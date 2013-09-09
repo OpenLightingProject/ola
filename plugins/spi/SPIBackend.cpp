@@ -115,15 +115,25 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
     return false;
   }
 
-  string on("1\n");
-  string off("0\n");
+  const string on("1");
+  const string off("0");
 
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
     uint8_t pin = output & (1 << i);
-    if (pin) {
-      write(m_gpio_fds[i], on.c_str(), on.size());
-    } else {
-      write(m_gpio_fds[i], off.c_str(), off.size());
+
+    if (i >= m_gpio_pin_state.size()) {
+      m_gpio_pin_state.push_back(!pin);
+    }
+
+    if (m_gpio_pin_state[i] != pin) {
+      const string &data = pin ? on : off;
+      if (write(m_gpio_fds[i], data.c_str(), data.size()) < 0) {
+        OLA_WARN << "Failed to toggle SPI GPIO pin "
+                 << static_cast<int>(m_gpio_pins[i]) << ": "
+                 << strerror(errno);
+        return false;
+      }
+      m_gpio_pin_state[i] = pin;
     }
   }
 
@@ -136,6 +146,7 @@ bool HardwareBackend::InitHook() {
    *   echo N > /sys/class/gpio/export
    * That requires root access.
    */
+  const string direction("out");
   bool failed = false;
   vector<uint8_t>::const_iterator iter = m_gpio_pins.begin();
   for (; iter != m_gpio_pins.end(); ++iter) {
@@ -149,6 +160,22 @@ bool HardwareBackend::InitHook() {
     } else {
       m_gpio_fds.push_back(fd);
     }
+
+    // Set dir
+    str.str("");
+    str << "/sys/class/gpio/gpio" << static_cast<int>(*iter) << "/direction";
+    fd = open(str.str().c_str(), O_RDWR);
+    if (fd < 0) {
+      OLA_WARN << "Failed to open " << str.str() << " : " << strerror(errno);
+      failed = true;
+      break;
+    }
+    if (write(fd, direction.c_str(), direction.size()) < 0) {
+      OLA_WARN << "Failed to enable output on " << str.str() << " : "
+               << strerror(errno);
+      failed = true;
+    }
+    close(fd);
   }
 
   if (failed) {
