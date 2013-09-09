@@ -65,6 +65,7 @@ examples/ola_dev_info
 examples/ola_dmxconsole
 examples/ola_dmxmonitor
 examples/ola_e131
+examples/ola_latency
 examples/ola_plugin_info
 examples/ola_plugin_state
 examples/ola_rdm_discover
@@ -89,6 +90,7 @@ ola/stamp-common
 olad/OlaVersion.h
 olad/olad
 olad/testdata/ola-output.conf
+plugins/artnet/artnet_loadtest
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
 python/ola/PidStoreLocation.py
