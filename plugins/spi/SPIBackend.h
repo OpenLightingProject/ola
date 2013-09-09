@@ -106,6 +106,8 @@ class HardwareBackend : public SPIBackend {
     const uint8_t m_output_count;
     const vector<uint8_t> m_gpio_pins;
     GPIOFds m_gpio_fds;
+
+    void CloseGPIOFDs();
 };
 
 

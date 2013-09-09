@@ -26,6 +26,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
@@ -101,10 +102,7 @@ HardwareBackend::HardwareBackend(const string &spi_device,
 
 
 HardwareBackend::~HardwareBackend() {
-  GPIOFds::iterator iter = m_gpio_fds.begin();
-  for (; iter != m_gpio_fds.end(); ++iter) {
-    close(*iter);
-  }
+  CloseGPIOFDs();
 }
 
 bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
@@ -113,23 +111,56 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
     return false;
   }
 
-  // TODO(simon): Select GPIO output here
+  string on("1\n");
+  string off("0\n");
+
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
     uint8_t on = output & (1 << i);
     OLA_INFO << "Pin " << i << " is " << static_cast<int>(on);
-    // Write m_gpio_fds[i] = on;
+    if (on) {
+      write(m_gpio_fds[i], on.c_str(), on.size());
+    } else {
+      write(m_gpio_fds[i], off.c_str(), off.size());
+    }
   }
 
   return WriteSPIData(data, length);
 }
 
 bool HardwareBackend::InitHook() {
-  // open each pin.
+  /**
+   * This relies on the pins being exported:
+   *   echo N > /sys/class/gpio/export
+   * That requires root access.
+   */
+  bool failed = false;
   vector<uint8_t>::const_iterator iter = m_gpio_pins.begin();
   for (; iter != m_gpio_pins.end(); ++iter) {
-    // open GPIO fd here
+    std::ostringstream str;
+    str << "/sys/class/gpio/gpio" << static_cast<int>(*iter) << "/value";
+    int fd = open(str.str().c_str(), O_RDWR);
+    if (fd < 0) {
+      OLA_WARN << "Failed to open " << str.str() << " : " << strerror(errno);
+      failed = true;
+      break;
+    } else {
+      m_gpio_fds.push_back(fd);
+    }
+  }
+
+  if (failed) {
+    CloseGPIOFDs();
+    return false;
   }
   return true;
+}
+
+void HardwareBackend::CloseGPIOFDs() {
+  GPIOFds::iterator iter = m_gpio_fds.begin();
+  for (; iter != m_gpio_fds.end(); ++iter) {
+    close(*iter);
+  }
+  m_gpio_fds.clear();
 }
 
 SoftwareBackend::SoftwareBackend(const string &spi_device,
