@@ -208,6 +208,10 @@ class TestLogger(object):
     results_log.append('Test Run: %s' % test_data['timestamp'])
     results_log.append('UID: %s' % test_data['uid'])
 
+    manufacturer_label = test_data['properties'].get('manufacturer_label', None)
+    if manufacturer_label:
+      results_log.append('Manufacturer: %s' % manufacturer_label)
+
     model_description = test_data['properties'].get('model_description', None)
     if model_description:
       results_log.append('Model Description: %s' % model_description)

@@ -1243,6 +1243,7 @@ class GetManufacturerLabel(TestMixins.GetMixin,
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'MANUFACTURER_LABEL'
   EXPECTED_FIELD = 'label'
+  PROVIDES = ['manufacturer_label']
 
 
 class GetManufacturerLabelWithData(TestMixins.GetWithDataMixin,
