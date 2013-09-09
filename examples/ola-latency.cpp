@@ -38,7 +38,8 @@ using std::string;
 
 DEFINE_s_uint32(universe, u, 1, "The universe to receive data for");
 DEFINE_bool(send_dmx, false, "Use SendDmx messages, default is GetDmx");
-DEFINE_uint32(count, 0, "Exit after this many RPCs, default: infinite (0)");
+DEFINE_s_uint32(count, c, 0,
+    "Exit after this many RPCs, default: infinite (0)");
 
 class Tracker {
   public:
@@ -75,10 +76,13 @@ void Tracker::Start() {
   SendRequest();
   m_wrapper.GetSelectServer()->Run();
 
-  OLA_INFO << "--------------";
-  OLA_INFO << "Sent " << m_count << " RPCs";
-  OLA_INFO << "Max was " << m_max.MicroSeconds() << " microseconds";
-  OLA_INFO << "Mean " << m_sum / m_count << " microseconds";
+  // Log this as WARN to ensure we actually get some output by default
+  // It also means you can just see the stats and not each individual request
+  // if you want.
+  OLA_WARN << "--------------";
+  OLA_WARN << "Sent " << m_count << " RPCs";
+  OLA_WARN << "Max was " << m_max.MicroSeconds() << " microseconds";
+  OLA_WARN << "Mean " << m_sum / m_count << " microseconds";
 }
 
 void Tracker::GotDmx(const DmxBuffer &, const string &) {
@@ -126,6 +130,16 @@ int main(int argc, char *argv[]) {
   ola::SetHelpString("[options]", "Measure the latency of RPCs to olad.");
   ola::ParseFlags(&argc, argv);
   ola::InitLoggingFromFlags();
+
+  if (FLAGS_count == 0) {
+    ola::log_level current_log_level = ola::LogLevel();
+    if (current_log_level != ola::OLA_LOG_DEBUG &&
+        current_log_level != ola::OLA_LOG_INFO) {
+      ola::SetLogLevel(ola::OLA_LOG_INFO);
+      OLA_INFO << "Forced log level to INFO to ensure you see some output in "
+                  "infinite mode";
+    }
+  }
 
   Tracker tracker;
   if (!tracker.Setup()) {
