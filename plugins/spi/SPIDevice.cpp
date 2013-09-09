@@ -165,6 +165,10 @@ string SPIDevice::SyncPortKey() const {
   return m_spi_device_name + "-sync-port";
 }
 
+string SPIDevice::GPIOPinKey() const {
+  return m_spi_device_name + "-gpio-pin";
+}
+
 string SPIDevice::PersonalityKey(uint8_t port) const {
   return GetPortKey("personality", port);
 }
@@ -200,7 +204,18 @@ void SPIDevice::PopulateHardwareBackendOptions(
     HardwareBackend::Options *options) {
   PopulateOptions(options);
 
-  // add gpio pins here
+  vector<string> pins = m_preferences->GetMultipleValue(GPIOPinKey());
+  vector<string>::const_iterator iter = pins.begin();
+  for (; iter != pins.end(); iter++) {
+    uint8_t pin;
+    if (!StringToInt(*iter, &pin)) {
+      OLA_WARN << "Invalid GPIO pin " << *iter;
+      continue;
+    }
+
+    // Do we need extra checking here?
+    options.gpio_pins.push_back(pin);
+  }
 }
 
 void SPIDevice::PopulateSoftwareBackendOptions(
