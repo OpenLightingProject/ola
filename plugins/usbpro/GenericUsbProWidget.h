@@ -67,14 +67,14 @@ class GenericUsbProWidget: public BaseUsbProWidget {
                        uint8_t mab_time,
                        uint8_t rate);
 
+    static const uint8_t RECEIVED_DMX_LABEL = 5;
+
   protected:
     // child classes can intercept this.
     virtual void HandleMessage(uint8_t label,
                                const uint8_t *data,
                                unsigned int length);
     void HandleDMX(const uint8_t *data, unsigned int length);
-
-    static const uint8_t RECEIVED_DMX_LABEL = 5;
 
   private:
     bool m_active;

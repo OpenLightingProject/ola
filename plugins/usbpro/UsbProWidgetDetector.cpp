@@ -48,6 +48,7 @@
 #include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/GenericUsbProWidget.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 
 namespace ola {
@@ -153,6 +154,8 @@ void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
       break;
     case ENTTEC_SNIFFER_LABEL:
       HandleSnifferPacket(widget);
+      break;
+    case GenericUsbProWidget::RECEIVED_DMX_LABEL:
       break;
     default:
       OLA_WARN << "Unknown response label: 0x" << std::hex <<
