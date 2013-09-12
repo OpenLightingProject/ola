@@ -71,6 +71,7 @@ class DummyPortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIdentifyDevice);
   CPPUNIT_TEST(testParamDescription);
   CPPUNIT_TEST(testOlaManufacturerPidCodeVersion);
+  CPPUNIT_TEST(testSlotInfo);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -101,6 +102,7 @@ class DummyPortTest: public CppUnit::TestFixture {
     void testIdentifyDevice();
     void testParamDescription();
     void testOlaManufacturerPidCodeVersion();
+    void testSlotInfo();
 
 
   private:
@@ -212,7 +214,7 @@ void DummyPortTest::testUnknownPid() {
 
 
 /*
- * Check that the supported params command work
+ * Check that the supported params command works
  */
 void DummyPortTest::testSupportedParams() {
   RDMRequest *request = new RDMGetRequest(
@@ -719,6 +721,66 @@ void DummyPortTest::testOlaManufacturerPidCodeVersion() {
   checkMalformedRequest(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
   checkSetRequest(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
   checkNoBroadcastResponse(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
+}
+
+
+/*
+ * Check that the slot info command works
+ */
+void DummyPortTest::testSlotInfo() {
+  RDMRequest *request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_SLOT_INFO,  // param id
+      NULL,  // data
+      0);  // data length
+
+  struct slot_infos_s {
+    struct {
+      uint16_t offset;
+      uint8_t type;
+      uint16_t label;
+    } __attribute__((packed)) slot_info_s[5];
+  } __attribute__((packed));
+
+  slot_infos_s slot_infos = {
+      {
+        {HostToNetwork(static_cast<uint16_t>(0)),
+         static_cast<uint8_t>(ola::rdm::ST_PRIMARY),
+         HostToNetwork(static_cast<uint16_t>(ola::rdm::SD_INTENSITY))},
+        {HostToNetwork(static_cast<uint16_t>(1)),
+         static_cast<uint8_t>(ola::rdm::ST_SEC_FINE),
+         HostToNetwork(static_cast<uint16_t>(0))},
+        {HostToNetwork(static_cast<uint16_t>(2)),
+         static_cast<uint8_t>(ola::rdm::ST_PRIMARY),
+         HostToNetwork(static_cast<uint16_t>(ola::rdm::SD_PAN))},
+        {HostToNetwork(static_cast<uint16_t>(3)),
+         static_cast<uint8_t>(ola::rdm::ST_PRIMARY),
+         HostToNetwork(static_cast<uint16_t>(ola::rdm::SD_TILT))},
+        {HostToNetwork(static_cast<uint16_t>(4)),
+         static_cast<uint8_t>(ola::rdm::ST_PRIMARY),
+         HostToNetwork(static_cast<uint16_t>(ola::rdm::SD_UNDEFINED))}
+      }};
+
+  RDMResponse *response = GetResponseFromData(
+    request,
+    reinterpret_cast<uint8_t*>(&slot_infos),
+    sizeof(slot_infos));
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.SendRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  checkSubDeviceOutOfRange(ola::rdm::PID_SLOT_INFO);
+  checkMalformedRequest(ola::rdm::PID_SLOT_INFO);
+  checkSetRequest(ola::rdm::PID_SLOT_INFO);
+  checkNoBroadcastResponse(ola::rdm::PID_SLOT_INFO);
 }
 
 
