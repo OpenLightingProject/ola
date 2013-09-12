@@ -2029,7 +2029,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
   """Get SLOT_INFO."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'SLOT_INFO'
-  PROVIDES = ['defined_slots']
+  PROVIDES = ['defined_slots', 'undefined_definition_slots']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -2038,10 +2038,12 @@ class GetSlotInfo(OptionalParameterTestFixture):
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
       self.SetProperty('defined_slots', set())
+      self.SetProperty('undefined_definition_slots', [])
       return
 
     slots = [d['slot_offset'] for d in fields['slots']]
     self.SetProperty('defined_slots', set(slots))
+    undefined_definition_slots = []
 
     for slot in fields['slots']:
       if slot['slot_type'] not in RDMConstants.SLOT_TYPE_TO_NAME:
@@ -2053,12 +2055,16 @@ class GetSlotInfo(OptionalParameterTestFixture):
         if slot['slot_label_id'] not in RDMConstants.SLOT_DEFINITION_TO_NAME:
           self.AddWarning('Unknown slot id %d for slot %d' %
                           (slot['slot_label_id'], slot['slot_offset']))
+        if slot['slot_label_id'] == 0xffff:
+          undefined_definition_slots.append(slot['slot_offset'])
       else:
         # slot_label_id must reference a defined slot
         if slot['slot_label_id'] not in slots:
           self.AddWarning(
               'Slot %d is of type secondary and references an unknown slot %d'
               % (slot['slot_offset'], slot['slot_label_id']))
+
+    self.SetProperty('undefined_definition_slots', undefined_definition_slots)
 
 
 class GetSlotInfoWithData(TestMixins.GetWithDataMixin,
@@ -2073,6 +2079,7 @@ class SetSlotInfo(TestMixins.UnsupportedSetMixin,
   """Set SLOT_INFO."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SLOT_INFO'
+
 
 class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
                                ResponderTestFixture):
@@ -2120,8 +2127,8 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
 
     if self._slots[0] != fields['slot_number']:
       self.AddWarning(
-          'Requested descriptionfor slot %d, message returned slot %d' %
-          (self._current_index, fields['slot_number']))
+          'Requested description for slot %d, message returned slot %d' %
+          (self._slots[0], fields['slot_number']))
       return
 
 
@@ -2141,6 +2148,53 @@ class GetSlotDescriptionWithTooMuchData(OptionalParameterTestFixture):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
+
+class GetUndefinedSlotDefinitionDescriptions(OptionalParameterTestFixture):
+  """Get the slot description for all slots with undefined definition."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'SLOT_DESCRIPTION'
+  REQUIRES = ['undefined_definition_slots']
+
+  def Test(self):
+    self.undef_slots = self.Property('undefined_definition_slots')[:]
+    if len(self.undef_slots) == 0:
+      self.SetNotRun(' No undefined definition slots found')
+      return
+    self._GetSlotDescription()
+
+  def _GetSlotDescription(self):
+    if len(self.undef_slots) == 0:
+      self.Stop()
+      return
+
+    self.AddExpectedResults([
+      self.AckGetResult(action=self._GetSlotDescription),
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID,
+                         action=self._GetSlotDescription),
+      self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                         action=self._GetSlotDescription)
+    ])
+    self.current_slot = self.undef_slots.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_slot])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      if response.nack_reason == RDMNack.NR_UNKNOWN_PID:
+        self.AddWarning(
+            '%s not supported for slot %d with undefined '
+            'definition' %
+            (self.pid, self.current_slot))
+      if response.nack_reason == RDMNack.NR_DATA_OUT_OF_RANGE:
+        self.AddWarning(
+            'Slot description for slot %d with undefined definition was missing'
+            % (self.current_slot))
+      return
+
+    if not fields['name'] :
+      self.AddWarning(
+          'Slot description for slot %d with undefined definition was blank' %
+          (self.current_slot))
+      return
 
 class SetSlotDescription(TestMixins.UnsupportedSetMixin,
                          OptionalParameterTestFixture):
