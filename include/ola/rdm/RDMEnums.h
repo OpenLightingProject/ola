@@ -559,7 +559,7 @@ typedef enum {
   LAMP_ON_MODE_OFF = 0x00,
   LAMP_ON_MODE_DMX = 0x01,
   LAMP_ON_MODE_ON = 0x02,
-  LAMP_ON_MODE_AFTER_CAL = 0x03,
+  LAMP_ON_MODE_ON_AFTER_CAL = 0x03,
 } rdm_lamp_mode;
 
 typedef enum {
@@ -578,40 +578,40 @@ typedef enum {
 // The identify modes from E1.37-1
 typedef enum {
   IDENTIFY_MODE_QUIET = 0x00,
-  IDENTIFY_MODE_LOUD = 0xff
+  IDENTIFY_MODE_LOUD = 0xFF
 } rdm_identify_mode;
 
 typedef enum {
   RESET_WARM = 0x01,
-  RESET_COLD = 0xff,
+  RESET_COLD = 0xFF,
 } rdm_reset_device_mode;
 
 // the two special presets
 static const uint16_t PRESET_PLAYBACK_OFF = 0x0000;
-static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;
+static const uint16_t PRESET_PLAYBACK_ALL = 0xFFFF;
 
 // bit masks for sensor values
 static const uint8_t SENSOR_RECORDED_VALUE = 0x01;
 static const uint8_t SENSOR_RECORDED_RANGE_VALUES = 0x02;
-static const uint8_t ALL_SENSORS = 0xff;
+static const uint8_t ALL_SENSORS = 0xFF;
 
 // The maximum PIN
 static const uint16_t MAX_LOCK_PIN = 9999;
 
 // The Preset programmed modes
 typedef enum {
-  PRESET_NOT_PROGRAMMED = 0,
-  PRESET_PROGRAMMED = 1,
-  PRESET_PROGRAMMED_READ_ONLY = 2,
+  PRESET_NOT_PROGRAMMED = 0x00,
+  PRESET_PROGRAMMED = 0x01,
+  PRESET_PROGRAMMED_READ_ONLY = 0x02,
 } rdm_preset_programmed_mode;
 
 // The RDM merge modes
 typedef enum {
-  MERGEMODE_DEFAULT = 0,
-  MERGEMODE_HTP = 1,
-  MERGEMODE_LTP = 2,
-  MERGEMODE_DMX_ONLY = 3,
-  MERGEMODE_OTHER = 0xff,
+  MERGEMODE_DEFAULT = 0x00,
+  MERGEMODE_HTP = 0x01,
+  MERGEMODE_LTP = 0x02,
+  MERGEMODE_DMX_ONLY = 0x03,
+  MERGEMODE_OTHER = 0xFF,
 } rdm_preset_merge_mode;
 }  // namespace rdm
 }  // namespace ola

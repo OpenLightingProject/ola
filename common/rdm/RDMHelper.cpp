@@ -123,7 +123,7 @@ string LampModeToString(uint8_t lamp_mode) {
       return "DMX";
     case LAMP_ON_MODE_ON:
       return "On";
-    case LAMP_ON_MODE_AFTER_CAL:
+    case LAMP_ON_MODE_ON_AFTER_CAL:
       return "On after calibration";
     default:
       stringstream str;
