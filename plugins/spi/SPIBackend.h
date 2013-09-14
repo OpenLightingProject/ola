@@ -43,8 +43,9 @@ class SPIBackend {
      */
     struct Options {
       uint32_t spi_speed;
+      bool cs_enable_high;
 
-      Options() : spi_speed(1000000) {}
+      Options() : spi_speed(1000000), cs_enable_high(false) {}
     };
 
     SPIBackend(const string &spi_device, const Options &options);
@@ -63,7 +64,7 @@ class SPIBackend {
      * Write data for a single output (device / universe) to the backend
      */
     virtual bool Write(uint8_t output, const uint8_t *data,
-                       unsigned int length) = 0;
+                       unsigned int length, unsigned int latch_bytes) = 0;
 
   protected:
     bool WriteSPIData(const uint8_t *data, unsigned int length);
@@ -72,7 +73,8 @@ class SPIBackend {
 
   private:
     const string m_device_path;
-    uint32_t m_spi_speed;
+    const uint32_t m_spi_speed;
+    const bool m_cs_enable_high;
     int m_fd;
 
     static const uint8_t SPI_MODE;
@@ -95,7 +97,8 @@ class HardwareBackend : public SPIBackend {
     HardwareBackend(const string &spi_device, const Options &options);
     ~HardwareBackend();
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length);
+    bool Write(uint8_t output, const uint8_t *data, unsigned int length,
+               unsigned int latch_bytes);
 
   protected:
     bool InitHook();
@@ -136,11 +139,13 @@ class SoftwareBackend : public SPIBackend {
     SoftwareBackend(const string &spi_device, const Options &options);
     ~SoftwareBackend();
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length);
+    bool Write(uint8_t output, const uint8_t *data, unsigned int length,
+               unsigned int latch_bytes);
 
   private:
     const int16_t m_sync_output;
     vector<unsigned int> m_output_sizes;
+    vector<unsigned int> m_latch_bytes;
     uint8_t *m_output;
     unsigned int m_length;
 };

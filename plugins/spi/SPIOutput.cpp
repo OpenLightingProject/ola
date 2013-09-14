@@ -216,7 +216,7 @@ void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t output_data[length];
   buffer.GetRange(m_start_address - 1, output_data, &length);
-  m_backend->Write(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length, 0);
 }
 
 void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
@@ -235,11 +235,12 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
     memcpy(output_data + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
            pixel_data_length);
   }
-  m_backend->Write(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length, 0);
 }
 
 void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
-  unsigned int length = LPD8806BufferSize();
+  uint8_t latch_bytes = (m_pixel_count + 31) / 32;
+  unsigned int length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
   uint8_t output_data[length];
   memset(output_data, 0, length);
 
@@ -260,10 +261,12 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
         output_data[i] = 0x80 | (d >> 1);
     }
   }
-  m_backend->Write(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length, latch_bytes);
 }
 
 void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
+  uint8_t latch_bytes = (m_pixel_count + 31) / 32;
+
   unsigned int pixel_data_length = LPD8806_SLOTS_PER_PIXEL;
   uint8_t pixel_data[pixel_data_length];
   buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
@@ -278,7 +281,7 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
   pixel_data[1] = pixel_data[0];
   pixel_data[0] = temp;
 
-  unsigned int length = LPD8806BufferSize();
+  unsigned int length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
   uint8_t output_data[length];
   memset(output_data, 0, length);
   for (unsigned int i = 0; i < m_pixel_count; i++) {
@@ -287,12 +290,7 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
         0x80 | (pixel_data[j] >> 1);
     }
   }
-  m_backend->Write(m_output_number, output_data, length);
-}
-
-unsigned int SPIOutput::LPD8806BufferSize() const {
-  uint8_t latch_bytes = (m_pixel_count + 31) / 32;
-  return m_pixel_count * LPD8806_SLOTS_PER_PIXEL + latch_bytes;
+  m_backend->Write(m_output_number, output_data, length, latch_bytes);
 }
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
