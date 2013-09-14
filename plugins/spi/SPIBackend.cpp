@@ -47,6 +47,8 @@ SPIBackend::SPIBackend(const string &spi_device, const Options &options)
       m_spi_speed(options.spi_speed),
       m_cs_enable_high(options.cs_enable_high),
       m_fd(-1) {
+  OLA_INFO << "Created SPI backend " << spi_device << " with speed "
+           << options.spi_speed << ", CE is " << m_cs_enable_high;
 }
 
 SPIBackend::~SPIBackend() {
