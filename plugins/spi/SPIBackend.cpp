@@ -30,104 +30,175 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
+#include "ola/stl/STLUtils.h"
 #include "plugins/spi/SPIBackend.h"
-
 
 namespace ola {
 namespace plugin {
 namespace spi {
 
-const uint8_t SPIBackend::SPI_BITS_PER_WORD = 8;
-const uint8_t SPIBackend::SPI_MODE = 0;
+using ola::thread::MutexLocker;
 
-SPIBackend::SPIBackend(const string &spi_device, const Options &options)
-    : m_device_path(spi_device),
-      m_spi_speed(options.spi_speed),
-      m_cs_enable_high(options.cs_enable_high),
-      m_fd(-1) {
-  OLA_INFO << "Created SPI backend " << spi_device << " with speed "
-           << options.spi_speed << ", CE is " << m_cs_enable_high;
+uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
+  if (length < m_size) {
+    m_size = length;
+    return m_data;
+  } else if (length == m_size) {
+    return m_data;
+  }
+
+  if (length <= m_actual_size) {
+    m_size = length;
+    return m_data;
+  }
+
+  free(m_data);
+  m_data = reinterpret_cast<uint8_t*>(malloc(length));
+  if (m_data) {
+    m_size = m_data ? length : 0;
+    m_actual_size = m_size;
+  }
+  return m_data;
 }
 
-SPIBackend::~SPIBackend() {
-  if (m_fd >= 0)
-    close(m_fd);
+void HardwareBackend::OutputData::SetPending(unsigned int length,
+                                             unsigned int latch_bytes) {
+  if (length < m_size) {
+    m_size = length;
+  }
+  m_latch_bytes = latch_bytes;
+  m_write_pending = true;
 }
 
-bool SPIBackend::Init() {
-  bool ok = InitHook();
-  if (!ok)
-    return false;
-
-  int fd = open(m_device_path.c_str(), O_RDWR);
-  ola::network::SocketCloser closer(fd);
-  if (fd < 0) {
-    OLA_WARN << "Failed to open " << m_device_path << " : " << strerror(errno);
-    return false;
+HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
+    const HardwareBackend::OutputData &other) {
+  if (this != &other) {
+    uint8_t *data = Resize(other.m_size + other.m_latch_bytes);
+    if (data) {
+      memcpy(data, other.m_data, other.m_size);
+      memset(data + m_size, 0, m_latch_bytes);
+      m_write_pending = true;
+      m_latch_bytes = other.m_latch_bytes;
+    } else {
+      m_write_pending = false;
+    }
   }
-
-  uint8_t spi_mode = SPI_MODE;
-  if (m_cs_enable_high) {
-    spi_mode |= SPI_CS_HIGH;
-  }
-
-  if (ioctl(fd, SPI_IOC_WR_MODE, &spi_mode) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_MODE for " << m_device_path;
-    return false;
-  }
-
-  uint8_t spi_bits_per_word = SPI_BITS_PER_WORD;
-  if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &spi_bits_per_word) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_BITS_PER_WORD for " << m_device_path;
-    return false;
-  }
-
-  if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &m_spi_speed) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_MAX_SPEED_HZ for " << m_device_path;
-    return false;
-  }
-  m_fd = closer.Release();
-  return true;
-}
-
-bool SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
-  struct spi_ioc_transfer spi;
-  memset(&spi, 0, sizeof(spi));
-  spi.tx_buf = reinterpret_cast<__u64>(data);
-  spi.len = length;
-  int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
-  if (bytes_written != static_cast<int>(length)) {
-    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
-    return false;
-  }
-  return true;
+  return *this;
 }
 
 HardwareBackend::HardwareBackend(const string &spi_device,
-                                       const Options &options)
-    : SPIBackend(spi_device, options),
+                                 const Options &options)
+    : m_spi_writer(spi_device, options),
       m_output_count(1 << options.gpio_pins.size()),
+      m_exit(false),
       m_gpio_pins(options.gpio_pins) {
+  SetupOutputs(&m_output_data);
 }
 
 
 HardwareBackend::~HardwareBackend() {
+  {
+    MutexLocker lock(&m_mutex);
+    m_exit = true;
+  }
+
+  Join();
+
+  STLDeleteElements(&m_output_data);
   CloseGPIOFDs();
 }
 
-bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
-                            unsigned int length, unsigned int latch_bytes) {
-  if (output >= m_output_count) {
+bool HardwareBackend::Init() {
+  if (!(m_spi_writer.Init() && SetupGPIO())) {
     return false;
   }
 
+  if (!FastStart()) {
+    CloseGPIOFDs();
+    return false;
+  }
+  return true;
+}
+
+uint8_t *HardwareBackend::Checkout(uint8_t output_id, unsigned int length) {
+  if (output_id >= m_output_count) {
+    return NULL;
+  }
+
+  m_mutex.Lock();
+  uint8_t *output = m_output_data[output_id]->Resize(length);
+  if (!output) {
+    m_mutex.Unlock();
+  }
+  return output;
+}
+
+void HardwareBackend::Commit(uint8_t output, unsigned int length,
+                             unsigned int latch_bytes) {
+  if (output >= m_output_count) {
+    return;
+  }
+
+  m_output_data[output]->SetPending(length, latch_bytes);
+  m_mutex.Unlock();
+  m_cond_var.Signal();
+}
+
+void *HardwareBackend::Run() {
+  Outputs outputs;
+  SetupOutputs(&outputs);
+
+  while (true) {
+    m_mutex.Lock();
+    bool action_pending = false;
+    Outputs::const_iterator iter = m_output_data.begin();
+    for (; iter != m_output_data.end(); ++iter) {
+      if ((*iter)->IsPending()) {
+        action_pending = true;
+        break;
+      }
+    }
+    if (!action_pending) {
+      m_cond_var.Wait(&m_mutex);
+    }
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      STLDeleteElements(&outputs);
+      return NULL;
+    }
+
+    for (unsigned int i = 0; i < m_output_data.size(); i++) {
+      if (m_output_data[i]->IsPending()) {
+        // take a copy
+        *outputs[i] = *m_output_data[i];
+      }
+    }
+    m_mutex.Unlock();
+
+    for (unsigned int i = 0; i < outputs.size(); i++) {
+      if (outputs[i]->IsPending()) {
+        WriteOutput(i, outputs[i]);
+      }
+    }
+  }
+}
+
+void HardwareBackend::SetupOutputs(Outputs *outputs) {
+  for (unsigned int i = 0; i < m_output_count; i++) {
+    outputs->push_back(new OutputData());
+  }
+}
+
+void HardwareBackend::WriteOutput(uint8_t output_id, OutputData *output) {
   const string on("1");
   const string off("0");
 
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
-    uint8_t pin = output & (1 << i);
+    uint8_t pin = output_id & (1 << i);
 
     if (i >= m_gpio_pin_state.size()) {
       m_gpio_pin_state.push_back(!pin);
@@ -139,19 +210,16 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
         OLA_WARN << "Failed to toggle SPI GPIO pin "
                  << static_cast<int>(m_gpio_pins[i]) << ": "
                  << strerror(errno);
-        return false;
+        return;
       }
       m_gpio_pin_state[i] = pin;
     }
   }
 
-  uint8_t final_data[length + latch_bytes];
-  memcpy(final_data, data, length);
-  memset(final_data + length, 0, latch_bytes);
-  return WriteSPIData(data, length);
+  m_spi_writer.WriteSPIData(output->GetData(), output->Size());
 }
 
-bool HardwareBackend::InitHook() {
+bool HardwareBackend::SetupGPIO() {
   /**
    * This relies on the pins being exported:
    *   echo N > /sys/class/gpio/export
@@ -204,6 +272,7 @@ void HardwareBackend::CloseGPIOFDs() {
   m_gpio_fds.clear();
 }
 
+/*
 SoftwareBackend::SoftwareBackend(const string &spi_device,
                                  const Options &options)
     : SPIBackend(spi_device, options),
@@ -264,6 +333,7 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
     return true;
   }
 }
+*/
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola

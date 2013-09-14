@@ -34,7 +34,7 @@ namespace spi {
 
 class SPIOutputPort: public BasicOutputPort {
   public:
-    SPIOutputPort(SPIDevice *parent, class SPIBackend *backend,
+    SPIOutputPort(SPIDevice *parent, class SPIBackendInterface *backend,
                   const UID &uid, const SPIOutput::Options &options);
     ~SPIOutputPort() {}
 

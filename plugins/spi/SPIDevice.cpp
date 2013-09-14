@@ -58,7 +58,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
     m_spi_device_name = spi_device.substr(pos + 1);
 
   SetDefaults();
-  unsigned int port_count;
+  unsigned int port_count = 0;
 
   string backend_type = m_preferences->GetValue(SPIBackendKey());
   if (backend_type == HARDWARE_BACKEND) {
@@ -74,12 +74,14 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                << "' for SPI device " << m_spi_device_name;
     }
 
+    /*
     SoftwareBackend::Options options;
     PopulateSoftwareBackendOptions(&options);
     m_backend.reset(new SoftwareBackend(spi_device, options));
     port_count = options.outputs;
     OLA_INFO << m_spi_device_name << ", Software backend, " << port_count
              << " ports";
+    */
   }
 
   for (uint8_t i = 0; i < port_count; i++) {
@@ -229,6 +231,7 @@ void SPIDevice::PopulateHardwareBackendOptions(
   }
 }
 
+/*
 void SPIDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
   PopulateOptions(options);
@@ -238,8 +241,9 @@ void SPIDevice::PopulateSoftwareBackendOptions(
     options->sync_output = options->outputs - 1;
   }
 }
+*/
 
-void SPIDevice::PopulateOptions(SPIBackend::Options *options) {
+void SPIDevice::PopulateOptions(SPIWriter::Options *options) {
   uint32_t spi_speed;
   if (StringToInt(m_preferences->GetValue(SPISpeedKey()), &spi_speed)) {
     options->spi_speed = spi_speed;

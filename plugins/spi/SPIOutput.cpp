@@ -107,7 +107,7 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
 };
 
 
-SPIOutput::SPIOutput(const UID &uid, SPIBackend *backend,
+SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                      const Options &options)
     : m_backend(backend),
       m_output_number(options.output_number),
@@ -214,14 +214,17 @@ void SPIOutput::SendRDMRequest(const RDMRequest *request,
 
 void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
-  uint8_t output_data[length];
-  buffer.GetRange(m_start_address - 1, output_data, &length);
-  m_backend->Write(m_output_number, output_data, length, 0);
+  uint8_t *output = m_backend->Checkout(m_output_number, length);
+  if (!output)
+    return;
+
+  buffer.GetRange(m_start_address - 1, output, &length);
+  m_backend->Commit(m_output_number, length, 0);
 }
 
 void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
   unsigned int pixel_data_length = WS2801_SLOTS_PER_PIXEL;
-  uint8_t pixel_data[pixel_data_length];
+  uint8_t pixel_data[WS2801_SLOTS_PER_PIXEL];
   buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
   if (pixel_data_length != WS2801_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << WS2801_SLOTS_PER_PIXEL
@@ -230,19 +233,25 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
   }
 
   unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
-  uint8_t output_data[length];
+  uint8_t *output = m_backend->Checkout(m_output_number, length);
+  if (!output)
+    return;
   for (unsigned int i = 0; i < m_pixel_count; i++) {
-    memcpy(output_data + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
+    memcpy(output + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
            pixel_data_length);
   }
-  m_backend->Write(m_output_number, output_data, length, 0);
+  m_backend->Commit(m_output_number, length, 0);
 }
 
 void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   uint8_t latch_bytes = (m_pixel_count + 31) / 32;
   unsigned int length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
-  uint8_t output_data[length];
-  memset(output_data, 0, length);
+
+  uint8_t *output = m_backend->Checkout(m_output_number, length);
+  if (!output)
+    return;
+
+  memset(output, 0, length);
 
   unsigned int first_slot = m_start_address - 1;  // 0 offset
   unsigned int limit = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
@@ -252,23 +261,23 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
     // Convert RGB to GRB
     switch (i % LPD8806_SLOTS_PER_PIXEL) {
       case 0:
-        output_data[i + 1] = 0x80 | (d >> 1);
+        output[i + 1] = 0x80 | (d >> 1);
         break;
       case 1:
-        output_data[i - 1] = 0x80 | (d >> 1);
+        output[i - 1] = 0x80 | (d >> 1);
         break;
       default:
-        output_data[i] = 0x80 | (d >> 1);
+        output[i] = 0x80 | (d >> 1);
     }
   }
-  m_backend->Write(m_output_number, output_data, length, latch_bytes);
+  m_backend->Commit(m_output_number, length, latch_bytes);
 }
 
 void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
   uint8_t latch_bytes = (m_pixel_count + 31) / 32;
 
   unsigned int pixel_data_length = LPD8806_SLOTS_PER_PIXEL;
-  uint8_t pixel_data[pixel_data_length];
+  uint8_t pixel_data[LPD8806_SLOTS_PER_PIXEL];
   buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
   if (pixel_data_length != LPD8806_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << LPD8806_SLOTS_PER_PIXEL
@@ -282,15 +291,16 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
   pixel_data[0] = temp;
 
   unsigned int length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
-  uint8_t output_data[length];
-  memset(output_data, 0, length);
+  uint8_t *output = m_backend->Checkout(m_output_number, length);
+  if (!output)
+    return;
+  memset(output, 0, length);
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     for (unsigned int j = 0; j < LPD8806_SLOTS_PER_PIXEL; j++) {
-      output_data[i * LPD8806_SLOTS_PER_PIXEL + j] =
-        0x80 | (pixel_data[j] >> 1);
+      output[i * LPD8806_SLOTS_PER_PIXEL + j] = 0x80 | (pixel_data[j] >> 1);
     }
   }
-  m_backend->Write(m_output_number, output_data, length, latch_bytes);
+  m_backend->Commit(m_output_number, length, latch_bytes);
 }
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {

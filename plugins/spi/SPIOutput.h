@@ -115,7 +115,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     };
 
     SPIOutput(const UID &uid,
-              class SPIBackend *backend,
+              class SPIBackendInterface *backend,
               const Options &options);
 
     uint8_t GetPersonality() const;
@@ -149,7 +149,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
         static RDMOps *instance;
     };
 
-    class SPIBackend *m_backend;
+    class SPIBackendInterface *m_backend;
     const uint8_t m_output_number;
     string m_spi_device_name;
     const UID m_uid;
