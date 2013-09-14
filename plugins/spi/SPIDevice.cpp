@@ -158,6 +158,10 @@ string SPIDevice::SPISpeedKey() const {
   return m_spi_device_name + "-spi-speed";
 }
 
+string SPIDevice::SPICEKey() const {
+  return m_spi_device_name + "-spi-ce-high";
+}
+
 string SPIDevice::PortCountKey() const {
   return m_spi_device_name + "-ports";
 }
@@ -197,6 +201,7 @@ void SPIDevice::SetDefaults() {
                                  SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPISpeedKey(), IntValidator(0, 32000000),
                                  "100000");
+  m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), "false");
   m_preferences->SetDefaultValue(PortCountKey(), IntValidator(1, 8), "1");
   m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), "0");
 }
@@ -238,6 +243,10 @@ void SPIDevice::PopulateOptions(SPIBackend::Options *options) {
   uint32_t spi_speed;
   if (StringToInt(m_preferences->GetValue(SPISpeedKey()), &spi_speed)) {
     options->spi_speed = spi_speed;
+  }
+  bool ce_high;
+  if (StringToBool(m_preferences->GetValue(SPICEKey()), &ce_high)) {
+    options->cs_enable_high = ce_high;
   }
 }
 }  // namespace spi
