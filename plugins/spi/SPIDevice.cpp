@@ -116,6 +116,7 @@ string SPIDevice::DeviceId() const {
  */
 bool SPIDevice::StartHook() {
   if (!m_backend->Init()) {
+    STLDeleteElements(&m_spi_ports);
     return false;
   }
 
