@@ -26,6 +26,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -44,7 +45,10 @@ const uint8_t SPIBackend::SPI_MODE = 0;
 SPIBackend::SPIBackend(const string &spi_device, const Options &options)
     : m_device_path(spi_device),
       m_spi_speed(options.spi_speed),
+      m_cs_enable_high(options.cs_enable_high),
       m_fd(-1) {
+  OLA_INFO << "Created SPI backend " << spi_device << " with speed "
+           << options.spi_speed << ", CE is " << m_cs_enable_high;
 }
 
 SPIBackend::~SPIBackend() {
@@ -65,6 +69,10 @@ bool SPIBackend::Init() {
   }
 
   uint8_t spi_mode = SPI_MODE;
+  if (m_cs_enable_high) {
+    spi_mode |= SPI_CS_HIGH;
+  }
+
   if (ioctl(fd, SPI_IOC_WR_MODE, &spi_mode) < 0) {
     OLA_WARN << "Failed to set SPI_IOC_WR_MODE for " << m_device_path;
     return false;
@@ -110,7 +118,7 @@ HardwareBackend::~HardwareBackend() {
 }
 
 bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
-                            unsigned int length) {
+                            unsigned int length, unsigned int latch_bytes) {
   if (output >= m_output_count) {
     return false;
   }
@@ -137,6 +145,9 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
     }
   }
 
+  uint8_t final_data[length + latch_bytes];
+  memcpy(final_data, data, length);
+  memset(final_data + length, 0, latch_bytes);
   return WriteSPIData(data, length);
 }
 
@@ -198,6 +209,7 @@ SoftwareBackend::SoftwareBackend(const string &spi_device,
     : SPIBackend(spi_device, options),
       m_sync_output(options.sync_output),
       m_output_sizes(options.outputs, 0),
+      m_latch_bytes(options.outputs, 0),
       m_output(NULL),
       m_length(0) {
 }
@@ -207,7 +219,7 @@ SoftwareBackend::~SoftwareBackend() {
 }
 
 bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
-                            unsigned int length) {
+                            unsigned int length, unsigned int latch_bytes) {
   if (output >= m_output_sizes.size()) {
     OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
     return false;
@@ -222,7 +234,12 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
       trailing += m_output_sizes[i];
     }
   }
-  const unsigned int required_size = leading + length + trailing;
+  m_latch_bytes[output] = latch_bytes;
+
+  const unsigned int total_latch_bytes = std::accumulate(
+      m_latch_bytes.begin(), m_latch_bytes.end(), 0);
+  const unsigned int required_size = (
+      leading + length + trailing + total_latch_bytes);
 
   // Check if the current buffer is large enough to hold our data.
   if (required_size != m_length) {
@@ -231,6 +248,7 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
     memcpy(new_output, m_output, leading);
     memcpy(new_output + leading, data, length);
     memcpy(new_output + leading + length, m_output + leading, trailing);
+    memset(new_output + leading + length + trailing, 0, total_latch_bytes);
     free(m_output);
     m_output = new_output;
     m_length = required_size;

@@ -109,6 +109,15 @@ void Escape(string *original);
 string EscapeString(const string &original);
 
 /**
+ * @brief Convert a string to a bool. The string can be 'true' or 'false'.
+ * @param[in] value the string to convert
+ * @param[out] output a pointer where the value will be stored.
+ * @returns true if the value was converted, false if the string was not a
+ * bool.
+ */
+bool StringToBool(const string &value, bool *output);
+
+/**
  * @brief Convert a string to a unsigned int.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.

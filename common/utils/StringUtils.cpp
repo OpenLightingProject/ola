@@ -95,6 +95,20 @@ string IntToString(unsigned int i) {
   return str.str();
 }
 
+bool StringToBool(const string &value, bool *output) {
+  string lc_value(value);
+  ToLower(&lc_value);
+  if (lc_value == "true") {
+    *output = true;
+    return true;
+  } else if (lc_value == "false") {
+    *output = false;
+    return true;
+  }
+  return false;
+}
+
+
 bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (value.empty())
     return false;
