@@ -53,6 +53,10 @@ class SPIBackendInterface {
     virtual string DevicePath() const = 0;
 
     virtual bool Init() = 0;
+
+  protected:
+    static const char SPI_DROP_VAR[];
+    static const char SPI_DROP_VAR_KEY[];
 };
 
 
@@ -203,9 +207,6 @@ class SoftwareBackend : public SPIBackendInterface,
     uint8_t *m_output;
     unsigned int m_length;
     unsigned int m_buffer_size;
-
-    static const char SPI_DROP_VAR[];
-    static const char SPI_DROP_VAR_KEY[];
 };
 }  // namespace spi
 }  // namespace plugin

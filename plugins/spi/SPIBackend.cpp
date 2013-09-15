@@ -42,8 +42,8 @@ namespace spi {
 
 using ola::thread::MutexLocker;
 
-const char SPI_DROP_VAR[] = "spi-drops";
-const char SPI_DROP_VAR_KEY[] = "device";
+const char SPIBackendInterface::SPI_DROP_VAR[] = "spi-drops";
+const char SPIBackendInterface::SPI_DROP_VAR_KEY[] = "device";
 
 uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
   if (length < m_size) {
