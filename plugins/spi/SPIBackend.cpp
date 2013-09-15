@@ -153,6 +153,13 @@ void *HardwareBackend::Run() {
 
   while (true) {
     m_mutex.Lock();
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      STLDeleteElements(&outputs);
+      return NULL;
+    }
+
     bool action_pending = false;
     Outputs::const_iterator iter = m_output_data.begin();
     for (; iter != m_output_data.end(); ++iter) {
