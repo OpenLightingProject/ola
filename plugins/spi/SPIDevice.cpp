@@ -64,7 +64,9 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
   if (backend_type == HARDWARE_BACKEND) {
     HardwareBackend::Options options;
     PopulateHardwareBackendOptions(&options);
-    m_backend.reset(new HardwareBackend(spi_device, options));
+    m_backend.reset(
+        new HardwareBackend(spi_device, options,
+                            plugin_adaptor->GetExportMap()));
     port_count = 1 << options.gpio_pins.size();
     OLA_INFO << m_spi_device_name << ", Hardware backend, " << port_count
              << " ports";
@@ -76,7 +78,9 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
 
     SoftwareBackend::Options options;
     PopulateSoftwareBackendOptions(&options);
-    m_backend.reset(new SoftwareBackend(spi_device, options));
+    m_backend.reset(
+        new SoftwareBackend(spi_device, options,
+                            plugin_adaptor->GetExportMap()));
     port_count = options.outputs;
     OLA_INFO << m_spi_device_name << ", Software backend, " << port_count
              << " ports";

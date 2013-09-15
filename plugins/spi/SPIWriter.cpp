@@ -40,14 +40,23 @@ namespace spi {
 
 const uint8_t SPIWriter::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIWriter::SPI_MODE = 0;
+const char SPIWriter::SPI_ERROR_VAR[] = "spi-write-errors";
+const char SPIWriter::SPI_ERROR_VAR_KEY[] = "device";
 
-SPIWriter::SPIWriter(const string &spi_device, const Options &options)
+SPIWriter::SPIWriter(const string &spi_device,
+                     const Options &options,
+                     ExportMap *export_map)
     : m_device_path(spi_device),
       m_spi_speed(options.spi_speed),
       m_cs_enable_high(options.cs_enable_high),
       m_fd(-1) {
   OLA_INFO << "Created SPI Writer " << spi_device << " with speed "
            << options.spi_speed << ", CE is " << m_cs_enable_high;
+  if (export_map) {
+    m_error_map_var = export_map->GetUIntMapVar(SPI_ERROR_VAR,
+                                                SPI_ERROR_VAR_KEY);
+    (*m_error_map_var)[m_device_path] = 0;
+  }
 }
 
 SPIWriter::~SPIWriter() {
@@ -95,6 +104,10 @@ bool SPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
   int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
   if (bytes_written != static_cast<int>(length)) {
     OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
+    if (m_error_map_var) {
+      (*m_error_map_var)[m_device_path]++;
+    }
+
     return false;
   }
   return true;

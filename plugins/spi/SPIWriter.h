@@ -21,6 +21,7 @@
 #ifndef PLUGINS_SPI_SPIWRITER_H_
 #define PLUGINS_SPI_SPIWRITER_H_
 
+#include <ola/ExportMap.h>
 #include <stdint.h>
 #include <string>
 
@@ -45,7 +46,8 @@ class SPIWriter {
       Options() : spi_speed(1000000), cs_enable_high(false) {}
     };
 
-    SPIWriter(const string &spi_device, const Options &options);
+    SPIWriter(const string &spi_device, const Options &options,
+              ExportMap *export_map);
     ~SPIWriter();
 
     string DevicePath() const { return m_device_path; }
@@ -63,9 +65,12 @@ class SPIWriter {
     const uint32_t m_spi_speed;
     const bool m_cs_enable_high;
     int m_fd;
+    UIntMap *m_error_map_var;
 
     static const uint8_t SPI_MODE;
     static const uint8_t SPI_BITS_PER_WORD;
+    static const char SPI_ERROR_VAR[];
+    static const char SPI_ERROR_VAR_KEY[];
 };
 
 }  // namespace spi

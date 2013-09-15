@@ -88,8 +88,9 @@ HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
 }
 
 HardwareBackend::HardwareBackend(const string &spi_device,
-                                 const Options &options)
-    : m_spi_writer(spi_device, options),
+                                 const Options &options,
+                                 ExportMap *export_map)
+    : m_spi_writer(spi_device, options, export_map),
       m_output_count(1 << options.gpio_pins.size()),
       m_exit(false),
       m_gpio_pins(options.gpio_pins) {
@@ -283,8 +284,9 @@ void HardwareBackend::CloseGPIOFDs() {
 }
 
 SoftwareBackend::SoftwareBackend(const string &spi_device,
-                                 const Options &options)
-    : m_spi_writer(spi_device, options),
+                                 const Options &options,
+                                 ExportMap *export_map)
+    : m_spi_writer(spi_device, options, export_map),
       m_write_pending(false),
       m_exit(false),
       m_sync_output(options.sync_output),

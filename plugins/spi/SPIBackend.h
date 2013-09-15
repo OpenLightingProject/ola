@@ -68,7 +68,9 @@ class HardwareBackend : public ola::thread::Thread,
       vector<uint8_t> gpio_pins;
     };
 
-    HardwareBackend(const string &spi_device, const Options &options);
+    HardwareBackend(const string &spi_device,
+                    const Options &options,
+                    ExportMap *export_map);
     ~HardwareBackend();
 
     bool Init();
@@ -165,7 +167,9 @@ class SoftwareBackend : public SPIBackendInterface,
       explicit Options() : SPIWriter::Options(), outputs(1), sync_output(0) {}
     };
 
-    SoftwareBackend(const string &spi_device, const Options &options);
+    SoftwareBackend(const string &spi_device,
+                    const Options &options,
+                    ExportMap *export_map);
     ~SoftwareBackend();
 
     bool Init();
