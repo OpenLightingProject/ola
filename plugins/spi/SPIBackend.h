@@ -126,6 +126,7 @@ class HardwareBackend : public ola::thread::Thread,
     typedef vector<OutputData*> Outputs;
 
     SPIWriter m_spi_writer;
+    UIntMap *m_drop_map;
     const uint8_t m_output_count;
     ola::thread::Mutex m_mutex;
     ola::thread::ConditionVariable m_cond_var;
@@ -190,6 +191,7 @@ class SoftwareBackend : public SPIBackendInterface,
 
   private:
     SPIWriter m_spi_writer;
+    UIntMap *m_drop_map;
     ola::thread::Mutex m_mutex;
     ola::thread::ConditionVariable m_cond_var;
     bool m_write_pending;
@@ -201,6 +203,9 @@ class SoftwareBackend : public SPIBackendInterface,
     uint8_t *m_output;
     unsigned int m_length;
     unsigned int m_buffer_size;
+
+    static const char SPI_DROP_VAR[];
+    static const char SPI_DROP_VAR_KEY[];
 };
 }  // namespace spi
 }  // namespace plugin

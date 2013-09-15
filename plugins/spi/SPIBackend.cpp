@@ -42,6 +42,9 @@ namespace spi {
 
 using ola::thread::MutexLocker;
 
+const char SPI_DROP_VAR[] = "spi-drops";
+const char SPI_DROP_VAR_KEY[] = "device";
+
 uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
   if (length < m_size) {
     m_size = length;
@@ -95,6 +98,11 @@ HardwareBackend::HardwareBackend(const string &spi_device,
       m_exit(false),
       m_gpio_pins(options.gpio_pins) {
   SetupOutputs(&m_output_data);
+  if (export_map) {
+    m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
+                                           SPI_DROP_VAR_KEY);
+    (*m_drop_map)[m_spi_writer.DevicePath()] = 0;
+  }
 }
 
 
@@ -144,7 +152,12 @@ void HardwareBackend::Commit(uint8_t output) {
     return;
   }
 
-  m_output_data[output]->SetPending();
+  OutputData *output_data = m_output_data[output];
+  if (output_data->IsPending() && m_drop_map) {
+    // There was already another write pending which we're now stomping on
+    (*m_drop_map)[m_spi_writer.DevicePath()]++;
+  }
+  output_data->SetPending();
   m_mutex.Unlock();
   m_cond_var.Signal();
 }
@@ -295,6 +308,11 @@ SoftwareBackend::SoftwareBackend(const string &spi_device,
       m_output(NULL),
       m_length(0),
       m_buffer_size(0) {
+  if (export_map) {
+    m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
+                                           SPI_DROP_VAR_KEY);
+    (*m_drop_map)[m_spi_writer.DevicePath()] = 0;
+  }
 }
 
 SoftwareBackend::~SoftwareBackend() {
@@ -367,8 +385,16 @@ void SoftwareBackend::Commit(uint8_t output) {
     return;
   }
 
+  bool should_write = m_sync_output < 0 || output == m_sync_output;
+  if (should_write) {
+    if (m_write_pending && m_drop_map) {
+      // There was already another write pending which we're now stomping on
+      (*m_drop_map)[m_spi_writer.DevicePath()]++;
+    }
+    m_write_pending = should_write;
+  }
   m_mutex.Unlock();
-  if (m_sync_output < 0 || output == m_sync_output) {
+  if (should_write) {
     m_cond_var.Signal();
   }
 }
@@ -396,15 +422,20 @@ void *SoftwareBackend::Run() {
       return NULL;
     }
 
-    if (length < m_length) {
-      free(output_data);
-      output_data = reinterpret_cast<uint8_t*>(malloc(m_length));
-      length = m_length;
+    bool write_pending = m_write_pending;
+    if (write_pending) {
+      if (length < m_length) {
+        free(output_data);
+        output_data = reinterpret_cast<uint8_t*>(malloc(m_length));
+        length = m_length;
+      }
+      memcpy(output_data, m_output, m_length);
     }
-    memcpy(output_data, m_output, m_length);
     m_mutex.Unlock();
 
-    m_spi_writer.WriteSPIData(output_data, m_length);
+    if (write_pending) {
+      m_spi_writer.WriteSPIData(output_data, m_length);
+    }
   }
 }
 }  // namespace spi
