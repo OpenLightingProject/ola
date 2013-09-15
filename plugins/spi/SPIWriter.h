@@ -66,11 +66,13 @@ class SPIWriter {
     const bool m_cs_enable_high;
     int m_fd;
     UIntMap *m_error_map_var;
+    UIntMap *m_write_map_var;
 
     static const uint8_t SPI_MODE;
     static const uint8_t SPI_BITS_PER_WORD;
+    static const char SPI_DEVICE_KEY[];
     static const char SPI_ERROR_VAR[];
-    static const char SPI_ERROR_VAR_KEY[];
+    static const char SPI_WRITE_VAR[];
 };
 
 }  // namespace spi

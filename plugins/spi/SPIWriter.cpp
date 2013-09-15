@@ -40,8 +40,9 @@ namespace spi {
 
 const uint8_t SPIWriter::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIWriter::SPI_MODE = 0;
+const char SPIWriter::SPI_DEVICE_KEY[] = "device";
 const char SPIWriter::SPI_ERROR_VAR[] = "spi-write-errors";
-const char SPIWriter::SPI_ERROR_VAR_KEY[] = "device";
+const char SPIWriter::SPI_WRITE_VAR[] = "spi-writes";
 
 SPIWriter::SPIWriter(const string &spi_device,
                      const Options &options,
@@ -54,8 +55,11 @@ SPIWriter::SPIWriter(const string &spi_device,
            << options.spi_speed << ", CE is " << m_cs_enable_high;
   if (export_map) {
     m_error_map_var = export_map->GetUIntMapVar(SPI_ERROR_VAR,
-                                                SPI_ERROR_VAR_KEY);
+                                                SPI_DEVICE_KEY);
     (*m_error_map_var)[m_device_path] = 0;
+    m_write_map_var = export_map->GetUIntMapVar(SPI_WRITE_VAR,
+                                                SPI_DEVICE_KEY);
+    (*m_write_map_var)[m_device_path] = 0;
   }
 }
 
@@ -101,13 +105,17 @@ bool SPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
   memset(&spi, 0, sizeof(spi));
   spi.tx_buf = reinterpret_cast<__u64>(data);
   spi.len = length;
+
+  if (m_write_map_var) {
+    (*m_write_map_var)[m_device_path]++;
+  }
+
   int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
   if (bytes_written != static_cast<int>(length)) {
     OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
     if (m_error_map_var) {
       (*m_error_map_var)[m_device_path]++;
     }
-
     return false;
   }
   return true;
