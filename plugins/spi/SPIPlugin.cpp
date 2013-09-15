@@ -139,7 +139,7 @@ string SPIPlugin::Description() const {
 "<device>-spi-speed = <int>\n"
 "The speed of the SPI bus, range is 0 - 32000000 Hz.\n"
 "\n"
-"<device>-ce-high = <int>\n"
+"<device>-ce-high = <bool>\n"
 "The mode of the CE pin. Set to false this pulls the CE pin low when writing\n"
 "data. Set to true this will pull the pin high when writing.\n"
 "\n"
