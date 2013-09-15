@@ -78,7 +78,7 @@ class SPIDevice: public ola::Device {
 
     void SetDefaults();
     void PopulateHardwareBackendOptions(HardwareBackend::Options *options);
-    // void PopulateSoftwareBackendOptions(SoftwareBackend::Options *options);
+    void PopulateSoftwareBackendOptions(SoftwareBackend::Options *options);
     void PopulateOptions(SPIWriter::Options *options);
 
     static const char SPI_DEVICE_NAME[];

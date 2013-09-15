@@ -74,14 +74,12 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                << "' for SPI device " << m_spi_device_name;
     }
 
-    /*
     SoftwareBackend::Options options;
     PopulateSoftwareBackendOptions(&options);
     m_backend.reset(new SoftwareBackend(spi_device, options));
     port_count = options.outputs;
     OLA_INFO << m_spi_device_name << ", Software backend, " << port_count
              << " ports";
-    */
   }
 
   for (uint8_t i = 0; i < port_count; i++) {
@@ -232,7 +230,6 @@ void SPIDevice::PopulateHardwareBackendOptions(
   }
 }
 
-/*
 void SPIDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
   PopulateOptions(options);
@@ -242,7 +239,6 @@ void SPIDevice::PopulateSoftwareBackendOptions(
     options->sync_output = options->outputs - 1;
   }
 }
-*/
 
 void SPIDevice::PopulateOptions(SPIWriter::Options *options) {
   uint32_t spi_speed;
