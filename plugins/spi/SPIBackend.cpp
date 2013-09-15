@@ -104,8 +104,8 @@ HardwareBackend::~HardwareBackend() {
     m_exit = true;
   }
 
-  Join();
   m_cond_var.Signal();
+  Join();
 
   STLDeleteElements(&m_output_data);
   CloseGPIOFDs();
