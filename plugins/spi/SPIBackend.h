@@ -45,8 +45,10 @@ class SPIBackendInterface {
     virtual ~SPIBackendInterface() {}
 
     virtual uint8_t *Checkout(uint8_t output, unsigned int length) = 0;
-    virtual void Commit(uint8_t output, unsigned int length,
-                        unsigned int latch_bytes) = 0;
+    virtual uint8_t *Checkout(uint8_t output,
+                              unsigned int length,
+                              unsigned int latch_bytes) = 0;
+    virtual void Commit(uint8_t output) = 0;
 
     virtual string DevicePath() const = 0;
 
@@ -67,14 +69,18 @@ class HardwareBackend : public ola::thread::Thread,
     };
 
     HardwareBackend(const string &spi_device, const Options &options);
-
     ~HardwareBackend();
 
     bool Init();
 
-    uint8_t *Checkout(uint8_t output, unsigned int length);
+    uint8_t *Checkout(uint8_t output, unsigned int length) {
+      return Checkout(output, length, 0);
+    }
 
-    void Commit(uint8_t output, unsigned int length, unsigned int latch_bytes);
+    uint8_t *Checkout(uint8_t output,
+                      unsigned int length,
+                      unsigned int latch_bytes);
+    void Commit(uint8_t output);
 
     string DevicePath() const { return m_spi_writer.DevicePath(); }
 
@@ -95,7 +101,8 @@ class HardwareBackend : public ola::thread::Thread,
         ~OutputData() { delete m_data; }
 
         uint8_t *Resize(unsigned int length);
-        void SetPending(unsigned int length, unsigned int latch_bytes);
+        void SetLatchBytes(unsigned int latch_bytes);
+        void SetPending();
         bool IsPending() const { return m_write_pending; }
         void ResetPending() { m_write_pending = false; }
         const uint8_t *GetData() const { return m_data; }
@@ -139,33 +146,58 @@ class HardwareBackend : public ola::thread::Thread,
 /**
  * An SPI Backend which uses a software multipliexer. This accumulates all data
  * into a single buffer and then writes it to the SPI bus.
-class SoftwareBackend : public SPIBackendInterface {
+ */
+class SoftwareBackend : public SPIBackendInterface,
+                        public ola::thread::Thread {
   public:
     struct Options : public SPIWriter::Options {
+      /*
        * The number of outputs.
+       */
       uint8_t outputs;
+       /*
        * Controls if we designate one of the outputs as the 'sync' output.
        * If set >= 0, it denotes the output which triggers the SPI write.
        * If set to -1, we perform an SPI write on each update.
+       */
       int16_t sync_output;
 
-      explicit Options() : outputs(1), sync_output(0) {}
+      explicit Options() : SPIWriter::Options(), outputs(1), sync_output(0) {}
     };
 
     SoftwareBackend(const string &spi_device, const Options &options);
     ~SoftwareBackend();
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length,
-               unsigned int latch_bytes);
+    bool Init();
+
+    uint8_t *Checkout(uint8_t output, unsigned int length) {
+      return Checkout(output, length, 0);
+    }
+
+    uint8_t *Checkout(uint8_t output,
+                      unsigned int length,
+                      unsigned int latch_bytes);
+    void Commit(uint8_t output);
+
+    string DevicePath() const { return m_spi_writer.DevicePath(); }
+
+  protected:
+    void* Run();
 
   private:
+    SPIWriter m_spi_writer;
+    ola::thread::Mutex m_mutex;
+    ola::thread::ConditionVariable m_cond_var;
+    bool m_write_pending;
+    bool m_exit;
+
     const int16_t m_sync_output;
     vector<unsigned int> m_output_sizes;
     vector<unsigned int> m_latch_bytes;
     uint8_t *m_output;
     unsigned int m_length;
+    unsigned int m_buffer_size;
 };
-*/
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola

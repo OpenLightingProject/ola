@@ -64,13 +64,12 @@ uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
   return m_data;
 }
 
-void HardwareBackend::OutputData::SetPending(unsigned int length,
-                                             unsigned int latch_bytes) {
-  if (length < m_size) {
-    m_size = length;
-  }
-  m_latch_bytes = latch_bytes;
+void HardwareBackend::OutputData::SetPending() {
   m_write_pending = true;
+}
+
+void HardwareBackend::OutputData::SetLatchBytes(unsigned int latch_bytes) {
+  m_latch_bytes = latch_bytes;
 }
 
 HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
@@ -123,7 +122,9 @@ bool HardwareBackend::Init() {
   return true;
 }
 
-uint8_t *HardwareBackend::Checkout(uint8_t output_id, unsigned int length) {
+uint8_t *HardwareBackend::Checkout(uint8_t output_id,
+                                   unsigned int length,
+                                   unsigned int latch_bytes) {
   if (output_id >= m_output_count) {
     return NULL;
   }
@@ -133,16 +134,16 @@ uint8_t *HardwareBackend::Checkout(uint8_t output_id, unsigned int length) {
   if (!output) {
     m_mutex.Unlock();
   }
+  m_output_data[output_id]->SetLatchBytes(latch_bytes);
   return output;
 }
 
-void HardwareBackend::Commit(uint8_t output, unsigned int length,
-                             unsigned int latch_bytes) {
+void HardwareBackend::Commit(uint8_t output) {
   if (output >= m_output_count) {
     return;
   }
 
-  m_output_data[output]->SetPending(length, latch_bytes);
+  m_output_data[output]->SetPending();
   m_mutex.Unlock();
   m_cond_var.Signal();
 }
@@ -281,27 +282,51 @@ void HardwareBackend::CloseGPIOFDs() {
   m_gpio_fds.clear();
 }
 
-/*
 SoftwareBackend::SoftwareBackend(const string &spi_device,
                                  const Options &options)
-    : SPIBackend(spi_device, options),
+    : m_spi_writer(spi_device, options),
+      m_write_pending(false),
+      m_exit(false),
       m_sync_output(options.sync_output),
       m_output_sizes(options.outputs, 0),
       m_latch_bytes(options.outputs, 0),
       m_output(NULL),
-      m_length(0) {
+      m_length(0),
+      m_buffer_size(0) {
 }
 
 SoftwareBackend::~SoftwareBackend() {
+  {
+    MutexLocker lock(&m_mutex);
+    m_exit = true;
+  }
+
+  m_cond_var.Signal();
+  Join();
+
   free(m_output);
 }
 
-bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
-                            unsigned int length, unsigned int latch_bytes) {
-  if (output >= m_output_sizes.size()) {
-    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
+bool SoftwareBackend::Init() {
+  if (!m_spi_writer.Init()) {
     return false;
   }
+
+  if (!FastStart()) {
+    return false;
+  }
+  return true;
+}
+
+uint8_t *SoftwareBackend::Checkout(uint8_t output,
+                                   unsigned int length,
+                                   unsigned int latch_bytes) {
+  if (output >= m_output_sizes.size()) {
+    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
+    return NULL;
+  }
+
+  m_mutex.Lock();
 
   unsigned int leading = 0;
   unsigned int trailing = 0;
@@ -312,8 +337,8 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
       trailing += m_output_sizes[i];
     }
   }
-  m_latch_bytes[output] = latch_bytes;
 
+  m_latch_bytes[output] = latch_bytes;
   const unsigned int total_latch_bytes = std::accumulate(
       m_latch_bytes.begin(), m_latch_bytes.end(), 0);
   const unsigned int required_size = (
@@ -324,25 +349,62 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
     // The length changed
     uint8_t *new_output = reinterpret_cast<uint8_t*>(malloc(required_size));
     memcpy(new_output, m_output, leading);
-    memcpy(new_output + leading, data, length);
     memcpy(new_output + leading + length, m_output + leading, trailing);
     memset(new_output + leading + length + trailing, 0, total_latch_bytes);
     free(m_output);
     m_output = new_output;
     m_length = required_size;
     m_output_sizes[output] = length;
-  } else {
-    // This is just an update
-    memcpy(m_output + leading, data, length);
+  }
+  return m_output + leading;
+}
+
+void SoftwareBackend::Commit(uint8_t output) {
+  if (output >= m_output_sizes.size()) {
+    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
+    return;
   }
 
+  m_mutex.Unlock();
   if (m_sync_output < 0 || output == m_sync_output) {
-    return WriteSPIData(m_output, m_length);
-  } else {
-    return true;
+    m_cond_var.Signal();
   }
 }
-*/
+
+void *SoftwareBackend::Run() {
+  uint8_t *output_data = NULL;
+  unsigned int length = 0;
+
+  while (true) {
+    m_mutex.Lock();
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      delete output_data;
+      return NULL;
+    }
+
+    if (!m_write_pending) {
+      m_cond_var.Wait(&m_mutex);
+    }
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      delete output_data;
+      return NULL;
+    }
+
+    if (length < m_length) {
+      free(output_data);
+      output_data = reinterpret_cast<uint8_t*>(malloc(m_length));
+      length = m_length;
+    }
+    memcpy(output_data, m_output, m_length);
+    m_mutex.Unlock();
+
+    m_spi_writer.WriteSPIData(output_data, m_length);
+  }
+}
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola
