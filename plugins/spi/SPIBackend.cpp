@@ -79,9 +79,8 @@ HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
     uint8_t *data = Resize(other.m_size + other.m_latch_bytes);
     if (data) {
       memcpy(data, other.m_data, other.m_size);
-      memset(data + m_size, 0, m_latch_bytes);
+      memset(data + other.m_size, 0, other.m_latch_bytes);
       m_write_pending = true;
-      m_latch_bytes = other.m_latch_bytes;
     } else {
       m_write_pending = false;
     }
@@ -106,6 +105,7 @@ HardwareBackend::~HardwareBackend() {
   }
 
   Join();
+  m_cond_var.Signal();
 
   STLDeleteElements(&m_output_data);
   CloseGPIOFDs();
