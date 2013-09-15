@@ -175,6 +175,7 @@ void *HardwareBackend::Run() {
       if (m_output_data[i]->IsPending()) {
         // take a copy
         *outputs[i] = *m_output_data[i];
+        m_output_data[i]->ResetPending();
       }
     }
     m_mutex.Unlock();
@@ -182,6 +183,7 @@ void *HardwareBackend::Run() {
     for (unsigned int i = 0; i < outputs.size(); i++) {
       if (outputs[i]->IsPending()) {
         WriteOutput(i, outputs[i]);
+        outputs[i]->ResetPending();
       }
     }
   }

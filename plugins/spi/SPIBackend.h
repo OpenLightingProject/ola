@@ -97,6 +97,7 @@ class HardwareBackend : public ola::thread::Thread,
         uint8_t *Resize(unsigned int length);
         void SetPending(unsigned int length, unsigned int latch_bytes);
         bool IsPending() const { return m_write_pending; }
+        void ResetPending() { m_write_pending = false; }
         const uint8_t *GetData() const { return m_data; }
         unsigned int Size() const { return m_size; }
 
