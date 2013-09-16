@@ -423,6 +423,7 @@ void *SoftwareBackend::Run() {
     }
 
     bool write_pending = m_write_pending;
+    m_write_pending = false;
     if (write_pending) {
       if (length < m_length) {
         free(output_data);
