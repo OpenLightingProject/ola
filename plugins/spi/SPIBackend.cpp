@@ -435,7 +435,7 @@ void *SoftwareBackend::Run() {
     m_mutex.Unlock();
 
     if (write_pending) {
-      m_spi_writer.WriteSPIData(output_data, m_length);
+      m_spi_writer.WriteSPIData(output_data, length);
     }
   }
 }
