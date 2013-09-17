@@ -20,8 +20,6 @@
 
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <string>
-#include <vector>
 
 #include "ola/base/Array.h"
 #include "ola/DmxBuffer.h"
@@ -38,8 +36,6 @@ using ola::plugin::spi::HardwareBackend;
 using ola::plugin::spi::SoftwareBackend;
 using ola::plugin::spi::SPIBackendInterface;
 using ola::UIntMap;
-using std::string;
-using std::vector;
 
 class SPIBackendTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SPIBackendTest);
@@ -53,9 +49,7 @@ class SPIBackendTest: public CppUnit::TestFixture {
  public:
   SPIBackendTest()
       : CppUnit::TestFixture(),
-        m_writer(DEVICE_NAME),
-        m_software_backend(SoftwareBackend::Options(), &m_writer,
-                           &m_export_map) {
+        m_writer(DEVICE_NAME) {
   }
   void setUp();
   unsigned int DropCount();
@@ -74,7 +68,6 @@ class SPIBackendTest: public CppUnit::TestFixture {
  private:
   ExportMap m_export_map;
   FakeSPIWriter m_writer;
-  SoftwareBackend m_software_backend;
 
   static const uint8_t DATA1[];
   static const uint8_t DATA2[];

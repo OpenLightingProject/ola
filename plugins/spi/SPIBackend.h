@@ -208,6 +208,48 @@ class SoftwareBackend : public SPIBackendInterface,
     unsigned int m_length;
     unsigned int m_buffer_size;
 };
+
+
+/**
+ * A fake backend used for testing. If we had gmock this would be much
+ * easier...
+ */
+class FakeSPIBackend : public SPIBackendInterface {
+  public:
+    explicit FakeSPIBackend(unsigned int outputs);
+    ~FakeSPIBackend();
+
+    uint8_t *Checkout(uint8_t output, unsigned int length) {
+      return Checkout(output, length, 0);
+    }
+
+    uint8_t *Checkout(uint8_t output,
+                      unsigned int length,
+                      unsigned int latch_bytes);
+
+    void Commit(uint8_t output);
+    const uint8_t *GetData(uint8_t output, unsigned int *length);
+
+    string DevicePath() const { return "/dev/test"; }
+
+    bool Init() { return true; }
+
+    unsigned int Writes(uint8_t output) const;
+
+  private:
+    class Output {
+      public:
+        Output() : data(NULL), length(0), writes(0) {}
+        ~Output() { delete[] data; }
+
+        uint8_t *data;
+        unsigned int length;
+        unsigned int writes;
+    };
+
+    typedef vector<Output*> Outputs;
+    Outputs m_outputs;
+};
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola

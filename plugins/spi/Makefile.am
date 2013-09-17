@@ -18,7 +18,7 @@ if BUILD_TESTS
 TESTS = SPITester
 endif
 check_PROGRAMS = $(TESTS)
-SPITester_SOURCES = SPIBackendTest.cpp
+SPITester_SOURCES = SPIBackendTest.cpp SPIOutputTest.cpp
 SPITester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SPITester_LDADD = $(COMMON_TESTING_LIBS) \
                   libolaspicore.la \

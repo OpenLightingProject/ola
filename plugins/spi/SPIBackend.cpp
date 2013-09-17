@@ -441,6 +441,59 @@ void *SoftwareBackend::Run() {
     }
   }
 }
+
+FakeSPIBackend::FakeSPIBackend(unsigned int outputs) {
+  for (unsigned int i = 0; i < outputs; i++) {
+    m_outputs.push_back(new Output());
+  }
+}
+
+FakeSPIBackend::~FakeSPIBackend() {
+  STLDeleteElements(&m_outputs);
+}
+
+uint8_t *FakeSPIBackend::Checkout(uint8_t output_id,
+                                  unsigned int length,
+                                  unsigned int latch_bytes) {
+  if (output_id >= m_outputs.size()) {
+    return NULL;
+  }
+
+  Output *output = m_outputs[output_id];
+
+  if (output->length != length + latch_bytes) {
+    delete[] output->data;
+    output->data = new uint8_t[length + latch_bytes];
+    output->length = length + latch_bytes;
+    memset(output->data + length, 0, latch_bytes);
+  }
+  return output->data;
+}
+
+void FakeSPIBackend::Commit(uint8_t output) {
+  if (output >= m_outputs.size()) {
+    return;
+  }
+  m_outputs[output]->writes++;
+}
+
+const uint8_t *FakeSPIBackend::GetData(uint8_t output_id,
+                                       unsigned int *length) {
+  if (output_id >= m_outputs.size()) {
+    return NULL;
+  }
+  Output *output = m_outputs[output_id];
+  *length = output->length;
+  return output->data;
+}
+
+
+unsigned int FakeSPIBackend::Writes(uint8_t output) const {
+  if (output >= m_outputs.size()) {
+    return 0;
+  }
+  return m_outputs[output]->writes;
+}
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola

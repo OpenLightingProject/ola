@@ -133,9 +133,7 @@ bool FakeSPIWriter::WriteSPIData(const uint8_t*, unsigned int length) {
   }
   m_cond_var.Signal();
 
-  OLA_INFO << "writer thread blocked";
   MutexLocker lock(&m_write_lock);
-  OLA_INFO << "writer thread unblocked";
   return true;
 }
 

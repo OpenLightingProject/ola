@@ -124,7 +124,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     bool SetStartAddress(uint16_t start_address);
 
     string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+    bool WriteDMX(const DmxBuffer &buffer);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);

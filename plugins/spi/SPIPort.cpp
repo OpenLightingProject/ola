@@ -62,8 +62,8 @@ string SPIOutputPort::Description() const {
   return m_spi_output.Description();
 }
 
-bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-  return m_spi_output.WriteDMX(buffer, priority);
+bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
+  return m_spi_output.WriteDMX(buffer);
 }
 
 void SPIOutputPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {

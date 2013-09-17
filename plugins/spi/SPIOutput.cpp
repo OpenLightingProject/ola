@@ -168,7 +168,7 @@ string SPIOutput::Description() const {
 /*
  * Send DMX data over SPI.
  */
-bool SPIOutput::WriteDMX(const DmxBuffer &buffer, uint8_t) {
+bool SPIOutput::WriteDMX(const DmxBuffer &buffer) {
   if (m_identify_mode)
     return true;
 
@@ -259,23 +259,23 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   const unsigned int length = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
                                        buffer.Size() - first_slot);
 
+  if (length < LPD8806_SLOTS_PER_PIXEL) {
+    return;
+  }
+
   uint8_t *output = m_backend->Checkout(m_output_number, length, latch_bytes);
   if (!output)
     return;
 
-  for (unsigned int i = 0; i < length; i++) {
-    uint8_t d = buffer.Get(first_slot + i);
+  for (unsigned int i = 0; i < length / LPD8806_SLOTS_PER_PIXEL; i++) {
     // Convert RGB to GRB
-    switch (i % LPD8806_SLOTS_PER_PIXEL) {
-      case 0:
-        output[i + 1] = 0x80 | (d >> 1);
-        break;
-      case 1:
-        output[i - 1] = 0x80 | (d >> 1);
-        break;
-      default:
-        output[i] = 0x80 | (d >> 1);
-    }
+    unsigned int offset = first_slot + i * LPD8806_SLOTS_PER_PIXEL;
+    uint8_t r = buffer.Get(offset);
+    uint8_t g = buffer.Get(offset + 1);
+    uint8_t b = buffer.Get(offset + 2);
+    output[i * LPD8806_SLOTS_PER_PIXEL] = 0x80 | (g >> 1);
+    output[i * LPD8806_SLOTS_PER_PIXEL + 1] = 0x80 | (r >> 1);
+    output[i * LPD8806_SLOTS_PER_PIXEL + 2] = 0x80 | (b >> 1);
   }
   m_backend->Commit(m_output_number);
 }
