@@ -44,6 +44,8 @@ const char SPIWriter::SPI_DEVICE_KEY[] = "device";
 const char SPIWriter::SPI_ERROR_VAR[] = "spi-write-errors";
 const char SPIWriter::SPI_WRITE_VAR[] = "spi-writes";
 
+using ola::thread::MutexLocker;
+
 SPIWriter::SPIWriter(const string &spi_device,
                      const Options &options,
                      ExportMap *export_map)
@@ -119,6 +121,52 @@ bool SPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
     return false;
   }
   return true;
+}
+
+bool FakeSPIWriter::WriteSPIData(const uint8_t*, unsigned int length) {
+  {
+    MutexLocker lock(&m_mutex);
+
+    m_writes++;
+    m_write_pending = true;
+    m_last_write_size = length;
+  }
+  m_cond_var.Signal();
+
+  OLA_INFO << "writer thread blocked";
+  MutexLocker lock(&m_write_lock);
+  OLA_INFO << "writer thread unblocked";
+  return true;
+}
+
+void FakeSPIWriter::BlockWriter() {
+  m_write_lock.Lock();
+}
+
+void FakeSPIWriter::UnblockWriter() {
+  m_write_lock.Unlock();
+}
+
+void FakeSPIWriter::ResetWrite() {
+  MutexLocker lock(&m_mutex);
+  m_write_pending = false;
+}
+
+void FakeSPIWriter::WaitForWrite() {
+  MutexLocker lock(&m_mutex);
+  if (m_write_pending)
+    return;
+  m_cond_var.Wait(&m_mutex);
+}
+
+unsigned int FakeSPIWriter::WriteCount() const {
+  MutexLocker lock(&m_mutex);
+  return m_writes;
+}
+
+unsigned int FakeSPIWriter::LastWriteSize() const {
+  MutexLocker lock(&m_mutex);
+  return m_last_write_size;
 }
 }  // namespace spi
 }  // namespace plugin

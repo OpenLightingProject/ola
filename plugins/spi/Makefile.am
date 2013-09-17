@@ -12,4 +12,16 @@ libolaspicore_la_LIBADD = ../../common/libolacommon.la
 libolaspi_la_SOURCES = SPIPlugin.cpp SPIDevice.cpp SPIPort.cpp
 libolaspi_la_LIBADD = ../../common/libolacommon.la \
                       libolaspicore.la
+
+# Test programs
+if BUILD_TESTS
+TESTS = SPITester
+endif
+check_PROGRAMS = $(TESTS)
+SPITester_SOURCES = SPIBackendTest.cpp
+SPITester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+SPITester_LDADD = $(COMMON_TESTING_LIBS) \
+                  libolaspicore.la \
+                  ../../common/libolacommon.la
+
 endif

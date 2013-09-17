@@ -58,8 +58,8 @@ uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
     return m_data;
   }
 
-  free(m_data);
-  m_data = reinterpret_cast<uint8_t*>(malloc(length));
+  delete[] m_data;
+  m_data = new uint8_t[length];
   if (m_data) {
     m_size = m_data ? length : 0;
     m_actual_size = m_size;
@@ -90,10 +90,10 @@ HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
   return *this;
 }
 
-HardwareBackend::HardwareBackend(const string &spi_device,
-                                 const Options &options,
+HardwareBackend::HardwareBackend(const Options &options,
+                                 SPIWriterInterface *writer,
                                  ExportMap *export_map)
-    : m_spi_writer(spi_device, options, export_map),
+    : m_spi_writer(writer),
       m_output_count(1 << options.gpio_pins.size()),
       m_exit(false),
       m_gpio_pins(options.gpio_pins) {
@@ -101,7 +101,7 @@ HardwareBackend::HardwareBackend(const string &spi_device,
   if (export_map) {
     m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
                                            SPI_DROP_VAR_KEY);
-    (*m_drop_map)[m_spi_writer.DevicePath()] = 0;
+    (*m_drop_map)[m_spi_writer->DevicePath()] = 0;
   }
 }
 
@@ -120,11 +120,11 @@ HardwareBackend::~HardwareBackend() {
 }
 
 bool HardwareBackend::Init() {
-  if (!(m_spi_writer.Init() && SetupGPIO())) {
+  if (!(m_spi_writer->Init() && SetupGPIO())) {
     return false;
   }
 
-  if (!FastStart()) {
+  if (!Start()) {
     CloseGPIOFDs();
     return false;
   }
@@ -155,7 +155,7 @@ void HardwareBackend::Commit(uint8_t output) {
   OutputData *output_data = m_output_data[output];
   if (output_data->IsPending() && m_drop_map) {
     // There was already another write pending which we're now stomping on
-    (*m_drop_map)[m_spi_writer.DevicePath()]++;
+    (*m_drop_map)[m_spi_writer->DevicePath()]++;
   }
   output_data->SetPending();
   m_mutex.Unlock();
@@ -240,7 +240,7 @@ void HardwareBackend::WriteOutput(uint8_t output_id, OutputData *output) {
     }
   }
 
-  m_spi_writer.WriteSPIData(output->GetData(), output->Size());
+  m_spi_writer->WriteSPIData(output->GetData(), output->Size());
 }
 
 bool HardwareBackend::SetupGPIO() {
@@ -296,10 +296,10 @@ void HardwareBackend::CloseGPIOFDs() {
   m_gpio_fds.clear();
 }
 
-SoftwareBackend::SoftwareBackend(const string &spi_device,
-                                 const Options &options,
+SoftwareBackend::SoftwareBackend(const Options &options,
+                                 SPIWriterInterface *writer,
                                  ExportMap *export_map)
-    : m_spi_writer(spi_device, options, export_map),
+    : m_spi_writer(writer),
       m_write_pending(false),
       m_exit(false),
       m_sync_output(options.sync_output),
@@ -311,7 +311,7 @@ SoftwareBackend::SoftwareBackend(const string &spi_device,
   if (export_map) {
     m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
                                            SPI_DROP_VAR_KEY);
-    (*m_drop_map)[m_spi_writer.DevicePath()] = 0;
+    (*m_drop_map)[m_spi_writer->DevicePath()] = 0;
   }
 }
 
@@ -324,15 +324,15 @@ SoftwareBackend::~SoftwareBackend() {
   m_cond_var.Signal();
   Join();
 
-  free(m_output);
+  delete[] m_output;
 }
 
 bool SoftwareBackend::Init() {
-  if (!m_spi_writer.Init()) {
+  if (!m_spi_writer->Init()) {
     return false;
   }
 
-  if (!FastStart()) {
+  if (!Start()) {
     return false;
   }
   return true;
@@ -367,11 +367,11 @@ uint8_t *SoftwareBackend::Checkout(uint8_t output,
   // Check if the current buffer is large enough to hold our data.
   if (required_size != m_length) {
     // The length changed
-    uint8_t *new_output = reinterpret_cast<uint8_t*>(malloc(required_size));
+    uint8_t *new_output = new uint8_t[required_size];
     memcpy(new_output, m_output, leading);
     memcpy(new_output + leading + length, m_output + leading, trailing);
     memset(new_output + leading + length + trailing, 0, total_latch_bytes);
-    free(m_output);
+    delete[] m_output;
     m_output = new_output;
     m_length = required_size;
     m_output_sizes[output] = length;
@@ -389,7 +389,7 @@ void SoftwareBackend::Commit(uint8_t output) {
   if (should_write) {
     if (m_write_pending && m_drop_map) {
       // There was already another write pending which we're now stomping on
-      (*m_drop_map)[m_spi_writer.DevicePath()]++;
+      (*m_drop_map)[m_spi_writer->DevicePath()]++;
     }
     m_write_pending = should_write;
   }
@@ -418,7 +418,7 @@ void *SoftwareBackend::Run() {
 
     if (m_exit) {
       m_mutex.Unlock();
-      delete output_data;
+      delete[] output_data;
       return NULL;
     }
 
@@ -426,16 +426,18 @@ void *SoftwareBackend::Run() {
     m_write_pending = false;
     if (write_pending) {
       if (length < m_length) {
-        free(output_data);
-        output_data = reinterpret_cast<uint8_t*>(malloc(m_length));
+        delete[] output_data;
+        output_data = new uint8_t[m_length];
         length = m_length;
       }
+      // TODO(simon) Add an actual size here
+      length = m_length;
       memcpy(output_data, m_output, m_length);
     }
     m_mutex.Unlock();
 
     if (write_pending) {
-      m_spi_writer.WriteSPIData(output_data, length);
+      m_spi_writer->WriteSPIData(output_data, length);
     }
   }
 }

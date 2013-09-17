@@ -66,14 +66,14 @@ class SPIBackendInterface {
 class HardwareBackend : public ola::thread::Thread,
                         public SPIBackendInterface {
   public:
-    struct Options : public SPIWriter::Options {
+    struct Options {
       // Which GPIO bits to use to select the output. The number of outputs
       // will be 2 ** gpio_pins.size();
       vector<uint8_t> gpio_pins;
     };
 
-    HardwareBackend(const string &spi_device,
-                    const Options &options,
+    HardwareBackend(const Options &options,
+                    SPIWriterInterface *writer,
                     ExportMap *export_map);
     ~HardwareBackend();
 
@@ -88,7 +88,7 @@ class HardwareBackend : public ola::thread::Thread,
                       unsigned int latch_bytes);
     void Commit(uint8_t output);
 
-    string DevicePath() const { return m_spi_writer.DevicePath(); }
+    string DevicePath() const { return m_spi_writer->DevicePath(); }
 
   protected:
     void* Run();
@@ -104,7 +104,7 @@ class HardwareBackend : public ola::thread::Thread,
               m_latch_bytes(0) {
         }
 
-        ~OutputData() { delete m_data; }
+        ~OutputData() { delete[] m_data; }
 
         uint8_t *Resize(unsigned int length);
         void SetLatchBytes(unsigned int latch_bytes);
@@ -129,7 +129,7 @@ class HardwareBackend : public ola::thread::Thread,
     typedef vector<int> GPIOFds;
     typedef vector<OutputData*> Outputs;
 
-    SPIWriter m_spi_writer;
+    SPIWriterInterface *m_spi_writer;
     UIntMap *m_drop_map;
     const uint8_t m_output_count;
     ola::thread::Mutex m_mutex;
@@ -157,7 +157,7 @@ class HardwareBackend : public ola::thread::Thread,
 class SoftwareBackend : public SPIBackendInterface,
                         public ola::thread::Thread {
   public:
-    struct Options : public SPIWriter::Options {
+    struct Options {
       /*
        * The number of outputs.
        */
@@ -169,11 +169,11 @@ class SoftwareBackend : public SPIBackendInterface,
        */
       int16_t sync_output;
 
-      explicit Options() : SPIWriter::Options(), outputs(1), sync_output(0) {}
+      explicit Options() : outputs(1), sync_output(0) {}
     };
 
-    SoftwareBackend(const string &spi_device,
-                    const Options &options,
+    SoftwareBackend(const Options &options,
+                    SPIWriterInterface *writer,
                     ExportMap *export_map);
     ~SoftwareBackend();
 
@@ -188,13 +188,13 @@ class SoftwareBackend : public SPIBackendInterface,
                       unsigned int latch_bytes);
     void Commit(uint8_t output);
 
-    string DevicePath() const { return m_spi_writer.DevicePath(); }
+    string DevicePath() const { return m_spi_writer->DevicePath(); }
 
   protected:
     void* Run();
 
   private:
-    SPIWriter m_spi_writer;
+    SPIWriterInterface *m_spi_writer;
     UIntMap *m_drop_map;
     ola::thread::Mutex m_mutex;
     ola::thread::ConditionVariable m_cond_var;
