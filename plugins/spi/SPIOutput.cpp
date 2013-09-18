@@ -214,20 +214,15 @@ void SPIOutput::SendRDMRequest(const RDMRequest *request,
 }
 
 void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
-  const unsigned int length = min(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
-                                  buffer.Size() - m_start_address + 1);
-
-  uint8_t *output = m_backend->Checkout(m_output_number, length);
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length);
   if (!output)
     return;
 
-  unsigned int new_length = length;
+  unsigned int new_length = output_length;
   buffer.GetRange(m_start_address - 1, output, &new_length);
-  if (new_length != length) {
-    OLA_WARN << "Data size mismatch, size was " << buffer.Size()
-             << " start address " << m_start_address
-             << " pixel count " << m_pixel_count;
-  }
   m_backend->Commit(m_output_number);
 }
 
@@ -256,16 +251,21 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
 void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   const uint8_t latch_bytes = (m_pixel_count + 31) / 32;
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
-  const unsigned int length = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
-                                       buffer.Size() - first_slot);
-
-  if (length < LPD8806_SLOTS_PER_PIXEL) {
+  if (buffer.Size() - first_slot < LPD8806_SLOTS_PER_PIXEL) {
+    // not even 3 bytes of data, don't bother updating
     return;
   }
 
-  uint8_t *output = m_backend->Checkout(m_output_number, length, latch_bytes);
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length,
+                                        latch_bytes);
   if (!output)
     return;
+
+  const unsigned int length = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+                                       buffer.Size() - first_slot);
 
   for (unsigned int i = 0; i < length / LPD8806_SLOTS_PER_PIXEL; i++) {
     // Convert RGB to GRB

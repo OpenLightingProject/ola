@@ -47,16 +47,15 @@ class SPIBackendTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-  SPIBackendTest()
-      : CppUnit::TestFixture(),
-        m_writer(DEVICE_NAME) {
-  }
+  SPIBackendTest();
+
   void setUp();
   unsigned int DropCount();
   bool SendSomeData(SPIBackendInterface *backend,
                     uint8_t output,
                     const uint8_t *data,
                     unsigned int length,
+                    unsigned int checkout_size,
                     unsigned int latch_bytes = 0);
 
   void testHardwareDrops();
@@ -68,10 +67,15 @@ class SPIBackendTest: public CppUnit::TestFixture {
  private:
   ExportMap m_export_map;
   FakeSPIWriter m_writer;
+  unsigned int m_total_size;
 
   static const uint8_t DATA1[];
   static const uint8_t DATA2[];
   static const uint8_t DATA3[];
+  static const uint8_t EXPECTED1[];
+  static const uint8_t EXPECTED2[];
+  static const uint8_t EXPECTED3[];
+  static const uint8_t EXPECTED4[];
   static const char DEVICE_NAME[];
   static const char SPI_DROP_VAR[];
   static const char SPI_DROP_VAR_KEY[];
@@ -90,6 +94,23 @@ const uint8_t SPIBackendTest::DATA3[] = {
   0xa, 0xb, 0xc, 0xd, 0xe, 0xf
 };
 
+const uint8_t SPIBackendTest::EXPECTED1[] = {
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0
+};
+
+const uint8_t SPIBackendTest::EXPECTED2[] = {
+  0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0
+};
+
+const uint8_t SPIBackendTest::EXPECTED3[] = {
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
+  0, 0, 0, 0,
+};
+
+const uint8_t SPIBackendTest::EXPECTED4[] = {
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0
+};
 
 const char SPIBackendTest::DEVICE_NAME[] = "Fake Device";
 const char SPIBackendTest::SPI_DROP_VAR[] = "spi-drops";
@@ -97,6 +118,12 @@ const char SPIBackendTest::SPI_DROP_VAR_KEY[] = "device";
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SPIBackendTest);
+
+SPIBackendTest::SPIBackendTest()
+    : CppUnit::TestFixture(),
+      m_writer(DEVICE_NAME) {
+  m_total_size = arraysize(DATA3);
+}
 
 void SPIBackendTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -112,8 +139,9 @@ bool SPIBackendTest::SendSomeData(SPIBackendInterface *backend,
                                   uint8_t output,
                                   const uint8_t *data,
                                   unsigned int length,
+                                  unsigned int checkout_size,
                                   unsigned int latch_bytes) {
-  uint8_t *buffer = backend->Checkout(output, length, latch_bytes);
+  uint8_t *buffer = backend->Checkout(output, checkout_size, latch_bytes);
   if (!buffer)
     return false;
   memcpy(buffer, data, length);
@@ -132,11 +160,11 @@ void SPIBackendTest::testHardwareDrops() {
   m_writer.BlockWriter();
   OLA_ASSERT_EQ(0u, DropCount());
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();  // now we know the writer is blocked
   OLA_ASSERT_EQ(1u, m_writer.WriteCount());
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   OLA_ASSERT_EQ(1u, DropCount());
   m_writer.ResetWrite();
   m_writer.UnblockWriter();
@@ -152,47 +180,49 @@ void SPIBackendTest::testHardwareVariousFrameLengths() {
                           &m_export_map);
   OLA_ASSERT(backend.Init());
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(1u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(10u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(2u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(10u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA2, arraysize(DATA2)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA2, arraysize(DATA2), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(3u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(6u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED2, arraysize(EXPECTED2));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(4u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(10u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(5u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(16u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, DATA3, arraysize(DATA3));
   m_writer.ResetWrite();
 
   // now test the latch bytes
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), 4));
+  OLA_ASSERT(
+      SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(6u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(14u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED3, arraysize(EXPECTED3));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3), 4));
+  OLA_ASSERT(
+      SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(7u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(20u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED3, arraysize(EXPECTED3));
   m_writer.ResetWrite();
 }
 
@@ -205,13 +235,17 @@ void SPIBackendTest::testInvalidOutputs() {
                              &m_export_map);
   OLA_ASSERT(hw_backend.Init());
 
-  OLA_ASSERT_FALSE(SendSomeData(&hw_backend, 1, DATA1, arraysize(DATA1)));
+  OLA_ASSERT_FALSE(
+      SendSomeData(&hw_backend, 1, DATA1, arraysize(DATA1), m_total_size));
+  OLA_ASSERT_EQ(0u, m_writer.WriteCount());
 
   // SoftwareBackend
   SoftwareBackend sw_backend(SoftwareBackend::Options(), &m_writer,
                              &m_export_map);
   OLA_ASSERT(sw_backend.Init());
-  OLA_ASSERT_FALSE(SendSomeData(&sw_backend, 1, DATA1, arraysize(DATA1)));
+  OLA_ASSERT_FALSE(
+      SendSomeData(&sw_backend, 1, DATA1, arraysize(DATA1), m_total_size));
+  OLA_ASSERT_EQ(0u, m_writer.WriteCount());
 }
 
 /**
@@ -225,11 +259,11 @@ void SPIBackendTest::testSoftwareDrops() {
   m_writer.BlockWriter();
   OLA_ASSERT_EQ(0u, DropCount());
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();  // now we know the writer is blocked
   OLA_ASSERT_EQ(1u, m_writer.WriteCount());
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   OLA_ASSERT_EQ(1u, DropCount());
   m_writer.ResetWrite();
   m_writer.UnblockWriter();
@@ -245,46 +279,48 @@ void SPIBackendTest::testSoftwareVariousFrameLengths() {
                           &m_export_map);
   OLA_ASSERT(backend.Init());
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(1u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(10u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(2u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(10u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA2, arraysize(DATA2)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA2, arraysize(DATA2), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(3u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(6u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED2, arraysize(EXPECTED2));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(4u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(10u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3)));
+  OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(5u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(16u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, DATA3, arraysize(DATA3));
   m_writer.ResetWrite();
 
   // now test the latch bytes
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), 4));
+  OLA_ASSERT(
+      SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(6u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(14u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED4, arraysize(EXPECTED4));
   m_writer.ResetWrite();
 
-  OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3), 4));
+  OLA_ASSERT(
+      SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(7u, m_writer.WriteCount());
-  OLA_ASSERT_EQ(20u, m_writer.LastWriteSize());
+  m_writer.CheckDataMatches(__LINE__, EXPECTED3, arraysize(EXPECTED3));
   m_writer.ResetWrite();
 }

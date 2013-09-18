@@ -32,7 +32,7 @@
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
 #include "plugins/spi/SPIWriter.h"
-
+#include "ola/testing/TestUtils.h"
 
 namespace ola {
 namespace plugin {
@@ -123,9 +123,15 @@ bool SPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
   return true;
 }
 
-bool FakeSPIWriter::WriteSPIData(const uint8_t*, unsigned int length) {
+bool FakeSPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
   {
     MutexLocker lock(&m_mutex);
+
+    if (m_last_write_size != length) {
+      delete[] m_data;
+      m_data = new uint8_t[length];
+    }
+    memcpy(m_data, data, length);
 
     m_writes++;
     m_write_pending = true;
@@ -165,6 +171,14 @@ unsigned int FakeSPIWriter::WriteCount() const {
 unsigned int FakeSPIWriter::LastWriteSize() const {
   MutexLocker lock(&m_mutex);
   return m_last_write_size;
+}
+
+void FakeSPIWriter::CheckDataMatches(unsigned int line,
+                                     const uint8_t *expected,
+                                     unsigned int length) {
+  MutexLocker lock(&m_mutex);
+  ola::testing::ASSERT_DATA_EQUALS(line, expected, length, m_data,
+                                   m_last_write_size);
 }
 }  // namespace spi
 }  // namespace plugin

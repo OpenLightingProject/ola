@@ -63,6 +63,7 @@ uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
   if (m_data) {
     m_size = m_data ? length : 0;
     m_actual_size = m_size;
+    memset(m_data, 0, length);
   }
   return m_data;
 }
@@ -369,6 +370,7 @@ uint8_t *SoftwareBackend::Checkout(uint8_t output,
     // The length changed
     uint8_t *new_output = new uint8_t[required_size];
     memcpy(new_output, m_output, leading);
+    memset(new_output + leading, 0, length);
     memcpy(new_output + leading + length, m_output + leading, trailing);
     memset(new_output + leading + length + trailing, 0, total_latch_bytes);
     delete[] m_output;
@@ -464,8 +466,8 @@ uint8_t *FakeSPIBackend::Checkout(uint8_t output_id,
   if (output->length != length + latch_bytes) {
     delete[] output->data;
     output->data = new uint8_t[length + latch_bytes];
+    memset(output->data, 0, length + latch_bytes);
     output->length = length + latch_bytes;
-    memset(output->data + length, 0, latch_bytes);
   }
   return output->data;
 }
