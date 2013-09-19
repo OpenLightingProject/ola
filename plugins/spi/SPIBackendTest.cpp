@@ -26,8 +26,8 @@
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
+#include "plugins/spi/FakeSPIWriter.h"
 #include "plugins/spi/SPIBackend.h"
-#include "plugins/spi/SPIWriter.h"
 
 using ola::DmxBuffer;
 using ola::ExportMap;

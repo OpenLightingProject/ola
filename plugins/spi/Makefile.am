@@ -1,8 +1,8 @@
 include $(top_srcdir)/common.mk
 
 libdir = $(plugindir)
-EXTRA_DIST = SPIBackend.h SPIOutput.h SPIPlugin.h SPIDevice.h SPIPort.h \
-             SPIWriter.h
+EXTRA_DIST = FakeSPIWriter.h SPIBackend.h SPIOutput.h SPIPlugin.h \
+             SPIDevice.h SPIPort.h SPIWriter.h
 
 if USE_SPI
 lib_LTLIBRARIES = libolaspicore.la libolaspi.la
@@ -18,7 +18,8 @@ if BUILD_TESTS
 TESTS = SPITester
 endif
 check_PROGRAMS = $(TESTS)
-SPITester_SOURCES = SPIBackendTest.cpp SPIOutputTest.cpp
+SPITester_SOURCES = SPIBackendTest.cpp SPIOutputTest.cpp \
+                    FakeSPIWriter.cpp
 SPITester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SPITester_LDADD = $(COMMON_TESTING_LIBS) \
                   libolaspicore.la \

@@ -87,55 +87,6 @@ class SPIWriter : public SPIWriterInterface {
     static const char SPI_ERROR_VAR[];
     static const char SPI_WRITE_VAR[];
 };
-
-
-/**
- * A Fake SPI Writer used for testing
- */
-class FakeSPIWriter : public SPIWriterInterface {
-  public:
-    explicit FakeSPIWriter(const string &device_path)
-      : m_device_path(device_path),
-        m_write_pending(0),
-        m_writes(0),
-        m_last_write_size(0),
-        m_data(NULL) {
-    }
-
-    ~FakeSPIWriter() {
-      delete[] m_data;
-    }
-
-    bool Init() { return true; }
-
-    string DevicePath() const { return m_device_path; }
-
-    bool WriteSPIData(const uint8_t *data, unsigned int length);
-
-    // Methods used for testing
-    void BlockWriter();
-    void UnblockWriter();
-
-    void ResetWrite();
-    void WaitForWrite();
-
-    unsigned int WriteCount() const;
-    unsigned int LastWriteSize() const;
-    void CheckDataMatches(unsigned int line, const uint8_t *data,
-                          unsigned int length);
-
-  private:
-    const string m_device_path;
-    bool m_write_pending;  // GUARDED_BY(m_mutex)
-    unsigned int m_writes;  // GUARDED_BY(m_mutex)
-    unsigned int m_last_write_size;  // GUARDED_BY(m_mutex)
-    uint8_t *m_data;  // GUARDED_BY(m_mutex)
-
-    ola::thread::Mutex m_write_lock;
-    mutable ola::thread::Mutex m_mutex;
-    ola::thread::ConditionVariable m_cond_var;
-};
-
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola
