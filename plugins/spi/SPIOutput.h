@@ -60,7 +60,7 @@ class PersonalityManager {
       STLDeleteElements(&m_personalities);
     }
 
-    void AddPersonality(uint8_t footprint, const string &description) {
+    void AddPersonality(uint16_t footprint, const string &description) {
       m_personalities.push_back(new Personality(footprint, description));
     }
 
