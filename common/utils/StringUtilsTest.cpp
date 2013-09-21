@@ -39,6 +39,7 @@ using ola::ShortenString;
 using ola::StringEndsWith;
 using ola::StringJoin;
 using ola::StringSplit;
+using ola::StringToBool;
 using ola::StringToInt;
 using ola::StringTrim;
 using ola::ToLower;
@@ -54,6 +55,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEndsWith);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
+  CPPUNIT_TEST(testStringToBool);
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
   CPPUNIT_TEST(testStringToUInt8);
@@ -77,6 +79,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testEndsWith();
     void testIntToString();
     void testEscape();
+    void testStringToBool();
     void testStringToUInt();
     void testStringToUInt16();
     void testStringToUInt8();
@@ -258,6 +261,21 @@ void StringUtilsTest::testEscape() {
       result);
 }
 
+void StringUtilsTest::testStringToBool() {
+  bool value;
+  OLA_ASSERT_FALSE(StringToBool("", &value));
+  OLA_ASSERT_FALSE(StringToBool("-1", &value));
+  OLA_ASSERT_FALSE(StringToBool("1", &value));
+  OLA_ASSERT_FALSE(StringToBool("0", &value));
+  OLA_ASSERT_TRUE(StringToBool("true", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBool("false", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBool("TrUE", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBool("FalSe", &value));
+  OLA_ASSERT_EQ(value, false);
+}
 
 void StringUtilsTest::testStringToUInt() {
   unsigned int value;

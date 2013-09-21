@@ -47,11 +47,12 @@
 #include <vector>
 
 #ifdef USE_SPI
-#include "plugins/spi/SPIOutput.h"
 #include "plugins/spi/SPIBackend.h"
+#include "plugins/spi/SPIOutput.h"
+#include "plugins/spi/SPIWriter.h"
 using ola::plugin::spi::SoftwareBackend;
-using ola::plugin::spi::SPIBackend;
 using ola::plugin::spi::SPIOutput;
+using ola::plugin::spi::SPIWriter;
 DEFINE_string(spi_device, "", "Path to the SPI device to use.");
 #endif
 
@@ -95,7 +96,7 @@ void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
 
 #ifdef USE_SPI
 void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
-  output->WriteDMX(*buffer, 0);
+  output->WriteDMX(*buffer);
 }
 #endif
 
@@ -205,7 +206,8 @@ int main(int argc, char *argv[]) {
   // uber hack for now.
   // TODO(simon): fix this
 #ifdef USE_SPI
-  auto_ptr<SPIBackend> spi_backend;
+  auto_ptr<SPIWriter> spi_writer;
+  auto_ptr<SoftwareBackend> spi_backend;
   auto_ptr<SPIOutput> spi_output;
   DmxBuffer spi_buffer;
 
@@ -216,9 +218,11 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
+    spi_writer.reset(
+        new SPIWriter(FLAGS_spi_device, SPIWriter::Options(), NULL));
+
     SoftwareBackend::Options options;
-    options.outputs = 1;
-    spi_backend.reset(new SoftwareBackend(FLAGS_spi_device, options));
+    spi_backend.reset(new SoftwareBackend(options, spi_writer.get(), NULL));
     if (!spi_backend->Init()) {
       OLA_WARN << "Failed to init SPI backend";
       exit(ola::EXIT_USAGE);

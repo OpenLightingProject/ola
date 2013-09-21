@@ -30,6 +30,7 @@
 #include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UID.h"
 #include "plugins/spi/SPIBackend.h"
+#include "plugins/spi/SPIWriter.h"
 
 namespace ola {
 namespace plugin {
@@ -56,7 +57,8 @@ class SPIDevice: public ola::Device {
   private:
     typedef std::vector<class SPIOutputPort*> SPIPorts;
 
-    auto_ptr<SPIBackend> m_backend;
+    auto_ptr<SPIWriterInterface> m_writer;
+    auto_ptr<SPIBackendInterface> m_backend;
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     SPIPorts m_spi_ports;
@@ -65,6 +67,7 @@ class SPIDevice: public ola::Device {
     // Per device options
     string SPIBackendKey() const;
     string SPISpeedKey() const;
+    string SPICEKey() const;
     string PortCountKey() const;
     string SyncPortKey() const;
     string GPIOPinKey() const;
@@ -78,7 +81,7 @@ class SPIDevice: public ola::Device {
     void SetDefaults();
     void PopulateHardwareBackendOptions(HardwareBackend::Options *options);
     void PopulateSoftwareBackendOptions(SoftwareBackend::Options *options);
-    void PopulateOptions(SPIBackend::Options *options);
+    void PopulateWriterOptions(SPIWriter::Options *options);
 
     static const char SPI_DEVICE_NAME[];
     static const char HARDWARE_BACKEND[];

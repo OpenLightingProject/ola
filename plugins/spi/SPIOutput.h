@@ -115,7 +115,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     };
 
     SPIOutput(const UID &uid,
-              class SPIBackend *backend,
+              class SPIBackendInterface *backend,
               const Options &options);
 
     uint8_t GetPersonality() const;
@@ -124,7 +124,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     bool SetStartAddress(uint16_t start_address);
 
     string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+    bool WriteDMX(const DmxBuffer &buffer);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -149,7 +149,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
         static RDMOps *instance;
     };
 
-    class SPIBackend *m_backend;
+    class SPIBackendInterface *m_backend;
     const uint8_t m_output_number;
     string m_spi_device_name;
     const UID m_uid;

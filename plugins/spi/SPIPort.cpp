@@ -34,7 +34,7 @@ using ola::rdm::RDMCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 
-SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackend *backend,
+SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackendInterface *backend,
                              const UID &uid,
                              const SPIOutput::Options &options)
     : BasicOutputPort(parent, options.output_number, true),
@@ -62,8 +62,8 @@ string SPIOutputPort::Description() const {
   return m_spi_output.Description();
 }
 
-bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-  return m_spi_output.WriteDMX(buffer, priority);
+bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
+  return m_spi_output.WriteDMX(buffer);
 }
 
 void SPIOutputPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {

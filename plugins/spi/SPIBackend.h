@@ -23,8 +23,12 @@
 #define PLUGINS_SPI_SPIBACKEND_H_
 
 #include <stdint.h>
+#include <ola/thread/Mutex.h>
+#include <ola/thread/Thread.h>
 #include <string>
 #include <vector>
+
+#include "plugins/spi/SPIWriter.h"
 
 namespace ola {
 namespace plugin {
@@ -34,80 +38,114 @@ using std::string;
 using std::vector;
 
 /**
- * The base class for all SPI Backends.
+ * The interface for all SPI Backends.
  */
-class SPIBackend {
+class SPIBackendInterface {
   public:
-    /**
-     * SPIBackend Options
-     */
-    struct Options {
-      uint32_t spi_speed;
+    virtual ~SPIBackendInterface() {}
 
-      Options() : spi_speed(1000000) {}
-    };
+    virtual uint8_t *Checkout(uint8_t output, unsigned int length) = 0;
+    virtual uint8_t *Checkout(uint8_t output,
+                              unsigned int length,
+                              unsigned int latch_bytes) = 0;
+    virtual void Commit(uint8_t output) = 0;
 
-    SPIBackend(const string &spi_device, const Options &options);
+    virtual string DevicePath() const = 0;
 
-    virtual ~SPIBackend();
-
-    /**
-     * Init the SPI backend
-     * @returns false if initialization failed.
-     */
-    bool Init();
-
-    string DevicePath() const { return m_device_path; }
-
-    /**
-     * Write data for a single output (device / universe) to the backend
-     */
-    virtual bool Write(uint8_t output, const uint8_t *data,
-                       unsigned int length) = 0;
+    virtual bool Init() = 0;
 
   protected:
-    bool WriteSPIData(const uint8_t *data, unsigned int length);
-
-    virtual bool InitHook() { return true; }
-
-  private:
-    const string m_device_path;
-    uint32_t m_spi_speed;
-    int m_fd;
-
-    static const uint8_t SPI_MODE;
-    static const uint8_t SPI_BITS_PER_WORD;
+    static const char SPI_DROP_VAR[];
+    static const char SPI_DROP_VAR_KEY[];
 };
 
+
 /**
- * A SPIBackend which uses a hardware multiplexier. This uses the GPIO pins to
- * control the multiplexer and route the SPI signal to the correct pixel
- * string.
+ * A HardwareBackend which uses GPIO pins and an external de-multiplexer
  */
-class HardwareBackend : public SPIBackend {
+class HardwareBackend : public ola::thread::Thread,
+                        public SPIBackendInterface {
   public:
-    struct Options : public SPIBackend::Options {
+    struct Options {
       // Which GPIO bits to use to select the output. The number of outputs
       // will be 2 ** gpio_pins.size();
       vector<uint8_t> gpio_pins;
     };
 
-    HardwareBackend(const string &spi_device, const Options &options);
+    HardwareBackend(const Options &options,
+                    SPIWriterInterface *writer,
+                    ExportMap *export_map);
     ~HardwareBackend();
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length);
+    bool Init();
+
+    uint8_t *Checkout(uint8_t output, unsigned int length) {
+      return Checkout(output, length, 0);
+    }
+
+    uint8_t *Checkout(uint8_t output,
+                      unsigned int length,
+                      unsigned int latch_bytes);
+    void Commit(uint8_t output);
+
+    string DevicePath() const { return m_spi_writer->DevicePath(); }
 
   protected:
-    bool InitHook();
+    void* Run();
 
   private:
-    typedef vector<int> GPIOFds;
+    class OutputData {
+      public:
+        OutputData()
+            : m_data(NULL),
+              m_write_pending(false),
+              m_size(0),
+              m_actual_size(0),
+              m_latch_bytes(0) {
+        }
 
+        ~OutputData() { delete[] m_data; }
+
+        uint8_t *Resize(unsigned int length);
+        void SetLatchBytes(unsigned int latch_bytes);
+        void SetPending();
+        bool IsPending() const { return m_write_pending; }
+        void ResetPending() { m_write_pending = false; }
+        const uint8_t *GetData() const { return m_data; }
+        unsigned int Size() const { return m_size; }
+
+        OutputData& operator=(const OutputData &other);
+
+      private:
+        uint8_t *m_data;
+        bool m_write_pending;
+        unsigned int m_size;
+        unsigned int m_actual_size;
+        unsigned int m_latch_bytes;
+
+        OutputData(const OutputData&);
+    };
+
+    typedef vector<int> GPIOFds;
+    typedef vector<OutputData*> Outputs;
+
+    SPIWriterInterface *m_spi_writer;
+    UIntMap *m_drop_map;
     const uint8_t m_output_count;
-    const vector<uint8_t> m_gpio_pins;
+    ola::thread::Mutex m_mutex;
+    ola::thread::ConditionVariable m_cond_var;
+    bool m_exit;
+
+    Outputs m_output_data;
+
+    // GPIO members
     GPIOFds m_gpio_fds;
+    const vector<uint8_t> m_gpio_pins;
     vector<bool> m_gpio_pin_state;
 
+    void SetupOutputs(Outputs *outputs);
+    void WriteOutput(uint8_t output_id, OutputData *output);
+    bool SetupGPIO();
     void CloseGPIOFDs();
 };
 
@@ -116,14 +154,15 @@ class HardwareBackend : public SPIBackend {
  * An SPI Backend which uses a software multipliexer. This accumulates all data
  * into a single buffer and then writes it to the SPI bus.
  */
-class SoftwareBackend : public SPIBackend {
+class SoftwareBackend : public SPIBackendInterface,
+                        public ola::thread::Thread {
   public:
-    struct Options : public SPIBackend::Options {
-      /**
+    struct Options {
+      /*
        * The number of outputs.
        */
       uint8_t outputs;
-      /**
+       /*
        * Controls if we designate one of the outputs as the 'sync' output.
        * If set >= 0, it denotes the output which triggers the SPI write.
        * If set to -1, we perform an SPI write on each update.
@@ -133,16 +172,83 @@ class SoftwareBackend : public SPIBackend {
       explicit Options() : outputs(1), sync_output(0) {}
     };
 
-    SoftwareBackend(const string &spi_device, const Options &options);
+    SoftwareBackend(const Options &options,
+                    SPIWriterInterface *writer,
+                    ExportMap *export_map);
     ~SoftwareBackend();
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length);
+    bool Init();
+
+    uint8_t *Checkout(uint8_t output, unsigned int length) {
+      return Checkout(output, length, 0);
+    }
+
+    uint8_t *Checkout(uint8_t output,
+                      unsigned int length,
+                      unsigned int latch_bytes);
+    void Commit(uint8_t output);
+
+    string DevicePath() const { return m_spi_writer->DevicePath(); }
+
+  protected:
+    void* Run();
 
   private:
+    SPIWriterInterface *m_spi_writer;
+    UIntMap *m_drop_map;
+    ola::thread::Mutex m_mutex;
+    ola::thread::ConditionVariable m_cond_var;
+    bool m_write_pending;
+    bool m_exit;
+
     const int16_t m_sync_output;
     vector<unsigned int> m_output_sizes;
+    vector<unsigned int> m_latch_bytes;
     uint8_t *m_output;
     unsigned int m_length;
+    unsigned int m_buffer_size;
+};
+
+
+/**
+ * A fake backend used for testing. If we had gmock this would be much
+ * easier...
+ */
+class FakeSPIBackend : public SPIBackendInterface {
+  public:
+    explicit FakeSPIBackend(unsigned int outputs);
+    ~FakeSPIBackend();
+
+    uint8_t *Checkout(uint8_t output, unsigned int length) {
+      return Checkout(output, length, 0);
+    }
+
+    uint8_t *Checkout(uint8_t output,
+                      unsigned int length,
+                      unsigned int latch_bytes);
+
+    void Commit(uint8_t output);
+    const uint8_t *GetData(uint8_t output, unsigned int *length);
+
+    string DevicePath() const { return "/dev/test"; }
+
+    bool Init() { return true; }
+
+    unsigned int Writes(uint8_t output) const;
+
+  private:
+    class Output {
+      public:
+        Output() : data(NULL), length(0), writes(0) {}
+        ~Output() { delete[] data; }
+
+        uint8_t *data;
+        unsigned int length;
+        unsigned int writes;
+    };
+
+    typedef vector<Output*> Outputs;
+    Outputs m_outputs;
 };
 }  // namespace spi
 }  // namespace plugin
