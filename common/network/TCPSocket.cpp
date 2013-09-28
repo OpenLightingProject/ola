@@ -20,7 +20,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-/* FreeBSD need types.h before tcp.h */
+/* FreeBSD needs types.h before tcp.h */
 #include <sys/types.h>
 #include <netinet/tcp.h>
 #include <stdio.h>
