@@ -1,4 +1,5 @@
 x/y/2013 ola-0.8.32
+ * Added more RDM responder tests
  * Added pretty printing of slot info messages
  * Improved the performance of the RPC system on Linux, leading to a 1000x
    reduction in RPC latency and 4x speedup of the RDM tests.
