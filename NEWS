@@ -1,6 +1,6 @@
 29/9/2013 ola-0.8.32
  * Added more RDM responder tests to cover E1.37-1
- * Print the UID. model description and timestamp in the RDM test logs
+ * Print the UID, model description and timestamp in the RDM test logs
  * Added pretty printing of slot info messages
  * Added support for new OSC formats
  * Added support for more tha 4 ArtNet output ports
