@@ -1,3 +1,9 @@
+ola (0.8.32-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- RenZO <renzo@imaginux.com>  Sun, 29 Sep 2013 17:15:41 +0200
+
 ola (0.8.31-3) unstable; urgency=low
 
   * New ola-logic-sniffer package
