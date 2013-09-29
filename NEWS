@@ -3,7 +3,7 @@
  * Print the UID, model description and timestamp in the RDM test logs
  * Added pretty printing of slot info messages
  * Added support for new OSC formats
- * Added support for more tha 4 ArtNet output ports
+ * Added support for more than 4 ArtNet output ports
  * Added a simple ArtNet loadtest
  * Fixed a couple of bugs in the Dummy RDM responders
  * Added support for templates in the OSC target addresses.
