@@ -30,104 +30,200 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
+#include "ola/stl/STLUtils.h"
 #include "plugins/spi/SPIBackend.h"
-
 
 namespace ola {
 namespace plugin {
 namespace spi {
 
-const uint8_t SPIBackend::SPI_BITS_PER_WORD = 8;
-const uint8_t SPIBackend::SPI_MODE = 0;
+using ola::thread::MutexLocker;
 
-SPIBackend::SPIBackend(const string &spi_device, const Options &options)
-    : m_device_path(spi_device),
-      m_spi_speed(options.spi_speed),
-      m_cs_enable_high(options.cs_enable_high),
-      m_fd(-1) {
-  OLA_INFO << "Created SPI backend " << spi_device << " with speed "
-           << options.spi_speed << ", CE is " << m_cs_enable_high;
+const char SPIBackendInterface::SPI_DROP_VAR[] = "spi-drops";
+const char SPIBackendInterface::SPI_DROP_VAR_KEY[] = "device";
+
+uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
+  if (length < m_size) {
+    m_size = length;
+    return m_data;
+  } else if (length == m_size) {
+    return m_data;
+  }
+
+  if (length <= m_actual_size) {
+    m_size = length;
+    return m_data;
+  }
+
+  delete[] m_data;
+  m_data = new uint8_t[length];
+  if (m_data) {
+    m_size = m_data ? length : 0;
+    m_actual_size = m_size;
+    memset(m_data, 0, length);
+  }
+  return m_data;
 }
 
-SPIBackend::~SPIBackend() {
-  if (m_fd >= 0)
-    close(m_fd);
+void HardwareBackend::OutputData::SetPending() {
+  m_write_pending = true;
 }
 
-bool SPIBackend::Init() {
-  bool ok = InitHook();
-  if (!ok)
-    return false;
-
-  int fd = open(m_device_path.c_str(), O_RDWR);
-  ola::network::SocketCloser closer(fd);
-  if (fd < 0) {
-    OLA_WARN << "Failed to open " << m_device_path << " : " << strerror(errno);
-    return false;
-  }
-
-  uint8_t spi_mode = SPI_MODE;
-  if (m_cs_enable_high) {
-    spi_mode |= SPI_CS_HIGH;
-  }
-
-  if (ioctl(fd, SPI_IOC_WR_MODE, &spi_mode) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_MODE for " << m_device_path;
-    return false;
-  }
-
-  uint8_t spi_bits_per_word = SPI_BITS_PER_WORD;
-  if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &spi_bits_per_word) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_BITS_PER_WORD for " << m_device_path;
-    return false;
-  }
-
-  if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &m_spi_speed) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_MAX_SPEED_HZ for " << m_device_path;
-    return false;
-  }
-  m_fd = closer.Release();
-  return true;
+void HardwareBackend::OutputData::SetLatchBytes(unsigned int latch_bytes) {
+  m_latch_bytes = latch_bytes;
 }
 
-bool SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
-  struct spi_ioc_transfer spi;
-  memset(&spi, 0, sizeof(spi));
-  spi.tx_buf = reinterpret_cast<__u64>(data);
-  spi.len = length;
-  int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
-  if (bytes_written != static_cast<int>(length)) {
-    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
-    return false;
+HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
+    const HardwareBackend::OutputData &other) {
+  if (this != &other) {
+    uint8_t *data = Resize(other.m_size + other.m_latch_bytes);
+    if (data) {
+      memcpy(data, other.m_data, other.m_size);
+      memset(data + other.m_size, 0, other.m_latch_bytes);
+      m_write_pending = true;
+    } else {
+      m_write_pending = false;
+    }
   }
-  return true;
+  return *this;
 }
 
-HardwareBackend::HardwareBackend(const string &spi_device,
-                                       const Options &options)
-    : SPIBackend(spi_device, options),
+HardwareBackend::HardwareBackend(const Options &options,
+                                 SPIWriterInterface *writer,
+                                 ExportMap *export_map)
+    : m_spi_writer(writer),
       m_output_count(1 << options.gpio_pins.size()),
+      m_exit(false),
       m_gpio_pins(options.gpio_pins) {
+  SetupOutputs(&m_output_data);
+  if (export_map) {
+    m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
+                                           SPI_DROP_VAR_KEY);
+    (*m_drop_map)[m_spi_writer->DevicePath()] = 0;
+  }
 }
 
 
 HardwareBackend::~HardwareBackend() {
+  {
+    MutexLocker lock(&m_mutex);
+    m_exit = true;
+  }
+
+  m_cond_var.Signal();
+  Join();
+
+  STLDeleteElements(&m_output_data);
   CloseGPIOFDs();
 }
 
-bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
-                            unsigned int length, unsigned int latch_bytes) {
-  if (output >= m_output_count) {
+bool HardwareBackend::Init() {
+  if (!(m_spi_writer->Init() && SetupGPIO())) {
     return false;
   }
 
+  if (!Start()) {
+    CloseGPIOFDs();
+    return false;
+  }
+  return true;
+}
+
+uint8_t *HardwareBackend::Checkout(uint8_t output_id,
+                                   unsigned int length,
+                                   unsigned int latch_bytes) {
+  if (output_id >= m_output_count) {
+    return NULL;
+  }
+
+  m_mutex.Lock();
+  uint8_t *output = m_output_data[output_id]->Resize(length);
+  if (!output) {
+    m_mutex.Unlock();
+  }
+  m_output_data[output_id]->SetLatchBytes(latch_bytes);
+  return output;
+}
+
+void HardwareBackend::Commit(uint8_t output) {
+  if (output >= m_output_count) {
+    return;
+  }
+
+  OutputData *output_data = m_output_data[output];
+  if (output_data->IsPending() && m_drop_map) {
+    // There was already another write pending which we're now stomping on
+    (*m_drop_map)[m_spi_writer->DevicePath()]++;
+  }
+  output_data->SetPending();
+  m_mutex.Unlock();
+  m_cond_var.Signal();
+}
+
+void *HardwareBackend::Run() {
+  Outputs outputs;
+  SetupOutputs(&outputs);
+
+  while (true) {
+    m_mutex.Lock();
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      STLDeleteElements(&outputs);
+      return NULL;
+    }
+
+    bool action_pending = false;
+    Outputs::const_iterator iter = m_output_data.begin();
+    for (; iter != m_output_data.end(); ++iter) {
+      if ((*iter)->IsPending()) {
+        action_pending = true;
+        break;
+      }
+    }
+    if (!action_pending) {
+      m_cond_var.Wait(&m_mutex);
+    }
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      STLDeleteElements(&outputs);
+      return NULL;
+    }
+
+    for (unsigned int i = 0; i < m_output_data.size(); i++) {
+      if (m_output_data[i]->IsPending()) {
+        // take a copy
+        *outputs[i] = *m_output_data[i];
+        m_output_data[i]->ResetPending();
+      }
+    }
+    m_mutex.Unlock();
+
+    for (unsigned int i = 0; i < outputs.size(); i++) {
+      if (outputs[i]->IsPending()) {
+        WriteOutput(i, outputs[i]);
+        outputs[i]->ResetPending();
+      }
+    }
+  }
+}
+
+void HardwareBackend::SetupOutputs(Outputs *outputs) {
+  for (unsigned int i = 0; i < m_output_count; i++) {
+    outputs->push_back(new OutputData());
+  }
+}
+
+void HardwareBackend::WriteOutput(uint8_t output_id, OutputData *output) {
   const string on("1");
   const string off("0");
 
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
-    uint8_t pin = output & (1 << i);
+    uint8_t pin = output_id & (1 << i);
 
     if (i >= m_gpio_pin_state.size()) {
       m_gpio_pin_state.push_back(!pin);
@@ -139,19 +235,16 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
         OLA_WARN << "Failed to toggle SPI GPIO pin "
                  << static_cast<int>(m_gpio_pins[i]) << ": "
                  << strerror(errno);
-        return false;
+        return;
       }
       m_gpio_pin_state[i] = pin;
     }
   }
 
-  uint8_t final_data[length + latch_bytes];
-  memcpy(final_data, data, length);
-  memset(final_data + length, 0, latch_bytes);
-  return WriteSPIData(data, length);
+  m_spi_writer->WriteSPIData(output->GetData(), output->Size());
 }
 
-bool HardwareBackend::InitHook() {
+bool HardwareBackend::SetupGPIO() {
   /**
    * This relies on the pins being exported:
    *   echo N > /sys/class/gpio/export
@@ -204,26 +297,57 @@ void HardwareBackend::CloseGPIOFDs() {
   m_gpio_fds.clear();
 }
 
-SoftwareBackend::SoftwareBackend(const string &spi_device,
-                                 const Options &options)
-    : SPIBackend(spi_device, options),
+SoftwareBackend::SoftwareBackend(const Options &options,
+                                 SPIWriterInterface *writer,
+                                 ExportMap *export_map)
+    : m_spi_writer(writer),
+      m_write_pending(false),
+      m_exit(false),
       m_sync_output(options.sync_output),
       m_output_sizes(options.outputs, 0),
       m_latch_bytes(options.outputs, 0),
       m_output(NULL),
-      m_length(0) {
+      m_length(0),
+      m_buffer_size(0) {
+  if (export_map) {
+    m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
+                                           SPI_DROP_VAR_KEY);
+    (*m_drop_map)[m_spi_writer->DevicePath()] = 0;
+  }
 }
 
 SoftwareBackend::~SoftwareBackend() {
-  free(m_output);
+  {
+    MutexLocker lock(&m_mutex);
+    m_exit = true;
+  }
+
+  m_cond_var.Signal();
+  Join();
+
+  delete[] m_output;
 }
 
-bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
-                            unsigned int length, unsigned int latch_bytes) {
-  if (output >= m_output_sizes.size()) {
-    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
+bool SoftwareBackend::Init() {
+  if (!m_spi_writer->Init()) {
     return false;
   }
+
+  if (!Start()) {
+    return false;
+  }
+  return true;
+}
+
+uint8_t *SoftwareBackend::Checkout(uint8_t output,
+                                   unsigned int length,
+                                   unsigned int latch_bytes) {
+  if (output >= m_output_sizes.size()) {
+    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
+    return NULL;
+  }
+
+  m_mutex.Lock();
 
   unsigned int leading = 0;
   unsigned int trailing = 0;
@@ -234,8 +358,8 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
       trailing += m_output_sizes[i];
     }
   }
-  m_latch_bytes[output] = latch_bytes;
 
+  m_latch_bytes[output] = latch_bytes;
   const unsigned int total_latch_bytes = std::accumulate(
       m_latch_bytes.begin(), m_latch_bytes.end(), 0);
   const unsigned int required_size = (
@@ -244,25 +368,133 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
   // Check if the current buffer is large enough to hold our data.
   if (required_size != m_length) {
     // The length changed
-    uint8_t *new_output = reinterpret_cast<uint8_t*>(malloc(required_size));
+    uint8_t *new_output = new uint8_t[required_size];
     memcpy(new_output, m_output, leading);
-    memcpy(new_output + leading, data, length);
+    memset(new_output + leading, 0, length);
     memcpy(new_output + leading + length, m_output + leading, trailing);
     memset(new_output + leading + length + trailing, 0, total_latch_bytes);
-    free(m_output);
+    delete[] m_output;
     m_output = new_output;
     m_length = required_size;
     m_output_sizes[output] = length;
-  } else {
-    // This is just an update
-    memcpy(m_output + leading, data, length);
+  }
+  return m_output + leading;
+}
+
+void SoftwareBackend::Commit(uint8_t output) {
+  if (output >= m_output_sizes.size()) {
+    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
+    return;
   }
 
-  if (m_sync_output < 0 || output == m_sync_output) {
-    return WriteSPIData(m_output, m_length);
-  } else {
-    return true;
+  bool should_write = m_sync_output < 0 || output == m_sync_output;
+  if (should_write) {
+    if (m_write_pending && m_drop_map) {
+      // There was already another write pending which we're now stomping on
+      (*m_drop_map)[m_spi_writer->DevicePath()]++;
+    }
+    m_write_pending = should_write;
   }
+  m_mutex.Unlock();
+  if (should_write) {
+    m_cond_var.Signal();
+  }
+}
+
+void *SoftwareBackend::Run() {
+  uint8_t *output_data = NULL;
+  unsigned int length = 0;
+
+  while (true) {
+    m_mutex.Lock();
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      delete output_data;
+      return NULL;
+    }
+
+    if (!m_write_pending) {
+      m_cond_var.Wait(&m_mutex);
+    }
+
+    if (m_exit) {
+      m_mutex.Unlock();
+      delete[] output_data;
+      return NULL;
+    }
+
+    bool write_pending = m_write_pending;
+    m_write_pending = false;
+    if (write_pending) {
+      if (length < m_length) {
+        delete[] output_data;
+        output_data = new uint8_t[m_length];
+        length = m_length;
+      }
+      // TODO(simon) Add an actual size here
+      length = m_length;
+      memcpy(output_data, m_output, m_length);
+    }
+    m_mutex.Unlock();
+
+    if (write_pending) {
+      m_spi_writer->WriteSPIData(output_data, length);
+    }
+  }
+}
+
+FakeSPIBackend::FakeSPIBackend(unsigned int outputs) {
+  for (unsigned int i = 0; i < outputs; i++) {
+    m_outputs.push_back(new Output());
+  }
+}
+
+FakeSPIBackend::~FakeSPIBackend() {
+  STLDeleteElements(&m_outputs);
+}
+
+uint8_t *FakeSPIBackend::Checkout(uint8_t output_id,
+                                  unsigned int length,
+                                  unsigned int latch_bytes) {
+  if (output_id >= m_outputs.size()) {
+    return NULL;
+  }
+
+  Output *output = m_outputs[output_id];
+
+  if (output->length != length + latch_bytes) {
+    delete[] output->data;
+    output->data = new uint8_t[length + latch_bytes];
+    memset(output->data, 0, length + latch_bytes);
+    output->length = length + latch_bytes;
+  }
+  return output->data;
+}
+
+void FakeSPIBackend::Commit(uint8_t output) {
+  if (output >= m_outputs.size()) {
+    return;
+  }
+  m_outputs[output]->writes++;
+}
+
+const uint8_t *FakeSPIBackend::GetData(uint8_t output_id,
+                                       unsigned int *length) {
+  if (output_id >= m_outputs.size()) {
+    return NULL;
+  }
+  Output *output = m_outputs[output_id];
+  *length = output->length;
+  return output->data;
+}
+
+
+unsigned int FakeSPIBackend::Writes(uint8_t output) const {
+  if (output >= m_outputs.size()) {
+    return 0;
+  }
+  return m_outputs[output]->writes;
 }
 }  // namespace spi
 }  // namespace plugin

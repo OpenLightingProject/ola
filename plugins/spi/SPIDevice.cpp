@@ -58,13 +58,21 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
     m_spi_device_name = spi_device.substr(pos + 1);
 
   SetDefaults();
-  unsigned int port_count;
+  unsigned int port_count = 0;
 
   string backend_type = m_preferences->GetValue(SPIBackendKey());
+  SPIWriter::Options writer_options;
+  PopulateWriterOptions(&writer_options);
+  m_writer.reset(new SPIWriter(spi_device, writer_options,
+                               plugin_adaptor->GetExportMap()));
+
+
   if (backend_type == HARDWARE_BACKEND) {
     HardwareBackend::Options options;
     PopulateHardwareBackendOptions(&options);
-    m_backend.reset(new HardwareBackend(spi_device, options));
+    m_backend.reset(
+        new HardwareBackend(options, m_writer.get(),
+                            plugin_adaptor->GetExportMap()));
     port_count = 1 << options.gpio_pins.size();
     OLA_INFO << m_spi_device_name << ", Hardware backend, " << port_count
              << " ports";
@@ -76,7 +84,9 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
 
     SoftwareBackend::Options options;
     PopulateSoftwareBackendOptions(&options);
-    m_backend.reset(new SoftwareBackend(spi_device, options));
+    m_backend.reset(
+        new SoftwareBackend(options, m_writer.get(),
+                            plugin_adaptor->GetExportMap()));
     port_count = options.outputs;
     OLA_INFO << m_spi_device_name << ", Software backend, " << port_count
              << " ports";
@@ -114,6 +124,7 @@ string SPIDevice::DeviceId() const {
  */
 bool SPIDevice::StartHook() {
   if (!m_backend->Init()) {
+    STLDeleteElements(&m_spi_ports);
     return false;
   }
 
@@ -208,8 +219,6 @@ void SPIDevice::SetDefaults() {
 
 void SPIDevice::PopulateHardwareBackendOptions(
     HardwareBackend::Options *options) {
-  PopulateOptions(options);
-
   vector<string> pins = m_preferences->GetMultipleValue(GPIOPinKey());
   vector<string>::const_iterator iter = pins.begin();
   for (; iter != pins.end(); iter++) {
@@ -231,7 +240,6 @@ void SPIDevice::PopulateHardwareBackendOptions(
 
 void SPIDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
-  PopulateOptions(options);
   StringToInt(m_preferences->GetValue(PortCountKey()), &options->outputs);
   StringToInt(m_preferences->GetValue(SyncPortKey()), &options->sync_output);
   if (options->sync_output == -2) {
@@ -239,7 +247,7 @@ void SPIDevice::PopulateSoftwareBackendOptions(
   }
 }
 
-void SPIDevice::PopulateOptions(SPIBackend::Options *options) {
+void SPIDevice::PopulateWriterOptions(SPIWriter::Options *options) {
   uint32_t spi_speed;
   if (StringToInt(m_preferences->GetValue(SPISpeedKey()), &spi_speed)) {
     options->spi_speed = spi_speed;

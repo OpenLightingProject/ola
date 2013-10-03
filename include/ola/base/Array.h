@@ -59,7 +59,7 @@ template <typename T, size_t N>
  * @param array the array to get the size of.
  * @return the number of elements in the array.
  */
-#define arraysize(array) (sizeof(ArraySizeHelper(array)))
+#define arraysize(array) (sizeof(ola::ArraySizeHelper(array)))
 
 }  // namespace ola
 #endif  // INCLUDE_OLA_BASE_ARRAY_H_

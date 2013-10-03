@@ -1,5 +1,13 @@
-x/y/2013 ola-0.8.32
+29/9/2013 ola-0.8.32
+ * Added more RDM responder tests to cover E1.37-1
+ * Print the UID, model description and timestamp in the RDM test logs
  * Added pretty printing of slot info messages
+ * Added support for new OSC formats
+ * Added support for more than 4 ArtNet output ports
+ * Added a simple ArtNet loadtest
+ * Fixed a couple of bugs in the Dummy RDM responders
+ * Added support for templates in the OSC target addresses.
+ * Re-wrote the SPI backend with loads of new options.
  * Improved the performance of the RPC system on Linux, leading to a 1000x
    reduction in RPC latency and 4x speedup of the RDM tests.
 
