@@ -590,10 +590,27 @@ typedef enum {
 static const uint16_t PRESET_PLAYBACK_OFF = 0x0000;
 static const uint16_t PRESET_PLAYBACK_ALL = 0xFFFF;
 
+static const uint8_t ALL_SENSORS = 0xff;
+
 // bit masks for sensor values
 static const uint8_t SENSOR_RECORDED_VALUE = 0x01;
 static const uint8_t SENSOR_RECORDED_RANGE_VALUES = 0x02;
-static const uint8_t ALL_SENSORS = 0xFF;
+
+// Consts for sensor values when unsupported
+static const uint8_t SENSOR_RECORDED_UNSUPPORTED = 0x0000;
+static const uint8_t SENSOR_RECORDED_RANGE_UNSUPPORTED = 0x0000;
+
+// Consts for SENSOR_DEFINITION's range_min
+static const int16_t SENSOR_DEFINITION_RANGE_MIN_UNDEFINED = -0x8000;
+
+// Consts for SENSOR_DEFINITION's range_max
+static const int16_t SENSOR_DEFINITION_RANGE_MAX_UNDEFINED = 0x7FFF;
+
+// Consts for SENSOR_DEFINITION's normal_min
+static const int16_t SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED = -0x8000;
+
+// Consts for SENSOR_DEFINITION's normal_max
+static const int16_t SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED = 0x7FFF;
 
 // The maximum PIN
 static const uint16_t MAX_LOCK_PIN = 9999;

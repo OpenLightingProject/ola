@@ -31,6 +31,7 @@
 #include <vector>
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/ResponderPersonality.h"
+#include "ola/rdm/ResponderSensor.h"
 
 namespace ola {
 namespace rdm {
@@ -117,6 +118,17 @@ class ResponderHelper {
         uint16_t *dmx_address,
         uint8_t queued_message_count = 0);
 
+    static const RDMResponse *GetSensorDefinition(
+        const RDMRequest *request, const Sensors *sensor_list);
+
+    static const RDMResponse *GetSensorValue(
+        const RDMRequest *request, const Sensors *sensor_list);
+    static const RDMResponse *SetSensorValue(
+        const RDMRequest *request, const Sensors *sensor_list);
+
+    static const RDMResponse *RecordSensor(
+        const RDMRequest *request, const Sensors *sensor_list);
+
     static const RDMResponse *GetRealTimeClock(
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
@@ -187,6 +199,14 @@ class ResponderHelper {
     static const RDMResponse *SetUInt32Value(
         const RDMRequest *request, uint32_t *value,
         uint8_t queued_message_count = 0);
+
+    struct sensor_value_s {
+      uint8_t sensor;
+      int16_t value;
+      int16_t lowest;
+      int16_t highest;
+      int16_t recorded;
+    } __attribute__((packed));
 };
 }  // namespace rdm
 }  // namespace ola
