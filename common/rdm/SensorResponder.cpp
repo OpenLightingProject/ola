@@ -34,6 +34,7 @@
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderLoadSensor.h"
 #include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/SensorResponder.h"
 
@@ -152,6 +153,9 @@ SensorResponder::SensorResponder(const UID &uid)
   m_sensors.push_back(new FakeSensor(
         SENSOR_ITEMS, UNITS_NONE, PREFIX_KILO,
         "Fake Beta Particle Counter", true, true, 0, 100, 0, 1));
+  m_sensors.push_back(new LoadSensor(0, "Load Average 1 minute"));
+  m_sensors.push_back(new LoadSensor(1, "Load Average 5 minutes"));
+  m_sensors.push_back(new LoadSensor(2, "Load Average 15 minutes"));
 }
 
 
@@ -172,7 +176,7 @@ const RDMResponse *SensorResponder::GetDeviceInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_SENSOR_ONLY_MODEL, PRODUCT_CATEGORY_TEST,
-      1, 0, 1, 1, ZERO_FOOTPRINT_DMX_ADDRESS, 0, m_sensors.size());
+      2, 0, 1, 1, ZERO_FOOTPRINT_DMX_ADDRESS, 0, m_sensors.size());
 }
 
 const RDMResponse *SensorResponder::GetProductDetailList(
