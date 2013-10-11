@@ -53,6 +53,7 @@ string ProductDetailToString(uint16_t detail);
 string ResetDeviceToString(uint8_t reset_device);
 bool UIntToResetDevice(uint8_t state, rdm_reset_device_mode *reset_device);
 string SensorTypeToString(uint8_t type);
+string SensorSupportsRecordingToString(uint8_t supports_recording);
 string SlotInfoToString(uint8_t slot_type, uint16_t slot_label);
 string StatusMessageIdToString(uint16_t message_id,
                                int16_t data1,

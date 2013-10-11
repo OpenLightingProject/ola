@@ -22,7 +22,9 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 #include "ola/rdm/RDMHelper.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -30,6 +32,7 @@ namespace rdm {
 
 using std::string;
 using std::stringstream;
+using std::vector;
 
 
 /**
@@ -725,6 +728,23 @@ string SensorTypeToString(uint8_t type) {
       str << "Unknown, was " << static_cast<int>(type);
       return str.str();
   }
+}
+
+
+/**
+ * Convert a uint8_t representing a sensor's recording support to a
+ * human-readable string.
+ * @param supports_recording the sensor recording support bitmask
+ */
+string SensorSupportsRecordingToString(uint8_t supports_recording) {
+  vector<string> recording_support;
+  if (supports_recording & SENSOR_RECORDED_VALUE) {
+    recording_support.push_back("Recorded Value");
+  }
+  if (supports_recording & SENSOR_RECORDED_RANGE_VALUES) {
+    recording_support.push_back("Lowest/Highest Detected Values");
+  }
+  return StringJoin(", ", recording_support);
 }
 
 
