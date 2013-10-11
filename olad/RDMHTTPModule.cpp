@@ -2468,7 +2468,7 @@ void RDMHTTPModule::LampModeHandler(HTTPResponse *response,
     {"Off", ola::rdm::LAMP_ON_MODE_OFF},
     {"DMX", ola::rdm::LAMP_ON_MODE_DMX},
     {"On", ola::rdm::LAMP_ON_MODE_ON},
-    {"On After Calibration", ola::rdm::LAMP_ON_MODE_AFTER_CAL}};
+    {"On After Calibration", ola::rdm::LAMP_ON_MODE_ON_AFTER_CAL}};
 
   for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {

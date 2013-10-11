@@ -95,6 +95,9 @@ class DummyResponder: public RDMControllerInterface {
     const RDMResponse *GetPersonality(const RDMRequest *request);
     const RDMResponse *SetPersonality(const RDMRequest *request);
     const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+    const RDMResponse *GetSlotInfo(const RDMRequest *request);
+    const RDMResponse *GetSlotDescription(const RDMRequest *request);
+    const RDMResponse *GetSlotDefaultValues(const RDMRequest *request);
     const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *GetLampStrikes(const RDMRequest *request);

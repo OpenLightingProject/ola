@@ -148,6 +148,10 @@ def DisplaySummary(uid, tests, device):
   logging.info('Test Run: %s' % now.strftime('%F %r %z'))
   logging.info('UID: %s' % uid)
 
+  manufacturer_label = getattr(device, 'manufacturer_label', None)
+  if manufacturer_label:
+    logging.info('Manufacturer: %s' % manufacturer_label)
+
   model_description = getattr(device, 'model_description', None)
   if model_description:
     logging.info('Model Description: %s' % model_description)

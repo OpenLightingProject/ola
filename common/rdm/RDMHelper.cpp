@@ -65,7 +65,7 @@ string ResponseCodeToString(rdm_response_code status) {
     case RDM_WRONG_SUB_START_CODE:
       return "Incorrect sub start code";
     case RDM_PACKET_TOO_SHORT:
-      return "RDM response was smaller than the mimimun size";
+      return "RDM response was smaller than the minimum size";
     case RDM_PACKET_LENGTH_MISMATCH:
       return "The length field of packet didn't match length received";
     case RDM_PARAM_LENGTH_MISMATCH:
@@ -83,8 +83,8 @@ string ResponseCodeToString(rdm_response_code status) {
 
 
 /**
- * Convert a uint8_t representing a lamp mode to a human-readable string.
- * @param type the lamp mode value
+ * Convert a uint8_t representing a data type to a human-readable string.
+ * @param type the data type value
  */
 string DataTypeToString(uint8_t type) {
   switch (type) {
@@ -126,7 +126,7 @@ string LampModeToString(uint8_t lamp_mode) {
       return "DMX";
     case LAMP_ON_MODE_ON:
       return "On";
-    case LAMP_ON_MODE_AFTER_CAL:
+    case LAMP_ON_MODE_ON_AFTER_CAL:
       return "On after calibration";
     default:
       stringstream str;
@@ -137,8 +137,8 @@ string LampModeToString(uint8_t lamp_mode) {
 
 
 /**
- * Convert a uint8_t representing a lamp mode to a human-readable string.
- * @param lamp_state the lamp mode value
+ * Convert a uint8_t representing a lamp state to a human-readable string.
+ * @param lamp_state the lamp state value
  */
 string LampStateToString(uint8_t lamp_state) {
   switch (lamp_state) {

@@ -259,7 +259,7 @@ class TestRunner(object):
     """Run all the tests.
 
     Args:
-      filter: If not None, limit the tests to those in the list and their
+      whitelist: If not None, limit the tests to those in the list and their
         dependancies.
       no_factory_defaults: Avoid running the SET factory defaults test.
       update_cb: This is called between each test to update the progress. It
@@ -274,7 +274,16 @@ class TestRunner(object):
     if whitelist is None:
       tests_to_run = self._all_tests
     else:
-      tests_to_run = [t for t in self._all_tests if t.__name__ in whitelist]
+      tests_to_run = []
+      matched_tests = []
+      for t in self._all_tests:
+        if t.__name__ in whitelist:
+          tests_to_run.append(t)
+          matched_tests.append(t.__name__)
+      invalid_tests = whitelist.difference(matched_tests)
+      if len(invalid_tests) != 0:
+        for t in invalid_tests:
+          logging.error("Test %s doesn't exist, skipping" % t)
 
     if no_factory_defaults:
       factory_default_tests = set(['ResetFactoryDefaults',
