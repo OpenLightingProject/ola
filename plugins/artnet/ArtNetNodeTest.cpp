@@ -71,9 +71,11 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testConfigurationMode);
   CPPUNIT_TEST(testExtendedInputPorts);
   CPPUNIT_TEST(testBroadcastSendDMX);
+  CPPUNIT_TEST(testBroadcastSendDMXZeroUniverse);
   CPPUNIT_TEST(testLimitedBroadcastDMX);
   CPPUNIT_TEST(testNonBroadcastSendDMX);
   CPPUNIT_TEST(testReceiveDMX);
+  CPPUNIT_TEST(testReceiveDMXZeroUniverse);
   CPPUNIT_TEST(testHTPMerge);
   CPPUNIT_TEST(testLTPMerge);
   CPPUNIT_TEST(testControllerDiscovery);
@@ -110,9 +112,11 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void testConfigurationMode();
   void testExtendedInputPorts();
   void testBroadcastSendDMX();
+  void testBroadcastSendDMXZeroUniverse();
   void testLimitedBroadcastDMX();
   void testNonBroadcastSendDMX();
   void testReceiveDMX();
+  void testReceiveDMXZeroUniverse();
   void testHTPMerge();
   void testLTPMerge();
   void testControllerDiscovery();
@@ -695,6 +699,45 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   }
 }
 
+/**
+ * Check sending DMX using broadcast works to ArtNet universe 0.
+ */
+void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
+  m_socket->SetDiscardMode(true);
+
+  ArtNetNodeOptions node_options;
+  node_options.always_broadcast = true;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+
+  node.SetNetAddress(0);
+  node.SetSubnetAddress(0);
+  node.SetInputPortUniverse(m_port_id, 0);
+
+  OLA_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  {
+    SocketVerifier verifer(m_socket);
+    const uint8_t DMX_MESSAGE[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x50,
+      0x0, 14,
+      0,  // seq #
+      1,  // physical port
+      0, 0,  // subnet & net address
+      0, 6,  // dmx length
+      0, 1, 2, 3, 4, 5
+    };
+    ExpectedBroadcast(DMX_MESSAGE, sizeof(DMX_MESSAGE));
+
+    DmxBuffer dmx;
+    dmx.SetFromString("0,1,2,3,4,5");
+    OLA_ASSERT(node.SendDMX(m_port_id, dmx));
+  }
+}
+
 /*
  * Check sending DMX using the limited broadcast address.
  */
@@ -914,7 +957,6 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   }
 }
 
-
 /**
  * Check that receiving DMX works
  */
@@ -989,6 +1031,48 @@ void ArtNetNodeTest::testReceiveDMX() {
   }
 }
 
+/**
+ * Check that receiving DMX for universe 0 works.
+ */
+void ArtNetNodeTest::testReceiveDMXZeroUniverse() {
+  m_socket->SetDiscardMode(true);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+
+  node.SetNetAddress(0);
+  node.SetSubnetAddress(0);
+  node.SetOutputPortUniverse(m_port_id, 0);
+
+  DmxBuffer input_buffer;
+  node.SetDMXHandler(m_port_id,
+                     &input_buffer,
+                     ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
+
+  OLA_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  uint8_t DMX_MESSAGE[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0, 0,  // subnet & net address
+    0, 6,  // dmx length
+    0, 1, 2, 3, 4, 5
+  };
+
+  // 'receive' a DMX message
+  {
+    SocketVerifier verifer(m_socket);
+    OLA_ASSERT_FALSE(m_got_dmx);
+    ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
+    OLA_ASSERT(m_got_dmx);
+    OLA_ASSERT_EQ(string("0,1,2,3,4,5"), input_buffer.ToString());
+  }
+}
 
 /**
  * Check that merging works
