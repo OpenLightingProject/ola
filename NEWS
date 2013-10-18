@@ -1,3 +1,8 @@
+X/10/2013 ola-0.8.33
+ * Fix the build breakage when using XCode 5 (clang 500)
+ * Save the SPI pixel count during shutdown
+ * Fix E1.31 merging - #256
+
 29/9/2013 ola-0.8.32
  * Added more RDM responder tests to cover E1.37-1
  * Print the UID, model description and timestamp in the RDM test logs
