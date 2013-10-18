@@ -37,7 +37,7 @@ using std::pair;
 using std::vector;
 using ola::Callback0;
 
-const TimeInterval DMPE131Inflator::EXPIRY_INTERVAL(2500);
+const TimeInterval DMPE131Inflator::EXPIRY_INTERVAL(2500000);
 
 
 DMPE131Inflator::~DMPE131Inflator() {
