@@ -93,15 +93,16 @@ void MockClientStub::UpdateDmxData(
 void ClientTest::testSendDMX() {
   // check we survive a null pointer
   const DmxBuffer buffer(TEST_DATA);
+  uint8_t priority = 100;
   Client client(NULL);
   OLA_ASSERT(NULL == client.Stub());
-  client.SendDMX(TEST_UNIVERSE, buffer);
+  client.SendDMX(TEST_UNIVERSE, priority, buffer);
 
   // check the stub is called correctly
   MockClientStub client_stub;
   Client client2(&client_stub);
   OLA_ASSERT(&client_stub == client2.Stub());
-  client2.SendDMX(TEST_UNIVERSE, buffer);
+  client2.SendDMX(TEST_UNIVERSE, priority, buffer);
 }
 
 
