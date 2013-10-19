@@ -297,7 +297,16 @@ void OlaCallbackClient::SetDmxCallback(
   m_core->SetDmxCallback(callback);
 }
 
-
+/**
+ * Set the callback to be run whenever new DMX data is received.
+ */
+void OlaCallbackClient::SetDmxCallback(
+    Callback4<void,
+              unsigned int,
+              uint8_t,
+              const DmxBuffer&, const string&> *callback) {
+  m_core->SetDmxCallback(callback);
+}
 
 /*
  * Register our interest in a universe.

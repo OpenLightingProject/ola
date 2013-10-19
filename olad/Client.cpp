@@ -42,7 +42,8 @@ Client::~Client() {
  * @param buffer the DmxBuffer with the data
  * @return true if the update was sent, false otherwise
  */
-bool Client::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
+bool Client::SendDMX(unsigned int universe, uint8_t priority,
+                     const DmxBuffer &buffer) {
   if (!m_client_stub) {
     OLA_FATAL << "client_stub is null";
     return false;
@@ -52,6 +53,7 @@ bool Client::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
   ola::proto::DmxData dmx_data;
   ola::proto::Ack *ack = new ola::proto::Ack();
 
+  dmx_data.set_priority(priority);
   dmx_data.set_universe(universe);
   dmx_data.set_data(buffer.Get());
 

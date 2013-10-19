@@ -138,10 +138,17 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
         unsigned int uni,
         SingleUseCallback1<void, const string&> *callback);
 
-    // dmx methods
+    // DMX methods
     void SetDmxCallback(
         Callback3<void,
                   unsigned int,
+                  const DmxBuffer&, const string&> *callback);
+
+    // Similar to above, but this also passes the source priority.
+    void SetDmxCallback(
+        Callback4<void,
+                  unsigned int,
+                  uint8_t,
                   const DmxBuffer&, const string&> *callback);
 
     bool RegisterUniverse(

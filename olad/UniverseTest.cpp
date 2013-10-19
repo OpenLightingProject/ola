@@ -119,8 +119,10 @@ class UniverseTest: public CppUnit::TestFixture {
 class MockClient: public ola::Client {
   public:
     MockClient(): ola::Client(NULL), m_dmx_set(false) {}
-    bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
+    bool SendDMX(unsigned int universe_id, uint8_t priority,
+                 const DmxBuffer &buffer) {
       OLA_ASSERT_EQ(TEST_UNIVERSE, universe_id);
+      OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_MIN, priority);
       OLA_ASSERT_EQ(string(TEST_DATA), buffer.Get());
       m_dmx_set = true;
       return true;

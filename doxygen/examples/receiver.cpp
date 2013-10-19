@@ -32,11 +32,13 @@ void RegisterComplete(const std::string& error) {
 
 // Called when new DMX data arrives.
 void NewDmx(unsigned int universe,
+            uint8_t priority,
             const ola::DmxBuffer &data,
             const std::string &error) {
   if (error.empty()) {
     OLA_INFO << "Received " << data.Size()
-             << " channels for universe " << universe;
+             << " channels for universe " << universe
+             << ", priority " << static_cast<int>(priority);
   } else {
     OLA_WARN << "Receive failed: " << error;
   }

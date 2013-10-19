@@ -42,7 +42,8 @@ class Client {
     explicit Client(OlaClientService_Stub *client_stub):
       m_client_stub(client_stub) {}
     virtual ~Client();
-    virtual bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer);
+    virtual bool SendDMX(unsigned int universe_id, uint8_t priority,
+                         const DmxBuffer &buffer);
 
     void SendDMXCallback(ola::rpc::SimpleRpcController *controller,
                          ola::proto::Ack *ack);

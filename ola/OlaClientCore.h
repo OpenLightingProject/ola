@@ -22,6 +22,7 @@
 #define OLA_OLACLIENTCORE_H_
 
 #include <google/protobuf/stubs/common.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -51,6 +52,12 @@ using ola::rpc::StreamRpcChannel;
 
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
+    typedef Callback3<void, unsigned int, const DmxBuffer&, const string&>
+        DmxCallback;
+
+    typedef Callback4<void, unsigned int, uint8_t, const DmxBuffer&,
+                      const string&> DmxCallbackWithPriority;
+
     explicit OlaClientCore(ConnectedDescriptor *descriptor);
     ~OlaClientCore();
 
@@ -137,10 +144,8 @@ class OlaClientCore: public ola::proto::OlaClientService {
         SingleUseCallback1<void, const string&> *callback);
 
     // dmx methods
-    void SetDmxCallback(
-        Callback3<void,
-                  unsigned int,
-                  const DmxBuffer&, const string&> *callback);
+    void SetDmxCallback(DmxCallback *callback);
+    void SetDmxCallback(DmxCallbackWithPriority *callback);
 
     bool RegisterUniverse(
         unsigned int universe,
@@ -379,8 +384,8 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void FreeArgs(arg_type *args);
 
     ConnectedDescriptor *m_descriptor;
-    Callback3<void, unsigned int, const DmxBuffer&, const string&>
-      *m_dmx_callback;
+    std::auto_ptr<DmxCallback> m_dmx_callback;
+    std::auto_ptr<DmxCallbackWithPriority> m_dmx_callback_with_priority;
     StreamRpcChannel *m_channel;
     ola::proto::OlaServerService_Stub *m_stub;
     int m_connected;
