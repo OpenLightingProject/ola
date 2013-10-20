@@ -4423,12 +4423,12 @@ class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
       return;
 
     if is_supported and new_value != self.INFINITE_TIME:
-      self.SetStartuped(
+      self.SetFailed(
           'infinite %s was supported, but the value was truncated after a set.'
           ' Expected %d, got %d' %
           (field_name, self.INFINITE_TIME, new_value))
     elif not is_supported and new_value == self.INFINITE_TIME:
-      self.SetStartuped(
+      self.SetFailed(
           'infinite %s was not supported, but the value was not truncated '
           'after a set.' % field_name)
 
