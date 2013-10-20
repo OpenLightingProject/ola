@@ -157,6 +157,9 @@ void SPIDevice::PrePortStop() {
     str.str("");
     str << (*iter)->GetStartAddress();
     m_preferences->SetValue(StartAddressKey(i), str.str());
+    str.str("");
+    str << (*iter)->PixelCount();
+    m_preferences->SetValue(PixelCountKey(i), str.str());
   }
   m_preferences->Save();
 }

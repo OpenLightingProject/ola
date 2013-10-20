@@ -122,6 +122,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     bool SetPersonality(uint16_t personality);
     uint16_t GetStartAddress() const;
     bool SetStartAddress(uint16_t start_address);
+    unsigned int PixelCount() const { return m_pixel_count; }
 
     string Description() const;
     bool WriteDMX(const DmxBuffer &buffer);

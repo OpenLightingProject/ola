@@ -506,7 +506,8 @@ class SetPresetStatusMixin(object):
       fade_time = preset_info['min_preset_fade_time']
       wait_time = preset_info['min_preset_wait_time']
 
-    return struct.pack('!HHHHB', scene, fade_time, fade_time, wait_time, 0)
+    return struct.pack('!HHHHB', scene, int(fade_time), int(fade_time),
+                       int(wait_time), 0)
 
 
 # Discovery Mixins
