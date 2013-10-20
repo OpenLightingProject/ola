@@ -1,4 +1,8 @@
-x/y/2013 ola-0.8.33
+x/10/2013 ola-0.8.33
+ * Fix the build breakage when using XCode 5 (clang 500)
+ * Save the SPI pixel count during shutdown
+ * Fix E1.31 merging - #256
+ * Fix a bug where OLA wouldn't receive on ArtNet universe 0 - #260
  * Added more RDM responder tests to cover some slot related edge cases
  * Log an error if we try and run an RDM test that doesn't exist
  * Added pretty printing of sensor definition messages

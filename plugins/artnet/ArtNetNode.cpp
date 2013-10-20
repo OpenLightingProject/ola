@@ -484,7 +484,7 @@ bool ArtNetNodeImpl::SetOutputPortUniverse(uint8_t port_id,
   if (!port)
     return false;
 
-  if ((port->universe_address & 0xf) == (universe_id & 0xf))
+  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf))
     return true;
 
   port->universe_address = (

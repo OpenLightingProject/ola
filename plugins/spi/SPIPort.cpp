@@ -58,6 +58,10 @@ bool SPIOutputPort::SetStartAddress(uint16_t address) {
   return m_spi_output.SetStartAddress(address);
 }
 
+unsigned int SPIOutputPort::PixelCount() const {
+  return m_spi_output.PixelCount();
+}
+
 string SPIOutputPort::Description() const {
   return m_spi_output.Description();
 }

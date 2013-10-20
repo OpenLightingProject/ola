@@ -71,9 +71,11 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testConfigurationMode);
   CPPUNIT_TEST(testExtendedInputPorts);
   CPPUNIT_TEST(testBroadcastSendDMX);
+  CPPUNIT_TEST(testBroadcastSendDMXZeroUniverse);
   CPPUNIT_TEST(testLimitedBroadcastDMX);
   CPPUNIT_TEST(testNonBroadcastSendDMX);
   CPPUNIT_TEST(testReceiveDMX);
+  CPPUNIT_TEST(testReceiveDMXZeroUniverse);
   CPPUNIT_TEST(testHTPMerge);
   CPPUNIT_TEST(testLTPMerge);
   CPPUNIT_TEST(testControllerDiscovery);
@@ -110,9 +112,11 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void testConfigurationMode();
   void testExtendedInputPorts();
   void testBroadcastSendDMX();
+  void testBroadcastSendDMXZeroUniverse();
   void testLimitedBroadcastDMX();
   void testNonBroadcastSendDMX();
   void testReceiveDMX();
+  void testReceiveDMXZeroUniverse();
   void testHTPMerge();
   void testLTPMerge();
   void testControllerDiscovery();
@@ -695,6 +699,109 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   }
 }
 
+/**
+ * Check sending DMX using broadcast works to ArtNet universe 0.
+ */
+void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
+  m_socket->SetDiscardMode(true);
+
+  ArtNetNodeOptions node_options;
+  node_options.always_broadcast = true;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+
+  node.SetNetAddress(0);
+  node.SetSubnetAddress(0);
+  node.SetInputPortUniverse(m_port_id, 0);
+
+  OLA_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  {
+    SocketVerifier verifer(m_socket);
+    const uint8_t DMX_MESSAGE[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x50,
+      0x0, 14,
+      0,  // seq #
+      1,  // physical port
+      0, 0,  // subnet & net address
+      0, 6,  // dmx length
+      0, 1, 2, 3, 4, 5
+    };
+    ExpectedBroadcast(DMX_MESSAGE, sizeof(DMX_MESSAGE));
+
+    DmxBuffer dmx;
+    dmx.SetFromString("0,1,2,3,4,5");
+    OLA_ASSERT(node.SendDMX(m_port_id, dmx));
+  }
+
+  // Now disable, and set to a different universe.
+  {
+    uint8_t poll_reply_message[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x21,
+      10, 0, 0, 1,
+      0x36, 0x19,
+      0, 0,
+      0, 0,  // subnet address
+      0x4, 0x31,  // oem
+      0,
+      0xd2,
+      0x70, 0x7a,  // esta
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,  // short name
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // long name
+      '#', '0', '0', '0', '1', ' ', '[', '1', ']', ' ', 'O', 'L', 'A',
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0,  // node report
+      0, 4,  // num ports
+      0xc0, 0xc0, 0xc0, 0xc0,  // port types
+      8, 0, 8, 8,  // good input
+      0, 0, 0, 0,  // good output
+      0x0, 0x0, 0x0, 0x0,  // swin
+      0x0, 0x0, 0x0, 0x0,  // swout
+      0, 0, 0, 0, 0, 0, 0,  // video, macro, remote, spare, style
+      0xa, 0xb, 0xc, 0x12, 0x34, 0x56,  // mac address
+      0xa, 0x0, 0x0, 0x1,
+      0,
+      8,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0  // filler
+    };
+    ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+
+    node.EnterConfigurationMode();
+    node.DisableInputPort(m_port_id);
+    node.SetInputPortUniverse(m_port_id, 0);
+    node.ExitConfigurationMode();
+    m_socket->Verify();
+  }
+
+  {
+    SocketVerifier verifer(m_socket);
+    const uint8_t DMX_MESSAGE[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x50,
+      0x0, 14,
+      1,  // seq #
+      1,  // physical port
+      0, 0,  // subnet & net address
+      0, 6,  // dmx length
+      10, 11, 12, 13, 14, 15
+    };
+    ExpectedBroadcast(DMX_MESSAGE, sizeof(DMX_MESSAGE));
+
+    DmxBuffer dmx;
+    dmx.SetFromString("10,11,12,13,14,15");
+    OLA_ASSERT(node.SendDMX(m_port_id, dmx));
+  }
+}
+
 /*
  * Check sending DMX using the limited broadcast address.
  */
@@ -914,7 +1021,6 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   }
 }
 
-
 /**
  * Check that receiving DMX works
  */
@@ -989,6 +1095,78 @@ void ArtNetNodeTest::testReceiveDMX() {
   }
 }
 
+/**
+ * Check that receiving DMX for universe 0 works.
+ */
+void ArtNetNodeTest::testReceiveDMXZeroUniverse() {
+  m_socket->SetDiscardMode(true);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+
+  node.SetNetAddress(0);
+  node.SetSubnetAddress(0);
+  node.SetOutputPortUniverse(m_port_id, 0);
+
+  DmxBuffer input_buffer;
+  node.SetDMXHandler(m_port_id,
+                     &input_buffer,
+                     ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
+
+  OLA_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+
+  // 'receive' a DMX message
+  {
+    uint8_t DMX_MESSAGE[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x50,
+      0x0, 14,
+      0,  // seq #
+      1,  // physical port
+      0, 0,  // subnet & net address
+      0, 6,  // dmx length
+      0, 1, 2, 3, 4, 5
+    };
+    SocketVerifier verifer(m_socket);
+    OLA_ASSERT_FALSE(m_got_dmx);
+    ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
+    OLA_ASSERT(m_got_dmx);
+    OLA_ASSERT_EQ(string("0,1,2,3,4,5"), input_buffer.ToString());
+  }
+
+  // Now disable, and set to a different universe.
+  {
+    node.EnterConfigurationMode();
+    node.DisableInputPort(m_port_id);
+    node.SetInputPortUniverse(m_port_id, 0);
+    node.ExitConfigurationMode();
+    m_socket->Verify();
+  }
+
+  m_got_dmx = false;
+
+  // 'receive' another DMX message
+  {
+    uint8_t DMX_MESSAGE[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x50,
+      0x0, 14,
+      1,  // seq #
+      1,  // physical port
+      0, 0,  // subnet & net address
+      0, 4,  // dmx length
+      10, 11, 12, 13
+    };
+    SocketVerifier verifer(m_socket);
+    OLA_ASSERT_FALSE(m_got_dmx);
+    ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
+    OLA_ASSERT(m_got_dmx);
+    OLA_ASSERT_EQ(string("10,11,12,13"), input_buffer.ToString());
+  }
+}
 
 /**
  * Check that merging works

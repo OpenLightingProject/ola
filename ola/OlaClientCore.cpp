@@ -48,7 +48,6 @@ using ola::rdm::UIDSet;
 
 OlaClientCore::OlaClientCore(ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
-      m_dmx_callback(NULL),
       m_channel(NULL),
       m_stub(NULL),
       m_connected(false) {
@@ -56,10 +55,6 @@ OlaClientCore::OlaClientCore(ConnectedDescriptor *descriptor)
 
 
 OlaClientCore::~OlaClientCore() {
-  if (m_dmx_callback) {
-    delete m_dmx_callback;
-    m_dmx_callback = NULL;
-  }
   if (m_connected)
     Stop();
 }
@@ -511,11 +506,17 @@ bool OlaClientCore::Patch(
 /*
  * Set the callback to be run when DMX data arrives
  */
-void OlaClientCore::SetDmxCallback(
-    Callback3<void, unsigned int, const DmxBuffer&, const string&> *callback) {
-  if (m_dmx_callback)
-    delete m_dmx_callback;
-  m_dmx_callback = callback;
+void OlaClientCore::SetDmxCallback(DmxCallback *callback) {
+  m_dmx_callback.reset(callback);
+  m_dmx_callback_with_priority.reset();
+}
+
+/*
+ * Set the callback to be run when DMX data arrives
+ */
+void OlaClientCore::SetDmxCallback(DmxCallbackWithPriority *callback) {
+  m_dmx_callback.reset();
+  m_dmx_callback_with_priority.reset(callback);
 }
 
 
@@ -850,18 +851,27 @@ bool OlaClientCore::SendTimeCode(
  * Called when new DMX data arrives
  */
 void OlaClientCore::UpdateDmxData(
-    ::google::protobuf::RpcController *controller,
+    ::google::protobuf::RpcController*,
     const ola::proto::DmxData *request,
-    ola::proto::Ack *response,
+    ola::proto::Ack*,
     ::google::protobuf::Closure *done) {
-  if (m_dmx_callback) {
+  if (m_dmx_callback.get() || m_dmx_callback_with_priority.get()) {
     DmxBuffer buffer;
     buffer.Set(request->data());
-    m_dmx_callback->Run(request->universe(), buffer, "");
+
+    if (m_dmx_callback.get()) {
+      m_dmx_callback->Run(request->universe(), buffer, "");
+    }
+    if (m_dmx_callback_with_priority.get()) {
+      uint8_t priority = 0;
+      if (request->has_priority()) {
+        priority = request->priority();
+      }
+      m_dmx_callback_with_priority->Run(request->universe(), priority, buffer,
+                                        "");
+    }
   }
   done->Run();
-  (void) response;
-  (void) controller;
 }
 
 

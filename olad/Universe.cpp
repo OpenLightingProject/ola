@@ -604,7 +604,7 @@ bool Universe::UpdateDependants() {
   for (client_iter = m_sink_clients.begin();
        client_iter != m_sink_clients.end();
        ++client_iter) {
-    (*client_iter)->SendDMX(m_universe_id, m_buffer);
+    (*client_iter)->SendDMX(m_universe_id, m_active_priority, m_buffer);
   }
 
   SafeIncrement(K_FPS_VAR);

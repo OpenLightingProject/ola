@@ -42,6 +42,7 @@ class SPIOutputPort: public BasicOutputPort {
     bool SetPersonality(uint16_t personality);
     uint16_t GetStartAddress() const;
     bool SetStartAddress(uint16_t start_address);
+    unsigned int PixelCount() const;
 
     string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
