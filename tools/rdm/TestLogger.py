@@ -162,7 +162,7 @@ class TestLogger(object):
     not_run = 0
     passed = 0
 
-    results_log.append('Test Version %s' % test_data['version'])
+    results_log.append('OLA RDM Responder Tests\n')
 
     if requested_category is None or requested_category.lower() == 'all':
       requested_category = None
@@ -205,6 +205,7 @@ class TestLogger(object):
       advisories.extend(str(s) for s in test.get('advisories', []))
 
     results_log.append('------------------- Summary --------------------')
+    results_log.append('OLA Version: %s' % test_data['version'])
     results_log.append('Test Run: %s' % test_data['timestamp'])
     results_log.append('UID: %s' % test_data['uid'])
 
