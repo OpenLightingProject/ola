@@ -1,4 +1,4 @@
-X/10/2013 ola-0.8.33
+22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)
  * Save the SPI pixel count during shutdown
  * Fix E1.31 merge timeouts - #256
