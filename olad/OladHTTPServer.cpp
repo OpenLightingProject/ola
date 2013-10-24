@@ -938,6 +938,8 @@ void OladHTTPServer::PortToJson(JsonObject *json,
     priority_json->Add(
       "current_mode",
       (port.PriorityMode() == PRIORITY_MODE_INHERIT ?  "inherit" : "override"));
+    priority_json->Add("priority_capability",
+      (port.PriorityCapability() == CAPABILITY_STATIC ? "static" : "full"));
   }
 }
 
