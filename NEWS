@@ -1,4 +1,4 @@
-x/Y/2013 ola-0.8.34
+X/Y/2013 ola-0.8.34
  * Added more RDM responder tests to cover some slot related edge cases
  * Log an error if we try and run an RDM test that doesn't exist
  * Added pretty printing of sensor definition messages
