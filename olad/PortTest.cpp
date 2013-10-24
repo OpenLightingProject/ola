@@ -70,8 +70,8 @@ void PortTest::testOutputPortPriorities() {
   OLA_ASSERT_EQ((uint8_t) 0, output_port.GetPriority());
 
   // test the setting of modes
-  output_port.SetPriorityMode(ola::PRIORITY_MODE_OVERRIDE);
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_OVERRIDE,
+  output_port.SetPriorityMode(ola::PRIORITY_MODE_STATIC);
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
                        output_port.GetPriorityMode());
 
   output_port.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);

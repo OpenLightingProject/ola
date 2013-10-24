@@ -24,7 +24,7 @@
 namespace ola {
   typedef enum {
     PRIORITY_MODE_INHERIT,
-    PRIORITY_MODE_OVERRIDE,
+    PRIORITY_MODE_STATIC,
     PRIORITY_MODE_END,
   } port_priority_mode;
 

@@ -253,12 +253,12 @@ void DeviceManagerTest::testRestorePriorities() {
   // these ports support priorities
   OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        input_port2.PriorityCapability());
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_OVERRIDE,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
                        input_port2.GetPriorityMode());
   OLA_ASSERT_EQ((uint8_t) 160, input_port2.GetPriority());
   OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        output_port2.PriorityCapability());
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_OVERRIDE,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
                        output_port2.GetPriorityMode());
   OLA_ASSERT_EQ((uint8_t) 180, output_port2.GetPriority());
   OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
@@ -275,9 +275,9 @@ void DeviceManagerTest::testRestorePriorities() {
   // Now make some changes
   input_port2.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
   output_port2.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
-  input_port3.SetPriorityMode(ola::PRIORITY_MODE_OVERRIDE);
+  input_port3.SetPriorityMode(ola::PRIORITY_MODE_STATIC);
   input_port3.SetPriority(40);
-  output_port3.SetPriorityMode(ola::PRIORITY_MODE_OVERRIDE);
+  output_port3.SetPriorityMode(ola::PRIORITY_MODE_STATIC);
   output_port3.SetPriority(60);
 
   // unregister all

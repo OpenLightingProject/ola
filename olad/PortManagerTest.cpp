@@ -244,13 +244,13 @@ void PortManagerTest::testInputPortSetPriority() {
   // try changing to override mode
   OLA_ASSERT(patcher.SetPriorityOverride(&input_port2, 20));
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
   OLA_ASSERT(patcher.SetPriorityOverride(&input_port2, 180));
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 180);
 
   // change back to inherit mode
@@ -299,13 +299,13 @@ void PortManagerTest::testOutputPortSetPriority() {
   // try changing to static mode
   OLA_ASSERT(patcher.SetPriorityOverride(&output_port2, 20));
   OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
   OLA_ASSERT(patcher.SetPriorityOverride(&output_port2, 180));
   OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 180);
 
   // change back to inherit mode

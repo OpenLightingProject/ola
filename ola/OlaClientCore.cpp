@@ -333,7 +333,7 @@ bool OlaClientCore::SetPortPriorityOverride(
   request.set_device_alias(device_alias);
   request.set_port_id(port);
   request.set_is_output(port_direction == OUTPUT_PORT);
-  request.set_priority_mode(ola::PRIORITY_MODE_OVERRIDE);
+  request.set_priority_mode(ola::PRIORITY_MODE_STATIC);
   request.set_priority(value);
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(

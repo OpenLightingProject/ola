@@ -283,7 +283,7 @@ void OlaServerServiceImpl::SetPortPriority(
 
   bool inherit_mode = true;
   uint8_t value = 0;
-  if (request->priority_mode() == PRIORITY_MODE_OVERRIDE) {
+  if (request->priority_mode() == PRIORITY_MODE_STATIC) {
     if (request->has_priority()) {
       inherit_mode = false;
       value = request->priority();
