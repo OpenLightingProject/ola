@@ -103,9 +103,9 @@ string DataTypeToString(uint8_t type) {
     case DS_SIGNED_WORD:
       return "int16";
     case DS_UNSIGNED_DWORD:
-      return "uint32 ";
+      return "uint32";
     case DS_SIGNED_DWORD:
-      return "int32 ";
+      return "int32";
     default:
       stringstream str;
       str << "Unknown, was " << static_cast<int>(type);
