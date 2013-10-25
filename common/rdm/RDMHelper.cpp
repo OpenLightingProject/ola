@@ -373,7 +373,7 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_DIMMER_DC_PWM:
       return "Dimmer DC PWM";
     case PRODUCT_CATEGORY_DIMMER_CS_LED:
-      return "Dimmer DC led";
+      return "Dimmer DC LED";
     case PRODUCT_CATEGORY_DIMMER_OTHER:
       return "Dimmer other";
     case PRODUCT_CATEGORY_POWER:
@@ -407,7 +407,7 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_AV_OTHER:
       return "AV other";
     case PRODUCT_CATEGORY_MONITOR:
-      return "monitor";
+      return "Monitor";
     case PRODUCT_CATEGORY_MONITOR_ACLINEPOWER:
       return "AC line power monitor";
     case PRODUCT_CATEGORY_MONITOR_DCPOWER:
@@ -456,14 +456,14 @@ string ProductDetailToString(uint16_t detail) {
       return "Incandescent Lamp";
     case PRODUCT_DETAIL_LED:
       return "LED";
-    case PRODUCT_DETAIL_FLUROESCENT:
-      return "Fluroescent";
+    case PRODUCT_DETAIL_FLUORESCENT:
+      return "Fluorescent";
     case PRODUCT_DETAIL_COLDCATHODE:
       return "Cold Cathode";
     case PRODUCT_DETAIL_ELECTROLUMINESCENT:
       return "Electro-luminescent";
     case PRODUCT_DETAIL_LASER:
-      return "Lase";
+      return "Laser";
     case PRODUCT_DETAIL_FLASHTUBE:
       return "Flash Tube";
     case PRODUCT_DETAIL_COLORSCROLLER:
