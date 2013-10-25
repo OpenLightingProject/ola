@@ -98,10 +98,10 @@ string IntToString(unsigned int i) {
 bool StringToBool(const string &value, bool *output) {
   string lc_value(value);
   ToLower(&lc_value);
-  if (lc_value == "true") {
+  if ((lc_value == "true") || (lc_value == "t") || (lc_value == "1")) {
     *output = true;
     return true;
-  } else if (lc_value == "false") {
+  } else if ((lc_value == "false") || (lc_value == "f") || (lc_value == "0")) {
     *output = false;
     return true;
   }

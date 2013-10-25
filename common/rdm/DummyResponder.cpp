@@ -43,9 +43,18 @@ DummyResponder::RDMOps *DummyResponder::RDMOps::instance = NULL;
 const DummyResponder::Personalities *
     DummyResponder::Personalities::Instance() {
   if (!instance) {
+    SlotDataCollection::SlotDataList p2_slot_data;
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_INTENSITY, 0));
+    p2_slot_data.push_back(SlotData::SecondarySlot(ST_SEC_FINE, 0, 0));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_PAN, 127));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_TILT, 127));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_UNDEFINED, 0, "Foo"));
+
     PersonalityList personalities;
     personalities.push_back(Personality(0, "Personality 1"));
-    personalities.push_back(Personality(5, "Personality 2"));
+    personalities.push_back(Personality(5,
+                                        "Personality 2",
+                                        SlotDataCollection(p2_slot_data)));
     personalities.push_back(Personality(10, "Personality 3"));
     personalities.push_back(Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
@@ -86,6 +95,15 @@ const ResponderOps<DummyResponder>::ParamHandler
     &DummyResponder::SetPersonality},
   { PID_DMX_PERSONALITY_DESCRIPTION,
     &DummyResponder::GetPersonalityDescription,
+    NULL},
+  { PID_SLOT_INFO,
+    &DummyResponder::GetSlotInfo,
+    NULL},
+  { PID_SLOT_DESCRIPTION,
+    &DummyResponder::GetSlotDescription,
+    NULL},
+  { PID_DEFAULT_SLOT_VALUE,
+    &DummyResponder::GetSlotDefaultValues,
     NULL},
   { PID_DMX_START_ADDRESS,
     &DummyResponder::GetDmxStartAddress,
@@ -149,7 +167,7 @@ const RDMResponse *DummyResponder::GetParamDescription(
 const RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DEVICE_MODEL,
-      PRODUCT_CATEGORY_OTHER, 1,
+      PRODUCT_CATEGORY_OTHER, 2,
       &m_personality_manager,
       m_start_address,
       0, 0);
@@ -207,6 +225,20 @@ const RDMResponse *DummyResponder::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, &m_personality_manager);
+}
+
+const RDMResponse *DummyResponder::GetSlotInfo(const RDMRequest *request) {
+  return ResponderHelper::GetSlotInfo(request, &m_personality_manager);
+}
+
+const RDMResponse *DummyResponder::GetSlotDescription(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotDescription(request, &m_personality_manager);
+}
+
+const RDMResponse *DummyResponder::GetSlotDefaultValues(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotDefaultValues(request, &m_personality_manager);
 }
 
 const RDMResponse *DummyResponder::GetDmxStartAddress(
