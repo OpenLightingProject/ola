@@ -27,6 +27,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaClientWrapper.h>
 
+#include <iostream>
 #include <string>
 
 using ola::DmxBuffer;
@@ -34,6 +35,8 @@ using ola::NewSingleCallback;
 using ola::OlaCallbackClientWrapper;
 using ola::TimeStamp;
 using ola::TimeInterval;
+using std::cout;
+using std::endl;
 using std::string;
 
 DEFINE_s_uint32(universe, u, 1, "The universe to receive data for");
@@ -76,13 +79,13 @@ void Tracker::Start() {
   SendRequest();
   m_wrapper.GetSelectServer()->Run();
 
-  // Log this as WARN to ensure we actually get some output by default
+  // Print this via cout to ensure we actually get some output by default
   // It also means you can just see the stats and not each individual request
   // if you want.
-  OLA_WARN << "--------------";
-  OLA_WARN << "Sent " << m_count << " RPCs";
-  OLA_WARN << "Max was " << m_max.MicroSeconds() << " microseconds";
-  OLA_WARN << "Mean " << m_sum / m_count << " microseconds";
+  cout << "--------------" << endl;
+  cout << "Sent " << m_count << " RPCs" << endl;
+  cout << "Max was " << m_max.MicroSeconds() << " microseconds" << endl;
+  cout << "Mean " << m_sum / m_count << " microseconds" << endl;
 }
 
 void Tracker::GotDmx(const DmxBuffer &, const string &) {

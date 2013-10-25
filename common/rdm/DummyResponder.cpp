@@ -227,8 +227,7 @@ const RDMResponse *DummyResponder::GetPersonalityDescription(
       request, &m_personality_manager);
 }
 
-const RDMResponse *DummyResponder::GetSlotInfo(
-    const RDMRequest *request) {
+const RDMResponse *DummyResponder::GetSlotInfo(const RDMRequest *request) {
   return ResponderHelper::GetSlotInfo(request, &m_personality_manager);
 }
 
