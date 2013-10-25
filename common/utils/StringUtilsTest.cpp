@@ -662,6 +662,14 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   string label6 = "controller_ip_address";
   CustomCapitalizeLabel(&label6);
   OLA_ASSERT_EQ(string("Controller IP Address"), label6);
+
+  string label7 = "dazzled_led_type";
+  CustomCapitalizeLabel(&label7);
+  OLA_ASSERT_EQ(string("Dazzled LED Type"), label7);
+
+  string label8 = "device_rdm_uid";
+  CustomCapitalizeLabel(&label8);
+  OLA_ASSERT_EQ(string("Device RDM UID"), label8);
 };
 
 

@@ -332,6 +332,9 @@ void CustomCapitalizeLabel(string *s) {
   static const char* const transforms[] = {
     "dmx",
     "ip",
+    "led",
+    "rdm",
+    "uid",
     NULL
   };
   const size_t size = s->size();
