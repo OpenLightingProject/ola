@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "common/protocol/Ola.pb.h"
+#include "common/protocol/OlaService.pb.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "ola/Callback.h"

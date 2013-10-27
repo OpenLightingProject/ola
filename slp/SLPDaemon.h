@@ -40,6 +40,7 @@
 
 #include "slp/SLPServer.h"
 #include "slp/SLP.pb.h"
+#include "slp/SLPService.pb.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;

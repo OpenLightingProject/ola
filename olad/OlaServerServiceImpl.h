@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include "common/protocol/Ola.pb.h"
+#include "common/protocol/OlaService.pb.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/RDMCommand.h"
 #include "olad/ClientBroker.h"

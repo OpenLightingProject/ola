@@ -26,6 +26,7 @@
 #include "olad/DmxSource.h"
 #include "olad/Client.h"
 #include "common/protocol/Ola.pb.h"
+#include "common/protocol/OlaService.pb.h"
 #include "ola/testing/TestUtils.h"
 
 

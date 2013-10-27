@@ -17,7 +17,7 @@ Rpc.pb.cc Rpc.pb.h: Rpc.proto
 TestService.pb.cc TestService.pb.h: TestService.proto
 	$(PROTOC) --cpp_out ./ TestService.proto
 
-TestServiceService.pb.cc TestServiceService.pb.h: TestService.proto
+TestServiceService.pb.cpp TestServiceService.pb.h: TestService.proto
 	$(OLA_PROTOC) --cppservice_out ./ TestService.proto
 
 if BUILD_TESTS
@@ -28,8 +28,8 @@ check_PROGRAMS = $(TESTS)
 RpcTester_SOURCES = RpcControllerTest.cpp \
                     StreamRpcChannelTest.cpp \
                     StreamRpcHeaderTest.cpp \
-                    TestServiceService.pb.cpp
-nodist_RpcTester_SOURCES = TestService.pb.cc
+nodist_RpcTester_SOURCES = TestService.pb.cc \
+                           TestServiceService.pb.cpp
 RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                   $(libprotobuf_LIBS) \
