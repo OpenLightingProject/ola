@@ -304,7 +304,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
     else
-      status = m_port_manager->SetPriorityOverride(port, value);
+      status = m_port_manager->SetPriorityStatic(port, value);
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
@@ -313,7 +313,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
     else
-      status = m_port_manager->SetPriorityOverride(port, value);
+      status = m_port_manager->SetPriorityStatic(port, value);
   }
 
   if (!status)

@@ -215,21 +215,21 @@ void PortManagerTest::testInputPortSetPriority() {
   OLA_ASSERT_EQ(input_port.PriorityCapability(),
                        ola::CAPABILITY_STATIC);
   OLA_ASSERT_EQ(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port.GetPriority(),
                        DmxSource::PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so this is a noop
   OLA_ASSERT(patcher.SetPriorityInherit(&input_port));
   OLA_ASSERT_EQ(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port.GetPriority(),
                        DmxSource::PRIORITY_DEFAULT);
 
   // set the static priority to 20
-  OLA_ASSERT(patcher.SetPriorityOverride(&input_port, 20));
+  OLA_ASSERT(patcher.SetPriorityStatic(&input_port, 20));
   OLA_ASSERT_EQ(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port.GetPriority(), (uint8_t) 20);
 
   // Now test an input port that does support priorities
@@ -237,23 +237,23 @@ void PortManagerTest::testInputPortSetPriority() {
   OLA_ASSERT_EQ(input_port2.PriorityCapability(),
                        ola::CAPABILITY_FULL);
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+                       ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(),
                        DmxSource::PRIORITY_DEFAULT);
 
   // try changing to override mode
-  OLA_ASSERT(patcher.SetPriorityOverride(&input_port2, 20));
+  OLA_ASSERT(patcher.SetPriorityStatic(&input_port2, 20));
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
-  OLA_ASSERT(patcher.SetPriorityOverride(&input_port2, 180));
+  OLA_ASSERT(patcher.SetPriorityStatic(&input_port2, 180));
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 180);
 
-  // change back to inherit mode
+  // change to inherit mode
   OLA_ASSERT(patcher.SetPriorityInherit(&input_port2));
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
@@ -280,7 +280,7 @@ void PortManagerTest::testOutputPortSetPriority() {
 
   // this port doesn't support priorities so these are all noops
   OLA_ASSERT(patcher.SetPriorityInherit(&output_port));
-  OLA_ASSERT(patcher.SetPriorityOverride(&output_port, 20));
+  OLA_ASSERT(patcher.SetPriorityStatic(&output_port, 20));
   OLA_ASSERT_EQ(output_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   OLA_ASSERT_EQ(output_port.GetPriority(),
@@ -297,13 +297,13 @@ void PortManagerTest::testOutputPortSetPriority() {
                        DmxSource::PRIORITY_DEFAULT);
 
   // try changing to static mode
-  OLA_ASSERT(patcher.SetPriorityOverride(&output_port2, 20));
+  OLA_ASSERT(patcher.SetPriorityStatic(&output_port2, 20));
   OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
-  OLA_ASSERT(patcher.SetPriorityOverride(&output_port2, 180));
+  OLA_ASSERT(patcher.SetPriorityStatic(&output_port2, 180));
   OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 180);

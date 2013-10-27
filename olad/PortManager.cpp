@@ -76,11 +76,13 @@ bool PortManager::UnPatchPort(OutputPort *port) {
  * @param port the port to configure
  */
 bool PortManager::SetPriorityInherit(Port *port) {
-  if (port->PriorityCapability() == CAPABILITY_NONE)
+  if (port->PriorityCapability() != CAPABILITY_FULL)
     return true;
 
-  if (port->GetPriorityMode() != PRIORITY_MODE_INHERIT)
+  if (port->GetPriorityMode() != PRIORITY_MODE_INHERIT) {
     port->SetPriorityMode(PRIORITY_MODE_INHERIT);
+  }
+
   return true;
 }
 
@@ -90,7 +92,7 @@ bool PortManager::SetPriorityInherit(Port *port) {
  * @param port the port to configure
  * @param value the new priority
  */
-bool PortManager::SetPriorityOverride(Port *port, uint8_t value) {
+bool PortManager::SetPriorityStatic(Port *port, uint8_t value) {
   if (port->PriorityCapability() == CAPABILITY_NONE)
     return true;
 

@@ -241,9 +241,10 @@ void DeviceManagerTest::testRestorePriorities() {
   OLA_ASSERT_EQ(1u, manager.DeviceCount());
   OLA_ASSERT_EQ(ola::CAPABILITY_STATIC,
                        input_port.PriorityCapability());
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
                        input_port.GetPriorityMode());
   OLA_ASSERT_EQ((uint8_t) 120, input_port.GetPriority());
+
   OLA_ASSERT_EQ(ola::CAPABILITY_NONE,
                        output_port.PriorityCapability());
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
@@ -256,16 +257,19 @@ void DeviceManagerTest::testRestorePriorities() {
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
                        input_port2.GetPriorityMode());
   OLA_ASSERT_EQ((uint8_t) 160, input_port2.GetPriority());
+
   OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        output_port2.PriorityCapability());
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
                        output_port2.GetPriorityMode());
   OLA_ASSERT_EQ((uint8_t) 180, output_port2.GetPriority());
+
   OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        input_port3.PriorityCapability());
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
                        input_port3.GetPriorityMode());
   OLA_ASSERT_EQ((uint8_t) 200, input_port3.GetPriority());
+
   OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        output_port3.PriorityCapability());
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,

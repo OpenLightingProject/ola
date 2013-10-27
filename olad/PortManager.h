@@ -46,7 +46,7 @@ class PortManager {
     bool UnPatchPort(OutputPort *port);
 
     bool SetPriorityInherit(Port *port);
-    bool SetPriorityOverride(Port *port, uint8_t value);
+    bool SetPriorityStatic(Port *port, uint8_t value);
 
   private:
     PortManager(const PortManager&);
