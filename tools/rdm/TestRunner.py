@@ -281,9 +281,8 @@ class TestRunner(object):
           tests_to_run.append(t)
           matched_tests.append(t.__name__)
       invalid_tests = whitelist.difference(matched_tests)
-      if len(invalid_tests) != 0:
-        for t in invalid_tests:
-          logging.error("Test %s doesn't exist, skipping" % t)
+      for t in invalid_tests:
+        logging.error("Test %s doesn't exist, skipping" % t)
 
     if no_factory_defaults:
       factory_default_tests = set(['ResetFactoryDefaults',

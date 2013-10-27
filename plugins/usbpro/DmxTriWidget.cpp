@@ -25,6 +25,7 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
@@ -242,7 +243,7 @@ void DmxTriWidgetImpl::RunDiscoveryCallback(RDMDiscoveryCallback *callback) {
     return;
 
   UIDSet uid_set;
-  map<UID, uint8_t>::iterator iter = m_uid_index_map.begin();
+  UIDToIndexMap::iterator iter = m_uid_index_map.begin();
   for (; iter != m_uid_index_map.end(); ++iter) {
     uid_set.AddUID(iter->first);
   }
@@ -462,7 +463,7 @@ void DmxTriWidgetImpl::DispatchRequest() {
   if (request->DestinationUID().IsBroadcast()) {
     message.index = 0;
   } else {
-    map<UID, uint8_t>::const_iterator iter =
+    UIDToIndexMap::const_iterator iter =
       m_uid_index_map.find(request->DestinationUID());
     if (iter == m_uid_index_map.end()) {
       OLA_WARN << request->DestinationUID() << " not found in uid map";
@@ -496,7 +497,7 @@ void DmxTriWidgetImpl::DispatchRequest() {
  * Send a queued get message
  */
 void DmxTriWidgetImpl::DispatchQueuedGet() {
-  map<UID, uint8_t>::const_iterator iter =
+  UIDToIndexMap::const_iterator iter =
     m_uid_index_map.find(m_pending_rdm_request->DestinationUID());
   if (iter == m_uid_index_map.end()) {
     OLA_WARN << m_pending_rdm_request->DestinationUID()
@@ -504,13 +505,13 @@ void DmxTriWidgetImpl::DispatchQueuedGet() {
     HandleRDMError(ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
-  uint8_t data[] = {QUEUED_GET_COMMAND_ID,
-                    iter->second,
-                    m_pending_rdm_request->ParamData()[0]};
+  uint8_t data[3] = {QUEUED_GET_COMMAND_ID,
+                     iter->second,
+                     m_pending_rdm_request->ParamData()[0]};
 
   if (!SendCommandToTRI(EXTENDED_COMMAND_LABEL,
                         reinterpret_cast<uint8_t*>(&data),
-                        sizeof(data))) {
+                        arraysize(data))) {
     HandleRDMError(ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
