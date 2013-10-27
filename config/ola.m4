@@ -71,6 +71,19 @@ elif test -n "$1" ; then
     AC_MSG_ERROR([protoc version too old $protoc_version < $required]);
   fi
 fi
+
+AC_ARG_WITH([ola-protoc],
+  [AS_HELP_STRING([--with-ola-protoc=COMMAND],
+    [use the given ola_protoc command instead of building one (useful for cross-compiling)])],
+  [],[with_ola_protoc=no])
+
+OLA_PROTOC="\$(top_builddir)/protoc/ola_protoc";
+
+if test "$with_ola_protoc" != "no"; then
+  OLA_PROTOC=$with_ola_protoc;
+  echo "set ola_protoc to $with_ola_protoc"
+fi
+AC_SUBST([OLA_PROTOC])
 ])
 
 

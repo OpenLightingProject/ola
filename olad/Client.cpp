@@ -22,6 +22,7 @@
 #include <map>
 #include <utility>
 #include "common/protocol/Ola.pb.h"
+#include "common/protocol/OlaService.pb.h"
 #include "ola/Logging.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/Client.h"

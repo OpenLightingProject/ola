@@ -31,6 +31,7 @@
 #include "ola/network/Socket.h"
 #include "ola/slp/SLPClient.h"
 #include "slp/SLP.pb.h"
+#include "slp/SLPService.pb.h"
 
 namespace ola {
 namespace slp {
