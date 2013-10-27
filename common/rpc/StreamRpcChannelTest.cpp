@@ -27,6 +27,7 @@
 #include "common/rpc/StreamRpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/TestService.pb.h"
+#include "common/rpc/TestServiceService.pb.h"
 #include "ola/testing/TestUtils.h"
 
 
