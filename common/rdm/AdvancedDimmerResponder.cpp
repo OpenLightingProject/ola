@@ -87,7 +87,7 @@ const FrequencyModulationSetting::ArgType
 const char* AdvancedDimmerResponder::LOCK_STATES[] = {
   "Unlocked",
   "Start Address Locked",
-  "Address and Pesonalities Locked",
+  "Address and Personalities Locked",
 };
 
 const SettingCollection<BasicSetting>
