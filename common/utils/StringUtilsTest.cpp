@@ -265,8 +265,8 @@ void StringUtilsTest::testStringToBool() {
   bool value;
   OLA_ASSERT_FALSE(StringToBool("", &value));
   OLA_ASSERT_FALSE(StringToBool("-1", &value));
-  OLA_ASSERT_FALSE(StringToBool("1", &value));
-  OLA_ASSERT_FALSE(StringToBool("0", &value));
+  OLA_ASSERT_FALSE(StringToBool("2", &value));
+  OLA_ASSERT_FALSE(StringToBool("a", &value));
   OLA_ASSERT_TRUE(StringToBool("true", &value));
   OLA_ASSERT_EQ(value, true);
   OLA_ASSERT_TRUE(StringToBool("false", &value));
@@ -274,6 +274,18 @@ void StringUtilsTest::testStringToBool() {
   OLA_ASSERT_TRUE(StringToBool("TrUE", &value));
   OLA_ASSERT_EQ(value, true);
   OLA_ASSERT_TRUE(StringToBool("FalSe", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBool("t", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBool("f", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBool("T", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBool("F", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBool("1", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBool("0", &value));
   OLA_ASSERT_EQ(value, false);
 }
 

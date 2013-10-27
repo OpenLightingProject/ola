@@ -489,7 +489,7 @@ const RDMResponse *MovingLightResponder::SetLampOnMode(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (new_value > static_cast<uint8_t>(LAMP_ON_MODE_AFTER_CAL)) {
+  if (new_value > static_cast<uint8_t>(LAMP_ON_MODE_ON_AFTER_CAL)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 

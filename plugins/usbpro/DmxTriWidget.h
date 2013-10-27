@@ -83,8 +83,10 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
       FETCH_UID_REQUIRED,
     } TriDiscoveryState;
 
+    typedef std::map<ola::rdm::UID, uint8_t> UIDToIndexMap;
+
     ola::thread::SchedulerInterface *m_scheduler;
-    std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
+    UIDToIndexMap m_uid_index_map;
     uint8_t m_uid_count;
     uint16_t m_last_esta_id;
     bool m_use_raw_rdm;

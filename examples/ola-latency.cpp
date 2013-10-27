@@ -19,14 +19,16 @@
  */
 
 #include <stdlib.h>
-#include <ola/base/Flags.h>
-#include <ola/base/Init.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
+#include <ola/thread/SignalThread.h>
 
+#include <iostream>
 #include <string>
 
 using ola::DmxBuffer;
@@ -34,11 +36,14 @@ using ola::NewSingleCallback;
 using ola::OlaCallbackClientWrapper;
 using ola::TimeStamp;
 using ola::TimeInterval;
+using std::cout;
+using std::endl;
 using std::string;
 
 DEFINE_s_uint32(universe, u, 1, "The universe to receive data for");
 DEFINE_bool(send_dmx, false, "Use SendDmx messages, default is GetDmx");
-DEFINE_uint32(count, 0, "Exit after this many RPCs, default: infinite (0)");
+DEFINE_s_uint32(count, c, 0,
+    "Exit after this many RPCs, default: infinite (0)");
 
 class Tracker {
   public:
@@ -61,10 +66,12 @@ class Tracker {
     ola::DmxBuffer m_buffer;
     OlaCallbackClientWrapper m_wrapper;
     ola::Clock m_clock;
+    ola::thread::SignalThread m_signal_thread;
     TimeStamp m_send_time;
 
     void SendRequest();
     void LogTime();
+    void StartSignalThread();
 };
 
 bool Tracker::Setup() {
@@ -72,13 +79,25 @@ bool Tracker::Setup() {
 }
 
 void Tracker::Start() {
+  ola::SelectServer *ss = m_wrapper.GetSelectServer();
+  m_signal_thread.InstallSignalHandler(
+      SIGINT,
+      ola::NewCallback(ss, &ola::SelectServer::Terminate));
+  m_signal_thread.InstallSignalHandler(
+      SIGTERM,
+      ola::NewCallback(ss, &ola::SelectServer::Terminate));
   SendRequest();
-  m_wrapper.GetSelectServer()->Run();
 
-  OLA_INFO << "--------------";
-  OLA_INFO << "Sent " << m_count << " RPCs";
-  OLA_INFO << "Max was " << m_max.MicroSeconds() << " microseconds";
-  OLA_INFO << "Mean " << m_sum / m_count << " microseconds";
+  ss->Execute(ola::NewSingleCallback(this, &Tracker::StartSignalThread));
+  ss->Run();
+
+  // Print this via cout to ensure we actually get some output by default
+  // It also means you can just see the stats and not each individual request
+  // if you want.
+  cout << "--------------" << endl;
+  cout << "Sent " << m_count << " RPCs" << endl;
+  cout << "Max was " << m_max.MicroSeconds() << " microseconds" << endl;
+  cout << "Mean " << m_sum / m_count << " microseconds" << endl;
 }
 
 void Tracker::GotDmx(const DmxBuffer &, const string &) {
@@ -118,6 +137,12 @@ void Tracker::LogTime() {
     m_wrapper.GetSelectServer()->Terminate();
   } else {
     SendRequest();
+  }
+}
+
+void Tracker::StartSignalThread() {
+  if (!m_signal_thread.Start()) {
+    m_wrapper.GetSelectServer()->Terminate();
   }
 }
 

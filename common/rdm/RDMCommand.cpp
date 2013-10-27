@@ -357,10 +357,10 @@ RDMRequest* RDMRequest::InflateFromData(const string &data) {
 
 /**
  * Inflate a request from some data
- * @param the request data
+ * @param data the request data
  * @param length the length of the request data
+ * @param response_code a pointer to a rdm_response_code to set
  * @param request an optional RDMRequest object that this response is for
- * @param a pointer to a rdm_response_code to set
  * @returns a new RDMResponse object, or NULL is this response is invalid
  */
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
