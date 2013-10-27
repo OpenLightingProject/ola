@@ -619,7 +619,6 @@ AC_OUTPUT( Makefile \
     common/rdm/testdata/Makefile \
     common/rdm/testdata/pids/Makefile \
     common/rpc/Makefile \
-    common/rpc/generator/Makefile \
     common/testing/Makefile \
     common/thread/Makefile \
     common/timecode/Makefile \
