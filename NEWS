@@ -237,7 +237,7 @@ X/Y/2013 ola-0.8.34
  * Add the generic messaging framework and use it to handle RDM PIDs
  * Add support for manufacturer specific PIDs in the C++ RDM CLI tools - #112
  * Add proper ACK_TIMER handling the in C++ RDM CLI tools - #93
- * Added STATUS_MESSAGE support in the C++ RDM CLI tools - #111
+ * Added STATUS_MESSAGES support in the C++ RDM CLI tools - #111
  * Further improvements of the RDM test suite
  * Fixed link errors with the new version of gcc - #142, #145
  * Fixed sorting of Sensors in the RDM web UI - #137

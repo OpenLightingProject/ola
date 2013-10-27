@@ -578,7 +578,7 @@ typedef enum {
 // The identify modes from E1.37-1
 typedef enum {
   IDENTIFY_MODE_QUIET = 0x00,
-  IDENTIFY_MODE_LOUD = 0xFF
+  IDENTIFY_MODE_LOUD = 0xFF,
 } rdm_identify_mode;
 
 typedef enum {
@@ -612,7 +612,7 @@ typedef enum {
   MERGEMODE_LTP = 0x02,
   MERGEMODE_DMX_ONLY = 0x03,
   MERGEMODE_OTHER = 0xFF,
-} rdm_preset_merge_mode;
+} rdm_preset_mergemode;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

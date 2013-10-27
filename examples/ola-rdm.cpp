@@ -302,7 +302,7 @@ void RDMController::HandleResponse(
       }
       // this is just an empty status message, the device probably doesn't
       // support queued messages.
-      cout << "Empty STATUS_MESSAGE returned." << endl;
+      cout << "Empty STATUS_MESSAGES returned." << endl;
     }
   } else if (response_status.response_type == ola::rdm::RDM_NACK_REASON) {
     cout << "Request NACKed: " <<

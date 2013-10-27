@@ -265,7 +265,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_presets(PRESET_COUNT),
       m_preset_scene(0),
       m_preset_level(0),
-      m_preset_merge_mode(MERGEMODE_DEFAULT) {
+      m_preset_mergemode(MERGEMODE_DEFAULT) {
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
@@ -833,7 +833,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  uint8_t output = m_preset_merge_mode;
+  uint8_t output = m_preset_mergemode;
   return GetResponseFromData(request, &output, sizeof(output), RDM_ACK);
 }
 
@@ -847,7 +847,7 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   if (arg > MERGEMODE_DMX_ONLY) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
-  m_preset_merge_mode = static_cast<rdm_preset_merge_mode>(arg);
+  m_preset_mergemode = static_cast<rdm_preset_mergemode>(arg);
   return ResponderHelper::EmptySetResponse(request);
 }
 
