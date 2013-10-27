@@ -116,6 +116,7 @@ void FileGenerator::GenerateImplementation(Printer *printer) {
     "\n"
     "#include \"$file$.pb.h\"\n"
     "\n"
+    "#include <google/protobuf/descriptor.h>\n"
     "#include <google/protobuf/stubs/once.h>\n"
     "\n",
     "file", m_output_name,
