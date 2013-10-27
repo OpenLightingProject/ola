@@ -642,7 +642,8 @@ class OptionalParameterTestFixture(ResponderTestFixture):
       expected_results = [
         self.NackSetResult(
           RDMNack.NR_WRITE_PROTECT,
-          advisory='SET %s was locked, try changing the lock mode' %
+          advisory='SET %s was write protected, try changing the lock mode if'
+                   ' enabled' %
             self.pid.name)
       ]
       if isinstance(result, list):
