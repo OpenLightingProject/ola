@@ -106,7 +106,7 @@ class QueuedMessageFetcher(object):
 
     store = PidStore.GetStore()
     self._queued_message_pid = store.GetName('QUEUED_MESSAGE')
-    self._status_message_pid = store.GetName('STATUS_MESSAGE')
+    self._status_messages_pid = store.GetName('STATUS_MESSAGES')
 
   def FetchAllMessages(self):
     self._counter = 0
@@ -165,7 +165,7 @@ class QueuedMessageFetcher(object):
     # Stop if we get a message with no status messages in it.
     if (response.response_type == OlaClient.RDM_ACK and
         response.command_class == OlaClient.RDM_GET_RESPONSE and
-        response.pid == self._status_message_pid.value and
+        response.pid == self._status_messages_pid.value and
         unpacked_data is not None and
         unpacked_data.get('messages', []) == []):
       if (self._outstanding_ack_timers == 0):

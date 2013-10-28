@@ -239,7 +239,7 @@ const RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
 }
 
 /**
- * Return an empty STATUS_MESSAGE response.
+ * Return an empty STATUS_MESSAGES response.
  */
 const RDMResponse *AckTimerResponder::EmptyStatusMessage(
     const RDMRequest *request) {

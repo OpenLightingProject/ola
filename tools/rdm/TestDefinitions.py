@@ -89,7 +89,7 @@ class MuteDeviceWithData(ResponderTestFixture):
 class UnMuteDevice(ResponderTestFixture):
   """UnMute device and verify response."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  PID = 'DISC_UNMUTE'
+  PID = 'DISC_UN_MUTE'
   PROVIDES = ['unmute_supported']
   REQUIRES = ['mute_control_fields']
 
@@ -114,7 +114,7 @@ class UnMuteDevice(ResponderTestFixture):
 class UnMuteDeviceWithData(ResponderTestFixture):
   """UnMute device info with param data."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  PID = 'DISC_UNMUTE'
+  PID = 'DISC_UN_MUTE'
 
   def Test(self):
     # Section 6.3.4 of E1.20
@@ -128,7 +128,7 @@ class UnMuteDeviceWithData(ResponderTestFixture):
 class RequestsWhileUnmuted(ResponderTestFixture):
   """Unmute the device, send a GET DEVICE_INFO request, mute device again."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  PID = 'DISC_UNMUTE'
+  PID = 'DISC_UN_MUTE'
   # this requires sub_device_count so that we know DEVICE_INFO is supported
   REQUIRES = ['mute_supported', 'unmute_supported', 'sub_device_count']
 
@@ -661,7 +661,7 @@ class GetSupportedParameters(ResponderTestFixture):
       ('LANGUAGE_CAPABILITIES', 'LANGUAGE'),
       ('DMX_PERSONALITY', 'DMX_PERSONALITY_DESCRIPTION'),
       ('SENSOR_DEFINITION', 'SENSOR_VALUE'),
-      ('SELF_TEST_DESCRIPTION', 'PERFORM_SELF_TEST'),
+      ('SELF_TEST_DESCRIPTION', 'PERFORM_SELFTEST'),
   ]
 
   # If the first pid in each group is supported, the remainer of the group
@@ -1577,7 +1577,7 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
 class GetBootSoftwareVersion(OptionalParameterTestFixture):
   """GET the boot software version."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
-  PID = 'BOOT_SOFTWARE_VERSION'
+  PID = 'BOOT_SOFTWARE_VERSION_ID'
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult(field_names=['version']))
@@ -1588,27 +1588,27 @@ class GetBootSoftwareVersionWithData(TestMixins.GetWithDataMixin,
                                      OptionalParameterTestFixture):
   """GET the boot software version with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'BOOT_SOFTWARE_VERSION'
+  PID = 'BOOT_SOFTWARE_VERSION_ID'
 
 
 class SetBootSoftwareVersion(TestMixins.UnsupportedSetMixin,
                              ResponderTestFixture):
   """Attempt to SET the boot software version."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'BOOT_SOFTWARE_VERSION'
+  PID = 'BOOT_SOFTWARE_VERSION_ID'
 
 class AllSubDevicesGetBootSoftwareVersion(TestMixins.AllSubDevicesGetMixin,
                                           ResponderTestFixture):
-  """Send a Get BOOT_SOFTWARE_VERSION to ALL_SUB_DEVICES."""
+  """Send a Get BOOT_SOFTWARE_VERSION_ID to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
-  PID = 'BOOT_SOFTWARE_VERSION'
+  PID = 'BOOT_SOFTWARE_VERSION_ID'
 
 # Boot Software Version Label
 #------------------------------------------------------------------------------
 class GetBootSoftwareLabel(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the boot software label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
-  PID = 'BOOT_SOFTWARE_LABEL'
+  PID = 'BOOT_SOFTWARE_VERSION_LABEL'
   EXPECTED_FIELD = 'label'
 
 
@@ -1616,20 +1616,20 @@ class GetBootSoftwareLabelWithData(TestMixins.GetWithDataMixin,
                                    OptionalParameterTestFixture):
   """GET the boot software label with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'BOOT_SOFTWARE_LABEL'
+  PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 
 class SetBootSoftwareLabel(TestMixins.UnsupportedSetMixin,
                            OptionalParameterTestFixture):
   """SET the boot software label."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'BOOT_SOFTWARE_LABEL'
+  PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
                                                ResponderTestFixture):
-  """Send a Get BOOT_SOFTWARE_LABEL to ALL_SUB_DEVICES."""
+  """Send a Get BOOT_SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
-  PID = 'BOOT_SOFTWARE_LABEL'
+  PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 # DMX Personality & DMX Personality Description
 #------------------------------------------------------------------------------
@@ -3708,7 +3708,7 @@ class AllSubDevicesGetPowerState(TestMixins.AllSubDevicesGetMixin,
 class GetPerformSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get the current self test settings."""
   CATEGORY = TestCategory.CONTROL
-  PID = 'PERFORM_SELF_TEST'
+  PID = 'PERFORM_SELFTEST'
   EXPECTED_FIELD = 'tests_active'
 
 
@@ -3716,14 +3716,14 @@ class GetPerformSelfTestWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get the current self test settings with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PERFORM_SELF_TEST'
+  PID = 'PERFORM_SELFTEST'
 
 
 class SetPerformSelfTest(TestMixins.SetMixin,
                          OptionalParameterTestFixture):
   """Turn any running self tests off."""
   CATEGORY = TestCategory.CONTROL
-  PID = 'PERFORM_SELF_TEST'
+  PID = 'PERFORM_SELFTEST'
   EXPECTED_FIELD = 'tests_active'
 
   def NewValue(self):
@@ -3737,13 +3737,13 @@ class SetPerformSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set the perform self test setting but don't provide any data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PERFORM_SELF_TEST'
+  PID = 'PERFORM_SELFTEST'
 
 class AllSubDevicesGetPerformSelfTest(TestMixins.AllSubDevicesGetMixin,
                                       ResponderTestFixture):
-  """Send a Get PERFORM_SELF_TEST to ALL_SUB_DEVICES."""
+  """Send a Get PERFORM_SELFTEST to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
-  PID = 'PERFORM_SELF_TEST'
+  PID = 'PERFORM_SELFTEST'
 
 # Self Test Description
 #------------------------------------------------------------------------------
@@ -5481,7 +5481,7 @@ class GetOutputResponseTime(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = "OUTPUT_RESPONSE_TIME"
-  PROVIDES = ['output_response_time', 'number_output_response_times']
+  PROVIDES = ['current_response_time', 'number_response_options']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -5493,18 +5493,18 @@ class GetOutputResponseTime(TestMixins.GetMixin, OptionalParameterTestFixture):
         self.SetProperty(key, None)
       return
 
-    self.SetPropertyFromDict(fields, 'output_response_time')
-    self.SetPropertyFromDict(fields, 'number_output_response_times')
+    self.SetPropertyFromDict(fields, 'current_response_time')
+    self.SetPropertyFromDict(fields, 'number_response_options')
 
-    if fields['output_response_time'] == 0:
+    if fields['current_response_time'] == 0:
       self.SetFailed('Output response times must be numbered from 1')
       return
 
-    if fields['output_response_time'] > fields['number_output_response_times']:
+    if fields['current_response_time'] > fields['number_response_options']:
       self.SetFailed(
           'Output response time %d exceeded number of response times %d' %
-          (fields['output_response_time'],
-           fields['number_output_response_times']))
+          (fields['current_response_time'],
+           fields['number_response_options']))
       return
 
 class GetOutputResponseTimeWithData(TestMixins.GetWithDataMixin,
@@ -5517,17 +5517,17 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = "OUTPUT_RESPONSE_TIME"
-  REQUIRES = ['output_response_time', 'number_output_response_times']
+  REQUIRES = ['current_response_time', 'number_response_options']
 
   def Test(self):
-    times = self.Property('number_output_response_times')
+    times = self.Property('number_response_options')
     if times:
       self.output_response_times = [i + 1 for i in xrange(times)]
       self._SetOutputResponseTime()
     else:
       # check we get a NR_UNKNOWN_PID
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
-      self.output_response_time = 1  # can use anything here really
+      self.current_response_time = 1  # can use anything here really
       self.SendSet(ROOT_DEVICE, self.pid, [1])
 
   def _SetOutputResponseTime(self):
@@ -5542,7 +5542,7 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
   def VerifySet(self):
     self.AddIfGetSupported(
       self.AckGetResult(
-        field_values={'output_response_time': self.output_response_times[0]},
+        field_values={'current_response_time': self.output_response_times[0]},
         action=self.NextOutputResponseTime))
     self.SendGet(ROOT_DEVICE, self.pid)
 
@@ -5551,10 +5551,10 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
     self._SetOutputResponseTime()
 
   def ResetState(self):
-    if not self.PidSupported() or not self.Property('output_response_time'):
+    if not self.PidSupported() or not self.Property('current_response_time'):
       return
 
-    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('output_response_time')])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_response_time')])
     self._wrapper.Run()
 
 class SetZeroOutputResponseTime(TestMixins.SetZeroByteMixin,
@@ -5566,7 +5566,7 @@ class SetOutOfRangeOutputResponseTime(TestMixins.SetOutOfRangeByteMixin,
                                       OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME to an out-of-range value."""
   PID = 'OUTPUT_RESPONSE_TIME'
-  REQUIRES = ['number_output_response_times']
+  REQUIRES = ['number_response_options']
   LABEL = 'output response times'
 
 class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
@@ -5588,8 +5588,8 @@ class GetOutputResponseTimeDescription(TestMixins.GetSettingDescriptionsMixin,
   """Get the OUTPUT_RESPONSE_TIME_DESCRIPTION for all response times."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
-  REQUIRES = ['number_output_response_times']
-  EXPECTED_FIELD = 'output_response_time'
+  REQUIRES = ['number_response_options']
+  EXPECTED_FIELD = 'response_time'
 
 class GetOutputResponseTimeDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                                  OptionalParameterTestFixture):
@@ -5606,7 +5606,7 @@ class GetOutputResponseTimeDescriptionWithExtraData(
 
 class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroByteMixin,
                                            OptionalParameterTestFixture):
-  """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for output_response_time 0."""
+  """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for response_time 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
@@ -5615,8 +5615,8 @@ class GetOutOfRangeOutputResponseTimeDescription(
     OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an out-of-range response time."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
-  REQUIRES = ['number_output_response_times']
-  LABEL = 'output response times'
+  REQUIRES = ['number_response_options']
+  LABEL = 'response times'
 
 class SetOutputResponseTimeDescription(TestMixins.UnsupportedSetMixin,
                                        ResponderTestFixture):
@@ -5638,7 +5638,7 @@ class GetModulationFrequency(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = "MODULATION_FREQUENCY"
-  PROVIDES = ['modulation_frequency', 'number_modulation_frequencies']
+  PROVIDES = ['current_modulation_frequency', 'number_modulation_frequencies']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -5650,18 +5650,18 @@ class GetModulationFrequency(TestMixins.GetMixin, OptionalParameterTestFixture):
         self.SetProperty(key, None)
       return
 
-    self.SetPropertyFromDict(fields, 'modulation_frequency')
+    self.SetPropertyFromDict(fields, 'current_modulation_frequency')
     self.SetPropertyFromDict(fields, 'number_modulation_frequencies')
 
-    if fields['modulation_frequency'] == 0:
+    if fields['current_modulation_frequency'] == 0:
       self.SetFailed('Modulation frequency must be numbered from 1')
       return
 
-    if fields['modulation_frequency'] > fields['number_modulation_frequencies']:
+    if fields['current_modulation_frequency'] > fields['number_modulation_frequencies']:
       self.SetFailed(
-          'Output response time %d exceeded number of response times %d' %
-          (fields['output_response_time'],
-           fields['number_output_response_times']))
+          'Modulation frequency %d exceeded number of modulation frequencies %d' %
+          (fields['current_modulation_frequency'],
+           fields['number_modulation_frequencies']))
       return
 
 class GetModulationFrequencyWithData(TestMixins.GetWithDataMixin,
@@ -5674,7 +5674,7 @@ class SetModulationFrequency(OptionalParameterTestFixture):
   """Set MODULATION_FREQUENCY."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = "MODULATION_FREQUENCY"
-  REQUIRES = ['modulation_frequency', 'number_modulation_frequencies']
+  REQUIRES = ['current_modulation_frequency', 'number_modulation_frequencies']
 
   def Test(self):
     items = self.Property('number_modulation_frequencies')
@@ -5699,7 +5699,7 @@ class SetModulationFrequency(OptionalParameterTestFixture):
   def VerifySet(self):
     self.AddIfGetSupported(
       self.AckGetResult(
-        field_values={'modulation_frequency': self.frequencies[0]},
+        field_values={'current_modulation_frequency': self.frequencies[0]},
         action=self.NextModulationFrequency))
     self.SendGet(ROOT_DEVICE, self.pid)
 
@@ -5708,10 +5708,10 @@ class SetModulationFrequency(OptionalParameterTestFixture):
     self._SetModulationFrequency()
 
   def ResetState(self):
-    if not self.PidSupported() or not self.Property('modulation_frequency'):
+    if not self.PidSupported() or not self.Property('current_modulation_frequency'):
       return
 
-    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('modulation_frequency')])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_modulation_frequency')])
     self._wrapper.Run()
 
 class SetZeroModulationFrequency(TestMixins.SetZeroByteMixin,
@@ -6165,14 +6165,14 @@ class AllSubDevicesGetPresetStatus(TestMixins.AllSubDevicesGetMixin,
   PID = 'PRESET_STATUS'
   DATA = [1]
 
-# PRESET_MERGE_MODE
+# PRESET_MERGEMODE
 #------------------------------------------------------------------------------
 class GetPresetMergeMode(TestMixins.GetMixin,
                          OptionalParameterTestFixture):
-  """Get PRESET_MERGE_MODE with extra data."""
+  """Get PRESET_MERGEMODE with extra data."""
   CATEGORY = TestCategory.CONTROL
-  PID = 'PRESET_MERGE_MODE'
-  PROVIDES = ['preset_merge_mode']
+  PID = 'PRESET_MERGEMODE'
+  PROVIDES = ['preset_mergemode']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -6180,26 +6180,26 @@ class GetPresetMergeMode(TestMixins.GetMixin,
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
-      self.SetProperty('preset_merge_mode', None)
+      self.SetProperty('preset_mergemode', None)
       return
 
-    self.SetProperty('preset_merge_mode', fields['merge_mode'])
+    self.SetProperty('preset_mergemode', fields['merge_mode'])
 
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
-  """Get PRESET_MERGE_MODE with extra data."""
+  """Get PRESET_MERGEMODE with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_MERGE_MODE'
+  PID = 'PRESET_MERGEMODE'
 
 class SetPresetMergeMode(OptionalParameterTestFixture):
-  """Set PRESET_MERGE_MODE."""
+  """Set PRESET_MERGEMODE."""
   CATEGORY = TestCategory.CONTROL
-  PID = 'PRESET_MERGE_MODE'
-  REQUIRES = ['preset_merge_mode']
-  PROVIDES = ['set_preset_merge_mode_supported']
+  PID = 'PRESET_MERGEMODE'
+  REQUIRES = ['preset_mergemode']
+  PROVIDES = ['set_preset_mergemode_supported']
 
   def Test(self):
-    self.value = self.Property('preset_merge_mode')
+    self.value = self.Property('preset_mergemode')
     if self.value is None:
       self.value = 0
 
@@ -6223,18 +6223,18 @@ class SetPresetMergeMode(OptionalParameterTestFixture):
       self.in_set = False
 
 class SetAllPresetMergeModes(OptionalParameterTestFixture):
-  """Set PRESET_MERGE_MODE to each of the defined values."""
+  """Set PRESET_MERGEMODE to each of the defined values."""
   CATEGORY = TestCategory.CONTROL
-  PID = 'PRESET_MERGE_MODE'
-  REQUIRES = ['preset_merge_mode', 'set_preset_merge_mode_supported']
+  PID = 'PRESET_MERGEMODE'
+  REQUIRES = ['preset_mergemode', 'set_preset_mergemode_supported']
   MODES = [0, 1, 2, 3, 0xff]
 
   def Test(self):
-    if not self.Property('set_preset_merge_mode_supported'):
-      self.SetNotRun('SET PRESET_MERGE_MODE not supported')
+    if not self.Property('set_preset_mergemode_supported'):
+      self.SetNotRun('SET PRESET_MERGEMODE not supported')
       return
 
-    self.old_value = self.Property('preset_merge_mode')
+    self.old_value = self.Property('preset_mergemode')
     self.merge_modes = [m for m in self.MODES if m != self.old_value]
     # PerformSet pop's the last value, so we add a dummy value to the end of
     # the list.
@@ -6266,15 +6266,15 @@ class SetAllPresetMergeModes(OptionalParameterTestFixture):
 
 class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
-  """Set PRESET_MERGE_MODE without any data."""
+  """Set PRESET_MERGEMODE without any data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_MERGE_MODE'
+  PID = 'PRESET_MERGEMODE'
 
 class AllSubDevicesGetPresetMergeMode(TestMixins.AllSubDevicesGetMixin,
                                       ResponderTestFixture):
-  """Get PRESET_MERGE_MODE addressed to ALL_SUB_DEVICES."""
+  """Get PRESET_MERGEMODE addressed to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
-  PID = 'PRESET_MERGE_MODE'
+  PID = 'PRESET_MERGEMODE'
 
 # Cross check the control fields with various other properties
 #------------------------------------------------------------------------------

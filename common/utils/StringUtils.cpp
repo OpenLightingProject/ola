@@ -330,8 +330,13 @@ void CapitalizeLabel(string *s) {
 
 void CustomCapitalizeLabel(string *s) {
   static const char* const transforms[] = {
+    "dhcp",
     "dmx",
+    "dns",
     "ip",
+    "led",
+    "rdm",
+    "uid",
     NULL
   };
   const size_t size = s->size();

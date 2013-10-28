@@ -259,11 +259,11 @@ class ConfigReader(object):
     elif unpack_exception:
       print 'Invalid Param data: %s' % unpack_exception
     else:
-      status_message_pid = self.pid_store.GetName('STATUS_MESSAGE')
+      status_messages_pid = self.pid_store.GetName('STATUS_MESSAGES')
       queued_message_pid = self.pid_store.GetName('QUEUED_MESSAGE')
-      if (response.pid == status_message_pid.value and
+      if (response.pid == status_messages_pid.value and
           unpacked_data.get('messages', []) == []):
-        logging.debug('Got back empty list of STATUS_MESSAGE')
+        logging.debug('Got back empty list of STATUS_MESSAGES')
         self._NextState()
         return
       elif response.pid == queued_message_pid.value:

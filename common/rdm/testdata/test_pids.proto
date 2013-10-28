@@ -92,7 +92,7 @@ pid {
   get_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "STATUS_MESSAGE"
+  name: "STATUS_MESSAGES"
   value: 48
   get_request {
     field {
@@ -487,7 +487,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "BOOT_SOFTWARE_VERSION"
+  name: "BOOT_SOFTWARE_VERSION_ID"
   value: 193
   get_request {
   }
@@ -500,7 +500,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "BOOT_SOFTWARE_LABEL"
+  name: "BOOT_SOFTWARE_VERSION_LABEL"
   value: 194
   get_request {
   }
@@ -1346,7 +1346,7 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
-  name: "PERFORM_SELF_TEST"
+  name: "PERFORM_SELFTEST"
   value: 4128
   get_request {
   }
@@ -1691,7 +1691,7 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
-  name: "PRESET_MERGE_MODE"
+  name: "PRESET_MERGEMODE"
   value: 32691
   get_request {
   }

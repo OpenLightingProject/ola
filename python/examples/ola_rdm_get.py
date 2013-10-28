@@ -377,8 +377,8 @@ class InteractiveModeController(cmd.Cmd):
     elif unpack_exception:
       print 'Invalid Param data: %s' % unpack_exception
     else:
-      status_message_pid = self.pid_store.GetName('STATUS_MESSAGE')
-      if (response.pid == status_message_pid.value and
+      status_messages_pid = self.pid_store.GetName('STATUS_MESSAGES')
+      if (response.pid == status_messages_pid.value and
           unpacked_data.get('messages', []) == []):
         self.wrapper.StopIfNoEvents()
         return
