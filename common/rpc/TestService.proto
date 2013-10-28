@@ -20,6 +20,7 @@
 
 package ola.rpc;
 
+option cc_generic_services = false;
 option py_generic_services = true;
 
 message EchoRequest {

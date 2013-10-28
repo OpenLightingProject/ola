@@ -491,7 +491,7 @@ class ResponderTestFixture(TestFixture):
       return
 
     queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
-    status_message_pid = self.LookupPid('STATUS_MESSAGE')
+    status_messages_pid = self.LookupPid('STATUS_MESSAGES')
     if (response.pid == queued_message_pid.value and
         response.response_type == OlaClient.RDM_NACK_REASON):
         # A Nack here is fatal because if we get an ACK_TIMER, QUEUED_MESSAGE
@@ -500,7 +500,7 @@ class ResponderTestFixture(TestFixture):
                        response.nack_reason)
         self.Stop()
         return
-    elif (response.pid == status_message_pid.value and
+    elif (response.pid == status_messages_pid.value and
           unpacked_data.get('messages', None) == []):
         # this means we've run out of messages
         if self._state == TestState.NOT_RUN:
@@ -642,7 +642,8 @@ class OptionalParameterTestFixture(ResponderTestFixture):
       expected_results = [
         self.NackSetResult(
           RDMNack.NR_WRITE_PROTECT,
-          advisory='SET %s was locked, try changing the lock mode' %
+          advisory='SET %s was write protected, try changing the lock mode if'
+                   ' enabled' %
             self.pid.name)
       ]
       if isinstance(result, list):

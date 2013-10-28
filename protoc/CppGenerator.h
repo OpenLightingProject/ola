@@ -33,7 +33,7 @@ class CppGenerator : public google::protobuf::compiler::CodeGenerator {
   // implements CodeGenerator ----------------------------------------
   bool Generate(const google::protobuf::FileDescriptor *file,
                 const std::string &parameter,
-                google::protobuf::compiler::GeneratorContext *generator_context,
+                google::protobuf::compiler::OutputDirectory *generator_context,
                 std::string *error) const;
 
  private:

@@ -34,14 +34,14 @@ namespace ola {
 
 using google::protobuf::FileDescriptor;
 using google::protobuf::ServiceDescriptor;
-using google::protobuf::compiler::GeneratorContext;
+using google::protobuf::compiler::OutputDirectory;
 using google::protobuf::io::Printer;
 using std::auto_ptr;
 using std::string;
 
 bool CppGenerator::Generate(const FileDescriptor *file,
                             const string&,
-                            GeneratorContext *generator_context,
+                            OutputDirectory *generator_context,
                             string*) const {
   string basename = StripProto(file->name()) + "Service";
 

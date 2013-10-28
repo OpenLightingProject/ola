@@ -53,8 +53,8 @@ sed -ne  '/^enum RDMResponseType/,/^}/p' ../../../common/protocol/Ola.proto |
 grep RDM_ | sed "s/;/,/"
 cat <<EOM
 } rdm_response_type;
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMRESPONSECODES_H_
 EOM
 ) > RDMResponseCodes.h

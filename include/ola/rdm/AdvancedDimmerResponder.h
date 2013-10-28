@@ -156,7 +156,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     std::vector<Preset> m_presets;
     uint16_t m_preset_scene;
     uint8_t m_preset_level;
-    rdm_preset_merge_mode m_preset_merge_mode;
+    rdm_preset_mergemode m_preset_mergemode;
     fail_mode_s m_fail_mode;
     startup_mode_s m_startup_mode;
 
