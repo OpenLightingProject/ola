@@ -73,28 +73,6 @@ inline bool ascii_isdigit(char c) {
 }
 
 // ----------------------------------------------------------------------
-// HasPrefixString()
-//    Check if a string begins with a given prefix.
-// StripPrefixString()
-//    Given a string and a putative prefix, returns the string minus the
-//    prefix string if the prefix matches, otherwise the original
-//    string.
-// ----------------------------------------------------------------------
-inline bool HasPrefixString(const string& str,
-                            const string& prefix) {
-  return str.size() >= prefix.size() &&
-         str.compare(0, prefix.size(), prefix) == 0;
-}
-
-inline string StripPrefixString(const string& str, const string& prefix) {
-  if (HasPrefixString(str, prefix)) {
-    return str.substr(prefix.size());
-  } else {
-    return str;
-  }
-}
-
-// ----------------------------------------------------------------------
 // HasSuffixString()
 //    Return true if str ends in suffix.
 // StripSuffixString()
@@ -113,41 +91,6 @@ inline string StripSuffixString(const string& str, const string& suffix) {
     return str.substr(0, str.size() - suffix.size());
   } else {
     return str;
-  }
-}
-
-// ----------------------------------------------------------------------
-// StripString
-//    Replaces any occurrence of the character 'remove' (or the characters
-//    in 'remove') with the character 'replacewith'.
-//    Good for keeping html characters or protocol characters (\t) out
-//    of places where they might cause a problem.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void StripString(string* s, const char* remove,
-                                    char replacewith);
-
-// ----------------------------------------------------------------------
-// LowerString()
-// UpperString()
-//    Convert the characters in "s" to lowercase or uppercase.  ASCII-only:
-//    these functions intentionally ignore locale because they are applied to
-//    identifiers used in the Protocol Buffer language, not to natural-language
-//    strings.
-// ----------------------------------------------------------------------
-
-inline void LowerString(string * s) {
-  string::iterator end = s->end();
-  for (string::iterator i = s->begin(); i != end; ++i) {
-    // tolower() changes based on locale.  We don't want this!
-    if ('A' <= *i && *i <= 'Z') *i += 'a' - 'A';
-  }
-}
-
-inline void UpperString(string * s) {
-  string::iterator end = s->end();
-  for (string::iterator i = s->begin(); i != end; ++i) {
-    // toupper() changes based on locale.  We don't want this!
-    if ('a' <= *i && *i <= 'z') *i += 'A' - 'a';
   }
 }
 
@@ -199,134 +142,6 @@ inline string JoinStrings(const vector<string>& components,
   string result;
   JoinStrings(components, delim, &result);
   return result;
-}
-
-// ----------------------------------------------------------------------
-// UnescapeCEscapeSequences()
-//    Copies "source" to "dest", rewriting C-style escape sequences
-//    -- '\n', '\r', '\\', '\ooo', etc -- to their ASCII
-//    equivalents.  "dest" must be sufficiently large to hold all
-//    the characters in the rewritten string (i.e. at least as large
-//    as strlen(source) + 1 should be safe, since the replacements
-//    are always shorter than the original escaped sequences).  It's
-//    safe for source and dest to be the same.  RETURNS the length
-//    of dest.
-//
-//    It allows hex sequences \xhh, or generally \xhhhhh with an
-//    arbitrary number of hex digits, but all of them together must
-//    specify a value of a single byte (e.g. \x0045 is equivalent
-//    to \x45, and \x1234 is erroneous).
-//
-//    It also allows escape sequences of the form \uhhhh (exactly four
-//    hex digits, upper or lower case) or \Uhhhhhhhh (exactly eight
-//    hex digits, upper or lower case) to specify a Unicode code
-//    point. The dest array will contain the UTF8-encoded version of
-//    that code-point (e.g., if source contains \u2019, then dest will
-//    contain the three bytes 0xE2, 0x80, and 0x99).
-//
-//    Errors: In the first form of the call, errors are reported with
-//    LOG(ERROR). The same is true for the second form of the call if
-//    the pointer to the string vector is NULL; otherwise, error
-//    messages are stored in the vector. In either case, the effect on
-//    the dest array is not defined, but rest of the source will be
-//    processed.
-//    ----------------------------------------------------------------------
-
-LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest);
-LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
-                                                vector<string> *errors);
-
-// ----------------------------------------------------------------------
-// UnescapeCEscapeString()
-//    This does the same thing as UnescapeCEscapeSequences, but creates
-//    a new string. The caller does not need to worry about allocating
-//    a dest buffer. This should be used for non performance critical
-//    tasks such as printing debug messages. It is safe for src and dest
-//    to be the same.
-//
-//    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
-//
-//    In the first and second calls, the length of dest is returned. In the
-//    the third call, the new string is returned.
-// ----------------------------------------------------------------------
-
-LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest);
-LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest,
-                                             vector<string> *errors);
-LIBPROTOBUF_EXPORT string UnescapeCEscapeString(const string& src);
-
-// ----------------------------------------------------------------------
-// CEscapeString()
-//    Copies 'src' to 'dest', escaping dangerous characters using
-//    C-style escape sequences. This is very useful for preparing query
-//    flags. 'src' and 'dest' should not overlap.
-//    Returns the number of bytes written to 'dest' (not including the \0)
-//    or -1 if there was insufficient space.
-//
-//    Currently only \n, \r, \t, ", ', \ and !isprint() chars are escaped.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT int CEscapeString(const char* src, int src_len,
-                                     char* dest, int dest_len);
-
-// ----------------------------------------------------------------------
-// CEscape()
-//    More convenient form of CEscapeString: returns result as a "string".
-//    This version is slower than CEscapeString() because it does more
-//    allocation.  However, it is much more convenient to use in
-//    non-speed-critical code like logging messages etc.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT string CEscape(const string& src);
-
-namespace strings {
-// Like CEscape() but does not escape bytes with the upper bit set.
-LIBPROTOBUF_EXPORT string Utf8SafeCEscape(const string& src);
-
-// Like CEscape() but uses hex (\x) escapes instead of octals.
-LIBPROTOBUF_EXPORT string CHexEscape(const string& src);
-}  // namespace strings
-
-// ----------------------------------------------------------------------
-// strto32()
-// strtou32()
-// strto64()
-// strtou64()
-//    Architecture-neutral plug compatible replacements for strtol() and
-//    strtoul().  Long's have different lengths on ILP-32 and LP-64
-//    platforms, so using these is safer, from the point of view of
-//    overflow behavior, than using the standard libc functions.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT int32_t strto32_adaptor(const char *nptr, char **endptr,
-                                         int base);
-LIBPROTOBUF_EXPORT uint32_t strtou32_adaptor(const char *nptr, char **endptr,
-                                           int base);
-
-inline int32_t strto32(const char *nptr, char **endptr, int base) {
-  if (sizeof(int32_t) == sizeof(long))
-    return strtol(nptr, endptr, base);
-  else
-    return strto32_adaptor(nptr, endptr, base);
-}
-
-inline uint32_t strtou32(const char *nptr, char **endptr, int base) {
-  if (sizeof(uint32_t) == sizeof(unsigned long))
-    return strtoul(nptr, endptr, base);
-  else
-    return strtou32_adaptor(nptr, endptr, base);
-}
-
-// For now, long long is 64-bit on all the platforms we care about, so these
-// functions can simply pass the call to strto[u]ll.
-inline int64_t strto64(const char *nptr, char **endptr, int base) {
-  GOOGLE_COMPILE_ASSERT(sizeof(int64_t) == sizeof(long long),
-                        sizeof_int64_t_is_not_sizeof_long_long);
-  return strtoll(nptr, endptr, base);
-}
-
-inline uint64_t strtou64(const char *nptr, char **endptr, int base) {
-  GOOGLE_COMPILE_ASSERT(sizeof(uint64_t) == sizeof(unsigned long long),
-                        sizeof_uint64_t_is_not_sizeof_long_long);
-  return strtoull(nptr, endptr, base);
 }
 
 // ----------------------------------------------------------------------
@@ -455,14 +270,6 @@ LIBPROTOBUF_EXPORT char* FloatToBuffer(float i, char* buffer);
 // overestimate to be safe.
 static const int kDoubleToBufferSize = 32;
 static const int kFloatToBufferSize = 24;
-
-// ----------------------------------------------------------------------
-// NoLocaleStrtod()
-//   Exactly like strtod(), except it always behaves as if in the "C"
-//   locale (i.e. decimal points must be '.'s).
-// ----------------------------------------------------------------------
-
-LIBPROTOBUF_EXPORT double NoLocaleStrtod(const char* text, char** endptr);
 
 }  // namespace ola
 

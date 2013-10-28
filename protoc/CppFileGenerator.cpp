@@ -78,7 +78,7 @@ FileGenerator::~FileGenerator() {
 void FileGenerator::GenerateHeader(Printer *printer) {
   const string filename_identifier = FilenameIdentifier(m_output_name);
 
-  map<string, string> var_map;
+  std::map<string, string> var_map;
   var_map["basename"] = StripProto(m_file->name());
   var_map["filename"] = m_file->name();
   var_map["filename_identifier"] = filename_identifier;

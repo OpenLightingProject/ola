@@ -31,22 +31,19 @@
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// Edited by Simon Newton for OLA
 
 #ifndef PROTOC_GENERATORHELPERS_H_
 #define PROTOC_GENERATORHELPERS_H_
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <map>
 #include <string>
 
 namespace ola {
 
 using std::string;
-using std::map;
-using google::protobuf::Descriptor;
-using google::protobuf::FileDescriptor;
-using google::protobuf::io::Printer;
 
 // Commonly-used separator comments.  Thick is a line of '=', thin is a line
 // of '-'.
@@ -61,7 +58,8 @@ extern const char kThinSeparator[];
 //   ::foo::bar::Baz_Qux
 // While the non-qualified version would be:
 //   Baz_Qux
-string ClassName(const Descriptor* descriptor, bool qualified);
+string ClassName(const google::protobuf::Descriptor* descriptor,
+                 bool qualified);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
@@ -80,20 +78,5 @@ inline bool HasDescriptorMethods(const google::protobuf::FileDescriptor* file) {
   return file->options().optimize_for() !=
       google::protobuf::FileOptions::LITE_RUNTIME;
 }
-
-// Prints 'with_static_init' if static initializers have to be used for the
-// provided file. Otherwise emits both 'with_static_init' and
-// 'without_static_init' using #ifdef.
-void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, Printer* printer,
-    const char* with_static_init, const char* without_static_init,
-    const char* var1 = NULL, const string& val1 = "",
-    const char* var2 = NULL, const string& val2 = "");
-
-void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    Printer* printer, const char* with_static_init,
-    const char* without_static_init);
-
 }  // namespace ola
 #endif  // PROTOC_GENERATORHELPERS_H_

@@ -31,21 +31,18 @@
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// Edited by Simon Newton for OLA
 
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/common.h>
 
-#include <limits>
-#include <map>
 #include <string>
-#include <vector>
 
 #include "protoc/GeneratorHelpers.h"
 #include "protoc/StrUtil.h"
 
 using std::string;
 using google::protobuf::Descriptor;
-using google::protobuf::EnumDescriptor;
 
 namespace ola {
 
@@ -57,20 +54,6 @@ string DotsToUnderscores(const string& name) {
 
 string DotsToColons(const string& name) {
   return StringReplace(name, ".", "::", true);
-}
-
-// Returns whether the provided descriptor has an extension. This includes its
-// nested types.
-bool HasExtension(const Descriptor* descriptor) {
-  if (descriptor->extension_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-    if (HasExtension(descriptor->nested_type(i))) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -93,21 +76,6 @@ string ClassName(const Descriptor* descriptor, bool qualified) {
     return "::" + DotsToColons(outer_name) + DotsToUnderscores(inner_name);
   } else {
     return outer->name() + DotsToUnderscores(inner_name);
-  }
-}
-
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
-  if (enum_descriptor->containing_type() == NULL) {
-    if (qualified) {
-      return "::" + DotsToColons(enum_descriptor->full_name());
-    } else {
-      return enum_descriptor->name();
-    }
-  } else {
-    string result = ClassName(enum_descriptor->containing_type(), qualified);
-    result += '_';
-    result += enum_descriptor->name();
-    return result;
   }
 }
 
@@ -144,49 +112,5 @@ string GlobalAddDescriptorsName(const string& filename) {
 // Return the name of the AssignDescriptors() function for a given file.
 string GlobalAssignDescriptorsName(const string& filename) {
   return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
-}
-
-bool StaticInitializersForced(const FileDescriptor* file) {
-  if (HasDescriptorMethods(file) || file->extension_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasExtension(file->message_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, Printer* printer,
-    const char* with_static_init, const char* without_static_init,
-    const char* var1, const string& val1,
-    const char* var2, const string& val2) {
-  map<string, string> vars;
-  if (var1) {
-    vars[var1] = val1;
-  }
-  if (var2) {
-    vars[var2] = val2;
-  }
-  PrintHandlingOptionalStaticInitializers(
-      vars, file, printer, with_static_init, without_static_init);
-}
-
-void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    Printer* printer, const char* with_static_init,
-    const char* without_static_init) {
-  if (StaticInitializersForced(file)) {
-    printer->Print(vars, with_static_init);
-  } else {
-    printer->Print(vars, (string(
-      "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n") +
-      without_static_init +
-      "#else\n" +
-      with_static_init +
-      "#endif\n").c_str());
-  }
 }
 }  // namespace ola
