@@ -32,7 +32,7 @@
 
 namespace ola {
 
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcChannel;
 using ola::proto::OlaServerService_Stub;
 
 StreamingClient::StreamingClient(bool auto_start)
@@ -76,7 +76,7 @@ bool StreamingClient::Setup() {
   m_ss = new SelectServer();
   m_ss->AddReadDescriptor(m_socket);
 
-  m_channel = new StreamRpcChannel(NULL, m_socket);
+  m_channel = new RpcChannel(NULL, m_socket);
 
   if (!m_channel) {
     delete m_socket;

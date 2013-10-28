@@ -34,7 +34,6 @@ class Preferences;
 namespace plugin {
 namespace artnet {
 
-using google::protobuf::RpcController;
 using ola::Device;
 using ola::plugin::artnet::Request;
 using std::string;
@@ -51,10 +50,10 @@ class ArtNetDevice: public Device {
   void EnterConfigurationMode() { m_node->EnterConfigurationMode(); }
   void ExitConfigurationMode() { m_node->ExitConfigurationMode(); }
 
-  void Configure(RpcController *controller,
+  void Configure(ola::rpc::RpcController *controller,
                  const string &request,
                  string *response,
-                 google::protobuf::Closure *done);
+                 Callback0<void> *done);
 
   static const char K_ALWAYS_BROADCAST_KEY[];
   static const char K_DEVICE_NAME[];
@@ -83,7 +82,7 @@ class ArtNetDevice: public Device {
   void HandleOptions(Request *request, string *response);
   void HandleNodeList(Request *request,
                       string *response,
-                      RpcController *controller);
+                      ola::rpc::RpcController *controller);
 };
 }  // namespace artnet
 }  // namespace plugin

@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * StreamRpcChannel.h
- * Interface for the Stream RPC Channel
+ * The RPC Channel
  * Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "ola/ExportMap.h"
+#include "common/rpc/RpcController.h"
 
 #include HASH_MAP_H
 
@@ -42,11 +43,9 @@ namespace rpc {
 
 using google::protobuf::Message;
 using google::protobuf::MethodDescriptor;
-using google::protobuf::RpcChannel;
-using google::protobuf::RpcController;
-using google::protobuf::Service;
 
 class RpcMessage;
+class RpcService;
 
 class OutstandingRequest {
   /*
@@ -71,7 +70,7 @@ class OutstandingResponse {
 
     int id;
     RpcController *controller;
-    google::protobuf::Closure *callback;
+    Callback0<void> *callback;
     Message *reply;
 };
 
@@ -82,10 +81,10 @@ class OutstandingResponse {
  * This implementation runs over a ConnectedDescriptor which means it can be
  * used over TCP or pipes.
  */
-class StreamRpcChannel: public RpcChannel {
+class RpcChannel {
   public :
     /**
-     * @@brief Create a new StreamRpcChannel.
+     * @@brief Create a new RpcChannel.
      * @param service the Service to use to handle incoming requests. Ownership
      *   is not transferred.
      * @param descriptor the descriptor to use for reading/writing data. The
@@ -93,20 +92,20 @@ class StreamRpcChannel: public RpcChannel {
      *   SelectServer. Ownership of the descriptor is not transferred.
      * @param export_map the ExportMap to use for stats
      */
-    StreamRpcChannel(Service *service,
-                     ola::io::ConnectedDescriptor *descriptor,
-                     ExportMap *export_map = NULL);
+    RpcChannel(RpcService *service,
+               ola::io::ConnectedDescriptor *descriptor,
+               ExportMap *export_map = NULL);
 
     /**
      * @brief Destructor
      */
-    ~StreamRpcChannel();
+    ~RpcChannel();
 
     /**
      * @brief Set the Service to use to handle incoming requests.
      * @param service the new Service to use, ownership is not transferred.
      */
-    void SetService(Service *service) { m_service = service; }
+    void SetService(RpcService *service) { m_service = service; }
 
     /**
      * @brief Check if there are any pending RPCs on the channel.
@@ -128,8 +127,8 @@ class StreamRpcChannel: public RpcChannel {
      * @param callback the callback to run when the channel fails.
      *
      * @note
-     * The callback will be run from the call stack of the StreamRpcChannel
-     * object. This means you can't delete the StreamRpcChannel object from
+     * The callback will be run from the call stack of the RpcChannel
+     * object. This means you can't delete the RpcChannel object from
      * within the called, you'll need to queue it up an delete it later.
      */
     void SetChannelCloseHandler(SingleUseCallback0<void> *callback);
@@ -142,7 +141,7 @@ class StreamRpcChannel: public RpcChannel {
         RpcController *controller,
         const Message *request,
         Message *response,
-        google::protobuf::Closure *done);
+        Callback0<void> *done);
 
     /**
      * @brief Invoked by the RPC completion handler when the server side
@@ -180,7 +179,7 @@ class StreamRpcChannel: public RpcChannel {
 
     void HandleChannelClose();
 
-    Service *m_service;  // service to dispatch requests to
+    RpcService *m_service;  // service to dispatch requests to
     std::auto_ptr<SingleUseCallback0<void> > m_on_close;
     // the descriptor to read/write to.
     class ola::io::ConnectedDescriptor *m_descriptor;

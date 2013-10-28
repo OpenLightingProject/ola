@@ -79,7 +79,7 @@ void ServiceGenerator::GenerateDeclarations(Printer* printer) {
 
 void ServiceGenerator::GenerateInterface(Printer* printer) {
   printer->Print(vars_,
-    "class $dllexport$$classname$ : public ::google::protobuf::Service {\n"
+    "class $dllexport$$classname$ : public ola::rpc::RpcService {\n"
     " protected:\n"
     "  // This class should be treated as an abstract interface.\n"
     "  inline $classname$() {};\n"
@@ -88,8 +88,6 @@ void ServiceGenerator::GenerateInterface(Printer* printer) {
   printer->Indent();
 
   printer->Print(vars_,
-    "\n"
-    "typedef $classname$_Stub Stub;\n"
     "\n"
     "static const ::google::protobuf::ServiceDescriptor* descriptor();\n"
     "\n");
@@ -102,10 +100,10 @@ void ServiceGenerator::GenerateInterface(Printer* printer) {
     "\n"
     "const ::google::protobuf::ServiceDescriptor* GetDescriptor();\n"
     "void CallMethod(const ::google::protobuf::MethodDescriptor* method,\n"
-    "                ::google::protobuf::RpcController* controller,\n"
+    "                ola::rpc::RpcController* controller,\n"
     "                const ::google::protobuf::Message* request,\n"
     "                ::google::protobuf::Message* response,\n"
-    "                ::google::protobuf::Closure* done);\n"
+    "                ola::rpc::RpcService::CompletionCallback* done);\n"
     "const ::google::protobuf::Message& GetRequestPrototype(\n"
     "  const ::google::protobuf::MethodDescriptor* method) const;\n"
     "const ::google::protobuf::Message& GetResponsePrototype(\n"
@@ -128,12 +126,12 @@ void ServiceGenerator::GenerateStubDefinition(Printer* printer) {
   printer->Indent();
 
   printer->Print(vars_,
-    "$classname$_Stub(::google::protobuf::RpcChannel* channel);\n"
-    "$classname$_Stub(::google::protobuf::RpcChannel* channel,\n"
+    "$classname$_Stub(ola::rpc::RpcChannel* channel);\n"
+    "$classname$_Stub(ola::rpc::RpcChannel* channel,\n"
     "                 ::google::protobuf::Service::ChannelOwnership ownership);\n"
     "~$classname$_Stub();\n"
     "\n"
-    "inline ::google::protobuf::RpcChannel* channel() { return channel_; }\n"
+    "inline ola::rpc::RpcChannel* channel() { return channel_; }\n"
     "\n"
     "// implements $classname$ ------------------------------------------\n"
     "\n");
@@ -143,7 +141,7 @@ void ServiceGenerator::GenerateStubDefinition(Printer* printer) {
   printer->Outdent();
   printer->Print(vars_,
     " private:\n"
-    "  ::google::protobuf::RpcChannel* channel_;\n"
+    "  ola::rpc::RpcChannel* channel_;\n"
     "  bool owns_channel_;\n"
     "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$_Stub);\n"
     "};\n"
@@ -161,10 +159,10 @@ void ServiceGenerator::GenerateMethodSignatures(
     sub_vars["virtual"] = virtual_or_non == VIRTUAL ? "virtual " : "";
 
     printer->Print(sub_vars,
-      "$virtual$void $name$(::google::protobuf::RpcController* controller,\n"
+      "$virtual$void $name$(ola::rpc::RpcController* controller,\n"
       "                     const $input_type$* request,\n"
       "                     $output_type$* response,\n"
-      "                     ::google::protobuf::Closure* done);\n");
+      "                     ola::rpc::RpcService::CompletionCallback* done);\n");
   }
 }
 
@@ -205,10 +203,10 @@ void ServiceGenerator::GenerateImplementation(Printer* printer) {
 
   // Generate stub implementation.
   printer->Print(vars_,
-    "$classname$_Stub::$classname$_Stub(::google::protobuf::RpcChannel* channel)\n"
+    "$classname$_Stub::$classname$_Stub(ola::rpc::RpcChannel* channel)\n"
     "  : channel_(channel), owns_channel_(false) {}\n"
     "$classname$_Stub::$classname$_Stub(\n"
-    "    ::google::protobuf::RpcChannel* channel,\n"
+    "    ola::rpc::RpcChannel* channel,\n"
     "    ::google::protobuf::Service::ChannelOwnership ownership)\n"
     "  : channel_(channel),\n"
     "    owns_channel_(ownership == ::google::protobuf::Service::STUB_OWNS_CHANNEL) {}\n"
@@ -231,10 +229,10 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
     sub_vars["output_type"] = ClassName(method->output_type(), true);
 
     printer->Print(sub_vars,
-      "void $classname$::$name$(::google::protobuf::RpcController* controller,\n"
+      "void $classname$::$name$(ola::rpc::RpcController* controller,\n"
       "                         const $input_type$*,\n"
       "                         $output_type$*,\n"
-      "                         ::google::protobuf::Closure* done) {\n"
+      "                         ola::rpc::RpcService::CompletionCallback* done) {\n"
       "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
       "  done->Run();\n"
       "}\n"
@@ -245,10 +243,10 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
 void ServiceGenerator::GenerateCallMethod(Printer* printer) {
   printer->Print(vars_,
     "void $classname$::CallMethod(const ::google::protobuf::MethodDescriptor* method,\n"
-    "                             ::google::protobuf::RpcController* controller,\n"
+    "                             ola::rpc::RpcController* controller,\n"
     "                             const ::google::protobuf::Message* request,\n"
     "                             ::google::protobuf::Message* response,\n"
-    "                             ::google::protobuf::Closure* done) {\n"
+    "                             ola::rpc::RpcService::CompletionCallback* done) {\n"
     "  GOOGLE_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
     "  switch(method->index()) {\n");
 
@@ -329,10 +327,10 @@ void ServiceGenerator::GenerateStubMethods(Printer* printer) {
     sub_vars["output_type"] = ClassName(method->output_type(), true);
 
     printer->Print(sub_vars,
-      "void $classname$_Stub::$name$(::google::protobuf::RpcController* controller,\n"
+      "void $classname$_Stub::$name$(ola::rpc::RpcController* controller,\n"
       "                              const $input_type$* request,\n"
       "                              $output_type$* response,\n"
-      "                              ::google::protobuf::Closure* done) {\n"
+      "                              ola::rpc::RpcService::CompletionCallback* done) {\n"
       "  channel_->CallMethod(descriptor()->method($index$),\n"
       "                       controller, request, response, done);\n"
       "}\n");

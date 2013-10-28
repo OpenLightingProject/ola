@@ -36,7 +36,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using google::protobuf::RpcController;
 using ola::plugin::usbpro::Request;
 
 
@@ -58,10 +57,10 @@ class UltraDMXProDevice: public UsbSerialDevice {
     // both output ports can be bound to the same universe
     bool AllowMultiPortPatching() const { return true; }
 
-    void Configure(RpcController *controller,
+    void Configure(ola::rpc::RpcController *controller,
                    const string &request,
                    string *response,
-                   google::protobuf::Closure *done);
+                   Callback0<void> *done);
 
   protected:
     void PrePortStop();
@@ -69,21 +68,21 @@ class UltraDMXProDevice: public UsbSerialDevice {
   private:
     void UpdateParams(bool status, const usb_pro_parameters &params);
 
-    void HandleParametersRequest(RpcController *controller,
+    void HandleParametersRequest(ola::rpc::RpcController *controller,
                                  const Request *request,
                                  string *response,
-                                 google::protobuf::Closure *done);
+                                 Callback0<void> *done);
 
-    void HandleParametersResponse(RpcController *controller,
+    void HandleParametersResponse(ola::rpc::RpcController *controller,
                                   string *response,
-                                  google::protobuf::Closure *done,
+                                  Callback0<void> *done,
                                   bool status,
                                   const usb_pro_parameters &params);
 
-    void HandleSerialRequest(RpcController *controller,
+    void HandleSerialRequest(ola::rpc::RpcController *controller,
                              const Request *request,
                              string *response,
-                             google::protobuf::Closure *done);
+                             Callback0<void> *done);
 
     UltraDMXProWidget *m_ultra_widget;
     string m_serial;

@@ -18,18 +18,17 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <google/protobuf/stubs/common.h>
 #include <map>
 #include <utility>
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/Client.h"
 
 namespace ola {
 
-using google::protobuf::NewCallback;
 using ola::rpc::SimpleRpcController;
 
 Client::~Client() {
@@ -62,7 +61,7 @@ bool Client::SendDMX(unsigned int universe, uint8_t priority,
       controller,
       &dmx_data,
       ack,
-      NewCallback(this, &ola::Client::SendDMXCallback, controller, ack));
+      ola::NewCallback(this, &ola::Client::SendDMXCallback, controller, ack));
   return true;
 }
 

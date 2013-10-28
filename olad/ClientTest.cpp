@@ -21,14 +21,14 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/Clock.h"
-#include "ola/DmxBuffer.h"
-#include "olad/DmxSource.h"
-#include "olad/Client.h"
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
+#include "common/rpc/RpcController.h"
+#include "ola/Clock.h"
+#include "ola/DmxBuffer.h"
 #include "ola/testing/TestUtils.h"
-
+#include "olad/Client.h"
+#include "olad/DmxSource.h"
 
 
 static unsigned int TEST_UNIVERSE = 1;
@@ -65,19 +65,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
 class MockClientStub: public ola::proto::OlaClientService_Stub {
   public:
       MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
-      void UpdateDmxData(::google::protobuf::RpcController* controller,
-                         const ::ola::proto::DmxData* request,
-                         ::ola::proto::Ack* response,
-                         ::google::protobuf::Closure* done);
+      void UpdateDmxData(ola::rpc::RpcController* controller,
+                         const ola::proto::DmxData* request,
+                         ola::proto::Ack* response,
+                         ola::Callback0<void>* done);
 };
 
 
 
 void MockClientStub::UpdateDmxData(
-    ::google::protobuf::RpcController* controller,
-    const ::ola::proto::DmxData* request,
-    ::ola::proto::Ack* response,
-    ::google::protobuf::Closure* done) {
+    ola::rpc::RpcController* controller,
+    const ola::proto::DmxData* request,
+    ola::proto::Ack* response,
+    ola::Callback0<void>* done) {
 
   OLA_ASSERT(controller);
   OLA_ASSERT_FALSE(controller->Failed());

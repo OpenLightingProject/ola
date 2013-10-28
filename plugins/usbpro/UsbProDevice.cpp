@@ -21,12 +21,11 @@
  * at a time.
  */
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/service.h>
 #include <iomanip>
 #include <iostream>
 #include <string>
 
+#include "common/rpc/RpcController.h"
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -38,9 +37,9 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using google::protobuf::RpcController;
-using ola::plugin::usbpro::Request;
 using ola::plugin::usbpro::Reply;
+using ola::plugin::usbpro::Request;
+using ola::rpc::RpcController;
 
 /*
  * Create a new device
@@ -105,7 +104,7 @@ void UsbProDevice::PrePortStop() {
 void UsbProDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
-                             google::protobuf::Closure *done) {
+                             Callback0<void> *done) {
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");
@@ -158,7 +157,7 @@ void UsbProDevice::UpdateParams(unsigned int port_id, bool status,
 void UsbProDevice::HandleParametersRequest(RpcController *controller,
                                            const Request *request,
                                            string *response,
-                                           google::protobuf::Closure *done) {
+                                           Callback0<void> *done) {
   if (!request->has_parameters()) {
       controller->SetFailed("Invalid request");
       done->Run();
@@ -212,7 +211,7 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
  */
 void UsbProDevice::HandleParametersResponse(RpcController *controller,
                                             string *response,
-                                            google::protobuf::Closure *done,
+                                            Callback0<void> *done,
                                             unsigned int port_id,
                                             bool status,
                                             const usb_pro_parameters &params) {
@@ -243,7 +242,7 @@ void UsbProDevice::HandleSerialRequest(
     RpcController*,
     const Request*,
     string *response,
-    google::protobuf::Closure *done) {
+    Callback0<void> *done) {
   Reply reply;
   reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
   ola::plugin::usbpro::SerialNumberReply *serial_reply =
@@ -261,7 +260,7 @@ void UsbProDevice::HandlePortAssignmentRequest(
     RpcController *controller,
     const Request*,
     string *response,
-    google::protobuf::Closure *done) {
+    Callback0<void> *done) {
   m_pro_widget->GetPortAssignments(NewSingleCallback(
     this,
     &UsbProDevice::HandlePortAssignmentResponse,
@@ -276,7 +275,7 @@ void UsbProDevice::HandlePortAssignmentRequest(
  */
 void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
                                                 string *response,
-                                                google::protobuf::Closure *done,
+                                                Callback0<void> *done,
                                                 bool status,
                                                 uint8_t port1_assignment,
                                                 uint8_t port2_assignment) {

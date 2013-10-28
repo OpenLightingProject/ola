@@ -21,13 +21,13 @@
 #ifndef COMMON_RPC_SIMPLERPCCONTROLLER_H_
 #define COMMON_RPC_SIMPLERPCCONTROLLER_H_
 
-#include <google/protobuf/service.h>
 #include <string>
+#include "common/rpc/RpcController.h"
 
 namespace ola {
 namespace rpc {
 
-class SimpleRpcController: public google::protobuf::RpcController {
+class SimpleRpcController: public RpcController {
   public:
     SimpleRpcController();
     ~SimpleRpcController() {}
@@ -39,7 +39,7 @@ class SimpleRpcController: public google::protobuf::RpcController {
 
     void SetFailed(const std::string &reason);
     bool IsCanceled() const { return m_cancelled; }
-    void NotifyOnCancel(google::protobuf::Closure *callback) {
+    void NotifyOnCancel(CancelCallback *callback) {
       m_callback = callback;
     }
 
@@ -47,7 +47,7 @@ class SimpleRpcController: public google::protobuf::RpcController {
     bool m_failed;
     bool m_cancelled;
     std::string m_error_text;
-    google::protobuf::Closure *m_callback;
+    CancelCallback *m_callback;
 };
 }  // namespace rpc
 }  // namespace ola
