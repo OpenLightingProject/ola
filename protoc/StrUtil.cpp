@@ -170,7 +170,8 @@ void SplitStringToIteratorUsing(const string& full,
         ++p;
       } else {
         const char* start = p;
-        while (++p != end && *p != c);
+        while (++p != end && *p != c) {
+        }
         *result++ = string(start, p - start);
       }
     }
