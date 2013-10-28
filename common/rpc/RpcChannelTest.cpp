@@ -22,13 +22,13 @@
 #include <google/protobuf/stubs/common.h>
 #include <string>
 
-#include "ola/Callback.h"
-#include "ola/io/SelectServer.h"
-#include "ola/network/Socket.h"
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/TestService.pb.h"
 #include "common/rpc/TestServiceService.pb.h"
+#include "ola/Callback.h"
+#include "ola/io/SelectServer.h"
+#include "ola/network/Socket.h"
 #include "ola/testing/TestUtils.h"
 
 

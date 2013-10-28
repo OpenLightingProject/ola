@@ -13,24 +13,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * StreamRpcHeaderTest.cpp
- * Test fixture for the StreamRpcHeader class
+ * RpcHeaderTest.cpp
+ * Test fixture for the RpcHeader class
  * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "common/rpc/StreamRpcChannel.h"
-#include "common/rpc/StreamRpcHeader.h"
+#include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcHeader.h"
 #include "ola/testing/TestUtils.h"
 
 
 using ola::rpc::RpcChannel;
-using ola::rpc::StreamRpcHeader;
+using ola::rpc::RpcHeader;
 
-class StreamRpcHeaderTest : public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(StreamRpcHeaderTest);
+class RpcHeaderTest : public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(RpcHeaderTest);
   CPPUNIT_TEST(testHeaderEncoding);
   CPPUNIT_TEST_SUITE_END();
 
@@ -38,9 +38,9 @@ class StreamRpcHeaderTest : public CppUnit::TestFixture {
     void testHeaderEncoding();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(StreamRpcHeaderTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(RpcHeaderTest);
 
-void StreamRpcHeaderTest::testHeaderEncoding() {
+void RpcHeaderTest::testHeaderEncoding() {
   /*
    * Test we can encode and decode headers correctly.
    */
@@ -49,13 +49,13 @@ void StreamRpcHeaderTest::testHeaderEncoding() {
 
   size = 0;
   version = 0;
-  StreamRpcHeader::EncodeHeader(&header, version, size);
-  StreamRpcHeader::DecodeHeader(header, &o_version, &o_size);
+  RpcHeader::EncodeHeader(&header, version, size);
+  RpcHeader::DecodeHeader(header, &o_version, &o_size);
   OLA_ASSERT_EQ(version, o_version);
 
   version = RpcChannel::PROTOCOL_VERSION;
   size = 24;
-  StreamRpcHeader::EncodeHeader(&header, version, size);
-  StreamRpcHeader::DecodeHeader(header, &o_version, &o_size);
+  RpcHeader::EncodeHeader(&header, version, size);
+  RpcHeader::DecodeHeader(header, &o_version, &o_size);
   OLA_ASSERT_EQ(version, o_version);
 }

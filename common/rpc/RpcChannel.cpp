@@ -28,8 +28,8 @@
 #include "common/rpc/Rpc.pb.h"
 #include "common/rpc/RpcService.h"
 #include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/StreamRpcChannel.h"
-#include "common/rpc/StreamRpcHeader.h"
+#include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcHeader.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
@@ -51,6 +51,20 @@ const char *RpcChannel::K_RPC_VARIABLES[] = {
   K_RPC_RECEIVED_VAR,
   K_RPC_SENT_ERROR_VAR,
   K_RPC_SENT_VAR,
+};
+
+class OutstandingResponse {
+  /*
+   * These are Requests on the client end that haven't completed yet.
+   */
+  public:
+    OutstandingResponse() {}
+    ~OutstandingResponse() {}
+
+    int id;
+    RpcController *controller;
+    Callback0<void> *callback;
+    Message *reply;
 };
 
 RpcChannel::RpcChannel(
@@ -242,7 +256,7 @@ bool RpcChannel::SendMsg(RpcMessage *msg) {
   msg->AppendToString(&output);
   int length = output.size();
 
-  StreamRpcHeader::EncodeHeader(&header, PROTOCOL_VERSION,
+  RpcHeader::EncodeHeader(&header, PROTOCOL_VERSION,
                                 length - sizeof(header));
   output.replace(
       0, sizeof(header),
@@ -325,7 +339,7 @@ int RpcChannel::ReadHeader(unsigned int *version,
   if (!data_read)
     return 0;
 
-  StreamRpcHeader::DecodeHeader(header, version, size);
+  RpcHeader::DecodeHeader(header, version, size);
   return 0;
 }
 

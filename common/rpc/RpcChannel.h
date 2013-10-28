@@ -13,13 +13,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * StreamRpcChannel.h
+ * RpcChannel.h
  * The RPC Channel
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef COMMON_RPC_STREAMRPCCHANNEL_H_
-#define COMMON_RPC_STREAMRPCCHANNEL_H_
+#ifndef COMMON_RPC_RPCCHANNEL_H_
+#define COMMON_RPC_RPCCHANNEL_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -59,21 +59,6 @@ class OutstandingRequest {
     RpcController *controller;
     Message *response;
 };
-
-class OutstandingResponse {
-  /*
-   * These are Requests on the client end that haven't completed yet.
-   */
-  public:
-    OutstandingResponse() {}
-    ~OutstandingResponse() {}
-
-    int id;
-    RpcController *controller;
-    Callback0<void> *callback;
-    Message *reply;
-};
-
 
 /**
  * @brief The RPC channel used to communicate between the client and the
@@ -156,7 +141,7 @@ class RpcChannel {
     static const unsigned int PROTOCOL_VERSION = 1;
 
   private:
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingResponse*>
+    typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, class OutstandingResponse*>
       ResponseMap;
 
     bool SendMsg(RpcMessage *msg);
@@ -204,4 +189,4 @@ class RpcChannel {
 };
 }  // namespace rpc
 }  // namespace ola
-#endif  // COMMON_RPC_STREAMRPCCHANNEL_H_
+#endif  // COMMON_RPC_RPCCHANNEL_H_

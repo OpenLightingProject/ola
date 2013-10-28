@@ -126,7 +126,7 @@ void FileGenerator::GenerateImplementation(Printer *printer) {
     "#include <google/protobuf/descriptor.h>\n"
     "#include <google/protobuf/stubs/once.h>\n"
     "\n"
-    "#include \"common/rpc/StreamRpcChannel.h\"\n"
+    "#include \"common/rpc/RpcChannel.h\"\n"
     "#include \"common/rpc/RpcController.h\"\n"
     "\n",
     "file", m_output_name,

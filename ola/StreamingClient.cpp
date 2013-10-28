@@ -28,7 +28,7 @@
 #include <ola/StreamingClient.h>
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 
 namespace ola {
 
