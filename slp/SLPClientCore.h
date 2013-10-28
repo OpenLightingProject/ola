@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 #include "ola/Callback.h"
 #include "ola/network/Socket.h"
 #include "ola/slp/SLPClient.h"

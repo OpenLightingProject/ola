@@ -1,12 +1,12 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libstreamrpcchannel.la
-libstreamrpcchannel_la_SOURCES = StreamRpcChannel.cpp SimpleRpcController.cpp
+libstreamrpcchannel_la_SOURCES = RpcChannel.cpp SimpleRpcController.cpp
 nodist_libstreamrpcchannel_la_SOURCES = Rpc.pb.cc
 libstreamrpcchannel_la_LIBADD = $(libprotobuf_LIBS)
 
 EXTRA_DIST = RpcController.h Rpc.proto RpcService.h TestService.proto \
-             SimpleRpcController.h StreamRpcChannel.h StreamRpcHeader.h
+             SimpleRpcController.h RpcChannel.h RpcHeader.h
 
 BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h \
                 TestServiceService.pb.h TestServiceService.pb.cpp
@@ -26,8 +26,8 @@ endif
 check_PROGRAMS = $(TESTS)
 
 RpcTester_SOURCES = RpcControllerTest.cpp \
-                    StreamRpcChannelTest.cpp \
-                    StreamRpcHeaderTest.cpp \
+                    RpcChannelTest.cpp \
+                    RpcHeaderTest.cpp \
 nodist_RpcTester_SOURCES = TestService.pb.cc \
                            TestServiceService.pb.cpp
 RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

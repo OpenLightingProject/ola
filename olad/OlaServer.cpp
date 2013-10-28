@@ -31,19 +31,19 @@
 #include <utility>
 #include <vector>
 
-#include "ola/network/Socket.h"
 #include "common/protocol/Ola.pb.h"
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 #include "ola/BaseTypes.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"
+#include "ola/network/Socket.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/Client.h"
-#include "olad/DeviceManager.h"
 #include "olad/ClientBroker.h"
+#include "olad/DeviceManager.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"

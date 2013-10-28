@@ -28,8 +28,8 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
+#include "common/rpc/RpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/StreamRpcChannel.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/OlaCallbackClient.h"

@@ -44,7 +44,7 @@
 #include <set>
 #include <vector>
 
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 #include "slp/SLPDaemon.h"
 
 namespace ola {
