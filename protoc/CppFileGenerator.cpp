@@ -181,12 +181,6 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
   // anyone calls descriptor() or GetReflection() on one of the types defined
   // in the file.
 
-  /*
-  printer->Print(
-  "void $adddescriptorsname$();\n\n",
-  "adddescriptorsname", GlobalAddDescriptorsName(m_output_name));
-  */
-
   // In optimize_for = LITE_RUNTIME mode, we don't generate AssignDescriptors()
   // and we only use AddDescriptors() to allocate default instances.
   if (HasDescriptorMethods(m_file)) {
@@ -240,140 +234,9 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
       "\n",
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
 
-    // protobuf_RegisterTypes():  Calls
-    // MessageFactory::InternalRegisterGeneratedType() for each message type.
-    /*
-    printer->Print(
-      "void protobuf_RegisterTypes(const ::std::string&) {\n"
-      "  protobuf_AssignDescriptorsOnce();\n");
-    printer->Indent();
-
-    printer->Outdent();
-    printer->Print(
-      "}\n"
-      "\n"
-      "}  // namespace\n");
-    */
     printer->Print("}  // namespace\n");
   }
 
-  // -----------------------------------------------------------------
-
-  // ShutdownFile():  Deletes descriptors, default instances, etc. on shutdown.
-  /*
-  printer->Print(
-    "\n"
-    "void $shutdownfilename$() {\n",
-    "shutdownfilename", GlobalShutdownFileName(m_output_name));
-  printer->Indent();
-
-  printer->Outdent();
-  printer->Print(
-    "}\n\n");
-  */
-
-  // -----------------------------------------------------------------
-
-  // Now generate the AddDescriptors() function.
-  /*
-  PrintHandlingOptionalStaticInitializers(
-    m_file, printer,
-    // With static initializers.
-    // Note that we don't need any special synchronization in the following code
-    // because it is called at static init time before any threads exist.
-    "void $adddescriptorsname$() {\n"
-    "  static bool already_here = false;\n"
-    "  if (already_here) return;\n"
-    "  already_here = true;\n"
-    "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n"
-    "\n",
-    // Without.
-    "void $adddescriptorsname$_impl() {\n"
-    "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n"
-    "\n",
-    // Vars.
-    "adddescriptorsname", GlobalAddDescriptorsName(m_output_name));
-
-  printer->Indent();
-
-  // Call the AddDescriptors() methods for all of our dependencies, to make
-  // sure they get added first.
-  for (int i = 0; i < m_file->dependency_count(); i++) {
-    const FileDescriptor* dependency = m_file->dependency(i);
-    // Print the namespace prefix for the dependency.
-    vector<string> dependency_package_parts;
-    SplitStringUsing(dependency->package(), ".", &dependency_package_parts);
-    printer->Print("::");
-    for (unsigned int j = 0; j < dependency_package_parts.size(); j++) {
-      printer->Print("$name$::",
-                     "name", dependency_package_parts[j]);
-    }
-    // Call its AddDescriptors function.
-    printer->Print(
-      "$name$();\n",
-      "name", GlobalAddDescriptorsName(dependency->name()));
-  }
-
-  if (HasDescriptorMethods(m_file)) {
-    // Embed the descriptor.  We simply serialize the entire FileDescriptorProto
-    // and embed it as a string literal, which is parsed and built into real
-    // descriptors at initialization time.
-    google::protobuf::FileDescriptorProto fileproto;
-    m_file->CopyTo(&fileproto);
-    string filedata;
-    fileproto.SerializeToString(&filedata);
-
-    printer->Print(
-      "::google::protobuf::DescriptorPool::InternalAddGeneratedFile(");
-
-    // Only write 40 bytes per line.
-    static const int kBytesPerLine = 40;
-    for (unsigned int i = 0; i < filedata.size(); i += kBytesPerLine) {
-      printer->Print("\n  \"$data$\"",
-                     "data",
-                     EscapeTrigraphs(
-                         CEscape(filedata.substr(i, kBytesPerLine))));
-    }
-    printer->Print(
-        ", $size$);\n",
-        "size", SimpleItoa(filedata.size()));
-
-    // Call MessageFactory::InternalRegisterGeneratedFile().
-    printer->Print(
-      "::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(\n"
-      "  \"$filename$\", &protobuf_RegisterTypes);\n",
-      "filename", m_output_name);
-  }
-
-  printer->Print(
-    "::google::protobuf::internal::OnShutdown(&$shutdownfilename$);\n",
-    "shutdownfilename", GlobalShutdownFileName(m_file->name()));
-
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
-
-  PrintHandlingOptionalStaticInitializers(
-    m_file, printer,
-    // With static initializers.
-    "// Force AddDescriptors() to be called at static initialization time.\n"
-    "struct StaticDescriptorInitializer_$filename$ {\n"
-    "  StaticDescriptorInitializer_$filename$() {\n"
-    "    $adddescriptorsname$();\n"
-    "  }\n"
-    "} static_descriptor_initializer_$filename$_;\n",
-    // Without.
-    "GOOGLE_PROTOBUF_DECLARE_ONCE($adddescriptorsname$_once_);\n"
-    "void $adddescriptorsname$() {\n"
-    "  ::google::protobuf::::google::protobuf::GoogleOnceInit("
-    "&$adddescriptorsname$_once_,\n"
-    "                 &$adddescriptorsname$_impl);\n"
-    "}\n",
-    // Vars.
-    "adddescriptorsname", GlobalAddDescriptorsName(m_output_name),
-    "filename", FilenameIdentifier(m_output_name));
-  */
 }
 
 void FileGenerator::GenerateNamespaceOpeners(Printer* printer) {

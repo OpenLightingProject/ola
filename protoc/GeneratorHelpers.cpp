@@ -50,43 +50,6 @@ using google::protobuf::EnumDescriptor;
 namespace ola {
 
 namespace {
-// ----------------------------------------------------------------------
-// StringReplace()
-//    Give me a string and two patterns "old" and "new", and I replace
-//    the first instance of "old" in the string with "new", if it
-//    exists.  RETURN a new string, regardless of whether the replacement
-//    happened or not.
-// ----------------------------------------------------------------------
-/*
-void StringReplace(const string& s, const string& oldsub,
-                   const string& newsub, bool replace_all,
-                   string* res) {
-  if (oldsub.empty()) {
-    res->append(s);  // if empty, append the given string.
-    return;
-  }
-
-  string::size_type start_pos = 0;
-  string::size_type pos;
-  do {
-    pos = s.find(oldsub, start_pos);
-    if (pos == string::npos) {
-      break;
-    }
-    res->append(s, start_pos, pos - start_pos);
-    res->append(newsub);
-    start_pos = pos + oldsub.size();  // start searching again after the "old"
-  } while (replace_all);
-  res->append(s, start_pos, s.length() - start_pos);
-}
-
-string StringReplace(const string& s, const string& oldsub,
-                     const string& newsub, bool replace_all) {
-  string ret;
-  StringReplace(s, oldsub, newsub, replace_all, &ret);
-  return ret;
-}
-*/
 
 string DotsToUnderscores(const string& name) {
   return StringReplace(name, ".", "_", true);
@@ -96,57 +59,6 @@ string DotsToColons(const string& name) {
   return StringReplace(name, ".", "::", true);
 }
 
-
-/*
-const char* const kKeywordList[] = {
-  "and", "and_eq", "asm", "auto", "bitand", "bitor", "bool", "break", "case",
-  "catch", "char", "class", "compl", "const", "const_cast", "continue",
-  "default", "delete", "do", "double", "dynamic_cast", "else", "enum",
-  "explicit", "extern", "false", "float", "for", "friend", "goto", "if",
-  "inline", "int", "long", "mutable", "namespace", "new", "not", "not_eq",
-  "operator", "or", "or_eq", "private", "protected", "public", "register",
-  "reinterpret_cast", "return", "short", "signed", "sizeof", "static",
-  "static_cast", "struct", "switch", "template", "this", "throw", "true", "try",
-  "typedef", "typeid", "typename", "union", "unsigned", "using", "virtual",
-  "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
-};
-
-hash_set<string> MakeKeywordsMap() {
-  hash_set<string> result;
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(kKeywordList); i++) {
-    result.insert(kKeywordList[i]);
-  }
-  return result;
-}
-
-hash_set<string> kKeywords = MakeKeywordsMap();
-
-string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
-  string result;
-  // Note:  I distrust ctype.h due to locales.
-  for (unsigned int i = 0; i < input.size(); i++) {
-    if ('a' <= input[i] && input[i] <= 'z') {
-      if (cap_next_letter) {
-        result += input[i] + ('A' - 'a');
-      } else {
-        result += input[i];
-      }
-      cap_next_letter = false;
-    } else if ('A' <= input[i] && input[i] <= 'Z') {
-      // Capital letters are left as-is.
-      result += input[i];
-      cap_next_letter = false;
-    } else if ('0' <= input[i] && input[i] <= '9') {
-      result += input[i];
-      cap_next_letter = true;
-    } else {
-      cap_next_letter = true;
-    }
-  }
-  return result;
-}
-
-*/
 // Returns whether the provided descriptor has an extension. This includes its
 // nested types.
 bool HasExtension(const Descriptor* descriptor) {
@@ -199,44 +111,6 @@ string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
   }
 }
 
-/*
-string SuperClassName(const Descriptor* descriptor) {
-  return HasDescriptorMethods(descriptor->file()) ?
-      "::google::protobuf::Message" : "::google::protobuf::MessageLite";
-}
-
-string FieldName(const FieldDescriptor* field) {
-  string result = field->name();
-  LowerString(&result);
-  if (kKeywords.count(result) > 0) {
-    result.append("_");
-  }
-  return result;
-}
-
-string FieldConstantName(const FieldDescriptor *field) {
-  string field_name = UnderscoresToCamelCase(field->name(), true);
-  string result = "k" + field_name + "FieldNumber";
-
-  if (!field->is_extension() &&
-      field->containing_type()->FindFieldByCamelcaseName(
-        field->camelcase_name()) != field) {
-    // This field's camelcase name is not unique.  As a hack, add the field
-    // number to the constant name.  This makes the constant rather useless,
-    // but what can we do?
-    result += "_" + SimpleItoa(field->number());
-  }
-
-  return result;
-}
-
-string FieldMessageTypeName(const FieldDescriptor* field) {
-  // Note:  The Google-internal version of Protocol Buffers uses this function
-  //   as a hook point for hacks to support legacy code.
-  return ClassName(field->message_type(), true);
-}
-
-*/
 string StripProto(const string& filename) {
   if (HasSuffixString(filename, ".protodevel")) {
     return StripSuffixString(filename, ".protodevel");
@@ -244,137 +118,6 @@ string StripProto(const string& filename) {
     return StripSuffixString(filename, ".proto");
   }
 }
-
-/*
-const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
-  switch (type) {
-    case FieldDescriptor::CPPTYPE_INT32  : return "::google::protobuf::int32";
-    case FieldDescriptor::CPPTYPE_INT64  : return "::google::protobuf::int64";
-    case FieldDescriptor::CPPTYPE_UINT32 : return "::google::protobuf::uint32";
-    case FieldDescriptor::CPPTYPE_UINT64 : return "::google::protobuf::uint64";
-    case FieldDescriptor::CPPTYPE_DOUBLE : return "double";
-    case FieldDescriptor::CPPTYPE_FLOAT  : return "float";
-    case FieldDescriptor::CPPTYPE_BOOL   : return "bool";
-    case FieldDescriptor::CPPTYPE_ENUM   : return "int";
-    case FieldDescriptor::CPPTYPE_STRING : return "::std::string";
-    case FieldDescriptor::CPPTYPE_MESSAGE: return NULL;
-
-    // No default because we want the compiler to complain if any new
-    // CppTypes are added.
-  }
-
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
-}
-
-const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
-  switch (type) {
-    case FieldDescriptor::TYPE_INT32   : return "Int32";
-    case FieldDescriptor::TYPE_INT64   : return "Int64";
-    case FieldDescriptor::TYPE_UINT32  : return "UInt32";
-    case FieldDescriptor::TYPE_UINT64  : return "UInt64";
-    case FieldDescriptor::TYPE_SINT32  : return "SInt32";
-    case FieldDescriptor::TYPE_SINT64  : return "SInt64";
-    case FieldDescriptor::TYPE_FIXED32 : return "Fixed32";
-    case FieldDescriptor::TYPE_FIXED64 : return "Fixed64";
-    case FieldDescriptor::TYPE_SFIXED32: return "SFixed32";
-    case FieldDescriptor::TYPE_SFIXED64: return "SFixed64";
-    case FieldDescriptor::TYPE_FLOAT   : return "Float";
-    case FieldDescriptor::TYPE_DOUBLE  : return "Double";
-
-    case FieldDescriptor::TYPE_BOOL    : return "Bool";
-    case FieldDescriptor::TYPE_ENUM    : return "Enum";
-
-    case FieldDescriptor::TYPE_STRING  : return "String";
-    case FieldDescriptor::TYPE_BYTES   : return "Bytes";
-    case FieldDescriptor::TYPE_GROUP   : return "Group";
-    case FieldDescriptor::TYPE_MESSAGE : return "Message";
-
-    // No default because we want the compiler to complain if any new
-    // types are added.
-  }
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return "";
-}
-
-string DefaultValue(const FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32:
-      // gcc rejects the decimal form of kint32min and kint64min.
-      if (field->default_value_int32() == kint32min) {
-        // Make sure we are in a 2's complement system.
-        GOOGLE_COMPILE_ASSERT(kint32min == -0x80000000, kint32min_value_error);
-        return "-0x80000000";
-      }
-      return SimpleItoa(field->default_value_int32());
-    case FieldDescriptor::CPPTYPE_UINT32:
-      return SimpleItoa(field->default_value_uint32()) + "u";
-    case FieldDescriptor::CPPTYPE_INT64:
-      // See the comments for CPPTYPE_INT32.
-      if (field->default_value_int64() == kint64min) {
-        // Make sure we are in a 2's complement system.
-        GOOGLE_COMPILE_ASSERT(kint64min == GOOGLE_LONGLONG(-0x8000000000000000),
-                       kint64min_value_error);
-        return "GOOGLE_LONGLONG(-0x8000000000000000)";
-      }
-      return "GOOGLE_LONGLONG(" + SimpleItoa(field->default_value_int64()) + ")";
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
-    case FieldDescriptor::CPPTYPE_DOUBLE: {
-      double value = field->default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
-        return "::google::protobuf::internal::Infinity()";
-      } else if (value == -numeric_limits<double>::infinity()) {
-        return "-::google::protobuf::internal::Infinity()";
-      } else if (value != value) {
-        return "::google::protobuf::internal::NaN()";
-      } else {
-        return SimpleDtoa(value);
-      }
-    }
-    case FieldDescriptor::CPPTYPE_FLOAT:
-      {
-        float value = field->default_value_float();
-        if (value == numeric_limits<float>::infinity()) {
-          return "static_cast<float>(::google::protobuf::internal::Infinity())";
-        } else if (value == -numeric_limits<float>::infinity()) {
-          return "static_cast<float>(-::google::protobuf::internal::Infinity())";
-        } else if (value != value) {
-          return "static_cast<float>(::google::protobuf::internal::NaN())";
-        } else {
-          string float_value = SimpleFtoa(value);
-          // If floating point value contains a period (.) or an exponent
-          // (either E or e), then append suffix 'f' to make it a float
-          // literal.
-          if (float_value.find_first_of(".eE") != string::npos) {
-            float_value.push_back('f');
-          }
-          return float_value;
-        }
-      }
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return field->default_value_bool() ? "true" : "false";
-    case FieldDescriptor::CPPTYPE_ENUM:
-      // Lazy:  Generate a static_cast because we don't have a helper function
-      //   that constructs the full name of an enum value.
-      return strings::Substitute(
-          "static_cast< $0 >($1)",
-          ClassName(field->enum_type(), true),
-          field->default_value_enum()->number());
-    case FieldDescriptor::CPPTYPE_STRING:
-      return "\"" + EscapeTrigraphs(
-        CEscape(field->default_value_string())) +
-        "\"";
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      return FieldMessageTypeName(field) + "::default_instance()";
-  }
-  // Can't actually get here; make compiler happy.  (We could add a default
-  // case above but then we wouldn't get the nice compiler warning when a
-  // new type is added.)
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-  return "";
-}
-*/
 
 // Convert a file name into a valid identifier.
 string FilenameIdentifier(const string& filename) {
@@ -401,16 +144,6 @@ string GlobalAddDescriptorsName(const string& filename) {
 // Return the name of the AssignDescriptors() function for a given file.
 string GlobalAssignDescriptorsName(const string& filename) {
   return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
-}
-
-// Return the name of the ShutdownFile() function for a given file.
-string GlobalShutdownFileName(const string& filename) {
-  return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
-}
-
-// Escape C++ trigraphs by escaping question marks to \?
-string EscapeTrigraphs(const string& to_escape) {
-  return StringReplace(to_escape, "?", "\\?", true);
 }
 
 bool StaticInitializersForced(const FileDescriptor* file) {
