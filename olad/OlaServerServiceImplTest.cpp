@@ -23,30 +23,29 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <google/protobuf/stubs/common.h>
 #include <string>
 
 #include "common/rpc/SimpleRpcController.h"
 #include "ola/BaseTypes.h"
+#include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
+#include "ola/testing/TestUtils.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/PluginLoader.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
-#include "ola/testing/TestUtils.h"
 
-
-using google::protobuf::Closure;
-using google::protobuf::NewCallback;
+using ola::NewCallback;
+using ola::Callback0;
 using ola::DmxBuffer;
-using ola::OlaServerServiceImpl;
 using ola::OlaClientService;
+using ola::OlaServerServiceImpl;
 using ola::Universe;
 using ola::UniverseStore;
 using ola::rpc::SimpleRpcController;
@@ -272,7 +271,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::UniverseRequest *request = new ola::proto::UniverseRequest();
   ola::proto::DmxData *response = new ola::proto::DmxData();
-  Closure *closure = NewCallback(
+  Callback0<void> *closure = ola::NewCallback(
       &check,
       &GetDmxCheck::Check,
       controller,
@@ -359,7 +358,7 @@ void OlaServerServiceImplTest::CallRegisterForDmx(
   ola::proto::RegisterDmxRequest *request = (
       new ola::proto::RegisterDmxRequest());
   ola::proto::Ack *response = new ola::proto::Ack();
-  Closure *closure = NewCallback(
+  Callback0<void> *closure = ola::NewCallback(
       &check,
       &RegisterForDmxCheck::Check,
       controller,
@@ -444,7 +443,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
   ola::proto::DmxData *request = new
     ola::proto::DmxData();
   ola::proto::Ack *response = new ola::proto::Ack();
-  Closure *closure = NewCallback(
+  Callback0<void> *closure = ola::NewCallback(
       &check,
       &UpdateDmxDataCheck::Check,
       controller,
@@ -515,7 +514,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
   ola::proto::UniverseNameRequest *request = new
     ola::proto::UniverseNameRequest();
   ola::proto::Ack *response = new ola::proto::Ack();
-  Closure *closure = NewCallback(
+  Callback0<void> *closure = ola::NewCallback(
       &check,
       &SetUniverseNameCheck::Check,
       controller,
@@ -585,7 +584,7 @@ void OlaServerServiceImplTest::CallSetMergeMode(
   ola::proto::MergeModeRequest *request = new
     ola::proto::MergeModeRequest();
   ola::proto::Ack *response = new ola::proto::Ack();
-  Closure *closure = NewCallback(
+  Callback0<void> *closure = ola::NewCallback(
       &check,
       &SetMergeModeCheck::Check,
       controller,

@@ -40,6 +40,7 @@
 
 #include "slp/SLPServer.h"
 #include "slp/SLP.pb.h"
+#include "slp/SLPService.pb.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -102,34 +103,34 @@ class SLPDaemon {
         }
         ~SLPServiceImpl() {}
 
-        void FindService(::google::protobuf::RpcController* controller,
+        void FindService(ola::rpc::RpcController* controller,
                          const ola::slp::proto::ServiceRequest* request,
                          ola::slp::proto::ServiceReply* response,
-                         ::google::protobuf::Closure* done);
+                         CompletionCallback* done);
 
         void RegisterService(
-            ::google::protobuf::RpcController* controller,
+            ola::rpc::RpcController* controller,
             const ola::slp::proto::ServiceRegistration* request,
             ola::slp::proto::ServiceAck* response,
-            ::google::protobuf::Closure* done);
+            CompletionCallback* done);
 
         void DeRegisterService(
-            ::google::protobuf::RpcController* controller,
+            ola::rpc::RpcController* controller,
             const ola::slp::proto::ServiceDeRegistration* request,
             ola::slp::proto::ServiceAck* response,
-            ::google::protobuf::Closure* done);
+            CompletionCallback* done);
 
         void GetServerInfo(
-            ::google::protobuf::RpcController* controller,
+            ola::rpc::RpcController* controller,
             const ola::slp::proto::ServerInfoRequest* request,
             ola::slp::proto::ServerInfoReply* response,
-            ::google::protobuf::Closure* done);
+            CompletionCallback* done);
 
       private:
         SLPServer *m_slp_server;
 
         void FindServiceHandler(ola::slp::proto::ServiceReply* response,
-                                ::google::protobuf::Closure* done,
+                                CompletionCallback* done,
                                 const URLEntries &urls);
     };
 

@@ -44,7 +44,7 @@
 #include <set>
 #include <vector>
 
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 #include "slp/SLPDaemon.h"
 
 namespace ola {
@@ -57,7 +57,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 using ola::network::UDPSocket;
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcChannel;
 using std::auto_ptr;
 using std::string;
 
@@ -67,7 +67,7 @@ const uint16_t SLPDaemon::DEFAULT_SLP_RPC_PORT = 9011;
 
 class ConnectedClient {
   public:
-    StreamRpcChannel *channel;
+    RpcChannel *channel;
     TCPSocket *socket;
 
     explicit ConnectedClient(TCPSocket *socket)
@@ -231,8 +231,7 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
     delete client;
   }
 
-  client->channel = new StreamRpcChannel(m_service_impl.get(), socket,
-                                         m_export_map),
+  client->channel = new RpcChannel(m_service_impl.get(), socket, m_export_map),
 
   client->channel->SetChannelCloseHandler(NewSingleCallback(
       this, &SLPDaemon::RPCSocketClosed, socket->ReadDescriptor()));
@@ -284,10 +283,10 @@ bool SLPDaemon::CleanOldClients() {
  * Find Service request.
  */
 void SLPDaemon::SLPServiceImpl::FindService(
-    ::google::protobuf::RpcController*,
+    ola::rpc::RpcController*,
     const ola::slp::proto::ServiceRequest* request,
     ola::slp::proto::ServiceReply* response,
-    ::google::protobuf::Closure* done) {
+    CompletionCallback* done) {
   OLA_INFO << "Recv FindService request";
 
   set<string> scopes;
@@ -308,10 +307,10 @@ void SLPDaemon::SLPServiceImpl::FindService(
  * Register service request.
  */
 void SLPDaemon::SLPServiceImpl::RegisterService(
-    ::google::protobuf::RpcController*,
+    ola::rpc::RpcController*,
     const ola::slp::proto::ServiceRegistration* request,
     ola::slp::proto::ServiceAck* response,
-    ::google::protobuf::Closure* done) {
+    CompletionCallback* done) {
   OLA_INFO << "Recv RegisterService request";
 
   set<string> scopes;
@@ -329,10 +328,10 @@ void SLPDaemon::SLPServiceImpl::RegisterService(
  * De-Register service request.
  */
 void SLPDaemon::SLPServiceImpl::DeRegisterService(
-    ::google::protobuf::RpcController*,
+    ola::rpc::RpcController*,
     const ola::slp::proto::ServiceDeRegistration* request,
     ola::slp::proto::ServiceAck* response,
-    ::google::protobuf::Closure* done) {
+    CompletionCallback* done) {
   OLA_INFO << "Recv DeRegisterService request";
 
   set<string> scopes;
@@ -351,10 +350,10 @@ void SLPDaemon::SLPServiceImpl::DeRegisterService(
  * Get the server info
  */
 void SLPDaemon::SLPServiceImpl::GetServerInfo(
-    ::google::protobuf::RpcController*,
+    ola::rpc::RpcController*,
     const ola::slp::proto::ServerInfoRequest*,
     ola::slp::proto::ServerInfoReply* response,
-    ::google::protobuf::Closure* done) {
+    CompletionCallback* done) {
   OLA_INFO << "Recv GetServerInfo";
 
   response->set_da_enabled(m_slp_server->DAEnabled());
@@ -373,7 +372,7 @@ void SLPDaemon::SLPServiceImpl::GetServerInfo(
  */
 void SLPDaemon::SLPServiceImpl::FindServiceHandler(
     ola::slp::proto::ServiceReply* response,
-    ::google::protobuf::Closure* done,
+    CompletionCallback* done,
     const URLEntries &urls) {
   for (URLEntries::const_iterator iter = urls.begin();
        iter != urls.end(); ++iter) {

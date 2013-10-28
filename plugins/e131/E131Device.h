@@ -32,7 +32,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using google::protobuf::RpcController;
 using ola::Plugin;
 using ola::plugin::e131::Request;
 using std::vector;
@@ -68,10 +67,10 @@ class E131Device: public ola::Device {
 
     string DeviceId() const { return "1"; }
 
-    void Configure(RpcController *controller,
+    void Configure(ola::rpc::RpcController *controller,
                    const string &request,
                    string *response,
-                   google::protobuf::Closure *done);
+                   Callback0<void> *done);
 
   protected:
     bool StartHook();

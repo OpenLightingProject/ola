@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * StreamRpcChannel.cpp
+ * RpcChannel.cpp
  * Interface for the UDP RPC Channel
  * Copyright (C) 2005-2008 Simon Newton
  */
@@ -26,9 +26,10 @@
 #include <string>
 
 #include "common/rpc/Rpc.pb.h"
+#include "common/rpc/RpcService.h"
 #include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/StreamRpcChannel.h"
-#include "common/rpc/StreamRpcHeader.h"
+#include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcHeader.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
@@ -40,20 +41,34 @@ namespace rpc {
 using google::protobuf::ServiceDescriptor;
 using std::auto_ptr;
 
-const char StreamRpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
-const char StreamRpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
-const char StreamRpcChannel::K_RPC_SENT_ERROR_VAR[] = "rpc-send-errors";
-const char StreamRpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
-const char StreamRpcChannel::STREAMING_NO_RESPONSE[] = "STREAMING_NO_RESPONSE";
+const char RpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
+const char RpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
+const char RpcChannel::K_RPC_SENT_ERROR_VAR[] = "rpc-send-errors";
+const char RpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
+const char RpcChannel::STREAMING_NO_RESPONSE[] = "STREAMING_NO_RESPONSE";
 
-const char *StreamRpcChannel::K_RPC_VARIABLES[] = {
+const char *RpcChannel::K_RPC_VARIABLES[] = {
   K_RPC_RECEIVED_VAR,
   K_RPC_SENT_ERROR_VAR,
   K_RPC_SENT_VAR,
 };
 
-StreamRpcChannel::StreamRpcChannel(
-    Service *service,
+class OutstandingResponse {
+  /*
+   * These are Requests on the client end that haven't completed yet.
+   */
+  public:
+    OutstandingResponse() {}
+    ~OutstandingResponse() {}
+
+    int id;
+    RpcController *controller;
+    Callback0<void> *callback;
+    Message *reply;
+};
+
+RpcChannel::RpcChannel(
+    RpcService *service,
     ola::io::ConnectedDescriptor *descriptor,
     ExportMap *export_map)
     : m_service(service),
@@ -66,9 +81,9 @@ StreamRpcChannel::StreamRpcChannel(
       m_recv_type_map(NULL) {
   if (descriptor) {
     descriptor->SetOnData(
-        ola::NewCallback(this, &StreamRpcChannel::DescriptorReady));
+        ola::NewCallback(this, &RpcChannel::DescriptorReady));
     descriptor->SetOnClose(
-        ola::NewSingleCallback(this, &StreamRpcChannel::HandleChannelClose));
+        ola::NewSingleCallback(this, &RpcChannel::HandleChannelClose));
   }
 
   if (m_export_map) {
@@ -80,11 +95,11 @@ StreamRpcChannel::StreamRpcChannel(
   }
 }
 
-StreamRpcChannel::~StreamRpcChannel() {
+RpcChannel::~RpcChannel() {
   free(m_buffer);
 }
 
-void StreamRpcChannel::DescriptorReady() {
+void RpcChannel::DescriptorReady() {
   if (!m_expected_size) {
     // this is a new msg
     unsigned int version;
@@ -143,17 +158,17 @@ void StreamRpcChannel::DescriptorReady() {
   return;
 }
 
-void StreamRpcChannel::SetChannelCloseHandler(
+void RpcChannel::SetChannelCloseHandler(
     SingleUseCallback0<void> *closure) {
   m_on_close.reset(closure);
 }
 
-void StreamRpcChannel::CallMethod(
+void RpcChannel::CallMethod(
     const MethodDescriptor *method,
     RpcController *controller,
     const Message *request,
     Message *reply,
-    google::protobuf::Closure *done) {
+    Callback0<void> *done) {
   // TODO(simonn): reduce the number of copies here
   string output;
   RpcMessage message;
@@ -206,7 +221,7 @@ void StreamRpcChannel::CallMethod(
   }
 }
 
-void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
+void RpcChannel::RequestComplete(OutstandingRequest *request) {
   string output;
   RpcMessage message;
 
@@ -229,7 +244,7 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
 /*
  * Write an RpcMessage to the write descriptor.
  */
-bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
+bool RpcChannel::SendMsg(RpcMessage *msg) {
   if (!(m_descriptor && m_descriptor->ValidReadDescriptor())) {
     OLA_WARN << "RPC descriptor closed, not sending messages";
     return false;
@@ -241,7 +256,7 @@ bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
   msg->AppendToString(&output);
   int length = output.size();
 
-  StreamRpcHeader::EncodeHeader(&header, PROTOCOL_VERSION,
+  RpcHeader::EncodeHeader(&header, PROTOCOL_VERSION,
                                 length - sizeof(header));
   output.replace(
       0, sizeof(header),
@@ -279,7 +294,7 @@ bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
  * @param size the size of the new buffer to allocate
  * @returns the size of the new buffer
  */
-int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
+int RpcChannel::AllocateMsgBuffer(unsigned int size) {
   unsigned int requested_size = size;
   uint8_t *new_buffer;
 
@@ -309,7 +324,7 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
  * Read 4 bytes and decode the header fields.
  * @returns: -1 if there is no data is available, version and size are 0
  */
-int StreamRpcChannel::ReadHeader(unsigned int *version,
+int RpcChannel::ReadHeader(unsigned int *version,
                                  unsigned int *size) const {
   uint32_t header;
   unsigned int data_read = 0;
@@ -324,7 +339,7 @@ int StreamRpcChannel::ReadHeader(unsigned int *version,
   if (!data_read)
     return 0;
 
-  StreamRpcHeader::DecodeHeader(header, version, size);
+  RpcHeader::DecodeHeader(header, version, size);
   return 0;
 }
 
@@ -332,7 +347,7 @@ int StreamRpcChannel::ReadHeader(unsigned int *version,
 /*
  * Parse a new message and handle it.
  */
-bool StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
+bool RpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
   RpcMessage msg;
   if (!msg.ParseFromArray(data, size)) {
     OLA_WARN << "Failed to parse RPC";
@@ -384,7 +399,7 @@ bool StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
 /*
  * Handle a new RPC method call.
  */
-void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
+void RpcChannel::HandleRequest(RpcMessage *msg) {
   if (!m_service) {
     OLA_WARN << "no service registered";
     return;
@@ -426,8 +441,8 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   }
 
   m_requests[msg->id()] = request;
-  google::protobuf::Closure *callback = NewCallback(
-      this, &StreamRpcChannel::RequestComplete, request);
+  Callback0<void> *callback = NewCallback(
+      this, &RpcChannel::RequestComplete, request);
   m_service->CallMethod(method, request->controller, request_pb, response_pb,
                         callback);
   delete request_pb;
@@ -437,7 +452,7 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
 /*
  * Handle a streaming RPC call. This doesn't return any response to the client.
  */
-void StreamRpcChannel::HandleStreamRequest(RpcMessage *msg) {
+void RpcChannel::HandleStreamRequest(RpcMessage *msg) {
   if (!m_service) {
     OLA_WARN << "no service registered";
     return;
@@ -482,7 +497,7 @@ void StreamRpcChannel::HandleStreamRequest(RpcMessage *msg) {
 /*
  * Notify the caller that the request failed.
  */
-void StreamRpcChannel::SendRequestFailed(OutstandingRequest *request) {
+void RpcChannel::SendRequestFailed(OutstandingRequest *request) {
   RpcMessage message;
   message.set_type(RESPONSE_FAILED);
   message.set_id(request->id);
@@ -495,7 +510,7 @@ void StreamRpcChannel::SendRequestFailed(OutstandingRequest *request) {
 /*
  * Sent if we get a request for a non-existant method.
  */
-void StreamRpcChannel::SendNotImplemented(int msg_id) {
+void RpcChannel::SendNotImplemented(int msg_id) {
   RpcMessage message;
   message.set_type(RESPONSE_NOT_IMPLEMENTED);
   message.set_id(msg_id);
@@ -506,7 +521,7 @@ void StreamRpcChannel::SendNotImplemented(int msg_id) {
 /*
  * Cleanup an outstanding request after the response has been returned
  */
-void StreamRpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
+void RpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
   m_requests.erase(request->id);
   delete request->controller;
   delete request->response;
@@ -518,7 +533,7 @@ void StreamRpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
 /*
  * Handle a RPC response by invoking the callback.
  */
-void StreamRpcChannel::HandleResponse(RpcMessage *msg) {
+void RpcChannel::HandleResponse(RpcMessage *msg) {
   auto_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
@@ -531,7 +546,7 @@ void StreamRpcChannel::HandleResponse(RpcMessage *msg) {
 /*
  * Handle a RPC response by invoking the callback.
  */
-void StreamRpcChannel::HandleFailedResponse(RpcMessage *msg) {
+void RpcChannel::HandleFailedResponse(RpcMessage *msg) {
   auto_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
@@ -544,7 +559,7 @@ void StreamRpcChannel::HandleFailedResponse(RpcMessage *msg) {
 /*
  * Handle a RPC response by invoking the callback.
  */
-void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
+void RpcChannel::HandleCanceledResponse(RpcMessage *msg) {
   OLA_INFO << "Received a canceled response";
   auto_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
@@ -558,7 +573,7 @@ void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
 /*
  * Handle a NOT_IMPLEMENTED by invoking the callback.
  */
-void StreamRpcChannel::HandleNotImplemented(RpcMessage *msg) {
+void RpcChannel::HandleNotImplemented(RpcMessage *msg) {
   OLA_INFO << "Received a non-implemented response";
   auto_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
@@ -571,7 +586,7 @@ void StreamRpcChannel::HandleNotImplemented(RpcMessage *msg) {
 /*
  * Invoke the Channel close handler/
  */
-void StreamRpcChannel::HandleChannelClose() {
+void RpcChannel::HandleChannelClose() {
   if (m_on_close.get()) {
     m_on_close.release()->Run();
   }

@@ -13,20 +13,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * StreamRpcHeader.h
+ * RpcHeader.h
  * The header for the RPC messages.
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef COMMON_RPC_STREAMRPCHEADER_H_
-#define COMMON_RPC_STREAMRPCHEADER_H_
+#ifndef COMMON_RPC_RPCHEADER_H_
+#define COMMON_RPC_RPCHEADER_H_
 
 #include <stdint.h>
 
 namespace ola {
 namespace rpc {
 
-class StreamRpcHeader {
+class RpcHeader {
   /*
    * The first 4 bytes are the header which contains the RPC protocol version
    * (this is separate from the protobuf version) and the size of the protobuf.
@@ -56,4 +56,4 @@ class StreamRpcHeader {
 };
 }  // namespace rpc
 }  // namespace ola
-#endif  // COMMON_RPC_STREAMRPCHEADER_H_
+#endif  // COMMON_RPC_RPCHEADER_H_

@@ -26,11 +26,12 @@
 #include <vector>
 
 #include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/RpcChannel.h"
 #include "ola/Callback.h"
 #include "ola/network/Socket.h"
 #include "ola/slp/SLPClient.h"
 #include "slp/SLP.pb.h"
+#include "slp/SLPService.pb.h"
 
 namespace ola {
 namespace slp {
@@ -40,7 +41,7 @@ class SLPClientCoreServiceImpl;
 using std::string;
 using ola::io::ConnectedDescriptor;
 using ola::rpc::SimpleRpcController;
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcChannel;
 
 class SLPClientCore {
   public:
@@ -124,7 +125,7 @@ class SLPClientCore {
 
   private:
     ConnectedDescriptor *m_descriptor;
-    StreamRpcChannel *m_channel;
+    RpcChannel *m_channel;
     ola::slp::proto::SLPService_Stub *m_stub;
     int m_connected;
 

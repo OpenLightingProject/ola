@@ -27,9 +27,8 @@
 #include <string>
 #include <vector>
 
-namespace google {
-namespace protobuf {
-  class Closure;
+namespace ola {
+namespace rpc {
   class RpcController;
 }
 }
@@ -79,10 +78,10 @@ class AbstractDevice {
     virtual OutputPort *GetOutputPort(unsigned int port_id) const = 0;
 
     // configure this device
-    virtual void Configure(google::protobuf::RpcController *controller,
+    virtual void Configure(ola::rpc::RpcController *controller,
                            const string &request,
                            string *response,
-                           google::protobuf::Closure *done) = 0;
+                           Callback0<void> *done) = 0;
 };
 
 
@@ -124,10 +123,10 @@ class Device: public AbstractDevice {
     void DeleteAllPorts();
 
     // Handle a Configure request
-    virtual void Configure(class google::protobuf::RpcController *controller,
+    virtual void Configure(ola::rpc::RpcController *controller,
                            const string &request,
                            string *response,
-                           google::protobuf::Closure *done);
+                           Callback0<void> *done);
 
   protected:
     virtual bool StartHook() { return true; }
