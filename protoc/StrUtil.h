@@ -114,36 +114,6 @@ LIBPROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
 LIBPROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
                                          vector<string>* res);
 
-// Split a string using one or more byte delimiters, presented
-// as a nul-terminated c string. Append the components to 'result'.
-// If there are consecutive delimiters, this function will return
-// corresponding empty strings.  If you want to drop the empty
-// strings, try SplitStringUsing().
-//
-// If "full" is the empty string, yields an empty string as the only value.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void SplitStringAllowEmpty(const string& full,
-                                              const char* delim,
-                                              vector<string>* result);
-
-// ----------------------------------------------------------------------
-// JoinStrings()
-//    These methods concatenate a vector of strings into a C++ string, using
-//    the C-string "delim" as a separator between components. There are two
-//    flavors of the function, one flavor returns the concatenated string,
-//    another takes a pointer to the target string. In the latter case the
-//    target string is cleared and overwritten.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void JoinStrings(const vector<string>& components,
-                                    const char* delim, string* result);
-
-inline string JoinStrings(const vector<string>& components,
-                          const char* delim) {
-  string result;
-  JoinStrings(components, delim, &result);
-  return result;
-}
-
 // ----------------------------------------------------------------------
 // FastIntToBuffer()
 // FastHexToBuffer()
@@ -177,24 +147,6 @@ char* FastUInt64ToBuffer(uint64_t i, char* buffer);  // inline below
 LIBPROTOBUF_EXPORT char* FastHexToBuffer(int i, char* buffer);
 LIBPROTOBUF_EXPORT char* FastHex64ToBuffer(uint64_t i, char* buffer);
 LIBPROTOBUF_EXPORT char* FastHex32ToBuffer(uint32_t i, char* buffer);
-
-// at least 22 bytes long
-inline char* FastIntToBuffer(int i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastInt32ToBuffer(i, buffer) : FastInt64ToBuffer(i, buffer));
-}
-inline char* FastUIntToBuffer(unsigned int i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastUInt32ToBuffer(i, buffer) : FastUInt64ToBuffer(i, buffer));
-}
-inline char* FastLongToBuffer(long i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastInt32ToBuffer(i, buffer) : FastInt64ToBuffer(i, buffer));
-}
-inline char* FastULongToBuffer(unsigned long i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastUInt32ToBuffer(i, buffer) : FastUInt64ToBuffer(i, buffer));
-}
 
 // ----------------------------------------------------------------------
 // FastInt32ToBufferLeft()
@@ -239,37 +191,6 @@ LIBPROTOBUF_EXPORT string SimpleItoa(long i);
 LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long i);
 LIBPROTOBUF_EXPORT string SimpleItoa(long long i);
 LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long long i);
-
-// ----------------------------------------------------------------------
-// SimpleDtoa()
-// SimpleFtoa()
-// DoubleToBuffer()
-// FloatToBuffer()
-//    Description: converts a double or float to a string which, if
-//    passed to NoLocaleStrtod(), will produce the exact same original double
-//    (except in case of NaN; all NaNs are considered the same value).
-//    We try to keep the string short but it's not guaranteed to be as
-//    short as possible.
-//
-//    DoubleToBuffer() and FloatToBuffer() write the text to the given
-//    buffer and return it.  The buffer must be at least
-//    kDoubleToBufferSize bytes for doubles and kFloatToBufferSize
-//    bytes for floats.  kFastToBufferSize is also guaranteed to be large
-//    enough to hold either.
-//
-//    Return value: string
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT string SimpleDtoa(double value);
-LIBPROTOBUF_EXPORT string SimpleFtoa(float value);
-
-LIBPROTOBUF_EXPORT char* DoubleToBuffer(double i, char* buffer);
-LIBPROTOBUF_EXPORT char* FloatToBuffer(float i, char* buffer);
-
-// In practice, doubles should never need more than 24 bytes and floats
-// should never need more than 14 (including null terminators), but we
-// overestimate to be safe.
-static const int kDoubleToBufferSize = 32;
-static const int kFloatToBufferSize = 24;
 
 }  // namespace ola
 
