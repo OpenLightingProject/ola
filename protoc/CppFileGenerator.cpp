@@ -86,9 +86,16 @@ void FileGenerator::GenerateHeader(Printer *printer) {
     "#define PROTOBUF_$filename_identifier$__INCLUDED\n"
     "\n"
     "#include <google/protobuf/service.h>\n"
-    "#include <string>\n"
     "\n"
     "#include \"$basename$.pb.h\"\n"
+    "#include \"common/rpc/RpcService.h\"\n"
+    "\n"
+    "namespace ola {\n"
+    "namespace rpc {\n"
+    "  class RpcController;\n"
+    "  class RpcChannel;\n"
+    "}  // rpc\n"
+    "}  // ola\n"
     "\n",
     "basename", StripProto(m_file->name()),
     "filename", m_file->name(),
@@ -118,6 +125,9 @@ void FileGenerator::GenerateImplementation(Printer *printer) {
     "\n"
     "#include <google/protobuf/descriptor.h>\n"
     "#include <google/protobuf/stubs/once.h>\n"
+    "\n"
+    "#include \"common/rpc/StreamRpcChannel.h\"\n"
+    "#include \"common/rpc/RpcController.h\"\n"
     "\n",
     "file", m_output_name,
     "filename", m_file->name());

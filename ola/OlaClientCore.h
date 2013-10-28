@@ -49,7 +49,7 @@ class OlaClientCoreServiceImpl;
 using std::string;
 using ola::io::ConnectedDescriptor;
 using ola::rpc::SimpleRpcController;
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcChannel;
 
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
@@ -216,10 +216,10 @@ class OlaClientCore: public ola::proto::OlaClientService {
     /*
      * This is called by the channel when new DMX data turns up
      */
-    void UpdateDmxData(::google::protobuf::RpcController* controller,
+    void UpdateDmxData(ola::rpc::RpcController* controller,
                        const ola::proto::DmxData* request,
                        ola::proto::Ack* response,
-                       ::google::protobuf::Closure* done);
+                       CompletionCallback* done);
 
     // unfortunately all of these need to be public because they're used in the
     // closures. That's why this class is wrapped in OlaClient or
@@ -387,7 +387,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     ConnectedDescriptor *m_descriptor;
     std::auto_ptr<DmxCallback> m_dmx_callback;
     std::auto_ptr<DmxCallbackWithPriority> m_dmx_callback_with_priority;
-    StreamRpcChannel *m_channel;
+    RpcChannel *m_channel;
     ola::proto::OlaServerService_Stub *m_stub;
     int m_connected;
 };

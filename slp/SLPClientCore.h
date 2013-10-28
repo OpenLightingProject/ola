@@ -41,7 +41,7 @@ class SLPClientCoreServiceImpl;
 using std::string;
 using ola::io::ConnectedDescriptor;
 using ola::rpc::SimpleRpcController;
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcChannel;
 
 class SLPClientCore {
   public:
@@ -125,7 +125,7 @@ class SLPClientCore {
 
   private:
     ConnectedDescriptor *m_descriptor;
-    StreamRpcChannel *m_channel;
+    RpcChannel *m_channel;
     ola::slp::proto::SLPService_Stub *m_stub;
     int m_connected;
 

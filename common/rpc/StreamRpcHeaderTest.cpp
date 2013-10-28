@@ -26,8 +26,8 @@
 #include "ola/testing/TestUtils.h"
 
 
+using ola::rpc::RpcChannel;
 using ola::rpc::StreamRpcHeader;
-using ola::rpc::StreamRpcChannel;
 
 class StreamRpcHeaderTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StreamRpcHeaderTest);
@@ -53,7 +53,7 @@ void StreamRpcHeaderTest::testHeaderEncoding() {
   StreamRpcHeader::DecodeHeader(header, &o_version, &o_size);
   OLA_ASSERT_EQ(version, o_version);
 
-  version = StreamRpcChannel::PROTOCOL_VERSION;
+  version = RpcChannel::PROTOCOL_VERSION;
   size = 24;
   StreamRpcHeader::EncodeHeader(&header, version, size);
   StreamRpcHeader::DecodeHeader(header, &o_version, &o_size);

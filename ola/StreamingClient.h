@@ -33,7 +33,7 @@
 namespace ola {
 
 namespace rpc {
-  class StreamRpcChannel;
+  class RpcChannel;
 }
 
 namespace proto {
@@ -129,7 +129,7 @@ class StreamingClient {
     uint16_t m_server_port;
     TCPSocket *m_socket;
     SelectServer *m_ss;
-    class ola::rpc::StreamRpcChannel *m_channel;
+    class ola::rpc::RpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;
     bool m_socket_closed;
 };

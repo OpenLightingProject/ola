@@ -68,7 +68,7 @@ bool OlaClientCore::Setup() {
   if (m_connected)
     return false;
 
-  m_channel = new StreamRpcChannel(this, m_descriptor);
+  m_channel = new RpcChannel(this, m_descriptor);
 
   if (!m_channel) {
     return false;
@@ -123,7 +123,7 @@ bool OlaClientCore::FetchPluginList(
   ola::proto::PluginListRequest request;
   ola::proto::PluginListReply *reply = new ola::proto::PluginListReply();
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandlePluginList,
       NewArgs<plugin_list_arg>(controller, reply, callback));
@@ -151,7 +151,7 @@ bool OlaClientCore::FetchPluginDescription(
 
   request.set_plugin_id(plugin_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandlePluginDescription,
       NewArgs<plugin_description_arg>(controller, reply, callback));
@@ -179,7 +179,7 @@ bool OlaClientCore::FetchPluginState(
 
   request.set_plugin_id(plugin_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandlePluginState,
       NewArgs<plugin_state_arg>(controller, reply, callback));
@@ -208,7 +208,7 @@ bool OlaClientCore::FetchDeviceInfo(
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
   request.set_plugin_id(filter);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleDeviceInfo,
       NewArgs<device_info_arg>(controller, reply, callback));
@@ -265,7 +265,7 @@ bool OlaClientCore::ConfigureDevice(
   request.set_device_alias(device_alias);
   request.set_data(msg);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleDeviceConfig,
       NewArgs<configure_device_args>(controller, reply, callback));
@@ -299,7 +299,7 @@ bool OlaClientCore::SetPortPriorityInherit(
   request.set_is_output(port_direction == OUTPUT_PORT);
   request.set_priority_mode(ola::PRIORITY_MODE_INHERIT);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -336,7 +336,7 @@ bool OlaClientCore::SetPortPriorityOverride(
   request.set_priority_mode(ola::PRIORITY_MODE_OVERRIDE);
   request.set_priority(value);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -362,7 +362,7 @@ bool OlaClientCore::FetchUniverseList(
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUniverseList,
       NewArgs<universe_list_args>(controller, reply, callback));
@@ -390,7 +390,7 @@ bool OlaClientCore::FetchUniverseInfo(
 
   request.set_universe(universe_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUniverseInfo,
       NewArgs<universe_info_args>(controller, reply, callback));
@@ -421,7 +421,7 @@ bool OlaClientCore::SetUniverseName(
   request.set_universe(universe);
   request.set_name(name);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -454,7 +454,7 @@ bool OlaClientCore::SetUniverseMergeMode(
   request.set_universe(universe);
   request.set_merge_mode(merge_mode);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -494,7 +494,7 @@ bool OlaClientCore::Patch(
   request.set_is_output(port_direction == OUTPUT_PORT);
   request.set_action(action);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -545,7 +545,7 @@ bool OlaClientCore::RegisterUniverse(
   request.set_universe(universe);
   request.set_action(action);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -616,7 +616,7 @@ bool OlaClientCore::FetchDmx(
 
   request.set_universe(universe);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleGetDmx,
       NewArgs<get_dmx_args>(controller, reply, callback));
@@ -644,7 +644,7 @@ bool OlaClientCore::FetchUIDList(
 
   request.set_universe(universe);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUIDList,
       NewArgs<uid_list_args>(controller, reply, callback));
@@ -676,7 +676,7 @@ bool OlaClientCore::RunDiscovery(
   request.set_universe(universe);
   request.set_full(full);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUIDList,
       NewArgs<uid_list_args>(controller, reply, callback));
@@ -703,7 +703,7 @@ bool OlaClientCore::SetSourceUID(
   request.set_esta_id(uid.ManufacturerId());
   request.set_device_id(uid.DeviceId());
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -838,7 +838,7 @@ bool OlaClientCore::SendTimeCode(
   request.set_seconds(timecode.Seconds());
   request.set_frames(timecode.Frames());
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -851,10 +851,10 @@ bool OlaClientCore::SendTimeCode(
  * Called when new DMX data arrives
  */
 void OlaClientCore::UpdateDmxData(
-    ::google::protobuf::RpcController*,
+    ola::rpc::RpcController*,
     const ola::proto::DmxData *request,
     ola::proto::Ack*,
-    ::google::protobuf::Closure *done) {
+    CompletionCallback *done) {
   if (m_dmx_callback.get() || m_dmx_callback_with_priority.get()) {
     DmxBuffer buffer;
     buffer.Set(request->data());
@@ -1248,7 +1248,7 @@ bool OlaClientCore::GenericSendDmx(
     // full request
     SimpleRpcController *controller = new SimpleRpcController();
     ola::proto::Ack *reply = new ola::proto::Ack();
-    google::protobuf::Closure *cb = google::protobuf::NewCallback(
+    CompletionCallback *cb = NewCallback(
         this,
         &ola::OlaClientCore::HandleAck,
         NewArgs<ack_args>(controller, reply, callback));
@@ -1282,7 +1282,7 @@ bool OlaClientCore::GenericFetchCandidatePorts(
   if (include_universe)
     request.set_universe(universe_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleDeviceInfo,
       NewArgs<device_info_arg>(controller, reply, callback));
@@ -1326,7 +1326,7 @@ bool OlaClientCore::RDMCommand(
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleRDM,
       NewArgs<rdm_response_args>(controller, reply, callback));
@@ -1371,7 +1371,7 @@ bool OlaClientCore::RDMCommandWithPid(
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleRDMWithPID,
       NewArgs<rdm_pid_response_args>(controller, reply, callback));

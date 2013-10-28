@@ -5,8 +5,8 @@ libstreamrpcchannel_la_SOURCES = StreamRpcChannel.cpp SimpleRpcController.cpp
 nodist_libstreamrpcchannel_la_SOURCES = Rpc.pb.cc
 libstreamrpcchannel_la_LIBADD = $(libprotobuf_LIBS)
 
-EXTRA_DIST = Rpc.proto TestService.proto SimpleRpcController.h \
-             StreamRpcChannel.h StreamRpcHeader.h
+EXTRA_DIST = RpcController.h Rpc.proto RpcService.h TestService.proto \
+             SimpleRpcController.h StreamRpcChannel.h StreamRpcHeader.h
 
 BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h \
                 TestServiceService.pb.h TestServiceService.pb.cpp

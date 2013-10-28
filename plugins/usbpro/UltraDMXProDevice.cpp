@@ -20,12 +20,11 @@
  * This device creates 3 ports, 1 input and 2 output.
  */
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/service.h>
 #include <iomanip>
 #include <iostream>
 #include <string>
 
+#include "common/rpc/RpcController.h"
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -36,9 +35,9 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using google::protobuf::RpcController;
 using ola::plugin::usbpro::Request;
 using ola::plugin::usbpro::Reply;
+using ola::rpc::RpcController;
 
 /*
  * Create a new device
@@ -132,7 +131,7 @@ void UltraDMXProDevice::PrePortStop() {
 void UltraDMXProDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
-                             google::protobuf::Closure *done) {
+                             Callback0<void> *done) {
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");
@@ -179,7 +178,7 @@ void UltraDMXProDevice::HandleParametersRequest(
     RpcController *controller,
     const Request *request,
     string *response,
-    google::protobuf::Closure *done) {
+    Callback0<void> *done) {
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
@@ -220,7 +219,7 @@ void UltraDMXProDevice::HandleParametersRequest(
 void UltraDMXProDevice::HandleParametersResponse(
     RpcController *controller,
     string *response,
-    google::protobuf::Closure *done,
+    Callback0<void> *done,
     bool status,
     const usb_pro_parameters &params) {
   if (!status) {
@@ -250,7 +249,7 @@ void UltraDMXProDevice::HandleSerialRequest(
     RpcController *controller,
     const Request *request,
     string *response,
-    google::protobuf::Closure *done) {
+    Callback0<void> *done) {
   Reply reply;
   reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
   ola::plugin::usbpro::SerialNumberReply *serial_reply =

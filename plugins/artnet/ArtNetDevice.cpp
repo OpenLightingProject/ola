@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rpc/RpcController.h"
 #include "ola/Callback.h"
 #include "ola/CallbackRunner.h"
 #include "ola/Logging.h"
@@ -52,8 +53,7 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using google::protobuf::Closure;
-using google::protobuf::RpcController;
+using ola::rpc::RpcController;
 using ola::StringToInt;
 using ola::network::AddressToString;
 using ola::network::IPV4Address;
@@ -181,8 +181,8 @@ void ArtNetDevice::PostPortStop() {
 void ArtNetDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
-                             Closure *done) {
-  CallbackRunner<Closure> runner(done);
+                             Callback0<void> *done) {
+  CallbackRunner<Callback0<void> > runner(done);
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");

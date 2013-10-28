@@ -24,12 +24,11 @@
 
 #include "common/rpc/SimpleRpcController.h"
 #include "ola/testing/TestUtils.h"
-
+#include "ola/Callback.h"
 
 using std::string;
+using ola::rpc::RpcController;
 using ola::rpc::SimpleRpcController;
-using google::protobuf::Closure;
-using google::protobuf::NewCallback;
 
 class RpcControllerTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RpcControllerTest);
@@ -71,7 +70,8 @@ void RpcControllerTest::testCancel() {
   controller.Reset();
   OLA_ASSERT_FALSE(controller.IsCanceled());
 
-  Closure *callback = NewCallback(this, &RpcControllerTest::Callback);
+  RpcController::CancelCallback *callback = ola::NewCallback(
+      this, &RpcControllerTest::Callback);
   m_callback_run = false;
   controller.NotifyOnCancel(callback);
   controller.StartCancel();

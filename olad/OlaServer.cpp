@@ -63,7 +63,7 @@
 namespace ola {
 
 using ola::rdm::RootPidStore;
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcChannel;
 using std::auto_ptr;
 using std::pair;
 
@@ -400,7 +400,7 @@ void OlaServer::StopPlugins() {
  */
 void OlaServer::InternalNewConnection(
     ola::io::ConnectedDescriptor *socket) {
-  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
+  RpcChannel *channel = new RpcChannel(NULL, socket, m_export_map);
   channel->SetChannelCloseHandler(
       NewSingleCallback(this, &OlaServer::ChannelClosed,
                         socket->ReadDescriptor()));
