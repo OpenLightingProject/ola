@@ -31,17 +31,25 @@ class RpcController {
   public:
     typedef Callback0<void> CancelCallback;
 
-    RpcController() {}
-    virtual ~RpcController() {}
+    RpcController();
+    ~RpcController() {}
 
-    virtual void Reset() = 0;
-    virtual bool Failed() const = 0;
-    virtual std::string ErrorText() const = 0;
-    virtual void StartCancel() = 0;
+    void Reset();
+    bool Failed() const { return m_failed; }
+    std::string ErrorText() const { return m_error_text; }
+    void StartCancel();
 
-    virtual void SetFailed(const std::string &reason) = 0;
-    virtual bool IsCanceled() const = 0;
-    virtual void NotifyOnCancel(CancelCallback *callback)  = 0;
+    void SetFailed(const std::string &reason);
+    bool IsCanceled() const { return m_cancelled; }
+    void NotifyOnCancel(CancelCallback *callback) {
+      m_callback = callback;
+    }
+
+  private:
+    bool m_failed;
+    bool m_cancelled;
+    std::string m_error_text;
+    CancelCallback *m_callback;
 };
 }  // namespace rpc
 }  // namespace ola

@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/RpcController.h"
 #include "common/rpc/RpcChannel.h"
 #include "ola/Callback.h"
 #include "ola/network/Socket.h"
@@ -40,7 +40,7 @@ class SLPClientCoreServiceImpl;
 
 using std::string;
 using ola::io::ConnectedDescriptor;
-using ola::rpc::SimpleRpcController;
+using ola::rpc::RpcController;
 using ola::rpc::RpcChannel;
 
 class SLPClientCore {
@@ -99,7 +99,7 @@ class SLPClientCore {
     // closures. That's why this class is wrapped in OlaClient or
     // OlaCallbackClient.
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::slp::proto::ServiceAck *reply;
       SingleUseCallback2<void, const string&, uint16_t> *callback;
     } register_arg;
@@ -107,7 +107,7 @@ class SLPClientCore {
     void HandleRegistration(register_arg *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::slp::proto::ServiceReply *reply;
       SingleUseCallback2<void, const string&,
                          const vector<URLEntry> &> *callback;
@@ -116,7 +116,7 @@ class SLPClientCore {
     void HandleFindRequest(find_arg *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::slp::proto::ServerInfoReply *reply;
       SingleUseCallback2<void, const string&, const ServerInfo&> *callback;
     } server_info_arg;
@@ -141,7 +141,7 @@ class SLPClientCore {
 
     template <typename arg_type, typename reply_type, typename callback_type>
     arg_type *NewArgs(
-        SimpleRpcController *controller,
+        RpcController *controller,
         reply_type reply,
         callback_type callback);
 
@@ -155,7 +155,7 @@ class SLPClientCore {
  */
 template <typename arg_type, typename reply_type, typename callback_type>
 arg_type *SLPClientCore::NewArgs(
-    SimpleRpcController *controller,
+    RpcController *controller,
     reply_type reply,
     callback_type callback) {
   arg_type *args = new arg_type();

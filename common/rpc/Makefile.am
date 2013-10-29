@@ -1,12 +1,12 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libstreamrpcchannel.la
-libstreamrpcchannel_la_SOURCES = RpcChannel.cpp SimpleRpcController.cpp
+libstreamrpcchannel_la_SOURCES = RpcChannel.cpp RpcController.cpp
 nodist_libstreamrpcchannel_la_SOURCES = Rpc.pb.cc
 libstreamrpcchannel_la_LIBADD = $(libprotobuf_LIBS)
 
-EXTRA_DIST = RpcController.h Rpc.proto RpcService.h TestService.proto \
-             SimpleRpcController.h RpcChannel.h RpcHeader.h
+EXTRA_DIST = Rpc.proto RpcChannel.h RpcController.h RpcHeader.h \
+             RpcPeer.h RpcService.h TestService.proto
 
 BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h \
                 TestServiceService.pb.h TestServiceService.pb.cpp

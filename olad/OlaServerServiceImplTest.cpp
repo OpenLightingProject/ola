@@ -25,7 +25,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/RpcController.h"
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Clock.h"
@@ -48,7 +48,7 @@ using ola::OlaClientService;
 using ola::OlaServerServiceImpl;
 using ola::Universe;
 using ola::UniverseStore;
-using ola::rpc::SimpleRpcController;
+using ola::rpc::RpcController;
 using std::string;
 
 
@@ -111,7 +111,7 @@ static const uint8_t SAMPLE_DMX_DATA[] = {1, 2, 3, 4, 5};
 class GetDmxCheck {
   public:
     virtual ~GetDmxCheck() {}
-    virtual void Check(SimpleRpcController *controller,
+    virtual void Check(RpcController *controller,
                        ola::proto::DmxData *reply) = 0;
 };
 
@@ -121,7 +121,7 @@ class GetDmxCheck {
  */
 class GetDmxNoDataCheck: public GetDmxCheck {
   public:
-    void Check(SimpleRpcController *controller,
+    void Check(RpcController *controller,
                ola::proto::DmxData *reply) {
       DmxBuffer empty_buffer;
       OLA_ASSERT_FALSE(controller->Failed());
@@ -135,7 +135,7 @@ class GetDmxNoDataCheck: public GetDmxCheck {
  */
 class GetDmxValidDataCheck: public GetDmxCheck {
   public:
-    void Check(SimpleRpcController *controller,
+    void Check(RpcController *controller,
                ola::proto::DmxData *reply) {
       OLA_ASSERT_FALSE(controller->Failed());
       OLA_ASSERT(DmxBuffer(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA)) ==
@@ -150,7 +150,7 @@ class GetDmxValidDataCheck: public GetDmxCheck {
 class RegisterForDmxCheck {
   public:
     virtual ~RegisterForDmxCheck() {}
-    virtual void Check(SimpleRpcController *controller,
+    virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
 };
 
@@ -161,7 +161,7 @@ class RegisterForDmxCheck {
 class UpdateDmxDataCheck {
   public:
     virtual ~UpdateDmxDataCheck() {}
-    virtual void Check(SimpleRpcController *controller,
+    virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
 };
 
@@ -172,7 +172,7 @@ class UpdateDmxDataCheck {
 class SetUniverseNameCheck {
   public:
     virtual ~SetUniverseNameCheck() {}
-    virtual void Check(SimpleRpcController *controller,
+    virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
 };
 
@@ -183,7 +183,7 @@ class SetUniverseNameCheck {
 class SetMergeModeCheck {
   public:
     virtual ~SetMergeModeCheck() {}
-    virtual void Check(SimpleRpcController *controller,
+    virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
 };
 
@@ -194,7 +194,7 @@ class SetMergeModeCheck {
 template<typename parent, typename reply>
 class GenericMissingUniverseCheck: public parent {
   public:
-    void Check(SimpleRpcController *controller,
+    void Check(RpcController *controller,
                reply *r) {
       OLA_ASSERT(controller->Failed());
       OLA_ASSERT_EQ(string("Universe doesn't exist"),
@@ -210,7 +210,7 @@ class GenericMissingUniverseCheck: public parent {
 template<typename parent>
 class GenericAckCheck: public parent {
   public:
-    void Check(SimpleRpcController *controller,
+    void Check(RpcController *controller,
                ola::proto::Ack *r) {
       OLA_ASSERT_FALSE(controller->Failed());
       (void) r;
@@ -268,7 +268,7 @@ void OlaServerServiceImplTest::testGetDmx() {
 void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
                                           int universe_id,
                                           GetDmxCheck &check) {
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::UniverseRequest *request = new ola::proto::UniverseRequest();
   ola::proto::DmxData *response = new ola::proto::DmxData();
   Callback0<void> *closure = ola::NewCallback(
@@ -354,7 +354,7 @@ void OlaServerServiceImplTest::CallRegisterForDmx(
     int universe_id,
     ola::proto::RegisterAction action,
     RegisterForDmxCheck &check) {
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::RegisterDmxRequest *request = (
       new ola::proto::RegisterDmxRequest());
   ola::proto::Ack *response = new ola::proto::Ack();
@@ -439,7 +439,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
     int universe_id,
     const DmxBuffer &data,
     UpdateDmxDataCheck &check) {
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DmxData *request = new
     ola::proto::DmxData();
   ola::proto::Ack *response = new ola::proto::Ack();
@@ -510,7 +510,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
     int universe_id,
     const string &name,
     SetUniverseNameCheck &check) {
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::UniverseNameRequest *request = new
     ola::proto::UniverseNameRequest();
   ola::proto::Ack *response = new ola::proto::Ack();
@@ -580,7 +580,7 @@ void OlaServerServiceImplTest::CallSetMergeMode(
     int universe_id,
     ola::proto::MergeMode merge_mode,
     SetMergeModeCheck &check) {
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::MergeModeRequest *request = new
     ola::proto::MergeModeRequest();
   ola::proto::Ack *response = new ola::proto::Ack();

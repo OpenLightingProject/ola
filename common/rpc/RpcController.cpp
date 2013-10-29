@@ -13,43 +13,43 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SimpleRpcController.h
- * Interface for a basic RPC Controller
+ * RpcController.cpp
+ * The  RPC Controller
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef COMMON_RPC_SIMPLERPCCONTROLLER_H_
-#define COMMON_RPC_SIMPLERPCCONTROLLER_H_
-
 #include <string>
+#include "ola/Logging.h"
 #include "common/rpc/RpcController.h"
 
 namespace ola {
 namespace rpc {
 
-class SimpleRpcController: public RpcController {
-  public:
-    SimpleRpcController();
-    ~SimpleRpcController() {}
+RpcController::RpcController()
+    : m_failed(false),
+      m_cancelled(false),
+      m_error_text(""),
+      m_callback(NULL) {
+}
 
-    void Reset();
-    bool Failed() const { return m_failed; }
-    std::string ErrorText() const { return m_error_text; }
-    void StartCancel();
+void RpcController::Reset() {
+  m_failed = false;
+  m_cancelled = false;
+  if (m_callback)
+    OLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
+      "leaking memory!";
+  m_callback = NULL;
+}
 
-    void SetFailed(const std::string &reason);
-    bool IsCanceled() const { return m_cancelled; }
-    void NotifyOnCancel(CancelCallback *callback) {
-      m_callback = callback;
-    }
+void RpcController::StartCancel() {
+  m_cancelled = true;
+  if (m_callback)
+    m_callback->Run();
+}
 
-  private:
-    bool m_failed;
-    bool m_cancelled;
-    std::string m_error_text;
-    CancelCallback *m_callback;
-};
+void RpcController::SetFailed(const std::string &reason) {
+  m_failed = true;
+  m_error_text = reason;
+}
 }  // namespace rpc
 }  // namespace ola
-
-#endif  // COMMON_RPC_SIMPLERPCCONTROLLER_H_

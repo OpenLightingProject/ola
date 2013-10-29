@@ -23,7 +23,7 @@
 #include <string>
 
 #include "common/rpc/RpcChannel.h"
-#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/RpcController.h"
 #include "common/rpc/TestService.pb.h"
 #include "common/rpc/TestServiceService.pb.h"
 #include "ola/Callback.h"
@@ -40,7 +40,7 @@ using ola::rpc::EchoRequest;
 using ola::rpc::RpcChannel;
 using ola::rpc::RpcController;
 using ola::rpc::STREAMING_NO_RESPONSE;
-using ola::rpc::SimpleRpcController;
+using ola::rpc::RpcController;
 using ola::rpc::TestService;
 using ola::rpc::TestService_Stub;
 using std::string;
@@ -90,7 +90,7 @@ class RpcChannelTest: public CppUnit::TestFixture {
     void FailedEchoComplete();
 
   private:
-    SimpleRpcController m_controller;
+    RpcController m_controller;
     EchoRequest m_request;
     EchoReply m_reply;
     TestService_Stub *m_stub;

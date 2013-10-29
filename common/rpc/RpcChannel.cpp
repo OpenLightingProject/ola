@@ -27,7 +27,7 @@
 
 #include "common/rpc/Rpc.pb.h"
 #include "common/rpc/RpcService.h"
-#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/RpcController.h"
 #include "common/rpc/RpcChannel.h"
 #include "common/rpc/RpcHeader.h"
 #include "ola/Callback.h"
@@ -432,7 +432,7 @@ void RpcChannel::HandleRequest(RpcMessage *msg) {
 
   OutstandingRequest *request = new OutstandingRequest();
   request->id = msg->id();
-  request->controller = new SimpleRpcController();
+  request->controller = new RpcController();
   request->response = response_pb;
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
