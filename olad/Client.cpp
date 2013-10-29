@@ -29,7 +29,7 @@
 
 namespace ola {
 
-using ola::rpc::SimpleRpcController;
+using ola::rpc::RpcController;
 
 Client::~Client() {
   m_data_map.clear();
@@ -49,7 +49,7 @@ bool Client::SendDMX(unsigned int universe, uint8_t priority,
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DmxData dmx_data;
   ola::proto::Ack *ack = new ola::proto::Ack();
 
@@ -69,7 +69,7 @@ bool Client::SendDMX(unsigned int universe, uint8_t priority,
 /*
  * Called when UpdateDmxData completes
  */
-void Client::SendDMXCallback(SimpleRpcController *controller,
+void Client::SendDMXCallback(RpcController *controller,
                              ola::proto::Ack *reply) {
   delete controller;
   delete reply;

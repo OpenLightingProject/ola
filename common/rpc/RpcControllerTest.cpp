@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * RpcContollerTest.cpp
- * Test fixture for the SimpleRpcController class
+ * Test fixture for the RpcController class
  * Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -22,13 +22,13 @@
 #include <google/protobuf/stubs/common.h>
 #include <string>
 
-#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/RpcController.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/Callback.h"
 
 using std::string;
 using ola::rpc::RpcController;
-using ola::rpc::SimpleRpcController;
+using ola::rpc::RpcController;
 
 class RpcControllerTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RpcControllerTest);
@@ -49,7 +49,7 @@ class RpcControllerTest : public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(RpcControllerTest);
 
 void RpcControllerTest::testFailed() {
-  SimpleRpcController controller;
+  RpcController controller;
   string failure = "Failed";
   controller.SetFailed(failure);
   OLA_ASSERT_TRUE(controller.Failed());
@@ -63,7 +63,7 @@ void RpcControllerTest::Callback() {
 }
 
 void RpcControllerTest::testCancel() {
-  SimpleRpcController controller;
+  RpcController controller;
   controller.StartCancel();
   OLA_ASSERT_TRUE(controller.IsCanceled());
 

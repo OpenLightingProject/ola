@@ -119,7 +119,7 @@ bool OlaClientCore::FetchPluginList(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::PluginListRequest request;
   ola::proto::PluginListReply *reply = new ola::proto::PluginListReply();
 
@@ -144,7 +144,7 @@ bool OlaClientCore::FetchPluginDescription(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::PluginDescriptionRequest request;
   ola::proto::PluginDescriptionReply *reply = new
     ola::proto::PluginDescriptionReply();
@@ -172,7 +172,7 @@ bool OlaClientCore::FetchPluginState(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::PluginStateRequest request;
   ola::proto::PluginStateReply *reply = new
     ola::proto::PluginStateReply();
@@ -204,7 +204,7 @@ bool OlaClientCore::FetchDeviceInfo(
   }
 
   ola::proto::DeviceInfoRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
   request.set_plugin_id(filter);
 
@@ -258,7 +258,7 @@ bool OlaClientCore::ConfigureDevice(
   }
 
   ola::proto::DeviceConfigRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DeviceConfigReply *reply = new ola::proto::DeviceConfigReply();
 
   string configure_request;
@@ -291,7 +291,7 @@ bool OlaClientCore::SetPortPriorityInherit(
   }
 
   ola::proto::PortPriorityRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_device_alias(device_alias);
@@ -327,7 +327,7 @@ bool OlaClientCore::SetPortPriorityOverride(
   }
 
   ola::proto::PortPriorityRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_device_alias(device_alias);
@@ -358,7 +358,7 @@ bool OlaClientCore::FetchUniverseList(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
@@ -384,7 +384,7 @@ bool OlaClientCore::FetchUniverseInfo(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
@@ -415,7 +415,7 @@ bool OlaClientCore::SetUniverseName(
   }
 
   ola::proto::UniverseNameRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_universe(universe);
@@ -446,7 +446,7 @@ bool OlaClientCore::SetUniverseMergeMode(
   }
 
   ola::proto::MergeModeRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::MergeMode merge_mode = mode == OlaUniverse::MERGE_HTP ?
@@ -483,7 +483,7 @@ bool OlaClientCore::Patch(
   }
 
   ola::proto::PatchPortRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::PatchAction action = (
@@ -536,7 +536,7 @@ bool OlaClientCore::RegisterUniverse(
   }
 
   ola::proto::RegisterDmxRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::RegisterAction action = (
@@ -611,7 +611,7 @@ bool OlaClientCore::FetchDmx(
   }
 
   ola::proto::UniverseRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DmxData *reply = new ola::proto::DmxData();
 
   request.set_universe(universe);
@@ -639,7 +639,7 @@ bool OlaClientCore::FetchUIDList(
   }
 
   ola::proto::UniverseRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
   request.set_universe(universe);
@@ -670,7 +670,7 @@ bool OlaClientCore::RunDiscovery(
   }
 
   ola::proto::DiscoveryRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
   request.set_universe(universe);
@@ -697,7 +697,7 @@ bool OlaClientCore::SetSourceUID(
   }
 
   ola::proto::UID request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_esta_id(uid.ManufacturerId());
@@ -828,7 +828,7 @@ bool OlaClientCore::SendTimeCode(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::TimeCode request;
   ola::proto::Ack *reply = new ola::proto::Ack();
 
@@ -1246,7 +1246,7 @@ bool OlaClientCore::GenericSendDmx(
 
   if (callback) {
     // full request
-    SimpleRpcController *controller = new SimpleRpcController();
+    RpcController *controller = new RpcController();
     ola::proto::Ack *reply = new ola::proto::Ack();
     CompletionCallback *cb = NewCallback(
         this,
@@ -1276,7 +1276,7 @@ bool OlaClientCore::GenericFetchCandidatePorts(
   }
 
   ola::proto::OptionalUniverseRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
 
   if (include_universe)
@@ -1314,7 +1314,7 @@ bool OlaClientCore::RDMCommand(
   }
 
   ola::proto::RDMRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
 
   request.set_universe(universe);
@@ -1359,7 +1359,7 @@ bool OlaClientCore::RDMCommandWithPid(
   }
 
   ola::proto::RDMRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
 
   request.set_universe(universe);
@@ -1397,7 +1397,7 @@ bool OlaClientCore::RDMCommandWithPid(
  * Ack Overflow (should never make it to the client)
  */
 void OlaClientCore::CheckRDMResponseStatus(
-    SimpleRpcController *controller,
+    RpcController *controller,
     ola::proto::RDMResponse *reply,
     ola::rdm::ResponseStatus *new_status) {
   new_status->message_count = reply->message_count();

@@ -134,7 +134,7 @@ bool SLPClientCore::DeRegisterService(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::slp::proto::ServiceDeRegistration request;
   ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
@@ -165,7 +165,7 @@ bool SLPClientCore::FindService(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::slp::proto::ServiceRequest request;
   ola::slp::proto::ServiceReply *reply = new ola::slp::proto::ServiceReply();
 
@@ -194,7 +194,7 @@ bool SLPClientCore::GetServerInfo(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::slp::proto::ServerInfoRequest request;
   ola::slp::proto::ServerInfoReply *reply =
       new ola::slp::proto::ServerInfoReply();
@@ -304,7 +304,7 @@ bool SLPClientCore::GenericRegisterService(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::slp::proto::ServiceRegistration request;
   ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 

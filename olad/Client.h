@@ -22,7 +22,7 @@
 #define OLAD_CLIENT_H_
 
 #include <map>
-#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/RpcController.h"
 #include "olad/DmxSource.h"
 
 namespace ola {
@@ -45,7 +45,7 @@ class Client {
     virtual bool SendDMX(unsigned int universe_id, uint8_t priority,
                          const DmxBuffer &buffer);
 
-    void SendDMXCallback(ola::rpc::SimpleRpcController *controller,
+    void SendDMXCallback(ola::rpc::RpcController *controller,
                          ola::proto::Ack *ack);
     void DMXRecieved(unsigned int universe, const DmxSource &source);
     const DmxSource SourceData(unsigned int universe) const;
