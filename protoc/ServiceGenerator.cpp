@@ -34,9 +34,7 @@
 //
 // Edited by Simon Newton for OLA
 
-//#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
-//#include <google/protobuf/stubs/strutil.h>
 
 #include <map>
 #include <string>
