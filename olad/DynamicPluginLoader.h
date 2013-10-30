@@ -22,6 +22,7 @@
 #define OLAD_DYNAMICPLUGINLOADER_H_
 
 #include <vector>
+#include "ola/base/Macro.h"
 #include "olad/PluginLoader.h"
 
 namespace ola {
@@ -35,12 +36,11 @@ class DynamicPluginLoader: public PluginLoader {
     void UnloadPlugins() {}
 
   private:
-    DynamicPluginLoader(const DynamicPluginLoader&);
-    DynamicPluginLoader operator=(const DynamicPluginLoader&);
-
     void PopulatePlugins();
 
     std::vector<class AbstractPlugin*> m_plugins;
+
+    DISALLOW_COPY_AND_ASSIGN(DynamicPluginLoader);
 };
 }  // namespace ola
 #endif  // OLAD_DYNAMICPLUGINLOADER_H_

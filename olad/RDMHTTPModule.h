@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 #include "ola/OlaCallbackClient.h"
+#include "ola/base/Macro.h"
 #include "ola/http/HTTPServer.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMAPI.h"
@@ -133,9 +134,6 @@ class RDMHTTPModule {
       unsigned int total;
       vector<std::pair<uint32_t, string> > personalities;
     } personality_info;
-
-    RDMHTTPModule(const RDMHTTPModule&);
-    RDMHTTPModule& operator=(const RDMHTTPModule&);
 
     // uid resolution methods
     void HandleUIDList(HTTPResponse *response,
@@ -663,6 +661,8 @@ class RDMHTTPModule {
     static const char PROXIED_DEVICES_SECTION_NAME[];
     static const char RESET_DEVICE_SECTION_NAME[];
     static const char TILT_INVERT_SECTION_NAME[];
+
+    DISALLOW_COPY_AND_ASSIGN(RDMHTTPModule);
 };
 }  // namespace ola
 #endif  // OLAD_RDMHTTPMODULE_H_

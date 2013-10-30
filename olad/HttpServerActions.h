@@ -25,6 +25,7 @@
 #include <string>
 #include "ola/ActionQueue.h"
 #include "ola/OlaCallbackClient.h"
+#include "ola/base/Macro.h"
 
 namespace ola {
 
@@ -58,8 +59,7 @@ class BaseHttpAction: public Action {
     bool m_failed;
     SingleUseCallback0<void> *m_on_done;
 
-    BaseHttpAction(const BaseHttpAction&);
-    BaseHttpAction& operator=(const BaseHttpAction&);
+    DISALLOW_COPY_AND_ASSIGN(BaseHttpAction);
 };
 
 
@@ -88,8 +88,7 @@ class SetNameAction: public BaseHttpAction {
     string m_name;
     bool m_is_fatal;
 
-    SetNameAction(const SetNameAction&);
-    SetNameAction& operator=(const SetNameAction&);
+    DISALLOW_COPY_AND_ASSIGN(SetNameAction);
 };
 
 
@@ -115,8 +114,7 @@ class SetMergeModeAction: public BaseHttpAction {
     unsigned int m_universe;
     OlaUniverse::merge_mode m_merge_mode;
 
-    SetMergeModeAction(const SetMergeModeAction&);
-    SetMergeModeAction& operator=(const SetMergeModeAction&);
+    DISALLOW_COPY_AND_ASSIGN(SetMergeModeAction);
 };
 
 
@@ -151,8 +149,7 @@ class PatchPortAction: public BaseHttpAction {
     unsigned int m_universe;
     PatchAction m_action;
 
-    PatchPortAction(const PatchPortAction&);
-    PatchPortAction& operator=(const PatchPortAction&);
+    DISALLOW_COPY_AND_ASSIGN(PatchPortAction);
 };
 
 
@@ -181,8 +178,7 @@ class PortPriorityInheritAction: public BaseHttpAction {
     unsigned int m_port;
     PortDirection m_direction;
 
-    PortPriorityInheritAction(const PortPriorityInheritAction&);
-    PortPriorityInheritAction& operator=(const PortPriorityInheritAction&);
+    DISALLOW_COPY_AND_ASSIGN(PortPriorityInheritAction);
 };
 
 
@@ -214,8 +210,7 @@ class PortPriorityOverrideAction: public BaseHttpAction {
     PortDirection m_direction;
     uint8_t m_override_value;
 
-    PortPriorityOverrideAction(const PortPriorityOverrideAction&);
-    PortPriorityOverrideAction& operator=(const PortPriorityOverrideAction&);
+    DISALLOW_COPY_AND_ASSIGN(PortPriorityOverrideAction);
 };
 }  // namespace ola
 #endif  // OLAD_HTTPSERVERACTIONS_H_

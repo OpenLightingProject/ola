@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rpc/RpcController.h"
 #include "ola/CallbackRunner.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -42,6 +43,8 @@ namespace plugin {
 namespace e131 {
 
 const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
+
+using ola::rpc::RpcController;
 
 /*
  * Create a new device
@@ -130,8 +133,8 @@ void E131Device::PostPortStop() {
 void E131Device::Configure(RpcController *controller,
                            const string &request,
                            string *response,
-                           google::protobuf::Closure *done) {
-  CallbackRunner<google::protobuf::Closure> runner(done);
+                           Callback0<void> *done) {
+  CallbackRunner<Callback0<void> > runner(done);
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");

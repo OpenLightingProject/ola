@@ -23,6 +23,8 @@
 
 #include <vector>
 
+#include "ola/base/Macro.h"
+
 namespace ola {
 
 class PluginLoader {
@@ -38,6 +40,9 @@ class PluginLoader {
 
   protected:
     class PluginAdaptor *m_plugin_adaptor;
+
+  private:
+    DISALLOW_COPY_AND_ASSIGN(PluginLoader);
 };
 }  // namespace ola
 #endif  // OLAD_PLUGINLOADER_H_

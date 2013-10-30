@@ -24,6 +24,7 @@
 #include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/ExportMap.h>
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/UID.h>
@@ -40,7 +41,6 @@ namespace ola {
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
 using std::map;
-using std::pair;
 using std::set;
 
 class Client;
@@ -186,8 +186,6 @@ class Universe: public ola::rdm::RDMControllerInterface {
     TimeInterval m_rdm_discovery_interval;
     TimeStamp m_last_discovery_time;
 
-    Universe(const Universe&);
-    Universe& operator=(const Universe&);
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
                             ola::rdm::rdm_response_code code,
                             const ola::rdm::RDMResponse *response,
@@ -221,6 +219,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     template<class PortClass>
     bool GenericContainsPort(PortClass *port,
                              const vector<PortClass*> &ports) const;
+
+    DISALLOW_COPY_AND_ASSIGN(Universe);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLAD_UNIVERSE_H_

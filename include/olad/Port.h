@@ -22,6 +22,7 @@
 #define INCLUDE_OLAD_PORT_H_
 
 #include <ola/DmxBuffer.h>
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/timecode/TimeCode.h>
@@ -189,8 +190,7 @@ class BasicInputPort: public InputPort {
     const PluginAdaptor *m_plugin_adaptor;
     bool m_supports_rdm;
 
-    BasicInputPort(const BasicInputPort&);
-    BasicInputPort& operator=(const BasicInputPort&);
+    DISALLOW_COPY_AND_ASSIGN(BasicInputPort);
 };
 
 
@@ -260,8 +260,7 @@ class BasicOutputPort: public OutputPort {
     AbstractDevice *m_device;
     bool m_supports_rdm;
 
-    BasicOutputPort(const BasicOutputPort&);
-    BasicOutputPort& operator=(const BasicOutputPort&);
+    DISALLOW_COPY_AND_ASSIGN(BasicOutputPort);
 };
 
 

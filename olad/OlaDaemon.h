@@ -26,6 +26,7 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/ExportMap.h"
+#include "ola/base/Macro.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/network/SocketAddress.h"
@@ -69,11 +70,10 @@ class OlaDaemon {
     string DefaultConfigDir();
     bool InitConfigDir(const string &path);
 
-    OlaDaemon(const OlaDaemon&);
-    OlaDaemon& operator=(const OlaDaemon&);
-
     static const char K_RPC_PORT_VAR[];
     static const char OLA_CONFIG_DIR[];
+
+    DISALLOW_COPY_AND_ASSIGN(OlaDaemon);
 };
 }  // namespace ola
 #endif  // OLAD_OLADAEMON_H_

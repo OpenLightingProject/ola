@@ -30,7 +30,9 @@
 #ifndef INCLUDE_OLA_EXPORTMAP_H_
 #define INCLUDE_OLA_EXPORTMAP_H_
 
+#include <ola/base/Macro.h>
 #include <stdlib.h>
+
 #include <functional>
 #include <map>
 #include <sstream>
@@ -346,9 +348,6 @@ class ExportMap {
     vector<BaseVariable*> AllVariables() const;
 
   private :
-    ExportMap(const ExportMap&);
-    ExportMap& operator=(const ExportMap&);
-
     template<typename Type>
     Type *GetVar(map<string, Type*> *var_map, const string &name);
 
@@ -365,6 +364,8 @@ class ExportMap {
     map<string, StringMap*> m_str_map_variables;
     map<string, IntMap*> m_int_map_variables;
     map<string, UIntMap*> m_uint_map_variables;
+
+    DISALLOW_COPY_AND_ASSIGN(ExportMap);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLA_EXPORTMAP_H_

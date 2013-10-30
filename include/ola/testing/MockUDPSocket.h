@@ -22,12 +22,14 @@
 #define INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_
 
 #include <cppunit/extensions/HelperMacros.h>
+
+#include <ola/base/Macro.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
+
 #include <string>
 #include <queue>
-
-#include "ola/network/IPV4Address.h"
-#include "ola/network/Socket.h"
-#include "ola/network/SocketAddress.h"
 
 namespace ola {
 namespace testing {
@@ -154,6 +156,8 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     bool m_discard_mode;
 
     uint8_t* IOQueueToBuffer(IOQueue *ioqueue, unsigned int *size) const;
+
+    DISALLOW_COPY_AND_ASSIGN(MockUDPSocket);
 };
 
 
@@ -171,6 +175,8 @@ class SocketVerifier {
 
   private:
     MockUDPSocket *m_socket;
+
+    DISALLOW_COPY_AND_ASSIGN(SocketVerifier);
 };
 }  // namespace testing
 }  // namespace ola

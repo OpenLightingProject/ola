@@ -13,43 +13,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SimpleRpcController.cpp
- * The Simple RPC Controller
- * Copyright (C) 2005-2009 Simon Newton
+ * CppGenerator.h
+ * Copyright (C) 2013 Simon Newton
  */
 
+#ifndef PROTOC_CPPGENERATOR_H_
+#define PROTOC_CPPGENERATOR_H_
+
+#include <google/protobuf/compiler/code_generator.h>
 #include <string>
-#include "ola/Logging.h"
-#include "common/rpc/SimpleRpcController.h"
 
 namespace ola {
-namespace rpc {
 
-SimpleRpcController::SimpleRpcController()
-    : m_failed(false),
-      m_cancelled(false),
-      m_error_text(""),
-      m_callback(NULL) {
-}
+class CppGenerator : public google::protobuf::compiler::CodeGenerator {
+ public:
+  CppGenerator() {}
+  ~CppGenerator() {}
 
-void SimpleRpcController::Reset() {
-  m_failed = false;
-  m_cancelled = false;
-  if (m_callback)
-    OLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
-      "leaking memory!";
-  m_callback = NULL;
-}
+  // implements CodeGenerator ----------------------------------------
+  bool Generate(const google::protobuf::FileDescriptor *file,
+                const std::string &parameter,
+                google::protobuf::compiler::OutputDirectory *generator_context,
+                std::string *error) const;
 
-void SimpleRpcController::StartCancel() {
-  m_cancelled = true;
-  if (m_callback)
-    m_callback->Run();
-}
+ private:
+  CppGenerator(const CppGenerator&);
+  CppGenerator& operator=(const CppGenerator&);
+};
 
-void SimpleRpcController::SetFailed(const std::string &reason) {
-  m_failed = true;
-  m_error_text = reason;
-}
-}  // namespace rpc
 }  // namespace ola
+#endif  // PROTOC_CPPGENERATOR_H_

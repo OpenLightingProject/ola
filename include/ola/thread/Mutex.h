@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <ola/Clock.h>
+#include <ola/base/Macro.h>
 
 namespace ola {
 namespace thread {
@@ -45,8 +46,7 @@ class Mutex {
   private:
     pthread_mutex_t m_mutex;
 
-    Mutex(const Mutex&);
-    Mutex& operator=(const Mutex&);
+    DISALLOW_COPY_AND_ASSIGN(Mutex);
 };
 
 
@@ -62,8 +62,7 @@ class MutexLocker {
   private:
     Mutex *m_mutex;
 
-    MutexLocker(const MutexLocker&);
-    MutexLocker& operator=(const MutexLocker&);
+    DISALLOW_COPY_AND_ASSIGN(MutexLocker);
 };
 
 
@@ -84,8 +83,7 @@ class ConditionVariable {
   private:
     pthread_cond_t m_condition;
 
-    ConditionVariable(const ConditionVariable&);
-    ConditionVariable& operator=(const ConditionVariable&);
+    DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };
 }  // namespace thread
 }  // namespace ola

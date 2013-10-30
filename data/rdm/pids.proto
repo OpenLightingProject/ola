@@ -37,7 +37,7 @@ pid {
   discovery_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "DISC_UNMUTE"
+  name: "DISC_UN_MUTE"
   value: 3
   discovery_request {
   }
@@ -147,7 +147,7 @@ pid {
   get_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "STATUS_MESSAGE"
+  name: "STATUS_MESSAGES"
   value: 48
   get_request {
     field {
@@ -306,10 +306,66 @@ pid {
     field {
       type: UINT8
       name: "data_type"
+      label {
+        value: 0
+        label: "Not defined"
+      }
+      label {
+        value: 1
+        label: "Bit field"
+      }
+      label {
+        value: 2
+        label: "ASCII"
+      }
+      label {
+        value: 3
+        label: "uint8"
+      }
+      label {
+        value: 4
+        label: "int8"
+      }
+      label {
+        value: 5
+        label: "uint16"
+      }
+      label {
+        value: 6
+        label: "int16"
+      }
+      label {
+        value: 7
+        label: "uint32"
+      }
+      label {
+        value: 8
+        label: "int32"
+      }
+      range {
+        min: 0
+        max: 8
+      }
+      range {
+        min: 128
+        max: 223
+      }
     }
     field {
       type: UINT8
       name: "command_class"
+      label {
+        value: 1
+        label: "Get"
+      }
+      label {
+        value: 2
+        label: "Set"
+      }
+      label {
+        value: 3
+        label: "Get and Set"
+      }
     }
     field {
       type: UINT8
@@ -364,6 +420,314 @@ pid {
     field {
       type: UINT16
       name: "product_category"
+      label {
+        value: 0
+        label: "Not declared"
+      }
+      label {
+        value: 256
+        label: "Fixture"
+      }
+      label {
+        value: 257
+        label: "Fixed fixture"
+      }
+      label {
+        value: 258
+        label: "Moving yoke fixture"
+      }
+      label {
+        value: 259
+        label: "Moving mirror fixture"
+      }
+      label {
+        value: 511
+        label: "Fixture other"
+      }
+      label {
+        value: 512
+        label: "Fixture accessory"
+      }
+      label {
+        value: 513
+        label: "Fixture accessory color"
+      }
+      label {
+        value: 514
+        label: "Fixture accessory yoke"
+      }
+      label {
+        value: 515
+        label: "Fixture accessory mirror"
+      }
+      label {
+        value: 516
+        label: "Fixture accessory effect"
+      }
+      label {
+        value: 517
+        label: "Fixture accessory beam"
+      }
+      label {
+        value: 767
+        label: "Fixture accessory other"
+      }
+      label {
+        value: 768
+        label: "Projector"
+      }
+      label {
+        value: 769
+        label: "Projector fixed"
+      }
+      label {
+        value: 770
+        label: "Projector moving yoke"
+      }
+      label {
+        value: 771
+        label: "Projector moving mirror"
+      }
+      label {
+        value: 1023
+        label: "Projector other"
+      }
+      label {
+        value: 1024
+        label: "Atmospheric"
+      }
+      label {
+        value: 1025
+        label: "Atmospheric effect"
+      }
+      label {
+        value: 1026
+        label: "Atmospheric pyro"
+      }
+      label {
+        value: 1279
+        label: "Atmospheric other"
+      }
+      label {
+        value: 1280
+        label: "Dimmer"
+      }
+      label {
+        value: 1281
+        label: "Dimmer AC incandescent"
+      }
+      label {
+        value: 1282
+        label: "Dimmer AC fluorescent"
+      }
+      label {
+        value: 1283
+        label: "Dimmer AC cold cathode"
+      }
+      label {
+        value: 1284
+        label: "Dimmer AC no dim"
+      }
+      label {
+        value: 1285
+        label: "Dimmer AC ELV"
+      }
+      label {
+        value: 1286
+        label: "Dimmer AC other"
+      }
+      label {
+        value: 1287
+        label: "Dimmer DC level"
+      }
+      label {
+        value: 1288
+        label: "Dimmer DC PWM"
+      }
+      label {
+        value: 1289
+        label: "Dimmer DC LED"
+      }
+      label {
+        value: 1535
+        label: "Dimmer other"
+      }
+      label {
+        value: 1536
+        label: "Power"
+      }
+      label {
+        value: 1537
+        label: "Power control"
+      }
+      label {
+        value: 1538
+        label: "Power source"
+      }
+      label {
+        value: 1791
+        label: "Power other"
+      }
+      label {
+        value: 1792
+        label: "Scenic"
+      }
+      label {
+        value: 1793
+        label: "Scenic drive"
+      }
+      label {
+        value: 2047
+        label: "Scenic other"
+      }
+      label {
+        value: 2048
+        label: "Data"
+      }
+      label {
+        value: 2049
+        label: "Data distribution"
+      }
+      label {
+        value: 2050
+        label: "Data conversion"
+      }
+      label {
+        value: 2303
+        label: "Data other"
+      }
+      label {
+        value: 2304
+        label: "A/V"
+      }
+      label {
+        value: 2305
+        label: "A/V audio"
+      }
+      label {
+        value: 2306
+        label: "A/V video"
+      }
+      label {
+        value: 2559
+        label: "AV other"
+      }
+      label {
+        value: 2560
+        label: "Monitor"
+      }
+      label {
+        value: 2561
+        label: "AC line power monitor"
+      }
+      label {
+        value: 2562
+        label: "DC power monitor"
+      }
+      label {
+        value: 2563
+        label: "Environmental monitor"
+      }
+      label {
+        value: 2815
+        label: "Other monitor"
+      }
+      label {
+        value: 28672
+        label: "Control"
+      }
+      label {
+        value: 28673
+        label: "Controller"
+      }
+      label {
+        value: 28674
+        label: "Backup device"
+      }
+      label {
+        value: 28927
+        label: "Other control"
+      }
+      label {
+        value: 28928
+        label: "Test"
+      }
+      label {
+        value: 28929
+        label: "Test equipment"
+      }
+      label {
+        value: 29183
+        label: "Test equipment other"
+      }
+      label {
+        value: 32767
+        label: "Other"
+      }
+      range {
+        min: 0
+        max: 0
+      }
+      range {
+        min: 256
+        max: 259
+      }
+      range {
+        min: 511
+        max: 517
+      }
+      range {
+        min: 767
+        max: 771
+      }
+      range {
+        min: 1023
+        max: 1026
+      }
+      range {
+        min: 1279
+        max: 1289
+      }
+      range {
+        min: 1535
+        max: 1538
+      }
+      range {
+        min: 1791
+        max: 1793
+      }
+      range {
+        min: 2047
+        max: 2050
+      }
+      range {
+        min: 2303
+        max: 2306
+      }
+      range {
+        min: 2559
+        max: 2563
+      }
+      range {
+        min: 2815
+        max: 2815
+      }
+      range {
+        min: 28672
+        max: 28674
+      }
+      range {
+        min: 28927
+        max: 28929
+      }
+      range {
+        min: 32767
+        max: 32767
+      }
+      range {
+        min: 32768
+        max: 57343
+      }
     }
     field {
       type: UINT32
@@ -409,6 +773,378 @@ pid {
       field {
         type: UINT16
         name: "detail_id"
+        label {
+          value: 0
+          label: "Not declared"
+        }
+        label {
+          value: 1
+          label: "Arc Lamp"
+        }
+        label {
+          value: 2
+          label: "Metal Halide Lamp"
+        }
+        label {
+          value: 3
+          label: "Incandescent Lamp"
+        }
+        label {
+          value: 4
+          label: "LED"
+        }
+        label {
+          value: 5
+          label: "Fluroescent"
+        }
+        label {
+          value: 6
+          label: "Cold Cathode"
+        }
+        label {
+          value: 7
+          label: "Electro-luminescent"
+        }
+        label {
+          value: 8
+          label: "Laser"
+        }
+        label {
+          value: 9
+          label: "Flash Tube"
+        }
+        label {
+          value: 256
+          label: "Color Scroller"
+        }
+        label {
+          value: 257
+          label: "Color Wheel"
+        }
+        label {
+          value: 258
+          label: "Color Changer (Semaphore or other type)"
+        }
+        label {
+          value: 259
+          label: "Iris"
+        }
+        label {
+          value: 260
+          label: "Dimming Shuttle"
+        }
+        label {
+          value: 261
+          label: "Profile Shuttle"
+        }
+        label {
+          value: 262
+          label: "Barndoor Shuttle"
+        }
+        label {
+          value: 263
+          label: "Effects Disc"
+        }
+        label {
+          value: 264
+          label: "Gobo Rotator"
+        }
+        label {
+          value: 512
+          label: "Video"
+        }
+        label {
+          value: 513
+          label: "Slide"
+        }
+        label {
+          value: 514
+          label: "Film"
+        }
+        label {
+          value: 515
+          label: "Oil Wheel"
+        }
+        label {
+          value: 516
+          label: "LCD Gate"
+        }
+        label {
+          value: 768
+          label: "Fogger, Glycol"
+        }
+        label {
+          value: 769
+          label: "Fogger, Mineral Oil"
+        }
+        label {
+          value: 770
+          label: "Fogger, Water"
+        }
+        label {
+          value: 771
+          label: "Dry Ice/ Carbon Dioxide Device"
+        }
+        label {
+          value: 772
+          label: "Nitrogen based"
+        }
+        label {
+          value: 773
+          label: "Bubble or Foam Machine"
+        }
+        label {
+          value: 774
+          label: "Propane Flame"
+        }
+        label {
+          value: 775
+          label: "Other Flame"
+        }
+        label {
+          value: 776
+          label: "Scents"
+        }
+        label {
+          value: 777
+          label: "Snow Machine"
+        }
+        label {
+          value: 778
+          label: "Water Jet"
+        }
+        label {
+          value: 779
+          label: "Wind Machine"
+        }
+        label {
+          value: 780
+          label: "Confetti Machine"
+        }
+        label {
+          value: 781
+          label: "Hazard (Any form of pyrotechnic control or device.)"
+        }
+        label {
+          value: 1024
+          label: "Phase Control"
+        }
+        label {
+          value: 1025
+          label: "Phase Angle"
+        }
+        label {
+          value: 1026
+          label: "Sine"
+        }
+        label {
+          value: 1027
+          label: "PWM"
+        }
+        label {
+          value: 1028
+          label: "DC"
+        }
+        label {
+          value: 1029
+          label: "HF Ballast"
+        }
+        label {
+          value: 1030
+          label: "HFHV Neon/Argon"
+        }
+        label {
+          value: 1031
+          label: "HFHV Electroluminscent"
+        }
+        label {
+          value: 1032
+          label: "Metal Halide Ballast"
+        }
+        label {
+          value: 1033
+          label: "Bit Angle Modulation"
+        }
+        label {
+          value: 1034
+          label: "Frequency Modulation"
+        }
+        label {
+          value: 1035
+          label: "High Frequency 12V"
+        }
+        label {
+          value: 1036
+          label: "Mechanical Relay"
+        }
+        label {
+          value: 1037
+          label: "Electronic Relay"
+        }
+        label {
+          value: 1038
+          label: "Electronic Switch"
+        }
+        label {
+          value: 1039
+          label: "Contactor"
+        }
+        label {
+          value: 1280
+          label: "Mirror Ball Rotator"
+        }
+        label {
+          value: 1281
+          label: "Other Rotator"
+        }
+        label {
+          value: 1282
+          label: "Kabuki Drop"
+        }
+        label {
+          value: 1283
+          label: "Curtain"
+        }
+        label {
+          value: 1284
+          label: "Line Set"
+        }
+        label {
+          value: 1285
+          label: "Motor Control"
+        }
+        label {
+          value: 1286
+          label: "Damper Control"
+        }
+        label {
+          value: 1536
+          label: "Splitter"
+        }
+        label {
+          value: 1537
+          label: "Ethernet Node"
+        }
+        label {
+          value: 1538
+          label: "DMX512 Merger"
+        }
+        label {
+          value: 1539
+          label: "Data Patch"
+        }
+        label {
+          value: 1540
+          label: "Wireless link"
+        }
+        label {
+          value: 1793
+          label: "Protocol Convertor"
+        }
+        label {
+          value: 1794
+          label: "DMX512 to DC Voltage"
+        }
+        label {
+          value: 1795
+          label: "DC Voltage to DMX512"
+        }
+        label {
+          value: 1796
+          label: "Switch Panel"
+        }
+        label {
+          value: 2048
+          label: "Router"
+        }
+        label {
+          value: 2049
+          label: "Fader, Single Channel"
+        }
+        label {
+          value: 2050
+          label: "Mixer, Multi Channel"
+        }
+        label {
+          value: 2304
+          label: "Manual Changeover"
+        }
+        label {
+          value: 2305
+          label: "Auto Changeover"
+        }
+        label {
+          value: 2306
+          label: "Test Device"
+        }
+        label {
+          value: 2560
+          label: "GFI / RCD Device"
+        }
+        label {
+          value: 2561
+          label: "Battery"
+        }
+        label {
+          value: 2562
+          label: "Controllable Breaker"
+        }
+        label {
+          value: 32767
+          label: "Other Device"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+        range {
+          min: 256
+          max: 264
+        }
+        range {
+          min: 512
+          max: 516
+        }
+        range {
+          min: 768
+          max: 781
+        }
+        range {
+          min: 1024
+          max: 1039
+        }
+        range {
+          min: 1280
+          max: 1286
+        }
+        range {
+          min: 1536
+          max: 1540
+        }
+        range {
+          min: 1792
+          max: 1796
+        }
+        range {
+          min: 2048
+          max: 2050
+        }
+        range {
+          min: 2304
+          max: 2306
+        }
+        range {
+          min: 2560
+          max: 2562
+        }
+        range {
+          min: 32767
+          max: 32767
+        }
+        range {
+          min: 32768
+          max: 57343
+        }
       }
     }
   }
@@ -542,7 +1278,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "BOOT_SOFTWARE_VERSION"
+  name: "BOOT_SOFTWARE_VERSION_ID"
   value: 193
   get_request {
   }
@@ -555,7 +1291,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "BOOT_SOFTWARE_LABEL"
+  name: "BOOT_SOFTWARE_VERSION_LABEL"
   value: 194
   get_request {
   }
@@ -670,6 +1406,42 @@ pid {
       field {
         type: UINT8
         name: "slot_type"
+        label {
+          value: 0
+          label: "Primary"
+        }
+        label {
+          value: 1
+          label: "Secondary fine"
+        }
+        label {
+          value: 2
+          label: "Secondary timing"
+        }
+        label {
+          value: 3
+          label: "Secondary speed"
+        }
+        label {
+          value: 4
+          label: "Secondary control"
+        }
+        label {
+          value: 5
+          label: "Secondary index"
+        }
+        label {
+          value: 6
+          label: "Secondary rotation speed"
+        }
+        label {
+          value: 7
+          label: "Secondary rotation index"
+        }
+        label {
+          value: 255
+          label: "Secondary undefined"
+        }
       }
       field {
         type: UINT16
@@ -953,6 +1725,150 @@ pid {
     field {
       type: UINT8
       name: "type"
+      label {
+        value: 0
+        label: "Temperature"
+      }
+      label {
+        value: 1
+        label: "Voltage"
+      }
+      label {
+        value: 2
+        label: "Current"
+      }
+      label {
+        value: 3
+        label: "Frequency"
+      }
+      label {
+        value: 4
+        label: "Resistance"
+      }
+      label {
+        value: 5
+        label: "Power"
+      }
+      label {
+        value: 6
+        label: "Mass"
+      }
+      label {
+        value: 7
+        label: "Length"
+      }
+      label {
+        value: 8
+        label: "Area"
+      }
+      label {
+        value: 9
+        label: "Volume"
+      }
+      label {
+        value: 10
+        label: "Density"
+      }
+      label {
+        value: 11
+        label: "Velocity"
+      }
+      label {
+        value: 12
+        label: "Acceleration"
+      }
+      label {
+        value: 13
+        label: "Force"
+      }
+      label {
+        value: 14
+        label: "Energy"
+      }
+      label {
+        value: 15
+        label: "Pressure"
+      }
+      label {
+        value: 16
+        label: "Time"
+      }
+      label {
+        value: 17
+        label: "Angle"
+      }
+      label {
+        value: 18
+        label: "Position X"
+      }
+      label {
+        value: 19
+        label: "Position Y"
+      }
+      label {
+        value: 20
+        label: "Position Z"
+      }
+      label {
+        value: 21
+        label: "Angular velocity"
+      }
+      label {
+        value: 22
+        label: "Luminous intensity"
+      }
+      label {
+        value: 23
+        label: "Luminous flux"
+      }
+      label {
+        value: 24
+        label: "Illuminance"
+      }
+      label {
+        value: 25
+        label: "Chrominance red"
+      }
+      label {
+        value: 26
+        label: "Chrominance green"
+      }
+      label {
+        value: 27
+        label: "Chrominance blue"
+      }
+      label {
+        value: 28
+        label: "Contacts"
+      }
+      label {
+        value: 29
+        label: "Memory"
+      }
+      label {
+        value: 30
+        label: "Items"
+      }
+      label {
+        value: 31
+        label: "Humidity"
+      }
+      label {
+        value: 32
+        label: "16 bit counter"
+      }
+      label {
+        value: 127
+        label: "Other"
+      }
+      range {
+        min: 0
+        max: 32
+      }
+      range {
+        min: 127
+        max: 255
+      }
     }
     field {
       type: UINT8
@@ -1286,18 +2202,18 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "output_response_time"
+      name: "current_response_time"
     }
     field {
       type: UINT8
-      name: "number_output_response_times"
+      name: "number_response_options"
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
     field {
       type: UINT8
-      name: "output_response_time"
+      name: "response_time"
       range {
         min: 1
         max: 255
@@ -1314,7 +2230,7 @@ pid {
   get_request {
     field {
       type: UINT8
-      name: "output_response_time"
+      name: "response_time"
       range {
         min: 1
         max: 255
@@ -1324,7 +2240,7 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "output_response_time"
+      name: "response_time"
       range {
         min: 1
         max: 255
@@ -1346,7 +2262,7 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "modulation_frequency"
+      name: "current_modulation_frequency"
     }
     field {
       type: UINT8
@@ -2096,7 +3012,7 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
-  name: "PERFORM_SELF_TEST"
+  name: "PERFORM_SELFTEST"
   value: 4128
   get_request {
   }
@@ -2453,7 +3369,7 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
-  name: "PRESET_MERGE_MODE"
+  name: "PRESET_MERGEMODE"
   value: 4163
   get_request {
   }
@@ -2536,855 +3452,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-pid {
-  name: "BACKGROUND_QUEUED_STATUS_POLICY"
-  value: 32720
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT8
-      name: "current_policy_setting"
-    }
-    field {
-      type: UINT8
-      name: "num_policy_settings"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: UINT8
-      name: "policy"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION"
-  value: 32721
-  get_request {
-    field {
-      type: UINT8
-      name: "policy_setting"
-    }
-  }
-  get_response {
-    field {
-      type: UINT8
-      name: "policy_setting"
-    }
-    field {
-      type: STRING
-      name: "description"
-      max_size: 32
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "BACKGROUND_STATUS_TYPE"
-  value: 32722
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT8
-      name: "status_type"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: UINT8
-      name: "status_type"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "QUEUED_STATUS_ENDPOINT_COLLECTION"
-  value: 32723
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT8
-      name: "status_type"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "QUEUED_STATUS_UID_COLLECTION"
-  value: 32724
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UID
-      name: "target_uid"
-    }
-    field {
-      type: UINT8
-      name: "status_type"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_LIST"
-  value: 32736
-  get_request {
-  }
-  get_response {
-    field {
-      type: UINT32
-      name: "list_change_number"
-    }
-    field {
-      type: GROUP
-      name: "endpoints"
-      field {
-        type: UINT16
-        name: "endpoint_id"
-      }
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_TO_UNIVERSE"
-  value: 32737
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-    }
-    field {
-      type: UINT16
-      name: "universe"
-      label {
-        value: 65535
-        label: "Composite"
-      }
-      range {
-        min: 1
-        max: 65535
-      }
-    }
-    field {
-      type: BOOL
-      name: "physical"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: UINT16
-      name: "universe"
-      label {
-        value: 65535
-        label: "Composite"
-      }
-      range {
-        min: 1
-        max: 63999
-      }
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "RDM_TRAFFIC_ENABLE"
-  value: 32738
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: BOOL
-      name: "rdm_enabled"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: BOOL
-      name: "rdm_enabled"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_MODE"
-  value: 32739
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT8
-      name: "endpoint_function"
-      label {
-        value: 0
-        label: "Disabled"
-      }
-      label {
-        value: 1
-        label: "Input"
-      }
-      label {
-        value: 2
-        label: "Output"
-      }
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: UINT8
-      name: "endpoint_function"
-      label {
-        value: 0
-        label: "Disabled"
-      }
-      label {
-        value: 1
-        label: "Input"
-      }
-      label {
-        value: 2
-        label: "Output"
-      }
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_LABEL"
-  value: 32740
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: STRING
-      name: "endpoint_label"
-      max_size: 32
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: STRING
-      name: "endpoint_label"
-      max_size: 32
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "DISCOVERY_STATE"
-  value: 32741
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT16
-      name: "device_count"
-      label {
-        value: 65535
-        label: "Not Supported"
-      }
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT8
-      name: "discovery_state"
-      label {
-        value: 0
-        label: "Not Run"
-      }
-      label {
-        value: 1
-        label: "Completed"
-      }
-      label {
-        value: 2
-        label: "Incremental"
-      }
-      label {
-        value: 3
-        label: "Full"
-      }
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: UINT8
-      name: "discovery_state"
-      label {
-        value: 0
-        label: "Not Run"
-      }
-      label {
-        value: 1
-        label: "Completed"
-      }
-      label {
-        value: 2
-        label: "Incremental"
-      }
-      label {
-        value: 3
-        label: "Full"
-      }
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_TIMING"
-  value: 32742
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT8
-      name: "current_setting"
-    }
-    field {
-      type: UINT8
-      name: "number_of_settings"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: UINT8
-      name: "timing_setting"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_TIMING_DESCRIPTION"
-  value: 32743
-  get_request {
-    field {
-      type: UINT8
-      name: "timing_setting"
-    }
-  }
-  get_response {
-    field {
-      type: UINT8
-      name: "timing_setting"
-    }
-    field {
-      type: STRING
-      name: "description"
-      max_size: 32
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "BINDING_CONTROL_FIELDS"
-  value: 32744
-  get_request {
-    field {
-      type: UID
-      name: "uid"
-    }
-  }
-  get_response {
-    field {
-      type: UID
-      name: "uid"
-    }
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT16
-      name: "control_bits"
-    }
-    field {
-      type: UID
-      name: "binding_uid"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_IDENTIFY"
-  value: 32745
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: BOOL
-      name: "identify_state"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: BOOL
-      name: "identify_state"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "BACKGROUND_DISCOVERY"
-  value: 32746
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: BOOL
-      name: "background_discovery"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      label {
-        value: 65535
-        label: "All Endpoints"
-      }
-      range {
-        min: 0
-        max: 65535
-      }
-    }
-    field {
-      type: BOOL
-      name: "background_discovery"
-    }
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_DEVICE_LIST_CHANGE"
-  value: 32747
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT32
-      name: "list_change_number"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_DEVICES"
-  value: 32748
-  get_request {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-  }
-  get_response {
-    field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 0
-        max: 65534
-      }
-    }
-    field {
-      type: UINT32
-      name: "list_change_number"
-    }
-    field {
-      type: GROUP
-      name: "uids"
-      field {
-        type: UID
-        name: "uid"
-      }
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "TCP_COMMS_STATUS"
-  value: 32749
-  get_request {
-  }
-  get_response {
-    field {
-      type: IPV4
-      name: "controller_ip"
-      label {
-        value: 0
-        label: "No Connection"
-      }
-    }
-    field {
-      type: UINT16
-      name: "unhealthy_events"
-    }
-    field {
-      type: UINT16
-      name: "connection_events"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-  set_request {
-  }
-  set_response {
-  }
-  set_sub_device_range: ROOT_DEVICE
-}
-pid {
-  name: "ENDPOINT_LIST_CHANGE"
-  value: 32750
-  get_request {
-  }
-  get_response {
-    field {
-      type: UINT32
-      name: "list_change_number"
-    }
-  }
-  get_sub_device_range: ROOT_DEVICE
-}
-version: 1366482943
+version: 1382755231

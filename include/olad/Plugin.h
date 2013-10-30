@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLAD_PLUGIN_H_
 #define INCLUDE_OLAD_PLUGIN_H_
 
+#include <ola/base/Macro.h>
 #include <ola/plugin_id.h>
 
 #include <set>
@@ -113,8 +114,8 @@ class Plugin: public AbstractPlugin {
 
   private:
     bool m_enabled;  // are we running
-    Plugin(const Plugin&);
-    Plugin& operator=(const Plugin&);
+
+    DISALLOW_COPY_AND_ASSIGN(Plugin);
 };
 }  // namespace ola
 

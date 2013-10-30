@@ -23,6 +23,7 @@
 #define INCLUDE_OLA_E133_OLASLPTHREAD_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/e133/SLPThread.h>
 #include <ola/network/Socket.h>
 #include <ola/network/TCPSocket.h>
@@ -85,6 +86,8 @@ class OLASLPThread: public BaseSLPThread {
     void ShutdownClient();
     bool ConnectAndSetupClient();
     void AttemptSLPConnection();
+
+    DISALLOW_COPY_AND_ASSIGN(OLASLPThread);
 };
 }  // namespace e133
 }  // namespace ola

@@ -23,6 +23,7 @@
 #define INCLUDE_OLA_E133_OPENSLPTHREAD_H_
 
 #include <slp.h>
+#include <ola/base/Macro.h>
 #include <ola/e133/SLPThread.h>
 #include <ola/network/Socket.h>
 #include <ola/thread/ExecutorInterface.h>
@@ -61,6 +62,8 @@ class OpenSLPThread: public BaseSLPThread {
   private:
     bool m_init_ok;
     SLPHandle m_slp_handle;
+
+    DISALLOW_COPY_AND_ASSIGN(OpenSLPThread);
 };
 }  // namespace e133
 }  // namespace ola

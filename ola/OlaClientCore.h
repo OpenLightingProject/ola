@@ -27,8 +27,9 @@
 #include <vector>
 
 #include "common/protocol/Ola.pb.h"
-#include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/StreamRpcChannel.h"
+#include "common/protocol/OlaService.pb.h"
+#include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcController.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/OlaCallbackClient.h"
@@ -47,8 +48,8 @@ class OlaClientCoreServiceImpl;
 
 using std::string;
 using ola::io::ConnectedDescriptor;
-using ola::rpc::SimpleRpcController;
-using ola::rpc::StreamRpcChannel;
+using ola::rpc::RpcController;
+using ola::rpc::RpcChannel;
 
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
@@ -215,16 +216,16 @@ class OlaClientCore: public ola::proto::OlaClientService {
     /*
      * This is called by the channel when new DMX data turns up
      */
-    void UpdateDmxData(::google::protobuf::RpcController* controller,
+    void UpdateDmxData(ola::rpc::RpcController* controller,
                        const ola::proto::DmxData* request,
                        ola::proto::Ack* response,
-                       ::google::protobuf::Closure* done);
+                       CompletionCallback* done);
 
     // unfortunately all of these need to be public because they're used in the
     // closures. That's why this class is wrapped in OlaClient or
     // OlaCallbackClient.
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::PluginListReply *reply;
       SingleUseCallback2<void,
                          const vector<class OlaPlugin>&,
@@ -234,7 +235,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandlePluginList(plugin_list_arg *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::PluginDescriptionReply *reply;
       SingleUseCallback2<void, const string&, const string&> *callback;
     } plugin_description_arg;
@@ -242,7 +243,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandlePluginDescription(plugin_description_arg *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::PluginStateReply *reply;
       OlaCallbackClient::PluginStateCallback *callback;
     } plugin_state_arg;
@@ -250,7 +251,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandlePluginState(plugin_state_arg *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::DeviceInfoReply *reply;
       SingleUseCallback2<void,
                          const vector <class OlaDevice> &,
@@ -260,7 +261,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandleDeviceInfo(device_info_arg *arg);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::DeviceConfigReply *reply;
       SingleUseCallback2<void, const string&, const string&> *callback;
     } configure_device_args;
@@ -268,7 +269,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandleDeviceConfig(configure_device_args *arg);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::Ack *reply;
       BaseCallback1<void, const string&> *callback;
     } ack_args;
@@ -276,7 +277,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandleAck(ack_args *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::UniverseInfoReply *reply;
       SingleUseCallback2<void,
                          const vector <class OlaUniverse>&,
@@ -286,7 +287,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandleUniverseList(universe_list_args *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::UniverseInfoReply *reply;
       SingleUseCallback2<void, class OlaUniverse&, const string&> *callback;
     } universe_info_args;
@@ -294,7 +295,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandleUniverseInfo(universe_info_args *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::DmxData *reply;
       SingleUseCallback2<void, const DmxBuffer&, const string&> *callback;
     } get_dmx_args;
@@ -302,7 +303,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     void HandleGetDmx(get_dmx_args *args);
 
     typedef struct {
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::UIDListReply *reply;
       SingleUseCallback2<void,
                          const ola::rdm::UIDSet&,
@@ -313,7 +314,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
     typedef struct {
       ola::rdm::RDMAPIImplInterface::rdm_callback *callback;
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::RDMResponse *reply;
     } rdm_response_args;
 
@@ -321,7 +322,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
     typedef struct {
       ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback;
-      SimpleRpcController *controller;
+      RpcController *controller;
       ola::proto::RDMResponse *reply;
     } rdm_pid_response_args;
 
@@ -361,7 +362,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
         const uint8_t *data,
         unsigned int data_length);
 
-    void CheckRDMResponseStatus(SimpleRpcController *controller,
+    void CheckRDMResponseStatus(RpcController *controller,
                                 ola::proto::RDMResponse *reply,
                                 ola::rdm::ResponseStatus *new_status);
 
@@ -376,7 +377,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
     template <typename arg_type, typename reply_type, typename callback_type>
     arg_type *NewArgs(
-        SimpleRpcController *controller,
+        RpcController *controller,
         reply_type reply,
         callback_type callback);
 
@@ -386,7 +387,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     ConnectedDescriptor *m_descriptor;
     std::auto_ptr<DmxCallback> m_dmx_callback;
     std::auto_ptr<DmxCallbackWithPriority> m_dmx_callback_with_priority;
-    StreamRpcChannel *m_channel;
+    RpcChannel *m_channel;
     ola::proto::OlaServerService_Stub *m_stub;
     int m_connected;
 };
@@ -397,7 +398,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
  */
 template <typename arg_type, typename reply_type, typename callback_type>
 arg_type *OlaClientCore::NewArgs(
-    SimpleRpcController *controller,
+    RpcController *controller,
     reply_type reply,
     callback_type callback) {
   arg_type *args = new arg_type();

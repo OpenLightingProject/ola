@@ -25,7 +25,9 @@
 #include <set>
 #include <string>
 #include <vector>
+
 #include "ola/Clock.h"
+#include "ola/base/Macro.h"
 
 namespace ola {
 
@@ -57,12 +59,12 @@ class UniverseStore {
                                                // able to delete
     Clock m_clock;
 
-    explicit UniverseStore(const ola::UniverseStore&);
-    UniverseStore& operator=(const UniverseStore&);
     bool RestoreUniverseSettings(Universe *universe) const;
     bool SaveUniverseSettings(Universe *universe) const;
 
     static const unsigned int MINIMUM_RDM_DISCOVERY_INTERVAL;
+
+    DISALLOW_COPY_AND_ASSIGN(UniverseStore);
 };
 }  // namespace ola
 #endif  // OLAD_UNIVERSESTORE_H_

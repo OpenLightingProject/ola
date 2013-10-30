@@ -5658,5 +5658,19 @@ manufacturer {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
+  pid {
+    name: "CODE_VERSION"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: STRING
+        name: "code_version"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
 }
-version: 1365898008
+version: 1382755231

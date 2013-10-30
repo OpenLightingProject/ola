@@ -543,7 +543,7 @@ class DiscoveryMixin(ResponderTestFixture):
     return UID.AllDevices()
 
   def UnMuteDevice(self, next_method):
-    unmute_pid = self.LookupPid('DISC_UNMUTE')
+    unmute_pid = self.LookupPid('DISC_UN_MUTE')
     self.AddExpectedResults([
         AckDiscoveryResult(unmute_pid.value, action=next_method),
     ])

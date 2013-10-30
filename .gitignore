@@ -5,6 +5,7 @@
 *.log
 *.o
 *.pb.cc
+*.pb.cpp
 *.pb.h
 *.pc
 *.pyc
@@ -93,6 +94,7 @@ olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
+protoc/ola_protoc
 python/ola/PidStoreLocation.py
 python/ola/Version.py
 slp/slp_client

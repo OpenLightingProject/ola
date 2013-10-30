@@ -68,7 +68,7 @@ bool OlaClientCore::Setup() {
   if (m_connected)
     return false;
 
-  m_channel = new StreamRpcChannel(this, m_descriptor);
+  m_channel = new RpcChannel(this, m_descriptor);
 
   if (!m_channel) {
     return false;
@@ -119,11 +119,11 @@ bool OlaClientCore::FetchPluginList(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::PluginListRequest request;
   ola::proto::PluginListReply *reply = new ola::proto::PluginListReply();
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandlePluginList,
       NewArgs<plugin_list_arg>(controller, reply, callback));
@@ -144,14 +144,14 @@ bool OlaClientCore::FetchPluginDescription(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::PluginDescriptionRequest request;
   ola::proto::PluginDescriptionReply *reply = new
     ola::proto::PluginDescriptionReply();
 
   request.set_plugin_id(plugin_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandlePluginDescription,
       NewArgs<plugin_description_arg>(controller, reply, callback));
@@ -172,14 +172,14 @@ bool OlaClientCore::FetchPluginState(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::PluginStateRequest request;
   ola::proto::PluginStateReply *reply = new
     ola::proto::PluginStateReply();
 
   request.set_plugin_id(plugin_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandlePluginState,
       NewArgs<plugin_state_arg>(controller, reply, callback));
@@ -204,11 +204,11 @@ bool OlaClientCore::FetchDeviceInfo(
   }
 
   ola::proto::DeviceInfoRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
   request.set_plugin_id(filter);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleDeviceInfo,
       NewArgs<device_info_arg>(controller, reply, callback));
@@ -258,14 +258,14 @@ bool OlaClientCore::ConfigureDevice(
   }
 
   ola::proto::DeviceConfigRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DeviceConfigReply *reply = new ola::proto::DeviceConfigReply();
 
   string configure_request;
   request.set_device_alias(device_alias);
   request.set_data(msg);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleDeviceConfig,
       NewArgs<configure_device_args>(controller, reply, callback));
@@ -291,7 +291,7 @@ bool OlaClientCore::SetPortPriorityInherit(
   }
 
   ola::proto::PortPriorityRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_device_alias(device_alias);
@@ -299,7 +299,7 @@ bool OlaClientCore::SetPortPriorityInherit(
   request.set_is_output(port_direction == OUTPUT_PORT);
   request.set_priority_mode(ola::PRIORITY_MODE_INHERIT);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -327,7 +327,7 @@ bool OlaClientCore::SetPortPriorityOverride(
   }
 
   ola::proto::PortPriorityRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_device_alias(device_alias);
@@ -336,7 +336,7 @@ bool OlaClientCore::SetPortPriorityOverride(
   request.set_priority_mode(ola::PRIORITY_MODE_STATIC);
   request.set_priority(value);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -358,11 +358,11 @@ bool OlaClientCore::FetchUniverseList(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUniverseList,
       NewArgs<universe_list_args>(controller, reply, callback));
@@ -384,13 +384,13 @@ bool OlaClientCore::FetchUniverseInfo(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
   request.set_universe(universe_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUniverseInfo,
       NewArgs<universe_info_args>(controller, reply, callback));
@@ -415,13 +415,13 @@ bool OlaClientCore::SetUniverseName(
   }
 
   ola::proto::UniverseNameRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_universe(universe);
   request.set_name(name);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -446,7 +446,7 @@ bool OlaClientCore::SetUniverseMergeMode(
   }
 
   ola::proto::MergeModeRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::MergeMode merge_mode = mode == OlaUniverse::MERGE_HTP ?
@@ -454,7 +454,7 @@ bool OlaClientCore::SetUniverseMergeMode(
   request.set_universe(universe);
   request.set_merge_mode(merge_mode);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -483,7 +483,7 @@ bool OlaClientCore::Patch(
   }
 
   ola::proto::PatchPortRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::PatchAction action = (
@@ -494,7 +494,7 @@ bool OlaClientCore::Patch(
   request.set_is_output(port_direction == OUTPUT_PORT);
   request.set_action(action);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -536,7 +536,7 @@ bool OlaClientCore::RegisterUniverse(
   }
 
   ola::proto::RegisterDmxRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::RegisterAction action = (
@@ -545,7 +545,7 @@ bool OlaClientCore::RegisterUniverse(
   request.set_universe(universe);
   request.set_action(action);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -611,12 +611,12 @@ bool OlaClientCore::FetchDmx(
   }
 
   ola::proto::UniverseRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DmxData *reply = new ola::proto::DmxData();
 
   request.set_universe(universe);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleGetDmx,
       NewArgs<get_dmx_args>(controller, reply, callback));
@@ -639,12 +639,12 @@ bool OlaClientCore::FetchUIDList(
   }
 
   ola::proto::UniverseRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
   request.set_universe(universe);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUIDList,
       NewArgs<uid_list_args>(controller, reply, callback));
@@ -670,13 +670,13 @@ bool OlaClientCore::RunDiscovery(
   }
 
   ola::proto::DiscoveryRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
   request.set_universe(universe);
   request.set_full(full);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleUIDList,
       NewArgs<uid_list_args>(controller, reply, callback));
@@ -697,13 +697,13 @@ bool OlaClientCore::SetSourceUID(
   }
 
   ola::proto::UID request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_esta_id(uid.ManufacturerId());
   request.set_device_id(uid.DeviceId());
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -828,7 +828,7 @@ bool OlaClientCore::SendTimeCode(
     return false;
   }
 
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::TimeCode request;
   ola::proto::Ack *reply = new ola::proto::Ack();
 
@@ -838,7 +838,7 @@ bool OlaClientCore::SendTimeCode(
   request.set_seconds(timecode.Seconds());
   request.set_frames(timecode.Frames());
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleAck,
       NewArgs<ack_args>(controller, reply, callback));
@@ -851,10 +851,10 @@ bool OlaClientCore::SendTimeCode(
  * Called when new DMX data arrives
  */
 void OlaClientCore::UpdateDmxData(
-    ::google::protobuf::RpcController*,
+    ola::rpc::RpcController*,
     const ola::proto::DmxData *request,
     ola::proto::Ack*,
-    ::google::protobuf::Closure *done) {
+    CompletionCallback *done) {
   if (m_dmx_callback.get() || m_dmx_callback_with_priority.get()) {
     DmxBuffer buffer;
     buffer.Set(request->data());
@@ -1246,9 +1246,9 @@ bool OlaClientCore::GenericSendDmx(
 
   if (callback) {
     // full request
-    SimpleRpcController *controller = new SimpleRpcController();
+    RpcController *controller = new RpcController();
     ola::proto::Ack *reply = new ola::proto::Ack();
-    google::protobuf::Closure *cb = google::protobuf::NewCallback(
+    CompletionCallback *cb = NewCallback(
         this,
         &ola::OlaClientCore::HandleAck,
         NewArgs<ack_args>(controller, reply, callback));
@@ -1276,13 +1276,13 @@ bool OlaClientCore::GenericFetchCandidatePorts(
   }
 
   ola::proto::OptionalUniverseRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
 
   if (include_universe)
     request.set_universe(universe_id);
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleDeviceInfo,
       NewArgs<device_info_arg>(controller, reply, callback));
@@ -1314,7 +1314,7 @@ bool OlaClientCore::RDMCommand(
   }
 
   ola::proto::RDMRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
 
   request.set_universe(universe);
@@ -1326,7 +1326,7 @@ bool OlaClientCore::RDMCommand(
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleRDM,
       NewArgs<rdm_response_args>(controller, reply, callback));
@@ -1359,7 +1359,7 @@ bool OlaClientCore::RDMCommandWithPid(
   }
 
   ola::proto::RDMRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
+  RpcController *controller = new RpcController();
   ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
 
   request.set_universe(universe);
@@ -1371,7 +1371,7 @@ bool OlaClientCore::RDMCommandWithPid(
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
 
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+  CompletionCallback *cb = NewCallback(
       this,
       &ola::OlaClientCore::HandleRDMWithPID,
       NewArgs<rdm_pid_response_args>(controller, reply, callback));
@@ -1397,7 +1397,7 @@ bool OlaClientCore::RDMCommandWithPid(
  * Ack Overflow (should never make it to the client)
  */
 void OlaClientCore::CheckRDMResponseStatus(
-    SimpleRpcController *controller,
+    RpcController *controller,
     ola::proto::RDMResponse *reply,
     ola::rdm::ResponseStatus *new_status) {
   new_status->message_count = reply->message_count();

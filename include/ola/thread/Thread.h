@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_THREAD_THREAD_H_
 
 #include <pthread.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/Mutex.h>
 
 namespace ola {
@@ -58,6 +59,8 @@ class Thread {
     bool m_running;
     Mutex m_mutex;  // protects m_running
     ConditionVariable m_condition;  // use to wait for the thread to start
+
+    DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 }  // namespace thread
 }  // namespace ola

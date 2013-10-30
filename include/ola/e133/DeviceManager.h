@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_E133_DEVICEMANAGER_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/IPV4Address.h>
@@ -76,6 +77,8 @@ class DeviceManager {
 
   private:
     class DeviceManagerImpl *m_impl;
+
+    DISALLOW_COPY_AND_ASSIGN(DeviceManager);
 };
 }  // namespace e133
 }  // namespace ola

@@ -32,7 +32,7 @@ lib_LTLIBRARIES = libolaslpcore.la \
                   libolaslpclient.la
 
 # libolaslpproto.la
-nodist_libolaslpproto_la_SOURCES = SLP.pb.cc
+nodist_libolaslpproto_la_SOURCES = SLP.pb.cc SLPService.pb.cpp
 libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
 # required, otherwise we get build errors
 libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
@@ -64,10 +64,13 @@ libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
                             libolaslpproto.la \
                             libolaslpcore.la
 
-BUILT_SOURCES = SLP.pb.cc SLP.pb.h
+BUILT_SOURCES = SLP.pb.cc SLP.pb.h SLPService.pb.h SLPService.pb.h
 
 SLP.pb.cc SLP.pb.h: SLP.proto
 	$(PROTOC)  --cpp_out ./ SLP.proto
+
+SLPService.pb.cpp SLPService.pb.h: SLP.proto
+	$(OLA_PROTOC)  --cppservice_out ./ SLP.proto
 
 # Programs
 noinst_PROGRAMS = slp_client
@@ -90,7 +93,7 @@ slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    libolaslpcore.la
 
 clean-local:
-	rm -f *.pb.{h,cc} *.gcno *.gcda
+	rm -f *.pb.{h,cc,cpp} *.gcno *.gcda
 
 # Tests
 if BUILD_TESTS
