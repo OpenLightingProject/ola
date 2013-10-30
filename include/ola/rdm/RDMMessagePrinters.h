@@ -418,7 +418,7 @@ class SensorDefinitionPrinter: public GenericMessagePrinter {
         Stream() << TransformLabel(name) << ": ";
         string supports_recording =
             SensorSupportsRecordingToString(message->Value());
-        if (supports_recording == "") {
+        if (supports_recording.empty()) {
           Stream() << "None";
         } else {
           Stream() << supports_recording;
