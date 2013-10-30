@@ -24,6 +24,7 @@
 
 #include <ola/Clock.h>
 #include <ola/ExportMap.h>
+#include <ola/base/Macro.h>
 #include <ola/http/HTTPServer.h>
 #include <string>
 
@@ -77,6 +78,8 @@ class OlaHTTPServer {
 
     int DisplayDebug(const HTTPRequest *request, HTTPResponse *response);
     int DisplayHandlers(const HTTPRequest *request, HTTPResponse *response);
+
+    DISALLOW_COPY_AND_ASSIGN(OlaHTTPServer);
 };
 }  // namespace http
 }  // namespace ola

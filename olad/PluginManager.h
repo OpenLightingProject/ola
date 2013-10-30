@@ -24,6 +24,8 @@
 #include <map>
 #include <vector>
 
+#include "ola/base/Macro.h"
+
 namespace ola {
 
 using std::vector;
@@ -61,15 +63,14 @@ class PluginManager {
                          vector<AbstractPlugin*> *plugins);
 
   private:
-    PluginManager(const PluginManager&);
-    PluginManager operator=(const PluginManager&);
-
     typedef std::map<ola_plugin_id, AbstractPlugin*> PluginMap;
 
     vector<PluginLoader*> m_plugin_loaders;
     PluginMap m_loaded_plugins;  // plugins that are loaded
     PluginMap m_active_plugins;  // active plugins
     PluginAdaptor *m_plugin_adaptor;
+
+    DISALLOW_COPY_AND_ASSIGN(PluginManager);
 };
 }  // namespace ola
 #endif  // OLAD_PLUGINMANAGER_H_

@@ -33,6 +33,7 @@
 #  include <config.h>
 #endif
 
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #include <sys/time.h>
 
@@ -40,6 +41,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+
 
 namespace ola {
 
@@ -372,8 +374,7 @@ class Clock {
     }
 
   private:
-    Clock(const Clock &other);
-    Clock& operator=(const Clock &other);
+    DISALLOW_COPY_AND_ASSIGN(Clock);
 };
 
 

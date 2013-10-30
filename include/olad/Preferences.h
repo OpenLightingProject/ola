@@ -22,6 +22,7 @@
 #ifndef INCLUDE_OLAD_PREFERENCES_H_
 #define INCLUDE_OLAD_PREFERENCES_H_
 
+#include <ola/base/Macro.h>
 #include <ola/Logging.h>
 #include <ola/thread/Thread.h>
 #include <ola/io/SelectServer.h>
@@ -124,6 +125,8 @@ class IPv4Validator: public Validator {
     bool IsValid(const string &value) const;
   private:
     bool m_empty_ok;
+
+    DISALLOW_COPY_AND_ASSIGN(IPv4Validator);
 };
 
 
@@ -162,8 +165,7 @@ class Preferences {
     string m_preference_name;
 
   private:
-    Preferences(const Preferences&);
-    Preferences& operator=(const Preferences&);
+    DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 
 

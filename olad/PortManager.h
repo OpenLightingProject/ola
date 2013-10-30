@@ -27,6 +27,7 @@
 #include "olad/DeviceManager.h"
 #include "olad/PortBroker.h"
 #include "olad/UniverseStore.h"
+#include "ola/base/Macro.h"
 
 
 namespace ola {
@@ -49,9 +50,6 @@ class PortManager {
     bool SetPriorityOverride(Port *port, uint8_t value);
 
   private:
-    PortManager(const PortManager&);
-    PortManager& operator=(const PortManager&);
-
     template<class PortClass>
     bool GenericPatchPort(PortClass *port,
                           unsigned int new_universe_id);
@@ -78,6 +76,8 @@ class PortManager {
 
     UniverseStore * const m_universe_store;
     PortBroker *m_broker;
+
+    DISALLOW_COPY_AND_ASSIGN(PortManager);
 };
 }  // namespace ola
 #endif  // OLAD_PORTMANAGER_H_

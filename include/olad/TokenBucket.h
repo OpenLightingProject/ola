@@ -22,6 +22,7 @@
 #define INCLUDE_OLAD_TOKENBUCKET_H_
 
 #include <ola/Clock.h>
+#include <ola/base/Macro.h>
 
 namespace ola {
 
@@ -46,8 +47,7 @@ class TokenBucket {
     unsigned int m_max;
     TimeStamp m_last;
 
-    TokenBucket(const TokenBucket&);
-    TokenBucket& operator=(const TokenBucket&);
+    DISALLOW_COPY_AND_ASSIGN(TokenBucket);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLAD_TOKENBUCKET_H_

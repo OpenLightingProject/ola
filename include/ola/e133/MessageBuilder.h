@@ -23,6 +23,7 @@
 #define INCLUDE_OLA_E133_MESSAGEBUILDER_H_
 
 #include <ola/acn/CID.h>
+#include <ola/base/Macro.h>
 #include <ola/e133/E133Enums.h>
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
@@ -67,6 +68,8 @@ class MessageBuilder {
     const CID m_cid;
     const string m_source_name;
     ola::io::MemoryBlockPool m_memory_pool;
+
+    DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };
 }  // namespace e133
 }  // namespace ola

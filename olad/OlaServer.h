@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "ola/ExportMap.h"
+#include "ola/base/Macro.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
@@ -134,13 +135,12 @@ class OlaServer {
     void ReloadPluginsInternal();
     void UpdatePidStore(const RootPidStore *pid_store);
 
-    OlaServer(const OlaServer&);
-    OlaServer& operator=(const OlaServer&);
-
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];
     static const char K_UID_VAR[];
     static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;
+
+    DISALLOW_COPY_AND_ASSIGN(OlaServer);
 };
 }  // namespace ola
 #endif  // OLAD_OLASERVER_H_

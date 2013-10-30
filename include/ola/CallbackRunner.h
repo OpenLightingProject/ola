@@ -41,6 +41,8 @@
 #ifndef INCLUDE_OLA_CALLBACKRUNNER_H_
 #define INCLUDE_OLA_CALLBACKRUNNER_H_
 
+#include <ola/base/Macro.h>
+
 namespace ola {
 
 /**
@@ -96,6 +98,8 @@ class CallbackRunner {
 
   private:
     CallbackClass *m_callback;
+
+    DISALLOW_COPY_AND_ASSIGN(CallbackRunner);
 };
 
 /**

@@ -22,8 +22,9 @@
 #define INCLUDE_OLA_E133_E133RECEIVER_H_
 
 #include <ola/Callback.h>
-#include <ola/network/Socket.h>
+#include <ola/base/Macro.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/Socket.h>
 #include <ola/rdm/RDMCommand.h>
 
 #include <memory>
@@ -142,6 +143,8 @@ class E133Receiver {
         const ola::plugin::e131::TransportHeader *transport_header,
         const ola::plugin::e131::E133Header *e133_header,
         const std::string &raw_response);
+
+    DISALLOW_COPY_AND_ASSIGN(E133Receiver);
 };
 }  // namespace e133
 }  // namespace ola

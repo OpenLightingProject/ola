@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_THREAD_THREADPOOL_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/ConsumerThread.h>
 #include <ola/thread/Thread.h>
 #include <queue>
@@ -52,6 +53,8 @@ class ThreadPool {
     std::vector<ConsumerThread*> m_threads;
 
     void JoinAllThreads();
+
+    DISALLOW_COPY_AND_ASSIGN(ThreadPool);
 };
 }  // namespace thread
 }  // namespace ola

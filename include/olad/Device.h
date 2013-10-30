@@ -21,8 +21,9 @@
 #ifndef INCLUDE_OLAD_DEVICE_H_
 #define INCLUDE_OLAD_DEVICE_H_
 
-#include <stdint.h>
+#include <ola/base/Macro.h>
 #include <olad/Port.h>
+#include <stdint.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -144,15 +145,14 @@ class Device: public AbstractDevice {
     input_port_map m_input_ports;
     output_port_map m_output_ports;
 
-    Device(const Device&);
-    Device& operator=(const Device&);
-
     template<class PortClass>
     bool GenericAddPort(PortClass *port,
                         map<unsigned int, PortClass*> *ports);
 
     template <class PortClass>
     void GenericDeletePort(PortClass *p);
+
+    DISALLOW_COPY_AND_ASSIGN(Device);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLAD_DEVICE_H_

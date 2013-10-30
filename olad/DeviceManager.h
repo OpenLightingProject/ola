@@ -34,6 +34,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "ola/base/Macro.h"
 #include "ola/timecode/TimeCode.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
@@ -81,8 +82,6 @@ class DeviceManager {
     unsigned int m_next_device_alias;
     std::set<class OutputPort*> m_timecode_ports;
 
-    DeviceManager(const DeviceManager&);
-    DeviceManager& operator=(const DeviceManager&);
     void ReleaseDevice(const AbstractDevice *device);
     void RestoreDevicePortSettings(AbstractDevice *device);
 
@@ -97,6 +96,8 @@ class DeviceManager {
 
     static const char PORT_PREFERENCES[];
     static const unsigned int FIRST_DEVICE_ALIAS = 1;
+
+    DISALLOW_COPY_AND_ASSIGN(DeviceManager);
 };
 }  // namespace ola
 #endif  // OLAD_DEVICEMANAGER_H_

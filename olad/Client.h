@@ -23,6 +23,7 @@
 
 #include <map>
 #include "common/rpc/RpcController.h"
+#include "ola/base/Macro.h"
 #include "olad/DmxSource.h"
 
 namespace ola {
@@ -52,11 +53,10 @@ class Client {
     class OlaClientService_Stub *Stub() const { return m_client_stub; }
 
   private:
-    Client(const Client&);
-    Client& operator=(const Client&);
-
     class OlaClientService_Stub *m_client_stub;
     map<unsigned int, DmxSource> m_data_map;
+
+    DISALLOW_COPY_AND_ASSIGN(Client);
 };
 }  // namespace ola
 #endif  // OLAD_CLIENT_H_

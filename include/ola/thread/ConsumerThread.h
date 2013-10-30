@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_THREAD_CONSUMERTHREAD_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/Thread.h>
 #include <queue>
 
@@ -65,6 +66,8 @@ class ConsumerThread: public ola::thread::Thread {
     ConditionVariable *m_condition_var;
 
     void EmptyQueue();
+
+    DISALLOW_COPY_AND_ASSIGN(ConsumerThread);
 };
 }  // namespace thread
 }  // namespace ola

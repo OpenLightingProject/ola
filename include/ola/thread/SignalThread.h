@@ -23,6 +23,7 @@
 
 #include <signal.h>
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/Thread.h>
 #include <map>
 
@@ -48,6 +49,7 @@ class SignalThread : public ola::thread::Thread {
   public:
     typedef ola::Callback0<void> SignalHandler;
 
+    SignalThread() {}
     ~SignalThread();
 
     // This has to be called before Start(). You can't add signal handlers once
@@ -64,6 +66,8 @@ class SignalThread : public ola::thread::Thread {
 
     bool AddSignals(sigset_t *signals);
     bool BlockSignal(int signal);
+
+    DISALLOW_COPY_AND_ASSIGN(SignalThread);
 };
 }  // namespace thread
 }  // namespace ola
