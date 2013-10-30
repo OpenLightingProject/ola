@@ -21,9 +21,10 @@
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
 #define INCLUDE_OLAD_PLUGINADAPTOR_H_
 
-#include <ola/Clock.h>
 #include <ola/Callback.h>
+#include <ola/Clock.h>
 #include <ola/ExportMap.h>
+#include <ola/base/Macro.h>
 #include <ola/io/SelectServerInterface.h>
 
 #include <string>
@@ -76,14 +77,13 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     }
 
   private:
-    PluginAdaptor(const PluginAdaptor&);
-    PluginAdaptor& operator=(const PluginAdaptor&);
-
     DeviceManager *m_device_manager;
     ola::io::SelectServerInterface *m_ss;
     ExportMap *m_export_map;
     class PreferencesFactory *m_preferences_factory;
     class PortBrokerInterface *m_port_broker;
+
+    DISALLOW_COPY_AND_ASSIGN(PluginAdaptor);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLAD_PLUGINADAPTOR_H_

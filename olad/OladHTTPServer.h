@@ -26,6 +26,7 @@
 #include <vector>
 #include "ola/ExportMap.h"
 #include "ola/OlaCallbackClient.h"
+#include "ola/base/Macro.h"
 #include "ola/http/HTTPServer.h"
 #include "ola/http/OlaHTTPServer.h"
 #include "ola/network/Interface.h"
@@ -146,9 +147,6 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     RDMHTTPModule m_rdm_module;
     time_t m_start_time_t;
 
-    OladHTTPServer(const OladHTTPServer&);
-    OladHTTPServer& operator=(const OladHTTPServer&);
-
     void HandleGetDmx(HTTPResponse *response,
                       const DmxBuffer &buffer,
                       const string &error);
@@ -186,6 +184,8 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
     static const char K_PRIORITY_VALUE_SUFFIX[];
     static const char K_PRIORITY_MODE_SUFFIX[];
+
+    DISALLOW_COPY_AND_ASSIGN(OladHTTPServer);
 };
 }  // namespace ola
 #endif  // OLAD_OLADHTTPSERVER_H_

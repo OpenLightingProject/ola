@@ -36,14 +36,15 @@
 #define INCLUDE_OLA_E133_SLPTHREAD_H_
 
 #include <ola/Callback.h>
-#include <ola/thread/Thread.h>
+#include <ola/base/Macro.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/Socket.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/Socket.h>
 #include <ola/rdm/UID.h>
-#include <ola/thread/ExecutorInterface.h>
 #include <ola/slp/SLPClient.h>
 #include <ola/slp/URLEntry.h>
+#include <ola/thread/ExecutorInterface.h>
+#include <ola/thread/Thread.h>
 
 #include <map>
 #include <string>
@@ -210,6 +211,8 @@ class BaseSLPThread: public ola::thread::Thread {
     static const uint16_t SA_REREGISTRATION_TIME;
     static const char E133_DEVICE_SLP_SERVICE_NAME[];
     static const char E133_CONTROLLER_SLP_SERVICE_NAME[];
+
+    DISALLOW_COPY_AND_ASSIGN(BaseSLPThread);
 };
 
 
@@ -224,8 +227,7 @@ class SLPThreadFactory {
           BaseSLPThread::DEFAULT_DISCOVERY_INTERVAL_SECONDS);
 
   private:
-    SLPThreadFactory(const SLPThreadFactory&);
-    SLPThreadFactory& operator=(const SLPThreadFactory&);
+    DISALLOW_COPY_AND_ASSIGN(SLPThreadFactory);
 };
 }  // namespace e133
 }  // namespace ola

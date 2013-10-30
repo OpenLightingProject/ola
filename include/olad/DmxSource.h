@@ -67,7 +67,6 @@ class DmxSource {
       return *this;
     }
 
-
     /*
      * Equality check
      */

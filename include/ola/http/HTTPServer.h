@@ -35,6 +35,7 @@
 #define INCLUDE_OLA_HTTP_HTTPSERVER_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServer.h>
 #include <ola/thread/Thread.h>
@@ -98,6 +99,8 @@ class HTTPRequest {
     bool m_in_flight;
 
     static const unsigned int K_POST_BUFFER_SIZE = 1024;
+
+    DISALLOW_COPY_AND_ASSIGN(HTTPRequest);
 };
 
 
@@ -123,6 +126,8 @@ class HTTPResponse {
     struct MHD_Connection *m_connection;
     multimap<string, string> m_headers;
     unsigned int m_status_code;
+
+    DISALLOW_COPY_AND_ASSIGN(HTTPResponse);
 };
 
 
@@ -216,16 +221,14 @@ class HTTPServer: public ola::thread::Thread {
     unsigned int m_port;
     string m_data_dir;
 
-
-    HTTPServer(const HTTPServer&);
-    HTTPServer& operator=(const HTTPServer&);
-
     int ServeStaticContent(static_file_info *file_info,
                            HTTPResponse *response);
 
     ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
                                                 fd_set *w_set,
                                                 int fd);
+
+    DISALLOW_COPY_AND_ASSIGN(HTTPServer);
 };
 }  // namespace http
 }  // namespace ola

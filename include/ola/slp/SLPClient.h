@@ -23,6 +23,7 @@
 
 #include <ola/Callback.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Macro.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
@@ -104,10 +105,9 @@ class SLPClient {
         SingleUseCallback2<void, const string&, const ServerInfo&> *callback);
 
   private:
-    SLPClient(const SLPClient&);
-    SLPClient operator=(const SLPClient&);
-
     auto_ptr<class SLPClientCore> m_core;
+
+    DISALLOW_COPY_AND_ASSIGN(SLPClient);
 };
 
 
@@ -138,6 +138,8 @@ class SLPClientWrapper: public BaseClientWrapper {
       m_socket.reset(TCPSocket::Connect(
             IPV4SocketAddress(IPV4Address::Loopback(), OLA_SLP_DEFAULT_PORT)));
     }
+
+    DISALLOW_COPY_AND_ASSIGN(SLPClientWrapper);
 };
 }  // namespace slp
 }  // namespace ola
