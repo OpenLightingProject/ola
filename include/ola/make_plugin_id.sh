@@ -35,7 +35,7 @@ EOM
 grep -E "^[ \t]+OLA_PLUGIN_" ../../common/protocol/Ola.proto | sed "s/;/,/"
 cat <<EOM
 } ola_plugin_id;
-}
+}  // namespace ola
 #endif  // INCLUDE_OLA_PLUGIN_ID_H_
 EOM
 ) > plugin_id.h
