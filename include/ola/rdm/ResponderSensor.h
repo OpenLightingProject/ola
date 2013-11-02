@@ -48,10 +48,6 @@ class Sensor {
   public:
     struct SensorOptions {
       public:
-        ola::rdm::rdm_sensor_type type;
-        ola::rdm::rdm_pid_unit unit;
-        ola::rdm::rdm_pid_prefix prefix;
-        string description;
         bool recorded_value_support;
         bool recorded_range_support;
         int16_t range_min;
@@ -59,26 +55,10 @@ class Sensor {
         int16_t normal_min;
         int16_t normal_max;
 
-        SensorOptions()
-            : type(SENSOR_OTHER),
-              unit(UNITS_NONE),
-              prefix(PREFIX_NONE),
-              description(""),
-              recorded_value_support(true),
-              recorded_range_support(true),
-              range_min(SENSOR_DEFINITION_RANGE_MIN_UNDEFINED),
-              range_max(SENSOR_DEFINITION_RANGE_MAX_UNDEFINED),
-              normal_min(SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED),
-              normal_max(SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED) {
-        }
-
         // SensorOptions constructor to set all options, for use in
-        // initialisation lists
-        SensorOptions(ola::rdm::rdm_sensor_type type,
-                      ola::rdm::rdm_pid_unit unit,
-                      ola::rdm::rdm_pid_prefix prefix,
-                      const string &description,
-                      bool recorded_value_support = true,
+        // initialisation lists. This also sets the defaults if called with no
+        // args
+        SensorOptions(bool recorded_value_support = true,
                       bool recorded_range_support = true,
                       int16_t range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
                       int16_t range_max = SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
@@ -86,11 +66,7 @@ class Sensor {
                           SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED,
                       int16_t normal_max =
                           SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)
-            : type(type),
-              unit(unit),
-              prefix(prefix),
-              description(description),
-              recorded_value_support(recorded_value_support),
+            : recorded_value_support(recorded_value_support),
               recorded_range_support(recorded_range_support),
               range_min(range_min),
               range_max(range_max),
@@ -99,11 +75,15 @@ class Sensor {
         }
     };
 
-    explicit Sensor(const SensorOptions &options)
-        : m_type(options.type),
-          m_unit(options.unit),
-          m_prefix(options.prefix),
-          m_description(options.description),
+    Sensor(ola::rdm::rdm_sensor_type type,
+           ola::rdm::rdm_pid_unit unit,
+           ola::rdm::rdm_pid_prefix prefix,
+           const string &description,
+           const SensorOptions &options)
+        : m_type(type),
+          m_unit(unit),
+          m_prefix(prefix),
+          m_description(description),
           m_recorded_value_support(options.recorded_value_support),
           m_recorded_range_support(options.recorded_range_support),
           m_range_min(options.range_min),
@@ -122,12 +102,6 @@ class Sensor {
     int16_t NormalMin() const { return m_normal_min; }
     int16_t NormalMax() const { return m_normal_max; }
     const string& Description() const { return m_description; }
-
-    /**
-     * @brief Actually get the value from the Sensor.
-     * @returns the value of the sensor when polled.
-     */
-    virtual int16_t PollSensor() = 0;
 
     int16_t Lowest() const {
       if (m_recorded_range_support) {
@@ -165,7 +139,7 @@ class Sensor {
     }
 
     /**
-     * Generate a new value and record it.
+     * Get the current value and record it for later collection.
      */
     void Record() {
       uint16_t value = FetchValue();
@@ -173,7 +147,7 @@ class Sensor {
     }
 
     /**
-     * Reset a sensor.
+     * Reset a sensor's min/max/recorded values.
      */
     int16_t Reset() {
       int16_t value = PollSensor();
@@ -195,6 +169,12 @@ class Sensor {
     }
 
   protected:
+    /**
+     * @brief Actually get the value from the Sensor.
+     * @returns the value of the sensor when polled.
+     */
+    virtual int16_t PollSensor() = 0;
+
     const ola::rdm::rdm_sensor_type m_type;
     const ola::rdm::rdm_pid_unit m_unit;
     const ola::rdm::rdm_pid_prefix m_prefix;

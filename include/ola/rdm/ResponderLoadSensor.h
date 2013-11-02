@@ -44,11 +44,11 @@ namespace rdm {
 class LoadSensor: public Sensor {
   public:
     LoadSensor(const uint8_t load_average, const string &description)
-        : Sensor(SensorOptions(SENSOR_OTHER,
-                               UNITS_NONE,
-                               PREFIX_CENTI,
-                               description,
-                               true,
+        : Sensor(SENSOR_OTHER,
+                 UNITS_NONE,
+                 PREFIX_CENTI,
+                 description,
+                 SensorOptions(true,
                                true,
                                0,
                                SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
@@ -61,10 +61,11 @@ class LoadSensor: public Sensor {
       m_recorded = 0;
     }
 
-    int16_t PollSensor();
-
     static const int16_t LOAD_SENSOR_NUM_AVERAGES = 3;
     static const int16_t LOAD_SENSOR_ERROR_VALUE = 0;
+
+  protected:
+    int16_t PollSensor();
 
   private:
     uint8_t m_load_average;
