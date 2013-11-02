@@ -33,6 +33,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
@@ -66,19 +67,9 @@ class SensorResponder: public RDMControllerInterface {
         static RDMOps *instance;
     };
 
-    struct sensor_value_s {
-      uint8_t sensor;
-      int16_t value;
-      int16_t lowest;
-      int16_t highest;
-      int16_t recorded;
-    } __attribute__((packed));
-
-    typedef vector<class FakeSensor*> FakeSensors;
-
     const UID m_uid;
     bool m_identify_mode;
-    FakeSensors m_sensors;
+    Sensors m_sensors;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
