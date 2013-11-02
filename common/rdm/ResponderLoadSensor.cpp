@@ -38,12 +38,12 @@ int16_t LoadSensor::PollSensor() {
   uint8_t returned;
   returned = getloadavg(averages, LOAD_SENSOR_NUM_AVERAGES);
   if (returned != LOAD_SENSOR_NUM_AVERAGES) {
-    OLA_WARN << "getloadavg only returned " << static_cast<int>(returned) <<
-        " values, expecting " << static_cast<int>(LOAD_SENSOR_NUM_AVERAGES) <<
-        " values";
+    OLA_WARN << "getloadavg only returned " << static_cast<int>(returned)
+        << " values, expecting " << static_cast<int>(LOAD_SENSOR_NUM_AVERAGES)
+        << " values";
     return LOAD_SENSOR_ERROR_VALUE;
   } else {
-    return static_cast<int16_t>(averages[m_load_average]*100);
+    return static_cast<int16_t>(averages[m_load_average] * 100);
   }
 #else
   // No getloadavg, do something else if Windows?

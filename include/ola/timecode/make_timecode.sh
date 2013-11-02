@@ -1,5 +1,5 @@
 #!/bin/bash
-# Autogenerate the plugin_id.h file from the protobuf definition.
+# Autogenerate the TimeCodeEnums.h file from the protobuf definition.
 
 (
 cat <<EOM
@@ -36,8 +36,8 @@ EOM
 grep TIMECODE_ ../../../common/protocol/Ola.proto | sed "s/;/,/"
 cat <<EOM
 } TimeCodeType;
-}
-}
+}  // namespace timecode
+}  // namespace ola
 #endif  // INCLUDE_OLA_TIMECODE_TIMECODEENUMS_H_
 EOM
 ) > TimeCodeEnums.h
