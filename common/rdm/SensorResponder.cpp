@@ -103,17 +103,7 @@ class FakeSensor: public Sensor {
 
   protected:
     int16_t PollSensor();
-    int16_t GenerateValue();
 };
-
-
-/**
- * Generate a Sensor value
- */
-int16_t FakeSensor::GenerateValue() {
-  int16_t value = ola::math::Random(m_range_min, m_range_max);
-  return value;
-}
 
 
 /**
@@ -121,7 +111,7 @@ int16_t FakeSensor::GenerateValue() {
  */
 int16_t FakeSensor::PollSensor() {
   // This is a fake sensor, so make a value
-  return GenerateValue();
+  return ola::math::Random(m_range_min, m_range_max);
 }
 
 

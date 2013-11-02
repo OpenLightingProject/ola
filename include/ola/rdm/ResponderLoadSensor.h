@@ -28,11 +28,6 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERLOADSENSOR_H_
 #define INCLUDE_OLA_RDM_RESPONDERLOADSENSOR_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <cstdlib>
 #include <string>
 #include "ola/rdm/ResponderSensor.h"
 
@@ -70,33 +65,6 @@ class LoadSensor: public Sensor {
   private:
     uint8_t m_load_average;
 };
-
-
-/**
- * Fetch a Sensor value
- */
-int16_t LoadSensor::PollSensor() {
-#ifdef HAVE_GETLOADAVG
-  if (m_load_average >= LOAD_SENSOR_NUM_AVERAGES) {
-    return LOAD_SENSOR_ERROR_VALUE;
-  }
-  double averages[LOAD_SENSOR_NUM_AVERAGES];
-  uint8_t returned;
-  returned = getloadavg(averages, LOAD_SENSOR_NUM_AVERAGES);
-  if (returned != LOAD_SENSOR_NUM_AVERAGES) {
-    OLA_WARN << "getloadavg only returned " << static_cast<int>(returned) <<
-        " values, expecting " << static_cast<int>(LOAD_SENSOR_NUM_AVERAGES) <<
-        " values";
-    return LOAD_SENSOR_ERROR_VALUE;
-  } else {
-    return static_cast<int16_t>(averages[m_load_average]*100);
-  }
-#else
-  // No getloadavg, do something else if Windows?
-  OLA_WARN << "getloadavg not supported, returning default value";
-  return LOAD_SENSOR_ERROR_VALUE;
-#endif
-}
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RESPONDERLOADSENSOR_H_
