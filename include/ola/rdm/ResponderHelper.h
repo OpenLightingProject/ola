@@ -119,15 +119,15 @@ class ResponderHelper {
         uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetSensorDefinition(
-        const RDMRequest *request, const Sensors *sensor_list);
+        const RDMRequest *request, const Sensors &sensor_list);
 
     static const RDMResponse *GetSensorValue(
-        const RDMRequest *request, const Sensors *sensor_list);
+        const RDMRequest *request, const Sensors &sensor_list);
     static const RDMResponse *SetSensorValue(
-        const RDMRequest *request, const Sensors *sensor_list);
+        const RDMRequest *request, const Sensors &sensor_list);
 
     static const RDMResponse *RecordSensor(
-        const RDMRequest *request, const Sensors *sensor_list);
+        const RDMRequest *request, const Sensors &sensor_list);
 
     static const RDMResponse *GetRealTimeClock(
         const RDMRequest *request,

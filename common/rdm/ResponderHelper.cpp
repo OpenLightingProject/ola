@@ -424,13 +424,13 @@ const RDMResponse *ResponderHelper::SetDmxAddress(
  * Get a sensor definition
  */
 const RDMResponse *ResponderHelper::GetSensorDefinition(
-    const RDMRequest *request, const Sensors *sensor_list) {
+    const RDMRequest *request, const Sensors &sensor_list) {
   uint8_t sensor_number;
   if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (sensor_number >= sensor_list->size()) {
+  if (sensor_number >= sensor_list.size()) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -447,7 +447,7 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     char description[32];
   } __attribute__((packed));
 
-  Sensor *sensor = sensor_list->at(sensor_number);
+  const Sensor *sensor = sensor_list.at(sensor_number);
   struct sensor_definition_s sensor_definition;
   sensor_definition.sensor =  sensor_number;
   sensor_definition.type = sensor->Type();
@@ -471,17 +471,17 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
  * Get a sensor value
  */
 const RDMResponse *ResponderHelper::GetSensorValue(
-    const RDMRequest *request, const Sensors *sensor_list) {
+    const RDMRequest *request, const Sensors &sensor_list) {
   uint8_t sensor_number;
   if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (sensor_number >= sensor_list->size()) {
+  if (sensor_number >= sensor_list.size()) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  Sensor *sensor = sensor_list->at(sensor_number);
+  Sensor *sensor = sensor_list.at(sensor_number);
   struct sensor_value_s sensor_value = {
     sensor_number,
     HostToNetwork(sensor->FetchValue()),
@@ -500,7 +500,7 @@ const RDMResponse *ResponderHelper::GetSensorValue(
  * Set a sensor value
  */
 const RDMResponse *ResponderHelper::SetSensorValue(
-    const RDMRequest *request, const Sensors *sensor_list) {
+    const RDMRequest *request, const Sensors &sensor_list) {
   uint8_t sensor_number;
   if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -508,12 +508,12 @@ const RDMResponse *ResponderHelper::SetSensorValue(
 
   int16_t value = 0;
   if (sensor_number == ALL_SENSORS) {
-    Sensors::const_iterator iter = sensor_list->begin();
-    for (; iter != sensor_list->end(); ++iter) {
+    Sensors::const_iterator iter = sensor_list.begin();
+    for (; iter != sensor_list.end(); ++iter) {
       value = (*iter)->Reset();
     }
-  } else if (sensor_number < sensor_list->size()) {
-    Sensor *sensor = sensor_list->at(sensor_number);
+  } else if (sensor_number < sensor_list.size()) {
+    Sensor *sensor = sensor_list.at(sensor_number);
     value = sensor->Reset();
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
@@ -538,19 +538,19 @@ const RDMResponse *ResponderHelper::SetSensorValue(
  * Record a sensor
  */
 const RDMResponse *ResponderHelper::RecordSensor(
-    const RDMRequest *request, const Sensors *sensor_list) {
+    const RDMRequest *request, const Sensors &sensor_list) {
   uint8_t sensor_number;
   if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   if (sensor_number == ALL_SENSORS) {
-    Sensors::const_iterator iter = sensor_list->begin();
-    for (; iter != sensor_list->end(); ++iter) {
+    Sensors::const_iterator iter = sensor_list.begin();
+    for (; iter != sensor_list.end(); ++iter) {
       (*iter)->Record();
     }
-  } else if (sensor_number < sensor_list->size()) {
-    Sensor *sensor = sensor_list->at(sensor_number);
+  } else if (sensor_number < sensor_list.size()) {
+    Sensor *sensor = sensor_list.at(sensor_number);
     sensor->Record();
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);

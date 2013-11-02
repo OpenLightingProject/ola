@@ -228,25 +228,25 @@ const RDMResponse *SensorResponder::GetSoftwareVersionLabel(
  */
 const RDMResponse *SensorResponder::GetSensorDefinition(
     const RDMRequest *request) {
-  return ResponderHelper::GetSensorDefinition(request, &m_sensors);
+  return ResponderHelper::GetSensorDefinition(request, m_sensors);
 }
 
 /**
  * PID_SENSOR_VALUE
  */
 const RDMResponse *SensorResponder::GetSensorValue(const RDMRequest *request) {
-  return ResponderHelper::GetSensorValue(request, &m_sensors);
+  return ResponderHelper::GetSensorValue(request, m_sensors);
 }
 
 const RDMResponse *SensorResponder::SetSensorValue(const RDMRequest *request) {
-  return ResponderHelper::SetSensorValue(request, &m_sensors);
+  return ResponderHelper::SetSensorValue(request, m_sensors);
 }
 
 /**
  * PID_RECORD_SENSORS
  */
 const RDMResponse *SensorResponder::RecordSensor(const RDMRequest *request) {
-  return ResponderHelper::RecordSensor(request, &m_sensors);
+  return ResponderHelper::RecordSensor(request, m_sensors);
 }
 }  // namespace rdm
 }  // namespace ola

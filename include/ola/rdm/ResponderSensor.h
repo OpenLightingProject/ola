@@ -49,7 +49,7 @@ class Sensor {
     Sensor(ola::rdm::rdm_sensor_type type,
            ola::rdm::rdm_pid_unit unit,
            ola::rdm::rdm_pid_prefix prefix,
-           const string &description = "",
+           const string &description,
            bool recorded_value_support = true,
            bool recorded_range_support = true,
            int16_t range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
@@ -68,6 +68,7 @@ class Sensor {
           m_normal_max(normal_max),
           m_recorded(0) {
     };
+    virtual ~Sensor() {}
 
     rdm_sensor_type Type() const { return m_type; }
     rdm_pid_unit Unit() const { return m_unit; }
@@ -76,10 +77,15 @@ class Sensor {
     int16_t RangeMax() const { return m_range_max; }
     int16_t NormalMin() const { return m_normal_min; }
     int16_t NormalMax() const { return m_normal_max; }
-    string Description() const { return m_description; }
+    const string& Description() const { return m_description; }
+
+    /**
+     * @brief Actually get the value from the Sensor.
+     * @returns the value of the sensor when polled.
+     */
     virtual int16_t PollSensor() = 0;
 
-    int16_t Lowest() {
+    int16_t Lowest() const {
       if (m_recorded_range_support) {
         return m_lowest;
       } else {
@@ -87,7 +93,7 @@ class Sensor {
       }
     }
 
-    int16_t Highest() {
+    int16_t Highest() const {
       if (m_recorded_range_support) {
         return m_highest;
       } else {
@@ -95,7 +101,7 @@ class Sensor {
       }
     }
 
-    int16_t Recorded() {
+    int16_t Recorded() const {
       if (m_recorded_value_support) {
         return m_recorded;
       } else {
@@ -104,7 +110,8 @@ class Sensor {
     }
 
     /**
-     * Generate a new value.
+     * @brief Get the current value, store any new min or max and return it.
+     * @returns the current value of the sensor.
      */
     int16_t FetchValue() {
       int16_t value = PollSensor();
@@ -132,7 +139,7 @@ class Sensor {
       return value;
     }
 
-    uint8_t RecordedSupportBitMask() {
+    uint8_t RecordedSupportBitMask() const {
       uint8_t bit_mask = 0;
       if (m_recorded_value_support) {
         bit_mask |= SENSOR_RECORDED_VALUE;
