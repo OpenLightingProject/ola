@@ -34,6 +34,7 @@
 
 #include <cstdlib>
 #include <string>
+#include "ola/rdm/ResponderSensor.h"
 
 namespace ola {
 namespace rdm {
@@ -42,17 +43,17 @@ namespace rdm {
  */
 class LoadSensor: public Sensor {
   public:
-    LoadSensor(const uint8_t load_average, const string &description = "")
-        : Sensor(SENSOR_OTHER,
-                 UNITS_NONE,
-                 PREFIX_CENTI,
-                 description,
-                 true,
-                 true,
-                 0,
-                 SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
-                 0,
-                 SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED),
+    LoadSensor(const uint8_t load_average, const string &description)
+        : Sensor(SensorOptions(SENSOR_OTHER,
+                               UNITS_NONE,
+                               PREFIX_CENTI,
+                               description,
+                               true,
+                               true,
+                               0,
+                               SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
+                               0,
+                               SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)),
           m_load_average(load_average) {
       // set high / low to something
       Reset();

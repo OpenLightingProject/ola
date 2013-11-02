@@ -46,26 +46,70 @@ using std::string;
  */
 class Sensor {
   public:
-    Sensor(ola::rdm::rdm_sensor_type type,
-           ola::rdm::rdm_pid_unit unit,
-           ola::rdm::rdm_pid_prefix prefix,
-           const string &description,
-           bool recorded_value_support = true,
-           bool recorded_range_support = true,
-           int16_t range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
-           int16_t range_max = SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
-           int16_t normal_min = SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED,
-           int16_t normal_max = SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)
-        : m_type(type),
-          m_unit(unit),
-          m_prefix(prefix),
-          m_description(description),
-          m_recorded_value_support(recorded_value_support),
-          m_recorded_range_support(recorded_range_support),
-          m_range_min(range_min),
-          m_range_max(range_max),
-          m_normal_min(normal_min),
-          m_normal_max(normal_max),
+    struct SensorOptions {
+      public:
+        ola::rdm::rdm_sensor_type type;
+        ola::rdm::rdm_pid_unit unit;
+        ola::rdm::rdm_pid_prefix prefix;
+        string description;
+        bool recorded_value_support;
+        bool recorded_range_support;
+        int16_t range_min;
+        int16_t range_max;
+        int16_t normal_min;
+        int16_t normal_max;
+
+        SensorOptions()
+            : type(SENSOR_OTHER),
+              unit(UNITS_NONE),
+              prefix(PREFIX_NONE),
+              description(""),
+              recorded_value_support(true),
+              recorded_range_support(true),
+              range_min(SENSOR_DEFINITION_RANGE_MIN_UNDEFINED),
+              range_max(SENSOR_DEFINITION_RANGE_MAX_UNDEFINED),
+              normal_min(SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED),
+              normal_max(SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED) {
+        }
+
+        // SensorOptions constructor to set all options, for use in
+        // initialisation lists
+        SensorOptions(ola::rdm::rdm_sensor_type type,
+                      ola::rdm::rdm_pid_unit unit,
+                      ola::rdm::rdm_pid_prefix prefix,
+                      const string &description,
+                      bool recorded_value_support = true,
+                      bool recorded_range_support = true,
+                      int16_t range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
+                      int16_t range_max = SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
+                      int16_t normal_min =
+                          SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED,
+                      int16_t normal_max =
+                          SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)
+            : type(type),
+              unit(unit),
+              prefix(prefix),
+              description(description),
+              recorded_value_support(recorded_value_support),
+              recorded_range_support(recorded_range_support),
+              range_min(range_min),
+              range_max(range_max),
+              normal_min(normal_min),
+              normal_max(normal_max) {
+        }
+    };
+
+    explicit Sensor(const SensorOptions &options)
+        : m_type(options.type),
+          m_unit(options.unit),
+          m_prefix(options.prefix),
+          m_description(options.description),
+          m_recorded_value_support(options.recorded_value_support),
+          m_recorded_range_support(options.recorded_range_support),
+          m_range_min(options.range_min),
+          m_range_max(options.range_max),
+          m_normal_min(options.normal_min),
+          m_normal_max(options.normal_max),
           m_recorded(0) {
     };
     virtual ~Sensor() {}

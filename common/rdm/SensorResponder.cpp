@@ -89,26 +89,8 @@ const ResponderOps<SensorResponder>::ParamHandler
  */
 class FakeSensor: public Sensor {
   public:
-    FakeSensor(ola::rdm::rdm_sensor_type type,
-               ola::rdm::rdm_pid_unit unit,
-               ola::rdm::rdm_pid_prefix prefix,
-               const string &description = "",
-               bool recorded_value_support = true,
-               bool recorded_range_support = true,
-               int16_t range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
-               int16_t range_max = SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
-               int16_t normal_min = SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED,
-               int16_t normal_max = SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)
-        : Sensor(type,
-                 unit,
-                 prefix,
-                 description,
-                 recorded_value_support,
-                 recorded_range_support,
-                 range_min,
-                 range_max,
-                 normal_min,
-                 normal_max) {
+    explicit FakeSensor(const SensorOptions &options)
+        : Sensor(options) {
       // set high / low to something
       Reset();
       // Force recorded back to zero
@@ -144,15 +126,46 @@ int16_t FakeSensor::PollSensor() {
 SensorResponder::SensorResponder(const UID &uid)
     : m_uid(uid),
       m_identify_mode(false) {
-  m_sensors.push_back(new FakeSensor(
-        SENSOR_TEMPERATURE, UNITS_CENTIGRADE, PREFIX_NONE,
-        "Fake Temperature", true, true, 0, 100, 10, 20));
-  m_sensors.push_back(new FakeSensor(
-        SENSOR_VOLTAGE, UNITS_VOLTS_DC, PREFIX_DECI,
-        "Fake Voltage", true, true, 110, 140, 119, 125));
-  m_sensors.push_back(new FakeSensor(
-        SENSOR_ITEMS, UNITS_NONE, PREFIX_KILO,
-        "Fake Beta Particle Counter", true, true, 0, 100, 0, 1));
+
+  Sensor::SensorOptions fake_temperature_options;
+  fake_temperature_options.type = SENSOR_TEMPERATURE;
+  fake_temperature_options.unit = UNITS_CENTIGRADE;
+  fake_temperature_options.prefix = PREFIX_NONE;
+  fake_temperature_options.description = "Fake Temperature";
+  fake_temperature_options.recorded_value_support = true;
+  fake_temperature_options.recorded_range_support = true;
+  fake_temperature_options.range_min = 0;
+  fake_temperature_options.range_max = 100;
+  fake_temperature_options.normal_min = 10;
+  fake_temperature_options.normal_max = 20;
+  m_sensors.push_back(new FakeSensor(fake_temperature_options));
+
+  Sensor::SensorOptions fake_voltage_options;
+  fake_voltage_options.type = SENSOR_VOLTAGE;
+  fake_voltage_options.unit = UNITS_VOLTS_DC;
+  fake_voltage_options.prefix = PREFIX_DECI;
+  fake_voltage_options.description = "Fake Voltage";
+  fake_voltage_options.recorded_value_support = true;
+  fake_voltage_options.recorded_range_support = true;
+  fake_voltage_options.range_min = 110;
+  fake_voltage_options.range_max = 140;
+  fake_voltage_options.normal_min = 119;
+  fake_voltage_options.normal_max = 125;
+  m_sensors.push_back(new FakeSensor(fake_voltage_options));
+
+  Sensor::SensorOptions fake_beta_particle_counter_options;
+  fake_beta_particle_counter_options.type = SENSOR_ITEMS;
+  fake_beta_particle_counter_options.unit = UNITS_NONE;
+  fake_beta_particle_counter_options.prefix = PREFIX_KILO;
+  fake_beta_particle_counter_options.description = "Fake Beta Particle Counter";
+  fake_beta_particle_counter_options.recorded_value_support = true;
+  fake_beta_particle_counter_options.recorded_range_support = true;
+  fake_beta_particle_counter_options.range_min = 0;
+  fake_beta_particle_counter_options.range_max = 100;
+  fake_beta_particle_counter_options.normal_min = 0;
+  fake_beta_particle_counter_options.normal_max = 1;
+  m_sensors.push_back(new FakeSensor(fake_beta_particle_counter_options));
+
   m_sensors.push_back(new LoadSensor(0, "Load Average 1 minute"));
   m_sensors.push_back(new LoadSensor(1, "Load Average 5 minutes"));
   m_sensors.push_back(new LoadSensor(2, "Load Average 15 minutes"));
