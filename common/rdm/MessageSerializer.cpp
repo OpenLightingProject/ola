@@ -77,6 +77,15 @@ void MessageSerializer::Visit(
 
 
 void MessageSerializer::Visit(
+    const ola::messaging::MACMessageField *message) {
+  unsigned int size = message->GetDescriptor()->MaxSize();
+  CheckForFreeSpace(size);
+  message->Value().Pack(m_data + m_offset, size);
+  m_offset += size;
+}
+
+
+void MessageSerializer::Visit(
     const ola::messaging::UIDMessageField *message) {
   unsigned int size = message->GetDescriptor()->MaxSize();
   CheckForFreeSpace(size);

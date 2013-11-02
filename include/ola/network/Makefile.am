@@ -3,6 +3,7 @@ SOURCES = AdvancedTCPConnector.h\
           IPV4Address.h \
           Interface.h \
           InterfacePicker.h \
+          MACAddress.h \
           NetworkUtils.h \
           Socket.h \
           SocketAddress.h \

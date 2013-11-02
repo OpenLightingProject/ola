@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <netinet/in.h>
 
-#include "ola/network/InterfacePicker.h"  // MAC_LENGTH
+#include "ola/network/MACAddress.h"
 #include "ola/BaseTypes.h"
 
 namespace ola {
@@ -71,7 +71,7 @@ typedef struct espnet_node_config_s espnet_node_config_t;
  */
 struct espnet_poll_reply_s {
   uint32_t head;
-  uint8_t  mac[ola::network::MAC_LENGTH];
+  uint8_t  mac[ola::network::MACAddress::LENGTH];
   uint16_t type;
   uint8_t  version;
   uint8_t  sw;

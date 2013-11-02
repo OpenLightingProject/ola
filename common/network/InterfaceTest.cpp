@@ -57,8 +57,7 @@ void InterfaceTest::testBuilder() {
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.ip_address.ToString());
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.bcast_address.ToString());
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.subnet_mask.ToString());
-  OLA_ASSERT_EQ(string("00:00:00:00:00:00"),
-                       HardwareAddressToString(interface.hw_address));
+  OLA_ASSERT_EQ(string("00:00:00:00:00:00"), interface.hw_address.ToString());
 
   // set & build an interface from strings
   builder.SetName("eth0");
@@ -70,18 +69,14 @@ void InterfaceTest::testBuilder() {
   interface = builder.Construct();
   OLA_ASSERT_EQ(string("eth0"), interface.name);
   OLA_ASSERT_EQ(string("192.168.1.1"), interface.ip_address.ToString());
-  OLA_ASSERT_EQ(string("192.168.1.255"),
-                       interface.bcast_address.ToString());
-  OLA_ASSERT_EQ(string("255.255.255.0"),
-                       interface.subnet_mask.ToString());
-  OLA_ASSERT_EQ(string("e4:ff:29:36:74:12"),
-                       HardwareAddressToString(interface.hw_address));
+  OLA_ASSERT_EQ(string("192.168.1.255"), interface.bcast_address.ToString());
+  OLA_ASSERT_EQ(string("255.255.255.0"), interface.subnet_mask.ToString());
+  OLA_ASSERT_EQ(string("e4:ff:29:36:74:12"), interface.hw_address.ToString());
 
   // check the alternate form of mac address
   OLA_ASSERT_TRUE(builder.SetHardwareAddress("12.34.56.78.90.ab"));
   interface = builder.Construct();
-  OLA_ASSERT_EQ(string("12:34:56:78:90:ab"),
-                       HardwareAddressToString(interface.hw_address));
+  OLA_ASSERT_EQ(string("12:34:56:78:90:ab"), interface.hw_address.ToString());
 
   // reset the builder
   builder.Reset();
@@ -90,8 +85,7 @@ void InterfaceTest::testBuilder() {
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.ip_address.ToString());
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.bcast_address.ToString());
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.subnet_mask.ToString());
-  OLA_ASSERT_EQ(string("00:00:00:00:00:00"),
-                       HardwareAddressToString(interface.hw_address));
+  OLA_ASSERT_EQ(string("00:00:00:00:00:00"), interface.hw_address.ToString());
 
   // now check we can't use bad data
   OLA_ASSERT_FALSE(builder.SetAddress("192.168.1."));
@@ -106,8 +100,7 @@ void InterfaceTest::testBuilder() {
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.ip_address.ToString());
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.bcast_address.ToString());
   OLA_ASSERT_EQ(string("0.0.0.0"), interface.subnet_mask.ToString());
-  OLA_ASSERT_EQ(string("00:00:00:00:00:00"),
-                       HardwareAddressToString(interface.hw_address));
+  OLA_ASSERT_EQ(string("00:00:00:00:00:00"), interface.hw_address.ToString());
 
   // now build from IPV4Address objects
   IPV4Address ip_address, netmask, broadcast_address;

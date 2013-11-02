@@ -54,7 +54,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
  * Check that HardwareAddressToString works
  */
 void NetworkUtilsTest::testHardwareAddressToString() {
-  uint8_t hw_address[ola::network::MAC_LENGTH] = {
+  uint8_t hw_address[ola::network::MACAddress::LENGTH] = {
     0x0, 0xa, 0xff, 0x10, 0x25, 0x4};
   const std::string mac_address = HardwareAddressToString(hw_address);
   OLA_ASSERT_EQ(std::string("00:0a:ff:10:25:04"), mac_address);

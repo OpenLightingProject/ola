@@ -25,6 +25,7 @@
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/sandnet/SandNetNode.h"
 
@@ -39,6 +40,7 @@ using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
+using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
@@ -253,7 +255,7 @@ bool SandNetNode::SendAdvertisement() {
   memset(&packet, 0, sizeof(packet));
   packet.opcode = HostToNetwork(static_cast<uint16_t>(SANDNET_ADVERTISMENT));
 
-  memcpy(advertisement->mac, m_interface.hw_address, ola::network::MAC_LENGTH);
+  m_interface.hw_address.Get(advertisement->mac);
   advertisement->firmware = HostToNetwork(FIRMWARE_VERSION);
 
   for (unsigned int i = 0; i < SANDNET_MAX_PORTS; i++) {

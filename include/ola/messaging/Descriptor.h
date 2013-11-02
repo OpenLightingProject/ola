@@ -117,6 +117,25 @@ class IPV4FieldDescriptor: public FieldDescriptor {
 
 
 /**
+ * A FieldDescriptor that represents a MAC Address
+ */
+class MACFieldDescriptor: public FieldDescriptor {
+  public:
+    explicit MACFieldDescriptor(const string &name)
+        : FieldDescriptor(name) {
+    }
+
+    bool FixedSize() const { return true; }
+    bool LimitedSize() const { return true; }
+    unsigned int MaxSize() const { return 6; }
+
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
+    }
+};
+
+
+/**
  * A FieldDescriptor that represents a UID
  */
 class UIDFieldDescriptor: public FieldDescriptor {

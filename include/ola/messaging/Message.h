@@ -24,6 +24,7 @@
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/MessageVisitor.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/MACAddress.h>
 #include <ola/rdm/UID.h>
 #include <string>
 #include <vector>
@@ -123,6 +124,42 @@ class IPV4MessageField: public MessageFieldInterface {
   private:
     const IPV4FieldDescriptor *m_descriptor;
     ola::network::IPV4Address m_value;
+};
+
+
+/**
+ * A MessageField that represents a MAC Address
+ */
+class MACMessageField: public MessageFieldInterface {
+  public:
+    MACMessageField(const MACFieldDescriptor *descriptor,
+                     const ola::network::MACAddress &value)
+        : m_descriptor(descriptor),
+          m_value(value) {
+    }
+
+    /**
+     * TODO(Peter): As byte array too?
+     *MACMessageField(const MACFieldDescriptor *descriptor,
+     *                 uint32_t value)
+     *    : m_descriptor(descriptor),
+     *      m_value(ola::network::MACAddress(value)) {
+     *}
+     */
+
+
+    const MACFieldDescriptor *GetDescriptor() const {
+      return m_descriptor;
+    }
+    ola::network::MACAddress Value() const { return m_value; }
+
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
+    }
+
+  private:
+    const MACFieldDescriptor *m_descriptor;
+    ola::network::MACAddress m_value;
 };
 
 

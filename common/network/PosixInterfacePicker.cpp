@@ -49,6 +49,7 @@
 #include "common/network/PosixInterfacePicker.h"
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketCloser.h"
 
@@ -152,9 +153,10 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       }
     }
 
-    if (interface.name == last_dl_iface_name && hwaddr) {
-      memcpy(interface.hw_address, hwaddr,
-             std::min(hwlen, (uint8_t) MAC_LENGTH));
+    if ((interface.name == last_dl_iface_name) &&
+        hwaddr &&
+        (hwlen <= MACAddress::LENGTH)) {
+      interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
     }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = IPV4Address(sin->sin_addr);
@@ -187,7 +189,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFHWADDR, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error" << strerror(errno);
       } else {
-        memcpy(interface.hw_address, ifrcopy.ifr_hwaddr.sa_data, MAC_LENGTH);
+        interface.hw_address = MACAddress(
+            reinterpret_cast<uint8_t*>(ifrcopy.ifr_hwaddr.sa_data));
       }
     }
 #endif
@@ -198,7 +201,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
      */
     OLA_DEBUG << "Found: " << interface.name << ", " <<
       interface.ip_address << ", " <<
-      HardwareAddressToString(interface.hw_address);
+      interface.hw_address;
     interfaces.push_back(interface);
   }
   delete[] buffer;

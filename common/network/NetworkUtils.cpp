@@ -40,6 +40,7 @@ typedef uint32_t in_addr_t;
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/Interface.h"
+#include "ola/network/MACAddress.h"
 
 
 namespace ola {
@@ -67,19 +68,42 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 }
 
 
+/**
+ * Convert a string to a struct ether_addr
+ * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
+ * 'nn.nn.nn.nn.nn.nn'
+ * @param addr a struct ether_addr
+ */
+bool StringToMACAddress(const string &mac_address, struct ether_addr &addr) {
+  vector<string> tokens;
+  ola::StringSplit(mac_address, tokens, ":.");
+  if (tokens.size() != MACAddress::LENGTH)
+    return false;
+
+  uint8_t tmp_address[MACAddress::LENGTH];
+  for (unsigned int i = 0; i < MACAddress::LENGTH; i++) {
+    if (!ola::HexStringToInt(tokens[i], tmp_address + i))
+      return false;
+  }
+  memcpy(addr.ether_addr_octet, tmp_address, MACAddress::LENGTH);
+  return true;
+}
+
+
 string AddressToString(const struct in_addr &addr) {
   return inet_ntoa(addr);
 }
-
+// TODO(Peter): ether_aton
 
 /*
  * Convert a mac address to a human readable string
  * @param hw_address the mac address.
  * @return a string
  */
-std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]) {
+std::string HardwareAddressToString(
+    const uint8_t hw_address[MACAddress::LENGTH]) {
   std::stringstream str;
-  for (unsigned int i = 0 ; i < ola::network::MAC_LENGTH; i++) {
+  for (unsigned int i = 0 ; i < MACAddress::LENGTH; i++) {
     if (i != 0)
       str << ":";
     str << std::hex << std::setfill('0') << std::setw(2) <<
@@ -88,6 +112,10 @@ std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]) {
   return str.str();
 }
 
+
+std::string MACAddressToString(const struct ether_addr &addr) {
+  return HardwareAddressToString(addr.ether_addr_octet);
+}
 
 /**
  * True if we're big endian, false otherwise.

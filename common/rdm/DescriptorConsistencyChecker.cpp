@@ -40,6 +40,12 @@ void DescriptorConsistencyChecker::Visit(
     const ola::messaging::IPV4FieldDescriptor*) {
 }
 
+
+void DescriptorConsistencyChecker::Visit(
+    const ola::messaging::MACFieldDescriptor*) {
+}
+
+
 void DescriptorConsistencyChecker::Visit(
     const ola::messaging::UIDFieldDescriptor*) {
 }

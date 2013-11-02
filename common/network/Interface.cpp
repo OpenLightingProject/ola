@@ -41,7 +41,6 @@ using std::vector;
 
 Interface::Interface()
     : loopback(false) {
-  memset(hw_address, 0, MAC_LENGTH);
 }
 
 
@@ -49,14 +48,14 @@ Interface::Interface(const string &name,
                      const IPV4Address &ip_address,
                      const IPV4Address &broadcast_address,
                      const IPV4Address &subnet_mask,
-                     const uint8_t *arg_hw_address,
+                     const MACAddress &hw_address,
                      bool loopback):
   name(name),
   ip_address(ip_address),
   bcast_address(broadcast_address),
   subnet_mask(subnet_mask),
+  hw_address(hw_address),
   loopback(loopback) {
-  memcpy(hw_address, arg_hw_address, MAC_LENGTH);
 }
 
 
@@ -65,7 +64,7 @@ Interface::Interface(const Interface &other) {
   ip_address = other.ip_address;
   bcast_address = other.bcast_address;
   subnet_mask = other.subnet_mask;
-  memcpy(hw_address, other.hw_address, MAC_LENGTH);
+  hw_address = other.hw_address;
   loopback = other.loopback;
 }
 
@@ -76,7 +75,7 @@ Interface& Interface::operator=(const Interface &other) {
     ip_address = other.ip_address;
     bcast_address = other.bcast_address;
     subnet_mask = other.subnet_mask;
-    memcpy(hw_address, other.hw_address, MAC_LENGTH);
+    hw_address = other.hw_address;
     loopback = other.loopback;
   }
   return *this;
@@ -97,8 +96,8 @@ bool Interface::operator==(const Interface &other) {
 InterfaceBuilder::InterfaceBuilder()
   : m_ip_address(0),
     m_broadcast_address(0),
-    m_subnet_mask(0) {
-  memset(m_hw_address, 0, MAC_LENGTH);
+    m_subnet_mask(0),
+    m_hw_address() {
 }
 
 
@@ -131,19 +130,25 @@ bool InterfaceBuilder::SetSubnetMask(const string &mask) {
  * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
  * 'nn.nn.nn.nn.nn.nn'
  */
-bool InterfaceBuilder::SetHardwareAddress(const string &mac_address) {
-  vector<string> tokens;
-  ola::StringSplit(mac_address, tokens, ":.");
-  if (tokens.size() != MAC_LENGTH)
-    return false;
+/**
+ *bool InterfaceBuilder::SetHardwareAddress(const string &mac_address) {
+ *  vector<string> tokens;
+ *  ola::StringSplit(mac_address, tokens, ":.");
+ *  if (tokens.size() != MAC_LENGTH)
+ *    return false;
+ *
+ *  uint8_t tmp_address[MAC_LENGTH];
+ *  for (unsigned int i = 0; i < MAC_LENGTH; i++) {
+ *    if (!ola::HexStringToInt(tokens[i], tmp_address + i))
+ *      return false;
+ *  }
+ *  memcpy(m_hw_address, tmp_address, MAC_LENGTH);
+ *  return true;
+ *}
+ */
 
-  uint8_t tmp_address[MAC_LENGTH];
-  for (unsigned int i = 0; i < MAC_LENGTH; i++) {
-    if (!ola::HexStringToInt(tokens[i], tmp_address + i))
-      return false;
-  }
-  memcpy(m_hw_address, tmp_address, MAC_LENGTH);
-  return true;
+bool InterfaceBuilder::SetHardwareAddress(const string &mac_address) {
+  return MACAddress::FromString(mac_address, &m_hw_address);
 }
 
 
@@ -154,15 +159,16 @@ void InterfaceBuilder::SetLoopback(bool loopback) {
   m_loopback = loopback;
 }
 
+
 /**
  * Reset the builder object
  */
 void InterfaceBuilder::Reset() {
   m_name = "";
-  memset(m_hw_address, 0, MAC_LENGTH);
   m_ip_address = IPV4Address(0);
   m_broadcast_address = IPV4Address(0);
   m_subnet_mask = IPV4Address(0);
+  m_hw_address = MACAddress();
   m_loopback = false;
 }
 
