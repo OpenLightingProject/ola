@@ -55,7 +55,9 @@ class Result {
      * @param error the text description of the error. An empty string means
      * the action succeeded.
      */
-    explicit Result(const std::string &error);
+    explicit Result(const std::string &error)
+        : m_error(error) {
+    }
 
     /**
      * @brief Indicates the status of the action.
