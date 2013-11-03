@@ -129,9 +129,9 @@ void UltraDMXProDevice::PrePortStop() {
  * @param done the closure to call once the request is complete
  */
 void UltraDMXProDevice::Configure(RpcController *controller,
-                             const string &request,
-                             string *response,
-                             Callback0<void> *done) {
+                                  const string &request,
+                                  string *response,
+                                  ConfigureCallback *done) {
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");
@@ -174,11 +174,10 @@ void UltraDMXProDevice::UpdateParams(bool status,
  * then another GetParam() request in order to return the latest values to the
  * client.
  */
-void UltraDMXProDevice::HandleParametersRequest(
-    RpcController *controller,
-    const Request *request,
-    string *response,
-    Callback0<void> *done) {
+void UltraDMXProDevice::HandleParametersRequest(RpcController *controller,
+                                                const Request *request,
+                                                string *response,
+                                                ConfigureCallback *done) {
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
@@ -219,7 +218,7 @@ void UltraDMXProDevice::HandleParametersRequest(
 void UltraDMXProDevice::HandleParametersResponse(
     RpcController *controller,
     string *response,
-    Callback0<void> *done,
+    ConfigureCallback *done,
     bool status,
     const usb_pro_parameters &params) {
   if (!status) {
@@ -249,7 +248,7 @@ void UltraDMXProDevice::HandleSerialRequest(
     RpcController *controller,
     const Request *request,
     string *response,
-    Callback0<void> *done) {
+    ConfigureCallback *done) {
   Reply reply;
   reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
   ola::plugin::usbpro::SerialNumberReply *serial_reply =

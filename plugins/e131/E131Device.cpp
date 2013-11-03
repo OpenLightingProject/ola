@@ -133,8 +133,8 @@ void E131Device::PostPortStop() {
 void E131Device::Configure(RpcController *controller,
                            const string &request,
                            string *response,
-                           Callback0<void> *done) {
-  CallbackRunner<Callback0<void> > runner(done);
+                           ConfigureCallback *done) {
+  CallbackRunner<ConfigureCallback> runner(done);
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");

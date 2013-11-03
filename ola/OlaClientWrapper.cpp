@@ -14,18 +14,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * OlaClientWrapper.cpp
- * Implementation of Simple Client
+ * Implementation of the OLA Client
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <ola/OlaClientWrapper.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
-#include <ola/OlaClientWrapper.h>
 
 namespace ola {
+namespace client {
 
 BaseClientWrapper::~BaseClientWrapper() {
   Cleanup();
@@ -67,4 +68,5 @@ void BaseClientWrapper::SocketClosed() {
   OLA_INFO << "Server closed the connection";
   m_ss.Terminate();
 }
+}  // namespace client
 }  // namespace ola

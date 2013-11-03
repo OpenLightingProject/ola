@@ -60,7 +60,7 @@ class UltraDMXProDevice: public UsbSerialDevice {
     void Configure(ola::rpc::RpcController *controller,
                    const string &request,
                    string *response,
-                   Callback0<void> *done);
+                   ConfigureCallback *done);
 
   protected:
     void PrePortStop();
@@ -71,18 +71,18 @@ class UltraDMXProDevice: public UsbSerialDevice {
     void HandleParametersRequest(ola::rpc::RpcController *controller,
                                  const Request *request,
                                  string *response,
-                                 Callback0<void> *done);
+                                 ConfigureCallback *done);
 
     void HandleParametersResponse(ola::rpc::RpcController *controller,
                                   string *response,
-                                  Callback0<void> *done,
+                                  ConfigureCallback *done,
                                   bool status,
                                   const usb_pro_parameters &params);
 
     void HandleSerialRequest(ola::rpc::RpcController *controller,
                              const Request *request,
                              string *response,
-                             Callback0<void> *done);
+                             ConfigureCallback *done);
 
     UltraDMXProWidget *m_ultra_widget;
     string m_serial;

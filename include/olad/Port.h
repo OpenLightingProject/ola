@@ -165,7 +165,7 @@ class BasicInputPort: public InputPort {
 
     // Get the inherited priority
     virtual uint8_t InheritedPriority() const {
-      return DmxSource::PRIORITY_MIN;
+      return ola::dmx::SOURCE_PRIORITY_MIN;
     }
 
     // override this to cancel the SetUniverse operation.

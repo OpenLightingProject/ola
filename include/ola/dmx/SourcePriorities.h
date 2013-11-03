@@ -13,26 +13,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * OlaDevice.h
- * Interface to the OLA Client Device class
- * Copyright (C) 2005-2006 Simon Newton
+ * SourcePriorities.h
+ * Copyright (C) 2013 Simon Newton
  */
-
-#ifndef OLA_STREAMINGCLIENT_H_
-#define OLA_STREAMINGCLIENT_H_
-
-#include <ola/client/StreamingClient.h>
 
 /**
- * @file
- * @brief
- * @deprecated Include <ola/client/StreamingClient.h> instead.
+ * @file SourcePriorities.h
+ * @brief The constants for DMX source priorities.
  */
 
+#ifndef INCLUDE_OLA_DMX_SOURCEPRIORITIES_H_
+#define INCLUDE_OLA_DMX_SOURCEPRIORITIES_H_
+
+#include <stdint.h>
+
 namespace ola {
+namespace dmx {
 
-// For backwards compatability:
-typedef ola::client::StreamingClient StreamingClient;
+/**
+ * @brief The minimum priority for a source.
+ */
+static const uint8_t SOURCE_PRIORITY_MIN = 0;
 
+/**
+ * @brief The default priority for a source.
+ */
+static const uint8_t SOURCE_PRIORITY_DEFAULT = 100;
+
+/**
+ * @brief The maximum priority for a source.
+ */
+static const uint8_t SOURCE_PRIORITY_MAX = 200;
+
+}  // namespace dmx
 }  // namespace ola
-#endif  // OLA_STREAMINGCLIENT_H_
+#endif  // INCLUDE_OLA_DMX_SOURCEPRIORITIES_H_
