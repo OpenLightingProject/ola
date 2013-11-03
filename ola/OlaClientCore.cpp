@@ -33,14 +33,14 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
-#include "ola/api/ClientTypes.h"
+#include "ola/client/ClientTypes.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/RDMEnums.h"
 
 namespace ola {
-namespace api {
+namespace client {
 
 using ola::proto::OlaServerService_Stub;
 using std::auto_ptr;
@@ -1225,5 +1225,5 @@ void OlaClientCore::UpdateResponseAckData(
       reply->command_class() == ola::proto::RDM_SET_RESPONSE);
   new_status->pid_value = reply->param_id();
 }
-}  // namespace api
+}  // namespace client
 }  // namespace ola

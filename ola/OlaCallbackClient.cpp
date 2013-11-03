@@ -27,20 +27,20 @@
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"
-#include "ola/api/Result.h"
+#include "ola/client/Result.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/RDMEnums.h"
 
 namespace ola {
 
-using ola::api::Result;
+using ola::client::Result;
 using ola::io::ConnectedDescriptor;
 using ola::rdm::RDMAPIImplInterface;
 using std::string;
 
 OlaCallbackClient::OlaCallbackClient(ConnectedDescriptor *descriptor)
-    : m_core(new api::OlaClientCore(descriptor)) {
+    : m_core(new client::OlaClientCore(descriptor)) {
   m_core->SetDmxCallback(NewCallback(this, &OlaCallbackClient::HandleDMX));
 }
 
@@ -138,7 +138,7 @@ bool OlaCallbackClient::SetPortPriorityInherit(
     SingleUseCallback1<void, const string&> *callback) {
   m_core->SetPortPriorityInherit(
       device_alias, port,
-      port_direction == INPUT_PORT ? api::INPUT_PORT: api::OUTPUT_PORT,
+      port_direction == INPUT_PORT ? client::INPUT_PORT: client::OUTPUT_PORT,
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   return true;
 }
@@ -151,7 +151,7 @@ bool OlaCallbackClient::SetPortPriorityOverride(
     SingleUseCallback1<void, const string&> *callback) {
   m_core->SetPortPriorityOverride(
       device_alias, port,
-      port_direction == INPUT_PORT ? api::INPUT_PORT: api::OUTPUT_PORT,
+      port_direction == INPUT_PORT ? client::INPUT_PORT: client::OUTPUT_PORT,
       value,
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   return true;
@@ -205,8 +205,8 @@ bool OlaCallbackClient::Patch(
     SingleUseCallback1<void, const string&> *callback) {
   m_core->Patch(
       device_alias, port,
-      port_direction == INPUT_PORT ? api::INPUT_PORT: api::OUTPUT_PORT,
-      action == PATCH ? api::PATCH : api::UNPATCH,
+      port_direction == INPUT_PORT ? client::INPUT_PORT: client::OUTPUT_PORT,
+      action == PATCH ? client::PATCH : client::UNPATCH,
       universe,
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   return true;
@@ -229,7 +229,7 @@ bool OlaCallbackClient::RegisterUniverse(
     SingleUseCallback1<void, const string&> *callback) {
   m_core->RegisterUniverse(
       universe,
-      register_action == REGISTER ? api::REGISTER : api::UNREGISTER,
+      register_action == REGISTER ? client::REGISTER : client::UNREGISTER,
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   return true;
 }
@@ -238,7 +238,7 @@ bool OlaCallbackClient::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
     SingleUseCallback1<void, const string&> *callback) {
-  api::SendDmxArgs args(
+  client::SendDmxArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   m_core->SendDmx(universe, args, data);
   return true;
@@ -248,7 +248,7 @@ bool OlaCallbackClient::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
     Callback1<void, const string&> *callback) {
-  api::SendDmxArgs args(
+  client::SendDmxArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleRepeatableSetCallback,
         callback));
   m_core->SendDmx(universe, args, data);
@@ -256,7 +256,7 @@ bool OlaCallbackClient::SendDmx(
 }
 
 bool OlaCallbackClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
-  api::SendDmxArgs args;
+  client::SendDmxArgs args;
   m_core->SendDmx(universe, args, data);
   return true;
 }
@@ -277,7 +277,7 @@ bool OlaCallbackClient::FetchUIDList(
                            const string&> *callback) {
   m_core->RunDiscovery(
       universe,
-      api::DISCOVERY_CACHED,
+      client::DISCOVERY_CACHED,
       NewSingleCallback(this, &OlaCallbackClient::HandleDiscovery, callback));
   return true;
 }
@@ -289,7 +289,7 @@ bool OlaCallbackClient::RunDiscovery(
                                 const ola::rdm::UIDSet&,
                                 const string&> *callback) {
   m_core->RunDiscovery(
-      universe, full ? api::DISCOVERY_FULL : api::DISCOVERY_INCREMENTAL,
+      universe, full ? client::DISCOVERY_FULL : client::DISCOVERY_INCREMENTAL,
       NewSingleCallback(this, &OlaCallbackClient::HandleDiscovery, callback));
   return true;
 }
@@ -366,22 +366,22 @@ bool OlaCallbackClient::SendTimeCode(
 void OlaCallbackClient::HandlePluginList(
     SingleUseCallback2<void, const std::vector<OlaPlugin>&,
                        const string&> *callback,
-    const api::Result &result,
+    const client::Result &result,
     const std::vector<OlaPlugin> &plugins) {
   callback->Run(plugins, result.Error());
 }
 
 void OlaCallbackClient::HandlePluginDescription(
     SingleUseCallback2<void, const string&, const string&> *callback,
-    const api::Result &result,
+    const client::Result &result,
     const std::string &description) {
   callback->Run(description, result.Error());
 }
 
 void OlaCallbackClient::HandlePluginState(
     PluginStateCallback *callback,
-    const api::Result &result,
-    const api::PluginState &core_state) {
+    const client::Result &result,
+    const client::PluginState &core_state) {
   PluginState state;
   state.name = core_state.name;
   state.enabled = core_state.enabled;
@@ -395,14 +395,14 @@ void OlaCallbackClient::HandlePluginState(
 void OlaCallbackClient::HandleDeviceInfo(
     SingleUseCallback2<void, const std::vector<OlaDevice>&, const string&>
         *callback,
-    const api::Result &result,
+    const client::Result &result,
     const std::vector<OlaDevice> &devices) {
   callback->Run(devices, result.Error());
 }
 
 void OlaCallbackClient::HandleConfigureDevice(
     SingleUseCallback2<void, const string&, const string&> *callback,
-    const api::Result &result,
+    const client::Result &result,
     const std::string &reply) {
   callback->Run(reply, result.Error());
 }
@@ -410,14 +410,14 @@ void OlaCallbackClient::HandleConfigureDevice(
 void OlaCallbackClient::HandleUniverseList(
     SingleUseCallback2<void, const std::vector<OlaUniverse>&,
                        const string &> *callback,
-    const api::Result &result,
+    const client::Result &result,
     const std::vector<OlaUniverse> &universes) {
   callback->Run(universes, result.Error());
 }
 
 void OlaCallbackClient::HandleUniverseInfo(
     SingleUseCallback2<void, OlaUniverse&, const string&> *callback,
-    const api::Result &result,
+    const client::Result &result,
     const OlaUniverse &universe) {
   // There was a bug in the API and universe isn't const.
   OlaUniverse new_universe(
@@ -432,8 +432,8 @@ void OlaCallbackClient::HandleUniverseInfo(
 
 void OlaCallbackClient::HandleFetchDmx(
     SingleUseCallback2<void, const DmxBuffer&, const string&> *callback,
-    const api::Result &result,
-    const api::DMXMetadata&,
+    const client::Result &result,
+    const client::DMXMetadata&,
     const DmxBuffer &data) {
   callback->Run(data, result.Error());
 }
@@ -442,7 +442,7 @@ void OlaCallbackClient::HandleDiscovery(
     ola::SingleUseCallback2<void,
                             const ola::rdm::UIDSet&,
                             const string&> *callback,
-    const api::Result &result,
+    const client::Result &result,
     const ola::rdm::UIDSet &uids) {
   callback->Run(uids, result.Error());
 }
@@ -459,7 +459,7 @@ void OlaCallbackClient::HandleRepeatableSetCallback(
   callback->Run(result.Error());
 }
 
-void OlaCallbackClient::HandleDMX(const api::DMXMetadata &metadata,
+void OlaCallbackClient::HandleDMX(const client::DMXMetadata &metadata,
                                   const DmxBuffer &data) {
   if (m_dmx_callback.get()) {
     m_dmx_callback->Run(metadata.universe, data, "");

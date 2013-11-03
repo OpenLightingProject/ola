@@ -18,8 +18,8 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_API_CLIENTTYPES_H_
-#define INCLUDE_OLA_API_CLIENTTYPES_H_
+#ifndef INCLUDE_OLA_CLIENT_CLIENTTYPES_H_
+#define INCLUDE_OLA_CLIENT_CLIENTTYPES_H_
 
 #include <ola/dmx/SourcePriorities.h>
 
@@ -34,7 +34,7 @@
  */
 
 namespace ola {
-namespace api {
+namespace client {
 
 /**
  * @brief Represents a Plugin.
@@ -304,6 +304,6 @@ struct DMXMetadata {
         priority(priority) {
   }
 };
-}  // namespace api
+}  // namespace client
 }  // namespace ola
-#endif  // INCLUDE_OLA_API_CLIENTTYPES_H_
+#endif  // INCLUDE_OLA_CLIENT_CLIENTTYPES_H_

@@ -42,7 +42,7 @@ void BaseHttpAction::Perform(SingleUseCallback0<void> *on_done) {
   DoAction();
 }
 
-void BaseHttpAction::CallbackComplete(const api::Result &result) {
+void BaseHttpAction::CallbackComplete(const client::Result &result) {
   RequestComplete(result.Success());
 }
 

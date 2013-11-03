@@ -47,8 +47,8 @@
 namespace ola {
 
 using ola::OladHTTPServer;
-using ola::api::OlaUniverse;
-using ola::api::Result;
+using ola::client::OlaUniverse;
+using ola::client::Result;
 using ola::rdm::UID;
 using ola::thread::MutexLocker;
 using ola::web::BoolItem;
@@ -149,7 +149,7 @@ const char RDMHTTPModule::RESET_DEVICE_SECTION_NAME[] = "Reset Device";
 const char RDMHTTPModule::TILT_INVERT_SECTION_NAME[] = "Tilt Invert";
 
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
-                             api::OlaClient *client)
+                             client::OlaClient *client)
     : m_server(http_server),
       m_client(client),
       m_rdm_api(m_client) {
@@ -225,7 +225,7 @@ int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
 
   m_client->RunDiscovery(
       universe_id,
-      incremental ? api::DISCOVERY_INCREMENTAL : api::DISCOVERY_FULL,
+      incremental ? client::DISCOVERY_INCREMENTAL : client::DISCOVERY_FULL,
       NewSingleCallback(this, &RDMHTTPModule::HandleUIDList,
                         response, universe_id));
 
@@ -249,7 +249,7 @@ int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
 
   m_client->RunDiscovery(
       universe_id,
-      api::DISCOVERY_CACHED,
+      client::DISCOVERY_CACHED,
       NewSingleCallback(this,
                         &RDMHTTPModule::HandleUIDList,
                         response,

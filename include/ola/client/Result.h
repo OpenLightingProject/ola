@@ -22,17 +22,17 @@
  * @brief The Result object passed to OLA client callbacks.
  */
 
-#ifndef INCLUDE_OLA_API_RESULT_H_
-#define INCLUDE_OLA_API_RESULT_H_
+#ifndef INCLUDE_OLA_CLIENT_RESULT_H_
+#define INCLUDE_OLA_CLIENT_RESULT_H_
 
 #include <ola/base/Macro.h>
 #include <string>
 
 namespace ola {
-namespace api {
+namespace client {
 
 /**
- * @class Result ola/api/Result.h
+ * @class Result ola/client/Result.h
  * @brief Indicates the result of a OLA API call.
  *
  * Result objects are the first argument passed to an API callback function.
@@ -75,6 +75,6 @@ class Result {
 
     DISALLOW_COPY_AND_ASSIGN(Result);
 };
-}  // namespace api
+}  // namespace client
 }  // namespace ola
-#endif  // INCLUDE_OLA_API_RESULT_H_
+#endif  // INCLUDE_OLA_CLIENT_RESULT_H_

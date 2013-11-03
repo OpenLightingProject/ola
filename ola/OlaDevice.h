@@ -21,23 +21,23 @@
 #ifndef OLA_OLADEVICE_H_
 #define OLA_OLADEVICE_H_
 
-#include <ola/api/ClientTypes.h>
+#include <ola/client/ClientTypes.h>
 
 /**
  * @file
  * @brief
- * @deprecated Include <ola/api/ClientTypes.h> instead.
+ * @deprecated Include <ola/client/ClientTypes.h> instead.
  */
 
 namespace ola {
 
 // For backwards compatability:
-typedef ola::api::OlaDevice OlaDevice;
-typedef ola::api::OlaInputPort OlaInputPort;
-typedef ola::api::OlaOutputPort OlaOutputPort;
-typedef ola::api::OlaPlugin OlaPlugin;
-typedef ola::api::OlaPort OlaPort;
-typedef ola::api::OlaUniverse OlaUniverse;
+typedef ola::client::OlaDevice OlaDevice;
+typedef ola::client::OlaInputPort OlaInputPort;
+typedef ola::client::OlaOutputPort OlaOutputPort;
+typedef ola::client::OlaPlugin OlaPlugin;
+typedef ola::client::OlaPort OlaPort;
+typedef ola::client::OlaUniverse OlaUniverse;
 
 }  // namespace ola
 #endif  // OLA_OLADEVICE_H_

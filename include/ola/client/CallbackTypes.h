@@ -22,20 +22,20 @@
  * @brief The various callbacks used with the OLA Client.
  */
 
-#ifndef INCLUDE_OLA_API_CALLBACKTYPES_H_
-#define INCLUDE_OLA_API_CALLBACKTYPES_H_
+#ifndef INCLUDE_OLA_CLIENT_CALLBACKTYPES_H_
+#define INCLUDE_OLA_CLIENT_CALLBACKTYPES_H_
 
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
-#include <ola/api/ClientTypes.h>
-#include <ola/api/Result.h>
+#include <ola/client/ClientTypes.h>
+#include <ola/client/Result.h>
 #include <ola/rdm/UIDSet.h>
 
 #include <string>
 #include <vector>
 
 namespace ola {
-namespace api {
+namespace client {
 
 /**
  * @brief Invoked when OlaClient::FetchPluginList() completes.
@@ -140,6 +140,6 @@ typedef SingleUseCallback3<void, const Result&, const DMXMetadata&,
 typedef Callback2<void, const DMXMetadata&, const DmxBuffer&>
     RepeatableDmxCallback;
 
-}  // namespace api
+}  // namespace client
 }  // namespace ola
-#endif  // INCLUDE_OLA_API_CALLBACKTYPES_H_
+#endif  // INCLUDE_OLA_CLIENT_CALLBACKTYPES_H_

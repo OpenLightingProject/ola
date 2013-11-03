@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 #include "ola/ExportMap.h"
-#include "ola/api/OlaClient.h"
+#include "ola/client/OlaClient.h"
 #include "ola/base/Macro.h"
 #include "ola/http/HTTPServer.h"
 #include "ola/http/OlaHTTPServer.h"
@@ -80,36 +80,36 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     int ReloadPidStore(const HTTPRequest *request, HTTPResponse *response);
 
     void HandlePluginList(HTTPResponse *response,
-                          const api::Result &result,
-                          const vector<api::OlaPlugin> &plugins);
+                          const client::Result &result,
+                          const vector<client::OlaPlugin> &plugins);
 
     void HandleUniverseList(HTTPResponse *response,
                             ola::web::JsonObject *json,
-                            const api::Result &result,
-                            const vector<api::OlaUniverse> &universes);
+                            const client::Result &result,
+                            const vector<client::OlaUniverse> &universes);
 
     void HandlePartialPluginInfo(HTTPResponse *response,
                                  int plugin_id,
-                                 const api::Result &result,
+                                 const client::Result &result,
                                  const string &description);
     void HandlePluginInfo(HTTPResponse *response,
                           string description,
-                          const api::Result &result,
-                          const ola::api::PluginState &state);
+                          const client::Result &result,
+                          const ola::client::PluginState &state);
 
     void HandleUniverseInfo(HTTPResponse *response,
-                            const api::Result &result,
-                            const api::OlaUniverse &universe);
+                            const client::Result &result,
+                            const client::OlaUniverse &universe);
 
     void HandlePortsForUniverse(HTTPResponse *response,
                                 ola::web::JsonObject *json,
                                 unsigned int universe_id,
-                                const api::Result &result,
-                                const vector<api::OlaDevice> &devices);
+                                const client::Result &result,
+                                const vector<client::OlaDevice> &devices);
 
     void HandleCandidatePorts(HTTPResponse *response,
-                              const api::Result &result,
-                              const vector<api::OlaDevice> &devices);
+                              const client::Result &result,
+                              const vector<client::OlaDevice> &devices);
 
     void CreateUniverseComplete(HTTPResponse *response,
                                 unsigned int universe_id,
@@ -140,7 +140,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
 
   private:
     class ola::io::ConnectedDescriptor *m_client_socket;
-    ola::api::OlaClient m_client;
+    ola::client::OlaClient m_client;
     class OlaServer *m_ola_server;
     bool m_enable_quit;
     ola::network::Interface m_interface;
@@ -148,21 +148,22 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     time_t m_start_time_t;
 
     void HandleGetDmx(HTTPResponse *response,
-                      const api::Result &result,
-                      const api::DMXMetadata &metadata,
+                      const client::Result &result,
+                      const client::DMXMetadata &metadata,
                       const DmxBuffer &buffer);
 
-    void HandleBoolResponse(HTTPResponse *response, const api::Result &result);
+    void HandleBoolResponse(HTTPResponse *response,
+                            const client::Result &result);
 
     void PortToJson(ola::web::JsonObject *object,
-                    const api::OlaDevice &device,
-                    const api::OlaPort &port,
+                    const client::OlaDevice &device,
+                    const client::OlaPort &port,
                     bool is_output);
 
     void AddPatchActions(ActionQueue *action_queue,
                          const string port_id_string,
                          unsigned int universe,
-                         api::PatchAction port_action);
+                         client::PatchAction port_action);
 
     void AddPriorityActions(ActionQueue *action_queue,
                             const HTTPRequest *request);
@@ -170,7 +171,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     typedef struct {
       unsigned int device_alias;
       unsigned int port;
-      api::PortDirection direction;
+      client::PortDirection direction;
       string string_id;
     } port_identifier;
 

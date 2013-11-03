@@ -39,12 +39,12 @@
 
 namespace ola {
 
-using ola::api::OlaDevice;
-using ola::api::OlaInputPort;
-using ola::api::OlaOutputPort;
-using ola::api::OlaPlugin;
-using ola::api::OlaPort;
-using ola::api::OlaUniverse;
+using ola::client::OlaDevice;
+using ola::client::OlaInputPort;
+using ola::client::OlaOutputPort;
+using ola::client::OlaPlugin;
+using ola::client::OlaPort;
+using ola::client::OlaUniverse;
 using ola::io::ConnectedDescriptor;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
@@ -325,7 +325,7 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
 
   // add patch actions here
   string add_port_ids = request->GetPostParameter("add_ports");
-  AddPatchActions(action_queue, add_port_ids, universe_id, ola::api::PATCH);
+  AddPatchActions(action_queue, add_port_ids, universe_id, ola::client::PATCH);
 
   if (!name.empty())
     action_queue->AddAction(
@@ -377,10 +377,10 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
   }
 
   string remove_port_ids = request->GetPostParameter("remove_ports");
-  AddPatchActions(action_queue, remove_port_ids, universe_id, api::UNPATCH);
+  AddPatchActions(action_queue, remove_port_ids, universe_id, client::UNPATCH);
 
   string add_port_ids = request->GetPostParameter("add_ports");
-  AddPatchActions(action_queue, add_port_ids, universe_id, api::PATCH);
+  AddPatchActions(action_queue, add_port_ids, universe_id, client::PATCH);
 
   AddPriorityActions(action_queue, request);
 
@@ -433,7 +433,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
   if (!buffer.Size())
     return m_server.ServeError(response, "Invalid DMX string");
 
-  ola::api::SendDmxArgs args(
+  ola::client::SendDmxArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
   m_client.SendDmx(universe_id, args, buffer);
   return MHD_YES;
@@ -510,7 +510,7 @@ int OladHTTPServer::ReloadPidStore(const HTTPRequest *request,
  * @param error an error string.
  */
 void OladHTTPServer::HandlePluginList(HTTPResponse *response,
-                                      const api::Result &result,
+                                      const client::Result &result,
                                       const vector<OlaPlugin> &plugins) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
@@ -545,7 +545,7 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
  */
 void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
                                        JsonObject *json,
-                                       const api::Result &result,
+                                       const client::Result &result,
                                        const vector<OlaUniverse> &universes) {
   if (result.Success()) {
     JsonArray *universe_json = json->AddArray("universes");
@@ -577,7 +577,7 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
  */
 void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
                                              int plugin_id,
-                                             const api::Result &result,
+                                             const client::Result &result,
                                              const string &description) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
@@ -598,8 +598,8 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
  */
 void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
                                       string description,
-                                      const api::Result &result,
-                                      const ola::api::PluginState &state) {
+                                      const client::Result &result,
+                                      const ola::client::PluginState &state) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
     return;
@@ -636,7 +636,7 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
  * @param error an error string.
  */
 void OladHTTPServer::HandleUniverseInfo(HTTPResponse *response,
-                                        const api::Result &result,
+                                        const client::Result &result,
                                         const OlaUniverse &universe) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
@@ -666,7 +666,7 @@ void OladHTTPServer::HandlePortsForUniverse(
     HTTPResponse *response,
     JsonObject *json,
     unsigned int universe_id,
-    const api::Result &result,
+    const client::Result &result,
     const vector<OlaDevice> &devices) {
   if (result.Success()) {
     vector<OlaDevice>::const_iterator iter = devices.begin();
@@ -714,7 +714,7 @@ void OladHTTPServer::HandlePortsForUniverse(
  */
 void OladHTTPServer::HandleCandidatePorts(
     HTTPResponse *response,
-    const api::Result &result,
+    const client::Result &result,
     const vector<OlaDevice> &devices) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
@@ -852,8 +852,8 @@ int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {
  * @param error Error message
  */
 void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
-                                  const api::Result &result,
-                                  const api::DMXMetadata &,
+                                  const client::Result &result,
+                                  const client::DMXMetadata &,
                                   const DmxBuffer &buffer) {
   // rather than adding 512 JsonValue we cheat and use raw here
   stringstream str;
@@ -875,7 +875,7 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
  * @param error an error string.
  */
 void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
-                                        const api::Result &result) {
+                                        const client::Result &result) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
     return;
@@ -922,7 +922,7 @@ void OladHTTPServer::PortToJson(JsonObject *json,
 void OladHTTPServer::AddPatchActions(ActionQueue *action_queue,
                                     const string port_id_string,
                                     unsigned int universe,
-                                    api::PatchAction port_action) {
+                                    client::PatchAction port_action) {
   vector<port_identifier> ports;
   vector<port_identifier>::const_iterator iter;
   DecodePortIds(port_id_string, &ports);
@@ -1011,8 +1011,8 @@ void OladHTTPServer::DecodePortIds(const string &port_ids,
       continue;
     }
 
-    api::PortDirection direction = (
-        tokens[1] == "I" ?  api::INPUT_PORT : api::OUTPUT_PORT);
+    client::PortDirection direction = (
+        tokens[1] == "I" ?  client::INPUT_PORT : client::OUTPUT_PORT);
     port_identifier port_id = {device_alias, port, direction, *iter};
     ports->push_back(port_id);
   }

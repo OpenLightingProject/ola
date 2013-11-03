@@ -18,13 +18,13 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_API_OLACLIENT_H_
-#define INCLUDE_OLA_API_OLACLIENT_H_
+#ifndef INCLUDE_OLA_CLIENT_OLACLIENT_H_
+#define INCLUDE_OLA_CLIENT_OLACLIENT_H_
 
 #include <ola/DmxBuffer.h>
-#include <ola/api/CallbackTypes.h>
-#include <ola/api/ClientArgs.h>
-#include <ola/api/ClientTypes.h>
+#include <ola/client/CallbackTypes.h>
+#include <ola/client/ClientArgs.h>
+#include <ola/client/ClientTypes.h>
 #include <ola/base/Macro.h>
 #include <ola/common.h>
 #include <ola/io/Descriptor.h>
@@ -38,10 +38,10 @@
 #include <string>
 
 namespace ola {
-namespace api {
+namespace client {
 
 /**
- * @class OlaClient ola/api/OlaClient.h
+ * @class OlaClient ola/client/OlaClient.h
  * @brief The callback based C++ client for OLA.
  */
 class OlaClient: public ola::rdm::RDMAPIImplInterface {
@@ -296,6 +296,6 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
 
     DISALLOW_COPY_AND_ASSIGN(OlaClient);
 };
-}  // namespace api
+}  // namespace client
 }  // namespace ola
-#endif  // INCLUDE_OLA_API_OLACLIENT_H_
+#endif  // INCLUDE_OLA_CLIENT_OLACLIENT_H_

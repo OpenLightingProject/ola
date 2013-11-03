@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <string>
 #include "ola/ActionQueue.h"
-#include "ola/api/OlaClient.h"
+#include "ola/client/OlaClient.h"
 #include "ola/base/Macro.h"
 
 namespace ola {
@@ -37,7 +37,7 @@ using std::string;
  */
 class BaseHttpAction: public Action {
   public:
-    explicit BaseHttpAction(api::OlaClient *client):
+    explicit BaseHttpAction(client::OlaClient *client):
       Action(),
       m_client(client),
       m_failed(false),
@@ -47,10 +47,10 @@ class BaseHttpAction: public Action {
 
     bool Failed() const  { return m_failed; }
     void Perform(SingleUseCallback0<void> *on_done);
-    void CallbackComplete(const api::Result &result);
+    void CallbackComplete(const client::Result &result);
 
   protected:
-    api::OlaClient *m_client;
+    client::OlaClient *m_client;
 
     void RequestComplete(bool failure);
     virtual void DoAction() = 0;
@@ -68,7 +68,7 @@ class BaseHttpAction: public Action {
  */
 class SetNameAction: public BaseHttpAction {
   public:
-    SetNameAction(api::OlaClient *client,
+    SetNameAction(client::OlaClient *client,
                   unsigned int universe,
                   const string &name,
                   bool is_fatal):
@@ -97,9 +97,9 @@ class SetNameAction: public BaseHttpAction {
  */
 class SetMergeModeAction: public BaseHttpAction {
   public:
-    SetMergeModeAction(api::OlaClient *client,
+    SetMergeModeAction(client::OlaClient *client,
                        unsigned int universe,
-                       api::OlaUniverse::merge_mode mode):
+                       client::OlaUniverse::merge_mode mode):
       BaseHttpAction(client),
       m_universe(universe),
       m_merge_mode(mode) {
@@ -112,7 +112,7 @@ class SetMergeModeAction: public BaseHttpAction {
 
   private:
     unsigned int m_universe;
-    api::OlaUniverse::merge_mode m_merge_mode;
+    client::OlaUniverse::merge_mode m_merge_mode;
 
     DISALLOW_COPY_AND_ASSIGN(SetMergeModeAction);
 };
@@ -123,12 +123,12 @@ class SetMergeModeAction: public BaseHttpAction {
  */
 class PatchPortAction: public BaseHttpAction {
   public:
-    PatchPortAction(api::OlaClient *client,
+    PatchPortAction(client::OlaClient *client,
                   unsigned int device_alias,
                   unsigned int port,
-                  api::PortDirection direction,
+                  client::PortDirection direction,
                   unsigned int universe,
-                  api::PatchAction action):
+                  client::PatchAction action):
       BaseHttpAction(client),
       m_device_alias(device_alias),
       m_port(port),
@@ -145,9 +145,9 @@ class PatchPortAction: public BaseHttpAction {
   private:
     unsigned int m_device_alias;
     unsigned int m_port;
-    api::PortDirection m_direction;
+    client::PortDirection m_direction;
     unsigned int m_universe;
-    api::PatchAction m_action;
+    client::PatchAction m_action;
 
     DISALLOW_COPY_AND_ASSIGN(PatchPortAction);
 };
@@ -158,10 +158,10 @@ class PatchPortAction: public BaseHttpAction {
  */
 class PortPriorityInheritAction: public BaseHttpAction {
   public:
-    PortPriorityInheritAction(api::OlaClient *client,
+    PortPriorityInheritAction(client::OlaClient *client,
                               unsigned int device_alias,
                               unsigned int port,
-                              api::PortDirection direction):
+                              client::PortDirection direction):
       BaseHttpAction(client),
       m_device_alias(device_alias),
       m_port(port),
@@ -176,7 +176,7 @@ class PortPriorityInheritAction: public BaseHttpAction {
   private:
     unsigned int m_device_alias;
     unsigned int m_port;
-    api::PortDirection m_direction;
+    client::PortDirection m_direction;
 
     DISALLOW_COPY_AND_ASSIGN(PortPriorityInheritAction);
 };
@@ -187,10 +187,10 @@ class PortPriorityInheritAction: public BaseHttpAction {
  */
 class PortPriorityOverrideAction: public BaseHttpAction {
   public:
-    PortPriorityOverrideAction(api::OlaClient *client,
+    PortPriorityOverrideAction(client::OlaClient *client,
                               unsigned int device_alias,
                               unsigned int port,
-                              api::PortDirection direction,
+                              client::PortDirection direction,
                               uint8_t overide_value):
       BaseHttpAction(client),
       m_device_alias(device_alias),
@@ -207,7 +207,7 @@ class PortPriorityOverrideAction: public BaseHttpAction {
   private:
     unsigned int m_device_alias;
     unsigned int m_port;
-    api::PortDirection m_direction;
+    client::PortDirection m_direction;
     uint8_t m_override_value;
 
     DISALLOW_COPY_AND_ASSIGN(PortPriorityOverrideAction);

@@ -26,7 +26,7 @@
 #include <ola/network/SocketAddress.h>
 
 namespace ola {
-namespace api {
+namespace client {
 
 BaseClientWrapper::~BaseClientWrapper() {
   Cleanup();
@@ -68,5 +68,5 @@ void BaseClientWrapper::SocketClosed() {
   OLA_INFO << "Server closed the connection";
   m_ss.Terminate();
 }
-}  // namespace api
+}  // namespace client
 }  // namespace ola

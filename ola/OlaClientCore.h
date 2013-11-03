@@ -30,9 +30,9 @@
 #include "common/rpc/RpcController.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/api/CallbackTypes.h"
-#include "ola/api/ClientArgs.h"
-#include "ola/api/ClientTypes.h"
+#include "ola/client/CallbackTypes.h"
+#include "ola/client/ClientArgs.h"
+#include "ola/client/ClientTypes.h"
 #include "ola/base/Macro.h"
 #include "ola/dmx/SourcePriorities.h"
 #include "ola/io/Descriptor.h"
@@ -43,7 +43,7 @@
 #include "ola/timecode/TimeCode.h"
 
 namespace ola {
-namespace api {
+namespace client {
 
 using std::string;
 using ola::io::ConnectedDescriptor;
@@ -52,7 +52,7 @@ using ola::rpc::RpcChannel;
 
 /**
  * @brief The low level C++ API to olad.
- * Clients shouldn't use this directly. Instead use ola::api::OlaClient.
+ * Clients shouldn't use this directly. Instead use ola::client::OlaClient.
  */
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
@@ -440,6 +440,6 @@ class OlaClientCore: public ola::proto::OlaClientService {
     DISALLOW_COPY_AND_ASSIGN(OlaClientCore);
 };
 
-}  // namespace api
+}  // namespace client
 }  // namespace ola
 #endif  // OLA_OLACLIENTCORE_H_

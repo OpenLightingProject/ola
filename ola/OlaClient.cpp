@@ -18,7 +18,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#include "ola/api/OlaClient.h"
+#include "ola/client/OlaClient.h"
 
 #include <string>
 
@@ -31,7 +31,7 @@
 #include "ola/rdm/RDMEnums.h"
 
 namespace ola {
-namespace api {
+namespace client {
 
 using std::string;
 using ola::rdm::RDMAPIImplInterface;
@@ -281,5 +281,5 @@ bool OlaClient::RDMSet(RDMAPIImplInterface::rdm_pid_callback *callback,
                         data,
                         data_length);
 }
-}  // namespace api
+}  // namespace client
 }  // namespace ola

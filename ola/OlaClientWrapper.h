@@ -27,7 +27,7 @@
 
 #include <ola/AutoStart.h>
 #include <ola/OlaCallbackClient.h>
-#include <ola/api/OlaClient.h>
+#include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocket.h>
@@ -35,7 +35,7 @@
 #include <memory>
 
 namespace ola {
-namespace api {
+namespace client {
 
 using ola::io::SelectServer;
 using ola::network::TCPSocket;
@@ -113,10 +113,10 @@ class GenericClientWrapper: public BaseClientWrapper {
 };
 
 typedef GenericClientWrapper<OlaClient> OlaClientWrapper;
-}  // namespace api
+}  // namespace client
 
 // Legacy
-typedef ola::api::GenericClientWrapper<OlaCallbackClient>
+typedef ola::client::GenericClientWrapper<OlaCallbackClient>
     OlaCallbackClientWrapper;
 
 }  // namespace ola

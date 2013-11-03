@@ -111,7 +111,7 @@ class SLPClient {
 };
 
 
-class SLPClientWrapper: public ola::api::BaseClientWrapper {
+class SLPClientWrapper: public ola::client::BaseClientWrapper {
   public:
     SLPClientWrapper() : BaseClientWrapper() {}
 

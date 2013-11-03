@@ -23,7 +23,7 @@
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/api/StreamingClient.h>
+#include <ola/client/StreamingClient.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
@@ -34,7 +34,7 @@
 #include "common/rpc/RpcChannel.h"
 
 namespace ola {
-namespace api {
+namespace client {
 
 using ola::io::SelectServer;
 using ola::network::TCPSocket;
@@ -158,5 +158,5 @@ void StreamingClient::ChannelClosed() {
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";
 }
-}  // namespace api
+}  // namespace client
 }  // namespace ola

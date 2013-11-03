@@ -21,18 +21,18 @@
 #ifndef OLA_STREAMINGCLIENT_H_
 #define OLA_STREAMINGCLIENT_H_
 
-#include <ola/api/StreamingClient.h>
+#include <ola/client/StreamingClient.h>
 
 /**
  * @file
  * @brief
- * @deprecated Include <ola/api/StreamingClient.h> instead.
+ * @deprecated Include <ola/client/StreamingClient.h> instead.
  */
 
 namespace ola {
 
 // For backwards compatability:
-typedef ola::api::StreamingClient StreamingClient;
+typedef ola::client::StreamingClient StreamingClient;
 
 }  // namespace ola
 #endif  // OLA_STREAMINGCLIENT_H_

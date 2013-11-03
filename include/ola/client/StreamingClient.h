@@ -22,8 +22,8 @@
  * @brief A client for sending DMX512 data to olad.
  */
 
-#ifndef INCLUDE_OLA_API_STREAMINGCLIENT_H_
-#define INCLUDE_OLA_API_STREAMINGCLIENT_H_
+#ifndef INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
+#define INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 
 #include <ola/BaseTypes.h>
 #include <ola/DmxBuffer.h>
@@ -36,10 +36,10 @@ namespace network { class TCPSocket; }
 namespace proto { class OlaServerService_Stub; }
 namespace rpc { class RpcChannel; }
 
-namespace api {
+namespace client {
 
 /**
- * @class StreamingClient ola/api/StreamingClient.h
+ * @class StreamingClient ola/client/StreamingClient.h
  * @brief Send DMX512 data to olad.
  *
  * StreamingClient sends DMX512 data to OLAD without waiting for an
@@ -127,6 +127,6 @@ class StreamingClient {
 
     DISALLOW_COPY_AND_ASSIGN(StreamingClient);
 };
-}  // namespace api
+}  // namespace client
 }  // namespace ola
-#endif  // INCLUDE_OLA_API_STREAMINGCLIENT_H_
+#endif  // INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
