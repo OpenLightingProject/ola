@@ -28,7 +28,6 @@
 #endif
 
 #include <ola/network/Interface.h>
-#include <ola/network/MACAddress.h>
 #include <string>
 
 
@@ -36,12 +35,7 @@ namespace ola {
 namespace network {
 
 bool StringToAddress(const std::string &address, struct in_addr &addr);
-bool StringToMACAddress(const std::string &address, struct ether_addr &addr);
 std::string AddressToString(const struct in_addr &addr);
-std::string MACAddressToString(const struct ether_addr &addr);
-
-std::string HardwareAddressToString(
-    const uint8_t hw_address[MACAddress::LENGTH]);
 
 bool IsBigEndian();
 

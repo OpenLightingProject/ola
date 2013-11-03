@@ -21,36 +21,67 @@
 #include <assert.h>
 #include <ola/network/MACAddress.h>
 #include <ola/network/NetworkUtils.h>
+#include <ola/StringUtils.h>
+#include <iomanip>
 #include <string>
+#include <vector>
 
 namespace ola {
 namespace network {
 
+/*
+ * Convert a mac address to a human readable string
+ * @return a string
+ */
 std::string MACAddress::ToString() const {
-  return MACAddressToString(m_address);
+  // TODO(Peter): ether_aton
+  std::stringstream str;
+  for (unsigned int i = 0 ; i < MACAddress::LENGTH; i++) {
+    if (i != 0)
+      str << ":";
+    str << std::hex << std::setfill('0') << std::setw(2) <<
+      static_cast<int>(m_address.ether_addr_octet[i]);
+  }
+  return str.str();
 }
 
 MACAddress* MACAddress::FromString(const std::string &address) {
-  struct ether_addr addr;
-  if (!StringToMACAddress(address, addr))
+  MACAddress *addr = new MACAddress;
+  if (!MACAddress::FromString(address, addr))
     return NULL;
 
-  return new MACAddress(addr);
+  return addr;
 }
 
+/**
+ * Convert a string to a MACAddress object
+ * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
+ * 'nn.nn.nn.nn.nn.nn'
+ * @param target a pointer to a MACAddress object
+ * @return true if it worked, false otherwise
+ */
 bool MACAddress::FromString(const std::string &address, MACAddress *target) {
-  struct ether_addr addr;
-  if (!StringToMACAddress(address, addr))
+  vector<string> tokens;
+  ola::StringSplit(address, tokens, ":.");
+  if (tokens.size() != MACAddress::LENGTH)
     return false;
+
+  uint8_t tmp_address[MACAddress::LENGTH];
+  for (unsigned int i = 0; i < MACAddress::LENGTH; i++) {
+    if (!ola::HexStringToInt(tokens[i], tmp_address + i))
+      return false;
+  }
+  struct ether_addr addr;
+  memcpy(addr.ether_addr_octet, tmp_address, MACAddress::LENGTH);
   *target = MACAddress(addr);
   return true;
 }
 
 
 MACAddress MACAddress::FromStringOrDie(const std::string &address) {
-  struct ether_addr addr;
-  assert(StringToMACAddress(address, addr));
-  return MACAddress(addr);
+  MACAddress addr;
+  assert(MACAddress::FromString(address, &addr));
+  return addr;
 }
 }  // namespace network
 }  // namespace ola

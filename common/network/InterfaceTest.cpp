@@ -27,7 +27,6 @@
 #include "ola/testing/TestUtils.h"
 
 
-using ola::network::HardwareAddressToString;
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::network::InterfaceBuilder;

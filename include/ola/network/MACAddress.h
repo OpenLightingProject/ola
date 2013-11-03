@@ -41,6 +41,7 @@ using std::ostream;
 /*
  * Represents a MAC Address.
  * All methods use network byte order unless otherwise mentioned.
+ * TODO(Peter): Is the above actually true for MAC addresses?
  */
 class MACAddress {
   public:
@@ -75,26 +76,33 @@ class MACAddress {
     }
 
     bool operator==(const MACAddress &other) const {
-      return m_address.ether_addr_octet == other.m_address.ether_addr_octet;
+      return (memcmp(m_address.ether_addr_octet,
+                     other.m_address.ether_addr_octet,
+                     LENGTH) == 0);
     }
 
     bool operator!=(const MACAddress &other) const {
       return !(*this == other);
     }
 
-    // Order addresses. Note that this won't order how humans expect
-    // because ether_addr is in network byte order.
+    /**
+     * @brief Order addresses. Note that this won't order how humans expect
+     * because ether_addr is in network byte order.
+     * TODO(Peter): Check if this is actually true for MAC Addresses
+     */
     bool operator<(const MACAddress &other) const {
-      // TODO(Peter): Fixme to order based on whole array!
-      return m_address.ether_addr_octet < other.m_address.ether_addr_octet;
+      return (memcmp(m_address.ether_addr_octet,
+                     other.m_address.ether_addr_octet,
+                     LENGTH) < 0);
     }
 
     bool operator>(const MACAddress &other) const {
-      // TODO(Peter): Fixme to order based on whole array!
-      return m_address.ether_addr_octet > other.m_address.ether_addr_octet;
+      return (memcmp(m_address.ether_addr_octet,
+                     other.m_address.ether_addr_octet,
+                     LENGTH) > 0);
     }
 
-    const struct ether_addr Address() const {
+    const struct ether_addr& Address() const {
       return m_address;
     }
 
