@@ -5,7 +5,7 @@
  * @namespace ola::acn
  * @brief ACN related code.
  *
- * @namespace ola::api
+ * @namespace ola::client
  * @brief OLA C++ API
  *
  * @namespace ola::dmx
