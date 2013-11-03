@@ -70,7 +70,7 @@ class E131Device: public ola::Device {
     void Configure(ola::rpc::RpcController *controller,
                    const string &request,
                    string *response,
-                   Callback0<void> *done);
+                   ConfigureCallback *done);
 
   protected:
     bool StartHook();

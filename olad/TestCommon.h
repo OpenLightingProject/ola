@@ -78,7 +78,7 @@ class TestMockPriorityInputPort: public TestMockInputPort {
                               unsigned int port_id,
                               const ola::PluginAdaptor *plugin_adaptor):
         TestMockInputPort(parent, port_id, plugin_adaptor),
-        m_inherited_priority(ola::DmxSource::PRIORITY_DEFAULT) {
+        m_inherited_priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {
     }
 
     uint8_t InheritedPriority() const {

@@ -27,7 +27,7 @@ check_PROGRAMS = $(TESTS)
 
 RpcTester_SOURCES = RpcControllerTest.cpp \
                     RpcChannelTest.cpp \
-                    RpcHeaderTest.cpp \
+                    RpcHeaderTest.cpp
 nodist_RpcTester_SOURCES = TestService.pb.cc \
                            TestServiceService.pb.cpp
 RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

@@ -104,7 +104,7 @@ void UsbProDevice::PrePortStop() {
 void UsbProDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
-                             Callback0<void> *done) {
+                             ConfigureCallback *done) {
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");
@@ -157,7 +157,7 @@ void UsbProDevice::UpdateParams(unsigned int port_id, bool status,
 void UsbProDevice::HandleParametersRequest(RpcController *controller,
                                            const Request *request,
                                            string *response,
-                                           Callback0<void> *done) {
+                                           ConfigureCallback *done) {
   if (!request->has_parameters()) {
       controller->SetFailed("Invalid request");
       done->Run();
@@ -211,7 +211,7 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
  */
 void UsbProDevice::HandleParametersResponse(RpcController *controller,
                                             string *response,
-                                            Callback0<void> *done,
+                                            ConfigureCallback *done,
                                             unsigned int port_id,
                                             bool status,
                                             const usb_pro_parameters &params) {
@@ -238,11 +238,10 @@ void UsbProDevice::HandleParametersResponse(RpcController *controller,
 /*
  * Handle a Serial number Configure RPC. We can just return the cached number.
  */
-void UsbProDevice::HandleSerialRequest(
-    RpcController*,
-    const Request*,
-    string *response,
-    Callback0<void> *done) {
+void UsbProDevice::HandleSerialRequest(RpcController*,
+                                       const Request*,
+                                       string *response,
+                                       ConfigureCallback *done) {
   Reply reply;
   reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
   ola::plugin::usbpro::SerialNumberReply *serial_reply =
@@ -256,11 +255,10 @@ void UsbProDevice::HandleSerialRequest(
 /*
  * Handle a port assignment request.
  */
-void UsbProDevice::HandlePortAssignmentRequest(
-    RpcController *controller,
-    const Request*,
-    string *response,
-    Callback0<void> *done) {
+void UsbProDevice::HandlePortAssignmentRequest(RpcController *controller,
+                                               const Request*,
+                                               string *response,
+                                               ConfigureCallback *done) {
   m_pro_widget->GetPortAssignments(NewSingleCallback(
     this,
     &UsbProDevice::HandlePortAssignmentResponse,
@@ -275,7 +273,7 @@ void UsbProDevice::HandlePortAssignmentRequest(
  */
 void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
                                                 string *response,
-                                                Callback0<void> *done,
+                                                ConfigureCallback *done,
                                                 bool status,
                                                 uint8_t port1_assignment,
                                                 uint8_t port2_assignment) {

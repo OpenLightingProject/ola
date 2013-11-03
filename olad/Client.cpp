@@ -61,7 +61,8 @@ bool Client::SendDMX(unsigned int universe, uint8_t priority,
       controller,
       &dmx_data,
       ack,
-      ola::NewCallback(this, &ola::Client::SendDMXCallback, controller, ack));
+      ola::NewSingleCallback(this, &ola::Client::SendDMXCallback,
+                             controller, ack));
   return true;
 }
 
