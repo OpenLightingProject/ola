@@ -34,6 +34,7 @@
 #include <ola/rdm/UIDSet.h>
 #include <ola/timecode/TimeCode.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
