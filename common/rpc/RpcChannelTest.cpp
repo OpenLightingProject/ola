@@ -32,7 +32,7 @@
 #include "ola/testing/TestUtils.h"
 
 
-using ola::NewCallback;
+using ola::NewSingleCallback;
 using ola::io::LoopbackDescriptor;
 using ola::io::SelectServer;
 using ola::rpc::EchoReply;
@@ -179,7 +179,7 @@ void RpcChannelTest::testEcho() {
   m_stub->Echo(&m_controller,
                &m_request,
                &m_reply,
-               NewCallback(this, &RpcChannelTest::EchoComplete));
+               NewSingleCallback(this, &RpcChannelTest::EchoComplete));
 
   m_ss.Run();
 }
@@ -194,7 +194,7 @@ void RpcChannelTest::testFailedEcho() {
       &m_controller,
       &m_request,
       &m_reply,
-      NewCallback(this, &RpcChannelTest::FailedEchoComplete));
+      NewSingleCallback(this, &RpcChannelTest::FailedEchoComplete));
   m_ss.Run();
 }
 

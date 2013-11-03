@@ -24,6 +24,7 @@
 #include <sys/types.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -32,24 +33,26 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
-#include "ola/OlaDevice.h"
+#include "ola/api/ClientTypes.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
+#include "ola/rdm/RDMEnums.h"
 
 namespace ola {
+namespace api {
 
 using ola::proto::OlaServerService_Stub;
+using std::auto_ptr;
 using std::string;
 using std::vector;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 
+const char OlaClientCore::NOT_CONNECTED_ERROR[] = "Not connected";
+
 OlaClientCore::OlaClientCore(ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
-      m_channel(NULL),
-      m_stub(NULL),
       m_connected(false) {
 }
 
@@ -68,15 +71,15 @@ bool OlaClientCore::Setup() {
   if (m_connected)
     return false;
 
-  m_channel = new RpcChannel(this, m_descriptor);
+  m_channel.reset(new RpcChannel(this, m_descriptor));
 
-  if (!m_channel) {
+  if (!m_channel.get()) {
     return false;
   }
-  m_stub = new OlaServerService_Stub(m_channel);
+  m_stub.reset(new OlaServerService_Stub(m_channel.get()));
 
-  if (!m_stub) {
-    delete m_channel;
+  if (!m_stub.get()) {
+    m_channel.reset();
     return false;
   }
   m_connected = true;
@@ -91,8 +94,8 @@ bool OlaClientCore::Setup() {
 bool OlaClientCore::Stop() {
   if (m_connected) {
     m_descriptor->Close();
-    delete m_channel;
-    delete m_stub;
+    m_channel.reset();
+    m_stub.reset();
   }
   m_connected = false;
   return 0;
@@ -105,45 +108,30 @@ void OlaClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
   m_channel->SetChannelCloseHandler(callback);
 }
 
+void OlaClientCore::SetDmxCallback(RepeatableDmxCallback *callback) {
+  m_dmx_callback.reset(callback);
+}
 
-/*
- * Fetch the list of plugins loaded.
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchPluginList(
-    SingleUseCallback2<void,
-                       const std::vector<OlaPlugin>&,
-                       const string &> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::FetchPluginList(PluginListCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::PluginListRequest request;
   ola::proto::PluginListReply *reply = new ola::proto::PluginListReply();
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandlePluginList,
-      NewArgs<plugin_list_arg>(controller, reply, callback));
-  m_stub->GetPlugins(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandlePluginList,
+        controller, reply, callback);
+    m_stub->GetPlugins(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandlePluginList(controller, reply, callback);
+  }
 }
 
-
-/*
- * Fetch the description for a plugin
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchPluginDescription(
+void OlaClientCore::FetchPluginDescription(
     ola_plugin_id plugin_id,
-    SingleUseCallback2<void, const string&, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+    PluginDescriptionCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::PluginDescriptionRequest request;
   ola::proto::PluginDescriptionReply *reply = new
@@ -151,112 +139,73 @@ bool OlaClientCore::FetchPluginDescription(
 
   request.set_plugin_id(plugin_id);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandlePluginDescription,
-      NewArgs<plugin_description_arg>(controller, reply, callback));
-  m_stub->GetPluginDescription(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandlePluginDescription,
+        controller, reply, callback);
+    m_stub->GetPluginDescription(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandlePluginDescription(controller, reply, callback);
+  }
 }
 
-
-/**
- * Fetch the state of a plugin. This returns the enabled state and the list of
- * plugins this plugin conflicts with.
- */
-bool OlaClientCore::FetchPluginState(
+void OlaClientCore::FetchPluginState(
     ola_plugin_id plugin_id,
-    OlaCallbackClient::PluginStateCallback *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+    PluginStateCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::PluginStateRequest request;
-  ola::proto::PluginStateReply *reply = new
-    ola::proto::PluginStateReply();
+  ola::proto::PluginStateReply *reply = new ola::proto::PluginStateReply();
 
   request.set_plugin_id(plugin_id);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandlePluginState,
-      NewArgs<plugin_state_arg>(controller, reply, callback));
-  m_stub->GetPluginState(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandlePluginState,
+        controller, reply, callback);
+    m_stub->GetPluginState(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandlePluginState(controller, reply, callback);
+  }
 }
 
-
-/*
- * Request a listing of what devices are attached
- * @param filter only fetch devices that belong to this particular plugin
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchDeviceInfo(
-    ola_plugin_id filter,
-    SingleUseCallback2<void,
-                       const vector <class OlaDevice>&,
-                       const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::FetchDeviceInfo(ola_plugin_id filter,
+                                    DeviceInfoCallback *callback) {
   ola::proto::DeviceInfoRequest request;
   RpcController *controller = new RpcController();
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
+
   request.set_plugin_id(filter);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleDeviceInfo,
-      NewArgs<device_info_arg>(controller, reply, callback));
-  m_stub->GetDeviceInfo(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandleDeviceInfo,
+        controller, reply, callback);
+    m_stub->GetDeviceInfo(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleDeviceInfo(controller, reply, callback);
+  }
 }
 
-
-/*
- * Request a list of ports that could be patched to a universe.
- * @param universe_id the universe id
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchCandidatePorts(
+void OlaClientCore::FetchCandidatePorts(
     unsigned int universe_id,
-    SingleUseCallback2<void,
-                       const vector <class OlaDevice>&,
-                       const string&> *callback) {
-  return GenericFetchCandidatePorts(universe_id, true, callback);
+    CandidatePortsCallback *callback) {
+  GenericFetchCandidatePorts(universe_id, true, callback);
 }
 
-
-/*
- * Request a list of ports that could be patched to a new universe.
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchCandidatePorts(
-  SingleUseCallback2<void,
-                     const vector <class OlaDevice>&,
-                     const string&> *callback) {
-  return GenericFetchCandidatePorts(0, false, callback);
+void OlaClientCore::FetchCandidatePorts(CandidatePortsCallback *callback) {
+  GenericFetchCandidatePorts(0, false, callback);
 }
 
-
-/*
- * Sends a device config request
- * @param device_alias the device alias
- * @param msg the data to send
- */
-bool OlaClientCore::ConfigureDevice(
+void OlaClientCore::ConfigureDevice(
     unsigned int device_alias,
     const string &msg,
-    SingleUseCallback2<void, const string&, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+    ConfigureDeviceCallback *callback) {
   ola::proto::DeviceConfigRequest request;
   RpcController *controller = new RpcController();
   ola::proto::DeviceConfigReply *reply = new ola::proto::DeviceConfigReply();
@@ -265,31 +214,22 @@ bool OlaClientCore::ConfigureDevice(
   request.set_device_alias(device_alias);
   request.set_data(msg);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleDeviceConfig,
-      NewArgs<configure_device_args>(controller, reply, callback));
-  m_stub->ConfigureDevice(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandleDeviceConfig,
+        controller, reply, callback);
+    m_stub->ConfigureDevice(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleDeviceConfig(controller, reply, callback);
+  }
 }
 
-
-/*
- * Set the priority for a port to inherit mode
- * @param dev the device id
- * @param port the port id
- * @param is_output true for an output port, false of an input port
- */
-bool OlaClientCore::SetPortPriorityInherit(
-    unsigned int device_alias,
-    unsigned int port,
-    PortDirection port_direction,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::SetPortPriorityInherit(unsigned int device_alias,
+                                           unsigned int port,
+                                           PortDirection port_direction,
+                                           SetCallback *callback) {
   ola::proto::PortPriorityRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
@@ -299,33 +239,23 @@ bool OlaClientCore::SetPortPriorityInherit(
   request.set_is_output(port_direction == OUTPUT_PORT);
   request.set_priority_mode(ola::PRIORITY_MODE_INHERIT);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->SetPortPriority(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SetPortPriority(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
-
-/*
- * Set the priority for a port to override mode
- * @param dev the device id
- * @param port the port id
- * @param is_output true for an output port, false of an input port
- * @param value the port priority value
- */
-bool OlaClientCore::SetPortPriorityOverride(
-    unsigned int device_alias,
-    unsigned int port,
-    PortDirection port_direction,
-    uint8_t value,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::SetPortPriorityOverride(unsigned int device_alias,
+                                            unsigned int port,
+                                            PortDirection port_direction,
+                                            uint8_t value,
+                                            SetCallback *callback) {
   ola::proto::PortPriorityRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
@@ -336,84 +266,58 @@ bool OlaClientCore::SetPortPriorityOverride(
   request.set_priority_mode(ola::PRIORITY_MODE_OVERRIDE);
   request.set_priority(value);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->SetPortPriority(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SetPortPriority(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
-
-/*
- * Request a universe listing
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchUniverseList(
-    SingleUseCallback2<void,
-                       const vector<class OlaUniverse>&,
-                       const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::FetchUniverseList(UniverseListCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleUniverseList,
-      NewArgs<universe_list_args>(controller, reply, callback));
-  m_stub->GetUniverseInfo(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleUniverseList,
+        controller, reply, callback);
+    m_stub->GetUniverseInfo(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleUniverseList(controller, reply, callback);
+  }
 }
 
-
-/*
- * Fetch the information for a single universe.
- * @param universe_id the id of the universe
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchUniverseInfo(
-    unsigned int universe_id,
-    SingleUseCallback2<void, OlaUniverse&, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::FetchUniverseInfo(unsigned int universe_id,
+                                      UniverseInfoCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
   request.set_universe(universe_id);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleUniverseInfo,
-      NewArgs<universe_info_args>(controller, reply, callback));
-  m_stub->GetUniverseInfo(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleUniverseInfo,
+        controller, reply, callback);
+    m_stub->GetUniverseInfo(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleUniverseInfo(controller, reply, callback);
+  }
 }
 
-
-/*
- * Set the name of a universe
- * @param universe the id of the universe
- * @param name the new name
- * @return true on success, false on failure
- */
-bool OlaClientCore::SetUniverseName(
-    unsigned int universe,
-    const string &name,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::SetUniverseName(unsigned int universe,
+                                    const string &name,
+                                    SetCallback *callback) {
   ola::proto::UniverseNameRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
@@ -421,30 +325,21 @@ bool OlaClientCore::SetUniverseName(
   request.set_universe(universe);
   request.set_name(name);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->SetUniverseName(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SetUniverseName(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
-
-/*
- * Set the merge mode of a universe
- * @param universe the id of the universe
- * @param mode the new merge mode
- * @return true on success, false on failure
- */
-bool OlaClientCore::SetUniverseMergeMode(
-    unsigned int universe,
-    OlaUniverse::merge_mode mode,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::SetUniverseMergeMode(unsigned int universe,
+                                         OlaUniverse::merge_mode mode,
+                                         SetCallback *callback) {
   ola::proto::MergeModeRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
@@ -454,248 +349,153 @@ bool OlaClientCore::SetUniverseMergeMode(
   request.set_universe(universe);
   request.set_merge_mode(merge_mode);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->SetMergeMode(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SetMergeMode(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
-
-/*
- * (Un)Patch a port to a universe
- * @param device_alias the alias of the device
- * @param port  the port id
- * @param action OlaClientCore::PATCH or OlaClientCore::UNPATCH
- * @param universe universe id
- */
-bool OlaClientCore::Patch(
-    unsigned int device_alias,
-    unsigned int port_id,
-    ola::PortDirection port_direction,
-    ola::PatchAction patch_action,
-    unsigned int universe,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::Patch(unsigned int device_alias,
+                          unsigned int port_id,
+                          PortDirection port_direction,
+                          PatchAction patch_action,
+                          unsigned int universe,
+                          SetCallback *callback) {
   ola::proto::PatchPortRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::PatchAction action = (
-      patch_action == ola::PATCH ? ola::proto::PATCH : ola::proto::UNPATCH);
+      patch_action == PATCH ? ola::proto::PATCH : ola::proto::UNPATCH);
   request.set_universe(universe);
   request.set_device_alias(device_alias);
   request.set_port_id(port_id);
   request.set_is_output(port_direction == OUTPUT_PORT);
   request.set_action(action);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->PatchPort(controller, &request, reply, cb);
-  return true;
-}
-
-
-/*
- * Set the callback to be run when DMX data arrives
- */
-void OlaClientCore::SetDmxCallback(DmxCallback *callback) {
-  m_dmx_callback.reset(callback);
-  m_dmx_callback_with_priority.reset();
-}
-
-/*
- * Set the callback to be run when DMX data arrives
- */
-void OlaClientCore::SetDmxCallback(DmxCallbackWithPriority *callback) {
-  m_dmx_callback.reset();
-  m_dmx_callback_with_priority.reset(callback);
-}
-
-
-/*
- * Register our interest in a universe, the observer object will then
- * be notifed when the dmx values in this universe change.
- * @param universe the id of the universe
- * @param action the action (register or unregister)
- */
-bool OlaClientCore::RegisterUniverse(
-    unsigned int universe,
-    ola::RegisterAction register_action,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->PatchPort(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
   }
+}
 
+void OlaClientCore::RegisterUniverse(unsigned int universe,
+                                     RegisterAction register_action,
+                                     SetCallback *callback) {
   ola::proto::RegisterDmxRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::RegisterAction action = (
-      register_action == ola::REGISTER ? ola::proto::REGISTER :
+      register_action == REGISTER ? ola::proto::REGISTER :
         ola::proto::UNREGISTER);
   request.set_universe(universe);
   request.set_action(action);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->RegisterForDmx(controller, &request, reply, cb);
-  return true;
-}
-
-
-/*
- * Write some dmx data
- * @param universe   universe to send to
- * @param data the DmxBuffer with the data
- * @return true on success, false on failure
- */
-bool OlaClientCore::SendDmx(
-    unsigned int universe,
-    const DmxBuffer &data,
-    SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->RegisterForDmx(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
   }
-  return GenericSendDmx(universe, data, callback);
 }
 
+void OlaClientCore::SendDmx(unsigned int universe,
+                            const SendDmxArgs &args,
+                            const DmxBuffer &data) {
+  ola::proto::DmxData request;
+  request.set_universe(universe);
+  request.set_data(data.Get());
+  request.set_priority(args.priority);
 
-/*
- * Write some dmx data
- * @param universe   universe to send to
- * @param data the DmxBuffer with the data
- * @return true on success, false on failure
- */
-bool OlaClientCore::SendDmx(
-    unsigned int universe,
-    const DmxBuffer &data,
-    Callback1<void, const string&> *callback) {
-  return GenericSendDmx(universe, data, callback);
-}
+  if (args.callback) {
+    // Full request
+    RpcController *controller = new RpcController();
+    ola::proto::Ack *reply = new ola::proto::Ack();
 
-
-/*
- * Write some dmx data
- * @param universe   universe to send to
- * @param data the DmxBuffer with the data
- * @return true on success, false on failure
- */
-bool OlaClientCore::SendDmx(unsigned int universe, const DmxBuffer &data) {
-  return GenericSendDmx(universe, data, NULL);
-}
-
-
-/*
- * Read dmx data
- * @param universe the universe id to get data for
- * @return true on success, false on failure
- */
-bool OlaClientCore::FetchDmx(
-    unsigned int universe,
-    SingleUseCallback2<void, const DmxBuffer&, const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
+    if (m_connected) {
+      CompletionCallback *cb = ola::NewSingleCallback(
+          this,
+          &OlaClientCore::HandleGeneralAck,
+          controller, reply, args.callback);
+      m_stub->UpdateDmxData(controller, &request, reply, cb);
+     } else {
+      controller->SetFailed(NOT_CONNECTED_ERROR);
+      HandleGeneralAck(controller, reply, args.callback);
+     }
+  } else if (m_connected) {
+    // stream data
+    m_stub->StreamDmxData(NULL, &request, NULL, NULL);
   }
+}
 
+void OlaClientCore::FetchDmx(unsigned int universe,
+                             DmxCallback *callback) {
   ola::proto::UniverseRequest request;
   RpcController *controller = new RpcController();
   ola::proto::DmxData *reply = new ola::proto::DmxData();
 
   request.set_universe(universe);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleGetDmx,
-      NewArgs<get_dmx_args>(controller, reply, callback));
-  m_stub->GetDmx(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandleGetDmx,
+        controller, reply, callback);
+    m_stub->GetDmx(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleGetDmx(controller, reply, callback);
+  }
 }
 
-
-/*
- * Fetch the UID list for a universe
- */
-bool OlaClientCore::FetchUIDList(
-    unsigned int universe,
-    SingleUseCallback2<void,
-                       const UIDSet&,
-                       const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
-  ola::proto::UniverseRequest request;
+void OlaClientCore::RunDiscovery(unsigned int universe,
+                                 DiscoveryType discovery_type,
+                                 DiscoveryCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
-  request.set_universe(universe);
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleUIDList,
-      NewArgs<uid_list_args>(controller, reply, callback));
-  m_stub->GetUIDs(controller, &request, reply, cb);
-  return true;
-}
-
-
-/*
- * Force RDM discovery for a universe
- * @param universe the universe id to run discovery on
- * @return true on success, false on failure
- */
-bool OlaClientCore::RunDiscovery(
-    unsigned int universe,
-    bool full,
-    ola::SingleUseCallback2<void,
-                            const UIDSet&,
-                            const string&> *callback) {
   if (!m_connected) {
-    delete callback;
-    return false;
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleUIDList(controller, reply, callback);
   }
 
-  ola::proto::DiscoveryRequest request;
-  RpcController *controller = new RpcController();
-  ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
-
-  request.set_universe(universe);
-  request.set_full(full);
-
-  CompletionCallback *cb = NewCallback(
+  CompletionCallback *cb = NewSingleCallback(
       this,
-      &ola::OlaClientCore::HandleUIDList,
-      NewArgs<uid_list_args>(controller, reply, callback));
-  m_stub->ForceDiscovery(controller, &request, reply, cb);
-  return true;
+      &OlaClientCore::HandleUIDList,
+      controller, reply, callback);
+
+  if (discovery_type == DISCOVERY_CACHED) {
+    ola::proto::UniverseRequest request;
+    request.set_universe(universe);
+    m_stub->GetUIDs(controller, &request, reply, cb);
+  } else {
+    ola::proto::DiscoveryRequest request;
+    request.set_universe(universe);
+    request.set_full(discovery_type == DISCOVERY_FULL);
+    m_stub->ForceDiscovery(controller, &request, reply, cb);
+  }
 }
 
-
-/*
- * Set this clients Source UID
- */
-bool OlaClientCore::SetSourceUID(
-    const UID &uid,
-    ola::SingleUseCallback1<void, const string &> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::SetSourceUID(const UID &uid,
+                                 SetCallback *callback) {
   ola::proto::UID request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
@@ -703,12 +503,16 @@ bool OlaClientCore::SetSourceUID(
   request.set_esta_id(uid.ManufacturerId());
   request.set_device_id(uid.DeviceId());
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->SetSourceUID(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SetSourceUID(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
 
@@ -808,24 +612,15 @@ bool OlaClientCore::RDMSet(
 }
 
 
-/**
- * Send TimeCode data.
- * @param callback the Callback to invoke when this completes
- * @param timecode The timecode data.
- * @return true on success, false on failure
- */
-bool OlaClientCore::SendTimeCode(
-    ola::SingleUseCallback1<void, const string&> *callback,
-    const ola::timecode::TimeCode &timecode) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+void OlaClientCore::SendTimeCode(const ola::timecode::TimeCode &timecode,
+                                 SetCallback *callback) {
   if (!timecode.IsValid()) {
+    Result result("Invalid timecode");
     OLA_WARN << "Invalid timecode: " << timecode;
-    delete callback;
-    return false;
+    if (callback) {
+      callback->Run(result);
+    }
+    return;
   }
 
   RpcController *controller = new RpcController();
@@ -838,38 +633,32 @@ bool OlaClientCore::SendTimeCode(
   request.set_seconds(timecode.Seconds());
   request.set_frames(timecode.Frames());
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->SendTimeCode(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SendTimeCode(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
-
-/*
- * Called when new DMX data arrives
- */
-void OlaClientCore::UpdateDmxData(
-    ola::rpc::RpcController*,
-    const ola::proto::DmxData *request,
-    ola::proto::Ack*,
-    CompletionCallback *done) {
-  if (m_dmx_callback.get() || m_dmx_callback_with_priority.get()) {
+void OlaClientCore::UpdateDmxData(ola::rpc::RpcController*,
+                                  const ola::proto::DmxData *request,
+                                  ola::proto::Ack*,
+                                  CompletionCallback *done) {
+  if (m_dmx_callback.get()) {
     DmxBuffer buffer;
     buffer.Set(request->data());
 
-    if (m_dmx_callback.get()) {
-      m_dmx_callback->Run(request->universe(), buffer, "");
+    uint8_t priority = 0;
+    if (request->has_priority()) {
+      priority = request->priority();
     }
-    if (m_dmx_callback_with_priority.get()) {
-      uint8_t priority = 0;
-      if (request->has_priority()) {
-        priority = request->priority();
-      }
-      m_dmx_callback_with_priority->Run(request->universe(), priority, buffer,
-                                        "");
-    }
+    DMXMetadata metadata(request->universe(), priority);
+    m_dmx_callback->Run(metadata, buffer);
   }
   done->Run();
 }
@@ -880,20 +669,22 @@ void OlaClientCore::UpdateDmxData(
 /*
  * Called once PluginInfo completes
  */
-void OlaClientCore::HandlePluginList(plugin_list_arg *args) {
-  string error_string = "";
-  vector<OlaPlugin> ola_plugins;
+void OlaClientCore::HandlePluginList(RpcController *controller_ptr,
+                                     ola::proto::PluginListReply *reply_ptr,
+                                     PluginListCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::PluginListReply> reply(reply_ptr);
 
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    for (int i = 0; i < args->reply->plugin_size(); ++i) {
-      ola::proto::PluginInfo plugin_info = args->reply->plugin(i);
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+
+  vector<OlaPlugin> ola_plugins;
+  if (!controller->Failed()) {
+    for (int i = 0; i < reply->plugin_size(); ++i) {
+      ola::proto::PluginInfo plugin_info = reply->plugin(i);
       OlaPlugin plugin(plugin_info.plugin_id(),
                        plugin_info.name(),
                        plugin_info.active());
@@ -901,54 +692,58 @@ void OlaClientCore::HandlePluginList(plugin_list_arg *args) {
     }
   }
   std::sort(ola_plugins.begin(), ola_plugins.end());
-  args->callback->Run(ola_plugins, error_string);
-  FreeArgs(args);
+  callback->Run(result, ola_plugins);
 }
 
 
 /*
  * Called once PluginState completes
  */
-void OlaClientCore::HandlePluginDescription(plugin_description_arg *args) {
-  string error_string = "";
+void OlaClientCore::HandlePluginDescription(
+    RpcController *controller_ptr,
+    ola::proto::PluginDescriptionReply *reply_ptr,
+    PluginDescriptionCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::PluginDescriptionReply> reply(reply_ptr);
+
+  if (!callback) {
+    return;
+  }
+
+  Result result(controller->Failed() ? controller->ErrorText() : "");
   string description;
 
-  if (!args->callback) {
-    FreeArgs(args);
-    return;
+  if (!controller->Failed()) {
+    description = reply->description();
   }
-
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    description = args->reply->description();
-  }
-  args->callback->Run(description, error_string);
-  FreeArgs(args);
+  callback->Run(result, description);
 }
 
 
 /*
  * Called once PluginState completes
  */
-void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
-  string error_string = "";
-  OlaCallbackClient::PluginState plugin_state;
+void OlaClientCore::HandlePluginState(
+    RpcController *controller_ptr,
+    ola::proto::PluginStateReply *reply_ptr,
+    PluginStateCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::PluginStateReply> reply(reply_ptr);
 
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    plugin_state.name = args->reply->name();
-    plugin_state.enabled = args->reply->enabled();
-    plugin_state.active = args->reply->active();
-    plugin_state.preferences_source = args->reply->preferences_source();
-    for (int i = 0; i < args->reply->conflicts_with_size(); ++i) {
-      ola::proto::PluginInfo plugin_info = args->reply->conflicts_with(i);
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+  PluginState plugin_state;
+
+  if (!controller->Failed()) {
+    plugin_state.name = reply->name();
+    plugin_state.enabled = reply->enabled();
+    plugin_state.active = reply->active();
+    plugin_state.preferences_source = reply->preferences_source();
+    for (int i = 0; i < reply->conflicts_with_size(); ++i) {
+      ola::proto::PluginInfo plugin_info = reply->conflicts_with(i);
       OlaPlugin plugin(plugin_info.plugin_id(),
                        plugin_info.name(),
                        plugin_info.active());
@@ -956,28 +751,29 @@ void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
     }
   }
 
-  args->callback->Run(plugin_state, error_string);
-  FreeArgs(args);
+  callback->Run(result, plugin_state);
 }
 
 
 /*
  * Called once DeviceInfo completes.
  */
-void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
-  string error_string = "";
-  vector<OlaDevice> ola_devices;
+void OlaClientCore::HandleDeviceInfo(RpcController *controller_ptr,
+                                     ola::proto::DeviceInfoReply *reply_ptr,
+                                     DeviceInfoCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::DeviceInfoReply> reply(reply_ptr);
 
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    for (int i = 0; i < args->reply->device_size(); ++i) {
-      ola::proto::DeviceInfo device_info = args->reply->device(i);
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+  vector<OlaDevice> ola_devices;
+
+  if (!controller->Failed()) {
+    for (int i = 0; i < reply->device_size(); ++i) {
+      ola::proto::DeviceInfo device_info = reply->device(i);
       vector<OlaInputPort> input_ports;
 
       for (int j = 0; j < device_info.input_port_size(); ++j) {
@@ -997,7 +793,6 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
       }
 
       vector<OlaOutputPort> output_ports;
-
       for (int j = 0; j < device_info.output_port_size(); ++j) {
         ola::proto::PortInfo port_info = device_info.output_port(j);
         OlaOutputPort port(
@@ -1024,65 +819,72 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
     }
   }
   std::sort(ola_devices.begin(), ola_devices.end());
-  args->callback->Run(ola_devices, error_string);
-  FreeArgs(args);
+  callback->Run(result, ola_devices);
 }
 
+void OlaClientCore::HandleDeviceConfig(RpcController *controller_ptr,
+                                       ola::proto::DeviceConfigReply *reply_ptr,
+                                       ConfigureDeviceCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::DeviceConfigReply> reply(reply_ptr);
 
-/*
- * Handle a device config response
- */
-void OlaClientCore::HandleDeviceConfig(configure_device_args *args) {
-  string error_string, data;
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed())
-    error_string = args->controller->ErrorText();
-  else
-    data = args->reply->data();
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+  string response_data;
+  if (!controller->Failed()) {
+    response_data = reply->data();
+  }
 
-  args->callback->Run(data, error_string);
-  FreeArgs(args);
+  callback->Run(result, response_data);
 }
 
+void OlaClientCore::HandleAck(RpcController *controller_ptr,
+                              ola::proto::Ack *reply_ptr,
+                              SetCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::Ack> reply(reply_ptr);
 
-/*
- * Called once SetPriority completes
- */
-void OlaClientCore::HandleAck(ack_args *args) {
-  string error_string = "";
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed())
-    error_string = args->controller->ErrorText();
-  args->callback->Run(error_string);
-  FreeArgs(args);
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+  callback->Run(result);
 }
 
+void OlaClientCore::HandleGeneralAck(RpcController *controller_ptr,
+                                     ola::proto::Ack *reply_ptr,
+                                     GeneralSetCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::Ack> reply(reply_ptr);
 
-/*
- * Called once UniverseInfo completes
- */
-void OlaClientCore::HandleUniverseList(universe_list_args *args) {
-  string error_string = "";
+  if (!callback) {
+    return;
+  }
+
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+  callback->Run(result);
+}
+
+void OlaClientCore::HandleUniverseList(RpcController *controller_ptr,
+                                       ola::proto::UniverseInfoReply *reply_ptr,
+                                       UniverseListCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::UniverseInfoReply> reply(reply_ptr);
+
+  if (!callback) {
+    return;
+  }
+
+  Result result(controller->Failed() ? controller->ErrorText() : "");
   vector<OlaUniverse> ola_universes;
 
-  if (!args->callback) {
-    FreeArgs(args);
-    return;
-  }
-
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    for (int i = 0; i < args->reply->universe_size(); ++i) {
-      ola::proto::UniverseInfo universe_info = args->reply->universe(i);
+  if (!controller->Failed()) {
+    for (int i = 0; i < reply->universe_size(); ++i) {
+      ola::proto::UniverseInfo universe_info = reply->universe(i);
       OlaUniverse::merge_mode merge_mode = (
         universe_info.merge_mode() == ola::proto::HTP ?
         OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP);
@@ -1096,33 +898,26 @@ void OlaClientCore::HandleUniverseList(universe_list_args *args) {
       ola_universes.push_back(universe);
     }
   }
-  args->callback->Run(ola_universes, error_string);
-  FreeArgs(args);
+  callback->Run(result, ola_universes);
 }
 
+void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
+                                       ola::proto::UniverseInfoReply *reply_ptr,
+                                       UniverseInfoCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::UniverseInfoReply> reply(reply_ptr);
 
-/*
- * Called once UniverseInfo completes
- */
-void OlaClientCore::HandleUniverseInfo(universe_info_args *args) {
-  string error_string = "";
-  OlaUniverse null_universe(0,
-                            OlaUniverse::MERGE_LTP,
-                            "",
-                            0,
-                            0,
-                            0);
-
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    if (args->reply->universe_size() == 1) {
-      ola::proto::UniverseInfo universe_info = args->reply->universe(0);
+  string error_str(controller->Failed() ? controller->ErrorText() : "");
+
+  OlaUniverse null_universe(0, OlaUniverse::MERGE_LTP, "", 0, 0, 0);
+
+  if (!controller->Failed()) {
+    if (reply->universe_size() == 1) {
+      ola::proto::UniverseInfo universe_info = reply->universe(0);
       OlaUniverse::merge_mode merge_mode = (
         universe_info.merge_mode() == ola::proto::HTP ?
         OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP);
@@ -1133,161 +928,118 @@ void OlaClientCore::HandleUniverseInfo(universe_info_args *args) {
                            universe_info.input_port_count(),
                            universe_info.output_port_count(),
                            universe_info.rdm_devices());
-      args->callback->Run(universe, error_string);
-      FreeArgs(args);
+      Result result(error_str);
+      callback->Run(result, universe);
       return;
-
-    } else if (args->reply->universe_size() > 1) {
-      error_string = "Too many universes in response";
+    } else if (reply->universe_size() > 1) {
+      error_str = "Too many universes in response";
     } else {
-      error_string = "Universe not found";
+      error_str = "Universe not found";
     }
   }
-  args->callback->Run(null_universe, error_string);
-  FreeArgs(args);
+  Result result(error_str);
+  callback->Run(result, null_universe);
 }
 
+void OlaClientCore::HandleGetDmx(RpcController *controller_ptr,
+                                 ola::proto::DmxData *reply_ptr,
+                                 DmxCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::DmxData> reply(reply_ptr);
 
-/*
- * Called once GetDmx completes
- */
-void OlaClientCore::HandleGetDmx(get_dmx_args *args) {
-  string error_string;
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
-  if (args->controller->Failed())
-    error_string = args->controller->ErrorText();
 
+  Result result(controller->Failed() ? controller->ErrorText() : "");
   DmxBuffer buffer;
-  buffer.Set(args->reply->data());
-  args->callback->Run(buffer, error_string);
-  FreeArgs(args);
+  uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
+
+  if (!controller->Failed()) {
+    buffer.Set(reply->data());
+    priority = reply->priority();
+  }
+  DMXMetadata metadata(reply->universe(), priority);
+  callback->Run(result, metadata, buffer);
 }
 
+void OlaClientCore::HandleUIDList(RpcController *controller_ptr,
+                                  ola::proto::UIDListReply *reply_ptr,
+                                  DiscoveryCallback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::UIDListReply> reply(reply_ptr);
 
-/*
- * Handle the UID list response
- */
-void OlaClientCore::HandleUIDList(uid_list_args *args) {
-  string error_string = "";
-  ola::rdm::UIDSet uid_set;
-
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
-  if (args->controller->Failed()) {
-    error_string = args->controller->ErrorText();
-  } else {
-    for (int i = 0; i < args->reply->uid_size(); ++i) {
-      ola::proto::UID proto_uid = args->reply->uid(i);
-      ola::rdm::UID uid(proto_uid.esta_id(),
-                        proto_uid.device_id());
-      uid_set.AddUID(uid);
+  Result result(controller->Failed() ? controller->ErrorText() : "");
+  UIDSet uids;
+
+  if (!controller->Failed()) {
+    for (int i = 0; i < reply->uid_size(); ++i) {
+      const ola::proto::UID &proto_uid = reply->uid(i);
+      ola::rdm::UID uid(proto_uid.esta_id(), proto_uid.device_id());
+      uids.AddUID(uid);
     }
   }
-  args->callback->Run(uid_set, error_string);
-  FreeArgs(args);
+  callback->Run(result, uids);
 }
 
+void OlaClientCore::HandleRDM(RpcController *controller_ptr,
+                   ola::proto::RDMResponse *reply_ptr,
+                   ola::rdm::RDMAPIImplInterface::rdm_callback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::RDMResponse> reply(reply_ptr);
 
-/*
- * Handle an RDM message
- */
-void OlaClientCore::HandleRDM(rdm_response_args *args) {
-  if (!args->callback) {
-    FreeArgs(args);
+  if (!callback) {
     return;
   }
 
   ola::rdm::ResponseStatus response_status;
-  CheckRDMResponseStatus(args->controller,
-                         args->reply,
-                         &response_status);
-  args->callback->Run(response_status, args->reply->data());
-  FreeArgs(args);
+  CheckRDMResponseStatus(controller.get(), reply.get(), &response_status);
+  callback->Run(response_status, reply->data());
 }
 
 
-/**
- * Handle a RDM response, and pass the PID back to the client
- */
-void OlaClientCore::HandleRDMWithPID(rdm_pid_response_args *args) {
-  if (!args->callback) {
-    FreeArgs(args);
+void OlaClientCore::HandleRDMWithPID(
+    RpcController *controller_ptr,
+    ola::proto::RDMResponse *reply_ptr,
+    ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback) {
+  auto_ptr<RpcController> controller(controller_ptr);
+  auto_ptr<ola::proto::RDMResponse> reply(reply_ptr);
+
+  if (!callback) {
     return;
   }
 
   ola::rdm::ResponseStatus response_status;
-  CheckRDMResponseStatus(args->controller,
-                         args->reply,
-                         &response_status);
-  args->callback->Run(response_status,
-                      args->reply->param_id(),
-                      args->reply->data());
-  FreeArgs(args);
+  CheckRDMResponseStatus(controller.get(), reply.get(), &response_status);
+  callback->Run(response_status, reply->param_id(), reply->data());
 }
 
-
-/**
- * The generic SendDmx method.
- * If callback is null here we stream the data.
- */
-bool OlaClientCore::GenericSendDmx(
-    unsigned int universe,
-    const DmxBuffer &data,
-    BaseCallback1<void, const string&> *callback) {
-  ola::proto::DmxData request;
-  request.set_universe(universe);
-  request.set_data(data.Get());
-
-  if (callback) {
-    // full request
-    RpcController *controller = new RpcController();
-    ola::proto::Ack *reply = new ola::proto::Ack();
-    CompletionCallback *cb = NewCallback(
-        this,
-        &ola::OlaClientCore::HandleAck,
-        NewArgs<ack_args>(controller, reply, callback));
-    m_stub->UpdateDmxData(controller, &request, reply, cb);
-  } else {
-    // stream data
-    m_stub->StreamDmxData(NULL, &request, NULL, NULL);
-  }
-  return true;
-}
-
-
-/*
- * Fetch a list of candidate ports, with or without a universe
- */
-bool OlaClientCore::GenericFetchCandidatePorts(
+void OlaClientCore::GenericFetchCandidatePorts(
     unsigned int universe_id,
     bool include_universe,
-    SingleUseCallback2<void,
-                       const vector <class OlaDevice>&,
-                       const string&> *callback) {
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
+    CandidatePortsCallback *callback) {
   ola::proto::OptionalUniverseRequest request;
   RpcController *controller = new RpcController();
   ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
 
-  if (include_universe)
+  if (include_universe) {
     request.set_universe(universe_id);
+  }
 
-  CompletionCallback *cb = NewCallback(
-      this,
-      &ola::OlaClientCore::HandleDeviceInfo,
-      NewArgs<device_info_arg>(controller, reply, callback));
-  m_stub->GetCandidatePorts(controller, &request, reply, cb);
-  return true;
+  if (m_connected) {
+    CompletionCallback *cb = NewSingleCallback(
+        this,
+        &OlaClientCore::HandleDeviceInfo,
+        controller, reply, callback);
+    m_stub->GetCandidatePorts(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleDeviceInfo(controller, reply, callback);
+  }
 }
 
 
@@ -1326,10 +1078,10 @@ bool OlaClientCore::RDMCommand(
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
 
-  CompletionCallback *cb = NewCallback(
+  CompletionCallback *cb = NewSingleCallback(
       this,
-      &ola::OlaClientCore::HandleRDM,
-      NewArgs<rdm_response_args>(controller, reply, callback));
+      &OlaClientCore::HandleRDM,
+      controller, reply, callback);
 
   m_stub->RDMCommand(controller, &request, reply, cb);
   return true;
@@ -1371,10 +1123,10 @@ bool OlaClientCore::RDMCommandWithPid(
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
 
-  CompletionCallback *cb = NewCallback(
+  CompletionCallback *cb = NewSingleCallback(
       this,
-      &ola::OlaClientCore::HandleRDMWithPID,
-      NewArgs<rdm_pid_response_args>(controller, reply, callback));
+      &OlaClientCore::HandleRDMWithPID,
+      controller, reply, callback);
 
   m_stub->RDMCommand(controller, &request, reply, cb);
   return true;
@@ -1473,4 +1225,5 @@ void OlaClientCore::UpdateResponseAckData(
       reply->command_class() == ola::proto::RDM_SET_RESPONSE);
   new_status->pid_value = reply->param_id();
 }
+}  // namespace api
 }  // namespace ola

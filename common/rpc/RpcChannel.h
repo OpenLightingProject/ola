@@ -121,12 +121,11 @@ class RpcChannel {
     /**
      * @brief Invoke an RPC method on this channel.
      */
-    void CallMethod(
-        const MethodDescriptor *method,
-        RpcController *controller,
-        const Message *request,
-        Message *response,
-        Callback0<void> *done);
+    void CallMethod(const MethodDescriptor *method,
+                    RpcController *controller,
+                    const Message *request,
+                    Message *response,
+                    SingleUseCallback0<void> *done);
 
     /**
      * @brief Invoked by the RPC completion handler when the server side

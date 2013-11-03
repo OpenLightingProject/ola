@@ -15,186 +15,162 @@
  *
  * OlaClient.cpp
  * Implementation of OlaClient
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2010 Simon Newton
  */
 
+#include "ola/api/OlaClient.h"
+
 #include <string>
+
+#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/OlaClient.h"
 #include "ola/OlaClientCore.h"
+#include "ola/OlaDevice.h"
+#include "ola/rdm/RDMAPI.h"
+#include "ola/rdm/RDMAPIImplInterface.h"
+#include "ola/rdm/RDMEnums.h"
 
 namespace ola {
+namespace api {
 
+using std::string;
+using ola::rdm::RDMAPIImplInterface;
 using ola::io::ConnectedDescriptor;
 
 OlaClient::OlaClient(ConnectedDescriptor *descriptor)
-    : m_observer(NULL) {
-  m_core = new OlaClientCore(descriptor);
+    : m_core(new OlaClientCore(descriptor)) {
 }
 
 OlaClient::~OlaClient() {
-  delete m_core;
 }
 
-
-/*
- * Setup this client
- *
- * @returns true on success, false on failure
- */
 bool OlaClient::Setup() {
-  OLA_WARN << "Using OlaClient which has been deprecated, please upgrade "
-           << "to the OlaCallbackClient";
   return m_core->Setup();
 }
 
-
-/*
- * Close the ola connection.
- *
- * @return true on sucess, false on failure
- */
 bool OlaClient::Stop() {
   return m_core->Stop();
 }
 
-
-/*
- * Set the OlaClientObserver object
- *
- * @params observer the OlaClientObserver object to be used for the callbacks.
- */
-void OlaClient::SetObserver(OlaClientObserver *observer) {
-  m_observer = observer;
-  m_core->SetDmxCallback(NewCallback(observer, &OlaClientObserver::NewDmx));
-}
-
-/**
- * Set the close handler.
- */
 void OlaClient::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
   m_core->SetCloseHandler(callback);
 }
 
-/*
- * Fetch info about available plugins. This results in a call to
- *   observer->Plugins(...)
- *  when the request returns.
- * @returns true if the request succeeded, false otherwise.
- */
-bool OlaClient::FetchPluginList() {
-  if (m_observer)
-    return m_core->FetchPluginList(
-        NewSingleCallback(m_observer, &OlaClientObserver::Plugins));
-  else
-    return m_core->FetchPluginList(NULL);
+void OlaClient::SetDmxCallback(RepeatableDmxCallback *callback) {
+  m_core->SetDmxCallback(callback);
 }
 
-
-/*
- * Fetch the description for a plugin. This calls
- *   observer->PluginDescription(...)
- *  when the request returns.
- * @returns true if the request succeeded, false otherwise.
- */
-bool OlaClient::FetchPluginDescription(ola_plugin_id plugin_id) {
-  if (m_observer)
-    return m_core->FetchPluginDescription(
-        plugin_id,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::PluginDescription,
-                          plugin_id));
-  else
-    return m_core->FetchPluginDescription(plugin_id, NULL);
+void OlaClient::FetchPluginList(PluginListCallback *callback) {
+  m_core->FetchPluginList(callback);
 }
 
-
-/*
- * Write some dmx data.
- * @param universe   universe to send to
- * @param data  a DmxBuffer with the data
- * @return true on success, false on failure
- */
-bool OlaClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
-  if (m_observer)
-    return m_core->SendDmx(
-        universe,
-        data,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::SendDmxComplete,
-                          universe));
-  else
-    return m_core->SendDmx(
-        universe,
-        data,
-        static_cast<Callback1<void, const string&>*>(NULL));
+void OlaClient::FetchPluginDescription(ola_plugin_id plugin_id,
+                                       PluginDescriptionCallback *callback) {
+  m_core->FetchPluginDescription(plugin_id, callback);
 }
 
-
-/*
- * Read dmx data. This results in a call to
- *  observer->NewDmx()
- * when the request returns.
- *
- * @param universe the universe id to get data for
- * @return true on success, false on failure
- */
-bool OlaClient::FetchDmx(unsigned int universe) {
-  if (m_observer)
-    return m_core->FetchDmx(
-        universe,
-        NewSingleCallback(m_observer, &OlaClientObserver::NewDmx, universe));
-  else
-    return m_core->FetchDmx(universe, NULL);
+void OlaClient::FetchPluginState(ola_plugin_id plugin_id,
+                                 PluginStateCallback *callback) {
+  m_core->FetchPluginState(plugin_id, callback);
 }
 
-
-/*
- * Fetch the UID list for a universe
- * @param universe the universe id to get data for
- * @return true on success, false on failure
- */
-bool OlaClient::FetchUIDList(unsigned int universe) {
-  if (m_observer)
-    return m_core->FetchUIDList(
-        universe,
-        NewSingleCallback(m_observer, &OlaClientObserver::UIDList, universe));
-  else
-    return m_core->FetchUIDList(universe, NULL);
+void OlaClient::FetchDeviceInfo(ola_plugin_id plugin_filter,
+                                DeviceInfoCallback *callback) {
+  m_core->FetchDeviceInfo(plugin_filter, callback);
 }
 
-
-/*
- * Run RDM discovery for a universe
- * @param universe the universe id to run discovery on
- * @return true on success, false on failure
- */
-bool OlaClient::RunDiscovery(unsigned int universe, bool full) {
-  if (m_observer)
-    return m_core->RunDiscovery(
-        universe,
-        full,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::RDMDiscoveryComplete,
-                          universe));
-  else
-    return m_core->RunDiscovery(universe, full, NULL);
+void OlaClient::FetchCandidatePorts(CandidatePortsCallback *callback) {
+  m_core->FetchCandidatePorts(callback);
 }
 
-
-/*
- * Set this clients Source UID
- */
-bool OlaClient::SetSourceUID(const UID &uid) {
-  if (m_observer)
-    return m_core->SetSourceUID(
-        uid,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::SetSourceUIDComplete));
-  else
-    return m_core->SetSourceUID(uid, NULL);
+void OlaClient::FetchCandidatePorts(unsigned int universe_id,
+                                            CandidatePortsCallback *callback) {
+  m_core->FetchCandidatePorts(universe_id, callback);
 }
 
+void OlaClient::ConfigureDevice(unsigned int device_alias,
+                                const std::string &msg,
+                                ConfigureDeviceCallback *callback) {
+  m_core->ConfigureDevice(device_alias, msg, callback);
+}
+
+void OlaClient::SetPortPriorityInherit(unsigned int device_alias,
+                                       unsigned int port,
+                                       PortDirection port_direction,
+                                       SetCallback *callback) {
+  m_core->SetPortPriorityInherit(device_alias, port, port_direction, callback);
+}
+
+void OlaClient::SetPortPriorityOverride(unsigned int device_alias,
+                                        unsigned int port,
+                                        PortDirection port_direction,
+                                        uint8_t value,
+                                        SetCallback *callback) {
+  m_core->SetPortPriorityOverride(device_alias, port, port_direction, value,
+                                  callback);
+}
+
+void OlaClient::FetchUniverseList(UniverseListCallback *callback) {
+  m_core->FetchUniverseList(callback);
+}
+
+void OlaClient::FetchUniverseInfo(unsigned int universe,
+                                  UniverseInfoCallback *callback) {
+  m_core->FetchUniverseInfo(universe, callback);
+}
+
+void OlaClient::SetUniverseName(unsigned int universe,
+                                const std::string &name,
+                                SetCallback *callback) {
+  m_core->SetUniverseName(universe, name, callback);
+}
+
+void OlaClient::SetUniverseMergeMode(unsigned int universe,
+                                     OlaUniverse::merge_mode mode,
+                                     SetCallback *callback) {
+  m_core->SetUniverseMergeMode(universe, mode, callback);
+}
+
+void OlaClient::Patch(unsigned int device_alias,
+                      unsigned int port,
+                      PortDirection port_direction,
+                      PatchAction action,
+                      unsigned int universe,
+                      SetCallback *callback) {
+  m_core->Patch(device_alias, port, port_direction, action, universe, callback);
+}
+
+void OlaClient::RegisterUniverse(unsigned int universe,
+                                 RegisterAction register_action,
+                                 SetCallback *callback) {
+  m_core->RegisterUniverse(universe, register_action, callback);
+}
+
+void OlaClient::SendDmx(unsigned int universe,
+                        const SendDmxArgs &args,
+                        const DmxBuffer &data) {
+  m_core->SendDmx(universe, args, data);
+}
+
+void OlaClient::FetchDmx(unsigned int universe, DmxCallback *callback) {
+  m_core->FetchDmx(universe, callback);
+}
+
+void OlaClient::RunDiscovery(unsigned int universe,
+                             DiscoveryType discovery_type,
+                             DiscoveryCallback *callback) {
+  m_core->RunDiscovery(universe, discovery_type, callback);
+}
+
+void OlaClient::SetSourceUID(const ola::rdm::UID &uid,
+                             SetCallback *callback) {
+  m_core->SetSourceUID(uid, callback);
+}
+
+void OlaClient::SendTimeCode(const ola::timecode::TimeCode &timecode,
+                             SetCallback *callback) {
+  m_core->SendTimeCode(timecode, callback);
+}
 
 /*
  * Send an RDM Get Command
@@ -207,13 +183,13 @@ bool OlaClient::SetSourceUID(const UID &uid) {
  * @param data_length the length of the data
  * @return true on success, false on failure
  */
-bool OlaClient::RDMGet(rdm_callback *callback,
-            unsigned int universe,
-            const UID &uid,
-            uint16_t sub_device,
-            uint16_t pid,
-            const uint8_t *data,
-            unsigned int data_length) {
+bool OlaClient::RDMGet(RDMAPIImplInterface::rdm_callback *callback,
+                       unsigned int universe,
+                       const ola::rdm::UID &uid,
+                       uint16_t sub_device,
+                       uint16_t pid,
+                       const uint8_t *data,
+                       unsigned int data_length) {
   return m_core->RDMGet(callback,
                         universe,
                         uid,
@@ -225,7 +201,7 @@ bool OlaClient::RDMGet(rdm_callback *callback,
 
 
 /*
- * Send an RDM Get Command
+ * Send an RDM Get Command and get the pid it returns.
  * @param callback the Callback to invoke when this completes
  * @param universe the universe to send the command on
  * @param uid the UID to send the command to
@@ -235,9 +211,9 @@ bool OlaClient::RDMGet(rdm_callback *callback,
  * @param data_length the length of the data
  * @return true on success, false on failure
  */
-bool OlaClient::RDMGet(rdm_pid_callback *callback,
+bool OlaClient::RDMGet(RDMAPIImplInterface::rdm_pid_callback *callback,
                        unsigned int universe,
-                       const UID &uid,
+                       const ola::rdm::UID &uid,
                        uint16_t sub_device,
                        uint16_t pid,
                        const uint8_t *data,
@@ -263,9 +239,9 @@ bool OlaClient::RDMGet(rdm_pid_callback *callback,
  * @param data_length the length of the data
  * @return true on success, false on failure
  */
-bool OlaClient::RDMSet(rdm_callback *callback,
+bool OlaClient::RDMSet(RDMAPIImplInterface::rdm_callback *callback,
                        unsigned int universe,
-                       const UID &uid,
+                       const ola::rdm::UID &uid,
                        uint16_t sub_device,
                        uint16_t pid,
                        const uint8_t *data,
@@ -279,210 +255,31 @@ bool OlaClient::RDMSet(rdm_callback *callback,
                         data_length);
 }
 
-
 /*
- * Request a listing of what devices are attached. This results in a call to
- *   observer->Devices()
- * when the request returns.
- * @param filter only fetch devices that belong to this plugin
+ * Send an RDM Set Command and get the pid it returns
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
  * @return true on success, false on failure
  */
-bool OlaClient::FetchDeviceInfo(ola_plugin_id filter) {
-  if (m_observer)
-    return m_core->FetchDeviceInfo(
-        filter,
-        NewSingleCallback(m_observer, &OlaClientObserver::Devices));
-  else
-    return m_core->FetchDeviceInfo(filter, NULL);
+bool OlaClient::RDMSet(RDMAPIImplInterface::rdm_pid_callback *callback,
+                       unsigned int universe,
+                       const ola::rdm::UID &uid,
+                       uint16_t sub_device,
+                       uint16_t pid,
+                       const uint8_t *data,
+                       unsigned int data_length) {
+  return m_core->RDMSet(callback,
+                        universe,
+                        uid,
+                        sub_device,
+                        pid,
+                        data,
+                        data_length);
 }
-
-
-/*
- * Request information about active universes. This results in a call to
- *   observer->Universes()
- * when the request returns.
- * @return true on success, false on failure
- */
-bool OlaClient::FetchUniverseInfo() {
-  if (m_observer)
-    return m_core->FetchUniverseList(
-        NewSingleCallback(m_observer, &OlaClientObserver::Universes));
-  else
-    return m_core->FetchUniverseList(NULL);
-}
-
-
-/*
- * Set the name of a universe.
- * @return true on success, false on failure
- */
-bool OlaClient::SetUniverseName(unsigned int universe, const string &name) {
-  if (m_observer)
-    return m_core->SetUniverseName(
-        universe,
-        name,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::UniverseNameComplete,
-                          universe));
-  else
-    return m_core->SetUniverseName(universe, name, NULL);
-}
-
-
-/*
- * Set the merge mode of a universe
- *
- * @return true on success, false on failure
- */
-bool OlaClient::SetUniverseMergeMode(unsigned int universe,
-                                     OlaUniverse::merge_mode mode) {
-  if (m_observer)
-    return m_core->SetUniverseMergeMode(
-        universe,
-        mode,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::UniverseMergeModeComplete,
-                          universe));
-  else
-    return m_core->SetUniverseMergeMode(universe, mode, NULL);
-}
-
-
-/*
- * Register our interest in a universe. This results in calls to
- *   observer->NewDmx()
- * whenever the dmx values change.
- *
- * @param uni  the universe id
- * @param action REGISTER or UNREGISTER
- * @return true on success, false on failure
- */
-bool OlaClient::RegisterUniverse(unsigned int universe,
-                                 ola::RegisterAction register_action) {
-  if (m_observer)
-    return m_core->RegisterUniverse(
-        universe,
-        register_action,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::RegistrationComplete,
-                          universe));
-  else
-    return m_core->RegisterUniverse(universe, register_action, NULL);
-}
-
-
-/*
- * (Un)Patch a port to a universe
- * @param dev     the device id
- * @param port    the port id
- * @param port_direction the direction of the port
- * @param action  OlaClient::PATCH or OlaClient::UNPATCH
- * @param uni    universe id
- * @return true on success, false on failure
- */
-bool OlaClient::Patch(unsigned int device_alias,
-                      unsigned int port_id,
-                      PortDirection port_direction,
-                      ola::PatchAction patch_action,
-                      unsigned int universe) {
-  if (m_observer)
-    return m_core->Patch(
-        device_alias,
-        port_id,
-        port_direction,
-        patch_action,
-        universe,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::PatchComplete,
-                          device_alias,
-                          port_id,
-                          port_direction));
-  else
-    return m_core->Patch(
-        device_alias,
-        port_id,
-        port_direction,
-        patch_action,
-        universe,
-        NULL);
-}
-
-
-/*
- * Set the priority for a port to inherit mode
- * @param dev the device id
- * @param port the port id
- * @param port_direction the direction of the port
- */
-bool OlaClient::SetPortPriorityInherit(unsigned int device_alias,
-                                       unsigned int port,
-                                       PortDirection port_direction) {
-  if (m_observer)
-    return m_core->SetPortPriorityInherit(
-        device_alias,
-        port,
-        port_direction,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::SetPortPriorityComplete,
-                          device_alias,
-                          port,
-                          port_direction));
-  else
-    return m_core->SetPortPriorityInherit(
-        device_alias,
-        port,
-        port_direction,
-        NULL);
-}
-
-
-/*
- * Set the priority for a port to override mode
- * @param dev the device id
- * @param port the port id
- * @param port_direction the direction of the port
- * @param value the port priority value
- */
-bool OlaClient::SetPortPriorityOverride(unsigned int device_alias,
-                                        unsigned int port,
-                                        PortDirection port_direction,
-                                        uint8_t value) {
-  if (m_observer)
-    return m_core->SetPortPriorityOverride(
-        device_alias,
-        port,
-        port_direction,
-        value,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::SetPortPriorityComplete,
-                          device_alias,
-                          port,
-                          port_direction));
-  else
-    return m_core->SetPortPriorityOverride(
-        device_alias,
-        port,
-        port_direction,
-        value,
-        NULL);
-}
-
-
-/*
- * Sends a device config request
- * @param device_alias the device_alias
- * @param msg  the request message
- * @return true on success, false on failure
- */
-bool OlaClient::ConfigureDevice(unsigned int device_alias, const string &msg) {
-  if (m_observer)
-    return m_core->ConfigureDevice(
-        device_alias,
-        msg,
-        NewSingleCallback(m_observer,
-                          &OlaClientObserver::DeviceConfig,
-                          device_alias));
-  else
-    return m_core->ConfigureDevice(device_alias, msg, NULL);
-}
+}  // namespace api
 }  // namespace ola

@@ -1,7 +1,7 @@
 include $(top_srcdir)/common.mk
 
-HEADER_FILES = AutoStart.h OlaClient.h OlaCallbackClient.h OlaDevice.h \
-               OlaClientWrapper.h StreamingClient.h common.h
+DEPRECATED = OlaCallbackClient.h OlaDevice.h StreamingClient.h
+HEADER_FILES = AutoStart.h OlaClientWrapper.h common.h $(DEPRECATED)
 
 pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(HEADER_FILES)
@@ -10,8 +10,8 @@ EXTRA_DIST = $(HEADER_FILES) OlaClientCore.h common-h.in
 
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = AutoStart.cpp \
-                    OlaClient.cpp \
                     OlaCallbackClient.cpp \
+                    OlaClient.cpp \
                     OlaClientCore.cpp \
                     OlaClientWrapper.cpp \
                     StreamingClient.cpp
@@ -48,6 +48,3 @@ distclean-local:
 # Don't distribute common.h, since it is build host dependent!
 dist-hook:
 	rm -f $(distdir)/common.h
-
-install-exec-hook:
-	$(LN_S) -f $(includedir)/ola/OlaClientWrapper.h $(DESTDIR)$(includedir)/ola/SimpleClient.h	

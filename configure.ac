@@ -633,6 +633,7 @@ AC_OUTPUT( Makefile \
     include/Makefile \
     include/ola/Makefile \
     include/ola/acn/Makefile \
+    include/ola/api/Makefile \
     include/ola/base/Makefile \
     include/ola/dmx/Makefile \
     include/ola/file/Makefile \

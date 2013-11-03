@@ -24,6 +24,7 @@
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
 #include "common/rpc/RpcController.h"
+#include "common/rpc/RpcService.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/testing/TestUtils.h"
@@ -64,21 +65,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
  */
 class MockClientStub: public ola::proto::OlaClientService_Stub {
   public:
-      MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
-      void UpdateDmxData(ola::rpc::RpcController* controller,
-                         const ola::proto::DmxData* request,
-                         ola::proto::Ack* response,
-                         ola::Callback0<void>* done);
+    MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
+
+    void UpdateDmxData(ola::rpc::RpcController *controller,
+                       const ola::proto::DmxData *request,
+                       ola::proto::Ack *response,
+                       ola::rpc::RpcService::CompletionCallback *done);
 };
 
 
 
 void MockClientStub::UpdateDmxData(
     ola::rpc::RpcController* controller,
-    const ola::proto::DmxData* request,
-    ola::proto::Ack* response,
-    ola::Callback0<void>* done) {
-
+    const ola::proto::DmxData *request,
+    ola::proto::Ack *response,
+    ola::rpc::RpcService::CompletionCallback *done) {
   OLA_ASSERT(controller);
   OLA_ASSERT_FALSE(controller->Failed());
   OLA_ASSERT_EQ(TEST_UNIVERSE, (unsigned int) request->universe());

@@ -56,7 +56,7 @@ class UsbProDevice: public UsbSerialDevice {
     void Configure(ola::rpc::RpcController *controller,
                    const string &request,
                    string *response,
-                   Callback0<void> *done);
+                   ConfigureCallback *done);
 
     bool AllowMultiPortPatching() const { return true; }
 
@@ -77,11 +77,11 @@ class UsbProDevice: public UsbSerialDevice {
     void HandleParametersRequest(ola::rpc::RpcController *controller,
                                  const Request *request,
                                  string *response,
-                                 Callback0<void> *done);
+                                 ConfigureCallback *done);
 
     void HandleParametersResponse(ola::rpc::RpcController *controller,
                                   string *response,
-                                  Callback0<void> *done,
+                                  ConfigureCallback *done,
                                   unsigned int port_id,
                                   bool status,
                                   const usb_pro_parameters &params);
@@ -89,16 +89,16 @@ class UsbProDevice: public UsbSerialDevice {
     void HandleSerialRequest(ola::rpc::RpcController *controller,
                              const Request *request,
                              string *response,
-                             Callback0<void> *done);
+                             ConfigureCallback *done);
 
     void HandlePortAssignmentRequest(ola::rpc::RpcController *controller,
                                      const Request *request,
                                      string *response,
-                                     Callback0<void> *done);
+                                     ConfigureCallback *done);
 
     void HandlePortAssignmentResponse(ola::rpc::RpcController *controller,
                                       string *response,
-                                      Callback0<void> *done,
+                                      ConfigureCallback *done,
                                       bool status,
                                       uint8_t port1_assignment,
                                       uint8_t port2_assignment);

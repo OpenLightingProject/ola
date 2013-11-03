@@ -111,7 +111,7 @@ class SLPClient {
 };
 
 
-class SLPClientWrapper: public BaseClientWrapper {
+class SLPClientWrapper: public ola::api::BaseClientWrapper {
   public:
     SLPClientWrapper() : BaseClientWrapper() {}
 
@@ -135,7 +135,7 @@ class SLPClientWrapper: public BaseClientWrapper {
     }
 
     void InitSocket() {
-      m_socket.reset(TCPSocket::Connect(
+      m_socket.reset(ola::network::TCPSocket::Connect(
             IPV4SocketAddress(IPV4Address::Loopback(), OLA_SLP_DEFAULT_PORT)));
     }
 

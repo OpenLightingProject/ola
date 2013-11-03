@@ -39,36 +39,32 @@ void BaseHttpAction::RequestComplete(bool failure) {
 
 void BaseHttpAction::Perform(SingleUseCallback0<void> *on_done) {
   m_on_done = on_done;
-  if (!DoAction())
-    RequestComplete(true);
+  DoAction();
 }
 
-void BaseHttpAction::CallbackComplete(const string &error) {
-  RequestComplete(!error.empty());
+void BaseHttpAction::CallbackComplete(const api::Result &result) {
+  RequestComplete(result.Success());
 }
 
 
-bool SetNameAction::DoAction() {
-  return m_client->SetUniverseName(
+void SetNameAction::DoAction() {
+  m_client->SetUniverseName(
     m_universe,
     m_name,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
-
-
-bool SetMergeModeAction::DoAction() {
-  return m_client->SetUniverseMergeMode(
+void SetMergeModeAction::DoAction() {
+  m_client->SetUniverseMergeMode(
     m_universe,
     m_merge_mode,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
-
-bool PatchPortAction::DoAction() {
-  return m_client->Patch(
+void PatchPortAction::DoAction() {
+  m_client->Patch(
     m_device_alias,
     m_port,
     m_direction,
@@ -78,9 +74,8 @@ bool PatchPortAction::DoAction() {
                       &SetNameAction::CallbackComplete));
 }
 
-
-bool PortPriorityInheritAction::DoAction() {
-  return m_client->SetPortPriorityInherit(
+void PortPriorityInheritAction::DoAction() {
+  m_client->SetPortPriorityInherit(
     m_device_alias,
     m_port,
     m_direction,
@@ -89,8 +84,8 @@ bool PortPriorityInheritAction::DoAction() {
 }
 
 
-bool PortPriorityOverrideAction::DoAction() {
-  return m_client->SetPortPriorityOverride(
+void PortPriorityOverrideAction::DoAction() {
+  m_client->SetPortPriorityOverride(
     m_device_alias,
     m_port,
     m_direction,

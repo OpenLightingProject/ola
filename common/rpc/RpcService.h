@@ -34,7 +34,7 @@ class RpcController;
 
 class RpcService {
   public:
-    typedef Callback0<void> CompletionCallback;
+    typedef SingleUseCallback0<void> CompletionCallback;
 
     RpcService() {}
     virtual ~RpcService() {}

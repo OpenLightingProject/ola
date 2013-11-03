@@ -39,14 +39,20 @@
 
 namespace ola {
 
+using ola::api::OlaDevice;
+using ola::api::OlaInputPort;
+using ola::api::OlaOutputPort;
+using ola::api::OlaPlugin;
+using ola::api::OlaPort;
+using ola::api::OlaUniverse;
 using ola::io::ConnectedDescriptor;
+using ola::web::JsonArray;
+using ola::web::JsonObject;
 using std::cout;
 using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
-using ola::web::JsonArray;
-using ola::web::JsonObject;
 
 const char OladHTTPServer::HELP_PARAMETER[] = "help";
 const char OladHTTPServer::HELP_REDIRECTION[] = "?help=1";
@@ -198,14 +204,11 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
-                                          HTTPResponse *response) {
-  bool ok = m_client.FetchPluginList(
+                                           HTTPResponse *response) {
+  m_client.FetchPluginList(
       NewSingleCallback(this,
                         &OladHTTPServer::HandlePluginList,
                         response));
-
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
 }
 
@@ -225,14 +228,11 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
   if (!StringToInt(val, &plugin_id))
     return ServeHelpRedirect(response);
 
-  bool ok = m_client.FetchPluginDescription(
+  m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
       NewSingleCallback(this,
                         &OladHTTPServer::HandlePartialPluginInfo,
                         response, plugin_id));
-
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
 }
 
@@ -252,14 +252,12 @@ int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
   if (!StringToInt(uni_id, &universe_id))
     return ServeHelpRedirect(response);
 
-  bool ok = m_client.FetchUniverseInfo(
+  m_client.FetchUniverseInfo(
       universe_id,
       NewSingleCallback(this,
                         &OladHTTPServer::HandleUniverseInfo,
                         response));
 
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
   (void) request;
 }
@@ -276,11 +274,10 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
   if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "? or ?id=[universe]");
   string uni_id = request->GetParameter("id");
-  bool ok = false;
 
   if (uni_id.empty()) {
     // get all available ports
-    ok = m_client.FetchCandidatePorts(
+    m_client.FetchCandidatePorts(
         NewSingleCallback(this,
                           &OladHTTPServer::HandleCandidatePorts,
                           response));
@@ -289,15 +286,12 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
     if (!StringToInt(uni_id, &universe_id))
       return ServeHelpRedirect(response);
 
-    ok = m_client.FetchCandidatePorts(
+    m_client.FetchCandidatePorts(
         universe_id,
         NewSingleCallback(this,
                           &OladHTTPServer::HandleCandidatePorts,
                           response));
   }
-
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
 }
 
@@ -331,8 +325,7 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
 
   // add patch actions here
   string add_port_ids = request->GetPostParameter("add_ports");
-  AddPatchActions(action_queue, add_port_ids, universe_id, PATCH);
-
+  AddPatchActions(action_queue, add_port_ids, universe_id, ola::api::PATCH);
 
   if (!name.empty())
     action_queue->AddAction(
@@ -384,10 +377,10 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
   }
 
   string remove_port_ids = request->GetPostParameter("remove_ports");
-  AddPatchActions(action_queue, remove_port_ids, universe_id, UNPATCH);
+  AddPatchActions(action_queue, remove_port_ids, universe_id, api::UNPATCH);
 
   string add_port_ids = request->GetPostParameter("add_ports");
-  AddPatchActions(action_queue, add_port_ids, universe_id, PATCH);
+  AddPatchActions(action_queue, add_port_ids, universe_id, api::PATCH);
 
   AddPriorityActions(action_queue, request);
 
@@ -410,14 +403,10 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
     return ServeHelpRedirect(response);
-  int ok = m_client.FetchDmx(universe_id,
-                             NewSingleCallback(this,
-                                               &OladHTTPServer::HandleGetDmx,
-                                               response));
 
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
-
+  m_client.FetchDmx(
+      universe_id,
+      NewSingleCallback(this, &OladHTTPServer::HandleGetDmx, response));
   return MHD_YES;
 }
 
@@ -444,13 +433,9 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
   if (!buffer.Size())
     return m_server.ServeError(response, "Invalid DMX string");
 
-  bool ok = m_client.SendDmx(
-      universe_id,
-      buffer,
+  ola::api::SendDmxArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
-
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  m_client.SendDmx(universe_id, args, buffer);
   return MHD_YES;
 }
 
@@ -525,10 +510,10 @@ int OladHTTPServer::ReloadPidStore(const HTTPRequest *request,
  * @param error an error string.
  */
 void OladHTTPServer::HandlePluginList(HTTPResponse *response,
-                                     const vector<OlaPlugin> &plugins,
-                                     const string &error) {
-  if (!error.empty()) {
-    m_server.ServeError(response, error);
+                                      const api::Result &result,
+                                      const vector<OlaPlugin> &plugins) {
+  if (!result.Success()) {
+    m_server.ServeError(response, result.Error());
     return;
   }
 
@@ -536,17 +521,11 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
 
   // fire off the universe request now. the main server is running in a
   // separate thread.
-  bool ok = m_client.FetchUniverseList(
+  m_client.FetchUniverseList(
       NewSingleCallback(this,
                         &OladHTTPServer::HandleUniverseList,
                         response,
                         json));
-
-  if (!ok) {
-    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
-    delete json;
-    return;
-  }
 
   JsonArray *plugins_json = json->AddArray("plugins");
   vector<OlaPlugin>::const_iterator iter;
@@ -566,9 +545,9 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
  */
 void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
                                        JsonObject *json,
-                                       const vector<OlaUniverse> &universes,
-                                       const string &error) {
-  if (error.empty()) {
+                                       const api::Result &result,
+                                       const vector<OlaUniverse> &universes) {
+  if (result.Success()) {
     JsonArray *universe_json = json->AddArray("universes");
 
     vector<OlaUniverse>::const_iterator iter;
@@ -598,20 +577,17 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
  */
 void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
                                              int plugin_id,
-                                             const string &description,
-                                             const string &error) {
-  if (!error.empty()) {
-    m_server.ServeError(response, error);
+                                             const api::Result &result,
+                                             const string &description) {
+  if (!result.Success()) {
+    m_server.ServeError(response, result.Error());
     return;
   }
-  bool ok = m_client.FetchPluginState(
+  m_client.FetchPluginState(
       (ola_plugin_id) plugin_id,
       NewSingleCallback(this,
                         &OladHTTPServer::HandlePluginInfo,
                         response, description));
-
-  if (!ok)
-    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
 }
 
 /*
@@ -620,13 +596,12 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
  * @param description the plugin description.
  * @param error an error string.
  */
-void OladHTTPServer::HandlePluginInfo(
-    HTTPResponse *response,
-    string description,
-    const OlaCallbackClient::PluginState &state,
-    const string &error) {
-  if (!error.empty()) {
-    m_server.ServeError(response, error);
+void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
+                                      string description,
+                                      const api::Result &result,
+                                      const ola::api::PluginState &state) {
+  if (!result.Success()) {
+    m_server.ServeError(response, result.Error());
     return;
   }
   string escaped_description = description;
@@ -661,10 +636,10 @@ void OladHTTPServer::HandlePluginInfo(
  * @param error an error string.
  */
 void OladHTTPServer::HandleUniverseInfo(HTTPResponse *response,
-                                       OlaUniverse &universe,
-                                       const string &error) {
-  if (!error.empty()) {
-    m_server.ServeError(response, error);
+                                        const api::Result &result,
+                                        const OlaUniverse &universe) {
+  if (!result.Success()) {
+    m_server.ServeError(response, result.Error());
     return;
   }
 
@@ -672,19 +647,13 @@ void OladHTTPServer::HandleUniverseInfo(HTTPResponse *response,
 
   // fire off the device/port request now. the main server is running in a
   // separate thread.
-  bool ok = m_client.FetchDeviceInfo(
+  m_client.FetchDeviceInfo(
       ola::OLA_PLUGIN_ALL,
       NewSingleCallback(this,
                         &OladHTTPServer::HandlePortsForUniverse,
                         response,
                         json,
                         universe.Id()));
-
-  if (!ok) {
-    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
-    delete json;
-    return;
-  }
 
   json->Add("id", universe.Id());
   json->Add("name", universe.Name());
@@ -697,9 +666,9 @@ void OladHTTPServer::HandlePortsForUniverse(
     HTTPResponse *response,
     JsonObject *json,
     unsigned int universe_id,
-    const vector<OlaDevice> &devices,
-    const string &error) {
-  if (error.empty()) {
+    const api::Result &result,
+    const vector<OlaDevice> &devices) {
+  if (result.Success()) {
     vector<OlaDevice>::const_iterator iter = devices.begin();
     vector<OlaInputPort>::const_iterator input_iter;
     vector<OlaOutputPort>::const_iterator output_iter;
@@ -745,10 +714,10 @@ void OladHTTPServer::HandlePortsForUniverse(
  */
 void OladHTTPServer::HandleCandidatePorts(
     HTTPResponse *response,
-    const vector<class OlaDevice> &devices,
-    const string &error) {
-  if (!error.empty()) {
-    m_server.ServeError(response, error);
+    const api::Result &result,
+    const vector<OlaDevice> &devices) {
+  if (!result.Success()) {
+    m_server.ServeError(response, result.Error());
     return;
   }
 
@@ -883,14 +852,15 @@ int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {
  * @param error Error message
  */
 void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
-                                 const DmxBuffer &buffer,
-                                 const string &error) {
+                                  const api::Result &result,
+                                  const api::DMXMetadata &,
+                                  const DmxBuffer &buffer) {
   // rather than adding 512 JsonValue we cheat and use raw here
   stringstream str;
   str << "[" << buffer.ToString() << "]";
   JsonObject json;
   json.AddRaw("dmx", str.str());
-  json.Add("error", error);
+  json.Add("error", result.Error());
 
   response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
@@ -905,9 +875,9 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
  * @param error an error string.
  */
 void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
-                                       const string &error) {
-  if (!error.empty()) {
-    m_server.ServeError(response, error);
+                                        const api::Result &result) {
+  if (!result.Success()) {
+    m_server.ServeError(response, result.Error());
     return;
   }
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
@@ -952,7 +922,7 @@ void OladHTTPServer::PortToJson(JsonObject *json,
 void OladHTTPServer::AddPatchActions(ActionQueue *action_queue,
                                     const string port_id_string,
                                     unsigned int universe,
-                                    PatchAction port_action) {
+                                    api::PatchAction port_action) {
   vector<port_identifier> ports;
   vector<port_identifier>::const_iterator iter;
   DecodePortIds(port_id_string, &ports);
@@ -1041,7 +1011,8 @@ void OladHTTPServer::DecodePortIds(const string &port_ids,
       continue;
     }
 
-    PortDirection direction = tokens[1] == "I" ? INPUT_PORT : OUTPUT_PORT;
+    api::PortDirection direction = (
+        tokens[1] == "I" ?  api::INPUT_PORT : api::OUTPUT_PORT);
     port_identifier port_id = {device_alias, port, direction, *iter};
     ports->push_back(port_id);
   }

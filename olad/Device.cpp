@@ -179,7 +179,7 @@ string Device::UniqueId() const {
 void Device::Configure(ola::rpc::RpcController *controller,
                        const string &request,
                        string *response,
-                       Callback0<void> *done) {
+                       ConfigureCallback *done) {
   controller->SetFailed("Not Implemented");
   done->Run();
   (void) request;

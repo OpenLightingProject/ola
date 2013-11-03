@@ -26,14 +26,16 @@
 #define OLA_OLACLIENTWRAPPER_H_
 
 #include <ola/AutoStart.h>
-#include <ola/OlaClient.h>
 #include <ola/OlaCallbackClient.h>
+#include <ola/api/OlaClient.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocket.h>
+
 #include <memory>
 
 namespace ola {
+namespace api {
 
 using ola::io::SelectServer;
 using ola::network::TCPSocket;
@@ -111,10 +113,11 @@ class GenericClientWrapper: public BaseClientWrapper {
 };
 
 typedef GenericClientWrapper<OlaClient> OlaClientWrapper;
-// for historical reasons we typedef SimpleClient to OlaClientWrapper
-typedef GenericClientWrapper<OlaClient> SimpleClient;
+}  // namespace api
 
+// Legacy
+typedef ola::api::GenericClientWrapper<OlaCallbackClient>
+    OlaCallbackClientWrapper;
 
-typedef GenericClientWrapper<OlaCallbackClient> OlaCallbackClientWrapper;
 }  // namespace ola
 #endif  // OLA_OLACLIENTWRAPPER_H_

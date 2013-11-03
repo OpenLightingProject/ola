@@ -1,5 +1,5 @@
 SUBDIRS = base dmx network file http io rdm thread web math messaging slp acn \
-          e133 stl testing timecode util
+          e133 stl testing timecode util api
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \
           Constants.h DmxBuffer.h ExportMap.h Logging.h MultiCallback.h \

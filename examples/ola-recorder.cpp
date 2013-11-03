@@ -44,7 +44,7 @@ using std::map;
 using std::vector;
 using std::string;
 using ola::OlaUniverse;
-using ola::SimpleClient;
+using ola::OlaCallbackClientWrapper;
 
 typedef struct {
   ola::log_level level;
