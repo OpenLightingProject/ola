@@ -56,8 +56,8 @@ void OlaClient::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
   m_core->SetCloseHandler(callback);
 }
 
-void OlaClient::SetDmxCallback(RepeatableDmxCallback *callback) {
-  m_core->SetDmxCallback(callback);
+void OlaClient::SetDMXCallback(RepeatableDMXCallback *callback) {
+  m_core->SetDMXCallback(callback);
 }
 
 void OlaClient::FetchPluginList(PluginListCallback *callback) {
@@ -146,14 +146,14 @@ void OlaClient::RegisterUniverse(unsigned int universe,
   m_core->RegisterUniverse(universe, register_action, callback);
 }
 
-void OlaClient::SendDmx(unsigned int universe,
-                        const SendDMXArgs &args,
-                        const DmxBuffer &data) {
-  m_core->SendDmx(universe, args, data);
+void OlaClient::SendDMX(unsigned int universe,
+                        const DmxBuffer &data,
+                        const SendDMXArgs &args) {
+  m_core->SendDMX(universe, data, args);
 }
 
-void OlaClient::FetchDmx(unsigned int universe, DmxCallback *callback) {
-  m_core->FetchDmx(universe, callback);
+void OlaClient::FetchDMX(unsigned int universe, DMXCallback *callback) {
+  m_core->FetchDMX(universe, callback);
 }
 
 void OlaClient::RunDiscovery(unsigned int universe,

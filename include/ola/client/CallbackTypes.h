@@ -125,13 +125,13 @@ typedef SingleUseCallback2<void, const Result&, const ola::rdm::UIDSet&>
 
 
 /**
- * @brief Called once when OlaClient::FetchDmx() completes.
+ * @brief Called once when OlaClient::FetchDMX() completes.
  * @param result the Result of the API call.
  * @param metadata the DMXMetadata associated with the frame.
  * @param dmx the DmxBuffer with the data.
  */
 typedef SingleUseCallback3<void, const Result&, const DMXMetadata&,
-                           const DmxBuffer&> DmxCallback;
+                           const DmxBuffer&> DMXCallback;
 
 /**
  * @brief Called when new DMX data arrives.
@@ -139,7 +139,7 @@ typedef SingleUseCallback3<void, const Result&, const DMXMetadata&,
  * @param dmx the DmxBuffer with the data.
  */
 typedef Callback2<void, const DMXMetadata&, const DmxBuffer&>
-    RepeatableDmxCallback;
+    RepeatableDMXCallback;
 
 /**
  * @brief Called when a RDM request completes.

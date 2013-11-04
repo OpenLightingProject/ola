@@ -66,7 +66,7 @@ enum DiscoveryType {
 };
 
 /**
- * @brief Arguments passed to the SendDmx() method.
+ * @brief Arguments passed to the SendDMX() method.
  */
 struct SendDMXArgs {
   /**

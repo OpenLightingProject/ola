@@ -44,7 +44,7 @@ using std::string;
 
 OlaCallbackClient::OlaCallbackClient(ConnectedDescriptor *descriptor)
     : m_core(new client::OlaClientCore(descriptor)) {
-  m_core->SetDmxCallback(NewCallback(this, &OlaCallbackClient::HandleDMX));
+  m_core->SetDMXCallback(NewCallback(this, &OlaCallbackClient::HandleDMX));
 }
 
 OlaCallbackClient::~OlaCallbackClient() {}
@@ -243,7 +243,7 @@ bool OlaCallbackClient::SendDmx(
     SingleUseCallback1<void, const string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
-  m_core->SendDmx(universe, args, data);
+  m_core->SendDMX(universe, data, args);
   return true;
 }
 
@@ -254,20 +254,20 @@ bool OlaCallbackClient::SendDmx(
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleRepeatableSetCallback,
         callback));
-  m_core->SendDmx(universe, args, data);
+  m_core->SendDMX(universe, data, args);
   return true;
 }
 
 bool OlaCallbackClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
   client::SendDMXArgs args;
-  m_core->SendDmx(universe, args, data);
+  m_core->SendDMX(universe, data, args);
   return true;
 }
 
 bool OlaCallbackClient::FetchDmx(
     unsigned int universe,
     SingleUseCallback2<void, const DmxBuffer&, const string&> *callback) {
-  m_core->FetchDmx(
+  m_core->FetchDMX(
       universe,
       NewSingleCallback(this, &OlaCallbackClient::HandleFetchDmx, callback));
   return true;

@@ -107,7 +107,7 @@ void OlaClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
   m_channel->SetChannelCloseHandler(callback);
 }
 
-void OlaClientCore::SetDmxCallback(RepeatableDmxCallback *callback) {
+void OlaClientCore::SetDMXCallback(RepeatableDMXCallback *callback) {
   m_dmx_callback.reset(callback);
 }
 
@@ -415,9 +415,9 @@ void OlaClientCore::RegisterUniverse(unsigned int universe,
   }
 }
 
-void OlaClientCore::SendDmx(unsigned int universe,
-                            const SendDMXArgs &args,
-                            const DmxBuffer &data) {
+void OlaClientCore::SendDMX(unsigned int universe,
+                            const DmxBuffer &data,
+                            const SendDMXArgs &args) {
   ola::proto::DmxData request;
   request.set_universe(universe);
   request.set_data(data.Get());
@@ -444,8 +444,8 @@ void OlaClientCore::SendDmx(unsigned int universe,
   }
 }
 
-void OlaClientCore::FetchDmx(unsigned int universe,
-                             DmxCallback *callback) {
+void OlaClientCore::FetchDMX(unsigned int universe,
+                             DMXCallback *callback) {
   ola::proto::UniverseRequest request;
   RpcController *controller = new RpcController();
   ola::proto::DmxData *reply = new ola::proto::DmxData();
@@ -868,7 +868,7 @@ void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
 
 void OlaClientCore::HandleGetDmx(RpcController *controller_ptr,
                                  ola::proto::DmxData *reply_ptr,
-                                 DmxCallback *callback) {
+                                 DMXCallback *callback) {
   auto_ptr<RpcController> controller(controller_ptr);
   auto_ptr<ola::proto::DmxData> reply(reply_ptr);
 
