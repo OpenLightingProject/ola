@@ -433,7 +433,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
   if (!buffer.Size())
     return m_server.ServeError(response, "Invalid DMX string");
 
-  ola::client::SendDmxArgs args(
+  ola::client::SendDMXArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
   m_client.SendDmx(universe_id, args, buffer);
   return MHD_YES;

@@ -68,7 +68,7 @@ enum DiscoveryType {
 /**
  * @brief Arguments passed to the SendDmx() method.
  */
-struct SendDmxArgs {
+struct SendDMXArgs {
   /**
    * @brief The priority of the data, defaults to
    * ola::dmx::PRIORITY_DEFAULT.
@@ -80,20 +80,33 @@ struct SendDmxArgs {
   GeneralSetCallback *callback;
 
   /**
-   * @brief Create a new SendDmxArgs object
+   * @brief Create a new SendDMXArgs object
    */
-  SendDmxArgs()
+  SendDMXArgs()
       : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT),
         callback(NULL) {
   }
 
   /**
-   * @brief Create a new SendDmxArgs object
+   * @brief Create a new SendDMXArgs object
    */
-  explicit SendDmxArgs(GeneralSetCallback *callback)
+  explicit SendDMXArgs(GeneralSetCallback *callback)
       : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT),
         callback(callback) {
   }
+};
+
+/**
+ * @brief Arguments used with OlaClient::RDMGet() and OlaClient::RDMSet()
+ * methods.
+ */
+struct SendRDMArgs {
+  /**
+   * The callback to run when the request completes
+   */
+  RDMCallback *callback;
+
+  explicit SendRDMArgs(RDMCallback *callback) : callback(callback) {}
 };
 }  // namespace client
 }  // namespace ola

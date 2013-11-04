@@ -416,7 +416,7 @@ void OlaClientCore::RegisterUniverse(unsigned int universe,
 }
 
 void OlaClientCore::SendDmx(unsigned int universe,
-                            const SendDmxArgs &args,
+                            const SendDMXArgs &args,
                             const DmxBuffer &data) {
   ola::proto::DmxData request;
   request.set_universe(universe);
@@ -521,9 +521,9 @@ void OlaClientCore::RDMGet(unsigned int universe,
                            uint16_t pid,
                            const uint8_t *data,
                            unsigned int data_length,
-                           RDMCallback *callback) {
+                           const SendRDMArgs& args) {
   SendRDMCommand(false, universe, uid, sub_device, pid, data, data_length,
-                 callback);
+                 args);
 }
 
 void OlaClientCore::RDMSet(unsigned int universe,
@@ -532,9 +532,9 @@ void OlaClientCore::RDMSet(unsigned int universe,
                            uint16_t pid,
                            const uint8_t *data,
                            unsigned int data_length,
-                           RDMCallback *callback) {
+                           const SendRDMArgs& args) {
   SendRDMCommand(true, universe, uid, sub_device, pid, data, data_length,
-                 callback);
+                 args);
 }
 
 void OlaClientCore::SendTimeCode(const ola::timecode::TimeCode &timecode,
@@ -922,13 +922,13 @@ void OlaClientCore::HandleRDM(RpcController *controller_ptr,
   }
 
   Result result(controller->Failed() ? controller->ErrorText() : "");
-  ola::rdm::rdm_response_code response_code = ola::rdm::RDM_FAILED_TO_SEND;
+  RDMMetadata metadata;
   ola::rdm::RDMResponse *response = NULL;
 
   if (!controller->Failed()) {
-    response = BuildRDMResponse(reply.get(), &response_code);
+    response = BuildRDMResponse(reply.get(), &metadata.response_code);
   }
-  callback->Run(result, response_code, response);
+  callback->Run(result, metadata, response);
 }
 
 void OlaClientCore::GenericFetchCandidatePorts(
@@ -965,8 +965,8 @@ void OlaClientCore::SendRDMCommand(bool is_set,
                                    uint16_t pid,
                                    const uint8_t *data,
                                    unsigned int data_length,
-                                   RDMCallback *callback) {
-  if (!callback) {
+                                   const SendRDMArgs &args) {
+  if (!args.callback) {
     OLA_WARN << "RDM callback was null, command to " << uid << " won't be sent";
     return;
   }
@@ -976,7 +976,7 @@ void OlaClientCore::SendRDMCommand(bool is_set,
 
   if (!m_connected) {
     controller->SetFailed(NOT_CONNECTED_ERROR);
-    HandleRDM(controller, reply, callback);
+    HandleRDM(controller, reply, args.callback);
     return;
   }
 
@@ -993,7 +993,7 @@ void OlaClientCore::SendRDMCommand(bool is_set,
   CompletionCallback *cb = NewSingleCallback(
       this,
       &OlaClientCore::HandleRDM,
-      controller, reply, callback);
+      controller, reply, args.callback);
 
   m_stub->RDMCommand(controller, &request, reply, cb);
 }

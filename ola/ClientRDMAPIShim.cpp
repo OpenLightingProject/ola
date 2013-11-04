@@ -25,6 +25,8 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMEnums.h>
 
+#include <string>
+
 namespace ola {
 namespace client {
 
@@ -35,9 +37,9 @@ bool ClientRDMAPIShim::RDMGet(rdm_callback *callback,
                               uint16_t pid,
                               const uint8_t *data,
                               unsigned int data_length) {
-  m_client->RDMGet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &ClientRDMAPIShim::HandleResponse, callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &ClientRDMAPIShim::HandleResponse, callback));
+  m_client->RDMGet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
@@ -48,10 +50,9 @@ bool ClientRDMAPIShim::RDMGet(rdm_pid_callback *callback,
                               uint16_t pid,
                               const uint8_t *data,
                               unsigned int data_length) {
-  m_client->RDMGet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &ClientRDMAPIShim::HandleResponseWithPid,
-                        callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &ClientRDMAPIShim::HandleResponseWithPid, callback));
+  m_client->RDMGet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
@@ -62,19 +63,19 @@ bool ClientRDMAPIShim::RDMSet(rdm_callback *callback,
                               uint16_t pid,
                               const uint8_t *data,
                               unsigned int data_length) {
-  m_client->RDMSet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &ClientRDMAPIShim::HandleResponse, callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &ClientRDMAPIShim::HandleResponse, callback));
+  m_client->RDMSet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
 void ClientRDMAPIShim::HandleResponse(rdm_callback *callback,
                                       const Result &result,
-                                      ola::rdm::rdm_response_code response_code,
+                                      const RDMMetadata &metadata,
                                       const ola::rdm::RDMResponse *response) {
   rdm::ResponseStatus response_status;
   string data;
-  GetResponseStatusAndData(result, response_code, response,
+  GetResponseStatusAndData(result, metadata.response_code, response,
                            &response_status, &data);
   callback->Run(response_status, data);
 }
@@ -82,11 +83,11 @@ void ClientRDMAPIShim::HandleResponse(rdm_callback *callback,
 void ClientRDMAPIShim::HandleResponseWithPid(
     rdm_pid_callback *callback,
     const Result &result,
-    ola::rdm::rdm_response_code response_code,
+    const RDMMetadata &metadata,
     const ola::rdm::RDMResponse *response) {
   rdm::ResponseStatus response_status;
   string data;
-  GetResponseStatusAndData(result, response_code, response,
+  GetResponseStatusAndData(result, metadata.response_code, response,
                            &response_status, &data);
   callback->Run(response_status, response_status.pid_value, data);
 }

@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_CLIENT_CLIENTRDMAPISHIM_H_
 #define INCLUDE_OLA_CLIENT_CLIENTRDMAPISHIM_H_
 
+#include <ola/client/ClientTypes.h>
 #include <ola/client/Result.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMCommand.h>
@@ -71,13 +72,13 @@ class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
     void HandleResponse(
         rdm_callback *callback,
         const Result &result,
-        ola::rdm::rdm_response_code response_code,
+        const RDMMetadata &metadata,
         const ola::rdm::RDMResponse *response);
 
     void HandleResponseWithPid(
         rdm_pid_callback *callback,
         const Result &result,
-        ola::rdm::rdm_response_code response_code,
+        const RDMMetadata &metadata,
         const ola::rdm::RDMResponse *response);
 
     void GetResponseStatusAndData(

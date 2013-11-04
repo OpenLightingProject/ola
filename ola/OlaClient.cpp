@@ -147,7 +147,7 @@ void OlaClient::RegisterUniverse(unsigned int universe,
 }
 
 void OlaClient::SendDmx(unsigned int universe,
-                        const SendDmxArgs &args,
+                        const SendDMXArgs &args,
                         const DmxBuffer &data) {
   m_core->SendDmx(universe, args, data);
 }
@@ -178,18 +178,18 @@ void OlaClient::RDMGet(unsigned int universe,
                        uint16_t pid,
                        const uint8_t *data,
                        unsigned int data_length,
-                       RDMCallback *callback) {
-  m_core->RDMGet(universe, uid, sub_device, pid, data, data_length, callback);
+                       const SendRDMArgs& args) {
+  m_core->RDMGet(universe, uid, sub_device, pid, data, data_length, args);
 }
 
 void OlaClient::RDMSet(unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length,
-                RDMCallback *callback) {
-  m_core->RDMSet(universe, uid, sub_device, pid, data, data_length, callback);
+                       const ola::rdm::UID &uid,
+                       uint16_t sub_device,
+                       uint16_t pid,
+                       const uint8_t *data,
+                       unsigned int data_length,
+                       const SendRDMArgs& args) {
+  m_core->RDMSet(universe, uid, sub_device, pid, data, data_length, args);
 }
 }  // namespace client
 }  // namespace ola

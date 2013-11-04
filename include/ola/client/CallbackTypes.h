@@ -145,11 +145,14 @@ typedef Callback2<void, const DMXMetadata&, const DmxBuffer&>
  * @brief Called when a RDM request completes.
  * Used with OlaClient::RDMGet() and OlaClient::RDMSet().
  * @param result the Result of the API call.
- * @param response_code the internal (OLA) response code
+ * @param metadata the metadata for the response, including the
+ * rdm_response_code.
  * @param response the RDM Response, or NULL if no response was received.
  */
-typedef SingleUseCallback3<void, const Result&, ola::rdm::rdm_response_code,
+typedef SingleUseCallback3<void, const Result&,
+                           const RDMMetadata&,
                            const ola::rdm::RDMResponse*> RDMCallback;
+
 
 }  // namespace client
 }  // namespace ola

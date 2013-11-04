@@ -222,11 +222,11 @@ class OlaClient {
     /**
      * @brief Send DMX data.
      * @param universe the universe to send to.
-     * @param args the SendDmxArgs to use for this call.
+     * @param args the SendDMXArgs to use for this call.
      * @param data the DmxBuffer with the data
      */
     void SendDmx(unsigned int universe,
-                 const SendDmxArgs &args,
+                 const SendDMXArgs &args,
                  const DmxBuffer &data);
 
     /**
@@ -261,7 +261,7 @@ class OlaClient {
      * @param pid the PID to address
      * @param data the optional data to send
      * @param data_length the length of the data
-     * @param callback the Callback to invoke when this completes
+     * @param args the RDM arguments which includes the callback to run.
      */
     void RDMGet(unsigned int universe,
                 const ola::rdm::UID &uid,
@@ -269,7 +269,7 @@ class OlaClient {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length,
-                RDMCallback *callback);
+                const SendRDMArgs& args);
 
     /**
      * @brief Send an RDM Set Command.
@@ -279,7 +279,7 @@ class OlaClient {
      * @param pid the PID to address
      * @param data the optional data to send
      * @param data_length the length of the data
-     * @param callback the Callback to invoke when this completes
+     * @param args the RDM arguments which includes the callback to run.
      */
     void RDMSet(unsigned int universe,
                 const ola::rdm::UID &uid,
@@ -287,7 +287,7 @@ class OlaClient {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length,
-                RDMCallback *callback);
+                const SendRDMArgs& args);
 
     /**
      * @brief Send TimeCode data.

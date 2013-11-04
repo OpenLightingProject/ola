@@ -313,13 +313,13 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
     void HandleRDMResponse(
         ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
         const client::Result &result,
-        ola::rdm::rdm_response_code response_code,
+        const client::RDMMetadata &metadata,
         const ola::rdm::RDMResponse *response);
 
     void HandleRDMResponseWithPid(
         ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
         const client::Result &result,
-        ola::rdm::rdm_response_code response_code,
+        const client::RDMMetadata &metadata,
         const ola::rdm::RDMResponse *response);
 
     void GetResponseStatusAndData(

@@ -35,7 +35,9 @@
 
 namespace ola {
 
+using ola::client::RDMMetadata;
 using ola::client::Result;
+using ola::client::SendRDMArgs;
 using ola::io::ConnectedDescriptor;
 using ola::rdm::RDMAPIImplInterface;
 using std::string;
@@ -239,7 +241,7 @@ bool OlaCallbackClient::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
     SingleUseCallback1<void, const string&> *callback) {
-  client::SendDmxArgs args(
+  client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   m_core->SendDmx(universe, args, data);
   return true;
@@ -249,7 +251,7 @@ bool OlaCallbackClient::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
     Callback1<void, const string&> *callback) {
-  client::SendDmxArgs args(
+  client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleRepeatableSetCallback,
         callback));
   m_core->SendDmx(universe, args, data);
@@ -257,7 +259,7 @@ bool OlaCallbackClient::SendDmx(
 }
 
 bool OlaCallbackClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
-  client::SendDmxArgs args;
+  client::SendDMXArgs args;
   m_core->SendDmx(universe, args, data);
   return true;
 }
@@ -312,9 +314,9 @@ bool OlaCallbackClient::RDMGet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  m_core->RDMGet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponse, callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &OlaCallbackClient::HandleRDMResponse, callback));
+  m_core->RDMGet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
@@ -326,10 +328,9 @@ bool OlaCallbackClient::RDMGet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  m_core->RDMGet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponseWithPid,
-                        callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &OlaCallbackClient::HandleRDMResponseWithPid, callback));
+  m_core->RDMGet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
@@ -341,9 +342,9 @@ bool OlaCallbackClient::RDMSet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  m_core->RDMSet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponse, callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &OlaCallbackClient::HandleRDMResponse, callback));
+  m_core->RDMSet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
@@ -355,10 +356,9 @@ bool OlaCallbackClient::RDMSet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  m_core->RDMSet(
-      universe, uid, sub_device, pid, data, data_length,
-      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponseWithPid,
-                        callback));
+  SendRDMArgs args(NewSingleCallback(
+      this, &OlaCallbackClient::HandleRDMResponseWithPid, callback));
+  m_core->RDMSet(universe, uid, sub_device, pid, data, data_length, args);
   return true;
 }
 
@@ -485,11 +485,11 @@ void OlaCallbackClient::HandleDMX(const client::DMXMetadata &metadata,
 void OlaCallbackClient::HandleRDMResponse(
     ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
     const Result &result,
-    ola::rdm::rdm_response_code response_code,
+    const RDMMetadata &metadata,
     const ola::rdm::RDMResponse *response) {
   rdm::ResponseStatus response_status;
   string data;
-  GetResponseStatusAndData(result, response_code, response,
+  GetResponseStatusAndData(result, metadata.response_code, response,
                            &response_status, &data);
   callback->Run(response_status, data);
 }
@@ -497,11 +497,11 @@ void OlaCallbackClient::HandleRDMResponse(
 void OlaCallbackClient::HandleRDMResponseWithPid(
     ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
     const Result &result,
-    ola::rdm::rdm_response_code response_code,
+    const RDMMetadata &metadata,
     const ola::rdm::RDMResponse *response) {
   rdm::ResponseStatus response_status;
   string data;
-  GetResponseStatusAndData(result, response_code, response,
+  GetResponseStatusAndData(result, metadata.response_code, response,
                            &response_status, &data);
   callback->Run(response_status, response_status.pid_value, data);
 }
