@@ -932,12 +932,19 @@ void OladHTTPServer::PortToJson(JsonObject *json,
   json->Add("id", str.str());
   json->Add("is_output", is_output);
 
+  JsonObject *priority_json = json->AddObject("priority");
   if (port.PriorityCapability() != CAPABILITY_NONE) {
-    JsonObject *priority_json = json->AddObject("priority");
-    priority_json->Add("value", static_cast<int>(port.Priority()));
+    // This can be used as the default value for the priority input and because
+    // inherit ports can return a 0 priority we shall set it to the default
+    // here
+    uint8_t priority = port.Priority();
+    if (priority == 0) {
+      priority = DmxSource::PRIORITY_DEFAULT;
+    }
+    priority_json->Add("value", static_cast<int>(priority));
     priority_json->Add(
       "current_mode",
-      (port.PriorityMode() == PRIORITY_MODE_INHERIT ?  "inherit" : "override"));
+      (port.PriorityMode() == PRIORITY_MODE_INHERIT ?  "inherit" : "static"));
     priority_json->Add("priority_capability",
       (port.PriorityCapability() == CAPABILITY_STATIC ? "static" : "full"));
   }
@@ -988,18 +995,18 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
     string priority_id = iter->string_id + K_PRIORITY_VALUE_SUFFIX;
     string mode = request->GetPostParameter(priority_mode_id);
 
-    if (mode == "0") {
+    if (mode == "inherit") {
       action_queue->AddAction(new PortPriorityInheritAction(
         &m_client,
         iter->device_alias,
         iter->port,
         iter->direction));
-    } else if (mode == "1" || mode == "") {
+    } else if (mode == "static" || mode == "") {
       // an empty mode param means this is a static port
       string value = request->GetPostParameter(priority_id);
       uint8_t priority_value;
       if (StringToInt(value, &priority_value)) {
-        action_queue->AddAction(new PortPriorityOverrideAction(
+        action_queue->AddAction(new PortPriorityStaticAction(
           &m_client,
           iter->device_alias,
           iter->port,

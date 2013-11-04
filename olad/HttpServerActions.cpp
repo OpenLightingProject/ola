@@ -89,7 +89,7 @@ bool PortPriorityInheritAction::DoAction() {
 }
 
 
-bool PortPriorityOverrideAction::DoAction() {
+bool PortPriorityStaticAction::DoAction() {
   return m_client->SetPortPriorityOverride(
     m_device_alias,
     m_port,

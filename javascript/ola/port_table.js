@@ -42,7 +42,6 @@ ola.Port = function(data, opt_domHelper) {
 };
 goog.inherits(ola.Port, goog.ui.Component);
 
-
 /**
  * This component can't be used to decorate
  * @return {bool} false.
@@ -70,20 +69,18 @@ ola.Port.prototype.createDom = function() {
 
   var priority = this.data['priority'];
 
-  if (priority == undefined) {
+  if (priority['priority_capability'] == undefined) {
     // this port doesn't support priorities at all
     this.dom_.appendChild(
       tr, goog.dom.createDom('td', {}, 'Not supported'));
   } else {
+    // Now we know it supports priorities, lets create the common UI elements
+    // for them
     this.priority_input = goog.dom.createElement('input');
     this.priority_input.value = priority['value'];
     this.priority_input.maxLength = 3;
     this.priority_input.size = 3;
-    if (priority['priority_capability'] == undefined) {
-      // this port only supports static priorities
-      var td = goog.dom.createDom('td', {}, this.priority_input);
-      this.dom_.appendChild(tr, td);
-    } else if (priority['priority_capability'] == "full") {
+    if (priority['priority_capability'] == "full") {
       // this port supports both modes
       this.priority_select = new goog.ui.Select();
       this.priority_select.addItem(new goog.ui.MenuItem('Inherit'));
@@ -96,7 +93,7 @@ ola.Port.prototype.createDom = function() {
       this.priority_select.render(td);
       this.dom_.appendChild(td, this.priority_input);
       this.dom_.appendChild(tr, td);
-    } else {
+    } else if (priority['priority_capability'] == "static") {
       // this port only supports Static priorities
       var td = goog.dom.createDom('td', {}, 'Static');
       this.dom_.appendChild(td, this.priority_input);
@@ -207,7 +204,7 @@ ola.Port.prototype.isSelected = function() {
  */
 ola.Port.prototype.priority = function() {
   var priority_capability = this.data['priority']['priority_capability'];
-  if (priority_capability) {
+  if (priority_capability != undefined) {
     return this.priority_input.value;
   } else {
     return undefined;
@@ -222,10 +219,14 @@ ola.Port.prototype.priority = function() {
  */
 ola.Port.prototype.priorityMode = function() {
   var priority_capability = this.data['priority']['priority_capability'];
-  if (priority_capability == 'inherit') {
-    return this.priority_select.getValue();
+  if (priority_capability == 'full') {
+    if (this.priority_select.getValue() == 'Inherit') {
+      return 'inherit'
+    } else {
+      return 'static'
+    }
   } else if (priority_capability == 'static'){
-    return 'Static';
+    return 'static';
   } else {
     return undefined;
   }

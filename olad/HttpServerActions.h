@@ -185,9 +185,9 @@ class PortPriorityInheritAction: public BaseHttpAction {
 /*
  * An action that sets a port priority to override mode.
  */
-class PortPriorityOverrideAction: public BaseHttpAction {
+class PortPriorityStaticAction: public BaseHttpAction {
   public:
-    PortPriorityOverrideAction(OlaCallbackClient *client,
+    PortPriorityStaticAction(OlaCallbackClient *client,
                               unsigned int device_alias,
                               unsigned int port,
                               PortDirection direction,
@@ -210,7 +210,7 @@ class PortPriorityOverrideAction: public BaseHttpAction {
     PortDirection m_direction;
     uint8_t m_override_value;
 
-    DISALLOW_COPY_AND_ASSIGN(PortPriorityOverrideAction);
+    DISALLOW_COPY_AND_ASSIGN(PortPriorityStaticAction);
 };
 }  // namespace ola
 #endif  // OLAD_HTTPSERVERACTIONS_H_

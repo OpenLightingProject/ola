@@ -172,7 +172,7 @@ bool PortManager::GenericUnPatchPort(PortClass *port) {
   if (universe) {
     universe->RemovePort(port);
     port->SetUniverse(NULL);
-    OLA_DEBUG << "Port " << port->UniqueId() << " has been removed from uni "
+    OLA_INFO << "Unpatech " << port->UniqueId() << " from uni "
       << universe->UniverseId();
   }
   return true;

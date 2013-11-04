@@ -56,10 +56,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PortTest);
 void PortTest::testOutputPortPriorities() {
   TestMockOutputPort output_port(NULL, 1);
 
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       output_port.GetPriority());
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
-                       output_port.GetPriorityMode());
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT, output_port.GetPriority());
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT, output_port.GetPriorityMode());
 
   // test the setting of priorities
   OLA_ASSERT(output_port.SetPriority(120));
@@ -71,12 +69,10 @@ void PortTest::testOutputPortPriorities() {
 
   // test the setting of modes
   output_port.SetPriorityMode(ola::PRIORITY_MODE_STATIC);
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC,
-                       output_port.GetPriorityMode());
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC, output_port.GetPriorityMode());
 
   output_port.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
-                       output_port.GetPriorityMode());
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT, output_port.GetPriorityMode());
 }
 
 
@@ -106,8 +102,7 @@ void PortTest::testInputPortPriorities() {
   ola::Universe *universe = store.GetUniverseOrCreate(universe_id);
   OLA_ASSERT(universe);
 
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT, universe->ActivePriority());
 
   // change the priority
   uint8_t new_priority = 120;
@@ -145,7 +140,7 @@ void PortTest::testInputPortPriorities() {
   input_port2.DmxChanged();
   OLA_ASSERT_EQ((uint8_t) 123, universe->ActivePriority());
 
-  // now try override mode
+  // now try static mode
   new_priority = 108;
   port_manager.SetPriorityStatic(&input_port2, new_priority);
   m_clock.CurrentTime(&time_stamp);
