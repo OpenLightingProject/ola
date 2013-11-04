@@ -187,12 +187,12 @@ void PortManagerTest::testInputPortSetPriority() {
 
   OLA_ASSERT_EQ(input_port.PriorityCapability(), ola::CAPABILITY_STATIC);
   OLA_ASSERT_EQ(input_port.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
-  OLA_ASSERT_EQ(input_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(input_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so this is a noop
   OLA_ASSERT(patcher.SetPriorityInherit(&input_port));
   OLA_ASSERT_EQ(input_port.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
-  OLA_ASSERT_EQ(input_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(input_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // set the static priority to 20
   OLA_ASSERT(patcher.SetPriorityStatic(&input_port, 20));
@@ -201,9 +201,10 @@ void PortManagerTest::testInputPortSetPriority() {
 
   // Now test an input port that does support priorities
   TestMockPriorityInputPort input_port2(NULL, 1, NULL);
+
   OLA_ASSERT_EQ(input_port2.PriorityCapability(), ola::CAPABILITY_FULL);
   OLA_ASSERT_EQ(input_port2.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
-  OLA_ASSERT_EQ(input_port2.GetPriority(), DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(input_port2.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // try changing to static mode
   OLA_ASSERT(patcher.SetPriorityStatic(&input_port2, 20));
@@ -234,20 +235,20 @@ void PortManagerTest::testOutputPortSetPriority() {
 
   OLA_ASSERT_EQ(output_port.PriorityCapability(), ola::CAPABILITY_NONE);
   OLA_ASSERT_EQ(output_port.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(output_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so these are all noops
   OLA_ASSERT(patcher.SetPriorityInherit(&output_port));
   OLA_ASSERT(patcher.SetPriorityStatic(&output_port, 20));
   OLA_ASSERT_EQ(output_port.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(output_port.GetPriority(), ola:dmx::SOURCE_PRIORITY_DEFAULT);
 
   // now test an output port that supports priorities
   TestMockPriorityOutputPort output_port2(NULL, 1);
 
   OLA_ASSERT_EQ(output_port2.PriorityCapability(), ola::CAPABILITY_FULL);
   OLA_ASSERT_EQ(output_port2.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port2.GetPriority(), DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(output_port2.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // try changing to static mode
   OLA_ASSERT(patcher.SetPriorityStatic(&output_port2, 20));

@@ -56,7 +56,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PortTest);
 void PortTest::testOutputPortPriorities() {
   TestMockOutputPort output_port(NULL, 1);
 
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT, output_port.GetPriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, output_port.GetPriority());
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT, output_port.GetPriorityMode());
 
   // test the setting of priorities
@@ -102,7 +102,7 @@ void PortTest::testInputPortPriorities() {
   ola::Universe *universe = store.GetUniverseOrCreate(universe_id);
   OLA_ASSERT(universe);
 
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT, universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
 
   // change the priority
   uint8_t new_priority = 120;

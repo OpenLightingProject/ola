@@ -48,7 +48,7 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 inet_ntoa inet_aton select socket strerror getifaddrs \
-                getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
+                getloadavg getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -634,6 +634,7 @@ AC_OUTPUT( Makefile \
     include/ola/Makefile \
     include/ola/acn/Makefile \
     include/ola/base/Makefile \
+    include/ola/client/Makefile \
     include/ola/dmx/Makefile \
     include/ola/file/Makefile \
     include/ola/e133/Makefile \

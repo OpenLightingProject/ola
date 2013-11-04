@@ -100,11 +100,11 @@ bool PortManager::SetPriorityStatic(Port *port, uint8_t value) {
       port->GetPriorityMode() != PRIORITY_MODE_STATIC)
     port->SetPriorityMode(PRIORITY_MODE_STATIC);
 
-  if (value > DmxSource::PRIORITY_MAX) {
-    OLA_WARN << "Priority " << static_cast<int>(value) <<
-      " is greater than the max priority (" <<
-      static_cast<int>(DmxSource::PRIORITY_MAX) << ")";
-    value = DmxSource::PRIORITY_MAX;
+  if (value > ola::dmx::SOURCE_PRIORITY_MAX) {
+    OLA_WARN << "Priority " << static_cast<int>(value)
+        << " is greater than the max priority ("
+        << static_cast<int>(ola::dmx::SOURCE_PRIORITY_MAX) << ")";
+    value = ola::dmx::SOURCE_PRIORITY_MAX;
   }
 
   if (port->GetPriority() != value)

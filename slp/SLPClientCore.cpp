@@ -143,7 +143,7 @@ bool SLPClientCore::DeRegisterService(
        iter != scopes.end(); ++iter)
     request.add_scope(*iter);
 
-  ola::rpc::RpcService::CompletionCallback *cb = NewCallback(
+  ola::rpc::RpcService::CompletionCallback *cb = NewSingleCallback(
       this,
       &SLPClientCore::HandleRegistration,
       NewArgs<register_arg>(controller, reply, callback));
@@ -174,7 +174,7 @@ bool SLPClientCore::FindService(
        iter != scopes.end(); ++iter)
     request.add_scope(*iter);
 
-  ola::rpc::RpcService::CompletionCallback *cb = NewCallback(
+  ola::rpc::RpcService::CompletionCallback *cb = NewSingleCallback(
       this,
       &SLPClientCore::HandleFindRequest,
       NewArgs<find_arg>(controller, reply, callback));
@@ -199,7 +199,7 @@ bool SLPClientCore::GetServerInfo(
   ola::slp::proto::ServerInfoReply *reply =
       new ola::slp::proto::ServerInfoReply();
 
-  ola::rpc::RpcService::CompletionCallback *cb = NewCallback(
+  ola::rpc::RpcService::CompletionCallback *cb = NewSingleCallback(
       this,
       &SLPClientCore::HandleServerInfo,
       NewArgs<server_info_arg>(controller, reply, callback));
@@ -315,7 +315,7 @@ bool SLPClientCore::GenericRegisterService(
   request.set_lifetime(lifetime);
   request.set_persistent(persistent);
 
-  ola::rpc::RpcService::CompletionCallback *cb = NewCallback(
+  ola::rpc::RpcService::CompletionCallback *cb = NewSingleCallback(
       this,
       &SLPClientCore::HandleRegistration,
       NewArgs<register_arg>(controller, reply, callback));

@@ -63,7 +63,7 @@ class OutstandingResponse {
 
     int id;
     RpcController *controller;
-    Callback0<void> *callback;
+    SingleUseCallback0<void> *callback;
     Message *reply;
 };
 
@@ -163,12 +163,11 @@ void RpcChannel::SetChannelCloseHandler(
   m_on_close.reset(closure);
 }
 
-void RpcChannel::CallMethod(
-    const MethodDescriptor *method,
-    RpcController *controller,
-    const Message *request,
-    Message *reply,
-    Callback0<void> *done) {
+void RpcChannel::CallMethod(const MethodDescriptor *method,
+                            RpcController *controller,
+                            const Message *request,
+                            Message *reply,
+                            SingleUseCallback0<void> *done) {
   // TODO(simonn): reduce the number of copies here
   string output;
   RpcMessage message;
@@ -441,7 +440,7 @@ void RpcChannel::HandleRequest(RpcMessage *msg) {
   }
 
   m_requests[msg->id()] = request;
-  Callback0<void> *callback = NewCallback(
+  SingleUseCallback0<void> *callback = NewSingleCallback(
       this, &RpcChannel::RequestComplete, request);
   m_service->CallMethod(method, request->controller, request_pb, response_pb,
                         callback);

@@ -139,11 +139,13 @@ void OlaServerServiceImpl::UpdateDmxData(
     DmxBuffer buffer;
     buffer.Set(request->data());
 
-    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
     if (request->has_priority()) {
       priority = request->priority();
-      priority = std::max(DmxSource::PRIORITY_MIN, priority);
-      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+      priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
+                          priority);
+      priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
+                          priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
     client->DMXRecieved(request->universe(), source);
@@ -171,11 +173,13 @@ void OlaServerServiceImpl::StreamDmxData(
     DmxBuffer buffer;
     buffer.Set(request->data());
 
-    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
     if (request->has_priority()) {
       priority = request->priority();
-      priority = std::max(DmxSource::PRIORITY_MIN, priority);
-      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+      priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
+                          priority);
+      priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
+                          priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
     client->DMXRecieved(request->universe(), source);
@@ -586,8 +590,7 @@ void OlaServerServiceImpl::ConfigureDevice(
     return;
   }
 
-  device->Configure(controller,
-                    request->data(),
+  device->Configure(controller, request->data(),
                     response->mutable_data(), done);
 }
 
