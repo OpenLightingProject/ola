@@ -28,6 +28,7 @@
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"
 #include "ola/client/Result.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/RDMEnums.h"
@@ -311,8 +312,10 @@ bool OlaCallbackClient::RDMGet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  return m_core->RDMGet(callback, universe, uid, sub_device, pid, data,
-                        data_length);
+  m_core->RDMGet(
+      universe, uid, sub_device, pid, data, data_length,
+      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponse, callback));
+  return true;
 }
 
 bool OlaCallbackClient::RDMGet(
@@ -323,8 +326,11 @@ bool OlaCallbackClient::RDMGet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  return m_core->RDMGet(callback, universe, uid, sub_device, pid, data,
-                        data_length);
+  m_core->RDMGet(
+      universe, uid, sub_device, pid, data, data_length,
+      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponseWithPid,
+                        callback));
+  return true;
 }
 
 bool OlaCallbackClient::RDMSet(
@@ -335,8 +341,10 @@ bool OlaCallbackClient::RDMSet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  return m_core->RDMSet(callback, universe, uid, sub_device, pid, data,
-                        data_length);
+  m_core->RDMSet(
+      universe, uid, sub_device, pid, data, data_length,
+      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponse, callback));
+  return true;
 }
 
 bool OlaCallbackClient::RDMSet(
@@ -347,8 +355,11 @@ bool OlaCallbackClient::RDMSet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  return m_core->RDMSet(callback, universe, uid, sub_device, pid, data,
-                        data_length);
+  m_core->RDMSet(
+      universe, uid, sub_device, pid, data, data_length,
+      NewSingleCallback(this, &OlaCallbackClient::HandleRDMResponseWithPid,
+                        callback));
+  return true;
 }
 
 bool OlaCallbackClient::SendTimeCode(
@@ -468,6 +479,85 @@ void OlaCallbackClient::HandleDMX(const client::DMXMetadata &metadata,
   if (m_dmx_callback.get()) {
     m_priority_dmx_callback->Run(metadata.universe, metadata.priority, data,
                                  "");
+  }
+}
+
+void OlaCallbackClient::HandleRDMResponse(
+    ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+    const Result &result,
+    ola::rdm::rdm_response_code response_code,
+    const ola::rdm::RDMResponse *response) {
+  rdm::ResponseStatus response_status;
+  string data;
+  GetResponseStatusAndData(result, response_code, response,
+                           &response_status, &data);
+  callback->Run(response_status, data);
+}
+
+void OlaCallbackClient::HandleRDMResponseWithPid(
+    ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+    const Result &result,
+    ola::rdm::rdm_response_code response_code,
+    const ola::rdm::RDMResponse *response) {
+  rdm::ResponseStatus response_status;
+  string data;
+  GetResponseStatusAndData(result, response_code, response,
+                           &response_status, &data);
+  callback->Run(response_status, response_status.pid_value, data);
+}
+
+
+void OlaCallbackClient::GetResponseStatusAndData(
+    const Result &result,
+    ola::rdm::rdm_response_code response_code,
+    const ola::rdm::RDMResponse *response,
+    rdm::ResponseStatus *response_status,
+    string *data) {
+  response_status->error = result.Error();
+  response_status->response_code = ola::rdm::RDM_FAILED_TO_SEND;
+
+  if (result.Success()) {
+    response_status->response_code = response_code;
+    if (response_code == ola::rdm::RDM_COMPLETED_OK && response) {
+      response_status->response_type = response->PortIdResponseType();
+      response_status->message_count = response->MessageCount();
+      response_status->pid_value = response->ParamId();
+      response_status->set_command = (
+          response->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND_RESPONSE
+           ? true : false);
+
+      switch (response->PortIdResponseType()) {
+        case ola::rdm::RDM_ACK:
+          data->append(reinterpret_cast<const char*>(response->ParamData()),
+                       response->ParamDataSize());
+          break;
+        case ola::rdm::RDM_ACK_TIMER:
+          GetParamFromReply("ack timer", response, response_status);
+          break;
+        case ola::rdm::RDM_NACK_REASON:
+          GetParamFromReply("nack", response, response_status);
+          break;
+        default:
+          OLA_WARN << "Invalid response type 0x" << std::hex
+                   << static_cast<int>(response->PortIdResponseType());
+          response_status->response_type = ola::rdm::RDM_INVALID_RESPONSE;
+      }
+    }
+  }
+}
+
+void OlaCallbackClient::GetParamFromReply(
+    const string &message_type,
+    const ola::rdm::RDMResponse *response,
+    ola::rdm::ResponseStatus *new_status) {
+  uint16_t param;
+  if (response->ParamDataSize() != sizeof(param)) {
+    OLA_WARN << "Invalid PDL size for " << message_type << ", length was "
+             << response->ParamDataSize();
+    new_status->response_type = ola::rdm::RDM_INVALID_RESPONSE;
+  } else {
+    memcpy(&param, response->ParamData(), sizeof(param));
+    new_status->m_param = ola::network::NetworkToHost(param);
   }
 }
 }  // namespace ola

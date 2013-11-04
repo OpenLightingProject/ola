@@ -29,6 +29,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/client/ClientTypes.h>
 #include <ola/client/Result.h>
+#include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UIDSet.h>
 
 #include <string>
@@ -139,6 +140,16 @@ typedef SingleUseCallback3<void, const Result&, const DMXMetadata&,
  */
 typedef Callback2<void, const DMXMetadata&, const DmxBuffer&>
     RepeatableDmxCallback;
+
+/**
+ * @brief Called when a RDM request completes.
+ * Used with OlaClient::RDMGet() and OlaClient::RDMSet().
+ * @param result the Result of the API call.
+ * @param response_code the internal (OLA) response code
+ * @param response the RDM Response, or NULL if no response was received.
+ */
+typedef SingleUseCallback3<void, const Result&, ola::rdm::rdm_response_code,
+                           const ola::rdm::RDMResponse*> RDMCallback;
 
 }  // namespace client
 }  // namespace ola

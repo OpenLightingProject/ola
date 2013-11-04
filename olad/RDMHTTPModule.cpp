@@ -152,7 +152,8 @@ RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
                              client::OlaClient *client)
     : m_server(http_server),
       m_client(client),
-      m_rdm_api(m_client) {
+      m_shim(client),
+      m_rdm_api(&m_shim) {
 
   m_server->RegisterHandler(
       "/rdm/run_discovery",

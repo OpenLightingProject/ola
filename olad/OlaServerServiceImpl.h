@@ -185,6 +185,8 @@ class OlaServerServiceImpl {
     void PopulatePort(const PortClass &port,
                       ola::proto::PortInfo *port_info) const;
 
+    void SetProtoUID(const ola::rdm::UID &uid, ola::proto::UID *pb_uid);
+
     UniverseStore *m_universe_store;
     DeviceManager *m_device_manager;
     class PluginManager *m_plugin_manager;

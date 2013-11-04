@@ -70,7 +70,7 @@ class Result {
      * @brief Returns the error message if the action failed.
      * @return the error message.
      */
-    const string& Error() const { return m_error; }
+    const std::string& Error() const { return m_error; }
 
   private:
     const std::string m_error;

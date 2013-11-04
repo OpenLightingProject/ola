@@ -26,8 +26,9 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "ola/client/OlaClient.h"
 #include "ola/base/Macro.h"
+#include "ola/client/ClientRDMAPIShim.h"
+#include "ola/client/OlaClient.h"
 #include "ola/http/HTTPServer.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMAPI.h"
@@ -98,6 +99,7 @@ class RDMHTTPModule {
 
     HTTPServer *m_server;
     ola::client::OlaClient *m_client;
+    ola::client::ClientRDMAPIShim m_shim;
     ola::rdm::RDMAPI m_rdm_api;
     map<unsigned int, uid_resolution_state*> m_universe_uids;
 
