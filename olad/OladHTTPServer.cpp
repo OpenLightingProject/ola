@@ -814,7 +814,7 @@ void OladHTTPServer::ModifyUniverseComplete(HTTPResponse *response,
  * Send the response to a modify universe request.
  */
 void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
-                                               ActionQueue *action_queue) {
+                                                ActionQueue *action_queue) {
   if (!action_queue->WasSuccessful()) {
     delete action_queue;
     m_server.ServeError(response, "Update failed");

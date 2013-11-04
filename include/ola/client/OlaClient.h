@@ -29,7 +29,6 @@
 #include <ola/common.h>
 #include <ola/io/Descriptor.h>
 #include <ola/plugin_id.h>
-#include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/UID.h>
 #include <ola/rdm/UIDSet.h>
 #include <ola/timecode/TimeCode.h>
@@ -44,7 +43,7 @@ namespace client {
  * @class OlaClient ola/client/OlaClient.h
  * @brief The callback based C++ client for OLA.
  */
-class OlaClient: public ola::rdm::RDMAPIImplInterface {
+class OlaClient {
   public:
     explicit OlaClient(ola::io::ConnectedDescriptor *descriptor);
     ~OlaClient();
@@ -254,34 +253,41 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
      */
     void SetSourceUID(const ola::rdm::UID &uid, SetCallback *callback);
 
-    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                unsigned int universe,
+    /**
+     * @brief Send an RDM Get Command.
+     * @param universe the universe to send the command on
+     * @param uid the UID to send the command to
+     * @param sub_device the sub device index
+     * @param pid the PID to address
+     * @param data the optional data to send
+     * @param data_length the length of the data
+     * @param callback the Callback to invoke when this completes
+     */
+    void RDMGet(unsigned int universe,
                 const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
-                unsigned int data_length);
-    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-                unsigned int universe,
+                unsigned int data_length,
+                RDMCallback *callback);
+
+    /**
+     * @brief Send an RDM Set Command.
+     * @param universe the universe to send the command on
+     * @param uid the UID to send the command to
+     * @param sub_device the sub device index
+     * @param pid the PID to address
+     * @param data the optional data to send
+     * @param data_length the length of the data
+     * @param callback the Callback to invoke when this completes
+     */
+    void RDMSet(unsigned int universe,
                 const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
-                unsigned int data_length);
-    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
-    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
+                unsigned int data_length,
+                RDMCallback *callback);
 
     /**
      * @brief Send TimeCode data.
