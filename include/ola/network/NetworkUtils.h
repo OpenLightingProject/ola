@@ -37,8 +37,6 @@ namespace network {
 bool StringToAddress(const std::string &address, struct in_addr &addr);
 std::string AddressToString(const struct in_addr &addr);
 
-std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]);
-
 bool IsBigEndian();
 
 // we define uint8_t versions of these so we can call them with any type.

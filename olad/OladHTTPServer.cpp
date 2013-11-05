@@ -183,8 +183,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("ip", m_interface.ip_address.ToString());
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
-  json.Add("hw_address",
-      ola::network::HardwareAddressToString(m_interface.hw_address));
+  json.Add("hw_address", m_interface.hw_address.ToString());
   json.Add("version", OLA_VERSION);
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);

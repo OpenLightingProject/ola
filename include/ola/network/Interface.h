@@ -22,12 +22,11 @@
 #define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
 #include <ola/network/IPV4Address.h>
+#include <ola/network/MACAddress.h>
 #include <string>
 
 namespace ola {
 namespace network {
-
-enum { MAC_LENGTH = 6 };
 
 using std::string;
 
@@ -41,7 +40,7 @@ class Interface {
               const IPV4Address &ip_address,
               const IPV4Address &broadcast_address,
               const IPV4Address &subnet_mask,
-              const uint8_t *hw_address,
+              const MACAddress &hw_address,
               bool loopback);
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
@@ -51,7 +50,7 @@ class Interface {
     IPV4Address ip_address;
     IPV4Address bcast_address;
     IPV4Address subnet_mask;
-    uint8_t hw_address[MAC_LENGTH];
+    MACAddress hw_address;
     bool loopback;
 };
 
@@ -81,7 +80,9 @@ class InterfaceBuilder {
       m_subnet_mask = mask;
     }
 
-    bool SetHardwareAddress(const string &mac_address);
+    void SetHardwareAddress(const MACAddress &mac_address) {
+      m_hw_address = mac_address;
+    }
 
     void SetLoopback(bool loopback);
 
@@ -93,7 +94,7 @@ class InterfaceBuilder {
     IPV4Address m_ip_address;
     IPV4Address m_broadcast_address;
     IPV4Address m_subnet_mask;
-    uint8_t m_hw_address[MAC_LENGTH];
+    MACAddress m_hw_address;
     bool m_loopback;
 
     bool SetAddress(const string &str, IPV4Address *target);
