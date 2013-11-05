@@ -56,6 +56,8 @@ using std::string;
  */
 class UID {
   public:
+    enum { LENGTH = 6 };
+
     /**
      * @brief Constructs a new UID
      * @param esta_id the ESTA (manufacturer ID).

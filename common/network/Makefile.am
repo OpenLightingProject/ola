@@ -38,6 +38,7 @@ HealthCheckedConnectionTester_LDADD = $(COMMON_TEST_LDADD)
 NetworkTester_SOURCES = IPAddressTest.cpp \
                         InterfacePickerTest.cpp \
                         InterfaceTest.cpp \
+                        MACAddressTest.cpp \
                         NetworkUtilsTest.cpp \
                         SocketAddressTest.cpp \
                         SocketTest.cpp

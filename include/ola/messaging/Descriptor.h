@@ -22,6 +22,9 @@
 #define INCLUDE_OLA_MESSAGING_DESCRIPTOR_H_
 
 #include <ola/messaging/DescriptorVisitor.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/MACAddress.h>
+#include <ola/rdm/UID.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -108,7 +111,7 @@ class IPV4FieldDescriptor: public FieldDescriptor {
 
     bool FixedSize() const { return true; }
     bool LimitedSize() const { return true; }
-    unsigned int MaxSize() const { return 4; }
+    unsigned int MaxSize() const { return ola::network::IPV4Address::LENGTH; }
 
     void Accept(FieldDescriptorVisitor *visitor) const {
       visitor->Visit(this);
@@ -127,7 +130,7 @@ class MACFieldDescriptor: public FieldDescriptor {
 
     bool FixedSize() const { return true; }
     bool LimitedSize() const { return true; }
-    unsigned int MaxSize() const { return 6; }
+    unsigned int MaxSize() const { return ola::network::MACAddress::LENGTH; }
 
     void Accept(FieldDescriptorVisitor *visitor) const {
       visitor->Visit(this);
@@ -146,7 +149,7 @@ class UIDFieldDescriptor: public FieldDescriptor {
 
     bool FixedSize() const { return true; }
     bool LimitedSize() const { return true; }
-    unsigned int MaxSize() const { return 6; }
+    unsigned int MaxSize() const { return ola::rdm::UID::LENGTH; }
 
     void Accept(FieldDescriptorVisitor *visitor) const {
       visitor->Visit(this);

@@ -34,7 +34,7 @@ namespace network {
  * @return a string
  */
 std::string MACAddress::ToString() const {
-  // TODO(Peter): ether_aton
+  // TODO(Peter): ether_ntoa_r
   std::stringstream str;
   for (unsigned int i = 0 ; i < MACAddress::LENGTH; i++) {
     if (i != 0)
@@ -45,6 +45,7 @@ std::string MACAddress::ToString() const {
   return str.str();
 }
 
+
 MACAddress* MACAddress::FromString(const std::string &address) {
   MACAddress *addr = new MACAddress;
   if (!MACAddress::FromString(address, addr))
@@ -52,6 +53,7 @@ MACAddress* MACAddress::FromString(const std::string &address) {
 
   return addr;
 }
+
 
 /**
  * Convert a string to a MACAddress object
@@ -61,18 +63,17 @@ MACAddress* MACAddress::FromString(const std::string &address) {
  * @return true if it worked, false otherwise
  */
 bool MACAddress::FromString(const std::string &address, MACAddress *target) {
+  struct ether_addr addr;
   vector<string> tokens;
   ola::StringSplit(address, tokens, ":.");
   if (tokens.size() != MACAddress::LENGTH)
     return false;
 
-  uint8_t tmp_address[MACAddress::LENGTH];
   for (unsigned int i = 0; i < MACAddress::LENGTH; i++) {
-    if (!ola::HexStringToInt(tokens[i], tmp_address + i))
+    if (!ola::HexStringToInt(tokens[i], addr.ether_addr_octet + i))
       return false;
   }
-  struct ether_addr addr;
-  memcpy(addr.ether_addr_octet, tmp_address, MACAddress::LENGTH);
+
   *target = MACAddress(addr);
   return true;
 }
