@@ -849,4 +849,452 @@ pid {
   }
   get_sub_device_range: ROOT_DEVICE
 }
-version: 1382755231
+pid {
+  name: "LIST_INTERFACES"
+  value: 65504
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "interfaces"
+      field {
+        type: UINT16
+        name: "interface_identifier"
+        range {
+          min: 0
+          max: 65280
+        }
+      }
+      field {
+        type: UINT16
+        name: "interface_hardware_type"
+        label {
+          value: 1
+          label: "Ethernet"
+        }
+        range {
+          min: 0
+          max: 65535
+        }
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "INTERFACE_LABEL"
+  value: 65505
+  get_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: STRING
+      name: "interface_label"
+      max_size: 32
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "INTERFACE_HARDWARE_ADDRESS"
+  value: 65506
+  get_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: MAC
+      name: "hardware_address"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "IPV4_DHCP_MODE"
+  value: 65507
+  get_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: BOOL
+      name: "dhcp"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: BOOL
+      name: "dhcp"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "IPV4_ZEROCONF_MODE"
+  value: 65508
+  get_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: BOOL
+      name: "zeroconf"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: BOOL
+      name: "zeroconf"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "IPV4_CURRENT_ADDRESS"
+  value: 65509
+  get_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: IPV4
+      name: "ipv4_address"
+      label {
+        value: 0
+        label: "IPv4 Unconfigured"
+      }
+    }
+    field {
+      type: UINT8
+      name: "netmask"
+      range {
+        min: 0
+        max: 32
+      }
+    }
+    field {
+      type: BOOL
+      name: "dhcp_address"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "IPV4_STATIC_ADDRESS"
+  value: 65510
+  get_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+    }
+    field {
+      type: IPV4
+      name: "ipv4_address"
+      label {
+        value: 0
+        label: "IPv4 Unconfigured"
+      }
+    }
+    field {
+      type: UINT8
+      name: "netmask"
+      range {
+        min: 0
+        max: 32
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+    field {
+      type: IPV4
+      name: "ipv4_address"
+      label {
+        value: 0
+        label: "IPv4 Unconfigured"
+      }
+    }
+    field {
+      type: UINT8
+      name: "netmask"
+      range {
+        min: 0
+        max: 32
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "INTERFACE_RENEW_DHCP"
+  value: 65511
+  set_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "INTERFACE_RELEASE_DHCP"
+  value: 65512
+  set_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "INTERFACE_APPLY_CONFIGURATION"
+  value: 65513
+  set_request {
+    field {
+      type: UINT16
+      name: "interface_identifier"
+      range {
+        min: 0
+        max: 65280
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "IPV4_DEFAULT_ROUTE"
+  value: 65514
+  get_request {
+  }
+  get_response {
+    field {
+      type: IPV4
+      name: "ipv4_address"
+      label {
+        value: 0
+        label: "No Default Route"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: IPV4
+      name: "ipv4_address"
+      label {
+        value: 0
+        label: "No Default Route"
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "DNS_NAME_SERVER"
+  value: 65515
+  get_request {
+    field {
+      type: UINT8
+      name: "name_server_index"
+      range {
+        min: 0
+        max: 2
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "name_server_index"
+    }
+    field {
+      type: IPV4
+      name: "name_server_address"
+      label {
+        value: 0
+        label: "IPv4 Unconfigured"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: UINT8
+      name: "name_server_index"
+      range {
+        min: 0
+        max: 2
+      }
+    }
+    field {
+      type: IPV4
+      name: "name_server_address"
+      label {
+        value: 0
+        label: "IPv4 Unconfigured"
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "DNS_HOSTNAME"
+  value: 65516
+  get_request {
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "dns_hostname"
+      min_size: 1
+      max_size: 63
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: STRING
+      name: "dns_hostname"
+      min_size: 1
+      max_size: 63
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "DNS_DOMAIN_NAME"
+  value: 65517
+  get_request {
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "dns_domain_name"
+      max_size: 231
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: STRING
+      name: "dns_domain_name"
+      max_size: 231
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+version: 1383106710
