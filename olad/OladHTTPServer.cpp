@@ -404,7 +404,7 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
   if (!StringToInt(uni_id, &universe_id))
     return ServeHelpRedirect(response);
 
-  m_client.FetchDmx(
+  m_client.FetchDMX(
       universe_id,
       NewSingleCallback(this, &OladHTTPServer::HandleGetDmx, response));
   return MHD_YES;
@@ -433,9 +433,9 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
   if (!buffer.Size())
     return m_server.ServeError(response, "Invalid DMX string");
 
-  ola::client::SendDmxArgs args(
+  ola::client::SendDMXArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
-  m_client.SendDmx(universe_id, args, buffer);
+  m_client.SendDMX(universe_id, buffer, args);
   return MHD_YES;
 }
 

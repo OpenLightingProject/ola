@@ -71,7 +71,7 @@ class OlaClient {
      * have been registered with RegisterUniverse().
      * @param callback the callback to run upon receiving new DMX data.
      */
-    void SetDmxCallback(RepeatableDmxCallback *callback);
+    void SetDMXCallback(RepeatableDMXCallback *callback);
 
     /**
      * @brief Fetch the list of plugins loaded.
@@ -210,7 +210,7 @@ class OlaClient {
 
     /**
      * @brief Register our interest in a universe. The callback set by
-     * SetDmxCallback() will be called when new DMX data arrives.
+     * SetDMXCallback() will be called when new DMX data arrives.
      * @param universe the id of the universe to register for.
      * @param register_action the action (register or unregister)
      * @param callback the SetCallback to invoke upon completion.
@@ -222,19 +222,19 @@ class OlaClient {
     /**
      * @brief Send DMX data.
      * @param universe the universe to send to.
-     * @param args the SendDmxArgs to use for this call.
      * @param data the DmxBuffer with the data
+     * @param args the SendDMXArgs to use for this call.
      */
-    void SendDmx(unsigned int universe,
-                 const SendDmxArgs &args,
-                 const DmxBuffer &data);
+    void SendDMX(unsigned int universe,
+                 const DmxBuffer &data,
+                 const SendDMXArgs &args);
 
     /**
      * @brief Fetch the latest DMX data for a universe.
      * @param universe the universe id to get data for.
      * @param callback the SetCallback to invoke upon completion.
      */
-    void FetchDmx(unsigned int universe, DmxCallback *callback);
+    void FetchDMX(unsigned int universe, DMXCallback *callback);
 
     /**
      * @brief Trigger discovery for a universe.
@@ -261,7 +261,7 @@ class OlaClient {
      * @param pid the PID to address
      * @param data the optional data to send
      * @param data_length the length of the data
-     * @param callback the Callback to invoke when this completes
+     * @param args the RDM arguments which includes the callback to run.
      */
     void RDMGet(unsigned int universe,
                 const ola::rdm::UID &uid,
@@ -269,7 +269,7 @@ class OlaClient {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length,
-                RDMCallback *callback);
+                const SendRDMArgs& args);
 
     /**
      * @brief Send an RDM Set Command.
@@ -279,7 +279,7 @@ class OlaClient {
      * @param pid the PID to address
      * @param data the optional data to send
      * @param data_length the length of the data
-     * @param callback the Callback to invoke when this completes
+     * @param args the RDM arguments which includes the callback to run.
      */
     void RDMSet(unsigned int universe,
                 const ola::rdm::UID &uid,
@@ -287,7 +287,7 @@ class OlaClient {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length,
-                RDMCallback *callback);
+                const SendRDMArgs& args);
 
     /**
      * @brief Send TimeCode data.

@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_CLIENT_CLIENTTYPES_H_
 
 #include <ola/dmx/SourcePriorities.h>
+#include <ola/rdm/RDMResponseCodes.h>
 
 #include <olad/PortConstants.h>
 
@@ -302,6 +303,27 @@ struct DMXMetadata {
                        uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT)
       : universe(universe),
         priority(priority) {
+  }
+};
+
+
+/**
+ * @brief Metadata that accompanies RDM Responses.
+ */
+struct RDMMetadata {
+  /**
+   * @brief The internal (OLA) response code.
+   */
+  ola::rdm::rdm_response_code response_code;
+
+  /**
+   * @brief Construct a new RDMMetadata object.
+   * The default response code is RDM_FAILED_TO_SEND.
+   */
+  RDMMetadata() : response_code(ola::rdm::RDM_FAILED_TO_SEND) {}
+
+  explicit RDMMetadata(ola::rdm::rdm_response_code response_code)
+      : response_code(response_code) {
   }
 };
 }  // namespace client
