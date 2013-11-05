@@ -115,7 +115,7 @@ class IPV4MessageField: public MessageFieldInterface {
     const IPV4FieldDescriptor *GetDescriptor() const {
       return m_descriptor;
     }
-    ola::network::IPV4Address Value() const { return m_value; }
+    const ola::network::IPV4Address& Value() const { return m_value; }
 
     void Accept(MessageVisitor *visitor) const {
       visitor->Visit(this);
@@ -133,25 +133,15 @@ class IPV4MessageField: public MessageFieldInterface {
 class MACMessageField: public MessageFieldInterface {
   public:
     MACMessageField(const MACFieldDescriptor *descriptor,
-                     const ola::network::MACAddress &value)
+                    const ola::network::MACAddress &value)
         : m_descriptor(descriptor),
           m_value(value) {
     }
 
-    /**
-     * TODO(Peter): As byte array too?
-     *MACMessageField(const MACFieldDescriptor *descriptor,
-     *                 uint32_t value)
-     *    : m_descriptor(descriptor),
-     *      m_value(ola::network::MACAddress(value)) {
-     *}
-     */
-
-
     const MACFieldDescriptor *GetDescriptor() const {
       return m_descriptor;
     }
-    ola::network::MACAddress Value() const { return m_value; }
+    const ola::network::MACAddress& Value() const { return m_value; }
 
     void Accept(MessageVisitor *visitor) const {
       visitor->Visit(this);
