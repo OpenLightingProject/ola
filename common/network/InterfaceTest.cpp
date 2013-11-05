@@ -66,9 +66,7 @@ void InterfaceTest::testBuilder() {
   OLA_ASSERT_TRUE(builder.SetAddress("192.168.1.1"));
   OLA_ASSERT_TRUE(builder.SetBroadcast("192.168.1.255"));
   OLA_ASSERT_TRUE(builder.SetSubnetMask("255.255.255.0"));
-  MACAddress addr1;
-  OLA_ASSERT_TRUE(MACAddress::FromString(string("e4:ff:29:36:74:12"), &addr1));
-  builder.SetHardwareAddress(addr1);
+  builder.SetHardwareAddress(MACAddress::FromStringOrDie("e4:ff:29:36:74:12"));
 
   interface = builder.Construct();
   OLA_ASSERT_EQ(string("eth0"), interface.name);
@@ -78,9 +76,7 @@ void InterfaceTest::testBuilder() {
   OLA_ASSERT_EQ(string("e4:ff:29:36:74:12"), interface.hw_address.ToString());
 
   // check the alternate form of mac address
-  MACAddress addr2;
-  OLA_ASSERT_TRUE(MACAddress::FromString(string("12.34.56.78.90.ab"), &addr2));
-  builder.SetHardwareAddress(addr2);
+  builder.SetHardwareAddress(MACAddress::FromStringOrDie("12.34.56.78.90.ab"));
   interface = builder.Construct();
   OLA_ASSERT_EQ(string("12:34:56:78:90:ab"), interface.hw_address.ToString());
 

@@ -347,9 +347,8 @@ void ArtNetNodeTest::setUp() {
   OLA_ASSERT(interface_builder.SetAddress("10.0.0.1"));
   OLA_ASSERT(interface_builder.SetSubnetMask("255.0.0.0"));
   OLA_ASSERT(interface_builder.SetBroadcast("10.255.255.255"));
-  MACAddress addr;
-  OLA_ASSERT_TRUE(MACAddress::FromString("0a:0b:0c:12:34:56", &addr));
-  interface_builder.SetHardwareAddress(addr);
+  interface_builder.SetHardwareAddress(
+      MACAddress::FromStringOrDie("0a:0b:0c:12:34:56"));
   interface = interface_builder.Construct();
 
   ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
