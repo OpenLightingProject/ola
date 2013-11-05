@@ -134,6 +134,7 @@ class MACAddress {
       return out << address.ToString();
     }
 
+    static bool StringToEther(const std::string &address, ether_addr &target);
     static MACAddress* FromString(const std::string &address);
     static bool FromString(const std::string &address, MACAddress *target);
     // useful for testing
