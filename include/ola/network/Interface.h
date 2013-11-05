@@ -80,7 +80,6 @@ class InterfaceBuilder {
       m_subnet_mask = mask;
     }
 
-    bool SetHardwareAddress(const string &mac_address);
     void SetHardwareAddress(const MACAddress &mac_address) {
       m_hw_address = mac_address;
     }

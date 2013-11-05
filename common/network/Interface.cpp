@@ -126,16 +126,6 @@ bool InterfaceBuilder::SetSubnetMask(const string &mask) {
 
 
 /**
- * Sets the hardware (mac) address.
- * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
- * 'nn.nn.nn.nn.nn.nn'
- */
-bool InterfaceBuilder::SetHardwareAddress(const string &mac_address) {
-  return MACAddress::FromString(mac_address, &m_hw_address);
-}
-
-
-/**
  * Set the loopback flag.
  */
 void InterfaceBuilder::SetLoopback(bool loopback) {
