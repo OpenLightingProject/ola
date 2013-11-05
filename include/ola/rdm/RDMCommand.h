@@ -404,18 +404,13 @@ class RDMResponse: public RDMCommand {
                 uint8_t response_type,
                 uint8_t message_count,
                 uint16_t sub_device,
+                RDMCommand::RDMCommandClass command_class,
                 uint16_t param_id,
                 const uint8_t *data,
-                unsigned int length):
-      RDMCommand(source,
-                 destination,
-                 transaction_number,
-                 response_type,
-                 message_count,
-                 sub_device,
-                 param_id,
-                 data,
-                 length) {
+                unsigned int length)
+          : RDMCommand(source, destination, transaction_number, response_type,
+                       message_count, sub_device, param_id, data, length),
+            m_command_class(command_class) {
     }
 
     uint8_t ResponseType() const { return m_port_id; }
@@ -425,6 +420,8 @@ class RDMResponse: public RDMCommand {
                        bool unpack_param_data) const {
       printer->Print(this, summarize, unpack_param_data);
     }
+
+    RDMCommandClass CommandClass() const { return m_command_class; }
 
     // The maximum size of an ACK_OVERFLOW session that we'll buffer
     // 4k should be big enough for everyone ;)
@@ -451,6 +448,9 @@ class RDMResponse: public RDMCommand {
     // Combine two responses into one.
     static RDMResponse* CombineResponses(const RDMResponse *response1,
                                          const RDMResponse *response2);
+
+  private:
+    RDMCommand::RDMCommandClass m_command_class;
 };
 
 
@@ -465,18 +465,13 @@ class RDMGetSetResponse: public RDMResponse {
                       uint8_t response_type,
                       uint8_t message_count,
                       uint16_t sub_device,
+                      RDMCommand::RDMCommandClass command_class,
                       uint16_t param_id,
                       const uint8_t *data,
-                      unsigned int length):
-      RDMResponse(source,
-                  destination,
-                  transaction_number,
-                  response_type,
-                  message_count,
-                  sub_device,
-                  param_id,
-                  data,
-                  length) {
+                      unsigned int length)
+        : RDMResponse(source, destination, transaction_number, response_type,
+                      message_count, sub_device, command_class, param_id, data,
+                      length) {
     }
 };
 
@@ -492,18 +487,11 @@ class BaseRDMResponse: public RDMGetSetResponse {
                     uint16_t sub_device,
                     uint16_t param_id,
                     const uint8_t *data,
-                    unsigned int length):
-      RDMGetSetResponse(source,
-                        destination,
-                        transaction_number,
-                        response_type,
-                        message_count,
-                        sub_device,
-                        param_id,
-                        data,
-                        length) {
+                    unsigned int length)
+        : RDMGetSetResponse(source, destination, transaction_number,
+                            response_type, message_count, sub_device,
+                            command_class, param_id, data, length) {
     }
-    RDMCommandClass CommandClass() const { return command_class; }
 };
 
 typedef BaseRDMResponse<RDMCommand::GET_COMMAND_RESPONSE> RDMGetResponse;
@@ -621,12 +609,11 @@ class RDMDiscoveryResponse: public RDMResponse {
                       port_id,
                       message_count,
                       sub_device,
+                      DISCOVER_COMMAND_RESPONSE,
                       param_id,
                       data,
                       length) {
     }
-
-    RDMCommandClass CommandClass() const { return DISCOVER_COMMAND_RESPONSE; }
 
     virtual void Print(CommandPrinter *printer,
                        bool summarize,

@@ -10,6 +10,7 @@ EXTRA_DIST = $(HEADER_FILES) OlaClientCore.h common-h.in
 
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = AutoStart.cpp \
+                    ClientRDMAPIShim.cpp \
                     OlaCallbackClient.cpp \
                     OlaClient.cpp \
                     OlaClientCore.cpp \

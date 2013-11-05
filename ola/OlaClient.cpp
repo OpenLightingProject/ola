@@ -56,8 +56,8 @@ void OlaClient::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
   m_core->SetCloseHandler(callback);
 }
 
-void OlaClient::SetDmxCallback(RepeatableDmxCallback *callback) {
-  m_core->SetDmxCallback(callback);
+void OlaClient::SetDMXCallback(RepeatableDMXCallback *callback) {
+  m_core->SetDMXCallback(callback);
 }
 
 void OlaClient::FetchPluginList(PluginListCallback *callback) {
@@ -146,14 +146,14 @@ void OlaClient::RegisterUniverse(unsigned int universe,
   m_core->RegisterUniverse(universe, register_action, callback);
 }
 
-void OlaClient::SendDmx(unsigned int universe,
-                        const SendDmxArgs &args,
-                        const DmxBuffer &data) {
-  m_core->SendDmx(universe, args, data);
+void OlaClient::SendDMX(unsigned int universe,
+                        const DmxBuffer &data,
+                        const SendDMXArgs &args) {
+  m_core->SendDMX(universe, data, args);
 }
 
-void OlaClient::FetchDmx(unsigned int universe, DmxCallback *callback) {
-  m_core->FetchDmx(universe, callback);
+void OlaClient::FetchDMX(unsigned int universe, DMXCallback *callback) {
+  m_core->FetchDMX(universe, callback);
 }
 
 void OlaClient::RunDiscovery(unsigned int universe,
@@ -172,114 +172,24 @@ void OlaClient::SendTimeCode(const ola::timecode::TimeCode &timecode,
   m_core->SendTimeCode(timecode, callback);
 }
 
-/*
- * Send an RDM Get Command
- * @param callback the Callback to invoke when this completes
- * @param universe the universe to send the command on
- * @param uid the UID to send the command to
- * @param sub_device the sub device index
- * @param pid the PID to address
- * @param data the optional data to send
- * @param data_length the length of the data
- * @return true on success, false on failure
- */
-bool OlaClient::RDMGet(RDMAPIImplInterface::rdm_callback *callback,
-                       unsigned int universe,
+void OlaClient::RDMGet(unsigned int universe,
                        const ola::rdm::UID &uid,
                        uint16_t sub_device,
                        uint16_t pid,
                        const uint8_t *data,
-                       unsigned int data_length) {
-  return m_core->RDMGet(callback,
-                        universe,
-                        uid,
-                        sub_device,
-                        pid,
-                        data,
-                        data_length);
+                       unsigned int data_length,
+                       const SendRDMArgs& args) {
+  m_core->RDMGet(universe, uid, sub_device, pid, data, data_length, args);
 }
 
-
-/*
- * Send an RDM Get Command and get the pid it returns.
- * @param callback the Callback to invoke when this completes
- * @param universe the universe to send the command on
- * @param uid the UID to send the command to
- * @param sub_device the sub device index
- * @param pid the PID to address
- * @param data the optional data to send
- * @param data_length the length of the data
- * @return true on success, false on failure
- */
-bool OlaClient::RDMGet(RDMAPIImplInterface::rdm_pid_callback *callback,
-                       unsigned int universe,
+void OlaClient::RDMSet(unsigned int universe,
                        const ola::rdm::UID &uid,
                        uint16_t sub_device,
                        uint16_t pid,
                        const uint8_t *data,
-                       unsigned int data_length) {
-  return m_core->RDMGet(callback,
-                        universe,
-                        uid,
-                        sub_device,
-                        pid,
-                        data,
-                        data_length);
-}
-
-
-/*
- * Send an RDM Set Command
- * @param callback the Callback to invoke when this completes
- * @param universe the universe to send the command on
- * @param uid the UID to send the command to
- * @param sub_device the sub device index
- * @param pid the PID to address
- * @param data the optional data to send
- * @param data_length the length of the data
- * @return true on success, false on failure
- */
-bool OlaClient::RDMSet(RDMAPIImplInterface::rdm_callback *callback,
-                       unsigned int universe,
-                       const ola::rdm::UID &uid,
-                       uint16_t sub_device,
-                       uint16_t pid,
-                       const uint8_t *data,
-                       unsigned int data_length) {
-  return m_core->RDMSet(callback,
-                        universe,
-                        uid,
-                        sub_device,
-                        pid,
-                        data,
-                        data_length);
-}
-
-/*
- * Send an RDM Set Command and get the pid it returns
- * @param callback the Callback to invoke when this completes
- * @param universe the universe to send the command on
- * @param uid the UID to send the command to
- * @param sub_device the sub device index
- * @param pid the PID to address
- * @param data the optional data to send
- * @param data_length the length of the data
- * @return true on success, false on failure
- */
-bool OlaClient::RDMSet(RDMAPIImplInterface::rdm_pid_callback *callback,
-                       unsigned int universe,
-                       const ola::rdm::UID &uid,
-                       uint16_t sub_device,
-                       uint16_t pid,
-                       const uint8_t *data,
-                       unsigned int data_length) {
-  return m_core->RDMSet(callback,
-                        universe,
-                        uid,
-                        sub_device,
-                        pid,
-                        data,
-                        data_length);
+                       unsigned int data_length,
+                       const SendRDMArgs& args) {
+  m_core->RDMSet(universe, uid, sub_device, pid, data, data_length, args);
 }
 }  // namespace client
 }  // namespace ola

@@ -30,6 +30,7 @@
 #include <ola/network/Socket.h>
 #include <ola/plugin_id.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
+#include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UID.h>
 #include <ola/rdm/UIDSet.h>
 #include <ola/timecode/TimeCode.h>
@@ -308,6 +309,30 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
 
     void HandleDMX(const client::DMXMetadata &metadata,
                    const DmxBuffer &data);
+
+    void HandleRDMResponse(
+        ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+        const client::Result &result,
+        const client::RDMMetadata &metadata,
+        const ola::rdm::RDMResponse *response);
+
+    void HandleRDMResponseWithPid(
+        ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+        const client::Result &result,
+        const client::RDMMetadata &metadata,
+        const ola::rdm::RDMResponse *response);
+
+    void GetResponseStatusAndData(
+        const client::Result &result,
+        ola::rdm::rdm_response_code response_code,
+        const ola::rdm::RDMResponse *response,
+        rdm::ResponseStatus *response_status,
+        string *data);
+
+    void GetParamFromReply(
+        const string &message_type,
+        const ola::rdm::RDMResponse *response,
+        ola::rdm::ResponseStatus *new_status);
 
     DISALLOW_COPY_AND_ASSIGN(OlaCallbackClient);
 };

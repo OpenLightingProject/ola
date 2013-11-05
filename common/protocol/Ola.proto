@@ -327,13 +327,17 @@ message RDMDiscoveryRequest {
 
 message RDMResponse {
   required RDMResponseCode response_code = 1;
+  optional UID source_uid = 9;
+  optional UID dest_uid = 10;
+  optional int32 transaction_number = 11;
+
   // ACK, NACK or TIMER
   optional RDMResponseType response_type = 2;
   optional uint32 message_count = 3 [default = 0];
-  optional bytes data = 4 [default = ""]; // 0 - 231 bytes
-  optional uint32 param_id = 5;  // the param id, required for queued messages
-  optional RDMCommandClass command_class = 6; // the command class
   optional uint32 sub_device = 7; // the sub device
+  optional RDMCommandClass command_class = 6; // the command class
+  optional uint32 param_id = 5;  // the param id, required for queued messages
+  optional bytes data = 4 [default = ""]; // 0 - 231 bytes
   repeated bytes raw_response = 8;
 }
 

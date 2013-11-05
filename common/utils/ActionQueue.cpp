@@ -13,8 +13,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * OlaHttpServer.cpp
- * Ola HTTP class
+ * ActionQueue.cpp
+ * The Action Queue class.
  * Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -23,24 +23,19 @@
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 
 using std::vector;
 
 ActionQueue::~ActionQueue() {
-  vector<Action*>::const_iterator iter;
-  for (iter = m_actions.begin(); iter != m_actions.end(); ++iter)
-    delete *iter;
-  m_actions.clear();
+  STLDeleteElements(&m_actions);
 }
-
 
 void ActionQueue::AddAction(Action *action) {
   m_actions.push_back(action);
 }
-
 
 /*
  * Check the state of the current action, and if necessary run the next action.

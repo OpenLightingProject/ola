@@ -29,6 +29,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/client/ClientTypes.h>
 #include <ola/client/Result.h>
+#include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UIDSet.h>
 
 #include <string>
@@ -124,13 +125,13 @@ typedef SingleUseCallback2<void, const Result&, const ola::rdm::UIDSet&>
 
 
 /**
- * @brief Called once when OlaClient::FetchDmx() completes.
+ * @brief Called once when OlaClient::FetchDMX() completes.
  * @param result the Result of the API call.
  * @param metadata the DMXMetadata associated with the frame.
  * @param dmx the DmxBuffer with the data.
  */
 typedef SingleUseCallback3<void, const Result&, const DMXMetadata&,
-                           const DmxBuffer&> DmxCallback;
+                           const DmxBuffer&> DMXCallback;
 
 /**
  * @brief Called when new DMX data arrives.
@@ -138,7 +139,20 @@ typedef SingleUseCallback3<void, const Result&, const DMXMetadata&,
  * @param dmx the DmxBuffer with the data.
  */
 typedef Callback2<void, const DMXMetadata&, const DmxBuffer&>
-    RepeatableDmxCallback;
+    RepeatableDMXCallback;
+
+/**
+ * @brief Called when a RDM request completes.
+ * Used with OlaClient::RDMGet() and OlaClient::RDMSet().
+ * @param result the Result of the API call.
+ * @param metadata the metadata for the response, including the
+ * rdm_response_code.
+ * @param response the RDM Response, or NULL if no response was received.
+ */
+typedef SingleUseCallback3<void, const Result&,
+                           const RDMMetadata&,
+                           const ola::rdm::RDMResponse*> RDMCallback;
+
 
 }  // namespace client
 }  // namespace ola
