@@ -108,9 +108,9 @@ class MACAddress {
 
     // copy the address in network byte order to a location. The location
     // should be at least LENGTH bytes.
-    void Get(uint8_t ptr[LENGTH]) {
+    void Get(uint8_t ptr[LENGTH]) const {
       memcpy(ptr,
-             reinterpret_cast<uint8_t*>(&m_address),
+             reinterpret_cast<const uint8_t*>(&m_address),
              LENGTH);
     }
 
@@ -120,7 +120,7 @@ class MACAddress {
      * @param length the size of the memory block, should be at least LENGTH.
      * @returns true if length was >= LENGTH, false otherwise.
      */
-    bool Pack(uint8_t *buffer, unsigned int length) {
+    bool Pack(uint8_t *buffer, unsigned int length) const {
       if (length < LENGTH)
         return false;
       Get(buffer);
