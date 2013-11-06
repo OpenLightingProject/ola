@@ -412,6 +412,9 @@ const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
     case ola::rdm::pid::IPV4:
       descriptor = new ola::messaging::IPV4FieldDescriptor(field.name());
       break;
+    case ola::rdm::pid::MAC:
+      descriptor = new ola::messaging::MACFieldDescriptor(field.name());
+      break;
     case ola::rdm::pid::UID:
       descriptor = new ola::messaging::UIDFieldDescriptor(field.name());
       break;
