@@ -23,6 +23,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderSensor.h"
@@ -444,12 +445,12 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     int16_t normal_min;
     int16_t normal_max;
     uint8_t recorded_support;
-    char description[32];
+    char description[MAX_RDM_STRING_LENGTH];
   } __attribute__((packed));
 
   const Sensor *sensor = sensor_list.at(sensor_number);
   struct sensor_definition_s sensor_definition;
-  sensor_definition.sensor =  sensor_number;
+  sensor_definition.sensor = sensor_number;
   sensor_definition.type = sensor->Type();
   sensor_definition.unit = sensor->Unit();
   sensor_definition.prefix = sensor->Prefix();
@@ -557,6 +558,52 @@ const RDMResponse *ResponderHelper::RecordSensor(
   }
 
   return GetResponseFromData(request, NULL, 0);
+}
+
+
+const RDMResponse *ResponderHelper::GetDNSHostname(
+    const RDMRequest *request, DNSGetter *dns_getter) {
+  // TODO(Peter): Check this is between 1 and 63 chars
+  return GetString(request, dns_getter->GetHostname());
+}
+
+
+const RDMResponse *ResponderHelper::GetDNSDomainName(
+    const RDMRequest *request, DNSGetter *dns_getter) {
+  // TODO(Peter): Check this is between 0 and 231 chars
+  return GetString(request, dns_getter->GetDomainName());
+}
+
+
+const RDMResponse *ResponderHelper::GetDNSNameServer(
+    const RDMRequest *request, DNSGetter *dns_getter) {
+  uint8_t name_server_number;
+  if (!ResponderHelper::ExtractUInt8(request, &name_server_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  NameServers name_servers = dns_getter->GetNameServers();
+
+  if ((name_server_number >= name_servers.size()) ||
+      (name_server_number > 2)) {
+    // TODO(Peter): Check the ID is between 0 and 2; turn 2 into a const
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  struct name_server_s {
+    uint8_t index;
+    uint32_t address;
+  } __attribute__((packed));
+
+  struct name_server_s name_server;
+  name_server.index = name_server_number;
+  // TODO(Peter): Seems to be reversed if HostToNetwork is used?
+  name_server.address = name_servers.at(name_server_number).AsInt();
+
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&name_server),
+    sizeof(name_server));
 }
 
 

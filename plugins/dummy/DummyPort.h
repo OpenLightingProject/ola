@@ -48,7 +48,8 @@ class DummyPort: public BasicOutputPort {
               number_of_dummy_responders(1),
               number_of_ack_timer_responders(0),
               number_of_advanced_dimmers(0),
-              number_of_sensor_responders(1) {
+              number_of_sensor_responders(1),
+              number_of_network_responders(1) {
         }
 
         uint8_t number_of_dimmers;
@@ -58,6 +59,7 @@ class DummyPort: public BasicOutputPort {
         uint8_t number_of_ack_timer_responders;
         uint8_t number_of_advanced_dimmers;
         uint8_t number_of_sensor_responders;
+        uint8_t number_of_network_responders;
     };
 
     DummyPort(class DummyDevice *parent,

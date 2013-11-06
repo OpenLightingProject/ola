@@ -46,6 +46,7 @@ const char DummyPlugin::DIMMER_COUNT_KEY[] = "dimmer_count";
 const char DummyPlugin::DIMMER_SUBDEVICE_COUNT_KEY[] = "dimmer_subdevice_count";
 const char DummyPlugin::DUMMY_DEVICE_COUNT_KEY[] = "dummy_device_count";
 const char DummyPlugin::MOVING_LIGHT_COUNT_KEY[] = "moving_light_count";
+const char DummyPlugin::NETWORK_COUNT_KEY[] = "network_device_count";
 const char DummyPlugin::PLUGIN_NAME[] = "Dummy";
 const char DummyPlugin::PLUGIN_PREFIX[] = "dummy";
 const char DummyPlugin::SENSOR_COUNT_KEY[] = "sensor_device_count";
@@ -88,6 +89,11 @@ bool DummyPlugin::StartHook() {
                    &options.number_of_sensor_responders))
     StringToInt(DEFAULT_DEVICE_COUNT,
                 &options.number_of_sensor_responders);
+
+  if (!StringToInt(m_preferences->GetValue(NETWORK_COUNT_KEY) ,
+                   &options.number_of_network_responders))
+    StringToInt(DEFAULT_DEVICE_COUNT,
+                &options.number_of_network_responders);
 
   m_device = new DummyDevice(this, DEVICE_NAME, options);
   m_device->Start();
@@ -149,6 +155,8 @@ string DummyPlugin::Description() const {
 "\n"
 "sensor_device_count = 1\n"
 "The number of sensor-only devices to create.\n"
+"network_device_count = 1\n"
+"The number of network E1.37-2 devices to create.\n"
 "\n";
 }
 
@@ -187,6 +195,10 @@ bool DummyPlugin::SetDefaultPreferences() {
                                          DEFAULT_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(SENSOR_COUNT_KEY,
+                                         IntValidator(0, 254),
+                                         DEFAULT_DEVICE_COUNT);
+
+  save |= m_preferences->SetDefaultValue(NETWORK_COUNT_KEY,
                                          IntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 

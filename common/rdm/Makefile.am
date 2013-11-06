@@ -14,10 +14,10 @@ libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        DimmerSubDevice.cpp DiscoveryAgent.cpp \
                        DummyResponder.cpp GroupSizeCalculator.cpp \
                        MessageDeserializer.cpp MessageSerializer.cpp \
-                       MovingLightResponder.cpp OpenLightingEnums.cpp \
-                       PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
-                       QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
-                       RDMCommandSerializer.cpp RDMHelper.cpp \
+                       MovingLightResponder.cpp NetworkResponder.cpp \
+                       OpenLightingEnums.cpp PidStore.cpp PidStoreHelper.cpp \
+                       PidStoreLoader.cpp QueueingRDMController.cpp RDMAPI.cpp \
+                       RDMCommand.cpp RDMCommandSerializer.cpp RDMHelper.cpp \
                        ResponderHelper.cpp ResponderLoadSensor.cpp \
                        ResponderPersonality.cpp ResponderSlotData.cpp \
                        ResponderSettings.cpp SensorResponder.cpp \

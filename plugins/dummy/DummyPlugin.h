@@ -61,6 +61,7 @@ class DummyPlugin: public Plugin {
     static const char DIMMER_SUBDEVICE_COUNT_KEY[];
     static const char DUMMY_DEVICE_COUNT_KEY[];
     static const char MOVING_LIGHT_COUNT_KEY[];
+    static const char NETWORK_COUNT_KEY[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char SENSOR_COUNT_KEY[];

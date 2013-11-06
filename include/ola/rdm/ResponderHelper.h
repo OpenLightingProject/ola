@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/ResponderNetworkController.h"
 #include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/ResponderSensor.h"
 
@@ -128,6 +129,15 @@ class ResponderHelper {
 
     static const RDMResponse *RecordSensor(
         const RDMRequest *request, const Sensors &sensor_list);
+
+    static const RDMResponse *GetDNSHostname(
+        const RDMRequest *request, DNSGetter *dns_getter);
+
+    static const RDMResponse *GetDNSDomainName(
+        const RDMRequest *request, DNSGetter *dns_getter);
+
+    static const RDMResponse *GetDNSNameServer(
+        const RDMRequest *request, DNSGetter *dns_getter);
 
     static const RDMResponse *GetRealTimeClock(
         const RDMRequest *request,
