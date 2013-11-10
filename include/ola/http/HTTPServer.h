@@ -112,7 +112,8 @@ class HTTPResponse {
   private:
     string m_data;
     struct MHD_Connection *m_connection;
-    multimap<string, string> m_headers;
+    typedef multimap<string, string> HeadersMultiMap;
+    HeadersMultiMap m_headers;
     unsigned int m_status_code;
 
     DISALLOW_COPY_AND_ASSIGN(HTTPResponse);

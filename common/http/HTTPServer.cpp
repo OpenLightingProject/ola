@@ -352,7 +352,7 @@ int HTTPResponse::SendJson(const JsonValue &json) {
       static_cast<void*>(const_cast<char*>(output.data())),
       MHD_NO,
       MHD_YES);
-  map<string, string>::const_iterator iter;
+  HeadersMultiMap::const_iterator iter;
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
     MHD_add_response_header(response,
                             iter->first.c_str(),
@@ -366,7 +366,7 @@ int HTTPResponse::SendJson(const JsonValue &json) {
  * @returns true on success, false on error
  */
 int HTTPResponse::Send() {
-  map<string, string>::const_iterator iter;
+  HeadersMultiMap::const_iterator iter;
   struct MHD_Response *response = MHD_create_response_from_data(
       m_data.length(),
       static_cast<void*>(const_cast<char*>(m_data.data())),
