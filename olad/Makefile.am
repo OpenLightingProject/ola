@@ -6,8 +6,8 @@ pkgincludedir = $(includedir)/olad
 pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 
-OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
-                    DmxSource.cpp \
+OLASERVER_SOURCES = AvahiDiscoveryAgent.h Client.cpp ClientBroker.cpp \
+                    Device.cpp DeviceManager.cpp DmxSource.cpp \
                     DiscoveryAgent.cpp \
                     DynamicPluginLoader.cpp \
                     OlaServerServiceImpl.cpp \
@@ -17,6 +17,10 @@ OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
 
 if HAVE_DNSSD
 OLASERVER_SOURCES += BonjourDiscoveryAgent.cpp
+endif
+
+if HAVE_AVAHI
+OLASERVER_SOURCES += AvahiDiscoveryAgent.cpp
 endif
 
 # lib olaserver

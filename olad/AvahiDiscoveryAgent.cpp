@@ -13,33 +13,39 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DiscoveryAgent.cpp
- * The Interface for DNS-SD Registration & Discovery
+ * AvahiDiscoveryAgent.cpp
+ * The Bonjour implementation of DiscoveryAgentInterface.
  * Copyright (C) 2013 Simon Newton
  */
-#include "olad/DiscoveryAgent.h"
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef HAVE_DNSSD
-#include "olad/BonjourDiscoveryAgent.h"
-#endif
-
-#ifdef HAVE_AVAHI
 #include "olad/AvahiDiscoveryAgent.h"
-#endif
+
+#include <memory>
+#include <string>
 
 namespace ola {
 
-DiscoveryAgentInterface* DiscoveryAgentFactory::New() {
-#ifdef HAVE_DNSSD
-  return new BonjourDiscoveryAgent();
-#endif
-#ifdef HAVE_AVAHI
-  return new AvahiDiscoveryAgent();
-#endif
-  return NULL;
+using std::auto_ptr;
+using std::string;
+
+
+AvahiDiscoveryAgent::AvahiDiscoveryAgent() {
+}
+
+AvahiDiscoveryAgent::~AvahiDiscoveryAgent() {
+}
+
+bool AvahiDiscoveryAgent::Init() {
+  return true;
+}
+
+void AvahiDiscoveryAgent::RegisterService(const string &service_name,
+                                          const string &type,
+                                          uint16_t port,
+                                          const RegisterOptions &options) {
+  (void) service_name;
+  (void) type;
+  (void) port;
+  (void) options;
 }
 }  // namespace ola
