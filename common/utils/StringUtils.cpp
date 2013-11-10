@@ -334,6 +334,7 @@ void CustomCapitalizeLabel(string *s) {
     "dmx",
     "dns",
     "ip",
+    "ipv4",  // Should really be IPv4 probably, but better than nothing
     "led",
     "rdm",
     "uid",

@@ -671,9 +671,9 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   CustomCapitalizeLabel(&label8);
   OLA_ASSERT_EQ(string("Device RDM UID"), label8);
 
-  string label9 = "dns_via_dhcp";
+  string label9 = "dns_via_ipv4_dhcp";
   CustomCapitalizeLabel(&label9);
-  OLA_ASSERT_EQ(string("DNS Via DHCP"), label9);
+  OLA_ASSERT_EQ(string("DNS Via IPV4 DHCP"), label9);
 };
 
 
