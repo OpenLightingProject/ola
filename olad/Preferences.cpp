@@ -184,7 +184,7 @@ void MemoryPreferences::SetMultipleValue(const string &key,
 bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
                                         const string &value) {
-  map<string, string>::const_iterator iter;
+  PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
   if (iter == m_pref_map.end() || !validator.IsValid(iter->second)) {
@@ -202,7 +202,7 @@ bool MemoryPreferences::SetDefaultValue(const string &key,
  * doesn't exist.
  */
 string MemoryPreferences::GetValue(const string &key) const {
-  map<string, string>::const_iterator iter;
+  PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
   if (iter != m_pref_map.end())
@@ -217,7 +217,7 @@ string MemoryPreferences::GetValue(const string &key) const {
  */
 vector<string> MemoryPreferences::GetMultipleValue(const string &key) const {
   vector<string> values;
-  map<string, string>::const_iterator iter;
+  PreferencesMap::const_iterator iter;
 
   for (iter = m_pref_map.find(key);
        iter != m_pref_map.end() && iter->first == key; ++iter) {
@@ -266,7 +266,7 @@ void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
  * @return true if the value is 'true' or false otherwise
  */
 bool MemoryPreferences::GetValueAsBool(const string &key) const {
-  map<string, string>::const_iterator iter;
+  PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
   if (iter != m_pref_map.end())

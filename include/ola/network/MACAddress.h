@@ -25,7 +25,17 @@
 #include <winsock2.h>
 // TODO(Peter): Do something else, possibly define the type locally
 #else
+#include <sys/types.h> // required for FreeBSD uchar - doesn't hurt others
 #include <net/ethernet.h>
+#endif
+
+#ifdef __FreeBSD__
+// In the FreeBSD struct ether_addr, the single field is named octet, instead
+// of ether_addr_octet.
+// OS X does this too, but avoids it by adding the following line to its
+// header, for compatibility with linux and others:
+// http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/net/ethernet.h
+#define ether_addr_octet octet
 #endif
 
 #include <stdint.h>

@@ -225,6 +225,18 @@ if test "${use_lpthread}" = "yes"; then
   LIBS="-lpthread $LIBS"
 fi
 
+
+# LIBRARY: libexecinfo
+# FreeBSD required -lexecinfo to call backtrace - checking for presence of header execinfo.h isn't enough
+
+AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+case "${host_os}" in
+  *freebsd*)
+  LIBS="$LIBS -lexecinfo"
+  ;;
+esac
+
+
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
               AC_HELP_STRING([--enable-java-libs], [Build the Java interface]))
