@@ -37,7 +37,6 @@
 #include "ola/dmx/SourcePriorities.h"
 #include "ola/io/Descriptor.h"
 #include "ola/plugin_id.h"
-#include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/timecode/TimeCode.h"
@@ -71,7 +70,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
      * is transferred to the OlaClientCore.
      * @param callback the callback to run upon receiving new DMX data.
      */
-    void SetDmxCallback(RepeatableDmxCallback *callback);
+    void SetDMXCallback(RepeatableDMXCallback *callback);
 
     /**
      * @brief Fetch the list of plugins loaded.
@@ -210,7 +209,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
     /**
      * @brief Register our interest in a universe. The callback set by
-     * SetDmxCallback() will be called when new DMX data arrives.
+     * SetDMXCallback() will be called when new DMX data arrives.
      * @param universe the id of the universe to register for.
      * @param register_action the action (register or unregister)
      * @param callback the SetCallback to invoke upon completion.
@@ -222,19 +221,19 @@ class OlaClientCore: public ola::proto::OlaClientService {
     /**
      * @brief Send DMX data.
      * @param universe the universe to send to.
-     * @param args the SendDmxArgs to use for this call.
      * @param data the DmxBuffer with the data
+     * @param args the SendDMXArgs to use for this call.
      */
-    void SendDmx(unsigned int universe,
-                 const SendDmxArgs &args,
-                 const DmxBuffer &data);
+    void SendDMX(unsigned int universe,
+                 const DmxBuffer &data,
+                 const SendDMXArgs &args);
 
     /**
      * @brief Fetch the latest DMX data for a universe.
      * @param universe the universe id to get data for.
      * @param callback the SetCallback to invoke upon completion.
      */
-    void FetchDmx(unsigned int universe, DmxCallback *callback);
+    void FetchDMX(unsigned int universe, DMXCallback *callback);
 
     /**
      * @brief Trigger discovery for a universe.
@@ -253,34 +252,41 @@ class OlaClientCore: public ola::proto::OlaClientService {
      */
     void SetSourceUID(const ola::rdm::UID &uid, SetCallback *callback);
 
-    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                unsigned int universe,
+    /**
+     * @brief Send an RDM Get Command.
+     * @param universe the universe to send the command on
+     * @param uid the UID to send the command to
+     * @param sub_device the sub device index
+     * @param pid the PID to address
+     * @param data the optional data to send
+     * @param data_length the length of the data
+     * @param args the RDM arguments which includes the callback to run.
+     */
+    void RDMGet(unsigned int universe,
                 const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
-                unsigned int data_length);
-    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-                unsigned int universe,
+                unsigned int data_length,
+                const SendRDMArgs& args);
+
+    /**
+     * @brief Send an RDM Set Command.
+     * @param universe the universe to send the command on
+     * @param uid the UID to send the command to
+     * @param sub_device the sub device index
+     * @param pid the PID to address
+     * @param data the optional data to send
+     * @param data_length the length of the data
+     * @param args the RDM arguments which includes the callback to run.
+     */
+    void RDMSet(unsigned int universe,
                 const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
-                unsigned int data_length);
-    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
-    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
+                unsigned int data_length,
+                const SendRDMArgs& args);
 
     /**
      * @brief Send TimeCode data.
@@ -300,7 +306,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
   private:
     ConnectedDescriptor *m_descriptor;
-    std::auto_ptr<RepeatableDmxCallback> m_dmx_callback;
+    std::auto_ptr<RepeatableDMXCallback> m_dmx_callback;
     std::auto_ptr<RpcChannel> m_channel;
     std::auto_ptr<ola::proto::OlaServerService_Stub> m_stub;
     int m_connected;
@@ -373,7 +379,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
      */
     void HandleGetDmx(RpcController *controller,
                       ola::proto::DmxData *reply,
-                      DmxCallback *callback);
+                      DMXCallback *callback);
 
     /**
      * @brief Called when a RunDiscovery() request completes.
@@ -387,15 +393,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
      */
     void HandleRDM(RpcController *controller,
                    ola::proto::RDMResponse *reply,
-                   ola::rdm::RDMAPIImplInterface::rdm_callback *callback);
-
-    /**
-     * @brief Handle a RDM response, and pass the PID back to the client.
-     */
-    void HandleRDMWithPID(
-        RpcController *controller,
-        ola::proto::RDMResponse *reply,
-        ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback);
+                   RDMCallback *callback);
 
     /**
      * @brief Fetch a list of candidate ports, with or without a universe
@@ -404,36 +402,24 @@ class OlaClientCore: public ola::proto::OlaClientService {
                                     bool include_universe,
                                     CandidatePortsCallback *callback);
 
-    bool RDMCommand(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                    bool is_set,
-                    unsigned int universe,
-                    const ola::rdm::UID &uid,
-                    uint16_t sub_device,
-                    uint16_t pid,
-                    const uint8_t *data,
-                    unsigned int data_length);
-    bool RDMCommandWithPid(
-        ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-        bool is_set,
-        unsigned int universe,
-        const ola::rdm::UID &uid,
-        uint16_t sub_device,
-        uint16_t pid,
-        const uint8_t *data,
-        unsigned int data_length);
+    /**
+     * @brief Sends a RDM command to the server.
+     */
+    void SendRDMCommand(bool is_set,
+                        unsigned int universe,
+                        const ola::rdm::UID &uid,
+                        uint16_t sub_device,
+                        uint16_t pid,
+                        const uint8_t *data,
+                        unsigned int data_length,
+                        const SendRDMArgs &args);
 
-    void CheckRDMResponseStatus(RpcController *controller,
-                                ola::proto::RDMResponse *reply,
-                                ola::rdm::ResponseStatus *new_status);
-
-    void GetParamFromReply(
-        const string &message_type,
+    /**
+     * @brief Builds a RDMResponse from the server's RDM reply message.
+     */
+    ola::rdm::RDMResponse *BuildRDMResponse(
         ola::proto::RDMResponse *reply,
-        ola::rdm::ResponseStatus *new_status);
-
-    void UpdateResponseAckData(
-        ola::proto::RDMResponse *reply,
-        ola::rdm::ResponseStatus *new_status);
+        ola::rdm::rdm_response_code *response_code);
 
     static const char NOT_CONNECTED_ERROR[];
 

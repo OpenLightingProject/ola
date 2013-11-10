@@ -75,8 +75,10 @@ class IPV4Address {
       return !(*this == other);
     }
 
-    // Order addresses. Note that this won't order how humans expect
-    // because s_addr is in network byte order.
+    /**
+     * @brief Order addresses. Note that this won't order how humans expect
+     * because s_addr is in network byte order.
+     */
     bool operator<(const IPV4Address &other) const {
       return m_address.s_addr < other.m_address.s_addr;
     }

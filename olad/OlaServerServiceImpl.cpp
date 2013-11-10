@@ -615,8 +615,7 @@ void OlaServerServiceImpl::GetUIDs(
   UIDSet::Iterator iter = uid_set.Begin();
   for (; iter != uid_set.End(); ++iter) {
     ola::proto::UID *uid = response->add_uid();
-    uid->set_esta_id(iter->ManufacturerId());
-    uid->set_device_id(iter->DeviceId());
+    SetProtoUID(*iter, uid);
   }
 }
 
@@ -813,10 +812,13 @@ void OlaServerServiceImpl::HandleRDMResponse(
     } else {
       uint8_t response_type = rdm_response->ResponseType();
       if (response_type <= ola::rdm::RDM_NACK_REASON) {
+        SetProtoUID(rdm_response->SourceUID(), response->mutable_source_uid());
+        SetProtoUID(rdm_response->DestinationUID(),
+                    response->mutable_dest_uid());
+        response->set_transaction_number(rdm_response->TransactionNumber());
         response->set_response_type(
             static_cast<ola::proto::RDMResponseType>(response_type));
         response->set_message_count(rdm_response->MessageCount());
-        response->set_param_id(rdm_response->ParamId());
         response->set_sub_device(rdm_response->SubDevice());
 
         switch (rdm_response->CommandClass()) {
@@ -833,6 +835,8 @@ void OlaServerServiceImpl::HandleRDMResponse(
             OLA_WARN << "Unknown command class 0x" << std::hex <<
               rdm_response->CommandClass();
         }
+
+        response->set_param_id(rdm_response->ParamId());
 
         if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
           const string data(
@@ -877,8 +881,7 @@ void OlaServerServiceImpl::RDMDiscoveryComplete(
   UIDSet::Iterator iter = uids.Begin();
   for (; iter != uids.End(); ++iter) {
     ola::proto::UID *uid = response->add_uid();
-    uid->set_esta_id(iter->ManufacturerId());
-    uid->set_device_id(iter->DeviceId());
+    SetProtoUID(*iter, uid);
   }
 }
 
@@ -973,6 +976,11 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
   port_info->set_supports_rdm(port.SupportsRDM());
 }
 
+void OlaServerServiceImpl::SetProtoUID(const ola::rdm::UID &uid,
+                                       ola::proto::UID *pb_uid) {
+  pb_uid->set_esta_id(uid.ManufacturerId());
+  pb_uid->set_device_id(uid.DeviceId());
+}
 
 // OlaClientService
 // ----------------------------------------------------------------------------

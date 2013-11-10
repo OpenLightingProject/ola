@@ -9,6 +9,7 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            Interface.cpp \
                            InterfacePicker.cpp \
                            NetworkUtils.cpp \
+                           MACAddress.cpp \
                            Socket.cpp \
                            SocketAddress.cpp \
                            SocketHelper.cpp \
@@ -37,6 +38,7 @@ HealthCheckedConnectionTester_LDADD = $(COMMON_TEST_LDADD)
 NetworkTester_SOURCES = IPAddressTest.cpp \
                         InterfacePickerTest.cpp \
                         InterfaceTest.cpp \
+                        MACAddressTest.cpp \
                         NetworkUtilsTest.cpp \
                         SocketAddressTest.cpp \
                         SocketTest.cpp

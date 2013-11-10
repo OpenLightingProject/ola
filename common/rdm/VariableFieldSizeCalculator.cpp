@@ -124,6 +124,12 @@ void VariableFieldSizeCalculator::Visit(
 
 
 void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::MACFieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+
+void VariableFieldSizeCalculator::Visit(
     const ola::messaging::UIDFieldDescriptor *descriptor) {
   m_fixed_size_sum += descriptor->MaxSize();
 }

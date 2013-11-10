@@ -33,6 +33,7 @@
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::network::InterfacePicker;
+using ola::network::MACAddress;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -89,13 +90,7 @@ void InterfacePickerTest::testGetInterfaces() {
     cout << " ip: " << iter->ip_address << endl;
     cout << " bcast: " << iter->bcast_address << endl;
     cout << " subnet: " << iter->subnet_mask << endl;
-    cout << " hw_addr: ";
-    for (unsigned int i = 0; i < ola::network::MAC_LENGTH; i++) {
-      if (i)
-        cout << ':';
-      cout << std::setw(2) << std::setfill('0') << std::hex <<
-        0 + (uint8_t) iter->hw_address[i];
-    }
+    cout << " hw_addr: " << iter->hw_address << endl;
     cout << endl;
     cout << "---------------" << endl;
   }

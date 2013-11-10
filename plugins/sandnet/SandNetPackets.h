@@ -25,15 +25,14 @@
 #include <stdint.h>
 #include <netinet/in.h>
 
-#include <ola/network/InterfacePicker.h>  // MAC_LENGTH
 #include <ola/BaseTypes.h>
+#include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 #include "plugins/sandnet/SandNetCommon.h"
 
 namespace ola {
 namespace plugin {
 namespace sandnet {
-
-using ola::network::MAC_LENGTH;
 
 enum { SANDNET_NAME_LENGTH = 31};
 
@@ -80,7 +79,7 @@ struct sandnet_packet_advertisement_port_s {
  * A Sandnet Advertisment
  */
 struct sandnet_advertisement_s {
-  uint8_t mac[ola::network::MAC_LENGTH];    // mac address
+  uint8_t mac[ola::network::MACAddress::LENGTH];    // mac address
   uint32_t firmware;                   // firmware version
   struct sandnet_packet_advertisement_port_s ports[SANDNET_MAX_PORTS];  // ports
   uint8_t nlen;                       // length of the name field
@@ -111,7 +110,7 @@ typedef struct sandnet_dmx_s sandnet_dmx;
  * Changes the port attributes
  */
 struct sandnet_port_control_s {
-  uint8_t  mac[MAC_LENGTH];  // mac address
+  uint8_t  mac[ola::network::MACAddress::LENGTH];  // mac address
   uint8_t  magic[4];                 // ?? seems to change
   struct sandnet_packet_advertisement_port_s ports[SANDNET_MAX_PORTS];  // ports
 }__attribute__((packed));
@@ -123,7 +122,7 @@ typedef struct sandnet_port_control_s sandnet_port_control;
  * Sets the name of the sandnet node
  */
 struct sandnet_name_s {
-  uint8_t  mac[MAC_LENGTH];   // mac address
+  uint8_t  mac[ola::network::MACAddress::LENGTH];   // mac address
   uint8_t  name_length;               // length of the name field
   uint8_t  name[SANDNET_NAME_LENGTH];  // name field
 }__attribute__((packed));
@@ -136,7 +135,7 @@ typedef struct sandnet_name_s sandnet_name;
  * (presumably this flashes the leds or something)
  */
 struct sandnet_identify_s {
-  uint8_t  mac[MAC_LENGTH];  // mac address
+  uint8_t  mac[ola::network::MACAddress::LENGTH];  // mac address
 }__attribute__((packed));
 
 typedef struct sandnet_identify_s sandnet_identify;
@@ -147,10 +146,10 @@ typedef struct sandnet_identify_s sandnet_identify;
  * sets the node's networking parameters
  */
 struct sandnet_program_s {
-  uint8_t  mac[MAC_LENGTH];  // mac address
-  uint8_t  ip[4];
+  uint8_t  mac[ola::network::MACAddress::LENGTH];  // mac address
+  uint8_t  ip[ola::network::IPV4Address::LENGTH];
   uint8_t  dhcp;
-  uint8_t  netmask[4];
+  uint8_t  netmask[ola::network::IPV4Address::LENGTH];
 }__attribute__((packed));
 
 typedef struct sandnet_program_s sandnet_program;
@@ -160,7 +159,7 @@ typedef struct sandnet_program_s sandnet_program;
  * Turns the led on and off
  */
 struct sandnet_led_s {
-  uint8_t  mac[MAC_LENGTH];  // mac address
+  uint8_t  mac[ola::network::MACAddress::LENGTH];  // mac address
   uint8_t  led;              // 0x00 off, 0xff on
 }__attribute__((packed));
 

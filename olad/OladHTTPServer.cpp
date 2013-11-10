@@ -184,8 +184,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("ip", m_interface.ip_address.ToString());
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
-  json.Add("hw_address",
-      ola::network::HardwareAddressToString(m_interface.hw_address));
+  json.Add("hw_address", m_interface.hw_address.ToString());
   json.Add("version", OLA_VERSION);
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
@@ -405,7 +404,7 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
   if (!StringToInt(uni_id, &universe_id))
     return ServeHelpRedirect(response);
 
-  m_client.FetchDmx(
+  m_client.FetchDMX(
       universe_id,
       NewSingleCallback(this, &OladHTTPServer::HandleGetDmx, response));
   return MHD_YES;
@@ -434,9 +433,9 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
   if (!buffer.Size())
     return m_server.ServeError(response, "Invalid DMX string");
 
-  ola::client::SendDmxArgs args(
+  ola::client::SendDMXArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
-  m_client.SendDmx(universe_id, args, buffer);
+  m_client.SendDMX(universe_id, buffer, args);
   return MHD_YES;
 }
 
@@ -815,7 +814,7 @@ void OladHTTPServer::ModifyUniverseComplete(HTTPResponse *response,
  * Send the response to a modify universe request.
  */
 void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
-                                               ActionQueue *action_queue) {
+                                                ActionQueue *action_queue) {
   if (!action_queue->WasSuccessful()) {
     delete action_queue;
     m_server.ServeError(response, "Update failed");
