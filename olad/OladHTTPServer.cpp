@@ -28,6 +28,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/dmx/SourcePriorities.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/web/Json.h"
 #include "olad/DmxSource.h"
@@ -909,7 +910,7 @@ void OladHTTPServer::PortToJson(JsonObject *json,
     // here
     uint8_t priority = port.Priority();
     if (priority == 0) {
-      priority = DmxSource::PRIORITY_DEFAULT;
+      priority = dmx::SOURCE_PRIORITY_DEFAULT;
     }
     priority_json->Add("value", static_cast<int>(priority));
     priority_json->Add(

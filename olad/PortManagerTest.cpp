@@ -241,7 +241,7 @@ void PortManagerTest::testOutputPortSetPriority() {
   OLA_ASSERT(patcher.SetPriorityInherit(&output_port));
   OLA_ASSERT(patcher.SetPriorityStatic(&output_port, 20));
   OLA_ASSERT_EQ(output_port.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port.GetPriority(), ola:dmx::SOURCE_PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(output_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // now test an output port that supports priorities
   TestMockPriorityOutputPort output_port2(NULL, 1);
