@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_THREAD_CALLBACKTHREAD_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/Thread.h>
 
 namespace ola {
@@ -53,7 +54,7 @@ class CallbackThread : public Thread {
   private:
     VoidThreadCallback *m_callback;
 
-    DISALLOW_COPY_AND_ASSIGN(Thread);
+    DISALLOW_COPY_AND_ASSIGN(CallbackThread);
 };
 }  // namespace thread
 }  // namespace ola

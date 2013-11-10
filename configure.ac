@@ -453,6 +453,17 @@ if test "${have_microhttpd}" = "yes"; then
   AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
 fi
 
+# DNS-SD support
+# LIBRARY: dns_sd
+AC_CHECK_HEADER(
+  dns_sd.h,
+  [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
+
+if test "${have_dnssd}" = "yes"; then
+  AC_DEFINE(HAVE_DNSSD, 1, [Defined to use Bonjour DNS_SD])
+fi
+AM_CONDITIONAL(HAVE_DNSSD, test "${have_dnssd}" = "yes")
+
 # Now build a list of plugin libs
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
