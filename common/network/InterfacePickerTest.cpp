@@ -91,6 +91,7 @@ void InterfacePickerTest::testGetInterfaces() {
     cout << " ip: " << iter->ip_address << endl;
     cout << " bcast: " << iter->bcast_address << endl;
     cout << " subnet: " << iter->subnet_mask << endl;
+    cout << " type: " << iter->type << endl;
     cout << " hw_addr: " << iter->hw_address << endl;
     cout << endl;
     cout << "---------------" << endl;

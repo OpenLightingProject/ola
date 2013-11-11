@@ -42,7 +42,8 @@ using std::vector;
 
 Interface::Interface()
     : loopback(false),
-      index(1) {
+      index(0),
+      type(ARPHRD_VOID) {
 }
 
 
@@ -52,14 +53,16 @@ Interface::Interface(const string &name,
                      const IPV4Address &subnet_mask,
                      const MACAddress &hw_address,
                      bool loopback,
-                     int32_t index)
+                     int32_t index,
+                     uint16_t type)
     : name(name),
       ip_address(ip_address),
       bcast_address(broadcast_address),
       subnet_mask(subnet_mask),
       hw_address(hw_address),
       loopback(loopback),
-      index(index) {
+      index(index),
+      type(type) {
 }
 
 
@@ -70,7 +73,8 @@ Interface::Interface(const Interface &other)
       subnet_mask(other.subnet_mask),
       hw_address(other.hw_address),
       loopback(other.loopback),
-      index(other.index) {
+      index(other.index),
+      type(other.type) {
 }
 
 
@@ -83,6 +87,7 @@ Interface& Interface::operator=(const Interface &other) {
     hw_address = other.hw_address;
     loopback = other.loopback;
     index = other.index;
+    type = other.type;
   }
   return *this;
 }
@@ -93,7 +98,8 @@ bool Interface::operator==(const Interface &other) {
           ip_address == other.ip_address &&
           subnet_mask == other.subnet_mask &&
           loopback == other.loopback &&
-          index == other.index);
+          index == other.index &&
+          type == other.type);
 }
 
 
@@ -149,6 +155,14 @@ void InterfaceBuilder::SetIndex(int32_t index) {
 
 
 /**
+ * Set the type.
+ */
+void InterfaceBuilder::SetType(uint16_t type) {
+  m_type = type;
+}
+
+
+/**
  * Reset the builder object
  */
 void InterfaceBuilder::Reset() {
@@ -158,7 +172,8 @@ void InterfaceBuilder::Reset() {
   m_subnet_mask = IPV4Address(0);
   m_hw_address = MACAddress();
   m_loopback = false;
-  m_index = 1;
+  m_index = 0;
+  m_type = ARPHRD_VOID;
 }
 
 
@@ -175,7 +190,8 @@ Interface InterfaceBuilder::Construct() {
                    m_subnet_mask,
                    m_hw_address,
                    m_loopback,
-                   m_index);
+                   m_index,
+                   m_type);
 }
 
 

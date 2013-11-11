@@ -21,6 +21,12 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
 #define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
+#ifdef WIN32
+// TODO(Peter): Do something else
+#else
+#include <net/if_arp.h>
+#endif
+
 #include <stdint.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/MACAddress.h>
@@ -43,7 +49,8 @@ class Interface {
               const IPV4Address &subnet_mask,
               const MACAddress &hw_address,
               bool loopback,
-              int32_t index = 1);
+              int32_t index = 0,
+              uint16_t type = ARPHRD_VOID);
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
     bool operator==(const Interface &other);
@@ -55,6 +62,7 @@ class Interface {
     MACAddress hw_address;
     bool loopback;
     int32_t index;
+    uint16_t type;
 };
 
 
@@ -91,6 +99,8 @@ class InterfaceBuilder {
 
     void SetIndex(int32_t index);
 
+    void SetType(uint16_t type);
+
     void Reset();
     Interface Construct();
 
@@ -102,6 +112,7 @@ class InterfaceBuilder {
     MACAddress m_hw_address;
     bool m_loopback;
     int32_t m_index;
+    uint16_t m_type;
 
     bool SetAddress(const string &str, IPV4Address *target);
 };

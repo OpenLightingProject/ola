@@ -18,7 +18,13 @@
  */
 
 #include <stdint.h>
+
+#ifdef WIN32
+// TODO(Peter): Do something else
+#else
 #include <net/if_arp.h>
+#endif
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -574,6 +580,7 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
   }
 
   std::vector<Interface> interfaces = picker->GetInterfaces(false);
+  // TODO(Peter): Sort by index
 
   if (interfaces.size() == 0) {
     return EmptyGetResponse(request, queued_message_count);
@@ -590,7 +597,7 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
     list_interfaces[i].index = HostToNetwork(
         static_cast<uint16_t>(interfaces[i].index));
     list_interfaces[i].type = HostToNetwork(
-        static_cast<uint16_t>(ARPHRD_ETHER));
+        static_cast<uint16_t>(interfaces[i].type));
         // TODO(Peter): Fetch this from the interface object
   }
 
@@ -625,7 +632,8 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
   } __attribute__((packed));
 
   struct interface_label_s interface_label;
-  interface_label.index = HostToNetwork(interface->index);
+  interface_label.index = HostToNetwork(
+      static_cast<uint16_t>(interface->index));
 
   size_t str_len = min(interface->name.size(),
                        sizeof(interface_label.label));
@@ -648,7 +656,7 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
     const RDMRequest *request,
     const InterfacePicker *picker,
     uint8_t queued_message_count) {
-  // TODO(Peter): Do the type 1 stuff!
+  // TODO(Peter): Rename to match the type 1 stuff!
   uint16_t index;
   if (!ResponderHelper::ExtractUInt16(request, &index)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -661,13 +669,18 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  if (interface->type != ARPHRD_ETHER) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
   struct interface_hardware_address_s {
     uint16_t index;
     uint8_t hardware_address[MACAddress::LENGTH];
   } __attribute__((packed));
 
   struct interface_hardware_address_s interface_hardware_address;
-  interface_hardware_address.index = HostToNetwork(interface->index);
+  interface_hardware_address.index = HostToNetwork(
+      static_cast<uint16_t>(interface->index));
 
   // TODO(Peter): Is this the correct byte order?
   interface->hw_address.Get(interface_hardware_address.hardware_address);
@@ -705,7 +718,8 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
   } __attribute__((packed));
 
   struct ipv4_current_address_s ipv4_current_address;
-  ipv4_current_address.index = HostToNetwork(interface->index);
+  ipv4_current_address.index = HostToNetwork(
+      static_cast<uint16_t>(interface->index));
 
   // Already in correct byte order
   ipv4_current_address.ipv4_address = interface->ip_address.AsInt();

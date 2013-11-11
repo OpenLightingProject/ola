@@ -191,6 +191,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFHWADDR, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error" << strerror(errno);
       } else {
+        interface.type = ifrcopy.ifr_hwaddr.sa_family;
+        // TODO(Peter): We probably shouldn't do this if it's not ARPHRD_ETHER
         interface.hw_address = MACAddress(
             reinterpret_cast<uint8_t*>(ifrcopy.ifr_hwaddr.sa_data));
       }
