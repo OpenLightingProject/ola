@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <stdint.h>
 #include <string.h>
 #include <string>
 #include <vector>
@@ -40,7 +41,8 @@ using std::vector;
 
 
 Interface::Interface()
-    : loopback(false) {
+    : loopback(false),
+      index(1) {
 }
 
 
@@ -49,13 +51,15 @@ Interface::Interface(const string &name,
                      const IPV4Address &broadcast_address,
                      const IPV4Address &subnet_mask,
                      const MACAddress &hw_address,
-                     bool loopback)
+                     bool loopback,
+                     int32_t index)
     : name(name),
       ip_address(ip_address),
       bcast_address(broadcast_address),
       subnet_mask(subnet_mask),
       hw_address(hw_address),
-      loopback(loopback) {
+      loopback(loopback),
+      index(index) {
 }
 
 
@@ -65,7 +69,8 @@ Interface::Interface(const Interface &other)
       bcast_address(other.bcast_address),
       subnet_mask(other.subnet_mask),
       hw_address(other.hw_address),
-      loopback(other.loopback) {
+      loopback(other.loopback),
+      index(other.index) {
 }
 
 
@@ -77,6 +82,7 @@ Interface& Interface::operator=(const Interface &other) {
     subnet_mask = other.subnet_mask;
     hw_address = other.hw_address;
     loopback = other.loopback;
+    index = other.index;
   }
   return *this;
 }
@@ -86,7 +92,8 @@ bool Interface::operator==(const Interface &other) {
   return (name == other.name &&
           ip_address == other.ip_address &&
           subnet_mask == other.subnet_mask &&
-          loopback == other.loopback);
+          loopback == other.loopback &&
+          index == other.index);
 }
 
 
@@ -134,6 +141,14 @@ void InterfaceBuilder::SetLoopback(bool loopback) {
 
 
 /**
+ * Set the index.
+ */
+void InterfaceBuilder::SetIndex(int32_t index) {
+  m_index = index;
+}
+
+
+/**
  * Reset the builder object
  */
 void InterfaceBuilder::Reset() {
@@ -143,6 +158,7 @@ void InterfaceBuilder::Reset() {
   m_subnet_mask = IPV4Address(0);
   m_hw_address = MACAddress();
   m_loopback = false;
+  m_index = 1;
 }
 
 
@@ -158,7 +174,8 @@ Interface InterfaceBuilder::Construct() {
                    m_broadcast_address,
                    m_subnet_mask,
                    m_hw_address,
-                   m_loopback);
+                   m_loopback,
+                   m_index);
 }
 
 

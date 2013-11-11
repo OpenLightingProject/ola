@@ -19,6 +19,8 @@
  */
 
 #include <assert.h>
+#include <math.h>
+#include <stdint.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <string>
@@ -51,6 +53,27 @@ IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
   struct in_addr addr;
   assert(StringToAddress(address, addr));
   return IPV4Address(addr);
+}
+
+
+bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
+  // TODO(Peter): Is this endian safe?
+  uint32_t netmask = NetworkToHost(address.AsInt());
+  uint8_t bits = 0;
+  bool seen_one = false;
+  for (uint8_t i = 0; i < 32; i++) {
+    if ( netmask & 1 ) {
+      bits++;
+      seen_one = true;
+    } else {
+      if (seen_one) {
+        return false;
+      }
+    }
+    netmask = netmask >> 1;
+  }
+  *mask = bits;
+  return true;
 }
 
 

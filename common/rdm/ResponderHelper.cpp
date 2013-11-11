@@ -17,6 +17,8 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <stdint.h>
+#include <net/if_arp.h>
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -24,6 +26,7 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderSensor.h"
@@ -33,6 +36,7 @@ namespace ola {
 namespace rdm {
 
 using ola::network::HostToNetwork;
+using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using std::min;
 using std::string;
@@ -561,28 +565,199 @@ const RDMResponse *ResponderHelper::RecordSensor(
 }
 
 
+const RDMResponse *ResponderHelper::GetListInterfaces(
+    const RDMRequest *request,
+    const InterfacePicker *picker,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  std::vector<Interface> interfaces = picker->GetInterfaces(false);
+
+  if (interfaces.size() == 0) {
+    return EmptyGetResponse(request, queued_message_count);
+  }
+
+  struct list_interfaces_s {
+    uint16_t index;
+    uint16_t type;
+  } __attribute__((packed));
+
+  list_interfaces_s list_interfaces[interfaces.size()];
+
+  for (uint16_t i = 0; i < interfaces.size(); i++) {
+    list_interfaces[i].index = HostToNetwork(
+        static_cast<uint16_t>(interfaces[i].index));
+    list_interfaces[i].type = HostToNetwork(
+        static_cast<uint16_t>(ARPHRD_ETHER));
+        // TODO(Peter): Fetch this from the interface object
+  }
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&list_interfaces),
+      sizeof(list_interfaces),
+      RDM_ACK,
+      queued_message_count);
+}
+
+
+const RDMResponse *ResponderHelper::GetInterfaceLabel(
+    const RDMRequest *request,
+    const InterfacePicker *picker,
+    uint8_t queued_message_count) {
+  uint16_t index;
+  if (!ResponderHelper::ExtractUInt16(request, &index)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  Interface *interface = new Interface();
+  // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
+  // fact we're not losing precision
+  if (!picker->ChooseInterface(interface, (int32_t)index, false, true)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  struct interface_label_s {
+    uint16_t index;
+    char label[MAX_RDM_STRING_LENGTH];
+  } __attribute__((packed));
+
+  struct interface_label_s interface_label;
+  interface_label.index = HostToNetwork(interface->index);
+
+  size_t str_len = min(interface->name.size(),
+                       sizeof(interface_label.label));
+  strncpy(interface_label.label, interface->name.c_str(),
+          str_len);
+
+  unsigned int param_data_size = (
+      sizeof(interface_label) -
+      sizeof(interface_label.label) + str_len);
+
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&interface_label),
+                             param_data_size,
+                             RDM_ACK,
+                             queued_message_count);
+}
+
+
+const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
+    const RDMRequest *request,
+    const InterfacePicker *picker,
+    uint8_t queued_message_count) {
+  // TODO(Peter): Do the type 1 stuff!
+  uint16_t index;
+  if (!ResponderHelper::ExtractUInt16(request, &index)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  Interface *interface = new Interface();
+  // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
+  // fact we're not losing precision
+  if (!picker->ChooseInterface(interface, (int32_t)index, false, true)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  struct interface_hardware_address_s {
+    uint16_t index;
+    uint8_t hardware_address[MACAddress::LENGTH];
+  } __attribute__((packed));
+
+  struct interface_hardware_address_s interface_hardware_address;
+  interface_hardware_address.index = HostToNetwork(interface->index);
+
+  // TODO(Peter): Is this the correct byte order?
+  interface->hw_address.Get(interface_hardware_address.hardware_address);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&interface_hardware_address),
+      sizeof(interface_hardware_address),
+      RDM_ACK,
+      queued_message_count);
+}
+
+
+const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
+    const RDMRequest *request,
+    const InterfacePicker *picker,
+    uint8_t queued_message_count) {
+  uint16_t index;
+  if (!ResponderHelper::ExtractUInt16(request, &index)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  Interface *interface = new Interface();
+  // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
+  // fact we're not losing precision
+  if (!picker->ChooseInterface(interface, (int32_t)index, false, true)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  struct ipv4_current_address_s {
+    uint16_t index;
+    uint32_t ipv4_address;
+    uint8_t netmask;
+    uint8_t dhcp;
+  } __attribute__((packed));
+
+  struct ipv4_current_address_s ipv4_current_address;
+  ipv4_current_address.index = HostToNetwork(interface->index);
+
+  // Already in correct byte order
+  ipv4_current_address.ipv4_address = interface->ip_address.AsInt();
+
+  uint8_t undef = 255;
+  uint8_t *mask = &undef;  // UINT8_MAX;
+  if (!IPV4Address::ToCIDRMask(interface->subnet_mask, mask))
+    OLA_WARN << "Error converting " << interface->subnet_mask <<
+        " to CIDR value";
+
+  ipv4_current_address.netmask = *mask;
+
+  // TODO(Peter): Fixme!
+  ipv4_current_address.dhcp = false ? 1 : 0;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&ipv4_current_address),
+      sizeof(ipv4_current_address),
+      RDM_ACK,
+      queued_message_count);
+}
+
+
+const RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
+    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
+  return GetIPV4Address(request, global_network_getter->GetIPV4DefaultRoute());
+}
+
+
 const RDMResponse *ResponderHelper::GetDNSHostname(
-    const RDMRequest *request, DNSGetter *dns_getter) {
+    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
   // TODO(Peter): Check this is between 1 and 63 chars
-  return GetString(request, dns_getter->GetHostname());
+  return GetString(request, global_network_getter->GetHostname());
 }
 
 
 const RDMResponse *ResponderHelper::GetDNSDomainName(
-    const RDMRequest *request, DNSGetter *dns_getter) {
+    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
   // TODO(Peter): Check this is between 0 and 231 chars
-  return GetString(request, dns_getter->GetDomainName());
+  return GetString(request, global_network_getter->GetDomainName());
 }
 
 
 const RDMResponse *ResponderHelper::GetDNSNameServer(
-    const RDMRequest *request, DNSGetter *dns_getter) {
+    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
   uint8_t name_server_number;
   if (!ResponderHelper::ExtractUInt8(request, &name_server_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  NameServers name_servers = dns_getter->GetNameServers();
+  NameServers name_servers = global_network_getter->GetNameServers();
 
   if ((name_server_number >= name_servers.size()) ||
       (name_server_number > 2)) {
@@ -598,6 +773,7 @@ const RDMResponse *ResponderHelper::GetDNSNameServer(
   struct name_server_s name_server;
   name_server.index = name_server_number;
   // TODO(Peter): Seems to be reversed if HostToNetwork is used?
+  // Is this because s_addr is in network byte order already?
   name_server.address = name_servers.at(name_server_number).AsInt();
 
   return GetResponseFromData(
@@ -747,6 +923,20 @@ const RDMResponse *ResponderHelper::GetBitFieldParamDescription(
       static_cast<uint32_t>(0),
       description,
       queued_message_count);
+}
+
+/*
+ * Handle a request that returns an IPv4 address
+ */
+const RDMResponse *ResponderHelper::GetIPV4Address(
+    const RDMRequest *request,
+    const IPV4Address &value,
+    uint8_t queued_message_count) {
+  return GetUInt32Value(request,
+                        // Flip it back because s_addr is in network byte order
+                        // already
+                        NetworkToHost(value.AsInt()),
+                        queued_message_count);
 }
 
 /*

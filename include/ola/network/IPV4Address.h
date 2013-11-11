@@ -27,6 +27,7 @@
 #include <netinet/in.h>
 #endif
 
+#include <stdint.h>
 #include <string.h>
 #include <sstream>
 #include <string>
@@ -115,6 +116,8 @@ class IPV4Address {
     static bool FromString(const std::string &address, IPV4Address *target);
     // useful for testing
     static IPV4Address FromStringOrDie(const std::string &address);
+
+    static bool ToCIDRMask(IPV4Address address, uint8_t *mask);
 
     static IPV4Address WildCard() {
       return IPV4Address(INADDR_ANY);

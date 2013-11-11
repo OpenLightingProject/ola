@@ -87,6 +87,7 @@ void InterfacePickerTest::testGetInterfaces() {
   cout << endl;
   for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
     cout << iter->name << endl;
+    cout << " index: " << iter->index << endl;
     cout << " ip: " << iter->ip_address << endl;
     cout << " bcast: " << iter->bcast_address << endl;
     cout << " subnet: " << iter->subnet_mask << endl;

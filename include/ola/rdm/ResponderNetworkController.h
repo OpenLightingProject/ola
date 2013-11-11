@@ -44,13 +44,14 @@ using std::vector;
 typedef vector<ola::network::IPV4Address> NameServers;
 
 /**
- * @brief Gets DNS information.
+ * @brief Gets global network information.
  */
-class DNSGetter {
+class GlobalNetworkGetter {
   public:
-    DNSGetter() {}
-    virtual ~DNSGetter() {}
+    GlobalNetworkGetter() {}
+    virtual ~GlobalNetworkGetter() {}
 
+    virtual ola::network::IPV4Address GetIPV4DefaultRoute() = 0;
     virtual string GetHostname() = 0;
     virtual string GetDomainName() = 0;
     virtual NameServers GetNameServers() = 0;

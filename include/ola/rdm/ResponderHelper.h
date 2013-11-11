@@ -29,6 +29,9 @@
 
 #include <string>
 #include <vector>
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/ResponderNetworkController.h"
 #include "ola/rdm/ResponderPersonality.h"
@@ -36,6 +39,10 @@
 
 namespace ola {
 namespace rdm {
+
+using ola::network::Interface;
+using ola::network::InterfacePicker;
+using ola::network::IPV4Address;
 
 /**
  * Helper methods for building RDM responders. These don't check that the
@@ -130,14 +137,37 @@ class ResponderHelper {
     static const RDMResponse *RecordSensor(
         const RDMRequest *request, const Sensors &sensor_list);
 
+    static const RDMResponse *GetListInterfaces(
+        const RDMRequest *request,
+        const InterfacePicker *picker,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetInterfaceLabel(
+        const RDMRequest *request,
+        const InterfacePicker *picker,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetInterfaceHardwareAddress(
+        const RDMRequest *request,
+        const InterfacePicker *picker,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetIPV4CurrentAddress(
+        const RDMRequest *request,
+        const InterfacePicker *picker,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetIPV4DefaultRoute(
+        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
+
     static const RDMResponse *GetDNSHostname(
-        const RDMRequest *request, DNSGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
 
     static const RDMResponse *GetDNSDomainName(
-        const RDMRequest *request, DNSGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
 
     static const RDMResponse *GetDNSNameServer(
-        const RDMRequest *request, DNSGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
 
     static const RDMResponse *GetRealTimeClock(
         const RDMRequest *request,
@@ -169,6 +199,10 @@ class ResponderHelper {
         rdm_command_class command_class,
         string description,
         uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetIPV4Address(const RDMRequest *request,
+                                             const IPV4Address &value,
+                                             uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,

@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
 #define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
+#include <stdint.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/MACAddress.h>
 #include <string>
@@ -41,7 +42,8 @@ class Interface {
               const IPV4Address &broadcast_address,
               const IPV4Address &subnet_mask,
               const MACAddress &hw_address,
-              bool loopback);
+              bool loopback,
+              int32_t index = 1);
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
     bool operator==(const Interface &other);
@@ -52,6 +54,7 @@ class Interface {
     IPV4Address subnet_mask;
     MACAddress hw_address;
     bool loopback;
+    int32_t index;
 };
 
 
@@ -86,6 +89,8 @@ class InterfaceBuilder {
 
     void SetLoopback(bool loopback);
 
+    void SetIndex(int32_t index);
+
     void Reset();
     Interface Construct();
 
@@ -96,6 +101,7 @@ class InterfaceBuilder {
     IPV4Address m_subnet_mask;
     MACAddress m_hw_address;
     bool m_loopback;
+    int32_t m_index;
 
     bool SetAddress(const string &str, IPV4Address *target);
 };

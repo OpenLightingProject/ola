@@ -46,7 +46,12 @@ class InterfacePicker {
     // stupid windows, 'interface' seems to be a struct so we use iface here.
     bool ChooseInterface(Interface *iface,
                          const std::string &ip_or_name,
-                         bool include_loopback = false) const;
+                         bool include_loopback = false,
+                         bool specific_only = false) const;
+    bool ChooseInterface(Interface *iface,
+                         const int32_t index,
+                         bool include_loopback = false,
+                         bool specific_only = false) const;
 
     virtual std::vector<Interface> GetInterfaces(
         bool include_loopback) const = 0;

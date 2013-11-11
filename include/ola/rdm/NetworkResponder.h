@@ -69,7 +69,7 @@ class NetworkResponder: public RDMControllerInterface {
 
     const UID m_uid;
     bool m_identify_mode;
-    DNSGetter *m_dns_getter;
+    GlobalNetworkGetter *m_global_network_getter;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -79,6 +79,11 @@ class NetworkResponder: public RDMControllerInterface {
     const RDMResponse *GetDeviceLabel(const RDMRequest *request);
     const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+    const RDMResponse *GetListInterfaces(const RDMRequest *request);
+    const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
+    const RDMResponse *GetInterfaceHardwareAddress(const RDMRequest *request);
+    const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
+    const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
     const RDMResponse *GetDNSHostname(const RDMRequest *request);
     const RDMResponse *GetDNSDomainName(const RDMRequest *request);
     const RDMResponse *GetDNSNameServer(const RDMRequest *request);

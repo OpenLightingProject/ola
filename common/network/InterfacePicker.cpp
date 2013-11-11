@@ -41,14 +41,18 @@ using std::vector;
 
 /*
  * Select an interface to use
- * @param interface, the interface to populate
- * @param ip_or_name the ip address or interface name  of the local interface
+ * @param iface, the interface to populate
+ * @param ip_or_name the IP address or interface name of the local interface
  *   we'd prefer to use.
+ * @param include_loopback true if we want to include the loopback interface
+ *   when searching
+ * @param specific_only true if we're only interested in the specific interface
  * @return true if we found an interface, false otherwise
  */
 bool InterfacePicker::ChooseInterface(Interface *iface,
                                       const string &ip_or_name,
-                                      bool include_loopback) const {
+                                      bool include_loopback,
+                                      bool specific_only) const {
   bool found = false;
   vector<Interface> interfaces = GetInterfaces(include_loopback);
 
@@ -81,10 +85,55 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
     }
   }
 
+  if (!found && specific_only)
+    return false;  // No match and being fussy
+
   if (!found)
     *iface = interfaces[0];
   OLA_DEBUG << "Using interface " << iface->name << " (" <<
     iface->ip_address << ")";
+  return true;
+}
+
+
+/*
+ * Select an interface to use by index
+ * @param iface, the interface to populate
+ * @param index the index of the local interface we'd prefer to use.
+ * @param include_loopback true if we want to include the loopback interface
+ *   when searching
+ * @param specific_only true if we're only interested in the specific interface
+ * @return true if we found an interface, false otherwise
+ */
+bool InterfacePicker::ChooseInterface(Interface *iface,
+                                      const int32_t index,
+                                      bool include_loopback,
+                                      bool specific_only) const {
+  bool found = false;
+  vector<Interface> interfaces = GetInterfaces(include_loopback);
+
+  if (interfaces.empty()) {
+    OLA_INFO << "No interfaces found";
+    return false;
+  }
+
+  vector<Interface>::const_iterator iter;
+  // search by index
+  for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
+    if (iter->index == index) {
+      *iface = *iter;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found && specific_only)
+    return false;  // No match and being fussy
+
+  if (!found)
+    *iface = interfaces[0];
+  OLA_DEBUG << "Using interface " << iface->name << " (" <<
+    iface->ip_address << ") with index " << iface->index;
   return true;
 }
 

@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * InterfacePicker.cpp
+ * PosixInterfacePicker.cpp
  * Chooses an interface to listen on
  * Copyright (C) 2005-2010 Simon Newton
  */
@@ -197,8 +197,19 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     }
 #endif
 
-    /* ok, if that all failed we should prob try and use sysctl to work out the bcast
-     * and hware addresses
+    // fetch index
+#ifdef SIOGIFINDEX
+    if (ifrcopy.ifr_flags & SIOGIFINDEX) {
+      if (ioctl(sd, SIOGIFINDEX, &ifrcopy) < 0) {
+        OLA_WARN << "ioctl error" << strerror(errno);
+      } else {
+        interface.index = ifrcopy.ifr_ifindex;
+      }
+    }
+#endif
+
+    /* ok, if that all failed we should prob try and use sysctl to work out the
+     * bcast and hware addresses
      * i'll leave that for another day
      */
     OLA_DEBUG << "Found: " << interface.name << ", " <<

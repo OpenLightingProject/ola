@@ -70,6 +70,21 @@ const ResponderOps<NetworkResponder>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &NetworkResponder::GetIdentify,
     &NetworkResponder::SetIdentify},
+  { PID_LIST_INTERFACES,
+    &NetworkResponder::GetListInterfaces,
+    NULL},
+  { PID_INTERFACE_LABEL,
+    &NetworkResponder::GetInterfaceLabel,
+    NULL},
+  { PID_INTERFACE_HARDWARE_ADDRESS,
+    &NetworkResponder::GetInterfaceHardwareAddress,
+    NULL},
+  { PID_IPV4_CURRENT_ADDRESS,
+    &NetworkResponder::GetIPV4CurrentAddress,
+    NULL},
+  { PID_IPV4_DEFAULT_ROUTE,
+    &NetworkResponder::GetIPV4DefaultRoute,
+    NULL},
   { PID_DNS_HOSTNAME,
     &NetworkResponder::GetDNSHostname,
     NULL},
@@ -86,23 +101,27 @@ const ResponderOps<NetworkResponder>::ParamHandler
 /**
  * A class which represents a fake DNS getter.
  */
-class FakeDNSGetter: public DNSGetter {
+class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
   public:
-    FakeDNSGetter(const string &hostname,
-                  const string &domain_name,
-                  const NameServers &name_servers)
-        : DNSGetter(),
+    FakeGlobalNetworkGetter(const IPV4Address ipv4_default_route,
+                            const string &hostname,
+                            const string &domain_name,
+                            const NameServers &name_servers)
+        : GlobalNetworkGetter(),
+          m_ipv4_default_route(ipv4_default_route),
           m_hostname(hostname),
           m_domain_name(domain_name),
           m_name_servers(name_servers) {
     }
 
   protected:
+    IPV4Address GetIPV4DefaultRoute();
     string GetHostname();
     string GetDomainName();
     NameServers GetNameServers();
 
  private:
+    IPV4Address m_ipv4_default_route;
     string m_hostname;
     string m_domain_name;
     NameServers m_name_servers;
@@ -110,24 +129,32 @@ class FakeDNSGetter: public DNSGetter {
 
 
 /**
- * Get a hostname
+ * Get the IPv4 default route
  */
-string FakeDNSGetter::GetHostname() {
+IPV4Address FakeGlobalNetworkGetter::GetIPV4DefaultRoute() {
+  return m_ipv4_default_route;
+}
+
+
+/**
+ * Get the hostname
+ */
+string FakeGlobalNetworkGetter::GetHostname() {
   return m_hostname;
 }
 
 
 /**
- * Get a domain name
+ * Get the domain name
  */
-string FakeDNSGetter::GetDomainName() {
+string FakeGlobalNetworkGetter::GetDomainName() {
   return m_domain_name;
 }
 
 /**
  * Get name servers
  */
-NameServers FakeDNSGetter::GetNameServers() {
+NameServers FakeGlobalNetworkGetter::GetNameServers() {
   return m_name_servers;
 }
 
@@ -137,11 +164,15 @@ NameServers FakeDNSGetter::GetNameServers() {
 NetworkResponder::NetworkResponder(const UID &uid)
     : m_uid(uid),
       m_identify_mode(false) {
-    vector<IPV4Address> name_servers;
-    name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
-    name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
-    name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
-    m_dns_getter = new FakeDNSGetter("foo", "bar.com", name_servers);
+  vector<IPV4Address> name_servers;
+  name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
+  name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
+  name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
+  m_global_network_getter = new FakeGlobalNetworkGetter(
+      IPV4Address::FromStringOrDie("10.0.0.254"),
+      "foo",
+      "bar.com",
+      name_servers);
 }
 
 
@@ -208,19 +239,48 @@ const RDMResponse *NetworkResponder::GetSoftwareVersionLabel(
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
+const RDMResponse *NetworkResponder::GetListInterfaces(
+    const RDMRequest *request) {
+  return ResponderHelper::GetListInterfaces(request,
+      ola::network::InterfacePicker::NewPicker());
+}
+
+const RDMResponse *NetworkResponder::GetInterfaceLabel(
+    const RDMRequest *request) {
+  return ResponderHelper::GetInterfaceLabel(request,
+      ola::network::InterfacePicker::NewPicker());
+}
+
+const RDMResponse *NetworkResponder::GetInterfaceHardwareAddress(
+    const RDMRequest *request) {
+  return ResponderHelper::GetInterfaceHardwareAddress(request,
+      ola::network::InterfacePicker::NewPicker());
+}
+
+const RDMResponse *NetworkResponder::GetIPV4CurrentAddress(
+    const RDMRequest *request) {
+  return ResponderHelper::GetIPV4CurrentAddress(request,
+      ola::network::InterfacePicker::NewPicker());
+}
+
+const RDMResponse *NetworkResponder::GetIPV4DefaultRoute(
+    const RDMRequest *request) {
+  return ResponderHelper::GetIPV4DefaultRoute(request, m_global_network_getter);
+}
+
 const RDMResponse *NetworkResponder::GetDNSHostname(
     const RDMRequest *request) {
-  return ResponderHelper::GetDNSHostname(request, m_dns_getter);
+  return ResponderHelper::GetDNSHostname(request, m_global_network_getter);
 }
 
 const RDMResponse *NetworkResponder::GetDNSDomainName(
     const RDMRequest *request) {
-  return ResponderHelper::GetDNSDomainName(request, m_dns_getter);
+  return ResponderHelper::GetDNSDomainName(request, m_global_network_getter);
 }
 
 const RDMResponse *NetworkResponder::GetDNSNameServer(
     const RDMRequest *request) {
-  return ResponderHelper::GetDNSNameServer(request, m_dns_getter);
+  return ResponderHelper::GetDNSNameServer(request, m_global_network_getter);
 }
 }  // namespace rdm
 }  // namespace ola
