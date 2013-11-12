@@ -44,17 +44,15 @@ using std::vector;
  * @param iface, the interface to populate
  * @param ip_or_name the IP address or interface name of the local interface
  *   we'd prefer to use.
- * @param include_loopback true if we want to include the loopback interface
- *   when searching
- * @param specific_only true if we're only interested in the specific interface
+ * @param options a ChooseInterfaceOptions struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
-bool InterfacePicker::ChooseInterface(Interface *iface,
-                                      const string &ip_or_name,
-                                      bool include_loopback,
-                                      bool specific_only) const {
+bool InterfacePicker::ChooseInterface(
+    Interface *iface,
+    const string &ip_or_name,
+    const ChooseInterfaceOptions &options) const {
   bool found = false;
-  vector<Interface> interfaces = GetInterfaces(include_loopback);
+  vector<Interface> interfaces = GetInterfaces(options.include_loopback);
 
   if (interfaces.empty()) {
     OLA_INFO << "No interfaces found";
@@ -85,7 +83,7 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
     }
   }
 
-  if (!found && specific_only)
+  if (!found && options.specific_only)
     return false;  // No match and being fussy
 
   if (!found)
@@ -100,17 +98,15 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
  * Select an interface to use by index
  * @param iface, the interface to populate
  * @param index the index of the local interface we'd prefer to use.
- * @param include_loopback true if we want to include the loopback interface
- *   when searching
- * @param specific_only true if we're only interested in the specific interface
+ * @param options a ChooseInterfaceOptions struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
-bool InterfacePicker::ChooseInterface(Interface *iface,
-                                      const int32_t index,
-                                      bool include_loopback,
-                                      bool specific_only) const {
+bool InterfacePicker::ChooseInterface(
+    Interface *iface,
+    int32_t index,
+    const ChooseInterfaceOptions &options) const {
   bool found = false;
-  vector<Interface> interfaces = GetInterfaces(include_loopback);
+  vector<Interface> interfaces = GetInterfaces(options.include_loopback);
 
   if (interfaces.empty()) {
     OLA_INFO << "No interfaces found";
@@ -127,7 +123,7 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
     }
   }
 
-  if (!found && specific_only)
+  if (!found && options.specific_only)
     return false;  // No match and being fussy
 
   if (!found)

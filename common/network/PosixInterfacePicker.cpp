@@ -211,8 +211,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
 #endif
 
     /* ok, if that all failed we should prob try and use sysctl to work out the
-     * bcast and hware addresses
-     * i'll leave that for another day
+     * broadcast and hardware addresses
+     * I'll leave that for another day
      */
     OLA_DEBUG << "Found: " << interface.name << ", " <<
       interface.ip_address << ", " <<

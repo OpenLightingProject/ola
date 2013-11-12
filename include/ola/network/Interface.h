@@ -42,6 +42,8 @@ using std::string;
  */
 class Interface {
   public:
+    enum { DEFAULT_INDEX = 0 };
+
     Interface();
     Interface(const string &name,
               const IPV4Address &ip_address,
@@ -49,7 +51,7 @@ class Interface {
               const IPV4Address &subnet_mask,
               const MACAddress &hw_address,
               bool loopback,
-              int32_t index = 0,
+              int32_t index = DEFAULT_INDEX,
               uint16_t type = ARPHRD_VOID);
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);

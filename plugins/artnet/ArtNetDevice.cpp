@@ -101,10 +101,12 @@ bool ArtNetDevice::StartHook() {
   ola::network::Interface interface;
   auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
+  ola::network::InterfacePicker::ChooseInterfaceOptions options;
+  options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);
   if (!picker->ChooseInterface(
           &interface,
           m_preferences->GetValue(K_IP_KEY),
-          m_preferences->GetValueAsBool(K_LOOPBACK_KEY))) {
+          options)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }

@@ -32,6 +32,7 @@ std::string IPV4Address::ToString() const {
   return AddressToString(m_address);
 }
 
+
 IPV4Address* IPV4Address::FromString(const std::string &address) {
   struct in_addr addr;
   if (!StringToAddress(address, addr))
@@ -39,6 +40,7 @@ IPV4Address* IPV4Address::FromString(const std::string &address) {
 
   return new IPV4Address(addr);
 }
+
 
 bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   struct in_addr addr;

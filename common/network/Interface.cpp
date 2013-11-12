@@ -42,7 +42,7 @@ using std::vector;
 
 Interface::Interface()
     : loopback(false),
-      index(0),
+      index(DEFAULT_INDEX),
       type(ARPHRD_VOID) {
 }
 
@@ -172,7 +172,7 @@ void InterfaceBuilder::Reset() {
   m_subnet_mask = IPV4Address(0);
   m_hw_address = MACAddress();
   m_loopback = false;
-  m_index = 0;
+  m_index = Interface::DEFAULT_INDEX;
   m_type = ARPHRD_VOID;
 }
 

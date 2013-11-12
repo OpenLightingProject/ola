@@ -40,18 +40,34 @@ namespace network {
  */
 class InterfacePicker {
   public:
+    struct ChooseInterfaceOptions {
+      public:
+        // Include the loopback interface when searching
+        bool include_loopback;
+        /**
+         * True if we're only interested in the specific interface when
+         * searching, false to ensure we return something even if we didn't find a match
+         */
+        bool specific_only;
+
+        ChooseInterfaceOptions()
+          : include_loopback(false),
+            specific_only(false) {
+        }
+    };
+
     InterfacePicker() {}
     virtual ~InterfacePicker() {}
 
     // stupid windows, 'interface' seems to be a struct so we use iface here.
-    bool ChooseInterface(Interface *iface,
-                         const std::string &ip_or_name,
-                         bool include_loopback = false,
-                         bool specific_only = false) const;
-    bool ChooseInterface(Interface *iface,
-                         const int32_t index,
-                         bool include_loopback = false,
-                         bool specific_only = false) const;
+    bool ChooseInterface(
+        Interface *iface,
+        const std::string &ip_or_name,
+        const ChooseInterfaceOptions &options = ChooseInterfaceOptions()) const;
+    bool ChooseInterface(
+        Interface *iface,
+        int32_t index,
+        const ChooseInterfaceOptions &options = ChooseInterfaceOptions()) const;
 
     virtual std::vector<Interface> GetInterfaces(
         bool include_loopback) const = 0;

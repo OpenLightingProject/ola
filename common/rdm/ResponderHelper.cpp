@@ -31,7 +31,6 @@
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
-#include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/ResponderHelper.h"
@@ -620,9 +619,11 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
   }
 
   Interface *interface = new Interface();
+  InterfacePicker::ChooseInterfaceOptions options;
+  options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
-  if (!picker->ChooseInterface(interface, (int32_t)index, false, true)) {
+  if (!picker->ChooseInterface(interface, (int32_t)index, options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -663,9 +664,11 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
   }
 
   Interface *interface = new Interface();
+  InterfacePicker::ChooseInterfaceOptions options;
+  options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
-  if (!picker->ChooseInterface(interface, (int32_t)index, false, true)) {
+  if (!picker->ChooseInterface(interface, (int32_t)index, options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -704,9 +707,11 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
   }
 
   Interface *interface = new Interface();
+  InterfacePicker::ChooseInterfaceOptions options;
+  options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
-  if (!picker->ChooseInterface(interface, (int32_t)index, false, true)) {
+  if (!picker->ChooseInterface(interface, (int32_t)index, options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
