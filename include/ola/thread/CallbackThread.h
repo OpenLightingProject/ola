@@ -29,7 +29,7 @@ namespace ola {
 namespace thread {
 
 /**
- * @class A thread which executes a Callback.
+ * @brief A thread which executes a Callback.
  */
 class CallbackThread : public Thread {
   public:

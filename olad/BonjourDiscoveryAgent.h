@@ -78,6 +78,7 @@ class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
     ServiceRefs m_refs;
 
     void InternalRegisterService(RegisterArgs *args);
+    string BuildTxtRecord(const RegisterOptions::TxtData &txt_data);
     DISALLOW_COPY_AND_ASSIGN(BonjourDiscoveryAgent);
 };
 }  // namespace ola

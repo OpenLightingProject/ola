@@ -107,6 +107,7 @@ void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
   OLA_INFO << "Adding " << args->service_name << ", " << args->type;
 
   ServiceRef ref;
+  const string txt_data = BuildTxtRecord(args->txt_data);
 
   DNSServiceErrorType error = DNSServiceRegister(
       &ref.service_ref,
@@ -114,7 +115,7 @@ void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
       args->domain.c_str(),
       NULL,  // use default host name
       htons(args->port),
-      args->txt_record.size(), args->txt_record.c_str(),
+      txt_data.size(), txt_data.c_str(),
       NULL,  // call back function
       NULL);  // no context
 
@@ -127,5 +128,25 @@ void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
 
   m_ss.AddReadDescriptor(ref.descriptor);
   m_refs.push_back(ref);
+}
+
+string BonjourDiscoveryAgent::BuildTxtRecord(
+    const RegisterOptions::TxtData &txt_data) {
+  RegisterOptions::TxtData::const_iterator iter = txt_data.begin();
+  string output;
+  for (; iter != txt_data.end(); ++iter) {
+    unsigned int pair_size = iter->first.size() + iter->second.size() + 1;
+    if (pair_size > UINT8_MAX) {
+      OLA_WARN << "Discovery data of " << iter->first << ": " << iter->second
+               << " exceeed " << static_cast<int>(UINT8_MAX)
+               << " bytes. Data skipped";
+      continue;
+    }
+    output.append(1, static_cast<char>(pair_size));
+    output.append(iter->first);
+    output.append("=");
+    output.append(iter->second);
+  }
+  return output;
 }
 }  // namespace ola
