@@ -246,7 +246,7 @@ bool OlaServer::Init() {
   bool web_server_started = false;
 
 #ifdef HAVE_LIBMICROHTTPD
-  if (StartHttpServer(iface)) {
+  if (m_options.http_enable && StartHttpServer(iface)) {
     web_server_started = true;
   } else {
     OLA_WARN << "Failed to start the HTTP server.";
