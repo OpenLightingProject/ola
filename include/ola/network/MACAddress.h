@@ -25,7 +25,7 @@
 #include <winsock2.h>
 // TODO(Peter): Do something else, possibly define the type locally
 #else
-#include <sys/types.h> // required for FreeBSD uchar - doesn't hurt others
+#include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
 #include <net/ethernet.h>
 #endif
 
