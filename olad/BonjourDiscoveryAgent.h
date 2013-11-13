@@ -38,7 +38,7 @@ class CallbackThread;
 }
 
 /**
- * @class An implementation of DiscoveryAgentInterface that uses the Apple
+ * @brief An implementation of DiscoveryAgentInterface that uses the Apple
  * dns_sd.h library.
  */
 class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
