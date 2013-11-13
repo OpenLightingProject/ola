@@ -71,6 +71,8 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
     // The structure used to track services.
     struct ServiceEntry : public RegisterOptions {
       const std::string service_name;
+      // This may differ from the service name if there was a collision.
+      std::string actual_service_name;
       const std::string type;
       const uint16_t port;
       AvahiEntryGroup *group;
@@ -96,8 +98,8 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
     void UpdateServices();
     void DeregisterAllServices();
     void SetUpReconnectTimeout();
+    bool RenameAndRegister(ServiceEntry *service);
 
-    std::string GenerateAlternateName(const std::string &service_name);
     std::string MakeServiceKey(const std::string &service_name,
                                const std::string &type);
     std::string ClientStateToString(AvahiClientState state);
