@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <ola/base/Macro.h>
 #include <string>
+#include <map>
 
 namespace ola {
 
@@ -37,12 +38,15 @@ class DiscoveryAgentInterface {
     virtual bool Init() = 0;
 
     struct RegisterOptions {
+      typedef std::map<std::string, std::string> TxtData;
+
       int if_index;
       std::string domain;
       std::string txt_record;
+      TxtData txt_data;
 
       RegisterOptions()
-          : if_index(0),
+          : if_index(0),  // 0 is any
             domain(""),
             txt_record("") {
       }
@@ -50,7 +54,8 @@ class DiscoveryAgentInterface {
       RegisterOptions(const RegisterOptions &options)
           : if_index(options.if_index),
             domain(options.domain),
-            txt_record(options.txt_record) {
+            txt_record(options.txt_record),
+            txt_data(options.txt_data) {
       }
     };
 

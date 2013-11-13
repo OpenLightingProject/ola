@@ -256,6 +256,7 @@ bool OlaServer::Init() {
   if (web_server_started && m_discovery_agent.get()) {
     DiscoveryAgentInterface::RegisterOptions options;
     options.txt_record = "\006path=/";
+    options.txt_data["path"] = "/";
     m_discovery_agent->RegisterService(
         "OLA Web Console",
         K_DISCOVERY_SERVICE_TYPE, m_options.http_port, options);
