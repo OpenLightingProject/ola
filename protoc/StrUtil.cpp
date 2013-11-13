@@ -315,26 +315,26 @@ static inline char* PlaceNum(char* p, int num, char prev_sep) {
 // ----------------------------------------------------------------------
 
 static const char two_ASCII_digits[100][2] = {
-  {'0','0'}, {'0','1'}, {'0','2'}, {'0','3'}, {'0','4'},
-  {'0','5'}, {'0','6'}, {'0','7'}, {'0','8'}, {'0','9'},
-  {'1','0'}, {'1','1'}, {'1','2'}, {'1','3'}, {'1','4'},
-  {'1','5'}, {'1','6'}, {'1','7'}, {'1','8'}, {'1','9'},
-  {'2','0'}, {'2','1'}, {'2','2'}, {'2','3'}, {'2','4'},
-  {'2','5'}, {'2','6'}, {'2','7'}, {'2','8'}, {'2','9'},
-  {'3','0'}, {'3','1'}, {'3','2'}, {'3','3'}, {'3','4'},
-  {'3','5'}, {'3','6'}, {'3','7'}, {'3','8'}, {'3','9'},
-  {'4','0'}, {'4','1'}, {'4','2'}, {'4','3'}, {'4','4'},
-  {'4','5'}, {'4','6'}, {'4','7'}, {'4','8'}, {'4','9'},
-  {'5','0'}, {'5','1'}, {'5','2'}, {'5','3'}, {'5','4'},
-  {'5','5'}, {'5','6'}, {'5','7'}, {'5','8'}, {'5','9'},
-  {'6','0'}, {'6','1'}, {'6','2'}, {'6','3'}, {'6','4'},
-  {'6','5'}, {'6','6'}, {'6','7'}, {'6','8'}, {'6','9'},
-  {'7','0'}, {'7','1'}, {'7','2'}, {'7','3'}, {'7','4'},
-  {'7','5'}, {'7','6'}, {'7','7'}, {'7','8'}, {'7','9'},
-  {'8','0'}, {'8','1'}, {'8','2'}, {'8','3'}, {'8','4'},
-  {'8','5'}, {'8','6'}, {'8','7'}, {'8','8'}, {'8','9'},
-  {'9','0'}, {'9','1'}, {'9','2'}, {'9','3'}, {'9','4'},
-  {'9','5'}, {'9','6'}, {'9','7'}, {'9','8'}, {'9','9'}
+  {'0', '0'}, {'0', '1'}, {'0', '2'}, {'0', '3'}, {'0', '4'},
+  {'0', '5'}, {'0', '6'}, {'0', '7'}, {'0', '8'}, {'0', '9'},
+  {'1', '0'}, {'1', '1'}, {'1', '2'}, {'1', '3'}, {'1', '4'},
+  {'1', '5'}, {'1', '6'}, {'1', '7'}, {'1', '8'}, {'1', '9'},
+  {'2', '0'}, {'2', '1'}, {'2', '2'}, {'2', '3'}, {'2', '4'},
+  {'2', '5'}, {'2', '6'}, {'2', '7'}, {'2', '8'}, {'2', '9'},
+  {'3', '0'}, {'3', '1'}, {'3', '2'}, {'3', '3'}, {'3', '4'},
+  {'3', '5'}, {'3', '6'}, {'3', '7'}, {'3', '8'}, {'3', '9'},
+  {'4', '0'}, {'4', '1'}, {'4', '2'}, {'4', '3'}, {'4', '4'},
+  {'4', '5'}, {'4', '6'}, {'4', '7'}, {'4', '8'}, {'4', '9'},
+  {'5', '0'}, {'5', '1'}, {'5', '2'}, {'5', '3'}, {'5', '4'},
+  {'5', '5'}, {'5', '6'}, {'5', '7'}, {'5', '8'}, {'5', '9'},
+  {'6', '0'}, {'6', '1'}, {'6', '2'}, {'6', '3'}, {'6', '4'},
+  {'6', '5'}, {'6', '6'}, {'6', '7'}, {'6', '8'}, {'6', '9'},
+  {'7', '0'}, {'7', '1'}, {'7', '2'}, {'7', '3'}, {'7', '4'},
+  {'7', '5'}, {'7', '6'}, {'7', '7'}, {'7', '8'}, {'7', '9'},
+  {'8', '0'}, {'8', '1'}, {'8', '2'}, {'8', '3'}, {'8', '4'},
+  {'8', '5'}, {'8', '6'}, {'8', '7'}, {'8', '8'}, {'8', '9'},
+  {'9', '0'}, {'9', '1'}, {'9', '2'}, {'9', '3'}, {'9', '4'},
+  {'9', '5'}, {'9', '6'}, {'9', '7'}, {'9', '8'}, {'9', '9'}
 };
 
 char* FastUInt32ToBufferLeft(uint32_t u, char* buffer) {
@@ -352,39 +352,39 @@ char* FastUInt32ToBufferLeft(uint32_t u, char* buffer) {
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt100_000_000:
+ sublt100_000_000:
     u -= digits * 100000000;  // 100,000,000
-lt100_000_000:
+ lt100_000_000:
     digits = u / 1000000;  // 1,000,000
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt1_000_000:
+ sublt1_000_000:
     u -= digits * 1000000;  // 1,000,000
-lt1_000_000:
+ lt1_000_000:
     digits = u / 10000;  // 10,000
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt10_000:
+ sublt10_000:
     u -= digits * 10000;  // 10,000
-lt10_000:
+ lt10_000:
     digits = u / 100;
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt100:
+ sublt100:
     u -= digits * 100;
-lt100:
+ lt100:
     digits = u;
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-done:
+ done:
     *buffer = 0;
     return buffer;
   }
@@ -500,28 +500,28 @@ string SimpleItoa(unsigned int i) {
     FastUInt64ToBufferLeft(i, buffer));
 }
 
-string SimpleItoa(long i) {
+string SimpleItoa(long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned long i) {
+string SimpleItoa(unsigned long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :
     FastUInt64ToBufferLeft(i, buffer));
 }
 
-string SimpleItoa(long long i) {
+string SimpleItoa(long long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned long long i) {
+string SimpleItoa(unsigned long long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :

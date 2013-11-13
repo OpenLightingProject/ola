@@ -22,8 +22,12 @@
 #define OLAD_AVAHIDISCOVERYAGENT_H_
 
 #include <avahi-client/client.h>
+#include <avahi-common/thread-watch.h>
+#include <avahi-client/publish.h>
 
 #include <ola/base/Macro.h>
+#include <ola/util/Backoff.h>
+#include <map>
 #include <string>
 
 #include "olad/DiscoveryAgent.h"
@@ -31,7 +35,7 @@
 namespace ola {
 
 /**
- * @class An implementation of DiscoveryAgentInterface that uses the Avahi
+ * @brief An implementation of DiscoveryAgentInterface that uses the Avahi
  * client library.
  */
 class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
@@ -46,7 +50,61 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
                          uint16_t port,
                          const RegisterOptions &options);
 
+    /**
+     * @brief Called when the Avahi client state changes
+     */
+    void ClientStateChanged(AvahiClientState state, AvahiClient *client);
+
+    /**
+     * @brief Called when a entry group state changes.
+     */
+    void GroupStateChanged(const std::string &service_key,
+                           AvahiEntryGroup *group,
+                           AvahiEntryGroupState state);
+
+    /**
+     * @brief Called when the reconnect timeout expires.
+     */
+    void ReconnectTimeout();
+
   private:
+    // The structure used to track services.
+    struct ServiceEntry : public RegisterOptions {
+      const std::string service_name;
+      // This may differ from the service name if there was a collision.
+      std::string actual_service_name;
+      const std::string type;
+      const uint16_t port;
+      AvahiEntryGroup *group;
+      AvahiEntryGroupState state;
+      struct EntryGroupParams *params;
+
+      ServiceEntry(const std::string &service_name,
+                   const std::string &type,
+                   uint16_t port,
+                   const RegisterOptions &options);
+    };
+
+    typedef std::map<std::string, ServiceEntry*> Services;
+
+    AvahiThreadedPoll *m_threaded_poll;
+    AvahiClient *m_client;
+    AvahiTimeout *m_reconnect_timeout;
+    Services m_services;
+    BackoffGenerator m_backoff;
+
+    bool InternalRegisterService(ServiceEntry *service);
+    void CreateNewClient();
+    void UpdateServices();
+    void DeregisterAllServices();
+    void SetUpReconnectTimeout();
+    bool RenameAndRegister(ServiceEntry *service);
+
+    std::string MakeServiceKey(const std::string &service_name,
+                               const std::string &type);
+    std::string ClientStateToString(AvahiClientState state);
+    std::string GroupStateToString(AvahiEntryGroupState state);
+
     DISALLOW_COPY_AND_ASSIGN(AvahiDiscoveryAgent);
 };
 }  // namespace ola

@@ -15,13 +15,6 @@ OLASERVER_SOURCES = AvahiDiscoveryAgent.h Client.cpp ClientBroker.cpp \
                     Preferences.cpp Port.cpp PortBroker.cpp PortManager.cpp \
                     Universe.cpp UniverseStore.cpp
 
-if HAVE_DNSSD
-OLASERVER_SOURCES += BonjourDiscoveryAgent.cpp
-endif
-
-if HAVE_AVAHI
-OLASERVER_SOURCES += AvahiDiscoveryAgent.cpp
-endif
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -31,6 +24,15 @@ libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                          $(top_builddir)/common/libolacommon.la \
                          $(top_builddir)/common/web/libolaweb.la \
                          $(top_builddir)/ola/libola.la
+
+if HAVE_DNSSD
+OLASERVER_SOURCES += BonjourDiscoveryAgent.cpp
+endif
+
+if HAVE_AVAHI
+OLASERVER_SOURCES += AvahiDiscoveryAgent.cpp
+libolaserver_la_LIBADD += $(avahi_LIBS)
+endif
 
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServerActions.cpp \

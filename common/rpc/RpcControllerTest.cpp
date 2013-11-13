@@ -33,12 +33,10 @@ using ola::rpc::RpcController;
 class RpcControllerTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RpcControllerTest);
   CPPUNIT_TEST(testFailed);
-  CPPUNIT_TEST(testCancel);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testFailed();
-    void testCancel();
 
   private:
     void Callback();
@@ -60,26 +58,4 @@ void RpcControllerTest::testFailed() {
 
 void RpcControllerTest::Callback() {
   m_callback_run = true;
-}
-
-void RpcControllerTest::testCancel() {
-  RpcController controller;
-  controller.StartCancel();
-  OLA_ASSERT_TRUE(controller.IsCanceled());
-
-  controller.Reset();
-  OLA_ASSERT_FALSE(controller.IsCanceled());
-
-  RpcController::CancelCallback *callback = ola::NewCallback(
-      this, &RpcControllerTest::Callback);
-  m_callback_run = false;
-  controller.NotifyOnCancel(callback);
-  controller.StartCancel();
-  OLA_ASSERT_TRUE(m_callback_run);
-
-  controller.Reset();
-  OLA_ASSERT_FALSE(controller.IsCanceled());
-  m_callback_run = false;
-  controller.StartCancel();
-  OLA_ASSERT_FALSE(m_callback_run);
 }
