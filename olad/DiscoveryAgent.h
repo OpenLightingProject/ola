@@ -24,33 +24,55 @@
 #include <stdint.h>
 #include <ola/base/Macro.h>
 #include <string>
+#include <map>
 
 namespace ola {
 
 /**
- * @class The interface to DNS-SD operations like register, browse etc.
+ * @brief The interface to DNS-SD operations like register, browse etc.
  */
 class DiscoveryAgentInterface {
   public:
     virtual ~DiscoveryAgentInterface() {}
 
+    /**
+     * @brief Initialize the DiscoveryAgent.
+     */
     virtual bool Init() = 0;
 
+    /**
+     * @brief Options for the RegisterService method
+     * This controls options like the interface index, domain and TXT record
+     * data.
+     */
     struct RegisterOptions {
-      int if_index;
+      /**
+       * @typdef The data type that stores the key : values for the TXT record.
+       */
+      typedef std::map<std::string, std::string> TxtData;
+
+      /**
+       * @brief A constant which represents all Interfaces.
+       */
+      static const int ALL_INTERFACES = 0;
+
+      int if_index;  /**< The interface index to register on */
+      /**
+       * @brief The domain to use. The empty string uses the system default
+       * domain.
+       */
       std::string domain;
-      std::string txt_record;
+      TxtData txt_data;   /**< The TXT record data. */
 
       RegisterOptions()
-          : if_index(0),
-            domain(""),
-            txt_record("") {
+          : if_index(ALL_INTERFACES),
+            domain("") {
       }
 
       RegisterOptions(const RegisterOptions &options)
           : if_index(options.if_index),
             domain(options.domain),
-            txt_record(options.txt_record) {
+            txt_data(options.txt_data) {
       }
     };
 
@@ -69,7 +91,7 @@ class DiscoveryAgentInterface {
 };
 
 /**
- * @class A Factory which produces implementations of DiscoveryAgentInterface.
+ * @brief A Factory which produces implementations of DiscoveryAgentInterface.
  * The exact type of object returns depends on what implementation of DNS-SD was
  * available at build time.
  */
@@ -77,6 +99,11 @@ class DiscoveryAgentFactory {
  public:
     DiscoveryAgentFactory() {}
 
+    /**
+     * @brief Create a new DiscoveryAgent.
+     * This returns a DiscoveryAgent appropriate for the platform. It can
+     * either be a BonjourDiscoveryAgent or a AvahiDiscoveryAgent.
+     */
     DiscoveryAgentInterface* New();
 
  private:

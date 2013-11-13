@@ -352,39 +352,39 @@ char* FastUInt32ToBufferLeft(uint32_t u, char* buffer) {
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt100_000_000:
+ sublt100_000_000:
     u -= digits * 100000000;  // 100,000,000
-lt100_000_000:
+ lt100_000_000:
     digits = u / 1000000;  // 1,000,000
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt1_000_000:
+ sublt1_000_000:
     u -= digits * 1000000;  // 1,000,000
-lt1_000_000:
+ lt1_000_000:
     digits = u / 10000;  // 10,000
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt10_000:
+ sublt10_000:
     u -= digits * 10000;  // 10,000
-lt10_000:
+ lt10_000:
     digits = u / 100;
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-sublt100:
+ sublt100:
     u -= digits * 100;
-lt100:
+ lt100:
     digits = u;
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
-done:
+ done:
     *buffer = 0;
     return buffer;
   }
@@ -500,28 +500,28 @@ string SimpleItoa(unsigned int i) {
     FastUInt64ToBufferLeft(i, buffer));
 }
 
-string SimpleItoa(long i) {
+string SimpleItoa(long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned long i) {
+string SimpleItoa(unsigned long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :
     FastUInt64ToBufferLeft(i, buffer));
 }
 
-string SimpleItoa(long long i) {
+string SimpleItoa(long long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
     FastInt32ToBuffer(i, buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
-string SimpleItoa(unsigned long long i) {
+string SimpleItoa(unsigned long long i) {  // NOLINT(runtime/int)
   char buffer[kFastToBufferSize];
   return string(buffer, (sizeof(i) == 4) ?
     FastUInt32ToBufferLeft(i, buffer) :

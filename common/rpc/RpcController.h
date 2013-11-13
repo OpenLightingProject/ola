@@ -29,27 +29,18 @@ namespace rpc {
 
 class RpcController {
   public:
-    typedef Callback0<void> CancelCallback;
-
     RpcController();
     ~RpcController() {}
 
     void Reset();
     bool Failed() const { return m_failed; }
     std::string ErrorText() const { return m_error_text; }
-    void StartCancel();
 
     void SetFailed(const std::string &reason);
-    bool IsCanceled() const { return m_cancelled; }
-    void NotifyOnCancel(CancelCallback *callback) {
-      m_callback = callback;
-    }
 
   private:
     bool m_failed;
-    bool m_cancelled;
     std::string m_error_text;
-    CancelCallback *m_callback;
 };
 }  // namespace rpc
 }  // namespace ola

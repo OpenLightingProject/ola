@@ -27,24 +27,11 @@ namespace rpc {
 
 RpcController::RpcController()
     : m_failed(false),
-      m_cancelled(false),
-      m_error_text(""),
-      m_callback(NULL) {
+      m_error_text("") {
 }
 
 void RpcController::Reset() {
   m_failed = false;
-  m_cancelled = false;
-  if (m_callback)
-    OLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
-      "leaking memory!";
-  m_callback = NULL;
-}
-
-void RpcController::StartCancel() {
-  m_cancelled = true;
-  if (m_callback)
-    m_callback->Run();
 }
 
 void RpcController::SetFailed(const std::string &reason) {

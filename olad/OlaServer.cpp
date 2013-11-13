@@ -246,7 +246,7 @@ bool OlaServer::Init() {
   bool web_server_started = false;
 
 #ifdef HAVE_LIBMICROHTTPD
-  if (StartHttpServer(iface)) {
+  if (m_options.http_enable && StartHttpServer(iface)) {
     web_server_started = true;
   } else {
     OLA_WARN << "Failed to start the HTTP server.";
@@ -255,7 +255,7 @@ bool OlaServer::Init() {
 
   if (web_server_started && m_discovery_agent.get()) {
     DiscoveryAgentInterface::RegisterOptions options;
-    options.txt_record = "\006path=/";
+    options.txt_data["path"] = "/";
     m_discovery_agent->RegisterService(
         "OLA Web Console",
         K_DISCOVERY_SERVICE_TYPE, m_options.http_port, options);
