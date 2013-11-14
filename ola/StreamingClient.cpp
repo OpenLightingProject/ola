@@ -127,6 +127,15 @@ void StreamingClient::Stop() {
 
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) {
+  return Send(universe, ola::dmx::SOURCE_PRIORITY_DEFAULT, data);
+}
+
+bool StreamingClient::SendDmx(const SendArgs &args, const DmxBuffer &data) {
+  return Send(args.universe, args.priority, data);
+}
+
+bool StreamingClient::Send(unsigned int universe, uint8_t priority,
+                           const DmxBuffer &data) {
   if (!m_stub || !m_socket->ValidReadDescriptor())
     return false;
 
@@ -144,6 +153,7 @@ bool StreamingClient::SendDmx(unsigned int universe,
   ola::proto::DmxData request;
   request.set_universe(universe);
   request.set_data(data.Get());
+  request.set_priority(priority);
   m_stub->StreamDmxData(NULL, &request, NULL, NULL);
 
   if (m_socket_closed) {

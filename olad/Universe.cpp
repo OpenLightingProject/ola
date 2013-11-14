@@ -709,6 +709,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
         changed_source_is_active = true;
     }
   }
+  OLA_INFO << "got priority " << (int) m_active_priority;
 
   if (active_sources.empty()) {
     OLA_WARN << "Something changed but we didn't find any active sources " <<
