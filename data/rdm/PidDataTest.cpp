@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <memory>
 
 #include "ola/Logging.h"
 #include "ola/rdm/PidStore.h"
@@ -47,8 +48,9 @@ void PidDataTest::setUp() {
  * Check we can load the data.
  */
 void PidDataTest::testDataLoad() {
-  const RootPidStore *store = RootPidStore::LoadFromDirectory(DATADIR);
-  OLA_ASSERT_NOT_NULL(store);
+  std::auto_ptr<const RootPidStore> store(
+      RootPidStore::LoadFromDirectory(DATADIR));
+  OLA_ASSERT_NOT_NULL(store.get());
 
   const PidStore *esta_store = store->EstaStore();
   OLA_ASSERT_NOT_NULL(esta_store);
