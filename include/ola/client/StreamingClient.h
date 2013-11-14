@@ -28,6 +28,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Macro.h>
+#include <ola/dmx/SourcePriorities.h>
 
 namespace ola {
 
@@ -74,6 +75,21 @@ class StreamingClient {
     };
 
     /**
+     * The arguments for the SendDmx method
+     */
+    class SendArgs {
+      public:
+        /**
+         * @brief the priority of the data.
+         * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
+         * ola::dmx::SOURCE_PRIORITY_MAX.
+         */
+        uint8_t priority;
+
+        SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
+    };
+
+    /**
      * Create a new StreamingClient.
      * @param auto_start if set to true, this will automatically start olad if
      *   it's not already running.
@@ -109,10 +125,22 @@ class StreamingClient {
 
     /**
      * Send a DmxBuffer to the olad server.
+     * @param universe the universe to send on.
+     * @param data the DMX512 data.
      * @returns true if sent sucessfully, false if the connection to the server
      *   has been closed.
      */
     bool SendDmx(unsigned int universe, const DmxBuffer &data);
+
+    /**
+     * @brief Send DMX data.
+     * @param universe the universe to send to.
+     * @param data the DmxBuffer with the data
+     * @param args the SendDMXArgs to use for this call.
+     */
+    bool SendDMX(unsigned int universe,
+                 const DmxBuffer &data,
+                 const SendArgs &args);
 
     void ChannelClosed();
 
@@ -124,6 +152,8 @@ class StreamingClient {
     class ola::rpc::RpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;
     bool m_socket_closed;
+
+    bool Send(unsigned int universe, uint8_t priority, const DmxBuffer &data);
 
     DISALLOW_COPY_AND_ASSIGN(StreamingClient);
 };
