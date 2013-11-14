@@ -6,13 +6,15 @@ pkgincludedir = $(includedir)/olad
 pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 
-OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
-                    DmxSource.cpp \
+OLASERVER_SOURCES = AvahiDiscoveryAgent.h Client.cpp ClientBroker.cpp \
+                    Device.cpp DeviceManager.cpp DmxSource.cpp \
+                    DiscoveryAgent.cpp \
                     DynamicPluginLoader.cpp \
                     OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortBroker.cpp PortManager.cpp \
                     Universe.cpp UniverseStore.cpp
+
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -23,6 +25,15 @@ libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                          $(top_builddir)/common/web/libolaweb.la \
                          $(top_builddir)/ola/libola.la
 
+if HAVE_DNSSD
+OLASERVER_SOURCES += BonjourDiscoveryAgent.cpp
+endif
+
+if HAVE_AVAHI
+OLASERVER_SOURCES += AvahiDiscoveryAgent.cpp
+libolaserver_la_LIBADD += $(avahi_LIBS)
+endif
+
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServerActions.cpp \
                            OladHTTPServer.cpp \
@@ -31,8 +42,8 @@ libolaserver_la_LIBADD += $(top_builddir)/common/http/libolahttp.la
 endif
 
 
-EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
-             DynamicPluginLoader.h \
+EXTRA_DIST = BonjourDiscoveryAgent.h Client.h ClientBroker.h DeviceManager.h \
+             DiscoveryAgent.h DynamicPluginLoader.h \
              HttpServerActions.h \
              OladHTTPServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \

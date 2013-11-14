@@ -123,6 +123,7 @@ class OlaServer {
     ola::thread::timeout_id m_housekeeping_timeout;
     ClientMap m_sd_to_service;
     auto_ptr<OladHTTPServer_t> m_httpd;
+    auto_ptr<class DiscoveryAgentInterface> m_discovery_agent;
     const Options m_options;
     ola::rdm::UID m_default_uid;
 
@@ -138,6 +139,7 @@ class OlaServer {
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];
     static const char K_UID_VAR[];
+    static const char K_DISCOVERY_SERVICE_TYPE[];
     static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;
 
     DISALLOW_COPY_AND_ASSIGN(OlaServer);
