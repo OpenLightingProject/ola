@@ -1,4 +1,5 @@
 X/Y/2013 ola-0.8.34
+ * Added DNS-SD registration support so the OLA web UI appears as _http._tcp
  * Added more RDM responder tests to cover some slot related edge cases
  * Log an error if we try and run an RDM test that doesn't exist
  * Added pretty printing of sensor definition messages
