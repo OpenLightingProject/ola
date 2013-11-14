@@ -44,7 +44,7 @@ bool terminate = false;
 bool SendDataFromString(StreamingClient *client,
                         unsigned int universe,
                         const string &data) {
-  StreamingClient::SendArgs args(universe);
+  StreamingClient::SendArgs args;
   args.priority = FLAGS_priority;
 
   ola::DmxBuffer buffer;
@@ -53,7 +53,7 @@ bool SendDataFromString(StreamingClient *client,
   if (!status || buffer.Size() == 0)
     return false;
 
-  if (!client->SendDmx(args, buffer)) {
+  if (!client->SendDMX(universe, buffer, args)) {
     cout << "Send DMX failed" << endl;
     terminate = true;
     return false;

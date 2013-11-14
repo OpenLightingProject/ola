@@ -80,20 +80,13 @@ class StreamingClient {
     class SendArgs {
       public:
         /**
-         * @brief the universe to send on
-         */
-        unsigned int universe;
-        /**
          * @brief the priority of the data.
          * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
          * ola::dmx::SOURCE_PRIORITY_MAX.
          */
         uint8_t priority;
 
-        explicit SendArgs(unsigned int universe)
-            : universe(universe),
-              priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {
-        }
+        SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
     };
 
     /**
@@ -140,13 +133,14 @@ class StreamingClient {
     bool SendDmx(unsigned int universe, const DmxBuffer &data);
 
     /**
-     * Send a DmxBuffer to the olad server.
-     * @@param args the options used for sending.
-     * @param data the DMX512 data.
-     * @returns true if sent sucessfully, false if the connection to the server
-     *   has been closed.
+     * @brief Send DMX data.
+     * @param universe the universe to send to.
+     * @param data the DmxBuffer with the data
+     * @param args the SendDMXArgs to use for this call.
      */
-    bool SendDmx(const SendArgs &args, const DmxBuffer &data);
+    bool SendDMX(unsigned int universe,
+                 const DmxBuffer &data,
+                 const SendArgs &args);
 
     void ChannelClosed();
 

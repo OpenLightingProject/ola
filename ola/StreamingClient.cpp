@@ -130,8 +130,10 @@ bool StreamingClient::SendDmx(unsigned int universe,
   return Send(universe, ola::dmx::SOURCE_PRIORITY_DEFAULT, data);
 }
 
-bool StreamingClient::SendDmx(const SendArgs &args, const DmxBuffer &data) {
-  return Send(args.universe, args.priority, data);
+bool StreamingClient::SendDMX(unsigned int universe,
+                              const DmxBuffer &data,
+                              const SendArgs &args) {
+  return Send(universe, args.priority, data);
 }
 
 bool StreamingClient::Send(unsigned int universe, uint8_t priority,
