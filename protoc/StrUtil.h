@@ -187,10 +187,11 @@ inline char* FastUInt64ToBuffer(uint64_t i, char* buffer) {
 // ----------------------------------------------------------------------
 LIBPROTOBUF_EXPORT string SimpleItoa(int i);
 LIBPROTOBUF_EXPORT string SimpleItoa(unsigned int i);
-LIBPROTOBUF_EXPORT string SimpleItoa(long i);
-LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long i);
-LIBPROTOBUF_EXPORT string SimpleItoa(long long i);
-LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long long i);
+LIBPROTOBUF_EXPORT string SimpleItoa(long i);   // NOLINT(runtime/int)
+LIBPROTOBUF_EXPORT string SimpleItoa(unsigned long i);   // NOLINT(runtime/int)
+LIBPROTOBUF_EXPORT string SimpleItoa(long long i);   // NOLINT(runtime/int)
+LIBPROTOBUF_EXPORT string SimpleItoa(
+    unsigned long long i);  // NOLINT(runtime/int)
 
 }  // namespace ola
 

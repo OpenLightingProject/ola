@@ -94,6 +94,7 @@ AvahiDiscoveryAgent::ServiceEntry::ServiceEntry(
     const RegisterOptions &options)
     : RegisterOptions(options),
       service_name(service_name),
+      actual_service_name(service_name),
       type(type),
       port(port),
       group(NULL),
@@ -117,8 +118,6 @@ AvahiDiscoveryAgent::~AvahiDiscoveryAgent() {
         m_reconnect_timeout);
   }
 
-  // TODO(simon): Check if we do this while the poll is still running, if the
-  // callbacks aere triggered.
   DeregisterAllServices();
   STLDeleteValues(&m_services);
 
@@ -237,33 +236,15 @@ void AvahiDiscoveryAgent::GroupStateChanged(const string &service_key,
   service->state = state;
 
   switch (state) {
-    case AVAHI_ENTRY_GROUP_ESTABLISHED :
+    case AVAHI_ENTRY_GROUP_ESTABLISHED:
       break;
-
-    case AVAHI_ENTRY_GROUP_COLLISION : {
-      //char *n;
-
-      /* A service name collision with a remote service
-       * happened. Let's pick a new name */
-      //n = avahi_alternative_service_name(name);
-      //avahi_free(name);
-      //name = n;
-
-      //OLA_WARN << "Service name collision, renaming service to '" << name
-      //         << "'";
-
-      /* And recreate the services */
-      //create_services(avahi_entry_group_get_client(g));
+    case AVAHI_ENTRY_GROUP_COLLISION:
+      RenameAndRegister(service);
       break;
-    }
-
-    case AVAHI_ENTRY_GROUP_FAILURE :
-      //OLA_WARN << "Entry group failure: " << avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
-
-      // Some kind of failure happened while we were registering our services
-      //avahi_simple_poll_quit(simple_poll);
+    case AVAHI_ENTRY_GROUP_FAILURE:
+      OLA_WARN << "Failed to register " << service_key
+               << avahi_strerror(avahi_client_errno(m_client));
       break;
-
     case AVAHI_ENTRY_GROUP_UNCOMMITED:
     case AVAHI_ENTRY_GROUP_REGISTERING:
       break;
@@ -312,7 +293,7 @@ bool AvahiDiscoveryAgent::InternalRegisterService(ServiceEntry *service) {
       service->group,
       service->if_index > 0 ? service->if_index : AVAHI_IF_UNSPEC,
       AVAHI_PROTO_INET, static_cast<AvahiPublishFlags>(0),
-      service->service_name.c_str(), service->type.c_str(), NULL, NULL,
+      service->actual_service_name.c_str(), service->type.c_str(), NULL, NULL,
       service->port, txt_args);
 
   avahi_string_list_free(txt_args);
@@ -320,7 +301,7 @@ bool AvahiDiscoveryAgent::InternalRegisterService(ServiceEntry *service) {
   if (r) {
     if (r == AVAHI_ERR_COLLISION) {
       OLA_WARN << "Collision with local service!";
-      // TODO(simon) handle this!
+      return RenameAndRegister(service);
     }
     OLA_WARN << "avahi_entry_group_add_service failed: " << avahi_strerror(r);
     avahi_entry_group_reset(service->group);
@@ -409,14 +390,16 @@ void AvahiDiscoveryAgent::SetUpReconnectTimeout() {
   }
 }
 
-/*
- * Generate an alternate name for the service.
- */
-string AvahiDiscoveryAgent::GenerateAlternateName(const string &service_name) {
-  char *new_name_str = avahi_alternative_service_name(service_name.c_str());
+bool AvahiDiscoveryAgent::RenameAndRegister(ServiceEntry *service) {
+  char *new_name_str =
+    avahi_alternative_service_name(service->actual_service_name.c_str());
   string new_name(new_name_str);
   avahi_free(new_name_str);
-  return new_name;
+
+  OLA_WARN << "Service name collision for " << service->actual_service_name
+           << " renaming to " << new_name;
+  service->actual_service_name = new_name;
+  return InternalRegisterService(service);
 }
 
 /*

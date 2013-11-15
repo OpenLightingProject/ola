@@ -35,7 +35,7 @@
 namespace ola {
 
 /**
- * @class An implementation of DiscoveryAgentInterface that uses the Avahi
+ * @brief An implementation of DiscoveryAgentInterface that uses the Avahi
  * client library.
  */
 class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
@@ -43,18 +43,8 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
     AvahiDiscoveryAgent();
     ~AvahiDiscoveryAgent();
 
-    /**
-     * Initialize this Discovery Agent
-     */
     bool Init();
 
-    /**
-     * @brief Register a service
-     * @param service_name the name of the service
-     * @param type the service type
-     * @param port the port the service is on
-     * @param options extra options that control registration.
-     */
     void RegisterService(const std::string &service_name,
                          const std::string &type,
                          uint16_t port,
@@ -73,7 +63,7 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
                            AvahiEntryGroupState state);
 
     /**
-     * Called when the reconnect timeout expires.
+     * @brief Called when the reconnect timeout expires.
      */
     void ReconnectTimeout();
 
@@ -81,6 +71,8 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
     // The structure used to track services.
     struct ServiceEntry : public RegisterOptions {
       const std::string service_name;
+      // This may differ from the service name if there was a collision.
+      std::string actual_service_name;
       const std::string type;
       const uint16_t port;
       AvahiEntryGroup *group;
@@ -106,8 +98,8 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
     void UpdateServices();
     void DeregisterAllServices();
     void SetUpReconnectTimeout();
+    bool RenameAndRegister(ServiceEntry *service);
 
-    std::string GenerateAlternateName(const std::string &service_name);
     std::string MakeServiceKey(const std::string &service_name,
                                const std::string &type);
     std::string ClientStateToString(AvahiClientState state);
