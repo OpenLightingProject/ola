@@ -909,6 +909,7 @@ void OladHTTPServer::PortToJson(JsonObject *json,
     // here
     uint8_t priority = port.Priority();
     if (priority == 0) {
+      // We check here because 0 is an invalid priority outside of Olad
       priority = dmx::SOURCE_PRIORITY_DEFAULT;
     }
     priority_json->Add("value", static_cast<int>(priority));
