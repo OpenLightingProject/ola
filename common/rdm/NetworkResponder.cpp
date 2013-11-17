@@ -29,18 +29,23 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/NetworkResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RealGlobalNetworkGetter.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderNetworkController.h"
+#include "common/network/FakeInterfacePicker.h"
 
 namespace ola {
 namespace rdm {
 
+using ola::network::FakeInterfacePicker;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using std::string;
 using std::vector;
@@ -76,8 +81,8 @@ const ResponderOps<NetworkResponder>::ParamHandler
   { PID_INTERFACE_LABEL,
     &NetworkResponder::GetInterfaceLabel,
     NULL},
-  { PID_INTERFACE_HARDWARE_ADDRESS,
-    &NetworkResponder::GetInterfaceHardwareAddress,
+  { PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
+    &NetworkResponder::GetInterfaceHardwareAddressType1,
     NULL},
   { PID_IPV4_CURRENT_ADDRESS,
     &NetworkResponder::GetIPV4CurrentAddress,
@@ -99,33 +104,64 @@ const ResponderOps<NetworkResponder>::ParamHandler
 
 
 /**
- * A class which represents a fake DNS getter.
+ * A class which represents a fake network getter.
  */
 class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
   public:
-    FakeGlobalNetworkGetter(const IPV4Address ipv4_default_route,
+    FakeGlobalNetworkGetter(const vector<Interface> interfaces,
+                            const IPV4Address ipv4_default_route,
                             const string &hostname,
                             const string &domain_name,
                             const NameServers &name_servers)
         : GlobalNetworkGetter(),
+          // m_picker(new FakeInterfacePicker(interfaces)),
+          // Todo(Peter): should be FakeInterfacePicker when I can get it
+          // working
+          m_picker(InterfacePicker::NewPicker()),
           m_ipv4_default_route(ipv4_default_route),
           m_hostname(hostname),
           m_domain_name(domain_name),
           m_name_servers(name_servers) {
+      if (interfaces.size() > 0) {}
     }
 
   protected:
+    const ola::network::InterfacePicker *GetInterfacePicker() const;
+    bool GetDHCPStatus(const ola::network::Interface &iface) const;
     IPV4Address GetIPV4DefaultRoute();
     string GetHostname();
     string GetDomainName();
     NameServers GetNameServers();
 
  private:
+    InterfacePicker *m_picker;
     IPV4Address m_ipv4_default_route;
     string m_hostname;
     string m_domain_name;
     NameServers m_name_servers;
 };
+
+
+/**
+ * Get the interface picker
+ */
+const InterfacePicker *FakeGlobalNetworkGetter::GetInterfacePicker() const {
+  OLA_INFO << "Getting picker";
+  return m_picker;
+}
+
+
+/**
+ * Get the DHCP status of an interface
+ * @param iface the interface to check the DHCP status of
+ * @return true if using DHCP, false otherwise
+ */
+bool FakeGlobalNetworkGetter::GetDHCPStatus(
+    const ola::network::Interface &iface) const {
+  // TODO(Peter): Fixme - actually do the work!
+  if (iface.index > 0) {}
+  return false;
+}
 
 
 /**
@@ -164,15 +200,29 @@ NameServers FakeGlobalNetworkGetter::GetNameServers() {
 NetworkResponder::NetworkResponder(const UID &uid)
     : m_uid(uid),
       m_identify_mode(false) {
-  vector<IPV4Address> name_servers;
-  name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
-  name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
-  name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
-  m_global_network_getter = new FakeGlobalNetworkGetter(
-      IPV4Address::FromStringOrDie("10.0.0.254"),
-      "foo",
-      "bar.com",
-      name_servers);
+  // vector<Interface> interfaces;
+
+  // interfaces.push_back(Interface(
+  //     "eth1",
+  //     IPV4Address::FromStringOrDie("10.0.0.20"),
+  //     IPV4Address::FromStringOrDie("10.0.0.255"),
+  //     IPV4Address::FromStringOrDie("255.255.255.0"),
+  //     MACAddress::FromStringOrDie("01:23:45:67:89:ab"),
+  //     false,
+  //     1));
+
+  // vector<IPV4Address> name_servers;
+  // name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
+  // name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
+  // name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
+
+  // m_global_network_getter = new FakeGlobalNetworkGetter(
+  //     interfaces,
+  //     IPV4Address::FromStringOrDie("10.0.0.254"),
+  //     "foo",
+  //     "bar.com",
+  //     name_servers);
+  m_global_network_getter = new RealGlobalNetworkGetter();
 }
 
 
@@ -241,26 +291,25 @@ const RDMResponse *NetworkResponder::GetSoftwareVersionLabel(
 
 const RDMResponse *NetworkResponder::GetListInterfaces(
     const RDMRequest *request) {
-  return ResponderHelper::GetListInterfaces(request,
-      ola::network::InterfacePicker::NewPicker());
+  return ResponderHelper::GetListInterfaces(request, m_global_network_getter);
 }
 
 const RDMResponse *NetworkResponder::GetInterfaceLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetInterfaceLabel(request,
-      ola::network::InterfacePicker::NewPicker());
+  return ResponderHelper::GetInterfaceLabel(request, m_global_network_getter);
 }
 
-const RDMResponse *NetworkResponder::GetInterfaceHardwareAddress(
+const RDMResponse *NetworkResponder::GetInterfaceHardwareAddressType1(
     const RDMRequest *request) {
-  return ResponderHelper::GetInterfaceHardwareAddress(request,
-      ola::network::InterfacePicker::NewPicker());
+  return ResponderHelper::GetInterfaceHardwareAddressType1(
+      request,
+      m_global_network_getter);
 }
 
 const RDMResponse *NetworkResponder::GetIPV4CurrentAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetIPV4CurrentAddress(request,
-      ola::network::InterfacePicker::NewPicker());
+                                                m_global_network_getter);
 }
 
 const RDMResponse *NetworkResponder::GetIPV4DefaultRoute(

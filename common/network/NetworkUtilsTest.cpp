@@ -26,11 +26,14 @@
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
+using ola::network::FullHostname;
 using ola::network::FullHostnameToDomain;
 using ola::network::FullHostnameToHostname;
+using ola::network::Hostname;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
 using ola::network::LittleEndianToHost;
+using ola::network::Nameservers;
 using ola::network::NetworkToHost;
 
 using std::string;
@@ -40,12 +43,14 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToFromNetwork);
   CPPUNIT_TEST(testToFromLittleEndian);
   CPPUNIT_TEST(testNameProcessing);
+  CPPUNIT_TEST(testNameservers);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testToFromNetwork();
     void testToFromLittleEndian();
     void testNameProcessing();
+    void testNameservers();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
@@ -96,4 +101,16 @@ void NetworkUtilsTest::testNameProcessing() {
   OLA_ASSERT_EQ(string(""), FullHostnameToDomain("foo"));
   OLA_ASSERT_EQ(string("bar"), FullHostnameToDomain("foo.bar"));
   OLA_ASSERT_EQ(string("bar.com"), FullHostnameToDomain("foo.bar.com"));
+
+  // Check we were able to get the hostname
+  OLA_ASSERT_GT(FullHostname().length(), 0);
+  OLA_ASSERT_GT(Hostname().length(), 0);
+}
+
+
+/*
+ * Check that we can fetch some name servers
+ */
+void NetworkUtilsTest::testNameservers() {
+  OLA_ASSERT_GT(Nameservers().size(), 0);
 }

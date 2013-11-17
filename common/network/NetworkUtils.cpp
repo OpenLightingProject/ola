@@ -25,6 +25,7 @@
 #ifdef WIN32
 typedef uint32_t in_addr_t;
 #else
+#include <resolv.h>
 #endif
 
 #include <errno.h>
@@ -308,6 +309,26 @@ string FullHostname() {
  */
 string Hostname() {
   return FullHostnameToHostname(FullHostname());
+}
+
+/*
+ * Return a vector of name server IP addresses.
+ */
+vector<IPV4Address> Nameservers() {
+  // Todo(Peter): Do something on Windows
+  OLA_DEBUG << "Getting nameservers";
+  vector<IPV4Address> name_servers;
+
+  if (res_init() != 0)
+    OLA_WARN << "Error getting nameservers";
+
+  for (int32_t i = 0; i < _res.nscount; i++) {
+    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr);
+    OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
+    name_servers.push_back(addr);
+  }
+
+  return name_servers;
 }
 }  // namespace network
 }  // namespace ola

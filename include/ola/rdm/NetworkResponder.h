@@ -81,7 +81,8 @@ class NetworkResponder: public RDMControllerInterface {
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     const RDMResponse *GetListInterfaces(const RDMRequest *request);
     const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
-    const RDMResponse *GetInterfaceHardwareAddress(const RDMRequest *request);
+    const RDMResponse *GetInterfaceHardwareAddressType1(
+        const RDMRequest *request);
     const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
     const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
     const RDMResponse *GetDNSHostname(const RDMRequest *request);

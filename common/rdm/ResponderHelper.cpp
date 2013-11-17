@@ -572,15 +572,15 @@ const RDMResponse *ResponderHelper::RecordSensor(
 
 const RDMResponse *ResponderHelper::GetListInterfaces(
     const RDMRequest *request,
-    const InterfacePicker *picker,
+    const GlobalNetworkGetter *global_network_getter,
     uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
-  std::vector<Interface> interfaces = picker->GetInterfaces(false);
+  std::vector<Interface> interfaces =
+      global_network_getter->GetInterfacePicker()->GetInterfaces(false);
   // TODO(Peter): Sort by index
-
   if (interfaces.size() == 0) {
     return EmptyGetResponse(request, queued_message_count);
   }
@@ -611,7 +611,7 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
 
 const RDMResponse *ResponderHelper::GetInterfaceLabel(
     const RDMRequest *request,
-    const InterfacePicker *picker,
+    const GlobalNetworkGetter *global_network_getter,
     uint8_t queued_message_count) {
   uint16_t index;
   if (!ResponderHelper::ExtractUInt16(request, &index)) {
@@ -623,7 +623,8 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
   options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
-  if (!picker->ChooseInterface(interface, (int32_t)index, options)) {
+  if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
+      interface, (int32_t)index, options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -653,11 +654,10 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
 }
 
 
-const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
+const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
     const RDMRequest *request,
-    const InterfacePicker *picker,
+    const GlobalNetworkGetter *global_network_getter,
     uint8_t queued_message_count) {
-  // TODO(Peter): Rename to match the type 1 stuff!
   uint16_t index;
   if (!ResponderHelper::ExtractUInt16(request, &index)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -668,10 +668,12 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
   options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
-  if (!picker->ChooseInterface(interface, (int32_t)index, options)) {
+  if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
+      interface, (int32_t)index, options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  // Only return type 1 (Ethernet)
   if (interface->type != ARPHRD_ETHER) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
@@ -699,7 +701,7 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddress(
 
 const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
     const RDMRequest *request,
-    const InterfacePicker *picker,
+    const GlobalNetworkGetter *global_network_getter,
     uint8_t queued_message_count) {
   uint16_t index;
   if (!ResponderHelper::ExtractUInt16(request, &index)) {
@@ -711,7 +713,8 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
   options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
-  if (!picker->ChooseInterface(interface, (int32_t)index, options)) {
+  if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
+      interface, (int32_t)index, options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -737,8 +740,8 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
 
   ipv4_current_address.netmask = *mask;
 
-  // TODO(Peter): Fixme!
-  ipv4_current_address.dhcp = false ? 1 : 0;
+  ipv4_current_address.dhcp = global_network_getter->GetDHCPStatus(*interface) ?
+      1 : 0;
 
   return GetResponseFromData(
       request,

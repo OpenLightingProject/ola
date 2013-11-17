@@ -28,7 +28,9 @@
 #endif
 
 #include <ola/network/Interface.h>
+#include <ola/network/IPV4Address.h>
 #include <string>
+#include <vector>
 
 
 namespace ola {
@@ -72,6 +74,8 @@ std::string FullHostnameToDomain(const std::string fqdn);
 std::string Domain();
 std::string FullHostname();
 std::string Hostname();
+
+std::vector<ola::network::IPV4Address> Nameservers();
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_NETWORKUTILS_H_

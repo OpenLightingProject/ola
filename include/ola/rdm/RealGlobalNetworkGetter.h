@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ResponderNetworkController.h
+ * RealGlobalNetworkGetter.h
  * Talks to the machine's network systems to get/set data.
  * Copyright (C) 2013 Peter Newman
  */
@@ -21,19 +21,18 @@
 /**
  * @addtogroup rdm_resp
  * @{
- * @file ResponderNetworkController.h
- * @brief Gets/sets config about a network.
+ * @file RealGlobalNetworkGetter.h
+ * @brief Gets/sets real config about a network.
  * @}
  */
 
-#ifndef INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
-#define INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
+#ifndef INCLUDE_OLA_RDM_REALGLOBALNETWORKGETTER_H_
+#define INCLUDE_OLA_RDM_REALGLOBALNETWORKGETTER_H_
 
 #include <string>
 #include <vector>
 
-#include "ola/rdm/RDMEnums.h"
-#include "ola/network/Interface.h"
+#include "ola/rdm/ResponderNetworkController.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
 
@@ -42,27 +41,26 @@ namespace rdm {
 
 using std::string;
 using std::vector;
-
-typedef vector<ola::network::IPV4Address> NameServers;
+using ola::network::InterfacePicker;
+using ola::network::IPV4Address;
 
 /**
- * @brief Gets global network information.
+ * A class which represents a real network getter.
  */
-class GlobalNetworkGetter {
+class RealGlobalNetworkGetter: public GlobalNetworkGetter {
   public:
-    GlobalNetworkGetter() {}
-    virtual ~GlobalNetworkGetter() {}
+    RealGlobalNetworkGetter()
+        : GlobalNetworkGetter() {
+    }
 
-    virtual const ola::network::InterfacePicker *GetInterfacePicker() const = 0;
-
-    virtual bool GetDHCPStatus(const ola::network::Interface &iface) const = 0;
-
-    virtual ola::network::IPV4Address GetIPV4DefaultRoute() = 0;
-    virtual string GetHostname() = 0;
-    virtual string GetDomainName() = 0;
-    virtual NameServers GetNameServers() = 0;
+  protected:
+    const InterfacePicker *GetInterfacePicker() const;
+    bool GetDHCPStatus(const ola::network::Interface &iface) const;
+    IPV4Address GetIPV4DefaultRoute();
+    string GetHostname();
+    string GetDomainName();
+    NameServers GetNameServers();
 };
-// TODO(Peter): Set global network information.
 }  // namespace rdm
 }  // namespace ola
-#endif  // INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
+#endif  // INCLUDE_OLA_RDM_REALGLOBALNETWORKGETTER_H_

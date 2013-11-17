@@ -909,7 +909,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "INTERFACE_HARDWARE_ADDRESS"
+  name: "INTERFACE_HARDWARE_ADDRESS_TYPE1"
   value: 65506
   get_request {
     field {
@@ -1297,4 +1297,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-version: 1383106710
+version: 1383707857

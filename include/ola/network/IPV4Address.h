@@ -117,7 +117,7 @@ class IPV4Address {
     // useful for testing
     static IPV4Address FromStringOrDie(const std::string &address);
 
-    /*
+    /**
      * @brief Convert a subnet mask to its CIDR format value
      * @param address the subnet mask as an IPV4Address object
      * @param mask the mask variable to populate

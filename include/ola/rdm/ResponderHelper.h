@@ -139,35 +139,35 @@ class ResponderHelper {
 
     static const RDMResponse *GetListInterfaces(
         const RDMRequest *request,
-        const InterfacePicker *picker,
+        const GlobalNetworkGetter *global_network_getter,
         uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetInterfaceLabel(
         const RDMRequest *request,
-        const InterfacePicker *picker,
+        const GlobalNetworkGetter *global_network_getter,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetInterfaceHardwareAddress(
+    static const RDMResponse *GetInterfaceHardwareAddressType1(
         const RDMRequest *request,
-        const InterfacePicker *picker,
+        const GlobalNetworkGetter *global_network_getter,
         uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetIPV4CurrentAddress(
         const RDMRequest *request,
-        const InterfacePicker *picker,
+        const GlobalNetworkGetter *global_network_getter,
         uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetIPV4DefaultRoute(
-        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *global_network_getter);
 
     static const RDMResponse *GetDNSHostname(
-        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *global_network_getter);
 
     static const RDMResponse *GetDNSDomainName(
-        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *global_network_getter);
 
     static const RDMResponse *GetDNSNameServer(
-        const RDMRequest *request, GlobalNetworkGetter *dns_getter);
+        const RDMRequest *request, GlobalNetworkGetter *global_network_getter);
 
     static const RDMResponse *GetRealTimeClock(
         const RDMRequest *request,
