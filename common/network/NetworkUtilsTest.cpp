@@ -26,22 +26,26 @@
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
-
-
+using ola::network::FullHostnameToDomain;
+using ola::network::FullHostnameToHostname;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 
+using std::string;
+
 class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(NetworkUtilsTest);
   CPPUNIT_TEST(testToFromNetwork);
   CPPUNIT_TEST(testToFromLittleEndian);
+  CPPUNIT_TEST(testNameProcessing);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testToFromNetwork();
     void testToFromLittleEndian();
+    void testNameProcessing();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
@@ -76,4 +80,20 @@ void NetworkUtilsTest::testToFromLittleEndian() {
 
   uint32_t v3 = 0x01020304;
   OLA_ASSERT_EQ(v3, LittleEndianToHost(HostToLittleEndian(v3)));
+}
+
+
+/*
+ * Check that name processing works
+ */
+void NetworkUtilsTest::testNameProcessing() {
+  // FullHostnameToHostname
+  OLA_ASSERT_EQ(string("foo"), FullHostnameToHostname("foo"));
+  OLA_ASSERT_EQ(string("foo"), FullHostnameToHostname("foo.bar"));
+  OLA_ASSERT_EQ(string("foo"), FullHostnameToHostname("foo.bar.com"));
+
+  // FullHostnameToDomain
+  OLA_ASSERT_EQ(string(""), FullHostnameToDomain("foo"));
+  OLA_ASSERT_EQ(string("bar"), FullHostnameToDomain("foo.bar"));
+  OLA_ASSERT_EQ(string("bar.com"), FullHostnameToDomain("foo.bar.com"));
 }

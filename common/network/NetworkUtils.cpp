@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * NetworkUtils.h
+ * NetworkUtils.cpp
  * Abstract various network functions.
  * Copyright (C) 2005-2009 Simon Newton
  */
@@ -23,10 +23,8 @@
 #endif
 
 #ifdef WIN32
-#include <winsock2.h>
 typedef uint32_t in_addr_t;
 #else
-#include <arpa/inet.h>
 #endif
 
 #include <errno.h>
@@ -41,6 +39,7 @@ typedef uint32_t in_addr_t;
 #include "ola/StringUtils.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
+#include "ola/network/NetworkUtils.h"
 
 
 namespace ola {
@@ -253,6 +252,39 @@ int32_t LittleEndianToHost(int32_t value) {
 
 
 /*
+ * Convert a FQDN to a hostname
+ */
+string FullHostnameToHostname(const string fqdn) {
+  std::vector<string> tokens;
+  StringSplit(fqdn, tokens, ".");
+  return string(tokens[0]);
+}
+
+
+/*
+ * Convert a FQDN to a domain
+ */
+string FullHostnameToDomain(const string fqdn) {
+  std::vector<string> tokens;
+  StringSplit(fqdn, tokens, ".");
+  if (tokens.size() <= 1)
+    return "";
+
+  // Remove the hostname
+  tokens.erase(tokens.begin());
+  return StringJoin(".", tokens);
+}
+
+
+/*
+ * Return the domain as a string.
+ */
+string Domain() {
+  return FullHostnameToDomain(FullHostname());
+}
+
+
+/*
  * Return the full hostname
  */
 string FullHostname() {
@@ -275,10 +307,7 @@ string FullHostname() {
  * Return the hostname as a string.
  */
 string Hostname() {
-  string hostname = FullHostname();
-  std::vector<string> tokens;
-  StringSplit(hostname, tokens, ".");
-  return string(tokens[0]);
+  return FullHostnameToHostname(FullHostname());
 }
 }  // namespace network
 }  // namespace ola
