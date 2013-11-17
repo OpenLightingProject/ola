@@ -66,6 +66,10 @@ int8_t LittleEndianToHost(int8_t value);
 int16_t LittleEndianToHost(int16_t value);
 int32_t LittleEndianToHost(int32_t value);
 
+std::string FullHostnameToHostname(const std::string fqdn);
+std::string FullHostnameToDomain(const std::string fqdn);
+
+std::string Domain();
 std::string FullHostname();
 std::string Hostname();
 }  // namespace network
