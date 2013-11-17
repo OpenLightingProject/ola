@@ -284,7 +284,7 @@ void OlaServerServiceImpl::SetPortPriority(
 
   bool inherit_mode = true;
   uint8_t value = 0;
-  if (request->priority_mode() == PRIORITY_MODE_OVERRIDE) {
+  if (request->priority_mode() == PRIORITY_MODE_STATIC) {
     if (request->has_priority()) {
       inherit_mode = false;
       value = request->priority();
@@ -305,7 +305,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
     else
-      status = m_port_manager->SetPriorityOverride(port, value);
+      status = m_port_manager->SetPriorityStatic(port, value);
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
@@ -314,7 +314,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
     else
-      status = m_port_manager->SetPriorityOverride(port, value);
+      status = m_port_manager->SetPriorityStatic(port, value);
   }
 
   if (!status)
@@ -966,10 +966,12 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
     port_info->set_active(false);
   }
 
-  if (port.PriorityCapability() != CAPABILITY_NONE)
-    port_info->set_priority(port.GetPriority());
-  if (port.PriorityCapability() == CAPABILITY_FULL)
+  if (port.PriorityCapability() != CAPABILITY_NONE) {
     port_info->set_priority_mode(port.GetPriorityMode());
+    if (port.GetPriorityMode() == PRIORITY_MODE_STATIC) {
+      port_info->set_priority(port.GetPriority());
+    }
+  }
 
   port_info->set_supports_rdm(port.SupportsRDM());
 }

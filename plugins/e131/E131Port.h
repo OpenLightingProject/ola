@@ -47,7 +47,9 @@ class E131InputPort: public BasicInputPort {
     E131InputPort(E131Device *parent, int id, E131Node *node,
                   class PluginAdaptor *plugin_adaptor)
         : BasicInputPort(parent, id, plugin_adaptor),
-          m_node(node) {}
+          m_node(node) {
+      SetPriorityMode(PRIORITY_MODE_INHERIT);
+    }
 
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(old_universe, new_universe);

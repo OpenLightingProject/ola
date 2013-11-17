@@ -152,7 +152,7 @@ ola.UniverseSettingsTab.prototype.generatePrioritySettingFromComponent_ =
     priority_setting.priority = priority;
     var priority_mode = port_component.priorityMode();
     if (priority_mode != undefined) {
-      priority_setting.mode = (priority_mode == 'Inherit' ? 0 : 1);
+      priority_setting.mode = priority_mode;
     }
     setting_list.push(priority_setting);
   }

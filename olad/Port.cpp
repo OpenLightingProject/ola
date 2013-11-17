@@ -39,7 +39,7 @@ BasicInputPort::BasicInputPort(AbstractDevice *parent,
                                bool supports_rdm):
     m_port_id(port_id),
     m_priority(ola::dmx::SOURCE_PRIORITY_DEFAULT),
-    m_priority_mode(PRIORITY_MODE_INHERIT),
+    m_priority_mode(PRIORITY_MODE_STATIC),
     m_port_string(""),
     m_universe(NULL),
     m_device(parent),

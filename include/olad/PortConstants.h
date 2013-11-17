@@ -20,18 +20,50 @@
 
 #ifndef INCLUDE_OLAD_PORTCONSTANTS_H_
 #define INCLUDE_OLAD_PORTCONSTANTS_H_
+/**
+ * @addtogroup olad
+ * @{
+ * @file PortConstants.h
+ * @brief Different priority modes and priority capabilities. Please make sure
+ * and visit [Merging Algorithms]
+ * (http://opendmx.net/index.php/OLA_Merging_Algorithms) for more information.
+ * @}
+ */
 
 namespace ola {
+
+  /**
+   * @addtogroup olad
+   * @{
+   */
+
+  /**
+   * @brief Defines the different priority modes that OLA supports.
+   */
   typedef enum {
+    /** Allows Port to inherit the priority of incoming data */
     PRIORITY_MODE_INHERIT,
-    PRIORITY_MODE_OVERRIDE,
+    /** The Port has a static priority set by the user and cannot
+     * inherit priorities from the incoming data*/
+    PRIORITY_MODE_STATIC,
+    /** Port can be used as an end condition for iterating through the
+     * modes*/
     PRIORITY_MODE_END,
   } port_priority_mode;
 
+  /**
+   * @brief Defines the priority capability of a Port.
+   */
   typedef enum {
-    CAPABILITY_NONE,  // port doesn't support priorities at all
-    CAPABILITY_STATIC,  // port allows a static priority assignment
-    CAPABILITY_FULL,  // port can either inherit or use a static assignment
+    /** Port doesn't support priorities at all*/
+    CAPABILITY_NONE,
+    /** Port allows a static priority assignment */
+    CAPABILITY_STATIC,
+    /** Port can either inherit or use a static assignment */
+    CAPABILITY_FULL,
   } port_priority_capability;
+
+  /**@} End olad group */
+
 }  // namespace ola
 #endif  // INCLUDE_OLAD_PORTCONSTANTS_H_
