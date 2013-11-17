@@ -29,7 +29,6 @@ PKG_CHECK_MODULES(libprotobuf, [protobuf >= $1])
 libprotobuf_CFLAGS=`echo $libprotobuf_CFLAGS | sed 's/-I/-isystem /'`
 AC_SUBST([libprotobuf_CFLAGS])
 
-
 AC_ARG_WITH([protoc],
   [AS_HELP_STRING([--with-protoc=COMMAND],
     [use the given protoc command instead of searching $PATH (useful for cross-compiling)])],
@@ -82,8 +81,22 @@ OLA_PROTOC="\$(top_builddir)/protoc/ola_protoc";
 if test "$with_ola_protoc" != "no"; then
   OLA_PROTOC=$with_ola_protoc;
   echo "set ola_protoc to $with_ola_protoc"
+else
+  AC_CHECK_HEADER(
+      [google/protobuf/compiler/command_line_interface.h],
+      [],
+      AC_MSG_ERROR([Cannot find the protoc header files]))
+  SAVED_LDFLAGS=$LDFLAGS
+  LDFLAGS="$LDFLAGS -lprotoc"
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM([#include <google/protobuf/compiler/command_line_interface.h>],
+      [google::protobuf::compiler::CommandLineInterface cli])],
+    [TEST_LIBS="$TEST_LIBS -lprotoc"] [],
+    [AC_MSG_ERROR([cannot find libproto])])
+  LDFLAGS=$SAVED_LDFLAGS
 fi
 AC_SUBST([OLA_PROTOC])
+AM_CONDITIONAL(BUILD_OLA_PROTOC, test "${with_ola_protoc}" == "no")
 ])
 
 
