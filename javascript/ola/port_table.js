@@ -95,9 +95,7 @@ ola.Port.prototype.createDom = function() {
       this.dom_.appendChild(tr, td);
     } else if (priority['priority_capability'] == "static") {
       // this port only supports Static priorities
-      var td = goog.dom.createDom('td', {}, 'Static');
-      this.dom_.appendChild(td, this.priority_input);
-      this.dom_.appendChild(tr, td);
+      this.dom_.appendChild(tr, this.priority_input);
     }
   }
   this.setElementInternal(tr);
