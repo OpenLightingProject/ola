@@ -53,7 +53,7 @@ class ArtNetDevice: public Device {
   void Configure(ola::rpc::RpcController *controller,
                  const string &request,
                  string *response,
-                 Callback0<void> *done);
+                 ConfigureCallback *done);
 
   static const char K_ALWAYS_BROADCAST_KEY[];
   static const char K_DEVICE_NAME[];

@@ -97,7 +97,7 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   if (!universe)
     return false;
 
-  if (GetPriorityMode() == PRIORITY_MODE_OVERRIDE)
+  if (GetPriorityMode() == PRIORITY_MODE_STATIC)
     priority = GetPriority();
 
   return m_node->SendDMX(universe->UniverseId(),

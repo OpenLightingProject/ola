@@ -139,11 +139,13 @@ void OlaServerServiceImpl::UpdateDmxData(
     DmxBuffer buffer;
     buffer.Set(request->data());
 
-    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
     if (request->has_priority()) {
       priority = request->priority();
-      priority = std::max(DmxSource::PRIORITY_MIN, priority);
-      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+      priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
+                          priority);
+      priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
+                          priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
     client->DMXRecieved(request->universe(), source);
@@ -171,11 +173,13 @@ void OlaServerServiceImpl::StreamDmxData(
     DmxBuffer buffer;
     buffer.Set(request->data());
 
-    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
     if (request->has_priority()) {
       priority = request->priority();
-      priority = std::max(DmxSource::PRIORITY_MIN, priority);
-      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+      priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
+                          priority);
+      priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
+                          priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
     client->DMXRecieved(request->universe(), source);
@@ -280,7 +284,7 @@ void OlaServerServiceImpl::SetPortPriority(
 
   bool inherit_mode = true;
   uint8_t value = 0;
-  if (request->priority_mode() == PRIORITY_MODE_OVERRIDE) {
+  if (request->priority_mode() == PRIORITY_MODE_STATIC) {
     if (request->has_priority()) {
       inherit_mode = false;
       value = request->priority();
@@ -301,7 +305,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
     else
-      status = m_port_manager->SetPriorityOverride(port, value);
+      status = m_port_manager->SetPriorityStatic(port, value);
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
@@ -310,7 +314,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
     else
-      status = m_port_manager->SetPriorityOverride(port, value);
+      status = m_port_manager->SetPriorityStatic(port, value);
   }
 
   if (!status)
@@ -586,8 +590,7 @@ void OlaServerServiceImpl::ConfigureDevice(
     return;
   }
 
-  device->Configure(controller,
-                    request->data(),
+  device->Configure(controller, request->data(),
                     response->mutable_data(), done);
 }
 
@@ -612,8 +615,7 @@ void OlaServerServiceImpl::GetUIDs(
   UIDSet::Iterator iter = uid_set.Begin();
   for (; iter != uid_set.End(); ++iter) {
     ola::proto::UID *uid = response->add_uid();
-    uid->set_esta_id(iter->ManufacturerId());
-    uid->set_device_id(iter->DeviceId());
+    SetProtoUID(*iter, uid);
   }
 }
 
@@ -810,10 +812,13 @@ void OlaServerServiceImpl::HandleRDMResponse(
     } else {
       uint8_t response_type = rdm_response->ResponseType();
       if (response_type <= ola::rdm::RDM_NACK_REASON) {
+        SetProtoUID(rdm_response->SourceUID(), response->mutable_source_uid());
+        SetProtoUID(rdm_response->DestinationUID(),
+                    response->mutable_dest_uid());
+        response->set_transaction_number(rdm_response->TransactionNumber());
         response->set_response_type(
             static_cast<ola::proto::RDMResponseType>(response_type));
         response->set_message_count(rdm_response->MessageCount());
-        response->set_param_id(rdm_response->ParamId());
         response->set_sub_device(rdm_response->SubDevice());
 
         switch (rdm_response->CommandClass()) {
@@ -830,6 +835,8 @@ void OlaServerServiceImpl::HandleRDMResponse(
             OLA_WARN << "Unknown command class 0x" << std::hex <<
               rdm_response->CommandClass();
         }
+
+        response->set_param_id(rdm_response->ParamId());
 
         if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
           const string data(
@@ -874,8 +881,7 @@ void OlaServerServiceImpl::RDMDiscoveryComplete(
   UIDSet::Iterator iter = uids.Begin();
   for (; iter != uids.End(); ++iter) {
     ola::proto::UID *uid = response->add_uid();
-    uid->set_esta_id(iter->ManufacturerId());
-    uid->set_device_id(iter->DeviceId());
+    SetProtoUID(*iter, uid);
   }
 }
 
@@ -960,14 +966,21 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
     port_info->set_active(false);
   }
 
-  if (port.PriorityCapability() != CAPABILITY_NONE)
-    port_info->set_priority(port.GetPriority());
-  if (port.PriorityCapability() == CAPABILITY_FULL)
+  if (port.PriorityCapability() != CAPABILITY_NONE) {
     port_info->set_priority_mode(port.GetPriorityMode());
+    if (port.GetPriorityMode() == PRIORITY_MODE_STATIC) {
+      port_info->set_priority(port.GetPriority());
+    }
+  }
 
   port_info->set_supports_rdm(port.SupportsRDM());
 }
 
+void OlaServerServiceImpl::SetProtoUID(const ola::rdm::UID &uid,
+                                       ola::proto::UID *pb_uid) {
+  pb_uid->set_esta_id(uid.ManufacturerId());
+  pb_uid->set_device_id(uid.DeviceId());
+}
 
 // OlaClientService
 // ----------------------------------------------------------------------------

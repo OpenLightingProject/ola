@@ -16,18 +16,6 @@
  * HTTPServer.h
  * The Base HTTP Server class.
  * Copyright (C) 2005-2008 Simon Newton
- *
- * This is a simple HTTP Server built around libmicrohttpd. It runs in a
- * separate thread.
- *
- * Example:
- *   HTTPServer::HTTPServerOptions options;
- *   options.port = ...;
- *   HTTPServer server(options);
- *   server.Init();
- *   server.Run();
- *   // get on with life and later...
- *   server.Stop();
  */
 
 
@@ -124,15 +112,34 @@ class HTTPResponse {
   private:
     string m_data;
     struct MHD_Connection *m_connection;
-    multimap<string, string> m_headers;
+    typedef multimap<string, string> HeadersMultiMap;
+    HeadersMultiMap m_headers;
     unsigned int m_status_code;
 
     DISALLOW_COPY_AND_ASSIGN(HTTPResponse);
 };
 
 
-/*
- * The base HTTP Server
+/**
+ * @addtogroup http_server
+ * @{
+ * @class HTTPServer
+ * @brief The base HTTP Server.
+ *
+ * This is a simple HTTP Server built around libmicrohttpd. It runs in a
+ * separate thread.
+ *
+ * @examplepara
+ * @code
+ *   HTTPServer::HTTPServerOptions options;
+ *   options.port = ...;
+ *   HTTPServer server(options);
+ *   server.Init();
+ *   server.Run();
+ *   // get on with life and later...
+ *   server.Stop();
+ * @endcode
+ * @}
  */
 class HTTPServer: public ola::thread::Thread {
   public:

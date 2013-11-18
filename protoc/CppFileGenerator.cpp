@@ -240,7 +240,6 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
 
     printer->Print("}  // namespace\n");
   }
-
 }
 
 void FileGenerator::GenerateNamespaceOpeners(Printer* printer) {

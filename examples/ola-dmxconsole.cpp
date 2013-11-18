@@ -48,15 +48,15 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
-#include <ola/OlaClient.h>
+#include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
 #include <string>
 
-using ola::SimpleClient;
-using ola::OlaClient;
+using ola::OlaCallbackClient;
+using ola::OlaCallbackClientWrapper;
 using ola::io::SelectServer;
 using std::string;
 
@@ -117,7 +117,7 @@ static int palette[MAXCOLOR];
 static bool screen_to_small = false;
 static int channels_offset = 1;
 
-OlaClient *client;
+OlaCallbackClient *client;
 SelectServer *ss;
 
 
@@ -797,7 +797,7 @@ int main(int argc, char *argv[]) {
   universe = opts.universe;
 
   /* set up ola connection */
-  SimpleClient ola_client;
+  OlaCallbackClientWrapper ola_client;
   ola::io::UnmanagedFileDescriptor stdin_descriptor(0);
   stdin_descriptor.SetOnData(ola::NewCallback(&stdin_ready));
 

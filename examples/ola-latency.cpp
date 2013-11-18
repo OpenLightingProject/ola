@@ -79,13 +79,13 @@ bool Tracker::Setup() {
 }
 
 void Tracker::Start() {
-  ola::SelectServer *ss = m_wrapper.GetSelectServer();
+  ola::io::SelectServer *ss = m_wrapper.GetSelectServer();
   m_signal_thread.InstallSignalHandler(
       SIGINT,
-      ola::NewCallback(ss, &ola::SelectServer::Terminate));
+      ola::NewCallback(ss, &ola::io::SelectServer::Terminate));
   m_signal_thread.InstallSignalHandler(
       SIGTERM,
-      ola::NewCallback(ss, &ola::SelectServer::Terminate));
+      ola::NewCallback(ss, &ola::io::SelectServer::Terminate));
   SendRequest();
 
   ss->Execute(ola::NewSingleCallback(this, &Tracker::StartSignalThread));

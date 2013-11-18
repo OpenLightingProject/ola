@@ -17,6 +17,7 @@
  */
 //! [Tutorial Example] NOLINT(whitespace/comments)
 #include <stdlib.h>
+#include <unistd.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>

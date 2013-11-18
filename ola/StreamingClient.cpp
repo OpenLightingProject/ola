@@ -23,17 +23,23 @@
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
+#include <ola/client/StreamingClient.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
-#include <ola/StreamingClient.h>
+#include <ola/network/TCPSocket.h>
+
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
 #include "common/rpc/RpcChannel.h"
 
 namespace ola {
+namespace client {
 
-using ola::rpc::RpcChannel;
+using ola::io::SelectServer;
+using ola::network::TCPSocket;
 using ola::proto::OlaServerService_Stub;
+using ola::rpc::RpcChannel;
 
 StreamingClient::StreamingClient(bool auto_start)
     : m_auto_start(auto_start),
@@ -121,6 +127,17 @@ void StreamingClient::Stop() {
 
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) {
+  return Send(universe, ola::dmx::SOURCE_PRIORITY_DEFAULT, data);
+}
+
+bool StreamingClient::SendDMX(unsigned int universe,
+                              const DmxBuffer &data,
+                              const SendArgs &args) {
+  return Send(universe, args.priority, data);
+}
+
+bool StreamingClient::Send(unsigned int universe, uint8_t priority,
+                           const DmxBuffer &data) {
   if (!m_stub || !m_socket->ValidReadDescriptor())
     return false;
 
@@ -138,6 +155,7 @@ bool StreamingClient::SendDmx(unsigned int universe,
   ola::proto::DmxData request;
   request.set_universe(universe);
   request.set_data(data.Get());
+  request.set_priority(priority);
   m_stub->StreamDmxData(NULL, &request, NULL, NULL);
 
   if (m_socket_closed) {
@@ -152,4 +170,5 @@ void StreamingClient::ChannelClosed() {
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";
 }
+}  // namespace client
 }  // namespace ola

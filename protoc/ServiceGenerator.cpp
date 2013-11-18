@@ -126,7 +126,8 @@ void ServiceGenerator::GenerateStubDefinition(Printer* printer) {
   printer->Print(vars_,
     "$classname$_Stub(ola::rpc::RpcChannel* channel);\n"
     "$classname$_Stub(ola::rpc::RpcChannel* channel,\n"
-    "                 ::google::protobuf::Service::ChannelOwnership ownership);\n"
+    "                 ::google::protobuf::Service::ChannelOwnership ownership"
+    ");\n"
     "~$classname$_Stub();\n"
     "\n"
     "inline ola::rpc::RpcChannel* channel() { return channel_; }\n"
@@ -160,7 +161,8 @@ void ServiceGenerator::GenerateMethodSignatures(
       "$virtual$void $name$(ola::rpc::RpcController* controller,\n"
       "                     const $input_type$* request,\n"
       "                     $output_type$* response,\n"
-      "                     ola::rpc::RpcService::CompletionCallback* done);\n");
+      "                     ola::rpc::RpcService::CompletionCallback* done"
+      ");\n");
   }
 }
 
@@ -187,7 +189,8 @@ void ServiceGenerator::GenerateImplementation(Printer* printer) {
     "  return $classname$_descriptor_;\n"
     "}\n"
     "\n"
-    "const ::google::protobuf::ServiceDescriptor* $classname$::GetDescriptor() {\n"
+    "const ::google::protobuf::ServiceDescriptor* $classname$::GetDescriptor()"
+    " {\n"
     "  protobuf_AssignDescriptorsOnce();\n"
     "  return $classname$_descriptor_;\n"
     "}\n"
@@ -207,7 +210,8 @@ void ServiceGenerator::GenerateImplementation(Printer* printer) {
     "    ola::rpc::RpcChannel* channel,\n"
     "    ::google::protobuf::Service::ChannelOwnership ownership)\n"
     "  : channel_(channel),\n"
-    "    owns_channel_(ownership == ::google::protobuf::Service::STUB_OWNS_CHANNEL) {}\n"
+    "    owns_channel_(ownership == "
+    "::google::protobuf::Service::STUB_OWNS_CHANNEL) {}\n"
     "$classname$_Stub::~$classname$_Stub() {\n"
     "  if (owns_channel_) delete channel_;\n"
     "}\n"
@@ -230,7 +234,8 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
       "void $classname$::$name$(ola::rpc::RpcController* controller,\n"
       "                         const $input_type$*,\n"
       "                         $output_type$*,\n"
-      "                         ola::rpc::RpcService::CompletionCallback* done) {\n"
+      "                         ola::rpc::RpcService::CompletionCallback* done"
+      ") {\n"
       "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
       "  done->Run();\n"
       "}\n"
@@ -240,11 +245,13 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
 
 void ServiceGenerator::GenerateCallMethod(Printer* printer) {
   printer->Print(vars_,
-    "void $classname$::CallMethod(const ::google::protobuf::MethodDescriptor* method,\n"
+    "void $classname$::CallMethod(const ::google::protobuf::MethodDescriptor* "
+    "method,\n"
     "                             ola::rpc::RpcController* controller,\n"
     "                             const ::google::protobuf::Message* request,\n"
     "                             ::google::protobuf::Message* response,\n"
-    "                             ola::rpc::RpcService::CompletionCallback* done) {\n"
+    "                             ola::rpc::RpcService::CompletionCallback* "
+    "done) {\n"
     "  GOOGLE_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
     "  switch(method->index()) {\n");
 
@@ -261,7 +268,8 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
     printer->Print(sub_vars,
       "    case $index$:\n"
       "      $name$(controller,\n"
-      "             ::google::protobuf::down_cast<const $input_type$*>(request),\n"
+      "             ::google::protobuf::down_cast<const $input_type$*>(request"
+      "),\n"
       "             ::google::protobuf::down_cast< $output_type$*>(response),\n"
       "             done);\n"
       "      break;\n");
@@ -269,7 +277,8 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
 
   printer->Print(vars_,
     "    default:\n"
-    "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen.\";\n"
+    "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never "
+    "happen.\";\n"
     "      break;\n"
     "  }\n"
     "}\n"
@@ -283,7 +292,8 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
       "const ::google::protobuf::Message& $classname$::GetRequestPrototype(\n");
   } else {
     printer->Print(vars_,
-      "const ::google::protobuf::Message& $classname$::GetResponsePrototype(\n");
+      "const ::google::protobuf::Message& $classname$::GetResponsePrototype"
+      "(\n");
   }
 
   printer->Print(vars_,
@@ -307,7 +317,8 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   printer->Print(vars_,
     "    default:\n"
-    "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen.\";\n"
+    "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen."
+    "\";\n"
     "      return *reinterpret_cast< ::google::protobuf::Message*>(NULL);\n"
     "  }\n"
     "}\n"
@@ -328,7 +339,8 @@ void ServiceGenerator::GenerateStubMethods(Printer* printer) {
       "void $classname$_Stub::$name$(ola::rpc::RpcController* controller,\n"
       "                              const $input_type$* request,\n"
       "                              $output_type$* response,\n"
-      "                              ola::rpc::RpcService::CompletionCallback* done) {\n"
+      "                              ola::rpc::RpcService::CompletionCallback*"
+      " done) {\n"
       "  channel_->CallMethod(descriptor()->method($index$),\n"
       "                       controller, request, response, done);\n"
       "}\n");

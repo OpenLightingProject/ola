@@ -122,7 +122,7 @@ class MockClient: public ola::Client {
     bool SendDMX(unsigned int universe_id, uint8_t priority,
                  const DmxBuffer &buffer) {
       OLA_ASSERT_EQ(TEST_UNIVERSE, universe_id);
-      OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_MIN, priority);
+      OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_MIN, priority);
       OLA_ASSERT_EQ(string(TEST_DATA), buffer.Get());
       m_dmx_set = true;
       return true;
@@ -257,8 +257,7 @@ void UniverseTest::testReceiveDmx() {
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(m_buffer);
   port.DmxChanged();
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(m_buffer.Size(), universe->GetDMX().Size());
   OLA_ASSERT(m_buffer == universe->GetDMX());
 
@@ -387,8 +386,7 @@ void UniverseTest::testLtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(buffer1.Size(), universe->GetDMX().Size());
   OLA_ASSERT(buffer1 == universe->GetDMX());
 
@@ -396,8 +394,7 @@ void UniverseTest::testLtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(buffer2.Size(), universe->GetDMX().Size());
   OLA_ASSERT(buffer2 == universe->GetDMX());
 
@@ -405,8 +402,7 @@ void UniverseTest::testLtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(buffer1.Size(), universe->GetDMX().Size());
   OLA_ASSERT(buffer1 == universe->GetDMX());
 
@@ -415,15 +411,14 @@ void UniverseTest::testLtpMerging() {
   client_buffer.SetFromString("255,0,0,255,10");
   m_clock.CurrentTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp,
-                        ola::DmxSource::PRIORITY_DEFAULT);
+                        ola::dmx::SOURCE_PRIORITY_DEFAULT);
   MockClient input_client;
   input_client.DMXRecieved(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);
 
   DmxBuffer client_htp_merge_result;
   client_htp_merge_result.SetFromString("255,255,0,255,10,7");
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(client_buffer.Size(), universe->GetDMX().Size());
   OLA_ASSERT(client_buffer == universe->GetDMX());
 
@@ -471,8 +466,7 @@ void UniverseTest::testHtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(buffer1.Size(), universe->GetDMX().Size());
   OLA_ASSERT(buffer1 == universe->GetDMX());
 
@@ -480,8 +474,7 @@ void UniverseTest::testHtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
-  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
-                       universe->ActivePriority());
+  OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
   OLA_ASSERT_EQ(htp_buffer.Size(), universe->GetDMX().Size());
   OLA_ASSERT(htp_buffer == universe->GetDMX());
 

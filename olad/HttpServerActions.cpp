@@ -39,63 +39,58 @@ void BaseHttpAction::RequestComplete(bool failure) {
 
 void BaseHttpAction::Perform(SingleUseCallback0<void> *on_done) {
   m_on_done = on_done;
-  if (!DoAction())
-    RequestComplete(true);
+  DoAction();
 }
 
-void BaseHttpAction::CallbackComplete(const string &error) {
-  RequestComplete(!error.empty());
+void BaseHttpAction::CallbackComplete(const client::Result &result) {
+  RequestComplete(!result.Success());
 }
 
 
-bool SetNameAction::DoAction() {
-  return m_client->SetUniverseName(
+void SetNameAction::DoAction() {
+  m_client->SetUniverseName(
     m_universe,
     m_name,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
-
-
-bool SetMergeModeAction::DoAction() {
-  return m_client->SetUniverseMergeMode(
+void SetMergeModeAction::DoAction() {
+  m_client->SetUniverseMergeMode(
     m_universe,
     m_merge_mode,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
-                      &SetNameAction::CallbackComplete));
+                      &SetMergeModeAction::CallbackComplete));
 }
 
-
-bool PatchPortAction::DoAction() {
-  return m_client->Patch(
+void PatchPortAction::DoAction() {
+  m_client->Patch(
     m_device_alias,
     m_port,
     m_direction,
     m_action,
     m_universe,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
-                      &SetNameAction::CallbackComplete));
+                      &PatchPortAction::CallbackComplete));
 }
 
-
-bool PortPriorityInheritAction::DoAction() {
-  return m_client->SetPortPriorityInherit(
+void PortPriorityInheritAction::DoAction() {
+  m_client->SetPortPriorityInherit(
     m_device_alias,
     m_port,
     m_direction,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
-                      &SetNameAction::CallbackComplete));
+                      &PortPriorityInheritAction::CallbackComplete));
 }
 
 
-bool PortPriorityOverrideAction::DoAction() {
-  return m_client->SetPortPriorityOverride(
+void PortPriorityStaticAction::DoAction() {
+  m_client->SetPortPriorityOverride(
     m_device_alias,
     m_port,
     m_direction,
     m_override_value,
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
-                      &SetNameAction::CallbackComplete));
+                      &PortPriorityStaticAction::CallbackComplete));
 }
 }  // namespace ola

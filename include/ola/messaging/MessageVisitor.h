@@ -30,6 +30,7 @@ namespace messaging {
 class BoolMessageField;
 class GroupMessageField;
 class IPV4MessageField;
+class MACMessageField;
 class StringMessageField;
 class UIDMessageField;
 
@@ -45,6 +46,7 @@ class MessageVisitor {
 
     virtual void Visit(const BoolMessageField*) = 0;
     virtual void Visit(const IPV4MessageField*) = 0;
+    virtual void Visit(const MACMessageField*) = 0;
     virtual void Visit(const UIDMessageField*) = 0;
     virtual void Visit(const StringMessageField*) = 0;
     virtual void Visit(const BasicMessageField<uint8_t>*) = 0;

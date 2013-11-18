@@ -45,7 +45,6 @@ using ola::network::AdvancedTCPConnector;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 using std::auto_ptr;

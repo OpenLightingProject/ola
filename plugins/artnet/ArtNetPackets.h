@@ -24,6 +24,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/rdm/UID.h"
 #include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/Interface.h"
 
 
@@ -99,7 +100,7 @@ struct artnet_reply_s {
   uint8_t  spare2;
   uint8_t  spare3;
   uint8_t  style;
-  uint8_t  mac[ola::network::MAC_LENGTH];
+  uint8_t  mac[ola::network::MACAddress::LENGTH];
   uint8_t  bind_ip[ola::network::IPV4Address::LENGTH];
   uint8_t  bind_index;
   uint8_t  status2;

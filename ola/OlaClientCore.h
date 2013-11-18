@@ -21,10 +21,8 @@
 #ifndef OLA_OLACLIENTCORE_H_
 #define OLA_OLACLIENTCORE_H_
 
-#include <google/protobuf/stubs/common.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
@@ -32,33 +30,31 @@
 #include "common/rpc/RpcController.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/OlaCallbackClient.h"
-#include "ola/OlaDevice.h"
-#include "ola/common.h"
-#include "ola/network/Socket.h"
+#include "ola/client/CallbackTypes.h"
+#include "ola/client/ClientArgs.h"
+#include "ola/client/ClientTypes.h"
+#include "ola/base/Macro.h"
+#include "ola/dmx/SourcePriorities.h"
+#include "ola/io/Descriptor.h"
 #include "ola/plugin_id.h"
-#include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/timecode/TimeCode.h"
 
 namespace ola {
-
-class OlaClientCoreServiceImpl;
+namespace client {
 
 using std::string;
 using ola::io::ConnectedDescriptor;
 using ola::rpc::RpcController;
 using ola::rpc::RpcChannel;
 
+/**
+ * @brief The low level C++ API to olad.
+ * Clients shouldn't use this directly. Instead use ola::client::OlaClient.
+ */
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
-    typedef Callback3<void, unsigned int, const DmxBuffer&, const string&>
-        DmxCallback;
-
-    typedef Callback4<void, unsigned int, uint8_t, const DmxBuffer&,
-                      const string&> DmxCallbackWithPriority;
-
     explicit OlaClientCore(ConnectedDescriptor *descriptor);
     ~OlaClientCore();
 
@@ -67,356 +63,369 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
     void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
 
-    // plugin methods
-    bool FetchPluginList(
-        SingleUseCallback2<void,
-                           const vector<class OlaPlugin>&,
-                           const string&> *callback);
+    /**
+     * @brief Set the callback to be run when new DMX data arrives.
+     * The DMX callback will be run when new data arrives for universes that
+     * have been registered with RegisterUniverse(). Ownership of the callback
+     * is transferred to the OlaClientCore.
+     * @param callback the callback to run upon receiving new DMX data.
+     */
+    void SetDMXCallback(RepeatableDMXCallback *callback);
 
-    bool FetchPluginDescription(
-        ola_plugin_id plugin_id,
-        SingleUseCallback2<void, const string&, const string&> *callback);
+    /**
+     * @brief Fetch the list of plugins loaded.
+     * @param callback the PluginListCallback to be invoked upon completion.
+     */
+    void FetchPluginList(PluginListCallback *callback);
 
-    bool FetchPluginState(ola_plugin_id plugin_id,
-                          OlaCallbackClient::PluginStateCallback *callback);
+    /**
+     * @brief Fetch the description for a plugin.
+     * @param plugin_id the id of the plugin to fetch the state for.
+     * @param callback the PluginDescriptionCallback to be invoked upon
+     * completion.
+     */
+    void FetchPluginDescription(ola_plugin_id plugin_id,
+                                PluginDescriptionCallback *callback);
 
-    // device methods
-    bool FetchDeviceInfo(
-        ola_plugin_id filter,
-        SingleUseCallback2<void,
-                           const vector <class OlaDevice>&,
-                           const string&> *callback);
+    /**
+     * @brief Fetch the state of a plugin. This returns the state and the list
+     * of plugins this plugin conflicts with.
+     * @param plugin_id the id of the plugin to fetch the state for.
+     * @param callback the PluginStateCallback to be invoked upon completion.
+     */
+    void FetchPluginState(ola_plugin_id plugin_id,
+                          PluginStateCallback *callback);
 
-    bool FetchCandidatePorts(
-        SingleUseCallback2<void,
-                           const vector <class OlaDevice>&,
-                           const string&> *callback);
+    /**
+     * @brief Request a list of the available devices.
+     * @param plugin_filter only fetch devices that belong to the specified
+     * plugin.
+     * @param callback the DeviceInfoCallback to be invoked upon completion.
+     */
+    void FetchDeviceInfo(ola_plugin_id plugin_filter,
+                         DeviceInfoCallback *callback);
 
-    bool FetchCandidatePorts(
-        unsigned int universe_id,
-        SingleUseCallback2<void,
-                           const vector <class OlaDevice>&,
-                           const string&> *callback);
+    /**
+     * Request a list of ports that could be patched to new universe.
+     * @param callback the CandidatePortsCallback invoked upon completion.
+     */
+    void FetchCandidatePorts(CandidatePortsCallback *callback);
 
-    bool ConfigureDevice(
-        unsigned int device_alias,
-        const string &msg,
-        SingleUseCallback2<void, const string&, const string&> *callback);
+    /**
+     * @brief Request a list of ports that could be patched to a particular
+     * universe.
+     * @param universe_id the id of the universe to fetch the candidate ports
+     * for.
+     * @param callback the CandidatePortsCallback invoked upon completion.
+     */
+    void FetchCandidatePorts(unsigned int universe_id,
+                             CandidatePortsCallback *callback);
 
-    // port methods
-    bool SetPortPriorityInherit(
-        unsigned int device_alias,
-        unsigned int port,
-        PortDirection port_direction,
-        SingleUseCallback1<void, const string&> *callback);
-    bool SetPortPriorityOverride(
-        unsigned int device_alias,
-        unsigned int port,
-        PortDirection port_direction,
-        uint8_t value,
-        SingleUseCallback1<void, const string&> *callback);
+    /**
+     * @brief Send a device config request.
+     * @param device_alias the device alias of the device to configure.
+     * @param msg the blob of data to send to the device.
+     * @param callback the ConfigureDeviceCallback invoked upon completion.
+     */
+    void ConfigureDevice(unsigned int device_alias,
+                         const string &msg,
+                         ConfigureDeviceCallback *callback);
 
-    // universe methods
-    bool FetchUniverseList(
-        SingleUseCallback2<void,
-                           const vector <class OlaUniverse>&,
-                           const string &> *callback);
-    bool FetchUniverseInfo(
-        unsigned int universe,
-        SingleUseCallback2<void,
-                           class OlaUniverse&,
-                           const string &> *callback);
-    bool SetUniverseName(
-        unsigned int uni,
-        const string &name,
-        SingleUseCallback1<void, const string&> *callback);
-    bool SetUniverseMergeMode(
-        unsigned int uni,
-        OlaUniverse::merge_mode mode,
-        SingleUseCallback1<void, const string&> *callback);
+    /**
+     * @brief Set the priority for a port to inherit mode.
+     * @param device_alias the device containing the port to change
+     * @param port the port id of the port to change.
+     * @param port_direction the direction of the port.
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void SetPortPriorityInherit(unsigned int device_alias,
+                                unsigned int port,
+                                PortDirection port_direction,
+                                SetCallback *callback);
 
-    // patching
-    bool Patch(
-        unsigned int device_alias,
-        unsigned int port,
-        ola::PortDirection port_direction,
-        ola::PatchAction action,
-        unsigned int uni,
-        SingleUseCallback1<void, const string&> *callback);
+    /**
+     * @brief Set the priority for a port to override mode
+     * @param device_alias the device containing the port to change
+     * @param port the port id of the port to change.
+     * @param port_direction the direction of the port.
+     * @param value the new port priority value.
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void SetPortPriorityOverride(unsigned int device_alias,
+                                 unsigned int port,
+                                 PortDirection port_direction,
+                                 uint8_t value,
+                                 SetCallback *callback);
 
-    // dmx methods
-    void SetDmxCallback(DmxCallback *callback);
-    void SetDmxCallback(DmxCallbackWithPriority *callback);
+    /**
+     * @brief Request a list of universes.
+     * @param callback the UniverseListCallback to invoke upon completion.
+     */
+    void FetchUniverseList(UniverseListCallback *callback);
 
-    bool RegisterUniverse(
-        unsigned int universe,
-        ola::RegisterAction register_action,
-        SingleUseCallback1<void, const string&> *callback);
-    bool SendDmx(
-        unsigned int universe,
-        const DmxBuffer &data,
-        SingleUseCallback1<void, const string&> *callback);
-    bool SendDmx(
-        unsigned int universe,
-        const DmxBuffer &data,
-        Callback1<void, const string&> *callback);
-    bool SendDmx(unsigned int universe, const DmxBuffer &data);
-    bool FetchDmx(
-        unsigned int universe,
-        SingleUseCallback2<void, const DmxBuffer&, const string&> *callback);
+    /**
+     * @brief Fetch the information for a given universe.
+     * @param universe the id of the universe.
+     * @param callback the UniverseInfoCallback to invoke upon completion.
+     */
+    void FetchUniverseInfo(unsigned int universe,
+                           UniverseInfoCallback *callback);
 
-    // rdm methods
-    bool FetchUIDList(
-        unsigned int universe,
-        SingleUseCallback2<void,
-                           const ola::rdm::UIDSet&,
-                           const string&> *callback);
-    bool RunDiscovery(
-        unsigned int universe,
-        bool full,
-        ola::SingleUseCallback2<void,
-                                const ola::rdm::UIDSet&,
-                                const string&> *callback);
-    bool SetSourceUID(const ola::rdm::UID &uid,
-                      ola::SingleUseCallback1<void, const string&> *callback);
+    /**
+     * @brief Set the name of a universe.
+     * @param universe the id of the universe
+     * @param name the new name to use.
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void SetUniverseName(unsigned int universe,
+                         const string &name,
+                         SetCallback *callback);
 
-    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                unsigned int universe,
+    /**
+     * @brief Set the merge mode of a universe.
+     * @param universe the id of the universe
+     * @param mode the new merge mode
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void SetUniverseMergeMode(unsigned int universe,
+                              OlaUniverse::merge_mode mode,
+                              SetCallback *callback);
+
+    /**
+     * @brief Patch or unpatch a port from a universe.
+     * @param device_alias the device containing the port to change
+     * @param port the port id of the port to change.
+     * @param port_direction the direction of the port.
+     * @param action OlaClientCore::PATCH or OlaClientCore::UNPATCH.
+     * @param universe universe id to patch the port to.
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void Patch(unsigned int device_alias,
+               unsigned int port,
+               PortDirection port_direction,
+               PatchAction action,
+               unsigned int universe,
+               SetCallback *callback);
+
+    /**
+     * @brief Register our interest in a universe. The callback set by
+     * SetDMXCallback() will be called when new DMX data arrives.
+     * @param universe the id of the universe to register for.
+     * @param register_action the action (register or unregister)
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void RegisterUniverse(unsigned int universe,
+                          RegisterAction register_action,
+                          SetCallback *callback);
+
+    /**
+     * @brief Send DMX data.
+     * @param universe the universe to send to.
+     * @param data the DmxBuffer with the data
+     * @param args the SendDMXArgs to use for this call.
+     */
+    void SendDMX(unsigned int universe,
+                 const DmxBuffer &data,
+                 const SendDMXArgs &args);
+
+    /**
+     * @brief Fetch the latest DMX data for a universe.
+     * @param universe the universe id to get data for.
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void FetchDMX(unsigned int universe, DMXCallback *callback);
+
+    /**
+     * @brief Trigger discovery for a universe.
+     * @param universe the universe id to run discovery on.
+     * @param discovery_type the type of discovery to run before returning.
+     * @param callback the UIDListCallback to invoke upon completion.
+     */
+    void RunDiscovery(unsigned int universe,
+                      DiscoveryType discovery_type,
+                      DiscoveryCallback *callback);
+
+    /**
+     * @brief Set the source UID for this client.
+     * @param uid the UID to use when sending RDM messages from this client.
+     * @param callback the SetCallback to invoke upon completion.
+     */
+    void SetSourceUID(const ola::rdm::UID &uid, SetCallback *callback);
+
+    /**
+     * @brief Send an RDM Get Command.
+     * @param universe the universe to send the command on
+     * @param uid the UID to send the command to
+     * @param sub_device the sub device index
+     * @param pid the PID to address
+     * @param data the optional data to send
+     * @param data_length the length of the data
+     * @param args the RDM arguments which includes the callback to run.
+     */
+    void RDMGet(unsigned int universe,
                 const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
-                unsigned int data_length);
-    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
-    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
-    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data,
-                unsigned int data_length);
+                unsigned int data_length,
+                const SendRDMArgs& args);
 
-    // timecode
-    bool SendTimeCode(ola::SingleUseCallback1<void, const string&> *callback,
-                      const ola::timecode::TimeCode &timecode);
+    /**
+     * @brief Send an RDM Set Command.
+     * @param universe the universe to send the command on
+     * @param uid the UID to send the command to
+     * @param sub_device the sub device index
+     * @param pid the PID to address
+     * @param data the optional data to send
+     * @param data_length the length of the data
+     * @param args the RDM arguments which includes the callback to run.
+     */
+    void RDMSet(unsigned int universe,
+                const ola::rdm::UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length,
+                const SendRDMArgs& args);
 
-    /*
-     * This is called by the channel when new DMX data turns up
+    /**
+     * @brief Send TimeCode data.
+     * @param timecode The timecode data.
+     * @param callback the SetCallback to invoke when the send completes.
+     */
+    void SendTimeCode(const ola::timecode::TimeCode &timecode,
+                      SetCallback *callback);
+
+    /**
+     * @brief This is called by the channel when new DMX data arrives.
      */
     void UpdateDmxData(ola::rpc::RpcController* controller,
                        const ola::proto::DmxData* request,
                        ola::proto::Ack* response,
                        CompletionCallback* done);
 
-    // unfortunately all of these need to be public because they're used in the
-    // closures. That's why this class is wrapped in OlaClient or
-    // OlaCallbackClient.
-    typedef struct {
-      RpcController *controller;
-      ola::proto::PluginListReply *reply;
-      SingleUseCallback2<void,
-                         const vector<class OlaPlugin>&,
-                         const string&> *callback;
-    } plugin_list_arg;
-
-    void HandlePluginList(plugin_list_arg *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::PluginDescriptionReply *reply;
-      SingleUseCallback2<void, const string&, const string&> *callback;
-    } plugin_description_arg;
-
-    void HandlePluginDescription(plugin_description_arg *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::PluginStateReply *reply;
-      OlaCallbackClient::PluginStateCallback *callback;
-    } plugin_state_arg;
-
-    void HandlePluginState(plugin_state_arg *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::DeviceInfoReply *reply;
-      SingleUseCallback2<void,
-                         const vector <class OlaDevice> &,
-                         const string &> *callback;
-    } device_info_arg;
-
-    void HandleDeviceInfo(device_info_arg *arg);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::DeviceConfigReply *reply;
-      SingleUseCallback2<void, const string&, const string&> *callback;
-    } configure_device_args;
-
-    void HandleDeviceConfig(configure_device_args *arg);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::Ack *reply;
-      BaseCallback1<void, const string&> *callback;
-    } ack_args;
-
-    void HandleAck(ack_args *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::UniverseInfoReply *reply;
-      SingleUseCallback2<void,
-                         const vector <class OlaUniverse>&,
-                         const string&> *callback;
-    } universe_list_args;
-
-    void HandleUniverseList(universe_list_args *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::UniverseInfoReply *reply;
-      SingleUseCallback2<void, class OlaUniverse&, const string&> *callback;
-    } universe_info_args;
-
-    void HandleUniverseInfo(universe_info_args *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::DmxData *reply;
-      SingleUseCallback2<void, const DmxBuffer&, const string&> *callback;
-    } get_dmx_args;
-
-    void HandleGetDmx(get_dmx_args *args);
-
-    typedef struct {
-      RpcController *controller;
-      ola::proto::UIDListReply *reply;
-      SingleUseCallback2<void,
-                         const ola::rdm::UIDSet&,
-                         const string&> *callback;
-    } uid_list_args;
-
-    void HandleUIDList(uid_list_args *args);
-
-    typedef struct {
-      ola::rdm::RDMAPIImplInterface::rdm_callback *callback;
-      RpcController *controller;
-      ola::proto::RDMResponse *reply;
-    } rdm_response_args;
-
-    void HandleRDM(rdm_response_args *args);
-
-    typedef struct {
-      ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback;
-      RpcController *controller;
-      ola::proto::RDMResponse *reply;
-    } rdm_pid_response_args;
-
-    void HandleRDMWithPID(rdm_pid_response_args *args);
-
   private:
-    OlaClientCore(const OlaClientCore&);
-    OlaClientCore operator=(const OlaClientCore&);
-
-    bool GenericSendDmx(
-        unsigned int universe,
-        const DmxBuffer &data,
-        BaseCallback1<void, const string&> *callback);
-
-    bool GenericFetchCandidatePorts(
-        unsigned int universe_id,
-        bool include_universe,
-        SingleUseCallback2<void,
-                           const vector <class OlaDevice>&,
-                           const string&> *callback);
-
-    bool RDMCommand(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
-                    bool is_set,
-                    unsigned int universe,
-                    const ola::rdm::UID &uid,
-                    uint16_t sub_device,
-                    uint16_t pid,
-                    const uint8_t *data,
-                    unsigned int data_length);
-    bool RDMCommandWithPid(
-        ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
-        bool is_set,
-        unsigned int universe,
-        const ola::rdm::UID &uid,
-        uint16_t sub_device,
-        uint16_t pid,
-        const uint8_t *data,
-        unsigned int data_length);
-
-    void CheckRDMResponseStatus(RpcController *controller,
-                                ola::proto::RDMResponse *reply,
-                                ola::rdm::ResponseStatus *new_status);
-
-    void GetParamFromReply(
-        const string &message_type,
-        ola::proto::RDMResponse *reply,
-        ola::rdm::ResponseStatus *new_status);
-
-    void UpdateResponseAckData(
-        ola::proto::RDMResponse *reply,
-        ola::rdm::ResponseStatus *new_status);
-
-    template <typename arg_type, typename reply_type, typename callback_type>
-    arg_type *NewArgs(
-        RpcController *controller,
-        reply_type reply,
-        callback_type callback);
-
-    template <typename arg_type>
-    void FreeArgs(arg_type *args);
-
     ConnectedDescriptor *m_descriptor;
-    std::auto_ptr<DmxCallback> m_dmx_callback;
-    std::auto_ptr<DmxCallbackWithPriority> m_dmx_callback_with_priority;
-    RpcChannel *m_channel;
-    ola::proto::OlaServerService_Stub *m_stub;
+    std::auto_ptr<RepeatableDMXCallback> m_dmx_callback;
+    std::auto_ptr<RpcChannel> m_channel;
+    std::auto_ptr<ola::proto::OlaServerService_Stub> m_stub;
     int m_connected;
+
+    /**
+     * @brief Called when GetPlugins() completes.
+     */
+    void HandlePluginList(RpcController *controller_ptr,
+                          ola::proto::PluginListReply *reply_ptr,
+                          PluginListCallback *callback);
+
+    /**
+     * @brief Called when GetPluginDescription() completes.
+     */
+    void HandlePluginDescription(RpcController *controller,
+                                 ola::proto::PluginDescriptionReply *reply,
+                                 PluginDescriptionCallback *callback);
+
+    /**
+     * @brief Called when GetPluginState() completes.
+     */
+    void HandlePluginState(RpcController *controller,
+                           ola::proto::PluginStateReply *reply,
+                           PluginStateCallback *callback);
+
+    /**
+     * @brief Called when GetDeviceInfo() completes.
+     */
+    void HandleDeviceInfo(RpcController *controller,
+                          ola::proto::DeviceInfoReply *reply,
+                          DeviceInfoCallback *callback);
+
+    /**
+     * @brief Called when ConfigureDevice() completes.
+     */
+    void HandleDeviceConfig(RpcController *controller,
+                            ola::proto::DeviceConfigReply *reply,
+                            ConfigureDeviceCallback *callback);
+
+    /**
+     * @brief Called when a Set* request completes.
+     */
+    void HandleAck(RpcController *controller,
+                   ola::proto::Ack *reply,
+                   SetCallback *callback);
+
+    /**
+     * @brief Called when a Set* request completes.
+     */
+    void HandleGeneralAck(RpcController *controller,
+                          ola::proto::Ack *reply,
+                          GeneralSetCallback *callback);
+
+    /**
+     * @brief Called when a GetUniverseInfo() request completes.
+     */
+    void HandleUniverseList(RpcController *controller,
+                            ola::proto::UniverseInfoReply *reply,
+                            UniverseListCallback *callback);
+
+    /**
+     * @brief Called when a GetUniverseInfo() request completes.
+     */
+    void HandleUniverseInfo(RpcController *controller,
+                            ola::proto::UniverseInfoReply *reply,
+                            UniverseInfoCallback *callback);
+
+    /**
+     * @brief Called when a GetDmx() request completes.
+     */
+    void HandleGetDmx(RpcController *controller,
+                      ola::proto::DmxData *reply,
+                      DMXCallback *callback);
+
+    /**
+     * @brief Called when a RunDiscovery() request completes.
+     */
+    void HandleUIDList(RpcController *controller_ptr,
+                       ola::proto::UIDListReply *reply_ptr,
+                       DiscoveryCallback *callback);
+
+    /**
+     * @brief Called when a RDM request completes.
+     */
+    void HandleRDM(RpcController *controller,
+                   ola::proto::RDMResponse *reply,
+                   RDMCallback *callback);
+
+    /**
+     * @brief Fetch a list of candidate ports, with or without a universe
+     */
+    void GenericFetchCandidatePorts(unsigned int universe_id,
+                                    bool include_universe,
+                                    CandidatePortsCallback *callback);
+
+    /**
+     * @brief Sends a RDM command to the server.
+     */
+    void SendRDMCommand(bool is_set,
+                        unsigned int universe,
+                        const ola::rdm::UID &uid,
+                        uint16_t sub_device,
+                        uint16_t pid,
+                        const uint8_t *data,
+                        unsigned int data_length,
+                        const SendRDMArgs &args);
+
+    /**
+     * @brief Builds a RDMResponse from the server's RDM reply message.
+     */
+    ola::rdm::RDMResponse *BuildRDMResponse(
+        ola::proto::RDMResponse *reply,
+        ola::rdm::rdm_response_code *response_code);
+
+    static const char NOT_CONNECTED_ERROR[];
+
+    DISALLOW_COPY_AND_ASSIGN(OlaClientCore);
 };
 
-
-/**
- * Create a new args structure
- */
-template <typename arg_type, typename reply_type, typename callback_type>
-arg_type *OlaClientCore::NewArgs(
-    RpcController *controller,
-    reply_type reply,
-    callback_type callback) {
-  arg_type *args = new arg_type();
-  args->controller = controller;
-  args->reply = reply;
-  args->callback = callback;
-  return args;
-}
-
-
-/**
- * Free an args structure
- */
-template <typename arg_type>
-void OlaClientCore::FreeArgs(arg_type *args) {
-  delete args->controller;
-  delete args->reply;
-  delete args;
-}
+}  // namespace client
 }  // namespace ola
 #endif  // OLA_OLACLIENTCORE_H_

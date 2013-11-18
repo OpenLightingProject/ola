@@ -41,8 +41,8 @@
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 
-using ola::NewCallback;
-using ola::Callback0;
+using ola::NewSingleCallback;
+using ola::SingleUseCallback0;
 using ola::DmxBuffer;
 using ola::OlaClientService;
 using ola::OlaServerServiceImpl;
@@ -271,7 +271,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
   RpcController *controller = new RpcController();
   ola::proto::UniverseRequest *request = new ola::proto::UniverseRequest();
   ola::proto::DmxData *response = new ola::proto::DmxData();
-  Callback0<void> *closure = ola::NewCallback(
+  SingleUseCallback0<void> *closure = NewSingleCallback(
       &check,
       &GetDmxCheck::Check,
       controller,
@@ -358,7 +358,7 @@ void OlaServerServiceImplTest::CallRegisterForDmx(
   ola::proto::RegisterDmxRequest *request = (
       new ola::proto::RegisterDmxRequest());
   ola::proto::Ack *response = new ola::proto::Ack();
-  Callback0<void> *closure = ola::NewCallback(
+  SingleUseCallback0<void> *closure = NewSingleCallback(
       &check,
       &RegisterForDmxCheck::Check,
       controller,
@@ -443,7 +443,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
   ola::proto::DmxData *request = new
     ola::proto::DmxData();
   ola::proto::Ack *response = new ola::proto::Ack();
-  Callback0<void> *closure = ola::NewCallback(
+  SingleUseCallback0<void> *closure = NewSingleCallback(
       &check,
       &UpdateDmxDataCheck::Check,
       controller,
@@ -514,7 +514,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
   ola::proto::UniverseNameRequest *request = new
     ola::proto::UniverseNameRequest();
   ola::proto::Ack *response = new ola::proto::Ack();
-  Callback0<void> *closure = ola::NewCallback(
+  SingleUseCallback0<void> *closure = NewSingleCallback(
       &check,
       &SetUniverseNameCheck::Check,
       controller,
@@ -584,7 +584,7 @@ void OlaServerServiceImplTest::CallSetMergeMode(
   ola::proto::MergeModeRequest *request = new
     ola::proto::MergeModeRequest();
   ola::proto::Ack *response = new ola::proto::Ack();
-  Callback0<void> *closure = ola::NewCallback(
+  ola::SingleUseCallback0<void> *closure = NewSingleCallback(
       &check,
       &SetMergeModeCheck::Check,
       controller,

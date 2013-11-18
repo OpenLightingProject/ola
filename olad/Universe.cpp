@@ -75,7 +75,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
                    Clock *clock)
     : m_universe_name(""),
       m_universe_id(universe_id),
-      m_active_priority(DmxSource::PRIORITY_MIN),
+      m_active_priority(ola::dmx::SOURCE_PRIORITY_MIN),
       m_merge_mode(Universe::MERGE_LTP),
       m_universe_store(store),
       m_export_map(export_map),
@@ -664,7 +664,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
   vector<InputPort*>::const_iterator iter;
   SourceClientMap::const_iterator client_iter;
 
-  m_active_priority = DmxSource::PRIORITY_MIN;
+  m_active_priority = ola::dmx::SOURCE_PRIORITY_MIN;
   TimeStamp now;
   m_clock->CurrentTime(&now);
   bool changed_source_is_active = false;

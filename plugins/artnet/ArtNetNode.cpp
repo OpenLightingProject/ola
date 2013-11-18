@@ -1040,8 +1040,7 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
     packet.data.reply.sw_out[i] = m_output_ports[i].universe_address;
   }
   packet.data.reply.style = NODE_CODE;
-  memcpy(packet.data.reply.mac, m_interface.hw_address,
-         ola::network::MAC_LENGTH);
+  m_interface.hw_address.Get(packet.data.reply.mac);
   m_interface.ip_address.Get(packet.data.reply.bind_ip);
   // maybe set status2 here if the web UI is enabled
   packet.data.reply.status2 = 0x08;  // node supports 15 bit port addresses

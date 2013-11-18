@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/DmxBuffer.h>

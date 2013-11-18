@@ -25,6 +25,7 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/RDMEnums.h"
 
 namespace ola {
@@ -418,6 +419,146 @@ const RDMResponse *ResponderHelper::SetDmxAddress(
     return EmptySetResponse(request, queued_message_count);
   }
 }
+
+/**
+ * Get a sensor definition
+ */
+const RDMResponse *ResponderHelper::GetSensorDefinition(
+    const RDMRequest *request, const Sensors &sensor_list) {
+  uint8_t sensor_number;
+  if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (sensor_number >= sensor_list.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  struct sensor_definition_s {
+    uint8_t sensor;
+    uint8_t type;
+    uint8_t unit;
+    uint8_t prefix;
+    int16_t range_min;
+    int16_t range_max;
+    int16_t normal_min;
+    int16_t normal_max;
+    uint8_t recorded_support;
+    char description[32];
+  } __attribute__((packed));
+
+  const Sensor *sensor = sensor_list.at(sensor_number);
+  struct sensor_definition_s sensor_definition;
+  sensor_definition.sensor =  sensor_number;
+  sensor_definition.type = sensor->Type();
+  sensor_definition.unit = sensor->Unit();
+  sensor_definition.prefix = sensor->Prefix();
+  sensor_definition.range_min = HostToNetwork(sensor->RangeMin());
+  sensor_definition.range_max = HostToNetwork(sensor->RangeMax());
+  sensor_definition.normal_min = HostToNetwork(sensor->NormalMin());
+  sensor_definition.normal_max = HostToNetwork(sensor->NormalMax());
+  sensor_definition.recorded_support = sensor->RecordedSupportBitMask();
+  strncpy(sensor_definition.description, sensor->Description().c_str(),
+          sizeof(sensor_definition.description));
+
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&sensor_definition),
+    sizeof(sensor_definition));
+}
+
+/**
+ * Get a sensor value
+ */
+const RDMResponse *ResponderHelper::GetSensorValue(
+    const RDMRequest *request, const Sensors &sensor_list) {
+  uint8_t sensor_number;
+  if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (sensor_number >= sensor_list.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  Sensor *sensor = sensor_list.at(sensor_number);
+  struct sensor_value_s sensor_value = {
+    sensor_number,
+    HostToNetwork(sensor->FetchValue()),
+    HostToNetwork(sensor->Lowest()),
+    HostToNetwork(sensor->Highest()),
+    HostToNetwork(sensor->Recorded()),
+  };
+
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&sensor_value),
+    sizeof(sensor_value));
+}
+
+/**
+ * Set a sensor value
+ */
+const RDMResponse *ResponderHelper::SetSensorValue(
+    const RDMRequest *request, const Sensors &sensor_list) {
+  uint8_t sensor_number;
+  if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  int16_t value = 0;
+  if (sensor_number == ALL_SENSORS) {
+    Sensors::const_iterator iter = sensor_list.begin();
+    for (; iter != sensor_list.end(); ++iter) {
+      value = (*iter)->Reset();
+    }
+  } else if (sensor_number < sensor_list.size()) {
+    Sensor *sensor = sensor_list.at(sensor_number);
+    value = sensor->Reset();
+  } else {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  struct sensor_value_s sensor_value = {
+    sensor_number,
+    HostToNetwork(value),
+    HostToNetwork(value),
+    HostToNetwork(value),
+    HostToNetwork(value),
+  };
+
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&sensor_value),
+    sizeof(sensor_value));
+}
+
+
+/**
+ * Record a sensor
+ */
+const RDMResponse *ResponderHelper::RecordSensor(
+    const RDMRequest *request, const Sensors &sensor_list) {
+  uint8_t sensor_number;
+  if (!ResponderHelper::ExtractUInt8(request, &sensor_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (sensor_number == ALL_SENSORS) {
+    Sensors::const_iterator iter = sensor_list.begin();
+    for (; iter != sensor_list.end(); ++iter) {
+      (*iter)->Record();
+    }
+  } else if (sensor_number < sensor_list.size()) {
+    Sensor *sensor = sensor_list.at(sensor_number);
+    sensor->Record();
+  } else {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  return GetResponseFromData(request, NULL, 0);
+}
+
 
 /**
  * Get the clock response.

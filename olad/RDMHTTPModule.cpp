@@ -47,6 +47,8 @@
 namespace ola {
 
 using ola::OladHTTPServer;
+using ola::client::OlaUniverse;
+using ola::client::Result;
 using ola::rdm::UID;
 using ola::thread::MutexLocker;
 using ola::web::BoolItem;
@@ -147,10 +149,11 @@ const char RDMHTTPModule::RESET_DEVICE_SECTION_NAME[] = "Reset Device";
 const char RDMHTTPModule::TILT_INVERT_SECTION_NAME[] = "Tilt Invert";
 
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
-                             OlaCallbackClient *client)
+                             client::OlaClient *client)
     : m_server(http_server),
       m_client(client),
-      m_rdm_api(m_client) {
+      m_shim(client),
+      m_rdm_api(&m_shim) {
 
   m_server->RegisterHandler(
       "/rdm/run_discovery",
@@ -221,16 +224,12 @@ int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
   string incremental_str = request->GetParameter("incremental");
   bool incremental = incremental_str == "true";
 
-  bool ok = m_client->RunDiscovery(
+  m_client->RunDiscovery(
       universe_id,
-      !incremental,
-      NewSingleCallback(this,
-                        &RDMHTTPModule::HandleUIDList,
-                        response,
-                        universe_id));
+      incremental ? client::DISCOVERY_INCREMENTAL : client::DISCOVERY_FULL,
+      NewSingleCallback(this, &RDMHTTPModule::HandleUIDList,
+                        response, universe_id));
 
-  if (!ok)
-    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
 }
 
@@ -249,15 +248,13 @@ int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
   if (!CheckForInvalidId(request, &universe_id))
     return OladHTTPServer::ServeHelpRedirect(response);
 
-  bool ok = m_client->FetchUIDList(
+  m_client->RunDiscovery(
       universe_id,
+      client::DISCOVERY_CACHED,
       NewSingleCallback(this,
                         &RDMHTTPModule::HandleUIDList,
                         response,
                         universe_id));
-
-  if (!ok)
-    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
 }
 
@@ -642,10 +639,10 @@ void RDMHTTPModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
  */
 void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
                                   unsigned int universe_id,
-                                  const ola::rdm::UIDSet &uids,
-                                  const string &error) {
-  if (!error.empty()) {
-    m_server->ServeError(response, error);
+                                  const Result &result,
+                                  const ola::rdm::UIDSet &uids) {
+  if (!result.Success()) {
+    m_server->ServeError(response, result.Error());
     return;
   }
   ola::rdm::UIDSet::Iterator iter = uids.Begin();

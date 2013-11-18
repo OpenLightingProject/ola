@@ -386,6 +386,56 @@ class SlotInfoPrinter: public MessagePrinter {
     };
     vector<slot_info> m_slot_info;
 };
+
+
+/**
+ * Print sensor definition.
+ */
+class SensorDefinitionPrinter: public GenericMessagePrinter {
+  public:
+    void Visit(const UInt8MessageField *message) {
+      const string name = message->GetDescriptor()->Name();
+      if (name == "type") {
+        Stream() << TransformLabel(name) << ": " <<
+          SensorTypeToString(message->Value()) << endl;
+      } else if (name == "unit") {
+        Stream() << TransformLabel(name) << ": ";
+        if (message->Value() == UNITS_NONE) {
+          Stream() << "None";
+        } else {
+          Stream() << UnitToString(message->Value());
+        }
+        Stream() << endl;
+      } else if (name == "prefix") {
+        Stream() << TransformLabel(name) << ": ";
+        if (message->Value() == PREFIX_NONE) {
+          Stream() << "None";
+        } else {
+          Stream() << PrefixToString(message->Value());
+        }
+        Stream() << endl;
+      } else if (name == "supports_recording") {
+        Stream() << TransformLabel(name) << ": ";
+        string supports_recording =
+            SensorSupportsRecordingToString(message->Value());
+        if (supports_recording.empty()) {
+          Stream() << "None";
+        } else {
+          Stream() << supports_recording;
+        }
+        Stream() << endl;
+      } else {
+        GenericMessagePrinter::Visit(message);
+      }
+    }
+
+  protected:
+    string TransformLabel(const string &label) {
+      string new_label = label;
+      ola::CustomCapitalizeLabel(&new_label);
+      return new_label;
+    }
+};
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMMESSAGEPRINTERS_H_

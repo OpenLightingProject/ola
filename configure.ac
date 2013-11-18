@@ -48,7 +48,7 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 inet_ntoa inet_aton select socket strerror getifaddrs \
-                getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
+                getloadavg getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -224,6 +224,18 @@ AC_CHECK_LIB([pthread], [pthread_create], [use_lpthread="yes"])
 if test "${use_lpthread}" = "yes"; then
   LIBS="-lpthread $LIBS"
 fi
+
+
+# LIBRARY: libexecinfo
+# FreeBSD required -lexecinfo to call backtrace - checking for presence of header execinfo.h isn't enough
+
+AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+case "${host_os}" in
+  *freebsd*)
+  LIBS="$LIBS -lexecinfo"
+  ;;
+esac
+
 
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
@@ -441,6 +453,29 @@ if test "${have_microhttpd}" = "yes"; then
   AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
 fi
 
+# DNS-SD support
+# LIBRARY: dns_sd
+AC_CHECK_HEADER(
+  dns_sd.h,
+  [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
+
+if test "${have_dnssd}" = "yes"; then
+  AC_DEFINE(HAVE_DNSSD, 1, [Defined to use Bonjour DNS_SD])
+fi
+AM_CONDITIONAL(HAVE_DNSSD, test "${have_dnssd}" = "yes")
+
+# LIBRARY: avahi
+PKG_CHECK_MODULES(
+  avahi,
+  [avahi-client],
+  [have_avahi="yes"],
+  [true])
+
+if test "${have_avahi}" = "yes"; then
+  AC_DEFINE(HAVE_AVAHI, 1, [Defined to use Bonjour DNS_SD])
+fi
+AM_CONDITIONAL(HAVE_AVAHI, test "${have_avahi}" = "yes")
+
 # Now build a list of plugin libs
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
@@ -634,6 +669,7 @@ AC_OUTPUT( Makefile \
     include/ola/Makefile \
     include/ola/acn/Makefile \
     include/ola/base/Makefile \
+    include/ola/client/Makefile \
     include/ola/dmx/Makefile \
     include/ola/file/Makefile \
     include/ola/e133/Makefile \

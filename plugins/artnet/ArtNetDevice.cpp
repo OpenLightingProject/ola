@@ -55,7 +55,6 @@ namespace artnet {
 
 using ola::rpc::RpcController;
 using ola::StringToInt;
-using ola::network::AddressToString;
 using ola::network::IPV4Address;
 using ola::plugin::artnet::Reply;
 using ola::plugin::artnet::Request;
@@ -181,8 +180,8 @@ void ArtNetDevice::PostPortStop() {
 void ArtNetDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
-                             Callback0<void> *done) {
-  CallbackRunner<Callback0<void> > runner(done);
+                             ConfigureCallback *done) {
+  CallbackRunner<ConfigureCallback> runner(done);
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");

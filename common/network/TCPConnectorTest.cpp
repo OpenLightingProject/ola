@@ -42,7 +42,6 @@ using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::io::SelectServer;
-using ola::network::StringToAddress;
 using ola::network::TCPConnector;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;

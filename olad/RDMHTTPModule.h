@@ -26,8 +26,9 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "ola/OlaCallbackClient.h"
 #include "ola/base/Macro.h"
+#include "ola/client/ClientRDMAPIShim.h"
+#include "ola/client/OlaClient.h"
 #include "ola/http/HTTPServer.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMAPI.h"
@@ -50,7 +51,7 @@ using std::string;
 class RDMHTTPModule {
   public:
     RDMHTTPModule(HTTPServer *http_server,
-                  class OlaCallbackClient *client);
+                  ola::client::OlaClient *client);
     ~RDMHTTPModule();
 
     void SetPidStore(const ola::rdm::RootPidStore *pid_store);
@@ -75,7 +76,7 @@ class RDMHTTPModule {
     int JsonSaveSectionInfo(const HTTPRequest *request,
                             HTTPResponse *response);
 
-    void PruneUniverseList(const vector<OlaUniverse> &universes);
+    void PruneUniverseList(const vector<client::OlaUniverse> &universes);
 
   private:
     typedef struct {
@@ -97,7 +98,8 @@ class RDMHTTPModule {
     } uid_resolution_state;
 
     HTTPServer *m_server;
-    class OlaCallbackClient *m_client;
+    ola::client::OlaClient *m_client;
+    ola::client::ClientRDMAPIShim m_shim;
     ola::rdm::RDMAPI m_rdm_api;
     map<unsigned int, uid_resolution_state*> m_universe_uids;
 
@@ -138,8 +140,8 @@ class RDMHTTPModule {
     // uid resolution methods
     void HandleUIDList(HTTPResponse *response,
                        unsigned int universe_id,
-                       const ola::rdm::UIDSet &uids,
-                       const string &error);
+                       const client::Result &result,
+                       const ola::rdm::UIDSet &uids);
 
     void ResolveNextUID(unsigned int universe_id);
 

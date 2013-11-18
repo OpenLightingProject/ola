@@ -1,4 +1,10 @@
 X/Y/2013 ola-0.8.34
+ * Added DNS-SD registration support so the OLA web UI appears as _http._tcp
+ * Added more RDM responder tests to cover some slot related edge cases
+ * Log an error if we try and run an RDM test that doesn't exist
+ * Added pretty printing of sensor definition messages
+ * Refactor sensor functionality in the software RDM responders and add a load
+   average sensor to them.
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)
@@ -10,7 +16,8 @@ X/Y/2013 ola-0.8.34
 
 29/9/2013 ola-0.8.32
  * Added more RDM responder tests to cover E1.37-1
- * Print the UID, model description and timestamp in the RDM test logs
+ * Print the UID, manufacturer, model description, software version and 
+   timestamp in the RDM test logs
  * Added pretty printing of slot info messages
  * Added support for new OSC formats
  * Added support for more than 4 ArtNet output ports

@@ -30,6 +30,7 @@
 #include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMCommand.h"
@@ -48,6 +49,7 @@
 using ola::DmxBuffer;
 using ola::network::IPV4Address;
 using ola::network::Interface;
+using ola::network::MACAddress;
 using ola::plugin::artnet::ArtNetNode;
 using ola::plugin::artnet::ArtNetNodeOptions;
 using ola::rdm::RDMCallback;
@@ -345,7 +347,8 @@ void ArtNetNodeTest::setUp() {
   OLA_ASSERT(interface_builder.SetAddress("10.0.0.1"));
   OLA_ASSERT(interface_builder.SetSubnetMask("255.0.0.0"));
   OLA_ASSERT(interface_builder.SetBroadcast("10.255.255.255"));
-  OLA_ASSERT(interface_builder.SetHardwareAddress("0a:0b:0c:12:34:56"));
+  interface_builder.SetHardwareAddress(
+      MACAddress::FromStringOrDie("0a:0b:0c:12:34:56"));
   interface = interface_builder.Construct();
 
   ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);

@@ -22,7 +22,9 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 #include "ola/rdm/RDMHelper.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -30,6 +32,7 @@ namespace rdm {
 
 using std::string;
 using std::stringstream;
+using std::vector;
 
 
 /**
@@ -100,9 +103,9 @@ string DataTypeToString(uint8_t type) {
     case DS_SIGNED_WORD:
       return "int16";
     case DS_UNSIGNED_DWORD:
-      return "uint32 ";
+      return "uint32";
     case DS_SIGNED_DWORD:
-      return "int32 ";
+      return "int32";
     default:
       stringstream str;
       str << "Unknown, was " << static_cast<int>(type);
@@ -370,7 +373,7 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_DIMMER_DC_PWM:
       return "Dimmer DC PWM";
     case PRODUCT_CATEGORY_DIMMER_CS_LED:
-      return "Dimmer DC led";
+      return "Dimmer DC LED";
     case PRODUCT_CATEGORY_DIMMER_OTHER:
       return "Dimmer other";
     case PRODUCT_CATEGORY_POWER:
@@ -404,7 +407,7 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_AV_OTHER:
       return "AV other";
     case PRODUCT_CATEGORY_MONITOR:
-      return "monitor";
+      return "Monitor";
     case PRODUCT_CATEGORY_MONITOR_ACLINEPOWER:
       return "AC line power monitor";
     case PRODUCT_CATEGORY_MONITOR_DCPOWER:
@@ -453,14 +456,14 @@ string ProductDetailToString(uint16_t detail) {
       return "Incandescent Lamp";
     case PRODUCT_DETAIL_LED:
       return "LED";
-    case PRODUCT_DETAIL_FLUROESCENT:
-      return "Fluroescent";
+    case PRODUCT_DETAIL_FLUORESCENT:
+      return "Fluorescent";
     case PRODUCT_DETAIL_COLDCATHODE:
       return "Cold Cathode";
     case PRODUCT_DETAIL_ELECTROLUMINESCENT:
       return "Electro-luminescent";
     case PRODUCT_DETAIL_LASER:
-      return "Lase";
+      return "Laser";
     case PRODUCT_DETAIL_FLASHTUBE:
       return "Flash Tube";
     case PRODUCT_DETAIL_COLORSCROLLER:
@@ -725,6 +728,23 @@ string SensorTypeToString(uint8_t type) {
       str << "Unknown, was " << static_cast<int>(type);
       return str.str();
   }
+}
+
+
+/**
+ * Convert a uint8_t representing a sensor's recording support to a
+ * human-readable string.
+ * @param supports_recording the sensor recording support bitmask
+ */
+string SensorSupportsRecordingToString(uint8_t supports_recording) {
+  vector<string> recording_support;
+  if (supports_recording & SENSOR_RECORDED_VALUE) {
+    recording_support.push_back("Recorded Value");
+  }
+  if (supports_recording & SENSOR_RECORDED_RANGE_VALUES) {
+    recording_support.push_back("Lowest/Highest Detected Values");
+  }
+  return StringJoin(", ", recording_support);
 }
 
 

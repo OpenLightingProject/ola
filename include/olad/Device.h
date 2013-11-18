@@ -48,6 +48,8 @@ using std::vector;
  */
 class AbstractDevice {
   public:
+    typedef BaseCallback0<void> ConfigureCallback;
+
     AbstractDevice() {}
     virtual ~AbstractDevice() {}
 
@@ -82,7 +84,7 @@ class AbstractDevice {
     virtual void Configure(ola::rpc::RpcController *controller,
                            const string &request,
                            string *response,
-                           Callback0<void> *done) = 0;
+                           ConfigureCallback *done) = 0;
 };
 
 
@@ -127,7 +129,7 @@ class Device: public AbstractDevice {
     virtual void Configure(ola::rpc::RpcController *controller,
                            const string &request,
                            string *response,
-                           Callback0<void> *done);
+                           ConfigureCallback *done);
 
   protected:
     virtual bool StartHook() { return true; }

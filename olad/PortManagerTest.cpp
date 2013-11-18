@@ -76,52 +76,39 @@ void PortManagerTest::testPortPatching() {
   device1.AddPort(&output_port2);
 
   OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 
   // simple patching
   OLA_ASSERT(port_manager.PatchPort(&input_port, 1));
   OLA_ASSERT(port_manager.PatchPort(&output_port, 2));
   OLA_ASSERT(input_port.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 1,
-                       input_port.GetUniverse()->UniverseId());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
+  OLA_ASSERT_EQ((unsigned int) 1, input_port.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
   OLA_ASSERT(output_port.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 2,
-                       output_port.GetUniverse()->UniverseId());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ((unsigned int) 2, output_port.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 
   // test looping
   OLA_ASSERT_FALSE(port_manager.PatchPort(&input_port2, 2));
   OLA_ASSERT_FALSE(port_manager.PatchPort(&output_port2, 1));
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 
   // test multiport
   OLA_ASSERT_FALSE(port_manager.PatchPort(&input_port2, 1));
   OLA_ASSERT_FALSE(port_manager.PatchPort(&output_port2, 2));
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 
   // test repatching
   OLA_ASSERT(port_manager.PatchPort(&input_port, 3));
   OLA_ASSERT(port_manager.PatchPort(&output_port, 4));
   OLA_ASSERT(input_port.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 3,
-                       input_port.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 3, input_port.GetUniverse()->UniverseId());
   OLA_ASSERT(output_port.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 4,
-                       output_port.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 4, output_port.GetUniverse()->UniverseId());
 
   // test unpatching
   OLA_ASSERT(port_manager.UnPatchPort(&input_port));
@@ -129,12 +116,9 @@ void PortManagerTest::testPortPatching() {
   OLA_ASSERT(port_manager.UnPatchPort(&output_port));
   OLA_ASSERT(port_manager.UnPatchPort(&output_port2));
   OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 }
 
 
@@ -159,46 +143,35 @@ void PortManagerTest::testPortPatchingLoopMulti() {
   device1.AddPort(&output_port2);
 
   OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port.GetUniverse());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port.GetUniverse());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 
   // simple patching
   OLA_ASSERT(port_manager.PatchPort(&input_port, 1));
   OLA_ASSERT(port_manager.PatchPort(&output_port, 2));
   OLA_ASSERT(input_port.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 1,
-                       input_port.GetUniverse()->UniverseId());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       input_port2.GetUniverse());
+  OLA_ASSERT_EQ((unsigned int) 1, input_port.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), input_port2.GetUniverse());
   OLA_ASSERT(output_port.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 2,
-                       output_port.GetUniverse()->UniverseId());
-  OLA_ASSERT_EQ(static_cast<Universe*>(NULL),
-                       output_port2.GetUniverse());
+  OLA_ASSERT_EQ((unsigned int) 2, output_port.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ(static_cast<Universe*>(NULL), output_port2.GetUniverse());
 
   // test looping
   OLA_ASSERT(port_manager.PatchPort(&input_port2, 2));
   OLA_ASSERT(port_manager.PatchPort(&output_port2, 1));
   OLA_ASSERT(input_port2.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 2,
-                       input_port2.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 2, input_port2.GetUniverse()->UniverseId());
   OLA_ASSERT(output_port2.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 1,
-                       output_port2.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 1, output_port2.GetUniverse()->UniverseId());
 
   // test multiport
   OLA_ASSERT(port_manager.PatchPort(&input_port2, 1));
   OLA_ASSERT(port_manager.PatchPort(&output_port2, 2));
   OLA_ASSERT(input_port2.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 1,
-                       input_port2.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 1, input_port2.GetUniverse()->UniverseId());
   OLA_ASSERT(output_port2.GetUniverse());
-  OLA_ASSERT_EQ((unsigned int) 2,
-                       output_port2.GetUniverse()->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 2, output_port2.GetUniverse()->UniverseId());
 }
 
 
@@ -212,51 +185,40 @@ void PortManagerTest::testInputPortSetPriority() {
   // Input port that doesn't support priorities
   TestMockInputPort input_port(NULL, 0, NULL);
 
-  OLA_ASSERT_EQ(input_port.PriorityCapability(),
-                       ola::CAPABILITY_STATIC);
-  OLA_ASSERT_EQ(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(input_port.GetPriority(),
-                       DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(input_port.PriorityCapability(), ola::CAPABILITY_STATIC);
+  OLA_ASSERT_EQ(input_port.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
+  OLA_ASSERT_EQ(input_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so this is a noop
   OLA_ASSERT(patcher.SetPriorityInherit(&input_port));
-  OLA_ASSERT_EQ(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(input_port.GetPriority(),
-                       DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(input_port.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
+  OLA_ASSERT_EQ(input_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // set the static priority to 20
-  OLA_ASSERT(patcher.SetPriorityOverride(&input_port, 20));
-  OLA_ASSERT_EQ(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+  OLA_ASSERT(patcher.SetPriorityStatic(&input_port, 20));
+  OLA_ASSERT_EQ(input_port.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port.GetPriority(), (uint8_t) 20);
 
   // Now test an input port that does support priorities
   TestMockPriorityInputPort input_port2(NULL, 1, NULL);
-  OLA_ASSERT_EQ(input_port2.PriorityCapability(),
-                       ola::CAPABILITY_FULL);
-  OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(input_port2.GetPriority(),
-                       DmxSource::PRIORITY_DEFAULT);
 
-  // try changing to override mode
-  OLA_ASSERT(patcher.SetPriorityOverride(&input_port2, 20));
-  OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+  OLA_ASSERT_EQ(input_port2.PriorityCapability(), ola::CAPABILITY_FULL);
+  OLA_ASSERT_EQ(input_port2.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
+  OLA_ASSERT_EQ(input_port2.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
+
+  // try changing to static mode
+  OLA_ASSERT(patcher.SetPriorityStatic(&input_port2, 20));
+  OLA_ASSERT_EQ(input_port2.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
-  OLA_ASSERT(patcher.SetPriorityOverride(&input_port2, 180));
-  OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+  OLA_ASSERT(patcher.SetPriorityStatic(&input_port2, 180));
+  OLA_ASSERT_EQ(input_port2.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 180);
 
-  // change back to inherit mode
+  // change to inherit mode
   OLA_ASSERT(patcher.SetPriorityInherit(&input_port2));
-  OLA_ASSERT_EQ(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+  OLA_ASSERT_EQ(input_port2.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
   OLA_ASSERT_EQ(input_port2.GetPriority(), (uint8_t) 180);
 }
 
@@ -271,46 +233,35 @@ void PortManagerTest::testOutputPortSetPriority() {
   // Input port that doesn't support priorities
   TestMockOutputPort output_port(NULL, 0);
 
-  OLA_ASSERT_EQ(output_port.PriorityCapability(),
-                       ola::CAPABILITY_NONE);
-  OLA_ASSERT_EQ(output_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port.GetPriority(),
-                       DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(output_port.PriorityCapability(), ola::CAPABILITY_NONE);
+  OLA_ASSERT_EQ(output_port.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
+  OLA_ASSERT_EQ(output_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so these are all noops
   OLA_ASSERT(patcher.SetPriorityInherit(&output_port));
-  OLA_ASSERT(patcher.SetPriorityOverride(&output_port, 20));
-  OLA_ASSERT_EQ(output_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port.GetPriority(),
-                       DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT(patcher.SetPriorityStatic(&output_port, 20));
+  OLA_ASSERT_EQ(output_port.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
+  OLA_ASSERT_EQ(output_port.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // now test an output port that supports priorities
   TestMockPriorityOutputPort output_port2(NULL, 1);
 
-  OLA_ASSERT_EQ(output_port2.PriorityCapability(),
-                       ola::CAPABILITY_FULL);
-  OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  OLA_ASSERT_EQ(output_port2.GetPriority(),
-                       DmxSource::PRIORITY_DEFAULT);
+  OLA_ASSERT_EQ(output_port2.PriorityCapability(), ola::CAPABILITY_FULL);
+  OLA_ASSERT_EQ(output_port2.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
+  OLA_ASSERT_EQ(output_port2.GetPriority(), ola::dmx::SOURCE_PRIORITY_DEFAULT);
 
   // try changing to static mode
-  OLA_ASSERT(patcher.SetPriorityOverride(&output_port2, 20));
-  OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+  OLA_ASSERT(patcher.SetPriorityStatic(&output_port2, 20));
+  OLA_ASSERT_EQ(output_port2.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
-  OLA_ASSERT(patcher.SetPriorityOverride(&output_port2, 180));
-  OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
+  OLA_ASSERT(patcher.SetPriorityStatic(&output_port2, 180));
+  OLA_ASSERT_EQ(output_port2.GetPriorityMode(), ola::PRIORITY_MODE_STATIC);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 180);
 
   // change back to inherit mode
   OLA_ASSERT(patcher.SetPriorityInherit(&output_port2));
-  OLA_ASSERT_EQ(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
+  OLA_ASSERT_EQ(output_port2.GetPriorityMode(), ola::PRIORITY_MODE_INHERIT);
   OLA_ASSERT_EQ(output_port2.GetPriority(), (uint8_t) 180);
 }

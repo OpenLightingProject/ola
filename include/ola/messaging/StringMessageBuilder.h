@@ -46,6 +46,7 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
 
     void Visit(const BoolFieldDescriptor*);
     void Visit(const IPV4FieldDescriptor*);
+    void Visit(const MACFieldDescriptor*);
     void Visit(const UIDFieldDescriptor*);
     void Visit(const StringFieldDescriptor*);
     void Visit(const IntegerFieldDescriptor<uint8_t>*);
