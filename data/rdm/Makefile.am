@@ -22,4 +22,4 @@ PidDataTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) -DDATADIR=\"$(srcdir)/\"
 PidDataTester_LDADD = $(COMMON_TESTING_LIBS) \
                       $(top_builddir)/common/libolacommon.la
 
-EXTRA_DIST = PidDataTest.py PidDataTest.sh
+EXTRA_DIST += PidDataTest.py PidDataTest.sh

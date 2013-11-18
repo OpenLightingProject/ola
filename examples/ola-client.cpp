@@ -515,7 +515,7 @@ int ParseSetPriorityOptions(int argc, char *argv[], options *opts) {
         opts->port_direction = ola::INPUT_PORT;
         break;
       case 'o':
-        opts->priority_mode = ola::PRIORITY_MODE_OVERRIDE;
+        opts->priority_mode = ola::PRIORITY_MODE_STATIC;
         opts->priority_value = atoi(optarg);
         break;
       case 'p':
@@ -866,7 +866,7 @@ void SetPortPriority(OlaCallbackClientWrapper *wrapper, const options &opts) {
     client->SetPortPriorityInherit(
         opts.device_id, opts.port_id, opts.port_direction,
         NewSingleCallback(&SetPortPriorityComplete, ss));
-  } else if (opts.priority_mode == ola::PRIORITY_MODE_OVERRIDE) {
+  } else if (opts.priority_mode == ola::PRIORITY_MODE_STATIC) {
     client->SetPortPriorityOverride(
         opts.device_id, opts.port_id, opts.port_direction, opts.priority_value,
         NewSingleCallback(&SetPortPriorityComplete, ss));

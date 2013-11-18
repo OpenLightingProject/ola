@@ -76,11 +76,13 @@ bool PortManager::UnPatchPort(OutputPort *port) {
  * @param port the port to configure
  */
 bool PortManager::SetPriorityInherit(Port *port) {
-  if (port->PriorityCapability() == CAPABILITY_NONE)
+  if (port->PriorityCapability() != CAPABILITY_FULL)
     return true;
 
-  if (port->GetPriorityMode() != PRIORITY_MODE_INHERIT)
+  if (port->GetPriorityMode() != PRIORITY_MODE_INHERIT) {
     port->SetPriorityMode(PRIORITY_MODE_INHERIT);
+  }
+
   return true;
 }
 
@@ -90,13 +92,13 @@ bool PortManager::SetPriorityInherit(Port *port) {
  * @param port the port to configure
  * @param value the new priority
  */
-bool PortManager::SetPriorityOverride(Port *port, uint8_t value) {
+bool PortManager::SetPriorityStatic(Port *port, uint8_t value) {
   if (port->PriorityCapability() == CAPABILITY_NONE)
     return true;
 
   if (port->PriorityCapability() == CAPABILITY_FULL &&
-      port->GetPriorityMode() != PRIORITY_MODE_OVERRIDE)
-    port->SetPriorityMode(PRIORITY_MODE_OVERRIDE);
+      port->GetPriorityMode() != PRIORITY_MODE_STATIC)
+    port->SetPriorityMode(PRIORITY_MODE_STATIC);
 
   if (value > ola::dmx::SOURCE_PRIORITY_MAX) {
     OLA_WARN << "Priority " << static_cast<int>(value)
@@ -170,7 +172,7 @@ bool PortManager::GenericUnPatchPort(PortClass *port) {
   if (universe) {
     universe->RemovePort(port);
     port->SetUniverse(NULL);
-    OLA_DEBUG << "Port " << port->UniqueId() << " has been removed from uni "
+    OLA_INFO << "Unpatched " << port->UniqueId() << " from uni "
       << universe->UniverseId();
   }
   return true;
