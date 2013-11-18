@@ -68,8 +68,8 @@ void PortTest::testOutputPortPriorities() {
   OLA_ASSERT_EQ((uint8_t) 0, output_port.GetPriority());
 
   // test the setting of modes
-  output_port.SetPriorityMode(ola::PRIORITY_MODE_OVERRIDE);
-  OLA_ASSERT_EQ(ola::PRIORITY_MODE_OVERRIDE, output_port.GetPriorityMode());
+  output_port.SetPriorityMode(ola::PRIORITY_MODE_STATIC);
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_STATIC, output_port.GetPriorityMode());
 
   output_port.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT, output_port.GetPriorityMode());
@@ -106,7 +106,7 @@ void PortTest::testInputPortPriorities() {
 
   // change the priority
   uint8_t new_priority = 120;
-  port_manager.SetPriorityOverride(&input_port, new_priority);
+  port_manager.SetPriorityStatic(&input_port, new_priority);
 
   m_clock.CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
@@ -114,7 +114,7 @@ void PortTest::testInputPortPriorities() {
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
 
   new_priority = 0;
-  port_manager.SetPriorityOverride(&input_port, new_priority);
+  port_manager.SetPriorityStatic(&input_port, new_priority);
 
   m_clock.CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
@@ -126,7 +126,8 @@ void PortTest::testInputPortPriorities() {
   TestMockPriorityInputPort input_port2(&device, 2, &plugin_adaptor);
   port_manager.PatchPort(&input_port2, universe_id);
 
-  // the default mode is inherit
+  // the default mode is static, lets change it to inherit
+  input_port2.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
   input_port2.SetInheritedPriority(99);
   m_clock.CurrentTime(&time_stamp);
   input_port2.WriteDMX(buffer);
@@ -139,9 +140,9 @@ void PortTest::testInputPortPriorities() {
   input_port2.DmxChanged();
   OLA_ASSERT_EQ((uint8_t) 123, universe->ActivePriority());
 
-  // now try override mode
+  // now try static mode
   new_priority = 108;
-  port_manager.SetPriorityOverride(&input_port2, new_priority);
+  port_manager.SetPriorityStatic(&input_port2, new_priority);
   m_clock.CurrentTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();

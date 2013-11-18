@@ -185,13 +185,13 @@ class PortPriorityInheritAction: public BaseHttpAction {
 /*
  * An action that sets a port priority to override mode.
  */
-class PortPriorityOverrideAction: public BaseHttpAction {
+class PortPriorityStaticAction: public BaseHttpAction {
   public:
-    PortPriorityOverrideAction(client::OlaClient *client,
-                              unsigned int device_alias,
-                              unsigned int port,
-                              client::PortDirection direction,
-                              uint8_t overide_value):
+    PortPriorityStaticAction(client::OlaClient *client,
+                             unsigned int device_alias,
+                             unsigned int port,
+                             client::PortDirection direction,
+                             uint8_t overide_value):
       BaseHttpAction(client),
       m_device_alias(device_alias),
       m_port(port),
@@ -210,7 +210,7 @@ class PortPriorityOverrideAction: public BaseHttpAction {
     client::PortDirection m_direction;
     uint8_t m_override_value;
 
-    DISALLOW_COPY_AND_ASSIGN(PortPriorityOverrideAction);
+    DISALLOW_COPY_AND_ASSIGN(PortPriorityStaticAction);
 };
 }  // namespace ola
 #endif  // OLAD_HTTPSERVERACTIONS_H_

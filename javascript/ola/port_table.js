@@ -42,7 +42,6 @@ ola.Port = function(data, opt_domHelper) {
 };
 goog.inherits(ola.Port, goog.ui.Component);
 
-
 /**
  * This component can't be used to decorate
  * @return {bool} false.
@@ -70,24 +69,22 @@ ola.Port.prototype.createDom = function() {
 
   var priority = this.data['priority'];
 
-  if (priority == undefined) {
+  if (priority['priority_capability'] == undefined) {
     // this port doesn't support priorities at all
     this.dom_.appendChild(
       tr, goog.dom.createDom('td', {}, 'Not supported'));
   } else {
+    // Now we know it supports priorities, lets create the common UI elements
+    // for them
     this.priority_input = goog.dom.createElement('input');
     this.priority_input.value = priority['value'];
     this.priority_input.maxLength = 3;
     this.priority_input.size = 3;
-    if (priority['current_mode'] == undefined) {
-      // this port only supports static priorities
-      var td = goog.dom.createDom('td', {}, this.priority_input);
-      this.dom_.appendChild(tr, td);
-    } else {
+    if (priority['priority_capability'] == "full") {
       // this port supports both modes
       this.priority_select = new goog.ui.Select();
       this.priority_select.addItem(new goog.ui.MenuItem('Inherit'));
-      this.priority_select.addItem(new goog.ui.MenuItem('Override'));
+      this.priority_select.addItem(new goog.ui.MenuItem('Static'));
       this.priority_select.setSelectedIndex(
         priority['current_mode'] == 'inherit' ? 0 : 1);
       this.prioritySelectChanged_();
@@ -96,6 +93,9 @@ ola.Port.prototype.createDom = function() {
       this.priority_select.render(td);
       this.dom_.appendChild(td, this.priority_input);
       this.dom_.appendChild(tr, td);
+    } else if (priority['priority_capability'] == "static") {
+      // this port only supports Static priorities
+      this.dom_.appendChild(tr, this.priority_input);
     }
   }
   this.setElementInternal(tr);
@@ -201,7 +201,8 @@ ola.Port.prototype.isSelected = function() {
  * doesn't support priorities.
  */
 ola.Port.prototype.priority = function() {
-  if (this.priority_input) {
+  var priority_capability = this.data['priority']['priority_capability'];
+  if (priority_capability != undefined) {
     return this.priority_input.value;
   } else {
     return undefined;
@@ -211,12 +212,19 @@ ola.Port.prototype.priority = function() {
 
 /**
  * Get the priority mode for this port
- * @return {string|undefined} the priority mode (inherit|override) or undefined
+ * @return {string|undefined} the priority mode (inherit|static) or undefined
  *   if this port doesn't support priority modes.
  */
 ola.Port.prototype.priorityMode = function() {
-  if (this.priority_select) {
-    return this.priority_select.getValue();
+  var priority_capability = this.data['priority']['priority_capability'];
+  if (priority_capability == 'full') {
+    if (this.priority_select.getValue() == 'Inherit') {
+      return 'inherit'
+    } else {
+      return 'static'
+    }
+  } else if (priority_capability == 'static'){
+    return 'static';
   } else {
     return undefined;
   }
@@ -229,8 +237,9 @@ ola.Port.prototype.priorityMode = function() {
  * @private
  */
 ola.Port.prototype.prioritySelectChanged_ = function(e) {
-  if (this.priority_select.getSelectedIndex()) {
-    // override mode
+  var item = this.priority_select.getSelectedItem();
+  if (item.getCaption() == 'Static') {
+    // static mode
     this.priority_input.style.visibility = 'visible';
   } else {
     // inherit mode
