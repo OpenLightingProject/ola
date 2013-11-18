@@ -40,11 +40,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-using std::vector;
-
-typedef vector<ola::network::IPV4Address> NameServers;
-
 /**
  * @brief Gets global network information.
  */
@@ -53,14 +48,39 @@ class GlobalNetworkGetter {
     GlobalNetworkGetter() {}
     virtual ~GlobalNetworkGetter() {}
 
+    /**
+     * Get the interface picker
+     */
     virtual const ola::network::InterfacePicker *GetInterfacePicker() const = 0;
 
+    /**
+     * Get the DHCP status of an interface
+     * @param iface the interface to check the DHCP status of
+     * @return true if the interface is using DHCP, false otherwise
+     */
     virtual bool GetDHCPStatus(const ola::network::Interface &iface) const = 0;
 
+    /**
+     * Get the IPv4 default route
+     * @return the machine's default route as an IPV4Address object
+     */
     virtual ola::network::IPV4Address GetIPV4DefaultRoute() = 0;
-    virtual string GetHostname() = 0;
-    virtual string GetDomainName() = 0;
-    virtual NameServers GetNameServers() = 0;
+
+    /**
+     * Get the hostname
+     */
+    virtual std::string GetHostname() = 0;
+
+    /**
+     * Get the domain name
+     */
+    virtual std::string GetDomainName() = 0;
+
+    /**
+     * Get name servers
+     */
+    virtual bool GetNameServers(
+        std::vector<ola::network::IPV4Address> *name_servers) = 0;
 };
 // TODO(Peter): Set global network information.
 }  // namespace rdm

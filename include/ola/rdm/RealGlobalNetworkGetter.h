@@ -39,11 +39,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-using std::vector;
-using ola::network::InterfacePicker;
-using ola::network::IPV4Address;
-
 /**
  * A class which represents a real network getter.
  */
@@ -54,12 +49,12 @@ class RealGlobalNetworkGetter: public GlobalNetworkGetter {
     }
 
   protected:
-    const InterfacePicker *GetInterfacePicker() const;
+    const ola::network::InterfacePicker *GetInterfacePicker() const;
     bool GetDHCPStatus(const ola::network::Interface &iface) const;
-    IPV4Address GetIPV4DefaultRoute();
-    string GetHostname();
-    string GetDomainName();
-    NameServers GetNameServers();
+    ola::network::IPV4Address GetIPV4DefaultRoute();
+    std::string GetHostname();
+    std::string GetDomainName();
+    bool GetNameServers(std::vector<ola::network::IPV4Address> *name_servers);
 };
 }  // namespace rdm
 }  // namespace ola

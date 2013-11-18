@@ -779,7 +779,10 @@ const RDMResponse *ResponderHelper::GetDNSNameServer(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  NameServers name_servers = global_network_getter->GetNameServers();
+  vector<IPV4Address> name_servers;
+  if (!global_network_getter->GetNameServers(&name_servers)) {
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  }
 
   if ((name_server_number >= name_servers.size()) ||
       (name_server_number > 2)) {

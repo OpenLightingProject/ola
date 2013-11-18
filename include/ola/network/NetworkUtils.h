@@ -36,20 +36,51 @@
 namespace ola {
 namespace network {
 
+/**
+ * Convert a string to a struct in_addr
+ */
 bool StringToAddress(const std::string &address, struct in_addr &addr);
 std::string AddressToString(const struct in_addr &addr);
 
+
+/**
+ * @return true if we're big endian, false otherwise.
+ */
 bool IsBigEndian();
 
 // we define uint8_t versions of these so we can call them with any type.
 uint8_t NetworkToHost(uint8_t value);
+
+/**
+ * Convert a uint16_t from network to host byte order
+ */
 uint16_t NetworkToHost(uint16_t value);
+
+/**
+ * Convert a uint32_t from network to host byte order
+ */
 uint32_t NetworkToHost(uint32_t value);
 int8_t NetworkToHost(int8_t value);
+
+/**
+ * Convert a uint16_t from network to host byte order
+ */
 int16_t NetworkToHost(int16_t value);
+
+/*
+ * Convert a int32_t from network to host byte order
+ */
 int32_t NetworkToHost(int32_t value);
 uint8_t HostToNetwork(uint8_t value);
+
+/**
+ * Convert a uint16_t from host to network byte order
+ */
 uint16_t HostToNetwork(uint16_t value);
+
+/**
+ * Convert a uint32_t from host to network byte order
+ */
 uint32_t HostToNetwork(uint32_t value);
 int8_t HostToNetwork(int8_t value);
 int16_t HostToNetwork(int16_t value);
@@ -68,14 +99,49 @@ int8_t LittleEndianToHost(int8_t value);
 int16_t LittleEndianToHost(int16_t value);
 int32_t LittleEndianToHost(int32_t value);
 
-std::string FullHostnameToHostname(const std::string fqdn);
-std::string FullHostnameToDomain(const std::string fqdn);
+/**
+ * Convert a FQDN to a hostname
+ * @param fqdn a fully qualified domain name
+ * @return the hostname part of the FQDN
+ */
+std::string HostnameFromFQDN(const std::string &fqdn);
 
-std::string Domain();
+/**
+ * Convert a FQDN to a domain
+ * @param fqdn a fully qualified domain name
+ * @return the domain part of the FQDN
+ */
+std::string DomainNameFromFQDN(const std::string &fqdn);
+
+/**
+ * Return the machine's domain name as a string.
+ */
+std::string DomainName();
+
+
+/**
+ * Return the machine's fully qualified domain name (FQDN)
+ */
+std::string FQDN();
+
+
+/**
+ * Return the machine's full hostname (FQDN)
+ * @deprecated use FQDN() instead (17 Nov 2013)
+ */
 std::string FullHostname();
+
+/**
+ * Return the machine's hostname
+ */
 std::string Hostname();
 
-std::vector<ola::network::IPV4Address> Nameservers();
+/**
+ * Get a vector of name server IP addresses.
+ * @param a pointer to a vector of name servers to populate
+ * @return true on success, false otherwise
+ */
+bool NameServers(std::vector<ola::network::IPV4Address> *name_servers);
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_NETWORKUTILS_H_

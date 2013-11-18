@@ -53,9 +53,11 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
-                  sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  endian.h execinfo.h unistd.h linux/if_packet.h sysexits.h])
+AC_CHECK_HEADERS([arpa/inet.h assert.h errno.h fcntl.h limits.h math.h \
+                  net/ethernet.h net/if_arp.h netinet/in.h resolv.h stdint.h \
+                  stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h \
+                  sys/types.h sys/uio.h syslog.h termios.h endian.h execinfo.h \
+                  unistd.h linux/if_packet.h sysexits.h])
 AC_CHECK_HEADERS([random])
 
 AC_PROG_LIBTOOL
@@ -156,7 +158,7 @@ AC_CHECK_TYPE(suseconds_t,
 # check for SO_NOSIGPIPE or MSG_NOSIGNAL
 AC_CHECK_DECLS(MSG_NOSIGNAL,
                ,
-               have_msg_no_pipe=no,
+               have_msg_no_signal=no,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
@@ -178,7 +180,7 @@ AC_CHECK_DECLS(SO_REUSEPORT,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_pipe}" = "no" && \
+if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_signal}" = "no" && \
    test "${have_so_no_pipe}" = "no"; then
  AC_MSG_ERROR([Your system needs either MSG_NOSIGNAL or SO_NOSIGPIPE])
 fi
@@ -225,6 +227,15 @@ if test "${use_lpthread}" = "yes"; then
   LIBS="-lpthread $LIBS"
 fi
 
+# LIBRARY: resolv
+SAVED_LDFLAGS=$LDFLAGS
+LDFLAGS="$LDFLAGS -lresolv"
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([#include <resolv.h>],
+    [res_init()])],
+  [TEST_LIBS="$TEST_LIBS -lresolv"] [],
+  [AC_MSG_ERROR([Missing resolv, please install it])])
+LDFLAGS=$SAVED_LDFLAGS
 
 # LIBRARY: libexecinfo
 # FreeBSD required -lexecinfo to call backtrace - checking for presence of header execinfo.h isn't enough

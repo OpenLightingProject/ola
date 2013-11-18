@@ -59,12 +59,11 @@ IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
 
 
 bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
-  // TODO(Peter): Is this endian safe?
   uint32_t netmask = NetworkToHost(address.AsInt());
   uint8_t bits = 0;
   bool seen_one = false;
   for (uint8_t i = 0; i < 32; i++) {
-    if ( netmask & 1 ) {
+    if (netmask & 1) {
       bits++;
       seen_one = true;
     } else {

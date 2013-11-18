@@ -21,36 +21,39 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <string>
+#include <vector>
 
 #include "ola/network/NetworkUtils.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
-using ola::network::FullHostname;
-using ola::network::FullHostnameToDomain;
-using ola::network::FullHostnameToHostname;
+using ola::network::FQDN;
+using ola::network::DomainNameFromFQDN;
 using ola::network::Hostname;
+using ola::network::HostnameFromFQDN;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 using ola::network::LittleEndianToHost;
-using ola::network::Nameservers;
+using ola::network::NameServers;
 using ola::network::NetworkToHost;
 
 using std::string;
+using std::vector;
 
 class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(NetworkUtilsTest);
   CPPUNIT_TEST(testToFromNetwork);
   CPPUNIT_TEST(testToFromLittleEndian);
   CPPUNIT_TEST(testNameProcessing);
-  CPPUNIT_TEST(testNameservers);
+  CPPUNIT_TEST(testNameServers);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testToFromNetwork();
     void testToFromLittleEndian();
     void testNameProcessing();
-    void testNameservers();
+    void testNameServers();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
@@ -92,18 +95,22 @@ void NetworkUtilsTest::testToFromLittleEndian() {
  * Check that name processing works
  */
 void NetworkUtilsTest::testNameProcessing() {
-  // FullHostnameToHostname
-  OLA_ASSERT_EQ(string("foo"), FullHostnameToHostname("foo"));
-  OLA_ASSERT_EQ(string("foo"), FullHostnameToHostname("foo.bar"));
-  OLA_ASSERT_EQ(string("foo"), FullHostnameToHostname("foo.bar.com"));
+  // HostnameFromFQDN
+  OLA_ASSERT_EQ(string(""), HostnameFromFQDN(""));
+  OLA_ASSERT_EQ(string("foo"), HostnameFromFQDN("foo"));
+  OLA_ASSERT_EQ(string("foo"), HostnameFromFQDN("foo.bar"));
+  OLA_ASSERT_EQ(string("foo"), HostnameFromFQDN("foo.barbaz"));
+  OLA_ASSERT_EQ(string("foo"), HostnameFromFQDN("foo.bar.com"));
 
-  // FullHostnameToDomain
-  OLA_ASSERT_EQ(string(""), FullHostnameToDomain("foo"));
-  OLA_ASSERT_EQ(string("bar"), FullHostnameToDomain("foo.bar"));
-  OLA_ASSERT_EQ(string("bar.com"), FullHostnameToDomain("foo.bar.com"));
+  // DomainNameFromFQDN
+  OLA_ASSERT_EQ(string(""), DomainNameFromFQDN(""));
+  OLA_ASSERT_EQ(string(""), DomainNameFromFQDN("foo"));
+  OLA_ASSERT_EQ(string("bar"), DomainNameFromFQDN("foo.bar"));
+  OLA_ASSERT_EQ(string("barbaz"), DomainNameFromFQDN("foo.barbaz"));
+  OLA_ASSERT_EQ(string("bar.com"), DomainNameFromFQDN("foo.bar.com"));
 
   // Check we were able to get the hostname
-  OLA_ASSERT_GT(FullHostname().length(), 0);
+  OLA_ASSERT_GT(FQDN().length(), 0);
   OLA_ASSERT_GT(Hostname().length(), 0);
 }
 
@@ -111,6 +118,7 @@ void NetworkUtilsTest::testNameProcessing() {
 /*
  * Check that we can fetch some name servers
  */
-void NetworkUtilsTest::testNameservers() {
-  OLA_ASSERT_GT(Nameservers().size(), 0);
+void NetworkUtilsTest::testNameServers() {
+  vector<IPV4Address> name_servers;
+  OLA_ASSERT_TRUE(NameServers(&name_servers));
 }

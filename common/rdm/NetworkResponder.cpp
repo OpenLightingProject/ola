@@ -112,7 +112,7 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
                             const IPV4Address ipv4_default_route,
                             const string &hostname,
                             const string &domain_name,
-                            const NameServers &name_servers)
+                            const vector<IPV4Address> &name_servers)
         : GlobalNetworkGetter(),
           // m_picker(new FakeInterfacePicker(interfaces)),
           // Todo(Peter): should be FakeInterfacePicker when I can get it
@@ -131,31 +131,23 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
     IPV4Address GetIPV4DefaultRoute();
     string GetHostname();
     string GetDomainName();
-    NameServers GetNameServers();
+    bool GetNameServers(vector<IPV4Address> *name_servers);
 
  private:
     InterfacePicker *m_picker;
     IPV4Address m_ipv4_default_route;
     string m_hostname;
     string m_domain_name;
-    NameServers m_name_servers;
+    vector<IPV4Address> m_name_servers;
 };
 
 
-/**
- * Get the interface picker
- */
 const InterfacePicker *FakeGlobalNetworkGetter::GetInterfacePicker() const {
   OLA_INFO << "Getting picker";
   return m_picker;
 }
 
 
-/**
- * Get the DHCP status of an interface
- * @param iface the interface to check the DHCP status of
- * @return true if using DHCP, false otherwise
- */
 bool FakeGlobalNetworkGetter::GetDHCPStatus(
     const ola::network::Interface &iface) const {
   // TODO(Peter): Fixme - actually do the work!
@@ -164,35 +156,27 @@ bool FakeGlobalNetworkGetter::GetDHCPStatus(
 }
 
 
-/**
- * Get the IPv4 default route
- */
 IPV4Address FakeGlobalNetworkGetter::GetIPV4DefaultRoute() {
   return m_ipv4_default_route;
 }
 
 
-/**
- * Get the hostname
- */
 string FakeGlobalNetworkGetter::GetHostname() {
   return m_hostname;
 }
 
 
-/**
- * Get the domain name
- */
 string FakeGlobalNetworkGetter::GetDomainName() {
   return m_domain_name;
 }
 
-/**
- * Get name servers
- */
-NameServers FakeGlobalNetworkGetter::GetNameServers() {
-  return m_name_servers;
+
+bool FakeGlobalNetworkGetter::GetNameServers(
+    vector<IPV4Address> *name_servers) {
+  name_servers = &m_name_servers;
+  return true;
 }
+
 
 /**
  * New NetworkResponder

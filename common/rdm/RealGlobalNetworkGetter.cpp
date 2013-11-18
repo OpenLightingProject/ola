@@ -31,56 +31,43 @@
 namespace ola {
 namespace rdm {
 
-/**
- * Get the interface picker
- */
+using ola::network::Interface;
+using ola::network::InterfacePicker;
+using ola::network::IPV4Address;
+using std::string;
+using std::vector;
+
 const InterfacePicker *RealGlobalNetworkGetter::GetInterfacePicker() const {
   OLA_INFO << "Getting picker";
   return InterfacePicker::NewPicker();
 }
 
 
-/**
- * Get the DHCP status of an interface
- * @param iface the interface to check the DHCP status of
- * @return true if using DHCP, false otherwise
- */
-bool RealGlobalNetworkGetter::GetDHCPStatus(
-    const ola::network::Interface &iface) const {
+bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
   // TODO(Peter): Fixme - actually do the work!
   if (iface.index > 0) {}
   return false;
 }
 
 
-/**
- * Get the IPv4 default route
- */
 IPV4Address RealGlobalNetworkGetter::GetIPV4DefaultRoute() {
   return IPV4Address();
 }
 
 
-/**
- * Get the hostname
- */
 string RealGlobalNetworkGetter::GetHostname() {
   return ola::network::Hostname();
 }
 
 
-/**
- * Get the domain name
- */
 string RealGlobalNetworkGetter::GetDomainName() {
-  return ola::network::Domain();
+  return ola::network::DomainName();
 }
 
-/**
- * Get name servers
- */
-NameServers RealGlobalNetworkGetter::GetNameServers() {
-  return ola::network::Nameservers();
+
+bool RealGlobalNetworkGetter::GetNameServers(
+    vector<IPV4Address> *name_servers) {
+  return ola::network::NameServers(name_servers);
 }
 }  // namespace rdm
 }  // namespace ola
