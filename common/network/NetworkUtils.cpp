@@ -231,10 +231,9 @@ int32_t LittleEndianToHost(int32_t value) {
 
 
 string HostnameFromFQDN(const string &fqdn) {
-  string::size_type first_dot = string::npos;
-  first_dot = fqdn.find_first_of(".");
+  string::size_type first_dot = fqdn.find_first_of(".");
   if (first_dot == string::npos)
-    return fqdn;  // TODO(Peter): Is this safe with a pass by ref?
+    return fqdn;
   return fqdn.substr(0, (first_dot));  // Don't return the dot itself
 }
 
@@ -283,6 +282,8 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   // TODO(Peter): Do something on Windows
   OLA_DEBUG << "Getting nameservers";
 
+  // Init the resolver info each time so it's always current for the RDM
+  // responders in case we've set it via RDM too
   if (res_init() != 0) {
     OLA_WARN << "Error getting nameservers";
     return false;
