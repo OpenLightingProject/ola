@@ -13,9 +13,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * RpcController.h
- * Interface for a basic RPC Controller.
- * Copyright (C) 2005-2009 Simon Newton
+ * RpcPeer.h
+ * Represents the peer of an RpcChannel.
+ * Copyright (C) 2013 Simon Newton
  */
 
 #ifndef COMMON_RPC_RPCPEER_H_
