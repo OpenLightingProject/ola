@@ -597,7 +597,6 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
         static_cast<uint16_t>(interfaces[i].index));
     list_interfaces[i].type = HostToNetwork(
         static_cast<uint16_t>(interfaces[i].type));
-        // TODO(Peter): Fetch this from the interface object
   }
 
   return GetResponseFromData(
@@ -624,7 +623,7 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
   if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
-      interface, (int32_t)index, options)) {
+      interface, static_cast<int32_t>(index), options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -639,8 +638,7 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
 
   size_t str_len = min(interface->name.size(),
                        sizeof(interface_label.label));
-  strncpy(interface_label.label, interface->name.c_str(),
-          str_len);
+  strncpy(interface_label.label, interface->name.c_str(), str_len);
 
   unsigned int param_data_size = (
       sizeof(interface_label) -
@@ -666,10 +664,8 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
   Interface *interface = new Interface();
   InterfacePicker::ChooseInterfaceOptions options;
   options.specific_only = true;
-  // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
-  // fact we're not losing precision
   if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
-      interface, (int32_t)index, options)) {
+      interface, static_cast<int32_t>(index), options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -686,8 +682,6 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
   struct interface_hardware_address_s interface_hardware_address;
   interface_hardware_address.index = HostToNetwork(
       static_cast<uint16_t>(interface->index));
-
-  // TODO(Peter): Is this the correct byte order?
   interface->hw_address.Get(interface_hardware_address.hardware_address);
 
   return GetResponseFromData(
@@ -714,7 +708,7 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
   if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
-      interface, (int32_t)index, options)) {
+      interface, static_cast<int32_t>(index), options)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -753,27 +747,41 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
 
 
 const RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
-    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
-  return GetIPV4Address(request, global_network_getter->GetIPV4DefaultRoute());
+    const RDMRequest *request,
+    const GlobalNetworkGetter *global_network_getter,
+    uint8_t queued_message_count) {
+  return GetIPV4Address(request,
+                        global_network_getter->GetIPV4DefaultRoute(),
+                        queued_message_count);
 }
 
 
 const RDMResponse *ResponderHelper::GetDNSHostname(
-    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
+    const RDMRequest *request,
+    const GlobalNetworkGetter *global_network_getter,
+    uint8_t queued_message_count) {
   // TODO(Peter): Check this is between 1 and 63 chars
-  return GetString(request, global_network_getter->GetHostname());
+  return GetString(request,
+                   global_network_getter->GetHostname(),
+                   queued_message_count);
 }
 
 
 const RDMResponse *ResponderHelper::GetDNSDomainName(
-    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
+    const RDMRequest *request,
+    const GlobalNetworkGetter *global_network_getter,
+    uint8_t queued_message_count) {
   // TODO(Peter): Check this is between 0 and 231 chars
-  return GetString(request, global_network_getter->GetDomainName());
+  return GetString(request,
+                   global_network_getter->GetDomainName(),
+                   queued_message_count);
 }
 
 
 const RDMResponse *ResponderHelper::GetDNSNameServer(
-    const RDMRequest *request, GlobalNetworkGetter *global_network_getter) {
+    const RDMRequest *request,
+    const GlobalNetworkGetter *global_network_getter,
+    uint8_t queued_message_count) {
   uint8_t name_server_number;
   if (!ResponderHelper::ExtractUInt8(request, &name_server_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -785,8 +793,7 @@ const RDMResponse *ResponderHelper::GetDNSNameServer(
   }
 
   if ((name_server_number >= name_servers.size()) ||
-      (name_server_number > 2)) {
-    // TODO(Peter): Check the ID is between 0 and 2; turn 2 into a const
+      (name_server_number > DNS_NAME_SERVER_MAX_INDEX)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -797,14 +804,15 @@ const RDMResponse *ResponderHelper::GetDNSNameServer(
 
   struct name_server_s name_server;
   name_server.index = name_server_number;
-  // TODO(Peter): Seems to be reversed if HostToNetwork is used?
-  // Is this because s_addr is in network byte order already?
+  // s_addr is already in network byte order, so doesn't need converting
   name_server.address = name_servers.at(name_server_number).AsInt();
 
   return GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(&name_server),
-    sizeof(name_server));
+    sizeof(name_server),
+    RDM_ACK,
+    queued_message_count);
 }
 
 

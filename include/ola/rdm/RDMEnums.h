@@ -650,6 +650,8 @@ typedef enum {
 // Consts for E1.37-2
 static const uint16_t IPV4_UNCONFIGURED = 0x00000000;
 static const uint16_t NO_DEFAULT_ROUTE = 0x00000000;
+
+static const int16_t DNS_NAME_SERVER_MAX_INDEX = 2;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

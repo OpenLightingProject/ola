@@ -37,11 +37,6 @@ using ola::network::IPV4Address;
 using std::string;
 using std::vector;
 
-const InterfacePicker *RealGlobalNetworkGetter::GetInterfacePicker() const {
-  OLA_INFO << "Getting picker";
-  return InterfacePicker::NewPicker();
-}
-
 
 bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
   // TODO(Peter): Fixme - actually do the work!
@@ -50,23 +45,24 @@ bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
 }
 
 
-IPV4Address RealGlobalNetworkGetter::GetIPV4DefaultRoute() {
+const IPV4Address RealGlobalNetworkGetter::GetIPV4DefaultRoute() const {
+  // TODO(Peter): Fixme - actually do the work!
   return IPV4Address();
 }
 
 
-string RealGlobalNetworkGetter::GetHostname() {
+const string RealGlobalNetworkGetter::GetHostname() const {
   return ola::network::Hostname();
 }
 
 
-string RealGlobalNetworkGetter::GetDomainName() {
+const string RealGlobalNetworkGetter::GetDomainName() const {
   return ola::network::DomainName();
 }
 
 
 bool RealGlobalNetworkGetter::GetNameServers(
-    vector<IPV4Address> *name_servers) {
+    vector<IPV4Address> *name_servers) const {
   return ola::network::NameServers(name_servers);
 }
 }  // namespace rdm

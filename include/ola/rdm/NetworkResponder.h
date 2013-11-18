@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * NetworkResponder_h
+ * NetworkResponder.h
  * Copyright (C) 2013 Peter Newman
  */
 
@@ -28,6 +28,7 @@
 #ifndef INCLUDE_OLA_RDM_NETWORKRESPONDER_H_
 #define INCLUDE_OLA_RDM_NETWORKRESPONDER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/rdm/RDMControllerInterface.h"
@@ -69,7 +70,7 @@ class NetworkResponder: public RDMControllerInterface {
 
     const UID m_uid;
     bool m_identify_mode;
-    GlobalNetworkGetter *m_global_network_getter;
+    std::auto_ptr<GlobalNetworkGetter> m_global_network_getter;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);

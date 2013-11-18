@@ -29,6 +29,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
 #define INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -51,7 +52,9 @@ class GlobalNetworkGetter {
     /**
      * Get the interface picker
      */
-    virtual const ola::network::InterfacePicker *GetInterfacePicker() const = 0;
+    virtual const ola::network::InterfacePicker *GetInterfacePicker() const {
+      return m_interface_picker.get();
+    };
 
     /**
      * Get the DHCP status of an interface
@@ -64,23 +67,26 @@ class GlobalNetworkGetter {
      * Get the IPv4 default route
      * @return the machine's default route as an IPV4Address object
      */
-    virtual ola::network::IPV4Address GetIPV4DefaultRoute() = 0;
+    virtual const ola::network::IPV4Address GetIPV4DefaultRoute() const = 0;
 
     /**
      * Get the hostname
      */
-    virtual std::string GetHostname() = 0;
+    virtual const std::string GetHostname() const = 0;
 
     /**
      * Get the domain name
      */
-    virtual std::string GetDomainName() = 0;
+    virtual const std::string GetDomainName() const = 0;
 
     /**
      * Get name servers
      */
     virtual bool GetNameServers(
-        std::vector<ola::network::IPV4Address> *name_servers) = 0;
+        std::vector<ola::network::IPV4Address> *name_servers) const = 0;
+
+  protected:
+    std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
 };
 // TODO(Peter): Set global network information.
 }  // namespace rdm
