@@ -55,7 +55,6 @@ namespace artnet {
 
 using ola::rpc::RpcController;
 using ola::StringToInt;
-using ola::network::AddressToString;
 using ola::network::IPV4Address;
 using ola::plugin::artnet::Reply;
 using ola::plugin::artnet::Request;
