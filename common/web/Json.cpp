@@ -20,84 +20,57 @@
  */
 
 #include <string>
-#include "ola/web/Json.h"
 #include "ola/StringUtils.h"
-
+#include "ola/stl/STLUtils.h"
+#include "ola/web/Json.h"
 
 namespace ola {
 namespace web {
 
-/**
- * Clean up a JsonObject
- */
 JsonObject::~JsonObject() {
-  MemberMap::iterator iter = m_members.begin();
-  for (; iter != m_members.end(); ++iter)
-    delete iter->second;
-  m_members.clear();
+  STLDeleteValues(&m_members);
 }
-
 
 void JsonObject::Add(const string &key, const string &value) {
-  FreeIfExists(key);
-  m_members[key] = new JsonStringValue(value);
+  STLReplaceAndDelete(&m_members, key, new JsonStringValue(value));
 }
-
 
 void JsonObject::Add(const string &key, const char *value) {
   Add(key, string(value));
 }
 
-
 void JsonObject::Add(const string &key, unsigned int i) {
-  FreeIfExists(key);
-  m_members[key] = new JsonUIntValue(i);
+  STLReplaceAndDelete(&m_members, key, new JsonUIntValue(i));
 }
-
 
 void JsonObject::Add(const string &key, int i) {
-  FreeIfExists(key);
-  m_members[key] = new JsonUIntValue(i);
+  STLReplaceAndDelete(&m_members, key, new JsonIntValue(i));
 }
-
 
 void JsonObject::Add(const string &key, bool value) {
-  FreeIfExists(key);
-  m_members[key] = new JsonBoolValue(value);
+  STLReplaceAndDelete(&m_members, key, new JsonBoolValue(value));
 }
-
 
 void JsonObject::Add(const string &key) {
-  FreeIfExists(key);
-  m_members[key] = new JsonNullValue();
+  STLReplaceAndDelete(&m_members, key, new JsonNullValue());
 }
-
 
 void JsonObject::AddRaw(const string &key, const string &value) {
-  FreeIfExists(key);
-  m_members[key] = new JsonRawValue(value);
+  STLReplaceAndDelete(&m_members, key, new JsonRawValue(value));
 }
 
-
 JsonObject* JsonObject::AddObject(const string &key) {
-  FreeIfExists(key);
   JsonObject *obj = new JsonObject();
-  m_members[key] = obj;
+  STLReplaceAndDelete(&m_members, key, obj);
   return obj;
 }
 
-
 JsonArray* JsonObject::AddArray(const string &key) {
-  FreeIfExists(key);
   JsonArray *array = new JsonArray();
-  m_members[key] = array;
+  STLReplaceAndDelete(&m_members, key, array);
   return array;
 }
 
-
-/**
- * Write a JsonObject to a stream.
- */
 void JsonObject::ToString(ostream *output, unsigned int indent) const {
   Indent(output, indent);
   *output << "{\n";
@@ -105,9 +78,9 @@ void JsonObject::ToString(ostream *output, unsigned int indent) const {
   string separator = "";
   for (; iter != m_members.end(); ++iter) {
     *output << separator;
-    Indent(output, indent + INDENT);
+    Indent(output, indent + DEFAULT_INDENT);
     *output << '"' << EscapeString(iter->first) << "\": ";
-    iter->second->ToString(output, indent + INDENT);
+    iter->second->ToString(output, indent + DEFAULT_INDENT);
     separator = ",\n";
   }
   *output << "\n";
@@ -115,36 +88,15 @@ void JsonObject::ToString(ostream *output, unsigned int indent) const {
   *output << "}";
 }
 
-
-/**
- * Check if a key exists.
- */
-void JsonObject::FreeIfExists(const string &key) const {
-  MemberMap::const_iterator iter = m_members.find(key);
-  if (iter != m_members.end())
-    delete iter->second;
-}
-
-
-/**
- * Clean up a JsonArray
- */
 JsonArray::~JsonArray() {
-  ValuesVector::iterator iter = m_values.begin();
-  for (; iter != m_values.end(); ++iter)
-    delete *iter;
-  m_values.clear();
+  STLDeleteElements(&m_values);
 }
 
-
-/**
- * Write a JsonArray to a stream.
- */
 void JsonArray::ToString(ostream *output, unsigned int indent) const {
   *output << "[";
   ValuesVector::const_iterator iter = m_values.begin();
   string separator = m_complex_type ? "\n" : "";
-  unsigned int child_indent = m_complex_type ? indent + INDENT : 0;
+  unsigned int child_indent = m_complex_type ? indent + DEFAULT_INDENT : 0;
   for (; iter != m_values.end(); ++iter) {
     *output << separator;
     (*iter)->ToString(output, child_indent);
@@ -159,14 +111,9 @@ void JsonArray::ToString(ostream *output, unsigned int indent) const {
   }
 }
 
-
-/**
- * Write the json to a stream.
- */
 void JsonWriter::Write(ostream *output, const JsonValue &obj) {
   obj.ToString(output, 0);
 }
-
 
 string JsonWriter::AsString(const JsonValue &obj) {
   stringstream str;
