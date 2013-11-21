@@ -291,7 +291,7 @@ const RDMResponse *DummyResponder::GetDeviceLabel(const RDMRequest *request) {
 
 const RDMResponse *DummyResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Dummy Model\xf0");
+  return ResponderHelper::GetString(request, "Dummy Model");
 }
 
 const RDMResponse *DummyResponder::GetSoftwareVersionLabel(
