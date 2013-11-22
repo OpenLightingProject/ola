@@ -86,14 +86,14 @@ else
       [google/protobuf/compiler/command_line_interface.h],
       [],
       AC_MSG_ERROR([Cannot find the protoc header files]))
-  SAVED_LDFLAGS=$LDFLAGS
-  LDFLAGS="$LDFLAGS -lprotoc"
+  SAVED_LIBS=$LIBS
+  LIBS="$LIBS -lprotoc"
   AC_LINK_IFELSE(
     [AC_LANG_PROGRAM([#include <google/protobuf/compiler/command_line_interface.h>],
       [google::protobuf::compiler::CommandLineInterface cli])],
     [TEST_LIBS="$TEST_LIBS -lprotoc"] [],
-    [AC_MSG_ERROR([cannot find libproto])])
-  LDFLAGS=$SAVED_LDFLAGS
+    [AC_MSG_ERROR([cannot find libprotoc])])
+  LIBS=$SAVED_LIBS
 fi
 AC_SUBST([OLA_PROTOC])
 AM_CONDITIONAL(BUILD_OLA_PROTOC, test "${with_ola_protoc}" == "no")
