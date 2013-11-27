@@ -114,11 +114,16 @@ class LogicReader {
 
     void Stop();
 
+    bool IsConnected() const {
+      MutexLocker lock(&m_mu);
+      return m_logic != NULL;
+    }
+
   private:
     const unsigned int m_sample_rate;
     U64 m_device_id;  // GUARDED_BY(mu_);
     LogicInterface *m_logic;  // GUARDED_BY(mu_);
-    Mutex m_mu;
+    mutable Mutex m_mu;
     SelectServer *m_ss;
     DMXSignalProcessor m_signal_processor;
     PidStoreHelper m_pid_helper;
@@ -334,6 +339,13 @@ void OnError(U64 device_id, void *user_data) {
   (void) user_data;
 }
 
+void DisplayReminder(LogicReader *reader) {
+  if (!reader->IsConnected()) {
+    cout << "No devices found, maybe you should check the permissions "
+         << "and/or the cable?" << endl;
+  }
+}
+
 /*
  * Main.
  */
@@ -351,6 +363,7 @@ int main(int argc, char *argv[]) {
   DevicesManagerInterface::BeginConnect();
 
   OLA_INFO << "Running...";
+  ss.RegisterSingleTimeout(1000, NewSingleCallback(DisplayReminder, &reader));
   ss.Run();
   reader.Stop();
   return ola::EXIT_OK;
