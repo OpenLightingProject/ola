@@ -470,7 +470,7 @@ void RpcChannel::HandleStreamRequest(RpcMessage *msg) {
   }
 
   if (method->output_type()->name() != STREAMING_NO_RESPONSE) {
-    OLA_WARN << "Streaming request recieved for " << method->name() <<
+    OLA_WARN << "Streaming request received for " << method->name() <<
       ", but the output type isn't STREAMING_NO_RESPONSE";
     return;
   }
