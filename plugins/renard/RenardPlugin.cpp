@@ -58,14 +58,18 @@ bool RenardPlugin::StartHook() {
   unsigned int device_id = 0;
 
   for (; iter != devices.end(); ++iter) {
+    OLA_INFO << "Attempt to open " << *iter;
+    
     // first check if it's there
-    int fd = open(iter->c_str(), O_WRONLY);
+    int fd = open(iter->c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
     if (fd >= 0) {
-      close(fd);
+      OLA_INFO << "Opened " << *iter;
+      
       RenardDevice *device = new RenardDevice(
           this,
           RENARD_DEVICE_NAME,
           *iter,
+          fd,
           device_id++);
       if (device->Start()) {
         m_devices.push_back(device);

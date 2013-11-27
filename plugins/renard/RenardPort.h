@@ -25,7 +25,6 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "plugins/renard/RenardDevice.h"
-#include "plugins/renard/RenardThread.h"
 
 namespace ola {
 namespace plugin {
@@ -39,24 +38,23 @@ class RenardOutputPort: public BasicOutputPort {
                       unsigned int id,
                       const string &path)
         : BasicOutputPort(parent, id),
-          m_thread(path),
           m_path(path) {
-      m_thread.Start();
     }
 
     ~RenardOutputPort() {
-      m_thread.Stop();
     }
 
     string Description() const { return "Renard at " + m_path; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_thread.WriteDmx(buffer);
+      (void) buffer;
+//FIXME
+//      return m_thread.WriteDmx(buffer);
       (void) priority;
+      return true;
     }
 
   private:
-    RenardThread m_thread;
     string m_path;
 };
 }  // namespace renard

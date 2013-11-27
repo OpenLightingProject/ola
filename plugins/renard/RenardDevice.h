@@ -36,7 +36,9 @@ class RenardDevice: public ola::Device {
     RenardDevice(ola::AbstractPlugin *owner,
                   const string &name,
                   const string &path,
+                  int fd,
                   unsigned int device_id);
+    virtual ~RenardDevice();
 
     // we only support one widget for now
     string DeviceId() const { return m_device_id; }
@@ -47,6 +49,7 @@ class RenardDevice: public ola::Device {
   private:
     string m_path;
     string m_device_id;
+    ola::io::ConnectedDescriptor *m_descriptor;
 };
 }  // namespace renard
 }  // namespace plugin

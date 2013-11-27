@@ -23,7 +23,9 @@
 #include <string.h>
 #include <iostream>
 #include <string>
+#include <termios.h>
 
+#include "ola/Logging.h"
 #include "plugins/renard/RenardDevice.h"
 #include "plugins/renard/RenardPort.h"
 
@@ -43,15 +45,32 @@ using ola::Device;
 RenardDevice::RenardDevice(AbstractPlugin *owner,
                              const string &name,
                              const string &path,
+                             int fd,
                              unsigned int device_id)
     : Device(owner, name),
       m_path(path) {
   std::stringstream str;
   str << device_id;
   m_device_id = str.str();
+
+  struct termios newtio;
+  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
+  newtio.c_cflag |= CREAD;
+  newtio.c_cflag |= CS8;
+  cfsetispeed(&newtio, B57600);
+  cfsetospeed(&newtio, B57600);
+  tcsetattr(fd, TCSANOW, &newtio);
+  
+  m_descriptor = new ola::io::DeviceDescriptor(fd);
+  
+  OLA_INFO << "Created " << m_device_id;
 }
 
 
+RenardDevice::~RenardDevice()
+{
+  m_descriptor->SetOnData(NULL);
+}
 
 /*
  * Start this device
