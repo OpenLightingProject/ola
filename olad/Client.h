@@ -48,7 +48,7 @@ class Client {
 
     void SendDMXCallback(ola::rpc::RpcController *controller,
                          ola::proto::Ack *ack);
-    void DMXRecieved(unsigned int universe, const DmxSource &source);
+    void DMXReceived(unsigned int universe, const DmxSource &source);
     const DmxSource SourceData(unsigned int universe) const;
     class OlaClientService_Stub *Stub() const { return m_client_stub; }
 

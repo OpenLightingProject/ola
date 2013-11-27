@@ -5,6 +5,7 @@ X/Y/2013 ola-0.8.34
  * Added pretty printing of sensor definition messages
  * Refactor sensor functionality in the software RDM responders and add a load
    average sensor to them.
+ * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)
