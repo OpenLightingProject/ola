@@ -13,48 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RenardDevice.h
- * Interface for the renard device
+ * RenardWidgetSS24.h
+ * Interface for the Renard SS24 device
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
-#ifndef PLUGINS_RENARD_RENARDDEVICE_H_
-#define PLUGINS_RENARD_RENARDDEVICE_H_
+#ifndef PLUGINS_RENARD_RENARDWIDGETSS24_H_
+#define PLUGINS_RENARD_RENARDWIDGETSS24_H_
 
-#include <memory>
 #include <string>
 
-#include "olad/Device.h"
+#include "plugins/renard/RenardWidget.h"
 
 namespace ola {
-
-class AbstractPlugin;
-
 namespace plugin {
 namespace renard {
 
-using ola::Device;
-using std::auto_ptr;
-
-class RenardDevice: public Device {
+class RenardWidgetSS24: public RenardWidget {
   public:
-    RenardDevice(AbstractPlugin *owner,
-                  const string &name,
-                  const string &dev_path);
-    ~RenardDevice();
+    explicit RenardWidgetSS24(const std::string &path): RenardWidget(path) {}
+    ~RenardWidgetSS24() {}
 
-    string DeviceId() const { return m_path; }
-    ola::io::ConnectedDescriptor *GetSocket() const;
-
+    bool Connect();
+    bool DetectDevice();
+    bool SendDmx(const DmxBuffer &buffer) const;
   protected:
-    bool StartHook();
-    void PrePortStop();
+    int SetChannel(unsigned int chan, uint8_t val) const;
+    int Send112(const DmxBuffer &buffer) const;
 
-  private:
-    string m_path;
-    auto_ptr<class RenardWidget> m_widget;
+    // This interface can only transmit 24 channels
+    enum { DMX_MAX_TRANSMIT_CHANNELS = 24 };
 };
 }  // namespace renard
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_RENARD_RENARDDEVICE_H_
+#endif  // PLUGINS_RENARD_RENARDWIDGETSS24_H_

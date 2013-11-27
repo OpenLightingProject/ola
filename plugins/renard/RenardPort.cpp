@@ -13,48 +13,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RenardDevice.h
- * Interface for the renard device
+ * RenardPort.cpp
+ * The Renard plugin for ola
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
-#ifndef PLUGINS_RENARD_RENARDDEVICE_H_
-#define PLUGINS_RENARD_RENARDDEVICE_H_
-
-#include <memory>
-#include <string>
-
-#include "olad/Device.h"
+#include "plugins/renard/RenardPort.h"
 
 namespace ola {
-
-class AbstractPlugin;
-
 namespace plugin {
 namespace renard {
 
-using ola::Device;
-using std::auto_ptr;
-
-class RenardDevice: public Device {
-  public:
-    RenardDevice(AbstractPlugin *owner,
-                  const string &name,
-                  const string &dev_path);
-    ~RenardDevice();
-
-    string DeviceId() const { return m_path; }
-    ola::io::ConnectedDescriptor *GetSocket() const;
-
-  protected:
-    bool StartHook();
-    void PrePortStop();
-
-  private:
-    string m_path;
-    auto_ptr<class RenardWidget> m_widget;
-};
+/*
+ * Write operation
+ * @param the buffer to write
+ * @return true on success, false on failure
+ */
+bool RenardOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                    uint8_t priority) {
+  return m_widget->SendDmx(buffer);
+  (void) priority;
+}
 }  // namespace renard
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_RENARD_RENARDDEVICE_H_

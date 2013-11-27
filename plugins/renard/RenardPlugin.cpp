@@ -18,11 +18,6 @@
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <vector>
 
@@ -36,51 +31,51 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
-using ola::PluginAdaptor;
-using std::vector;
+using std::string;
 
-const char RenardPlugin::RENARD_DEVICE_PATH[] = "/dev/ttyUSB0";
-const char RenardPlugin::RENARD_DEVICE_NAME[] = "Renard Serial Device";
+// Blank default path, so we don't start using a serial port without being asked
+const char RenardPlugin::RENARD_DEVICE_PATH[] = "";
+const char RenardPlugin::RENARD_BASE_DEVICE_NAME[] =
+    "Renard Device";  // This is just for generic Renard devices
+const char RenardPlugin::RENARD_SS24_DEVICE_NAME[] =
+    "Renard SS24 Device";
 const char RenardPlugin::PLUGIN_NAME[] = "Renard";
 const char RenardPlugin::PLUGIN_PREFIX[] = "renard";
 const char RenardPlugin::DEVICE_KEY[] = "device";
 
-
 /*
  * Start the plugin
- * TODO: scan /dev for devices?
  */
 bool RenardPlugin::StartHook() {
-  vector<string> devices = m_preferences->GetMultipleValue(DEVICE_KEY);
-  vector<string>::const_iterator iter = devices.begin();
+  vector<string> device_names;
+  vector<string>::iterator it;
+  RenardDevice *device;
 
-  // start counting device ids from 0
-  unsigned int device_id = 0;
+  // fetch device listing
+  device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
 
-  for (; iter != devices.end(); ++iter) {
-    OLA_INFO << "Attempt to open " << *iter;
-    
-    // first check if it's there
-    int fd = open(iter->c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
-    if (fd >= 0) {
-      OLA_INFO << "Opened " << *iter;
-      
-      RenardDevice *device = new RenardDevice(
-          this,
-          RENARD_DEVICE_NAME,
-          *iter,
-          fd,
-          device_id++);
-      if (device->Start()) {
-        m_devices.push_back(device);
-        m_plugin_adaptor->RegisterDevice(device);
-      } else {
-        OLA_WARN << "Failed to start RenardDevice for " << *iter;
-        delete device;
-      }
-    } else {
-      OLA_WARN << "Could not open " << *iter << " " << strerror(errno);
+  for (it = device_names.begin(); it != device_names.end(); ++it) {
+    if (it->empty()) {
+      OLA_DEBUG << "No path configured for device, please set one in "
+          "ola-renard.conf";
+      continue;
     }
+
+    // TODO(Peter): When support is added for multiple device types, ensure the
+    // correct name is passed in here
+    device = new RenardDevice(this, RENARD_SS24_DEVICE_NAME, *it);
+    OLA_DEBUG << "Adding device " << *it;
+
+    if (!device->Start()) {
+      delete device;
+      continue;
+    }
+
+    OLA_DEBUG << "Started device " << *it;
+
+    m_plugin_adaptor->AddReadDescriptor(device->GetSocket());
+    m_plugin_adaptor->RegisterDevice(device);
+    m_devices.push_back(device);
   }
   return true;
 }
@@ -91,15 +86,13 @@ bool RenardPlugin::StartHook() {
  * @return true on success, false on failure
  */
 bool RenardPlugin::StopHook() {
-  bool ret = true;
-  DeviceList::iterator iter = m_devices.begin();
-  for (; iter != m_devices.end(); ++iter) {
-    m_plugin_adaptor->UnregisterDevice(*iter);
-    ret &= (*iter)->Stop();
-    delete *iter;
+  vector<RenardDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    m_plugin_adaptor->RemoveReadDescriptor((*iter)->GetSocket());
+    DeleteDevice(*iter);
   }
   m_devices.clear();
-  return ret;
+  return true;
 }
 
 
@@ -111,34 +104,70 @@ string RenardPlugin::Description() const {
 "Renard Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port using the Renard\n"
-"widget.\n"
+"This plugin creates devices with one output port. It currently only supports "
+"the SS24 dimmer pack.\n"
 "\n"
 "--- Config file : ola-renard.conf ---\n"
 "\n"
 "device = /dev/ttyUSB0\n"
-"The path to the serial (usb) device that's connected to the renard board (SS24, etc). Multiple entries are supported.\n"
+"The device to use as a path for the serial port. Multiple devices are "
+"supported.\n"
 "\n";
 }
 
 
 /*
- * Set default preferences.
+ * Called when the file descriptor is closed.
+ */
+int RenardPlugin::SocketClosed(ConnectedDescriptor *socket) {
+  vector<RenardDevice*>::iterator iter;
+
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if ((*iter)->GetSocket() == socket)
+      break;
+  }
+
+  if (iter == m_devices.end()) {
+    OLA_WARN << "unknown fd";
+    return -1;
+  }
+
+  DeleteDevice(*iter);
+  m_devices.erase(iter);
+  return 0;
+}
+
+
+/*
+ * load the plugin prefs and default to sensible values
+ *
  */
 bool RenardPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                     RENARD_DEVICE_PATH))
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
+                                         RENARD_DEVICE_PATH);
+
+  if (save)
     m_preferences->Save();
 
-  // check if this save correctly
-  // we don't want to use it if null
-  if (m_preferences->GetValue(DEVICE_KEY).empty())
+  // Just check key exists, as we've set it to ""
+  if (!m_preferences->HasKey(DEVICE_KEY))
     return false;
-
   return true;
+}
+
+
+/*
+ * Cleanup a single device
+ */
+void RenardPlugin::DeleteDevice(RenardDevice *device) {
+  m_plugin_adaptor->UnregisterDevice(device);
+  device->Stop();
+  delete device;
 }
 }  // namespace renard
 }  // namespace plugin

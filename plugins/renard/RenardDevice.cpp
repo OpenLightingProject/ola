@@ -14,70 +14,84 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RenardDevice.cpp
- * The renard device
+ * Renard device
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <iostream>
 #include <string>
-#include <termios.h>
 
 #include "ola/Logging.h"
-#include "plugins/renard/RenardDevice.h"
 #include "plugins/renard/RenardPort.h"
+#include "plugins/renard/RenardWidgetSS24.h"
 
 namespace ola {
 namespace plugin {
 namespace renard {
 
-using ola::Device;
-
+using ola::AbstractPlugin;
 
 /*
  * Create a new device
- * @param owner
- * @param name
- * @param path to device
+ *
+ * @param owner  the plugin that owns this device
+ * @param name  the device name
+ * @param dev_path  path to the pro widget
  */
 RenardDevice::RenardDevice(AbstractPlugin *owner,
                              const string &name,
-                             const string &path,
-                             int fd,
-                             unsigned int device_id)
+                             const string &dev_path)
     : Device(owner, name),
-      m_path(path) {
-  std::stringstream str;
-  str << device_id;
-  m_device_id = str.str();
-
-  struct termios newtio;
-  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
-  newtio.c_cflag |= CREAD;
-  newtio.c_cflag |= CS8;
-  cfsetispeed(&newtio, B57600);
-  cfsetospeed(&newtio, B57600);
-  tcsetattr(fd, TCSANOW, &newtio);
-  
-  m_descriptor = new ola::io::DeviceDescriptor(fd);
-  
-  OLA_INFO << "Created " << m_device_id;
+      m_path(dev_path) {
+  // Currently always create a SS24 interface pending future options
+  m_widget.reset(new RenardWidgetSS24(m_path));
 }
 
 
-RenardDevice::~RenardDevice()
-{
-  m_descriptor->SetOnData(NULL);
+/*
+ * Destroy this device
+ */
+RenardDevice::~RenardDevice() {
+  // Stub destructor for compatibility with RenardWidget subclasses
 }
+
 
 /*
  * Start this device
  */
 bool RenardDevice::StartHook() {
-  AddPort(new RenardOutputPort(this, 0, m_path));
+  if (!m_widget.get())
+    return false;
+
+  if (!m_widget->Connect()) {
+    OLA_WARN << "Failed to connect to " << m_path;
+    return false;
+  }
+
+  if (!m_widget->DetectDevice()) {
+    OLA_WARN << "No device found at " << m_path;
+    return false;
+  }
+
+  RenardOutputPort *port = new RenardOutputPort(this, 0, m_widget.get());
+  AddPort(port);
   return true;
+}
+
+
+/*
+ * Stop this device
+ */
+void RenardDevice::PrePortStop() {
+  // disconnect from widget
+  m_widget->Disconnect();
+}
+
+
+/*
+ * return the sd for this device
+ */
+ConnectedDescriptor *RenardDevice::GetSocket() const {
+  return m_widget->GetSocket();
 }
 }  // namespace renard
 }  // namespace plugin

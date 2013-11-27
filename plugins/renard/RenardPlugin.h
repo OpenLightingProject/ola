@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RenardPlugin.h
- * Interface for the renard plugin class
+ * Interface for the Renard plugin class
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
@@ -23,43 +23,47 @@
 
 #include <string>
 #include <vector>
+
+#include "ola/io/Descriptor.h"
 #include "olad/Plugin.h"
-#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
 namespace renard {
 
-using ola::PluginAdaptor;
+using ola::io::ConnectedDescriptor;
+using std::string;
 
 class RenardDevice;
 
 class RenardPlugin: public Plugin {
   public:
     explicit RenardPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {
-    }
+      Plugin(plugin_adaptor) {}
+    ~RenardPlugin() {}
 
     string Name() const { return PLUGIN_NAME; }
-    string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_RENARD; }
+    string Description() const;
+    int SocketClosed(ConnectedDescriptor *socket);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
+    void DeleteDevice(RenardDevice *device);
 
-    typedef std::vector<RenardDevice*> DeviceList;
-    DeviceList m_devices;
+    std::vector<RenardDevice*> m_devices;  // list of our devices
+
+    static const char RENARD_DEVICE_PATH[];
+    static const char RENARD_BASE_DEVICE_NAME[];
+    static const char RENARD_SS24_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
-    static const char RENARD_DEVICE_PATH[];
-    static const char RENARD_DEVICE_NAME[];
     static const char DEVICE_KEY[];
 };
 }  // namespace renard
 }  // namespace plugin
 }  // namespace ola
-
 #endif  // PLUGINS_RENARD_RENARDPLUGIN_H_

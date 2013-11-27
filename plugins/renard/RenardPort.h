@@ -22,40 +22,27 @@
 #define PLUGINS_RENARD_RENARDPORT_H_
 
 #include <string>
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
+
 #include "plugins/renard/RenardDevice.h"
+#include "plugins/renard/RenardWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace renard {
 
-using std::string;
-
 class RenardOutputPort: public BasicOutputPort {
   public:
     RenardOutputPort(RenardDevice *parent,
                       unsigned int id,
-                      const string &path)
+                      RenardWidget *widget)
         : BasicOutputPort(parent, id),
-          m_path(path) {
-    }
+          m_widget(widget) {}
 
-    ~RenardOutputPort() {
-    }
-
-    string Description() const { return "Renard at " + m_path; }
-
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      (void) buffer;
-//FIXME
-//      return m_thread.WriteDmx(buffer);
-      (void) priority;
-      return true;
-    }
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+    string Description() const { return m_widget->GetPath(); }
 
   private:
-    string m_path;
+    RenardWidget *m_widget;
 };
 }  // namespace renard
 }  // namespace plugin
