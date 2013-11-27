@@ -76,16 +76,15 @@ int RenardWidgetSS24::Send24(const DmxBuffer &buffer) {
   unsigned int channels = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
                                    buffer.Size());
 
-  uint8_t msg[channels * 2 + 10];
+  // Max buffer size for worst case scenario
+  unsigned int bufferSize = channels * 2 + 10;
+  uint8_t msg[bufferSize];
 
   int dataToSend = 0;
 
   for (unsigned int i = 0; i < channels; i++) {
-
-    if ((i % 8) == 0)
-    {
-      if (byteCounter >= 100)
-      {
+    if ((i % 8) == 0) {
+      if (byteCounter >= 100) {
         // Send PAD
         msg[dataToSend++] = 0x7D;
         byteCounter = 0;
@@ -96,11 +95,10 @@ int RenardWidgetSS24::Send24(const DmxBuffer &buffer) {
       msg[dataToSend++] = 0x80 + (i / 8);
       byteCounter += 2;
     }
-    
+
     uint8_t b = buffer.Get(i);
-    
-    switch(b)
-    {
+
+    switch (b) {
       case 0x7D:
         msg[dataToSend++] = 0x7F;
         msg[dataToSend++] = 0x2F;
@@ -118,13 +116,13 @@ int RenardWidgetSS24::Send24(const DmxBuffer &buffer) {
         msg[dataToSend++] = 0x31;
         byteCounter += 2;
         break;
-      
+
       default:
         msg[dataToSend++] = b;
         byteCounter++;
         break;
     }
-    
+
     OLA_DEBUG << "Setting " << (i + 1) << " to " <<
         static_cast<int>(b);
   }

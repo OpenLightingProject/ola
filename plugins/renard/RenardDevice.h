@@ -37,7 +37,7 @@ using ola::Device;
 using std::auto_ptr;
 
 class RenardDevice: public Device {
-  public:
+ public:
     RenardDevice(AbstractPlugin *owner,
                   const string &name,
                   const string &dev_path);
@@ -46,11 +46,11 @@ class RenardDevice: public Device {
     string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
 
-  private:
+ private:
     string m_path;
     auto_ptr<class RenardWidget> m_widget;
 };

@@ -36,7 +36,7 @@ using ola::io::ConnectedDescriptor;
 using ola::io::SelectServer;
 
 class RenardWidget {
-  public:
+ public:
     static int ConnectToWidget(const std::string &path, speed_t speed = B57600);
 
     explicit RenardWidget(const std::string &path):
@@ -54,7 +54,7 @@ class RenardWidget {
     virtual bool SendDmx(const DmxBuffer &buffer) = 0;
     virtual bool DetectDevice() = 0;
 
-  protected:
+ protected:
     // instance variables
     bool m_enabled;
     const string m_path;

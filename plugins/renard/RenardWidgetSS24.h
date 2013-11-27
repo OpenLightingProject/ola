@@ -30,14 +30,14 @@ namespace plugin {
 namespace renard {
 
 class RenardWidgetSS24: public RenardWidget {
-  public:
+ public:
     explicit RenardWidgetSS24(const std::string &path): RenardWidget(path) {}
     ~RenardWidgetSS24() {}
 
     bool Connect();
     bool DetectDevice();
     bool SendDmx(const DmxBuffer &buffer);
-  protected:
+ protected:
     int Send24(const DmxBuffer &buffer);
 
     // This interface can only transmit 24 channels

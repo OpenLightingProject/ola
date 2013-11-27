@@ -31,7 +31,7 @@ namespace plugin {
 namespace renard {
 
 class RenardOutputPort: public BasicOutputPort {
-  public:
+ public:
     RenardOutputPort(RenardDevice *parent,
                       unsigned int id,
                       RenardWidget *widget)
@@ -41,7 +41,7 @@ class RenardOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return m_widget->GetPath(); }
 
-  private:
+ private:
     RenardWidget *m_widget;
 };
 }  // namespace renard

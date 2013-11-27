@@ -37,7 +37,7 @@ using std::string;
 class RenardDevice;
 
 class RenardPlugin: public Plugin {
-  public:
+ public:
     explicit RenardPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
     ~RenardPlugin() {}
@@ -48,7 +48,7 @@ class RenardPlugin: public Plugin {
     int SocketClosed(ConnectedDescriptor *socket);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
