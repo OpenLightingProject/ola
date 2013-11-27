@@ -47,6 +47,7 @@ using std::vector;
  * @param options a ChooseInterfaceOptions struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
+// TODO(Simon): Change these to callback based code to reduce duplication.
 bool InterfacePicker::ChooseInterface(
     Interface *iface,
     const string &ip_or_name,
@@ -101,6 +102,7 @@ bool InterfacePicker::ChooseInterface(
  * @param options a ChooseInterfaceOptions struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
+// TODO(Simon): Change these to callback based code to reduce duplication.
 bool InterfacePicker::ChooseInterface(
     Interface *iface,
     int32_t index,

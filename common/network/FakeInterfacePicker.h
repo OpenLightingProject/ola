@@ -38,10 +38,14 @@ class FakeInterfacePicker: public InterfacePicker {
   public:
     explicit FakeInterfacePicker(const vector<Interface> &interfaces)
         : InterfacePicker(),
-          m_interfaces(interfaces) {}
+          m_interfaces(interfaces) {
+      OLA_INFO << "Started with " << interfaces.size() << " fake interfaces";
+      OLA_INFO << "Transfered to " << m_interfaces.size() << " fake interfaces";
+    }
 
     std::vector<Interface> GetInterfaces(bool loopback) const {
       OLA_INFO << "Getting fake interfaces";
+      OLA_INFO << "Found " << m_interfaces.size() << " fake interfaces";
       return m_interfaces;
       (void) loopback;
     }

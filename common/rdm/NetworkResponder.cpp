@@ -108,24 +108,25 @@ const ResponderOps<NetworkResponder>::ParamHandler
  */
 class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
   public:
-    FakeGlobalNetworkGetter(const vector<Interface> interfaces,
+    FakeGlobalNetworkGetter(vector<Interface> &interfaces,
                             const IPV4Address ipv4_default_route,
                             const string &hostname,
                             const string &domain_name,
                             const vector<IPV4Address> &name_servers)
         : GlobalNetworkGetter(),
-          // m_picker(new FakeInterfacePicker(interfaces)),
+          //m_interface_picker.reset(new FakeInterfacePicker(interfaces)),
           // Todo(Peter): should be FakeInterfacePicker when I can get it
           // working
           m_ipv4_default_route(ipv4_default_route),
           m_hostname(hostname),
           m_domain_name(domain_name),
           m_name_servers(name_servers) {
-      m_interface_picker.reset(InterfacePicker::NewPicker());
+      //m_interface_picker.reset(InterfacePicker::NewPicker());
+      m_interface_picker.reset(new FakeInterfacePicker(interfaces));
       if (interfaces.size() > 0) {}
     }
 
-    const ola::network::InterfacePicker *GetInterfacePicker() const;
+    //const ola::network::InterfacePicker *GetInterfacePicker() const;
     bool GetDHCPStatus(const ola::network::Interface &iface) const;
     const IPV4Address GetIPV4DefaultRoute() const;
     const string GetHostname() const;
@@ -165,9 +166,7 @@ const string FakeGlobalNetworkGetter::GetDomainName() const {
 
 bool FakeGlobalNetworkGetter::GetNameServers(
     vector<IPV4Address> *name_servers) const {
-  // TODO(Peter): Fixme!
-  // name_servers = &m_name_servers;
-  name_servers = new vector<IPV4Address>();
+  *name_servers = m_name_servers;
   return true;
 }
 
@@ -178,29 +177,29 @@ bool FakeGlobalNetworkGetter::GetNameServers(
 NetworkResponder::NetworkResponder(const UID &uid)
     : m_uid(uid),
       m_identify_mode(false) {
-  // vector<Interface> interfaces;
+   vector<Interface> interfaces;
 
-  // interfaces.push_back(Interface(
-  //     "eth1",
-  //     IPV4Address::FromStringOrDie("10.0.0.20"),
-  //     IPV4Address::FromStringOrDie("10.0.0.255"),
-  //     IPV4Address::FromStringOrDie("255.255.255.0"),
-  //     MACAddress::FromStringOrDie("01:23:45:67:89:ab"),
-  //     false,
-  //     1));
+   interfaces.push_back(Interface(
+       "eth1",
+       IPV4Address::FromStringOrDie("10.0.0.20"),
+       IPV4Address::FromStringOrDie("10.0.0.255"),
+       IPV4Address::FromStringOrDie("255.255.255.0"),
+       MACAddress::FromStringOrDie("01:23:45:67:89:ab"),
+       false,
+       1));
 
-  // vector<IPV4Address> name_servers;
-  // name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
-  // name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
-  // name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
+   vector<IPV4Address> name_servers;
+   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
+   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
+   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
 
-  // m_global_network_getter = new FakeGlobalNetworkGetter(
-  //     interfaces,
-  //     IPV4Address::FromStringOrDie("10.0.0.254"),
-  //     "foo",
-  //     "bar.com",
-  //     name_servers);
-  m_global_network_getter.reset(new RealGlobalNetworkGetter());
+   m_global_network_getter.reset(new FakeGlobalNetworkGetter(
+       interfaces,
+       IPV4Address::FromStringOrDie("10.0.0.254"),
+       "foo",
+       "bar.com",
+       name_servers));
+  //m_global_network_getter.reset(new RealGlobalNetworkGetter());
 }
 
 
