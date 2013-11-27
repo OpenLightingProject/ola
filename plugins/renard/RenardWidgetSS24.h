@@ -36,10 +36,9 @@ class RenardWidgetSS24: public RenardWidget {
 
     bool Connect();
     bool DetectDevice();
-    bool SendDmx(const DmxBuffer &buffer) const;
+    bool SendDmx(const DmxBuffer &buffer);
   protected:
-    int SetChannel(unsigned int chan, uint8_t val) const;
-    int Send112(const DmxBuffer &buffer) const;
+    int Send24(const DmxBuffer &buffer);
 
     // This interface can only transmit 24 channels
     enum { DMX_MAX_TRANSMIT_CHANNELS = 24 };

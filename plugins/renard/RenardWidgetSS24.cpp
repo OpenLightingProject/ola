@@ -58,10 +58,8 @@ bool RenardWidgetSS24::DetectDevice() {
 /*
  * Send a DMX msg.
   */
-bool RenardWidgetSS24::SendDmx(const DmxBuffer &buffer) const {
-  // TODO(Peter): Probably add offset in here to send higher channels shifted
-  // down
-  int bytes_sent = Send112(buffer);
+bool RenardWidgetSS24::SendDmx(const DmxBuffer &buffer) {
+  int bytes_sent = Send24(buffer);
   OLA_DEBUG << "Sending DMX, sent " << bytes_sent << " bytes";
   // Should this confirm we've sent more than 0 bytes and return false if not?
   return true;
@@ -71,34 +69,67 @@ bool RenardWidgetSS24::SendDmx(const DmxBuffer &buffer) const {
 //-----------------------------------------------------------------------------
 // Private methods used for communicating with the widget
 /*
- * Set a single channel
- */
-int RenardWidgetSS24::SetChannel(unsigned int chan, uint8_t val) const {
-  uint8_t msg[2];
-
-  msg[0] = chan;
-  msg[1] = val;
-  OLA_DEBUG << "Setting " << chan << " to " << static_cast<int>(val);
-  return m_socket->Send(msg, sizeof(msg));
-}
-
-
-/*
- * Send 112 channels worth of data
+ * Send 24 channels worth of data
  * @param buf a DmxBuffer with the data
  */
-int RenardWidgetSS24::Send112(const DmxBuffer &buffer) const {
+int RenardWidgetSS24::Send24(const DmxBuffer &buffer) {
   unsigned int channels = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
                                    buffer.Size());
-  uint8_t msg[channels * 2];
 
-  for (unsigned int i = 0; i <= channels; i++) {
-    msg[i * 2] = i + 1;
-    msg[(i * 2) + 1] = buffer.Get(i);
+  uint8_t msg[channels * 2 + 10];
+
+  int dataToSend = 0;
+
+  for (unsigned int i = 0; i < channels; i++) {
+
+    if ((i % 8) == 0)
+    {
+      if (byteCounter >= 100)
+      {
+        // Send PAD
+        msg[dataToSend++] = 0x7D;
+        byteCounter = 0;
+      }
+
+      // Send address
+      msg[dataToSend++] = 0x7E;
+      msg[dataToSend++] = 0x80 + (i / 8);
+      byteCounter += 2;
+    }
+    
+    uint8_t b = buffer.Get(i);
+    
+    switch(b)
+    {
+      case 0x7D:
+        msg[dataToSend++] = 0x7F;
+        msg[dataToSend++] = 0x2F;
+        byteCounter += 2;
+        break;
+
+      case 0x7E:
+        msg[dataToSend++] = 0x7F;
+        msg[dataToSend++] = 0x30;
+        byteCounter += 2;
+        break;
+
+      case 0x7F:
+        msg[dataToSend++] = 0x7F;
+        msg[dataToSend++] = 0x31;
+        byteCounter += 2;
+        break;
+      
+      default:
+        msg[dataToSend++] = b;
+        byteCounter++;
+        break;
+    }
+    
     OLA_DEBUG << "Setting " << (i + 1) << " to " <<
-        static_cast<int>(buffer.Get(i));
+        static_cast<int>(b);
   }
-  return m_socket->Send(msg, (channels * 2));
+
+  return m_socket->Send(msg, dataToSend);
 }
 }  // namespace renard
 }  // namespace plugin

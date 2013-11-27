@@ -37,7 +37,7 @@ using ola::io::SelectServer;
 
 class RenardWidget {
   public:
-    static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
+    static int ConnectToWidget(const std::string &path, speed_t speed = B57600);
 
     explicit RenardWidget(const std::string &path):
       m_enabled(false),
@@ -51,17 +51,16 @@ class RenardWidget {
     int Disconnect();
     ConnectedDescriptor *GetSocket() { return m_socket; }
     string GetPath() { return m_path; }
-    virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
+    virtual bool SendDmx(const DmxBuffer &buffer) = 0;
     virtual bool DetectDevice() = 0;
 
   protected:
-    virtual int SetChannel(unsigned int chan, uint8_t val) const = 0;
-
     // instance variables
     bool m_enabled;
     const string m_path;
     ConnectedDescriptor *m_socket;
     SelectServer *m_ss;
+    int byteCounter;
 };
 }  // namespace renard
 }  // namespace plugin
