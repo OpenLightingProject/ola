@@ -34,28 +34,28 @@ bool RenardWidgetSS8::Connect() {
   OLA_DEBUG << "Connecting to " << m_path;
   OLA_DEBUG << "Baudrate set to " << static_cast<int>(m_baudrate);
 
-  //TODO: Move to utils
+  // TODO(Hakan): Move to utils
   speed_t baudrate = B57600;
   switch (m_baudrate) {
     case 9600:
       baudrate = B9600;
       break;
-    
+
     case 19200:
       baudrate = B19200;
       break;
-    
+
     case 38400:
       baudrate = B38400;
       break;
-    
+
     case 57600:
       baudrate = B57600;
       break;
-    
+
     case 115200:
       baudrate = B115200;
-      break;    
+      break;
   }
   int fd = ConnectToWidget(m_path, baudrate);
 

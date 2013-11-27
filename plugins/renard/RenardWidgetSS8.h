@@ -31,7 +31,10 @@ namespace renard {
 
 class RenardWidgetSS8: public RenardWidget {
  public:
-    explicit RenardWidgetSS8(const std::string &path, int dmxOffset, int channels, unsigned int baudrate): RenardWidget(path),
+    explicit RenardWidgetSS8(const std::string &path,
+                             int dmxOffset,
+                             int channels,
+                             unsigned int baudrate): RenardWidget(path),
         m_dmxOffset(dmxOffset),
         m_channels(channels),
         m_baudrate(baudrate),

@@ -56,21 +56,21 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
     m_device_name = dev_path;
 
   OLA_INFO << "Create device " << m_device_name;
-  
+
   SetDefaults();
 
   uint8_t dmxOffset;
   if (!StringToInt(m_preferences->GetValue(DeviceDmxOffsetKey()), &dmxOffset))
     dmxOffset = 0;
-    
+
   uint8_t channels;
   if (!StringToInt(m_preferences->GetValue(DeviceChannelsKey()), &channels))
     channels = 64;
-    
+
   uint32_t baudrate;
   if (!StringToInt(m_preferences->GetValue(DeviceBaudrateKey()), &baudrate))
     baudrate = 57600;
-    
+
   // Currently always create a SS8 interface pending future options
   m_widget.reset(new RenardWidgetSS8(m_path, dmxOffset, channels, baudrate));
 
@@ -135,9 +135,12 @@ string RenardDevice::DeviceDmxOffsetKey() const {
 
 void RenardDevice::SetDefaults() {
   // Set device options
-  m_preferences->SetDefaultValue(DeviceBaudrateKey(), IntValidator(9600, 115200), "57600");
-  m_preferences->SetDefaultValue(DeviceChannelsKey(), IntValidator(8, 142), "64");
-  m_preferences->SetDefaultValue(DeviceDmxOffsetKey(), IntValidator(0, 504), "0");
+  m_preferences->SetDefaultValue(DeviceBaudrateKey(),
+                                 IntValidator(9600, 115200), "57600");
+  m_preferences->SetDefaultValue(DeviceChannelsKey(),
+                                 IntValidator(8, 142), "64");
+  m_preferences->SetDefaultValue(DeviceDmxOffsetKey(),
+                                 IntValidator(0, 504), "0");
 }
 
 /*
