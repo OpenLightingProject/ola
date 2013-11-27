@@ -31,9 +31,6 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
-using ola::io::ConnectedDescriptor;
-using std::string;
-
 class RenardDevice;
 
 class RenardPlugin: public Plugin {
@@ -42,11 +39,11 @@ class RenardPlugin: public Plugin {
       Plugin(plugin_adaptor) {}
     ~RenardPlugin() {}
 
-    string Name() const { return PLUGIN_NAME; }
+    std::string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_RENARD; }
-    string Description() const;
-    int SocketClosed(ConnectedDescriptor *socket);
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string Description() const;
+    int SocketClosed(ola::io::ConnectedDescriptor *socket);
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     bool StartHook();
@@ -58,7 +55,7 @@ class RenardPlugin: public Plugin {
 
     static const char RENARD_DEVICE_PATH[];
     static const char RENARD_BASE_DEVICE_NAME[];
-    static const char RENARD_SS24_DEVICE_NAME[];
+    static const char RENARD_SS_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char DEVICE_KEY[];

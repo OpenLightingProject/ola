@@ -31,14 +31,11 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
+using ola::io::ConnectedDescriptor;
 using std::string;
 
 // Blank default path, so we don't start using a serial port without being asked
 const char RenardPlugin::RENARD_DEVICE_PATH[] = "";
-const char RenardPlugin::RENARD_BASE_DEVICE_NAME[] =
-    "Renard Device";  // This is just for generic Renard devices
-const char RenardPlugin::RENARD_SS24_DEVICE_NAME[] =
-    "Renard SS24 Device";
 const char RenardPlugin::PLUGIN_NAME[] = "Renard";
 const char RenardPlugin::PLUGIN_PREFIX[] = "renard";
 const char RenardPlugin::DEVICE_KEY[] = "device";
@@ -63,7 +60,7 @@ bool RenardPlugin::StartHook() {
 
     // TODO(Peter): When support is added for multiple device types, ensure the
     // correct name is passed in here
-    device = new RenardDevice(this, RENARD_SS24_DEVICE_NAME, *it);
+    device = new RenardDevice(this, m_preferences, *it);
     OLA_DEBUG << "Adding device " << *it;
 
     if (!device->Start()) {

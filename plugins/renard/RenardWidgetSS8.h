@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RenardWidgetSS24.h
- * Interface for the Renard SS24 device
+ * RenardWidgetSS8.h
+ * Interface for the Renard devices, using multiples of 8 channels
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
-#ifndef PLUGINS_RENARD_RENARDWIDGETSS24_H_
-#define PLUGINS_RENARD_RENARDWIDGETSS24_H_
+#ifndef PLUGINS_RENARD_RENARDWIDGETSS8_H_
+#define PLUGINS_RENARD_RENARDWIDGETSS8_H_
 
 #include <string>
 
@@ -29,21 +29,25 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
-class RenardWidgetSS24: public RenardWidget {
+class RenardWidgetSS8: public RenardWidget {
  public:
-    explicit RenardWidgetSS24(const std::string &path): RenardWidget(path) {}
-    ~RenardWidgetSS24() {}
+    explicit RenardWidgetSS8(const std::string &path, int dmxOffset, int channels, unsigned int baudrate): RenardWidget(path),
+        m_dmxOffset(dmxOffset),
+        m_channels(channels),
+        m_baudrate(baudrate),
+        m_startAddress(0x80) {}
+    ~RenardWidgetSS8() {}
 
     bool Connect();
     bool DetectDevice();
     bool SendDmx(const DmxBuffer &buffer);
- protected:
-    int Send24(const DmxBuffer &buffer);
-
-    // This interface can only transmit 24 channels
-    enum { DMX_MAX_TRANSMIT_CHANNELS = 24 };
+ private:
+    int m_dmxOffset;
+    int m_channels;
+    unsigned int m_baudrate;
+    uint8_t m_startAddress;
 };
 }  // namespace renard
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_RENARD_RENARDWIDGETSS24_H_
+#endif  // PLUGINS_RENARD_RENARDWIDGETSS8_H_
