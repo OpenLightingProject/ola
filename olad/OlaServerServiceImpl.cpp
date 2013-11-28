@@ -148,7 +148,7 @@ void OlaServerServiceImpl::UpdateDmxData(
                           priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
-    client->DMXRecieved(request->universe(), source);
+    client->DMXReceived(request->universe(), source);
     universe->SourceClientDataChanged(client);
   }
 }
@@ -182,7 +182,7 @@ void OlaServerServiceImpl::StreamDmxData(
                           priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
-    client->DMXRecieved(request->universe(), source);
+    client->DMXReceived(request->universe(), source);
     universe->SourceClientDataChanged(client);
   }
 }

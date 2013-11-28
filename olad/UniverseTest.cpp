@@ -413,7 +413,7 @@ void UniverseTest::testLtpMerging() {
   ola::DmxSource source(client_buffer, time_stamp,
                         ola::dmx::SOURCE_PRIORITY_DEFAULT);
   MockClient input_client;
-  input_client.DMXRecieved(TEST_UNIVERSE, source);
+  input_client.DMXReceived(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);
 
   DmxBuffer client_htp_merge_result;
@@ -501,7 +501,7 @@ void UniverseTest::testHtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp, new_priority);
   MockClient input_client;
-  input_client.DMXRecieved(TEST_UNIVERSE, source);
+  input_client.DMXReceived(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);
 
   DmxBuffer client_htp_merge_result;

@@ -32,9 +32,6 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
-using ola::io::ConnectedDescriptor;
-using ola::io::SelectServer;
-
 class MilInstWidget {
   public:
     static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
@@ -49,7 +46,7 @@ class MilInstWidget {
     // these methods are for communicating with the device
     virtual bool Connect() = 0;
     int Disconnect();
-    ConnectedDescriptor *GetSocket() { return m_socket; }
+    ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
     string GetPath() { return m_path; }
     virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
     virtual bool DetectDevice() = 0;
@@ -60,8 +57,8 @@ class MilInstWidget {
     // instance variables
     bool m_enabled;
     const string m_path;
-    ConnectedDescriptor *m_socket;
-    SelectServer *m_ss;
+    ola::io::ConnectedDescriptor *m_socket;
+    ola::io::SelectServer *m_ss;
 };
 }  // namespace milinst
 }  // namespace plugin

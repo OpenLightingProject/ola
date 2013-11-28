@@ -38,14 +38,6 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-using ola::ExportMap;
-using ola::io::SelectServerInterface;
-using ola::network::IPV4SocketAddress;
-using std::auto_ptr;
-using std::map;
-using std::string;
-using std::vector;
-
 /**
  * The OSCNode object handles sending and receiving DMX data using OSC.
  *
@@ -95,8 +87,8 @@ class OSCNode {
     // The callback run when we receive new DMX data.
     typedef Callback1<void, const DmxBuffer&> DMXCallback;
 
-    OSCNode(SelectServerInterface *ss,
-            ExportMap *export_map,
+    OSCNode(ola::io::SelectServerInterface *ss,
+            ola::ExportMap *export_map,
             const OSCNodeOptions &options);
     ~OSCNode();
 
@@ -110,12 +102,12 @@ class OSCNode {
                   const ola::DmxBuffer &data);
 
     // Receiving methods
-    bool RegisterAddress(const string &osc_address, DMXCallback *callback);
+    bool RegisterAddress(const std::string &osc_address, DMXCallback *callback);
 
     // Called by the liblo handlers.
-    void SetUniverse(const string &osc_address, const uint8_t *data,
+    void SetUniverse(const std::string &osc_address, const uint8_t *data,
                      unsigned int size);
-    void SetSlot(const string &osc_address, uint16_t slot, uint8_t value);
+    void SetSlot(const std::string &osc_address, uint16_t slot, uint8_t value);
 
     // The port OSC is listening on.
     uint16_t ListeningPort() const;
@@ -136,7 +128,7 @@ class OSCNode {
                   osc_address == other.osc_address);
         }
 
-        IPV4SocketAddress socket_address;
+        ola::network::IPV4SocketAddress socket_address;
         string osc_address;
         lo_address liblo_address;
 
@@ -145,7 +137,7 @@ class OSCNode {
         NodeOSCTarget& operator=(const NodeOSCTarget&);
     };
 
-    typedef vector<NodeOSCTarget*> OSCTargetVector;
+    typedef std::vector<NodeOSCTarget*> OSCTargetVector;
 
     struct OSCOutputGroup {
       OSCTargetVector targets;
@@ -156,20 +148,20 @@ class OSCNode {
       explicit OSCInputGroup(DMXCallback *callback) : callback(callback) {}
 
       DmxBuffer dmx;
-      auto_ptr<DMXCallback> callback;
+      std::auto_ptr<DMXCallback> callback;
     };
 
-    typedef map<unsigned int, OSCOutputGroup*> OutputGroupMap;
-    typedef map<string, OSCInputGroup*> InputUniverseMap;
+    typedef std::map<unsigned int, OSCOutputGroup*> OutputGroupMap;
+    typedef std::map<string, OSCInputGroup*> InputUniverseMap;
 
     struct SlotMessage {
       unsigned int slot;
       lo_message message;
     };
 
-    SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
     const uint16_t m_listen_port;
-    auto_ptr<ola::io::UnmanagedFileDescriptor> m_descriptor;
+    std::auto_ptr<ola::io::UnmanagedFileDescriptor> m_descriptor;
     lo_server m_osc_server;
     OutputGroupMap m_output_map;
     InputUniverseMap m_input_map;
@@ -188,7 +180,7 @@ class OSCNode {
                               const OSCTargetVector &targets);
     bool SendIndividualMessages(const DmxBuffer &data,
                                 OSCOutputGroup *group,
-                                const string &osc_type);
+                                const std::string &osc_type);
 
     static const uint16_t DEFAULT_OSC_PORT = 7770;
     static const char OSC_PORT_VARIABLE[];

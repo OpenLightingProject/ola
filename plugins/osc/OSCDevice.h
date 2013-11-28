@@ -37,15 +37,12 @@ class AbstractPlugin;
 namespace plugin {
 namespace osc {
 
-using std::string;
-using ola::network::IPV4SocketAddress;
-
 class OSCDevice: public Device {
   public:
     struct PortConfig {
       PortConfig() : data_format(OSCNode::FORMAT_BLOB) {}
 
-      vector<OSCTarget> targets;
+      std::vector<OSCTarget> targets;
       OSCNode::DataFormat data_format;
     };
 
@@ -54,9 +51,9 @@ class OSCDevice: public Device {
     OSCDevice(AbstractPlugin *owner,
               PluginAdaptor *plugin_adaptor,
               uint16_t udp_port,
-              const vector<string> &addresses,
+              const vector<std::string> &addresses,
               const PortConfigs &port_configs);
-    string DeviceId() const { return "1"; }
+    std::string DeviceId() const { return "1"; }
 
     bool AllowMultiPortPatching() const { return true; }
 

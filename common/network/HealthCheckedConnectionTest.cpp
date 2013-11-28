@@ -163,7 +163,7 @@ void HealthCheckedConnectionTest::setUp() {
 
 
 /*
- * Check that the channel stays up when all heartbeats are recieved.
+ * Check that the channel stays up when all heartbeats are received.
  */
 void HealthCheckedConnectionTest::testSimpleChannel() {
   options.validate_heartbeat = true;

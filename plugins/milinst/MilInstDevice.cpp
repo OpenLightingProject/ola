@@ -29,6 +29,7 @@ namespace plugin {
 namespace milinst {
 
 using ola::AbstractPlugin;
+using ola::io::ConnectedDescriptor;
 
 /*
  * Create a new device
