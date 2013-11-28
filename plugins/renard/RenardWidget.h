@@ -34,30 +34,49 @@ namespace renard {
 
 class RenardWidget {
   public:
-    static int ConnectToWidget(const std::string &path, speed_t speed);
-
-    explicit RenardWidget(const std::string &path)
+    explicit RenardWidget(const std::string &path,
+                          int dmxOffset,
+                          int channels,
+                          uint32_t baudrate,
+                          uint8_t startAddress)
       : m_enabled(false),
         m_path(path),
         m_socket(NULL),
-        m_ss(NULL) {}
+        m_ss(NULL),
+        m_dmxOffset(dmxOffset),
+        m_channels(channels),
+        m_baudrate(baudrate),
+        m_startAddress(startAddress) {}
     virtual ~RenardWidget();
 
     // these methods are for communicating with the device
-    virtual bool Connect() = 0;
+    bool Connect();
     int Disconnect();
     ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
     string GetPath() { return m_path; }
-    virtual bool SendDmx(const DmxBuffer &buffer) = 0;
-    virtual bool DetectDevice() = 0;
+    bool SendDmx(const DmxBuffer &buffer);
+    bool DetectDevice();
 
   protected:
+    int ConnectToWidget(const std::string &path, speed_t speed);
+
     // instance variables
     bool m_enabled;
     const string m_path;
     ola::io::ConnectedDescriptor *m_socket;
     ola::io::SelectServer *m_ss;
     int byteCounter;
+
+private:
+    int m_dmxOffset;
+    int m_channels;
+    unsigned int m_baudrate;
+    uint8_t m_startAddress;
+
+    static const uint8_t RENARD_COMMAND_PAD;
+    static const uint8_t RENARD_COMMAND_START_PACKET;
+    static const uint8_t RENARD_COMMAND_ESCAPE;
+    static const uint8_t RENARD_CHANNELS_IN_BANK;
 };
 }  // namespace renard
 }  // namespace plugin

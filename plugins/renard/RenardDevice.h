@@ -62,6 +62,7 @@ class RenardDevice: public ola::Device {
 
     static const char RENARD_DEVICE_NAME[];
     static const uint8_t RENARD_CHANNELS_IN_BANK;
+    static const uint8_t RENARD_START_ADDRESS;
     static const uint8_t RENARD_AVAILABLE_ADDRESSES;
     static const uint8_t DEFAULT_DMX_OFFSET;
     static const uint8_t DEFAULT_NUM_CHANNELS;

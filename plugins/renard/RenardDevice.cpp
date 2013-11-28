@@ -26,7 +26,7 @@
 #include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 #include "plugins/renard/RenardPort.h"
-#include "plugins/renard/RenardWidgetSS8.h"
+#include "plugins/renard/RenardWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -37,6 +37,7 @@ using ola::io::ConnectedDescriptor;
 
 const char RenardDevice::RENARD_DEVICE_NAME[] = "Renard Device";
 const uint8_t RenardDevice::RENARD_CHANNELS_IN_BANK = 8;
+const uint8_t RenardDevice::RENARD_START_ADDRESS = 0x80;
 const uint8_t RenardDevice::RENARD_AVAILABLE_ADDRESSES = 128;
 const uint8_t RenardDevice::DEFAULT_DMX_OFFSET = 0;
 const uint8_t RenardDevice::DEFAULT_NUM_CHANNELS = 64;
@@ -77,7 +78,8 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
   if (!StringToInt(m_preferences->GetValue(DeviceBaudrateKey()), &baudrate))
     baudrate = DEFAULT_BAUDRATE;
 
-  m_widget.reset(new RenardWidgetSS8(m_path, dmxOffset, channels, baudrate));
+  m_widget.reset(new RenardWidget(m_path, dmxOffset, channels, baudrate,
+                                  RENARD_START_ADDRESS));
 
   OLA_DEBUG << "DMX offset set to " << static_cast<int>(dmxOffset);
   OLA_DEBUG << "Channels set to " << static_cast<int>(channels);
