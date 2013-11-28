@@ -31,7 +31,6 @@ namespace io {
  * Convert an integer baud rate to the termios struct speed_t
  */
 speed_t IntegerToSpeedT(unsigned int baudrate) {
-  speed_t baudrate = B57600;
   switch (baudrate) {
     case 9600:
       return B9600;

@@ -138,7 +138,7 @@ void RenardDevice::SetDefaults() {
   m_preferences->SetDefaultValue(DeviceBaudrateKey(),
                                  IntValidator(9600, 115200), "57600");
   m_preferences->SetDefaultValue(DeviceChannelsKey(),
-                                 IntValidator(8, 142), "64");
+                                 IntValidator(8, 1024), "64");
   m_preferences->SetDefaultValue(DeviceDmxOffsetKey(),
                                  IntValidator(0, 504), "0");
 }
