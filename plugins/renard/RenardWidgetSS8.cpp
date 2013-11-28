@@ -35,7 +35,9 @@ bool RenardWidgetSS8::Connect() {
   OLA_DEBUG << "Connecting to " << m_path;
   OLA_DEBUG << "Baudrate set to " << static_cast<int>(m_baudrate);
 
-  speed_t baudrate = ola::io::IntegerToSpeedT(m_baudrate);
+  speed_t baudrate;
+  if(!ola::io::IntegerToSpeedT(m_baudrate, &baudrate))
+    return false;
 
   int fd = ConnectToWidget(m_path, baudrate);
 

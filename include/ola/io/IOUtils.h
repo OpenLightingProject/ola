@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOUTILS_H_
 #define INCLUDE_OLA_IO_IOUTILS_H_
 
+#include <stdint.h>
 #include <termios.h>
 
 namespace ola {
@@ -28,27 +29,36 @@ namespace io {
 
 
 /**
- * Convert an integer baud rate to the termios struct speed_t
+ * @brief Convert an integer baud rate to the termios struct speed_t
+ * @param[in] baudrate value to convert
+ * @param[out] output a pointer where the value will be stored
+ * @returns true if the value was converted, false if the baud rate wasn't supported
+ * by the method.
  */
-speed_t IntegerToSpeedT(unsigned int baudrate) {
-  switch (baudrate) {
+bool IntegerToSpeedT(uint32_t value, speed_t *output) {
+  switch (value) {
     case 9600:
-      return B9600;
+      *output = B9600;
+      return true;
 
     case 19200:
-      return B19200;
+      *output = B19200;
+      return true;
 
     case 38400:
-      return B38400;
+      *output = B38400;
+      return true;
 
     case 57600:
-      return B57600;
+      *output = B57600;
+      return true;
 
     case 115200:
-      return B115200;
+      *output = B115200;
+      return true;
   }
   
-  return B0;
+  return false;
 }
 }  // namespace  io
 }  // namespace  ola

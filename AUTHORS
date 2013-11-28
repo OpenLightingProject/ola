@@ -7,6 +7,7 @@ Primary author:
 Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
   Carsten Presser, Karate USB plugin
+  Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
@@ -19,5 +20,4 @@ Contributors:
   Rui Barreiros, ftdidmx plugin
   Sean Sill, various fixes.
   Tobi Schäfer, for the MacPort files
-  Hakan Lindestaf, Renard plugin
 
