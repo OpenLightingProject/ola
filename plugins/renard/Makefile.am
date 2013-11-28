@@ -8,7 +8,7 @@ EXTRA_DIST = RenardPlugin.h RenardDevice.h RenardPort.h \
 if USE_RENARD
 lib_LTLIBRARIES = libolarenard.la
 libolarenard_la_SOURCES = RenardPlugin.cpp RenardDevice.cpp \
-                           RenardPort.cpp RenardWidget.cpp \
-                           RenardWidgetSS8.cpp
+                          RenardPort.cpp RenardWidget.cpp \
+                          RenardWidgetSS8.cpp
 libolarenard_la_LIBADD = ../../common/libolacommon.la
 endif

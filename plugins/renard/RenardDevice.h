@@ -34,7 +34,7 @@ namespace plugin {
 namespace renard {
 
 class RenardDevice: public ola::Device {
- public:
+  public:
     RenardDevice(AbstractPlugin *owner,
                  class Preferences *preferences,
                  const std::string &dev_path);
@@ -43,11 +43,11 @@ class RenardDevice: public ola::Device {
     std::string DeviceId() const { return m_device_name; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
- protected:
+  protected:
     bool StartHook();
     void PrePortStop();
 
- private:
+  private:
     std::string m_path;
     std::auto_ptr<class RenardWidget> m_widget;
     std::string m_device_name;
@@ -61,6 +61,15 @@ class RenardDevice: public ola::Device {
     void SetDefaults();
 
     static const char RENARD_DEVICE_NAME[];
+    static const uint8_t RENARD_CHANNELS_IN_BANK;
+    static const uint8_t RENARD_AVAILABLE_ADDRESSES;
+    static const uint8_t DEFAULT_DMX_OFFSET;
+    static const uint8_t DEFAULT_NUM_CHANNELS;
+    static const uint32_t DEFAULT_BAUDRATE;
+    static const char BAUDRATE_19200[];
+    static const char BAUDRATE_38400[];
+    static const char BAUDRATE_57600[];
+    static const char BAUDRATE_115200[];
 };
 }  // namespace renard
 }  // namespace plugin

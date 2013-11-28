@@ -34,9 +34,9 @@ namespace renard {
 class RenardDevice;
 
 class RenardPlugin: public Plugin {
- public:
-    explicit RenardPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
+  public:
+    explicit RenardPlugin(PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor) {}
     ~RenardPlugin() {}
 
     std::string Name() const { return PLUGIN_NAME; }
@@ -45,7 +45,7 @@ class RenardPlugin: public Plugin {
     int SocketClosed(ola::io::ConnectedDescriptor *socket);
     std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
- private:
+  private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

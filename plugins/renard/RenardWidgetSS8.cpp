@@ -28,6 +28,13 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
+// Based on standard Renard firmware
+const uint8_t RenardWidgetSS8::RENARD_START_ADDRESS = 0x80;
+const uint8_t RenardWidgetSS8::RENARD_COMMAND_PAD = 0x7D;
+const uint8_t RenardWidgetSS8::RENARD_COMMAND_START_PACKET = 0x7E;
+const uint8_t RenardWidgetSS8::RENARD_COMMAND_ESCAPE = 0x7F;
+const uint8_t RenardWidgetSS8::RENARD_CHANNELS_IN_BANK = 8;
+
 /*
  * Connect to the widget
  */
@@ -36,8 +43,10 @@ bool RenardWidgetSS8::Connect() {
   OLA_DEBUG << "Baudrate set to " << static_cast<int>(m_baudrate);
 
   speed_t baudrate;
-  if(!ola::io::IntegerToSpeedT(m_baudrate, &baudrate))
+  if(!ola::io::IntegerToSpeedT(m_baudrate, &baudrate)) {
+    OLA_DEBUG << "Failed to convert baudrate, i.e. not supported baud rate";
     return false;
+  }
 
   int fd = ConnectToWidget(m_path, baudrate);
 
@@ -75,36 +84,37 @@ bool RenardWidgetSS8::SendDmx(const DmxBuffer &buffer) {
   int dataToSend = 0;
 
   for (unsigned int i = 0; i < channels; i++) {
-    if ((i % 8) == 0) {
+    if ((i % RENARD_CHANNELS_IN_BANK) == 0) {
       if (byteCounter >= 100) {
         // Send PAD
-        msg[dataToSend++] = 0x7D;
+        msg[dataToSend++] = RENARD_COMMAND_PAD;
         byteCounter = 0;
       }
 
       // Send address
-      msg[dataToSend++] = 0x7E;
+      msg[dataToSend++] = RENARD_COMMAND_START_PACKET;
       msg[dataToSend++] = m_startAddress + (i / 8);
       byteCounter += 2;
     }
 
     uint8_t b = buffer.Get(m_dmxOffset + i);
 
+    // Escaping magic bytes
     switch (b) {
-      case 0x7D:
-        msg[dataToSend++] = 0x7F;
+      case RENARD_COMMAND_PAD:
+        msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
         msg[dataToSend++] = 0x2F;
         byteCounter += 2;
         break;
 
-      case 0x7E:
-        msg[dataToSend++] = 0x7F;
+      case RENARD_COMMAND_START_PACKET:
+        msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
         msg[dataToSend++] = 0x30;
         byteCounter += 2;
         break;
 
-      case 0x7F:
-        msg[dataToSend++] = 0x7F;
+      case RENARD_COMMAND_ESCAPE:
+        msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
         msg[dataToSend++] = 0x31;
         byteCounter += 2;
         break;
@@ -122,7 +132,7 @@ bool RenardWidgetSS8::SendDmx(const DmxBuffer &buffer) {
   int bytes_sent = m_socket->Send(msg, dataToSend);
 
   OLA_DEBUG << "Sending DMX, sent " << bytes_sent << " bytes";
-  // Should this confirm we've sent more than 0 bytes and return false if not?
+
   return true;
 }
 }  // namespace renard

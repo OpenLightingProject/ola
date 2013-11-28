@@ -33,14 +33,14 @@ namespace plugin {
 namespace renard {
 
 class RenardWidget {
- public:
+  public:
     static int ConnectToWidget(const std::string &path, speed_t speed);
 
-    explicit RenardWidget(const std::string &path):
-      m_enabled(false),
-      m_path(path),
-      m_socket(NULL),
-      m_ss(NULL) {}
+    explicit RenardWidget(const std::string &path)
+      : m_enabled(false),
+        m_path(path),
+        m_socket(NULL),
+        m_ss(NULL) {}
     virtual ~RenardWidget();
 
     // these methods are for communicating with the device
@@ -51,7 +51,7 @@ class RenardWidget {
     virtual bool SendDmx(const DmxBuffer &buffer) = 0;
     virtual bool DetectDevice() = 0;
 
- protected:
+  protected:
     // instance variables
     bool m_enabled;
     const string m_path;

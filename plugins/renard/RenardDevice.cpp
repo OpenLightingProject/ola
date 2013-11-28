@@ -20,9 +20,10 @@
 
 #include <string>
 
+#include "ola/Constants.h"
 #include "ola/Logging.h"
-#include "olad/Preferences.h"
 #include "ola/StringUtils.h"
+#include "olad/Preferences.h"
 #include "plugins/renard/RenardPort.h"
 #include "plugins/renard/RenardWidgetSS8.h"
 
@@ -34,13 +35,22 @@ using ola::AbstractPlugin;
 using ola::io::ConnectedDescriptor;
 
 const char RenardDevice::RENARD_DEVICE_NAME[] = "Renard Device";
+const uint8_t RenardDevice::RENARD_CHANNELS_IN_BANK = 8;
+const uint8_t RenardDevice::RENARD_AVAILABLE_ADDRESSES = 128;
+const uint8_t RenardDevice::DEFAULT_DMX_OFFSET = 0;
+const uint8_t RenardDevice::DEFAULT_NUM_CHANNELS = 64;
+const uint32_t RenardDevice::DEFAULT_BAUDRATE = 57600;
+const char RenardDevice::BAUDRATE_19200[] = "19200";
+const char RenardDevice::BAUDRATE_38400[] = "38400";
+const char RenardDevice::BAUDRATE_57600[] = "57600";
+const char RenardDevice::BAUDRATE_115200[] = "115200";
 
 /*
  * Create a new device
  *
- * @param owner  the plugin that owns this device
- * @param name  the device name
- * @param dev_path  path to the pro widget
+ * @param owner the plugin that owns this device
+ * @param preferences config settings
+ * @param dev_path path to the pro widget
  */
 RenardDevice::RenardDevice(AbstractPlugin *owner,
                            class Preferences *preferences,
@@ -49,32 +59,26 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
       m_path(dev_path),
       m_preferences(preferences) {
 
-  size_t pos = dev_path.find_last_of("/");
-  if (pos != string::npos)
-    m_device_name = dev_path.substr(pos + 1);
-  else
-    m_device_name = dev_path;
-
+  m_device_name = dev_path;
   OLA_INFO << "Create device " << m_device_name;
 
   SetDefaults();
 
   uint8_t dmxOffset;
   if (!StringToInt(m_preferences->GetValue(DeviceDmxOffsetKey()), &dmxOffset))
-    dmxOffset = 0;
+    dmxOffset = DEFAULT_DMX_OFFSET;
 
   uint8_t channels;
   if (!StringToInt(m_preferences->GetValue(DeviceChannelsKey()), &channels))
-    channels = 64;
+    channels = DEFAULT_NUM_CHANNELS;
 
   uint32_t baudrate;
   if (!StringToInt(m_preferences->GetValue(DeviceBaudrateKey()), &baudrate))
-    baudrate = 57600;
+    baudrate = DEFAULT_BAUDRATE;
 
-  // Currently always create a SS8 interface pending future options
   m_widget.reset(new RenardWidgetSS8(m_path, dmxOffset, channels, baudrate));
 
-  OLA_DEBUG << "Dmx offset set to " << static_cast<int>(dmxOffset);
+  OLA_DEBUG << "DMX offset set to " << static_cast<int>(dmxOffset);
   OLA_DEBUG << "Channels set to " << static_cast<int>(channels);
   OLA_DEBUG << "Baudrate set to " << static_cast<int>(baudrate);
 }
@@ -134,13 +138,25 @@ string RenardDevice::DeviceDmxOffsetKey() const {
 }
 
 void RenardDevice::SetDefaults() {
+  set<string> valid_baudrates;
+  valid_baudrates.insert(BAUDRATE_19200);
+  valid_baudrates.insert(BAUDRATE_38400);
+  valid_baudrates.insert(BAUDRATE_57600);
+  valid_baudrates.insert(BAUDRATE_115200);
+
   // Set device options
   m_preferences->SetDefaultValue(DeviceBaudrateKey(),
-                                 IntValidator(9600, 115200), "57600");
+                                 SetValidator(valid_baudrates),
+                                 BAUDRATE_57600);
   m_preferences->SetDefaultValue(DeviceChannelsKey(),
-                                 IntValidator(8, 1024), "64");
+                                 IntValidator(RENARD_CHANNELS_IN_BANK,
+                                              RENARD_AVAILABLE_ADDRESSES *
+                                              RENARD_CHANNELS_IN_BANK),
+                                 IntToString(DEFAULT_NUM_CHANNELS));
   m_preferences->SetDefaultValue(DeviceDmxOffsetKey(),
-                                 IntValidator(0, 504), "0");
+                                 IntValidator(0, DMX_UNIVERSE_SIZE -
+                                              RENARD_CHANNELS_IN_BANK),
+                                 IntToString(DEFAULT_DMX_OFFSET));
 }
 
 /*

@@ -30,7 +30,7 @@ namespace plugin {
 namespace renard {
 
 class RenardWidgetSS8: public RenardWidget {
- public:
+  public:
     explicit RenardWidgetSS8(const std::string &path,
                              int dmxOffset,
                              int channels,
@@ -38,17 +38,23 @@ class RenardWidgetSS8: public RenardWidget {
         m_dmxOffset(dmxOffset),
         m_channels(channels),
         m_baudrate(baudrate),
-        m_startAddress(0x80) {}
+        m_startAddress(RENARD_START_ADDRESS) {}
     ~RenardWidgetSS8() {}
 
     bool Connect();
     bool DetectDevice();
     bool SendDmx(const DmxBuffer &buffer);
- private:
+  private:
     int m_dmxOffset;
     int m_channels;
     unsigned int m_baudrate;
     uint8_t m_startAddress;
+    
+    static const uint8_t RENARD_START_ADDRESS;
+    static const uint8_t RENARD_COMMAND_PAD;
+    static const uint8_t RENARD_COMMAND_PACKET_START;
+    static const uint8_t RENARD_COMMAND_ESCAPE;
+    static const uint8_t RENARD_CHANNELS_IN_BANK;
 };
 }  // namespace renard
 }  // namespace plugin

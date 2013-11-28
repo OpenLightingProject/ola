@@ -58,8 +58,6 @@ bool RenardPlugin::StartHook() {
       continue;
     }
 
-    // TODO(Peter): When support is added for multiple device types, ensure the
-    // correct name is passed in here
     device = new RenardDevice(this, m_preferences, *it);
     OLA_DEBUG << "Adding device " << *it;
 
@@ -102,13 +100,14 @@ string RenardPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin creates devices with one output port. It supports multiple "
-"Renard SS boards daisy-chained.\n"
+"Renard SS boards directly connected, or daisy-chained.\n"
 "\n"
 "--- Config file : ola-renard.conf ---\n"
 "\n"
 "device = /dev/ttyUSB0\n"
-"The device to use as a path for the serial port. Multiple devices are "
-"supported.\n"
+"The device to use as a path for the serial port or USB-Serial adapter. "
+"Renard boards don't have a built-in USB port, you will need an adapter ("
+"USB->RS232 or USB->RS485). Multiple devices are supported.\n"
 "\n"
 "--- Per Device Settings (using above device name without /dev/) ---\n"
 "<device>-baudrate = <int>\n"
@@ -117,6 +116,8 @@ string RenardPlugin::Description() const {
 "\n"
 "<device>-channels = <int>\n"
 "The number of channels connected to this device. Default 64.\n"
+"Note that the max number of channels vary by baud rate and "
+"the encoding.\n"
 "\n"
 "<device>-dmx-offset = <int>\n"
 "Which starting point in the DMX universe this device is mapped to. "
