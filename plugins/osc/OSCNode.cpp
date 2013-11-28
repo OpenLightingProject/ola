@@ -35,6 +35,7 @@ namespace plugin {
 namespace osc {
 
 using ola::IntToString;
+using ola::io::SelectServerInterface;
 using std::make_pair;
 using std::max;
 using std::min;

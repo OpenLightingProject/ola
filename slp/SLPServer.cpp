@@ -97,7 +97,7 @@ const char SLPServer::UNSUPPORTED[] = "Unsupported";
 // This counter tracks the number of packets received by type.
 // This is incremented prior to packet checks.
 const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "slp-udp-rx-packets";
-// The total number of recieved SLP UDP packets
+// The total number of received SLP UDP packets
 const char SLPServer::UDP_RX_TOTAL_VAR[] = "slp-udp-rx";
 const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
 
@@ -491,7 +491,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
   if (!request->predicate.empty()) {
     if (m_enable_da) {
       // TODO(simon): support predicate matching
-      OLA_WARN << "Recieved request with predicate, ignoring";
+      OLA_WARN << "Received request with predicate, ignoring";
     } else if (!request->Multicast()) {
       // For our purposes we assume that service's can't have attributes.
       // Therefore all predicate matches will fail, so we can return an empty
@@ -504,7 +504,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
   }
 
   if (!request->spi.empty()) {
-    OLA_WARN << "Recieved request with SPI";
+    OLA_WARN << "Received request with SPI";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        AUTHENTICATION_UNKNOWN);
     return;
@@ -522,7 +522,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
     request->scope_list;
   // check service, MaybeSend[DS]AAdvert do their own scope checking
   if (request->service_type.empty()) {
-    OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
+    OLA_INFO << "Received SrvRqst with empty service-type from: " << source;
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source, PARSE_ERROR);
     return;
   } else if (m_enable_da && request->service_type == DIRECTORY_AGENT_SERVICE) {

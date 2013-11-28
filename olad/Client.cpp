@@ -82,7 +82,7 @@ void Client::SendDMXCallback(RpcController *controller,
  * @param universe the id of the universe for the new data
  * @param buffer the new data
  */
-void Client::DMXRecieved(unsigned int universe, const DmxSource &source) {
+void Client::DMXReceived(unsigned int universe, const DmxSource &source) {
   STLReplace(&m_data_map, universe, source);
 }
 

@@ -31,15 +31,12 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-
 class OSCDevice;
 
-class OSCPlugin: public Plugin {
+class OSCPlugin: public ola::Plugin {
   public:
-    explicit OSCPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor),
+    explicit OSCPlugin(ola::PluginAdaptor *plugin_adaptor):
+      ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
 
     string Name() const { return PLUGIN_NAME; }

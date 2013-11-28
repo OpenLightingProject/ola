@@ -260,7 +260,7 @@ class TestRunner(object):
 
     Args:
       whitelist: If not None, limit the tests to those in the list and their
-        dependancies.
+        dependencies.
       no_factory_defaults: Avoid running the SET factory defaults test.
       update_cb: This is called between each test to update the progress. It
         takes two args, one is the number of test complete, the other is the
@@ -331,7 +331,7 @@ class TestRunner(object):
     return tests, device
 
   def _InstantiateTests(self, device, tests_to_run):
-    """Instantiate the required tests and calculate the dependancies.
+    """Instantiate the required tests and calculate the dependencies.
 
     Args:
       device: A DeviceProperties object
@@ -349,7 +349,7 @@ class TestRunner(object):
   def _AddTest(self, device, class_name_to_object, deps_map, test_class,
                parents = []):
     """Add a test class, recursively adding all REQUIRES.
-       This also checks for circular dependancies.
+       This also checks for circular dependencies.
 
     Args:
       device: A DeviceProperties object which is passed to each test.

@@ -177,7 +177,7 @@ void QueueingRDMController::HandleRDMResponse(
   m_rdm_request_pending = false;
 
   if (m_pending_requests.empty()) {
-    OLA_FATAL << "Recieved a response but the queue was empty!";
+    OLA_FATAL << "Received a response but the queue was empty!";
     return;
   }
 
