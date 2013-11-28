@@ -35,8 +35,9 @@ class MilInstDevice;
 
 class MilInstPlugin: public Plugin {
   public:
-    explicit MilInstPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
+    explicit MilInstPlugin(PluginAdaptor *plugin_adaptor)
+        : Plugin(plugin_adaptor) {}
+
     ~MilInstPlugin() {}
 
     std::string Name() const { return PLUGIN_NAME; }
