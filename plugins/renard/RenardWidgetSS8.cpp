@@ -21,6 +21,7 @@
 #include <algorithm>
 
 #include "ola/Logging.h"
+#include "ola/io/IOUtils.h"
 #include "plugins/renard/RenardWidgetSS8.h"
 
 namespace ola {
@@ -34,29 +35,8 @@ bool RenardWidgetSS8::Connect() {
   OLA_DEBUG << "Connecting to " << m_path;
   OLA_DEBUG << "Baudrate set to " << static_cast<int>(m_baudrate);
 
-  // TODO(Hakan): Move to utils
-  speed_t baudrate = B57600;
-  switch (m_baudrate) {
-    case 9600:
-      baudrate = B9600;
-      break;
+  speed_t baudrate = ola::io::IntegerToSpeedT(m_baudrate);
 
-    case 19200:
-      baudrate = B19200;
-      break;
-
-    case 38400:
-      baudrate = B38400;
-      break;
-
-    case 57600:
-      baudrate = B57600;
-      break;
-
-    case 115200:
-      baudrate = B115200;
-      break;
-  }
   int fd = ConnectToWidget(m_path, baudrate);
 
   if (fd < 0)

@@ -34,7 +34,7 @@ namespace renard {
 
 class RenardWidget {
  public:
-    static int ConnectToWidget(const std::string &path, speed_t speed = B57600);
+    static int ConnectToWidget(const std::string &path, speed_t speed);
 
     explicit RenardWidget(const std::string &path):
       m_enabled(false),
