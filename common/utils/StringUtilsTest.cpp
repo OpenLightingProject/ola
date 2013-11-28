@@ -490,6 +490,13 @@ void StringUtilsTest::testPrefixedHexStringToInt() {
   OLA_ASSERT_EQ(28927, value);
   OLA_ASSERT_TRUE(PrefixedHexStringToInt("0xffffffff", &value));
   OLA_ASSERT_EQ(-1, value);
+
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0X7f", &value));
+  OLA_ASSERT_EQ(127, value);
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0X7F", &value));
+  OLA_ASSERT_EQ(127, value);
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0x7F", &value));
+  OLA_ASSERT_EQ(127, value);
 }
 
 

@@ -377,7 +377,7 @@ void FormatData(std::ostream *out,
   for (unsigned int i = 0; i != length; i++) {
     raw << std::setfill('0') << std::setw(2) <<
         static_cast<unsigned int>(data[i]) << " ";
-    if (data[i] >= ' ' && data[i] <= '~')
+    if (isprint(data[i]))
       ascii << data[i];
     else
       ascii << ".";

@@ -46,8 +46,6 @@
 namespace ola {
 namespace network {
 
-using std::ostream;
-
 /*
  * Represents a MAC Address.
  * All methods use network byte order unless otherwise mentioned.
@@ -140,7 +138,8 @@ class MACAddress {
 
     std::string ToString() const;
 
-    friend ostream& operator<< (ostream &out, const MACAddress &address) {
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const MACAddress &address) {
       return out << address.ToString();
     }
 
