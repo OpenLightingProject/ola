@@ -152,7 +152,7 @@ class FrequencyModulationSetting : SettingInterface {
  * singleton.
  *
  * @note Settings are indexed from zero. SettingManager responsible for
- * reporting correct indicies with correct offset.
+ * reporting correct indices with correct offset.
  */
 template <class SettingType>
 class SettingCollection {

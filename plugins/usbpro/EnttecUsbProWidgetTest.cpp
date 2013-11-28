@@ -376,7 +376,7 @@ void EnttecUsbProWidgetTest::testParams() {
 
 
 /**
- * Check that recieving DMX works.
+ * Check that receiving DMX works.
  */
 void EnttecUsbProWidgetTest::testReceiveDMX() {
   EnttecPort *port = m_widget->GetPort(0);

@@ -184,7 +184,7 @@ class SLPServer {
     XIDAllocator m_xid_allocator;
 
     // Track pending transactions
-    // map of xid_t to callbacks to run when we recieve an Ack with this xid.
+    // map of xid_t to callbacks to run when we receive an Ack with this xid.
     PendingAckMap m_pending_acks;
     // multimap url -> PendingOperation for Reg / DeReg operations.
     PendingOperationsByURL m_pending_ops;

@@ -34,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
+using ola::network::IPV4SocketAddress;
 using std::string;
 using std::vector;
 

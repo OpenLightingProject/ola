@@ -27,9 +27,7 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-using std::string;
-
-string ExpandTemplate(const string &str, unsigned int value);
+std::string ExpandTemplate(const std::string &str, unsigned int value);
 }  // namespace osc
 }  // namespace plugin
 }  // namespace ola

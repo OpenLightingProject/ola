@@ -3837,7 +3837,7 @@ class ResetFactoryDefaults(OptionalParameterTestFixture):
   """Reset to factory defaults."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'FACTORY_DEFAULTS'
-  # Dependancies so that we don't reset the fields before checking them.
+  # Dependencies so that we don't reset the fields before checking them.
   DEPS = [GetStartAddress, GetPersonality]
 
   def Test(self):

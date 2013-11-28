@@ -162,7 +162,7 @@ void StateManager::Input() {
 
 
 /*
- * Called when new DMX is recieved by the local node
+ * Called when new DMX is received by the local node
  */
 void StateManager::NewDMX() {
   if (!m_states[m_count]->Verify(m_recv_buffer))

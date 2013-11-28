@@ -31,9 +31,6 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
-using ola::io::ConnectedDescriptor;
-using std::string;
-
 class MilInstDevice;
 
 class MilInstPlugin: public Plugin {
@@ -42,11 +39,11 @@ class MilInstPlugin: public Plugin {
       Plugin(plugin_adaptor) {}
     ~MilInstPlugin() {}
 
-    string Name() const { return PLUGIN_NAME; }
+    std::string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_MILINST; }
-    string Description() const;
-    int SocketClosed(ConnectedDescriptor *socket);
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string Description() const;
+    int SocketClosed(ola::io::ConnectedDescriptor *socket);
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();

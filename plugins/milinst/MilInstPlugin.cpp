@@ -31,6 +31,7 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
+using ola::io::ConnectedDescriptor;
 using std::string;
 
 // Blank default path, so we don't start using a serial port without being asked
