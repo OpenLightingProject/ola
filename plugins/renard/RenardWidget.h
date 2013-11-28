@@ -34,15 +34,30 @@ namespace renard {
 
 class RenardWidget {
   public:
+    // The DMX offset is where in the DMX universe the Renard channels
+    // will be mapped. Set to 0 means the first Renard channel will be
+    // mapped to DMX channel 1, next to 2, etc. If you set the DMX offset
+    // to 100 then the first Renard channel will respond to DMX channel
+    // 101. I envisioned this would be applicable to multiple (serial)
+    // devices sharing the same DMX universe.
+    // Number of channels is how many channels we'll output on the device.
+    // There are limits to how many channels we can address for any given
+    // refresh rate, based on baud rate and escaping. Renard ignores
+    // any extra channels that are sent on the wire, so setting this too
+    // high is not a major concern.
+    // The start address is the Renard-address of the first board. The
+    // default in the standard firmware is 0x80, and it may be a reasonable
+    // future feature request to have this configurable for more advanced
+    // Renard configurations (using wireless transmitters, etc).
     explicit RenardWidget(const std::string &path,
                           int dmxOffset,
                           int channels,
                           uint32_t baudrate,
                           uint8_t startAddress)
-      : m_enabled(false),
-        m_path(path),
+      : m_path(path),
         m_socket(NULL),
         m_ss(NULL),
+        m_byteCounter(0),
         m_dmxOffset(dmxOffset),
         m_channels(channels),
         m_baudrate(baudrate),
@@ -57,17 +72,14 @@ class RenardWidget {
     bool SendDmx(const DmxBuffer &buffer);
     bool DetectDevice();
 
-  protected:
+  private:
     int ConnectToWidget(const std::string &path, speed_t speed);
 
     // instance variables
-    bool m_enabled;
     const string m_path;
     ola::io::ConnectedDescriptor *m_socket;
     ola::io::SelectServer *m_ss;
-    int byteCounter;
-
-private:
+    int m_byteCounter;
     int m_dmxOffset;
     int m_channels;
     unsigned int m_baudrate;

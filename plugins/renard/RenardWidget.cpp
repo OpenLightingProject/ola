@@ -133,16 +133,17 @@ bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
 
   for (unsigned int i = 0; i < channels; i++) {
     if ((i % RENARD_CHANNELS_IN_BANK) == 0) {
-      if (byteCounter >= 100) {
-        // Send PAD
+      if (m_byteCounter >= 100) {
+        // Send PAD every 100 (or so) bytes. Note that the counter is per
+        // device, so the counter should span multiple calls to SendDMX.
         msg[dataToSend++] = RENARD_COMMAND_PAD;
-        byteCounter = 0;
+        m_byteCounter = 0;
       }
 
       // Send address
       msg[dataToSend++] = RENARD_COMMAND_START_PACKET;
       msg[dataToSend++] = m_startAddress + (i / 8);
-      byteCounter += 2;
+      m_byteCounter += 2;
     }
 
     uint8_t b = buffer.Get(m_dmxOffset + i);
@@ -152,24 +153,24 @@ bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
       case RENARD_COMMAND_PAD:
         msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
         msg[dataToSend++] = 0x2F;
-        byteCounter += 2;
+        m_byteCounter += 2;
         break;
 
       case RENARD_COMMAND_START_PACKET:
         msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
         msg[dataToSend++] = 0x30;
-        byteCounter += 2;
+        m_byteCounter += 2;
         break;
 
       case RENARD_COMMAND_ESCAPE:
         msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
         msg[dataToSend++] = 0x31;
-        byteCounter += 2;
+        m_byteCounter += 2;
         break;
 
       default:
         msg[dataToSend++] = b;
-        byteCounter++;
+        m_byteCounter++;
         break;
     }
 

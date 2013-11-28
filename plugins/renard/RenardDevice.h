@@ -37,7 +37,7 @@ class RenardDevice: public ola::Device {
   public:
     RenardDevice(AbstractPlugin *owner,
                  class Preferences *preferences,
-                 const std::string &dev_path);
+                 const std::string &dev_name);
     ~RenardDevice();
 
     std::string DeviceId() const { return m_device_name; }
@@ -48,9 +48,8 @@ class RenardDevice: public ola::Device {
     void PrePortStop();
 
   private:
-    std::string m_path;
     std::auto_ptr<class RenardWidget> m_widget;
-    std::string m_device_name;
+    const std::string m_device_name;
     class Preferences *m_preferences;
 
     // Per device options
