@@ -128,18 +128,20 @@ bool RenardWidget::DetectDevice() {
  * Send a DMX msg.
  */
 bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
-  if ((unsigned int)(m_channels + m_dmxOffset) > buffer.Size()) {
-    OLA_DEBUG << "Buffer overrun condition";
-    return false;
-  }
+  unsigned int channels = std::max((unsigned int)0,
+                                   std::min((unsigned int) m_channels +
+                                            m_dmxOffset, buffer.Size()) -
+                                   m_dmxOffset);
+
+  OLA_DEBUG << "Sending " << static_cast<int>(channels) << " channels";
 
   // Max buffer size for worst case scenario (escaping + padding)
-  unsigned int bufferSize = m_channels * 2 + 10;
+  unsigned int bufferSize = channels * 2 + 10;
   uint8_t msg[bufferSize];
 
   int dataToSend = 0;
 
-  for (unsigned int i = 0; i < m_channels; i++) {
+  for (unsigned int i = 0; i < channels; i++) {
     if ((i % RENARD_CHANNELS_IN_BANK) == 0) {
       if (m_byteCounter >= RENARD_BYTES_BETWEEN_PADDING) {
         // Send PAD every 100 (or so) bytes. Note that the counter is per
@@ -182,8 +184,10 @@ bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
         break;
     }
 
-    OLA_DEBUG << "Setting " << (i + 1) << " to " <<
-        static_cast<int>(b);
+    OLA_DEBUG << "Setting Renard " << m_startAddress +
+      (i / RENARD_CHANNELS_IN_BANK) << "/" <<
+      ((i % RENARD_CHANNELS_IN_BANK) + 1) << " to " <<
+      static_cast<int>(b);
   }
 
   int bytes_sent = m_socket->Send(msg, dataToSend);

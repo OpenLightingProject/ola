@@ -67,11 +67,11 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
 
   SetDefaults();
 
-  uint8_t dmxOffset;
+  uint32_t dmxOffset;
   if (!StringToInt(m_preferences->GetValue(DeviceDmxOffsetKey()), &dmxOffset))
     dmxOffset = DEFAULT_DMX_OFFSET;
 
-  uint8_t channels;
+  uint32_t channels;
   if (!StringToInt(m_preferences->GetValue(DeviceChannelsKey()), &channels))
     channels = DEFAULT_NUM_CHANNELS;
 
