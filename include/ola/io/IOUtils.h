@@ -57,7 +57,7 @@ bool IntegerToSpeedT(uint32_t value, speed_t *output) {
       *output = B115200;
       return true;
   }
-  
+
   return false;
 }
 }  // namespace  io

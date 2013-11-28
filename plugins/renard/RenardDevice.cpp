@@ -18,6 +18,7 @@
  * Copyright (C) 2013 Hakan Lindestaf
  */
 
+#include <set>
 #include <string>
 
 #include "ola/Constants.h"

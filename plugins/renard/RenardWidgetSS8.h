@@ -44,15 +44,16 @@ class RenardWidgetSS8: public RenardWidget {
     bool Connect();
     bool DetectDevice();
     bool SendDmx(const DmxBuffer &buffer);
+
   private:
     int m_dmxOffset;
     int m_channels;
     unsigned int m_baudrate;
     uint8_t m_startAddress;
-    
+
     static const uint8_t RENARD_START_ADDRESS;
     static const uint8_t RENARD_COMMAND_PAD;
-    static const uint8_t RENARD_COMMAND_PACKET_START;
+    static const uint8_t RENARD_COMMAND_START_PACKET;
     static const uint8_t RENARD_COMMAND_ESCAPE;
     static const uint8_t RENARD_CHANNELS_IN_BANK;
 };
