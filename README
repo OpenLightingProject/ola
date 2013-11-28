@@ -14,6 +14,8 @@ Plugins
 Are located in ./plugins. To create a new plugin you'll need to subclass the
 Plugin, Device and Port classes. See any of the current plugins for an example.
 
+For a walkthrough of an example see plugins/osc/README.
+
 
 C++ Library
 -------------------------------------------------------------------------------
@@ -43,7 +45,7 @@ with --enable-java-libs.
 Credits
 -------------------------------------------------------------------------------
 
-Thanks to the following people/organisations:
+Thanks to the following people/organisations (see also AUTHORS):
 
  - Wayne and Simon from Artistic Licence for providing a Net-Lynx
  - Nic from Enttec who provided a DMX USB Pro for testing.
