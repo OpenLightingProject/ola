@@ -36,8 +36,6 @@ using ola::AbstractPlugin;
 using ola::io::ConnectedDescriptor;
 
 const char RenardDevice::RENARD_DEVICE_NAME[] = "Renard Device";
-// The Renard protocol is built around 8 channels per packet
-const uint8_t RenardDevice::RENARD_CHANNELS_IN_BANK = 8;
 // The default Renard firmware has 0x80 as start address. It would be
 // possible to make this configurable in a future release if needed.
 const uint8_t RenardDevice::RENARD_START_ADDRESS = 0x80;
@@ -60,12 +58,12 @@ const char RenardDevice::BAUDRATE_115200[] = "115200";
  */
 RenardDevice::RenardDevice(AbstractPlugin *owner,
                            class Preferences *preferences,
-                           const string &dev_name)
+                           const string &dev_path)
     : Device(owner, RENARD_DEVICE_NAME),
-      m_device_name(dev_name),
+      m_dev_path(dev_path),
       m_preferences(preferences) {
 
-  OLA_INFO << "Create device " << m_device_name;
+  OLA_INFO << "Create device " << m_dev_path;
 
   SetDefaults();
 
@@ -81,7 +79,7 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
   if (!StringToInt(m_preferences->GetValue(DeviceBaudrateKey()), &baudrate))
     baudrate = DEFAULT_BAUDRATE;
 
-  m_widget.reset(new RenardWidget(m_device_name, dmxOffset, channels, baudrate,
+  m_widget.reset(new RenardWidget(m_dev_path, dmxOffset, channels, baudrate,
                                   RENARD_START_ADDRESS));
 
   OLA_DEBUG << "DMX offset set to " << static_cast<int>(dmxOffset);
@@ -106,12 +104,12 @@ bool RenardDevice::StartHook() {
     return false;
 
   if (!m_widget->Connect()) {
-    OLA_WARN << "Failed to connect to " << m_device_name;
+    OLA_WARN << "Failed to connect to " << m_dev_path;
     return false;
   }
 
   if (!m_widget->DetectDevice()) {
-    OLA_WARN << "No device found at " << m_device_name;
+    OLA_WARN << "No device found at " << m_dev_path;
     return false;
   }
 
@@ -132,15 +130,15 @@ void RenardDevice::PrePortStop() {
 }
 
 string RenardDevice::DeviceBaudrateKey() const {
-  return m_device_name + "-baudrate";
+  return m_dev_path + "-baudrate";
 }
 
 string RenardDevice::DeviceChannelsKey() const {
-  return m_device_name + "-channels";
+  return m_dev_path + "-channels";
 }
 
 string RenardDevice::DeviceDmxOffsetKey() const {
-  return m_device_name + "-dmx-offset";
+  return m_dev_path + "-dmx-offset";
 }
 
 void RenardDevice::SetDefaults() {
@@ -157,11 +155,13 @@ void RenardDevice::SetDefaults() {
   // Renard supports more than 512 channels, but in our application
   // we're tied to a single DMX universe so we'll limit it to 512 channels.
   m_preferences->SetDefaultValue(DeviceChannelsKey(),
-                                 IntValidator(RENARD_CHANNELS_IN_BANK,
+                                 IntValidator(RenardWidget::
+                                              RENARD_CHANNELS_IN_BANK,
                                               DMX_UNIVERSE_SIZE),
                                  IntToString(DEFAULT_NUM_CHANNELS));
   m_preferences->SetDefaultValue(DeviceDmxOffsetKey(),
                                  IntValidator(0, DMX_UNIVERSE_SIZE -
+                                              RenardWidget::
                                               RENARD_CHANNELS_IN_BANK),
                                  IntToString(DEFAULT_DMX_OFFSET));
 }

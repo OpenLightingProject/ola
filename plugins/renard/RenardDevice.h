@@ -37,10 +37,10 @@ class RenardDevice: public ola::Device {
   public:
     RenardDevice(AbstractPlugin *owner,
                  class Preferences *preferences,
-                 const std::string &dev_name);
+                 const std::string &dev_path);
     ~RenardDevice();
 
-    std::string DeviceId() const { return m_device_name; }
+    std::string DeviceId() const { return m_dev_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
   protected:
@@ -49,7 +49,7 @@ class RenardDevice: public ola::Device {
 
   private:
     std::auto_ptr<class RenardWidget> m_widget;
-    const std::string m_device_name;
+    const std::string m_dev_path;
     class Preferences *m_preferences;
 
     // Per device options
@@ -60,7 +60,6 @@ class RenardDevice: public ola::Device {
     void SetDefaults();
 
     static const char RENARD_DEVICE_NAME[];
-    static const uint8_t RENARD_CHANNELS_IN_BANK;
     static const uint8_t RENARD_START_ADDRESS;
     static const uint8_t RENARD_AVAILABLE_ADDRESSES;
     static const uint8_t DEFAULT_DMX_OFFSET;

@@ -33,7 +33,13 @@ namespace renard {
 const uint8_t RenardWidget::RENARD_COMMAND_PAD = 0x7D;
 const uint8_t RenardWidget::RENARD_COMMAND_START_PACKET = 0x7E;
 const uint8_t RenardWidget::RENARD_COMMAND_ESCAPE = 0x7F;
+const uint8_t RenardWidget::RENARD_ESCAPE_PAD = 0x2F;
+const uint8_t RenardWidget::RENARD_ESCAPE_START_PACKET = 0x30;
+const uint8_t RenardWidget::RENARD_ESCAPE_ESCAPE = 0x31;
+// The Renard protocol is built around 8 channels per packet
 const uint8_t RenardWidget::RENARD_CHANNELS_IN_BANK = 8;
+// Discussions on the Renard firmware recommended a padding each 100 bytes or so
+const uint32_t RenardWidget::RENARD_BYTES_BETWEEN_PADDING = 100;
 
 /*
  * New widget
@@ -122,18 +128,20 @@ bool RenardWidget::DetectDevice() {
  * Send a DMX msg.
  */
 bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
-  unsigned int channels = std::min((unsigned int) m_channels + m_dmxOffset,
-                                   buffer.Size()) - m_dmxOffset;
+  if ((unsigned int)(m_channels + m_dmxOffset) > buffer.Size()) {
+    OLA_DEBUG << "Buffer overrun condition";
+    return false;
+  }
 
-  // Max buffer size for worst case scenario
-  unsigned int bufferSize = channels * 2 + 10;
+  // Max buffer size for worst case scenario (escaping + padding)
+  unsigned int bufferSize = m_channels * 2 + 10;
   uint8_t msg[bufferSize];
 
   int dataToSend = 0;
 
-  for (unsigned int i = 0; i < channels; i++) {
+  for (unsigned int i = 0; i < m_channels; i++) {
     if ((i % RENARD_CHANNELS_IN_BANK) == 0) {
-      if (m_byteCounter >= 100) {
+      if (m_byteCounter >= RENARD_BYTES_BETWEEN_PADDING) {
         // Send PAD every 100 (or so) bytes. Note that the counter is per
         // device, so the counter should span multiple calls to SendDMX.
         msg[dataToSend++] = RENARD_COMMAND_PAD;
@@ -142,7 +150,7 @@ bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
 
       // Send address
       msg[dataToSend++] = RENARD_COMMAND_START_PACKET;
-      msg[dataToSend++] = m_startAddress + (i / 8);
+      msg[dataToSend++] = m_startAddress + (i / RENARD_CHANNELS_IN_BANK);
       m_byteCounter += 2;
     }
 
@@ -152,19 +160,19 @@ bool RenardWidget::SendDmx(const DmxBuffer &buffer) {
     switch (b) {
       case RENARD_COMMAND_PAD:
         msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
-        msg[dataToSend++] = 0x2F;
+        msg[dataToSend++] = RENARD_ESCAPE_PAD;
         m_byteCounter += 2;
         break;
 
       case RENARD_COMMAND_START_PACKET:
         msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
-        msg[dataToSend++] = 0x30;
+        msg[dataToSend++] = RENARD_ESCAPE_START_PACKET;
         m_byteCounter += 2;
         break;
 
       case RENARD_COMMAND_ESCAPE:
         msg[dataToSend++] = RENARD_COMMAND_ESCAPE;
-        msg[dataToSend++] = 0x31;
+        msg[dataToSend++] = RENARD_ESCAPE_ESCAPE;
         m_byteCounter += 2;
         break;
 

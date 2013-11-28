@@ -72,6 +72,8 @@ class RenardWidget {
     bool SendDmx(const DmxBuffer &buffer);
     bool DetectDevice();
 
+    static const uint8_t RENARD_CHANNELS_IN_BANK;
+
   private:
     int ConnectToWidget(const std::string &path, speed_t speed);
 
@@ -79,16 +81,19 @@ class RenardWidget {
     const string m_path;
     ola::io::ConnectedDescriptor *m_socket;
     ola::io::SelectServer *m_ss;
-    int m_byteCounter;
-    int m_dmxOffset;
-    int m_channels;
-    unsigned int m_baudrate;
+    uint32_t m_byteCounter;
+    uint32_t m_dmxOffset;
+    uint32_t m_channels;
+    uint32_t m_baudrate;
     uint8_t m_startAddress;
 
     static const uint8_t RENARD_COMMAND_PAD;
     static const uint8_t RENARD_COMMAND_START_PACKET;
     static const uint8_t RENARD_COMMAND_ESCAPE;
-    static const uint8_t RENARD_CHANNELS_IN_BANK;
+    static const uint8_t RENARD_ESCAPE_PAD;
+    static const uint8_t RENARD_ESCAPE_START_PACKET;
+    static const uint8_t RENARD_ESCAPE_ESCAPE;
+    static const uint32_t RENARD_BYTES_BETWEEN_PADDING;
 };
 }  // namespace renard
 }  // namespace plugin
