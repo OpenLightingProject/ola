@@ -52,9 +52,7 @@ class GlobalNetworkGetter {
     /**
      * Get the interface picker
      */
-    virtual const ola::network::InterfacePicker *GetInterfacePicker() const {
-      return m_interface_picker.get();
-    };
+    virtual const ola::network::InterfacePicker *GetInterfacePicker() const = 0;
 
     /**
      * Get the DHCP status of an interface
@@ -84,9 +82,6 @@ class GlobalNetworkGetter {
      */
     virtual bool GetNameServers(
         std::vector<ola::network::IPV4Address> *name_servers) const = 0;
-
-  protected:
-    std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
 };
 // TODO(Peter): Set global network information.
 }  // namespace rdm

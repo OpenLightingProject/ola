@@ -49,12 +49,16 @@ class RealGlobalNetworkGetter: public GlobalNetworkGetter {
       m_interface_picker.reset(ola::network::InterfacePicker::NewPicker());
     }
 
+    const ola::network::InterfacePicker *GetInterfacePicker() const;
     bool GetDHCPStatus(const ola::network::Interface &iface) const;
     const ola::network::IPV4Address GetIPV4DefaultRoute() const;
     const std::string GetHostname() const;
     const std::string GetDomainName() const;
     bool GetNameServers(
         std::vector<ola::network::IPV4Address> *name_servers) const;
+
+  private:
+    std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
 };
 }  // namespace rdm
 }  // namespace ola

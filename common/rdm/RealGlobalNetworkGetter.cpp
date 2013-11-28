@@ -38,6 +38,11 @@ using std::string;
 using std::vector;
 
 
+const InterfacePicker *RealGlobalNetworkGetter::GetInterfacePicker() const {
+  return m_interface_picker.get();
+};
+
+
 bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
   // TODO(Peter): Fixme - actually do the work!
   if (iface.index > 0) {}

@@ -114,19 +114,17 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
                             const string &domain_name,
                             const vector<IPV4Address> &name_servers)
         : GlobalNetworkGetter(),
-          //m_interface_picker.reset(new FakeInterfacePicker(interfaces)),
-          // Todo(Peter): should be FakeInterfacePicker when I can get it
-          // working
           m_ipv4_default_route(ipv4_default_route),
           m_hostname(hostname),
           m_domain_name(domain_name),
           m_name_servers(name_servers) {
+      // Todo(Peter): should be FakeInterfacePicker when I can get it working
       //m_interface_picker.reset(InterfacePicker::NewPicker());
       m_interface_picker.reset(new FakeInterfacePicker(interfaces));
       if (interfaces.size() > 0) {}
     }
 
-    //const ola::network::InterfacePicker *GetInterfacePicker() const;
+    const ola::network::InterfacePicker *GetInterfacePicker() const;
     bool GetDHCPStatus(const ola::network::Interface &iface) const;
     const IPV4Address GetIPV4DefaultRoute() const;
     const string GetHostname() const;
@@ -134,10 +132,20 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
     bool GetNameServers(vector<IPV4Address> *name_servers) const;
 
  private:
+    auto_ptr<InterfacePicker> m_interface_picker;
     IPV4Address m_ipv4_default_route;
     string m_hostname;
     string m_domain_name;
     vector<IPV4Address> m_name_servers;
+};
+
+
+const InterfacePicker *FakeGlobalNetworkGetter::GetInterfacePicker() const {
+  OLA_INFO << "Looking at get IF picker";
+  (void) m_interface_picker.get()->GetInterfaces(false);
+  OLA_INFO << "Got an IF picker";
+  OLA_INFO << "Found " << m_interface_picker.get()->GetInterfaces(false).size() << " fake interfaces in IF picker fetch check";
+  return m_interface_picker.get();
 };
 
 
@@ -187,6 +195,10 @@ NetworkResponder::NetworkResponder(const UID &uid)
        MACAddress::FromStringOrDie("01:23:45:67:89:ab"),
        false,
        1));
+
+   auto_ptr<InterfacePicker> test_picker;
+	 test_picker.reset(new FakeInterfacePicker(interfaces));
+	 OLA_INFO << "Found " << test_picker.get()->GetInterfaces(false).size() << " fake interfaces in test";
 
    vector<IPV4Address> name_servers;
    name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
