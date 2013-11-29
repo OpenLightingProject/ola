@@ -41,7 +41,7 @@ class DispatchingUsbProWidget;
  * Contains information about a USB Pro like device.
  */
 class UsbProWidgetInformation {
-  public:
+ public:
     typedef uint32_t DeviceSerialNumber;
 
     UsbProWidgetInformation():
@@ -74,7 +74,7 @@ class UsbProWidgetInformation {
  * Handles the discovery routine for devices that behave like a Enttec Usb Pro.
  */
 class UsbProWidgetDetector: public WidgetDetectorInterface {
-  public:
+ public:
     typedef ola::Callback2<void,
                            ola::io::ConnectedDescriptor*,
                            const UsbProWidgetInformation*> SuccessHandler;
@@ -90,7 +90,7 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
 
     bool Discover(ola::io::ConnectedDescriptor *descriptor);
 
-  private:
+ private:
     // Hold the discovery state for a widget
     class DiscoveryState {
       public:

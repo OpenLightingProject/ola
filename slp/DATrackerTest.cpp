@@ -48,7 +48,7 @@ using std::string;
 using std::vector;
 
 class DATrackerTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(DATrackerTest);
     CPPUNIT_TEST(testDirectoryAgent);
     CPPUNIT_TEST(testTracking);
@@ -61,7 +61,7 @@ class DATrackerTest: public CppUnit::TestFixture {
     void testDALookup();
     void testScopeMatching();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
       ip1 = IPV4Address::FromStringOrDie(IP_ADDRESS1);
@@ -84,7 +84,7 @@ class DATrackerTest: public CppUnit::TestFixture {
       m_expected_das.pop();
     }
 
-  private:
+ private:
     DATracker m_tracker;
     queue<DirectoryAgent> m_expected_das;
     IPV4Address ip1, ip2, ip3, ip4;

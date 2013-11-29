@@ -45,28 +45,28 @@ using std::vector;
  * The root device in the simulated dimmer.
  */
 class DimmerRootDevice: public RDMControllerInterface {
-  public:
+ public:
     typedef const map<uint16_t, class DimmerSubDevice*> SubDeviceMap;
 
     DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-  private:
+ private:
     /**
      * The RDM Operations for the DimmerRootDevice.
      */
     class RDMOps : public ResponderOps<DimmerRootDevice> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+     public:
+      static RDMOps *Instance() {
+        if (!instance)
+          instance = new RDMOps();
+        return instance;
+      }
 
-      private:
-        RDMOps() : ResponderOps<DimmerRootDevice>(PARAM_HANDLERS) {}
-        static RDMOps *instance;
+     private:
+      RDMOps() : ResponderOps<DimmerRootDevice>(PARAM_HANDLERS) {}
+      static RDMOps *instance;
     };
 
     const UID m_uid;

@@ -40,7 +40,7 @@ class PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testBlockToOutputStream);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testPDUBlock();
     void testBlockToOutputStream();
 

@@ -203,6 +203,7 @@ PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
 PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
+PLUGIN_SUPPORT(renard, USE_RENARD)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 
@@ -717,6 +718,7 @@ AC_OUTPUT( Makefile \
     plugins/opendmx/Makefile \
     plugins/osc/Makefile \
     plugins/pathport/Makefile \
+    plugins/renard/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
     plugins/spi/Makefile \

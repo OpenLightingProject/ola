@@ -44,7 +44,7 @@ namespace rdm {
  * bytes then Pack will return false.
  */
 class RDMCommandSerializer {
-  public:
+ public:
     static unsigned int RequiredSize(const RDMCommand &command);
 
     static bool Pack(const RDMCommand &command,
@@ -70,7 +70,7 @@ class RDMCommandSerializer {
 
     enum { MAX_PARAM_DATA_LENGTH = 231 };
 
-  private:
+ private:
     static const unsigned int CHECKSUM_LENGTH = 2;
 
     static bool PackWithParams(const RDMCommand &command,

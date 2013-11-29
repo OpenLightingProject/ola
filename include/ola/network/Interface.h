@@ -34,7 +34,7 @@ using std::string;
  * Represents an interface.
  */
 class Interface {
-  public:
+ public:
     Interface();
     Interface(const string &name,
               const IPV4Address &ip_address,
@@ -59,7 +59,7 @@ class Interface {
  * An InterfaceBuilder, this can construct Interface objects
  */
 class InterfaceBuilder {
-  public:
+ public:
     InterfaceBuilder();
     ~InterfaceBuilder() {}
 
@@ -89,7 +89,7 @@ class InterfaceBuilder {
     void Reset();
     Interface Construct();
 
-  private:
+ private:
     std::string m_name;
     IPV4Address m_ip_address;
     IPV4Address m_broadcast_address;

@@ -42,7 +42,7 @@ using std::string;
  *  - Optional button text. Non-empty means this item get's it own button.
  */
 class GenericItem {
-  public:
+ public:
     GenericItem(const string &description, const string &id):
         m_description(description),
         m_id(id),
@@ -57,14 +57,14 @@ class GenericItem {
 
     void PopulateItem(JsonObject *item) const;
 
-  protected:
+ protected:
     virtual string Type() const = 0;
     virtual void SetValue(JsonObject *item) const = 0;
     virtual void SetExtraProperties(JsonObject *item) const {
       (void) item;
     }
 
-  private:
+ private:
     string m_description;
     string m_id;
     string m_button_text;
@@ -75,7 +75,7 @@ class GenericItem {
  * This is a item that contains a string value
  */
 class StringItem: public GenericItem {
-  public:
+ public:
     StringItem(const string &description,
                const string &value,
                const string &id = ""):
@@ -83,13 +83,13 @@ class StringItem: public GenericItem {
       m_value(value) {
     }
 
-  protected:
+ protected:
     string Type() const { return "string"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
 
-  private:
+ private:
     string m_value;
 };
 
@@ -98,7 +98,7 @@ class StringItem: public GenericItem {
  * An item that contains a unsigned int
  */
 class UIntItem: public GenericItem {
-  public:
+ public:
     UIntItem(const string &description,
              unsigned int value,
              const string &id = ""):
@@ -117,14 +117,14 @@ class UIntItem: public GenericItem {
       m_max = max;
     }
 
-  protected:
+ protected:
     void SetExtraProperties(JsonObject *item) const;
     string Type() const { return "uint"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
 
-  private:
+ private:
     unsigned int m_value;
     bool m_min_set, m_max_set;
     unsigned int m_min;
@@ -133,7 +133,7 @@ class UIntItem: public GenericItem {
 
 
 class BoolItem: public GenericItem {
-  public:
+ public:
     BoolItem(const string &description,
              bool value,
              const string &id):
@@ -141,31 +141,31 @@ class BoolItem: public GenericItem {
       m_value(value) {
     }
 
-  protected:
+ protected:
     string Type() const { return "bool"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
 
-  private:
+ private:
     bool m_value;
 };
 
 
 class HiddenItem: public GenericItem {
-  public:
+ public:
     HiddenItem(const string &value, const string &id):
       GenericItem("", id),
       m_value(value) {
     }
 
-  protected:
+ protected:
     string Type() const { return "hidden"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
 
-  private:
+ private:
     string m_value;
 };
 
@@ -174,7 +174,7 @@ class HiddenItem: public GenericItem {
  * An item which is a select list
  */
 class SelectItem: public GenericItem {
-  public:
+ public:
     SelectItem(const string &description,
                const string &id = ""):
       GenericItem(description, id),
@@ -186,21 +186,21 @@ class SelectItem: public GenericItem {
     // helper method which converts ints to strings
     void AddItem(const string &label, unsigned int value);
 
-  protected:
+ protected:
     void SetExtraProperties(JsonObject *item) const {
       item->Add("selected_offset", m_selected_offset);
     }
     string Type() const { return "select"; }
     void SetValue(JsonObject *item) const;
 
-  private:
+ private:
     std::vector<std::pair<string, string> > m_values;
     unsigned int m_selected_offset;
 };
 
 
 class JsonSection {
-  public:
+ public:
     explicit JsonSection(bool allow_refresh = true);
     ~JsonSection();
 
@@ -210,7 +210,7 @@ class JsonSection {
     void AddItem(const GenericItem *item);
     string AsString() const;
 
-  private:
+ private:
     bool m_allow_refresh;
     string m_error;
     string m_save_button_text;

@@ -30,12 +30,12 @@ using ola::io::MemoryBuffer;
 
 
 class InputStreamTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(InputStreamTest);
     CPPUNIT_TEST(testRead);
     CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown() {}
     void testRead();

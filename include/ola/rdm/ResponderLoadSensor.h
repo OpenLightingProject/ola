@@ -37,7 +37,7 @@ namespace rdm {
  * A class which represents a load sensor.
  */
 class LoadSensor: public Sensor {
-  public:
+ public:
     LoadSensor(const uint8_t load_average, const string &description)
         : Sensor(SENSOR_OTHER,
                  UNITS_NONE,
@@ -59,10 +59,10 @@ class LoadSensor: public Sensor {
     static const int16_t LOAD_SENSOR_NUM_AVERAGES = 3;
     static const int16_t LOAD_SENSOR_ERROR_VALUE = 0;
 
-  protected:
+ protected:
     int16_t PollSensor();
 
-  private:
+ private:
     uint8_t m_load_average;
 };
 }  // namespace rdm

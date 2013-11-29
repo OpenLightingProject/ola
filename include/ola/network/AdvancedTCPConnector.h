@@ -44,7 +44,7 @@ namespace network {
  *   so). It'll need to be re-written if we want to support 1000s.
  */
 class AdvancedTCPConnector {
-  public:
+ public:
     AdvancedTCPConnector(ola::io::SelectServerInterface *ss,
                          TCPSocketFactoryInterface *socket_factory,
                          const ola::TimeInterval &connection_timeout);
@@ -70,7 +70,7 @@ class AdvancedTCPConnector {
     void Disconnect(const IPV4SocketAddress &endpoint, bool pause = false);
     void Resume(const IPV4SocketAddress &endpoint);
 
-  protected:
+ protected:
     typedef struct {
       ConnectionState state;
       unsigned int failed_attempts;
@@ -92,7 +92,7 @@ class AdvancedTCPConnector {
                             int error);
     void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
 
-  private:
+ private:
     ola::io::SelectServerInterface *m_ss;
 
     TCPConnector m_connector;

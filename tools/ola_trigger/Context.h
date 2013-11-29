@@ -37,7 +37,7 @@ using std::string;
  * A context is a collection of variables and their values.
  */
 class Context {
-  public:
+ public:
     Context() {}
     ~Context();
 
@@ -53,7 +53,7 @@ class Context {
     static const char SLOT_VALUE_VARIABLE[];
     static const char SLOT_OFFSET_VARIABLE[];
 
-  private:
+ private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;
     VariableMap m_variables;
 };

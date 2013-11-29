@@ -65,7 +65,7 @@ using std::vector;
  *   - many URLs.
  */
 class SLPStore {
-  public:
+ public:
     SLPStore() {}
     ~SLPStore();
 
@@ -104,7 +104,7 @@ class SLPStore {
     void Reset();
     void Dump(const TimeStamp &now);
 
-  private:
+ private:
     typedef vector<ServiceEntry*> ServiceEntryVector;
     typedef struct {
       TimeStamp last_cleaned;

@@ -29,7 +29,7 @@ namespace plugin {
 namespace stageprofi {
 
 class StageProfiWidgetUsb: public StageProfiWidget {
-  public:
+ public:
     StageProfiWidgetUsb(): StageProfiWidget() {}
     ~StageProfiWidgetUsb() {}
 

@@ -33,7 +33,7 @@ using ola::acn::CID;
  * The header for the root layer
  */
 class RootHeader {
-  public:
+ public:
     RootHeader() {}
     ~RootHeader() {}
     void SetCid(CID cid) { m_cid = cid; }
@@ -42,7 +42,7 @@ class RootHeader {
     bool operator==(const RootHeader &other) const {
       return m_cid == other.m_cid;
     }
-  private:
+ private:
     CID m_cid;
 };
 }  // namespace e131

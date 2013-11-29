@@ -35,7 +35,7 @@ using ola::PluginAdaptor;
 class DummyDevice;
 
 class DummyPlugin: public Plugin {
-  public:
+ public:
     explicit DummyPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
@@ -45,7 +45,7 @@ class DummyPlugin: public Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_DUMMY; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

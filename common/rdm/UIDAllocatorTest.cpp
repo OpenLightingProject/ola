@@ -35,7 +35,7 @@ class UIDAllocatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testAllocator);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testAllocator();
 };
 

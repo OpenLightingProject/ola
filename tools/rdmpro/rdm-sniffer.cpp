@@ -74,7 +74,7 @@ typedef struct {
  * A list of bytes
  */
 class ByteStream {
-  public:
+ public:
     ByteStream() {}
     virtual ~ByteStream() {}
 
@@ -83,13 +83,13 @@ class ByteStream {
     void Reset() { m_bytes.clear(); }
     unsigned int Size() { return m_bytes.size(); }
 
-  private:
+ private:
     vector<uint8_t> m_bytes;
 };
 
 
 class RDMSniffer {
-  public:
+ public:
     struct RDMSnifferOptions {
       // DMX Options
       bool display_dmx_frames;  // display DMX frames
@@ -132,7 +132,7 @@ class RDMSniffer {
                        const uint8_t *data,
                        unsigned int length);
 
-  private:
+ private:
     typedef enum {
       IDLE,
       BREAK,

@@ -41,11 +41,11 @@ class E131PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNestedE131PDU);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSimpleRev2E131PDU();
     void testSimpleE131PDU();
     void testNestedE131PDU();
-  private:
+ private:
     static const unsigned int TEST_VECTOR;
 };
 

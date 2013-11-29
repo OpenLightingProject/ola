@@ -45,7 +45,7 @@ using std::string;
 using std::vector;
 
 class PacketParserTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(PacketParserTest);
     CPPUNIT_TEST(testDetermineFunctionID);
     CPPUNIT_TEST(testParseServiceRequest);
@@ -70,7 +70,7 @@ class PacketParserTest: public CppUnit::TestFixture {
     void testExtractHeader();
     void testExtractURLEntry();
 
-  public:
+ public:
     void setUp() {
       OLA_ASSERT(IPV4Address::FromString("1.1.1.2", &ip1));
       OLA_ASSERT(IPV4Address::FromString("1.1.1.8", &ip2));
@@ -81,7 +81,7 @@ class PacketParserTest: public CppUnit::TestFixture {
       expected_urls.push_back(URLEntry("service:foo://1.1.1.10", 0x5678));
     }
 
-  private:
+ private:
     IPV4Address ip1, ip2;
     string expected_scopes;
     vector<URLEntry> expected_urls;

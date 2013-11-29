@@ -50,7 +50,7 @@ uint8_t SLPPacketParser::DetermineFunctionID(const uint8_t *data,
     return 0;
   }
   return data[1];
-};
+}
 
 
 /**

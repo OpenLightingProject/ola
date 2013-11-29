@@ -55,7 +55,7 @@ using std::string;
  * @}
  */
 class UID {
-  public:
+ public:
     enum { LENGTH = 6 };
 
     /**
@@ -272,7 +272,7 @@ class UID {
      */
     static const uint32_t ALL_DEVICES = 0xffffffff;
 
-  private:
+ private:
     struct rdm_uid {
       uint16_t esta_id;
       uint32_t device_id;

@@ -41,37 +41,37 @@ namespace client {
  * @brief Represents a Plugin.
  */
 class OlaPlugin {
-  public:
-    OlaPlugin(unsigned int id, const string &name, bool active)
-        : m_id(id),
-          m_name(name),
-          m_active(active) {}
-    ~OlaPlugin() {}
+ public:
+  OlaPlugin(unsigned int id, const string &name, bool active)
+      : m_id(id),
+        m_name(name),
+        m_active(active) {}
+  ~OlaPlugin() {}
 
-    /**
-     * @brief The plugin id.
-     */
-    unsigned int Id() const { return m_id; }
+  /**
+   * @brief The plugin id.
+   */
+  unsigned int Id() const { return m_id; }
 
-    /**
-     * @brief The name of the plugin.
-     */
-    const string& Name() const { return m_name; }
+  /**
+   * @brief The name of the plugin.
+   */
+  const string& Name() const { return m_name; }
 
-    /**
-     * @brief Indicates if the plugin is active or not
-     * @return true if the plugin is active, false otherwise.
-     */
-    bool IsActive() const { return m_active; }
+  /**
+   * @brief Indicates if the plugin is active or not
+   * @return true if the plugin is active, false otherwise.
+   */
+  bool IsActive() const { return m_active; }
 
-    bool operator<(const OlaPlugin &other) const {
-      return m_id < other.m_id;
-    }
+  bool operator<(const OlaPlugin &other) const {
+    return m_id < other.m_id;
+  }
 
-  private:
-    unsigned int m_id;  // id of this plugin
-    string m_name;  // plugin name
-    bool m_active;
+ private:
+  unsigned int m_id;  // id of this plugin
+  string m_name;  // plugin name
+  bool m_active;
 };
 
 /**
@@ -105,99 +105,99 @@ struct PluginState {
  * @brief The base class that represents a port.
  */
 class OlaPort {
-  public:
-    OlaPort(unsigned int port_id,
-            unsigned int universe,
-            bool active,
-            const string &description,
-            port_priority_capability capability,
-            port_priority_mode mode,
-            uint8_t priority,
-            bool supports_rdm):
-      m_id(port_id),
-      m_universe(universe),
-      m_active(active),
-      m_description(description),
-      m_priority_capability(capability),
-      m_priority_mode(mode),
-      m_priority(priority),
-      m_supports_rdm(supports_rdm) {}
-    virtual ~OlaPort() {}
+ public:
+  OlaPort(unsigned int port_id,
+          unsigned int universe,
+          bool active,
+          const string &description,
+          port_priority_capability capability,
+          port_priority_mode mode,
+          uint8_t priority,
+          bool supports_rdm):
+    m_id(port_id),
+    m_universe(universe),
+    m_active(active),
+    m_description(description),
+    m_priority_capability(capability),
+    m_priority_mode(mode),
+    m_priority(priority),
+    m_supports_rdm(supports_rdm) {}
+  virtual ~OlaPort() {}
 
-    unsigned int Id() const { return m_id; }
+  unsigned int Id() const { return m_id; }
 
-    /**
-     * @brief The universe this port is patched to
-     */
-    unsigned int Universe() const { return m_universe; }
+  /**
+   * @brief The universe this port is patched to
+   */
+  unsigned int Universe() const { return m_universe; }
 
-    bool IsActive() const { return m_active; }
+  bool IsActive() const { return m_active; }
 
-    /**
-     * @brief The description of this port
-     */
-    const string& Description() const { return m_description; }
+  /**
+   * @brief The description of this port
+   */
+  const string& Description() const { return m_description; }
 
-    port_priority_capability PriorityCapability() const {
-      return m_priority_capability;
-    }
-    port_priority_mode PriorityMode() const {
-      return m_priority_mode;
-    }
+  port_priority_capability PriorityCapability() const {
+    return m_priority_capability;
+  }
+  port_priority_mode PriorityMode() const {
+    return m_priority_mode;
+  }
 
-    uint8_t Priority() const { return m_priority; }
+  uint8_t Priority() const { return m_priority; }
 
-    /**
-     * @brief Indicates if this port supports RDM
-     * @returns true if the port supports RDM, false otherwise
-     */
-    bool SupportsRDM() const { return m_supports_rdm; }
+  /**
+   * @brief Indicates if this port supports RDM
+   * @returns true if the port supports RDM, false otherwise
+   */
+  bool SupportsRDM() const { return m_supports_rdm; }
 
-  private:
-    unsigned int m_id;  // id of this port
-    unsigned int m_universe;  // universe
-    bool m_active;  // active
-    string m_description;
-    port_priority_capability m_priority_capability;
-    port_priority_mode m_priority_mode;
-    uint8_t m_priority;
-    bool m_supports_rdm;
+ private:
+  unsigned int m_id;  // id of this port
+  unsigned int m_universe;  // universe
+  bool m_active;  // active
+  string m_description;
+  port_priority_capability m_priority_capability;
+  port_priority_mode m_priority_mode;
+  uint8_t m_priority;
+  bool m_supports_rdm;
 };
 
 /**
  * @brief An input port (receives DMX).
  */
 class OlaInputPort: public OlaPort {
-  public:
-    OlaInputPort(unsigned int port_id,
-                 unsigned int universe,
-                 bool active,
-                 const string &description,
-                 port_priority_capability capability,
-                 port_priority_mode mode,
-                 uint8_t priority,
-                 bool supports_rdm):
-        OlaPort(port_id, universe, active, description,
-                capability, mode, priority, supports_rdm) {
-    }
+ public:
+  OlaInputPort(unsigned int port_id,
+               unsigned int universe,
+               bool active,
+               const string &description,
+               port_priority_capability capability,
+               port_priority_mode mode,
+               uint8_t priority,
+               bool supports_rdm):
+      OlaPort(port_id, universe, active, description,
+              capability, mode, priority, supports_rdm) {
+  }
 };
 
 /**
  * @brief An Output Port (sends DMX).
  */
 class OlaOutputPort: public OlaPort {
-  public:
-    OlaOutputPort(unsigned int port_id,
-                  unsigned int universe,
-                  bool active,
-                  const string &description,
-                  port_priority_capability capability,
-                  port_priority_mode mode,
-                  uint8_t priority,
-                  bool supports_rdm):
-        OlaPort(port_id, universe, active, description,
-                capability, mode, priority, supports_rdm) {
-    }
+ public:
+  OlaOutputPort(unsigned int port_id,
+                unsigned int universe,
+                bool active,
+                const string &description,
+                port_priority_capability capability,
+                port_priority_mode mode,
+                uint8_t priority,
+                bool supports_rdm):
+      OlaPort(port_id, universe, active, description,
+              capability, mode, priority, supports_rdm) {
+  }
 };
 
 
@@ -205,44 +205,44 @@ class OlaOutputPort: public OlaPort {
  * @brief Represents a device.
  */
 class OlaDevice {
-  public:
-    OlaDevice(const string &id,
-              unsigned int alias,
-              const string &name,
-              int plugin_id,
-              const std::vector<OlaInputPort> &input_ports,
-              const std::vector<OlaOutputPort> &output_ports):
-      m_id(id),
-      m_alias(alias),
-      m_name(name),
-      m_plugin_id(plugin_id),
-      m_input_ports(input_ports),
-      m_output_ports(output_ports) {}
-    ~OlaDevice() {}
+ public:
+  OlaDevice(const string &id,
+            unsigned int alias,
+            const string &name,
+            int plugin_id,
+            const std::vector<OlaInputPort> &input_ports,
+            const std::vector<OlaOutputPort> &output_ports):
+    m_id(id),
+    m_alias(alias),
+    m_name(name),
+    m_plugin_id(plugin_id),
+    m_input_ports(input_ports),
+    m_output_ports(output_ports) {}
+  ~OlaDevice() {}
 
-    string Id() const { return m_id; }
-    unsigned int Alias() const { return m_alias; }
-    const string& Name() const { return m_name; }
-    int PluginId() const { return m_plugin_id; }
+  string Id() const { return m_id; }
+  unsigned int Alias() const { return m_alias; }
+  const string& Name() const { return m_name; }
+  int PluginId() const { return m_plugin_id; }
 
-    const std::vector<OlaInputPort> &InputPorts() const {
-      return m_input_ports;
-    }
-    const std::vector<OlaOutputPort> &OutputPorts() const {
-      return m_output_ports;
-    }
+  const std::vector<OlaInputPort> &InputPorts() const {
+    return m_input_ports;
+  }
+  const std::vector<OlaOutputPort> &OutputPorts() const {
+    return m_output_ports;
+  }
 
-    bool operator<(const OlaDevice &other) const {
-      return m_alias < other.m_alias;
-    }
+  bool operator<(const OlaDevice &other) const {
+    return m_alias < other.m_alias;
+  }
 
-  private:
-    string m_id;            // device id
-    unsigned int m_alias;   // device alias
-    string m_name;  // device name
-    int m_plugin_id;     // parent plugin id
-    std::vector<OlaInputPort> m_input_ports;
-    std::vector<OlaOutputPort> m_output_ports;
+ private:
+  string m_id;            // device id
+  unsigned int m_alias;   // device alias
+  string m_name;  // device name
+  int m_plugin_id;     // parent plugin id
+  std::vector<OlaInputPort> m_input_ports;
+  std::vector<OlaOutputPort> m_output_ports;
 };
 
 
@@ -250,40 +250,40 @@ class OlaDevice {
  * @brief Represents a universe.
  */
 class OlaUniverse {
-  public:
-    enum merge_mode {
-      MERGE_HTP,
-      MERGE_LTP,
-    };
+ public:
+  enum merge_mode {
+    MERGE_HTP,
+    MERGE_LTP,
+  };
 
-    OlaUniverse(unsigned int id,
-                merge_mode m,
-                const string &name,
-                unsigned int input_port_count,
-                unsigned int output_port_count,
-                unsigned int rdm_device_count):
-      m_id(id),
-      m_merge_mode(m),
-      m_name(name),
-      m_input_port_count(input_port_count),
-      m_output_port_count(output_port_count),
-      m_rdm_device_count(rdm_device_count) {}
-    ~OlaUniverse() {}
+  OlaUniverse(unsigned int id,
+              merge_mode m,
+              const string &name,
+              unsigned int input_port_count,
+              unsigned int output_port_count,
+              unsigned int rdm_device_count):
+    m_id(id),
+    m_merge_mode(m),
+    m_name(name),
+    m_input_port_count(input_port_count),
+    m_output_port_count(output_port_count),
+    m_rdm_device_count(rdm_device_count) {}
+  ~OlaUniverse() {}
 
-    unsigned int Id() const { return m_id;}
-    merge_mode MergeMode() const { return m_merge_mode; }
-    const string& Name() const { return m_name;}
-    unsigned int InputPortCount() const { return m_input_port_count; }
-    unsigned int OutputPortCount() const { return m_output_port_count; }
-    unsigned int RDMDeviceCount() const { return m_rdm_device_count; }
+  unsigned int Id() const { return m_id;}
+  merge_mode MergeMode() const { return m_merge_mode; }
+  const string& Name() const { return m_name;}
+  unsigned int InputPortCount() const { return m_input_port_count; }
+  unsigned int OutputPortCount() const { return m_output_port_count; }
+  unsigned int RDMDeviceCount() const { return m_rdm_device_count; }
 
-  private:
-    unsigned int m_id;
-    merge_mode m_merge_mode;
-    string m_name;
-    unsigned int m_input_port_count;
-    unsigned int m_output_port_count;
-    unsigned int m_rdm_device_count;
+ private:
+  unsigned int m_id;
+  merge_mode m_merge_mode;
+  string m_name;
+  unsigned int m_input_port_count;
+  unsigned int m_output_port_count;
+  unsigned int m_rdm_device_count;
 };
 
 /**

@@ -43,7 +43,7 @@ using ola::plugin::usbpro::Request;
  * An Enttec Usb Pro device
  */
 class UsbProDevice: public UsbSerialDevice {
-  public:
+ public:
     UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                  ola::AbstractPlugin *owner,
                  const string &name,
@@ -60,10 +60,10 @@ class UsbProDevice: public UsbSerialDevice {
 
     bool AllowMultiPortPatching() const { return true; }
 
-  protected:
+ protected:
     void PrePortStop();
 
-  private:
+ private:
     struct PortParams {
       bool got_parameters;
       uint8_t break_time;
@@ -115,7 +115,7 @@ class UsbProDevice: public UsbSerialDevice {
  * The Input port
  */
 class UsbProInputPort: public BasicInputPort {
-  public:
+ public:
     // The EnttecPort is owner by the caller.
     UsbProInputPort(UsbProDevice *parent,
                     EnttecPort *port,
@@ -132,7 +132,7 @@ class UsbProInputPort: public BasicInputPort {
 
     string Description() const { return "Serial #: " + m_serial; }
 
-  private:
+ private:
     const string m_serial;
     EnttecPort *m_port;
 };
@@ -142,7 +142,7 @@ class UsbProInputPort: public BasicInputPort {
  * The output port
  */
 class UsbProOutputPort: public BasicOutputPort {
-  public:
+ public:
     // The EnttecPort is owner by the caller.
     UsbProOutputPort(UsbProDevice *parent,
                      EnttecPort *port,
@@ -185,7 +185,7 @@ class UsbProOutputPort: public BasicOutputPort {
 
     string Description() const { return "Serial #: " + m_serial; }
 
-  private:
+ private:
     const string m_serial;
     EnttecPort *m_port;
     TokenBucket m_bucket;

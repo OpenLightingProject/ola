@@ -51,7 +51,7 @@ namespace network {
  * A TCPSocket
  */
 class TCPSocket: public ola::io::ConnectedDescriptor {
-  public:
+ public:
     explicit TCPSocket(int sd)
         : m_sd(sd) {
       SetNoSigPipe(sd);
@@ -70,10 +70,10 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
 
     bool SetNoDelay();
 
-  protected:
+ protected:
     bool IsSocket() const { return true; }
 
-  private:
+ private:
     int m_sd;
 
     TCPSocket(const TCPSocket &other);
@@ -85,7 +85,7 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
  * A TCP accepting socket
  */
 class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
-  public:
+ public:
     explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
     ~TCPAcceptingSocket();
     bool Listen(const SocketAddress &endpoint, int backlog = 10);
@@ -99,7 +99,7 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
 
     GenericSocketAddress GetLocalAddress() const;
 
-  private:
+ private:
     int m_sd;
     class TCPSocketFactoryInterface *m_factory;
 

@@ -28,14 +28,14 @@
 namespace ola {
 
 class DynamicPluginLoader: public PluginLoader {
-  public:
+ public:
     DynamicPluginLoader() {}
     ~DynamicPluginLoader();
 
     std::vector<class AbstractPlugin*> LoadPlugins();
     void UnloadPlugins() {}
 
-  private:
+ private:
     void PopulatePlugins();
 
     std::vector<class AbstractPlugin*> m_plugins;

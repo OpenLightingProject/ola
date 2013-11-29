@@ -33,7 +33,7 @@ namespace usbdmx {
  * A Velleman device
  */
 class VellemanDevice: public UsbDevice {
-  public:
+ public:
     VellemanDevice(ola::AbstractPlugin *owner,
                    libusb_device *usb_device):
         UsbDevice(owner, "Velleman USB Device", usb_device) {
@@ -41,7 +41,7 @@ class VellemanDevice: public UsbDevice {
 
     string DeviceId() const { return "velleman"; }
 
-  protected:
+ protected:
     bool StartHook();
 };
 }  // namespace usbdmx

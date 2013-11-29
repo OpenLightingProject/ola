@@ -35,11 +35,11 @@ class DmxSourceTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIsActive);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testDmxSource();
     void testIsActive();
 
-  private:
+ private:
     ola::Clock m_clock;
 };
 

@@ -37,7 +37,7 @@ namespace usbpro {
  * discovery routine passes or fails.
  */
 class WidgetDetectorInterface {
-  public:
+ public:
     WidgetDetectorInterface() {}
     virtual ~WidgetDetectorInterface() {}
 

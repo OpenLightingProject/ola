@@ -52,7 +52,7 @@ using std::vector;
  * Descriptor.
  */
 class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
-  public:
+ public:
     StringMessageBuilder();
     ~StringMessageBuilder();
 
@@ -77,7 +77,7 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
-  private:
+ private:
     vector<string> m_inputs;
     std::stack<vector<const ola::messaging::MessageFieldInterface*> > m_groups;
     unsigned int m_offset, m_input_size, m_group_instance_count;

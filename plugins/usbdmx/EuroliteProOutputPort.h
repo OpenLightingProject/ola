@@ -34,7 +34,7 @@ namespace usbdmx {
 
 
 class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
-  public:
+ public:
     EuroliteProOutputPort(class EuroliteProDevice *parent,
                           unsigned int id,
                           libusb_device *usb_device);
@@ -47,7 +47,7 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
-  private:
+ private:
     static const unsigned int URB_TIMEOUT_MS = 500;
     static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
     static const unsigned char ENDPOINT = 0x02;

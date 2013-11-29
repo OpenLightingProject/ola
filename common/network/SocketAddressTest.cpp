@@ -36,7 +36,7 @@ class SocketAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIPV4SocketAddressFromString);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testIPV4SocketAddress();
     void testIPV4SocketAddressFromString();
 };

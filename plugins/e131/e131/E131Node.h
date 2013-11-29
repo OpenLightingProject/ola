@@ -45,7 +45,7 @@ using ola::acn::CID;
 using std::string;
 
 class E131Node {
-  public:
+ public:
     E131Node(const string &ip_address,
              const CID &cid = CID::Generate(),
              bool use_rev2 = false,
@@ -83,7 +83,7 @@ class E131Node {
 
     ola::network::UDPSocket* GetSocket() { return &m_socket; }
 
-  private:
+ private:
     typedef struct {
       string source;
       uint8_t sequence;

@@ -52,7 +52,7 @@ namespace network {
  * TODO(Peter): Is the above actually true for MAC addresses?
  */
 class MACAddress {
-  public:
+ public:
     enum { LENGTH = ETHER_ADDR_LEN };
 
     MACAddress() {
@@ -148,7 +148,7 @@ class MACAddress {
     // useful for testing
     static MACAddress FromStringOrDie(const std::string &address);
 
-  private:
+ private:
     struct ether_addr m_address;
 };
 }  // namespace network

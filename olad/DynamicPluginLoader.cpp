@@ -63,6 +63,10 @@
 #include "plugins/pathport/PathportPlugin.h"
 #endif
 
+#ifdef USE_RENARD
+#include "plugins/renard/RenardPlugin.h"
+#endif
+
 #ifdef USE_SANDNET
 #include "plugins/sandnet/SandNetPlugin.h"
 #endif
@@ -166,6 +170,11 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef HAVE_LIBLO
   m_plugins.push_back(
       new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_RENARD
+  m_plugins.push_back(
+      new ola::plugin::renard::RenardPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_SANDNET

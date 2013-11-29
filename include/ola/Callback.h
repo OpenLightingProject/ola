@@ -117,7 +117,7 @@ namespace ola {
  */
 template <typename ReturnType>
 class BaseCallback0 {
-  public:
+ public:
     virtual ~BaseCallback0() {}
     virtual ReturnType Run() = 0;
 };
@@ -127,10 +127,10 @@ class BaseCallback0 {
  */
 template <typename ReturnType>
 class Callback0: public BaseCallback0<ReturnType> {
-  public:
+ public:
     virtual ~Callback0() {}
     ReturnType Run() { return this->DoRun(); }
-  private:
+ private:
     virtual ReturnType DoRun() = 0;
 };
 
@@ -139,14 +139,14 @@ class Callback0: public BaseCallback0<ReturnType> {
  */
 template <typename ReturnType>
 class SingleUseCallback0: public BaseCallback0<ReturnType> {
-  public:
+ public:
     virtual ~SingleUseCallback0() {}
     ReturnType Run() {
       ReturnType ret = this->DoRun();
       delete this;
       return ret;
     }
-  private:
+ private:
     virtual ReturnType DoRun() = 0;
 };
 
@@ -155,13 +155,13 @@ class SingleUseCallback0: public BaseCallback0<ReturnType> {
  */
 template <>
 class SingleUseCallback0<void>: public BaseCallback0<void> {
-  public:
+ public:
     virtual ~SingleUseCallback0() {}
     void Run() {
       this->DoRun();
       delete this;
     }
-  private:
+ private:
     virtual void DoRun() = 0;
 };
 
@@ -170,7 +170,7 @@ class SingleUseCallback0<void>: public BaseCallback0<void> {
  */
 template <typename Parent, typename ReturnType>
 class FunctionCallback0_0: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)();
     explicit FunctionCallback0_0(Function callback):
       Parent(),
@@ -178,7 +178,7 @@ class FunctionCallback0_0: public Parent {
     ReturnType DoRun() {
       return m_callback();
     }
-  private:
+ private:
     Function m_callback;
 };
 
@@ -222,7 +222,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType>
 class MethodCallback0_0: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)();
     MethodCallback0_0(Class *object, Method callback):
       Parent(),
@@ -231,7 +231,7 @@ class MethodCallback0_0: public Parent {
     ReturnType DoRun() {
       return (m_object->*m_callback)();
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
 };
@@ -284,7 +284,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0>
 class FunctionCallback1_0: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0);
     FunctionCallback1_0(Function callback, A0 a0):
       Parent(),
@@ -293,7 +293,7 @@ class FunctionCallback1_0: public Parent {
     ReturnType DoRun() {
       return m_callback(m_a0);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
 };
@@ -348,7 +348,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0>
 class MethodCallback1_0: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0);
     MethodCallback1_0(Class *object, Method callback, A0 a0):
       Parent(),
@@ -358,7 +358,7 @@ class MethodCallback1_0: public Parent {
     ReturnType DoRun() {
       return (m_object->*m_callback)(m_a0);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -422,7 +422,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1>
 class FunctionCallback2_0: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1);
     FunctionCallback2_0(Function callback, A0 a0, A1 a1):
       Parent(),
@@ -432,7 +432,7 @@ class FunctionCallback2_0: public Parent {
     ReturnType DoRun() {
       return m_callback(m_a0, m_a1);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -498,7 +498,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1>  // NOLINT(whitespace/line_length)
 class MethodCallback2_0: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1);
     MethodCallback2_0(Class *object, Method callback, A0 a0, A1 a1):
       Parent(),
@@ -509,7 +509,7 @@ class MethodCallback2_0: public Parent {
     ReturnType DoRun() {
       return (m_object->*m_callback)(m_a0, m_a1);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -584,7 +584,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2>  // NOLINT(whitespace/line_length)
 class FunctionCallback3_0: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2);
     FunctionCallback3_0(Function callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -595,7 +595,7 @@ class FunctionCallback3_0: public Parent {
     ReturnType DoRun() {
       return m_callback(m_a0, m_a1, m_a2);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -672,7 +672,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2>  // NOLINT(whitespace/line_length)
 class MethodCallback3_0: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2);
     MethodCallback3_0(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -684,7 +684,7 @@ class MethodCallback3_0: public Parent {
     ReturnType DoRun() {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -770,7 +770,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3>  // NOLINT(whitespace/line_length)
 class FunctionCallback4_0: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, A3);
     FunctionCallback4_0(Function callback, A0 a0, A1 a1, A2 a2, A3 a3):
       Parent(),
@@ -782,7 +782,7 @@ class FunctionCallback4_0: public Parent {
     ReturnType DoRun() {
       return m_callback(m_a0, m_a1, m_a2, m_a3);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -870,7 +870,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3>  // NOLINT(whitespace/line_length)
 class MethodCallback4_0: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, A3);
     MethodCallback4_0(Class *object, Method callback, A0 a0, A1 a1, A2 a2, A3 a3):  // NOLINT(whitespace/line_length)
       Parent(),
@@ -883,7 +883,7 @@ class MethodCallback4_0: public Parent {
     ReturnType DoRun() {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, m_a3);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -980,7 +980,7 @@ inline Callback0<ReturnType>* NewCallback(
  */
 template <typename ReturnType, typename Arg0>
 class BaseCallback1 {
-  public:
+ public:
     virtual ~BaseCallback1() {}
     virtual ReturnType Run(Arg0 arg0) = 0;
 };
@@ -990,10 +990,10 @@ class BaseCallback1 {
  */
 template <typename ReturnType, typename Arg0>
 class Callback1: public BaseCallback1<ReturnType, Arg0> {
-  public:
+ public:
     virtual ~Callback1() {}
     ReturnType Run(Arg0 arg0) { return this->DoRun(arg0); }
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0) = 0;
 };
 
@@ -1002,14 +1002,14 @@ class Callback1: public BaseCallback1<ReturnType, Arg0> {
  */
 template <typename ReturnType, typename Arg0>
 class SingleUseCallback1: public BaseCallback1<ReturnType, Arg0> {
-  public:
+ public:
     virtual ~SingleUseCallback1() {}
     ReturnType Run(Arg0 arg0) {
       ReturnType ret = this->DoRun(arg0);
       delete this;
       return ret;
     }
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0) = 0;
 };
 
@@ -1018,13 +1018,13 @@ class SingleUseCallback1: public BaseCallback1<ReturnType, Arg0> {
  */
 template <typename Arg0>
 class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
-  public:
+ public:
     virtual ~SingleUseCallback1() {}
     void Run(Arg0 arg0) {
       this->DoRun(arg0);
       delete this;
     }
-  private:
+ private:
     virtual void DoRun(Arg0 arg0) = 0;
 };
 
@@ -1033,7 +1033,7 @@ class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
  */
 template <typename Parent, typename ReturnType, typename Arg0>
 class FunctionCallback0_1: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(Arg0);
     explicit FunctionCallback0_1(Function callback):
       Parent(),
@@ -1041,7 +1041,7 @@ class FunctionCallback0_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return m_callback(arg0);
     }
-  private:
+ private:
     Function m_callback;
 };
 
@@ -1089,7 +1089,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename Arg0>
 class MethodCallback0_1: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(Arg0);
     MethodCallback0_1(Class *object, Method callback):
       Parent(),
@@ -1098,7 +1098,7 @@ class MethodCallback0_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return (m_object->*m_callback)(arg0);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
 };
@@ -1155,7 +1155,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename Arg0>
 class FunctionCallback1_1: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, Arg0);
     FunctionCallback1_1(Function callback, A0 a0):
       Parent(),
@@ -1164,7 +1164,7 @@ class FunctionCallback1_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return m_callback(m_a0, arg0);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
 };
@@ -1223,7 +1223,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0>  // NOLINT(whitespace/line_length)
 class MethodCallback1_1: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, Arg0);
     MethodCallback1_1(Class *object, Method callback, A0 a0):
       Parent(),
@@ -1233,7 +1233,7 @@ class MethodCallback1_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return (m_object->*m_callback)(m_a0, arg0);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -1301,7 +1301,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>  // NOLINT(whitespace/line_length)
 class FunctionCallback2_1: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, Arg0);
     FunctionCallback2_1(Function callback, A0 a0, A1 a1):
       Parent(),
@@ -1311,7 +1311,7 @@ class FunctionCallback2_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return m_callback(m_a0, m_a1, arg0);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -1381,7 +1381,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>  // NOLINT(whitespace/line_length)
 class MethodCallback2_1: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, Arg0);
     MethodCallback2_1(Class *object, Method callback, A0 a0, A1 a1):
       Parent(),
@@ -1392,7 +1392,7 @@ class MethodCallback2_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return (m_object->*m_callback)(m_a0, m_a1, arg0);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -1471,7 +1471,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>  // NOLINT(whitespace/line_length)
 class FunctionCallback3_1: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, Arg0);
     FunctionCallback3_1(Function callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -1482,7 +1482,7 @@ class FunctionCallback3_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return m_callback(m_a0, m_a1, m_a2, arg0);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -1563,7 +1563,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>  // NOLINT(whitespace/line_length)
 class MethodCallback3_1: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, Arg0);
     MethodCallback3_1(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -1575,7 +1575,7 @@ class MethodCallback3_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, arg0);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -1665,7 +1665,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0>  // NOLINT(whitespace/line_length)
 class FunctionCallback4_1: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, A3, Arg0);
     FunctionCallback4_1(Function callback, A0 a0, A1 a1, A2 a2, A3 a3):
       Parent(),
@@ -1677,7 +1677,7 @@ class FunctionCallback4_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return m_callback(m_a0, m_a1, m_a2, m_a3, arg0);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -1769,7 +1769,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0>  // NOLINT(whitespace/line_length)
 class MethodCallback4_1: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, A3, Arg0);
     MethodCallback4_1(Class *object, Method callback, A0 a0, A1 a1, A2 a2, A3 a3):  // NOLINT(whitespace/line_length)
       Parent(),
@@ -1782,7 +1782,7 @@ class MethodCallback4_1: public Parent {
     ReturnType DoRun(Arg0 arg0) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, m_a3, arg0);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -1883,7 +1883,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
  */
 template <typename ReturnType, typename Arg0, typename Arg1>
 class BaseCallback2 {
-  public:
+ public:
     virtual ~BaseCallback2() {}
     virtual ReturnType Run(Arg0 arg0, Arg1 arg1) = 0;
 };
@@ -1893,10 +1893,10 @@ class BaseCallback2 {
  */
 template <typename ReturnType, typename Arg0, typename Arg1>
 class Callback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
-  public:
+ public:
     virtual ~Callback2() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1) { return this->DoRun(arg0, arg1); }
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
@@ -1905,14 +1905,14 @@ class Callback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
  */
 template <typename ReturnType, typename Arg0, typename Arg1>
 class SingleUseCallback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
-  public:
+ public:
     virtual ~SingleUseCallback2() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1) {
       ReturnType ret = this->DoRun(arg0, arg1);
       delete this;
       return ret;
     }
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
@@ -1921,13 +1921,13 @@ class SingleUseCallback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
  */
 template <typename Arg0, typename Arg1>
 class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg1> {  // NOLINT(whitespace/line_length)
-  public:
+ public:
     virtual ~SingleUseCallback2() {}
     void Run(Arg0 arg0, Arg1 arg1) {
       this->DoRun(arg0, arg1);
       delete this;
     }
-  private:
+ private:
     virtual void DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
@@ -1936,7 +1936,7 @@ class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg
  */
 template <typename Parent, typename ReturnType, typename Arg0, typename Arg1>
 class FunctionCallback0_2: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(Arg0, Arg1);
     explicit FunctionCallback0_2(Function callback):
       Parent(),
@@ -1944,7 +1944,7 @@ class FunctionCallback0_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return m_callback(arg0, arg1);
     }
-  private:
+ private:
     Function m_callback;
 };
 
@@ -1996,7 +1996,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class MethodCallback0_2: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(Arg0, Arg1);
     MethodCallback0_2(Class *object, Method callback):
       Parent(),
@@ -2005,7 +2005,7 @@ class MethodCallback0_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return (m_object->*m_callback)(arg0, arg1);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
 };
@@ -2066,7 +2066,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class FunctionCallback1_2: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, Arg0, Arg1);
     FunctionCallback1_2(Function callback, A0 a0):
       Parent(),
@@ -2075,7 +2075,7 @@ class FunctionCallback1_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return m_callback(m_a0, arg0, arg1);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
 };
@@ -2138,7 +2138,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class MethodCallback1_2: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, Arg0, Arg1);
     MethodCallback1_2(Class *object, Method callback, A0 a0):
       Parent(),
@@ -2148,7 +2148,7 @@ class MethodCallback1_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return (m_object->*m_callback)(m_a0, arg0, arg1);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -2220,7 +2220,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class FunctionCallback2_2: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, Arg0, Arg1);
     FunctionCallback2_2(Function callback, A0 a0, A1 a1):
       Parent(),
@@ -2230,7 +2230,7 @@ class FunctionCallback2_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return m_callback(m_a0, m_a1, arg0, arg1);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -2304,7 +2304,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class MethodCallback2_2: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, Arg0, Arg1);
     MethodCallback2_2(Class *object, Method callback, A0 a0, A1 a1):
       Parent(),
@@ -2315,7 +2315,7 @@ class MethodCallback2_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return (m_object->*m_callback)(m_a0, m_a1, arg0, arg1);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -2398,7 +2398,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class FunctionCallback3_2: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, Arg0, Arg1);
     FunctionCallback3_2(Function callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -2409,7 +2409,7 @@ class FunctionCallback3_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return m_callback(m_a0, m_a1, m_a2, arg0, arg1);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -2494,7 +2494,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class MethodCallback3_2: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, Arg0, Arg1);
     MethodCallback3_2(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -2506,7 +2506,7 @@ class MethodCallback3_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, arg0, arg1);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -2600,7 +2600,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class FunctionCallback4_2: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, A3, Arg0, Arg1);
     FunctionCallback4_2(Function callback, A0 a0, A1 a1, A2 a2, A3 a3):
       Parent(),
@@ -2612,7 +2612,7 @@ class FunctionCallback4_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return m_callback(m_a0, m_a1, m_a2, m_a3, arg0, arg1);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -2708,7 +2708,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0, typename Arg1>  // NOLINT(whitespace/line_length)
 class MethodCallback4_2: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, A3, Arg0, Arg1);
     MethodCallback4_2(Class *object, Method callback, A0 a0, A1 a1, A2 a2, A3 a3):  // NOLINT(whitespace/line_length)
       Parent(),
@@ -2721,7 +2721,7 @@ class MethodCallback4_2: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, m_a3, arg0, arg1);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -2826,7 +2826,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
  */
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class BaseCallback3 {
-  public:
+ public:
     virtual ~BaseCallback3() {}
     virtual ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
@@ -2836,10 +2836,10 @@ class BaseCallback3 {
  */
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class Callback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
-  public:
+ public:
     virtual ~Callback3() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) { return this->DoRun(arg0, arg1, arg2); }  // NOLINT(whitespace/line_length)
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
@@ -2848,14 +2848,14 @@ class Callback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
  */
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class SingleUseCallback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
-  public:
+ public:
     virtual ~SingleUseCallback3() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       ReturnType ret = this->DoRun(arg0, arg1, arg2);
       delete this;
       return ret;
     }
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
@@ -2864,13 +2864,13 @@ class SingleUseCallback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
  */
 template <typename Arg0, typename Arg1, typename Arg2>
 class SingleUseCallback3<void, Arg0, Arg1, Arg2>: public BaseCallback3<void, Arg0, Arg1, Arg2> {  // NOLINT(whitespace/line_length)
-  public:
+ public:
     virtual ~SingleUseCallback3() {}
     void Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       this->DoRun(arg0, arg1, arg2);
       delete this;
     }
-  private:
+ private:
     virtual void DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
@@ -2879,7 +2879,7 @@ class SingleUseCallback3<void, Arg0, Arg1, Arg2>: public BaseCallback3<void, Arg
  */
 template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class FunctionCallback0_3: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(Arg0, Arg1, Arg2);
     explicit FunctionCallback0_3(Function callback):
       Parent(),
@@ -2887,7 +2887,7 @@ class FunctionCallback0_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return m_callback(arg0, arg1, arg2);
     }
-  private:
+ private:
     Function m_callback;
 };
 
@@ -2943,7 +2943,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class MethodCallback0_3: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(Arg0, Arg1, Arg2);
     MethodCallback0_3(Class *object, Method callback):
       Parent(),
@@ -2952,7 +2952,7 @@ class MethodCallback0_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return (m_object->*m_callback)(arg0, arg1, arg2);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
 };
@@ -3017,7 +3017,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class FunctionCallback1_3: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, Arg0, Arg1, Arg2);
     FunctionCallback1_3(Function callback, A0 a0):
       Parent(),
@@ -3026,7 +3026,7 @@ class FunctionCallback1_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return m_callback(m_a0, arg0, arg1, arg2);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
 };
@@ -3093,7 +3093,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class MethodCallback1_3: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, Arg0, Arg1, Arg2);
     MethodCallback1_3(Class *object, Method callback, A0 a0):
       Parent(),
@@ -3103,7 +3103,7 @@ class MethodCallback1_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return (m_object->*m_callback)(m_a0, arg0, arg1, arg2);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -3179,7 +3179,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class FunctionCallback2_3: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, Arg0, Arg1, Arg2);
     FunctionCallback2_3(Function callback, A0 a0, A1 a1):
       Parent(),
@@ -3189,7 +3189,7 @@ class FunctionCallback2_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return m_callback(m_a0, m_a1, arg0, arg1, arg2);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -3267,7 +3267,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class MethodCallback2_3: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, Arg0, Arg1, Arg2);
     MethodCallback2_3(Class *object, Method callback, A0 a0, A1 a1):
       Parent(),
@@ -3278,7 +3278,7 @@ class MethodCallback2_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return (m_object->*m_callback)(m_a0, m_a1, arg0, arg1, arg2);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -3365,7 +3365,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class FunctionCallback3_3: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, Arg0, Arg1, Arg2);
     FunctionCallback3_3(Function callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -3376,7 +3376,7 @@ class FunctionCallback3_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return m_callback(m_a0, m_a1, m_a2, arg0, arg1, arg2);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -3465,7 +3465,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class MethodCallback3_3: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, Arg0, Arg1, Arg2);
     MethodCallback3_3(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -3477,7 +3477,7 @@ class MethodCallback3_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, arg0, arg1, arg2);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -3575,7 +3575,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class FunctionCallback4_3: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, A3, Arg0, Arg1, Arg2);
     FunctionCallback4_3(Function callback, A0 a0, A1 a1, A2 a2, A3 a3):
       Parent(),
@@ -3587,7 +3587,7 @@ class FunctionCallback4_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return m_callback(m_a0, m_a1, m_a2, m_a3, arg0, arg1, arg2);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -3687,7 +3687,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0, typename Arg1, typename Arg2>  // NOLINT(whitespace/line_length)
 class MethodCallback4_3: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, A3, Arg0, Arg1, Arg2);
     MethodCallback4_3(Class *object, Method callback, A0 a0, A1 a1, A2 a2, A3 a3):  // NOLINT(whitespace/line_length)
       Parent(),
@@ -3700,7 +3700,7 @@ class MethodCallback4_3: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, m_a3, arg0, arg1, arg2);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -3809,7 +3809,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
  */
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class BaseCallback4 {
-  public:
+ public:
     virtual ~BaseCallback4() {}
     virtual ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
@@ -3819,10 +3819,10 @@ class BaseCallback4 {
  */
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class Callback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
-  public:
+ public:
     virtual ~Callback4() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return this->DoRun(arg0, arg1, arg2, arg3); }  // NOLINT(whitespace/line_length)
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
@@ -3831,14 +3831,14 @@ class Callback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
  */
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class SingleUseCallback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {  // NOLINT(whitespace/line_length)
-  public:
+ public:
     virtual ~SingleUseCallback4() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       ReturnType ret = this->DoRun(arg0, arg1, arg2, arg3);
       delete this;
       return ret;
     }
-  private:
+ private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
@@ -3847,13 +3847,13 @@ class SingleUseCallback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg
  */
 template <typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<void, Arg0, Arg1, Arg2, Arg3> {  // NOLINT(whitespace/line_length)
-  public:
+ public:
     virtual ~SingleUseCallback4() {}
     void Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       this->DoRun(arg0, arg1, arg2, arg3);
       delete this;
     }
-  private:
+ private:
     virtual void DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
@@ -3862,7 +3862,7 @@ class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<voi
  */
 template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class FunctionCallback0_4: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(Arg0, Arg1, Arg2, Arg3);
     explicit FunctionCallback0_4(Function callback):
       Parent(),
@@ -3870,7 +3870,7 @@ class FunctionCallback0_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return m_callback(arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Function m_callback;
 };
 
@@ -3930,7 +3930,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class MethodCallback0_4: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(Arg0, Arg1, Arg2, Arg3);
     MethodCallback0_4(Class *object, Method callback):
       Parent(),
@@ -3939,7 +3939,7 @@ class MethodCallback0_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return (m_object->*m_callback)(arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
 };
@@ -4008,7 +4008,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class FunctionCallback1_4: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, Arg0, Arg1, Arg2, Arg3);
     FunctionCallback1_4(Function callback, A0 a0):
       Parent(),
@@ -4017,7 +4017,7 @@ class FunctionCallback1_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return m_callback(m_a0, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
 };
@@ -4088,7 +4088,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class MethodCallback1_4: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, Arg0, Arg1, Arg2, Arg3);
     MethodCallback1_4(Class *object, Method callback, A0 a0):
       Parent(),
@@ -4098,7 +4098,7 @@ class MethodCallback1_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return (m_object->*m_callback)(m_a0, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -4178,7 +4178,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class FunctionCallback2_4: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, Arg0, Arg1, Arg2, Arg3);
     FunctionCallback2_4(Function callback, A0 a0, A1 a1):
       Parent(),
@@ -4188,7 +4188,7 @@ class FunctionCallback2_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return m_callback(m_a0, m_a1, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -4270,7 +4270,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class MethodCallback2_4: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, Arg0, Arg1, Arg2, Arg3);
     MethodCallback2_4(Class *object, Method callback, A0 a0, A1 a1):
       Parent(),
@@ -4281,7 +4281,7 @@ class MethodCallback2_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return (m_object->*m_callback)(m_a0, m_a1, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -4372,7 +4372,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class FunctionCallback3_4: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, Arg0, Arg1, Arg2, Arg3);
     FunctionCallback3_4(Function callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -4383,7 +4383,7 @@ class FunctionCallback3_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return m_callback(m_a0, m_a1, m_a2, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -4476,7 +4476,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class MethodCallback3_4: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, Arg0, Arg1, Arg2, Arg3);
     MethodCallback3_4(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
       Parent(),
@@ -4488,7 +4488,7 @@ class MethodCallback3_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;
@@ -4590,7 +4590,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class FunctionCallback4_4: public Parent {
-  public:
+ public:
     typedef ReturnType (*Function)(A0, A1, A2, A3, Arg0, Arg1, Arg2, Arg3);
     FunctionCallback4_4(Function callback, A0 a0, A1 a1, A2 a2, A3 a3):
       Parent(),
@@ -4602,7 +4602,7 @@ class FunctionCallback4_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return m_callback(m_a0, m_a1, m_a2, m_a3, arg0, arg1, arg2, arg3);
     }
-  private:
+ private:
     Function m_callback;
   A0 m_a0;
   A1 m_a1;
@@ -4706,7 +4706,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
  */
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3, typename Arg0, typename Arg1, typename Arg2, typename Arg3>  // NOLINT(whitespace/line_length)
 class MethodCallback4_4: public Parent {
-  public:
+ public:
     typedef ReturnType (Class::*Method)(A0, A1, A2, A3, Arg0, Arg1, Arg2, Arg3);
     MethodCallback4_4(Class *object, Method callback, A0 a0, A1 a1, A2 a2, A3 a3):  // NOLINT(whitespace/line_length)
       Parent(),
@@ -4719,7 +4719,7 @@ class MethodCallback4_4: public Parent {
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
       return (m_object->*m_callback)(m_a0, m_a1, m_a2, m_a3, arg0, arg1, arg2, arg3);  // NOLINT(whitespace/line_length)
     }
-  private:
+ private:
     Class *m_object;
     Method m_callback;
   A0 m_a0;

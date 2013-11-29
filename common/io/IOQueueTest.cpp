@@ -36,7 +36,7 @@ using std::string;
 
 
 class IOQueueTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(IOQueueTest);
     CPPUNIT_TEST(testBasicWrite);
     CPPUNIT_TEST(testBlockOverflow);
@@ -47,7 +47,7 @@ class IOQueueTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testStringRead);
     CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown() {}
     void testBasicWrite();
@@ -58,7 +58,7 @@ class IOQueueTest: public CppUnit::TestFixture {
     void testDump();
     void testStringRead();
 
-  private:
+ private:
     auto_ptr<IOQueue> m_buffer;
 
     unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);

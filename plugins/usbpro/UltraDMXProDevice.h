@@ -43,7 +43,7 @@ using ola::plugin::usbpro::Request;
  * An Ultra DMX Pro device
  */
 class UltraDMXProDevice: public UsbSerialDevice {
-  public:
+ public:
     UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
                       ola::AbstractPlugin *owner,
                       const string &name,
@@ -62,10 +62,10 @@ class UltraDMXProDevice: public UsbSerialDevice {
                    string *response,
                    ConfigureCallback *done);
 
-  protected:
+ protected:
     void PrePortStop();
 
-  private:
+ private:
     void UpdateParams(bool status, const usb_pro_parameters &params);
 
     void HandleParametersRequest(ola::rpc::RpcController *controller,
@@ -98,7 +98,7 @@ class UltraDMXProDevice: public UsbSerialDevice {
  * The Input port
  */
 class UltraDMXProInputPort: public BasicInputPort {
-  public:
+ public:
     UltraDMXProInputPort(UltraDMXProDevice *parent,
                          UltraDMXProWidget *widget,
                          unsigned int id,
@@ -118,7 +118,7 @@ class UltraDMXProInputPort: public BasicInputPort {
       return str.str();
     }
 
-  private:
+ private:
     string m_serial;
     UltraDMXProWidget *m_widget;
 };
@@ -128,7 +128,7 @@ class UltraDMXProInputPort: public BasicInputPort {
  * The output port, we have two of these per device.
  */
 class UltraDMXProOutputPort: public BasicOutputPort {
-  public:
+ public:
     UltraDMXProOutputPort(UltraDMXProDevice *parent,
                           UltraDMXProWidget *widget,
                           unsigned int id,
@@ -163,7 +163,7 @@ class UltraDMXProOutputPort: public BasicOutputPort {
       return str.str();
     }
 
-  private:
+ private:
     string m_serial;
     UltraDMXProWidget *m_widget;
     TokenBucket m_bucket;

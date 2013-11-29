@@ -35,7 +35,7 @@ using ola::PluginAdaptor;
 using std::string;
 
 class KiNetPlugin : public Plugin {
-  public:
+ public:
     explicit KiNetPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
 
@@ -46,7 +46,7 @@ class KiNetPlugin : public Plugin {
     string Description() const;
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     std::auto_ptr<class KiNetDevice> m_device;  // only have one device
 
     bool StartHook();

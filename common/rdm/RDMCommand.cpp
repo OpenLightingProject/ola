@@ -835,7 +835,7 @@ RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
                                  PID_DISC_UNIQUE_BRANCH,
                                  param_data,
                                  length);
-};
+}
 
 
 /*
@@ -854,7 +854,7 @@ RDMDiscoveryRequest *NewMuteRequest(const UID &source,
                                  PID_DISC_MUTE,
                                  NULL,
                                  0);
-};
+}
 
 
 /**
@@ -873,7 +873,7 @@ RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
                                    PID_DISC_UN_MUTE,
                                    NULL,
                                    0);
-};
+}
 
 
 /**

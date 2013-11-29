@@ -35,7 +35,7 @@ using std::vector;
 using ola::network::IPV4Address;
 
 class KiNetDevice: public ola::Device {
-  public:
+ public:
     KiNetDevice(AbstractPlugin *owner,
                 const vector<IPV4Address> &power_supplies,
                 class PluginAdaptor *plugin_adaptor);
@@ -43,12 +43,12 @@ class KiNetDevice: public ola::Device {
     // Only one KiNet device
     std::string DeviceId() const { return "1"; }
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
     void PostPortStop();
 
-  private:
+ private:
     const vector<IPV4Address> m_power_supplies;
     class KiNetNode *m_node;
     class PluginAdaptor *m_plugin_adaptor;

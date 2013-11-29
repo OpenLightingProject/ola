@@ -51,7 +51,7 @@ class OlaConfigurator;
  * Inherit from this and implement HandleResponse()
  */
 class OlaConfigurator {
-  public:
+ public:
     /*
      * @param device_id the device id to configure
      * @param plugin_id the expected plugin id for this device
@@ -79,11 +79,11 @@ class OlaConfigurator {
                                       const string &error) = 0;
     virtual void SendConfigRequest() = 0;
 
-  protected:
+ protected:
     unsigned int m_alias;
     ola::ola_plugin_id m_plugin_id;
 
-  private:
+ private:
     ola::OlaCallbackClientWrapper *m_client_wrapper;
     ola::OlaCallbackClient *m_client;
     ola::io::SelectServer *m_ss;

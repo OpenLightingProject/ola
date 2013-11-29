@@ -60,7 +60,7 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRequestAndDiscovery);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testSendAndReceive();
@@ -89,7 +89,7 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
         UIDSet *expected_uids,
         const UIDSet &uids);
 
-  private:
+ private:
     int m_discovery_complete_count;
 
     RDMRequest *NewGetRequest(const UID &source,
@@ -103,7 +103,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(QueueingRDMControllerTest);
  * The MockRDMController, used to verify the behaviour
  */
 class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     MockRDMController()
         : m_rdm_callback(NULL),
           m_discovery_callback(NULL) {
@@ -128,7 +128,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
     void RunDiscoveryCallback(const UIDSet &uids);
     void Verify();
 
-  private:
+ private:
     typedef struct {
       RDMRequest *request;
       ola::rdm::rdm_response_code code;

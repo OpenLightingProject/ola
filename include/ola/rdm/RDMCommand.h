@@ -71,7 +71,7 @@ typedef enum {
  *   as expensive.
  */
 class RDMCommand {
-  public:
+ public:
     /**
      * @brief A set of values representing CommandClasses in E1.20.
      * @note Please see section 6.2.10 of ANSI E1.20 for more information.
@@ -200,7 +200,7 @@ class RDMCommand {
 
     static RDMCommand *Inflate(const uint8_t *data, unsigned int length);
 
-  protected:
+ protected:
     uint8_t m_port_id;
 
     RDMCommand(const UID &source,
@@ -222,7 +222,7 @@ class RDMCommand {
 
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
-  private:
+ private:
     UID m_source;
     UID m_destination;
     uint8_t m_transaction_number;
@@ -244,7 +244,7 @@ class RDMCommand {
  * @brief RDM Commands that represent requests (GET, SET or DISCOVER).
  */
 class RDMRequest: public RDMCommand {
-  public:
+ public:
     RDMRequest(const UID &source,
                const UID &destination,
                uint8_t transaction_number,
@@ -305,7 +305,7 @@ class RDMRequest: public RDMCommand {
                                        unsigned int length);
     static RDMRequest* InflateFromData(const string &data);
 
-  private:
+ private:
     RDMCommandClass m_command_class;
 };
 
@@ -314,7 +314,7 @@ class RDMRequest: public RDMCommand {
  * @brief The parent class for GET/SET requests.
  */
 class RDMGetSetRequest: public RDMRequest {
-  public:
+ public:
     RDMGetSetRequest(const UID &source,
                      const UID &destination,
                      uint8_t transaction_number,
@@ -341,7 +341,7 @@ class RDMGetSetRequest: public RDMRequest {
 
 template <RDMCommand::RDMCommandClass command_class>
 class BaseRDMRequest: public RDMGetSetRequest {
-  public:
+ public:
     BaseRDMRequest(const UID &source,
                    const UID &destination,
                    uint8_t transaction_number,
@@ -397,7 +397,7 @@ typedef BaseRDMRequest<RDMCommand::SET_COMMAND> RDMSetRequest;
  * DISCOVER).
  */
 class RDMResponse: public RDMCommand {
-  public:
+ public:
     RDMResponse(const UID &source,
                 const UID &destination,
                 uint8_t transaction_number,
@@ -449,7 +449,7 @@ class RDMResponse: public RDMCommand {
     static RDMResponse* CombineResponses(const RDMResponse *response1,
                                          const RDMResponse *response2);
 
-  private:
+ private:
     RDMCommand::RDMCommandClass m_command_class;
 };
 
@@ -458,7 +458,7 @@ class RDMResponse: public RDMCommand {
  * @brief The base class for GET/SET responses.
  */
 class RDMGetSetResponse: public RDMResponse {
-  public:
+ public:
     RDMGetSetResponse(const UID &source,
                       const UID &destination,
                       uint8_t transaction_number,
@@ -478,7 +478,7 @@ class RDMGetSetResponse: public RDMResponse {
 
 template <RDMCommand::RDMCommandClass command_class>
 class BaseRDMResponse: public RDMGetSetResponse {
-  public:
+ public:
     BaseRDMResponse(const UID &source,
                     const UID &destination,
                     uint8_t transaction_number,
@@ -523,7 +523,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
  * @brief An RDM request of type DISCOVER_COMMAND.
  */
 class RDMDiscoveryRequest: public RDMRequest {
-  public:
+ public:
     RDMDiscoveryRequest(const UID &source,
                         const UID &destination,
                         uint8_t transaction_number,
@@ -593,7 +593,7 @@ RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
  * @brief An RDM response of type DISCOVER_COMMAND
  */
 class RDMDiscoveryResponse: public RDMResponse {
-  public:
+ public:
     RDMDiscoveryResponse(const UID &source,
                          const UID &destination,
                          uint8_t transaction_number,

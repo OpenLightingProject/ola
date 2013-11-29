@@ -53,7 +53,7 @@ using std::string;
  * This class holds information about an attached ftdi chip
  */
 class FtdiWidgetInfo {
-  public:
+ public:
     FtdiWidgetInfo(const string &name, const string &serial, int unsigned id)
       : m_name(name),
         m_serial(serial),
@@ -85,7 +85,7 @@ class FtdiWidgetInfo {
       return *this;
     }
 
-  private:
+ private:
     string m_name;
     string m_serial;
     int unsigned m_id;
@@ -96,7 +96,7 @@ class FtdiWidgetInfo {
  * An FTDI widget
  */
 class FtdiWidget {
-  public:
+ public:
     static const int VID = 0x0403;  // FTDI Vendor ID
     static const int PID = 0x6001;  // FTDI Product ID
 
@@ -169,7 +169,7 @@ class FtdiWidget {
      */
     static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
-  private:
+ private:
     string m_serial;
     string m_name;
     uint32_t m_id;

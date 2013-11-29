@@ -65,13 +65,13 @@ class GenericMessagePrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNestedPrinter);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     GenericMessagePrinterTest() {}
     void testSimplePrinter();
     void testLabeledPrinter();
     void testNestedPrinter();
 
-  private:
+ private:
     GenericMessagePrinter m_printer;
 };
 

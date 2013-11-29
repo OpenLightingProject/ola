@@ -28,7 +28,7 @@ namespace ola {
 namespace rpc {
 
 class RpcController {
-  public:
+ public:
     RpcController();
     ~RpcController() {}
 
@@ -38,7 +38,7 @@ class RpcController {
 
     void SetFailed(const std::string &reason);
 
-  private:
+ private:
     bool m_failed;
     std::string m_error_text;
 };

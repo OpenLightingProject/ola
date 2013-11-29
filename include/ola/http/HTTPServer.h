@@ -52,43 +52,43 @@ using std::vector;
  * Represents the HTTP request
  */
 class HTTPRequest {
-  public:
-    HTTPRequest(const string &url,
-                const string &method,
-                const string &version,
-                struct MHD_Connection *connection);
-    ~HTTPRequest();
-    bool Init();
+ public:
+  HTTPRequest(const string &url,
+              const string &method,
+              const string &version,
+              struct MHD_Connection *connection);
+  ~HTTPRequest();
+  bool Init();
 
-    // accessors
-    const string Url() const { return m_url; }
-    const string Method() const { return m_method; }
-    const string Version() const { return m_version; }
+  // accessors
+  const string Url() const { return m_url; }
+  const string Method() const { return m_method; }
+  const string Version() const { return m_version; }
 
-    void AddHeader(const string &key, const string &value);
-    void AddPostParameter(const string &key, const string &value);
-    void ProcessPostData(const char *data, size_t *data_size);
-    const string GetHeader(const string &key) const;
-    bool CheckParameterExists(const string &key) const;
-    const string GetParameter(const string &key) const;
-    const string GetPostParameter(const string &key) const;
+  void AddHeader(const string &key, const string &value);
+  void AddPostParameter(const string &key, const string &value);
+  void ProcessPostData(const char *data, size_t *data_size);
+  const string GetHeader(const string &key) const;
+  bool CheckParameterExists(const string &key) const;
+  const string GetParameter(const string &key) const;
+  const string GetPostParameter(const string &key) const;
 
-    bool InFlight() const { return m_in_flight; }
-    void SetInFlight() { m_in_flight = true; }
+  bool InFlight() const { return m_in_flight; }
+  void SetInFlight() { m_in_flight = true; }
 
-  private:
-    string m_url;
-    string m_method;
-    string m_version;
-    struct MHD_Connection *m_connection;
-    map<string, string> m_headers;
-    map<string, string> m_post_params;
-    struct MHD_PostProcessor *m_processor;
-    bool m_in_flight;
+ private:
+  string m_url;
+  string m_method;
+  string m_version;
+  struct MHD_Connection *m_connection;
+  map<string, string> m_headers;
+  map<string, string> m_post_params;
+  struct MHD_PostProcessor *m_processor;
+  bool m_in_flight;
 
-    static const unsigned int K_POST_BUFFER_SIZE = 1024;
+  static const unsigned int K_POST_BUFFER_SIZE = 1024;
 
-    DISALLOW_COPY_AND_ASSIGN(HTTPRequest);
+  DISALLOW_COPY_AND_ASSIGN(HTTPRequest);
 };
 
 
@@ -96,27 +96,27 @@ class HTTPRequest {
  * Represents the HTTP Response
  */
 class HTTPResponse {
-  public:
-    explicit HTTPResponse(struct MHD_Connection *connection):
-      m_connection(connection),
-      m_status_code(MHD_HTTP_OK) {}
+ public:
+  explicit HTTPResponse(struct MHD_Connection *connection):
+    m_connection(connection),
+    m_status_code(MHD_HTTP_OK) {}
 
-    void Append(const string &data) { m_data.append(data); }
-    void SetContentType(const string &type);
-    void SetHeader(const string &key, const string &value);
-    void SetStatus(unsigned int status) { m_status_code = status; }
-    void SetNoCache();
-    int SendJson(const ola::web::JsonValue &json);
-    int Send();
-    struct MHD_Connection *Connection() const { return m_connection; }
-  private:
-    string m_data;
-    struct MHD_Connection *m_connection;
-    typedef multimap<string, string> HeadersMultiMap;
-    HeadersMultiMap m_headers;
-    unsigned int m_status_code;
+  void Append(const string &data) { m_data.append(data); }
+  void SetContentType(const string &type);
+  void SetHeader(const string &key, const string &value);
+  void SetStatus(unsigned int status) { m_status_code = status; }
+  void SetNoCache();
+  int SendJson(const ola::web::JsonValue &json);
+  int Send();
+  struct MHD_Connection *Connection() const { return m_connection; }
+ private:
+  string m_data;
+  struct MHD_Connection *m_connection;
+  typedef multimap<string, string> HeadersMultiMap;
+  HeadersMultiMap m_headers;
+  unsigned int m_status_code;
 
-    DISALLOW_COPY_AND_ASSIGN(HTTPResponse);
+  DISALLOW_COPY_AND_ASSIGN(HTTPResponse);
 };
 
 
@@ -142,100 +142,100 @@ class HTTPResponse {
  * @}
  */
 class HTTPServer: public ola::thread::Thread {
-  public:
-    typedef ola::Callback2<int, const HTTPRequest*, HTTPResponse*>
-      BaseHTTPCallback;
+ public:
+  typedef ola::Callback2<int, const HTTPRequest*, HTTPResponse*>
+    BaseHTTPCallback;
 
-    struct HTTPServerOptions {
-      public:
-        // The port to listen on
-        uint16_t port;
-        // The root for content served with ServeStaticContent();
-        string data_dir;
+  struct HTTPServerOptions {
+   public:
+    // The port to listen on
+    uint16_t port;
+    // The root for content served with ServeStaticContent();
+    string data_dir;
 
-        HTTPServerOptions()
-          : port(0),
-            data_dir("") {
-        }
-    };
+    HTTPServerOptions()
+      : port(0),
+        data_dir("") {
+    }
+  };
 
-    explicit HTTPServer(const HTTPServerOptions &options);
-    virtual ~HTTPServer();
-    bool Init();
-    void *Run();
-    void Stop();
-    void UpdateSockets();
+  explicit HTTPServer(const HTTPServerOptions &options);
+  virtual ~HTTPServer();
+  bool Init();
+  void *Run();
+  void Stop();
+  void UpdateSockets();
 
-    /**
-     * Called when there is HTTP IO activity to deal with. This is a noop as
-     * MHD_run is called in UpdateSockets above.
-     */
-    void HandleHTTPIO() {}
+  /**
+   * Called when there is HTTP IO activity to deal with. This is a noop as
+   * MHD_run is called in UpdateSockets above.
+   */
+  void HandleHTTPIO() {}
 
-    int DispatchRequest(const HTTPRequest *request, HTTPResponse *response);
+  int DispatchRequest(const HTTPRequest *request, HTTPResponse *response);
 
-    // Register a callback handler.
-    bool RegisterHandler(const string &path, BaseHTTPCallback *handler);
+  // Register a callback handler.
+  bool RegisterHandler(const string &path, BaseHTTPCallback *handler);
 
-    // Register a file handler.
-    bool RegisterFile(const string &path,
-                      const string &content_type);
-    bool RegisterFile(const string &path,
-                      const string &file,
-                      const string &content_type);
-    // Set the default handler.
-    void RegisterDefaultHandler(BaseHTTPCallback *handler);
+  // Register a file handler.
+  bool RegisterFile(const string &path,
+                    const string &content_type);
+  bool RegisterFile(const string &path,
+                    const string &file,
+                    const string &content_type);
+  // Set the default handler.
+  void RegisterDefaultHandler(BaseHTTPCallback *handler);
 
-    void Handlers(vector<string> *handlers) const;
-    const string DataDir() const { return m_data_dir; }
+  void Handlers(vector<string> *handlers) const;
+  const string DataDir() const { return m_data_dir; }
 
-    // Return an error
-    int ServeError(HTTPResponse *response, const string &details="");
-    int ServeNotFound(HTTPResponse *response);
-    static int ServeRedirect(HTTPResponse *response, const string &location);
+  // Return an error
+  int ServeError(HTTPResponse *response, const string &details="");
+  int ServeNotFound(HTTPResponse *response);
+  static int ServeRedirect(HTTPResponse *response, const string &location);
 
-    // Return the contents of a file.
-    int ServeStaticContent(const string &path,
-                           const string &content_type,
-                           HTTPResponse *response);
+  // Return the contents of a file.
+  int ServeStaticContent(const string &path,
+                         const string &content_type,
+                         HTTPResponse *response);
 
-    static const char CONTENT_TYPE_PLAIN[];
-    static const char CONTENT_TYPE_HTML[];
-    static const char CONTENT_TYPE_GIF[];
-    static const char CONTENT_TYPE_PNG[];
-    static const char CONTENT_TYPE_CSS[];
-    static const char CONTENT_TYPE_JS[];
+  static const char CONTENT_TYPE_PLAIN[];
+  static const char CONTENT_TYPE_HTML[];
+  static const char CONTENT_TYPE_GIF[];
+  static const char CONTENT_TYPE_PNG[];
+  static const char CONTENT_TYPE_CSS[];
+  static const char CONTENT_TYPE_JS[];
 
-    // Expose the SelectServer
-    ola::io::SelectServer *SelectServer() { return &m_select_server; }
+  // Expose the SelectServer
+  ola::io::SelectServer *SelectServer() { return &m_select_server; }
 
-  private :
-    typedef struct {
-      string file_path;
-      string content_type;
-    } static_file_info;
+ private :
+  typedef struct {
+    string file_path;
+    string content_type;
+  } static_file_info;
 
-    typedef std::set<ola::io::UnmanagedFileDescriptor*,
-                     ola::io::UnmanagedFileDescriptor_lt> SocketSet;
+  typedef std::set<ola::io::UnmanagedFileDescriptor*,
+                   ola::io::UnmanagedFileDescriptor_lt> SocketSet;
 
-    struct MHD_Daemon *m_httpd;
-    ola::io::SelectServer m_select_server;
-    SocketSet m_sockets;
+  struct MHD_Daemon *m_httpd;
+  ola::io::SelectServer m_select_server;
+  SocketSet m_sockets;
 
-    map<string, BaseHTTPCallback*> m_handlers;
-    map<string, static_file_info> m_static_content;
-    BaseHTTPCallback *m_default_handler;
-    unsigned int m_port;
-    string m_data_dir;
+  map<string, BaseHTTPCallback*> m_handlers;
+  map<string, static_file_info> m_static_content;
+  BaseHTTPCallback *m_default_handler;
+  unsigned int m_port;
+  string m_data_dir;
 
-    int ServeStaticContent(static_file_info *file_info,
-                           HTTPResponse *response);
+  int ServeStaticContent(static_file_info *file_info,
+                         HTTPResponse *response);
 
-    ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
-                                                fd_set *w_set,
-                                                int fd);
+  ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
+                                              fd_set *w_set,
+                                              int fd);
 
-    DISALLOW_COPY_AND_ASSIGN(HTTPServer);
+  DISALLOW_COPY_AND_ASSIGN(HTTPServer);
 };
 }  // namespace http
 }  // namespace ola

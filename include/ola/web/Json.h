@@ -74,7 +74,7 @@ using std::vector;
  * @brief The base class for JSON values.
  */
 class JsonValue {
-  public:
+ public:
     virtual ~JsonValue() {}
 
     /**
@@ -84,7 +84,7 @@ class JsonValue {
      */
     virtual void ToString(ostream *output, unsigned int indent) const = 0;
 
-  protected:
+ protected:
     /**
      * @brief Append the give number of spaces to the output stream.
      * @param output the ostream to append to
@@ -105,7 +105,7 @@ class JsonValue {
  * @brief A string value.
  */
 class JsonStringValue: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonStringValue
      * @param value the string to use.
@@ -118,7 +118,7 @@ class JsonStringValue: public JsonValue {
       *output << '"' << EscapeString(m_value) << '"';
     }
 
-  private:
+ private:
     const string m_value;
 };
 
@@ -127,7 +127,7 @@ class JsonStringValue: public JsonValue {
  * @brief A unsigned int value.
  */
 class JsonUIntValue: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonUIntValue
      * @param value the unsigned int to use.
@@ -140,7 +140,7 @@ class JsonUIntValue: public JsonValue {
       *output << m_value;
     }
 
-  private:
+ private:
     const unsigned int m_value;
 };
 
@@ -149,7 +149,7 @@ class JsonUIntValue: public JsonValue {
  * @brief A signed int value.
  */
 class JsonIntValue: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonIntValue
      * @param value the int to use.
@@ -162,7 +162,7 @@ class JsonIntValue: public JsonValue {
       *output << m_value;
     }
 
-  private:
+ private:
     const int m_value;
 };
 
@@ -171,7 +171,7 @@ class JsonIntValue: public JsonValue {
  * @brief A Bool value
  */
 class JsonBoolValue: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonBoolValue
      * @param value the bool to use.
@@ -184,7 +184,7 @@ class JsonBoolValue: public JsonValue {
       *output << (m_value ? "true" : "false");
     }
 
-  private:
+ private:
     const bool m_value;
 };
 
@@ -193,7 +193,7 @@ class JsonBoolValue: public JsonValue {
  * @brief The null value
  */
 class JsonNullValue: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonNullValue
      */
@@ -209,7 +209,7 @@ class JsonNullValue: public JsonValue {
  * @brief A raw value, useful if you want to cheat.
  */
 class JsonRawValue: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonRawValue
      * @param value the raw data to insert.
@@ -222,7 +222,7 @@ class JsonRawValue: public JsonValue {
       *output << m_value;
     }
 
-  private:
+ private:
     const string m_value;
 };
 
@@ -237,7 +237,7 @@ class JsonRawValue: public JsonValue {
  * intern the strings here. That's a future optimization for someone.
  */
 class JsonObject: public JsonValue {
-  public:
+ public:
     /**
      * @brief Create a new JsonObject
      */
@@ -308,7 +308,7 @@ class JsonObject: public JsonValue {
 
     void ToString(ostream *output, unsigned int indent) const;
 
-  private:
+ private:
     typedef map<string, JsonValue*> MemberMap;
     MemberMap m_members;
 
@@ -321,7 +321,7 @@ class JsonObject: public JsonValue {
  * Arrays in JSON can contain values of different types.
  */
 class JsonArray: public JsonValue {
-  public:
+ public:
     JsonArray() : m_complex_type(false) {}
     ~JsonArray();
 
@@ -405,7 +405,7 @@ class JsonArray: public JsonValue {
 
     void ToString(ostream *output, unsigned int indent) const;
 
-  private:
+ private:
     typedef vector<JsonValue*> ValuesVector;
     ValuesVector m_values;
     // true if this array contains a nested object or array
@@ -418,7 +418,7 @@ class JsonArray: public JsonValue {
  * @brief A class that writes a JsonValue to an output stream.
  */
 class JsonWriter {
-  public:
+ public:
     /**
      * @brief Write the string representation of the JsonValue to a ostream.
      * @param output the ostream to write to

@@ -40,7 +40,7 @@ namespace rdm {
  */
 class StaticGroupTokenCalculator
     : public ola::messaging::FieldDescriptorVisitor {
-  public:
+ public:
     StaticGroupTokenCalculator() {}
     ~StaticGroupTokenCalculator() {}
 
@@ -63,7 +63,7 @@ class StaticGroupTokenCalculator
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
-  private:
+ private:
     std::stack<unsigned int> m_token_count;
     bool m_variable_sized_group_encountered;
 };
@@ -74,7 +74,7 @@ class StaticGroupTokenCalculator
  * of tokens.
  */
 class GroupSizeCalculator: public ola::messaging::FieldDescriptorVisitor {
-  public:
+ public:
     typedef enum {
       INSUFFICIENT_TOKENS,
       EXTRA_TOKENS,
@@ -108,7 +108,7 @@ class GroupSizeCalculator: public ola::messaging::FieldDescriptorVisitor {
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
-  private:
+ private:
     std::vector<const ola::messaging::FieldDescriptorGroup*> m_groups;
     std::vector<const ola::messaging::FieldDescriptorInterface*> m_non_groups;
     StaticGroupTokenCalculator m_simple_calculator;

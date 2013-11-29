@@ -47,7 +47,7 @@ class EnttecPortImpl;
  */
 class EnttecPort
     : public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     // Ownership not transferred.
     EnttecPort(EnttecPortImpl *impl, unsigned int queue_size);
     ~EnttecPort();
@@ -76,7 +76,7 @@ class EnttecPort
     // the tests access the implementation directly.
     friend class ::EnttecUsbProWidgetTest;
 
-  private:
+ private:
     EnttecPortImpl *m_impl;
     ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
@@ -86,7 +86,7 @@ class EnttecPort
  * An Enttec Usb Pro Widget
  */
 class EnttecUsbProWidget: public SerialWidgetInterface {
-  public:
+ public:
     /*
      * The callback to run when we receive a port assignment response
      * @param true if this command completed ok
@@ -130,7 +130,7 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
 
     static const uint16_t ENTTEC_ESTA_ID;
 
-  private:
+ private:
     class EnttecUsbProWidgetImpl *m_impl;
 };
 }  // namespace usbpro

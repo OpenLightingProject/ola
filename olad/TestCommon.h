@@ -50,7 +50,7 @@ using std::vector;
  * Mock out an Input Port
  */
 class TestMockInputPort: public BasicInputPort {
-  public:
+ public:
     TestMockInputPort(AbstractDevice *parent,
                       unsigned int port_id,
                       const ola::PluginAdaptor *plugin_adaptor):
@@ -64,7 +64,7 @@ class TestMockInputPort: public BasicInputPort {
     }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
-  private:
+ private:
     DmxBuffer m_buffer;
 };
 
@@ -73,7 +73,7 @@ class TestMockInputPort: public BasicInputPort {
  * Same as above but this supports priorities
  */
 class TestMockPriorityInputPort: public TestMockInputPort {
-  public:
+ public:
     TestMockPriorityInputPort(AbstractDevice *parent,
                               unsigned int port_id,
                               const ola::PluginAdaptor *plugin_adaptor):
@@ -89,10 +89,10 @@ class TestMockPriorityInputPort: public TestMockInputPort {
       m_inherited_priority = priority;
     }
 
-  protected:
+ protected:
     bool SupportsPriorities() const { return true; }
 
-  private:
+ private:
     uint8_t m_inherited_priority;
 };
 
@@ -101,7 +101,7 @@ class TestMockPriorityInputPort: public TestMockInputPort {
  * Mock out an OutputPort
  */
 class TestMockOutputPort: public BasicOutputPort {
-  public:
+ public:
     TestMockOutputPort(AbstractDevice *parent,
                        unsigned int port_id,
                        bool start_rdm_discovery_on_patch = false,
@@ -119,7 +119,7 @@ class TestMockOutputPort: public BasicOutputPort {
     }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
-  private:
+ private:
     DmxBuffer m_buffer;
 };
 
@@ -128,7 +128,7 @@ class TestMockOutputPort: public BasicOutputPort {
  * Mock out an RDM OutputPort
  */
 class TestMockRDMOutputPort: public TestMockOutputPort {
-  public:
+ public:
     typedef ola::BaseCallback2<void,
                                const ola::rdm::RDMRequest*,
                                ola::rdm::RDMCallback*> RDMRequestHandler;
@@ -175,7 +175,7 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
       on_complete->Run(*m_uids);
     }
 
-  private:
+ private:
     UIDSet *m_uids;
     std::auto_ptr<RDMRequestHandler> m_rdm_handler;
 };
@@ -185,10 +185,10 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
  * Same as above but this supports priorities
  */
 class TestMockPriorityOutputPort: public TestMockOutputPort {
-  public:
+ public:
     TestMockPriorityOutputPort(AbstractDevice *parent, unsigned int port_id):
       TestMockOutputPort(parent, port_id) {}
-  protected:
+ protected:
     bool SupportsPriorities() const { return true; }
 };
 
@@ -197,7 +197,7 @@ class TestMockPriorityOutputPort: public TestMockOutputPort {
  * A mock device
  */
 class MockDevice: public ola::Device {
-  public:
+ public:
     MockDevice(ola::AbstractPlugin *owner, const string &name):
       Device(owner, name) {}
     string DeviceId() const { return Name(); }
@@ -210,7 +210,7 @@ class MockDevice: public ola::Device {
  * A mock device with looping and multiport patching enabled
  */
 class MockDeviceLoopAndMulti: public ola::Device {
-  public:
+ public:
     MockDeviceLoopAndMulti(ola::AbstractPlugin *owner, const string &name):
       Device(owner, name) {}
     string DeviceId() const { return Name(); }
@@ -223,7 +223,7 @@ class MockDeviceLoopAndMulti: public ola::Device {
  * A mock plugin.
  */
 class TestMockPlugin: public ola::Plugin {
-  public:
+ public:
     TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
                    ola::ola_plugin_id plugin_id,
                    bool enabled = true)
@@ -262,7 +262,7 @@ class TestMockPlugin: public ola::Plugin {
 
     bool WasStarted() { return m_start_run; }
 
-  private:
+ private:
     bool m_start_run;
     bool m_enabled;
     ola::ola_plugin_id m_id;
@@ -275,7 +275,7 @@ class TestMockPlugin: public ola::Plugin {
  * or the mocking the plugin adaptor.
  */
 class MockSelectServer: public ola::io::SelectServerInterface {
-  public:
+ public:
     explicit MockSelectServer(const TimeStamp *wake_up):
       SelectServerInterface(),
       m_wake_up(wake_up) {}
@@ -341,7 +341,7 @@ class MockSelectServer: public ola::io::SelectServerInterface {
     }
 
 
-  private:
+ private:
     const TimeStamp *m_wake_up;
 };
 #endif  // OLAD_TESTCOMMON_H_

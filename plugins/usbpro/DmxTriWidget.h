@@ -45,7 +45,7 @@ using std::queue;
  */
 class DmxTriWidgetImpl: public BaseUsbProWidget,
                         public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     DmxTriWidgetImpl(ola::thread::SchedulerInterface *executor,
                      ola::io::ConnectedDescriptor *descriptor,
                      bool use_raw_rdm);
@@ -61,7 +61,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
-  private:
+ private:
     typedef enum {
       SINGLE_TX_COMMAND_ID = 0x21,
       DISCOVER_AUTO_COMMAND_ID = 0x33,
@@ -210,7 +210,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
  */
 class DmxTriWidget: public SerialWidgetInterface,
                     public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     DmxTriWidget(ola::thread::SchedulerInterface *ss,
                  ola::io::ConnectedDescriptor *descriptor,
                  unsigned int queue_size = 20,
@@ -241,7 +241,7 @@ class DmxTriWidget: public SerialWidgetInterface,
       return m_impl->GetDescriptor();
     }
 
-  private:
+ private:
     // we need to control the order of construction & destruction here so these
     // are pointers.
     DmxTriWidgetImpl *m_impl;

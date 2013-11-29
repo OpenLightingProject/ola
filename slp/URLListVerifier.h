@@ -25,7 +25,7 @@
  * FindService callback.
  */
 class URLListVerifier {
-  public:
+ public:
     typedef ola::BaseCallback1<void, const URLEntries&> FindServiceCallback;
 
     explicit URLListVerifier(const URLEntries &expected_urls)
@@ -52,7 +52,7 @@ class URLListVerifier {
       m_received_callback = true;
     }
 
-  private:
+ private:
     auto_ptr<FindServiceCallback> m_callback;
     const URLEntries m_expected_urls;
     bool m_received_callback;

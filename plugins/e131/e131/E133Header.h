@@ -34,7 +34,7 @@ using std::string;
  * Header for the E133 layer
  */
 class E133Header {
-  public:
+ public:
     E133Header() {}
     E133Header(const string &source,
                uint32_t sequence,
@@ -65,7 +65,7 @@ class E133Header {
     } __attribute__((packed));
     typedef struct e133_pdu_header_s e133_pdu_header;
 
-  private:
+ private:
     string m_source;
     uint32_t m_sequence;
     uint16_t m_endpoint;

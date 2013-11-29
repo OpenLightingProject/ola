@@ -49,7 +49,7 @@ namespace e131 {
  * IncomingTCPTransport directly. This class is used for testing.
  */
 class IncommingStreamTransport {
-  public:
+ public:
     IncommingStreamTransport(class BaseInflator *inflator,
                              ola::io::ConnectedDescriptor *descriptor,
                              const ola::network::IPV4SocketAddress &source);
@@ -57,7 +57,7 @@ class IncommingStreamTransport {
 
     bool Receive();
 
-  private:
+ private:
     // The receiver is a state machine.
     typedef enum {
       WAITING_FOR_PREAMBLE,
@@ -129,14 +129,14 @@ class IncommingStreamTransport {
  * IncomingTCPTransport is responsible for receiving ACN over TCP.
  */
 class IncomingTCPTransport {
-  public:
+ public:
     IncomingTCPTransport(class BaseInflator *inflator,
                          ola::network::TCPSocket *socket);
     ~IncomingTCPTransport() {}
 
     bool Receive() { return m_transport->Receive(); }
 
-  private:
+ private:
     std::auto_ptr<IncommingStreamTransport> m_transport;
 };
 }  // namespace e131

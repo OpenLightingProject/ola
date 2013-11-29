@@ -37,7 +37,7 @@ using std::string;
  * Represents a personality.
  */
 class Personality {
-  public:
+ public:
     Personality(uint16_t footprint, const string &description);
     Personality(uint16_t footprint, const string &description,
                 const SlotDataCollection &slot_data);
@@ -51,7 +51,7 @@ class Personality {
       return m_slot_data.Lookup(slot_number);
     }
 
-  private:
+ private:
     uint16_t m_footprint;
     string m_description;
     SlotDataCollection m_slot_data;
@@ -64,7 +64,7 @@ class Personality {
  * singleton.
  */
 class PersonalityCollection {
-  public:
+ public:
     typedef std::vector<Personality> PersonalityList;
 
     explicit PersonalityCollection(const PersonalityList &personalities);
@@ -74,10 +74,10 @@ class PersonalityCollection {
 
     const Personality *Lookup(uint8_t personality) const;
 
-  protected:
+ protected:
     PersonalityCollection() {}
 
-  private:
+ private:
     const PersonalityList m_personalities;
 };
 
@@ -86,7 +86,7 @@ class PersonalityCollection {
  * Manages the personalities for a single responder
  */
 class PersonalityManager {
-  public:
+ public:
     explicit PersonalityManager(const PersonalityCollection *personalities);
 
     uint8_t PersonalityCount() const;
@@ -96,7 +96,7 @@ class PersonalityManager {
     uint16_t ActivePersonalityFootprint() const;
     const Personality *Lookup(uint8_t personality) const;
 
-  private:
+ private:
     const PersonalityCollection *m_personalities;
     uint8_t m_active_personality;
 };

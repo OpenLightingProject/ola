@@ -42,7 +42,7 @@ using std::vector;
  * a bit-vector which will speed up calls like Intersects().
  */
 class ScopeSet {
-  public:
+ public:
     ScopeSet() {}
 
     ScopeSet(const ScopeSet &other)
@@ -133,7 +133,7 @@ class ScopeSet {
       return out;
     }
 
-  private:
+ private:
     set<string> m_scopes;
 };
 }  // namespace slp

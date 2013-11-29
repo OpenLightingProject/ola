@@ -101,7 +101,7 @@ const ResponderOps<AckTimerResponder>::ParamHandler
  * QUEUED_MESSAGE.
  */
 class QueuedResponse {
-  public:
+ public:
     // Takes ownership of the param data
     QueuedResponse(
         const ola::TimeStamp &valid_after,
@@ -131,7 +131,7 @@ class QueuedResponse {
     const uint8_t* ParamData() const { return m_param_data; }
     unsigned int ParamDataSize() const { return m_param_data_size; }
 
-  private:
+ private:
     ola::TimeStamp m_valid_after;
     rdm_pid m_pid;
     RDMCommand::RDMCommandClass m_command_class;

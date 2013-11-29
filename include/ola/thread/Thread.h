@@ -34,7 +34,7 @@ typedef pthread_t ThreadId;
  * A thread object to be subclassed.
  */
 class Thread {
-  public:
+ public:
     Thread(): m_thread_id(), m_running(false) {}
     virtual ~Thread() {}
 
@@ -50,11 +50,11 @@ class Thread {
 
     static inline ThreadId Self() { return pthread_self(); }
 
-  protected:
+ protected:
     // Sub classes implement this.
     virtual void *Run() = 0;
 
-  private:
+ private:
     pthread_t m_thread_id;
     bool m_running;
     Mutex m_mutex;  // protects m_running

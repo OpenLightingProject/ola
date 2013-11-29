@@ -35,7 +35,7 @@ using ola::PluginAdaptor;
 class KarateDevice;
 
 class KaratePlugin: public Plugin {
-  public:
+ public:
     explicit KaratePlugin(PluginAdaptor *plugin_adaptor)
         : Plugin(plugin_adaptor) {
     }
@@ -45,7 +45,7 @@ class KaratePlugin: public Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_KARATE; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

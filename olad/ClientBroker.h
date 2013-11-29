@@ -37,7 +37,7 @@
 namespace ola {
 
 class ClientBroker {
-  public:
+ public:
     ClientBroker() {}
     ~ClientBroker() {}
 
@@ -49,7 +49,7 @@ class ClientBroker {
                         const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-  private:
+ private:
     void RequestComplete(const Client *key,
                          ola::rdm::RDMCallback *callback,
                          ola::rdm::rdm_response_code code,

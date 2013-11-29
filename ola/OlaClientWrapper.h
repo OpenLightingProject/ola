@@ -45,7 +45,7 @@ using std::auto_ptr;
  * The base class, not used directly.
  */
 class BaseClientWrapper {
-  public:
+ public:
     BaseClientWrapper() {}
     virtual ~BaseClientWrapper();
 
@@ -55,10 +55,10 @@ class BaseClientWrapper {
     bool Cleanup();
     void SocketClosed();
 
-  protected:
+ protected:
     auto_ptr<TCPSocket> m_socket;
 
-  private:
+ private:
     SelectServer m_ss;
 
     virtual void CreateClient() = 0;
@@ -72,7 +72,7 @@ class BaseClientWrapper {
  */
 template <typename ClientClass>
 class GenericClientWrapper: public BaseClientWrapper {
-  public:
+ public:
     explicit GenericClientWrapper(bool auto_start = true):
         BaseClientWrapper(),
         m_auto_start(auto_start) {
@@ -81,7 +81,7 @@ class GenericClientWrapper: public BaseClientWrapper {
 
     ClientClass *GetClient() const { return m_client.get(); }
 
-  private:
+ private:
     auto_ptr<ClientClass> m_client;
     bool m_auto_start;
 

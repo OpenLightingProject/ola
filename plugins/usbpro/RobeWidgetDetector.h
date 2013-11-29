@@ -40,7 +40,7 @@ using std::auto_ptr;
  * Contains information about the Robe USB device.
 */
 class RobeWidgetInformation {
-  public:
+ public:
     RobeWidgetInformation()
         : uid(0, 0),
           hardware_version(0),
@@ -65,7 +65,7 @@ class RobeWidgetInformation {
  * Handles widget discovery for Robe devices.
  */
 class RobeWidgetDetector: public WidgetDetectorInterface {
-  public:
+ public:
     typedef ola::Callback2<void,
                            ola::io::ConnectedDescriptor*,
                            const RobeWidgetInformation*> SuccessHandler;
@@ -81,7 +81,7 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
 
     bool Discover(ola::io::ConnectedDescriptor *descriptor);
 
-  private:
+ private:
     // Hold the discovery state for a widget
     class DiscoveryState {
       public:

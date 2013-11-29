@@ -107,7 +107,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
  * A very simple E1.33 Controller
  */
 class SimpleE133Controller {
-  public:
+ public:
     struct Options {
       IPV4Address controller_ip;
       bool use_slp;
@@ -139,7 +139,7 @@ class SimpleE133Controller {
                         const uint8_t *data,
                         unsigned int data_length);
 
-  private:
+ private:
     const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
 

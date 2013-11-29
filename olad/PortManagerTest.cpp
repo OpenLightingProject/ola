@@ -44,7 +44,7 @@ class PortManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testOutputPortSetPriority);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testPortPatching();
     void testPortPatchingLoopMulti();
     void testInputPortSetPriority();

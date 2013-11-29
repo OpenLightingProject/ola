@@ -51,7 +51,7 @@ class PreferencesTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSave);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }

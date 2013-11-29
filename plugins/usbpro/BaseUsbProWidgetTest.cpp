@@ -46,7 +46,7 @@ class BaseUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testRemove);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testSend();
@@ -54,7 +54,7 @@ class BaseUsbProWidgetTest: public CommonWidgetTest {
     void testReceive();
     void testRemove();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::DispatchingUsbProWidget> m_widget;
     bool m_removed;
 

@@ -48,7 +48,7 @@ class InputPort;
 class OutputPort;
 
 class Universe: public ola::rdm::RDMControllerInterface {
-  public:
+ public:
     enum merge_mode {
       MERGE_HTP,
       MERGE_LTP
@@ -154,7 +154,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
     static const char K_UNIVERSE_UID_COUNT_VAR[];
 
-  private:
+ private:
     typedef struct {
       unsigned int expected_count;
       unsigned int current_count;

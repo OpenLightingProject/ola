@@ -36,7 +36,7 @@ namespace usbpro {
  * The SerialWidgetInterface.
  */
 class SerialWidgetInterface {
-  public:
+ public:
     SerialWidgetInterface() {}
     virtual ~SerialWidgetInterface() {}
 

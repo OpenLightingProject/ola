@@ -36,7 +36,7 @@ namespace usbpro {
  * An Ultra DMX Pro Widget
  */
 class UltraDMXProWidget: public GenericUsbProWidget {
-  public:
+ public:
     explicit UltraDMXProWidget(ola::io::ConnectedDescriptor *descriptor);
     ~UltraDMXProWidget() {}
     void Stop() { GenericStop(); }
@@ -44,7 +44,7 @@ class UltraDMXProWidget: public GenericUsbProWidget {
     bool SendDMX(const DmxBuffer &buffer);
     bool SendSecondaryDMX(const DmxBuffer &buffer);
 
-  private:
+ private:
     bool SendDMXWithLabel(uint8_t label, const DmxBuffer &data);
 
     static const uint8_t DMX_PRIMARY_PORT = 100;

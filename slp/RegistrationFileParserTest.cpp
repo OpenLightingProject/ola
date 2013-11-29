@@ -45,14 +45,14 @@ class RegistrationFileParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testFromStream);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testFromStream();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     RegistrationFileParser m_parser;
 };
 

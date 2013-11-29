@@ -52,7 +52,7 @@ using std::vector;
 
 
 class PidStoreHelper {
-  public:
+ public:
     explicit PidStoreHelper(const string &pid_location,
                             unsigned int initial_indent = 0);
     ~PidStoreHelper();
@@ -95,7 +95,7 @@ class PidStoreHelper {
         uint16_t manufacturer_id,
         vector<const ola::rdm::PidDescriptor*> *descriptors) const;
 
-  private:
+ private:
     const string m_pid_location;
     const ola::rdm::RootPidStore *m_root_store;
     ola::rdm::StringMessageBuilder m_string_builder;

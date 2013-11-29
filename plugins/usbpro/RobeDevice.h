@@ -35,7 +35,7 @@ namespace usbpro {
  * The device for a Robe Universe Interface.
  */
 class RobeDevice: public UsbSerialDevice {
-  public:
+ public:
     RobeDevice(ola::PluginAdaptor *plugin_adaptor,
                ola::AbstractPlugin *owner,
                const string &name,
@@ -43,7 +43,7 @@ class RobeDevice: public UsbSerialDevice {
 
     string DeviceId() const { return m_device_id; }
 
-  private:
+ private:
     string m_device_id;
     class RobeOutputPort *m_output_port;
     class RobeInputPort *m_input_port;
@@ -54,7 +54,7 @@ class RobeDevice: public UsbSerialDevice {
  * The Input port
  */
 class RobeInputPort: public BasicInputPort {
-  public:
+ public:
     RobeInputPort(RobeDevice *parent,
                   RobeWidget *widget,
                   ola::PluginAdaptor *plugin_adaptor)
@@ -76,7 +76,7 @@ class RobeInputPort: public BasicInputPort {
 
     string Description() const { return ""; }
 
-  private:
+ private:
     string m_path;
     RobeWidget *m_widget;
 };
@@ -87,7 +87,7 @@ class RobeInputPort: public BasicInputPort {
  * ports, but I haven't figured out how to use that yet.
  */
 class RobeOutputPort: public BasicOutputPort {
-  public:
+ public:
     RobeOutputPort(RobeDevice *parent, RobeWidget *widget);
 
     string Description() const { return ""; }
@@ -106,7 +106,7 @@ class RobeOutputPort: public BasicOutputPort {
       m_widget->RunIncrementalDiscovery(callback);
     }
 
-  private:
+ private:
     RobeWidget *m_widget;
 };
 }  // namespace usbpro

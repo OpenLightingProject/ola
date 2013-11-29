@@ -679,7 +679,7 @@ bool EnttecPort::SetParameters(uint8_t break_time, uint8_t mab_time,
  * implementation because we don't want to expose internal methods.
  */
 class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
-  public:
+ public:
     EnttecUsbProWidgetImpl(
         ola::io::ConnectedDescriptor *descriptor,
         const EnttecUsbProWidget::EnttecUsbProWidgetOptions &options);
@@ -694,7 +694,7 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
 
     bool SendCommand(uint8_t label, const uint8_t *data, unsigned int length);
 
-  private:
+ private:
     typedef vector<EnttecUsbProWidget::EnttecUsbProPortAssignmentCallback*>
       PortAssignmentCallbacks;
 

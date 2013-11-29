@@ -44,7 +44,7 @@ using std::string;
  * @brief Holds information about a single DMX slot.
  */
 class SlotData {
-  public:
+ public:
     /**
      * @brief The Slot Type.
      * Used in the SLOT_INFO message.
@@ -130,7 +130,7 @@ class SlotData {
         uint8_t default_slot_value,
         const string &description);
 
-  private:
+ private:
     SlotData(rdm_slot_type slot_type,
              uint16_t slot_id,
              uint8_t default_slot_value);
@@ -152,7 +152,7 @@ class SlotData {
  * @brief Holds information about a set of slots.
  */
 class SlotDataCollection {
-  public:
+ public:
     typedef std::vector<SlotData> SlotDataList;
 
     explicit SlotDataCollection(const SlotDataList &slot_data);
@@ -170,7 +170,7 @@ class SlotDataCollection {
      */
     const SlotData *Lookup(uint16_t slot) const;
 
-  private:
+ private:
     SlotDataList m_slot_data;
 };
 }  // namespace rdm

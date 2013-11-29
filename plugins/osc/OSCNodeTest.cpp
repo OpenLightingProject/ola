@@ -53,7 +53,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testReceive);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     /**
      * Initilize the OSCNode and the timeout_id
      */
@@ -77,7 +77,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
     // Called if we don't receive data in ABORT_TIMEOUT_IN_MS
     void Timeout() { OLA_FAIL("timeout"); }
 
-  private:
+ private:
     ola::io::SelectServer m_ss;
     auto_ptr<OSCNode> m_osc_node;
     UDPSocket m_udp_socket;

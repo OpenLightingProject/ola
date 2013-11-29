@@ -32,7 +32,7 @@ namespace io {
  * MemoryBlockPool. This class is not thread safe.
  */
 class MemoryBlockPool {
-  public:
+ public:
     explicit MemoryBlockPool(unsigned int block_size = DEFAULT_BLOCK_SIZE)
         : m_block_size(block_size),
           m_blocks_allocated(0) {
@@ -90,7 +90,7 @@ class MemoryBlockPool {
     // default to 1k blocks
     static const unsigned int DEFAULT_BLOCK_SIZE = 1024;
 
-  private:
+ private:
     std::queue<MemoryBlock*> m_free_blocks;
     const unsigned int m_block_size;
     unsigned int m_blocks_allocated;

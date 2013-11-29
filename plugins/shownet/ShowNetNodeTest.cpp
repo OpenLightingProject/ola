@@ -45,7 +45,7 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSendAndReceive);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testHandlePacket();
@@ -53,7 +53,7 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
     void testSendAndReceive();
     void UpdateData(unsigned int universe);
     void SendAndReceiveForUniverse(unsigned int universe);
-  private:
+ private:
     bool m_hander_called;
     ShowNetNode *m_node;
 };

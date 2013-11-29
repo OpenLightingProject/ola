@@ -38,11 +38,11 @@ class PortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInputPortPriorities);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testOutputPortPriorities();
     void testInputPortPriorities();
 
-  private:
+ private:
     Clock m_clock;
 };
 

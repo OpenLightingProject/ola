@@ -34,7 +34,7 @@ namespace kinet {
 using ola::network::IPV4Address;
 
 class KiNetOutputPort: public BasicOutputPort {
-  public:
+ public:
     KiNetOutputPort(KiNetDevice *device,
                     const IPV4Address &target,
                     KiNetNode *node,
@@ -53,7 +53,7 @@ class KiNetOutputPort: public BasicOutputPort {
       return "Power Supply: " + m_target.ToString();
     }
 
-  private:
+ private:
     KiNetNode *m_node;
     const IPV4Address m_target;
 };

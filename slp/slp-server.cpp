@@ -58,7 +58,7 @@ SLPDaemon *server = NULL;
 
 
 struct SLPOptions {
-  public:
+ public:
     bool help;
     ola::log_level log_level;
     string preferred_ip_address;

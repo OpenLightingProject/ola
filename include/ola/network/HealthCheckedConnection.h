@@ -55,7 +55,7 @@ namespace network {
  * The subclasses implement the SendHeartbeat and HeartbeatTimeout methods.
  */
 class HealthCheckedConnection {
-  public:
+ public:
     HealthCheckedConnection(ola::thread::SchedulerInterface *scheduler,
                             const ola::TimeInterval timeout_interval);
     virtual ~HealthCheckedConnection();
@@ -102,7 +102,7 @@ class HealthCheckedConnection {
      */
     virtual void HeartbeatTimeout() = 0;
 
-  private:
+ private:
     ola::thread::SchedulerInterface *m_scheduler;
     ola::TimeInterval m_heartbeat_interval;
     ola::thread::timeout_id m_send_timeout_id;

@@ -31,6 +31,7 @@
 #include <string>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/io/IOUtils.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
@@ -121,10 +122,8 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
 ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
-  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
-
-  if (fd == -1) {
-    OLA_WARN << "Failed to open " << path << " " << strerror(errno);
+  int fd;
+  if (!ola::io::Open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
     return NULL;
   }
 

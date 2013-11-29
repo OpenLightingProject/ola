@@ -44,14 +44,14 @@ class BaseRobeWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testRemove);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testSend();
     void testReceive();
     void testRemove();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::DispatchingRobeWidget> m_widget;
     bool m_removed;
 

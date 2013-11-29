@@ -54,7 +54,7 @@ typedef struct {
 
 
 class FirmwareTransferer {
-  public:
+ public:
     FirmwareTransferer(ifstream *file,
                        DispatchingUsbProWidget *widget,
                        SelectServer *ss):
@@ -78,7 +78,7 @@ class FirmwareTransferer {
     }
     bool WasSucessfull() const { return m_sucessful; }
 
-  private:
+ private:
     enum { FLASH_STATUS_LENGTH = 4 };
     enum { FLASH_PAGE_LENGTH = 64 };
 

@@ -74,7 +74,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringJoin);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSplit();
     void testTrim();
     void testShorten();
@@ -666,7 +666,7 @@ void StringUtilsTest::testCapitalizeLabel() {
   string label = "this-is_a_test";
   CapitalizeLabel(&label);
   OLA_ASSERT_EQ(string("This Is A Test"), label);
-};
+}
 
 
 void StringUtilsTest::testCustomCapitalizeLabel() {
@@ -705,7 +705,7 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   string label9 = "dns_via_dhcp";
   CustomCapitalizeLabel(&label9);
   OLA_ASSERT_EQ(string("DNS Via DHCP"), label9);
-};
+}
 
 
 void StringUtilsTest::testFormatData() {

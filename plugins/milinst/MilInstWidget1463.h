@@ -30,14 +30,14 @@ namespace plugin {
 namespace milinst {
 
 class MilInstWidget1463: public MilInstWidget {
-  public:
+ public:
     explicit MilInstWidget1463(const std::string &path): MilInstWidget(path) {}
     ~MilInstWidget1463() {}
 
     bool Connect();
     bool DetectDevice();
     bool SendDmx(const DmxBuffer &buffer) const;
-  protected:
+ protected:
     int SetChannel(unsigned int chan, uint8_t val) const;
     int Send112(const DmxBuffer &buffer) const;
 

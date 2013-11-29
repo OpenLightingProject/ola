@@ -33,7 +33,7 @@
 namespace ola {
 
 class PortManager {
-  public:
+ public:
     explicit PortManager(UniverseStore *universe_store,
                          PortBroker *broker)
         : m_universe_store(universe_store),
@@ -49,7 +49,7 @@ class PortManager {
     bool SetPriorityInherit(Port *port);
     bool SetPriorityStatic(Port *port, uint8_t value);
 
-  private:
+ private:
     template<class PortClass>
     bool GenericPatchPort(PortClass *port,
                           unsigned int new_universe_id);

@@ -29,7 +29,7 @@ namespace plugin {
 namespace ftdidmx {
 
 class FtdiDmxThread : public ola::thread::Thread {
-  public:
+ public:
     FtdiDmxThread(FtdiWidget *widget, unsigned int frequency);
     ~FtdiDmxThread();
 
@@ -37,7 +37,7 @@ class FtdiDmxThread : public ola::thread::Thread {
     void *Run();
     bool WriteDMX(const DmxBuffer &buffer);
 
-  private:
+ private:
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
