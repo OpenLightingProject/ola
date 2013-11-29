@@ -21,3 +21,5 @@ fi
 cp -a -v ./html/* $output_dir
 
 chmod -c -R a+r $output_dir
+
+chmod -c a+rx $output_dir/search
