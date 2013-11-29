@@ -44,14 +44,14 @@ class CIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToOutputBuffer);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testCID();
     void testSetPack();
     void testGenerate();
     void testToString();
     void testFromString();
     void testToOutputBuffer();
-  private:
+ private:
     static const uint8_t TEST_DATA[];
 };
 

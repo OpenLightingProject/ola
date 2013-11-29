@@ -42,7 +42,7 @@ namespace rdm {
  * A sub device in the simulated dimmer.
  */
 class DimmerSubDevice: public RDMControllerInterface {
-  public:
+ public:
     /**
      * We need the total sub device count here because the sub device field in
      * DEVICE_INFO must be the same for both the root and all sub devices
@@ -63,7 +63,7 @@ class DimmerSubDevice: public RDMControllerInterface {
        return m_start_address;
     }
 
-  private:
+ private:
     /**
      * The RDM Operations for the DimmerSubDevice.
      */

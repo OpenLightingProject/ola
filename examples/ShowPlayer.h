@@ -33,7 +33,7 @@
  * @brief A class which plays back recorded show files.
  */
 class ShowPlayer {
-  public:
+ public:
     /**
      * @brief Create a new ShowPlayer
      * @param filename the show file to play
@@ -58,7 +58,7 @@ class ShowPlayer {
                  unsigned int duration,
                  unsigned int delay);
 
-  private:
+ private:
     ola::OlaCallbackClientWrapper m_client;
     ShowLoader m_loader;
     bool m_infinte_loop;

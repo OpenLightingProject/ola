@@ -66,7 +66,7 @@ class RunLengthEncoder {
                 unsigned int length,
                 DmxBuffer *output);
 
-  private:
+ private:
     static const uint8_t REPEAT_FLAG = 0x80;
 };
 }  // namespace dmx

@@ -53,7 +53,7 @@ using std::min;
 
 
 class MockDummyPort: public DummyPort {
-  public:
+ public:
     MockDummyPort()
       : DummyPort(NULL, DummyPort::Options(), 0) {
     }
@@ -74,7 +74,7 @@ class DummyPortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSlotInfo);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     DummyPortTest():
       TestFixture(),
       m_expected_uid(0x7a70, 0xffffff00),
@@ -105,7 +105,7 @@ class DummyPortTest: public CppUnit::TestFixture {
     void testSlotInfo();
 
 
-  private:
+ private:
     UID m_expected_uid;
     UID m_test_source;
     MockDummyPort m_port;

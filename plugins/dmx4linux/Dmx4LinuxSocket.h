@@ -28,9 +28,9 @@ namespace plugin {
 namespace dmx4linux {
 
 class Dmx4LinuxSocket: public ola::network::DeviceDescriptor {
-  public:
+ public:
     explicit Dmx4LinuxSocket(int fd): ola::network::DeviceDescriptor(fd) {}
-  protected:
+ protected:
     virtual bool IsClosed() const {return false;}
 };
 }  // namespace dmx4linux

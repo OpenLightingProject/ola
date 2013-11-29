@@ -38,7 +38,7 @@ using std::string;
  * in STL containers. It doesn't have an ordering defined though.
  */
 class URLEntry {
-  public:
+ public:
     URLEntry() {}
 
     /**
@@ -108,7 +108,7 @@ class URLEntry {
       return out;
     }
 
-  protected:
+ protected:
     string m_url;
     uint16_t m_lifetime;
     // TODO(simon): add auth blocks here

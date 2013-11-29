@@ -31,7 +31,7 @@ namespace ola {
  * given the number of previous failed attempts.
  */
 class BackOffPolicy {
-  public:
+ public:
     BackOffPolicy() {}
     virtual ~BackOffPolicy() {}
 
@@ -48,7 +48,7 @@ class BackOffPolicy {
  *   1, 1, 1, 1, 1, ...
  */
 class ConstantBackoffPolicy: public BackOffPolicy {
-  public:
+ public:
     explicit ConstantBackoffPolicy(const TimeInterval &duration)
         : m_duration(duration) {
     }
@@ -57,7 +57,7 @@ class ConstantBackoffPolicy: public BackOffPolicy {
       return m_duration;
     }
 
-  private:
+ private:
     const TimeInterval m_duration;
 };
 
@@ -69,7 +69,7 @@ class ConstantBackoffPolicy: public BackOffPolicy {
  *  0, 1, 2, 3, 4, 5, 5, 5, ...
  */
 class LinearBackoffPolicy: public BackOffPolicy {
-  public:
+ public:
     LinearBackoffPolicy(const TimeInterval &duration, const TimeInterval &max)
         : m_duration(duration),
           m_max(max) {
@@ -82,7 +82,7 @@ class LinearBackoffPolicy: public BackOffPolicy {
       return interval;
     }
 
-  private:
+ private:
     const TimeInterval m_duration;
     const TimeInterval m_max;
 };
@@ -94,7 +94,7 @@ class LinearBackoffPolicy: public BackOffPolicy {
  *  0, 1, 2, 4, 8, 16, 20, 20, ...
  */
 class ExponentialBackoffPolicy: public BackOffPolicy {
-  public:
+ public:
     ExponentialBackoffPolicy(const TimeInterval &initial,
                              const TimeInterval &max)
         : m_initial(initial),
@@ -109,7 +109,7 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
       return interval;
     }
 
-  private:
+ private:
     const TimeInterval m_initial;
     const TimeInterval m_max;
 };
@@ -119,7 +119,7 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
 
 // Generates backoff times.
 class BackoffGenerator {
-  public:
+ public:
     explicit BackoffGenerator(const BackOffPolicy *policy)
         : m_policy(policy),
           m_failures(0) {
@@ -133,7 +133,7 @@ class BackoffGenerator {
       m_failures = 0;
     }
 
-  private:
+ private:
     std::auto_ptr<const BackOffPolicy> m_policy;
     unsigned int m_failures;
 };

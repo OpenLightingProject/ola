@@ -33,7 +33,7 @@ namespace thread {
  * A Mutex object
  */
 class Mutex {
-  public:
+ public:
     friend class ConditionVariable;
 
     Mutex();
@@ -43,7 +43,7 @@ class Mutex {
     bool TryLock();
     void Unlock();
 
-  private:
+ private:
     pthread_mutex_t m_mutex;
 
     DISALLOW_COPY_AND_ASSIGN(Mutex);
@@ -55,11 +55,11 @@ class Mutex {
  * is destroyed.
  */
 class MutexLocker {
-  public:
+ public:
     explicit MutexLocker(Mutex *mutex);
     ~MutexLocker();
 
-  private:
+ private:
     Mutex *m_mutex;
 
     DISALLOW_COPY_AND_ASSIGN(MutexLocker);
@@ -70,7 +70,7 @@ class MutexLocker {
  * A condition variable
  */
 class ConditionVariable {
-  public:
+ public:
     ConditionVariable();
     ~ConditionVariable();
 
@@ -80,7 +80,7 @@ class ConditionVariable {
     void Signal();
     void Broadcast();
 
-  private:
+ private:
     pthread_cond_t m_condition;
 
     DISALLOW_COPY_AND_ASSIGN(ConditionVariable);

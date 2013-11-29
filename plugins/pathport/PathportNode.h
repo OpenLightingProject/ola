@@ -38,7 +38,7 @@ using ola::network::IPV4Address;
 using ola::network::UDPSocket;
 
 class PathportNode {
-  public:
+ public:
     explicit PathportNode(const string &preferred_ip, uint32_t device_id,
                           uint8_t dscp);
     ~PathportNode();
@@ -62,7 +62,7 @@ class PathportNode {
     // apparently pathport supports up to 128 universes, the spec only says 64
     static const uint8_t MAX_UNIVERSES = 127;
 
-  private:
+ private:
     typedef struct {
       DmxBuffer *buffer;
       Callback0<void> *closure;

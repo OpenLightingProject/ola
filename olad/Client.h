@@ -52,7 +52,7 @@ class Client {
     const DmxSource SourceData(unsigned int universe) const;
     class OlaClientService_Stub *Stub() const { return m_client_stub; }
 
-  private:
+ private:
     class OlaClientService_Stub *m_client_stub;
     map<unsigned int, DmxSource> m_data_map;
 

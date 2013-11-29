@@ -64,7 +64,7 @@ using std::vector;
  * if we can factor it out.
  */
 class DeviceManagerImpl {
-  public:
+ public:
     /*
      * The callback used to receive RDMNet layer messages from the devices.
      * @returns true if the data should be acknowledged, false otherwise.
@@ -92,7 +92,7 @@ class DeviceManagerImpl {
     void RemoveDeviceIfNotConnected(const IPV4Address &ip_address);
     void ListManagedDevices(vector<IPV4Address> *devices) const;
 
-  private:
+ private:
     // hash_map of IPs to DeviceState
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, class DeviceState*>
       DeviceMap;

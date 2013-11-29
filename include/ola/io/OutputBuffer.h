@@ -34,7 +34,7 @@ namespace io {
  * append as much data as you want.
  */
 class OutputBufferInterface {
-  public:
+ public:
     virtual ~OutputBufferInterface() {}
 
     // Returns true if this OutputBuffer is empty.

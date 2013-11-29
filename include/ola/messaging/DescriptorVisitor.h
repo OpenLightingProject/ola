@@ -41,7 +41,7 @@ class IntegerFieldDescriptor;
  * The interface for the FieldDescriptor Visitor
  */
 class FieldDescriptorVisitor {
-  public:
+ public:
     virtual ~FieldDescriptorVisitor() {}
 
     // return true if you want groups to be recursively expanded

@@ -130,7 +130,7 @@ typedef enum {
  * @brief The base class for log destinations.
  */
 class LogDestination {
-  public:
+ public:
     /**
      * @brief Destructor
      */
@@ -148,7 +148,7 @@ class LogDestination {
  * @brief A LogDestination that writes to stderr
  */
 class StdErrorLogDestination: public LogDestination {
-  public:
+ public:
     /**
      * @brief Writes a messages out to stderr.
      */
@@ -159,7 +159,7 @@ class StdErrorLogDestination: public LogDestination {
  * @brief A LogDestination that writes to syslog
  */
 class SyslogDestination: public LogDestination {
-  public:
+ public:
     /**
      * @brief Initialize the SyslogDestination
      */
@@ -170,7 +170,7 @@ class SyslogDestination: public LogDestination {
      * @note This is syslog on *nix or the event log on windows.
      */
     void Write(log_level level, const string &log_line);
-  private:
+ private:
 #ifdef WIN32
     HANDLE m_eventlog;
 #endif
@@ -184,13 +184,13 @@ class SyslogDestination: public LogDestination {
  * @brief A LogLine, this represents a single log message.
  */
 class LogLine {
-  public:
+ public:
     LogLine(const char *file, int line, log_level level);
     ~LogLine();
     void Write();
 
     std::ostream &stream() { return m_stream; }
-  private:
+ private:
     log_level m_level;
     std::ostringstream m_stream;
     unsigned int m_prefix_length;

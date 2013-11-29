@@ -34,11 +34,11 @@ using std::auto_ptr;
 #define PLUGINS_USBPRO_COMMONWIDGETTEST_H_
 
 class CommonWidgetTest: public CppUnit::TestFixture {
-  public:
+ public:
     virtual void setUp();
     virtual void tearDown();
 
-  protected:
+ protected:
     ola::io::SelectServer m_ss;
     ola::io::PipeDescriptor m_descriptor;
     auto_ptr<ola::io::PipeDescriptor> m_other_end;

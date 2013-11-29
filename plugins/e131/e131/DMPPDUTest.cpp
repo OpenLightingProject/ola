@@ -39,7 +39,7 @@ using ola::acn::DMP_GET_PROPERTY_VECTOR;
 using ola::acn::DMP_SET_PROPERTY_VECTOR;
 
 class MockDMPInflator: public DMPInflator {
-  public:
+ public:
     MockDMPInflator(): DMPInflator(),
                        expected_vector(0),
                        expected_virtual(false),
@@ -63,7 +63,7 @@ class MockDMPInflator: public DMPInflator {
     unsigned int expected_increment;
     unsigned int expected_number;
 
-  protected:
+ protected:
     bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_len);
 };
@@ -74,11 +74,11 @@ class DMPPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSetProperty);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testGetProperty();
     void testSetProperty();
 
-  private:
+ private:
     void PackPduAndInflate(const DMPPDU *pdu);
     MockDMPInflator m_inflator;
 };

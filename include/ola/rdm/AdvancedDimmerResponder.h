@@ -46,12 +46,12 @@ using std::auto_ptr;
  * A dimmer that supports many of the E1.37-1 PIDs.
  */
 class AdvancedDimmerResponder: public RDMControllerInterface {
-  public:
+ public:
     explicit AdvancedDimmerResponder(const UID &uid);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-  private:
+ private:
     /**
      * The RDM Operations for the AdvancedDimmerResponder.
      */

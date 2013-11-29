@@ -55,7 +55,7 @@ class SchemaPrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntervalTypes);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     SchemaPrinterTest() {}
     void testPrinter();
     void testGroupPrinter();
@@ -63,7 +63,7 @@ class SchemaPrinterTest: public CppUnit::TestFixture {
     void testIntervalsAndLabels();
     void testIntervalTypes();
 
-  private:
+ private:
     template<typename field_descriptor_class, typename int_type>
     string GenerateIntervalString(int_type min, int_type max);
 };

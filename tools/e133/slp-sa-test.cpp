@@ -43,7 +43,7 @@ using std::vector;
 
 
 struct Options {
-  public:
+ public:
     bool help;
     bool list_tests;
     uint32_t timeout;

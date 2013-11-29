@@ -51,7 +51,7 @@ class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUnixSocketServerClose);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testLoopbackDescriptor();
@@ -78,7 +78,7 @@ class DescriptorTest: public CppUnit::TestFixture {
       m_ss->Terminate();
     }
 
-  private:
+ private:
     SelectServer *m_ss;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 

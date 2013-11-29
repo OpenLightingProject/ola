@@ -52,7 +52,7 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testProxy);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     DiscoveryAgentTest()
         : CppUnit::TestFixture(),
           m_callback_run(false) {
@@ -72,7 +72,7 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     bool m_callback_run;
 
     void DiscoverySuccessful(const UIDSet *expected,

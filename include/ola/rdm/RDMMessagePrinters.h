@@ -65,12 +65,12 @@ using std::string;
  * A RDM specific printer that transforms field names
  */
 class RDMMessagePrinter: public GenericMessagePrinter {
-  public:
+ public:
     explicit RDMMessagePrinter(unsigned int initial_ident = 0)
       : GenericMessagePrinter(GenericMessagePrinter::DEFAULT_INDENT,
                               initial_ident) {
     }
-  protected:
+ protected:
     string TransformLabel(const string &label) {
       string new_label = label;
       ola::CustomCapitalizeLabel(&new_label);
@@ -83,7 +83,7 @@ class RDMMessagePrinter: public GenericMessagePrinter {
  * Print a list of proxied UIDs
  */
 class ProxiedDevicesPrinter: public MessagePrinter {
-  public:
+ public:
     void Visit(const UIDMessageField *field) {
       Stream() << field->Value() << endl;
     }
@@ -94,7 +94,7 @@ class ProxiedDevicesPrinter: public MessagePrinter {
  * Print a status message.
  */
 class StatusMessagePrinter: public MessagePrinter {
-  public:
+ public:
     void Visit(const UInt8MessageField *field) {
       if (m_messages.empty())
         return;
@@ -123,7 +123,7 @@ class StatusMessagePrinter: public MessagePrinter {
       m_messages.push_back(message);
     }
 
-  protected:
+ protected:
     void PostStringHook() {
       vector<status_message>::const_iterator iter = m_messages.begin();
       for (; iter != m_messages.end(); ++iter) {
@@ -153,7 +153,7 @@ class StatusMessagePrinter: public MessagePrinter {
       }
     }
 
-  private:
+ private:
     enum { MAX_INT_FIELDS = 2 };
     enum { MAX_UINT_FIELDS = 2 };
     struct status_message {
@@ -176,7 +176,7 @@ class StatusMessagePrinter: public MessagePrinter {
  * Print a list of supported params with their canonical names
  */
 class SupportedParamsPrinter: public MessagePrinter {
-  public:
+ public:
     SupportedParamsPrinter(uint16_t manufacturer_id,
                            const RootPidStore *root_store)
         : m_manufacturer_id(manufacturer_id),
@@ -186,7 +186,7 @@ class SupportedParamsPrinter: public MessagePrinter {
       m_pids.insert(message->Value());
     }
 
-  protected:
+ protected:
     void PostStringHook() {
       set<uint16_t>::const_iterator iter = m_pids.begin();
       for (; iter != m_pids.end(); ++iter) {
@@ -202,7 +202,7 @@ class SupportedParamsPrinter: public MessagePrinter {
       }
     }
 
-  private:
+ private:
     set<uint16_t> m_pids;
     uint16_t m_manufacturer_id;
     const RootPidStore *m_root_store;
@@ -213,7 +213,7 @@ class SupportedParamsPrinter: public MessagePrinter {
  * Print the device info message.
  */
 class DeviceInfoPrinter: public GenericMessagePrinter {
-  public:
+ public:
     void Visit(const UInt16MessageField *message) {
       const string name = message->GetDescriptor()->Name();
       if (name == "product_category")
@@ -223,7 +223,7 @@ class DeviceInfoPrinter: public GenericMessagePrinter {
         GenericMessagePrinter::Visit(message);
     }
 
-  protected:
+ protected:
     string TransformLabel(const string &label) {
       string new_label = label;
       ola::CustomCapitalizeLabel(&new_label);
@@ -236,7 +236,7 @@ class DeviceInfoPrinter: public GenericMessagePrinter {
  * Print the string fields of a message
  */
 class LabelPrinter: public MessagePrinter {
-  public:
+ public:
     void Visit(const StringMessageField *message) {
       Stream() << message->Value() << endl;
     }
@@ -247,7 +247,7 @@ class LabelPrinter: public MessagePrinter {
  * Print the list of product detail ids
  */
 class ProductIdPrinter: public MessagePrinter {
-  public:
+ public:
     void Visit(const UInt16MessageField *message) {
       m_product_ids.insert(message->Value());
     }
@@ -258,7 +258,7 @@ class ProductIdPrinter: public MessagePrinter {
         Stream() << ProductDetailToString(*iter) << endl;
       }
     }
-  private:
+ private:
     set<uint16_t> m_product_ids;
 };
 
@@ -267,7 +267,7 @@ class ProductIdPrinter: public MessagePrinter {
  * Print the list of supported languages.
  */
 class LanguageCapabilityPrinter: public MessagePrinter {
-  public:
+ public:
     void Visit(const StringMessageField *message) {
       m_languages.insert(message->Value());
     }
@@ -278,7 +278,7 @@ class LanguageCapabilityPrinter: public MessagePrinter {
         Stream() << *iter << endl;
       }
     }
-  private:
+ private:
     set<string> m_languages;
 };
 
@@ -287,7 +287,7 @@ class LanguageCapabilityPrinter: public MessagePrinter {
  * Print the real time clock info
  */
 class ClockPrinter: public MessagePrinter {
-  public:
+ public:
     ClockPrinter() : MessagePrinter(), m_offset(0) {}
     void Visit(const UInt16MessageField *message) {
       m_year = message->Value();
@@ -312,7 +312,7 @@ class ClockPrinter: public MessagePrinter {
         static_cast<int>(m_fields[4]) << endl;
     }
 
-  private:
+ private:
     enum { CLOCK_FIELDS = 5};
     uint16_t m_year;
     uint8_t m_fields[CLOCK_FIELDS];
@@ -323,7 +323,7 @@ class ClockPrinter: public MessagePrinter {
  * Print slot info.
  */
 class SlotInfoPrinter: public MessagePrinter {
-  public:
+ public:
     void Visit(const UInt8MessageField *field) {
       if (m_slot_info.empty())
         return;
@@ -348,7 +348,7 @@ class SlotInfoPrinter: public MessagePrinter {
       m_slot_info.push_back(slot);
     }
 
-  protected:
+ protected:
     void PostStringHook() {
       vector<slot_info>::const_iterator iter = m_slot_info.begin();
       for (; iter != m_slot_info.end(); ++iter) {
@@ -371,7 +371,7 @@ class SlotInfoPrinter: public MessagePrinter {
       }
     }
 
-  private:
+ private:
     struct slot_info {
       public:
         uint16_t offset;
@@ -392,7 +392,7 @@ class SlotInfoPrinter: public MessagePrinter {
  * Print sensor definition.
  */
 class SensorDefinitionPrinter: public GenericMessagePrinter {
-  public:
+ public:
     void Visit(const UInt8MessageField *message) {
       const string name = message->GetDescriptor()->Name();
       if (name == "type") {
@@ -429,7 +429,7 @@ class SensorDefinitionPrinter: public GenericMessagePrinter {
       }
     }
 
-  protected:
+ protected:
     string TransformLabel(const string &label) {
       string new_label = label;
       ola::CustomCapitalizeLabel(&new_label);

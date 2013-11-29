@@ -36,7 +36,7 @@ class MultiCallbackTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSingleLimit);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testMultiCallback();
     void testZeroLimit();
     void testSingleLimit();
@@ -49,7 +49,7 @@ class MultiCallbackTest: public CppUnit::TestFixture {
       m_callback_count = 0;
     }
 
-  private:
+ private:
     int m_callback_count;
 };
 

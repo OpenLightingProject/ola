@@ -32,7 +32,7 @@ namespace e131 {
 class E133Inflator: public BaseInflator {
   friend class E133InflatorTest;
 
-  public:
+ public:
     E133Inflator()
         : BaseInflator(),
           m_last_header_valid(false) {
@@ -41,7 +41,7 @@ class E133Inflator: public BaseInflator {
 
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_E133; }
 
-  protected:
+ protected:
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
@@ -50,7 +50,7 @@ class E133Inflator: public BaseInflator {
     void ResetHeaderField() {
       m_last_header_valid = false;
     }
-  private:
+ private:
     E133Header m_last_header;
     bool m_last_header_valid;
 };

@@ -47,7 +47,7 @@ typedef set<IPV4Address> IPV4AddressSet;
  * the operation and the associated timer.
  */
 class PendingOperation {
-  public:
+ public:
     PendingOperation(xid_t xid, unsigned int retry_time)
       : xid(xid),
         timer_id(ola::thread::INVALID_TIMEOUT),
@@ -73,7 +73,7 @@ class PendingOperation {
     xid_t xid;
     ola::thread::timeout_id timer_id;
 
-  private:
+ private:
     // The time to wait before the next timeout, doubles each time.
     unsigned int m_retry_time;
     // milli-seconds since the first attempt
@@ -87,7 +87,7 @@ class PendingOperation {
  * A multicast operation. This keeps track of the previous responders.
  */
 class PendingMulticastOperation: public PendingOperation {
-  public:
+ public:
     PendingMulticastOperation(xid_t xid, unsigned int retry_time)
       : PendingOperation(xid, retry_time),
         m_pr_list_changed(false) {
@@ -107,7 +107,7 @@ class PendingMulticastOperation: public PendingOperation {
     class PendingSrvRqst *parent;
     IPV4AddressSet pr_list;
 
-  private:
+ private:
     bool m_pr_list_changed;
 };
 
@@ -116,7 +116,7 @@ class PendingMulticastOperation: public PendingOperation {
  * A unicast SrvReg / SrvDeReg operation.
  */
 class UnicastSrvRegOperation: public PendingOperation {
-  public:
+ public:
     UnicastSrvRegOperation(xid_t xid, unsigned int retry_time,
                            const string &da_url,
                            const ServiceEntry &service)
@@ -134,7 +134,7 @@ class UnicastSrvRegOperation: public PendingOperation {
  * A unicast SrvRqst operation to a DA.
  */
 class UnicastSrvRqstOperation: public PendingOperation {
-  public:
+ public:
     UnicastSrvRqstOperation(xid_t xid, unsigned int retry_time,
                             const string &da_url, const ScopeSet &scopes,
                             class PendingSrvRqst *parent)
@@ -157,7 +157,7 @@ class UnicastSrvRqstOperation: public PendingOperation {
  * expect those for directory-agents.
  */
 class MulicastSrvRqstOperation: public PendingMulticastOperation {
-  public:
+ public:
     MulicastSrvRqstOperation(xid_t xid, unsigned int retry_time,
                              const ScopeSet &scopes,
                              class PendingSrvRqst *parent)
@@ -175,7 +175,7 @@ class MulicastSrvRqstOperation: public PendingMulticastOperation {
  * Represents a find operation.
  */
 class PendingSrvRqst {
-  public:
+ public:
     typedef enum {
       PENDING,
       COMPLETE,
@@ -196,7 +196,7 @@ class PendingSrvRqst {
     BaseCallback1<void, const URLEntries&> *callback;
     URLEntries urls;
 
-  private:
+ private:
     typedef map<string, ScopeStatus> ScopeStatusMap;
     ScopeStatusMap scope_status_map;
 };

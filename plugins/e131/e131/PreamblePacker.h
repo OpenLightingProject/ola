@@ -35,7 +35,7 @@ namespace e131 {
  * isn't reentrant so be careful where you use it.
  */
 class PreamblePacker {
-  public:
+ public:
     explicit PreamblePacker()
         : m_send_buffer(NULL) {
     }
@@ -51,7 +51,7 @@ class PreamblePacker {
     static const unsigned int ACN_HEADER_SIZE;
     static const unsigned int MAX_DATAGRAM_SIZE = 1472;
 
-  private:
+ private:
     uint8_t *m_send_buffer;
 
     void Init();

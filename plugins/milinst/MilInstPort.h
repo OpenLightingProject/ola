@@ -31,7 +31,7 @@ namespace plugin {
 namespace milinst {
 
 class MilInstOutputPort: public BasicOutputPort {
-  public:
+ public:
     MilInstOutputPort(MilInstDevice *parent,
                       unsigned int id,
                       MilInstWidget *widget)
@@ -41,7 +41,7 @@ class MilInstOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return m_widget->GetPath(); }
 
-  private:
+ private:
     MilInstWidget *m_widget;
 };
 }  // namespace milinst

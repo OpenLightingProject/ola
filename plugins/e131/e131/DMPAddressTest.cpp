@@ -40,11 +40,11 @@ class DMPAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testAddressData);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testAddress();
     void testRangeAddress();
     void testAddressData();
-  private:
+ private:
     void checkAddress(
         const BaseDMPAddress *address,
         unsigned int start,

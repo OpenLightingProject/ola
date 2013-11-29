@@ -37,7 +37,7 @@ using std::string;
  * derived class.
  **/
 class SocketAddress {
-  public:
+ public:
     virtual ~SocketAddress() {}
 
     virtual uint16_t Family() const = 0;
@@ -54,7 +54,7 @@ class SocketAddress {
  * Wraps a sockaddr_in.
  */
 class IPV4SocketAddress: public SocketAddress {
-  public:
+ public:
     IPV4SocketAddress()
         : SocketAddress(),
           m_host(),
@@ -117,7 +117,7 @@ class IPV4SocketAddress: public SocketAddress {
 
     bool ToSockAddr(struct sockaddr *addr, unsigned int size) const;
 
-  private:
+ private:
     IPV4Address m_host;
     uint16_t m_port;
 };
@@ -127,7 +127,7 @@ class IPV4SocketAddress: public SocketAddress {
  * Wraps a struct sockaddr.
  */
 class GenericSocketAddress: public SocketAddress {
-  public:
+ public:
     explicit GenericSocketAddress(const struct sockaddr &addr)
       : m_addr(addr) {
     }
@@ -163,7 +163,7 @@ class GenericSocketAddress: public SocketAddress {
     IPV4SocketAddress V4Addr() const;
     // Add V6 here as well
 
-  private:
+ private:
     struct sockaddr m_addr;
 };
 }  // namespace network

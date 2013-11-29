@@ -34,7 +34,7 @@ using ola::io::ConnectedDescriptor;
 using ola::io::SelectServer;
 
 class StageProfiWidget {
-  public:
+ public:
     StageProfiWidget():
       m_enabled(false),
       m_got_response(false),
@@ -52,7 +52,7 @@ class StageProfiWidget {
     void SocketReady();
     void Timeout();
 
-  protected:
+ protected:
     int Send255(unsigned int start, const uint8_t *buf, unsigned int len) const;
     int SetChannel(unsigned int chan, uint8_t val) const;
 
@@ -66,7 +66,7 @@ class StageProfiWidget {
     enum { DMX_MSG_LEN = 255 };
     enum { DMX_HEADER_SIZE = 4};
 
-  private:
+ private:
     int DoRecv();
 };
 }  // namespace stageprofi

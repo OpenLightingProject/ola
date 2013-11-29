@@ -38,7 +38,7 @@ static const uint16_t ROOT_E133_ENDPOINT = 0;
  */
 class E133EndpointInterface
     : public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     E133EndpointInterface() {}
     virtual ~E133EndpointInterface() {}
 
@@ -99,7 +99,7 @@ class E133EndpointInterface
  * everything through the to controller.
  */
 class E133Endpoint: public E133EndpointInterface {
-  public:
+ public:
     // Callbacks which run various actions take place.
     // TODO(simon): if we expect the callee to read the state, perhaps there
     // should just be one callback with an enum indicating what changed?
@@ -151,7 +151,7 @@ class E133Endpoint: public E133EndpointInterface {
     virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete);
 
-  private:
+ private:
     bool m_identify_mode;
     const bool m_is_physical;
     uint16_t m_universe;

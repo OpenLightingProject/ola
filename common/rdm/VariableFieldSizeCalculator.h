@@ -45,7 +45,7 @@ using ola::messaging::FieldDescriptorGroup;
  */
 class VariableFieldSizeCalculator
     : public ola::messaging::FieldDescriptorVisitor {
-  public:
+ public:
     typedef enum {
       TOO_SMALL,
       TOO_LARGE,
@@ -80,7 +80,7 @@ class VariableFieldSizeCalculator
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*) {}
 
-  private:
+ private:
     unsigned int m_fixed_size_sum;
     vector<const StringFieldDescriptor*> m_variable_string_fields;
     vector<const FieldDescriptorGroup*> m_variable_group_fields;

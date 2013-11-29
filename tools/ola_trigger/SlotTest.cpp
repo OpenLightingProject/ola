@@ -37,7 +37,7 @@ class SlotTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDefaultAction);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testIntersectingIntervalAddition();
     void testIntervalAddition();
     void testActionMatching();

@@ -32,7 +32,7 @@ namespace ola {
  * @brief The interface to DNS-SD operations like register, browse etc.
  */
 class DiscoveryAgentInterface {
-  public:
+ public:
     virtual ~DiscoveryAgentInterface() {}
 
     /**

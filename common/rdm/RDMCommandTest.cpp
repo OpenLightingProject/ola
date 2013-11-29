@@ -74,7 +74,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCommandInflation);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testRDMCommand();
@@ -92,7 +92,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testUnMuteRequest();
     void testCommandInflation();
 
-  private:
+ private:
     void PackAndVerify(const RDMCommand &command,
                        const uint8_t *expected,
                        unsigned int expected_length);

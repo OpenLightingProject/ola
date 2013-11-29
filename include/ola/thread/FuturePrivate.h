@@ -30,7 +30,7 @@ namespace thread {
 
 template <typename T>
 class FutureImpl {
-  public:
+ public:
     FutureImpl()
         : m_ref_count(1),
           m_is_set(false),
@@ -82,7 +82,7 @@ class FutureImpl {
       m_condition.Broadcast();
     }
 
-  private:
+ private:
     mutable Mutex m_mutex;
     mutable ConditionVariable m_condition;
     unsigned int m_ref_count;
@@ -97,7 +97,7 @@ class FutureImpl {
  */
 template <>
 class FutureImpl<void> {
-  public:
+ public:
     FutureImpl()
         : m_ref_count(1),
           m_is_set(false) {
@@ -146,7 +146,7 @@ class FutureImpl<void> {
       m_condition.Broadcast();
     }
 
-  private:
+ private:
     mutable Mutex m_mutex;
     mutable ConditionVariable m_condition;
     unsigned int m_ref_count;

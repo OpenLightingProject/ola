@@ -63,7 +63,7 @@ class SLPServiceImpl;
  * An SLP Daemon.
  */
 class SLPDaemon {
-  public:
+ public:
     struct SLPDaemonOptions: public SLPServer::SLPServerOptions {
       // IP to multicast on
       bool enable_http;  // enable the HTTP server
@@ -92,7 +92,7 @@ class SLPDaemon {
 
     void Input(char c);
 
-  private:
+ private:
     /**
      * The implementation of the SLP Service.
      */

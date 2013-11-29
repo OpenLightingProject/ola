@@ -40,7 +40,7 @@ using std::string;
  * Provides helper methods for common E1.33 packet construction operations.
  */
 class MessageBuilder {
-  public:
+ public:
     MessageBuilder(const CID &cid, const string &source_name);
     ~MessageBuilder() {}
 
@@ -64,7 +64,7 @@ class MessageBuilder {
 
     ola::io::MemoryBlockPool *pool() { return &m_memory_pool; }
 
-  private:
+ private:
     const CID m_cid;
     const string m_source_name;
     ola::io::MemoryBlockPool m_memory_pool;

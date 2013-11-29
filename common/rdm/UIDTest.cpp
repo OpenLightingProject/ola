@@ -42,7 +42,7 @@ class UIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDirectedToUID);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testUID();
     void testUIDInequalities();
     void testUIDSet();

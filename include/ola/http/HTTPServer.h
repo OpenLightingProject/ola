@@ -52,7 +52,7 @@ using std::vector;
  * Represents the HTTP request
  */
 class HTTPRequest {
-  public:
+ public:
     HTTPRequest(const string &url,
                 const string &method,
                 const string &version,
@@ -76,7 +76,7 @@ class HTTPRequest {
     bool InFlight() const { return m_in_flight; }
     void SetInFlight() { m_in_flight = true; }
 
-  private:
+ private:
     string m_url;
     string m_method;
     string m_version;
@@ -96,7 +96,7 @@ class HTTPRequest {
  * Represents the HTTP Response
  */
 class HTTPResponse {
-  public:
+ public:
     explicit HTTPResponse(struct MHD_Connection *connection):
       m_connection(connection),
       m_status_code(MHD_HTTP_OK) {}
@@ -109,7 +109,7 @@ class HTTPResponse {
     int SendJson(const ola::web::JsonValue &json);
     int Send();
     struct MHD_Connection *Connection() const { return m_connection; }
-  private:
+ private:
     string m_data;
     struct MHD_Connection *m_connection;
     typedef multimap<string, string> HeadersMultiMap;
@@ -142,7 +142,7 @@ class HTTPResponse {
  * @}
  */
 class HTTPServer: public ola::thread::Thread {
-  public:
+ public:
     typedef ola::Callback2<int, const HTTPRequest*, HTTPResponse*>
       BaseHTTPCallback;
 

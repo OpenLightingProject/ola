@@ -38,7 +38,7 @@ namespace ola {
 namespace rdm {
 
 class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
-  public:
+ public:
     SubDeviceDispatcher() {}
     ~SubDeviceDispatcher() {}
 
@@ -48,7 +48,7 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-  private:
+ private:
     struct FanOutTracker {
       public:
         FanOutTracker(uint16_t number_of_subdevices,

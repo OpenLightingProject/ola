@@ -45,7 +45,7 @@
  */
 class E133HealthCheckedConnection
     : public ola::network::HealthCheckedConnection {
-  public:
+ public:
     E133HealthCheckedConnection(
         ola::e133::MessageBuilder *message_builder,
         MessageQueue *message_queue,
@@ -57,7 +57,7 @@ class E133HealthCheckedConnection
     void SendHeartbeat();
     void HeartbeatTimeout();
 
-  private:
+ private:
     ola::e133::MessageBuilder *m_message_builder;
     MessageQueue *m_message_queue;
     std::auto_ptr<ola::SingleUseCallback0<void> > m_on_timeout;

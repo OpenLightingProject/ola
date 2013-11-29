@@ -32,7 +32,7 @@ namespace e131 {
 class DMPInflator: public BaseInflator {
   friend class DMPInflatorTest;
 
-  public:
+ public:
     DMPInflator(): BaseInflator(PDU::ONE_BYTE),
                    m_last_header_valid(false) {
     }
@@ -40,14 +40,14 @@ class DMPInflator: public BaseInflator {
 
     uint32_t Id() const { return ola::acn::VECTOR_E131_DMP; }
 
-  protected:
+ protected:
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
                       unsigned int &bytes_used);
 
     void ResetHeaderField();
-  private:
+ private:
     DMPHeader m_last_header;
     bool m_last_header_valid;
 };

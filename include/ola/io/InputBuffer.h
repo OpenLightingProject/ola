@@ -32,7 +32,7 @@ namespace io {
  * InputBufferInterface.
  */
 class InputBufferInterface {
-  public:
+ public:
     virtual ~InputBufferInterface() {}
 
     /**

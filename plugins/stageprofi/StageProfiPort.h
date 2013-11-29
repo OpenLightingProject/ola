@@ -32,7 +32,7 @@ namespace plugin {
 namespace stageprofi {
 
 class StageProfiOutputPort: public BasicOutputPort {
-  public:
+ public:
     StageProfiOutputPort(StageProfiDevice *parent,
                          unsigned int id,
                          StageProfiWidget *widget)
@@ -42,7 +42,7 @@ class StageProfiOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return m_widget->GetDevicePath(); }
 
-  private:
+ private:
     StageProfiWidget *m_widget;
 };
 }  // namespace stageprofi

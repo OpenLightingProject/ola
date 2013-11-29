@@ -38,7 +38,7 @@ namespace ola {
 namespace rdm {
 
 class DummyResponder: public RDMControllerInterface {
-  public:
+ public:
     explicit DummyResponder(const UID &uid);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
@@ -48,7 +48,7 @@ class DummyResponder: public RDMControllerInterface {
       return m_personality_manager.ActivePersonalityFootprint();
     }
 
-  private:
+ private:
     /**
      * The RDM Operations for the DummyResponder.
      */

@@ -39,7 +39,7 @@ namespace usbpro {
  */
 class DmxterWidgetImpl: public BaseUsbProWidget,
                         public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     DmxterWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                      uint16_t esta_id,
                      uint32_t serial);
@@ -53,7 +53,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
-  private:
+ private:
     ola::rdm::UID m_uid;
     ola::rdm::UIDSet m_uids;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
@@ -129,7 +129,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
  */
 class DmxterWidget: public SerialWidgetInterface,
                     public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
                  uint16_t esta_id,
                  uint32_t serial,
@@ -155,7 +155,7 @@ class DmxterWidget: public SerialWidgetInterface,
       return m_impl->GetDescriptor();
     }
 
-  private:
+ private:
     // we need to control the order of construction & destruction here so these
     // are pointers.
     DmxterWidgetImpl *m_impl;

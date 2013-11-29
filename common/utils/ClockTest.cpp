@@ -36,7 +36,7 @@ class ClockTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testMockClock);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testTimeStamp();
     void testTimeInterval();
     void testTimeIntervalMutliplication();

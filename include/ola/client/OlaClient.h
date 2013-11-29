@@ -44,7 +44,7 @@ namespace client {
  * @brief The callback based C++ client for OLA.
  */
 class OlaClient {
-  public:
+ public:
     explicit OlaClient(ola::io::ConnectedDescriptor *descriptor);
     ~OlaClient();
 
@@ -297,7 +297,7 @@ class OlaClient {
     void SendTimeCode(const ola::timecode::TimeCode &timecode,
                       SetCallback *callback);
 
-  private:
+ private:
     std::auto_ptr<class OlaClientCore> m_core;
 
     DISALLOW_COPY_AND_ASSIGN(OlaClient);

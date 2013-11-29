@@ -35,7 +35,7 @@ namespace io {
  * not free the memory when the object is destroyed.
  */
 class MemoryBuffer: public InputBufferInterface {
-  public:
+ public:
     explicit MemoryBuffer(const uint8_t *data, unsigned int size)
         : m_data(data),
           m_size(size),
@@ -58,7 +58,7 @@ class MemoryBuffer: public InputBufferInterface {
       return data_size;
     }
 
-  private:
+ private:
     const uint8_t *m_data;
     const unsigned int m_size;
     unsigned int m_cursor;

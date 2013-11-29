@@ -43,7 +43,7 @@ class ScopeSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringEscaping);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testConstruction();
     void testIntersection();
     void testDifference();

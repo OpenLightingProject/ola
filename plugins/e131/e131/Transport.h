@@ -39,7 +39,7 @@ using ola::network::IPV4Address;
  * allows us to support several different protocol transports.
  */
 class OutgoingTransport {
-  public:
+ public:
     OutgoingTransport() {}
     virtual ~OutgoingTransport() {}
 

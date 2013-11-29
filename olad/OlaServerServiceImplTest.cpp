@@ -61,7 +61,7 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSetMergeMode);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     OlaServerServiceImplTest():
       m_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
     }
@@ -76,7 +76,7 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
     void testSetUniverseName();
     void testSetMergeMode();
 
-  private:
+ private:
     ola::rdm::UID m_uid;
     ola::Clock m_clock;
 
@@ -109,7 +109,7 @@ static const uint8_t SAMPLE_DMX_DATA[] = {1, 2, 3, 4, 5};
  * The GetDmx Checks
  */
 class GetDmxCheck {
-  public:
+ public:
     virtual ~GetDmxCheck() {}
     virtual void Check(RpcController *controller,
                        ola::proto::DmxData *reply) = 0;
@@ -120,7 +120,7 @@ class GetDmxCheck {
  * Assert that the data is all 0
  */
 class GetDmxNoDataCheck: public GetDmxCheck {
-  public:
+ public:
     void Check(RpcController *controller,
                ola::proto::DmxData *reply) {
       DmxBuffer empty_buffer;
@@ -134,7 +134,7 @@ class GetDmxNoDataCheck: public GetDmxCheck {
  * Assert that the data matches the test data.
  */
 class GetDmxValidDataCheck: public GetDmxCheck {
-  public:
+ public:
     void Check(RpcController *controller,
                ola::proto::DmxData *reply) {
       OLA_ASSERT_FALSE(controller->Failed());
@@ -148,7 +148,7 @@ class GetDmxValidDataCheck: public GetDmxCheck {
  * RegisterForDmxChecks
  */
 class RegisterForDmxCheck {
-  public:
+ public:
     virtual ~RegisterForDmxCheck() {}
     virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
@@ -159,7 +159,7 @@ class RegisterForDmxCheck {
  * UpdateDmxDataCheck
  */
 class UpdateDmxDataCheck {
-  public:
+ public:
     virtual ~UpdateDmxDataCheck() {}
     virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
@@ -170,7 +170,7 @@ class UpdateDmxDataCheck {
  * SetUniverseNameCheck
  */
 class SetUniverseNameCheck {
-  public:
+ public:
     virtual ~SetUniverseNameCheck() {}
     virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
@@ -181,7 +181,7 @@ class SetUniverseNameCheck {
  * SetMergeModeCheck
  */
 class SetMergeModeCheck {
-  public:
+ public:
     virtual ~SetMergeModeCheck() {}
     virtual void Check(RpcController *controller,
                        ola::proto::Ack *reply) = 0;
@@ -193,7 +193,7 @@ class SetMergeModeCheck {
  */
 template<typename parent, typename reply>
 class GenericMissingUniverseCheck: public parent {
-  public:
+ public:
     void Check(RpcController *controller,
                reply *r) {
       OLA_ASSERT(controller->Failed());
@@ -209,7 +209,7 @@ class GenericMissingUniverseCheck: public parent {
  */
 template<typename parent>
 class GenericAckCheck: public parent {
-  public:
+ public:
     void Check(RpcController *controller,
                ola::proto::Ack *r) {
       OLA_ASSERT_FALSE(controller->Failed());

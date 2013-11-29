@@ -44,7 +44,7 @@ class ThreadPool {
     void JoinAll();
     void Execute(Action action);
 
-  private:
+ private:
     queue<Action> m_callback_queue;
     unsigned int m_thread_count;
     bool m_shutdown;

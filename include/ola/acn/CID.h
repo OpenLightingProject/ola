@@ -127,7 +127,7 @@ class CID {
      */
     static CID FromString(const std::string &cid);
 
-  private:
+ private:
     class CIDImpl *m_impl;
 
     // Takes ownership;

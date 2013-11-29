@@ -35,7 +35,7 @@ namespace e131 {
 class E131Inflator: public BaseInflator {
   friend class E131InflatorTest;
 
-  public:
+ public:
     E131Inflator(): BaseInflator(),
                     m_last_header_valid(false) {
     }
@@ -43,7 +43,7 @@ class E131Inflator: public BaseInflator {
 
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_E131; }
 
-  protected:
+ protected:
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
@@ -52,7 +52,7 @@ class E131Inflator: public BaseInflator {
     void ResetHeaderField() {
       m_last_header_valid = false;
     }
-  private:
+ private:
     E131Header m_last_header;
     bool m_last_header_valid;
 };
@@ -64,7 +64,7 @@ class E131Inflator: public BaseInflator {
 class E131InflatorRev2: public BaseInflator {
   friend class E131InflatorTest;
 
-  public:
+ public:
     E131InflatorRev2(): BaseInflator(),
                     m_last_header_valid(false) {
     }
@@ -72,14 +72,14 @@ class E131InflatorRev2: public BaseInflator {
 
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_E131_REV2; }
 
-  protected:
+ protected:
     bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);
 
     void ResetHeaderField() {
       m_last_header_valid = false;
     }
-  private:
+ private:
     E131Header m_last_header;
     bool m_last_header_valid;
 };

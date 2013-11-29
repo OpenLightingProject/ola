@@ -27,7 +27,7 @@
 namespace ola {
 
 class TokenBucket {
-  public:
+ public:
     TokenBucket(unsigned int initial,
                 unsigned int rate_per_second,
                 unsigned int max,
@@ -41,7 +41,7 @@ class TokenBucket {
     bool GetToken(const TimeStamp &now);
     unsigned int Count(const TimeStamp &now);
 
-  private:
+ private:
     unsigned int m_count;
     unsigned int m_rate;
     unsigned int m_max;

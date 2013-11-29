@@ -33,7 +33,7 @@ namespace messaging {
  * The base class for all message printers.
  */
 class MessagePrinter: public MessageVisitor {
-  public:
+ public:
     virtual ~MessagePrinter() {}
 
     std::string AsString(const class Message *message);
@@ -52,12 +52,12 @@ class MessagePrinter: public MessageVisitor {
     virtual void Visit(const GroupMessageField*) {}
     virtual void PostVisit(const GroupMessageField*) {}
 
-  protected:
+ protected:
     std::stringstream& Stream() { return m_str; }
     virtual void PostStringHook() {}
     virtual string TransformLabel(const string &label) { return label; }
 
-  private:
+ private:
     std::stringstream m_str;
 };
 
@@ -66,7 +66,7 @@ class MessagePrinter: public MessageVisitor {
  * The generic printer returns key: value fields.
  */
 class GenericMessagePrinter: public MessagePrinter {
-  public:
+ public:
     GenericMessagePrinter(unsigned int indent_size = DEFAULT_INDENT,
                           unsigned int initial_indent = 0)
         : m_indent(initial_indent),
@@ -90,7 +90,7 @@ class GenericMessagePrinter: public MessagePrinter {
 
     static const unsigned int DEFAULT_INDENT = 2;
 
-  private:
+ private:
     unsigned int m_indent, m_indent_size;
 
     void AppendUInt(const string &name,

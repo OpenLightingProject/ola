@@ -50,7 +50,7 @@ namespace client {
  * @snippet streaming_client.cpp Tutorial Example
  */
 class StreamingClient {
-  public:
+ public:
     /**
      * Controls the options for the StreamingClient class.
      */
@@ -144,7 +144,7 @@ class StreamingClient {
 
     void ChannelClosed();
 
-  private:
+ private:
     bool m_auto_start;
     uint16_t m_server_port;
     ola::network::TCPSocket *m_socket;

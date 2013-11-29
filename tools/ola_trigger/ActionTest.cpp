@@ -39,7 +39,7 @@ class ActionTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCommandAction);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testVariableAssignment();
     void testVariableAssignmentInterpolation();
     void testCommandAction();
@@ -57,7 +57,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ActionTest);
  * A Mock CommandAction which doesn't fork and exec
  */
 class MockCommandAction: CommandAction {
-  public:
+ public:
     MockCommandAction(const string &command,
                       const vector<string> &args)
       : CommandAction(command, args) {
@@ -66,7 +66,7 @@ class MockCommandAction: CommandAction {
     void Execute(Context *context, uint8_t slot_value);
     void CheckArgs(int32_t line, const char* args[]);
 
-  private:
+ private:
     vector<string> m_interpolated_args;
 };
 

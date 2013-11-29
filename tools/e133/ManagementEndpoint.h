@@ -35,7 +35,7 @@ using ola::rdm::RDMCallback;
  * supplied.
  */
 class ManagementEndpoint: public E133Endpoint {
-  public:
+ public:
     ManagementEndpoint(DiscoverableRDMControllerInterface *controller,
                        const EndpointProperties &properties,
                        const ola::rdm::UID &uid,
@@ -48,7 +48,7 @@ class ManagementEndpoint: public E133Endpoint {
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
-  private:
+ private:
     /**
      * The RDM Operations for the MovingLightResponder.
      */

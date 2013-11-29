@@ -38,7 +38,7 @@ using std::string;
  * The show player class
  */
 class ShowRecorder {
-  public:
+ public:
     ShowRecorder(const string &filename,
                  const std::vector<unsigned int> &universes);
     ~ShowRecorder();
@@ -49,7 +49,7 @@ class ShowRecorder {
 
     uint64_t FrameCount() const { return m_frame_count; }
 
-  private:
+ private:
     ola::OlaCallbackClientWrapper m_client;
     ShowSaver m_saver;
     std::vector<unsigned int> m_universes;

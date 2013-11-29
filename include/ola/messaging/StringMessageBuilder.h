@@ -38,7 +38,7 @@ using std::vector;
  * This visitor builds a Message object from a list of strings.
  */
 class StringMessageBuilder: public FieldDescriptorVisitor {
-  public:
+ public:
     explicit StringMessageBuilder(const vector<string> &input)
         : m_input(input) {
     }
@@ -58,7 +58,7 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
     void Visit(const FieldDescriptorGroup*);
     void PostVisit(const FieldDescriptorGroup*);
 
-  private:
+ private:
     vector<string> m_input;
 };
 }  // namespace messaging

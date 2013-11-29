@@ -31,14 +31,14 @@ namespace plugin {
 namespace espnet {
 
 class EspNetPortHelper {
-  public:
+ public:
     string Description(Universe *universe) const;
     uint8_t EspNetUniverseId(Universe *universe) const;
 };
 
 
 class EspNetInputPort: public BasicInputPort {
-  public:
+ public:
     EspNetInputPort(EspNetDevice *parent, unsigned int id,
                     class PluginAdaptor *plugin_adaptor,
                     EspNetNode *node)
@@ -51,7 +51,7 @@ class EspNetInputPort: public BasicInputPort {
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
-  private:
+ private:
     EspNetPortHelper m_helper;
     EspNetNode *m_node;
     DmxBuffer m_buffer;
@@ -59,7 +59,7 @@ class EspNetInputPort: public BasicInputPort {
 
 
 class EspNetOutputPort: public BasicOutputPort {
-  public:
+ public:
     EspNetOutputPort(EspNetDevice *parent, unsigned int id, EspNetNode *node)
         : BasicOutputPort(parent, id),
           m_helper(),
@@ -69,7 +69,7 @@ class EspNetOutputPort: public BasicOutputPort {
     string Description() const { return m_helper.Description(GetUniverse()); }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-  private:
+ private:
     EspNetPortHelper m_helper;
     EspNetNode *m_node;
 };

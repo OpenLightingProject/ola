@@ -43,7 +43,7 @@ class URLEntryTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testAging);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testURLEntry();
     void testURLEntryWrite();
     void testToString();
@@ -53,7 +53,7 @@ class URLEntryTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     IOQueue output;
 };
 

@@ -59,7 +59,7 @@ using std::string;
  * vs inject.
  */
 class SLPServerTestHelper {
-  public:
+ public:
     explicit SLPServerTestHelper(MockUDPSocket *mock_socket)
         : m_ss(NULL, &m_clock),
           m_udp_socket(mock_socket),
@@ -202,7 +202,7 @@ class SLPServerTestHelper {
     static const char SERVER_IP[];
     static const char SLP_MULTICAST_IP[];
 
-  private:
+ private:
     ola::MockClock m_clock;
     ola::TimeStamp m_server_start_time;
     ola::io::SelectServer m_ss;

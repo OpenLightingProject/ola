@@ -39,7 +39,7 @@ class TokenBucketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testTokenBucketTwo);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testTokenBucket();
     void testTokenBucketTwo();
 

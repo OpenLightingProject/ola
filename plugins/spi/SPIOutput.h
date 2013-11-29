@@ -38,7 +38,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 
 class Personality {
-  public:
+ public:
     Personality(uint16_t footprint, const string &description)
         : m_footprint(footprint),
           m_description(description) {
@@ -47,13 +47,13 @@ class Personality {
     uint16_t footprint() const { return m_footprint; }
     string description() const { return m_description; }
 
-  private:
+ private:
     uint16_t m_footprint;
     const string m_description;
 };
 
 class PersonalityManager {
-  public:
+ public:
     PersonalityManager() : m_active_personality(0) {}
 
     ~PersonalityManager() {
@@ -96,14 +96,14 @@ class PersonalityManager {
       return m_personalities[personality - 1];
     }
 
-  private:
+ private:
     std::vector<Personality*> m_personalities;
     uint8_t m_active_personality;
 };
 
 
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     struct Options {
       uint8_t pixel_count;
       uint8_t output_number;
@@ -132,7 +132,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-  private:
+ private:
     /**
      * The RDM Operations for the MovingLightResponder.
      */

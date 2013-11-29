@@ -29,9 +29,9 @@ class RunLengthDecoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDecode);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testDecode();
-  private:
+ private:
 };
 
 

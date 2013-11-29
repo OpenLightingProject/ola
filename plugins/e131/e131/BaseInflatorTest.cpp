@@ -41,18 +41,18 @@ class BaseInflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInflatePDUBlock);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testChildInflators();
     void testDecodeLength();
     void testDecodeVector();
     void testInflatePDU();
     void testInflatePDUBlock();
-  private:
+ private:
 };
 
 
 class TestInflator: public ola::plugin::e131::BaseInflator {
-  public:
+ public:
     TestInflator(unsigned int id = 0, PDU::vector_size v_size = PDU::TWO_BYTES)
         : BaseInflator(v_size),
           m_id(id),
@@ -60,7 +60,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
     uint32_t Id() const { return m_id; }
     unsigned int BlocksHandled() const { return m_blocks_handled; }
 
-  protected:
+ protected:
     void ResetHeaderField() {}
     bool DecodeHeader(HeaderSet *headers,
                      const uint8_t *data,
@@ -83,7 +83,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
       (void) headers;
     }
 
-  private:
+ private:
     unsigned int m_id;
     unsigned int m_blocks_handled;
 };

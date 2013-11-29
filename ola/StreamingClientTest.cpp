@@ -47,12 +47,12 @@ class StreamingClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testSendDMX();
 
-  private:
+ private:
     class OlaServerThread *m_server_thread;
 };
 
@@ -64,7 +64,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StreamingClientTest);
  * The thread that the OlaServer runs in.
  */
 class OlaServerThread: public ola::thread::Thread {
-  public:
+ public:
     OlaServerThread() :
         Thread(),
         m_is_running(false) {
@@ -76,7 +76,7 @@ class OlaServerThread: public ola::thread::Thread {
     void WaitForStart();
     GenericSocketAddress RPCAddress() const;
 
-  private:
+ private:
     auto_ptr<OlaDaemon> m_olad;
     bool m_is_running;
     Mutex m_mutex;

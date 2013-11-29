@@ -44,7 +44,7 @@ namespace rdm {
  * @}
  */
 class UIDAllocator {
-  public:
+ public:
     /**
      * @brief Create a new allocator with the starting UID.
      * @param uid the first UID to allocate.
@@ -79,7 +79,7 @@ class UIDAllocator {
       return new UID(m_esta_id, m_device_id++);
     }
 
-  private:
+ private:
     uint16_t m_esta_id;
     uint32_t m_device_id;
     uint32_t m_last_device_id;

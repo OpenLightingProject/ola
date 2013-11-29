@@ -35,7 +35,7 @@ using ola::PluginAdaptor;
 class OpenDmxDevice;
 
 class OpenDmxPlugin: public Plugin {
-  public:
+ public:
     explicit OpenDmxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {
     }
@@ -45,7 +45,7 @@ class OpenDmxPlugin: public Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_OPENDMX; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

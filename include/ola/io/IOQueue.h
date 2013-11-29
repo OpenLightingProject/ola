@@ -40,7 +40,7 @@ namespace io {
 class IOQueue: public InputBufferInterface,
                public OutputBufferInterface,
                public IOVecInterface {
-  public:
+ public:
     IOQueue();
     explicit IOQueue(class MemoryBlockPool *block_pool);
 
@@ -75,7 +75,7 @@ class IOQueue: public InputBufferInterface,
 
     void Dump(std::ostream *output);
 
-  private:
+ private:
     typedef std::deque<class MemoryBlock*> BlockVector;
 
     class MemoryBlockPool* m_pool;

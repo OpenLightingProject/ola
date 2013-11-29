@@ -61,7 +61,7 @@ class SLPStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDump);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testInsertAndLookup();
     void testDoubleInsert();
     void testNonFresh();
@@ -92,7 +92,7 @@ class SLPStoreTest: public CppUnit::TestFixture {
     static const char SERVICE2_URL1[];
     static const char SERVICE2_URL2[];
 
-  private:
+ private:
     SLPStore m_store;
     MockClock m_clock;
     TimeStamp now;

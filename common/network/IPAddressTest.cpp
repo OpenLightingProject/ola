@@ -42,7 +42,7 @@ class IPAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLoopback);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testIPV4Address();
     void testWildcard();
     void testBroadcast();

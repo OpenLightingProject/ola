@@ -37,7 +37,7 @@ class VariableInterpolatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testMissingVariables);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testNoInterpolation();
     void testSimpleInterpolation();
     void testNestedInterpolation();

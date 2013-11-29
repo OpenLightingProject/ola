@@ -27,7 +27,7 @@ namespace ola {
 namespace network {
 
 class SocketCloser {
-  public:
+ public:
     explicit SocketCloser(int fd)
       : m_fd(fd) {
     }
@@ -41,7 +41,7 @@ class SocketCloser {
       m_fd = -1;
       return fd;
     }
-  private:
+ private:
     int m_fd;
 };
 }  // namespace network

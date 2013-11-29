@@ -50,7 +50,7 @@ namespace client {
    @endcode
  */
 class Result {
-  public:
+ public:
     /**
      * @param error the text description of the error. An empty string means
      * the action succeeded.
@@ -72,7 +72,7 @@ class Result {
      */
     const std::string& Error() const { return m_error; }
 
-  private:
+ private:
     const std::string m_error;
 
     DISALLOW_COPY_AND_ASSIGN(Result);

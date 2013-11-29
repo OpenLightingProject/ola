@@ -57,7 +57,7 @@ using ola::network::IPV4SocketAddress;
  * will trigger the on_read callback that was attached to the socket.
  */
 class MockUDPSocket: public ola::network::UDPSocketInterface {
-  public:
+ public:
     MockUDPSocket();
     ~MockUDPSocket() { Close(); }
 
@@ -131,7 +131,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
 
     void SetInterface(const IPV4Address &interface);
 
-  private:
+ private:
     typedef struct {
       const uint8_t *data;
       unsigned int size;
@@ -165,7 +165,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
  * This can be used to break the tests into sections.
  */
 class SocketVerifier {
-  public:
+ public:
     explicit SocketVerifier(MockUDPSocket *socket)
         : m_socket(socket) {
     }
@@ -173,7 +173,7 @@ class SocketVerifier {
       m_socket->Verify();
     }
 
-  private:
+ private:
     MockUDPSocket *m_socket;
 
     DISALLOW_COPY_AND_ASSIGN(SocketVerifier);

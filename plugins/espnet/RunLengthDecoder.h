@@ -35,7 +35,7 @@ class RunLengthDecoder {
     void Decode(DmxBuffer *dst,
                 const uint8_t *data,
                 unsigned int length);
-  private:
+ private:
     static const uint8_t ESCAPE_VALUE = 0xFD;
     static const uint8_t REPEAT_VALUE = 0xFE;
 };

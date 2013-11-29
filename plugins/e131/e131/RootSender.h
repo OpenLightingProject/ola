@@ -33,7 +33,7 @@ namespace e131 {
 using ola::acn::CID;
 
 class RootSender {
-  public:
+ public:
     explicit RootSender(const CID &cid);
     ~RootSender() {}
 
@@ -57,7 +57,7 @@ class RootSender {
     // TODO(simon): add methods to queue and send PDUs/blocks with different
     // vectors
 
-  private:
+ private:
     PDUBlock<PDU> m_working_block;
     PDUBlock<PDU> m_root_block;
     RootPDU m_root_pdu;

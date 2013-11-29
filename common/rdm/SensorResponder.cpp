@@ -88,7 +88,7 @@ const ResponderOps<SensorResponder>::ParamHandler
  * A class which represents a sensor.
  */
 class FakeSensor: public Sensor {
-  public:
+ public:
     FakeSensor(ola::rdm::rdm_sensor_type type,
                ola::rdm::rdm_pid_unit unit,
                ola::rdm::rdm_pid_prefix prefix,
@@ -101,7 +101,7 @@ class FakeSensor: public Sensor {
       m_recorded = 0;
     }
 
-  protected:
+ protected:
     int16_t PollSensor();
 };
 

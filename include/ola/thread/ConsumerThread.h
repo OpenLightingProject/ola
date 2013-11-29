@@ -59,7 +59,7 @@ class ConsumerThread: public ola::thread::Thread {
     ~ConsumerThread() {}
     void *Run();
 
-  private:
+ private:
     queue<Action> *m_callback_queue;
     const bool *m_shutdown;
     Mutex *m_mutex;

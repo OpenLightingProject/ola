@@ -58,7 +58,7 @@ using ola::thread::Mutex;
  * discovered.
  */
 class NewWidgetHandler {
-  public:
+ public:
     virtual ~NewWidgetHandler() {}
 
     virtual void NewWidget(class ArduinoWidget *widget,
@@ -80,7 +80,7 @@ class NewWidgetHandler {
  * Discovers new USB Serial widgets and calls the handler.
  */
 class WidgetDetectorThread: public ola::thread::Thread {
-  public:
+ public:
     explicit WidgetDetectorThread(NewWidgetHandler *widget_handler,
                                   ola::io::SelectServerInterface *ss,
                                   unsigned int usb_pro_timeout = 200,
@@ -107,12 +107,12 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // blocks until the thread is running
     void WaitUntilRunning();
 
-  protected:
+ protected:
     virtual bool RunScan();
     void PerformDiscovery(const string &path,
                           ConnectedDescriptor *descriptor);
 
-  private:
+ private:
     ola::io::SelectServerInterface *m_other_ss;
     ola::io::SelectServer m_ss;  // ss for this thread
     vector<WidgetDetectorInterface*> m_widget_detectors;

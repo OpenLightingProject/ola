@@ -40,7 +40,7 @@ using ola::NewSingleCallback;
  * Process a DMX signal.
  */
 class DMXSignalProcessor {
-  public:
+ public:
     typedef ola::Callback2<void, const uint8_t*, unsigned int> DataCallback;
 
     DMXSignalProcessor(DataCallback *callback, unsigned int sample_rate);
@@ -53,7 +53,7 @@ class DMXSignalProcessor {
     // Process more data.
     void Process(uint8_t *ptr, unsigned int size, uint8_t mask = 0xff);
 
-  private:
+ private:
     enum State {
       UNDEFINED,  // when the signal is low and we have no idea where we are.
       IDLE,

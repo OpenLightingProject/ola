@@ -34,7 +34,7 @@ namespace plugin {
 namespace milinst {
 
 class MilInstDevice: public ola::Device {
-  public:
+ public:
     MilInstDevice(AbstractPlugin *owner,
                   const std::string &name,
                   const std::string &dev_path);
@@ -43,11 +43,11 @@ class MilInstDevice: public ola::Device {
     std::string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
 
-  private:
+ private:
     std::string m_path;
     std::auto_ptr<class MilInstWidget> m_widget;
 };

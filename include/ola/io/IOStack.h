@@ -40,7 +40,7 @@ namespace io {
 class IOStack: public IOVecInterface,
                public InputBufferInterface,
                public OutputBufferInterface {
-  public:
+ public:
     IOStack();
     explicit IOStack(class MemoryBlockPool *block_pool);
 
@@ -72,7 +72,7 @@ class IOStack: public IOVecInterface,
 
     void Dump(std::ostream *output);
 
-  private:
+ private:
     typedef std::deque<class MemoryBlock*> BlockVector;
 
     class MemoryBlockPool* m_pool;

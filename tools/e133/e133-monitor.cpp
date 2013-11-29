@@ -71,7 +71,7 @@ DEFINE_s_string(target_addresses, t, "",
  * A very simple E1.33 Controller that acts as a passive monitor.
  */
 class SimpleE133Monitor {
-  public:
+ public:
     explicit SimpleE133Monitor(PidStoreHelper *pid_helper, bool enable_slp);
     ~SimpleE133Monitor();
 
@@ -80,7 +80,7 @@ class SimpleE133Monitor {
 
     void Run() { m_ss.Run(); }
 
-  private:
+ private:
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
     ola::io::StdinHandler m_stdin_handler;

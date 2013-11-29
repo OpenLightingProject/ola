@@ -51,7 +51,7 @@ class OutstandingRequest {
   /*
    * These are requests on the server end that haven't completed yet.
    */
-  public:
+ public:
     OutstandingRequest() {}
     ~OutstandingRequest() {}
 
@@ -139,7 +139,7 @@ class RpcChannel {
      */
     static const unsigned int PROTOCOL_VERSION = 1;
 
-  private:
+ private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, class OutstandingResponse*>
       ResponseMap;
 

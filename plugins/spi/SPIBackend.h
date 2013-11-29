@@ -41,7 +41,7 @@ using std::vector;
  * The interface for all SPI Backends.
  */
 class SPIBackendInterface {
-  public:
+ public:
     virtual ~SPIBackendInterface() {}
 
     virtual uint8_t *Checkout(uint8_t output, unsigned int length) = 0;
@@ -54,7 +54,7 @@ class SPIBackendInterface {
 
     virtual bool Init() = 0;
 
-  protected:
+ protected:
     static const char SPI_DROP_VAR[];
     static const char SPI_DROP_VAR_KEY[];
 };
@@ -65,7 +65,7 @@ class SPIBackendInterface {
  */
 class HardwareBackend : public ola::thread::Thread,
                         public SPIBackendInterface {
-  public:
+ public:
     struct Options {
       // Which GPIO bits to use to select the output. The number of outputs
       // will be 2 ** gpio_pins.size();
@@ -90,10 +90,10 @@ class HardwareBackend : public ola::thread::Thread,
 
     string DevicePath() const { return m_spi_writer->DevicePath(); }
 
-  protected:
+ protected:
     void* Run();
 
-  private:
+ private:
     class OutputData {
       public:
         OutputData()
@@ -156,7 +156,7 @@ class HardwareBackend : public ola::thread::Thread,
  */
 class SoftwareBackend : public SPIBackendInterface,
                         public ola::thread::Thread {
-  public:
+ public:
     struct Options {
       /*
        * The number of outputs.
@@ -190,10 +190,10 @@ class SoftwareBackend : public SPIBackendInterface,
 
     string DevicePath() const { return m_spi_writer->DevicePath(); }
 
-  protected:
+ protected:
     void* Run();
 
-  private:
+ private:
     SPIWriterInterface *m_spi_writer;
     UIntMap *m_drop_map;
     ola::thread::Mutex m_mutex;
@@ -215,7 +215,7 @@ class SoftwareBackend : public SPIBackendInterface,
  * easier...
  */
 class FakeSPIBackend : public SPIBackendInterface {
-  public:
+ public:
     explicit FakeSPIBackend(unsigned int outputs);
     ~FakeSPIBackend();
 
@@ -236,7 +236,7 @@ class FakeSPIBackend : public SPIBackendInterface {
 
     unsigned int Writes(uint8_t output) const;
 
-  private:
+ private:
     class Output {
       public:
         Output() : data(NULL), length(0), writes(0) {}

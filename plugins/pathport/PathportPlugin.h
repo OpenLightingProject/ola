@@ -31,7 +31,7 @@ namespace plugin {
 namespace pathport {
 
 class PathportPlugin: public ola::Plugin {
-  public:
+ public:
     explicit PathportPlugin(class ola::PluginAdaptor *plugin_adaptor)
         : Plugin(plugin_adaptor),
           m_device(NULL) {}
@@ -41,7 +41,7 @@ class PathportPlugin: public ola::Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_PATHPORT; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

@@ -77,7 +77,7 @@ class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRDMSend);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testLifecycle();
@@ -91,7 +91,7 @@ class UniverseTest: public CppUnit::TestFixture {
     void testRDMDiscovery();
     void testRDMSend();
 
-  private:
+ private:
     ola::MemoryPreferences *m_preferences;
     ola::UniverseStore *m_store;
     DmxBuffer m_buffer;
@@ -117,7 +117,7 @@ class UniverseTest: public CppUnit::TestFixture {
 
 
 class MockClient: public ola::Client {
-  public:
+ public:
     MockClient(): ola::Client(NULL), m_dmx_set(false) {}
     bool SendDMX(unsigned int universe_id, uint8_t priority,
                  const DmxBuffer &buffer) {

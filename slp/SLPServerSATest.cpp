@@ -58,7 +58,7 @@ using std::string;
 
 
 class SLPServerSATest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(SLPServerSATest);
     CPPUNIT_TEST(testConfiguredScopes);
     CPPUNIT_TEST(testSrvRqst);
@@ -113,14 +113,14 @@ class SLPServerSATest: public CppUnit::TestFixture {
     void testRegistrationWhileDeRegistering();
     void testFindLocalServices();
 
-  public:
+ public:
     void setUp() {
       ola::math::InitRandom();
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
       ResetTestState();
     }
 
-  private:
+ private:
     typedef set<IPV4Address> PRList;
     typedef set<IPV4Address> DAList;
 

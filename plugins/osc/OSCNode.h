@@ -67,7 +67,7 @@ namespace osc {
  *   node.RegisterAddress("/dmx/1", NULL);
  */
 class OSCNode {
-  public:
+ public:
     // The different data formats we can send in.
     enum DataFormat {
       FORMAT_BLOB,
@@ -112,7 +112,7 @@ class OSCNode {
     // The port OSC is listening on.
     uint16_t ListeningPort() const;
 
-  private:
+ private:
     class NodeOSCTarget {
       public:
         explicit NodeOSCTarget(const OSCTarget &target);

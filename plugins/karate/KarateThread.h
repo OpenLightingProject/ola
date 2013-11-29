@@ -30,14 +30,14 @@ namespace plugin {
 namespace karate {
 
 class KarateThread: public ola::thread::Thread {
-  public:
+ public:
     explicit KarateThread(const string &path);
 
     bool Stop();
     bool WriteDmx(const DmxBuffer &buffer);
     void *Run();
 
-  private:
+ private:
     string m_path;
     DmxBuffer m_buffer;
     bool m_term;

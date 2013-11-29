@@ -45,7 +45,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToString);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testBlackout();
     void testGetSet();
     void testAssign();
@@ -59,7 +59,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testSetChannel();
     void testToString();
 
-  private:
+ private:
     static const uint8_t TEST_DATA[];
     static const uint8_t TEST_DATA2[];
     static const uint8_t TEST_DATA3[];

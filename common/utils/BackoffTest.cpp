@@ -43,7 +43,7 @@ class BackoffTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testBackoffGenerator);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testLinearBackoffPolicy();
     void testExponentialBackoffPolicy();
     void testBackoffGenerator();

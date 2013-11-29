@@ -46,7 +46,7 @@ class PluginManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testConflictingPlugins);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testPluginManager();
     void testConflictingPlugins();
 
@@ -54,7 +54,7 @@ class PluginManagerTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
                             size_t active_plugins, unsigned int line) {
       std::stringstream str;
@@ -76,7 +76,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PluginManagerTest);
  * A Mock Loader
  */
 class MockLoader: public ola::PluginLoader {
-  public:
+ public:
     explicit MockLoader(const vector<AbstractPlugin*> &plugins):
       PluginLoader(),
       m_plugins(plugins) {
@@ -87,7 +87,7 @@ class MockLoader: public ola::PluginLoader {
     }
     void UnloadPlugins() {}
 
-  private:
+ private:
     vector<AbstractPlugin*> m_plugins;
 };
 

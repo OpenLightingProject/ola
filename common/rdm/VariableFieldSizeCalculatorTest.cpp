@@ -55,7 +55,7 @@ class VariableFieldSizeCalculatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNestedVariableSizedGroups);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testFixedFields();
     void testStringFields();
     void testWithFixedGroups();
@@ -67,7 +67,7 @@ class VariableFieldSizeCalculatorTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     ola::rdm::VariableFieldSizeCalculator m_calculator;
 };
 

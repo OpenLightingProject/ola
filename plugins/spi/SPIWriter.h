@@ -36,7 +36,7 @@ using std::string;
  * The interface for the SPI Writer
  */
 class SPIWriterInterface {
-  public:
+ public:
     virtual ~SPIWriterInterface() {}
 
     virtual string DevicePath() const = 0;
@@ -48,7 +48,7 @@ class SPIWriterInterface {
  * The SPI Writer, this writes data to a SPI device
  */
 class SPIWriter : public SPIWriterInterface {
-  public:
+ public:
     /**
      * SPIWriter Options
      */
@@ -73,7 +73,7 @@ class SPIWriter : public SPIWriterInterface {
 
     bool WriteSPIData(const uint8_t *data, unsigned int length);
 
-  private:
+ private:
     const string m_device_path;
     const uint32_t m_spi_speed;
     const bool m_cs_enable_high;

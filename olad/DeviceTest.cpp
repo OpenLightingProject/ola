@@ -43,10 +43,10 @@ class DeviceTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDevice);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testDevice();
 
-  private:
+ private:
     void AddPortsToDeviceAndCheck(ola::Device *device);
 };
 

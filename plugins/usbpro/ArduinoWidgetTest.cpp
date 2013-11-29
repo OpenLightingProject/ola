@@ -52,7 +52,7 @@ class ArduinoWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testErrorConditions);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testDiscovery();
@@ -60,7 +60,7 @@ class ArduinoWidgetTest: public CommonWidgetTest {
     void testErrorCodes();
     void testErrorConditions();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::ArduinoWidget> m_arduino;
     unsigned int m_tod_counter;
     uint8_t m_transaction_number;

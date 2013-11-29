@@ -35,7 +35,7 @@ namespace plugin {
 namespace ftdidmx {
 
 class FtdiDmxOutputPort : public ola::BasicOutputPort {
-  public:
+ public:
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
                       FtdiWidget *device,
                       unsigned int id,
@@ -53,7 +53,7 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
 
     string Description() const { return m_device->Description(); }
 
-  private:
+ private:
     FtdiWidget *m_device;
     FtdiDmxThread m_thread;
 };

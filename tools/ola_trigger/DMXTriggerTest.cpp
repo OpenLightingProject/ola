@@ -39,7 +39,7 @@ class DMXTriggerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testFallingEdgeTrigger);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testRisingEdgeTrigger();
     void testFallingEdgeTrigger();
 

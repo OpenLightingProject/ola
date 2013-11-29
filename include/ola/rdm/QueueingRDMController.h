@@ -46,7 +46,7 @@ using std::vector;
  * handles timing out messages that we don't get a response for.
  */
 class QueueingRDMController: public RDMControllerInterface {
-  public:
+ public:
     QueueingRDMController(RDMControllerInterface *controller,
                           unsigned int max_queue_size);
     ~QueueingRDMController();
@@ -57,7 +57,7 @@ class QueueingRDMController: public RDMControllerInterface {
     // This can be called multiple times and the requests will be queued.
     void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
-  protected:
+ protected:
     typedef struct {
       const RDMRequest *request;
       RDMCallback *on_complete;
@@ -90,7 +90,7 @@ class QueueingRDMController: public RDMControllerInterface {
  * In this model discovery has a higher precedence that RDM messages.
  */
 class DiscoverableQueueingRDMController: public QueueingRDMController {
-  public:
+ public:
     DiscoverableQueueingRDMController(
         DiscoverableRDMControllerInterface *controller,
         unsigned int max_queue_size);
@@ -101,7 +101,7 @@ class DiscoverableQueueingRDMController: public QueueingRDMController {
     void RunFullDiscovery(RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
 
-  private:
+ private:
     typedef vector<RDMDiscoveryCallback*> DiscoveryCallbacks;
     typedef vector<pair<bool, RDMDiscoveryCallback*> >
         PendingDiscoveryCallbacks;

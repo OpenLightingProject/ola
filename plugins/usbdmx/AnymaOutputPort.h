@@ -38,7 +38,7 @@ namespace usbdmx {
 class AnymaDevice;
 
 class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
-  public:
+ public:
     AnymaOutputPort(AnymaDevice *parent,
                     unsigned int id,
                     libusb_device_handle *usb_handle,
@@ -52,7 +52,7 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
-  private:
+ private:
     static const unsigned int URB_TIMEOUT_MS = 500;
     static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
 

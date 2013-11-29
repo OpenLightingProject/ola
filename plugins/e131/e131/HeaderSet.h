@@ -34,7 +34,7 @@ namespace plugin {
 namespace e131 {
 
 class HeaderSet {
-  public:
+ public:
     HeaderSet() {}
     ~HeaderSet() {}
 
@@ -66,7 +66,7 @@ class HeaderSet {
           m_dmp_header == other.m_dmp_header);
     }
 
-  private:
+ private:
     TransportHeader m_transport_header;
     RootHeader m_root_header;
     E131Header m_e131_header;

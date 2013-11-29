@@ -28,7 +28,7 @@
  * Container for stats about the TCP connection.
  */
 class TCPConnectionStats {
-  public:
+ public:
     TCPConnectionStats()
       : ip_address(),
         connection_events(0),

@@ -48,7 +48,7 @@ class ExportMapTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testExportMap);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testIntegerVariable();
     void testCounterVariable();
     void testStringVariable();

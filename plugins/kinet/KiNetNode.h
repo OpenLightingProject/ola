@@ -37,7 +37,7 @@ namespace kinet {
 using ola::network::IPV4Address;
 
 class KiNetNode {
-  public:
+ public:
     KiNetNode(ola::io::SelectServerInterface *ss,
               ola::network::UDPSocketInterface *socket = NULL);
     virtual ~KiNetNode();
@@ -48,7 +48,7 @@ class KiNetNode {
     // The following apply to Input Ports (those which send data)
     bool SendDMX(const IPV4Address &target, const ola::DmxBuffer &buffer);
 
-  private:
+ private:
     bool m_running;
     ola::io::SelectServerInterface *m_ss;
     ola::io::IOQueue m_output_queue;

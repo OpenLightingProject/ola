@@ -33,7 +33,7 @@ class IntervalTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLessThan);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testLowerUpper();
     void testContains();
     void testIntersects();

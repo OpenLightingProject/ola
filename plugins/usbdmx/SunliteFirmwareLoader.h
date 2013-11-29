@@ -32,14 +32,14 @@ namespace plugin {
 namespace usbdmx {
 
 class SunliteFirmwareLoader: public FirmwareLoader {
-  public:
+ public:
     explicit SunliteFirmwareLoader(libusb_device *usb_device)
         : m_device(usb_device) {}
     ~SunliteFirmwareLoader() {}
 
     bool LoadFirmware();
 
-  private:
+ private:
     libusb_device *m_device;
 
     static const int INTERFACE_NUMBER = 0;  // the device only has 1 interface

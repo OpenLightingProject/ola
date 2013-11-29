@@ -60,7 +60,7 @@ static const int INVALID_DESCRIPTOR = -1;
  * A FileDescriptor which can be read from.
  */
 class ReadFileDescriptor {
-  public:
+ public:
     virtual ~ReadFileDescriptor() {}
 
     // Returns the read descriptor for this socket
@@ -80,7 +80,7 @@ class ReadFileDescriptor {
  * A FileDescriptor which can be written to.
  */
 class WriteFileDescriptor {
-  public:
+ public:
     virtual ~WriteFileDescriptor() {}
     virtual int WriteDescriptor() const = 0;
 
@@ -127,7 +127,7 @@ class BidirectionalFileDescriptor: public ReadFileDescriptor,
     void PerformRead();
     void PerformWrite();
 
-  private:
+ private:
     ola::Callback0<void> *m_on_read;
     ola::Callback0<void> *m_on_write;
 };
@@ -148,7 +148,7 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
     int WriteDescriptor() const { return m_fd; }
     // Closing is left to something else
     bool Close() { return true; }
-  private:
+ private:
     int m_fd;
     UnmanagedFileDescriptor(const UnmanagedFileDescriptor &other);
     UnmanagedFileDescriptor& operator=(const UnmanagedFileDescriptor &other);
@@ -169,7 +169,7 @@ struct UnmanagedFileDescriptor_lt {
  * notifications when it's closed.
  */
 class ConnectedDescriptor: public BidirectionalFileDescriptor {
-  public:
+ public:
     ConnectedDescriptor(): BidirectionalFileDescriptor(), m_on_close(NULL) {}
     virtual ~ConnectedDescriptor() {
       if (m_on_close)
@@ -218,14 +218,14 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
 
     static bool SetNonBlocking(int fd);
 
-  protected:
+ protected:
     virtual bool IsSocket() const = 0;
     bool SetNoSigPipe(int fd);
 
     ConnectedDescriptor(const ConnectedDescriptor &other);
     ConnectedDescriptor& operator=(const ConnectedDescriptor &other);
 
-  private:
+ private:
     OnCloseCallback *m_on_close;
 };
 
@@ -235,7 +235,7 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
  * Everything written is available for reading.
  */
 class LoopbackDescriptor: public ConnectedDescriptor {
-  public:
+ public:
     LoopbackDescriptor() {
       m_fd_pair[0] = INVALID_DESCRIPTOR;
       m_fd_pair[1] = INVALID_DESCRIPTOR;
@@ -247,10 +247,10 @@ class LoopbackDescriptor: public ConnectedDescriptor {
     bool Close();
     bool CloseClient();
 
-  protected:
+ protected:
     bool IsSocket() const { return false; }
 
-  private:
+ private:
     int m_fd_pair[2];
     LoopbackDescriptor(const LoopbackDescriptor &other);
     LoopbackDescriptor& operator=(const LoopbackDescriptor &other);
@@ -262,7 +262,7 @@ class LoopbackDescriptor: public ConnectedDescriptor {
  * PipeDescriptor by calling OppositeEnd().
  */
 class PipeDescriptor: public ConnectedDescriptor {
-  public:
+ public:
     PipeDescriptor():
       m_other_end(NULL) {
       m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
@@ -277,10 +277,10 @@ class PipeDescriptor: public ConnectedDescriptor {
     bool Close();
     bool CloseClient();
 
-  protected:
+ protected:
     bool IsSocket() const { return false; }
 
-  private:
+ private:
     int m_in_pair[2];
     int m_out_pair[2];
     PipeDescriptor *m_other_end;
@@ -300,7 +300,7 @@ class PipeDescriptor: public ConnectedDescriptor {
  * A unix domain socket pair.
  */
 class UnixSocket: public ConnectedDescriptor {
-  public:
+ public:
     UnixSocket():
       m_other_end(NULL) {
       m_fd = INVALID_DESCRIPTOR;
@@ -314,10 +314,10 @@ class UnixSocket: public ConnectedDescriptor {
     bool Close();
     bool CloseClient();
 
-  protected:
+ protected:
     bool IsSocket() const { return true; }
 
-  private:
+ private:
     int m_fd;
     UnixSocket *m_other_end;
     UnixSocket(int socket, UnixSocket *other_end) {
@@ -333,7 +333,7 @@ class UnixSocket: public ConnectedDescriptor {
  * A descriptor which represents a connection to a device
  */
 class DeviceDescriptor: public ConnectedDescriptor {
-  public:
+ public:
     explicit DeviceDescriptor(int fd): m_fd(fd) {}
     ~DeviceDescriptor() { Close(); }
 
@@ -341,10 +341,10 @@ class DeviceDescriptor: public ConnectedDescriptor {
     int WriteDescriptor() const { return m_fd; }
     bool Close();
 
-  protected:
+ protected:
     bool IsSocket() const { return false; }
 
-  private:
+ private:
     int m_fd;
     DeviceDescriptor(const DeviceDescriptor &other);
     DeviceDescriptor& operator=(const DeviceDescriptor &other);

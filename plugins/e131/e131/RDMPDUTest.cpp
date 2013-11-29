@@ -53,7 +53,7 @@ class RDMPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRDMPDUWithDataToOutputStream);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testEmptyPDU();
     void testEmptyPDUToOutputStream();
     void testSimpleRDMPDU();
@@ -65,7 +65,7 @@ class RDMPDUTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     static const unsigned int TEST_VECTOR;
 };
 

@@ -55,7 +55,7 @@ class GroupSizeCalculatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNestedVariableSizedGroups);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSimpleCases();
     void testWithFixedGroups();
     void testSingleVariableSizedGroup();
@@ -66,7 +66,7 @@ class GroupSizeCalculatorTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     ola::rdm::GroupSizeCalculator m_calculator;
     ola::rdm::StaticGroupTokenCalculator m_static_calculator;
 };

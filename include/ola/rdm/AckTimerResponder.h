@@ -45,13 +45,13 @@ namespace rdm {
  * A responder that ACK_TIMERs certain GETs / SETs.
  */
 class AckTimerResponder: public RDMControllerInterface {
-  public:
+ public:
     explicit AckTimerResponder(const UID &uid);
     ~AckTimerResponder();
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-  private:
+ private:
     /**
      * The RDM Operations for the AckTimerResponder.
      */

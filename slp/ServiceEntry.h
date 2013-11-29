@@ -42,7 +42,7 @@ using std::string;
  * scopes set.
  */
 class ServiceEntry {
-  public:
+ public:
     ServiceEntry(const ServiceEntry &other)
         : m_local(other.m_local),
           m_url(other.m_url),
@@ -168,7 +168,7 @@ class ServiceEntry {
       return out;
     }
 
-  private:
+ private:
     bool m_local;  // true if this service originated locally
     URLEntry m_url;
     string m_service_type;

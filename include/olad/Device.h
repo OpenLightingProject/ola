@@ -47,7 +47,7 @@ using std::vector;
  * The interface for a Device
  */
 class AbstractDevice {
-  public:
+ public:
     typedef BaseCallback0<void> ConfigureCallback;
 
     AbstractDevice() {}
@@ -92,7 +92,7 @@ class AbstractDevice {
  * A partial implementation of a Device.
  */
 class Device: public AbstractDevice {
-  public:
+ public:
     Device(AbstractPlugin *owner, const string &name);
     virtual ~Device();
 
@@ -131,12 +131,12 @@ class Device: public AbstractDevice {
                            string *response,
                            ConfigureCallback *done);
 
-  protected:
+ protected:
     virtual bool StartHook() { return true; }
     virtual void PrePortStop() {}
     virtual void PostPortStop() {}
 
-  private:
+ private:
     typedef map<unsigned int, InputPort*> input_port_map;
     typedef map<unsigned int, OutputPort*> output_port_map;
 

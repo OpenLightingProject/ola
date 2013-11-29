@@ -39,7 +39,7 @@ namespace usbpro {
  */
 class ArduinoWidgetImpl: public BaseUsbProWidget,
                          public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     ArduinoWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                       uint16_t esta_id,
                       uint32_t serial);
@@ -58,7 +58,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
       GetUidSet(callback);
     }
 
-  private:
+ private:
     uint8_t m_transaction_id;
     ola::rdm::UID m_uid;
     const ola::rdm::RDMRequest *m_pending_request;
@@ -87,7 +87,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
  */
 class ArduinoWidget: public SerialWidgetInterface,
                      public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     ArduinoWidget(ola::io::ConnectedDescriptor *descriptor,
                   uint16_t esta_id,
                   uint32_t serial,
@@ -117,7 +117,7 @@ class ArduinoWidget: public SerialWidgetInterface,
       return m_impl->GetDescriptor();
     }
 
-  private:
+ private:
     // we need to control the order of construction & destruction here so these
     // are pointers.
     ArduinoWidgetImpl *m_impl;

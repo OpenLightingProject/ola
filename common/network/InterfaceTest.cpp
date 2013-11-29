@@ -40,7 +40,7 @@ class InterfaceTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testBuilder);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testBuilder();
 };
 

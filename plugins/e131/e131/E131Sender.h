@@ -36,7 +36,7 @@ namespace e131 {
 class DMPInflator;
 
 class E131Sender {
-  public:
+ public:
     E131Sender(ola::network::UDPSocket *socket,
               class RootSender *root_sender);
     ~E131Sender() {}
@@ -45,7 +45,7 @@ class E131Sender {
     bool UniverseIP(unsigned int universe,
                     class ola::network::IPV4Address *addr);
 
-  private:
+ private:
     ola::network::UDPSocket *m_socket;
     PreamblePacker m_packer;
     OutgoingUDPTransportImpl m_transport_impl;

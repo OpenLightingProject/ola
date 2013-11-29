@@ -84,7 +84,7 @@ struct OperationLabels {
 class EnttecPortImpl
     : public ola::rdm::DiscoverableRDMControllerInterface,
       public ola::rdm::DiscoveryTargetInterface {
-  public:
+ public:
     typedef ola::Callback3<bool, uint8_t, const uint8_t*, unsigned int>
       SendCallback;
 
@@ -121,7 +121,7 @@ class EnttecPortImpl
     void HandleIncommingDataMessage(const uint8_t *data, unsigned int length);
     void HandleDMXDiff(const uint8_t *data, unsigned int length);
 
-  private:
+ private:
     SendCallback *m_send_cb;
     OperationLabels m_ops;
     bool m_active;

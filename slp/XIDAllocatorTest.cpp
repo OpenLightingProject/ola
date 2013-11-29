@@ -33,7 +33,7 @@ class XIDAllocatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testXIDAllocator);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testXIDAllocator();
 };
 

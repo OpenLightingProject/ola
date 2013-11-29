@@ -30,7 +30,7 @@ namespace plugin {
 namespace espnet {
 
 class EspNetDevice: public Device {
-  public:
+ public:
     EspNetDevice(Plugin *owner,
                  class Preferences *prefs,
                  class PluginAdaptor *plugin_adaptor);
@@ -40,12 +40,12 @@ class EspNetDevice: public Device {
     static const char IP_KEY[];
     static const char NODE_NAME_KEY[];
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
     void PostPortStop();
 
-  private:
+ private:
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     class EspNetNode *m_node;

@@ -29,12 +29,12 @@ namespace plugin {
 namespace stageprofi {
 
 class StageProfiWidgetLan: public StageProfiWidget {
-  public:
+ public:
     StageProfiWidgetLan(): StageProfiWidget() {}
     ~StageProfiWidgetLan() {}
 
     bool Connect(const std::string &ip);
-  private:
+ private:
     static const uint16_t STAGEPROFI_PORT = 10001;
 };
 }  // namespace stageprofi

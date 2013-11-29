@@ -40,7 +40,7 @@ namespace messaging {
 class MessageVisitor;
 
 class Message {
-  public:
+ public:
     explicit Message(const vector<const class MessageFieldInterface*> &fields)
         : m_fields(fields) {
     }
@@ -50,7 +50,7 @@ class Message {
 
     unsigned int FieldCount() const { return m_fields.size(); }
 
-  private:
+ private:
     vector<const class MessageFieldInterface*> m_fields;
 };
 
@@ -60,7 +60,7 @@ class Message {
  * The Interface for a MessageField.
  */
 class MessageFieldInterface {
-  public:
+ public:
     virtual ~MessageFieldInterface() {}
 
     // Call back into a MessageVisitor
@@ -73,7 +73,7 @@ class MessageFieldInterface {
  * A MessageField that represents a bool
  */
 class BoolMessageField: public MessageFieldInterface {
-  public:
+ public:
     BoolMessageField(const BoolFieldDescriptor *descriptor,
                       bool value)
         : m_descriptor(descriptor),
@@ -89,7 +89,7 @@ class BoolMessageField: public MessageFieldInterface {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     const BoolFieldDescriptor *m_descriptor;
     bool m_value;
 };
@@ -99,7 +99,7 @@ class BoolMessageField: public MessageFieldInterface {
  * A MessageField that represents a IPv4 Address
  */
 class IPV4MessageField: public MessageFieldInterface {
-  public:
+ public:
     IPV4MessageField(const IPV4FieldDescriptor *descriptor,
                      const ola::network::IPV4Address &value)
         : m_descriptor(descriptor),
@@ -121,7 +121,7 @@ class IPV4MessageField: public MessageFieldInterface {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     const IPV4FieldDescriptor *m_descriptor;
     ola::network::IPV4Address m_value;
 };
@@ -131,7 +131,7 @@ class IPV4MessageField: public MessageFieldInterface {
  * A MessageField that represents a MAC Address
  */
 class MACMessageField: public MessageFieldInterface {
-  public:
+ public:
     MACMessageField(const MACFieldDescriptor *descriptor,
                     const ola::network::MACAddress &value)
         : m_descriptor(descriptor),
@@ -147,7 +147,7 @@ class MACMessageField: public MessageFieldInterface {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     const MACFieldDescriptor *m_descriptor;
     ola::network::MACAddress m_value;
 };
@@ -157,7 +157,7 @@ class MACMessageField: public MessageFieldInterface {
  * A MessageField that represents a UID.
  */
 class UIDMessageField: public MessageFieldInterface {
-  public:
+ public:
     UIDMessageField(const UIDFieldDescriptor *descriptor,
                     const ola::rdm::UID &uid)
         : m_descriptor(descriptor),
@@ -173,7 +173,7 @@ class UIDMessageField: public MessageFieldInterface {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     const UIDFieldDescriptor *m_descriptor;
     ola::rdm::UID m_uid;
 };
@@ -183,7 +183,7 @@ class UIDMessageField: public MessageFieldInterface {
  * A MessageField that represents a string
  */
 class StringMessageField: public MessageFieldInterface {
-  public:
+ public:
     StringMessageField(const StringFieldDescriptor *descriptor,
                        const string &value)
         : m_descriptor(descriptor),
@@ -197,7 +197,7 @@ class StringMessageField: public MessageFieldInterface {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     const StringFieldDescriptor *m_descriptor;
     const string m_value;
 };
@@ -208,7 +208,7 @@ class StringMessageField: public MessageFieldInterface {
  */
 template <typename type>
 class BasicMessageField: public MessageFieldInterface {
-  public:
+ public:
     BasicMessageField(const IntegerFieldDescriptor<type> *descriptor,
                       type value)
         : m_descriptor(descriptor),
@@ -224,7 +224,7 @@ class BasicMessageField: public MessageFieldInterface {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     const IntegerFieldDescriptor<type> *m_descriptor;
     type m_value;
 };
@@ -242,7 +242,7 @@ typedef BasicMessageField<int32_t> Int32MessageField;
  * A MessageField that consists of a group of fields
  */
 class GroupMessageField: public MessageFieldInterface {
-  public:
+ public:
     GroupMessageField(const FieldDescriptorGroup *descriptor,
                       const vector<const class MessageFieldInterface*> &fields)
       : m_descriptor(descriptor),
@@ -261,7 +261,7 @@ class GroupMessageField: public MessageFieldInterface {
 
     void Accept(MessageVisitor *visitor) const;
 
-  private:
+ private:
     const FieldDescriptorGroup *m_descriptor;
     vector<const class MessageFieldInterface*> m_fields;
 };

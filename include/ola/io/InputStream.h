@@ -32,7 +32,7 @@ namespace io {
  * InputStreamInterface. Similar to istream.
  */
 class InputStreamInterface {
-  public:
+ public:
     virtual ~InputStreamInterface() {}
 
     /*
@@ -59,7 +59,7 @@ class InputStreamInterface {
  * Extract formatted data from a InputBuffer.
  */
 class InputStream: public InputStreamInterface {
-  public:
+ public:
     // Ownership of the InputBuffer is not transferred.
     explicit InputStream(InputBufferInterface *buffer)
         : m_buffer(buffer) {
@@ -77,7 +77,7 @@ class InputStream: public InputStreamInterface {
       return m_buffer->Read(output, size);
     }
 
-  private:
+ private:
     InputBufferInterface *m_buffer;
 
     template <typename T>

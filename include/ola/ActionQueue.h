@@ -34,7 +34,7 @@ namespace ola {
  * The base action class
  */
 class Action {
-  public:
+ public:
     Action() {}
     virtual ~Action() {}
 
@@ -52,7 +52,7 @@ class Action {
  * sequentially.
  */
 class ActionQueue {
-  public:
+ public:
     ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
       m_on_complete(on_complete),
       m_action_index(-1),
@@ -67,7 +67,7 @@ class ActionQueue {
     unsigned int ActionCount() const { return m_actions.size(); }
     Action *GetAction(unsigned int i);
 
-  private:
+ private:
     SingleUseCallback1<void, ActionQueue*> *m_on_complete;
     std::vector<Action*> m_actions;
     int m_action_index;

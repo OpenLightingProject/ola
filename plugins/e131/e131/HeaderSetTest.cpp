@@ -52,7 +52,7 @@ class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testHeaderSet);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testRootHeader();
     void testTransportHeader();
     void testE131Header();

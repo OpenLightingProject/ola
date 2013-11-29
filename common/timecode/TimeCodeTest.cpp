@@ -40,7 +40,7 @@ class TimeCodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIsValid);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testTimeCode();
     void testIsValid();
 };

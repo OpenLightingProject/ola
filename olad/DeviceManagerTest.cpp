@@ -54,7 +54,7 @@ class DeviceManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRestorePriorities);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testDeviceManager();
     void testRestorePatchings();
     void testRestorePriorities();

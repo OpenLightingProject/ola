@@ -72,7 +72,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringJoin);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSplit();
     void testTrim();
     void testShorten();

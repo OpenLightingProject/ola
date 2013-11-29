@@ -39,7 +39,7 @@ namespace network {
  * Chooses an interface
  */
 class InterfacePicker {
-  public:
+ public:
     InterfacePicker() {}
     virtual ~InterfacePicker() {}
 

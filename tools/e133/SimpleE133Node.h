@@ -50,7 +50,7 @@ using std::auto_ptr;
  * messages.
  */
 class SimpleE133Node {
-  public:
+ public:
     struct Options {
       CID cid;
       IPV4Address ip_address;
@@ -81,7 +81,7 @@ class SimpleE133Node {
     void AddEndpoint(uint16_t endpoint_id, E133Endpoint *endpoint);
     void RemoveEndpoint(uint16_t endpoint_id);
 
-  private:
+ private:
     ola::io::SelectServer m_ss;
     auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
     ola::io::StdinHandler m_stdin_handler;

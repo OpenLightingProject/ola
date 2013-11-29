@@ -39,7 +39,7 @@ class StdinHandler {
     explicit StdinHandler(SelectServerInterface *ss, InputCallback *callback);
     ~StdinHandler();
 
-  private:
+ private:
     UnmanagedFileDescriptor m_stdin_descriptor;
     termios m_old_tc;
     SelectServerInterface *m_ss;

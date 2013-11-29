@@ -28,7 +28,7 @@
 namespace ola {
 
 class PluginLoader {
-  public:
+ public:
     PluginLoader() {}
     virtual ~PluginLoader() {}
 
@@ -38,10 +38,10 @@ class PluginLoader {
     virtual std::vector<class AbstractPlugin*> LoadPlugins() = 0;
     virtual void UnloadPlugins() = 0;
 
-  protected:
+ protected:
     class PluginAdaptor *m_plugin_adaptor;
 
-  private:
+ private:
     DISALLOW_COPY_AND_ASSIGN(PluginLoader);
 };
 }  // namespace ola

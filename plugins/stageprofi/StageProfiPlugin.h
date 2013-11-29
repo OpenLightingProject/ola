@@ -37,7 +37,7 @@ using std::string;
 class StageProfiDevice;
 
 class StageProfiPlugin: public Plugin {
-  public:
+ public:
     explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
     ~StageProfiPlugin() {}
@@ -48,7 +48,7 @@ class StageProfiPlugin: public Plugin {
     int SocketClosed(ConnectedDescriptor *socket);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

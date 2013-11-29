@@ -45,7 +45,7 @@ using std::vector;
  * Checks the value of a variable
  */
 class Validator {
-  public:
+ public:
     Validator() {}
     virtual ~Validator() {}
 
@@ -57,14 +57,14 @@ class Validator {
  * Check a value is a non-empty string
  */
 class StringValidator: public Validator {
-  public:
+ public:
     explicit StringValidator(bool empty_ok = false)
       : Validator(),
         m_empty_ok(empty_ok) {
     }
     bool IsValid(const string &value) const;
 
-  private:
+ private:
     const bool m_empty_ok;
 };
 
@@ -73,12 +73,12 @@ class StringValidator: public Validator {
  * Check that a value is one of a set of values
  */
 class SetValidator: public Validator {
-  public:
+ public:
     explicit SetValidator(const set<string> &values):
       m_values(values) {}
     bool IsValid(const string &value) const;
 
-  private:
+ private:
     set<string> m_values;
 };
 
@@ -87,7 +87,7 @@ class SetValidator: public Validator {
  * Check that a value is a valid bool
  */
 class BoolValidator: public Validator {
-  public:
+ public:
     BoolValidator(): Validator() {}
     bool IsValid(const string &value) const;
 
@@ -103,13 +103,13 @@ class BoolValidator: public Validator {
  * Check that a value falls within a range
  */
 class IntValidator: public Validator {
-  public:
+ public:
     IntValidator(unsigned int greater_than, unsigned int less_than):
         m_gt(greater_than),
         m_lt(less_than) {}
     bool IsValid(const string &value) const;
 
-  private:
+ private:
     unsigned int m_gt, m_lt;
 };
 
@@ -118,12 +118,12 @@ class IntValidator: public Validator {
  * Check a IPv4 address is valid
  */
 class IPv4Validator: public Validator {
-  public:
+ public:
     explicit IPv4Validator(bool empty_ok = true):
       m_empty_ok(empty_ok) {}
 
     bool IsValid(const string &value) const;
-  private:
+ private:
     bool m_empty_ok;
 
     DISALLOW_COPY_AND_ASSIGN(IPv4Validator);
@@ -134,7 +134,7 @@ class IPv4Validator: public Validator {
  * The abstract Preferences class
  */
 class Preferences {
-  public:
+ public:
     explicit Preferences(const string name): m_preference_name(name) {}
     virtual ~Preferences() {}
 
@@ -161,10 +161,10 @@ class Preferences {
     virtual bool GetValueAsBool(const string &key) const = 0;
     virtual void SetValueAsBool(const string &key, bool value) = 0;
 
-  protected:
+ protected:
     string m_preference_name;
 
-  private:
+ private:
     DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 
@@ -173,11 +173,11 @@ class Preferences {
  * A PreferencesFactory creates preferences objects
  */
 class PreferencesFactory {
-  public:
+ public:
     PreferencesFactory() {}
     virtual ~PreferencesFactory();
     virtual Preferences *NewPreference(const string &name);
-  private:
+ private:
     virtual Preferences *Create(const string &name) = 0;
     map<string, Preferences*> m_preferences_map;
 };
@@ -187,7 +187,7 @@ class PreferencesFactory {
  * MemoryPreferences just stores the preferences in memory. Useful for testing.
  */
 class MemoryPreferences: public Preferences {
-  public:
+ public:
     explicit MemoryPreferences(const string name): Preferences(name) {}
     virtual ~MemoryPreferences();
     virtual bool Load() { return true; }
@@ -216,14 +216,14 @@ class MemoryPreferences: public Preferences {
       return m_pref_map == other.m_pref_map;
     }
 
-  protected:
+ protected:
     typedef multimap<string, string> PreferencesMap;
     PreferencesMap m_pref_map;
 };
 
 
 class MemoryPreferencesFactory: public PreferencesFactory {
-  private:
+ private:
     MemoryPreferences *Create(const string &name) {
       return new MemoryPreferences(name);
     }
@@ -234,7 +234,7 @@ class MemoryPreferencesFactory: public PreferencesFactory {
  * The thread that saves preferences
  */
 class FilePreferenceSaverThread: public ola::thread::Thread {
-  public:
+ public:
     typedef multimap<string, string> PreferencesMap;
     FilePreferenceSaverThread();
 
@@ -245,7 +245,7 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
     bool Join(void *ptr = NULL);
     void Syncronize();
 
-  private:
+ private:
     ola::io::SelectServer m_ss;
 
     void SaveToFile(const string *filename, const PreferencesMap *preferences);
@@ -258,7 +258,7 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
  * FilePreferences uses one file per namespace
  */
 class FileBackedPreferences: public MemoryPreferences {
-  public:
+ public:
     explicit FileBackedPreferences(const string &directory,
                                    const string &name,
                                    FilePreferenceSaverThread *saver_thread)
@@ -271,7 +271,7 @@ class FileBackedPreferences: public MemoryPreferences {
 
     string Source() const { return FileName(); }
 
-  private:
+ private:
     const string m_directory;
     FilePreferenceSaverThread *m_saver_thread;
 
@@ -283,7 +283,7 @@ class FileBackedPreferences: public MemoryPreferences {
 
 
 class FileBackedPreferencesFactory: public PreferencesFactory {
-  public:
+ public:
     explicit FileBackedPreferencesFactory(const string &directory)
         : m_directory(directory) {
       m_saver_thread.Start();
@@ -293,7 +293,7 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
       m_saver_thread.Join();
     }
 
-  private:
+ private:
     const string m_directory;
     FilePreferenceSaverThread m_saver_thread;
 

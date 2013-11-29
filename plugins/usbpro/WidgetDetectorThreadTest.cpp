@@ -63,7 +63,7 @@ using std::string;
  * machine.
  */
 class MockWidgetDetectorThread: public WidgetDetectorThread {
-  public:
+ public:
     MockWidgetDetectorThread(NewWidgetHandler *widget_handler,
                              ola::io::SelectServerInterface *ss)
           // set very short timeouts since this is a unittest
@@ -74,13 +74,13 @@ class MockWidgetDetectorThread: public WidgetDetectorThread {
 
     UnixSocket* GetOtherEnd() { return m_descriptor->OppositeEnd(); }
 
-  protected:
+ protected:
     bool RunScan() {
       PerformDiscovery("/mock_device", m_descriptor);
       return true;
     }
 
-  private:
+ private:
     UnixSocket *m_descriptor;
 };
 
@@ -99,7 +99,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
   CPPUNIT_TEST(testClose);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
 
@@ -113,7 +113,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testTimeout();
     void testClose();
 
-  private:
+ private:
     typedef enum {
       NONE,
       ARDUINO,

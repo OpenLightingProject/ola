@@ -32,7 +32,7 @@ using std::string;
  * Loads a show file and reads the DMX data.
  */
 class ShowLoader {
-  public:
+ public:
     explicit ShowLoader(const string &filename);
     ~ShowLoader();
 
@@ -48,7 +48,7 @@ class ShowLoader {
     State NextTimeout(unsigned int *timeout);
     State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
 
-  private:
+ private:
     const string m_filename;
     std::ifstream m_show_file;
     unsigned int m_line;

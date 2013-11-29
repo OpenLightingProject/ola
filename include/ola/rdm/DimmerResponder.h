@@ -47,13 +47,13 @@ using std::auto_ptr;
  * of sub-devices.
  */
 class DimmerResponder: public RDMControllerInterface {
-  public:
+ public:
     DimmerResponder(const UID &uid, uint16_t number_of_subdevices);
     virtual ~DimmerResponder();
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-  private:
+ private:
     SubDeviceDispatcher m_dispatcher;
     auto_ptr<DimmerRootDevice> m_root_device;
     std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;

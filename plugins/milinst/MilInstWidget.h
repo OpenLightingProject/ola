@@ -33,7 +33,7 @@ namespace plugin {
 namespace milinst {
 
 class MilInstWidget {
-  public:
+ public:
     static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
 
     explicit MilInstWidget(const std::string &path)
@@ -52,7 +52,7 @@ class MilInstWidget {
     virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
     virtual bool DetectDevice() = 0;
 
-  protected:
+ protected:
     virtual int SetChannel(unsigned int chan, uint8_t val) const = 0;
 
     // instance variables

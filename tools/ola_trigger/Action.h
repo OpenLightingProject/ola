@@ -40,7 +40,7 @@ using std::vector;
  * This is the base class that all others inherit from.
  */
 class Action {
-  public:
+ public:
     Action()
       : m_ref_count(0) {
     }
@@ -56,7 +56,7 @@ class Action {
     }
     virtual void Execute(Context *context, uint8_t slot_value) = 0;
 
-  private:
+ private:
     unsigned int m_ref_count;
 };
 
@@ -65,7 +65,7 @@ class Action {
  * An Action that assigned a value to a variable
  */
 class VariableAssignmentAction: public Action {
-  public:
+ public:
     VariableAssignmentAction(const string &variable,
                              const string &value)
         : Action(),
@@ -75,7 +75,7 @@ class VariableAssignmentAction: public Action {
 
     void Execute(Context *context, uint8_t slot_value);
 
-  private:
+ private:
     const string m_variable;
     const string m_value;
 };
@@ -85,7 +85,7 @@ class VariableAssignmentAction: public Action {
  * Command Action. This action executes a command.
  */
 class CommandAction: public Action {
-  public:
+ public:
     CommandAction(const string &command,
                   const vector<string> &arguments)
         : m_command(command),
@@ -95,7 +95,7 @@ class CommandAction: public Action {
 
     virtual void Execute(Context *context, uint8_t slot_value);
 
-  protected:
+ protected:
     const string m_command;
     vector<string> m_arguments;
 
@@ -109,7 +109,7 @@ class CommandAction: public Action {
  * An interval of DMX values and then action to be taken for matching values.
  */
 class ValueInterval {
-  public:
+ public:
     ValueInterval(uint8_t lower, uint8_t upper)
         : m_lower(lower),
           m_upper(upper) {
@@ -135,7 +135,7 @@ class ValueInterval {
     string AsString() const;
     friend std::ostream& operator<<(std::ostream &out, const ValueInterval&);
 
-  private:
+ private:
     uint8_t m_lower, m_upper;
 };
 
@@ -144,7 +144,7 @@ class ValueInterval {
  * The set of intervals and their actions.
  */
 class Slot {
-  public:
+ public:
     explicit Slot(uint16_t slot_offset)
       : m_default_rising_action(NULL),
         m_default_falling_action(NULL),
@@ -170,7 +170,7 @@ class Slot {
       return m_slot_offset < other.m_slot_offset;
     };
 
-  private:
+ private:
     Action *m_default_rising_action;
     Action *m_default_falling_action;
     uint16_t m_slot_offset;

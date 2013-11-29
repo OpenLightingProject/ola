@@ -44,7 +44,7 @@ class ServiceEntryTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToString);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testConstructors();
     void testMutation();
     void testToString();
@@ -57,7 +57,7 @@ class ServiceEntryTest: public CppUnit::TestFixture {
       lifetime = 300;
     }
 
-  private:
+ private:
     ScopeSet scope_set;
     string service_type;
     string url;

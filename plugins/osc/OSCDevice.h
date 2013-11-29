@@ -38,7 +38,7 @@ namespace plugin {
 namespace osc {
 
 class OSCDevice: public Device {
-  public:
+ public:
     struct PortConfig {
       PortConfig() : data_format(OSCNode::FORMAT_BLOB) {}
 
@@ -57,7 +57,7 @@ class OSCDevice: public Device {
 
     bool AllowMultiPortPatching() const { return true; }
 
-  protected:
+ protected:
     PluginAdaptor *m_plugin_adaptor;
     const vector<string> m_port_addresses;
     const PortConfigs m_port_configs;

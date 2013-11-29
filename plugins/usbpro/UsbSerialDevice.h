@@ -34,7 +34,7 @@ namespace usbpro {
  * A USB device
  */
 class UsbSerialDevice: public ola::Device {
-  public:
+ public:
     UsbSerialDevice(ola::AbstractPlugin *owner,
                     const string &name,
                     SerialWidgetInterface *widget):
@@ -53,7 +53,7 @@ class UsbSerialDevice: public ola::Device {
 
     SerialWidgetInterface *GetWidget() const { return m_widget; }
 
-  protected:
+ protected:
     SerialWidgetInterface *m_widget;
 };
 }  // namespace usbpro

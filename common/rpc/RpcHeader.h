@@ -31,7 +31,7 @@ class RpcHeader {
    * The first 4 bytes are the header which contains the RPC protocol version
    * (this is separate from the protobuf version) and the size of the protobuf.
    */
-  public:
+ public:
     /**
      * Encode a header
      */
@@ -50,7 +50,7 @@ class RpcHeader {
       *size = header & SIZE_MASK;
     }
 
-  private:
+ private:
     static const unsigned int VERSION_MASK = 0xf0000000;
     static const unsigned int SIZE_MASK = 0x0fffffff;
 };

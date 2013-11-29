@@ -56,7 +56,7 @@ DEFINE_uint16(lifetime, 300, "The lifetime of the service (seconds).");
 
 // The base slp client command class.
 class Command {
-  public:
+ public:
     explicit Command(const string &scopes)
         : m_terminate(NULL) {
       ola::StringSplit(scopes, m_scopes, ",");
@@ -74,7 +74,7 @@ class Command {
     void Terminate() { m_terminate->Run(); }
     virtual bool Execute(SLPClient *client) = 0;
 
-  protected:
+ protected:
     vector<string> m_scopes;
 
     bool IsError(const string &error) {
@@ -84,13 +84,13 @@ class Command {
       return true;
     }
 
-  private:
+ private:
     ola::Callback0<void> *m_terminate;
 };
 
 
 class FindCommand: public Command {
-  public:
+ public:
     explicit FindCommand(const string &scopes,
                          const string service)
         : Command(scopes),
@@ -104,7 +104,7 @@ class FindCommand: public Command {
           NewSingleCallback(this, &FindCommand::RequestComplete));
     }
 
-  private:
+ private:
     const string m_service;
 
     void RequestComplete(const string &error,
@@ -120,7 +120,7 @@ class FindCommand: public Command {
 
 
 class RegisterCommand: public Command {
-  public:
+ public:
     explicit RegisterCommand(const string &scopes,
                              const string service,
                              uint16_t lifetime)
@@ -136,7 +136,7 @@ class RegisterCommand: public Command {
           NewSingleCallback(this, &RegisterCommand::RequestComplete));
     }
 
-  private:
+ private:
     string m_service;
     uint16_t m_lifetime;
 
@@ -150,7 +150,7 @@ class RegisterCommand: public Command {
 
 
 class DeRegisterCommand: public Command {
-  public:
+ public:
     explicit DeRegisterCommand(const string &scopes,
                                const string service)
       : Command(scopes),
@@ -164,7 +164,7 @@ class DeRegisterCommand: public Command {
           NewSingleCallback(this, &DeRegisterCommand::RequestComplete));
     }
 
-  private:
+ private:
     string m_service;
 
     void RequestComplete(const string &error, uint16_t code) {

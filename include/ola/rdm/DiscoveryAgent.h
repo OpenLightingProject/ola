@@ -49,7 +49,7 @@ using std::queue;
  * Branch (DUB) methods.
  */
 class DiscoveryTargetInterface {
-  public:
+ public:
     // Argument is true if the device responded
     typedef ola::BaseCallback1<void, bool> MuteDeviceCallback;
     typedef ola::BaseCallback0<void> UnMuteDeviceCallback;
@@ -77,7 +77,7 @@ class DiscoveryTargetInterface {
  * This class controls the discovery algorithm.
  */
 class DiscoveryAgent {
-  public:
+ public:
     explicit DiscoveryAgent(DiscoveryTargetInterface *target);
     ~DiscoveryAgent();
 
@@ -88,7 +88,7 @@ class DiscoveryAgent {
     void StartFullDiscovery(DiscoveryCompleteCallback *on_complete);
     void StartIncrementalDiscovery(DiscoveryCompleteCallback *on_complete);
 
-  private:
+ private:
     /**
      * Represents a range of UIDs (a branch of the UID tree)
      */

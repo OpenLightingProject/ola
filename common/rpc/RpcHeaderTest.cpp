@@ -34,7 +34,7 @@ class RpcHeaderTest : public CppUnit::TestFixture {
   CPPUNIT_TEST(testHeaderEncoding);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testHeaderEncoding();
 };
 

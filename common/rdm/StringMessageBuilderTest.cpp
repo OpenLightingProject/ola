@@ -65,7 +65,7 @@ class StringBuilderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringFailure);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSimpleBuilder();
     void testBuilderWithLabels();
     void testBuilderWithGroups();
@@ -80,7 +80,7 @@ class StringBuilderTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     ola::messaging::GenericMessagePrinter m_printer;
 
     const Message *BuildMessage(const Descriptor &descriptor,

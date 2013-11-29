@@ -39,7 +39,7 @@ class KiNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     KiNetNodeTest()
         : CppUnit::TestFixture(),
           ss(NULL),
@@ -49,7 +49,7 @@ class KiNetNodeTest: public CppUnit::TestFixture {
 
     void testSendDMX();
 
-  private:
+ private:
     ola::io::SelectServer ss;
     IPV4Address target_ip;
     MockUDPSocket *m_socket;

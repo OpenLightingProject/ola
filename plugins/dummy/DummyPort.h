@@ -38,7 +38,7 @@ namespace plugin {
 namespace dummy {
 
 class DummyPort: public BasicOutputPort {
-  public:
+ public:
     struct Options {
       public:
         Options()
@@ -71,7 +71,7 @@ class DummyPort: public BasicOutputPort {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-  private:
+ private:
     typedef struct {
       unsigned int expected_count;
       unsigned int current_count;

@@ -32,7 +32,7 @@ namespace plugin {
 namespace e131 {
 
 class NullInflator : public InflatorInterface {
-  public:
+ public:
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_NULL; }
 
     unsigned int InflatePDUBlock(HeaderSet *headers,
@@ -49,7 +49,7 @@ class NullInflator : public InflatorInterface {
 
 
 class RootInflator: public BaseInflator {
-  public:
+ public:
     typedef ola::Callback1<void, const TransportHeader&> OnDataCallback;
 
     /**
@@ -63,7 +63,7 @@ class RootInflator: public BaseInflator {
 
     uint32_t Id() const { return 0; }  // no effect for the root inflator
 
-  protected:
+ protected:
     // Decode a header block and adds any PduHeaders to the HeaderSet object
     bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);

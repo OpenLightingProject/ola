@@ -38,20 +38,20 @@ using std::string;
 
 
 class OutputStreamTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(OutputStreamTest);
     CPPUNIT_TEST(testBasicWrite);
     CPPUNIT_TEST(testWritePrimatives);
     CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
     void testBasicWrite();
     void testWritePrimatives();
 
-  private:
+ private:
     IOQueue m_buffer;
 
     unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);

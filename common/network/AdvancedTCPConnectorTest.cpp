@@ -63,7 +63,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEarlyDestruction);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     AdvancedTCPConnectorTest()
         : CppUnit::TestFixture(),
           m_localhost(IPV4Address::Loopback()),
@@ -87,7 +87,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
       m_ss->Terminate();
     }
 
-  private:
+ private:
     ola::MockClock m_clock;
     SelectServer *m_ss;
     auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;

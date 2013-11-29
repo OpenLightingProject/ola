@@ -28,7 +28,7 @@ namespace ola {
  */
 template<typename sequence_type>
 class SequenceNumber {
-  public:
+ public:
     SequenceNumber(): m_sequence_number(0) { }
     explicit SequenceNumber(sequence_type initial_value)
       : m_sequence_number(initial_value) {
@@ -36,7 +36,7 @@ class SequenceNumber {
 
     sequence_type Next() { return m_sequence_number++; }
 
-  private:
+ private:
     sequence_type m_sequence_number;
 };
 }  // namespace ola

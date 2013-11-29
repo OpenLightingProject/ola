@@ -33,7 +33,7 @@ using std::string;
  * Write show data to a file.
  */
 class ShowSaver {
-  public:
+ public:
     explicit ShowSaver(const string &filename);
     ~ShowSaver();
 
@@ -44,7 +44,7 @@ class ShowSaver {
                   unsigned int universe,
                   const ola::DmxBuffer &data);
 
-  private:
+ private:
     const string m_filename;
     std::ofstream m_show_file;
     ola::TimeStamp m_last_frame;

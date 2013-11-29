@@ -44,7 +44,7 @@ class ThreadPoolTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(test10By100);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void test1By10() {
       RunThreads(1, 10);
     }
@@ -60,7 +60,7 @@ class ThreadPoolTest: public CppUnit::TestFixture {
       m_counter = 0;
     }
 
-  private:
+ private:
     unsigned int m_counter;
     Mutex m_mutex;
 

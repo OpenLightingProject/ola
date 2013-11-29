@@ -64,7 +64,7 @@ typedef ola::BaseCallback1<void, const ola::rdm::UIDSet&> RDMDiscoveryCallback;
  * This is a class that can send RDM messages.
  */
 class RDMControllerInterface {
-  public:
+ public:
     RDMControllerInterface() {}
     virtual ~RDMControllerInterface() {}
 
@@ -90,7 +90,7 @@ class RDMControllerInterface {
  * run at the same time as RDM messages are being sent.
  */
 class DiscoverableRDMControllerInterface: public RDMControllerInterface {
-  public:
+ public:
     DiscoverableRDMControllerInterface(): RDMControllerInterface() {}
     virtual ~DiscoverableRDMControllerInterface() {}
 

@@ -32,7 +32,7 @@ namespace thread {
  * @brief A thread which executes a Callback.
  */
 class CallbackThread : public Thread {
-  public:
+ public:
     typedef SingleUseCallback0<void> VoidThreadCallback;
 
     /**
@@ -43,7 +43,7 @@ class CallbackThread : public Thread {
         : m_callback(callback) {
     }
 
-  protected:
+ protected:
     void *Run() {
       if (m_callback) {
         m_callback->Run();
@@ -51,7 +51,7 @@ class CallbackThread : public Thread {
       return NULL;
     }
 
-  private:
+ private:
     VoidThreadCallback *m_callback;
 
     DISALLOW_COPY_AND_ASSIGN(CallbackThread);

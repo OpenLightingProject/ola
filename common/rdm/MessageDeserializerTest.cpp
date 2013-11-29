@@ -65,7 +65,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testWithNestedVariableGroups);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testEmpty();
     void testSimpleBigEndian();
     void testSimpleLittleEndian();
@@ -79,7 +79,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     MessageDeserializer m_deserializer;
     GenericMessagePrinter m_printer;
 };

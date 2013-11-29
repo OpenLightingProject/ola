@@ -36,14 +36,14 @@ class ActionQueueTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testFailedQueue);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void CommandsComplete(ActionQueue *queue);
     void testEmptyQueue();
     void testSimpleQueue();
     void testFailedQueue();
 
-  private:
+ private:
     ActionQueue *m_received_queue;
 };
 
@@ -52,7 +52,7 @@ class ActionQueueTest: public CppUnit::TestFixture {
  * A basic test action
  */
 class MockAction: public Action {
-  public:
+ public:
     MockAction(bool fatal = false, bool fail = false):
       Action(),
       m_fatal(fatal),
@@ -65,7 +65,7 @@ class MockAction: public Action {
 
     void Perform(SingleUseCallback0<void> *on_done);
 
-  private:
+ private:
     bool m_fatal;
     bool m_failed;
     bool m_executed;

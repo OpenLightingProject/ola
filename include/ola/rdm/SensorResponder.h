@@ -43,13 +43,13 @@ namespace rdm {
  * A simulated responder with no footprint and just sensors.
  */
 class SensorResponder: public RDMControllerInterface {
-  public:
+ public:
     explicit SensorResponder(const UID &uid);
     ~SensorResponder();
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-  private:
+ private:
     /**
      * The RDM Operations for the SensorResponder.
      */

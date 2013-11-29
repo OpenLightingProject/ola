@@ -33,7 +33,7 @@ namespace io {
  * and IOStack classes.
  */
 class MemoryBlock {
-  public:
+ public:
     // Ownership of the data is transferred.
     MemoryBlock(uint8_t *data, unsigned int size)
         : m_data(data),
@@ -108,7 +108,7 @@ class MemoryBlock {
       return bytes_to_pop;
     }
 
-  private:
+ private:
     uint8_t* const m_data;
     uint8_t* const m_data_end;
     unsigned int m_capacity;

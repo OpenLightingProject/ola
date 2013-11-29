@@ -35,7 +35,7 @@ using std::string;
  * @brief The base class all Settings inherit from.
  */
 class SettingInterface {
-  public:
+ public:
     virtual ~SettingInterface() {}
 
     /**
@@ -62,7 +62,7 @@ class SettingInterface {
  * @brief A Setting which has a description and no other properties.
  */
 class BasicSetting : SettingInterface {
-  public:
+ public:
     typedef const char* ArgType;
 
     /**
@@ -84,7 +84,7 @@ class BasicSetting : SettingInterface {
     unsigned int GenerateDescriptionResponse(uint8_t index,
                                              uint8_t *data) const;
 
-  private:
+ private:
     struct description_s {
       uint8_t setting;
       char description[MAX_RDM_STRING_LENGTH];
@@ -99,7 +99,7 @@ class BasicSetting : SettingInterface {
  * See Section 4.10 of E1.37-1.
  */
 class FrequencyModulationSetting : SettingInterface {
-  public:
+ public:
     /**
      * @brief The constructor argument for the FrequencyModulationSetting
      */
@@ -134,7 +134,7 @@ class FrequencyModulationSetting : SettingInterface {
     unsigned int GenerateDescriptionResponse(uint8_t index,
                                              uint8_t *data) const;
 
-  private:
+ private:
     struct description_s {
       uint8_t setting;
       uint32_t frequency;
@@ -156,7 +156,7 @@ class FrequencyModulationSetting : SettingInterface {
  */
 template <class SettingType>
 class SettingCollection {
-  public:
+ public:
     /**
      * zero_offset is used for the LOCK_STATE which is special because it has
      * the unlocked state at index 0. However the 0 state isn't counted towards
@@ -184,10 +184,10 @@ class SettingCollection {
       return m_zero_offset ? 0 : 1;
     }
 
-  protected:
+ protected:
     SettingCollection() {}
 
-  private:
+ private:
     std::vector<SettingType> m_settings;
     const bool m_zero_offset;
 };
@@ -198,7 +198,7 @@ class SettingCollection {
  */
 template <class SettingType>
 class SettingManager {
-  public:
+ public:
     explicit SettingManager(const SettingCollection<SettingType> *settings)
         : m_settings(settings),
           m_current_setting(settings->Offset()) {
@@ -220,7 +220,7 @@ class SettingManager {
 
     bool ChangeSetting(uint8_t state);
 
-  private:
+ private:
     const SettingCollection<SettingType> *m_settings;
     uint8_t m_current_setting; /**< Index to m_settings, including zero*/
 };

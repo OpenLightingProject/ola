@@ -43,7 +43,7 @@ namespace rdm {
  * A simulated moving light.
  */
 class MovingLightResponder: public RDMControllerInterface {
-  public:
+ public:
     explicit MovingLightResponder(const UID &uid);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
@@ -53,7 +53,7 @@ class MovingLightResponder: public RDMControllerInterface {
       return m_personality_manager.ActivePersonalityFootprint();
     }
 
-  private:
+ private:
     /**
      * The RDM Operations for the MovingLightResponder.
      */

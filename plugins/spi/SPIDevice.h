@@ -39,7 +39,7 @@ namespace spi {
 using std::auto_ptr;
 
 class SPIDevice: public ola::Device {
-  public:
+ public:
     SPIDevice(class SPIPlugin *owner,
               class Preferences *preferences,
               class PluginAdaptor *plugin_adaptor,
@@ -50,11 +50,11 @@ class SPIDevice: public ola::Device {
 
     bool AllowMultiPortPatching() const { return true; }
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
 
-  private:
+ private:
     typedef std::vector<class SPIOutputPort*> SPIPorts;
 
     auto_ptr<SPIWriterInterface> m_writer;

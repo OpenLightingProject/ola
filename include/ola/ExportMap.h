@@ -53,7 +53,7 @@ using std::vector;
  * All other exported variables derive from this.
  */
 class BaseVariable {
-  public:
+ public:
     /**
      * @brief Create a new BaseVariable.
      * @param name the variable name.
@@ -77,7 +77,7 @@ class BaseVariable {
      */
     virtual const string Value() const = 0;
 
-  private:
+ private:
     string m_name;
 };
 
@@ -94,7 +94,7 @@ struct VariableLessThan: public std::binary_function<BaseVariable*,
  * @brief A boolean variable.
  */
 class BoolVariable: public BaseVariable {
-  public:
+ public:
     /**
      * @brief Create a new BoolVariable.
      * @param name the variable name.
@@ -124,7 +124,7 @@ class BoolVariable: public BaseVariable {
      */
     const string Value() const { return m_value ? "1" : "0"; }
 
-  private:
+ private:
     bool m_value;
 };
 
@@ -133,7 +133,7 @@ class BoolVariable: public BaseVariable {
  * Represents a string variable
  */
 class StringVariable: public BaseVariable {
-  public:
+ public:
     explicit StringVariable(const string &name)
         : BaseVariable(name),
           m_value("") {}
@@ -143,7 +143,7 @@ class StringVariable: public BaseVariable {
     const string Get() const { return m_value; }
     const string Value() const { return m_value; }
 
-  private:
+ private:
     string m_value;
 };
 
@@ -152,7 +152,7 @@ class StringVariable: public BaseVariable {
  * Represents a integer variable
  */
 class IntegerVariable: public BaseVariable {
-  public:
+ public:
     explicit IntegerVariable(const string &name)
         : BaseVariable(name),
           m_value(0) {}
@@ -169,7 +169,7 @@ class IntegerVariable: public BaseVariable {
       return out.str();
     }
 
-  private:
+ private:
     int m_value;
 };
 
@@ -178,7 +178,7 @@ class IntegerVariable: public BaseVariable {
  * Represents a counter which can only be added to.
  */
 class CounterVariable: public BaseVariable {
-  public:
+ public:
     explicit CounterVariable(const string &name)
         : BaseVariable(name),
           m_value(0) {}
@@ -194,7 +194,7 @@ class CounterVariable: public BaseVariable {
       return out.str();
     }
 
-  private:
+ private:
     unsigned int m_value;
 };
 
@@ -204,7 +204,7 @@ class CounterVariable: public BaseVariable {
  */
 template<typename Type>
 class MapVariable: public BaseVariable {
-  public:
+ public:
     MapVariable(const string &name, const string &label):
       BaseVariable(name),
       m_label(label) {}
@@ -216,10 +216,10 @@ class MapVariable: public BaseVariable {
     const string Value() const;
     const string Label() const { return m_label; }
 
-  protected:
+ protected:
     map<string, Type> m_variables;
 
-  private:
+ private:
     string m_label;
 };
 
@@ -230,7 +230,7 @@ typedef MapVariable<string> StringMap;
  * An map of integer values. This provides an increment operation.
  */
 class IntMap: public MapVariable<int> {
-  public:
+ public:
     IntMap(const string &name, const string &label)
         : MapVariable<int>(name, label) {
     }
@@ -245,7 +245,7 @@ class IntMap: public MapVariable<int> {
  * An IntMap. This provides an increment operation.
  */
 class UIntMap: public MapVariable<unsigned int> {
-  public:
+ public:
     UIntMap(const string &name, const string &label)
         : MapVariable<unsigned int>(name, label) {
     }
@@ -293,7 +293,7 @@ void MapVariable<Type>::Remove(const string &key) {
  *
  */
 class ExportMap {
-  public:
+ public:
     ExportMap() {}
     ~ExportMap();
 

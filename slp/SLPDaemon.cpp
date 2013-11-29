@@ -66,7 +66,7 @@ const uint16_t SLPDaemon::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPDaemon::DEFAULT_SLP_RPC_PORT = 9011;
 
 class ConnectedClient {
-  public:
+ public:
     RpcChannel *channel;
     TCPSocket *socket;
 

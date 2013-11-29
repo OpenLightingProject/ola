@@ -35,7 +35,7 @@ class PluginAdaptor;
 class AbstractPlugin;
 
 class PluginManager {
-  public:
+ public:
     PluginManager(const vector<PluginLoader*> &plugin_loaders,
                   PluginAdaptor *plugin_adaptor);
     ~PluginManager();
@@ -62,7 +62,7 @@ class PluginManager {
     void GetConflictList(ola_plugin_id plugin_id,
                          vector<AbstractPlugin*> *plugins);
 
-  private:
+ private:
     typedef std::map<ola_plugin_id, AbstractPlugin*> PluginMap;
 
     vector<PluginLoader*> m_plugin_loaders;

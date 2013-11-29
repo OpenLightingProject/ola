@@ -34,7 +34,7 @@ namespace plugin {
 namespace renard {
 
 class RenardDevice: public ola::Device {
-  public:
+ public:
     RenardDevice(AbstractPlugin *owner,
                  class Preferences *preferences,
                  const std::string &dev_path);
@@ -43,11 +43,11 @@ class RenardDevice: public ola::Device {
     std::string DeviceId() const { return m_dev_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
 
-  private:
+ private:
     std::auto_ptr<class RenardWidget> m_widget;
     const std::string m_dev_path;
     class Preferences *m_preferences;

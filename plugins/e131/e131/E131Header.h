@@ -34,7 +34,7 @@ using std::string;
  * Header for the E131 layer
  */
 class E131Header {
-  public:
+ public:
     E131Header() {}
     E131Header(const string &source,
                uint8_t priority,
@@ -87,7 +87,7 @@ class E131Header {
     static const uint8_t PREVIEW_DATA_MASK = 0x80;
     static const uint8_t STREAM_TERMINATED_MASK = 0x40;
 
-  private:
+ private:
     string m_source;
     uint8_t m_priority;
     uint8_t m_sequence;
@@ -99,7 +99,7 @@ class E131Header {
 
 
 class E131Rev2Header: public E131Header {
-  public:
+ public:
     E131Rev2Header(const string &source,
                    uint8_t priority,
                    uint8_t sequence,

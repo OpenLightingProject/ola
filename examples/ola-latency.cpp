@@ -46,7 +46,7 @@ DEFINE_s_uint32(count, c, 0,
     "Exit after this many RPCs, default: infinite (0)");
 
 class Tracker {
-  public:
+ public:
     Tracker()
         : m_count(0),
           m_sum(0) {
@@ -59,7 +59,7 @@ class Tracker {
     void GotDmx(const DmxBuffer &data, const string &error);
     void SendComplete(const string &error);
 
-  private:
+ private:
     uint32_t m_count;
     uint64_t m_sum;
     TimeInterval m_max;

@@ -38,7 +38,7 @@
 namespace ola {
 
 class PortBrokerInterface {
-  public:
+ public:
     PortBrokerInterface() {}
     virtual ~PortBrokerInterface() {}
 
@@ -51,7 +51,7 @@ class PortBrokerInterface {
 
 
 class PortBroker: public PortBrokerInterface {
-  public:
+ public:
     PortBroker() {}
     ~PortBroker() {}
 
@@ -63,7 +63,7 @@ class PortBroker: public PortBrokerInterface {
                         const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-  private:
+ private:
     typedef std::pair<string, const Port*> port_key;
 
     void RequestComplete(port_key key,

@@ -31,7 +31,7 @@ namespace plugin {
 namespace sandnet {
 
 class SandNetPlugin: public ola::Plugin {
-  public:
+ public:
     explicit SandNetPlugin(ola::PluginAdaptor *plugin_adaptor)
         : Plugin(plugin_adaptor),
           m_device(NULL) {}
@@ -41,7 +41,7 @@ class SandNetPlugin: public ola::Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_SANDNET; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     class SandNetDevice *m_device;  // only have one device
 
     bool StartHook();

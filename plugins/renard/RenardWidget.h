@@ -33,7 +33,7 @@ namespace plugin {
 namespace renard {
 
 class RenardWidget {
-  public:
+ public:
     // The DMX offset is where in the DMX universe the Renard channels
     // will be mapped. Set to 0 means the first Renard channel will be
     // mapped to DMX channel 1, next to 2, etc. If you set the DMX offset
@@ -73,7 +73,7 @@ class RenardWidget {
 
     static const uint8_t RENARD_CHANNELS_IN_BANK;
 
-  private:
+ private:
     int ConnectToWidget(const std::string &path, speed_t speed);
 
     // instance variables

@@ -37,7 +37,7 @@ namespace network {
  * An class which manages non-blocking TCP connects.
  */
 class TCPConnector {
-  public:
+ public:
     explicit TCPConnector(ola::io::SelectServerInterface *ss);
     ~TCPConnector();
 
@@ -52,7 +52,7 @@ class TCPConnector {
     void CancelAll();
     unsigned int ConnectionsPending() const { return m_connections.size(); }
 
-  private:
+ private:
     /**
      * A TCP socket waiting to connect.
      */

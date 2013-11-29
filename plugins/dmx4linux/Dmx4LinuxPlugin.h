@@ -37,7 +37,7 @@ namespace dmx4linux {
 class Dmx4LinuxDevice;
 
 class Dmx4LinuxPlugin: public ola::Plugin {
-  public:
+ public:
     explicit Dmx4LinuxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_in_descriptor(NULL),
@@ -53,7 +53,7 @@ class Dmx4LinuxPlugin: public ola::Plugin {
     int SocketReady();
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

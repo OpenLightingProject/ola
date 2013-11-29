@@ -57,7 +57,7 @@ class OutstandingResponse {
   /*
    * These are Requests on the client end that haven't completed yet.
    */
-  public:
+ public:
     OutstandingResponse() {}
     ~OutstandingResponse() {}
 

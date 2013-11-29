@@ -48,7 +48,7 @@ using std::auto_ptr;
  * E1.33 Devices can either be native, or gateways to E1.20 devices.
  */
 class E133Device {
-  public:
+ public:
     E133Device(ola::io::SelectServerInterface *ss,
                const ola::acn::CID &cid,
                const ola::network::IPV4Address &ip_address,
@@ -63,7 +63,7 @@ class E133Device {
     void SendStatusMessage(const ola::rdm::RDMResponse *response);
     bool CloseTCPConnection();
 
-  private:
+ private:
     ola::io::SelectServerInterface *m_ss;
     const ola::network::IPV4Address m_ip_address;
     ola::e133::MessageBuilder m_message_builder;

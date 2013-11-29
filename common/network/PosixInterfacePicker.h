@@ -31,10 +31,10 @@ namespace network {
  * The InterfacePicker for posix systems
  */
 class PosixInterfacePicker: public InterfacePicker {
-  public:
+ public:
     std::vector<Interface> GetInterfaces(bool include_loopback) const;
 
-  private:
+ private:
     static const unsigned int INITIAL_IFACE_COUNT = 10;
     static const unsigned int IFACE_COUNT_INC = 5;
     unsigned int GetIfReqSize(const char *data) const;

@@ -62,7 +62,7 @@ typedef struct {
  * A class which configures UsbPro devices.
  */
 class UsbProConfigurator: public OlaConfigurator {
-  public:
+ public:
     explicit UsbProConfigurator(const options &opts):
       OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_USBPRO),
       m_opts(opts) {}
@@ -72,7 +72,7 @@ class UsbProConfigurator: public OlaConfigurator {
     bool SendSerialRequest();
     bool SendPortAssignmentRequest();
 
-  private:
+ private:
     void DisplayParameters(const ola::plugin::usbpro::ParameterReply &reply);
     void DisplaySerial(const ola::plugin::usbpro::SerialNumberReply &reply);
     void DisplayPortAssignment(

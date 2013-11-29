@@ -52,7 +52,7 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDeviceModelDescription);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     RDMMessageInterationTest();
     ~RDMMessageInterationTest();
 
@@ -68,7 +68,7 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
       OLA_ASSERT_NOT_NULL(m_esta_store);
     }
 
-  private:
+ private:
     const ola::rdm::RootPidStore *m_store;
     const ola::rdm::PidStore *m_esta_store;
     ola::rdm::StringMessageBuilder m_builder;

@@ -51,13 +51,13 @@ typedef struct {
  * A class that configures E131 devices
  */
 class E131Configurator: public OlaConfigurator {
-  public:
+ public:
     explicit E131Configurator(const options &opts):
       OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_E131),
       m_options(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();
-  private:
+ private:
     void DisplayOptions(const ola::plugin::e131::PortInfoReply &reply);
     options m_options;
 };

@@ -31,7 +31,7 @@ namespace e131 {
 class DMPPDU;
 
 class E131PDU: public PDU {
-  public:
+ public:
     E131PDU(unsigned int vector,
             const E131Header &header,
             const DMPPDU *dmp_pdu):
@@ -48,7 +48,7 @@ class E131PDU: public PDU {
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;
 
-  private:
+ private:
     E131Header m_header;
     const DMPPDU *m_dmp_pdu;
 };

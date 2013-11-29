@@ -35,7 +35,7 @@ namespace usbdmx {
  * A EurolitePro device
  */
 class EuroliteProDevice: public UsbDevice {
-  public:
+ public:
     EuroliteProDevice(ola::AbstractPlugin *owner,
                       libusb_device *usb_device):
         UsbDevice(owner, "EurolitePro USB Device", usb_device),
@@ -44,10 +44,10 @@ class EuroliteProDevice: public UsbDevice {
 
     string DeviceId() const;
 
-  protected:
+ protected:
     bool StartHook();
 
-  private:
+ private:
     EuroliteProOutputPort *m_output_port;
 };
 }  // namespace usbdmx

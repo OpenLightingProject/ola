@@ -36,7 +36,7 @@ using std::string;
  * A Fake SPI Writer used for testing
  */
 class FakeSPIWriter : public SPIWriterInterface {
-  public:
+ public:
     explicit FakeSPIWriter(const string &device_path)
       : m_device_path(device_path),
         m_write_pending(0),
@@ -67,7 +67,7 @@ class FakeSPIWriter : public SPIWriterInterface {
     void CheckDataMatches(unsigned int line, const uint8_t *data,
                           unsigned int length);
 
-  private:
+ private:
     const string m_device_path;
     bool m_write_pending;  // GUARDED_BY(m_mutex)
     unsigned int m_writes;  // GUARDED_BY(m_mutex)

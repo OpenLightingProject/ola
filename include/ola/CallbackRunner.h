@@ -80,7 +80,7 @@ namespace ola {
  */
 template <typename CallbackClass>
 class CallbackRunner {
-  public:
+ public:
     /**
      * Construct a new CallbackRunner.
      * @param callback the Callback to execute.
@@ -96,7 +96,7 @@ class CallbackRunner {
       m_callback->Run();
     }
 
-  private:
+ private:
     CallbackClass *m_callback;
 
     DISALLOW_COPY_AND_ASSIGN(CallbackRunner);

@@ -54,7 +54,7 @@ typedef struct {
 bool operator <(const device_alias_pair& left, const device_alias_pair &right);
 
 class DeviceManager {
-  public:
+ public:
     DeviceManager(PreferencesFactory *prefs_factory,
                   class PortManager *port_manager);
     ~DeviceManager();
@@ -74,7 +74,7 @@ class DeviceManager {
     static const char PRIORITY_VALUE_SUFFIX[];
     static const char PRIORITY_MODE_SUFFIX[];
 
-  private:
+ private:
     Preferences *m_port_preferences;
     class PortManager *m_port_manager;
     map<string, device_alias_pair> m_devices;  // map device_ids to devices

@@ -82,7 +82,7 @@ unsigned int DMPSizeToByteSize(dmp_address_size size);
  * or absolute, ranged or non-ranged.
  */
 class BaseDMPAddress {
-  public:
+ public:
     BaseDMPAddress() {}
     virtual ~BaseDMPAddress() {}
 
@@ -109,7 +109,7 @@ class BaseDMPAddress {
     // True if this is a range address.
     virtual bool IsRange() const = 0;
 
-  protected:
+ protected:
     virtual unsigned int BaseSize() const = 0;
 };
 
@@ -119,7 +119,7 @@ class BaseDMPAddress {
  */
 template<typename type>
 class DMPAddress: public BaseDMPAddress {
-  public:
+ public:
     explicit DMPAddress(type start):
       BaseDMPAddress(),
       m_start(start) {}
@@ -146,10 +146,10 @@ class DMPAddress: public BaseDMPAddress {
 
     bool IsRange() const { return false; }
 
-  protected:
+ protected:
     unsigned int BaseSize() const { return sizeof(type); }
 
-  private:
+ private:
     type m_start;
 };
 
@@ -169,7 +169,7 @@ const BaseDMPAddress *NewSingleAddress(unsigned int value);
  */
 template <typename type>
 class RangeDMPAddress: public BaseDMPAddress {
-  public:
+ public:
     RangeDMPAddress(type start,
                     type increment,
                     type number):
@@ -206,10 +206,10 @@ class RangeDMPAddress: public BaseDMPAddress {
 
     bool IsRange() const { return true; }
 
-  protected:
+ protected:
     unsigned int BaseSize() const { return sizeof(type); }
 
-  private:
+ private:
     type m_start, m_increment, m_number;
 };
 
@@ -241,7 +241,7 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
  */
 template <typename type>
 class DMPAddressData {
-  public:
+ public:
     DMPAddressData(const type *address,
                    const uint8_t *data,
                    unsigned int length):
@@ -280,7 +280,7 @@ class DMPAddressData {
       stream->Write(m_data, m_length);
     }
 
-  private:
+ private:
     const type *m_address;
     const uint8_t *m_data;
     unsigned int m_length;

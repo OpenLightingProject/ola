@@ -45,7 +45,7 @@ using std::string;
  * @brief Holds information about a single sensor.
  */
 class Sensor {
-  public:
+ public:
     struct SensorOptions {
       public:
         bool recorded_value_support;
@@ -168,7 +168,7 @@ class Sensor {
       return bit_mask;
     }
 
-  protected:
+ protected:
     /**
      * @brief Actually get the value from the Sensor.
      * @returns the value of the sensor when polled.

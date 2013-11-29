@@ -36,7 +36,7 @@ using std::string;
 class ShowNetDevice;
 
 class ShowNetPlugin: public Plugin {
-  public:
+ public:
     explicit ShowNetPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
@@ -47,7 +47,7 @@ class ShowNetPlugin: public Plugin {
     string Description() const;
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

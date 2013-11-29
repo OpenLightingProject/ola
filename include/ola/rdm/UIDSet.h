@@ -49,7 +49,7 @@ using std::set;
  * @}
  */
 class UIDSet {
-  public:
+ public:
     /**
      * @brief the Iterator for a UIDSets
      */
@@ -202,7 +202,7 @@ class UIDSet {
       return out << uid_set.ToString();
     }
 
-  private:
+ private:
     set<UID> m_uids;
 
     explicit UIDSet(const set<UID> uids) {

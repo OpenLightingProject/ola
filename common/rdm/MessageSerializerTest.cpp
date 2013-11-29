@@ -64,7 +64,7 @@ class MessageSerializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testWithNestedGroups);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSimple();
     void testString();
     void testUID();
@@ -76,7 +76,7 @@ class MessageSerializerTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     const Message *BuildMessage(const Descriptor &descriptor,
                                 const vector<string> &inputs);
 };

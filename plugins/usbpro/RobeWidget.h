@@ -50,7 +50,7 @@ using std::auto_ptr;
 class RobeWidgetImpl: public BaseRobeWidget,
                       public ola::rdm::DiscoverableRDMControllerInterface,
                       public ola::rdm::DiscoveryTargetInterface {
-  public:
+ public:
     explicit RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                             const ola::rdm::UID &uid);
     ~RobeWidgetImpl() {}
@@ -82,7 +82,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
 
     static const int DMX_FRAME_DATA_SIZE;
 
-  private:
+ private:
     ola::rdm::RDMCallback *m_rdm_request_callback;
     MuteDeviceCallback *m_mute_callback;
     UnMuteDeviceCallback *m_unmute_callback;
@@ -116,7 +116,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
  */
 class RobeWidget: public SerialWidgetInterface,
                   public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     RobeWidget(ola::io::ConnectedDescriptor *descriptor,
                const ola::rdm::UID &uid,
                unsigned int queue_size = 20);
@@ -160,7 +160,7 @@ class RobeWidget: public SerialWidgetInterface,
     // the tests access the implementation directly.
     friend class ::RobeWidgetTest;
 
-  private:
+ private:
     // we need to control the order of construction & destruction here so these
     // are pointers.
     RobeWidgetImpl *m_impl;

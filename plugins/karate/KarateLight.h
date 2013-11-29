@@ -33,7 +33,7 @@ namespace plugin {
 namespace karate {
 
 class KarateLight {
-  public:
+ public:
   explicit KarateLight(const string &dev);
   ~KarateLight();
   bool Init();
@@ -48,7 +48,7 @@ class KarateLight {
   uint16_t GetDMXOffset() const { return m_dmx_offset; }
   bool IsActive() const { return m_active; }
 
-  private:
+ private:
   bool ReadBack(uint8_t *rd_data, uint8_t *rd_len);
   bool ReadByteFromEeprom(uint8_t addr, uint8_t *data);
   bool SendCommand(uint8_t cmd, const uint8_t *output_buffer,

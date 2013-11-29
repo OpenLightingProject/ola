@@ -55,7 +55,7 @@ using std::vector;
 
 
 class UniverseTracker {
-  public:
+ public:
     UniverseTracker(OlaCallbackClientWrapper *wrapper,
                     const vector<unsigned int> &universes);
     ~UniverseTracker() {}
@@ -65,10 +65,10 @@ class UniverseTracker {
     void PrintStats();
     void ResetStats();
 
-  protected:
+ protected:
     void Input(char c);
 
-  private:
+ private:
     struct UniverseStats {
       public:
         uint16_t shortest_frame;

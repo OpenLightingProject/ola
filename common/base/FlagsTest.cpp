@@ -49,7 +49,7 @@ DEFINE_s_string(s_str, j, "bar", "Test String");
 using std::string;
 
 class FlagsTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(FlagsTest);
     CPPUNIT_TEST(testDefaults);
     CPPUNIT_TEST(testSetting);
@@ -58,7 +58,7 @@ class FlagsTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testStringFlags);
     CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }

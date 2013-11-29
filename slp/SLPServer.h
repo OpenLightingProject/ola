@@ -71,7 +71,7 @@ class UnicastSrvRqstOperation;
  * register, deregister and locate services.
  */
 class SLPServer {
-  public:
+ public:
     struct SLPServerOptions {
       IPV4Address ip_address;  // The interface IP to multicast on
       ola::Clock *clock;  // The clock object to use, if null we create one
@@ -120,7 +120,7 @@ class SLPServer {
     uint16_t RegisterService(const ServiceEntry &service);
     uint16_t DeRegisterService(const ServiceEntry &service);
 
-  private:
+ private:
     typedef multimap<string, class UnicastSrvRegOperation*>
       PendingOperationsByURL;
     typedef SingleUseCallback1<void, uint16_t> AckCallback;

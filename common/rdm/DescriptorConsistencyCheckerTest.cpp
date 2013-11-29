@@ -42,7 +42,7 @@ class DescriptorConsistencyCheckerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNestedGroups);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testOkDescriptors();
     void testDuplicateStrings();
     void testGroups();

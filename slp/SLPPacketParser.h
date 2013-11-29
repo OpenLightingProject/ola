@@ -42,7 +42,7 @@ namespace slp {
  * The base SLP Packet class.
  */
 class SLPPacket {
-  public:
+ public:
     SLPPacket()
       : xid(0),
         flags(0),
@@ -65,7 +65,7 @@ class SLPPacket {
  * A Service Request message
  */
 class ServiceRequestPacket: public SLPPacket {
-  public:
+ public:
     vector<IPV4Address> pr_list;
     string service_type;
     string scope_list;
@@ -78,7 +78,7 @@ class ServiceRequestPacket: public SLPPacket {
  * A Service Reply
  */
 class ServiceReplyPacket: public SLPPacket {
-  public:
+ public:
     ServiceReplyPacket(): SLPPacket(), error_code(0) {}
 
     uint16_t error_code;
@@ -90,7 +90,7 @@ class ServiceReplyPacket: public SLPPacket {
  * A Service Registration
  */
 class ServiceRegistrationPacket: public SLPPacket {
-  public:
+ public:
     ServiceRegistrationPacket(): SLPPacket() {}
 
     URLEntry url;
@@ -104,7 +104,7 @@ class ServiceRegistrationPacket: public SLPPacket {
  * A Service De-Registration
  */
 class ServiceDeRegistrationPacket: public SLPPacket {
-  public:
+ public:
     ServiceDeRegistrationPacket(): SLPPacket() {}
 
     URLEntry url;
@@ -117,7 +117,7 @@ class ServiceDeRegistrationPacket: public SLPPacket {
  * A Service Ack
  */
 class ServiceAckPacket: public SLPPacket {
-  public:
+ public:
     ServiceAckPacket(): SLPPacket() {}
 
     uint16_t error_code;
@@ -128,7 +128,7 @@ class ServiceAckPacket: public SLPPacket {
  * A DA Advert
  */
 class DAAdvertPacket: public SLPPacket {
-  public:
+ public:
     DAAdvertPacket(): SLPPacket() {}
 
     uint16_t error_code;
@@ -144,7 +144,7 @@ class DAAdvertPacket: public SLPPacket {
  * SrvTypeRqst
  */
 class ServiceTypeRequestPacket: public SLPPacket {
-  public:
+ public:
     ServiceTypeRequestPacket()
         : SLPPacket(),
           include_all(false) {
@@ -161,7 +161,7 @@ class ServiceTypeRequestPacket: public SLPPacket {
  * The SLPPacketParser unpacks data from SLP packets.
  */
 class SLPPacketParser {
-  public:
+ public:
     SLPPacketParser() {}
     ~SLPPacketParser() {}
 
@@ -193,7 +193,7 @@ class SLPPacketParser {
                               SLPPacket *packet,
                               const string &packet_type);
 
-  private:
+ private:
     static bool ExtractString(BigEndianInputStream *input,
                               string *result,
                               const string &field_name,

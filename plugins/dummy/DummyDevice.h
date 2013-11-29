@@ -35,7 +35,7 @@ namespace dummy {
 using std::string;
 
 class DummyDevice: public Device {
-  public:
+ public:
     DummyDevice(
         AbstractPlugin *owner,
         const string &name,
@@ -45,7 +45,7 @@ class DummyDevice: public Device {
     }
     string DeviceId() const { return "1"; }
 
-  protected:
+ protected:
     uint16_t m_number_of_devices;
     uint16_t m_number_of_subdevices;
     const DummyPort::Options m_port_options;

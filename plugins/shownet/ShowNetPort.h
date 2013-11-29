@@ -33,7 +33,7 @@ namespace shownet {
 using ola::DmxBuffer;
 
 class ShowNetInputPort: public BasicInputPort {
-  public:
+ public:
     ShowNetInputPort(ShowNetDevice *parent,
                      unsigned int id,
                      class PluginAdaptor *plugin_adaptor,
@@ -54,7 +54,7 @@ class ShowNetInputPort: public BasicInputPort {
 
 
 class ShowNetOutputPort: public BasicOutputPort {
-  public:
+ public:
     ShowNetOutputPort(ShowNetDevice *parent,
                       unsigned int id,
                       ShowNetNode *node):
@@ -66,7 +66,7 @@ class ShowNetOutputPort: public BasicOutputPort {
     string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-  private:
+ private:
     ShowNetNode *m_node;
 };
 }  // namespace shownet

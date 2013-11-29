@@ -33,7 +33,7 @@ namespace rpc {
 class RpcController;
 
 class RpcService {
-  public:
+ public:
     typedef SingleUseCallback0<void> CompletionCallback;
 
     RpcService() {}

@@ -43,7 +43,7 @@ using ola::http::HTTPServer;
  * This is the main OLA HTTP Server
  */
 class OladHTTPServer: public ola::http::OlaHTTPServer {
-  public:
+ public:
     struct OladHTTPServerOptions: public HTTPServer::HTTPServerOptions {
       public:
         bool enable_quit;
@@ -138,7 +138,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
 
     static const char HELP_PARAMETER[];
 
-  private:
+ private:
     class ola::io::ConnectedDescriptor *m_client_socket;
     ola::client::OlaClient m_client;
     class OlaServer *m_ola_server;

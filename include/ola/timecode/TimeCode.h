@@ -31,7 +31,7 @@ namespace timecode {
 
 
 class TimeCode {
-  public:
+ public:
     TimeCode(TimeCodeType type, uint8_t hours, uint8_t minutes,
              uint8_t seconds, uint8_t frames)
         : m_type(type),
@@ -58,7 +58,7 @@ class TimeCode {
     std::string AsString() const;
     friend std::ostream& operator<<(std::ostream &out, const TimeCode&);
 
-  private:
+ private:
     TimeCodeType m_type;
     uint8_t m_hours;
     uint8_t m_minutes;

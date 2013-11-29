@@ -68,7 +68,7 @@ typedef map<UID, std::pair<IPV4Address, uint8_t> > uid_map;
 
 // Input ports are ones that send data using ArtNet
 class ArtNetNodeImpl::InputPort {
-  public:
+ public:
     InputPort()
         : enabled(false),
           sequence_number(0),
@@ -157,7 +157,7 @@ class ArtNetNodeImpl::InputPort {
     // these control the sending of RDM requests.
     ola::thread::timeout_id rdm_send_timeout;
 
-  private:
+ private:
     uint8_t m_port_address;
     // The callback to run if we receive an TOD and the discovery process
     // isn't running

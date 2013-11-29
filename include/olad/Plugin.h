@@ -103,7 +103,7 @@ class Plugin: public AbstractPlugin {
       return Id() < other.Id();
     }
 
-  protected:
+ protected:
     virtual bool StartHook() { return 0; }
     virtual bool StopHook() { return 0; }
     virtual bool SetDefaultPreferences() { return true; }
@@ -112,7 +112,7 @@ class Plugin: public AbstractPlugin {
     class Preferences *m_preferences;  // preferences container
     static const char ENABLED_KEY[];
 
-  private:
+ private:
     bool m_enabled;  // are we running
 
     DISALLOW_COPY_AND_ASSIGN(Plugin);

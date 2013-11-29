@@ -37,7 +37,7 @@ class OlaClient;
  * An implemention of RDMAPIImplInterface that uses the OlaClient.
  */
 class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
-  public:
+ public:
     explicit ClientRDMAPIShim(OlaClient *client)
         : m_client(client) {
     }
@@ -66,7 +66,7 @@ class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
                 const uint8_t *data = NULL,
                 unsigned int data_length = 0);
 
-  private:
+ private:
     OlaClient *m_client;
 
     void HandleResponse(

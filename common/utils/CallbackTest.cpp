@@ -37,7 +37,7 @@ class CallbackTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testMethodCallbacks2);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testFunctionCallbacks();
     void testMethodCallbacks();
     void testFunctionCallbacks1();

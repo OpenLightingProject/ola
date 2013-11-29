@@ -57,14 +57,14 @@ using std::string;
 
 
 class SLPServerUATest: public CppUnit::TestFixture {
-  public:
+ public:
     SLPServerUATest()
         : m_helper(&m_udp_socket),
           url1("service:foo://192.168.0.1", 300),
           url2("service:foo://192.168.0.8", 255) {
     }
 
-  public:
+ public:
     CPPUNIT_TEST_SUITE(SLPServerUATest);
     CPPUNIT_TEST(testFindServiceNoDA);
     CPPUNIT_TEST(testFindServiceWithDA);
@@ -87,7 +87,7 @@ class SLPServerUATest: public CppUnit::TestFixture {
     void testFindServiceMultipleDAs();
     void testPassiveDADiscovery();
 
-  public:
+ public:
     void setUp() {
       ola::math::InitRandom();
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -100,7 +100,7 @@ class SLPServerUATest: public CppUnit::TestFixture {
       m_helper.RunOnce();
     }
 
-  private:
+ private:
     typedef set<IPV4Address> PRList;
     typedef set<IPV4Address> DAList;
 

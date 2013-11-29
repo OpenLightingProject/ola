@@ -56,7 +56,7 @@ typedef int OladHTTPServer_t;
  * The main OlaServer class
  */
 class OlaServer {
-  public:
+ public:
     struct Options {
       bool http_enable;  // run the http server
       bool http_localhost_only;  // restrict access to localhost only

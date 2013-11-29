@@ -41,7 +41,7 @@ namespace client {
  * @brief Represents a Plugin.
  */
 class OlaPlugin {
-  public:
+ public:
     OlaPlugin(unsigned int id, const string &name, bool active)
         : m_id(id),
           m_name(name),
@@ -68,7 +68,7 @@ class OlaPlugin {
       return m_id < other.m_id;
     }
 
-  private:
+ private:
     unsigned int m_id;  // id of this plugin
     string m_name;  // plugin name
     bool m_active;
@@ -105,7 +105,7 @@ struct PluginState {
  * @brief The base class that represents a port.
  */
 class OlaPort {
-  public:
+ public:
     OlaPort(unsigned int port_id,
             unsigned int universe,
             bool active,
@@ -153,7 +153,7 @@ class OlaPort {
      */
     bool SupportsRDM() const { return m_supports_rdm; }
 
-  private:
+ private:
     unsigned int m_id;  // id of this port
     unsigned int m_universe;  // universe
     bool m_active;  // active
@@ -168,7 +168,7 @@ class OlaPort {
  * @brief An input port (receives DMX).
  */
 class OlaInputPort: public OlaPort {
-  public:
+ public:
     OlaInputPort(unsigned int port_id,
                  unsigned int universe,
                  bool active,
@@ -186,7 +186,7 @@ class OlaInputPort: public OlaPort {
  * @brief An Output Port (sends DMX).
  */
 class OlaOutputPort: public OlaPort {
-  public:
+ public:
     OlaOutputPort(unsigned int port_id,
                   unsigned int universe,
                   bool active,
@@ -205,7 +205,7 @@ class OlaOutputPort: public OlaPort {
  * @brief Represents a device.
  */
 class OlaDevice {
-  public:
+ public:
     OlaDevice(const string &id,
               unsigned int alias,
               const string &name,
@@ -236,7 +236,7 @@ class OlaDevice {
       return m_alias < other.m_alias;
     }
 
-  private:
+ private:
     string m_id;            // device id
     unsigned int m_alias;   // device alias
     string m_name;  // device name
@@ -250,7 +250,7 @@ class OlaDevice {
  * @brief Represents a universe.
  */
 class OlaUniverse {
-  public:
+ public:
     enum merge_mode {
       MERGE_HTP,
       MERGE_LTP,
@@ -277,7 +277,7 @@ class OlaUniverse {
     unsigned int OutputPortCount() const { return m_output_port_count; }
     unsigned int RDMDeviceCount() const { return m_rdm_device_count; }
 
-  private:
+ private:
     unsigned int m_id;
     merge_mode m_merge_mode;
     string m_name;

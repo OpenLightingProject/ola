@@ -57,7 +57,7 @@ using std::vector;
 
 
 class TestCase {
-  public:
+ public:
     typedef enum {
       DESTINATION_UNDEFINED,
       UNICAST,
@@ -132,7 +132,7 @@ class TestCase {
       return true;
     }
 
-  protected:
+ protected:
     // tests can use this.
     set<IPV4Address> pr_list;
 
@@ -160,7 +160,7 @@ class TestCase {
       m_function_id = function_id;
     }
 
-  private:
+ private:
     string m_name;
     Destination m_target;
     IPV4Address m_destination_ip;
@@ -230,7 +230,7 @@ void GetTestnames(vector<string> *test_names);
  * An object which registers a test creator on construction.
  */
 class TestRegisterer {
-  public:
+ public:
     TestRegisterer(const string &test_name, TestCaseCreator creator) {
       GetTestCreatorMap()[test_name] = creator;
     }
@@ -249,7 +249,7 @@ class TestRegisterer {
  * The TestRunner is the class which executes all the tests.
  */
 class TestRunner {
-  public:
+ public:
     TestRunner(unsigned int timeout,
                const vector<string> &test_names,
                const IPV4SocketAddress &target);
@@ -257,7 +257,7 @@ class TestRunner {
 
     void Run();
 
-  private:
+ private:
     SelectServer m_ss;
     UDPSocket m_socket;
     const unsigned int m_timeout_in_ms;

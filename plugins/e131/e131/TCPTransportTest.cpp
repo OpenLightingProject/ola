@@ -51,7 +51,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSinglePDUBlock);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     TCPTransportTest(): TestFixture(), m_ss(NULL) {}
     void testSinglePDU();
     void testShortPreamble();
@@ -68,7 +68,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void PDUReceived() { m_pdus_received++; }
     void Receive();
 
-  private:
+ private:
     unsigned int m_pdus_received;
     bool m_stream_ok;
     ola::network::IPV4SocketAddress m_localhost;

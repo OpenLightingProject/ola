@@ -45,7 +45,7 @@ using std::vector;
 
 
 class ExpectedResult {
-  public:
+ public:
     unsigned int universe;
     const UID uid;
     uint16_t sub_device;
@@ -83,7 +83,7 @@ class ExpectedResult {
 
 
 class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
-  public:
+ public:
     bool RDMGet(rdm_callback *callback,
                 unsigned int universe,
                 const UID &uid,
@@ -214,7 +214,7 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
       OLA_ASSERT_FALSE(m_set_expected.size());
     }
 
-  private:
+ private:
     deque<ExpectedResult*> m_get_expected;
     deque<ExpectedResult*> m_set_expected;
 };
@@ -229,7 +229,7 @@ class RDMAPITest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDmxSetup);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     RDMAPITest():
       m_api(&m_impl),
       m_uid(1, 2),
@@ -246,7 +246,7 @@ class RDMAPITest: public CppUnit::TestFixture {
     void setUp() {}
     void tearDown();
 
-  private:
+ private:
     static const unsigned int UNIVERSE = 1;
     static const char BROADCAST_ERROR[];
     static const char DEVICE_RANGE_ERROR[];

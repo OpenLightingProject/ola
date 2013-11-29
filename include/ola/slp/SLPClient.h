@@ -44,7 +44,7 @@ using ola::network::IPV4Address;
 
 // Information about the server
 class ServerInfo {
-  public:
+ public:
     bool da_enabled;
     uint16_t port;
     vector<string> scopes;
@@ -54,7 +54,7 @@ class ServerInfo {
 
 // Used to communicate with the local SLP server.
 class SLPClient {
-  public:
+ public:
     explicit SLPClient(ola::io::ConnectedDescriptor *descriptor);
     ~SLPClient();
 
@@ -104,7 +104,7 @@ class SLPClient {
     bool GetServerInfo(
         SingleUseCallback2<void, const string&, const ServerInfo&> *callback);
 
-  private:
+ private:
     auto_ptr<class SLPClientCore> m_core;
 
     DISALLOW_COPY_AND_ASSIGN(SLPClient);
@@ -112,12 +112,12 @@ class SLPClient {
 
 
 class SLPClientWrapper: public ola::client::BaseClientWrapper {
-  public:
+ public:
     SLPClientWrapper() : BaseClientWrapper() {}
 
     SLPClient *GetClient() const { return m_client.get(); }
 
-  private:
+ private:
     auto_ptr<SLPClient> m_client;
 
     void CreateClient() {

@@ -42,7 +42,7 @@ class AbstractDevice;
  * The base port class, all ports inherit from this.
  */
 class Port {
-  public:
+ public:
     virtual ~Port() {}
 
     // return the id of the port within this deivce
@@ -83,7 +83,7 @@ class Port {
  * system.
  */
 class InputPort: public Port {
-  public:
+ public:
     virtual ~InputPort() {}
 
     // signal the port that the DMX data has changed
@@ -102,7 +102,7 @@ class InputPort: public Port {
  * The Output Port interface, for ports that send data from the OLA system.
  */
 class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     virtual ~OutputPort() {}
 
     // Write dmx data to this port
@@ -131,7 +131,7 @@ class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
  * the plugin implementations from having to do it.
  */
 class BasicInputPort: public InputPort {
-  public:
+ public:
     BasicInputPort(AbstractDevice *parent,
                    unsigned int port_id,
                    const PluginAdaptor *plugin_adaptor,
@@ -175,11 +175,11 @@ class BasicInputPort: public InputPort {
 
     virtual bool SupportsRDM() const { return m_supports_rdm; }
 
-  protected:
+ protected:
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
 
-  private:
+ private:
     const unsigned int m_port_id;
     uint8_t m_priority;
     port_priority_mode m_priority_mode;
@@ -198,7 +198,7 @@ class BasicInputPort: public InputPort {
  * An implementation of an OutputPort.
  */
 class BasicOutputPort: public OutputPort {
-  public:
+ public:
     BasicOutputPort(AbstractDevice *parent,
                     unsigned int port_id,
                     bool start_rdm_discovery_on_patch = false,
@@ -245,12 +245,12 @@ class BasicOutputPort: public OutputPort {
 
     virtual bool SupportsRDM() const { return m_supports_rdm; }
 
-  protected:
+ protected:
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
     void UpdateUIDs(const ola::rdm::UIDSet &uids);
 
-  private:
+ private:
     const unsigned int m_port_id;
     const bool m_discover_on_patch;
     uint8_t m_priority;

@@ -54,7 +54,7 @@ using ola::rpc::RpcChannel;
  * Clients shouldn't use this directly. Instead use ola::client::OlaClient.
  */
 class OlaClientCore: public ola::proto::OlaClientService {
-  public:
+ public:
     explicit OlaClientCore(ConnectedDescriptor *descriptor);
     ~OlaClientCore();
 
@@ -304,7 +304,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
                        ola::proto::Ack* response,
                        CompletionCallback* done);
 
-  private:
+ private:
     ConnectedDescriptor *m_descriptor;
     std::auto_ptr<RepeatableDMXCallback> m_dmx_callback;
     std::auto_ptr<RpcChannel> m_channel;

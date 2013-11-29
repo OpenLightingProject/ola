@@ -51,11 +51,11 @@ static const unsigned int UNIVERSE_ID = 1;
  * NodeAction, this reflects an action to be performed on a node.
  */
 class NodeAction {
-  public:
+ public:
     virtual ~NodeAction() {}
     void SetNode(E131Node *node) { m_node = node; }
     virtual void Tick() {}
-  protected:
+ protected:
     E131Node *m_node;
 };
 
@@ -65,7 +65,7 @@ class NodeAction {
  *  one specifies the behaviour of two nodes.
  */
 class TestState {
-  public:
+ public:
     TestState(const string &name,
               NodeAction *action1,
               NodeAction *action2,
@@ -106,11 +106,11 @@ class TestState {
       return m_passed;
     }
 
-  protected:
+ protected:
     bool m_passed;
     DmxBuffer m_expected_result;
 
-  private:
+ private:
     string m_name, m_expected;
     NodeAction *m_action1, *m_action2;
 };
@@ -121,7 +121,7 @@ class TestState {
  * It's useful for state transitions.
  */
 class RelaxedTestState: public TestState {
-  public:
+ public:
     RelaxedTestState(const string &name,
                      NodeAction *action1,
                      NodeAction *action2,
@@ -146,7 +146,7 @@ class RelaxedTestState: public TestState {
       }
     }
 
-  private:
+ private:
     bool m_first;
     DmxBuffer m_expected_first_result;
 };
@@ -157,7 +157,7 @@ class RelaxedTestState: public TestState {
  * followed by another. It's useful for state transitions.
  */
 class OrderedTestState: public TestState {
-  public:
+ public:
     OrderedTestState(const string &name,
                      NodeAction *action1,
                      NodeAction *action2,
@@ -185,7 +185,7 @@ class OrderedTestState: public TestState {
       }
     }
 
-  private:
+ private:
     bool m_found_second;
     DmxBuffer m_expected_first_result;
 };
@@ -195,7 +195,7 @@ class OrderedTestState: public TestState {
  * This action does nothing.
  */
 class NodeInactive: public NodeAction {
-  public:
+ public:
     NodeInactive() {}
     void Tick() {}
 };
@@ -205,7 +205,7 @@ class NodeInactive: public NodeAction {
  * This action just sends some data wil the selected priority.
  */
 class NodeSimpleSend: public NodeAction {
-  public:
+ public:
     NodeSimpleSend(uint8_t priority, const string &data = ""):
         m_priority(priority) {
       if (data.empty())
@@ -217,7 +217,7 @@ class NodeSimpleSend: public NodeAction {
       m_node->SendDMX(UNIVERSE_ID, m_buffer, m_priority);
     }
 
-  private:
+ private:
     DmxBuffer m_buffer;
     uint8_t m_priority;
 };
@@ -227,7 +227,7 @@ class NodeSimpleSend: public NodeAction {
  * This action sends a terminated msg the does nothing.
  */
 class NodeTerminate: public NodeAction {
-  public:
+ public:
     NodeTerminate():
         m_sent(false) {
     }
@@ -236,7 +236,7 @@ class NodeTerminate: public NodeAction {
         m_node->StreamTerminated(UNIVERSE_ID);
       m_sent = true;
     }
-  private:
+ private:
     bool m_sent;
 };
 
@@ -245,7 +245,7 @@ class NodeTerminate: public NodeAction {
  * This state sends a terminated msg with data then does nothing
  */
 class NodeTerminateWithData: public NodeAction {
-  public:
+ public:
     explicit NodeTerminateWithData(uint8_t data):
         m_data(data),
         m_sent(false) {
@@ -258,7 +258,7 @@ class NodeTerminateWithData: public NodeAction {
       }
       m_sent = true;
     }
-  private:
+ private:
     uint8_t m_data;
      bool m_sent;
 };
@@ -269,7 +269,7 @@ class NodeTerminateWithData: public NodeAction {
  * handling.
  */
 class NodeVarySequenceNumber: public NodeAction {
-  public:
+ public:
     NodeVarySequenceNumber(uint8_t good_value, uint8_t bad_value,
                            unsigned int chance):
         m_counter(0),
@@ -297,7 +297,7 @@ class NodeVarySequenceNumber: public NodeAction {
       m_counter++;
     }
 
-  private:
+ private:
     unsigned int m_counter, m_chance;
     uint8_t m_good, m_bad;
 };
@@ -311,7 +311,7 @@ class NodeVarySequenceNumber: public NodeAction {
  *  gets to verify it.
  */
 class StateManager {
-  public:
+ public:
     StateManager(const std::vector<TestState*> &states,
                  bool interactive_mode = false):
         m_interactive(interactive_mode),
@@ -332,7 +332,7 @@ class StateManager {
     void NewDMX();
     bool Passed() const { return m_failed_tests.empty(); }
 
-  private:
+ private:
     bool m_interactive;
     unsigned int m_count, m_ticker;
     termios m_old_tc;

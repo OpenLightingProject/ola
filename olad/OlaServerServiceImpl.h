@@ -44,7 +44,7 @@ using ola::rpc::RpcController;
  * per-method.
  */
 class OlaServerServiceImpl {
-  public:
+ public:
     OlaServerServiceImpl(class UniverseStore *universe_store,
                          class DeviceManager *device_manager,
                          class PluginManager *plugin_manager,
@@ -158,7 +158,7 @@ class OlaServerServiceImpl {
                       ::ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done);
 
-  private:
+ private:
     void HandleRDMResponse(ola::proto::RDMResponse* response,
                            ola::rpc::RpcService::CompletionCallback* done,
                            bool include_raw_packets,
@@ -205,7 +205,7 @@ class OlaServerServiceImpl {
  * much passes everything through to the OlaServerServiceImpl.
  */
 class OlaClientService: public ola::proto::OlaServerService {
-  public:
+ public:
     OlaClientService(class Client *client,
                      OlaServerServiceImpl *impl):
       m_client(client),
@@ -364,7 +364,7 @@ class OlaClientService: public ola::proto::OlaServerService {
 
     Client *GetClient() const { return m_client; }
 
-  private:
+ private:
     class Client *m_client;
     OlaServerServiceImpl *m_impl;
     ola::rdm::UID *m_uid;
@@ -375,7 +375,7 @@ class OlaClientService: public ola::proto::OlaServerService {
  * This is the factory method for creating new OlaServerService(s)
  */
 class OlaClientServiceFactory {
-  public:
+ public:
     OlaClientService *New(Client *client, OlaServerServiceImpl *impl);
 };
 }  // namespace ola

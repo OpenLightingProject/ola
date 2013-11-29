@@ -35,7 +35,7 @@ using std::string;
  * Header for the DMP layer
  */
 class DMPHeader {
-  public:
+ public:
     static const unsigned int DMP_HEADER_SIZE = 1;
 
     explicit DMPHeader(uint8_t header = 0): m_header(header) {}
@@ -74,7 +74,7 @@ class DMPHeader {
 
     uint8_t Header() const { return m_header; }
 
-  private:
+ private:
     static const uint8_t VIRTUAL_MASK = 0x80;
     static const uint8_t RELATIVE_MASK = 0x40;
     static const uint8_t TYPE_MASK = 0x30;

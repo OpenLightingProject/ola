@@ -62,7 +62,7 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testBranch);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testParams();
@@ -75,7 +75,7 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
     void testUnMuteAll();
     void testBranch();
 
-  private:
+ private:
     auto_ptr<EnttecUsbProWidget> m_widget;
     uint8_t m_transaction_number;
     ola::rdm::rdm_response_code m_received_code;

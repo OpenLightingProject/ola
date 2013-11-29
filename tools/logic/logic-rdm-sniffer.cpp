@@ -95,7 +95,7 @@ void OnError(U64 device_id, void *user_data);
 void ProcessData(U8 *data, uint32_t data_length);
 
 class LogicReader {
-  public:
+ public:
     explicit LogicReader(SelectServer *ss, unsigned int sample_rate)
       : m_sample_rate(sample_rate),
         m_device_id(0),
@@ -119,7 +119,7 @@ class LogicReader {
       return m_logic != NULL;
     }
 
-  private:
+ private:
     const unsigned int m_sample_rate;
     U64 m_device_id;  // GUARDED_BY(mu_);
     LogicInterface *m_logic;  // GUARDED_BY(mu_);

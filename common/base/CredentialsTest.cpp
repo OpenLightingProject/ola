@@ -38,7 +38,7 @@ using ola::SetGID;
 using ola::SetUID;
 
 class CredentialsTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(CredentialsTest);
     CPPUNIT_TEST(testGetUIDs);
     CPPUNIT_TEST(testGetGIDs);
@@ -48,7 +48,7 @@ class CredentialsTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testGetGroup);
     CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }

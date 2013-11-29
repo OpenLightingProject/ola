@@ -36,7 +36,7 @@ namespace usbpro {
  * A widget that implements the Robe frame format.
  */
 class BaseRobeWidget: public SerialWidgetInterface {
-  public:
+ public:
     explicit BaseRobeWidget(ola::io::ConnectedDescriptor *descriptor);
     virtual ~BaseRobeWidget();
 
@@ -60,7 +60,7 @@ class BaseRobeWidget: public SerialWidgetInterface {
     static const uint8_t DMX_IN_REQUEST = 0x04;
     static const uint8_t DMX_IN_RESPONSE = 0x05;
 
-  private:
+ private:
     typedef enum {
       PRE_SOM,
       RECV_PACKET_TYPE,
@@ -103,7 +103,7 @@ class BaseRobeWidget: public SerialWidgetInterface {
  * DispatchingRobeWidget
  */
 class DispatchingRobeWidget: public BaseRobeWidget {
-  public:
+ public:
     typedef ola::Callback3<void,
                            uint8_t,
                            const uint8_t*,
@@ -129,7 +129,7 @@ class DispatchingRobeWidget: public BaseRobeWidget {
       m_callback = callback;
     }
 
-  private:
+ private:
     MessageCallback *m_callback;
 
     void HandleMessage(uint8_t label,

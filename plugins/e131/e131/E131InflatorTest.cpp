@@ -45,7 +45,7 @@ class E131InflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInflatePDU);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testDecodeRev2Header();
     void testDecodeHeader();
     void testInflatePDU();
