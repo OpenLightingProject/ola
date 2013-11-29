@@ -46,9 +46,6 @@ class SPIPlugin: public ola::Plugin {
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
-    void FindMatchingFiles(const string &directory,
-                           const vector<string> &prefixes,
-                           vector<string> *files);
 
     static const char DEFAULT_BASE_UID[];
     static const char DEFAULT_SPI_DEVICE_PREFIX[];

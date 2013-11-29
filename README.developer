@@ -5,6 +5,8 @@ This file provides some information for developers looking to submit patches to
 OLA. The first section contains some general notes, and the latter
 sections address particular languages.
 
+Also take a look at README which includes some relevant information for
+developers too.
 
 General
 ===============================================================================
@@ -14,7 +16,7 @@ Code Reviews
 
 To have patches reviewed please push your changes to a Google Code Repo, or
 github. Then open an issue with 'Type-Review' at
-http://code.google.com/p/linux-lighting/issues/list
+http://code.google.com/p/open-lighting/issues/list
 
 If you're using Google Code please enable comments on the repo. Under
 Administer -> Source check:
@@ -42,7 +44,8 @@ changes don't break the tests.
 
 The tests are performed with `make check` in the root ola directory. The same
 command can be run within a sub directory to only run a particular set of
-tests.
+tests (although you may experience issues with this method, running from the
+root ola directory is guaranteed to work).
 
 
 C++
@@ -96,6 +99,17 @@ cpplint.py can be downloaded here:
 
 Run it with:
    --filter=-legal/copyright,-readability/streams,-runtime/arrays
+
+Doxygen
+-------
+
+The code is documented using Doxygen. There is an automatically generated
+version available from:
+http://docs.openlighting.org/doc/
+
+If you want to build it yourself, install Doxygen, run ./configure in the ola
+root directory, then run make doxygen-doc. The files will be generated into 
+html/
 
 Race Conditions
 ---------------

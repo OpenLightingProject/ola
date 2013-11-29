@@ -29,11 +29,14 @@
 namespace ola {
 namespace network {
 
+using std::string;
+using std::vector;
+
 /*
  * Convert a mac address to a human readable string
  * @return a string
  */
-std::string MACAddress::ToString() const {
+string MACAddress::ToString() const {
   /**
    * ether_ntoa_r doesn't exist on Mac, so can't use it; ether_ntoa isn't
    * thread safe
@@ -56,7 +59,7 @@ std::string MACAddress::ToString() const {
  * @param target a pointer to a ether_addr struct
  * @return true if it worked, false otherwise
  */
-bool StringToEther(const std::string &address, ether_addr *target) {
+bool StringToEther(const string &address, ether_addr *target) {
   /**
    * ether_aton_r doesn't exist on Mac, so can't use it (it also might not
    * handle dots as well as colons as seperators)
@@ -74,7 +77,7 @@ bool StringToEther(const std::string &address, ether_addr *target) {
 }
 
 
-MACAddress* MACAddress::FromString(const std::string &address) {
+MACAddress* MACAddress::FromString(const string &address) {
   struct ether_addr addr;
   if (!StringToEther(address, &addr))
     return NULL;
@@ -90,7 +93,7 @@ MACAddress* MACAddress::FromString(const std::string &address) {
  * @param target a pointer to a MACAddress object
  * @return true if it worked, false otherwise
  */
-bool MACAddress::FromString(const std::string &address, MACAddress *target) {
+bool MACAddress::FromString(const string &address, MACAddress *target) {
   struct ether_addr addr;
 
   if (!StringToEther(address, &addr))
@@ -101,7 +104,7 @@ bool MACAddress::FromString(const std::string &address, MACAddress *target) {
 }
 
 
-MACAddress MACAddress::FromStringOrDie(const std::string &address) {
+MACAddress MACAddress::FromStringOrDie(const string &address) {
   struct ether_addr addr;
   assert(StringToEther(address, &addr));
   return MACAddress(addr);
