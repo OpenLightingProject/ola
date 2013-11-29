@@ -37,37 +37,37 @@ namespace dmx {
  * Encoding](http://en.wikipedia.org/wiki/Run-length_encoding)
  */
 class RunLengthEncoder {
-  public :
-    RunLengthEncoder() {}
-    ~RunLengthEncoder() {}
+ public :
+  RunLengthEncoder() {}
+  ~RunLengthEncoder() {}
 
-    /**
-     * Given a DMXBuffer, run length encode the data.
-     * @param[in] src the DmxBuffer to encode.
-     * @param[out] data where to store the RLE data
-     * @param[in,out] size the size of the data segment, set to the amount of
-     * data encoded.
-     * @return true if we encoded all data, false if we ran out of space
-     */
-    bool Encode(const DmxBuffer &src,
-                uint8_t *data,
-                unsigned int &size);
+  /**
+   * Given a DMXBuffer, run length encode the data.
+   * @param[in] src the DmxBuffer to encode.
+   * @param[out] data where to store the RLE data
+   * @param[in,out] size the size of the data segment, set to the amount of
+   * data encoded.
+   * @return true if we encoded all data, false if we ran out of space
+   */
+  bool Encode(const DmxBuffer &src,
+              uint8_t *data,
+              unsigned int &size);
 
-    /**
-     * Decode an DMX frame and place the output in a DmxBuffer
-     * @param[in] start_channel the first channel for the RLE'ed data
-     * @param[in] data the encoded frame.
-     * @param[in] length the length of the encoded frame.
-     * @param[out] The DmxBuffer to store the frame in
-     * @returns true if decoding was successful, false otherwise.
-     */
-    bool Decode(unsigned int start_channel,
-                const uint8_t *data,
-                unsigned int length,
-                DmxBuffer *output);
+  /**
+   * Decode an DMX frame and place the output in a DmxBuffer
+   * @param[in] start_channel the first channel for the RLE'ed data
+   * @param[in] data the encoded frame.
+   * @param[in] length the length of the encoded frame.
+   * @param[out] The DmxBuffer to store the frame in
+   * @returns true if decoding was successful, false otherwise.
+   */
+  bool Decode(unsigned int start_channel,
+              const uint8_t *data,
+              unsigned int length,
+              DmxBuffer *output);
 
  private:
-    static const uint8_t REPEAT_FLAG = 0x80;
+  static const uint8_t REPEAT_FLAG = 0x80;
 };
 }  // namespace dmx
 }  // namespace ola

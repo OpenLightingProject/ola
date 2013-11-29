@@ -51,31 +51,31 @@ namespace client {
  */
 class Result {
  public:
-    /**
-     * @param error the text description of the error. An empty string means
-     * the action succeeded.
-     */
-    explicit Result(const std::string &error)
-        : m_error(error) {
-    }
+  /**
+   * @param error the text description of the error. An empty string means
+   * the action succeeded.
+   */
+  explicit Result(const std::string &error)
+      : m_error(error) {
+  }
 
-    /**
-     * @brief Indicates the status of the action.
-     * If the action failed Error() can be used to fetch the error message.
-     * @return true if the action succeeded, false otherwise.
-     */
-    bool Success() const { return m_error.empty(); }
+  /**
+   * @brief Indicates the status of the action.
+   * If the action failed Error() can be used to fetch the error message.
+   * @return true if the action succeeded, false otherwise.
+   */
+  bool Success() const { return m_error.empty(); }
 
-    /**
-     * @brief Returns the error message if the action failed.
-     * @return the error message.
-     */
-    const std::string& Error() const { return m_error; }
+  /**
+   * @brief Returns the error message if the action failed.
+   * @return the error message.
+   */
+  const std::string& Error() const { return m_error; }
 
  private:
-    const std::string m_error;
+  const std::string m_error;
 
-    DISALLOW_COPY_AND_ASSIGN(Result);
+  DISALLOW_COPY_AND_ASSIGN(Result);
 };
 }  // namespace client
 }  // namespace ola

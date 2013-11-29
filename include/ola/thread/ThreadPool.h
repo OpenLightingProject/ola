@@ -32,29 +32,29 @@ namespace ola {
 namespace thread {
 
 class ThreadPool {
-  public :
-    typedef ola::BaseCallback0<void>* Action;
+ public :
+  typedef ola::BaseCallback0<void>* Action;
 
-    explicit ThreadPool(unsigned int thread_count)
-        : m_thread_count(thread_count),
-          m_shutdown(false) {
-    }
-    ~ThreadPool();
-    bool Init();
-    void JoinAll();
-    void Execute(Action action);
+  explicit ThreadPool(unsigned int thread_count)
+      : m_thread_count(thread_count),
+        m_shutdown(false) {
+  }
+  ~ThreadPool();
+  bool Init();
+  void JoinAll();
+  void Execute(Action action);
 
  private:
-    queue<Action> m_callback_queue;
-    unsigned int m_thread_count;
-    bool m_shutdown;
-    Mutex m_mutex;
-    ConditionVariable m_condition_var;
-    std::vector<ConsumerThread*> m_threads;
+  queue<Action> m_callback_queue;
+  unsigned int m_thread_count;
+  bool m_shutdown;
+  Mutex m_mutex;
+  ConditionVariable m_condition_var;
+  std::vector<ConsumerThread*> m_threads;
 
-    void JoinAllThreads();
+  void JoinAllThreads();
 
-    DISALLOW_COPY_AND_ASSIGN(ThreadPool);
+  DISALLOW_COPY_AND_ASSIGN(ThreadPool);
 };
 }  // namespace thread
 }  // namespace ola

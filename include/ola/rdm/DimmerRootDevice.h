@@ -57,16 +57,16 @@ class DimmerRootDevice: public RDMControllerInterface {
      * The RDM Operations for the DimmerRootDevice.
      */
     class RDMOps : public ResponderOps<DimmerRootDevice> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+     public:
+      static RDMOps *Instance() {
+        if (!instance)
+          instance = new RDMOps();
+        return instance;
+      }
 
-      private:
-        RDMOps() : ResponderOps<DimmerRootDevice>(PARAM_HANDLERS) {}
-        static RDMOps *instance;
+     private:
+      RDMOps() : ResponderOps<DimmerRootDevice>(PARAM_HANDLERS) {}
+      static RDMOps *instance;
     };
 
     const UID m_uid;

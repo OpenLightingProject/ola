@@ -361,7 +361,7 @@ class ArtNetNodeImplRDMWrapper
 
   void RunFullDiscovery(RDMDiscoveryCallback *callback) {
     m_impl->RunFullDiscovery(m_port_id, callback);
-  };
+  }
 
   void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
     m_impl->RunIncrementalDiscovery(m_port_id, callback);

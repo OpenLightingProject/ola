@@ -34,40 +34,40 @@ using ola::DmxBuffer;
 
 class ShowNetInputPort: public BasicInputPort {
  public:
-    ShowNetInputPort(ShowNetDevice *parent,
-                     unsigned int id,
-                     class PluginAdaptor *plugin_adaptor,
-                     ShowNetNode *node):
-      BasicInputPort(parent, id, plugin_adaptor),
-      m_node(node) {}
-    ~ShowNetInputPort() {}
+  ShowNetInputPort(ShowNetDevice *parent,
+                   unsigned int id,
+                   class PluginAdaptor *plugin_adaptor,
+                   ShowNetNode *node):
+    BasicInputPort(parent, id, plugin_adaptor),
+    m_node(node) {}
+  ~ShowNetInputPort() {}
 
-    string Description() const;
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+  string Description() const;
+  const DmxBuffer &ReadDMX() const { return m_buffer; }
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
-  private :
-    DmxBuffer m_buffer;
-    ShowNetNode *m_node;
+ private:
+  DmxBuffer m_buffer;
+  ShowNetNode *m_node;
 };
 
 
 class ShowNetOutputPort: public BasicOutputPort {
  public:
-    ShowNetOutputPort(ShowNetDevice *parent,
-                      unsigned int id,
-                      ShowNetNode *node):
-      BasicOutputPort(parent, id),
-      m_node(node) {}
-    ~ShowNetOutputPort() {}
+  ShowNetOutputPort(ShowNetDevice *parent,
+                    unsigned int id,
+                    ShowNetNode *node):
+    BasicOutputPort(parent, id),
+    m_node(node) {}
+  ~ShowNetOutputPort() {}
 
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+  string Description() const;
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
  private:
-    ShowNetNode *m_node;
+  ShowNetNode *m_node;
 };
 }  // namespace shownet
 }  // namespace plugin

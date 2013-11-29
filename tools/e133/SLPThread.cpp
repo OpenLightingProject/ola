@@ -502,7 +502,7 @@ void BaseSLPThread::HandleServerInfo(ServerInfoCallback *callback, bool ok,
   } else {
     callback->Run(ok, server_info);
   }
-};
+}
 
 
 /**

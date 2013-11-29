@@ -123,7 +123,7 @@ class ArtNetNodeImpl::InputPort {
     void RunTodCallback() {
       if (m_tod_callback.get())
         RunRDMCallbackWithUIDs(uids, m_tod_callback.get());
-    };
+    }
 
     void RunDiscoveryCallback() {
       if (discovery_callback) {

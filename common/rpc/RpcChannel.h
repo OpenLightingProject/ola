@@ -67,7 +67,7 @@ class OutstandingRequest {
  * used over TCP or pipes.
  */
 class RpcChannel {
-  public :
+ public :
     /**
      * @@brief Create a new RpcChannel.
      * @param service the Service to use to handle incoming requests. Ownership

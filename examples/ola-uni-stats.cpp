@@ -70,21 +70,21 @@ class UniverseTracker {
 
  private:
     struct UniverseStats {
-      public:
-        uint16_t shortest_frame;
-        uint16_t longest_frame;
-        uint64_t frame_count;
-        uint64_t frame_changes;
-        DmxBuffer frame_data;
+     public:
+      uint16_t shortest_frame;
+      uint16_t longest_frame;
+      uint64_t frame_count;
+      uint64_t frame_changes;
+      DmxBuffer frame_data;
 
-        UniverseStats() { Reset(); }
+      UniverseStats() { Reset(); }
 
-        void Reset() {
-          shortest_frame = DMX_UNIVERSE_SIZE + 1,
-          longest_frame = 0;
-          frame_count = 0;
-          frame_changes = 0;
-        }
+      void Reset() {
+        shortest_frame = DMX_UNIVERSE_SIZE + 1,
+        longest_frame = 0;
+        frame_count = 0;
+        frame_changes = 0;
+      }
     };
 
     typedef std::map<unsigned int, UniverseStats> UniverseStatsMap;

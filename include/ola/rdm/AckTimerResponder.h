@@ -46,88 +46,87 @@ namespace rdm {
  */
 class AckTimerResponder: public RDMControllerInterface {
  public:
-    explicit AckTimerResponder(const UID &uid);
-    ~AckTimerResponder();
+  explicit AckTimerResponder(const UID &uid);
+  ~AckTimerResponder();
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
  private:
-    /**
-     * The RDM Operations for the AckTimerResponder.
-     */
-    class RDMOps : public ResponderOps<AckTimerResponder> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
-
-      private:
-        RDMOps() : ResponderOps<AckTimerResponder>(PARAM_HANDLERS) {}
-
-        static RDMOps *instance;
-    };
-
-    /**
-     * The personalities
-     */
-    class Personalities : public PersonalityCollection {
-      public:
-        static const Personalities *Instance();
-
-      private:
-        explicit Personalities(const PersonalityList &personalities) :
-          PersonalityCollection(personalities) {
-        }
-
-        static Personalities *instance;
-    };
-
-    // The actual queue of messages to be collected.
-    typedef std::queue<class QueuedResponse*> ResponseQueue;
-
-    // The list of responses which aren't available yet. When they become
-    // valid they are moved to the ResponseQueue,
-    typedef std::vector<class QueuedResponse*> PendingResponses;
-
-    const UID m_uid;
-    uint16_t m_start_address;
-    bool m_identify_mode;
-    PersonalityManager m_personality_manager;
-
-    ResponseQueue m_queued_messages;
-    PendingResponses m_upcoming_queued_messages;
-    auto_ptr<class QueuedResponse> m_last_queued_message;
-    ola::Clock m_clock;
-
-    uint16_t Footprint() const {
-      return m_personality_manager.ActivePersonalityFootprint();
+  /**
+   * The RDM Operations for the AckTimerResponder.
+   */
+  class RDMOps : public ResponderOps<AckTimerResponder> {
+   public:
+    static RDMOps *Instance() {
+      if (!instance)
+        instance = new RDMOps();
+      return instance;
     }
 
-    uint8_t QueuedMessageCount() const;
-    void QueueAnyNewMessages();
-    const RDMResponse *ResponseFromQueuedMessage(
-        const RDMRequest *request,
-        const class QueuedResponse *queued_response);
-    const RDMResponse *EmptyStatusMessage(const RDMRequest *request);
-    const RDMResponse *GetQueuedMessage(const RDMRequest *request);
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetPersonality(const RDMRequest *request);
-    const RDMResponse *SetPersonality(const RDMRequest *request);
-    const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-    const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+   private:
+    RDMOps() : ResponderOps<AckTimerResponder>(PARAM_HANDLERS) {}
 
-    static const ResponderOps<AckTimerResponder>::ParamHandler
-      PARAM_HANDLERS[];
-    static const uint16_t ACK_TIMER_MS;
+    static RDMOps *instance;
+  };
+
+  /**
+   * The personalities
+   */
+  class Personalities : public PersonalityCollection {
+   public:
+    static const Personalities *Instance();
+
+   private:
+    explicit Personalities(const PersonalityList &personalities) :
+      PersonalityCollection(personalities) {
+    }
+
+    static Personalities *instance;
+  };
+
+  // The actual queue of messages to be collected.
+  typedef std::queue<class QueuedResponse*> ResponseQueue;
+
+  // The list of responses which aren't available yet. When they become
+  // valid they are moved to the ResponseQueue,
+  typedef std::vector<class QueuedResponse*> PendingResponses;
+
+  const UID m_uid;
+  uint16_t m_start_address;
+  bool m_identify_mode;
+  PersonalityManager m_personality_manager;
+
+  ResponseQueue m_queued_messages;
+  PendingResponses m_upcoming_queued_messages;
+  auto_ptr<class QueuedResponse> m_last_queued_message;
+  ola::Clock m_clock;
+
+  uint16_t Footprint() const {
+    return m_personality_manager.ActivePersonalityFootprint();
+  }
+
+  uint8_t QueuedMessageCount() const;
+  void QueueAnyNewMessages();
+  const RDMResponse *ResponseFromQueuedMessage(
+      const RDMRequest *request,
+      const class QueuedResponse *queued_response);
+  const RDMResponse *EmptyStatusMessage(const RDMRequest *request);
+  const RDMResponse *GetQueuedMessage(const RDMRequest *request);
+  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  const RDMResponse *GetPersonality(const RDMRequest *request);
+  const RDMResponse *SetPersonality(const RDMRequest *request);
+  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *GetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentify(const RDMRequest *request);
+  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+
+  static const ResponderOps<AckTimerResponder>::ParamHandler PARAM_HANDLERS[];
+  static const uint16_t ACK_TIMER_MS;
 };
 }  // namespace rdm
 }  // namespace ola

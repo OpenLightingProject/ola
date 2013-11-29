@@ -39,80 +39,80 @@ namespace rdm {
 
 class DummyResponder: public RDMControllerInterface {
  public:
-    explicit DummyResponder(const UID &uid);
+  explicit DummyResponder(const UID &uid);
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-    uint16_t StartAddress() const { return m_start_address; }
-    uint16_t Footprint() const {
-      return m_personality_manager.ActivePersonalityFootprint();
-    }
+  uint16_t StartAddress() const { return m_start_address; }
+  uint16_t Footprint() const {
+    return m_personality_manager.ActivePersonalityFootprint();
+  }
 
  private:
-    /**
-     * The RDM Operations for the DummyResponder.
-     */
-    class RDMOps : public ResponderOps<DummyResponder> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+  /**
+   * The RDM Operations for the DummyResponder.
+   */
+  class RDMOps : public ResponderOps<DummyResponder> {
+   public:
+    static RDMOps *Instance() {
+      if (!instance)
+        instance = new RDMOps();
+      return instance;
+    }
 
-      private:
-        RDMOps() : ResponderOps<DummyResponder>(PARAM_HANDLERS) {}
+   private:
+    RDMOps() : ResponderOps<DummyResponder>(PARAM_HANDLERS) {}
 
-        static RDMOps *instance;
-    };
+    static RDMOps *instance;
+  };
 
-    /**
-     * The personalities
-     */
-    class Personalities : public PersonalityCollection {
-      public:
-        static const Personalities *Instance();
+  /**
+   * The personalities
+   */
+  class Personalities : public PersonalityCollection {
+   public:
+    static const Personalities *Instance();
 
-      private:
-        explicit Personalities(const PersonalityList &personalities) :
-          PersonalityCollection(personalities) {
-        }
+   private:
+    explicit Personalities(const PersonalityList &personalities) :
+      PersonalityCollection(personalities) {
+    }
 
-        static Personalities *instance;
-    };
+    static Personalities *instance;
+  };
 
-    const UID m_uid;
-    uint16_t m_start_address;
-    bool m_identify_mode;
-    uint32_t m_lamp_strikes;
-    PersonalityManager m_personality_manager;
+  const UID m_uid;
+  uint16_t m_start_address;
+  bool m_identify_mode;
+  uint32_t m_lamp_strikes;
+  PersonalityManager m_personality_manager;
 
-    const RDMResponse *GetParamDescription(const RDMRequest *request);
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetFactoryDefaults(const RDMRequest *request);
-    const RDMResponse *SetFactoryDefaults(const RDMRequest *request);
-    const RDMResponse *GetProductDetailList(const RDMRequest *request);
-    const RDMResponse *GetPersonality(const RDMRequest *request);
-    const RDMResponse *SetPersonality(const RDMRequest *request);
-    const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-    const RDMResponse *GetSlotInfo(const RDMRequest *request);
-    const RDMResponse *GetSlotDescription(const RDMRequest *request);
-    const RDMResponse *GetSlotDefaultValues(const RDMRequest *request);
-    const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *GetLampStrikes(const RDMRequest *request);
-    const RDMResponse *SetLampStrikes(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
-    const RDMResponse *GetRealTimeClock(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-    const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
+  const RDMResponse *GetParamDescription(const RDMRequest *request);
+  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  const RDMResponse *GetFactoryDefaults(const RDMRequest *request);
+  const RDMResponse *SetFactoryDefaults(const RDMRequest *request);
+  const RDMResponse *GetProductDetailList(const RDMRequest *request);
+  const RDMResponse *GetPersonality(const RDMRequest *request);
+  const RDMResponse *SetPersonality(const RDMRequest *request);
+  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  const RDMResponse *GetSlotInfo(const RDMRequest *request);
+  const RDMResponse *GetSlotDescription(const RDMRequest *request);
+  const RDMResponse *GetSlotDefaultValues(const RDMRequest *request);
+  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *GetLampStrikes(const RDMRequest *request);
+  const RDMResponse *SetLampStrikes(const RDMRequest *request);
+  const RDMResponse *GetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentify(const RDMRequest *request);
+  const RDMResponse *GetRealTimeClock(const RDMRequest *request);
+  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
 
-    static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
-    static const uint8_t DEFAULT_PERSONALITY = 2;
+  static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
+  static const uint8_t DEFAULT_PERSONALITY = 2;
 };
 }  // namespace rdm
 }  // namespace ola

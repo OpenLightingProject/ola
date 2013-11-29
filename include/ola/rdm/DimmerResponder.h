@@ -48,15 +48,15 @@ using std::auto_ptr;
  */
 class DimmerResponder: public RDMControllerInterface {
  public:
-    DimmerResponder(const UID &uid, uint16_t number_of_subdevices);
-    virtual ~DimmerResponder();
+  DimmerResponder(const UID &uid, uint16_t number_of_subdevices);
+  virtual ~DimmerResponder();
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
  private:
-    SubDeviceDispatcher m_dispatcher;
-    auto_ptr<DimmerRootDevice> m_root_device;
-    std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;
+  SubDeviceDispatcher m_dispatcher;
+  auto_ptr<DimmerRootDevice> m_root_device;
+  std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;
 };
 }  // namespace rdm
 }  // namespace ola

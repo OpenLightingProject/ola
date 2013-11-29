@@ -51,111 +51,111 @@ namespace client {
  */
 class StreamingClient {
  public:
+  /**
+   * Controls the options for the StreamingClient class.
+   */
+  class Options {
+   public:
     /**
-     * Controls the options for the StreamingClient class.
+     * Create a new options structure with the default options. This
+     * includes automatically starting olad if it's not already running.
      */
-    class Options {
-      public:
-        /**
-         * Create a new options structure with the default options. This
-         * includes automatically starting olad if it's not already running.
-         */
-        Options() : auto_start(true), server_port(OLA_DEFAULT_PORT) {}
-
-        /**
-         * If true, the client will automatically start olad if it's not
-         * already running.
-         */
-        bool auto_start;
-
-        /**
-         * The RPC port olad is listening on.
-         */
-        uint16_t server_port;
-    };
+    Options() : auto_start(true), server_port(OLA_DEFAULT_PORT) {}
 
     /**
-     * The arguments for the SendDmx method
+     * If true, the client will automatically start olad if it's not
+     * already running.
      */
-    class SendArgs {
-      public:
-        /**
-         * @brief the priority of the data.
-         * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
-         * ola::dmx::SOURCE_PRIORITY_MAX.
-         */
-        uint8_t priority;
-
-        SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
-    };
+    bool auto_start;
 
     /**
-     * Create a new StreamingClient.
-     * @param auto_start if set to true, this will automatically start olad if
-     *   it's not already running.
-     * @deprecated Use the constructor that takes an Options struct instead.
+     * The RPC port olad is listening on.
      */
-    explicit StreamingClient(bool auto_start = true);
+    uint16_t server_port;
+  };
 
+  /**
+   * The arguments for the SendDmx method
+   */
+  class SendArgs {
+   public:
     /**
-     * Create a new StreamingClient.
-     * @param options an Options structure.
+     * @brief the priority of the data.
+     * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
+     * ola::dmx::SOURCE_PRIORITY_MAX.
      */
-    explicit StreamingClient(const Options &options);
+    uint8_t priority;
 
-    /**
-     * Destructor. This closes the connection to the olad server if it's still
-     * open.
-     */
-    ~StreamingClient();
+    SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
+  };
 
-    /**
-     * Initialize the client and connect to olad.
-     * @returns true if the initialization completed sucessfully, false if
-     *   there was a failure.
-     */
-    bool Setup();
+  /**
+   * Create a new StreamingClient.
+   * @param auto_start if set to true, this will automatically start olad if
+   *   it's not already running.
+   * @deprecated Use the constructor that takes an Options struct instead.
+   */
+  explicit StreamingClient(bool auto_start = true);
 
-    /**
-     * Close the connection to the olad server. This does not need to be called
-     * since ~StreamingClient() will close the connection if it's still open
-     * when the object is destroyed.
-     */
-    void Stop();
+  /**
+   * Create a new StreamingClient.
+   * @param options an Options structure.
+   */
+  explicit StreamingClient(const Options &options);
 
-    /**
-     * Send a DmxBuffer to the olad server.
-     * @param universe the universe to send on.
-     * @param data the DMX512 data.
-     * @returns true if sent sucessfully, false if the connection to the server
-     *   has been closed.
-     */
-    bool SendDmx(unsigned int universe, const DmxBuffer &data);
+  /**
+   * Destructor. This closes the connection to the olad server if it's still
+   * open.
+   */
+  ~StreamingClient();
 
-    /**
-     * @brief Send DMX data.
-     * @param universe the universe to send to.
-     * @param data the DmxBuffer with the data
-     * @param args the SendDMXArgs to use for this call.
-     */
-    bool SendDMX(unsigned int universe,
-                 const DmxBuffer &data,
-                 const SendArgs &args);
+  /**
+   * Initialize the client and connect to olad.
+   * @returns true if the initialization completed sucessfully, false if
+   *   there was a failure.
+   */
+  bool Setup();
 
-    void ChannelClosed();
+  /**
+   * Close the connection to the olad server. This does not need to be called
+   * since ~StreamingClient() will close the connection if it's still open
+   * when the object is destroyed.
+   */
+  void Stop();
+
+  /**
+   * Send a DmxBuffer to the olad server.
+   * @param universe the universe to send on.
+   * @param data the DMX512 data.
+   * @returns true if sent sucessfully, false if the connection to the server
+   *   has been closed.
+   */
+  bool SendDmx(unsigned int universe, const DmxBuffer &data);
+
+  /**
+   * @brief Send DMX data.
+   * @param universe the universe to send to.
+   * @param data the DmxBuffer with the data
+   * @param args the SendDMXArgs to use for this call.
+   */
+  bool SendDMX(unsigned int universe,
+               const DmxBuffer &data,
+               const SendArgs &args);
+
+  void ChannelClosed();
 
  private:
-    bool m_auto_start;
-    uint16_t m_server_port;
-    ola::network::TCPSocket *m_socket;
-    ola::io::SelectServer *m_ss;
-    class ola::rpc::RpcChannel *m_channel;
-    class ola::proto::OlaServerService_Stub *m_stub;
-    bool m_socket_closed;
+  bool m_auto_start;
+  uint16_t m_server_port;
+  ola::network::TCPSocket *m_socket;
+  ola::io::SelectServer *m_ss;
+  class ola::rpc::RpcChannel *m_channel;
+  class ola::proto::OlaServerService_Stub *m_stub;
+  bool m_socket_closed;
 
-    bool Send(unsigned int universe, uint8_t priority, const DmxBuffer &data);
+  bool Send(unsigned int universe, uint8_t priority, const DmxBuffer &data);
 
-    DISALLOW_COPY_AND_ASSIGN(StreamingClient);
+  DISALLOW_COPY_AND_ASSIGN(StreamingClient);
 };
 }  // namespace client
 }  // namespace ola

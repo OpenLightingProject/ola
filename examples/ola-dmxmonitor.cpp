@@ -117,7 +117,7 @@ class DmxMonitor {
           m_window(NULL),
           m_data_loss_window(NULL),
           m_channels_offset(true) {
-    };
+    }
 
     ~DmxMonitor() {
       if (m_window) {

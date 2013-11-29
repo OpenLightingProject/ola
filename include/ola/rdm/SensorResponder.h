@@ -44,47 +44,47 @@ namespace rdm {
  */
 class SensorResponder: public RDMControllerInterface {
  public:
-    explicit SensorResponder(const UID &uid);
-    ~SensorResponder();
+  explicit SensorResponder(const UID &uid);
+  ~SensorResponder();
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
  private:
-    /**
-     * The RDM Operations for the SensorResponder.
-     */
-    class RDMOps : public ResponderOps<SensorResponder> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+  /**
+   * The RDM Operations for the SensorResponder.
+   */
+  class RDMOps : public ResponderOps<SensorResponder> {
+   public:
+    static RDMOps *Instance() {
+      if (!instance)
+        instance = new RDMOps();
+      return instance;
+    }
 
-      private:
-        RDMOps() : ResponderOps<SensorResponder>(PARAM_HANDLERS) {}
+   private:
+    RDMOps() : ResponderOps<SensorResponder>(PARAM_HANDLERS) {}
 
-        static RDMOps *instance;
-    };
+    static RDMOps *instance;
+  };
 
-    const UID m_uid;
-    bool m_identify_mode;
-    Sensors m_sensors;
+  const UID m_uid;
+  bool m_identify_mode;
+  Sensors m_sensors;
 
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetProductDetailList(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-    const RDMResponse *GetSensorDefinition(const RDMRequest *request);
-    const RDMResponse *GetSensorValue(const RDMRequest *request);
-    const RDMResponse *SetSensorValue(const RDMRequest *request);
-    const RDMResponse *RecordSensor(const RDMRequest *request);
+  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  const RDMResponse *GetProductDetailList(const RDMRequest *request);
+  const RDMResponse *GetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentify(const RDMRequest *request);
+  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  const RDMResponse *GetSensorDefinition(const RDMRequest *request);
+  const RDMResponse *GetSensorValue(const RDMRequest *request);
+  const RDMResponse *SetSensorValue(const RDMRequest *request);
+  const RDMResponse *RecordSensor(const RDMRequest *request);
 
-    static const ResponderOps<SensorResponder>::ParamHandler PARAM_HANDLERS[];
+  static const ResponderOps<SensorResponder>::ParamHandler PARAM_HANDLERS[];
 };
 }  // namespace rdm
 }  // namespace ola

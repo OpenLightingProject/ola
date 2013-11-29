@@ -33,20 +33,20 @@ namespace ola {
 namespace io {
 
 class StdinHandler {
-  public :
-    typedef ola::Callback1<void, char> InputCallback;
+ public :
+  typedef ola::Callback1<void, char> InputCallback;
 
-    explicit StdinHandler(SelectServerInterface *ss, InputCallback *callback);
-    ~StdinHandler();
+  explicit StdinHandler(SelectServerInterface *ss, InputCallback *callback);
+  ~StdinHandler();
 
  private:
-    UnmanagedFileDescriptor m_stdin_descriptor;
-    termios m_old_tc;
-    SelectServerInterface *m_ss;
-    std::auto_ptr<InputCallback> m_callback;
+  UnmanagedFileDescriptor m_stdin_descriptor;
+  termios m_old_tc;
+  SelectServerInterface *m_ss;
+  std::auto_ptr<InputCallback> m_callback;
 
-    // stdin
-    void HandleData();
+  // stdin
+  void HandleData();
 };
 }  // namespace io
 }  // namespace ola
