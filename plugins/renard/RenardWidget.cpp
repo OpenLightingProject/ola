@@ -59,7 +59,7 @@ bool RenardWidget::Connect() {
   OLA_DEBUG << "Baudrate set to " << static_cast<int>(m_baudrate);
 
   speed_t baudrate;
-  if (!ola::io::IntegerToSpeedT(m_baudrate, &baudrate)) {
+  if (!ola::io::UIntToSpeedT(m_baudrate, &baudrate)) {
     OLA_DEBUG << "Failed to convert baudrate, i.e. not supported baud rate";
     return false;
   }

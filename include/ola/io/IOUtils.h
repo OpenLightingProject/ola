@@ -35,7 +35,7 @@ namespace io {
  * @returns true if the value was converted, false if the baud rate wasn't supported
  * by the method.
  */
-bool IntegerToSpeedT(uint32_t value, speed_t *output) {
+bool UIntToSpeedT(uint32_t value, speed_t *output) {
   switch (value) {
     case 9600:
       *output = B9600;
@@ -55,6 +55,10 @@ bool IntegerToSpeedT(uint32_t value, speed_t *output) {
 
     case 115200:
       *output = B115200;
+      return true;
+
+    case 230400:
+      *output = B230400;
       return true;
   }
 

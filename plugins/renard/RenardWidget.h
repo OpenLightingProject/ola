@@ -56,7 +56,6 @@ class RenardWidget {
                           uint8_t startAddress)
       : m_path(path),
         m_socket(NULL),
-        m_ss(NULL),
         m_byteCounter(0),
         m_dmxOffset(dmxOffset),
         m_channels(channels),
@@ -80,7 +79,6 @@ class RenardWidget {
     // instance variables
     const string m_path;
     ola::io::ConnectedDescriptor *m_socket;
-    ola::io::SelectServer *m_ss;
     uint32_t m_byteCounter;
     uint32_t m_dmxOffset;
     uint32_t m_channels;
