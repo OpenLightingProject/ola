@@ -87,10 +87,10 @@ int RenardWidget::ConnectToWidget(const std::string &path, speed_t speed) {
     return -1;
   }
 
-  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
-
-  if (fd == -1)
+  int fd;
+  if (!ola::io::Open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
     return -1;
+  }
 
   memset(&newtio, 0, sizeof(newtio));  // Clear struct for new port settings
   tcgetattr(fd, &newtio);

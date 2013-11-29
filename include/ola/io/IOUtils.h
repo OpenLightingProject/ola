@@ -24,46 +24,29 @@
 #include <stdint.h>
 #include <termios.h>
 
+#include <string>
+
 namespace ola {
 namespace io {
 
+/**
+ * @brief Wrapper around open().
+ * This logs a message is the open fails.
+ * @param path the path to open
+ * @param oflag flags passed to open
+ * @param[out] fd a pointer to the fd which is returned.
+ * @returns true if the open succeeded, false otherwise.
+ */
+bool Open(const std::string &path, int oflag, int *fd);
 
 /**
  * @brief Convert an integer baud rate to the termios struct speed_t
  * @param[in] baudrate value to convert
  * @param[out] output a pointer where the value will be stored
- * @returns true if the value was converted, false if the baud rate wasn't supported
- * by the method.
+ * @returns true if the value was converted, false if the baud rate wasn't
+ * supported by the method.
  */
-bool UIntToSpeedT(uint32_t value, speed_t *output) {
-  switch (value) {
-    case 9600:
-      *output = B9600;
-      return true;
-
-    case 19200:
-      *output = B19200;
-      return true;
-
-    case 38400:
-      *output = B38400;
-      return true;
-
-    case 57600:
-      *output = B57600;
-      return true;
-
-    case 115200:
-      *output = B115200;
-      return true;
-
-    case 230400:
-      *output = B230400;
-      return true;
-  }
-
-  return false;
-}
-}  // namespace  io
-}  // namespace  ola
+bool UIntToSpeedT(uint32_t value, speed_t *output);
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_IOUTILS_H_

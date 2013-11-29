@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/io/IOUtils.h"
 #include "ola/network/SocketCloser.h"
 #include "ola/stl/STLUtils.h"
 #include "plugins/spi/SPIBackend.h"
@@ -256,21 +257,18 @@ bool HardwareBackend::SetupGPIO() {
   for (; iter != m_gpio_pins.end(); ++iter) {
     std::ostringstream str;
     str << "/sys/class/gpio/gpio" << static_cast<int>(*iter) << "/value";
-    int fd = open(str.str().c_str(), O_RDWR);
-    if (fd < 0) {
-      OLA_WARN << "Failed to open " << str.str() << " : " << strerror(errno);
+    int fd;
+    if (ola::io::Open(str.str(), O_RDWR, &fd)) {
+      m_gpio_fds.push_back(fd);
+    } else {
       failed = true;
       break;
-    } else {
-      m_gpio_fds.push_back(fd);
     }
 
     // Set dir
     str.str("");
     str << "/sys/class/gpio/gpio" << static_cast<int>(*iter) << "/direction";
-    fd = open(str.str().c_str(), O_RDWR);
-    if (fd < 0) {
-      OLA_WARN << "Failed to open " << str.str() << " : " << strerror(errno);
+    if (!ola::io::Open(str.str(), O_RDWR, &fd)) {
       failed = true;
       break;
     }

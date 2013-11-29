@@ -33,6 +33,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/io/IOUtils.h"
 #include "plugins/karate/KarateLight.h"
 
 namespace ola {
@@ -82,9 +83,7 @@ bool KarateLight::Init() {
   if (m_active)
     return false;
 
-  m_fd = open(m_devname.c_str(), O_RDWR | O_NOCTTY);
-  if (m_fd < 0) {
-    OLA_WARN << "failed to open " << m_devname;
+  if (!ola::io::Open(m_devname, O_RDWR | O_NOCTTY, &m_fd)) {
     return false;
   }
 

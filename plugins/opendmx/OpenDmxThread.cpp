@@ -34,6 +34,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/io/IOUtils.h"
 #include "plugins/opendmx/OpenDmxThread.h"
 
 namespace ola {
@@ -67,7 +68,7 @@ void *OpenDmxThread::Run() {
 
   // start code
   buffer[0] = 0x00;
-  m_fd = open(m_path.c_str(), O_WRONLY);
+  ola::io::Open(m_path, O_WRONLY, &m_fd);
 
   while (true) {
     {
@@ -88,10 +89,8 @@ void *OpenDmxThread::Run() {
       m_term_cond.TimedWait(&m_term_mutex, wake_up);
       m_term_mutex.Unlock();
 
-      m_fd = open(m_path.c_str(), O_WRONLY);
 
-      if (m_fd == INVALID_FD)
-        OLA_WARN << "Open " << m_path << ": " << strerror(errno);
+      ola::io::Open(m_path, O_WRONLY, &m_fd);
 
     } else {
       length = DMX_UNIVERSE_SIZE;
