@@ -23,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <string>
 
 #include "ola/Logging.h"
 
