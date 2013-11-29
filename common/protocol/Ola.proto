@@ -63,7 +63,7 @@ enum PluginIds {
   OLA_PLUGIN_KINET = 16;
   OLA_PLUGIN_KARATE = 17;
   OLA_PLUGIN_MILINST = 18;
-  OLA_PLUGIN_RENARD = 10000;
+  OLA_PLUGIN_RENARD = 19;
 
   /*
    * To obtain a new plugin ID open a ticket at
