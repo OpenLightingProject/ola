@@ -106,6 +106,17 @@ void Escape(std::string *original);
 std::string EscapeString(const std::string &original);
 
 /**
+ * @brief Encode any unprintable characters in a string as hex, returning a
+ * copy.
+ *
+ * "foo\\nbar" becomes "foo\\\\x0abar"
+ * "foo\\x01test" becomes "foo\\\\x01test"
+ * @param original the string to encode.
+ * @returns The encoded string.
+ */
+std::string EncodeString(const std::string &original);
+
+/**
  * @brief Convert a string to a bool. The string can be 'true' or 'false'.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.

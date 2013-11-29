@@ -238,6 +238,21 @@ string EscapeString(const string &original) {
   return result;
 }
 
+string EncodeString(const string &original) {
+  stringstream encoded;
+  for (string::const_iterator iter = original.begin();
+       iter != original.end();
+       ++iter) {
+    if (isprint(*iter)) {
+      encoded << *iter;
+    } else {
+      encoded << "\\x" << std::setfill('0') << std::setw(2) << std::hex <<
+          static_cast<unsigned int>(*iter);
+    }
+  }
+  return encoded.str();
+}
+
 bool HexStringToInt(const string &value, uint8_t *output) {
   uint32_t temp;
   if (!HexStringToInt(value, &temp))
