@@ -42,7 +42,7 @@ using ola::network::TCPAcceptingSocket;
 using std::auto_ptr;
 
 class OlaDaemon {
-  public:
+ public:
     OlaDaemon(const OlaServer::Options &options,
               ExportMap *export_map = NULL);
     ~OlaDaemon();
@@ -56,7 +56,7 @@ class OlaDaemon {
 
     static const unsigned int DEFAULT_RPC_PORT = OLA_DEFAULT_PORT;
 
-  private:
+ private:
     const OlaServer::Options m_options;
     class ExportMap *m_export_map;
     SelectServer m_ss;

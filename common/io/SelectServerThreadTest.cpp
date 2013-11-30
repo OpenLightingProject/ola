@@ -35,7 +35,7 @@ using ola::thread::ThreadId;
 
 
 class TestThread: public ola::thread::Thread {
-  public:
+ public:
     TestThread(SelectServer *ss,
                ThreadId ss_thread_id)
         : m_ss(ss),
@@ -57,7 +57,7 @@ class TestThread: public ola::thread::Thread {
 
     bool CallbackRun() const { return m_callback_executed; }
 
-  private:
+ private:
     SelectServer *m_ss;
     ThreadId m_ss_thread_id;
     bool m_callback_executed;
@@ -70,13 +70,13 @@ class SelectServerThreadTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDifferentThreadCallback);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testSameThreadCallback();
     void testDifferentThreadCallback();
 
-  private:
+ private:
     SelectServer m_ss;
 };
 

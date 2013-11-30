@@ -49,7 +49,7 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testRUIDevice();
@@ -59,7 +59,7 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
     void testUnknownDevice();
     void testTimeout();
 
-  private:
+ private:
     auto_ptr<RobeWidgetDetector> m_detector;
     RobeWidgetInformation m_device_info;
     bool m_found_widget;

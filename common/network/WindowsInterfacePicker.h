@@ -31,7 +31,7 @@ namespace network {
  * The InterfacePicker for windows
  */
 class WindowsInterfacePicker: public InterfacePicker {
-  public:
+ public:
     std::vector<Interface> GetInterfaces() const;
 };
 }  // namespace network

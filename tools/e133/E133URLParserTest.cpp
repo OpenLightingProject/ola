@@ -35,7 +35,7 @@ class E133URLParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testParseUrl);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }

@@ -46,7 +46,7 @@ namespace thread {
  *  - spawn a thread which uses sigwait() to capture signals
  */
 class SignalThread : public ola::thread::Thread {
-  public:
+ public:
     typedef ola::Callback0<void> SignalHandler;
 
     SignalThread() {}
@@ -56,10 +56,10 @@ class SignalThread : public ola::thread::Thread {
     // the thread is running.
     bool InstallSignalHandler(int signal, SignalHandler *handler);
 
-  protected:
+ protected:
     void* Run();
 
-  private:
+ private:
     typedef std::map<int, SignalHandler*> SignalMap;
 
     SignalMap m_signal_handlers;

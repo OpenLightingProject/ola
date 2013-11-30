@@ -49,7 +49,7 @@ namespace ola {
 using google::protobuf::io::Printer;
 
 class FileGenerator {
-  public:
+ public:
     FileGenerator(const google::protobuf::FileDescriptor *file,
                   const std::string &output_name);
     ~FileGenerator();
@@ -57,7 +57,7 @@ class FileGenerator {
     void GenerateHeader(Printer *printer);
     void GenerateImplementation(Printer *printer);
 
-  private:
+ private:
     typedef std::vector<ServiceGenerator*> ServiceGenerators;
 
     const google::protobuf::FileDescriptor *m_file;

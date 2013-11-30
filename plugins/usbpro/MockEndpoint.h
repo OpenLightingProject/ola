@@ -44,7 +44,7 @@
  * The MockEndpoint, this is used for the unittests.
  */
 class MockEndpoint {
-  public:
+ public:
     explicit MockEndpoint(ola::io::ConnectedDescriptor *descriptor);
     ~MockEndpoint();
 
@@ -107,7 +107,7 @@ class MockEndpoint {
 
     void Verify();
 
-  private:
+ private:
     ola::io::ConnectedDescriptor *m_descriptor;
 
     typedef struct {

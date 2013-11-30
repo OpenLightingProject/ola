@@ -38,7 +38,7 @@ namespace usbpro {
  * A widget that implements the Usb Pro frame format.
  */
 class BaseUsbProWidget: public SerialWidgetInterface {
-  public:
+ public:
     explicit BaseUsbProWidget(ola::io::ConnectedDescriptor *descriptor);
     virtual ~BaseUsbProWidget();
 
@@ -62,7 +62,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
     static const uint8_t DEVICE_LABEL = 78;
     static const uint8_t HARDWARE_VERSION_LABEL = 14;
 
-  private:
+ private:
     typedef enum {
       PRE_SOM,
       RECV_LABEL,
@@ -103,7 +103,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
  * This is used for discovery.
  */
 class DispatchingUsbProWidget: public BaseUsbProWidget {
-  public:
+ public:
     typedef ola::Callback3<void,
                            uint8_t,
                            const uint8_t*,
@@ -129,7 +129,7 @@ class DispatchingUsbProWidget: public BaseUsbProWidget {
       m_callback = callback;
     }
 
-  private:
+ private:
     MessageCallback *m_callback;
 
     void HandleMessage(uint8_t label,

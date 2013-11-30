@@ -29,13 +29,13 @@ namespace plugin {
 namespace dmx4linux {
 
 class Dmx4LinuxDevice: public ola::Device {
-  public:
+ public:
     Dmx4LinuxDevice(class Dmx4LinuxPlugin *owner,
                     const string &name,
                     const string &device_id);
     string DeviceId() const { return m_device_id; }
 
-  private:
+ private:
     string m_device_id;
 };
 }  // namespace dmx4linux

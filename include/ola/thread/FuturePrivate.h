@@ -30,66 +30,66 @@ namespace thread {
 
 template <typename T>
 class FutureImpl {
-  public:
-    FutureImpl()
-        : m_ref_count(1),
-          m_is_set(false),
-          m_value() {
-    }
+ public:
+  FutureImpl()
+      : m_ref_count(1),
+        m_is_set(false),
+        m_value() {
+  }
 
-    void Ref() {
-      {
-        MutexLocker l(&m_mutex);
-        m_ref_count++;
-      }
-    };
-
-    void DeRef() {
-      unsigned int ref_count = 0;
-      {
-        MutexLocker l(&m_mutex);
-        ref_count = --m_ref_count;
-      }
-      if (ref_count == 0) {
-        delete this;
-      }
-    }
-
-    bool IsComplete() const {
+  void Ref() {
+    {
       MutexLocker l(&m_mutex);
-      return m_is_set;
+      m_ref_count++;
     }
+  }
 
-    const T& Get() const {
+  void DeRef() {
+    unsigned int ref_count = 0;
+    {
       MutexLocker l(&m_mutex);
-      if (m_is_set) {
-        return m_value;
-      }
-      m_condition.Wait(&m_mutex);
+      ref_count = --m_ref_count;
+    }
+    if (ref_count == 0) {
+      delete this;
+    }
+  }
+
+  bool IsComplete() const {
+    MutexLocker l(&m_mutex);
+    return m_is_set;
+  }
+
+  const T& Get() const {
+    MutexLocker l(&m_mutex);
+    if (m_is_set) {
       return m_value;
     }
+    m_condition.Wait(&m_mutex);
+    return m_value;
+  }
 
-    void Set(const T &t) {
-      {
-        MutexLocker l(&m_mutex);
-        if (m_is_set) {
-          OLA_FATAL << "Double call to FutureImpl::Set()";
-          return;
-        }
-        m_is_set = true;
-        m_value = t;
+  void Set(const T &t) {
+    {
+      MutexLocker l(&m_mutex);
+      if (m_is_set) {
+        OLA_FATAL << "Double call to FutureImpl::Set()";
+        return;
       }
-      m_condition.Broadcast();
+      m_is_set = true;
+      m_value = t;
     }
+    m_condition.Broadcast();
+  }
 
-  private:
-    mutable Mutex m_mutex;
-    mutable ConditionVariable m_condition;
-    unsigned int m_ref_count;
-    bool m_is_set;
-    T m_value;
+ private:
+  mutable Mutex m_mutex;
+  mutable ConditionVariable m_condition;
+  unsigned int m_ref_count;
+  bool m_is_set;
+  T m_value;
 
-    DISALLOW_COPY_AND_ASSIGN(FutureImpl<T>);
+  DISALLOW_COPY_AND_ASSIGN(FutureImpl<T>);
 };
 
 /**
@@ -97,62 +97,62 @@ class FutureImpl {
  */
 template <>
 class FutureImpl<void> {
-  public:
-    FutureImpl()
-        : m_ref_count(1),
-          m_is_set(false) {
-    }
+ public:
+  FutureImpl()
+      : m_ref_count(1),
+        m_is_set(false) {
+  }
 
-    void Ref() {
-      {
-        MutexLocker l(&m_mutex);
-        m_ref_count++;
-      }
-    };
-
-    void DeRef() {
-      unsigned int ref_count = 0;
-      {
-        MutexLocker l(&m_mutex);
-        ref_count = --m_ref_count;
-      }
-      if (ref_count == 0) {
-        delete this;
-      }
-    }
-
-    bool IsComplete() const {
+  void Ref() {
+    {
       MutexLocker l(&m_mutex);
-      return m_is_set;
+      m_ref_count++;
     }
+  }
 
-    void Get() const {
+  void DeRef() {
+    unsigned int ref_count = 0;
+    {
+      MutexLocker l(&m_mutex);
+      ref_count = --m_ref_count;
+    }
+    if (ref_count == 0) {
+      delete this;
+    }
+  }
+
+  bool IsComplete() const {
+    MutexLocker l(&m_mutex);
+    return m_is_set;
+  }
+
+  void Get() const {
+    MutexLocker l(&m_mutex);
+    if (m_is_set) {
+      return;
+    }
+    m_condition.Wait(&m_mutex);
+  }
+
+  void Set() {
+    {
       MutexLocker l(&m_mutex);
       if (m_is_set) {
+        OLA_FATAL << "Double call to FutureImpl::Set()";
         return;
       }
-      m_condition.Wait(&m_mutex);
+      m_is_set = true;
     }
+    m_condition.Broadcast();
+  }
 
-    void Set() {
-      {
-        MutexLocker l(&m_mutex);
-        if (m_is_set) {
-          OLA_FATAL << "Double call to FutureImpl::Set()";
-          return;
-        }
-        m_is_set = true;
-      }
-      m_condition.Broadcast();
-    }
+ private:
+  mutable Mutex m_mutex;
+  mutable ConditionVariable m_condition;
+  unsigned int m_ref_count;
+  bool m_is_set;
 
-  private:
-    mutable Mutex m_mutex;
-    mutable ConditionVariable m_condition;
-    unsigned int m_ref_count;
-    bool m_is_set;
-
-    DISALLOW_COPY_AND_ASSIGN(FutureImpl<void>);
+  DISALLOW_COPY_AND_ASSIGN(FutureImpl<void>);
 };
 
 }  // namespace thread

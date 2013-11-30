@@ -33,7 +33,7 @@ namespace messaging {
  * This visitor prints the schema as a string.
  */
 class SchemaPrinter: public FieldDescriptorVisitor {
-  public:
+ public:
     SchemaPrinter(bool include_intervals = true,
                   bool include_labels = true,
                   unsigned int indent_size = DEFAULT_INDENT)
@@ -62,7 +62,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     void Visit(const FieldDescriptorGroup*);
     void PostVisit(const FieldDescriptorGroup*);
 
-  private:
+ private:
     bool m_include_intervals, m_include_labels;
     std::stringstream m_str;
     unsigned int m_indent, m_indent_size;

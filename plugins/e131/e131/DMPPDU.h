@@ -40,7 +40,7 @@ using std::vector;
  * More specific dmp pdus like the SetPropery inherit from this.
  */
 class DMPPDU: public PDU {
-  public:
+ public:
     DMPPDU(unsigned int vector, const DMPHeader &dmp_header):
       PDU(vector, ONE_BYTE),
       m_header(dmp_header) {
@@ -51,7 +51,7 @@ class DMPPDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int *length) const;
     void PackHeader(OutputStream *stream) const;
 
-  protected:
+ protected:
     DMPHeader m_header;
 };
 
@@ -63,7 +63,7 @@ class DMPPDU: public PDU {
  */
 template <typename Address>
 class DMPGetProperty: public DMPPDU {
-  public:
+ public:
     DMPGetProperty(const DMPHeader &header,
                    const vector<Address> &addresses):
       DMPPDU(ola::acn::DMP_GET_PROPERTY_VECTOR, header),
@@ -93,7 +93,7 @@ class DMPGetProperty: public DMPPDU {
         iter->Write(stream);
     }
 
-  private:
+ private:
     vector<Address> m_addresses;
 };
 
@@ -204,7 +204,7 @@ const DMPPDU *NewRangeDMPGetProperty(
  */
 template <typename type>
 class DMPSetProperty: public DMPPDU {
-  public:
+ public:
     typedef vector<DMPAddressData<type> > AddressDataChunks;
 
     DMPSetProperty(const DMPHeader &header, const AddressDataChunks &chunks):
@@ -238,7 +238,7 @@ class DMPSetProperty: public DMPPDU {
         iter->Write(stream);
     }
 
-  private:
+ private:
     AddressDataChunks m_chunks;
 };
 

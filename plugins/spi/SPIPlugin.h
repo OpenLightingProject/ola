@@ -31,7 +31,7 @@ namespace plugin {
 namespace spi {
 
 class SPIPlugin: public ola::Plugin {
-  public:
+ public:
     explicit SPIPlugin(class ola::PluginAdaptor *plugin_adaptor)
         : Plugin(plugin_adaptor) {}
 
@@ -40,15 +40,12 @@ class SPIPlugin: public ola::Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_SPI; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     std::vector<class SPIDevice*> m_devices;
 
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
-    void FindMatchingFiles(const string &directory,
-                           const vector<string> &prefixes,
-                           vector<string> *files);
 
     static const char DEFAULT_BASE_UID[];
     static const char DEFAULT_SPI_DEVICE_PREFIX[];

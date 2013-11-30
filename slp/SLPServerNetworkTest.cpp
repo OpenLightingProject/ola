@@ -41,12 +41,12 @@ using std::auto_ptr;
 
 
 class SLPServerNetworkTest: public CppUnit::TestFixture {
-  public:
+ public:
     SLPServerNetworkTest()
         : m_helper(&m_udp_socket) {
     }
 
-  public:
+ public:
     CPPUNIT_TEST_SUITE(SLPServerNetworkTest);
     CPPUNIT_TEST(testMalformedPackets);
     CPPUNIT_TEST(testUnmatchedAcks);
@@ -59,7 +59,7 @@ class SLPServerNetworkTest: public CppUnit::TestFixture {
     void testUnmatchedSrvRply();
     void testShortPackets();
 
-  public:
+ public:
     void setUp() {
       ola::math::InitRandom();
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -72,7 +72,7 @@ class SLPServerNetworkTest: public CppUnit::TestFixture {
       m_helper.RunOnce();
     }
 
-  private:
+ private:
     MockUDPSocket m_udp_socket;
     SLPServerTestHelper m_helper;
 

@@ -63,7 +63,7 @@ class RobeWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testBranch);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testSendDMX();
@@ -75,7 +75,7 @@ class RobeWidgetTest: public CommonWidgetTest {
     void testBranch();
     void testReceive();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
     uint8_t m_transaction_number;
     ola::rdm::rdm_response_code m_received_code;

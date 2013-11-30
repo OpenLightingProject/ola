@@ -42,7 +42,7 @@
 using std::string;
 
 class DesignatedControllerConnection {
-  public:
+ public:
     DesignatedControllerConnection(
         ola::io::SelectServerInterface *ss,
         const ola::network::IPV4Address &ip_address,
@@ -61,7 +61,7 @@ class DesignatedControllerConnection {
 
     bool CloseTCPConnection();
 
-  private:
+ private:
     const ola::network::IPV4Address m_ip_address;
     const unsigned int m_max_queue_size;
     ola::io::SelectServerInterface *m_ss;

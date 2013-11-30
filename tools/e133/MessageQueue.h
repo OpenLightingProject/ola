@@ -42,7 +42,7 @@
 #include <ola/io/SelectServerInterface.h>
 
 class MessageQueue {
-  public:
+ public:
     MessageQueue(ola::io::ConnectedDescriptor *descriptor,
                  ola::io::SelectServerInterface *ss,
                  ola::io::MemoryBlockPool *memory_pool,
@@ -54,7 +54,7 @@ class MessageQueue {
 
     static const unsigned int DEFAULT_MAX_BUFFER_SIZE;
 
-  private:
+ private:
     ola::io::ConnectedDescriptor *m_descriptor;
     ola::io::SelectServerInterface *m_ss;
     ola::io::IOQueue m_output_buffer;

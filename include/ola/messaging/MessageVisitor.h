@@ -41,7 +41,7 @@ class BasicMessageField;
  * The interface for the Message Visitor
  */
 class MessageVisitor {
-  public:
+ public:
     virtual ~MessageVisitor() {}
 
     virtual void Visit(const BoolMessageField*) = 0;

@@ -49,7 +49,7 @@ using ola::network::IPV4Address;
  * request is for the specified pid, so be sure to get it right!
  */
 class ResponderHelper {
-  public:
+ public:
     // Request Parsing methods
     static bool ExtractUInt8(const RDMRequest *request, uint8_t *output);
     static bool ExtractUInt16(const RDMRequest *request, uint16_t *output);

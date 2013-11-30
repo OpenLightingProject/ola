@@ -37,7 +37,7 @@ namespace shownet {
 using std::string;
 
 class ShowNetNode {
-  public:
+ public:
     explicit ShowNetNode(const string &ip_address);
     virtual ~ShowNetNode();
 
@@ -62,7 +62,7 @@ class ShowNetNode {
 
     friend class ShowNetNodeTest;
 
-  private:
+ private:
     typedef struct {
       DmxBuffer *buffer;
       Callback0<void> *closure;

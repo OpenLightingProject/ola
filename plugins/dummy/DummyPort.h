@@ -38,9 +38,9 @@ namespace plugin {
 namespace dummy {
 
 class DummyPort: public BasicOutputPort {
-  public:
+ public:
     struct Options {
-      public:
+     public:
         Options()
             : number_of_dimmers(1),
               dimmer_sub_device_count(4),
@@ -62,39 +62,39 @@ class DummyPort: public BasicOutputPort {
         uint8_t number_of_network_responders;
     };
 
-    DummyPort(class DummyDevice *parent,
-              const Options &options,
-              unsigned int id);
-    virtual ~DummyPort();
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return "Dummy Port"; }
-    void RunFullDiscovery(RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback);
+  DummyPort(class DummyDevice *parent,
+            const Options &options,
+            unsigned int id);
+  virtual ~DummyPort();
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  string Description() const { return "Dummy Port"; }
+  void RunFullDiscovery(RDMDiscoveryCallback *callback);
+  void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMCallback *callback);
 
-  private:
-    typedef struct {
-      unsigned int expected_count;
-      unsigned int current_count;
-      bool failed;
-      ola::rdm::RDMCallback *callback;
-    } broadcast_request_tracker;
+ private:
+  typedef struct {
+    unsigned int expected_count;
+    unsigned int current_count;
+    bool failed;
+    ola::rdm::RDMCallback *callback;
+  } broadcast_request_tracker;
 
-    typedef map<UID, ola::rdm::RDMControllerInterface*> ResponderMap;
+  typedef map<UID, ola::rdm::RDMControllerInterface*> ResponderMap;
 
-    DmxBuffer m_buffer;
-    ResponderMap m_responders;
+  DmxBuffer m_buffer;
+  ResponderMap m_responders;
 
-    void RunDiscovery(RDMDiscoveryCallback *callback);
-    void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                            ola::rdm::rdm_response_code code,
-                            const ola::rdm::RDMResponse *response,
-                            const std::vector<std::string> &packets);
+  void RunDiscovery(RDMDiscoveryCallback *callback);
+  void HandleBroadcastAck(broadcast_request_tracker *tracker,
+                          ola::rdm::rdm_response_code code,
+                          const ola::rdm::RDMResponse *response,
+                          const std::vector<std::string> &packets);
 
-    // See http://www.opendmx.net/index.php/Open_Lighting_Allocations
-    // Do not change.
-    static const unsigned int kStartAddress = 0xffffff00;
+  // See http://www.opendmx.net/index.php/Open_Lighting_Allocations
+  // Do not change.
+  static const unsigned int kStartAddress = 0xffffff00;
 };
 }  // namespace dummy
 }  // namespace plugin

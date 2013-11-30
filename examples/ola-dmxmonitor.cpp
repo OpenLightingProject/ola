@@ -108,7 +108,7 @@ static int palette[MAXCOLOR];
  * The observer class which responds to events
  */
 class DmxMonitor {
-  public:
+ public:
     explicit DmxMonitor(unsigned int universe)
         : m_universe(universe),
           m_counter(0),
@@ -117,7 +117,7 @@ class DmxMonitor {
           m_window(NULL),
           m_data_loss_window(NULL),
           m_channels_offset(true) {
-    };
+    }
 
     ~DmxMonitor() {
       if (m_window) {
@@ -137,7 +137,7 @@ class DmxMonitor {
     void DrawDataLossWindow();
     void TerminalResized();
 
-  private:
+ private:
     unsigned int m_universe;
     unsigned int m_counter;
     int m_palette_number;

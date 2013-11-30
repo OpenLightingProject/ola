@@ -34,7 +34,7 @@ using std::queue;
  * The MockAction we use for testing.
  */
 class MockAction: public Action {
-  public:
+ public:
     MockAction() : Action() {}
 
     void Execute(Context*, uint8_t slot_value) {
@@ -57,7 +57,7 @@ class MockAction: public Action {
 
     bool NoCalls() const { return m_values.empty(); }
 
-  private:
+ private:
     queue<uint8_t> m_values;
 };
 
@@ -66,7 +66,7 @@ class MockAction: public Action {
  * An action that should never be run.
  */
 class BadAction: public Action {
-  public:
+ public:
     BadAction() : Action() {}
 
     void Execute(Context*, uint8_t slot_value) {

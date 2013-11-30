@@ -40,7 +40,7 @@ using ola::network::UDPSocket;
  * For some of the tests we need precise control over the timing.
  */
 class CustomMockClock: public ola::Clock {
-  public:
+ public:
     explicit CustomMockClock(TimeStamp *timestamp)
         : m_timestamp(timestamp) {
     }
@@ -49,7 +49,7 @@ class CustomMockClock: public ola::Clock {
       *timestamp = *m_timestamp;
     }
 
-  private:
+ private:
     TimeStamp *m_timestamp;
 };
 
@@ -61,7 +61,7 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLoopCallbacks);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testAddRemoveReadDescriptor();
@@ -100,7 +100,7 @@ class SelectServerTest: public CppUnit::TestFixture {
 
     void IncrementLoopCounter() { m_loop_counter++; }
 
-  private:
+ private:
     unsigned int m_timeout_counter;
     unsigned int m_loop_counter;
     ExportMap *m_map;

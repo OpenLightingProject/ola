@@ -39,7 +39,7 @@ namespace ola {
  * client library.
  */
 class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
-  public:
+ public:
     AvahiDiscoveryAgent();
     ~AvahiDiscoveryAgent();
 
@@ -67,7 +67,7 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
      */
     void ReconnectTimeout();
 
-  private:
+ private:
     // The structure used to track services.
     struct ServiceEntry : public RegisterOptions {
       const std::string service_name;

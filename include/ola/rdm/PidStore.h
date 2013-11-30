@@ -51,7 +51,7 @@ class PidDescriptor;
  * The root PID Store.
  */
 class RootPidStore {
-  public:
+ public:
     typedef map<uint16_t, const PidStore*> ManufacturerMap;
 
     RootPidStore(const PidStore *esta_store,
@@ -91,7 +91,7 @@ class RootPidStore {
     static const RootPidStore *LoadFromDirectory(const std::string &directory,
                                                  bool validate = true);
 
-  private:
+ private:
     const PidStore *m_esta_store;
     ManufacturerMap m_manufacturer_store;
     uint64_t m_version;
@@ -107,7 +107,7 @@ class RootPidStore {
  * Stores the PidDescriptors for a set of PIDs in a common namespace.
  */
 class PidStore {
-  public:
+ public:
     explicit PidStore(const vector<const PidDescriptor*> &pids);
     ~PidStore();
 
@@ -116,7 +116,7 @@ class PidStore {
     const PidDescriptor *LookupPID(uint16_t pid_value) const;
     const PidDescriptor *LookupPID(const string &pid_name) const;
 
-  private:
+ private:
     typedef map<uint16_t, const PidDescriptor*> PidMap;
     typedef map<string, const PidDescriptor*> PidNameMap;
     PidMap m_pid_by_value;
@@ -132,7 +132,7 @@ class PidStore {
  * PID.
  */
 class PidDescriptor {
-  public:
+ public:
     // TODO(simon): use the enums from the Pids.proto instead of duplicating
     // here.
     typedef enum {
@@ -171,7 +171,7 @@ class PidDescriptor {
     bool IsGetValid(uint16_t sub_device) const;
     bool IsSetValid(uint16_t sub_device) const;
 
-  private:
+ private:
     const string m_name;
     uint16_t m_pid_value;
     const Descriptor *m_get_request;

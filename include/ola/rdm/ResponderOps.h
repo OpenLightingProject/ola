@@ -58,7 +58,7 @@ namespace rdm {
  */
 template <class Target>
 class ResponderOps {
-  public:
+ public:
     /**
      * @brief The member function to call on the target to handle a request.
      *
@@ -104,7 +104,7 @@ class ResponderOps {
                           const RDMRequest *request,
                           RDMCallback *on_complete);
 
-  private:
+ private:
     struct InternalParamHandler {
       RDMHandler get_handler;
       RDMHandler set_handler;

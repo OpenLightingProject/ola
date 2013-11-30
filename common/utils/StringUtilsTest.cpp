@@ -72,7 +72,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringJoin);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSplit();
     void testTrim();
     void testShorten();
@@ -490,6 +490,13 @@ void StringUtilsTest::testPrefixedHexStringToInt() {
   OLA_ASSERT_EQ(28927, value);
   OLA_ASSERT_TRUE(PrefixedHexStringToInt("0xffffffff", &value));
   OLA_ASSERT_EQ(-1, value);
+
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0X7f", &value));
+  OLA_ASSERT_EQ(127, value);
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0X7F", &value));
+  OLA_ASSERT_EQ(127, value);
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0x7F", &value));
+  OLA_ASSERT_EQ(127, value);
 }
 
 
@@ -635,7 +642,7 @@ void StringUtilsTest::testCapitalizeLabel() {
   string label = "this-is_a_test";
   CapitalizeLabel(&label);
   OLA_ASSERT_EQ(string("This Is A Test"), label);
-};
+}
 
 
 void StringUtilsTest::testCustomCapitalizeLabel() {
@@ -706,6 +713,7 @@ void StringUtilsTest::testFormatData() {
              "6f 20 57 6f  o Wo\n"),
       str.str());
 }
+
 
 void StringUtilsTest::testStringJoin() {
   vector<int> ints;

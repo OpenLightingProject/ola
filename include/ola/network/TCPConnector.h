@@ -37,63 +37,63 @@ namespace network {
  * An class which manages non-blocking TCP connects.
  */
 class TCPConnector {
-  public:
-    explicit TCPConnector(ola::io::SelectServerInterface *ss);
-    ~TCPConnector();
+ public:
+  explicit TCPConnector(ola::io::SelectServerInterface *ss);
+  ~TCPConnector();
 
-    typedef ola::SingleUseCallback2<void, int, int> TCPConnectCallback;
-    typedef const void* TCPConnectionID;
+  typedef ola::SingleUseCallback2<void, int, int> TCPConnectCallback;
+  typedef const void* TCPConnectionID;
 
-    TCPConnectionID Connect(const IPV4SocketAddress &endpoint,
-                            const ola::TimeInterval &timeout,
-                            TCPConnectCallback *callback);
+  TCPConnectionID Connect(const IPV4SocketAddress &endpoint,
+                          const ola::TimeInterval &timeout,
+                          TCPConnectCallback *callback);
 
-    bool Cancel(TCPConnectionID id);
-    void CancelAll();
-    unsigned int ConnectionsPending() const { return m_connections.size(); }
+  bool Cancel(TCPConnectionID id);
+  void CancelAll();
+  unsigned int ConnectionsPending() const { return m_connections.size(); }
 
-  private:
-    /**
-     * A TCP socket waiting to connect.
-     */
-    class PendingTCPConnection: public ola::io::WriteFileDescriptor {
-      public:
-        PendingTCPConnection(TCPConnector *connector,
-                             const IPV4Address &ip,
-                             int fd,
-                             TCPConnectCallback *callback)
-            : WriteFileDescriptor(),
-              ip_address(ip),
-              callback(callback),
-              timeout_id(ola::thread::INVALID_TIMEOUT),
-              m_connector(connector),
-              m_fd(fd) {
-        }
+ private:
+  /**
+   * A TCP socket waiting to connect.
+   */
+  class PendingTCPConnection: public ola::io::WriteFileDescriptor {
+   public:
+    PendingTCPConnection(TCPConnector *connector,
+                         const IPV4Address &ip,
+                         int fd,
+                         TCPConnectCallback *callback)
+        : WriteFileDescriptor(),
+          ip_address(ip),
+          callback(callback),
+          timeout_id(ola::thread::INVALID_TIMEOUT),
+          m_connector(connector),
+          m_fd(fd) {
+    }
 
-        int WriteDescriptor() const { return m_fd; }
+    int WriteDescriptor() const { return m_fd; }
 
-        void PerformWrite();
-        void Close();
+    void PerformWrite();
+    void Close();
 
-        const IPV4Address ip_address;
-        TCPConnectCallback *callback;
-        ola::thread::timeout_id timeout_id;
+    const IPV4Address ip_address;
+    TCPConnectCallback *callback;
+    ola::thread::timeout_id timeout_id;
 
-      private:
-        TCPConnector *m_connector;
-        int m_fd;
-    };
+   private:
+    TCPConnector *m_connector;
+    int m_fd;
+  };
 
-    typedef std::set<PendingTCPConnection*> ConnectionSet;
+  typedef std::set<PendingTCPConnection*> ConnectionSet;
 
-    ola::io::SelectServerInterface *m_ss;
-    ConnectionSet m_connections;
+  ola::io::SelectServerInterface *m_ss;
+  ConnectionSet m_connections;
 
 
-    void SocketWritable(PendingTCPConnection *connection);
-    void FreePendingConnection(PendingTCPConnection *connection);
-    void Timeout(const ConnectionSet::iterator &iter);
-    void TimeoutEvent(PendingTCPConnection *connection);
+  void SocketWritable(PendingTCPConnection *connection);
+  void FreePendingConnection(PendingTCPConnection *connection);
+  void Timeout(const ConnectionSet::iterator &iter);
+  void TimeoutEvent(PendingTCPConnection *connection);
 };
 }  // namespace network
 }  // namespace ola

@@ -43,7 +43,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSLPStripServiceFromURL);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testEscape();
     void testUnescape();
     void testCanonicalize();

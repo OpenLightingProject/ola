@@ -69,7 +69,7 @@ namespace ola {
  * @note If limit is 0, the callback is exectuted immediately.
  */
 class MultiCallback: public BaseCallback0<void> {
-  public:
+ public:
     /**
      * @brief Constructor
      * @param limit after limit the object is deleted
@@ -98,7 +98,7 @@ class MultiCallback: public BaseCallback0<void> {
       }
     }
 
-  private:
+ private:
     unsigned int m_count;
     unsigned int m_limit;
     BaseCallback0<void> *m_callback;

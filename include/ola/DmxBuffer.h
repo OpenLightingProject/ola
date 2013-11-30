@@ -49,7 +49,7 @@ using std::string;
  * @note This class is <b>NOT</b> thread safe.
  */
 class DmxBuffer {
-  public:
+ public:
     /**
      * Constructor
      * This initializes and empty DmxBuffer, Size() == 0
@@ -266,7 +266,7 @@ class DmxBuffer {
      */
     string ToString() const;
 
-  private:
+ private:
     bool Init();
     bool DuplicateIfNeeded();
     void CopyFromOther(const DmxBuffer &other);

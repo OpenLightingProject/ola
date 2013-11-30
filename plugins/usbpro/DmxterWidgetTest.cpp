@@ -54,7 +54,7 @@ class DmxterWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testShutdown);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testTod();
@@ -65,7 +65,7 @@ class DmxterWidgetTest: public CommonWidgetTest {
     void testErrorConditions();
     void testShutdown();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
     unsigned int m_tod_counter;
 

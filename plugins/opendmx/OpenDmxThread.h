@@ -30,7 +30,7 @@ namespace plugin {
 namespace opendmx {
 
 class OpenDmxThread: public ola::thread::Thread {
-  public:
+ public:
     explicit OpenDmxThread(const string &path);
     ~OpenDmxThread() {}
 
@@ -38,7 +38,7 @@ class OpenDmxThread: public ola::thread::Thread {
     bool WriteDmx(const DmxBuffer &buffer);
     void *Run();
 
-  private:
+ private:
     int m_fd;
     string m_path;
     DmxBuffer m_buffer;

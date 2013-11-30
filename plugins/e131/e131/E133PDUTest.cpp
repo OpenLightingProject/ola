@@ -46,7 +46,7 @@ class E133PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSimpleE133PDUToOutputStream);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSimpleE133PDU();
     void testSimpleE133PDUToOutputStream();
 
@@ -54,7 +54,7 @@ class E133PDUTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
-  private:
+ private:
     static const unsigned int TEST_VECTOR;
 };
 

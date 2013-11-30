@@ -34,7 +34,7 @@ namespace plugin {
 namespace e131 {
 
 class E133StatusInflator: public BaseInflator {
-  public:
+ public:
     // These are pointers so the callers don't have to pull in all the headers.
     typedef ola::Callback4<void,
                            const TransportHeader*,  // src ip & port
@@ -52,7 +52,7 @@ class E133StatusInflator: public BaseInflator {
       m_handler.reset(handler);
     }
 
-  protected:
+ protected:
     // The 'header' is 0 bytes in length.
     bool DecodeHeader(HeaderSet *,
                       const uint8_t*,
@@ -69,7 +69,7 @@ class E133StatusInflator: public BaseInflator {
                                const uint8_t *data,
                                unsigned int pdu_len);
 
-  private:
+ private:
     std::auto_ptr<StatusMessageHandler> m_handler;
 };
 }  // namespace e131

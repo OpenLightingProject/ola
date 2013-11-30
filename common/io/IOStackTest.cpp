@@ -37,7 +37,7 @@ using std::string;
 
 
 class IOStackTest: public CppUnit::TestFixture {
-  public:
+ public:
     CPPUNIT_TEST_SUITE(IOStackTest);
     CPPUNIT_TEST(testBasicWrite);
     CPPUNIT_TEST(testBlockOverflow);
@@ -46,7 +46,7 @@ class IOStackTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBlockReuse);
     CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
@@ -57,7 +57,7 @@ class IOStackTest: public CppUnit::TestFixture {
     void testAppendToQueue();
     void testBlockReuse();
 
-  private:
+ private:
     unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
 };
 

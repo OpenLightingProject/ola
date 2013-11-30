@@ -29,11 +29,11 @@ namespace ola {
 namespace thread {
 
 class ExecutorInterface {
-  public :
-    ExecutorInterface() {}
-    virtual ~ExecutorInterface() {}
+ public :
+  ExecutorInterface() {}
+  virtual ~ExecutorInterface() {}
 
-    virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
+  virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
 };
 }  // namespace thread
 }  // namespace ola

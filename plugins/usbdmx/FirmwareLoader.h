@@ -26,7 +26,7 @@ namespace plugin {
 namespace usbdmx {
 
 class FirmwareLoader {
-  public:
+ public:
     FirmwareLoader() {}
     virtual ~FirmwareLoader() {}
 

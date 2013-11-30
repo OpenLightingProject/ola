@@ -35,14 +35,14 @@ class ThreadTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testConditionVariable);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testThread();
     void testConditionVariable();
 };
 
 
 class MockThread: public Thread {
-  public:
+ public:
     MockThread()
         : Thread(),
           m_thread_ran(false),
@@ -61,7 +61,7 @@ class MockThread: public Thread {
       return m_thread_ran;
     }
 
-  private:
+ private:
     bool m_thread_ran;
     Mutex m_mutex;
 };
@@ -87,7 +87,7 @@ void ThreadTest::testThread() {
 
 
 class MockConditionThread: public Thread {
-  public:
+ public:
     MockConditionThread(
         Mutex *mutex,
         ConditionVariable *condition)
@@ -106,7 +106,7 @@ class MockConditionThread: public Thread {
 
     static const int EXPECTED = 10;
 
-  private:
+ private:
     Mutex *m_mutex;
     ConditionVariable *m_condition;
 };

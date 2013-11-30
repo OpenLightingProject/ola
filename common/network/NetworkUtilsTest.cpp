@@ -49,7 +49,7 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNameServers);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testToFromNetwork();
     void testToFromLittleEndian();
     void testNameProcessing();

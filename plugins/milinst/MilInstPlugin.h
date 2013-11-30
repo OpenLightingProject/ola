@@ -34,9 +34,10 @@ namespace milinst {
 class MilInstDevice;
 
 class MilInstPlugin: public Plugin {
-  public:
-    explicit MilInstPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
+ public:
+    explicit MilInstPlugin(PluginAdaptor *plugin_adaptor)
+        : Plugin(plugin_adaptor) {}
+
     ~MilInstPlugin() {}
 
     std::string Name() const { return PLUGIN_NAME; }
@@ -45,7 +46,7 @@ class MilInstPlugin: public Plugin {
     int SocketClosed(ola::io::ConnectedDescriptor *socket);
     std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

@@ -66,7 +66,7 @@ using std::string;
  * Holds everything we need to manage a TCP connection to a E1.33 device.
  */
 class DeviceState {
-  public:
+ public:
     DeviceState()
       : socket(NULL),
         message_queue(NULL),
@@ -86,7 +86,7 @@ class DeviceState {
     // True if we're the designated controller.
     bool am_designated_controller;
 
-  private:
+ private:
     DeviceState(const DeviceState&);
     DeviceState& operator=(const DeviceState&);
 };

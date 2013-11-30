@@ -39,7 +39,7 @@ namespace osc {
  * template, as well as the current value.
  */
 class OSCInputPort: public BasicInputPort {
-  public:
+ public:
     /**
      * Create an OSCInputPort.
      * @param device the parent device
@@ -70,7 +70,7 @@ class OSCInputPort: public BasicInputPort {
      */
     std::string Description() const { return m_actual_address; }
 
-  private:
+ private:
     OSCNode *m_node;
     DmxBuffer m_buffer;
     const string m_address;
@@ -87,7 +87,7 @@ class OSCInputPort: public BasicInputPort {
  * The Output Port class, for sending DMX via OSC.
  */
 class OSCOutputPort: public BasicOutputPort {
-  public:
+ public:
     /**
      * Create an OSCOutputPort.
      * @param device the parent device
@@ -122,7 +122,7 @@ class OSCOutputPort: public BasicOutputPort {
      */
     std::string Description() const { return m_description; }
 
-  private:
+ private:
     OSCNode *m_node;
     const vector<OSCTarget> m_template_targets;
     std::vector<OSCTarget> m_registered_targets;

@@ -59,7 +59,7 @@ class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIOQueueUDPSend);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testTCPSocketClientClose();
@@ -89,7 +89,7 @@ class SocketTest: public CppUnit::TestFixture {
       m_ss->Terminate();
     }
 
-  private:
+ private:
     SelectServer *m_ss;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 

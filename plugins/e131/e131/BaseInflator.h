@@ -41,7 +41,7 @@ class BaseInflatorTest;
  * The inflator interface.
  */
 class InflatorInterface {
-  public:
+ public:
     virtual ~InflatorInterface() {}
 
     /*
@@ -64,7 +64,7 @@ class InflatorInterface {
 class BaseInflator : public InflatorInterface {
   friend class BaseInflatorTest;
 
-  public:
+ public:
     explicit BaseInflator(PDU::vector_size v_size = PDU::FOUR_BYTES);
     virtual ~BaseInflator() {}
 
@@ -91,7 +91,7 @@ class BaseInflator : public InflatorInterface {
     // This masks the first 4 bits of the length field
     static const uint8_t LENGTH_MASK = 0x0F;
 
-  protected:
+ protected:
     uint32_t m_last_vector;
     bool m_vector_set;
     PDU::vector_size m_vector_size;  // size of the vector field

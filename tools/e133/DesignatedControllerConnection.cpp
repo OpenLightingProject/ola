@@ -54,7 +54,7 @@ const unsigned int DesignatedControllerConnection::MAX_QUEUE_SIZE = 10;
 
 // Track the un-ack'ed messages.
 class OutstandingMessage {
-  public:
+ public:
     OutstandingMessage(uint16_t endpoint, const RDMResponse *rdm_response)
       : m_endpoint(endpoint),
         m_message_sent(false),
@@ -67,7 +67,7 @@ class OutstandingMessage {
     const RDMResponse* rdm_response() const { return m_rdm_response.get(); }
     uint16_t endpoint() const { return m_endpoint; }
 
-  private:
+ private:
     uint16_t m_endpoint;
     bool m_message_sent;
     auto_ptr<const RDMResponse> m_rdm_response;

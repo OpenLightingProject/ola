@@ -45,7 +45,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST(testSniffer);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testExtendedDiscovery();
@@ -53,7 +53,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
     void testTimeout();
     void testSniffer();
 
-  private:
+ private:
     auto_ptr<UsbProWidgetDetector> m_detector;
     UsbProWidgetInformation m_device_info;
     bool m_found_widget;

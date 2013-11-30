@@ -60,19 +60,19 @@ static const int INVALID_DESCRIPTOR = -1;
  * A FileDescriptor which can be read from.
  */
 class ReadFileDescriptor {
-  public:
-    virtual ~ReadFileDescriptor() {}
+ public:
+  virtual ~ReadFileDescriptor() {}
 
-    // Returns the read descriptor for this socket
-    virtual int ReadDescriptor() const = 0;
+  // Returns the read descriptor for this socket
+  virtual int ReadDescriptor() const = 0;
 
-    // True if the read descriptor is valid
-    bool ValidReadDescriptor() const {
-      return ReadDescriptor() != INVALID_DESCRIPTOR;
-    }
+  // True if the read descriptor is valid
+  bool ValidReadDescriptor() const {
+    return ReadDescriptor() != INVALID_DESCRIPTOR;
+  }
 
-    // Called when there is data to be read from this fd
-    virtual void PerformRead() = 0;
+  // Called when there is data to be read from this fd
+  virtual void PerformRead() = 0;
 };
 
 
@@ -80,17 +80,17 @@ class ReadFileDescriptor {
  * A FileDescriptor which can be written to.
  */
 class WriteFileDescriptor {
-  public:
-    virtual ~WriteFileDescriptor() {}
-    virtual int WriteDescriptor() const = 0;
+ public:
+  virtual ~WriteFileDescriptor() {}
+  virtual int WriteDescriptor() const = 0;
 
-    // True if the write descriptor is valid
-    bool ValidWriteDescriptor() const {
-      return WriteDescriptor() != INVALID_DESCRIPTOR;
-    }
+  // True if the write descriptor is valid
+  bool ValidWriteDescriptor() const {
+    return WriteDescriptor() != INVALID_DESCRIPTOR;
+  }
 
-    // This is called when the socket is ready to be written to
-    virtual void PerformWrite() = 0;
+  // This is called when the socket is ready to be written to
+  virtual void PerformWrite() = 0;
 };
 
 
@@ -100,36 +100,36 @@ class WriteFileDescriptor {
  */
 class BidirectionalFileDescriptor: public ReadFileDescriptor,
                                    public WriteFileDescriptor {
-  public :
-    BidirectionalFileDescriptor(): m_on_read(NULL), m_on_write(NULL) {}
-    virtual ~BidirectionalFileDescriptor() {
-      if (m_on_read)
-        delete m_on_read;
+ public :
+  BidirectionalFileDescriptor(): m_on_read(NULL), m_on_write(NULL) {}
+  virtual ~BidirectionalFileDescriptor() {
+    if (m_on_read)
+      delete m_on_read;
 
-      if (m_on_write)
-        delete m_on_write;
-    }
+    if (m_on_write)
+      delete m_on_write;
+  }
 
-    // Set the OnData closure
-    void SetOnData(ola::Callback0<void> *on_read) {
-      if (m_on_read)
-        delete m_on_read;
-      m_on_read = on_read;
-    }
+  // Set the OnData closure
+  void SetOnData(ola::Callback0<void> *on_read) {
+    if (m_on_read)
+      delete m_on_read;
+    m_on_read = on_read;
+  }
 
-    // Set the OnWrite closure
-    void SetOnWritable(ola::Callback0<void> *on_write) {
-      if (m_on_write)
-        delete m_on_write;
-      m_on_write = on_write;
-    }
+  // Set the OnWrite closure
+  void SetOnWritable(ola::Callback0<void> *on_write) {
+    if (m_on_write)
+      delete m_on_write;
+    m_on_write = on_write;
+  }
 
-    void PerformRead();
-    void PerformWrite();
+  void PerformRead();
+  void PerformWrite();
 
-  private:
-    ola::Callback0<void> *m_on_read;
-    ola::Callback0<void> *m_on_write;
+ private:
+  ola::Callback0<void> *m_on_read;
+  ola::Callback0<void> *m_on_write;
 };
 
 
@@ -139,19 +139,20 @@ class BidirectionalFileDescriptor: public ReadFileDescriptor,
  * simply allows a third-party sd to be registered with a callback.
  */
 class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
-  public :
-    explicit UnmanagedFileDescriptor(int fd)
-        : BidirectionalFileDescriptor(),
-          m_fd(fd) {}
-    ~UnmanagedFileDescriptor() {}
-    int ReadDescriptor() const { return m_fd; }
-    int WriteDescriptor() const { return m_fd; }
-    // Closing is left to something else
-    bool Close() { return true; }
-  private:
-    int m_fd;
-    UnmanagedFileDescriptor(const UnmanagedFileDescriptor &other);
-    UnmanagedFileDescriptor& operator=(const UnmanagedFileDescriptor &other);
+ public :
+  explicit UnmanagedFileDescriptor(int fd)
+      : BidirectionalFileDescriptor(),
+        m_fd(fd) {}
+  ~UnmanagedFileDescriptor() {}
+  int ReadDescriptor() const { return m_fd; }
+  int WriteDescriptor() const { return m_fd; }
+  // Closing is left to something else
+  bool Close() { return true; }
+
+ private:
+  int m_fd;
+  UnmanagedFileDescriptor(const UnmanagedFileDescriptor &other);
+  UnmanagedFileDescriptor& operator=(const UnmanagedFileDescriptor &other);
 };
 
 
@@ -169,64 +170,64 @@ struct UnmanagedFileDescriptor_lt {
  * notifications when it's closed.
  */
 class ConnectedDescriptor: public BidirectionalFileDescriptor {
-  public:
-    ConnectedDescriptor(): BidirectionalFileDescriptor(), m_on_close(NULL) {}
-    virtual ~ConnectedDescriptor() {
-      if (m_on_close)
-        delete m_on_close;
-    }
+ public:
+  ConnectedDescriptor(): BidirectionalFileDescriptor(), m_on_close(NULL) {}
+  virtual ~ConnectedDescriptor() {
+    if (m_on_close)
+      delete m_on_close;
+  }
 
-    virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
-    virtual ssize_t Send(IOQueue *data);
+  virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
+  virtual ssize_t Send(IOQueue *data);
 
-    virtual int Receive(uint8_t *buffer,
-                        unsigned int size,
-                        unsigned int &data_read);
+  virtual int Receive(uint8_t *buffer,
+                      unsigned int size,
+                      unsigned int &data_read);
 
-    virtual bool SetReadNonBlocking() {
-      return SetNonBlocking(ReadDescriptor());
-    }
+  virtual bool SetReadNonBlocking() {
+    return SetNonBlocking(ReadDescriptor());
+  }
 
-    virtual bool Close() = 0;
-    int DataRemaining() const;
-    bool IsClosed() const;
+  virtual bool Close() = 0;
+  int DataRemaining() const;
+  bool IsClosed() const;
 
-    typedef ola::SingleUseCallback0<void> OnCloseCallback;
+  typedef ola::SingleUseCallback0<void> OnCloseCallback;
 
-    // Set the OnClose closure
-    void SetOnClose(OnCloseCallback *on_close) {
-      if (m_on_close)
-        delete m_on_close;
-      m_on_close = on_close;
-    }
+  // Set the OnClose closure
+  void SetOnClose(OnCloseCallback *on_close) {
+    if (m_on_close)
+      delete m_on_close;
+    m_on_close = on_close;
+  }
 
-    /**
-     * This is a special method which transfers ownership of the on close
-     * handler away from the socket. Often when an on_close callback runs we
-     * want to delete the socket that it's bound to. This causes problems
-     * because we can't tell the difference between a normal deletion and a
-     * deletion triggered by a close, and the latter causes the callback to be
-     * deleted while it's running. To avoid this we we want to call the on
-     * close handler we transfer ownership away from the socket so doesn't need
-     * to delete the running handler.
-     */
-    OnCloseCallback *TransferOnClose() {
-      OnCloseCallback *on_close = m_on_close;
-      m_on_close = NULL;
-      return on_close;
-    }
+  /**
+   * This is a special method which transfers ownership of the on close
+   * handler away from the socket. Often when an on_close callback runs we
+   * want to delete the socket that it's bound to. This causes problems
+   * because we can't tell the difference between a normal deletion and a
+   * deletion triggered by a close, and the latter causes the callback to be
+   * deleted while it's running. To avoid this we we want to call the on
+   * close handler we transfer ownership away from the socket so doesn't need
+   * to delete the running handler.
+   */
+  OnCloseCallback *TransferOnClose() {
+    OnCloseCallback *on_close = m_on_close;
+    m_on_close = NULL;
+    return on_close;
+  }
 
-    static bool SetNonBlocking(int fd);
+  static bool SetNonBlocking(int fd);
 
-  protected:
-    virtual bool IsSocket() const = 0;
-    bool SetNoSigPipe(int fd);
+ protected:
+  virtual bool IsSocket() const = 0;
+  bool SetNoSigPipe(int fd);
 
-    ConnectedDescriptor(const ConnectedDescriptor &other);
-    ConnectedDescriptor& operator=(const ConnectedDescriptor &other);
+  ConnectedDescriptor(const ConnectedDescriptor &other);
+  ConnectedDescriptor& operator=(const ConnectedDescriptor &other);
 
-  private:
-    OnCloseCallback *m_on_close;
+ private:
+  OnCloseCallback *m_on_close;
 };
 
 
@@ -235,25 +236,25 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
  * Everything written is available for reading.
  */
 class LoopbackDescriptor: public ConnectedDescriptor {
-  public:
-    LoopbackDescriptor() {
-      m_fd_pair[0] = INVALID_DESCRIPTOR;
-      m_fd_pair[1] = INVALID_DESCRIPTOR;
-    }
-    ~LoopbackDescriptor() { Close(); }
-    bool Init();
-    int ReadDescriptor() const { return m_fd_pair[0]; }
-    int WriteDescriptor() const { return m_fd_pair[1]; }
-    bool Close();
-    bool CloseClient();
+ public:
+  LoopbackDescriptor() {
+    m_fd_pair[0] = INVALID_DESCRIPTOR;
+    m_fd_pair[1] = INVALID_DESCRIPTOR;
+  }
+  ~LoopbackDescriptor() { Close(); }
+  bool Init();
+  int ReadDescriptor() const { return m_fd_pair[0]; }
+  int WriteDescriptor() const { return m_fd_pair[1]; }
+  bool Close();
+  bool CloseClient();
 
-  protected:
-    bool IsSocket() const { return false; }
+ protected:
+  bool IsSocket() const { return false; }
 
-  private:
-    int m_fd_pair[2];
-    LoopbackDescriptor(const LoopbackDescriptor &other);
-    LoopbackDescriptor& operator=(const LoopbackDescriptor &other);
+ private:
+  int m_fd_pair[2];
+  LoopbackDescriptor(const LoopbackDescriptor &other);
+  LoopbackDescriptor& operator=(const LoopbackDescriptor &other);
 };
 
 
@@ -262,37 +263,37 @@ class LoopbackDescriptor: public ConnectedDescriptor {
  * PipeDescriptor by calling OppositeEnd().
  */
 class PipeDescriptor: public ConnectedDescriptor {
-  public:
-    PipeDescriptor():
-      m_other_end(NULL) {
-      m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
-      m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
-    }
-    ~PipeDescriptor() { Close(); }
+ public:
+  PipeDescriptor():
+    m_other_end(NULL) {
+    m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
+    m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
+  }
+  ~PipeDescriptor() { Close(); }
 
-    bool Init();
-    PipeDescriptor *OppositeEnd();
-    int ReadDescriptor() const { return m_in_pair[0]; }
-    int WriteDescriptor() const { return m_out_pair[1]; }
-    bool Close();
-    bool CloseClient();
+  bool Init();
+  PipeDescriptor *OppositeEnd();
+  int ReadDescriptor() const { return m_in_pair[0]; }
+  int WriteDescriptor() const { return m_out_pair[1]; }
+  bool Close();
+  bool CloseClient();
 
-  protected:
-    bool IsSocket() const { return false; }
+ protected:
+  bool IsSocket() const { return false; }
 
-  private:
-    int m_in_pair[2];
-    int m_out_pair[2];
-    PipeDescriptor *m_other_end;
-    PipeDescriptor(int in_pair[2], int out_pair[2], PipeDescriptor *other_end) {
-      m_in_pair[0] = in_pair[0];
-      m_in_pair[1] = in_pair[1];
-      m_out_pair[0] = out_pair[0];
-      m_out_pair[1] = out_pair[1];
-      m_other_end = other_end;
-    }
-    PipeDescriptor(const PipeDescriptor &other);
-    PipeDescriptor& operator=(const PipeDescriptor &other);
+ private:
+  int m_in_pair[2];
+  int m_out_pair[2];
+  PipeDescriptor *m_other_end;
+  PipeDescriptor(int in_pair[2], int out_pair[2], PipeDescriptor *other_end) {
+    m_in_pair[0] = in_pair[0];
+    m_in_pair[1] = in_pair[1];
+    m_out_pair[0] = out_pair[0];
+    m_out_pair[1] = out_pair[1];
+    m_other_end = other_end;
+  }
+  PipeDescriptor(const PipeDescriptor &other);
+  PipeDescriptor& operator=(const PipeDescriptor &other);
 };
 
 
@@ -300,32 +301,32 @@ class PipeDescriptor: public ConnectedDescriptor {
  * A unix domain socket pair.
  */
 class UnixSocket: public ConnectedDescriptor {
-  public:
-    UnixSocket():
-      m_other_end(NULL) {
-      m_fd = INVALID_DESCRIPTOR;
-    }
-    ~UnixSocket() { Close(); }
+ public:
+  UnixSocket():
+    m_other_end(NULL) {
+    m_fd = INVALID_DESCRIPTOR;
+  }
+  ~UnixSocket() { Close(); }
 
-    bool Init();
-    UnixSocket *OppositeEnd();
-    int ReadDescriptor() const { return m_fd; }
-    int WriteDescriptor() const { return m_fd; }
-    bool Close();
-    bool CloseClient();
+  bool Init();
+  UnixSocket *OppositeEnd();
+  int ReadDescriptor() const { return m_fd; }
+  int WriteDescriptor() const { return m_fd; }
+  bool Close();
+  bool CloseClient();
 
-  protected:
-    bool IsSocket() const { return true; }
+ protected:
+  bool IsSocket() const { return true; }
 
-  private:
-    int m_fd;
-    UnixSocket *m_other_end;
-    UnixSocket(int socket, UnixSocket *other_end) {
-      m_fd = socket;
-      m_other_end = other_end;
-    }
-    UnixSocket(const UnixSocket &other);
-    UnixSocket& operator=(const UnixSocket &other);
+ private:
+  int m_fd;
+  UnixSocket *m_other_end;
+  UnixSocket(int socket, UnixSocket *other_end) {
+    m_fd = socket;
+    m_other_end = other_end;
+  }
+  UnixSocket(const UnixSocket &other);
+  UnixSocket& operator=(const UnixSocket &other);
 };
 
 
@@ -333,21 +334,21 @@ class UnixSocket: public ConnectedDescriptor {
  * A descriptor which represents a connection to a device
  */
 class DeviceDescriptor: public ConnectedDescriptor {
-  public:
-    explicit DeviceDescriptor(int fd): m_fd(fd) {}
-    ~DeviceDescriptor() { Close(); }
+ public:
+  explicit DeviceDescriptor(int fd): m_fd(fd) {}
+  ~DeviceDescriptor() { Close(); }
 
-    int ReadDescriptor() const { return m_fd; }
-    int WriteDescriptor() const { return m_fd; }
-    bool Close();
+  int ReadDescriptor() const { return m_fd; }
+  int WriteDescriptor() const { return m_fd; }
+  bool Close();
 
-  protected:
-    bool IsSocket() const { return false; }
+ protected:
+  bool IsSocket() const { return false; }
 
-  private:
-    int m_fd;
-    DeviceDescriptor(const DeviceDescriptor &other);
-    DeviceDescriptor& operator=(const DeviceDescriptor &other);
+ private:
+  int m_fd;
+  DeviceDescriptor(const DeviceDescriptor &other);
+  DeviceDescriptor& operator=(const DeviceDescriptor &other);
 };
 }  // namespace io
 }  // namespace ola

@@ -29,7 +29,7 @@ namespace thread {
 
 class SchedulingExecutorInterface: public ExecutorInterface,
                                    public SchedulerInterface {
-  public:
+ public:
     virtual ~SchedulingExecutorInterface() {}
 };
 }  // namespace thread

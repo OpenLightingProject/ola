@@ -33,7 +33,7 @@ using ola::DmxBuffer;
  * The class which manages the triggering.
  */
 class DMXTrigger {
-  public:
+ public:
     typedef std::vector<Slot*> SlotVector;
 
     DMXTrigger(Context *context, const SlotVector &actions);
@@ -41,7 +41,7 @@ class DMXTrigger {
 
     void NewDMX(const DmxBuffer &data);
 
-  private:
+ private:
     Context *m_context;
     SlotVector m_slots;  // kept sorted
 };

@@ -38,7 +38,7 @@ namespace rdm {
  * The PidStore Loader
  */
 class PidStoreLoader {
-  public:
+ public:
     PidStoreLoader() {}
     ~PidStoreLoader() {}
 
@@ -54,7 +54,7 @@ class PidStoreLoader {
     const RootPidStore *LoadFromStream(std::istream *data,
                                        bool validate = true);
 
-  private:
+ private:
     PidStoreLoader(const PidStoreLoader&);
     PidStoreLoader& operator=(const PidStoreLoader&);
     DescriptorConsistencyChecker m_checker;

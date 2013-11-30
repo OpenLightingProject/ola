@@ -48,11 +48,11 @@ class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testGetSetDMX);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSendDMX();
     void testGetSetDMX();
 
-  private:
+ private:
     ola::Clock m_clock;
 };
 
@@ -64,7 +64,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
  * Mock out the ClientStub for testing
  */
 class MockClientStub: public ola::proto::OlaClientService_Stub {
-  public:
+ public:
     MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
 
     void UpdateDmxData(ola::rpc::RpcController *controller,

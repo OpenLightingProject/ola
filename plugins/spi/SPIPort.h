@@ -33,7 +33,7 @@ namespace plugin {
 namespace spi {
 
 class SPIOutputPort: public BasicOutputPort {
-  public:
+ public:
     SPIOutputPort(SPIDevice *parent, class SPIBackendInterface *backend,
                   const UID &uid, const SPIOutput::Options &options);
     ~SPIOutputPort() {}
@@ -52,7 +52,7 @@ class SPIOutputPort: public BasicOutputPort {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-  private:
+ private:
     SPIOutput m_spi_output;
 };
 }  // namespace spi

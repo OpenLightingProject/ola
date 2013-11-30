@@ -61,7 +61,7 @@ class DmxTriWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testQueuedMessages);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testTod();
@@ -77,7 +77,7 @@ class DmxTriWidgetTest: public CommonWidgetTest {
     void testAckOverflow();
     void testQueuedMessages();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::DmxTriWidget> m_widget;
     unsigned int m_tod_counter;
     bool m_expect_uids_in_tod;

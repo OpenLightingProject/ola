@@ -46,15 +46,13 @@
 namespace ola {
 namespace network {
 
-using std::ostream;
-
 /*
  * Represents a MAC Address.
  * All methods use network byte order unless otherwise mentioned.
  * TODO(Peter): Is the above actually true for MAC addresses?
  */
 class MACAddress {
-  public:
+ public:
     enum { LENGTH = ETHER_ADDR_LEN };
 
     MACAddress() {
@@ -140,7 +138,8 @@ class MACAddress {
 
     std::string ToString() const;
 
-    friend ostream& operator<< (ostream &out, const MACAddress &address) {
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const MACAddress &address) {
       return out << address.ToString();
     }
 
@@ -149,7 +148,7 @@ class MACAddress {
     // useful for testing
     static MACAddress FromStringOrDie(const std::string &address);
 
-  private:
+ private:
     struct ether_addr m_address;
 };
 }  // namespace network

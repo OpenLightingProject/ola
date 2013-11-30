@@ -7,6 +7,7 @@ X/Y/2013 ola-0.8.34
    average sensor to them.
  * Add a class to represent MAC addresses and support for MAC address RDM types
  * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
+ * Added plugin for Renard serial protocol (Renard SS24, SS8, etc)
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)

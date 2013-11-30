@@ -42,7 +42,7 @@ using std::ostream;
  * All methods use network byte order unless otherwise mentioned.
  */
 class IPV4Address {
-  public:
+ public:
     enum { LENGTH = 4 };
 
     IPV4Address() {
@@ -136,7 +136,7 @@ class IPV4Address {
 
     static IPV4Address Loopback();
 
-  private:
+ private:
     struct in_addr m_address;
 };
 }  // namespace network

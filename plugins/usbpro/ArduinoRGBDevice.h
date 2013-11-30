@@ -36,7 +36,7 @@ namespace usbpro {
  * An Arduino RGB Mixer Device
  */
 class ArduinoRGBDevice: public UsbSerialDevice {
-  public:
+ public:
     ArduinoRGBDevice(ola::io::SelectServerInterface *ss,
                      ola::AbstractPlugin *owner,
                      const string &name,
@@ -47,7 +47,7 @@ class ArduinoRGBDevice: public UsbSerialDevice {
 
     string DeviceId() const { return m_device_id; }
 
-  private:
+ private:
     string m_device_id;
 };
 
@@ -56,7 +56,7 @@ class ArduinoRGBDevice: public UsbSerialDevice {
  * A single Output port per device
  */
 class ArduinoRGBOutputPort: public BasicOutputPort {
-  public:
+ public:
     ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
                          ArduinoWidget *widget,
                          uint32_t serial,
@@ -87,7 +87,7 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
       m_widget->RunIncrementalDiscovery(callback);
     }
 
-  private:
+ private:
     ArduinoWidget *m_widget;
     TokenBucket m_bucket;
     const TimeStamp *m_wake_time;

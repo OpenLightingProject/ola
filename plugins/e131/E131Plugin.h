@@ -30,7 +30,7 @@ namespace plugin {
 namespace e131 {
 
 class E131Plugin: public ola::Plugin {
-  public:
+ public:
     explicit E131Plugin(ola::PluginAdaptor *plugin_adaptor):
       ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
@@ -41,7 +41,7 @@ class E131Plugin: public ola::Plugin {
     string Description() const;
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

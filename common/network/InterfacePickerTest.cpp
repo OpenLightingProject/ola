@@ -49,7 +49,7 @@ class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testChooseInterface);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testGetInterfaces();
     void testGetLoopbackInterfaces();
     void testChooseInterface();
@@ -58,7 +58,6 @@ class InterfacePickerTest: public CppUnit::TestFixture {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
 };
-
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
 

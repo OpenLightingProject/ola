@@ -37,60 +37,60 @@ class OlaClient;
  * An implemention of RDMAPIImplInterface that uses the OlaClient.
  */
 class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
-  public:
-    explicit ClientRDMAPIShim(OlaClient *client)
-        : m_client(client) {
-    }
+ public:
+  explicit ClientRDMAPIShim(OlaClient *client)
+      : m_client(client) {
+  }
 
-    bool RDMGet(rdm_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data = NULL,
-                unsigned int data_length = 0);
+  bool RDMGet(rdm_callback *callback,
+              unsigned int universe,
+              const ola::rdm::UID &uid,
+              uint16_t sub_device,
+              uint16_t pid,
+              const uint8_t *data = NULL,
+              unsigned int data_length = 0);
 
-    bool RDMGet(rdm_pid_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data = NULL,
-                unsigned int data_length = 0);
+  bool RDMGet(rdm_pid_callback *callback,
+              unsigned int universe,
+              const ola::rdm::UID &uid,
+              uint16_t sub_device,
+              uint16_t pid,
+              const uint8_t *data = NULL,
+              unsigned int data_length = 0);
 
-    bool RDMSet(rdm_callback *callback,
-                unsigned int universe,
-                const ola::rdm::UID &uid,
-                uint16_t sub_device,
-                uint16_t pid,
-                const uint8_t *data = NULL,
-                unsigned int data_length = 0);
+  bool RDMSet(rdm_callback *callback,
+              unsigned int universe,
+              const ola::rdm::UID &uid,
+              uint16_t sub_device,
+              uint16_t pid,
+              const uint8_t *data = NULL,
+              unsigned int data_length = 0);
 
-  private:
-    OlaClient *m_client;
+ private:
+  OlaClient *m_client;
 
-    void HandleResponse(
-        rdm_callback *callback,
-        const Result &result,
-        const RDMMetadata &metadata,
-        const ola::rdm::RDMResponse *response);
+  void HandleResponse(
+      rdm_callback *callback,
+      const Result &result,
+      const RDMMetadata &metadata,
+      const ola::rdm::RDMResponse *response);
 
-    void HandleResponseWithPid(
-        rdm_pid_callback *callback,
-        const Result &result,
-        const RDMMetadata &metadata,
-        const ola::rdm::RDMResponse *response);
+  void HandleResponseWithPid(
+      rdm_pid_callback *callback,
+      const Result &result,
+      const RDMMetadata &metadata,
+      const ola::rdm::RDMResponse *response);
 
-    void GetResponseStatusAndData(
-        const Result &result,
-        ola::rdm::rdm_response_code response_code,
-        const ola::rdm::RDMResponse *response,
-        rdm::ResponseStatus *response_status,
-        string *data);
+  void GetResponseStatusAndData(
+      const Result &result,
+      ola::rdm::rdm_response_code response_code,
+      const ola::rdm::RDMResponse *response,
+      rdm::ResponseStatus *response_status,
+      string *data);
 
-    void GetParamFromReply(const std::string &message_type,
-                           const ola::rdm::RDMResponse *reply,
-                           ola::rdm::ResponseStatus *new_status);
+  void GetParamFromReply(const std::string &message_type,
+                         const ola::rdm::RDMResponse *reply,
+                         ola::rdm::ResponseStatus *new_status);
 };
 }  // namespace client
 }  // namespace ola

@@ -44,7 +44,7 @@ using std::vector;
  * Represents a DA
  */
 class DirectoryAgent {
-  public:
+ public:
     DirectoryAgent()
         : m_boot_time(0) {
     }
@@ -105,10 +105,10 @@ class DirectoryAgent {
       return out;
     }
 
-  protected:
+ protected:
     mutable uint32_t m_boot_time;
 
-  private:
+ private:
     ScopeSet m_scopes;
     string m_url;
     IPV4Address m_address;
@@ -121,7 +121,7 @@ class DirectoryAgent {
  * callbacks to be informed of DA events.
  */
 class DATracker {
-  public:
+ public:
     typedef ola::Callback1<void, const DirectoryAgent&> NewDACallback;
 
     DATracker();
@@ -144,7 +144,7 @@ class DATracker {
     bool LookupDA(const string &da_url, DirectoryAgent *da);
     void MarkAsBad(const string &da_url);
 
-  private:
+ private:
     class InternalDirectoryAgent : public DirectoryAgent {
       public:
         InternalDirectoryAgent(): DirectoryAgent() {}

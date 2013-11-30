@@ -42,86 +42,86 @@ namespace rdm {
  * A sub device in the simulated dimmer.
  */
 class DimmerSubDevice: public RDMControllerInterface {
-  public:
-    /**
-     * We need the total sub device count here because the sub device field in
-     * DEVICE_INFO must be the same for both the root and all sub devices
-     * (10.5).
-     */
-    DimmerSubDevice(const UID &uid, uint16_t sub_device_number,
-                    uint16_t total_sub_devices);
+ public:
+  /**
+   * We need the total sub device count here because the sub device field in
+   * DEVICE_INFO must be the same for both the root and all sub devices
+   * (10.5).
+   */
+  DimmerSubDevice(const UID &uid, uint16_t sub_device_number,
+                  uint16_t total_sub_devices);
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-    uint16_t Footprint() const {
-      return m_personality_manager.ActivePersonalityFootprint();
+  uint16_t Footprint() const {
+    return m_personality_manager.ActivePersonalityFootprint();
+  }
+
+  bool SetDmxStartAddress(uint16_t start_address);
+
+  uint16_t GetDmxStartAddress() const {
+     return m_start_address;
+  }
+
+ private:
+  /**
+   * The RDM Operations for the DimmerSubDevice.
+   */
+  class RDMOps : public ResponderOps<DimmerSubDevice> {
+   public:
+    static RDMOps *Instance() {
+      if (!instance)
+        instance = new RDMOps();
+      return instance;
     }
 
-    bool SetDmxStartAddress(uint16_t start_address);
+   private:
+    RDMOps() : ResponderOps<DimmerSubDevice>(PARAM_HANDLERS, true) {}
 
-    uint16_t GetDmxStartAddress() const {
-       return m_start_address;
+    static RDMOps *instance;
+  };
+
+  /**
+   * The personalities
+   */
+  class Personalities : public PersonalityCollection {
+   public:
+    static const Personalities *Instance();
+
+   private:
+    explicit Personalities(const PersonalityList &personalities) :
+      PersonalityCollection(personalities) {
     }
 
-  private:
-    /**
-     * The RDM Operations for the DimmerSubDevice.
-     */
-    class RDMOps : public ResponderOps<DimmerSubDevice> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+    static Personalities *instance;
+  };
 
-      private:
-        RDMOps() : ResponderOps<DimmerSubDevice>(PARAM_HANDLERS, true) {}
+  const UID m_uid;
+  const uint16_t m_sub_device_number;
+  const uint16_t m_sub_device_count;
+  uint16_t m_start_address;
+  bool m_identify_on;
+  uint8_t m_identify_mode;
+  PersonalityManager m_personality_manager;
 
-        static RDMOps *instance;
-    };
+  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  const RDMResponse *GetProductDetailList(const RDMRequest *request);
+  const RDMResponse *GetPersonality(const RDMRequest *request);
+  const RDMResponse *SetPersonality(const RDMRequest *request);
+  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *GetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentifyMode(const RDMRequest *request);
+  const RDMResponse *GetIdentifyMode(const RDMRequest *request);
+  const RDMResponse *GetRealTimeClock(const RDMRequest *request);
+  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
 
-    /**
-     * The personalities
-     */
-    class Personalities : public PersonalityCollection {
-      public:
-        static const Personalities *Instance();
-
-      private:
-        explicit Personalities(const PersonalityList &personalities) :
-          PersonalityCollection(personalities) {
-        }
-
-        static Personalities *instance;
-    };
-
-    const UID m_uid;
-    const uint16_t m_sub_device_number;
-    const uint16_t m_sub_device_count;
-    uint16_t m_start_address;
-    bool m_identify_on;
-    uint8_t m_identify_mode;
-    PersonalityManager m_personality_manager;
-
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetProductDetailList(const RDMRequest *request);
-    const RDMResponse *GetPersonality(const RDMRequest *request);
-    const RDMResponse *SetPersonality(const RDMRequest *request);
-    const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-    const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentifyMode(const RDMRequest *request);
-    const RDMResponse *GetIdentifyMode(const RDMRequest *request);
-    const RDMResponse *GetRealTimeClock(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-
-    static const ResponderOps<DimmerSubDevice>::ParamHandler PARAM_HANDLERS[];
+  static const ResponderOps<DimmerSubDevice>::ParamHandler PARAM_HANDLERS[];
 };
 }  // namespace rdm
 }  // namespace ola

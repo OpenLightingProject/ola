@@ -127,7 +127,7 @@ void QueueingRDMController::TakeNextAction() {
     return;
 
   MaybeSendRDMRequest();
-};
+}
 
 
 /**

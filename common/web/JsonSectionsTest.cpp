@@ -48,7 +48,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSection);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testStringItem();
     void testUIntItem();
     void testSelectItem();
@@ -56,7 +56,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
     void testHiddenItem();
     void testSection();
 
-  private:
+ private:
     string ConvertToString(const GenericItem &item);
 };
 

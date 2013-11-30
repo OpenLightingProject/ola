@@ -52,7 +52,7 @@ using std::string;
  * codes.
  */
 class ResponseStatus {
-  public:
+ public:
     string error;  // Non empty if the RPC failed
     rdm_response_code response_code;
     uint8_t response_type;  // The RDM response type
@@ -84,7 +84,7 @@ class ResponseStatus {
  * This is the interface for an RDMAPI implementation
  */
 class RDMAPIImplInterface {
-  public:
+ public:
     virtual ~RDMAPIImplInterface() {}
 
     // args are the response type the param data

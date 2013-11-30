@@ -39,12 +39,12 @@ class UltraDMXProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testSecondarySendDMX);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void testPrimarySendDMX();
     void testSecondarySendDMX();
 
-  private:
+ private:
     auto_ptr<ola::plugin::usbpro::UltraDMXProWidget> m_widget;
 
     void Terminate() { m_ss.Terminate(); }

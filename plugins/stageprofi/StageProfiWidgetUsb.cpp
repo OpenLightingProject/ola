@@ -26,6 +26,7 @@
 
 #include "ola/Callback.h"
 #include "ola/io/Descriptor.h"
+#include "ola/io/IOUtils.h"
 #include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
 namespace ola {
@@ -38,10 +39,10 @@ namespace stageprofi {
 bool StageProfiWidgetUsb::Connect(const std::string &path) {
   struct termios newtio;
 
-  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
-
-  if (fd == -1)
+  int fd;
+  if (!ola::io::Open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
     return false;
+  }
 
   memset(&newtio, 0, sizeof(newtio));  // clear struct for new port settings
   tcgetattr(fd, &newtio);

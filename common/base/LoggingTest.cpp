@@ -41,17 +41,17 @@ class LoggingTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLogging);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testLogging();
 };
 
 
 class MockLogDestination: public ola::LogDestination {
-  public:
+ public:
     void AddExpected(log_level level, string log_line);
     void Write(log_level level, const string &log_line);
     int LinesRemaining() const { return m_log_lines.size(); }
-  private:
+ private:
     deque<std::pair<log_level, string> > m_log_lines;
 };
 

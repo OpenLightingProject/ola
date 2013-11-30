@@ -39,7 +39,7 @@ using ola::io::OutputStream;
  * TODO(simon): make this into a template based on vector size.
  */
 class PDU {
-  public:
+ public:
     typedef enum {
       ONE_BYTE = 1,
       TWO_BYTES = 2,
@@ -91,7 +91,7 @@ class PDU {
     // This indicates a data field is present
     static const uint8_t DFLAG_MASK = 0x10;
 
-  private:
+ private:
     unsigned int m_vector;
     unsigned int m_vector_size;
 
@@ -106,7 +106,7 @@ class PDU {
  */
 template <class C>
 class PDUBlock {
-  public:
+ public:
     PDUBlock(): m_size(0) {}
     ~PDUBlock() {}
 
@@ -134,7 +134,7 @@ class PDUBlock {
      */
     void Write(OutputStream *stream) const;
 
-  private:
+ private:
     std::vector<const C*> m_pdus;
     unsigned int m_size;
 };

@@ -42,7 +42,7 @@ class UDPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUDPTransport);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     UDPTransportTest(): TestFixture(), m_ss(NULL) {}
     void testUDPTransport();
     void setUp();
@@ -50,7 +50,7 @@ class UDPTransportTest: public CppUnit::TestFixture {
     void Stop();
     void FatalStop() { OLA_ASSERT(false); }
 
-  private:
+ private:
     ola::io::SelectServer *m_ss;
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };

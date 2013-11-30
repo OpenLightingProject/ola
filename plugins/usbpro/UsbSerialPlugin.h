@@ -36,7 +36,7 @@ namespace usbpro {
 using ola::io::ConnectedDescriptor;
 
 class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
-  public:
+ public:
     explicit UsbSerialPlugin(PluginAdaptor *plugin_adaptor);
 
     string Name() const { return PLUGIN_NAME; }
@@ -58,7 +58,7 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     void NewWidget(UltraDMXProWidget *widget,
                    const UsbProWidgetInformation &information);
 
-  private:
+ private:
     void AddDevice(UsbSerialDevice *device);
     bool StartHook();
     bool StopHook();
