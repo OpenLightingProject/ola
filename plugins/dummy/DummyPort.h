@@ -39,28 +39,28 @@ namespace dummy {
 
 class DummyPort: public BasicOutputPort {
  public:
-    struct Options {
-     public:
-        Options()
-            : number_of_dimmers(1),
-              dimmer_sub_device_count(4),
-              number_of_moving_lights(1),
-              number_of_dummy_responders(1),
-              number_of_ack_timer_responders(0),
-              number_of_advanced_dimmers(0),
-              number_of_sensor_responders(1),
-              number_of_network_responders(1) {
-        }
+  struct Options {
+   public:
+    Options()
+        : number_of_dimmers(1),
+          dimmer_sub_device_count(4),
+          number_of_moving_lights(1),
+          number_of_dummy_responders(1),
+          number_of_ack_timer_responders(0),
+          number_of_advanced_dimmers(0),
+          number_of_sensor_responders(1),
+          number_of_network_responders(1) {
+    }
 
-        uint8_t number_of_dimmers;
-        uint16_t dimmer_sub_device_count;
-        uint8_t number_of_moving_lights;
-        uint8_t number_of_dummy_responders;
-        uint8_t number_of_ack_timer_responders;
-        uint8_t number_of_advanced_dimmers;
-        uint8_t number_of_sensor_responders;
-        uint8_t number_of_network_responders;
-    };
+    uint8_t number_of_dimmers;
+    uint16_t dimmer_sub_device_count;
+    uint8_t number_of_moving_lights;
+    uint8_t number_of_dummy_responders;
+    uint8_t number_of_ack_timer_responders;
+    uint8_t number_of_advanced_dimmers;
+    uint8_t number_of_sensor_responders;
+    uint8_t number_of_network_responders;
+  }
 
   DummyPort(class DummyDevice *parent,
             const Options &options,
