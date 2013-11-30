@@ -60,7 +60,7 @@ class DummyPort: public BasicOutputPort {
     uint8_t number_of_advanced_dimmers;
     uint8_t number_of_sensor_responders;
     uint8_t number_of_network_responders;
-  }
+  };
 
   DummyPort(class DummyDevice *parent,
             const Options &options,

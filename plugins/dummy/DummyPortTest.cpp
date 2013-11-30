@@ -56,7 +56,7 @@ class MockDummyPort: public DummyPort {
   MockDummyPort()
       : DummyPort(NULL, DummyPort::Options(), 0) {
   }
-}
+};
 
 
 class DummyPortTest: public CppUnit::TestFixture {
