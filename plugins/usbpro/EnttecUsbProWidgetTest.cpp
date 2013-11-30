@@ -139,11 +139,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(EnttecUsbProWidgetTest);
 
 void EnttecUsbProWidgetTest::setUp() {
   CommonWidgetTest::setUp();
-  m_widget.reset(
-      new EnttecUsbProWidget(
-          &m_descriptor,
-          EnttecUsbProWidget::EnttecUsbProWidgetOptions(
-            EnttecUsbProWidget::ENTTEC_ESTA_ID, 1)));
+  EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
+      EnttecUsbProWidget::ENTTEC_ESTA_ID, 1);
+  options.enable_rdm = true;
+  m_widget.reset(new EnttecUsbProWidget(&m_descriptor, options));
 
   m_transaction_number = 0;
   m_got_dmx = false;

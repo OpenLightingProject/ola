@@ -39,62 +39,63 @@ namespace usbpro {
  */
 class BaseUsbProWidget: public SerialWidgetInterface {
  public:
-    explicit BaseUsbProWidget(ola::io::ConnectedDescriptor *descriptor);
-    virtual ~BaseUsbProWidget();
+  explicit BaseUsbProWidget(ola::io::ConnectedDescriptor *descriptor);
+  virtual ~BaseUsbProWidget();
 
-    ola::io::ConnectedDescriptor *GetDescriptor() const {
-      return m_descriptor;
-    }
-    void DescriptorReady();
+  ola::io::ConnectedDescriptor *GetDescriptor() const {
+    return m_descriptor;
+  }
+  void DescriptorReady();
 
-    // we locate the SendDMX in the base class since so many widgets share it.
-    virtual bool SendDMX(const DmxBuffer &buffer);
+  // we locate the SendDMX in the base class since so many widgets share it.
+  virtual bool SendDMX(const DmxBuffer &buffer);
 
-    bool SendMessage(uint8_t label,
-                     const uint8_t *data,
-                     unsigned int length) const;
+  bool SendMessage(uint8_t label,
+                   const uint8_t *data,
+                   unsigned int length) const;
 
-    static ola::io::ConnectedDescriptor *OpenDevice(const string &path);
+  static ola::io::ConnectedDescriptor *OpenDevice(const string &path);
 
-    static const uint8_t DMX_LABEL = 6;
-    static const uint8_t SERIAL_LABEL = 10;
-    static const uint8_t MANUFACTURER_LABEL = 77;
-    static const uint8_t DEVICE_LABEL = 78;
-    static const uint8_t HARDWARE_VERSION_LABEL = 14;
+  static const uint8_t DEVICE_LABEL = 78;
+  static const uint8_t DMX_LABEL = 6;
+  static const uint8_t GET_PARAMS = 3;
+  static const uint8_t HARDWARE_VERSION_LABEL = 14;
+  static const uint8_t MANUFACTURER_LABEL = 77;
+  static const uint8_t SERIAL_LABEL = 10;
 
  private:
-    typedef enum {
-      PRE_SOM,
-      RECV_LABEL,
-      RECV_SIZE_LO,
-      RECV_SIZE_HI,
-      RECV_BODY,
-      RECV_EOM,
-    } receive_state;
+  typedef enum {
+    PRE_SOM,
+    RECV_LABEL,
+    RECV_SIZE_LO,
+    RECV_SIZE_HI,
+    RECV_BODY,
+    RECV_EOM,
+  } receive_state;
 
-    enum {MAX_DATA_SIZE = 600};
+  enum {MAX_DATA_SIZE = 600};
 
-    typedef struct {
-      uint8_t som;
-      uint8_t label;
-      uint8_t len;
-      uint8_t len_hi;
-    } message_header;
+  typedef struct {
+    uint8_t som;
+    uint8_t label;
+    uint8_t len;
+    uint8_t len_hi;
+  } message_header;
 
-    ola::io::ConnectedDescriptor *m_descriptor;
-    receive_state m_state;
-    unsigned int m_bytes_received;
-    message_header m_header;
-    uint8_t m_recv_buffer[MAX_DATA_SIZE];
+  ola::io::ConnectedDescriptor *m_descriptor;
+  receive_state m_state;
+  unsigned int m_bytes_received;
+  message_header m_header;
+  uint8_t m_recv_buffer[MAX_DATA_SIZE];
 
-    void ReceiveMessage();
-    virtual void HandleMessage(uint8_t label,
-                               const uint8_t *data,
-                               unsigned int length) = 0;
+  void ReceiveMessage();
+  virtual void HandleMessage(uint8_t label,
+                             const uint8_t *data,
+                             unsigned int length) = 0;
 
-    static const uint8_t EOM = 0xe7;
-    static const uint8_t SOM = 0x7e;
-    static const unsigned int HEADER_SIZE;
+  static const uint8_t EOM = 0xe7;
+  static const uint8_t SOM = 0x7e;
+  static const unsigned int HEADER_SIZE;
 };
 
 
@@ -104,39 +105,39 @@ class BaseUsbProWidget: public SerialWidgetInterface {
  */
 class DispatchingUsbProWidget: public BaseUsbProWidget {
  public:
-    typedef ola::Callback3<void,
-                           uint8_t,
-                           const uint8_t*,
-                           unsigned int> MessageCallback;
-    DispatchingUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
-                            MessageCallback *callback)
-        : BaseUsbProWidget(descriptor),
-          m_callback(callback) {
-    }
+  typedef ola::Callback3<void,
+                         uint8_t,
+                         const uint8_t*,
+                         unsigned int> MessageCallback;
+  DispatchingUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
+                          MessageCallback *callback)
+      : BaseUsbProWidget(descriptor),
+        m_callback(callback) {
+  }
 
-    ~DispatchingUsbProWidget() {
-      Stop();
-    }
+  ~DispatchingUsbProWidget() {
+    Stop();
+  }
 
-    void Stop() {
-      if (m_callback)
-        delete m_callback;
-    }
+  void Stop() {
+    if (m_callback)
+      delete m_callback;
+  }
 
-    void SetHandler(MessageCallback *callback) {
-      if (m_callback)
-        delete m_callback;
-      m_callback = callback;
-    }
+  void SetHandler(MessageCallback *callback) {
+    if (m_callback)
+      delete m_callback;
+    m_callback = callback;
+  }
 
  private:
-    MessageCallback *m_callback;
+  MessageCallback *m_callback;
 
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length) {
-      m_callback->Run(label, data, length);
-    }
+  void HandleMessage(uint8_t label,
+                     const uint8_t *data,
+                     unsigned int length) {
+    m_callback->Run(label, data, length);
+  }
 };
 }  // namespace usbpro
 }  // namespace plugin

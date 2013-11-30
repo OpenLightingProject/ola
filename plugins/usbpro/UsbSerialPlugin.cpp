@@ -163,7 +163,8 @@ void UsbSerialPlugin::NewWidget(
     device_name = USBPRO_DEVICE_NAME;
 
   AddDevice(new UsbProDevice(m_plugin_adaptor, this, device_name, widget,
-                             information.serial, GetProFrameLimit()));
+                             information.serial, information.firmware_version,
+                             GetProFrameLimit()));
 }
 
 
@@ -181,7 +182,8 @@ void UsbSerialPlugin::NewWidget(
       widget,
       information.esta_id,
       information.device_id,
-      information.serial));
+      information.serial,
+      information.firmware_version));
 }
 
 
@@ -227,6 +229,7 @@ void UsbSerialPlugin::NewWidget(UltraDMXProWidget *widget,
       information.esta_id,
       information.device_id,
       information.serial,
+      information.firmware_version,
       GetUltraDMXProFrameLimit()));
 }
 

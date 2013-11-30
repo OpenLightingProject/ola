@@ -44,53 +44,54 @@ using ola::plugin::usbpro::Request;
  */
 class UltraDMXProDevice: public UsbSerialDevice {
  public:
-    UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
-                      ola::AbstractPlugin *owner,
-                      const string &name,
-                      UltraDMXProWidget *widget,
-                      uint16_t esta_id,
-                      uint16_t device_id,
-                      uint32_t serial,
-                      unsigned int fps_limit);
+  UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
+                    ola::AbstractPlugin *owner,
+                    const string &name,
+                    UltraDMXProWidget *widget,
+                    uint16_t esta_id,
+                    uint16_t device_id,
+                    uint32_t serial,
+                    uint16_t firmware_version,
+                    unsigned int fps_limit);
 
-    string DeviceId() const { return m_serial; }
-    // both output ports can be bound to the same universe
-    bool AllowMultiPortPatching() const { return true; }
+  string DeviceId() const { return m_serial; }
+  // both output ports can be bound to the same universe
+  bool AllowMultiPortPatching() const { return true; }
 
-    void Configure(ola::rpc::RpcController *controller,
-                   const string &request,
-                   string *response,
-                   ConfigureCallback *done);
+  void Configure(ola::rpc::RpcController *controller,
+                 const string &request,
+                 string *response,
+                 ConfigureCallback *done);
 
  protected:
-    void PrePortStop();
+  void PrePortStop();
 
  private:
-    void UpdateParams(bool status, const usb_pro_parameters &params);
+  void UpdateParams(bool status, const usb_pro_parameters &params);
 
-    void HandleParametersRequest(ola::rpc::RpcController *controller,
-                                 const Request *request,
-                                 string *response,
-                                 ConfigureCallback *done);
+  void HandleParametersRequest(ola::rpc::RpcController *controller,
+                               const Request *request,
+                               string *response,
+                               ConfigureCallback *done);
 
-    void HandleParametersResponse(ola::rpc::RpcController *controller,
-                                  string *response,
-                                  ConfigureCallback *done,
-                                  bool status,
-                                  const usb_pro_parameters &params);
+  void HandleParametersResponse(ola::rpc::RpcController *controller,
+                                string *response,
+                                ConfigureCallback *done,
+                                bool status,
+                                const usb_pro_parameters &params);
 
-    void HandleSerialRequest(ola::rpc::RpcController *controller,
-                             const Request *request,
-                             string *response,
-                             ConfigureCallback *done);
+  void HandleSerialRequest(ola::rpc::RpcController *controller,
+                           const Request *request,
+                           string *response,
+                           ConfigureCallback *done);
 
-    UltraDMXProWidget *m_ultra_widget;
-    string m_serial;
+  UltraDMXProWidget *m_ultra_widget;
+  string m_serial;
 
-    bool m_got_parameters;
-    uint8_t m_break_time;
-    uint8_t m_mab_time;
-    uint8_t m_rate;
+  bool m_got_parameters;
+  uint8_t m_break_time;
+  uint8_t m_mab_time;
+  uint8_t m_rate;
 };
 
 
@@ -99,28 +100,24 @@ class UltraDMXProDevice: public UsbSerialDevice {
  */
 class UltraDMXProInputPort: public BasicInputPort {
  public:
-    UltraDMXProInputPort(UltraDMXProDevice *parent,
-                         UltraDMXProWidget *widget,
-                         unsigned int id,
-                         ola::PluginAdaptor *plugin_adaptor,
-                         const string &serial)
-        : BasicInputPort(parent, id, plugin_adaptor),
-          m_serial(serial),
-          m_widget(widget) {}
+  UltraDMXProInputPort(UltraDMXProDevice *parent,
+                       UltraDMXProWidget *widget,
+                       unsigned int id,
+                       ola::PluginAdaptor *plugin_adaptor,
+                       const string &description)
+      : BasicInputPort(parent, id, plugin_adaptor),
+        m_description(description),
+        m_widget(widget) {}
 
-    const DmxBuffer &ReadDMX() const {
-      return m_widget->FetchDMX();
-    }
+  const DmxBuffer &ReadDMX() const {
+    return m_widget->FetchDMX();
+  }
 
-    string Description() const {
-      std::stringstream str;
-      str << "Serial " << m_serial;
-      return str.str();
-    }
+  string Description() const { return m_description; }
 
  private:
-    string m_serial;
-    UltraDMXProWidget *m_widget;
+  const string m_description;
+  UltraDMXProWidget *m_widget;
 };
 
 
@@ -129,46 +126,41 @@ class UltraDMXProInputPort: public BasicInputPort {
  */
 class UltraDMXProOutputPort: public BasicOutputPort {
  public:
-    UltraDMXProOutputPort(UltraDMXProDevice *parent,
-                          UltraDMXProWidget *widget,
-                          unsigned int id,
-                          string serial,
-                          const TimeStamp *wake_time,
-                          unsigned int max_burst,
-                          unsigned int rate,
-                          bool primary)
-        : BasicOutputPort(parent, id),
-          m_serial(serial),
-          m_widget(widget),
-          m_bucket(max_burst, rate, max_burst, *wake_time),
-          m_wake_time(wake_time),
-          m_primary(primary) {}
+  UltraDMXProOutputPort(UltraDMXProDevice *parent,
+                        UltraDMXProWidget *widget,
+                        unsigned int id,
+                        const string &description,
+                        const TimeStamp *wake_time,
+                        unsigned int max_burst,
+                        unsigned int rate,
+                        bool primary)
+      : BasicOutputPort(parent, id),
+        m_description(description),
+        m_widget(widget),
+        m_bucket(max_burst, rate, max_burst, *wake_time),
+        m_wake_time(wake_time),
+        m_primary(primary) {}
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      if (m_bucket.GetToken(*m_wake_time))
-        if (m_primary)
-          return m_widget->SendDMX(buffer);
-        else
-          return m_widget->SendSecondaryDMX(buffer);
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    if (m_bucket.GetToken(*m_wake_time))
+      if (m_primary)
+        return m_widget->SendDMX(buffer);
       else
-        OLA_INFO << "Port rated limited, dropping frame";
-      return true;
-      (void) priority;
-    }
+        return m_widget->SendSecondaryDMX(buffer);
+    else
+      OLA_INFO << "Port rated limited, dropping frame";
+    return true;
+    (void) priority;
+  }
 
-    string Description() const {
-      std::stringstream str;
-      str << "Serial " << m_serial << ", " <<
-        (m_primary ? "Port 1" : "Port 2");
-      return str.str();
-    }
+  string Description() const { return m_description; }
 
  private:
-    string m_serial;
-    UltraDMXProWidget *m_widget;
-    TokenBucket m_bucket;
-    const TimeStamp *m_wake_time;
-    bool m_primary;
+  const string m_description;
+  UltraDMXProWidget *m_widget;
+  TokenBucket m_bucket;
+  const TimeStamp *m_wake_time;
+  bool m_primary;
 };
 }  // namespace usbpro
 }  // namespace plugin

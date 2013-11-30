@@ -42,8 +42,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::auto_ptr;
-
 /*
  * A Robe USB Widget implementation.
  */
@@ -88,7 +86,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
     UnMuteDeviceCallback *m_unmute_callback;
     BranchCallback *m_branch_callback;
     ola::rdm::DiscoveryAgent m_discovery_agent;
-    auto_ptr<Callback0<void> > m_dmx_callback;
+    std::auto_ptr<Callback0<void> > m_dmx_callback;
     DmxBuffer m_buffer;
     const ola::rdm::RDMRequest *m_pending_request;
     const ola::rdm::UID m_uid;

@@ -241,6 +241,8 @@ void WidgetDetectorThreadTest::testArduinoWidget() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
   uint8_t manufacturer_data[] = "pzOpen Lighting";
   uint8_t device_data[] = "\001\000Unittest Device";
+  uint8_t get_params_request[] = {0, 0};
+
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
@@ -252,6 +254,9 @@ void WidgetDetectorThreadTest::testArduinoWidget() {
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
       BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::GET_PARAMS,
+                                       &get_params_request[0],
+                                       sizeof(get_params_request));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -267,6 +272,8 @@ void WidgetDetectorThreadTest::testDmxTriWidget() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
   uint8_t manufacturer_data[] = "\144\150JESE";
   uint8_t device_data[] = "\002\000RDM-TRI";
+  uint8_t get_params_request[] = {0, 0};
+
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
@@ -282,6 +289,9 @@ void WidgetDetectorThreadTest::testDmxTriWidget() {
       BaseUsbProWidget::SERIAL_LABEL,
       serial_data,
       sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::GET_PARAMS,
+                                       &get_params_request[0],
+                                       sizeof(get_params_request));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -297,6 +307,8 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
   uint8_t manufacturer_data[] = "\104\107Goddard Design";
   uint8_t device_data[] = "\115\104DMXter4";
+  uint8_t get_params_request[] = {0, 0};
+
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
@@ -308,6 +320,9 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
       BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::GET_PARAMS,
+                                       &get_params_request[0],
+                                       sizeof(get_params_request));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -321,6 +336,9 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
  */
 void WidgetDetectorThreadTest::testUsbProWidget() {
   const uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t get_params_request[] = {0, 0};
+  uint8_t get_params_response[] = {4, 1, 9, 1, 1};
+
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
                                        NULL,
                                        0);
@@ -330,6 +348,13 @@ void WidgetDetectorThreadTest::testUsbProWidget() {
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
       BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::GET_PARAMS,
+      &get_params_request[0],
+      sizeof(get_params_request),
+      BaseUsbProWidget::GET_PARAMS,
+      get_params_response,
+      sizeof(get_params_response));
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::HARDWARE_VERSION_LABEL,
                                        NULL,
                                        0);
@@ -345,6 +370,8 @@ void WidgetDetectorThreadTest::testUsbProWidget() {
  */
 void WidgetDetectorThreadTest::testUsbProMkIIWidget() {
   const uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t get_params_request[] = {0, 0};
+  uint8_t get_params_response[] = {4, 1, 9, 1, 1};
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
                                        NULL, 0);
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::DEVICE_LABEL,
@@ -352,6 +379,14 @@ void WidgetDetectorThreadTest::testUsbProMkIIWidget() {
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
       BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::GET_PARAMS,
+      &get_params_request[0],
+      sizeof(get_params_request),
+      BaseUsbProWidget::GET_PARAMS,
+      get_params_response,
+      sizeof(get_params_response));
 
   const uint8_t hardware_version = 2;
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -410,6 +445,8 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
   uint8_t manufacturer_data[] = "\153\152DMXking.com";
   uint8_t device_data[] = "\002\000ultraDMX Pro";
+  uint8_t get_params_request[] = {0, 0};
+
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
@@ -421,6 +458,9 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
       BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::GET_PARAMS,
+                                       &get_params_request[0],
+                                       sizeof(get_params_request));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();

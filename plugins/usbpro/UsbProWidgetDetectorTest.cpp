@@ -29,13 +29,11 @@
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "ola/testing/TestUtils.h"
 
-
-
 using ola::io::ConnectedDescriptor;
 using ola::plugin::usbpro::UsbProWidgetInformation;
 using ola::plugin::usbpro::UsbProWidgetDetector;
+using std::auto_ptr;
 using std::string;
-
 
 class UsbProWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(UsbProWidgetDetectorTest);
@@ -46,29 +44,30 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
+  void setUp();
 
-    void testExtendedDiscovery();
-    void testDiscovery();
-    void testTimeout();
-    void testSniffer();
+  void testExtendedDiscovery();
+  void testDiscovery();
+  void testTimeout();
+  void testSniffer();
 
  private:
-    auto_ptr<UsbProWidgetDetector> m_detector;
-    UsbProWidgetInformation m_device_info;
-    bool m_found_widget;
-    bool m_failed_widget;
+  auto_ptr<UsbProWidgetDetector> m_detector;
+  UsbProWidgetInformation m_device_info;
+  bool m_found_widget;
+  bool m_failed_widget;
 
-    void NewWidget(ConnectedDescriptor *descriptor,
-                   const UsbProWidgetInformation *info);
-    void FailedWidget(ConnectedDescriptor *descriptor);
-    void Timeout() { m_ss.Terminate(); }
+  void NewWidget(ConnectedDescriptor *descriptor,
+                 const UsbProWidgetInformation *info);
+  void FailedWidget(ConnectedDescriptor *descriptor);
+  void Timeout() { m_ss.Terminate(); }
 
-    static const uint8_t DEVICE_LABEL = 78;
-    static const uint8_t MANUFACTURER_LABEL = 77;
-    static const uint8_t SERIAL_LABEL = 10;
-    static const uint8_t HARDWARE_VERSION_LABEL = 14;
-    static const uint8_t SNIFFER_LABEL = 0x81;
+  static const uint8_t DEVICE_LABEL = 78;
+  static const uint8_t MANUFACTURER_LABEL = 77;
+  static const uint8_t SERIAL_LABEL = 10;
+  static const uint8_t GET_PARAMS = 3;
+  static const uint8_t HARDWARE_VERSION_LABEL = 14;
+  static const uint8_t SNIFFER_LABEL = 0x81;
 };
 
 
@@ -124,6 +123,10 @@ void UsbProWidgetDetectorTest::testExtendedDiscovery() {
   uint8_t manufacturer_data[] = "pzOpen Lighting";
   uint16_t expected_device = 0x534e;
   uint8_t device_data[] = "NSUnittest Device";
+  uint8_t get_params_request[] = {0, 0};
+  uint8_t get_params_response[] = {4, 1, 9, 1, 1};
+  uint16_t expected_firmware_version = 0x0104;
+
   m_endpoint->AddExpectedUsbProDataAndReturn(
       MANUFACTURER_LABEL,
       NULL,
@@ -145,6 +148,13 @@ void UsbProWidgetDetectorTest::testExtendedDiscovery() {
       SERIAL_LABEL,
       serial_data,
       sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      GET_PARAMS,
+      &get_params_request[0],
+      sizeof(get_params_request),
+      GET_PARAMS,
+      get_params_response,
+      sizeof(get_params_response));
 
   m_detector->Discover(&m_descriptor);
   m_ss.Run();
@@ -158,6 +168,7 @@ void UsbProWidgetDetectorTest::testExtendedDiscovery() {
   OLA_ASSERT_EQ(string("Unittest Device"), m_device_info.device);
   OLA_ASSERT_EQ(expected_serial, m_device_info.serial);
   OLA_ASSERT_EQ(expected_serial, m_device_info.serial);
+  OLA_ASSERT_EQ(expected_firmware_version, m_device_info.firmware_version);
 }
 
 
@@ -167,6 +178,8 @@ void UsbProWidgetDetectorTest::testExtendedDiscovery() {
 void UsbProWidgetDetectorTest::testDiscovery() {
   uint32_t expected_serial = 0x12345678;
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t get_params_request[] = {0, 0};
+
   m_endpoint->AddExpectedUsbProMessage(MANUFACTURER_LABEL, NULL, 0);
   m_endpoint->AddExpectedUsbProMessage(DEVICE_LABEL, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -176,6 +189,8 @@ void UsbProWidgetDetectorTest::testDiscovery() {
       SERIAL_LABEL,
       serial_data,
       sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(GET_PARAMS, &get_params_request[0],
+                                       sizeof(get_params_request));
 
   // Because the widget doesn't respond to Manufacturer or Device labels, we'll
   // send a HARDWARE_VERSION_LABEL message.
@@ -214,6 +229,7 @@ void UsbProWidgetDetectorTest::testTimeout() {
  */
 void UsbProWidgetDetectorTest::testSniffer() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t get_params_request[] = {0, 0};
   m_endpoint->AddExpectedUsbProMessage(MANUFACTURER_LABEL, NULL, 0);
   m_endpoint->AddExpectedUsbProMessage(DEVICE_LABEL, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -223,6 +239,8 @@ void UsbProWidgetDetectorTest::testSniffer() {
       SERIAL_LABEL,
       serial_data,
       sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(GET_PARAMS, &get_params_request[0],
+                                       sizeof(get_params_request));
   m_endpoint->AddExpectedUsbProMessage(HARDWARE_VERSION_LABEL, NULL, 0);
 
   m_endpoint->SendUnsolicitedUsbProData(SNIFFER_LABEL, NULL, 0);

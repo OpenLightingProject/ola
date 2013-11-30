@@ -36,9 +36,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::queue;
-
-
 /*
  * A DMX TRI Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController.
