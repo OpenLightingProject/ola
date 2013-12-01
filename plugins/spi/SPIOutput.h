@@ -160,6 +160,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     PersonalityManager m_personality_manager;
 
     // DMX methods
+    bool InternalWriteDMX(const DmxBuffer &buffer);
     void IndividualWS2801Control(const DmxBuffer &buffer);
     void CombinedWS2801Control(const DmxBuffer &buffer);
     void IndividualLPD8806Control(const DmxBuffer &buffer);
