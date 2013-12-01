@@ -21,6 +21,7 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/ResponderSettings.h>
+#include <algorithm>
 #include <string>
 
 namespace ola {
@@ -38,7 +39,8 @@ unsigned int BasicSetting::GenerateDescriptionResponse(uint8_t index,
   output->setting = index;
   strncpy(output->description, m_description.c_str(), MAX_RDM_STRING_LENGTH);
   return (sizeof(description_s) - MAX_RDM_STRING_LENGTH +
-          strlen(output->description));
+          std::min(static_cast<size_t>(MAX_RDM_STRING_LENGTH),
+                   strlen(output->description)));
 }
 
 FrequencyModulationSetting::FrequencyModulationSetting(const ArgType &arg)

@@ -36,11 +36,9 @@ namespace rdm {
  */
 DimmerResponder::DimmerResponder(const UID &uid,
                                  uint16_t number_of_subdevices) {
-  uint16_t sub_devices = std::min(MAX_SUBDEVICE_NUMBER,
-                                  number_of_subdevices);
+  uint16_t sub_devices = std::min(MAX_SUBDEVICE_NUMBER, number_of_subdevices);
   for (uint16_t i = 1; i <= sub_devices; i++) {
-    DimmerSubDevice *sub_device = new DimmerSubDevice(
-        uid, i, sub_devices);
+    DimmerSubDevice *sub_device = new DimmerSubDevice(uid, i, sub_devices);
     STLInsertIfNotPresent(&m_sub_devices, i, sub_device);
     m_dispatcher.AddSubDevice(i, sub_device);
   }
