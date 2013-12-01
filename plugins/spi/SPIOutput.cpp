@@ -171,24 +171,7 @@ string SPIOutput::Description() const {
 bool SPIOutput::WriteDMX(const DmxBuffer &buffer) {
   if (m_identify_mode)
     return true;
-
-  switch (m_personality_manager.ActivePersonalityNumber()) {
-    case 1:
-      IndividualWS2801Control(buffer);
-      break;
-    case 2:
-      CombinedWS2801Control(buffer);
-      break;
-    case 3:
-      IndividualLPD8806Control(buffer);
-      break;
-    case 4:
-      CombinedLPD8806Control(buffer);
-      break;
-    default:
-      break;
-  }
-  return true;
+  return InternalWriteDMX(buffer);
 }
 
 
@@ -211,6 +194,26 @@ void SPIOutput::SendRDMRequest(const RDMRequest *request,
                                 RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
+}
+
+bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
+  switch (m_personality_manager.ActivePersonalityNumber()) {
+    case 1:
+      IndividualWS2801Control(buffer);
+      break;
+    case 2:
+      CombinedWS2801Control(buffer);
+      break;
+    case 3:
+      IndividualLPD8806Control(buffer);
+      break;
+    case 4:
+      CombinedLPD8806Control(buffer);
+      break;
+    default:
+      break;
+  }
+  return true;
 }
 
 void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
@@ -458,11 +461,13 @@ const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
     OLA_INFO << "SPI " << m_spi_device_name << " identify mode " << (
         m_identify_mode ? "on" : "off");
     DmxBuffer identify_buffer;
-    if (m_identify_mode)
+    if (m_identify_mode) {
       identify_buffer.SetRangeToValue(0, DMX_MAX_CHANNEL_VALUE,
                                       DMX_UNIVERSE_SIZE);
-    else
+    } else {
       identify_buffer.Blackout();
+    }
+    InternalWriteDMX(identify_buffer);
   }
   return response;
 }
