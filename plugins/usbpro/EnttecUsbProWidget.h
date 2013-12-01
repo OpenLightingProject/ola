@@ -22,6 +22,7 @@
 #define PLUGINS_USBPRO_ENTTECUSBPROWIDGET_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
