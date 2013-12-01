@@ -109,8 +109,11 @@ class AllSubDevicesGetMixin(object):
 
   def Test(self):
     # E1.20, section 9.2.2
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    results = [self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE)]
+    # Some devices check the PID before the sub device.
+    if not self.PidSupported():
+      results.append(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
+    self.AddExpectedResults(results)
     self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, self.DATA)
 
 # Generic SET Mixins
