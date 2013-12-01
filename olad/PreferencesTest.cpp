@@ -31,7 +31,7 @@
 using ola::BoolValidator;
 using ola::FileBackedPreferences;
 using ola::FileBackedPreferencesFactory;
-using ola::IntValidator;
+using ola::UIntValidator;
 using ola::MemoryPreferencesFactory;
 using ola::Preferences;
 using ola::SetValidator;
@@ -93,7 +93,7 @@ void PreferencesTest::testValidators() {
   OLA_ASSERT(bool_validator.IsValid("false"));
   OLA_ASSERT_FALSE(bool_validator.IsValid(""));
 
-  IntValidator int_validator(10, 14);
+  UIntValidator int_validator(10, 14);
   OLA_ASSERT(int_validator.IsValid("10"));
   OLA_ASSERT(int_validator.IsValid("14"));
   OLA_ASSERT_FALSE(int_validator.IsValid("0"));

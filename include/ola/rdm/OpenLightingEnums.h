@@ -47,6 +47,10 @@ typedef enum {
   OLA_MANUFACTURER_PID_CODE_VERSION = 0x8001,
 } rdm_ola_manufacturer_pid;
 
+/**
+ * Also see the list here
+ * http://www.opendmx.net/index.php/Open_Lighting_Allocations#RDM_Model_Numbers
+ */
 typedef enum {
   // OLA Dummy RDM Responder
   OLA_DUMMY_DEVICE_MODEL = 1,

@@ -120,7 +120,7 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
     return false;
 
   if (m_preferences->SetDefaultValue(FtdiDmxPlugin::K_FREQUENCY,
-                                     IntValidator(1, 44),
+                                     UIntValidator(1, 44),
                                      DEFAULT_FREQUENCY))
     m_preferences->Save();
 

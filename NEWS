@@ -6,7 +6,7 @@ X/Y/2013 ola-0.9.0
  * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
 
  Features:
- * Added priority sipport for input ports - #259
+ * Added priority support for input ports - #259
  * Added DNS-SD registration support with both Bonjour and Avahi so that the
    OLA web UI appears as _http._tcp - #270
  * Added plugin for Renard serial protocol (Renard SS24, SS8, etc) - #277
@@ -19,7 +19,7 @@ X/Y/2013 ola-0.9.0
  * Added a --duration option to the show recorder - #255
  * Add a warning if the firmware in an Enttec USB Pro widget doesn't support
    RDM - #275
- * Print a warning if no Logic device is found when using the RDM sniifer.
+ * Print a warning if no Logic device is found when using the RDM sniffer.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265
