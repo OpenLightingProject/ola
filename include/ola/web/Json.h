@@ -115,7 +115,7 @@ class JsonStringValue: public JsonValue {
     }
 
     void ToString(ostream *output, unsigned int) const {
-      *output << '"' << EscapeString(m_value) << '"';
+      *output << '"' << EncodeString(EscapeString(m_value)) << '"';
     }
 
  private:
