@@ -176,13 +176,13 @@ bool ArtNetPlugin::SetDefaultPreferences() {
                                          StringValidator(),
                                          ARTNET_LONG_NAME);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_NET_KEY,
-                                         IntValidator(0, 127),
+                                         UIntValidator(0, 127),
                                          ARTNET_NET);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
-                                         IntValidator(0, 15),
+                                         UIntValidator(0, 15),
                                          ARTNET_SUBNET);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_OUTPUT_PORT_KEY,
-                                         IntValidator(0, 16),
+                                         UIntValidator(0, 16),
                                          "4");
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
                                          BoolValidator(),

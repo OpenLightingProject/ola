@@ -67,7 +67,7 @@ bool BoolValidator::IsValid(const string &value) const {
 }
 
 
-bool IntValidator::IsValid(const string &value) const {
+bool UIntValidator::IsValid(const string &value) const {
   unsigned int output;
   if (!StringToInt(value, &output))
     return false;
@@ -75,6 +75,13 @@ bool IntValidator::IsValid(const string &value) const {
   return (output >= m_gt && output <= m_lt);
 }
 
+bool IntValidator::IsValid(const string &value) const {
+  int output;
+  if (!StringToInt(value, &output))
+    return false;
+
+  return (output >= m_gt && output <= m_lt);
+}
 
 bool SetValidator::IsValid(const string &value) const {
   return STLContains(m_values, value);

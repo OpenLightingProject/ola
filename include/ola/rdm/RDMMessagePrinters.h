@@ -238,7 +238,7 @@ class DeviceInfoPrinter: public GenericMessagePrinter {
 class LabelPrinter: public MessagePrinter {
  public:
   void Visit(const StringMessageField *message) {
-    Stream() << message->Value() << endl;
+    Stream() << EncodeString(message->Value()) << endl;
   }
 };
 
@@ -276,7 +276,7 @@ class LanguageCapabilityPrinter: public MessagePrinter {
     void PostStringHook() {
       set<string>::const_iterator iter = m_languages.begin();
       for (; iter != m_languages.end(); ++iter) {
-        Stream() << *iter << endl;
+        Stream() << EncodeString(*iter) << endl;
       }
     }
  private:
