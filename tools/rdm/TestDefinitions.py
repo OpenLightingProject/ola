@@ -4345,12 +4345,12 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
 
     delay_time = self.min_delay_time
     # 0xffff means 'fail mode not supported'
-    if self.min_delay_time * 10 > 1:
+    if self.min_delay_time * 10 > 1 and self.min_delay_time * 10 < 0xffff:
       delay_time = (self.min_delay_time * 10 - 1) / 10.0  # decrement by 1
 
     hold_time = self.min_hold_time
     # 0xffff means 'fail mode not supported'
-    if self.min_hold_time * 10 > 1:
+    if self.min_hold_time * 10 > 1 and self.min_hold_time * 10 < 0xffff:
       hold_time = (self.min_hold_time * 10 - 1) / 10.0  # decrement by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
@@ -4599,12 +4599,12 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
 
     delay_time = self.min_delay_time
     # 0xffff means 'startup mode not supported'
-    if self.min_delay_time * 10 > 1:
+    if self.min_delay_time * 10 > 1 and self.min_delay_time * 10 < 0xffff:
       delay_time = (self.min_delay_time * 10 - 1) / 10.0  # decrement by 1
 
     hold_time = self.min_hold_time
     # 0xffff means 'startup mode not supported'
-    if self.min_hold_time * 10 > 1:
+    if self.min_hold_time * 10 > 1 and self.min_delay_time * 10 < 0xffff:
       hold_time = (self.min_hold_time * 10 - 1) / 10.0  # decrement by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
