@@ -31,6 +31,7 @@
 using ola::BoolValidator;
 using ola::FileBackedPreferences;
 using ola::FileBackedPreferencesFactory;
+using ola::IntValidator;
 using ola::UIntValidator;
 using ola::MemoryPreferencesFactory;
 using ola::Preferences;
@@ -93,12 +94,19 @@ void PreferencesTest::testValidators() {
   OLA_ASSERT(bool_validator.IsValid("false"));
   OLA_ASSERT_FALSE(bool_validator.IsValid(""));
 
-  UIntValidator int_validator(10, 14);
-  OLA_ASSERT(int_validator.IsValid("10"));
-  OLA_ASSERT(int_validator.IsValid("14"));
-  OLA_ASSERT_FALSE(int_validator.IsValid("0"));
-  OLA_ASSERT_FALSE(int_validator.IsValid("9"));
-  OLA_ASSERT_FALSE(int_validator.IsValid("15"));
+  IntValidator int_validator(-3, 4);
+  OLA_ASSERT(int_validator.IsValid("-3"));
+  OLA_ASSERT(int_validator.IsValid("0"));
+  OLA_ASSERT(int_validator.IsValid("4"));
+  OLA_ASSERT_FALSE(int_validator.IsValid("-4"));
+  OLA_ASSERT_FALSE(int_validator.IsValid("5"));
+
+  UIntValidator uint_validator(10, 14);
+  OLA_ASSERT(uint_validator.IsValid("10"));
+  OLA_ASSERT(uint_validator.IsValid("14"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("0"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("9"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("15"));
 
   IPv4Validator ipv4_validator;  // empty ok
   OLA_ASSERT(ipv4_validator.IsValid(""));
