@@ -22,6 +22,7 @@
 #define PLUGINS_USBPRO_ENTTECUSBPROWIDGET_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
@@ -49,8 +50,7 @@ class EnttecPort
     : public ola::rdm::DiscoverableRDMControllerInterface {
  public:
     // Ownership not transferred.
-    EnttecPort(EnttecPortImpl *impl, unsigned int queue_size);
-    ~EnttecPort();
+    EnttecPort(EnttecPortImpl *impl, unsigned int queue_size, bool enable_rdm);
 
     bool SendDMX(const DmxBuffer &buffer);
     const DmxBuffer &FetchDMX() const;
@@ -61,24 +61,18 @@ class EnttecPort
 
     // the following are from DiscoverableRDMControllerInterface
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *on_complete) {
-      m_controller->SendRDMRequest(request, on_complete);
-    }
+                        ola::rdm::RDMCallback *on_complete);
 
-    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_controller->RunFullDiscovery(callback);
-    }
-
-    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_controller->RunIncrementalDiscovery(callback);
-    }
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
     // the tests access the implementation directly.
     friend class ::EnttecUsbProWidgetTest;
 
  private:
     EnttecPortImpl *m_impl;
-    ola::rdm::DiscoverableQueueingRDMController *m_controller;
+    const bool m_enable_rdm;
+    std::auto_ptr<ola::rdm::DiscoverableQueueingRDMController> m_controller;
 };
 
 
@@ -101,19 +95,22 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       uint32_t serial;
       bool dual_ports;
       unsigned int queue_size;
+      bool enable_rdm;
 
       EnttecUsbProWidgetOptions()
           : esta_id(0),
             serial(0),
             dual_ports(false),
-            queue_size(20) {
+            queue_size(20),
+            enable_rdm(false) {
       }
 
       EnttecUsbProWidgetOptions(uint16_t esta_id, uint32_t serial)
           : esta_id(esta_id),
             serial(serial),
             dual_ports(false),
-            queue_size(20) {
+            queue_size(20),
+            enable_rdm(false) {
       }
     };
 

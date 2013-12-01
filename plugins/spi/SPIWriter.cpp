@@ -29,6 +29,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
 #include "plugins/spi/SPIWriter.h"

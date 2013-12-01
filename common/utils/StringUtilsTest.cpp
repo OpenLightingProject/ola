@@ -31,6 +31,7 @@ using ola::CapitalizeLabel;
 using ola::CustomCapitalizeLabel;
 using ola::Escape;
 using ola::EscapeString;
+using ola::EncodeString;
 using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
@@ -55,6 +56,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEndsWith);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
+  CPPUNIT_TEST(testEncodeString);
   CPPUNIT_TEST(testStringToBool);
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
@@ -79,6 +81,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testEndsWith();
     void testIntToString();
     void testEscape();
+    void testEncodeString();
     void testStringToBool();
     void testStringToUInt();
     void testStringToUInt16();
@@ -259,6 +262,27 @@ void StringUtilsTest::testEscape() {
   OLA_ASSERT_EQ(
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
       result);
+}
+
+/**
+ * Test encoding string
+ */
+void StringUtilsTest::testEncodeString() {
+  string s1 = "foo";
+  OLA_ASSERT_EQ(string("foo"), EncodeString(s1));
+
+  s1 = "newline\ntest";
+  OLA_ASSERT_EQ(string("newline\\x0atest"), EncodeString(s1));
+
+  s1 = "newline\n\ntest";
+  OLA_ASSERT_EQ(string("newline\\x0a\\x0atest"), EncodeString(s1));
+
+  s1 = "\x01newline\x02test";
+  OLA_ASSERT_EQ(string("\\x01newline\\x02test"), EncodeString(s1));
+
+  // Test a null in the middle of a string
+  s1 = string("newline" "\x00" "test", 12);
+  OLA_ASSERT_EQ(string("newline\\x00test"), EncodeString(s1));
 }
 
 void StringUtilsTest::testStringToBool() {

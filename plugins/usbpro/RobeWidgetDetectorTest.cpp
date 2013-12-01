@@ -37,6 +37,7 @@ using ola::plugin::usbpro::RobeWidget;
 using ola::plugin::usbpro::RobeWidgetDetector;
 using ola::plugin::usbpro::RobeWidgetInformation;
 using ola::rdm::UID;
+using std::auto_ptr;
 
 
 class RobeWidgetDetectorTest: public CommonWidgetTest {
@@ -50,30 +51,30 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
+  void setUp();
 
-    void testRUIDevice();
-    void testLockedRUIDevice();
-    void testOldWTXDevice();
-    void testWTXDevice();
-    void testUnknownDevice();
-    void testTimeout();
+  void testRUIDevice();
+  void testLockedRUIDevice();
+  void testOldWTXDevice();
+  void testWTXDevice();
+  void testUnknownDevice();
+  void testTimeout();
 
  private:
-    auto_ptr<RobeWidgetDetector> m_detector;
-    RobeWidgetInformation m_device_info;
-    bool m_found_widget;
-    bool m_failed_widget;
+  auto_ptr<RobeWidgetDetector> m_detector;
+  RobeWidgetInformation m_device_info;
+  bool m_found_widget;
+  bool m_failed_widget;
 
-    void NewWidget(ConnectedDescriptor *descriptor,
-                   const RobeWidgetInformation *info);
-    void FailedWidget(ConnectedDescriptor *descriptor);
-    void Timeout() { m_ss.Terminate(); }
+  void NewWidget(ConnectedDescriptor *descriptor,
+                 const RobeWidgetInformation *info);
+  void FailedWidget(ConnectedDescriptor *descriptor);
+  void Timeout() { m_ss.Terminate(); }
 
-    static const uint8_t INFO_REQUEST_LABEL = 0x14;
-    static const uint8_t INFO_RESPONSE_LABEL = 0x15;
-    static const uint8_t UID_REQUEST_LABEL = 0x24;
-    static const uint8_t UID_RESPONSE_LABEL = 0x25;
+  static const uint8_t INFO_REQUEST_LABEL = 0x14;
+  static const uint8_t INFO_RESPONSE_LABEL = 0x15;
+  static const uint8_t UID_REQUEST_LABEL = 0x24;
+  static const uint8_t UID_RESPONSE_LABEL = 0x25;
 };
 
 

@@ -52,6 +52,7 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
                                      uint16_t esta_id,
                                      uint16_t device_id,
                                      uint32_t serial,
+                                     uint16_t firmware_version,
                                      unsigned int fps_limit):
     UsbSerialDevice(owner, name, widget),
     m_ultra_widget(widget),
@@ -65,6 +66,10 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
     str <<  std::setw(2)  << digit;
   }
   m_serial = str.str();
+  str.str("");
+  str << "Serial #: " << m_serial << ", firmware "
+      << (firmware_version >> 8) << "." << (firmware_version & 0xff);
+
 
   m_ultra_widget->GetParameters(NewSingleCallback(
     this,
@@ -75,7 +80,7 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
       m_ultra_widget,
       0,
       plugin_adaptor,
-      m_serial);
+      str.str());
 
   m_ultra_widget->SetDMXCallback(
       NewCallback(
@@ -88,7 +93,7 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
       this,
       m_ultra_widget,
       0,
-      m_serial,
+      str.str(),
       plugin_adaptor->WakeUpTime(),
       5,  // allow up to 5 burst frames
       fps_limit,
@@ -100,7 +105,7 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
       this,
       m_ultra_widget,
       1,
-      m_serial,
+      str.str(),
       plugin_adaptor->WakeUpTime(),
       5,  // allow up to 5 burst frames
       fps_limit,

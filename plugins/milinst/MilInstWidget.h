@@ -39,8 +39,7 @@ class MilInstWidget {
     explicit MilInstWidget(const std::string &path)
         : m_enabled(false),
           m_path(path),
-          m_socket(NULL),
-          m_ss(NULL) {}
+          m_socket(NULL) {}
 
     virtual ~MilInstWidget();
 
@@ -59,7 +58,6 @@ class MilInstWidget {
     bool m_enabled;
     const string m_path;
     ola::io::ConnectedDescriptor *m_socket;
-    ola::io::SelectServer *m_ss;
 };
 }  // namespace milinst
 }  // namespace plugin

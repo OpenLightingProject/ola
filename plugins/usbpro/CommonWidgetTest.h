@@ -27,9 +27,6 @@
 #include "plugins/usbpro/MockEndpoint.h"
 
 
-using std::auto_ptr;
-
-
 #ifndef PLUGINS_USBPRO_COMMONWIDGETTEST_H_
 #define PLUGINS_USBPRO_COMMONWIDGETTEST_H_
 
@@ -41,8 +38,8 @@ class CommonWidgetTest: public CppUnit::TestFixture {
  protected:
     ola::io::SelectServer m_ss;
     ola::io::PipeDescriptor m_descriptor;
-    auto_ptr<ola::io::PipeDescriptor> m_other_end;
-    auto_ptr<MockEndpoint> m_endpoint;
+    std::auto_ptr<ola::io::PipeDescriptor> m_other_end;
+    std::auto_ptr<MockEndpoint> m_endpoint;
 
     void Terminate() { m_ss.Terminate(); }
 
