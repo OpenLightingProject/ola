@@ -173,7 +173,7 @@ bool E131Plugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(
       DSCP_KEY,
-      IntValidator(0, 63),
+      UIntValidator(0, 63),
       DEFAULT_DSCP_VALUE);
 
   save |= m_preferences->SetDefaultValue(
@@ -183,12 +183,12 @@ bool E131Plugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(
       INPUT_PORT_COUNT_KEY,
-      IntValidator(0, 128),
+      UIntValidator(0, 128),
       DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(
       OUTPUT_PORT_COUNT_KEY,
-      IntValidator(0, 128),
+      UIntValidator(0, 128),
       DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(true), "");

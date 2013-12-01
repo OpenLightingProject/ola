@@ -163,31 +163,31 @@ bool DummyPlugin::SetDefaultPreferences() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DUMMY_DEVICE_COUNT_KEY,
-                                         IntValidator(0, 254),
+                                         UIntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(DIMMER_COUNT_KEY,
-                                         IntValidator(0, 254),
+                                         UIntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(DIMMER_SUBDEVICE_COUNT_KEY,
-                                         IntValidator(0, 255),
+                                         UIntValidator(0, 255),
                                          DEFAULT_SUBDEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(MOVING_LIGHT_COUNT_KEY,
-                                         IntValidator(0, 254),
+                                         UIntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(ACK_TIMER_COUNT_KEY,
-                                         IntValidator(0, 254),
+                                         UIntValidator(0, 254),
                                          DEFAULT_ACK_TIMER_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(ADVANCED_DIMMER_KEY,
-                                         IntValidator(0, 254),
+                                         UIntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(SENSOR_COUNT_KEY,
-                                         IntValidator(0, 254),
+                                         UIntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 
   if (save)

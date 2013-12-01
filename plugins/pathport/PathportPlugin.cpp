@@ -116,7 +116,7 @@ bool PathportPlugin::SetDefaultPreferences() {
     return false;
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_DSCP_KEY,
-                                         IntValidator(0, 63),
+                                         UIntValidator(0, 63),
                                          DEFAULT_DSCP_VALUE);
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_IP_KEY,
                                          StringValidator(true), "");
@@ -129,7 +129,7 @@ bool PathportPlugin::SetDefaultPreferences() {
                          ola::math::Random(0, (1 << 24) - 1));
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
-                                         IntValidator(0, UINT_MAX),
+                                         UIntValidator(0, UINT_MAX),
                                          IntToString(product_id));
 
   if (save)
