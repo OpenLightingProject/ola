@@ -214,7 +214,7 @@ void SPIDevice::SetDefaults() {
   m_preferences->SetDefaultValue(SPIBackendKey(), SetValidator(valid_backends),
                                  SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPISpeedKey(), IntValidator(0, 32000000),
-                                 "100000");
+                                 "1000000");
   m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), "false");
   m_preferences->SetDefaultValue(PortCountKey(), IntValidator(1, 8), "1");
   m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), "0");
