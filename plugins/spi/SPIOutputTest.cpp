@@ -315,7 +315,7 @@ void SPIOutputTest::testCombinedLPD8806Control() {
 }
 
 /**
- * Test DMX writes in the individual LPD8806 mode.
+ * Test DMX writes in the individual P9813 mode.
  */
 void SPIOutputTest::testIndividualP9813Control() {
   FakeSPIBackend backend(2);
@@ -374,7 +374,7 @@ void SPIOutputTest::testIndividualP9813Control() {
 }
 
 /**
- * Test DMX writes in the combined LPD8806 mode.
+ * Test DMX writes in the combined P9813 mode.
  */
 void SPIOutputTest::testCombinedP9813Control() {
   FakeSPIBackend backend(2);
