@@ -67,8 +67,18 @@ using std::min;
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutput::SPI_MODE = 0;
+
+/**
+ * These constants are used to determine the number of DMX Slots per pixel
+ * The p9813 uses another byte preceding each of the three bytes as a kind
+ * of header.
+ */
 const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
+
+// Number of bytes that each P9813 pixel uses on the spi wires
+const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
@@ -129,6 +139,10 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                        "LPD8806 Individual Control");
   m_personality_manager.AddPersonality(LPD8806_SLOTS_PER_PIXEL,
                                        "LPD8806 Combined Control");
+  m_personality_manager.AddPersonality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
+                                       "P9813 Individual Control");
+  m_personality_manager.AddPersonality(P9813_SLOTS_PER_PIXEL,
+                                       "P9813 Combined Control");
   m_personality_manager.SetActivePersonality(1);
 }
 
@@ -209,6 +223,12 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
       break;
     case 4:
       CombinedLPD8806Control(buffer);
+      break;
+    case 5:
+      IndividualP9813Control(buffer);
+      break;
+    case 6:
+      CombinedP9813Control(buffer);
       break;
     default:
       break;
@@ -311,6 +331,88 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
     }
   }
   m_backend->Commit(m_output_number);
+}
+
+void SPIOutput::IndividualP9813Control(const DmxBuffer &buffer) {
+  // We need 4 bytes of zeros in the beginning and 8 bytes at
+  // the end
+  const uint8_t latch_bytes = 3 * P9813_SPI_BYTES_PER_PIXEL;
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  if (buffer.Size() - first_slot < P9813_SLOTS_PER_PIXEL) {
+    // not even 3 bytes of data, don't bother updating
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count * P9813_SPI_BYTES_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length,
+                                        latch_bytes);
+
+  if (!output)
+    return;
+
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    // Convert RGB to P9813 Pixel
+    unsigned int offset = first_slot + i * P9813_SLOTS_PER_PIXEL;
+    // We need to avoid the first 4 bytes of the buffer since that acts as a
+    // start of frame delimiter
+    unsigned int spi_offset = (i + 1) * P9813_SPI_BYTES_PER_PIXEL;
+    uint8_t r = 0;
+    uint8_t b = 0;
+    uint8_t g = 0;
+    if (buffer.Size() - offset >= P9813_SLOTS_PER_PIXEL) {
+      r = buffer.Get(offset);
+      g = buffer.Get(offset + 1);
+      b = buffer.Get(offset + 2);
+    }
+    output[spi_offset] = P9813CreateFlag(r, g, b);
+    output[spi_offset + 1] = b;
+    output[spi_offset + 2] = g;
+    output[spi_offset + 3] = r;
+  }
+  m_backend->Commit(m_output_number);
+}
+
+void SPIOutput::CombinedP9813Control(const DmxBuffer &buffer) {
+  const uint8_t latch_bytes = 3 * P9813_SPI_BYTES_PER_PIXEL;
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+
+  if (buffer.Size() - first_slot < P9813_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << P9813_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  uint8_t pixel_data[P9813_SPI_BYTES_PER_PIXEL];
+  pixel_data[3] = buffer.Get(first_slot);  // Get Red
+  pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
+  pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
+  pixel_data[0] = P9813CreateFlag(pixel_data[3], pixel_data[2],
+                                  pixel_data[1]);
+
+  const unsigned int length = m_pixel_count * P9813_SPI_BYTES_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, length, latch_bytes);
+  if (!output)
+    return;
+
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    memcpy(&output[(i + 1) * P9813_SPI_BYTES_PER_PIXEL], pixel_data,
+           P9813_SPI_BYTES_PER_PIXEL);
+  }
+  m_backend->Commit(m_output_number);
+}
+
+/**
+ * For more information please visit:
+ * https://github.com/CoolNeon/elinux-tcl/blob/master/README.txt
+ */
+uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
+  uint8_t flag = 0;
+  flag =  (red & 0xc0) >> 6; // NOLINT
+  flag |= (green & 0xc0) >> 4;  // NOLINT
+  flag |= (blue & 0xc0) >> 2;  // NOLINT
+  return ~flag;
 }
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
