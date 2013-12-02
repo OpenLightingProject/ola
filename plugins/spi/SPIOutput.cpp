@@ -409,9 +409,9 @@ void SPIOutput::CombinedP9813Control(const DmxBuffer &buffer) {
  */
 uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
   uint8_t flag = 0;
-  flag =  (red & 0xc0) >> 6; // NOLINT
-  flag |= (green & 0xc0) >> 4;  // NOLINT
-  flag |= (blue & 0xc0) >> 2;  // NOLINT
+  flag =  (red & 0xc0) >> 6;
+  flag |= (green & 0xc0) >> 4;
+  flag |= (blue & 0xc0) >> 2;
   return ~flag;
 }
 
