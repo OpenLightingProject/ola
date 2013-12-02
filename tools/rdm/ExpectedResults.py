@@ -295,7 +295,7 @@ class AckResult(SuccessfulResult):
       command_class: RDM_GET or RDM_SET
       pid_id: The pid id we expect
       field_names: Check that these fields are present in the response
-      field_dict: Check that fields & values are present in the response
+      field_values: Check that fields & values are present in the response
       action: The action to run if this result matches
       warning: A warning message to log is this result matches
       advisory: An advisory message to log is this result matches
@@ -358,7 +358,7 @@ class AckDiscoveryResult(AckResult):
     Args:
       pid_id: The pid id we expect
       field_names: Check that these fields are present in the response
-      field_dict: Check that fields & values are present in the response
+      field_values: Check that fields & values are present in the response
       action: The action to run if this result matches
       warning: A warning message to log is this result matches
       advisory: An advisory message to log is this result matches
@@ -385,7 +385,7 @@ class AckGetResult(AckResult):
     Args:
       pid_id: The pid id we expect
       field_names: Check that these fields are present in the response
-      field_dict: Check that fields & values are present in the response
+      field_values: Check that fields & values are present in the response
       action: The action to run if this result matches
       warning: A warning message to log is this result matches
       advisory: An advisory message to log is this result matches
@@ -413,7 +413,7 @@ class AckSetResult(AckResult):
     Args:
       pid_id: The pid id we expect
       field_names: Check that these fields are present in the response
-      field_dict: Check that fields & values are present in the response
+      field_values: Check that fields & values are present in the response
       action: The action to run if this result matches
       warning: A warning message to log is this result matches
       advisory: An advisory message to log is this result matches

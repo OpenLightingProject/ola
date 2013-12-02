@@ -28,6 +28,7 @@ import struct
 from ExpectedResults import *
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
+from TestHelpers import ContainsUnprintable
 from collections import deque
 from ola import PidStore
 from ola.DUBDecoder import DecodeResponse
@@ -70,8 +71,32 @@ class GetMixin(object):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
+class GetStringMixin(object):
+  """GET Mixin for an optional string PID. Verify EXPECTED_FIELD is in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+  """
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if response.WasAcked() and self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+
+    if not response.WasAcked():
+      return
+
+    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           fields[self.EXPECTED_FIELD].encode('string-escape')))
+
 class GetRequiredMixin(object):
-  """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
+  """GET Mixin for a required PID. Verify EXPECTED_FIELD is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
@@ -84,6 +109,31 @@ class GetRequiredMixin(object):
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+
+class GetRequiredStringMixin(object):
+  """GET Mixin for a required string PID. Verify EXPECTED_FIELD is in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+  """
+  def Test(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if response.WasAcked() and self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+
+    if not response.WasAcked():
+      return
+
+    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           fields[self.EXPECTED_FIELD].encode('string-escape')))
 
 class GetWithDataMixin(object):
   """GET a PID with junk param data."""
@@ -802,7 +852,8 @@ class GetSettingDescriptionsMixin(object):
   """Perform a GET for each setting in the range 0 .. NumberOfSettings().
 
     Subclasses must define EXPECTED_FIELD, which is the field to validate the
-    index against.
+    index against and DESCRIPTION_FIELD, which is the field to check for
+    unprintable characters.
   """
   CATEGORY = TestCategory.DIMMER_SETTINGS
 
@@ -839,3 +890,12 @@ class GetSettingDescriptionsMixin(object):
       self.AddWarning(
           '%s mismatch, sent %d, received %d' %
           (self.pid, self.current_item, fields[self.EXPECTED_FIELD]))
+
+    if ContainsUnprintable(fields[self.DESCRIPTION_FIELD]):
+      self.AddAdvisory(
+          '%s field in %s for %s %d contains unprintable characters, was %s' %
+          (self.DESCRIPTION_FIELD.capitalize(),
+           self.PID,
+           self.DESCRIPTION_FIELD,
+           self.current_item,
+           fields[self.DESCRIPTION_FIELD].encode('string-escape')))
