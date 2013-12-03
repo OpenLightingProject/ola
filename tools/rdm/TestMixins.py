@@ -71,17 +71,13 @@ class GetMixin(object):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
-class GetStringMixin(object):
+class GetStringMixin(GetMixin):
   """GET Mixin for an optional string PID. Verify EXPECTED_FIELD is in the
     response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
   """
-  def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
@@ -110,18 +106,13 @@ class GetRequiredMixin(object):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
-class GetRequiredStringMixin(object):
+class GetRequiredStringMixin(GetRequiredMixin):
   """GET Mixin for a required string PID. Verify EXPECTED_FIELD is in the
     response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
   """
-  def Test(self):
-    self.AddExpectedResults(
-        self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
@@ -261,7 +252,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
   """Send a SET device label to a broadcast or vendorcast uid."""
   def Test(self):
     if not self.Property('set_device_label_supported'):
-      self.SetNotRun(' Previous set label was nacked')
+      self.SetNotRun('Previous set label was nacked')
       self.Stop()
       return
 
@@ -442,12 +433,12 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
     footprint = self.Property('dmx_footprint')
     current_address = self.Property('dmx_address')
     if footprint == 0 or current_address == 0xffff:
-      self.SetNotRun(" Device doesn't use a DMX address")
+      self.SetNotRun("Device doesn't use a DMX address")
       self.Stop()
       return
 
     if not self.Property('set_dmx_address_supported'):
-      self.SetNotRun(' Previous set start address was nacked')
+      self.SetNotRun('Previous set start address was nacked')
       self.Stop()
       return
 
@@ -528,7 +519,7 @@ class SetUndefinedSensorValues(object):
       # loop and get all values
       self._DoAction()
     else:
-      self.SetNotRun(' All sensors declared')
+      self.SetNotRun('All sensors declared')
       self.Stop()
       return
 

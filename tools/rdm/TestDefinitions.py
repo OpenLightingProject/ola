@@ -986,8 +986,8 @@ class GetParamDescription(ResponderTestFixture):
 
     if ContainsUnprintable(fields['description']):
       self.AddAdvisory(
-          'Description field in parameter description contains unprintable '
-          'characters, was %s' % fields['description'].encode('string-escape'))
+          'Description field in %s contains unprintable characters, was %s' %
+          (self.PID, fields['description'].encode('string-escape')))
 
 
 class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
@@ -1698,8 +1698,8 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
 
     if ContainsUnprintable(fields['name']):
       self.AddAdvisory(
-          'Name field in DMX personality description contains unprintable '
-          'characters, was %s' % fields['name'].encode('string-escape'))
+          'Name field in %s contains unprintable characters, was %s' %
+          (self.PID, fields['name'].encode('string-escape')))
 
 
 class GetPersonality(OptionalParameterTestFixture):
@@ -2160,9 +2160,10 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
 
     if ContainsUnprintable(fields['name']):
       self.AddAdvisory(
-          'Name field in slot description for slot %d contains unprintable '
-          'characters, was %s' % (self._slots[0],
-                                  fields['name'].encode('string-escape')))
+          'Name field in %s for slot %d contains unprintable characters, was '
+          '%s' % (self.PID,
+                  self._slots[0],
+                  fields['name'].encode('string-escape')))
 
 
 class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
@@ -5794,7 +5795,7 @@ class GetModulationFrequencyDescription(TestMixins.GetSettingDescriptionsMixin,
   EXPECTED_FIELD = 'modulation_frequency'
   #DESCRIPTION_FIELD = 'modulation_frequency_description'
   #TODO(Peter): Fixme when PID file updated!
-  DESCRIPTION_FIELD = 'modulation_frequence_description'
+  DESCRIPTION_FIELD = 'modulation_frequency_description'
 
 class GetModulationFrequencyDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                                   OptionalParameterTestFixture):

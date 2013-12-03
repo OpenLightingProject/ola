@@ -150,11 +150,13 @@ def DisplaySummary(uid, tests, device):
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
   if manufacturer_label:
-    logging.info('Manufacturer: %s' % manufacturer_label)
+    logging.info('Manufacturer: %s' %
+                 manufacturer_label.encode('string-escape'))
 
   model_description = getattr(device, 'model_description', None)
   if model_description:
-    logging.info('Model Description: %s' % model_description)
+    logging.info('Model Description: %s' %
+                 model_description.encode('string-escape'))
 
   software_version = getattr(device, 'software_version', None)
   if software_version:
