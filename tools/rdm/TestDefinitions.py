@@ -32,7 +32,6 @@ from ola import RDMConstants
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
-import TestHelpers
 from TestHelpers import ContainsUnprintable
 import TestMixins
 from TestMixins import MAX_DMX_ADDRESS
@@ -5793,8 +5792,6 @@ class GetModulationFrequencyDescription(TestMixins.GetSettingDescriptionsMixin,
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
   REQUIRES = ['number_modulation_frequencies']
   EXPECTED_FIELD = 'modulation_frequency'
-  #DESCRIPTION_FIELD = 'modulation_frequency_description'
-  #TODO(Peter): Fixme when PID file updated!
   DESCRIPTION_FIELD = 'modulation_frequency_description'
 
 class GetModulationFrequencyDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
