@@ -32,6 +32,7 @@ from ola import RDMConstants
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
+from TestHelpers import ContainsUnprintable
 import TestMixins
 from TestMixins import MAX_DMX_ADDRESS
 
@@ -982,6 +983,11 @@ class GetParamDescription(ResponderTestFixture):
           'command class field in parameter description should be 1, 2 or 3, '
           'was %d' % fields['command_class'])
 
+    if ContainsUnprintable(fields['description']):
+      self.AddAdvisory(
+          'Description field in %s contains unprintable characters, was %s' %
+          (self.PID, fields['description'].encode('string-escape')))
+
 
 class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
   """GET parameter description for a non-manufacturer pid."""
@@ -1199,7 +1205,7 @@ class AllSubDevicesGetProductDetailIdList(TestMixins.AllSubDevicesGetMixin,
 
 # Device Model Description
 #------------------------------------------------------------------------------
-class GetDeviceModelDescription(TestMixins.GetMixin,
+class GetDeviceModelDescription(TestMixins.GetStringMixin,
                                 OptionalParameterTestFixture):
   """GET the device model description."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1237,7 +1243,7 @@ class AllSubDevicesGetModelDescription(TestMixins.AllSubDevicesGetMixin,
 
 # Manufacturer Label
 #------------------------------------------------------------------------------
-class GetManufacturerLabel(TestMixins.GetMixin,
+class GetManufacturerLabel(TestMixins.GetStringMixin,
                            OptionalParameterTestFixture):
   """GET the manufacturer label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1275,7 +1281,7 @@ class AllSubDevicesGetManufacturerLabel(TestMixins.AllSubDevicesGetMixin,
 
 # Device Label
 #------------------------------------------------------------------------------
-class GetDeviceLabel(TestMixins.GetMixin,
+class GetDeviceLabel(TestMixins.GetStringMixin,
                      OptionalParameterTestFixture):
   """GET the device label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1421,6 +1427,10 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
       if language in language_set:
         self.AddAdvisory('%s listed twice in language capabilities' % language)
       language_set.add(language)
+      if ContainsUnprintable(language):
+        self.AddAdvisory(
+            'Language name in languague capabilities contains unprintable '
+            'characters, was %s' % language.encode('string-escape'))
 
     self.SetProperty('languages_capabilities', language_set)
 
@@ -1439,7 +1449,7 @@ class AllSubDevicesGetLanguageCapablities(TestMixins.AllSubDevicesGetMixin,
 
 # Language
 #------------------------------------------------------------------------------
-class GetLanguage(TestMixins.GetMixin, OptionalParameterTestFixture):
+class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   """GET the language."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
@@ -1517,7 +1527,7 @@ class AllSubDevicesGetLanguage(TestMixins.AllSubDevicesGetMixin,
 
 # Software Version Label
 #------------------------------------------------------------------------------
-class GetSoftwareVersionLabel(TestMixins.GetRequiredMixin,
+class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
                               ResponderTestFixture):
   """GET the software version label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1605,7 +1615,7 @@ class AllSubDevicesGetBootSoftwareVersion(TestMixins.AllSubDevicesGetMixin,
 
 # Boot Software Version Label
 #------------------------------------------------------------------------------
-class GetBootSoftwareLabel(TestMixins.GetMixin, OptionalParameterTestFixture):
+class GetBootSoftwareLabel(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   """GET the boot software label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
@@ -1680,6 +1690,15 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
     else:
       self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(ROOT_DEVICE, self.pid, [1])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if ContainsUnprintable(fields['name']):
+      self.AddAdvisory(
+          'Name field in %s contains unprintable characters, was %s' %
+          (self.PID, fields['name'].encode('string-escape')))
 
 
 class GetPersonality(OptionalParameterTestFixture):
@@ -2138,6 +2157,13 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
           (self._slots[0], fields['slot_number']))
       return
 
+    if ContainsUnprintable(fields['name']):
+      self.AddAdvisory(
+          'Name field in %s for slot %d contains unprintable characters, was '
+          '%s' % (self.PID,
+                  self._slots[0],
+                  fields['name'].encode('string-escape')))
+
 
 class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                    OptionalParameterTestFixture):
@@ -2458,6 +2484,12 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     if fields['supports_recording'] & 0xfc:
       self.AddWarning('bits 7-2 in the recorded message support fields are set'
                       ' for sensor %d' % sensor_number)
+
+    if ContainsUnprintable(fields['name']):
+      self.AddAdvisory(
+          'Name field in sensor definition for sensor %d  contains unprintable'
+          ' characters, was %s' % (self._current_index,
+                                   fields['name'].encode('string-escape')))
 
   def CheckCondition(self, sensor_number, fields, lhs, predicate_str, rhs):
     """Check for a condition and add a warning if it isn't true."""
@@ -3760,6 +3792,16 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
     # try to get a description for the first self test
     self.SendGet(ROOT_DEVICE, self.pid, [1])
 
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if ContainsUnprintable(fields['description']):
+      self.AddAdvisory(
+          'Description field in self test description for test number %d '
+          'contains unprintable characters, was %s' %
+          (1, fields['description'].encode('string-escape')))
+
 
 class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                        OptionalParameterTestFixture):
@@ -4766,6 +4808,7 @@ class GetLockStateDescription(TestMixins.GetSettingDescriptionsMixin,
   PID = 'LOCK_STATE_DESCRIPTION'
   REQUIRES = ['number_of_lock_states']
   EXPECTED_FIELD = 'lock_state'
+  DESCRIPTION_FIELD = 'lock_state_description'
 
 class GetLockStateDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                         OptionalParameterTestFixture):
@@ -5436,6 +5479,7 @@ class GetCurveDescription(TestMixins.GetSettingDescriptionsMixin,
   PID = 'CURVE_DESCRIPTION'
   REQUIRES = ['number_curves']
   EXPECTED_FIELD = 'curve_number'
+  DESCRIPTION_FIELD = 'curve_description'
 
 class GetCurveDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                     OptionalParameterTestFixture):
@@ -5590,6 +5634,7 @@ class GetOutputResponseTimeDescription(TestMixins.GetSettingDescriptionsMixin,
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   REQUIRES = ['number_response_options']
   EXPECTED_FIELD = 'response_time'
+  DESCRIPTION_FIELD = 'response_time_description'
 
 class GetOutputResponseTimeDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                                  OptionalParameterTestFixture):
@@ -5747,6 +5792,7 @@ class GetModulationFrequencyDescription(TestMixins.GetSettingDescriptionsMixin,
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
   REQUIRES = ['number_modulation_frequencies']
   EXPECTED_FIELD = 'modulation_frequency'
+  DESCRIPTION_FIELD = 'modulation_frequency_description'
 
 class GetModulationFrequencyDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                                   OptionalParameterTestFixture):

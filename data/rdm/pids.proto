@@ -2312,7 +2312,7 @@ pid {
     }
     field {
       type: STRING
-      name: "modulation_frequence_description"
+      name: "modulation_frequency_description"
       max_size: 32
     }
   }
@@ -3452,4 +3452,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-version: 1382755231
+version: 1386049728
