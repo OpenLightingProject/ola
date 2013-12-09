@@ -112,6 +112,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     struct ifreq *iface = (struct ifreq*) ptr;
     ptr += GetIfReqSize(ptr);
 
+    OLA_DEBUG << "Checking " << iface->ifr_name;
+
 #ifdef HAVE_SOCKADDR_DL_STRUCT
     if (iface->ifr_addr.sa_family == AF_LINK) {
       struct sockaddr_dl *sdl = (struct sockaddr_dl*) &iface->ifr_addr;
