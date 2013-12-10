@@ -40,7 +40,7 @@ UsbProConfigMessages_pb2.py: $(usbpro_proto)
 PidStoreLocation.py:
 	echo "location = '${pid_datadir}'" > PidStoreLocation.py
 
-Version.py:
+Version.py: ../../configure.ac
 	echo "version = '${VERSION}'" > Version.py
 
 clean-local:
