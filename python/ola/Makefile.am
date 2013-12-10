@@ -37,7 +37,7 @@ UsbProConfigMessages_pb2.py: $(usbpro_proto)
 	$(PROTOC) --python_out ./ -I $(usbpro_path) $(usbpro_proto)
 
 # This is a hack, but I can't find any other way to do it
-PidStoreLocation.py:
+PidStoreLocation.py: ../../configure.ac
 	echo "location = '${pid_datadir}'" > PidStoreLocation.py
 
 Version.py: ../../configure.ac
