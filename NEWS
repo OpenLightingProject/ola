@@ -35,6 +35,7 @@ X/Y/2013 ola-0.9.0`
  * Added more code documentation, cleaned up some new linter warnings.
  * Added the DISALLOW_COPY_AND_ASSIGN macro.
  * Refactor load average function out into system utils.
+ * Switch the SPI RDM responders to using the core personality management code.
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)

@@ -87,6 +87,7 @@ class PersonalityCollection {
  */
 class PersonalityManager {
  public:
+    explicit PersonalityManager() : m_active_personality(0) {}
     explicit PersonalityManager(const PersonalityCollection *personalities);
 
     uint8_t PersonalityCount() const;
@@ -94,6 +95,7 @@ class PersonalityManager {
     uint8_t ActivePersonalityNumber() const { return m_active_personality; }
     const Personality *ActivePersonality() const;
     uint16_t ActivePersonalityFootprint() const;
+    string ActivePersonalityDescription() const;
     const Personality *Lookup(uint8_t personality) const;
 
  private:

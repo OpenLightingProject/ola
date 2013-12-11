@@ -105,6 +105,12 @@ uint16_t PersonalityManager::ActivePersonalityFootprint() const {
   return personality ? personality->Footprint() : 0;
 }
 
+string PersonalityManager::ActivePersonalityDescription() const {
+  const Personality *personality = m_personalities->Lookup(
+      m_active_personality);
+  return personality ? personality->Description() : "";
+}
+
 // Lookup a personality. Personalities are numbers from 1.
 const Personality *PersonalityManager::Lookup(uint8_t personality) const {
   return m_personalities->Lookup(personality);
