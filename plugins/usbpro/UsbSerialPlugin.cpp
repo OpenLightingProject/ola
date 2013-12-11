@@ -309,11 +309,11 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
                                          DEFAULT_DEVICE_DIR);
 
   save |= m_preferences->SetDefaultValue(USB_PRO_FPS_LIMIT_KEY,
-                                         IntValidator(0, MAX_PRO_FPS_LIMIT),
+                                         UIntValidator(0, MAX_PRO_FPS_LIMIT),
                                          DEFAULT_PRO_FPS_LIMIT);
 
   save |= m_preferences->SetDefaultValue(ULTRA_FPS_LIMIT_KEY,
-                                         IntValidator(0, MAX_ULTRA_FPS_LIMIT),
+                                         UIntValidator(0, MAX_ULTRA_FPS_LIMIT),
                                          DEFAULT_ULTRA_FPS_LIMIT);
 
   save |= m_preferences->SetDefaultValue(TRI_USE_RAW_RDM_KEY,
