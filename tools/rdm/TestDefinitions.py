@@ -1904,7 +1904,7 @@ class GetStartAddress(ResponderTestFixture):
     if self.Property('dmx_start_address') != fields['dmx_address']:
       self.SetFailed(
           'DMX_START_ADDRESS (%d) doesn\'t match what was in DEVICE_INFO (%d)'
-          % (self.Property('dmx_start_address'), fields['dmx_address']))
+          % (fields['dmx_address'], self.Property('dmx_start_address')))
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
