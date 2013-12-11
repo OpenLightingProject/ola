@@ -150,9 +150,12 @@ DummyResponder::DummyResponder(const UID &uid)
   m_personality_manager.SetActivePersonality(DEFAULT_PERSONALITY);
 
 #ifdef HAVE_GETLOADAVG
-  m_sensors.push_back(new LoadSensor(0, "Load Average 1 minute"));
-  m_sensors.push_back(new LoadSensor(1, "Load Average 5 minutes"));
-  m_sensors.push_back(new LoadSensor(2, "Load Average 15 minutes"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_1_MIN,
+                                     "Load Average 1 minute"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_5_MINS,
+                                     "Load Average 5 minutes"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
+                                     "Load Average 15 minutes"));
 #endif
 }
 

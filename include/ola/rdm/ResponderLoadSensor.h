@@ -30,6 +30,7 @@
 
 #include <string>
 #include "ola/rdm/ResponderSensor.h"
+#include "ola/system/SystemUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -38,7 +39,8 @@ namespace rdm {
  */
 class LoadSensor: public Sensor {
  public:
-  LoadSensor(const uint8_t load_average, const string &description)
+  LoadSensor(const ola::system::load_averages load_average,
+             const string &description)
       : Sensor(SENSOR_OTHER,
                UNITS_NONE,
                PREFIX_CENTI,
@@ -62,7 +64,7 @@ class LoadSensor: public Sensor {
   int16_t PollSensor();
 
  private:
-  uint8_t m_load_average;
+  ola::system::load_averages m_load_average;
 };
 }  // namespace rdm
 }  // namespace ola

@@ -28,7 +28,7 @@
 namespace ola {
 namespace system {
 
-bool LoadAverage(uint8_t average, double *value) {
+bool LoadAverage(load_averages average, double *value) {
 #ifdef HAVE_GETLOADAVG
   if (average >= NUMBER_LOAD_AVERAGES) {
     return false;

@@ -29,13 +29,19 @@ namespace system {
 
 static const uint8_t NUMBER_LOAD_AVERAGES = 3;
 
+typedef enum {
+  LOAD_AVERAGE_1_MIN = 0,
+  LOAD_AVERAGE_5_MINS = 1,
+  LOAD_AVERAGE_15_MINS = 2
+} load_averages;
+
 /**
  * @brief Get the system load average
  * @param[in] average the load average to fetch
  * @param[out] value a pointer to where the value will be stored
  * @returns true if the requested load average was fetched, false otherwise
  */
-bool LoadAverage(uint8_t average, double *value);
+bool LoadAverage(load_averages average, double *value);
 }  // namespace system
 }  // namespace ola
 #endif  // INCLUDE_OLA_SYSTEM_SYSTEMUTILS_H_
