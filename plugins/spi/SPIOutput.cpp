@@ -39,6 +39,8 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderLoadSensor.h"
+#include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
@@ -52,6 +54,7 @@ namespace spi {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
+using ola::rdm::LoadSensor;
 using ola::rdm::NR_DATA_OUT_OF_RANGE;
 using ola::rdm::NR_FORMAT_ERROR;
 using ola::rdm::RDMCallback;
@@ -114,6 +117,17 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
   { ola::rdm::PID_IDENTIFY_DEVICE,
     &SPIOutput::GetIdentify,
     &SPIOutput::SetIdentify},
+#ifdef HAVE_GETLOADAVG
+  { ola::rdm::PID_SENSOR_DEFINITION,
+    &SPIOutput::GetSensorDefinition,
+    NULL},
+  { ola::rdm::PID_SENSOR_VALUE,
+    &SPIOutput::GetSensorValue,
+    &SPIOutput::SetSensorValue},
+  { ola::rdm::PID_RECORD_SENSORS,
+    NULL,
+    &SPIOutput::RecordSensor},
+#endif
   { 0, NULL, NULL},
 };
 
@@ -144,6 +158,12 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_personality_manager.AddPersonality(P9813_SLOTS_PER_PIXEL,
                                        "P9813 Combined Control");
   m_personality_manager.SetActivePersonality(1);
+
+#ifdef HAVE_GETLOADAVG
+  m_sensors.push_back(new LoadSensor(0, "Load Average 1 minute"));
+  m_sensors.push_back(new LoadSensor(1, "Load Average 5 minutes"));
+  m_sensors.push_back(new LoadSensor(2, "Load Average 15 minutes"));
+#endif
 }
 
 
@@ -422,12 +442,12 @@ const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   }
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
-      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 1,
+      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 2,
       footprint,
       m_personality_manager.ActivePersonalityNumber(),
       m_personality_manager.PersonalityCount(),
       footprint ? m_start_address : ola::rdm::ZERO_FOOTPRINT_DMX_ADDRESS,
-      0, 0);
+      0, m_sensors.size());
 }
 
 const RDMResponse *SPIOutput::GetProductDetailList(
@@ -572,6 +592,32 @@ const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
     InternalWriteDMX(identify_buffer);
   }
   return response;
+}
+
+/**
+ * PID_SENSOR_DEFINITION
+ */
+const RDMResponse *SPIOutput::GetSensorDefinition(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSensorDefinition(request, m_sensors);
+}
+
+/**
+ * PID_SENSOR_VALUE
+ */
+const RDMResponse *SPIOutput::GetSensorValue(const RDMRequest *request) {
+  return ResponderHelper::GetSensorValue(request, m_sensors);
+}
+
+const RDMResponse *SPIOutput::SetSensorValue(const RDMRequest *request) {
+  return ResponderHelper::SetSensorValue(request, m_sensors);
+}
+
+/**
+ * PID_RECORD_SENSORS
+ */
+const RDMResponse *SPIOutput::RecordSensor(const RDMRequest *request) {
+  return ResponderHelper::RecordSensor(request, m_sensors);
 }
 }  // namespace spi
 }  // namespace plugin
