@@ -11,9 +11,10 @@ libolacommon_la_LIBADD = base/libolabase.la \
                          protocol/libolaproto.la \
                          rdm/libolardm.la \
                          rpc/libstreamrpcchannel.la \
+                         system/libolasystem.la \
                          thread/libthread.la \
                          timecode/libtimecode.la \
                          utils/libolautils.la
 
-SUBDIRS = base dmx export_map file web http io protocol rpc utils \
-          network math messaging rdm thread testing timecode
+SUBDIRS = base dmx export_map file web http io protocol rpc utils network \
+          math messaging rdm system thread testing timecode
