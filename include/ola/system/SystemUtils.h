@@ -13,26 +13,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * ResponderLoadSensor.cpp
+ * SystemUtils.h
+ * System Util functions.
  * Copyright (C) 2013 Peter Newman
  */
 
-#include "ola/Logging.h"
-#include "ola/rdm/ResponderLoadSensor.h"
-#include "ola/system/SystemUtils.h"
+#ifndef INCLUDE_OLA_SYSTEM_SYSTEMUTILS_H_
+#define INCLUDE_OLA_SYSTEM_SYSTEMUTILS_H_
+
+#include <stdint.h>
+#include <stdlib.h>
 
 namespace ola {
-namespace rdm {
+namespace system {
+
+static const uint8_t NUMBER_LOAD_AVERAGES = 3;
+
+typedef enum {
+  LOAD_AVERAGE_1_MIN = 0,
+  LOAD_AVERAGE_5_MINS = 1,
+  LOAD_AVERAGE_15_MINS = 2
+} load_averages;
+
 /**
- * Fetch a Sensor value
+ * @brief Get the system load average
+ * @param[in] average the load average to fetch
+ * @param[out] value a pointer to where the value will be stored
+ * @returns true if the requested load average was fetched, false otherwise
  */
-int16_t LoadSensor::PollSensor() {
-  double average;
-  if (!ola::system::LoadAverage(m_load_average, &average)) {
-    return LOAD_SENSOR_ERROR_VALUE;
-  } else {
-    return static_cast<int16_t>(average * 100);
-  }
-}
-}  // namespace rdm
+bool LoadAverage(load_averages average, double *value);
+}  // namespace system
 }  // namespace ola
+#endif  // INCLUDE_OLA_SYSTEM_SYSTEMUTILS_H_

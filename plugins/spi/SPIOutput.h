@@ -28,6 +28,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderSensor.h"
 
 namespace ola {
 namespace plugin {
@@ -104,101 +105,107 @@ class PersonalityManager {
 
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
-    struct Options {
-      uint8_t pixel_count;
-      uint8_t output_number;
+  struct Options {
+    uint8_t pixel_count;
+    uint8_t output_number;
 
-      explicit Options(uint8_t output_number)
-          : pixel_count(25),  // For the https://www.adafruit.com/products/738
-            output_number(output_number) {
-      }
-    };
+    explicit Options(uint8_t output_number)
+        : pixel_count(25),  // For the https://www.adafruit.com/products/738
+          output_number(output_number) {
+    }
+  };
 
-    SPIOutput(const UID &uid,
-              class SPIBackendInterface *backend,
-              const Options &options);
+  SPIOutput(const UID &uid,
+            class SPIBackendInterface *backend,
+            const Options &options);
 
-    uint8_t GetPersonality() const;
-    bool SetPersonality(uint16_t personality);
-    uint16_t GetStartAddress() const;
-    bool SetStartAddress(uint16_t start_address);
-    unsigned int PixelCount() const { return m_pixel_count; }
+  uint8_t GetPersonality() const;
+  bool SetPersonality(uint16_t personality);
+  uint16_t GetStartAddress() const;
+  bool SetStartAddress(uint16_t start_address);
+  unsigned int PixelCount() const { return m_pixel_count; }
 
-    string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer);
+  string Description() const;
+  bool WriteDMX(const DmxBuffer &buffer);
 
-    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback);
+  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMCallback *callback);
 
  private:
-    /**
-     * The RDM Operations for the MovingLightResponder.
-     */
-    class RDMOps : public ola::rdm::ResponderOps<SPIOutput> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+  /**
+   * The RDM Operations for the MovingLightResponder.
+   */
+  class RDMOps : public ola::rdm::ResponderOps<SPIOutput> {
+   public:
+    static RDMOps *Instance() {
+      if (!instance)
+        instance = new RDMOps();
+      return instance;
+    }
 
-      private:
-        RDMOps() : ola::rdm::ResponderOps<SPIOutput>(PARAM_HANDLERS) {}
+   private:
+    RDMOps() : ola::rdm::ResponderOps<SPIOutput>(PARAM_HANDLERS) {}
 
-        static RDMOps *instance;
-    };
+    static RDMOps *instance;
+  };
 
-    class SPIBackendInterface *m_backend;
-    const uint8_t m_output_number;
-    string m_spi_device_name;
-    const UID m_uid;
-    const unsigned int m_pixel_count;
-    uint16_t m_start_address;  // starts from 1
-    bool m_identify_mode;
-    PersonalityManager m_personality_manager;
+  class SPIBackendInterface *m_backend;
+  const uint8_t m_output_number;
+  string m_spi_device_name;
+  const UID m_uid;
+  const unsigned int m_pixel_count;
+  uint16_t m_start_address;  // starts from 1
+  bool m_identify_mode;
+  PersonalityManager m_personality_manager;
+  ola::rdm::Sensors m_sensors;
 
-    // DMX methods
-    bool InternalWriteDMX(const DmxBuffer &buffer);
-    void IndividualWS2801Control(const DmxBuffer &buffer);
-    void CombinedWS2801Control(const DmxBuffer &buffer);
-    void IndividualLPD8806Control(const DmxBuffer &buffer);
-    void CombinedLPD8806Control(const DmxBuffer &buffer);
-    void IndividualP9813Control(const DmxBuffer &buffer);
-    void CombinedP9813Control(const DmxBuffer &buffer);
-    unsigned int LPD8806BufferSize() const;
-    void WriteSPIData(const uint8_t *data, unsigned int length);
+  // DMX methods
+  bool InternalWriteDMX(const DmxBuffer &buffer);
+  void IndividualWS2801Control(const DmxBuffer &buffer);
+  void CombinedWS2801Control(const DmxBuffer &buffer);
+  void IndividualLPD8806Control(const DmxBuffer &buffer);
+  void CombinedLPD8806Control(const DmxBuffer &buffer);
+  void IndividualP9813Control(const DmxBuffer &buffer);
+  void CombinedP9813Control(const DmxBuffer &buffer);
+  unsigned int LPD8806BufferSize() const;
+  void WriteSPIData(const uint8_t *data, unsigned int length);
 
-    // RDM methods
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetProductDetailList(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-    const RDMResponse *GetDmxPersonality(const RDMRequest *request);
-    const RDMResponse *SetDmxPersonality(const RDMRequest *request);
-    const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-    const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
+  // RDM methods
+  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  const RDMResponse *GetProductDetailList(const RDMRequest *request);
+  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  const RDMResponse *GetDmxPersonality(const RDMRequest *request);
+  const RDMResponse *SetDmxPersonality(const RDMRequest *request);
+  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  const RDMResponse *GetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentify(const RDMRequest *request);
+  const RDMResponse *GetSensorDefinition(const RDMRequest *request);
+  const RDMResponse *GetSensorValue(const RDMRequest *request);
+  const RDMResponse *SetSensorValue(const RDMRequest *request);
+  const RDMResponse *RecordSensor(const RDMRequest *request);
 
-    // Helpers
-    uint8_t P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue);
 
-    static const uint8_t SPI_MODE;
-    static const uint8_t SPI_BITS_PER_WORD;
-    static const uint16_t SPI_DELAY;
-    static const uint32_t SPI_SPEED;
-    static const uint16_t WS2801_SLOTS_PER_PIXEL;
-    static const uint16_t LPD8806_SLOTS_PER_PIXEL;
-    static const uint16_t P9813_SLOTS_PER_PIXEL;
-    static const uint16_t P9813_SPI_BYTES_PER_PIXEL;
+  // Helpers
+  uint8_t P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue);
 
-    static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
-        PARAM_HANDLERS[];
+  static const uint8_t SPI_MODE;
+  static const uint8_t SPI_BITS_PER_WORD;
+  static const uint16_t SPI_DELAY;
+  static const uint32_t SPI_SPEED;
+  static const uint16_t WS2801_SLOTS_PER_PIXEL;
+  static const uint16_t LPD8806_SLOTS_PER_PIXEL;
+  static const uint16_t P9813_SLOTS_PER_PIXEL;
+  static const uint16_t P9813_SPI_BYTES_PER_PIXEL;
+
+  static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
+      PARAM_HANDLERS[];
 };
 }  // namespace spi
 }  // namespace plugin
