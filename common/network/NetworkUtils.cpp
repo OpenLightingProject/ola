@@ -46,6 +46,9 @@ typedef uint32_t in_addr_t;
 namespace ola {
 namespace network {
 
+using ola::network::IPV4Address;
+using std::string;
+using std::vector;
 
 bool StringToAddress(const string &address, struct in_addr &addr) {
   bool ok;
@@ -270,7 +273,7 @@ string FQDN() {
 
 string FullHostname() {
   return FQDN();
-};
+}
 
 
 string Hostname() {
