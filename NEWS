@@ -21,6 +21,7 @@ X/Y/2013 ola-0.9.0`
  * Print a warning if no Logic device is found when using the RDM sniffer.
  * Added checks to the RDM tests to flag if non-printable characters are
    returned in any RDM strings - #262
+ * Added support for the P9813 family of SPI pixels.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265
