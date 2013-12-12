@@ -4,6 +4,8 @@ X/Y/2013 ola-0.9.0`
    #266
  * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
  * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
+ * Renamed personaility_count(sic) to personality_count in device_info_s struct
+   in ola::rdm::RDMAPI
 
  Features:
  * Added priority support for input ports - #259

@@ -161,8 +161,8 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                       "P9813 Individual Control"));
   personalities.push_back(Personality(P9813_SLOTS_PER_PIXEL,
                                       "P9813 Combined Control"));
-  m_personality_manager = PersonalityManager(
-      new PersonalityCollection(personalities));
+  m_personality_collection = new PersonalityCollection(personalities);
+  m_personality_manager = PersonalityManager(m_personality_collection);
   m_personality_manager.SetActivePersonality(1);
 
 #ifdef HAVE_GETLOADAVG
