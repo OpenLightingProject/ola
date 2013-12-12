@@ -41,7 +41,7 @@ bool Open(const std::string &path, int oflag, int *fd);
 
 /**
  * @brief Convert an integer baud rate to the termios struct speed_t
- * @param[in] baudrate value to convert
+ * @param[in] value the baudrate value to convert
  * @param[out] output a pointer where the value will be stored
  * @returns true if the value was converted, false if the baud rate wasn't
  * supported by the method.

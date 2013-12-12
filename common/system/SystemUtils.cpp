@@ -13,26 +13,44 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * ResponderLoadSensor.cpp
+ * SystemUtils.cpp
+ * System Helper methods.
  * Copyright (C) 2013 Peter Newman
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "ola/Logging.h"
-#include "ola/rdm/ResponderLoadSensor.h"
 #include "ola/system/SystemUtils.h"
 
 namespace ola {
-namespace rdm {
-/**
- * Fetch a Sensor value
- */
-int16_t LoadSensor::PollSensor() {
-  double average;
-  if (!ola::system::LoadAverage(m_load_average, &average)) {
-    return LOAD_SENSOR_ERROR_VALUE;
-  } else {
-    return static_cast<int16_t>(average * 100);
+namespace system {
+
+bool LoadAverage(load_averages average, double *value) {
+#ifdef HAVE_GETLOADAVG
+  if (average >= NUMBER_LOAD_AVERAGES) {
+    return false;
   }
+  double averages[NUMBER_LOAD_AVERAGES];
+  uint8_t returned;
+  returned = getloadavg(averages, NUMBER_LOAD_AVERAGES);
+  if (returned != NUMBER_LOAD_AVERAGES) {
+    OLA_WARN << "getloadavg only returned " << static_cast<int>(returned)
+        << " values, expecting " << static_cast<int>(NUMBER_LOAD_AVERAGES)
+        << " values";
+    return false;
+  } else {
+    *value = averages[average];
+    return true;
+  }
+#else
+  // No getloadavg, do something else if Windows?
+  OLA_WARN << "getloadavg not supported, can't fetch value";
+  return false;
+#endif
 }
-}  // namespace rdm
+
+}  // namespace system
 }  // namespace ola

@@ -17,6 +17,10 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -29,6 +33,8 @@
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderLoadSensor.h"
+#include "ola/rdm/ResponderSensor.h"
 
 namespace ola {
 namespace rdm {
@@ -117,6 +123,17 @@ const ResponderOps<DummyResponder>::ParamHandler
   { PID_REAL_TIME_CLOCK,
     &DummyResponder::GetRealTimeClock,
     NULL},
+#ifdef HAVE_GETLOADAVG
+  { PID_SENSOR_DEFINITION,
+    &DummyResponder::GetSensorDefinition,
+    NULL},
+  { PID_SENSOR_VALUE,
+    &DummyResponder::GetSensorValue,
+    &DummyResponder::SetSensorValue},
+  { PID_RECORD_SENSORS,
+    NULL,
+    &DummyResponder::RecordSensor},
+#endif
   { OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyResponder::GetOlaCodeVersion,
     NULL},
@@ -131,6 +148,15 @@ DummyResponder::DummyResponder(const UID &uid)
       m_personality_manager(Personalities::Instance()) {
   // default to a personality with a non-0 footprint.
   m_personality_manager.SetActivePersonality(DEFAULT_PERSONALITY);
+
+#ifdef HAVE_GETLOADAVG
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_1_MIN,
+                                     "Load Average 1 minute"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_5_MINS,
+                                     "Load Average 5 minutes"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
+                                     "Load Average 15 minutes"));
+#endif
 }
 
 /*
@@ -167,10 +193,10 @@ const RDMResponse *DummyResponder::GetParamDescription(
 const RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DEVICE_MODEL,
-      PRODUCT_CATEGORY_OTHER, 2,
+      PRODUCT_CATEGORY_OTHER, 3,
       &m_personality_manager,
       m_start_address,
-      0, 0);
+      0, m_sensors.size());
 }
 
 /**
@@ -297,6 +323,32 @@ const RDMResponse *DummyResponder::GetDeviceModelDescription(
 const RDMResponse *DummyResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Software Version");
+}
+
+/**
+ * PID_SENSOR_DEFINITION
+ */
+const RDMResponse *DummyResponder::GetSensorDefinition(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSensorDefinition(request, m_sensors);
+}
+
+/**
+ * PID_SENSOR_VALUE
+ */
+const RDMResponse *DummyResponder::GetSensorValue(const RDMRequest *request) {
+  return ResponderHelper::GetSensorValue(request, m_sensors);
+}
+
+const RDMResponse *DummyResponder::SetSensorValue(const RDMRequest *request) {
+  return ResponderHelper::SetSensorValue(request, m_sensors);
+}
+
+/**
+ * PID_RECORD_SENSORS
+ */
+const RDMResponse *DummyResponder::RecordSensor(const RDMRequest *request) {
+  return ResponderHelper::RecordSensor(request, m_sensors);
 }
 
 const RDMResponse *DummyResponder::GetOlaCodeVersion(

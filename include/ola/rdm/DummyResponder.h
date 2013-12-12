@@ -32,6 +32,7 @@
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderOps.h"
 #include "ola/rdm/ResponderPersonality.h"
+#include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
@@ -86,6 +87,7 @@ class DummyResponder: public RDMControllerInterface {
   bool m_identify_mode;
   uint32_t m_lamp_strikes;
   PersonalityManager m_personality_manager;
+  Sensors m_sensors;
 
   const RDMResponse *GetParamDescription(const RDMRequest *request);
   const RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -110,6 +112,10 @@ class DummyResponder: public RDMControllerInterface {
   const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
   const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
   const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
+  const RDMResponse *GetSensorDefinition(const RDMRequest *request);
+  const RDMResponse *GetSensorValue(const RDMRequest *request);
+  const RDMResponse *SetSensorValue(const RDMRequest *request);
+  const RDMResponse *RecordSensor(const RDMRequest *request);
 
   static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint8_t DEFAULT_PERSONALITY = 2;

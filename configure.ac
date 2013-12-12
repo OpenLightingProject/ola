@@ -666,6 +666,7 @@ AC_OUTPUT( Makefile \
     common/rdm/testdata/Makefile \
     common/rdm/testdata/pids/Makefile \
     common/rpc/Makefile \
+    common/system/Makefile \
     common/testing/Makefile \
     common/thread/Makefile \
     common/timecode/Makefile \
@@ -693,6 +694,7 @@ AC_OUTPUT( Makefile \
     include/ola/rdm/Makefile \
     include/ola/slp/Makefile \
     include/ola/stl/Makefile \
+    include/ola/system/Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \

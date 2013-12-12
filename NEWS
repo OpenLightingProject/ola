@@ -13,28 +13,30 @@ X/Y/2013 ola-0.9.0
  * Added more RDM responder tests to cover some slot related edge cases.
  * Log an error if we try and run an RDM test that doesn't exist.
  * Refactor sensor functionality in the software RDM responders and add a load
-   average sensor to them.
+   average sensor to them and the SPI responder.
  * Add a class to represent MAC addresses and support for MAC address RDM types
  * Added pretty printing of sensor definition messages.
- * Added a --duration option to the show recorder - #255
+ * Added a --duration option to the show recorder - #255.
  * Add a warning if the firmware in an Enttec USB Pro widget doesn't support
-   RDM - #275
+   RDM - #275.
  * Print a warning if no Logic device is found when using the RDM sniffer.
  * Added checks to the RDM tests to flag if non-printable characters are
-   returned in any RDM strings - #262
+   returned in any RDM strings - #262.
+ * Added support for the P9813 family of SPI pixels.
 
  Bugs:
- * Build fixes for OS X 10.9 - #265
- * Build fixes for FreeBSD 10.0-BETA3
+ * Build fixes for OS X 10.9 - #265.
+ * Build fixes for FreeBSD 10.0-BETA3.
  * Fix a bug in the RDM tests relating to Fail & Startup modes.
  * Fix the web and CLI UIs so they work if strings from RDM devices have
-   unprintable characters in them - #263
+   unprintable characters in them - #263.
 
  Internal:
  * Switched to using a custom generator for the C++ RPC Code.
  * Split PID data into 3 files.
  * Added more code documentation, cleaned up some new linter warnings.
- * Added the DISALLOW_COPY_AND_ASSIGN macro
+ * Added the DISALLOW_COPY_AND_ASSIGN macro.
+ * Refactor load average function out into system utils.
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)
