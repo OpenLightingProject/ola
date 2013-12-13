@@ -41,6 +41,7 @@ namespace rdm {
 class DummyResponder: public RDMControllerInterface {
  public:
   explicit DummyResponder(const UID &uid);
+  ~DummyResponder();
 
   void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 

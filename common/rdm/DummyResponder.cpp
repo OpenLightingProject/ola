@@ -24,10 +24,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "ola/base/Array.h"
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
-#include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DummyResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
@@ -35,6 +35,7 @@
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderLoadSensor.h"
 #include "ola/rdm/ResponderSensor.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -157,6 +158,10 @@ DummyResponder::DummyResponder(const UID &uid)
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
                                      "Load Average 15 minutes"));
 #endif
+}
+
+DummyResponder::~DummyResponder() {
+  STLDeleteElements(&m_sensors);
 }
 
 /*
