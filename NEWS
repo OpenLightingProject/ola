@@ -4,8 +4,6 @@ X/Y/2013 ola-0.9.0`
    #266
  * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
  * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
- * Renamed personaility_count(sic) to personality_count in device_info_s struct
-   in ola::rdm::RDMAPI
 
  Features:
  * Added priority support for input ports - #259
@@ -24,6 +22,8 @@ X/Y/2013 ola-0.9.0`
  * Added checks to the RDM tests to flag if non-printable characters are
    returned in any RDM strings - #262.
  * Added support for the P9813 family of SPI pixels.
+ * Show dashes in the CLI DMX monitor if a universe has fewer than 512
+   channels.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265.
