@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 #define INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -79,6 +80,8 @@ class PersonalityCollection {
 
  private:
     const PersonalityList m_personalities;
+
+    DISALLOW_COPY_AND_ASSIGN(PersonalityCollection);
 };
 
 
@@ -101,6 +104,8 @@ class PersonalityManager {
  private:
     const PersonalityCollection *m_personalities;
     uint8_t m_active_personality;
+
+    DISALLOW_COPY_AND_ASSIGN(PersonalityManager);
 };
 }  // namespace rdm
 }  // namespace ola
