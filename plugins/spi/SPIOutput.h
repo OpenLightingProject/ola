@@ -21,6 +21,7 @@
 #ifndef PLUGINS_SPI_SPIOUTPUT_H_
 #define PLUGINS_SPI_SPIOUTPUT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/DmxBuffer.h"
@@ -28,6 +29,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/ResponderSensor.h"
 
 namespace ola {
@@ -37,71 +39,6 @@ namespace spi {
 using ola::rdm::UID;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
-
-class Personality {
- public:
-    Personality(uint16_t footprint, const string &description)
-        : m_footprint(footprint),
-          m_description(description) {
-    }
-
-    uint16_t footprint() const { return m_footprint; }
-    string description() const { return m_description; }
-
- private:
-    uint16_t m_footprint;
-    const string m_description;
-};
-
-class PersonalityManager {
- public:
-    PersonalityManager() : m_active_personality(0) {}
-
-    ~PersonalityManager() {
-      STLDeleteElements(&m_personalities);
-    }
-
-    void AddPersonality(uint16_t footprint, const string &description) {
-      m_personalities.push_back(new Personality(footprint, description));
-    }
-
-    uint8_t PersonalityCount() const { return m_personalities.size(); }
-
-    bool SetActivePersonality(uint8_t personality) {
-      if (personality == 0 || personality > m_personalities.size())
-        return false;
-      m_active_personality = personality;
-      return true;
-    }
-
-    uint8_t ActivePersonalityNumber() const { return m_active_personality; }
-
-    const Personality *ActivePersonality() const {
-      return Lookup(m_active_personality);
-    }
-
-    uint16_t ActivePersonalityFootprint() const {
-      const Personality *personality = Lookup(m_active_personality);
-      return personality ? personality->footprint() : 0;
-    }
-
-    string ActivePersonalityDescription() const {
-      const Personality *personality = Lookup(m_active_personality);
-      return personality ? personality->description() : "";
-    }
-
-    // Lookup a personality. Personalities are numbers from 1.
-    const Personality *Lookup(uint8_t personality) const {
-      if (personality == 0 || personality > m_personalities.size())
-        return NULL;
-      return m_personalities[personality - 1];
-    }
-
- private:
-    std::vector<Personality*> m_personalities;
-    uint8_t m_active_personality;
-};
-
 
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
@@ -118,6 +55,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   SPIOutput(const UID &uid,
             class SPIBackendInterface *backend,
             const Options &options);
+  ~SPIOutput();
 
   uint8_t GetPersonality() const;
   bool SetPersonality(uint16_t personality);
@@ -158,7 +96,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   const unsigned int m_pixel_count;
   uint16_t m_start_address;  // starts from 1
   bool m_identify_mode;
-  PersonalityManager m_personality_manager;
+  std::auto_ptr<ola::rdm::PersonalityCollection> m_personality_collection;
+  std::auto_ptr<ola::rdm::PersonalityManager> m_personality_manager;
   ola::rdm::Sensors m_sensors;
 
   // DMX methods
