@@ -176,6 +176,10 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
 #endif
 }
 
+SPIOutput::~SPIOutput() {
+  STLDeleteElements(&m_sensors);
+}
+
 
 uint8_t SPIOutput::GetPersonality() const {
   return m_personality_manager->ActivePersonalityNumber();
