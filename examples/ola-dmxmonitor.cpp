@@ -94,13 +94,13 @@ typedef struct {
 
 class DmxMonitor *dmx_monitor;
 
-static int display_mode = DISP_MODE_DMX;
+static unsigned int display_mode = DISP_MODE_DMX;
 static int current_channel = 0;    /* channel cursor is positioned on */
 static int first_channel = 0;    /* channel in upper left corner */
-static int channels_per_line = 80 / CHANNEL_DISPLAY_WIDTH;
+static unsigned int channels_per_line = 80 / CHANNEL_DISPLAY_WIDTH;
 // Default chans/screen is 80x24, less a row for the header,
 // and one at the bottom to get an even number of rows
-static int channels_per_screen =
+static unsigned int channels_per_screen =
     (80 / CHANNEL_DISPLAY_WIDTH) * ((24 - 2) / ROWS_PER_CHANNEL_ROW);
 static int palette[MAXCOLOR];
 
@@ -279,7 +279,8 @@ void DmxMonitor::StdinReady() {
     case KEY_RIGHT:
       if (current_channel < DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
-        if (current_channel >= first_channel + channels_per_screen) {
+        if (current_channel >=
+            static_cast<int>(first_channel + channels_per_screen)) {
           first_channel += channels_per_line;
         }
         DrawScreen();
@@ -306,7 +307,8 @@ void DmxMonitor::StdinReady() {
       current_channel += channels_per_line;
       if (current_channel >= DMX_UNIVERSE_SIZE)
         current_channel = DMX_UNIVERSE_SIZE - 1;
-      if (current_channel >= first_channel + channels_per_screen) {
+      if (current_channel >=
+          static_cast<int>(first_channel + channels_per_screen)) {
         first_channel += channels_per_line;
       }
       DrawScreen();
@@ -414,13 +416,13 @@ void DmxMonitor::DrawScreen(bool include_values) {
 
 /* display the channels numbers */
 void DmxMonitor::Mask() {
-  int i = 0, x, y;
-  int channel = first_channel;
+  unsigned int i = 0, x, y;
+  unsigned int channel = first_channel;
 
   /* clear headline */
   (void) attrset(palette[HEADLINE]);
   move(0, 0);
-  for (x = 0; x < COLS; x++)
+  for (x = 0; static_cast<int>(x) < COLS; x++)
     addch(' ');
 
   if (COLS > 15) {
@@ -431,15 +433,15 @@ void DmxMonitor::Mask() {
   /* write channel numbers */
   (void) attrset(palette[CHANNEL]);
   for (y = 1;
-       y < LINES &&
-       channel < DMX_UNIVERSE_SIZE &&
+       static_cast<int>(y) < LINES &&
+       static_cast<int>(channel) < DMX_UNIVERSE_SIZE &&
        i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
-         x < channels_per_line &&
-         channel < DMX_UNIVERSE_SIZE &&
-         i < channels_per_screen;
+         static_cast<int>(x) < static_cast<int>(channels_per_line) &&
+         static_cast<int>(channel) < DMX_UNIVERSE_SIZE &&
+         static_cast<int>(i < channels_per_screen);
          x++, i++, channel++) {
       switch (display_mode) {
         case DISP_MODE_HEX:
@@ -464,13 +466,14 @@ void DmxMonitor::Values() {
 
   /* values */
   for (y = ROWS_PER_CHANNEL_ROW;
-       y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
+       y < LINES && z < DMX_UNIVERSE_SIZE &&
+       i < static_cast<int>(channels_per_screen);
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
-         x < channels_per_line &&
+         x < static_cast<int>(channels_per_line) &&
          z < DMX_UNIVERSE_SIZE &&
-         i < channels_per_screen;
+         i < static_cast<int>(channels_per_screen);
          x++, z++, i++) {
       const int d = m_buffer.Get(z);
       switch (d) {
@@ -483,28 +486,42 @@ void DmxMonitor::Values() {
         default:
           (void) attrset(palette[NORM]);
       }
-      if (z == current_channel)
+      if (static_cast<int>(z) == current_channel)
         attron(A_REVERSE);
       switch (display_mode) {
         case DISP_MODE_HEX:
-          if (d == 0)
-            addstr("    ");
-          else
+          if (d == 0) {
+            if (static_cast<int>(m_buffer.Size()) <= z) {
+              addstr("--- ");
+            } else {
+              addstr("    ");
+            }
+          } else {
             printw(" %02x ", d);
+          }
           break;
         case DISP_MODE_DEC:
-          if (d == 0)
-            addstr("    ");
-          else if (d < 100)
+          if (d == 0) {
+            if (static_cast<int>(m_buffer.Size()) <= z) {
+              addstr("--- ");
+            } else {
+              addstr("    ");
+            }
+          } else if (d < 100) {
             printw(" %02d ", d);
-          else
+          } else {
             printw("%03d ", d);
+          }
           break;
         case DISP_MODE_DMX:
         default:
           switch (d) {
             case DMX_MIN_CHANNEL_VALUE:
-              addstr("    ");
+              if (static_cast<int>(m_buffer.Size()) <= z) {
+                addstr("--- ");
+              } else {
+                addstr("    ");
+              }
               break;
             case DMX_MAX_CHANNEL_VALUE:
               addstr(" FL ");
