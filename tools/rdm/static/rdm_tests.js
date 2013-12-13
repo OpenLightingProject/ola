@@ -106,6 +106,12 @@ RDMTests.ajax_loader = '<img src="/static/images/loader.gif" />';
  */
 RDMTests.poll_delay = 500;
 
+/**
+ * The path to post the publisher data to
+ * @this {RDMTests}
+ */
+RDMTests.publisher_url = 'http://rdm.openlighting.org/incoming/model_data';
+
 
 /**
  * Prepares the notification div and displays it on the page.
@@ -259,17 +265,25 @@ RDMTests.prototype.bind_events_to_doms = function() {
     icons: {secondary: 'ui-icon-search'}
   }).click(function() { rdmtests.collect_data(); });
 
+  $('#publisher-upload-form').attr('action', RDMTests.publisher_url);
+
   $('#publisher-clear-button').button({
     icons: {secondary: 'ui-icon-cancel'}
   }).click(function() {
     $('#publisher-output').html('');
     $('#publisher-upload-button').button('disable');
+    $('#publisher-download-button').button('disable');
   });
 
   $('#publisher-upload-button').button({
     disabled: true,
     icons: {secondary: 'ui-icon-extlink'}
   }).click(function() { rdmtests.upload_responder_info(); });
+
+  $('#publisher-download-button').button({
+    disabled: true,
+    icons: {secondary: 'ui-icon-disk'}
+  }).click(function() { rdmtests.download_responder_info(); });
 };
 
 
@@ -856,6 +870,7 @@ RDMTests.prototype._stat_collector_response = function(data) {
     $('#publisher-output').html(data['output']);
     $('#publisher_upload_data').val(data['output']);
     $('#publisher-upload-button').button('enable');
+    $('#publisher-download-button').button('enable');
   } else {
     window.setTimeout(function() { rdmtests.stat_collector()},
                       RDMTests.poll_delay);
@@ -868,6 +883,15 @@ RDMTests.prototype._stat_collector_response = function(data) {
  */
 RDMTests.prototype.upload_responder_info = function() {
   $('#publisher-upload-form').submit();
+}
+
+/**
+ * Download the collected responder data for offline use.
+ */
+RDMTests.prototype.download_responder_info = function() {
+  $('#publisher-upload-form').attr("action", "/DownloadModelData");
+  $('#publisher-upload-form').submit();
+  $('#publisher-upload-form').attr('action', RDMTests.publisher_url);
 }
 
 
