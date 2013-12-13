@@ -161,9 +161,10 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                       "P9813 Individual Control"));
   personalities.push_back(Personality(P9813_SLOTS_PER_PIXEL,
                                       "P9813 Combined Control"));
-  m_personality_collection = new PersonalityCollection(personalities);
-  m_personality_manager = PersonalityManager(m_personality_collection);
-  m_personality_manager.SetActivePersonality(1);
+  m_personality_collection.reset(new PersonalityCollection(personalities));
+  m_personality_manager.reset(new PersonalityManager(
+      m_personality_collection.get()));
+  m_personality_manager->SetActivePersonality(1);
 
 #ifdef HAVE_GETLOADAVG
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_1_MIN,
@@ -177,11 +178,11 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
 
 
 uint8_t SPIOutput::GetPersonality() const {
-  return m_personality_manager.ActivePersonalityNumber();
+  return m_personality_manager->ActivePersonalityNumber();
 }
 
 bool SPIOutput::SetPersonality(uint16_t personality) {
-  return m_personality_manager.SetActivePersonality(personality);
+  return m_personality_manager->SetActivePersonality(personality);
 }
 
 uint16_t SPIOutput::GetStartAddress() const {
@@ -189,7 +190,7 @@ uint16_t SPIOutput::GetStartAddress() const {
 }
 
 bool SPIOutput::SetStartAddress(uint16_t address) {
-  uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
+  uint16_t footprint = m_personality_manager->ActivePersonalityFootprint();
   uint16_t end_address = DMX_UNIVERSE_SIZE - footprint + 1;
   if (address == 0 || address > end_address || footprint == 0) {
     return false;
@@ -202,8 +203,8 @@ string SPIOutput::Description() const {
   std::ostringstream str;
   str << m_spi_device_name << ", output "
       << static_cast<int>(m_output_number) << ", "
-      << m_personality_manager.ActivePersonalityDescription() << ", "
-      << m_personality_manager.ActivePersonalityFootprint()
+      << m_personality_manager->ActivePersonalityDescription() << ", "
+      << m_personality_manager->ActivePersonalityFootprint()
       << " slots @ " << m_start_address << ". (" << m_uid << ")";
   return str.str();
 }
@@ -240,7 +241,7 @@ void SPIOutput::SendRDMRequest(const RDMRequest *request,
 }
 
 bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
-  switch (m_personality_manager.ActivePersonalityNumber()) {
+  switch (m_personality_manager->ActivePersonalityNumber()) {
     case 1:
       IndividualWS2801Control(buffer);
       break;
@@ -448,7 +449,7 @@ const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
       ola::rdm::PRODUCT_CATEGORY_FIXTURE, 2,
-      &m_personality_manager,
+      m_personality_manager.get(),
       m_start_address,
       0, m_sensors.size());
 }
@@ -483,27 +484,27 @@ const RDMResponse *SPIOutput::GetSoftwareVersionLabel(
 }
 
 const RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
-  return ResponderHelper::GetPersonality(request, &m_personality_manager);
+  return ResponderHelper::GetPersonality(request, m_personality_manager.get());
 }
 
 const RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
-  return ResponderHelper::SetPersonality(request, &m_personality_manager,
+  return ResponderHelper::SetPersonality(request, m_personality_manager.get(),
                                          m_start_address);
 }
 
 const RDMResponse *SPIOutput::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
-      request, &m_personality_manager);
+      request, m_personality_manager.get());
 }
 
 const RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {
-  return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
+  return ResponderHelper::GetDmxAddress(request, m_personality_manager.get(),
                                         m_start_address);
 }
 
 const RDMResponse *SPIOutput::SetDmxStartAddress(const RDMRequest *request) {
-  return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
+  return ResponderHelper::SetDmxAddress(request, m_personality_manager.get(),
                                         &m_start_address);
 }
 

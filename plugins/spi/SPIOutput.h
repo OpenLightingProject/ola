@@ -21,6 +21,7 @@
 #ifndef PLUGINS_SPI_SPIOUTPUT_H_
 #define PLUGINS_SPI_SPIOUTPUT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/DmxBuffer.h"
@@ -94,8 +95,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   const unsigned int m_pixel_count;
   uint16_t m_start_address;  // starts from 1
   bool m_identify_mode;
-  ola::rdm::PersonalityCollection *m_personality_collection;
-  ola::rdm::PersonalityManager m_personality_manager;
+  std::auto_ptr<ola::rdm::PersonalityCollection> m_personality_collection;
+  std::auto_ptr<ola::rdm::PersonalityManager> m_personality_manager;
   ola::rdm::Sensors m_sensors;
 
   // DMX methods
