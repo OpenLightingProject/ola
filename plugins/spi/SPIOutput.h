@@ -55,6 +55,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   SPIOutput(const UID &uid,
             class SPIBackendInterface *backend,
             const Options &options);
+  ~SPIOutput();
 
   uint8_t GetPersonality() const;
   bool SetPersonality(uint16_t personality);
