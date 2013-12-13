@@ -26,16 +26,24 @@
 #include <avahi-common/strlst.h>
 #include <avahi-common/timeval.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 
 using std::string;
+
+static std::string MakeServiceKey(const std::string &service_name,
+                                  const std::string &type) {
+  return service_name + "." + type;
+}
 
 /*
  * The userdata passed to the entry_callback function.
@@ -89,17 +97,27 @@ static void reconnect_callback(AvahiTimeout*, void *data) {
 
 AvahiDiscoveryAgent::ServiceEntry::ServiceEntry(
     const std::string &service_name,
-    const std::string &type,
+    const std::string &type_spec,
     uint16_t port,
     const RegisterOptions &options)
     : RegisterOptions(options),
       service_name(service_name),
       actual_service_name(service_name),
-      type(type),
       port(port),
       group(NULL),
       state(AVAHI_ENTRY_GROUP_UNCOMMITED),
-      params(NULL) {
+      params(NULL),
+      m_type_spec(type_spec) {
+  vector<string> tokens;
+  StringSplit(type_spec, tokens, ",");
+  m_type = tokens[0];
+  if (tokens.size() > 1) {
+    copy(tokens.begin() + 1, tokens.end(), std::back_inserter(m_sub_types));
+  }
+}
+
+string AvahiDiscoveryAgent::ServiceEntry::key() const {
+  return MakeServiceKey(actual_service_name, m_type_spec);
 }
 
 AvahiDiscoveryAgent::AvahiDiscoveryAgent()
@@ -261,9 +279,7 @@ void AvahiDiscoveryAgent::ReconnectTimeout() {
 
 bool AvahiDiscoveryAgent::InternalRegisterService(ServiceEntry *service) {
   if (!service->params) {
-    service->params = new EntryGroupParams(
-        this,
-        MakeServiceKey(service->service_name, service->type));
+    service->params = new EntryGroupParams(this, service->key());
   }
 
   if (!service->group) {
@@ -293,7 +309,7 @@ bool AvahiDiscoveryAgent::InternalRegisterService(ServiceEntry *service) {
       service->group,
       service->if_index > 0 ? service->if_index : AVAHI_IF_UNSPEC,
       AVAHI_PROTO_INET, static_cast<AvahiPublishFlags>(0),
-      service->actual_service_name.c_str(), service->type.c_str(), NULL, NULL,
+      service->actual_service_name.c_str(), service->type().c_str(), NULL, NULL,
       service->port, txt_args);
 
   avahi_string_list_free(txt_args);
@@ -306,6 +322,25 @@ bool AvahiDiscoveryAgent::InternalRegisterService(ServiceEntry *service) {
     OLA_WARN << "avahi_entry_group_add_service failed: " << avahi_strerror(r);
     avahi_entry_group_reset(service->group);
     return false;
+  }
+
+  // Add any subtypes
+  const vector<string> &sub_types = service->sub_types();
+  if (!sub_types.empty()) {
+    vector<string>::const_iterator iter = sub_types.begin();
+    for (; iter != sub_types.end(); ++iter) {
+      const string sub_type = *iter + "._sub." + service->type();
+      OLA_INFO << "Adding " << sub_type;
+      r = avahi_entry_group_add_service_subtype(
+          service->group,
+          service->if_index > 0 ? service->if_index : AVAHI_IF_UNSPEC,
+          AVAHI_PROTO_INET, static_cast<AvahiPublishFlags>(0),
+          service->actual_service_name.c_str(), service->type().c_str(), NULL,
+          sub_type.c_str());
+      if (!r) {
+        OLA_WARN << "Failed to add " << sub_type;
+      }
+    }
   }
 
   r = avahi_entry_group_commit(service->group);
@@ -401,16 +436,6 @@ bool AvahiDiscoveryAgent::RenameAndRegister(ServiceEntry *service) {
   service->actual_service_name = new_name;
   return InternalRegisterService(service);
 }
-
-/*
- * The key in the map. This is sufficient for now since we don't use sub
- * types.
- */
-string AvahiDiscoveryAgent::MakeServiceKey(const string &service_name,
-                                           const string &type) {
-  return service_name + "." + type;
-}
-
 
 string AvahiDiscoveryAgent::ClientStateToString(AvahiClientState state) {
   switch (state) {
