@@ -61,8 +61,10 @@ class MemoryBlock {
       delete[] m_data;
     }
 
-    // Move the insertion point to the end of the block. This is useful if you
-    // want to use the block in pre-pend mode
+    /**
+     * @brief Move the insertation point to the end of the block.
+     * This is useful if you want to use the block in pre-pend mode.
+     */
     void SeekBack() {
       m_first = m_data_end;
       m_last = m_first;
