@@ -10,7 +10,8 @@ libolaio_la_SOURCES = Descriptor.cpp \
 
 if BUILD_TESTS
 TESTS = DescriptorTester IOQueueTester \
-        IOStackTester SelectServerTester StreamTester
+        IOStackTester MemoryBlockTester \
+        SelectServerTester StreamTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -28,6 +29,10 @@ IOStackTester_LDADD = $(COMMON_TEST_LDADD)
 DescriptorTester_SOURCES = DescriptorTest.cpp
 DescriptorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DescriptorTester_LDADD = $(COMMON_TEST_LDADD)
+
+MemoryBlockTester_SOURCES = MemoryBlockTest.cpp
+MemoryBlockTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+MemoryBlockTester_LDADD = $(COMMON_TEST_LDADD)
 
 SelectServerTester_SOURCES = SelectServerTest.cpp \
                              SelectServerThreadTest.cpp
