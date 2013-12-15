@@ -31,6 +31,7 @@ X/Y/2013 ola-0.9.0`
  * Fix a bug in the RDM tests relating to Fail & Startup modes.
  * Fix the web and CLI UIs so they work if strings from RDM devices have
    unprintable characters in them - #263.
+ * Fix a bug in the KiNet plugin - #276
 
  Internal:
  * Switched to using a custom generator for the C++ RPC Code.
