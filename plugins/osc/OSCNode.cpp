@@ -46,7 +46,15 @@ const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
  * The Error handler for the OSC server.
  */
 void OSCErrorHandler(int error_code, const char *msg, const char *stack) {
-  OLA_WARN << "OSC Error. Code " << error_code << ", " << msg << ", " << stack;
+  string msg_str, stack_str;
+  if (msg) {
+    msg_str.assign(msg);
+  }
+  if (stack) {
+    stack_str.assign(stack);
+  }
+  OLA_WARN << "OSC Error. Code " << error_code << ", " << msg_str << ", "
+           << stack_str;
 }
 
 

@@ -15,7 +15,8 @@ libola_la_SOURCES = AutoStart.cpp \
                     OlaClient.cpp \
                     OlaClientCore.cpp \
                     OlaClientWrapper.cpp \
-                    StreamingClient.cpp
+                    StreamingClient.cpp \
+                    Version.cpp
 libola_la_LDFLAGS = -version-info 1:1:0
 libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
