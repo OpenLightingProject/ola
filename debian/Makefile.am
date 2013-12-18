@@ -9,8 +9,6 @@ EXTRA_DIST = changelog \
              Makefile.in \
              ola-dev.dirs \
              ola-dev.install \
-             ola-logic-sniffer.dirs \
-             ola-logic-sniffer.install \
              ola-python.dirs \
              ola-python.install \
              ola-rdm-tests.bash-completion \
