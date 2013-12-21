@@ -91,6 +91,11 @@ SelectServer::SelectServer(ExportMap *export_map,
  * Clean up
  */
 SelectServer::~SelectServer() {
+  while (!m_incoming_queue.empty()) {
+    delete m_incoming_queue.front();
+    m_incoming_queue.pop();
+  }
+
   STLDeleteElements(&m_loop_closures);
   if (m_free_clock)
     delete m_clock;
