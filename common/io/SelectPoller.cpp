@@ -20,6 +20,8 @@
 
 #include "common/io/SelectPoller.h"
 
+#include <algorithm>
+#include <queue>
 #include <string>
 
 #include "ola/Clock.h"
