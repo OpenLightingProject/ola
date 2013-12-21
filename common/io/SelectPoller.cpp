@@ -20,6 +20,9 @@
 
 #include "common/io/SelectPoller.h"
 
+#include <string.h>
+#include <errno.h>
+
 #include <algorithm>
 #include <queue>
 #include <string>
