@@ -32,17 +32,17 @@ namespace milinst {
 
 class MilInstOutputPort: public BasicOutputPort {
  public:
-    MilInstOutputPort(MilInstDevice *parent,
-                      unsigned int id,
-                      MilInstWidget *widget)
-        : BasicOutputPort(parent, id),
-          m_widget(widget) {}
+  MilInstOutputPort(MilInstDevice *parent,
+                    unsigned int id,
+                    MilInstWidget *widget)
+      : BasicOutputPort(parent, id),
+        m_widget(widget) {}
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return m_widget->GetPath(); }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  string Description() const { return m_widget->GetPath(); }
 
  private:
-    MilInstWidget *m_widget;
+  MilInstWidget *m_widget;
 };
 }  // namespace milinst
 }  // namespace plugin

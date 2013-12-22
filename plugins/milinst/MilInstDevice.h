@@ -35,21 +35,21 @@ namespace milinst {
 
 class MilInstDevice: public ola::Device {
  public:
-    MilInstDevice(AbstractPlugin *owner,
-                  const std::string &name,
-                  const std::string &dev_path);
-    ~MilInstDevice();
+  MilInstDevice(AbstractPlugin *owner,
+                const std::string &name,
+                const std::string &dev_path);
+  ~MilInstDevice();
 
-    std::string DeviceId() const { return m_path; }
-    ola::io::ConnectedDescriptor *GetSocket() const;
+  std::string DeviceId() const { return m_path; }
+  ola::io::ConnectedDescriptor *GetSocket() const;
 
  protected:
-    bool StartHook();
-    void PrePortStop();
+  bool StartHook();
+  void PrePortStop();
 
  private:
-    std::string m_path;
-    std::auto_ptr<class MilInstWidget> m_widget;
+  std::string m_path;
+  std::auto_ptr<class MilInstWidget> m_widget;
 };
 }  // namespace milinst
 }  // namespace plugin

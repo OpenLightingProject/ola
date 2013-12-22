@@ -85,7 +85,7 @@ int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) const {
 
 /*
  * Send 112 channels worth of data
- * @param buf a DmxBuffer with the data
+ * @param buffer a DmxBuffer with the data
  */
 int MilInstWidget1463::Send112(const DmxBuffer &buffer) const {
   unsigned int channels = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
