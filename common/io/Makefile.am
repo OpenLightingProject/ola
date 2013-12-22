@@ -1,17 +1,23 @@
 include $(top_srcdir)/common.mk
 
+EXTRA_DIST = PollerInterface.h SelectPoller.h TimeoutManager.h
+
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
                       IOQueue.cpp \
                       IOStack.cpp \
                       IOUtils.cpp \
+                      PollerInterface.cpp \
+                      SelectPoller.cpp \
                       SelectServer.cpp \
-                      StdinHandler.cpp
+                      StdinHandler.cpp \
+                      TimeoutManager.cpp
 
 if BUILD_TESTS
 TESTS = DescriptorTester IOQueueTester \
         IOStackTester MemoryBlockTester \
-        SelectServerTester StreamTester
+        SelectServerTester StreamTester \
+        TimeoutManagerTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -38,6 +44,10 @@ SelectServerTester_SOURCES = SelectServerTest.cpp \
                              SelectServerThreadTest.cpp
 SelectServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SelectServerTester_LDADD = $(COMMON_TEST_LDADD)
+
+TimeoutManagerTester_SOURCES = TimeoutManagerTest.cpp
+TimeoutManagerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+TimeoutManagerTester_LDADD = $(COMMON_TEST_LDADD)
 
 StreamTester_SOURCES = InputStreamTest.cpp \
                        OutputStreamTest.cpp

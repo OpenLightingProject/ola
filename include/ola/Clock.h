@@ -264,6 +264,8 @@ class TimeInterval {
     }
 
     // Various other methods.
+    bool IsZero() const { return !m_interval.IsSet(); }
+
     void AsTimeval(struct timeval *tv) const { m_interval.AsTimeval(tv); }
 
     time_t Seconds() const { return m_interval.Seconds(); }
