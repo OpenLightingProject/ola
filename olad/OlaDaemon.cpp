@@ -40,9 +40,10 @@
 #include "olad/PluginLoader.h"
 #include "olad/Preferences.h"
 
-DEFINE_s_string(config_dir, c, "", "Path to the config directory");
+DEFINE_s_string(config_dir, c, "",
+                "The path to the config directory, Defaults to ~/.ola/ .");
 DEFINE_s_uint16(rpc_port, r, ola::OlaDaemon::DEFAULT_RPC_PORT,
-                "Port to listen for RPCs on");
+                "The port to listen for RPCs on. Defaults to 9010.");
 
 namespace ola {
 
