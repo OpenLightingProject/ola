@@ -108,7 +108,7 @@ ola.PluginFrame.prototype.UpdateFromData_ = function(e) {
     conflict_row.style.display = 'none';
   }
   var description = goog.string.htmlEscape(e.plugin['description']);
-  description = description.replace(/\n/g, '<br>');
+  description = description.replace(/\\n/g, '<br>');
   goog.dom.$('plugin_description').innerHTML = description;
 };
 
