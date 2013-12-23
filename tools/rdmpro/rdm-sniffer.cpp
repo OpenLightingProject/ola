@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * rdm-sniffer.cpp
- * RDM Sniffer software for the Enttec RDM Pro.
+ * RDM Sniffer software for the ENTTEC RDM Pro.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -441,7 +441,7 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
 int main(int argc, char *argv[]) {
   ola::SetHelpString(
       "[options] <usb-device-path>",
-      "Sniff traffic from a Enttec RDM Pro device.");
+      "Sniff traffic from a ENTTEC RDM Pro device.");
   ola::ParseFlags(&argc, argv);
   ola::InitLoggingFromFlags();
 
