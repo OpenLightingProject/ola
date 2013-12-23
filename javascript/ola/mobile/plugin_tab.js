@@ -31,7 +31,7 @@ goog.provide('ola.mobile.PluginTab');
 
 
 /**
- * The class representing the Universe frame
+ * The class representing the Plugin frame
  * @constructor
  */
 ola.mobile.PluginTab = function() {
@@ -138,7 +138,7 @@ ola.mobile.PluginTab.prototype.pluginSelected_ = function(plugin_id) {
  */
 ola.mobile.PluginTab.prototype.updatePluginInfo_ = function(e) {
   this.plugin_info_frame.Clear();
-  var description = e.plugin['description'];
-  description = description.replace(/\n/g, '<br>');
+  var description = goog.string.htmlEscape(e.plugin['description']);
+  description = description.replace(/\\n/g, '<br>');
   this.plugin_info_frame.element.innerHTML = description;
 };

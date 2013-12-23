@@ -30,7 +30,7 @@ namespace milinst {
  * @return true on success, false on failure
  */
 bool MilInstOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                    uint8_t priority) {
+                                 uint8_t priority) {
   return m_widget->SendDmx(buffer);
   (void) priority;
 }

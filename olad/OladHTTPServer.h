@@ -126,7 +126,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
   void SendModifyUniverseResponse(HTTPResponse *response,
                                   class ActionQueue *action_queue);
 
-  /*
+  /**
    * Serve a help redirect
    * @param response the response to use
    */
