@@ -8,4 +8,5 @@ dist_man_MANS = ola_artnet.1 \
                 ola_streaming_client.1 \
                 ola_uni_info.1 \
                 ola_usbpro.1 \
-                olad.1
+                olad.1 \
+                rdmpro_sniffer.1

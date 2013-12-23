@@ -1,0 +1,28 @@
+.TH rdmpro_sniffer 1 "December 2013"
+.SH NAME
+rdmpro_sniffer \- Sniffer tool for use with the Enttec RDM Pro
+.SH SYNOPSIS
+rdmpro_sniffer [options] <usb-device-path>
+.SH DESCRIPTION
+Sniff traffic from a Enttec RDM Pro device.
+.SH OPTIONS
+.IP "-d, --display-dmx"
+Display DMX frames. Defaults to false.
+.IP "-h, --help"
+Display the help message
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-p, --readfile <string>"
+Display data from a previously captured file.
+.IP "-r, --full-rdm"
+Unpack RDM parameter data.
+.IP "-t, --timestamp"
+Include timestamps.
+.IP "-w, --savefile <string>"
+Also write the captured data to a file.
+.IP "--display-asc"
+Display non-RDM alternate start code frames.
+.IP "--dmx-slot-limit <int16_t>"
+Only display the first N slots of DMX data.
+.IP "--syslog"
+Send to syslog rather than stderr.
