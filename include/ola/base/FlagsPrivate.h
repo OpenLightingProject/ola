@@ -226,11 +226,13 @@ class FlagRegistry {
     void SetFirstLine(const string &help);
     void SetDecription(const string &help);
     void DisplayUsage();
+    void GenManPage();
 
  private:
     typedef std::map<std::string, FlagInterface*> LongOpts;
     typedef std::map<char, FlagInterface*> ShortOpts;
     typedef std::map<int, FlagInterface*> FlagMap;
+    typedef std::pair<string, string> OptionPair;  // <flag, description>
 
     LongOpts m_long_opts;
     ShortOpts m_short_opts;
@@ -241,6 +243,7 @@ class FlagRegistry {
     string GetShortOptsString() const;
     struct option *GetLongOpts(FlagMap *flag_map);
     void PrintFlags(std::vector<string> *lines);
+    void PrintManPageFlags(std::vector<OptionPair> *lines);
 };
 
 /**

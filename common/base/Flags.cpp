@@ -24,12 +24,14 @@
  * @file common/base/Flags.cpp
  * @}
  */
+#include <time.h>
 
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "ola/base/Array.h"
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
 #include "ola/stl/STLUtils.h"
@@ -39,6 +41,7 @@
  * @brief Define the help flag
  */
 DEFINE_s_bool(help, h, false, "Display the help message");
+DEFINE_bool(gen_manpage, false, "Generate a man page snippet");
 
 namespace ola {
 
@@ -48,6 +51,7 @@ namespace ola {
  */
 
 using std::cerr;
+using std::cout;
 using std::endl;
 
 /**
@@ -73,6 +77,10 @@ void SetHelpString(const string &first_line, const string &description) {
 
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
+}
+
+void GenManPage() {
+  GetRegistry()->GenManPage();
 }
 
 
@@ -185,6 +193,11 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     exit(EXIT_OK);
   }
 
+  if (FLAGS_gen_manpage) {
+    GenManPage();
+    exit(EXIT_OK);
+  }
+
   delete[] long_options;
 
   // Remove flags so only non-flag arguments remain.
@@ -220,6 +233,10 @@ void FlagRegistry::DisplayUsage() {
   for (; iter != m_long_opts.end(); ++iter) {
     std::ostringstream str;
     const FlagInterface *flag = iter->second;
+    if (flag->name() == FLAGS_gen_manpage.name()) {
+      continue;
+    }
+
     str << "  ";
     if (flag->short_opt()) {
       str << "-" << flag->short_opt() << ", ";
@@ -238,6 +255,55 @@ void FlagRegistry::DisplayUsage() {
 
   PrintFlags(&short_flag_lines);
   PrintFlags(&long_flag_lines);
+}
+
+void FlagRegistry::GenManPage() {
+  char date_str[100];
+  time_t curtime;
+  curtime = time(NULL);
+  struct tm loctime;
+  gmtime_r(&curtime, &loctime);
+  strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
+  cout << ".TH " << m_argv0 << " 1 \"" << date_str << "\"" << endl;
+  cout << ".SH NAME" << endl;
+  cout << m_argv0 << " \\- " << endl;
+  cout << ".SH SYNOPSIS" << endl;
+  cout << m_argv0 << " " << m_first_line << endl;
+  cout << ".SH DESCRIPTION" << endl;
+  cout << m_argv0 << endl;
+  cout << m_description << endl;
+  cout << ".SH OPTIONS" << endl;
+
+  // - comes before a-z which means flags without long options appear first. To
+  // avoid this we keep two lists.
+  vector<OptionPair> short_flag_lines, long_flag_lines;
+  LongOpts::const_iterator iter = m_long_opts.begin();
+  for (; iter != m_long_opts.end(); ++iter) {
+    const FlagInterface *flag = iter->second;
+    if (flag->name() == FLAGS_gen_manpage.name()) {
+      continue;
+    }
+
+    std::ostringstream str;
+    if (flag->short_opt()) {
+      str << "-" << flag->short_opt() << ", ";
+    }
+    str << "--" << flag->name();
+
+    if (flag->has_arg()) {
+      str << " <" << flag->arg_type() << ">";
+    }
+    if (flag->short_opt()) {
+      short_flag_lines.push_back(
+          OptionPair(str.str(), iter->second->help()));
+    } else {
+      long_flag_lines.push_back(
+          OptionPair(str.str(), iter->second->help()));
+    }
+  }
+
+  PrintManPageFlags(&short_flag_lines);
+  PrintManPageFlags(&long_flag_lines);
 }
 
 /**
@@ -298,6 +364,15 @@ void FlagRegistry::PrintFlags(std::vector<string> *lines) {
   vector<string>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter)
     cerr << *iter;
+}
+
+void FlagRegistry::PrintManPageFlags(std::vector<OptionPair> *lines) {
+  std::sort(lines->begin(), lines->end());
+  vector<OptionPair>::const_iterator iter = lines->begin();
+  for (; iter != lines->end(); ++iter) {
+    cout << ".IP \"" << iter->first << "\"" << endl;
+    cout << iter->second << endl;
+  }
 }
 /**
  * @endcond
