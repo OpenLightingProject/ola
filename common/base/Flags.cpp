@@ -51,7 +51,6 @@ namespace ola {
  * @{
  */
 
-using ola::file::FilenameFromPath;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -267,7 +266,7 @@ void FlagRegistry::GenManPage() {
   gmtime_r(&curtime, &loctime);
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
-  string exe_name = FilenameFromPath(m_argv0);
+  string exe_name = ola::file::FilenameFromPath(m_argv0);
 
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
