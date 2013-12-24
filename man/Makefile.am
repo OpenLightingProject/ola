@@ -1,4 +1,5 @@
-dist_man_MANS = ola_artnet.1 \
+dist_man_MANS = logic_rdm_sniffer.1 \
+                ola_artnet.1 \
                 ola_dev_info.1 \
                 ola_dmxconsole.1 \
                 ola_dmxmonitor.1 \
