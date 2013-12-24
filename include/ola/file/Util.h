@@ -27,16 +27,26 @@
 namespace ola {
 namespace file {
 
-using std::string;
-using std::vector;
+#ifdef WIN32
+  const char PATH_SEPARATOR = '\\';
+#else
+  const char PATH_SEPARATOR = '/';
+#endif
 
-void FindMatchingFiles(const string &directory,
-                       const string &prefix,
-                       vector<string> *files);
+void FindMatchingFiles(const std::string &directory,
+                       const std::string &prefix,
+                       std::vector<std::string> *files);
 
-void FindMatchingFiles(const string &directory,
-                       const vector<string> &prefixes,
-                       vector<string> *files);
+void FindMatchingFiles(const std::string &directory,
+                       const std::vector<std::string> &prefixes,
+                       std::vector<std::string> *files);
+
+/**
+ * Convert a path to a filename
+ * @param path a full path to a file
+ * @return the filename (basename) part of the path
+ */
+std::string FilenameFromPath(const std::string &path);
 }  // namespace file
 }  // namespace ola
 #endif  // INCLUDE_OLA_FILE_UTIL_H_

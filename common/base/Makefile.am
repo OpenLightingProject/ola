@@ -14,6 +14,7 @@ check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ./libolabase.la \
+                    ../file/libolafile.la
                     ../utils/libolautils.la
 
 CredentialsTester_SOURCES = CredentialsTest.cpp

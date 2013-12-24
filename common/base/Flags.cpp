@@ -34,6 +34,7 @@
 #include "ola/base/Array.h"
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
+#include "ola/file/Util.h"
 #include "ola/stl/STLUtils.h"
 
 /**
@@ -50,6 +51,7 @@ namespace ola {
  * @{
  */
 
+using ola::file::FilenameFromPath;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -264,13 +266,16 @@ void FlagRegistry::GenManPage() {
   struct tm loctime;
   gmtime_r(&curtime, &loctime);
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
-  cout << ".TH " << m_argv0 << " 1 \"" << date_str << "\"" << endl;
+
+  string exe_name = FilenameFromPath(m_argv0);
+
+  cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
-  cout << m_argv0 << " \\- " << endl;
+  cout << exe_name << " \\- " << endl;
   cout << ".SH SYNOPSIS" << endl;
-  cout << m_argv0 << " " << m_first_line << endl;
+  cout << exe_name << " " << m_first_line << endl;
   cout << ".SH DESCRIPTION" << endl;
-  cout << m_argv0 << endl;
+  cout << exe_name << endl;
   cout << m_description << endl;
   cout << ".SH OPTIONS" << endl;
 
