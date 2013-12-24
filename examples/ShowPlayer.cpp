@@ -46,7 +46,7 @@ using ola::DmxBuffer;
 
 ShowPlayer::ShowPlayer(const string &filename)
     : m_loader(filename),
-      m_infinte_loop(false),
+      m_infinite_loop(false),
       m_iteration_remaining(0),
       m_loop_delay(0) {
 }
@@ -68,7 +68,7 @@ int ShowPlayer::Init() {
 int ShowPlayer::Playback(unsigned int iterations,
                          unsigned int duration,
                          unsigned int delay) {
-  m_infinte_loop = iterations == 0 || duration != 0;
+  m_infinite_loop = iterations == 0 || duration != 0;
   m_iteration_remaining = iterations;
   m_loop_delay = delay;
   SendNextFrame();
@@ -139,7 +139,7 @@ ShowLoader::State ShowPlayer::RegisterNextTimeout() {
  */
 void ShowPlayer::HandleEndOfFile() {
   m_iteration_remaining--;
-  if (m_infinte_loop || m_iteration_remaining > 0) {
+  if (m_infinite_loop || m_iteration_remaining > 0) {
     m_loader.Reset();
     m_client.GetSelectServer()->RegisterSingleTimeout(
         m_loop_delay,

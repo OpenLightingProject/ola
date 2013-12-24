@@ -61,7 +61,7 @@ class ShowPlayer {
  private:
     ola::OlaCallbackClientWrapper m_client;
     ShowLoader m_loader;
-    bool m_infinte_loop;
+    bool m_infinite_loop;
     unsigned int m_iteration_remaining;
     unsigned int m_loop_delay;
 
