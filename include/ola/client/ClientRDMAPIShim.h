@@ -86,7 +86,7 @@ class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
       ola::rdm::rdm_response_code response_code,
       const ola::rdm::RDMResponse *response,
       rdm::ResponseStatus *response_status,
-      string *data);
+      std::string *data);
 
   void GetParamFromReply(const std::string &message_type,
                          const ola::rdm::RDMResponse *reply,

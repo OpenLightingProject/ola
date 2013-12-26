@@ -70,6 +70,7 @@ using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseNameRequest;
 using ola::proto::UniverseRequest;
 using ola::rdm::RDMResponse;
+using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rpc::RpcController;
 using std::set;

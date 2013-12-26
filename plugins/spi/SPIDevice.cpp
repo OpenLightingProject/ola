@@ -37,6 +37,10 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using std::auto_ptr;
+using std::string;
+using std::stringstream;
+
 const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
 const char SPIDevice::HARDWARE_BACKEND[] = "hardware";
 const char SPIDevice::SOFTWARE_BACKEND[] = "software";

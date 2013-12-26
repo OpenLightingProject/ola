@@ -27,6 +27,7 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+using ola::io::SelectServer;
 
 enum stageprofi_packet_type_e {
   ID_GETDMX =  0xFE,

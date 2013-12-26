@@ -30,6 +30,8 @@
 namespace ola {
 namespace io {
 
+using std::string;
+
 bool Open(const string &path, int oflag, int *fd) {
   *fd = open(path.c_str(), oflag);
   if (*fd < 0) {

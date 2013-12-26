@@ -22,6 +22,7 @@
 #include <iostream>
 #include <string>
 #include "ola/Logging.h"
+
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
 
@@ -30,6 +31,7 @@ namespace timecode {
 
 using std::setw;
 using std::setfill;
+using std::string;
 
 
 TimeCode::TimeCode(const TimeCode &other)

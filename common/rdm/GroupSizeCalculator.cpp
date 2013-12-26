@@ -28,6 +28,7 @@ namespace rdm {
 
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
+using std::vector;
 
 
 /**

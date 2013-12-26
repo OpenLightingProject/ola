@@ -64,7 +64,7 @@ class PortBroker: public PortBrokerInterface {
                         ola::rdm::RDMCallback *callback);
 
  private:
-    typedef std::pair<string, const Port*> port_key;
+    typedef std::pair<std::string, const Port*> port_key;
 
     void RequestComplete(port_key key,
                          ola::rdm::RDMCallback *callback,

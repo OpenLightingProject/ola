@@ -45,8 +45,6 @@
 
 namespace ola {
 
-using std::ostream;
-
 static const int USEC_IN_SECONDS = 1000000;
 static const int ONE_THOUSAND = 1000;
 
@@ -276,7 +274,8 @@ class TimeInterval {
 
     std::string ToString() const { return m_interval.ToString(); }
 
-    friend ostream& operator<< (ostream &out, const TimeInterval &interval) {
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const TimeInterval &interval) {
       return out << interval.m_interval.ToString();
     }
 
@@ -351,7 +350,8 @@ class TimeStamp {
 
     std::string ToString() const { return m_tv.ToString(); }
 
-    friend ostream& operator<< (ostream &out, const TimeStamp &timestamp) {
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const TimeStamp &timestamp) {
       return out << timestamp.m_tv.ToString();
     }
 

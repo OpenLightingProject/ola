@@ -51,6 +51,7 @@ using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::MessageDeserializer;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 
 class MessageDeserializerTest: public CppUnit::TestFixture {

@@ -47,7 +47,7 @@ class MilInstWidget {
   virtual bool Connect() = 0;
   int Disconnect();
   ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
-  string GetPath() { return m_path; }
+  std::string GetPath() { return m_path; }
   virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
   virtual bool DetectDevice() = 0;
 
@@ -56,7 +56,7 @@ class MilInstWidget {
 
   // instance variables
   bool m_enabled;
-  const string m_path;
+  const std::string m_path;
   ola::io::ConnectedDescriptor *m_socket;
 };
 }  // namespace milinst

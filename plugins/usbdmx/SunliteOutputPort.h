@@ -49,7 +49,7 @@ class SunliteOutputPort: public BasicOutputPort, ola::thread::Thread {
     void *Run();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+    std::string Description() const { return ""; }
 
  private:
     enum {SUNLITE_PACKET_SIZE = 0x340};

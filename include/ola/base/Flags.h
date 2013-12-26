@@ -77,8 +77,6 @@
 
 namespace ola {
 
-using std::string;
-
 /**
  * @brief Set the help string for the program.
  * @param first_line the inital line that is displayed in the help section.
@@ -86,7 +84,8 @@ using std::string;
  * @param description a multiline description of the program
  *
  */
-void SetHelpString(const string &first_line, const string &description);
+void SetHelpString(const std::string &first_line,
+                   const std::string &description);
 
 /**
  * @brief Print the usage text to stderr.

@@ -52,6 +52,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::thread::MutexLocker;
+using std::auto_ptr;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";

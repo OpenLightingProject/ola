@@ -41,11 +41,6 @@
 
 namespace ola {
 
-using std::string;
-using std::stringstream;
-using std::map;
-using std::vector;
-
 /**
  * @class BaseVariable <ola/ExportMap.h>
  * @brief The base variable class.
@@ -54,31 +49,31 @@ using std::vector;
  */
 class BaseVariable {
  public:
-    /**
-     * @brief Create a new BaseVariable.
-     * @param name the variable name.
-     */
-    explicit BaseVariable(const string &name): m_name(name) {}
+  /**
+   * @brief Create a new BaseVariable.
+   * @param name the variable name.
+   */
+  explicit BaseVariable(const std::string &name): m_name(name) {}
 
-    /**
-     * The Destructor.
-     */
-    virtual ~BaseVariable() {}
+  /**
+   * The Destructor.
+   */
+  virtual ~BaseVariable() {}
 
-    /**
-     * @brief Return the name of this variable.
-     * @returns the variable name.
-     */
-    const string Name() const { return m_name; }
+  /**
+   * @brief Return the name of this variable.
+   * @returns the variable name.
+   */
+  const std::string Name() const { return m_name; }
 
-    /**
-     * @brief Return the value of the variable as a string.
-     * @returns the value of the variable.
-     */
-    virtual const string Value() const = 0;
+  /**
+   * @brief Return the value of the variable as a string.
+   * @returns the value of the variable.
+   */
+  virtual const std::string Value() const = 0;
 
  private:
-    string m_name;
+  std::string m_name;
 };
 
 struct VariableLessThan: public std::binary_function<BaseVariable*,
@@ -95,37 +90,37 @@ struct VariableLessThan: public std::binary_function<BaseVariable*,
  */
 class BoolVariable: public BaseVariable {
  public:
-    /**
-     * @brief Create a new BoolVariable.
-     * @param name the variable name.
-     */
-    explicit BoolVariable(const string &name)
-        : BaseVariable(name),
-          m_value(false) {}
-    ~BoolVariable() {}
+  /**
+   * @brief Create a new BoolVariable.
+   * @param name the variable name.
+   */
+  explicit BoolVariable(const std::string &name)
+      : BaseVariable(name),
+        m_value(false) {}
+  ~BoolVariable() {}
 
-    /**
-     * @brief Set the value of the variable.
-     * @param value the new value.
-     */
-    void Set(bool value) { m_value = value; }
+  /**
+   * @brief Set the value of the variable.
+   * @param value the new value.
+   */
+  void Set(bool value) { m_value = value; }
 
-    /**
-     * @brief Get the value of this variable.
-     * @return the value of the boolean variable.
-     */
-    bool Get() const { return m_value; }
+  /**
+   * @brief Get the value of this variable.
+   * @return the value of the boolean variable.
+   */
+  bool Get() const { return m_value; }
 
-    /**
-     * @brief Get the value of this variable as a string.
-     * @return the value of the boolean variable.
-     *
-     * Booleans are represented by a 1 or 0.
-     */
-    const string Value() const { return m_value ? "1" : "0"; }
+  /**
+   * @brief Get the value of this variable as a string.
+   * @return the value of the boolean variable.
+   *
+   * Booleans are represented by a 1 or 0.
+   */
+  const std::string Value() const { return m_value ? "1" : "0"; }
 
  private:
-    bool m_value;
+  bool m_value;
 };
 
 
@@ -134,17 +129,17 @@ class BoolVariable: public BaseVariable {
  */
 class StringVariable: public BaseVariable {
  public:
-    explicit StringVariable(const string &name)
-        : BaseVariable(name),
-          m_value("") {}
-    ~StringVariable() {}
+  explicit StringVariable(const std::string &name)
+      : BaseVariable(name),
+        m_value("") {}
+  ~StringVariable() {}
 
-    void Set(const string &value) { m_value = value; }
-    const string Get() const { return m_value; }
-    const string Value() const { return m_value; }
+  void Set(const std::string &value) { m_value = value; }
+  const std::string Get() const { return m_value; }
+  const std::string Value() const { return m_value; }
 
  private:
-    string m_value;
+  std::string m_value;
 };
 
 
@@ -153,24 +148,24 @@ class StringVariable: public BaseVariable {
  */
 class IntegerVariable: public BaseVariable {
  public:
-    explicit IntegerVariable(const string &name)
-        : BaseVariable(name),
-          m_value(0) {}
-    ~IntegerVariable() {}
+  explicit IntegerVariable(const std::string &name)
+      : BaseVariable(name),
+        m_value(0) {}
+  ~IntegerVariable() {}
 
-    void Set(int value) { m_value = value; }
-    void operator++(int) { m_value++; }
-    void operator--(int) { m_value--; }
-    void Reset() { m_value = 0; }
-    int Get() const { return m_value; }
-    const string Value() const {
-      stringstream out;
-      out << m_value;
-      return out.str();
-    }
+  void Set(int value) { m_value = value; }
+  void operator++(int) { m_value++; }
+  void operator--(int) { m_value--; }
+  void Reset() { m_value = 0; }
+  int Get() const { return m_value; }
+  const std::string Value() const {
+    std::stringstream out;
+    out << m_value;
+    return out.str();
+  }
 
  private:
-    int m_value;
+  int m_value;
 };
 
 
@@ -179,23 +174,23 @@ class IntegerVariable: public BaseVariable {
  */
 class CounterVariable: public BaseVariable {
  public:
-    explicit CounterVariable(const string &name)
-        : BaseVariable(name),
-          m_value(0) {}
-    ~CounterVariable() {}
+  explicit CounterVariable(const std::string &name)
+      : BaseVariable(name),
+        m_value(0) {}
+  ~CounterVariable() {}
 
-    void operator++(int) { m_value++; }
-    void operator+=(unsigned int value) { m_value += value; }
-    void Reset() { m_value = 0; }
-    unsigned int Get() const { return m_value; }
-    const string Value() const {
-      stringstream out;
-      out << m_value;
-      return out.str();
-    }
+  void operator++(int) { m_value++; }
+  void operator+=(unsigned int value) { m_value += value; }
+  void Reset() { m_value = 0; }
+  unsigned int Get() const { return m_value; }
+  const std::string Value() const {
+    std::stringstream out;
+    out << m_value;
+    return out.str();
+  }
 
  private:
-    unsigned int m_value;
+  unsigned int m_value;
 };
 
 
@@ -205,25 +200,25 @@ class CounterVariable: public BaseVariable {
 template<typename Type>
 class MapVariable: public BaseVariable {
  public:
-    MapVariable(const string &name, const string &label):
-      BaseVariable(name),
-      m_label(label) {}
-    ~MapVariable() {}
+  MapVariable(const std::string &name, const std::string &label)
+      : BaseVariable(name),
+        m_label(label) {}
+  ~MapVariable() {}
 
-    void Remove(const string &key);
-    void Set(const string &key, Type value);
-    Type &operator[](const string &key);
-    const string Value() const;
-    const string Label() const { return m_label; }
+  void Remove(const std::string &key);
+  void Set(const std::string &key, Type value);
+  Type &operator[](const std::string &key);
+  const std::string Value() const;
+  const std::string Label() const { return m_label; }
 
  protected:
-    map<string, Type> m_variables;
+  std::map<std::string, Type> m_variables;
 
  private:
-    string m_label;
+  std::string m_label;
 };
 
-typedef MapVariable<string> StringMap;
+typedef MapVariable<std::string> StringMap;
 
 
 /**
@@ -231,13 +226,12 @@ typedef MapVariable<string> StringMap;
  */
 class IntMap: public MapVariable<int> {
  public:
-    IntMap(const string &name, const string &label)
-        : MapVariable<int>(name, label) {
-    }
+  IntMap(const std::string &name, const std::string &label)
+      : MapVariable<int>(name, label) {}
 
-    void Increment(const string &key) {
-      m_variables[key]++;
-    }
+  void Increment(const std::string &key) {
+    m_variables[key]++;
+  }
 };
 
 
@@ -246,13 +240,12 @@ class IntMap: public MapVariable<int> {
  */
 class UIntMap: public MapVariable<unsigned int> {
  public:
-    UIntMap(const string &name, const string &label)
-        : MapVariable<unsigned int>(name, label) {
-    }
+  UIntMap(const std::string &name, const std::string &label)
+      : MapVariable<unsigned int>(name, label) {}
 
-    void Increment(const string &key) {
-      m_variables[key]++;
-    }
+  void Increment(const std::string &key) {
+    m_variables[key]++;
+  }
 };
 
 
@@ -261,7 +254,7 @@ class UIntMap: public MapVariable<unsigned int> {
  * if the variable doesn't exist.
  */
 template<typename Type>
-Type &MapVariable<Type>::operator[](const string &key) {
+Type &MapVariable<Type>::operator[](const std::string &key) {
   return m_variables[key];
 }
 
@@ -270,7 +263,7 @@ Type &MapVariable<Type>::operator[](const string &key) {
  * Set a value in the Map variable.
  */
 template<typename Type>
-void MapVariable<Type>::Set(const string &key, Type value) {
+void MapVariable<Type>::Set(const std::string &key, Type value) {
   m_variables[key] = value;
 }
 
@@ -280,8 +273,8 @@ void MapVariable<Type>::Set(const string &key, Type value) {
  * @param key the key to remove
  */
 template<typename Type>
-void MapVariable<Type>::Remove(const string &key) {
-  typename map<string, Type>::iterator iter = m_variables.find(key);
+void MapVariable<Type>::Remove(const std::string &key) {
+  typename std::map<std::string, Type>::iterator iter = m_variables.find(key);
 
   if (iter != m_variables.end())
     m_variables.erase(iter);
@@ -294,78 +287,81 @@ void MapVariable<Type>::Remove(const string &key) {
  */
 class ExportMap {
  public:
-    ExportMap() {}
-    ~ExportMap();
+  ExportMap() {}
+  ~ExportMap();
 
-    /**
-     * @brief Lookup or create a BoolVariable.
-     * @param name the name of this variable.
-     * @return a pointer to the BoolVariable.
-     *
-     * The variable is created if it doesn't already exist. The pointer is
-     * valid for the lifetime of the ExportMap.
-     */
-    BoolVariable *GetBoolVar(const string &name);
+  /**
+   * @brief Lookup or create a BoolVariable.
+   * @param name the name of this variable.
+   * @return a pointer to the BoolVariable.
+   *
+   * The variable is created if it doesn't already exist. The pointer is
+   * valid for the lifetime of the ExportMap.
+   */
+  BoolVariable *GetBoolVar(const std::string &name);
 
-    /**
-     * @brief Lookup or create an IntegerVariable.
-     * @param name the name of this variable.
-     * @return an IntegerVariable.
-     *
-     * The variable is created if it doesn't already exist. The pointer is
-     * valid for the lifetime of the ExportMap.
-     */
-    IntegerVariable *GetIntegerVar(const string &name);
+  /**
+   * @brief Lookup or create an IntegerVariable.
+   * @param name the name of this variable.
+   * @return an IntegerVariable.
+   *
+   * The variable is created if it doesn't already exist. The pointer is
+   * valid for the lifetime of the ExportMap.
+   */
+  IntegerVariable *GetIntegerVar(const std::string &name);
 
-    /**
-     * @brief Lookup or create a CounterVariable.
-     * @param name the name of this variable.
-     * @return a CounterVariable.
-     *
-     * The variable is created if it doesn't already exist. The pointer is
-     * valid for the lifetime of the ExportMap.
-     */
-    CounterVariable *GetCounterVar(const string &name);
+  /**
+   * @brief Lookup or create a CounterVariable.
+   * @param name the name of this variable.
+   * @return a CounterVariable.
+   *
+   * The variable is created if it doesn't already exist. The pointer is
+   * valid for the lifetime of the ExportMap.
+   */
+  CounterVariable *GetCounterVar(const std::string &name);
 
-    /**
-     * @brief Lookup or create a StringVariable.
-     * @param name the name of this variable.
-     * @return a StringVariable.
-     *
-     * The variable is created if it doesn't already exist. The pointer is
-     * valid for the lifetime of the ExportMap.
-     */
-    StringVariable *GetStringVar(const string &name);
+  /**
+   * @brief Lookup or create a StringVariable.
+   * @param name the name of this variable.
+   * @return a StringVariable.
+   *
+   * The variable is created if it doesn't already exist. The pointer is
+   * valid for the lifetime of the ExportMap.
+   */
+  StringVariable *GetStringVar(const std::string &name);
 
-    StringMap *GetStringMapVar(const string &name, const string &label="");
-    IntMap *GetIntMapVar(const string &name, const string &label="");
-    UIntMap *GetUIntMapVar(const string &name, const string &label="");
+  StringMap *GetStringMapVar(const std::string &name,
+                             const std::string &label="");
+  IntMap *GetIntMapVar(const std::string &name, const std::string &label="");
+  UIntMap *GetUIntMapVar(const std::string &name,
+                         const std::string &label="");
 
-    /**
-     * @brief Fetch a list of all known variables.
-     * @returns a vector of all variables.
-     */
-    vector<BaseVariable*> AllVariables() const;
+  /**
+   * @brief Fetch a list of all known variables.
+   * @returns a vector of all variables.
+   */
+  std::vector<BaseVariable*> AllVariables() const;
 
-  private :
-    template<typename Type>
-    Type *GetVar(map<string, Type*> *var_map, const string &name);
+ private :
+  template<typename Type>
+  Type *GetVar(std::map<std::string, Type*> *var_map,
+               const std::string &name);
 
-    template<typename Type>
-    Type *GetMapVar(map<string, Type*> *var_map,
-                    const string &name,
-                    const string &label);
+  template<typename Type>
+  Type *GetMapVar(std::map<std::string, Type*> *var_map,
+                  const std::string &name,
+                  const std::string &label);
 
-    map<string, BoolVariable*> m_bool_variables;
-    map<string, CounterVariable*> m_counter_variables;
-    map<string, IntegerVariable*> m_int_variables;
-    map<string, StringVariable*> m_string_variables;
+  std::map<std::string, BoolVariable*> m_bool_variables;
+  std::map<std::string, CounterVariable*> m_counter_variables;
+  std::map<std::string, IntegerVariable*> m_int_variables;
+  std::map<std::string, StringVariable*> m_string_variables;
 
-    map<string, StringMap*> m_str_map_variables;
-    map<string, IntMap*> m_int_map_variables;
-    map<string, UIntMap*> m_uint_map_variables;
+  std::map<std::string, StringMap*> m_str_map_variables;
+  std::map<std::string, IntMap*> m_int_map_variables;
+  std::map<std::string, UIntMap*> m_uint_map_variables;
 
-    DISALLOW_COPY_AND_ASSIGN(ExportMap);
+  DISALLOW_COPY_AND_ASSIGN(ExportMap);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLA_EXPORTMAP_H_
