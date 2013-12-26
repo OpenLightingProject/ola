@@ -28,8 +28,8 @@ namespace ola {
 namespace client {
 
 #define OLA_CLIENT_VERSION_MAJOR 0
-#define OLA_CLIENT_VERSION_MINOR 9
-#define OLA_CLIENT_VERSION_REVISION 0
+#define OLA_CLIENT_VERSION_MINOR 8
+#define OLA_CLIENT_VERSION_REVISION 33
 
 /**
  * @class Version ola/client/Version.h
