@@ -23,8 +23,7 @@
 
 #include <ola/Clock.h>
 #include <ola/io/Descriptor.h>
-
-#include "common/io/TimeoutManager.h"
+#include <ola/io/TimeoutManager.h>
 
 namespace ola {
 namespace io {

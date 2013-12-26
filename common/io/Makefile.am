@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = PollerInterface.h SelectPoller.h TimeoutManager.h
+EXTRA_DIST = SelectPoller.h
 
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
