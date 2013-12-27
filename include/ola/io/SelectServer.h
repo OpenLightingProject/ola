@@ -33,9 +33,6 @@
 #include <queue>
 #include <set>
 
-#include "common/io/PollerInterface.h"
-#include "common/io/TimeoutManager.h"
-
 class SelectServerTest;
 
 namespace ola {
@@ -97,8 +94,8 @@ class SelectServer: public SelectServerInterface {
   ExportMap *m_export_map;
   bool m_terminate, m_is_running;
   TimeInterval m_poll_interval;
-  std::auto_ptr<TimeoutManager> m_timeout_manager;
-  std::auto_ptr<PollerInterface> m_poller;
+  std::auto_ptr<class TimeoutManager> m_timeout_manager;
+  std::auto_ptr<class PollerInterface> m_poller;
 
   Clock *m_clock;
   bool m_free_clock;
