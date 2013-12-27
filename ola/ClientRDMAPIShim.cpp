@@ -30,6 +30,9 @@
 namespace ola {
 namespace client {
 
+using std::string;
+
+
 bool ClientRDMAPIShim::RDMGet(rdm_callback *callback,
                               unsigned int universe,
                               const ola::rdm::UID &uid,

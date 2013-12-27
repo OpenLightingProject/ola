@@ -9,7 +9,7 @@ Release:   %{release}
 Summary:   OLA - Open Lighting Architecture
 Group:     Other
 License:   GPL
-URL:       http://code.google.com/p/linux-lighting
+URL:       https://github.com/OpenLightingProject/ola
 # Other doc found at:
 #  http://www.opendmx.net/index.php/LLA_0.3
 #  http://www.opendmx.net/index.php/LLA_on_Linux

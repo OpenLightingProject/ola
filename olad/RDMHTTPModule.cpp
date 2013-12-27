@@ -49,6 +49,9 @@ namespace ola {
 using ola::OladHTTPServer;
 using ola::client::OlaUniverse;
 using ola::client::Result;
+using ola::http::HTTPRequest;
+using ola::http::HTTPResponse;
+using ola::http::HTTPServer;
 using ola::rdm::UID;
 using ola::thread::MutexLocker;
 using ola::web::BoolItem;
@@ -61,6 +64,7 @@ using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
 using std::endl;
+using std::map;
 using std::pair;
 using std::set;
 using std::string;

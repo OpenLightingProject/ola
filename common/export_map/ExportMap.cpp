@@ -29,8 +29,10 @@
 
 namespace ola {
 
+using std::map;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 
 /*

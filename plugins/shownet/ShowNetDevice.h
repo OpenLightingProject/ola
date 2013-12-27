@@ -29,7 +29,6 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-using ola::Plugin;
 
 class ShowNetDevice: public ola::Device {
  public:
@@ -39,7 +38,7 @@ class ShowNetDevice: public ola::Device {
     ~ShowNetDevice() {}
 
     bool AllowMultiPortPatching() const { return true; }
-    string DeviceId() const { return "1"; }
+    std::string DeviceId() const { return "1"; }
 
     static const char IP_KEY[];
 

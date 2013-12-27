@@ -50,6 +50,8 @@ using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::min;
+using std::string;
+using std::vector;
 
 class MockDummyPort: public DummyPort {
  public:

@@ -35,6 +35,10 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
+using std::string;
+using std::stringstream;
+using std::vector;
+
 const char SandNetDevice::IP_KEY[] = "ip";
 const char SandNetDevice::NAME_KEY[] = "name";
 const char SandNetDevice::SANDNET_DEVICE_NAME[] = "SandNet";

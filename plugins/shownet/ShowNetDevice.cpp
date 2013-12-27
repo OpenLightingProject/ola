@@ -34,6 +34,8 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
+using std::stringstream;
+
 const char ShowNetDevice::SHOWNET_DEVICE_NAME[] = "ShowNet";
 const char ShowNetDevice::IP_KEY[] = "ip";
 

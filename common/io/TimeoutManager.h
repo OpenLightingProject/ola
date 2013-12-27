@@ -34,10 +34,7 @@
 namespace ola {
 namespace io {
 
-using ola::ExportMap;
 using ola::thread::timeout_id;
-using std::priority_queue;
-using std::set;
 
 /**
  * @class TimeoutManager
@@ -53,7 +50,7 @@ class TimeoutManager {
    * @param export_map an ExportMap to update
    * @param clock the Clock to use.
    */
-  TimeoutManager(ExportMap *export_map, Clock *clock);
+  TimeoutManager(ola::ExportMap *export_map, Clock *clock);
 
   ~TimeoutManager();
 
@@ -66,8 +63,9 @@ class TimeoutManager {
    * @returns the identifier for this timeout, this can be used to remove it
    * later.
    */
-  timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
-                                      ola::Callback0<bool> *closure);
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      const ola::TimeInterval &interval,
+      ola::Callback0<bool> *closure);
 
   /**
    * @brief Register a single use timeout function.
@@ -76,13 +74,15 @@ class TimeoutManager {
    * @returns the identifier for this timeout, this can be used to remove it
    * later.
    */
-  timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
-                                   ola::SingleUseCallback0<void> *closure);
+  ola::thread::timeout_id RegisterSingleTimeout(
+      const ola::TimeInterval &interval,
+      ola::SingleUseCallback0<void> *closure);
+
   /**
    * @brief Cancel a timeout.
    * @param timeout_id the id of the timeout
    */
-  void CancelTimeout(timeout_id id);
+  void CancelTimeout(ola::thread::timeout_id id);
 
   /**
    * @brief Check if there are any events in the queue.
@@ -185,13 +185,14 @@ class TimeoutManager {
     }
   };
 
-  typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
+  typedef std::priority_queue<Event*, std::vector<Event*>, ltevent>
+      event_queue_t;
 
-  ExportMap *m_export_map;
+  ola::ExportMap *m_export_map;
   Clock *m_clock;
 
   event_queue_t m_events;
-  set<timeout_id> m_removed_timeouts;
+  std::set<ola::thread::timeout_id> m_removed_timeouts;
 
   DISALLOW_COPY_AND_ASSIGN(TimeoutManager);
 };

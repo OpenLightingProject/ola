@@ -47,8 +47,8 @@ class SPIOutputPort: public BasicOutputPort {
     string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    void RunFullDiscovery(RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 

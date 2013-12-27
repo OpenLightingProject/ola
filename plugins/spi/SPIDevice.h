@@ -36,17 +36,16 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-using std::auto_ptr;
 
 class SPIDevice: public ola::Device {
  public:
     SPIDevice(class SPIPlugin *owner,
               class Preferences *preferences,
               class PluginAdaptor *plugin_adaptor,
-              const string &spi_device,
+              const std::string &spi_device,
               ola::rdm::UIDAllocator *uid_allocator);
 
-    string DeviceId() const;
+    std::string DeviceId() const;
 
     bool AllowMultiPortPatching() const { return true; }
 
@@ -57,26 +56,26 @@ class SPIDevice: public ola::Device {
  private:
     typedef std::vector<class SPIOutputPort*> SPIPorts;
 
-    auto_ptr<SPIWriterInterface> m_writer;
-    auto_ptr<SPIBackendInterface> m_backend;
+    std::auto_ptr<SPIWriterInterface> m_writer;
+    std::auto_ptr<SPIBackendInterface> m_backend;
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     SPIPorts m_spi_ports;
-    string m_spi_device_name;
+    std::string m_spi_device_name;
 
     // Per device options
-    string SPIBackendKey() const;
-    string SPISpeedKey() const;
-    string SPICEKey() const;
-    string PortCountKey() const;
-    string SyncPortKey() const;
-    string GPIOPinKey() const;
+    std::string SPIBackendKey() const;
+    std::string SPISpeedKey() const;
+    std::string SPICEKey() const;
+    std::string PortCountKey() const;
+    std::string SyncPortKey() const;
+    std::string GPIOPinKey() const;
 
     // Per port options
-    string PersonalityKey(uint8_t port) const;
-    string PixelCountKey(uint8_t port) const;
-    string StartAddressKey(uint8_t port) const;
-    string GetPortKey(const string &suffix, uint8_t port) const;
+    std::string PersonalityKey(uint8_t port) const;
+    std::string PixelCountKey(uint8_t port) const;
+    std::string StartAddressKey(uint8_t port) const;
+    std::string GetPortKey(const std::string &suffix, uint8_t port) const;
 
     void SetDefaults();
     void PopulateHardwareBackendOptions(HardwareBackend::Options *options);

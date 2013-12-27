@@ -63,7 +63,8 @@ DEFINE_s_uint16(http_port, p, ola::OlaServer::DEFAULT_HTTP_PORT,
  * This is called by the SelectServer loop to start up the SignalThread. If the
  * thread fails to start, we terminate the SelectServer
  */
-void StartSignalThread(ola::SelectServer *ss, SignalThread *signal_thread) {
+void StartSignalThread(ola::io::SelectServer *ss,
+                       SignalThread *signal_thread) {
   if (!signal_thread->Start()) {
     ss->Terminate();
   }
@@ -126,10 +127,12 @@ int main(int argc, char *argv[]) {
   // to do what we actually want them to.
   signal_thread.InstallSignalHandler(
       SIGINT,
-      ola::NewCallback(olad->GetSelectServer(), &ola::SelectServer::Terminate));
+      ola::NewCallback(olad->GetSelectServer(),
+                       &ola::io::SelectServer::Terminate));
   signal_thread.InstallSignalHandler(
       SIGTERM,
-      ola::NewCallback(olad->GetSelectServer(), &ola::SelectServer::Terminate));
+      ola::NewCallback(olad->GetSelectServer(),
+                       &ola::io::SelectServer::Terminate));
 
   // We can't start the signal thread here, otherwise there is a race
   // condition if a signal arrives before we enter the SelectServer Run()

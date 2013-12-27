@@ -31,9 +31,6 @@
 namespace ola {
 namespace http {
 
-using ola::ExportMap;
-using std::string;
-using ola::NewCallback;
 
 /*
  * A HTTP Server with ExportMap support. You can inherit from this class to
@@ -42,7 +39,7 @@ using ola::NewCallback;
 class OlaHTTPServer {
  public:
     OlaHTTPServer(const HTTPServer::HTTPServerOptions &options,
-                  ExportMap *export_map);
+                  ola::ExportMap *export_map);
     virtual ~OlaHTTPServer() {}
 
     virtual bool Init();
@@ -51,14 +48,14 @@ class OlaHTTPServer {
 
  protected:
     Clock m_clock;
-    ExportMap *m_export_map;
+    ola::ExportMap *m_export_map;
     HTTPServer m_server;
     TimeStamp m_start_time;
 
     /**
      * Register a static file to serve
      */
-    void RegisterFile(const string &file, const string &content_type) {
+    void RegisterFile(const std::string &file, const string &content_type) {
         m_server.RegisterFile("/" + file, file, content_type);
     }
 
@@ -67,13 +64,16 @@ class OlaHTTPServer {
     static const char K_UPTIME_VAR[];
 
     inline void RegisterHandler(
-        const string &path,
+        const std::string &path,
         int (OlaHTTPServer::*method)(const HTTPRequest*, HTTPResponse*)) {
       m_server.RegisterHandler(
           path,
-          NewCallback<OlaHTTPServer, int, const HTTPRequest*, HTTPResponse*>(
-            this,
-            method));
+          ola::NewCallback<OlaHTTPServer,
+                           int,
+                           const HTTPRequest*,
+                           HTTPResponse*>(
+                               this,
+                               method));
     }
 
     int DisplayDebug(const HTTPRequest *request, HTTPResponse *response);

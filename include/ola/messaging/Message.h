@@ -29,9 +29,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 
 namespace ola {
 namespace messaging {
@@ -41,7 +38,8 @@ class MessageVisitor;
 
 class Message {
  public:
-    explicit Message(const vector<const class MessageFieldInterface*> &fields)
+    explicit Message(
+        const std::vector<const class MessageFieldInterface*> &fields)
         : m_fields(fields) {
     }
     ~Message();
@@ -51,7 +49,7 @@ class Message {
     unsigned int FieldCount() const { return m_fields.size(); }
 
  private:
-    vector<const class MessageFieldInterface*> m_fields;
+    std::vector<const class MessageFieldInterface*> m_fields;
 };
 
 
@@ -185,13 +183,13 @@ class UIDMessageField: public MessageFieldInterface {
 class StringMessageField: public MessageFieldInterface {
  public:
     StringMessageField(const StringFieldDescriptor *descriptor,
-                       const string &value)
+                       const std::string &value)
         : m_descriptor(descriptor),
           m_value(value) {
     }
 
     const StringFieldDescriptor *GetDescriptor() const { return m_descriptor; }
-    const string& Value() const { return m_value; }
+    const std::string& Value() const { return m_value; }
 
     void Accept(MessageVisitor *visitor) const {
       visitor->Visit(this);
@@ -199,7 +197,7 @@ class StringMessageField: public MessageFieldInterface {
 
  private:
     const StringFieldDescriptor *m_descriptor;
-    const string m_value;
+    const std::string m_value;
 };
 
 
@@ -243,11 +241,11 @@ typedef BasicMessageField<int32_t> Int32MessageField;
  */
 class GroupMessageField: public MessageFieldInterface {
  public:
-    GroupMessageField(const FieldDescriptorGroup *descriptor,
-                      const vector<const class MessageFieldInterface*> &fields)
-      : m_descriptor(descriptor),
-        m_fields(fields) {
-    }
+    GroupMessageField(
+        const FieldDescriptorGroup *descriptor,
+        const std::vector<const class MessageFieldInterface*> &fields)
+        : m_descriptor(descriptor),
+          m_fields(fields) {}
     ~GroupMessageField();
 
     const FieldDescriptorGroup *GetDescriptor() const { return m_descriptor; }
@@ -263,7 +261,7 @@ class GroupMessageField: public MessageFieldInterface {
 
  private:
     const FieldDescriptorGroup *m_descriptor;
-    vector<const class MessageFieldInterface*> m_fields;
+    std::vector<const class MessageFieldInterface*> m_fields;
 };
 }  // namespace messaging
 }  // namespace ola

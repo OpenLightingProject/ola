@@ -40,6 +40,8 @@ namespace usbpro {
 using ola::plugin::usbpro::Reply;
 using ola::plugin::usbpro::Request;
 using ola::rpc::RpcController;
+using std::string;
+using std::stringstream;
 
 /*
  * Create a new device

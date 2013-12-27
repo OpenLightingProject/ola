@@ -38,14 +38,10 @@ namespace slp {
 
 class SLPClientCoreServiceImpl;
 
-using std::string;
-using ola::io::ConnectedDescriptor;
-using ola::rpc::RpcController;
-using ola::rpc::RpcChannel;
 
 class SLPClientCore {
  public:
-    explicit SLPClientCore(ConnectedDescriptor *descriptor);
+    explicit SLPClientCore(ola::io::ConnectedDescriptor *descriptor);
     ~SLPClientCore();
 
     bool Setup();
@@ -57,75 +53,78 @@ class SLPClientCore {
      * Register a service
      */
     bool RegisterService(
-        const vector<string> &scopes,
-        const string &service,
+        const std::vector<std::string> &scopes,
+        const std::string &service,
         uint16_t lifetime,
-        SingleUseCallback2<void, const string&, uint16_t> *callback);
+        SingleUseCallback2<void, const std::string&, uint16_t> *callback);
 
     /**
      * Register a service that persists beyond the lifetime of this client.
      */
     bool RegisterPersistentService(
-        const vector<string> &scopes,
-        const string &service,
+        const std::vector<std::string> &scopes,
+        const std::string &service,
         uint16_t lifetime,
-        SingleUseCallback2<void, const string&, uint16_t> *callback);
+        SingleUseCallback2<void, const std::string&, uint16_t> *callback);
 
     /**
      * DeRegister a service
      */
     bool DeRegisterService(
-        const vector<string> &scopes,
-        const string &service,
-        SingleUseCallback2<void, const string&, uint16_t> *callback);
+        const std::vector<std::string> &scopes,
+        const std::string &service,
+        SingleUseCallback2<void, const std::string&, uint16_t> *callback);
 
     /**
      * Find a service
      */
     bool FindService(
-        const vector<string> &scopes,
-        const string &service,
-        SingleUseCallback2<void, const string&,
-                           const vector<URLEntry> &> *callback);
+        const std::vector<std::string> &scopes,
+        const std::string &service,
+        SingleUseCallback2<void,
+                           const std::string&,
+                           const std::vector<URLEntry> &> *callback);
 
     /**
      * Get info about the server
      */
     bool GetServerInfo(
-        SingleUseCallback2<void, const string&, const ServerInfo&> *callback);
+        SingleUseCallback2<void,
+                           const std::string&,
+                           const ServerInfo&> *callback);
 
 
     // unfortunately all of these need to be public because they're used in the
     // closures. That's why this class is wrapped in OlaClient or
     // OlaCallbackClient.
     typedef struct {
-      RpcController *controller;
+      ola::rpc::RpcController *controller;
       ola::slp::proto::ServiceAck *reply;
-      SingleUseCallback2<void, const string&, uint16_t> *callback;
+      SingleUseCallback2<void, const std::string&, uint16_t> *callback;
     } register_arg;
 
     void HandleRegistration(register_arg *args);
 
     typedef struct {
-      RpcController *controller;
+      ola::rpc::RpcController *controller;
       ola::slp::proto::ServiceReply *reply;
-      SingleUseCallback2<void, const string&,
-                         const vector<URLEntry> &> *callback;
+      SingleUseCallback2<void, const std::string&,
+                         const std::vector<URLEntry> &> *callback;
     } find_arg;
 
     void HandleFindRequest(find_arg *args);
 
     typedef struct {
-      RpcController *controller;
+      ola::rpc::RpcController *controller;
       ola::slp::proto::ServerInfoReply *reply;
-      SingleUseCallback2<void, const string&, const ServerInfo&> *callback;
+      SingleUseCallback2<void, const std::string&, const ServerInfo&> *callback;
     } server_info_arg;
 
     void HandleServerInfo(server_info_arg *args);
 
  private:
-    ConnectedDescriptor *m_descriptor;
-    RpcChannel *m_channel;
+    ola::io::ConnectedDescriptor *m_descriptor;
+    ola::rpc::RpcChannel *m_channel;
     ola::slp::proto::SLPService_Stub *m_stub;
     int m_connected;
 
@@ -133,15 +132,15 @@ class SLPClientCore {
     SLPClientCore operator=(const SLPClientCore&);
 
     bool GenericRegisterService(
-        const vector<string> &scopes,
-        const string &service,
+        const std::vector<std::string> &scopes,
+        const std::string &service,
         uint16_t lifetime,
-        SingleUseCallback2<void, const string&, uint16_t> *callback,
+        SingleUseCallback2<void, const std::string&, uint16_t> *callback,
         bool persistant);
 
     template <typename arg_type, typename reply_type, typename callback_type>
     arg_type *NewArgs(
-        RpcController *controller,
+        ola::rpc::RpcController *controller,
         reply_type reply,
         callback_type callback);
 
@@ -155,7 +154,7 @@ class SLPClientCore {
  */
 template <typename arg_type, typename reply_type, typename callback_type>
 arg_type *SLPClientCore::NewArgs(
-    RpcController *controller,
+    ola::rpc::RpcController *controller,
     reply_type reply,
     callback_type callback) {
   arg_type *args = new arg_type();

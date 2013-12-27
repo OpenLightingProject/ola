@@ -55,7 +55,9 @@ class MessagePrinter: public MessageVisitor {
  protected:
     std::stringstream& Stream() { return m_str; }
     virtual void PostStringHook() {}
-    virtual string TransformLabel(const string &label) { return label; }
+    virtual std::string TransformLabel(const std::string &label) {
+      return label;
+    }
 
  private:
     std::stringstream m_str;
@@ -93,13 +95,13 @@ class GenericMessagePrinter: public MessagePrinter {
  private:
     unsigned int m_indent, m_indent_size;
 
-    void AppendUInt(const string &name,
+    void AppendUInt(const std::string &name,
                     unsigned int value,
-                    const string &label,
+                    const std::string &label,
                     int8_t multipler);
-    void AppendInt(const string &name,
+    void AppendInt(const std::string &name,
                    int value,
-                   const string &label,
+                   const std::string &label,
                    int8_t multipler);
     void AppendMultipler(int8_t multipler);
 };

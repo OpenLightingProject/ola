@@ -53,6 +53,7 @@ namespace ola {
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::string;
 
 /**
  * @brief the prefix used on inverted bool flags
@@ -264,13 +265,24 @@ void FlagRegistry::GenManPage() {
   struct tm loctime;
   gmtime_r(&curtime, &loctime);
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
-  cout << ".TH " << m_argv0 << " 1 \"" << date_str << "\"" << endl;
+
+  // Not using FilenameFromPath to avoid further dependancies
+  // This won't work on Windows as it's using the wrong path separator
+  string exe_name = m_argv0;
+  string::size_type last_path_sep = string::npos;
+  last_path_sep = m_argv0.find_last_of('/');
+  if (last_path_sep != string::npos) {
+    // Don't return the path sep itself
+    exe_name = m_argv0.substr(last_path_sep + 1);
+  }
+
+  cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
-  cout << m_argv0 << " \\- " << endl;
+  cout << exe_name << " \\- " << endl;
   cout << ".SH SYNOPSIS" << endl;
-  cout << m_argv0 << " " << m_first_line << endl;
+  cout << exe_name << " " << m_first_line << endl;
   cout << ".SH DESCRIPTION" << endl;
-  cout << m_argv0 << endl;
+  cout << exe_name << endl;
   cout << m_description << endl;
   cout << ".SH OPTIONS" << endl;
 

@@ -94,8 +94,6 @@
 
 namespace ola {
 
-using std::string;
-
 /**
  * @brief The OLA log levels.
  * This controls the verbosity of logging. Each level also includes those below
@@ -141,7 +139,7 @@ class LogDestination {
      * @note You must over load this if you want to create a new log
      * destination
      */
-    virtual void Write(log_level level, const string &log_line) = 0;
+    virtual void Write(log_level level, const std::string &log_line) = 0;
 };
 
 /**
@@ -152,7 +150,7 @@ class StdErrorLogDestination: public LogDestination {
     /**
      * @brief Writes a messages out to stderr.
      */
-    void Write(log_level level, const string &log_line);
+    void Write(log_level level, const std::string &log_line);
 };
 
 /**
@@ -169,7 +167,7 @@ class SyslogDestination: public LogDestination {
      * @brief Write a line to the system logger.
      * @note This is syslog on *nix or the event log on windows.
      */
-    void Write(log_level level, const string &log_line);
+    void Write(log_level level, const std::string &log_line);
  private:
 #ifdef WIN32
     HANDLE m_eventlog;

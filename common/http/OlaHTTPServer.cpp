@@ -31,6 +31,9 @@ namespace http {
 
 using ola::ExportMap;
 using std::auto_ptr;
+using std::string;
+using std::stringstream;
+using std::vector;
 
 const char OlaHTTPServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHTTPServer::K_UPTIME_VAR[] = "uptime-in-ms";

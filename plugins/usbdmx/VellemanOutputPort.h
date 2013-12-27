@@ -52,7 +52,7 @@ class VellemanOutputPort: public BasicOutputPort, ola::thread::Thread {
     void *Run();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const;
+    std::string Description() const;
 
  private:
     static const unsigned char ENDPOINT = 0x01;

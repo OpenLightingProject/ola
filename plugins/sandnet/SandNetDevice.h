@@ -38,7 +38,7 @@ class SandNetDevice: public ola::Device {
                   class Preferences *prefs,
                   class PluginAdaptor *plugin_adaptor);
 
-    string DeviceId() const { return "1"; }
+    std::string DeviceId() const { return "1"; }
     SandNetNode *GetNode() { return m_node; }
 
     bool SendAdvertisement();

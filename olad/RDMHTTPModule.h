@@ -38,50 +38,48 @@
 
 namespace ola {
 
-using ola::http::HTTPRequest;
-using ola::http::HTTPServer;
-using ola::http::HTTPResponse;
-using ola::rdm::UID;
-using std::string;
-
 
 /*
  * The module that deals with RDM requests.
  */
 class RDMHTTPModule {
  public:
-    RDMHTTPModule(HTTPServer *http_server,
+    RDMHTTPModule(ola::http::HTTPServer *http_server,
                   ola::client::OlaClient *client);
     ~RDMHTTPModule();
 
     void SetPidStore(const ola::rdm::RootPidStore *pid_store);
 
-    int RunRDMDiscovery(const HTTPRequest *request, HTTPResponse *response);
+    int RunRDMDiscovery(const ola::http::HTTPRequest *request,
+                        ola::http::HTTPResponse *response);
 
-    int JsonUIDs(const HTTPRequest *request, HTTPResponse *response);
+    int JsonUIDs(const ola::http::HTTPRequest *request,
+                 ola::http::HTTPResponse *response);
 
     // these are used by the RDM Patcher
-    int JsonUIDInfo(const HTTPRequest *request, HTTPResponse *response);
-    int JsonUIDIdentifyMode(const HTTPRequest *request,
-                            HTTPResponse *response);
-    int JsonUIDPersonalities(const HTTPRequest *request,
-                             HTTPResponse *response);
+    int JsonUIDInfo(const ola::http::HTTPRequest *request,
+                    ola::http::HTTPResponse *response);
+    int JsonUIDIdentifyMode(const ola::http::HTTPRequest *request,
+                            ola::http::HTTPResponse *response);
+    int JsonUIDPersonalities(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response);
 
     // these are used by the RDM Attributes Panel
-    int JsonSupportedPIDs(const HTTPRequest *request, HTTPResponse *response);
-    int JsonSupportedSections(const HTTPRequest *request,
-                              HTTPResponse *response);
-    int JsonSectionInfo(const HTTPRequest *request,
-                        HTTPResponse *response);
-    int JsonSaveSectionInfo(const HTTPRequest *request,
-                            HTTPResponse *response);
+    int JsonSupportedPIDs(const ola::http::HTTPRequest *request,
+                          ola::http::HTTPResponse *response);
+    int JsonSupportedSections(const ola::http::HTTPRequest *request,
+                              ola::http::HTTPResponse *response);
+    int JsonSectionInfo(const ola::http::HTTPRequest *request,
+                        ola::http::HTTPResponse *response);
+    int JsonSaveSectionInfo(const ola::http::HTTPRequest *request,
+                            ola::http::HTTPResponse *response);
 
-    void PruneUniverseList(const vector<client::OlaUniverse> &universes);
+    void PruneUniverseList(const std::vector<client::OlaUniverse> &universes);
 
  private:
     typedef struct {
-      string manufacturer;
-      string device;
+      std::string manufacturer;
+      std::string device;
       bool active;
     } resolved_uid;
 
@@ -91,25 +89,25 @@ class RDMHTTPModule {
     } uid_resolve_action;
 
     typedef struct {
-      map<UID, resolved_uid> resolved_uids;
-      std::queue<std::pair<UID, uid_resolve_action> > pending_uids;
+      std::map<ola::rdm::UID, resolved_uid> resolved_uids;
+      std::queue<std::pair<ola::rdm::UID, uid_resolve_action> > pending_uids;
       bool uid_resolution_running;
       bool active;
     } uid_resolution_state;
 
-    HTTPServer *m_server;
+    ola::http::HTTPServer *m_server;
     ola::client::OlaClient *m_client;
     ola::client::ClientRDMAPIShim m_shim;
     ola::rdm::RDMAPI m_rdm_api;
-    map<unsigned int, uid_resolution_state*> m_universe_uids;
+    std::map<unsigned int, uid_resolution_state*> m_universe_uids;
 
     ola::thread::Mutex m_pid_store_mu;
     const ola::rdm::RootPidStore *m_pid_store;  // GUARDED_BY(m_pid_store_mu);
 
     typedef struct {
-      string id;
-      string name;
-      string hint;
+      std::string id;
+      std::string name;
+      std::string hint;
     } section_info;
 
     struct lt_section_info {
@@ -120,25 +118,25 @@ class RDMHTTPModule {
 
     typedef struct {
       unsigned int universe_id;
-      const UID uid;
-      string hint;
-      string device_model;
-      string software_version;
+      const ola::rdm::UID uid;
+      std::string hint;
+      std::string device_model;
+      std::string software_version;
     } device_info;
 
     typedef struct {
       unsigned int universe_id;
-      const UID *uid;
+      const ola::rdm::UID *uid;
       bool include_descriptions;
       bool return_as_section;
       unsigned int active;
       unsigned int next;
       unsigned int total;
-      vector<std::pair<uint32_t, string> > personalities;
+      std::vector<std::pair<uint32_t, std::string> > personalities;
     } personality_info;
 
-    // uid resolution methods
-    void HandleUIDList(HTTPResponse *response,
+    // UID resolution methods
+    void HandleUIDList(ola::http::HTTPResponse *response,
                        unsigned int universe_id,
                        const client::Result &result,
                        const ola::rdm::UIDSet &uids);
@@ -146,449 +144,453 @@ class RDMHTTPModule {
     void ResolveNextUID(unsigned int universe_id);
 
     void UpdateUIDManufacturerLabel(unsigned int universe,
-                                    UID uid,
+                                    ola::rdm::UID uid,
                                     const ola::rdm::ResponseStatus &status,
-                                    const string &device_label);
+                                    const std::string &device_label);
 
     void UpdateUIDDeviceLabel(unsigned int universe,
-                              UID uid,
+                              ola::rdm::UID uid,
                               const ola::rdm::ResponseStatus &status,
-                              const string &device_label);
+                              const std::string &device_label);
 
     uid_resolution_state *GetUniverseUids(unsigned int universe);
     uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);
 
     // uid info handler
-    void UIDInfoHandler(HTTPResponse *response,
+    void UIDInfoHandler(ola::http::HTTPResponse *response,
                         const ola::rdm::ResponseStatus &status,
                         const ola::rdm::DeviceDescriptor &device);
 
     // uid identify handler
-    void UIDIdentifyHandler(HTTPResponse *response,
+    void UIDIdentifyHandler(ola::http::HTTPResponse *response,
                             const ola::rdm::ResponseStatus &status,
                             bool value);
 
     // personality handler
-    void SendPersonalityResponse(HTTPResponse *response,
+    void SendPersonalityResponse(ola::http::HTTPResponse *response,
                                  personality_info *info);
 
 
     // supported params / sections
-    void SupportedParamsHandler(HTTPResponse *response,
+    void SupportedParamsHandler(ola::http::HTTPResponse *response,
                                 const ola::rdm::ResponseStatus &status,
-                                const vector<uint16_t> &pids);
-    void SupportedSectionsHandler(HTTPResponse *response,
+                                const std::vector<uint16_t> &pids);
+    void SupportedSectionsHandler(ola::http::HTTPResponse *response,
                                   unsigned int universe,
-                                  UID uid,
+                                  ola::rdm::UID uid,
                                   const ola::rdm::ResponseStatus &status,
-                                  const vector<uint16_t> &pids);
+                                  const std::vector<uint16_t> &pids);
     void SupportedSectionsDeviceInfoHandler(
-        HTTPResponse *response,
-        const vector<uint16_t> pids,
+        ola::http::HTTPResponse *response,
+        const std::vector<uint16_t> pids,
         const ola::rdm::ResponseStatus &status,
         const ola::rdm::DeviceDescriptor &device);
 
     // section methods
-    string GetCommStatus(HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
+    std::string GetCommStatus(ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
 
-    void CommStatusHandler(HTTPResponse *response,
+    void CommStatusHandler(ola::http::HTTPResponse *response,
                            const ola::rdm::ResponseStatus &status,
                            uint16_t short_messages,
                            uint16_t length_mismatch,
                            uint16_t checksum_fail);
 
-    string ClearCommsCounters(HTTPResponse *response,
-                              unsigned int universe_id,
-                              const UID &uid);
+    std::string ClearCommsCounters(ola::http::HTTPResponse *response,
+                                   unsigned int universe_id,
+                                   const ola::rdm::UID &uid);
 
-    string GetProxiedDevices(HTTPResponse *response,
+    std::string GetProxiedDevices(ola::http::HTTPResponse *response,
                              unsigned int universe_id,
-                             const UID &uid);
+                             const ola::rdm::UID &uid);
 
 
-    void ProxiedDevicesHandler(HTTPResponse *response,
+    void ProxiedDevicesHandler(ola::http::HTTPResponse *response,
                                unsigned int universe_id,
                                const ola::rdm::ResponseStatus &status,
-                               const vector<UID> &uids);
+                               const std::vector<ola::rdm::UID> &uids);
 
-    string GetDeviceInfo(const HTTPRequest *request,
-                         HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
+    std::string GetDeviceInfo(const ola::http::HTTPRequest *request,
+                              ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
 
-    void GetSoftwareVersionHandler(HTTPResponse *response,
+    void GetSoftwareVersionHandler(ola::http::HTTPResponse *response,
                                    device_info dev_info,
                                    const ola::rdm::ResponseStatus &status,
-                                   const string &software_version);
+                                   const std::string &software_version);
 
-    void GetDeviceModelHandler(HTTPResponse *response,
+    void GetDeviceModelHandler(ola::http::HTTPResponse *response,
                                device_info dev_info,
                                const ola::rdm::ResponseStatus &status,
-                               const string &device_model);
+                               const std::string &device_model);
 
-    void GetDeviceInfoHandler(HTTPResponse *response,
+    void GetDeviceInfoHandler(ola::http::HTTPResponse *response,
                               device_info dev_info,
                               const ola::rdm::ResponseStatus &status,
                               const ola::rdm::DeviceDescriptor &device);
 
-    string GetProductIds(const HTTPRequest *request,
-                         HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
-
-    void GetProductIdsHandler(HTTPResponse *response,
-                              const ola::rdm::ResponseStatus &status,
-                              const vector<uint16_t> &ids);
-
-    string GetManufacturerLabel(const HTTPRequest *request,
-                                HTTPResponse *response,
-                                unsigned int universe_id,
-                                const UID &uid);
-
-    void GetManufacturerLabelHandler(HTTPResponse *response,
-                                     unsigned int universe_id,
-                                     const UID uid,
-                                     const ola::rdm::ResponseStatus &status,
-                                     const string &label);
-
-    string GetDeviceLabel(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
-
-    void GetDeviceLabelHandler(HTTPResponse *response,
-                               unsigned int universe_id,
-                               const UID uid,
-                               const ola::rdm::ResponseStatus &status,
-                               const string &label);
-
-    string SetDeviceLabel(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
-
-    string GetFactoryDefaults(HTTPResponse *response,
+    std::string GetProductIds(const ola::http::HTTPRequest *request,
+                              ola::http::HTTPResponse *response,
                               unsigned int universe_id,
-                              const UID &uid);
+                              const ola::rdm::UID &uid);
 
-    void FactoryDefaultsHandler(HTTPResponse *response,
+    void GetProductIdsHandler(ola::http::HTTPResponse *response,
+                              const ola::rdm::ResponseStatus &status,
+                              const std::vector<uint16_t> &ids);
+
+    std::string GetManufacturerLabel(const ola::http::HTTPRequest *request,
+                                     ola::http::HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const ola::rdm::UID &uid);
+
+    void GetManufacturerLabelHandler(ola::http::HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const ola::rdm::UID uid,
+                                     const ola::rdm::ResponseStatus &status,
+                                     const std::string &label);
+
+    std::string GetDeviceLabel(const ola::http::HTTPRequest *request,
+                          ola::http::HTTPResponse *response,
+                          unsigned int universe_id,
+                          const ola::rdm::UID &uid);
+
+    void GetDeviceLabelHandler(ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID uid,
+                               const ola::rdm::ResponseStatus &status,
+                               const std::string &label);
+
+    std::string SetDeviceLabel(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
+    std::string GetFactoryDefaults(ola::http::HTTPResponse *response,
+                                   unsigned int universe_id,
+                                   const ola::rdm::UID &uid);
+
+    void FactoryDefaultsHandler(ola::http::HTTPResponse *response,
                                 const ola::rdm::ResponseStatus &status,
                                 bool defaults);
 
-    string SetFactoryDefault(HTTPResponse *response,
-                             unsigned int universe_id,
-                             const UID &uid);
+    std::string SetFactoryDefault(ola::http::HTTPResponse *response,
+                                  unsigned int universe_id,
+                                  const ola::rdm::UID &uid);
 
-    string GetLanguage(HTTPResponse *response,
-                       unsigned int universe_id,
-                       const UID &uid);
+    std::string GetLanguage(ola::http::HTTPResponse *response,
+                            unsigned int universe_id,
+                            const ola::rdm::UID &uid);
 
-    void GetSupportedLanguagesHandler(HTTPResponse *response,
-                                      unsigned int universe_id,
-                                      const UID uid,
-                                      const ola::rdm::ResponseStatus &status,
-                                      const vector<string> &languages);
+    void GetSupportedLanguagesHandler(
+        ola::http::HTTPResponse *response,
+        unsigned int universe_id,
+        const ola::rdm::UID uid,
+        const ola::rdm::ResponseStatus &status,
+        const std::vector<std::string> &languages);
 
-    void GetLanguageHandler(HTTPResponse *response,
-                            vector<string> languages,
+    void GetLanguageHandler(ola::http::HTTPResponse *response,
+                            std::vector<std::string> languages,
                             const ola::rdm::ResponseStatus &status,
-                            const string &language);
+                            const std::string &language);
 
-    string SetLanguage(const HTTPRequest *request,
-                       HTTPResponse *response,
-                       unsigned int universe_id,
-                       const UID &uid);
+    std::string SetLanguage(const ola::http::HTTPRequest *request,
+                            ola::http::HTTPResponse *response,
+                            unsigned int universe_id,
+                            const ola::rdm::UID &uid);
 
-    string GetBootSoftware(HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string GetBootSoftware(ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    void GetBootSoftwareLabelHandler(HTTPResponse *response,
+    void GetBootSoftwareLabelHandler(ola::http::HTTPResponse *response,
                                      unsigned int universe_id,
-                                     const UID uid,
+                                     const ola::rdm::UID uid,
                                      const ola::rdm::ResponseStatus &status,
-                                     const string &label);
+                                     const std::string &label);
 
     void GetBootSoftwareVersionHandler(
-        HTTPResponse *response,
-        string label,
+        ola::http::HTTPResponse *response,
+        std::string label,
         const ola::rdm::ResponseStatus &status,
         uint32_t version);
 
-    string GetPersonalities(const HTTPRequest *request,
-                            HTTPResponse *response,
-                            unsigned int universe_id,
-                            const UID &uid,
-                            bool return_as_section,
-                            bool include_description = false);
+    std::string GetPersonalities(const ola::http::HTTPRequest *request,
+                                 ola::http::HTTPResponse *response,
+                                 unsigned int universe_id,
+                                 const ola::rdm::UID &uid,
+                                 bool return_as_section,
+                                 bool include_description = false);
 
     void GetPersonalityHandler(
-        HTTPResponse *response,
+        ola::http::HTTPResponse *response,
         personality_info *info,
         const ola::rdm::ResponseStatus &status,
         uint8_t current,
         uint8_t total);
 
-    void GetNextPersonalityDescription(HTTPResponse *response,
+    void GetNextPersonalityDescription(ola::http::HTTPResponse *response,
                                        personality_info *info);
 
     void GetPersonalityLabelHandler(
-        HTTPResponse *response,
+        ola::http::HTTPResponse *response,
         personality_info *info,
         const ola::rdm::ResponseStatus &status,
         uint8_t personality,
         uint16_t slot_count,
-        const string &label);
+        const std::string &label);
 
-    void SendSectionPersonalityResponse(HTTPResponse *response,
+    void SendSectionPersonalityResponse(ola::http::HTTPResponse *response,
                                         personality_info *info);
 
-    string SetPersonality(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
+    std::string SetPersonality(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
 
-    string GetStartAddress(const HTTPRequest *request,
-                           HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string GetStartAddress(const ola::http::HTTPRequest *request,
+                                ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    void GetStartAddressHandler(HTTPResponse *response,
+    void GetStartAddressHandler(ola::http::HTTPResponse *response,
                                 const ola::rdm::ResponseStatus &status,
                                 uint16_t address);
 
-    string SetStartAddress(const HTTPRequest *request,
-                           HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string SetStartAddress(const ola::http::HTTPRequest *request,
+                                ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    string GetSensor(const HTTPRequest *request,
-                     HTTPResponse *response,
-                     unsigned int universe_id,
-                     const UID &uid);
+    std::string GetSensor(const ola::http::HTTPRequest *request,
+                          ola::http::HTTPResponse *response,
+                          unsigned int universe_id,
+                          const ola::rdm::UID &uid);
 
-    void SensorDefinitionHandler(HTTPResponse *response,
+    void SensorDefinitionHandler(ola::http::HTTPResponse *response,
                                  unsigned int universe_id,
-                                 const UID uid,
+                                 const ola::rdm::UID uid,
                                  uint8_t sensor_id,
                                  const ola::rdm::ResponseStatus &status,
                                  const ola::rdm::SensorDescriptor &definition);
 
-    void SensorValueHandler(HTTPResponse *response,
+    void SensorValueHandler(ola::http::HTTPResponse *response,
                             ola::rdm::SensorDescriptor *definition,
                             const ola::rdm::ResponseStatus &status,
                             const ola::rdm::SensorValueDescriptor &value);
 
-    string RecordSensor(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string RecordSensor(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    string GetDeviceHours(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
+    std::string GetDeviceHours(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
 
-    string SetDeviceHours(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
+    std::string SetDeviceHours(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
 
-    string GetLampHours(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string GetLampHours(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    string SetLampHours(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string SetLampHours(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    string GetLampStrikes(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
+    std::string GetLampStrikes(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
 
-    string SetLampStrikes(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
+    std::string SetLampStrikes(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
 
-    string GetLampState(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string GetLampState(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    void LampStateHandler(HTTPResponse *response,
+    void LampStateHandler(ola::http::HTTPResponse *response,
                           const ola::rdm::ResponseStatus &status,
                           uint8_t state);
 
-    string SetLampState(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string SetLampState(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    string GetLampMode(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
-
-    void LampModeHandler(HTTPResponse *response,
-                          const ola::rdm::ResponseStatus &status,
-                          uint8_t mode);
-
-    string SetLampMode(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
-
-    string GetPowerCycles(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
-
-    string SetPowerCycles(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
-
-    string GetDisplayInvert(HTTPResponse *response,
+    std::string GetLampMode(const ola::http::HTTPRequest *request,
+                            ola::http::HTTPResponse *response,
                             unsigned int universe_id,
-                            const UID &uid);
+                            const ola::rdm::UID &uid);
 
-    void DisplayInvertHandler(HTTPResponse *response,
+    void LampModeHandler(ola::http::HTTPResponse *response,
+                         const ola::rdm::ResponseStatus &status,
+                         uint8_t mode);
+
+    std::string SetLampMode(const ola::http::HTTPRequest *request,
+                            ola::http::HTTPResponse *response,
+                            unsigned int universe_id,
+                            const ola::rdm::UID &uid);
+
+    std::string GetPowerCycles(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
+    std::string SetPowerCycles(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
+    std::string GetDisplayInvert(ola::http::HTTPResponse *response,
+                                 unsigned int universe_id,
+                                 const ola::rdm::UID &uid);
+
+    void DisplayInvertHandler(ola::http::HTTPResponse *response,
                               const ola::rdm::ResponseStatus &status,
                               uint8_t value);
 
-    string SetDisplayInvert(const HTTPRequest *request,
-                            HTTPResponse *response,
-                            unsigned int universe_id,
-                            const UID &uid);
+    std::string SetDisplayInvert(const ola::http::HTTPRequest *request,
+                                 ola::http::HTTPResponse *response,
+                                 unsigned int universe_id,
+                                 const ola::rdm::UID &uid);
 
-    string GetDisplayLevel(HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string GetDisplayLevel(ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    void DisplayLevelHandler(HTTPResponse *response,
+    void DisplayLevelHandler(ola::http::HTTPResponse *response,
                              const ola::rdm::ResponseStatus &status,
                              uint8_t value);
 
-    string SetDisplayLevel(const HTTPRequest *request,
-                           HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string SetDisplayLevel(const ola::http::HTTPRequest *request,
+                                ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    string GetPanInvert(HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string GetPanInvert(ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    string SetPanInvert(const HTTPRequest *request,
-                        HTTPResponse *response,
-                        unsigned int universe_id,
-                        const UID &uid);
+    std::string SetPanInvert(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response,
+                             unsigned int universe_id,
+                             const ola::rdm::UID &uid);
 
-    string GetTiltInvert(HTTPResponse *response,
+    std::string GetTiltInvert(ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
+
+    std::string SetTiltInvert(const ola::http::HTTPRequest *request,
+                              ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
+
+    std::string GetPanTiltSwap(ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
+    std::string SetPanTiltSwap(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
+    std::string GetClock(ola::http::HTTPResponse *response,
                          unsigned int universe_id,
-                         const UID &uid);
+                         const ola::rdm::UID &uid);
 
-    string SetTiltInvert(const HTTPRequest *request,
-                         HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
-
-    string GetPanTiltSwap(HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
-
-    string SetPanTiltSwap(const HTTPRequest *request,
-                          HTTPResponse *response,
-                          unsigned int universe_id,
-                          const UID &uid);
-
-    string GetClock(HTTPResponse *response,
-                    unsigned int universe_id,
-                    const UID &uid);
-
-    void ClockHandler(HTTPResponse *response,
+    void ClockHandler(ola::http::HTTPResponse *response,
                       const ola::rdm::ResponseStatus &status,
                       const ola::rdm::ClockValue &clock);
 
-    string SyncClock(HTTPResponse *response,
-                     unsigned int universe_id,
-                     const UID &uid);
+    std::string SyncClock(ola::http::HTTPResponse *response,
+                          unsigned int universe_id,
+                          const ola::rdm::UID &uid);
 
-    string GetIdentifyMode(HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string GetIdentifyMode(ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    string SetIdentifyMode(const HTTPRequest *request,
-                           HTTPResponse *response,
-                           unsigned int universe_id,
-                           const UID &uid);
+    std::string SetIdentifyMode(const ola::http::HTTPRequest *request,
+                                ola::http::HTTPResponse *response,
+                                unsigned int universe_id,
+                                const ola::rdm::UID &uid);
 
-    string GetPowerState(HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
+    std::string GetPowerState(ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
 
-    void PowerStateHandler(HTTPResponse *response,
+    void PowerStateHandler(ola::http::HTTPResponse *response,
                            const ola::rdm::ResponseStatus &status,
                            uint8_t value);
 
-    string SetPowerState(const HTTPRequest *request,
-                         HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
+    std::string SetPowerState(const ola::http::HTTPRequest *request,
+                              ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
 
-    string GetResetDevice(HTTPResponse *response);
+    std::string GetResetDevice(ola::http::HTTPResponse *response);
 
-    string SetResetDevice(const HTTPRequest *request,
-                         HTTPResponse *response,
-                         unsigned int universe_id,
-                         const UID &uid);
+    std::string SetResetDevice(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
 
     // util methods
-    bool CheckForInvalidId(const HTTPRequest *request,
+    bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);
 
-    bool CheckForInvalidUid(const HTTPRequest *request, UID **uid);
+    bool CheckForInvalidUid(const ola::http::HTTPRequest *request,
+                            ola::rdm::UID **uid);
 
-    uint16_t SubDeviceOrRoot(const HTTPRequest *request);
+    uint16_t SubDeviceOrRoot(const ola::http::HTTPRequest *request);
 
-    void SetHandler(HTTPResponse *response,
+    void SetHandler(ola::http::HTTPResponse *response,
                     const ola::rdm::ResponseStatus &status);
 
-    void GenericUIntHandler(HTTPResponse *response,
-                            string description,
+    void GenericUIntHandler(ola::http::HTTPResponse *response,
+                            std::string description,
                             const ola::rdm::ResponseStatus &status,
                             uint32_t value);
 
-    void GenericUInt8BoolHandler(HTTPResponse *response,
-                                 string description,
+    void GenericUInt8BoolHandler(ola::http::HTTPResponse *response,
+                                 std::string description,
                                  const ola::rdm::ResponseStatus &status,
                                  uint8_t value);
-    void GenericBoolHandler(HTTPResponse *response,
-                            string description,
+    void GenericBoolHandler(ola::http::HTTPResponse *response,
+                            std::string description,
                             const ola::rdm::ResponseStatus &status,
                             bool value);
 
-    bool CheckForRDMError(HTTPResponse *response,
+    bool CheckForRDMError(ola::http::HTTPResponse *response,
                           const ola::rdm::ResponseStatus &status);
-    int RespondWithError(HTTPResponse *response, const string &error);
-    void RespondWithSection(HTTPResponse *response,
+    int RespondWithError(ola::http::HTTPResponse *response,
+                         const std::string &error);
+    void RespondWithSection(ola::http::HTTPResponse *response,
                             const ola::web::JsonSection &section);
 
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
     bool CheckForRDMSuccessWithError(const ola::rdm::ResponseStatus &status,
-                                     string *error);
+                                     std::string *error);
 
-    void HandleBoolResponse(HTTPResponse *response, const string &error);
+    void HandleBoolResponse(ola::http::HTTPResponse *response,
+                            const std::string &error);
 
-    void AddSection(vector<section_info> *sections,
-                    const string &section_id,
-                    const string &section_name,
-                    const string &hint="");
+    void AddSection(std::vector<section_info> *sections,
+                    const std::string &section_id,
+                    const std::string &section_name,
+                    const std::string &hint="");
 
     static const uint32_t INVALID_PERSONALITY = 0xffff;
     static const char BACKEND_DISCONNECTED_ERROR[];

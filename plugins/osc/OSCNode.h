@@ -129,7 +129,7 @@ class OSCNode {
     }
 
     ola::network::IPV4SocketAddress socket_address;
-    string osc_address;
+    std::string osc_address;
     lo_address liblo_address;
 
    private:
@@ -152,7 +152,7 @@ class OSCNode {
   };
 
   typedef std::map<unsigned int, OSCOutputGroup*> OutputGroupMap;
-  typedef std::map<string, OSCInputGroup*> InputUniverseMap;
+  typedef std::map<std::string, OSCInputGroup*> InputUniverseMap;
 
   struct SlotMessage {
     unsigned int slot;

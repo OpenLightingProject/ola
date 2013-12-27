@@ -67,7 +67,7 @@ enum PluginIds {
 
   /*
    * To obtain a new plugin ID open a ticket at
-   * https://code.google.com/p/open-lighting/issues/entry
+   * https://github.com/OpenLightingProject/ola/issues/new
    * Plugin IDs are usually assigned just prior to merging the code into the
    * mainline. For development of plugins please use OLA_PLUGIN_EXPERIMENTAL.
    */

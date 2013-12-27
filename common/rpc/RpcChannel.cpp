@@ -40,6 +40,7 @@ namespace rpc {
 
 using google::protobuf::ServiceDescriptor;
 using std::auto_ptr;
+using std::string;
 
 const char RpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
 const char RpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
