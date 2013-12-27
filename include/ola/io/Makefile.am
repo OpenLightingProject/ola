@@ -11,9 +11,11 @@ SOURCES = BigEndianStream.h \
           MemoryBuffer.h \
           OutputBuffer.h \
           OutputStream.h \
+          PollerInterface.h \
           SelectServer.h \
           SelectServerInterface.h \
-          StdinHandler.h
+          StdinHandler.h \
+          TimeoutManager.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

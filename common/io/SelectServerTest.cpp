@@ -21,7 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
 
-#include "common/io/PollerInterface.h"
+#include "ola/io/PollerInterface.h"
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"

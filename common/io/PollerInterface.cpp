@@ -18,7 +18,7 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include "common/io/PollerInterface.h"
+#include "ola/io/PollerInterface.h"
 
 #include <string>
 

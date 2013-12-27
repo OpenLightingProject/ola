@@ -33,8 +33,8 @@
 #include <queue>
 #include <set>
 
-#include "common/io/PollerInterface.h"
-#include "common/io/TimeoutManager.h"
+#include <ola/io/PollerInterface.h>
+#include <ola/io/TimeoutManager.h>
 
 class SelectServerTest;
 
