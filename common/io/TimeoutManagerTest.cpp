@@ -36,7 +36,7 @@ using ola::NewCallback;
 using ola::TimeInterval;
 using ola::TimeStamp;
 using ola::io::TimeoutManager;
-using ola::io::timeout_id;
+using ola::thread::timeout_id;
 
 class TimeoutManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TimeoutManagerTest);

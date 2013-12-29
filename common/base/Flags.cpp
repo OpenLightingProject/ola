@@ -269,8 +269,7 @@ void FlagRegistry::GenManPage() {
   // Not using FilenameFromPath to avoid further dependancies
   // This won't work on Windows as it's using the wrong path separator
   string exe_name = m_argv0;
-  string::size_type last_path_sep = string::npos;
-  last_path_sep = m_argv0.find_last_of('/');
+  string::size_type last_path_sep = m_argv0.find_last_of('/');
   if (last_path_sep != string::npos) {
     // Don't return the path sep itself
     exe_name = m_argv0.substr(last_path_sep + 1);
