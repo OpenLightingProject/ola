@@ -34,7 +34,6 @@
 namespace ola {
 namespace io {
 
-using ola::thread::timeout_id;
 
 /**
  * @class TimeoutManager

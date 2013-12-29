@@ -4,7 +4,7 @@ noinst_LTLIBRARIES = libolafile.la
 libolafile_la_SOURCES = Util.cpp
 
 if BUILD_TESTS
-TESTS = FileTester
+TESTS = UtilTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -12,7 +12,7 @@ check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../libolacommon.la
 
-FileTester_SOURCES = UtilTest.cpp
-FileTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-FileTester_LDADD = $(COMMON_TEST_LDADD)
+UtilTester_SOURCES = UtilTest.cpp
+UtilTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+UtilTester_LDADD = $(COMMON_TEST_LDADD)
 
