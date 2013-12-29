@@ -2,6 +2,8 @@ ola (0.8.33-2) unstable; urgency=low
 
   * Remove logic_rdm_sniffer since it causes debuild failures.
 
+ -- Simon Newton <nomis52@gmail.com>  Tue Dec 17 18:25:55 2013 -0800
+
 ola (0.8.33-1) unstable; urgency=low
 
   * New upstream release
