@@ -53,12 +53,19 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h assert.h errno.h fcntl.h limits.h math.h \
-                  net/ethernet.h net/if_arp.h netinet/in.h resolv.h stdint.h \
-                  stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h \
-                  sys/types.h sys/uio.h syslog.h termios.h endian.h execinfo.h \
-                  unistd.h linux/if_packet.h sysexits.h])
+AC_CHECK_HEADERS([arpa/inet.h assert.h endian.h errno.h execinfo.h fcntl.h \
+                  limits.h linux/if_packet.h math.h net/ethernet.h \
+                  net/if_arp.h netinet/in.h resolv.h stdint.h stdlib.h \
+                  string.h sys/ioctl.h sys/socket.h sys/time.h sys/types.h \
+                  sys/uio.h sysexits.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([random])
+
+# These both need sa_family_t from bits/sockaddr.h
+AC_CHECK_HEADERS([bits/sockaddr.h linux/netlink.h linux/rtnetlink.h], [], [],
+                 [[#ifdef HAVE_BITS_SOCKADDR_H
+                     #include <bits/sockaddr.h>
+                   #endif
+                  ]])
 
 AC_PROG_LIBTOOL
 

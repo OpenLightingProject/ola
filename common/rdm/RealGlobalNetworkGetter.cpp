@@ -40,7 +40,7 @@ using std::vector;
 
 const InterfacePicker *RealGlobalNetworkGetter::GetInterfacePicker() const {
   return m_interface_picker.get();
-};
+}
 
 
 bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
@@ -50,9 +50,10 @@ bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
 }
 
 
-const IPV4Address RealGlobalNetworkGetter::GetIPV4DefaultRoute() const {
+bool RealGlobalNetworkGetter::GetIPV4DefaultRoute(
+    IPV4Address *default_route) const {
   // TODO(Peter): Fixme - actually do the work!
-  return IPV4Address();
+  return ola::network::DefaultRoute(default_route);
 }
 
 

@@ -43,22 +43,22 @@ namespace rdm {
  * A class which represents a real network getter.
  */
 class RealGlobalNetworkGetter: public GlobalNetworkGetter {
-  public:
-    RealGlobalNetworkGetter()
-        : GlobalNetworkGetter() {
-      m_interface_picker.reset(ola::network::InterfacePicker::NewPicker());
-    }
+ public:
+  RealGlobalNetworkGetter()
+      : GlobalNetworkGetter() {
+    m_interface_picker.reset(ola::network::InterfacePicker::NewPicker());
+  }
 
-    const ola::network::InterfacePicker *GetInterfacePicker() const;
-    bool GetDHCPStatus(const ola::network::Interface &iface) const;
-    const ola::network::IPV4Address GetIPV4DefaultRoute() const;
-    const std::string GetHostname() const;
-    const std::string GetDomainName() const;
-    bool GetNameServers(
-        std::vector<ola::network::IPV4Address> *name_servers) const;
+  const ola::network::InterfacePicker *GetInterfacePicker() const;
+  bool GetDHCPStatus(const ola::network::Interface &iface) const;
+  bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route) const;
+  const std::string GetHostname() const;
+  const std::string GetDomainName() const;
+  bool GetNameServers(
+      std::vector<ola::network::IPV4Address> *name_servers) const;
 
-  private:
-    std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
+ private:
+  std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
 };
 }  // namespace rdm
 }  // namespace ola

@@ -750,8 +750,13 @@ const RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
     const RDMRequest *request,
     const GlobalNetworkGetter *global_network_getter,
     uint8_t queued_message_count) {
+
+  IPV4Address default_route;
+  if (!global_network_getter->GetIPV4DefaultRoute(&default_route)) {
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  }
   return GetIPV4Address(request,
-                        global_network_getter->GetIPV4DefaultRoute(),
+                        default_route,
                         queued_message_count);
 }
 

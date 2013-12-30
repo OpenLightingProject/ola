@@ -142,6 +142,13 @@ std::string Hostname();
  * @return true on success, false otherwise
  */
 bool NameServers(std::vector<ola::network::IPV4Address> *name_servers);
+
+/**
+ * Get the default route.
+ * @param a pointer to the default route
+ * @return true on success, false otherwise
+ */
+bool DefaultRoute(ola::network::IPV4Address *default_route);
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_NETWORKUTILS_H_

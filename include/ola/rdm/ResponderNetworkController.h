@@ -45,43 +45,44 @@ namespace rdm {
  * @brief Gets global network information.
  */
 class GlobalNetworkGetter {
-  public:
-    GlobalNetworkGetter() {}
-    virtual ~GlobalNetworkGetter() {}
+ public:
+  GlobalNetworkGetter() {}
+  virtual ~GlobalNetworkGetter() {}
 
-    /**
-     * Get the interface picker
-     */
-    virtual const ola::network::InterfacePicker *GetInterfacePicker() const = 0;
+  /**
+   * Get the interface picker
+   */
+  virtual const ola::network::InterfacePicker *GetInterfacePicker() const = 0;
 
-    /**
-     * Get the DHCP status of an interface
-     * @param iface the interface to check the DHCP status of
-     * @return true if the interface is using DHCP, false otherwise
-     */
-    virtual bool GetDHCPStatus(const ola::network::Interface &iface) const = 0;
+  /**
+   * Get the DHCP status of an interface
+   * @param iface the interface to check the DHCP status of
+   * @return true if the interface is using DHCP, false otherwise
+   */
+  virtual bool GetDHCPStatus(const ola::network::Interface &iface) const = 0;
 
-    /**
-     * Get the IPv4 default route
-     * @return the machine's default route as an IPV4Address object
-     */
-    virtual const ola::network::IPV4Address GetIPV4DefaultRoute() const = 0;
+  /**
+   * Get the IPv4 default route
+   * @return the machine's default route as an IPV4Address object
+   */
+  virtual bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route)
+      const = 0;
 
-    /**
-     * Get the hostname
-     */
-    virtual const std::string GetHostname() const = 0;
+  /**
+   * Get the hostname
+   */
+  virtual const std::string GetHostname() const = 0;
 
-    /**
-     * Get the domain name
-     */
-    virtual const std::string GetDomainName() const = 0;
+  /**
+   * Get the domain name
+   */
+  virtual const std::string GetDomainName() const = 0;
 
-    /**
-     * Get name servers
-     */
-    virtual bool GetNameServers(
-        std::vector<ola::network::IPV4Address> *name_servers) const = 0;
+  /**
+   * Get name servers
+   */
+  virtual bool GetNameServers(
+      std::vector<ola::network::IPV4Address> *name_servers) const = 0;
 };
 // TODO(Peter): Set global network information.
 }  // namespace rdm
