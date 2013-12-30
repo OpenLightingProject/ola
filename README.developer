@@ -14,9 +14,8 @@ General
 Code Reviews
 ------------
 
-To have patches reviewed please push your changes to a Google Code Repo, or
-github. Then open an issue with 'Type-Review' at
-http://code.google.com/p/open-lighting/issues/list
+To have patches reviewed please push your changes to GitHub and create a Pull
+Request from within your fork.
 
 If you're using Google Code please enable comments on the repo. Under
 Administer -> Source check:

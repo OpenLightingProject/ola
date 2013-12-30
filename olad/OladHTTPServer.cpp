@@ -46,6 +46,9 @@ using ola::client::OlaOutputPort;
 using ola::client::OlaPlugin;
 using ola::client::OlaPort;
 using ola::client::OlaUniverse;
+using ola::http::HTTPRequest;
+using ola::http::HTTPResponse;
+using ola::http::HTTPServer;
 using ola::io::ConnectedDescriptor;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
@@ -166,7 +169,7 @@ void OladHTTPServer::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
 }
 
 
-/*
+/**
  * Print the server stats json
  * @param request the HTTPRequest
  * @param response the HTTPResponse
@@ -197,7 +200,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 }
 
 
-/*
+/**
  * Print the list of universes / plugins as a json string
  * @param request the HTTPRequest
  * @param response the HTTPResponse
@@ -296,7 +299,7 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
 }
 
 
-/*
+/**
  * Create a new universe by binding one or more ports.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
@@ -336,7 +339,7 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
 }
 
 
-/*
+/**
  * Modify an existing universe.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
@@ -389,8 +392,8 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
 }
 
 
-/*
- * Handle the get dmx command
+/**
+ * Handle the get DMX command
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
@@ -411,8 +414,8 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
 }
 
 
-/*
- * Handle the set dmx command
+/**
+ * Handle the set DMX command
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
@@ -440,7 +443,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
 }
 
 
-/*
+/**
  * Cause the server to shutdown
  * @param request the HTTPRequest
  * @param response the HTTPResponse
@@ -465,7 +468,7 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
 }
 
 
-/*
+/**
  * Reload all plugins
  * @param request the HTTPRequest
  * @param response the HTTPResponse
@@ -484,8 +487,8 @@ int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
 }
 
 
-/*
- * Reload the Pid Store.
+/**
+ * Reload the PID Store.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
@@ -503,11 +506,10 @@ int OladHTTPServer::ReloadPidStore(const HTTPRequest *request,
 }
 
 
-/*
+/**
  * Handle the plugin list callback
  * @param response the HTTPResponse that is associated with the request.
  * @param plugins a list of plugins
- * @param error an error string.
  */
 void OladHTTPServer::HandlePluginList(HTTPResponse *response,
                                       const client::Result &result,
@@ -537,11 +539,9 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
 }
 
 
-/*
+/**
  * Handle the universe list callback
  * @param response the HTTPResponse that is associated with the request.
- * @param plugins a list of plugins
- * @param error an error string.
  */
 void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
                                        JsonObject *json,
@@ -569,11 +569,10 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
 }
 
 
-/*
+/**
  * Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
  * @param description the plugin description.
- * @param error an error string.
  */
 void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
                                              int plugin_id,
@@ -590,11 +589,10 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
                         response, description));
 }
 
-/*
+/**
  * Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
  * @param description the plugin description.
- * @param error an error string.
  */
 void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
                                       string description,
@@ -604,11 +602,12 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
     m_server.ServeError(response, result.Error());
     return;
   }
+
   string escaped_description = description;
-  Escape(&escaped_description);
+  Escape(&escaped_description);  // Escape before passing in so we get \n
 
   JsonObject json;
-  json.Add("description", description);
+  json.Add("description", escaped_description);
   json.Add("name", state.name);
   json.Add("enabled", state.enabled);
   json.Add("active", state.active);
@@ -629,11 +628,10 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
 }
 
 
-/*
+/**
  * Handle the universe info
  * @param response the HTTPResponse that is associated with the request.
  * @param universe the OlaUniverse object
- * @param error an error string.
  */
 void OladHTTPServer::HandleUniverseInfo(HTTPResponse *response,
                                         const client::Result &result,
@@ -706,11 +704,10 @@ void OladHTTPServer::HandlePortsForUniverse(
 }
 
 
-/*
+/**
  * Handle the list of candidate ports
  * @param response the HTTPResponse that is associated with the request.
  * @param devices the possbile devices & ports
- * @param error an error string.
  */
 void OladHTTPServer::HandleCandidatePorts(
     HTTPResponse *response,
@@ -827,7 +824,7 @@ void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
   }
 }
 
-/*
+/**
  * Serve usage information.
  * @param response the reponse to use.
  * @param details the usage information
@@ -845,11 +842,10 @@ int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {
   return r;
 }
 
-/*
+/**
  * Callback for m_client.FetchDmx called by GetDmx
  * @param response the HTTPResponse
  * @param buffer the DmxBuffer
- * @param error Error message
  */
 void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
                                   const client::Result &result,
@@ -869,10 +865,9 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
 }
 
 
-/*
+/**
  * Handle the set DMX response.
  * @param response the HTTPResponse that is associated with the request.
- * @param error an error string.
  */
 void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
                                         const client::Result &result) {
@@ -922,7 +917,7 @@ void OladHTTPServer::PortToJson(JsonObject *json,
 }
 
 
-/*
+/**
  * Add the Patch Actions to the ActionQueue.
  * @param action_queue the ActionQueue to add the actions to.
  * @param port_id_string a string to ports to add/remove.
@@ -949,7 +944,7 @@ void OladHTTPServer::AddPatchActions(ActionQueue *action_queue,
 }
 
 
-/*
+/**
  * Add the Priority Actions to the ActionQueue.
  * @param action_queue the ActionQueue to add the actions to.
  * @param request the HTTPRequest to read the url params from.
@@ -989,7 +984,7 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
 }
 
 
-/*
+/**
  * Decode port ids in a string.
  * This converts a string like "4-I-1,2-O-3" into a vector of port identifiers.
  * @param port_ids the port ids in a , separated string
@@ -1029,7 +1024,7 @@ void OladHTTPServer::DecodePortIds(const string &port_ids,
 }
 
 
-/*
+/**
  * Register a handler
  */
 inline void OladHTTPServer::RegisterHandler(

@@ -34,7 +34,7 @@ DEFINE_string(name, "simon", "Specify the name");
 DEFINE_s_int8(baz, b, 0, "Sets the value of baz");
 
 int main(int argc, char* argv[]) {
-  ola::SetHelpString("<options>", "Description of binary");
+  ola::SetHelpString("[options]", "Description of binary");
   ola::ParseFlags(&argc, argv);
 
   cout << "--foo is " << FLAGS_foo << endl;

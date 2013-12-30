@@ -99,8 +99,14 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 #define OLA_ASSERT_LT(expected, output)  \
   CPPUNIT_ASSERT((expected) < (output))
 
+#define OLA_ASSERT_LTE(expected, output)  \
+  CPPUNIT_ASSERT((expected) <= (output))
+
 #define OLA_ASSERT_GT(expected, output)  \
   CPPUNIT_ASSERT((expected) > (output))
+
+#define OLA_ASSERT_GTE(expected, output)  \
+  CPPUNIT_ASSERT((expected) >= (output))
 
 #define OLA_ASSERT_VECTOR_EQ(expected, output)  \
   ola::testing::_AssertVectorEq(CPPUNIT_SOURCELINE(), (expected), (output))

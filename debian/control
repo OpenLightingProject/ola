@@ -4,24 +4,14 @@ Maintainer: RenZO <renzo@imaginux.com>
 Build-Depends: debhelper (>= 7), autotools-dev, bash-completion
 Standards-Version: 3.9.1
 Section: libs
-Vcs-Git: https://code.google.com/p/open-lighting/
-Vcs-browser: https://code.google.com/p/open-lighting/source/browse/
-Homepage: http://code.google.com/p/open-lighting/
+Vcs-Git: https://github.com/OpenLightingProject/ola.git
+Vcs-browser: https://github.com/OpenLightingProject/ola
+Homepage: https://github.com/OpenLightingProject/ola
 
 Package: ola-dev
 Section: libdevel
 Architecture: any
 Depends: ola (= ${binary:Version}), ${misc:Depends}
-Description: Open Lighting Architecture
- The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
- .
- OLA is written and maintained by Simon Newton <nomis52@gmail.com>
-
-Package: ola-logic-sniffer
-Section: electronics
-Architecture: any
-Depends: ola (= ${binary:Version}), ${misc:Depends}, libsaleaedevice1
 Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.

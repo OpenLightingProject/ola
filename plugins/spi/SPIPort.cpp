@@ -31,6 +31,7 @@ namespace plugin {
 namespace spi {
 
 using ola::rdm::RDMCallback;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 

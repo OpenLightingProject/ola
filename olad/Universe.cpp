@@ -51,6 +51,11 @@
 
 namespace ola {
 
+using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::UID;
+using std::string;
+using std::stringstream;
+
 const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe-uids";
 const char Universe::K_FPS_VAR[] = "universe-dmx-frames";
 const char Universe::K_MERGE_HTP_STR[] = "htp";

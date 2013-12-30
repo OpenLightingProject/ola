@@ -37,6 +37,9 @@ namespace plugin {
 namespace stageprofi {
 
 using ola::AbstractPlugin;
+using ola::io::ConnectedDescriptor;
+using std::string;
+
 
 /*
  * Create a new device

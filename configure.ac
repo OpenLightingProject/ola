@@ -82,6 +82,10 @@ AM_CONDITIONAL(FATAL_WARNINGS, test "${enable_fatal_warnings}" != "no")
 # check for hash_map
 AC_CXX_STL_HASH
 
+# epoll
+AX_HAVE_EPOLL(
+  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
 old_cppflags=$CPPFLAGS

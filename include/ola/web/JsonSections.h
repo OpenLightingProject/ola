@@ -30,8 +30,6 @@
 namespace ola {
 namespace web {
 
-using std::string;
-
 /**
  * This is the base item class. Items are composed into sections.
  * Each item has the following:
@@ -43,7 +41,7 @@ using std::string;
  */
 class GenericItem {
  public:
-    GenericItem(const string &description, const string &id):
+    GenericItem(const std::string &description, const std::string &id):
         m_description(description),
         m_id(id),
         m_button_text("") {
@@ -51,23 +49,23 @@ class GenericItem {
     virtual ~GenericItem() {}
 
     // Sets the text for the button associated
-    void SetButtonText(const string &text) {
+    void SetButtonText(const std::string &text) {
       m_button_text = text;
     }
 
     void PopulateItem(JsonObject *item) const;
 
  protected:
-    virtual string Type() const = 0;
+    virtual std::string Type() const = 0;
     virtual void SetValue(JsonObject *item) const = 0;
     virtual void SetExtraProperties(JsonObject *item) const {
       (void) item;
     }
 
  private:
-    string m_description;
-    string m_id;
-    string m_button_text;
+    std::string m_description;
+    std::string m_id;
+    std::string m_button_text;
 };
 
 
@@ -76,21 +74,21 @@ class GenericItem {
  */
 class StringItem: public GenericItem {
  public:
-    StringItem(const string &description,
-               const string &value,
-               const string &id = ""):
+    StringItem(const std::string &description,
+               const std::string &value,
+               const std::string &id = ""):
       GenericItem(description, id),
       m_value(value) {
     }
 
  protected:
-    string Type() const { return "string"; }
+    std::string Type() const { return "string"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
 
  private:
-    string m_value;
+    std::string m_value;
 };
 
 
@@ -99,9 +97,9 @@ class StringItem: public GenericItem {
  */
 class UIntItem: public GenericItem {
  public:
-    UIntItem(const string &description,
+    UIntItem(const std::string &description,
              unsigned int value,
-             const string &id = ""):
+             const std::string &id = ""):
       GenericItem(description, id),
       m_value(value),
       m_min_set(false),
@@ -119,7 +117,7 @@ class UIntItem: public GenericItem {
 
  protected:
     void SetExtraProperties(JsonObject *item) const;
-    string Type() const { return "uint"; }
+    std::string Type() const { return "uint"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
@@ -134,15 +132,15 @@ class UIntItem: public GenericItem {
 
 class BoolItem: public GenericItem {
  public:
-    BoolItem(const string &description,
+    BoolItem(const std::string &description,
              bool value,
-             const string &id):
+             const std::string &id):
       GenericItem(description, id),
       m_value(value) {
     }
 
  protected:
-    string Type() const { return "bool"; }
+    std::string Type() const { return "bool"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
@@ -154,19 +152,19 @@ class BoolItem: public GenericItem {
 
 class HiddenItem: public GenericItem {
  public:
-    HiddenItem(const string &value, const string &id):
+    HiddenItem(const std::string &value, const std::string &id):
       GenericItem("", id),
       m_value(value) {
     }
 
  protected:
-    string Type() const { return "hidden"; }
+    std::string Type() const { return "hidden"; }
     void SetValue(JsonObject *item) const {
       item->Add("value", m_value);
     }
 
  private:
-    string m_value;
+    std::string m_value;
 };
 
 
@@ -175,26 +173,26 @@ class HiddenItem: public GenericItem {
  */
 class SelectItem: public GenericItem {
  public:
-    SelectItem(const string &description,
-               const string &id = ""):
+    SelectItem(const std::string &description,
+               const std::string &id = ""):
       GenericItem(description, id),
       m_selected_offset(0) {
     }
 
     void SetSelectedOffset(unsigned int offset) { m_selected_offset = offset; }
-    void AddItem(const string &label, const string &value);
+    void AddItem(const std::string &label, const std::string &value);
     // helper method which converts ints to strings
-    void AddItem(const string &label, unsigned int value);
+    void AddItem(const std::string &label, unsigned int value);
 
  protected:
     void SetExtraProperties(JsonObject *item) const {
       item->Add("selected_offset", m_selected_offset);
     }
-    string Type() const { return "select"; }
+    std::string Type() const { return "select"; }
     void SetValue(JsonObject *item) const;
 
  private:
-    std::vector<std::pair<string, string> > m_values;
+    std::vector<std::pair<std::string, std::string> > m_values;
     unsigned int m_selected_offset;
 };
 
@@ -204,16 +202,16 @@ class JsonSection {
     explicit JsonSection(bool allow_refresh = true);
     ~JsonSection();
 
-    void SetSaveButton(const string &text) { m_save_button_text = text; }
-    void SetError(const string &error) { m_error = error; }
+    void SetSaveButton(const std::string &text) { m_save_button_text = text; }
+    void SetError(const std::string &error) { m_error = error; }
 
     void AddItem(const GenericItem *item);
-    string AsString() const;
+    std::string AsString() const;
 
  private:
     bool m_allow_refresh;
-    string m_error;
-    string m_save_button_text;
+    std::string m_error;
+    std::string m_save_button_text;
     std::vector<const GenericItem*> m_items;
 };
 }  // namespace web

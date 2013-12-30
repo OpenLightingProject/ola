@@ -31,7 +31,7 @@ namespace opendmx {
 
 class OpenDmxThread: public ola::thread::Thread {
  public:
-    explicit OpenDmxThread(const string &path);
+    explicit OpenDmxThread(const std::string &path);
     ~OpenDmxThread() {}
 
     bool Stop();
@@ -40,7 +40,7 @@ class OpenDmxThread: public ola::thread::Thread {
 
  private:
     int m_fd;
-    string m_path;
+    std::string m_path;
     DmxBuffer m_buffer;
     bool m_term;
     ola::thread::Mutex m_mutex;

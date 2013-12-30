@@ -42,9 +42,16 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
-using std::auto_ptr;
 using ola::rdm::DimmerResponder;
 using ola::rdm::DummyResponder;
+using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::UID;
+using std::auto_ptr;
+using std::map;
+using std::string;
+using std::stringstream;
+using std::vector;
+
 
 /**
  * A count number of responders of type T.
@@ -121,7 +128,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
   (void) priority;
   m_buffer = buffer;
   stringstream str;
-  std::string data = buffer.Get();
+  string data = buffer.Get();
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
   for (unsigned int i = 0; i < 10 && i < data.size(); i++)
@@ -171,7 +178,7 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
       if (i != m_responders.end()) {
         i->second->SendRDMRequest(request, callback);
       } else {
-          std::vector<std::string> packets;
+          std::vector<string> packets;
           callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
           delete request;
       }
@@ -192,7 +199,7 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
 void DummyPort::HandleBroadcastAck(broadcast_request_tracker *tracker,
                                    ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
-                                   const std::vector<std::string> &packets) {
+                                   const vector<string> &packets) {
   tracker->current_count++;
   if (code != ola::rdm::RDM_WAS_BROADCAST)
     tracker->failed = true;

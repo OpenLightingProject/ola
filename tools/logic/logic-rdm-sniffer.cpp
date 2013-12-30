@@ -78,16 +78,15 @@ using ola::NewSingleCallback;
 
 
 DEFINE_bool(display_asc, false,
-            "Display non-RDM alternate start code frames");
-DEFINE_bool(summarize_rdm, false,
-            "Print single-line versions of the RDM messages");
-DEFINE_bool(timestamp, false, "Include timestamps");
-DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames");
+            "Display non-RDM alternate start code frames.");
+DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
-              "Only display the first N DMX slots");
-DEFINE_uint32(sample_rate, 4000000, "Sample rate in Hz");
+              "Only display the first N slots of DMX data.");
+DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
 DEFINE_string(pid_location, PID_DATA_DIR,
-              "The directory containing the PID definitions");
+              "The directory containing the PID definitions.");
 
 void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
                 void *user_data);
@@ -273,10 +272,10 @@ void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
   auto_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(data), length));
   if (command.get()) {
-    if (!FLAGS_summarize_rdm)
+    if (FLAGS_full_rdm)
       cout << "---------------------------------------" << endl;
 
-    command->Print(&m_command_printer, !FLAGS_summarize_rdm, true);
+    command->Print(&m_command_printer, FLAGS_full_rdm, true);
   } else {
     DisplayRawData(data, length);
   }

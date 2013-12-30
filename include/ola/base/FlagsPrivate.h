@@ -33,11 +33,10 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ola {
-
-using std::string;
 
 /**
  * @brief The interface for the Flag classes.
@@ -50,8 +49,8 @@ class FlagInterface {
     virtual char short_opt() const = 0;
     virtual bool has_arg() const = 0;
     virtual const char* arg_type() const = 0;
-    virtual string help() const = 0;
-    virtual bool SetValue(const string &input) = 0;
+    virtual std::string help() const = 0;
+    virtual bool SetValue(const std::string &input) = 0;
 };
 
 /**
@@ -67,7 +66,7 @@ class BaseFlag : public FlagInterface {
 
     char short_opt() const { return m_short_opt; }
     const char* arg_type() const { return m_arg_type; }
-    string help() const { return m_help; }
+    std::string help() const { return m_help; }
 
  protected:
     void ReplaceUnderscoreWithHyphen(char *input);
@@ -106,7 +105,7 @@ class Flag : public BaseFlag {
       return *this;
     }
 
-    bool SetValue(const string &input);
+    bool SetValue(const std::string &input);
 
  private:
     const char *m_name;
@@ -150,7 +149,7 @@ class Flag<bool> : public BaseFlag {
       return *this;
     }
 
-    bool SetValue(const string&) {
+    bool SetValue(const std::string&) {
       m_value = !m_default;
       return true;
     }
@@ -167,10 +166,10 @@ class Flag<bool> : public BaseFlag {
  * @brief a string flag
  */
 template<>
-class Flag<string> : public BaseFlag {
+class Flag<std::string> : public BaseFlag {
  public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
-         string default_value, const char *help)
+         std::string default_value, const char *help)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
@@ -180,27 +179,27 @@ class Flag<string> : public BaseFlag {
 
     const char *name() const { return m_name; }
     bool has_arg() const { return true; }
-    string default_value() const { return m_default; }
+    std::string default_value() const { return m_default; }
     const char* arg_type() const { return "string"; }
 
     operator const char*() const { return m_value.c_str(); }
-    operator string() const { return m_value; }
-    string str() const { return m_value; }
+    operator std::string() const { return m_value; }
+    std::string str() const { return m_value; }
 
-    Flag &operator=(const string &v) {
+    Flag &operator=(const std::string &v) {
       m_value = v;
       return *this;
     }
 
-    bool SetValue(const string &input) {
+    bool SetValue(const std::string &input) {
       m_value = input;
       return true;
     }
 
  private:
     const char *m_name;
-    string m_default;
-    string m_value;
+    std::string m_default;
+    std::string m_value;
 };
 
 /**
@@ -223,24 +222,28 @@ class FlagRegistry {
     void RegisterFlag(FlagInterface *flag);
     void ParseFlags(int *argc, char **argv);
 
-    void SetFirstLine(const string &help);
-    void SetDecription(const string &help);
+    void SetFirstLine(const std::string &help);
+    void SetDecription(const std::string &help);
     void DisplayUsage();
+    void GenManPage();
 
  private:
     typedef std::map<std::string, FlagInterface*> LongOpts;
     typedef std::map<char, FlagInterface*> ShortOpts;
     typedef std::map<int, FlagInterface*> FlagMap;
+    // <flag, description>
+    typedef std::pair<std::string, std::string> OptionPair;
 
     LongOpts m_long_opts;
     ShortOpts m_short_opts;
-    string m_argv0;
-    string m_first_line;
-    string m_description;
+    std::string m_argv0;
+    std::string m_first_line;
+    std::string m_description;
 
-    string GetShortOptsString() const;
+    std::string GetShortOptsString() const;
     struct option *GetLongOpts(FlagMap *flag_map);
-    void PrintFlags(std::vector<string> *lines);
+    void PrintFlags(std::vector<std::string> *lines);
+    void PrintManPageFlags(std::vector<OptionPair> *lines);
 };
 
 /**

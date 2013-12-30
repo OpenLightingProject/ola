@@ -49,6 +49,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
+using std::string;
 
 
 const uint16_t EnttecUsbProWidget::ENTTEC_ESTA_ID = 0x454E;

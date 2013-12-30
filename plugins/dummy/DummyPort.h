@@ -31,8 +31,6 @@
 #include "ola/rdm/UID.h"
 #include "olad/Port.h"
 
-using ola::rdm::UID;
-
 namespace ola {
 namespace plugin {
 namespace dummy {
@@ -67,9 +65,9 @@ class DummyPort: public BasicOutputPort {
             unsigned int id);
   virtual ~DummyPort();
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-  string Description() const { return "Dummy Port"; }
-  void RunFullDiscovery(RDMDiscoveryCallback *callback);
-  void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+  std::string Description() const { return "Dummy Port"; }
+  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void SendRDMRequest(const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
@@ -81,12 +79,13 @@ class DummyPort: public BasicOutputPort {
     ola::rdm::RDMCallback *callback;
   } broadcast_request_tracker;
 
-  typedef map<UID, ola::rdm::RDMControllerInterface*> ResponderMap;
+  typedef std::map<ola::rdm::UID,
+                   ola::rdm::RDMControllerInterface*> ResponderMap;
 
   DmxBuffer m_buffer;
   ResponderMap m_responders;
 
-  void RunDiscovery(RDMDiscoveryCallback *callback);
+  void RunDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void HandleBroadcastAck(broadcast_request_tracker *tracker,
                           ola::rdm::rdm_response_code code,
                           const ola::rdm::RDMResponse *response,

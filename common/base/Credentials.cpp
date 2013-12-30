@@ -41,6 +41,8 @@
 
 namespace ola {
 
+using std::string;
+
 /**
  * @addtogroup cred
  * @{

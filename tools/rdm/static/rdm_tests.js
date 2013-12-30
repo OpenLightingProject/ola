@@ -901,9 +901,9 @@ RDMTests.prototype.download_responder_info = function() {
 RDMTests.prototype.report_bug = function() {
   var comments = 'Error: ' + this.exception + '\n\n' + this.traceback;
   var url = (
-      'http://code.google.com/p/open-lighting/issues/entry?' +
-      'summary=Bug%20Report%20From%20RDM%20Tests' +
-      '&comment=' + encodeURIComponent(comments));
+      'https://github.com/OpenLightingProject/ola/issues/new?' +
+      'title=Bug%20Report%20From%20RDM%20Tests' +
+      '&body=' + encodeURIComponent(comments));
   window.open(url, '_blank');
 };
 

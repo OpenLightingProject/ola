@@ -67,7 +67,7 @@ class RenardWidget {
     bool Connect();
     int Disconnect();
     ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
-    string GetPath() { return m_path; }
+    std::string GetPath() { return m_path; }
     bool SendDmx(const DmxBuffer &buffer);
     bool DetectDevice();
 
@@ -77,7 +77,7 @@ class RenardWidget {
     int ConnectToWidget(const std::string &path, speed_t speed);
 
     // instance variables
-    const string m_path;
+    const std::string m_path;
     ola::io::ConnectedDescriptor *m_socket;
     uint32_t m_byteCounter;
     uint32_t m_dmxOffset;
