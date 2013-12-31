@@ -45,7 +45,7 @@ class ThreadPool {
   void Execute(Action action);
 
  private:
-  queue<Action> m_callback_queue;
+  std::queue<Action> m_callback_queue;
   unsigned int m_thread_count;
   bool m_shutdown;
   Mutex m_mutex;
