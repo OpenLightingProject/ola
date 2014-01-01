@@ -36,7 +36,7 @@ namespace milinst {
 class MilInstDevice: public ola::Device {
  public:
   MilInstDevice(AbstractPlugin *owner,
-                const std::string &name,
+                class Preferences *preferences,
                 const std::string &dev_path);
   ~MilInstDevice();
 
@@ -49,7 +49,18 @@ class MilInstDevice: public ola::Device {
 
  private:
   std::string m_path;
+  class Preferences *m_preferences;
   std::auto_ptr<class MilInstWidget> m_widget;
+
+  static const char MILINST_DEVICE_NAME[];
+
+  // Per device options
+  string DeviceTypeKey() const;
+
+  void SetDeviceDefaults();
+
+  static const char TYPE_1463[];
+  static const char TYPE_1553[];
 };
 }  // namespace milinst
 }  // namespace plugin

@@ -36,10 +36,6 @@ using std::string;
 
 // Blank default path, so we don't start using a serial port without being asked
 const char MilInstPlugin::MILINST_DEVICE_PATH[] = "";
-const char MilInstPlugin::MILINST_BASE_DEVICE_NAME[] =
-    "Milford Instruments Device";  // This is just for generic MilInst devices
-const char MilInstPlugin::MILINST_1463_DEVICE_NAME[] =
-    "Milford Instruments 1-463 Device";
 const char MilInstPlugin::PLUGIN_NAME[] = "Milford Instruments";
 const char MilInstPlugin::PLUGIN_PREFIX[] = "milinst";
 const char MilInstPlugin::DEVICE_KEY[] = "device";
@@ -62,9 +58,7 @@ bool MilInstPlugin::StartHook() {
       continue;
     }
 
-    // TODO(Peter): When support is added for multiple device types, ensure the
-    // correct name is passed in here
-    device = new MilInstDevice(this, MILINST_1463_DEVICE_NAME, *it);
+    device = new MilInstDevice(this, m_preferences, *it);
     OLA_DEBUG << "Adding device " << *it;
 
     if (!device->Start()) {
@@ -105,8 +99,9 @@ string MilInstPlugin::Description() const {
 "Milford Instruments Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates devices with one output port. It currently only supports "
-"the 1-463 DMX Protocol Converter.\n"
+"This plugin creates devices with one output port. It currently supports the "
+"1-463 DMX Protocol Converter and 1-553 512 Channel Serial to DMX "
+"Transmitter.\n"
 "\n"
 "--- Config file : ola-milinst.conf ---\n"
 "\n"

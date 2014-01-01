@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * MilInstWidget1463.h
- * Interface for the MilInst 1-463 device
+ * MilInstWidget1553.h
+ * Interface for the MilInst 1-553 device
  * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef PLUGINS_MILINST_MILINSTWIDGET1463_H_
-#define PLUGINS_MILINST_MILINSTWIDGET1463_H_
+#ifndef PLUGINS_MILINST_MILINSTWIDGET1553_H_
+#define PLUGINS_MILINST_MILINSTWIDGET1553_H_
 
 #include <string>
 
@@ -29,24 +29,42 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
-class MilInstWidget1463: public MilInstWidget {
+class MilInstWidget1553: public MilInstWidget {
  public:
-  explicit MilInstWidget1463(const std::string &path): MilInstWidget(path) {}
-  ~MilInstWidget1463() {}
+  explicit MilInstWidget1553(const std::string &path, Preferences *preferences);
+  ~MilInstWidget1553() {}
 
   bool Connect();
   bool DetectDevice();
   bool SendDmx(const DmxBuffer &buffer) const;
-  std::string Type() { return "Milford Instruments 1-463 Widget"; }
+  std::string Type() { return "Milford Instruments 1-553 Widget"; }
 
  protected:
   int SetChannel(unsigned int chan, uint8_t val) const;
-  int Send112(const DmxBuffer &buffer) const;
+  int Send(const DmxBuffer &buffer) const;
 
-  // This interface can only transmit 112 channels
-  enum { DMX_MAX_TRANSMIT_CHANNELS = 112 };
+  static const uint8_t MILINST_1553_LOAD_COMMAND = 0x01;
+
+  static const char BAUDRATE_9600[];
+  static const char BAUDRATE_19200[];
+  static const speed_t DEFAULT_BAUDRATE;
+
+  static const char CHANNELS_128[];
+  static const char CHANNELS_256[];
+  static const char CHANNELS_512[];
+  static const uint16_t DEFAULT_CHANNELS;
+
+ private:
+  class Preferences *m_preferences;
+  uint16_t m_channels;
+
+  // Per widget options
+  string BaudRateKey() const;
+  string ChannelsKey() const;
+
+  void SetWidgetDefaults();
 };
 }  // namespace milinst
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_MILINST_MILINSTWIDGET1463_H_
+#endif  // PLUGINS_MILINST_MILINSTWIDGET1553_H_

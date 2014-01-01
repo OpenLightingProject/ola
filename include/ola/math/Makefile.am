@@ -1,4 +1,4 @@
-SOURCES = Random.h
+SOURCES = MathUtils.h Random.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)
