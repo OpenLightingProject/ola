@@ -39,6 +39,8 @@ class MilInstWidget1553: public MilInstWidget {
   bool SendDmx(const DmxBuffer &buffer) const;
   std::string Type() { return "Milford Instruments 1-553 Widget"; }
 
+  void SocketReady();
+
  protected:
   int SetChannel(unsigned int chan, uint8_t val) const;
   int Send(const DmxBuffer &buffer) const;

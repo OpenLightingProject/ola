@@ -79,9 +79,29 @@ bool MilInstWidget1553::Connect() {
     return false;
 
   m_socket = new ola::io::DeviceDescriptor(fd);
+  m_socket->SetOnData(
+      NewCallback<MilInstWidget1553>(this, &MilInstWidget1553::SocketReady));
 
   OLA_DEBUG << "Connected to " << m_path;
   return true;
+}
+
+
+/*
+ * Called when there is data to read
+ */
+void MilInstWidget1553::SocketReady() {
+  while (m_socket->DataRemaining() > 0) {
+    uint8_t byte = 0x00;
+    unsigned int data_read;
+
+    int ret = m_socket->Receive(&byte, 1, data_read);
+
+    if (ret == -1 || data_read != 1) {
+    } else {
+      OLA_DEBUG << "Received byte " << static_cast<int>(byte);
+    }
+  }
 }
 
 
