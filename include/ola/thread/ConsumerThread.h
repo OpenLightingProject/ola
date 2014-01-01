@@ -29,8 +29,6 @@
 namespace ola {
 namespace thread {
 
-using std::queue;
-
 /**
  * A thread which waits on a queue, and when actions (callbacks) become
  * available, it pulls them from the queue and executes them.
@@ -46,7 +44,7 @@ class ConsumerThread: public ola::thread::Thread {
    * @param condition_var the ConditionVariable to wait on. This signals when
    *   the queue is non-empty, or shutdown changes to true.
    */
-  ConsumerThread(queue<Action> *callback_queue,
+  ConsumerThread(std::queue<Action> *callback_queue,
                  const bool *shutdown,
                  Mutex *mutex,
                  ConditionVariable *condition_var)
@@ -60,7 +58,7 @@ class ConsumerThread: public ola::thread::Thread {
   void *Run();
 
  private:
-  queue<Action> *m_callback_queue;
+  std::queue<Action> *m_callback_queue;
   const bool *m_shutdown;
   Mutex *m_mutex;
   ConditionVariable *m_condition_var;

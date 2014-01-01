@@ -53,8 +53,10 @@ namespace ola {
 
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
+using std::set;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe-uids";
 const char Universe::K_FPS_VAR[] = "universe-dmx-frames";
