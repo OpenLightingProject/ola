@@ -32,7 +32,7 @@ namespace math {
  * @param[out] high the high byte
  * @param[out] low the low byte
  */
-void UInt16ToTwoUInt8(const uint16_t &input, uint8_t *high, uint8_t *low);
+void SplitUInt16(const uint16_t input, uint8_t *high, uint8_t *low);
 
 /**
  * @brief Convert two uint8_t's to a uint16_t
@@ -40,7 +40,7 @@ void UInt16ToTwoUInt8(const uint16_t &input, uint8_t *high, uint8_t *low);
  * @param low the low byte
  * @return the combined uint16_t
  */
-uint16_t TwoUInt8ToUInt16(const uint8_t &high, const uint8_t &low);
+uint16_t JoinUInt8(const uint8_t high, const uint8_t low);
 }  // namespace math
 }  // namespace ola
 #endif  // INCLUDE_OLA_MATH_MATHUTILS_H_

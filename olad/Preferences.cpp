@@ -216,10 +216,8 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
 
 void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
   m_pref_map.erase(key);
-  if (value)
-    m_pref_map.insert(make_pair(key, BoolValidator::ENABLED));
-  else
-    m_pref_map.insert(make_pair(key, BoolValidator::DISABLED));
+  m_pref_map.insert(make_pair(key, (value ? BoolValidator::ENABLED :
+                                            BoolValidator::DISABLED)));
 }
 
 

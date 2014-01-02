@@ -108,6 +108,16 @@ string MilInstPlugin::Description() const {
 "device = /dev/ttyS0\n"
 "The device to use as a path for the serial port. Multiple devices are "
 "supported.\n"
+"--- Per Device Settings ---\n"
+"<device>-type = [1-463 | 1-553]\n"
+"The type of interface.\n"
+"\n"
+"--- 1-553 Specific Per Device Settings ---\n"
+"<device>-baudrate = [9600 | 19200]\n"
+"The baudrate to connect at.\n"
+"\n"
+"<device>-channels = [128 | 256 | 512]\n"
+"The number of channels to send.\n"
 "\n";
 }
 

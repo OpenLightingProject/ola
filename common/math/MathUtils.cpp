@@ -26,13 +26,14 @@
 namespace ola {
 namespace math {
 
-void UInt16ToTwoUInt8(const uint16_t &input, uint8_t *high, uint8_t *low) {
+void SplitUInt16(const uint16_t input, uint8_t *high, uint8_t *low) {
   *high = (input >> std::numeric_limits<uint8_t>::digits) & UINT8_MAX;
   *low = input & UINT8_MAX;
 }
 
-uint16_t TwoUInt8ToUInt16(const uint8_t &high, const uint8_t &low) {
-  return (((uint16_t)high << std::numeric_limits<uint8_t>::digits) | low);
+uint16_t JoinUInt8(const uint8_t high, const uint8_t low) {
+  return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
+      | low);
 }
 }  // namespace math
 }  // namespace ola

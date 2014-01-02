@@ -23,67 +23,67 @@
 #include "ola/math/MathUtils.h"
 #include "ola/testing/TestUtils.h"
 
-using ola::math::UInt16ToTwoUInt8;
-using ola::math::TwoUInt8ToUInt16;
+using ola::math::SplitUInt16;
+using ola::math::JoinUInt8;
 
 class MathUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(MathUtilsTest);
-  CPPUNIT_TEST(testUInt16ToTwoUInt8);
-  CPPUNIT_TEST(testTwoUInt8ToUInt16);
+  CPPUNIT_TEST(testSplitUInt16);
+  CPPUNIT_TEST(testJoinUInt8);
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testUInt16ToTwoUInt8();
-    void testTwoUInt8ToUInt16();
+    void testSplitUInt16();
+    void testJoinUInt8();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MathUtilsTest);
 
 /*
- * Test the UInt16ToTwoUInt8 function
+ * Test the SplitUInt16 function
  */
-void MathUtilsTest::testUInt16ToTwoUInt8() {
+void MathUtilsTest::testSplitUInt16() {
   uint16_t input = 0xabcd;
   uint8_t high = 0x00;
   uint8_t low = 0x00;
-  UInt16ToTwoUInt8(input, &high, &low);
-  OLA_ASSERT_EQ(high, (uint8_t)0xab);
-  OLA_ASSERT_EQ(low, (uint8_t)0xcd);
+  SplitUInt16(input, &high, &low);
+  OLA_ASSERT_EQ(high, static_cast<uint8_t>(0xab));
+  OLA_ASSERT_EQ(low, static_cast<uint8_t>(0xcd));
 
   input = 0x0000;
-  UInt16ToTwoUInt8(input, &high, &low);
-  OLA_ASSERT_EQ(high, (uint8_t)0x00);
-  OLA_ASSERT_EQ(low, (uint8_t)0x00);
+  SplitUInt16(input, &high, &low);
+  OLA_ASSERT_EQ(high, static_cast<uint8_t>(0x00));
+  OLA_ASSERT_EQ(low, static_cast<uint8_t>(0x00));
 
   input = 0xffff;
-  UInt16ToTwoUInt8(input, &high, &low);
-  OLA_ASSERT_EQ(high, (uint8_t)0xff);
-  OLA_ASSERT_EQ(low, (uint8_t)0xff);
+  SplitUInt16(input, &high, &low);
+  OLA_ASSERT_EQ(high, static_cast<uint8_t>(0xff));
+  OLA_ASSERT_EQ(low, static_cast<uint8_t>(0xff));
 
   input = 0x0001;
-  UInt16ToTwoUInt8(input, &high, &low);
-  OLA_ASSERT_EQ(high, (uint8_t)0x00);
-  OLA_ASSERT_EQ(low, (uint8_t)0x01);
+  SplitUInt16(input, &high, &low);
+  OLA_ASSERT_EQ(high, static_cast<uint8_t>(0x00));
+  OLA_ASSERT_EQ(low, static_cast<uint8_t>(0x01));
 }
 
 /*
- * Test the TwoUInt8ToUInt16 function
+ * Test the JoinUInt8 function
  */
-void MathUtilsTest::testTwoUInt8ToUInt16() {
+void MathUtilsTest::testJoinUInt8() {
   uint8_t high = 0xab;
   uint8_t low = 0xcd;
-  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0xabcd);
+  OLA_ASSERT_EQ(JoinUInt8(high, low), static_cast<uint16_t>(0xabcd));
 
   high = 0x00;
   low = 0x00;
-  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0x0000);
+  OLA_ASSERT_EQ(JoinUInt8(high, low), static_cast<uint16_t>(0x0000));
 
   high = 0xff;
   low = 0xff;
-  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0xffff);
+  OLA_ASSERT_EQ(JoinUInt8(high, low), static_cast<uint16_t>(0xffff));
 
   high = 0x00;
   low = 0x01;
-  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0x0001);
+  OLA_ASSERT_EQ(JoinUInt8(high, low), static_cast<uint16_t>(0x0001));
 }

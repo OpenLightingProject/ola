@@ -190,7 +190,7 @@ class Preferences {
 
   /**
    * @brief Set a preference value only if it doesn't pass the validator.
-   * @note This only checks the first value.
+   * @note Note this only checks the first value.
    * @param key
    * @param validator A Validator object
    * @param value the new value
