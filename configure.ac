@@ -477,7 +477,7 @@ PKG_CHECK_MODULES(
   [true])
 
 if test "${have_avahi}" = "yes"; then
-  AC_DEFINE(HAVE_AVAHI, 1, [Defined to use Bonjour DNS_SD])
+  AC_DEFINE(HAVE_AVAHI, 1, [Defined to use Avahi])
 fi
 AM_CONDITIONAL(HAVE_AVAHI, test "${have_avahi}" = "yes")
 

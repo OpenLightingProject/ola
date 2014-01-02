@@ -151,7 +151,7 @@ class Preferences {
  public:
   explicit Preferences(const string name): m_preference_name(name) {}
 
-  /*
+  /**
    * Destroy this object
    */
   virtual ~Preferences() {}

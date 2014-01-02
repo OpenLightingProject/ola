@@ -73,22 +73,17 @@ void MathUtilsTest::testUInt16ToTwoUInt8() {
 void MathUtilsTest::testTwoUInt8ToUInt16() {
   uint8_t high = 0xab;
   uint8_t low = 0xcd;
-  uint16_t output = 0x0000;
-  TwoUInt8ToUInt16(high, low, &output);
-  OLA_ASSERT_EQ(output, (uint16_t)0xabcd);
+  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0xabcd);
 
   high = 0x00;
   low = 0x00;
-  TwoUInt8ToUInt16(high, low, &output);
-  OLA_ASSERT_EQ(output, (uint16_t)0x0000);
+  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0x0000);
 
   high = 0xff;
   low = 0xff;
-  TwoUInt8ToUInt16(high, low, &output);
-  OLA_ASSERT_EQ(output, (uint16_t)0xffff);
+  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0xffff);
 
   high = 0x00;
   low = 0x01;
-  TwoUInt8ToUInt16(high, low, &output);
-  OLA_ASSERT_EQ(output, (uint16_t)0x0001);
+  OLA_ASSERT_EQ(TwoUInt8ToUInt16(high, low), (uint16_t)0x0001);
 }
