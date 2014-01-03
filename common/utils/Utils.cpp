@@ -13,34 +13,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * MathUtils.h
- * Basic math helper functions.
+ * Utils.cpp
+ * Basic util helper functions.
  * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef INCLUDE_OLA_MATH_MATHUTILS_H_
-#define INCLUDE_OLA_MATH_MATHUTILS_H_
-
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <stdint.h>
 
+#include <limits>
+
 namespace ola {
-namespace math {
+namespace utils {
 
-/**
- * @brief Convert a uint16_t to two uint8_t's
- * @param[in] input the uint16_t to split
- * @param[out] high the high byte
- * @param[out] low the low byte
- */
-void SplitUInt16(const uint16_t input, uint8_t *high, uint8_t *low);
+void SplitUInt16(const uint16_t input, uint8_t *high, uint8_t *low) {
+  *high = (input >> std::numeric_limits<uint8_t>::digits) & UINT8_MAX;
+  *low = input & UINT8_MAX;
+}
 
-/**
- * @brief Convert two uint8_t's to a uint16_t
- * @param high the high byte
- * @param low the low byte
- * @return the combined uint16_t
- */
-uint16_t JoinUInt8(const uint8_t high, const uint8_t low);
-}  // namespace math
+uint16_t JoinUInt8(const uint8_t high, const uint8_t low) {
+  return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
+      | low);
+}
+}  // namespace utils
 }  // namespace ola
-#endif  // INCLUDE_OLA_MATH_MATHUTILS_H_

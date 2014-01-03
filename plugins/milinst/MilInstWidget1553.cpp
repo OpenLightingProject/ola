@@ -24,8 +24,8 @@
 
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
-#include "ola/math/MathUtils.h"
 #include "ola/StringUtils.h"
+#include "ola/util/Utils.h"
 #include "olad/Preferences.h"
 #include "plugins/milinst/MilInstWidget1553.h"
 
@@ -137,7 +137,7 @@ int MilInstWidget1553::SetChannel(unsigned int chan, uint8_t val) const {
   uint8_t msg[4];
 
   msg[0] = MILINST_1553_LOAD_COMMAND;
-  ola::math::SplitUInt16(chan, &msg[1], &msg[2]);
+  ola::utils::SplitUInt16(chan, &msg[1], &msg[2]);
   msg[3] = val;
   OLA_DEBUG << "Setting " << chan << " to " << static_cast<int>(val);
   return m_socket->Send(msg, sizeof(msg));
@@ -154,7 +154,7 @@ int MilInstWidget1553::Send(const DmxBuffer &buffer) const {
   uint8_t msg[3 + channels];
 
   msg[0] = MILINST_1553_LOAD_COMMAND;
-  ola::math::SplitUInt16(1, &msg[1], &msg[2]);
+  ola::utils::SplitUInt16(1, &msg[1], &msg[2]);
 
   buffer.Get(msg + 3, &channels);
 

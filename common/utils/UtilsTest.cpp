@@ -13,21 +13,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * MathUtilsTest.cpp
- * Unittest for math functions.
+ * UtilsTest.cpp
+ * Unittest for util functions.
  * Copyright (C) 2013 Peter Newman
  */
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/math/MathUtils.h"
+#include "ola/util/Utils.h"
 #include "ola/testing/TestUtils.h"
 
-using ola::math::SplitUInt16;
-using ola::math::JoinUInt8;
+using ola::utils::SplitUInt16;
+using ola::utils::JoinUInt8;
 
-class MathUtilsTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(MathUtilsTest);
+class UtilsTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(UtilsTest);
   CPPUNIT_TEST(testSplitUInt16);
   CPPUNIT_TEST(testJoinUInt8);
   CPPUNIT_TEST_SUITE_END();
@@ -38,12 +38,12 @@ class MathUtilsTest: public CppUnit::TestFixture {
 };
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(MathUtilsTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(UtilsTest);
 
 /*
  * Test the SplitUInt16 function
  */
-void MathUtilsTest::testSplitUInt16() {
+void UtilsTest::testSplitUInt16() {
   uint16_t input = 0xabcd;
   uint8_t high = 0x00;
   uint8_t low = 0x00;
@@ -70,7 +70,7 @@ void MathUtilsTest::testSplitUInt16() {
 /*
  * Test the JoinUInt8 function
  */
-void MathUtilsTest::testJoinUInt8() {
+void UtilsTest::testJoinUInt8() {
   uint8_t high = 0xab;
   uint8_t low = 0xcd;
   OLA_ASSERT_EQ(JoinUInt8(high, low), static_cast<uint16_t>(0xabcd));
