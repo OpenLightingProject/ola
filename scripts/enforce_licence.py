@@ -191,7 +191,9 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
   else:
-    print "File does not start with %s" % (file_name)
+    print "File %s does not start with \"%s...\"" % (
+        file_name,
+        licence.split('\n')[(0 if (lang == PYTHON) else 1)])
     if diff:
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
