@@ -604,7 +604,8 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
   }
 
   string escaped_description = description;
-  Escape(&escaped_description);  // Escape before passing in so we get \n
+  // Replace \n before passing in so we get \\n out the far end
+  ReplaceAll(&escaped_description, "\n", "\\n");
 
   JsonObject json;
   json.Add("description", escaped_description);

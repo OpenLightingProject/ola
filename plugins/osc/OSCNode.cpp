@@ -40,6 +40,7 @@ using std::make_pair;
 using std::max;
 using std::min;
 using std::string;
+using std::vector;
 
 const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
 

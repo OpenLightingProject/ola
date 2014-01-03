@@ -39,6 +39,7 @@
 namespace ola {
 
 using std::string;
+using std::vector;
 
 static std::string MakeServiceKey(const std::string &service_name,
                                   const std::string &type) {

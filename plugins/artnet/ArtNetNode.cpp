@@ -60,7 +60,9 @@ using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
+using std::map;
 using std::pair;
+using std::set;
 using std::string;
 using std::vector;
 
