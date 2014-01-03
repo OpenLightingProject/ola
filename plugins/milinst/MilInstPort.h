@@ -39,7 +39,7 @@ class MilInstOutputPort: public BasicOutputPort {
         m_widget(widget) {}
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-  string Description() const { return m_widget->GetPath(); }
+  string Description() const { return m_widget->Description(); }
 
  private:
   MilInstWidget *m_widget;

@@ -261,7 +261,7 @@ void ReplaceAll(string *original, const string &find, const string &replace) {
     return;  // Nothing to find, so nothing to do
 
   size_t start = 0;
-  while ((start = original->find(find)) != string::npos) {
+  while ((start = original->find(find, start)) != string::npos) {
     original->replace(start, find.length(), replace);
     start += find.length();  // Move to the end of the replaced section
   }

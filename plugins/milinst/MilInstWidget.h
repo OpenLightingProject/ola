@@ -48,6 +48,14 @@ class MilInstWidget {
   int Disconnect();
   ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
   std::string GetPath() { return m_path; }
+  virtual std::string Type() = 0;
+
+  std::string Description() {
+    std::ostringstream str;
+    str << GetPath() << ", " << Type();
+    return str.str();
+  }
+
   virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
   virtual bool DetectDevice() = 0;
 
