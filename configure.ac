@@ -702,7 +702,6 @@ AC_OUTPUT( Makefile \
     python/ola/Makefile \
     python/ola/rpc/Makefile \
     olad/Makefile \
-    olad/OlaVersion.h \
     olad/testdata/Makefile \
     olad/www/Makefile \
     plugins/Makefile \

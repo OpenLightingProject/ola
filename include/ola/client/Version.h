@@ -40,25 +40,25 @@ class Version {
  public:
   /**
    * @brief the Major version number
-   * @returns the major version number.
+   * @return the major version number.
    */
   static unsigned int GetMajor();
 
   /**
    * @brief the Minor version number
-   * @returns the minor version number.
+   * @return the minor version number.
    */
   static unsigned int GetMinor();
 
   /**
    * @brief the revision number
-   * @returns the revision number.
+   * @return the revision number.
    */
   static unsigned int GetRevision();
 
   /**
    * @brief the version number as a string.
-   * @returns the version number as a string.
+   * @return the version number as a string.
    */
   static std::string GetVersion();
 
@@ -68,7 +68,7 @@ class Version {
    * @param major the major version.
    * @param major the minor version.
    * @param major the revision.
-   * @returns true if the running version is >= major.minor,revision.
+   * @return true if the running version is >= major.minor.revision.
    */
   static bool IsAtLeast(unsigned int major,
                         unsigned int minor,

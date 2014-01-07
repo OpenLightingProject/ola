@@ -43,11 +43,9 @@ endif
 
 
 EXTRA_DIST = BonjourDiscoveryAgent.h Client.h ClientBroker.h DeviceManager.h \
-             DiscoveryAgent.h DynamicPluginLoader.h \
-             HttpServerActions.h \
-             OladHTTPServer.h OlaVersion.h \
-             OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortManager.h RDMHTTPModule.h TestCommon.h \
+             DiscoveryAgent.h DynamicPluginLoader.h HttpServerActions.h \
+             OladHTTPServer.h OlaServerServiceImpl.h PluginLoader.h \
+             PluginManager.h PortManager.h RDMHTTPModule.h TestCommon.h \
              UniverseStore.h
 
 # Olad Server
