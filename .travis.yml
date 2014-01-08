@@ -6,6 +6,7 @@ script: autoreconf -i && ./configure --enable-rdm-tests && make && make check
 
 before_install:
  - sudo apt-get update -qq
+ - sudo apt-cache search libmicrohttpd
  - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev  libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev libmicrohttpd10
 
 notifications:
