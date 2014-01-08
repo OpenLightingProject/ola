@@ -2,7 +2,7 @@ language: cpp
 compiler:
   - gcc
   - clang
-script: autoreconf -i && ./configure && make && make check
+script: autoreconf -i && ./configure --enable-rdm-tests && make && make check
 
 before_install:
  - sudo apt-get update -qq
