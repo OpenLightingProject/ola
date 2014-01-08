@@ -204,7 +204,7 @@ bool E131Plugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(
       REVISION_KEY,
-      SetValidator(revision_values),
+      SetValidator<string>(revision_values),
       REVISION_0_46);
 
   if (save)

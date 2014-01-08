@@ -186,13 +186,13 @@ void MilInstWidget1553::SetWidgetDefaults() {
 
   // Set 1-553 widget options
   save |= m_preferences->SetDefaultValue(BaudRateKey(),
-                                         SetValidator(valid_baudrates),
+                                         SetValidator<string>(valid_baudrates),
                                          BAUDRATE_9600);
 
   // TODO(Peter): Fix me, default to 512 once we can set the channel count or it
   // behaves properly when sending higher channel counts when limited
   save |= m_preferences->SetDefaultValue(ChannelsKey(),
-                                         SetValidator(valid_channels),
+                                         SetValidator<string>(valid_channels),
                                          IntToString(DEFAULT_CHANNELS));
 
   if (save)

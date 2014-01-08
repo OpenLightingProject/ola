@@ -150,13 +150,13 @@ void RenardDevice::SetDefaults() {
 
   // Set device options
   m_preferences->SetDefaultValue(DeviceBaudrateKey(),
-                                 SetValidator(valid_baudrates),
+                                 SetValidator<string>(valid_baudrates),
                                  BAUDRATE_57600);
   // Renard supports more than 512 channels, but in our application
   // we're tied to a single DMX universe so we'll limit it to 512 channels.
   m_preferences->SetDefaultValue(
       DeviceChannelsKey(),
-      UIntValidator(RenardWidget:: RENARD_CHANNELS_IN_BANK, DMX_UNIVERSE_SIZE),
+      UIntValidator(RenardWidget::RENARD_CHANNELS_IN_BANK, DMX_UNIVERSE_SIZE),
       IntToString(DEFAULT_NUM_CHANNELS));
   m_preferences->SetDefaultValue(
       DeviceDmxOffsetKey(),

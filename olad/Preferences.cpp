@@ -75,6 +75,7 @@ bool UIntValidator::IsValid(const string &value) const {
   return (output >= m_gt && output <= m_lt);
 }
 
+
 bool IntValidator::IsValid(const string &value) const {
   int output;
   if (!StringToInt(value, &output))
@@ -83,8 +84,34 @@ bool IntValidator::IsValid(const string &value) const {
   return (output >= m_gt && output <= m_lt);
 }
 
-bool SetValidator::IsValid(const string &value) const {
+
+template <>
+bool SetValidator<string>::IsValid(const string &value) const {
   return STLContains(m_values, value);
+}
+
+
+template <>
+bool SetValidator<unsigned int>::IsValid(const string &value) const {
+  unsigned int output;
+  // It's an integer based set validator, so if we can't parse it to an
+  // integer, it can't possibly match an integer and be valid
+  if (!StringToInt(value, &output))
+    return false;
+
+  return STLContains(m_values, output);
+}
+
+
+template <>
+bool SetValidator<int>::IsValid(const string &value) const {
+  int output;
+  // It's an integer based set validator, so if we can't parse it to an
+  // integer, it can't possibly match an integer and be valid
+  if (!StringToInt(value, &output))
+    return false;
+
+  return STLContains(m_values, output);
 }
 
 
@@ -152,9 +179,31 @@ void MemoryPreferences::SetValue(const string &key, const string &value) {
 }
 
 
+void MemoryPreferences::SetValue(const string &key, const unsigned int value) {
+  SetValue(key, IntToString(value));
+}
+
+
+void MemoryPreferences::SetValue(const string &key, const int value) {
+  SetValue(key, IntToString(value));
+}
+
+
 void MemoryPreferences::SetMultipleValue(const string &key,
                                          const string &value) {
   m_pref_map.insert(make_pair(key, value));
+}
+
+
+void MemoryPreferences::SetMultipleValue(const string &key,
+                                         const unsigned int value) {
+  SetMultipleValue(key, IntToString(value));
+}
+
+
+void MemoryPreferences::SetMultipleValue(const string &key,
+                                         const int value) {
+  SetMultipleValue(key, IntToString(value));
 }
 
 
@@ -169,6 +218,20 @@ bool MemoryPreferences::SetDefaultValue(const string &key,
     return true;
   }
   return false;
+}
+
+
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
+                                        const unsigned int value) {
+  return SetDefaultValue(key, validator, IntToString(value));
+}
+
+
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
+                                        const int value) {
+  return SetDefaultValue(key, validator, IntToString(value));
 }
 
 
