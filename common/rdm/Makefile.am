@@ -41,7 +41,7 @@ DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
 DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD)
 
-RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp
+RDMTester_SOURCES = RDMAPITest.cpp
 
 RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RDMTester_LDADD = $(COMMON_TEST_LDADD) \
