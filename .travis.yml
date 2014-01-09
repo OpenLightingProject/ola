@@ -4,6 +4,8 @@ compiler:
   - clang
 script: autoreconf -i && ./configure --enable-rdm-tests && make && make check
 
+cache: apt
+
 before_install:
  - sudo apt-get update -qq
  - sudo apt-cache search microhttpd
