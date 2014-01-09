@@ -80,13 +80,13 @@ int main(int argc, char *argv[]) {
   ola::ParseFlags(&argc, argv);
 
   if (FLAGS_version) {
-    cout << "OLA Daemon version " << ola::client::version::GetVersion() <<
+    cout << "OLA Daemon version " << ola::client::Version::GetVersion() <<
         endl;
     exit(ola::EXIT_OK);
   }
 
   ola::InitLoggingFromFlags();
-  OLA_INFO << "OLA Daemon version " << ola::client::version::GetVersion();
+  OLA_INFO << "OLA Daemon version " << ola::client::Version::GetVersion();
 
   #ifndef OLAD_SKIP_ROOT_CHECK
   if (!ola::GetEUID()) {
