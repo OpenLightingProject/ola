@@ -179,12 +179,12 @@ void MemoryPreferences::SetValue(const string &key, const string &value) {
 }
 
 
-void MemoryPreferences::SetValue(const string &key, const unsigned int value) {
+void MemoryPreferences::SetValue(const string &key, unsigned int value) {
   SetValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetValue(const string &key, const int value) {
+void MemoryPreferences::SetValue(const string &key, int value) {
   SetValue(key, IntToString(value));
 }
 
@@ -196,13 +196,12 @@ void MemoryPreferences::SetMultipleValue(const string &key,
 
 
 void MemoryPreferences::SetMultipleValue(const string &key,
-                                         const unsigned int value) {
+                                         unsigned int value) {
   SetMultipleValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const string &key,
-                                         const int value) {
+void MemoryPreferences::SetMultipleValue(const string &key, int value) {
   SetMultipleValue(key, IntToString(value));
 }
 
@@ -223,7 +222,7 @@ bool MemoryPreferences::SetDefaultValue(const string &key,
 
 bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
-                                        const unsigned int value) {
+                                        unsigned int value) {
   return SetDefaultValue(key, validator, IntToString(value));
 }
 

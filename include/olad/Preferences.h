@@ -191,7 +191,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetValue(const string &key, const unsigned int value) = 0;
+  virtual void SetValue(const string &key, unsigned int value) = 0;
 
   /**
    * @brief Set a preference value, overiding the existing value. This helper
@@ -199,7 +199,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetValue(const string &key, const int value) = 0;
+  virtual void SetValue(const string &key, int value) = 0;
 
   /**
    * @brief Adds this preference value to the store.
@@ -214,8 +214,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetMultipleValue(const string &key,
-                                const unsigned int value) = 0;
+  virtual void SetMultipleValue(const string &key, unsigned int value) = 0;
 
   /**
    * @brief Adds this preference value to the store. This helper accepts an
@@ -223,7 +222,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetMultipleValue(const string &key, const int value) = 0;
+  virtual void SetMultipleValue(const string &key, int value) = 0;
 
   /**
    * @brief Set a preference value if it doesn't already exist, or if it exists
@@ -249,7 +248,7 @@ class Preferences {
    */
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
-                               const unsigned int value) = 0;
+                               unsigned int value) = 0;
 
   /**
    * @brief Set a preference value if it doesn't already exist, or if it exists
@@ -262,7 +261,7 @@ class Preferences {
    */
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
-                               const int value) = 0;
+                               int value) = 0;
 
   /**
    * @brief Get a preference value
@@ -352,20 +351,20 @@ class MemoryPreferences: public Preferences {
   virtual string Source() const { return "Not Saved"; }
 
   virtual void SetValue(const string &key, const string &value);
-  virtual void SetValue(const string &key, const unsigned int value);
-  virtual void SetValue(const string &key, const int value);
+  virtual void SetValue(const string &key, unsigned int value);
+  virtual void SetValue(const string &key, int value);
   virtual void SetMultipleValue(const string &key, const string &value);
-  virtual void SetMultipleValue(const string &key, const unsigned int value);
-  virtual void SetMultipleValue(const string &key, const int value);
+  virtual void SetMultipleValue(const string &key, unsigned int value);
+  virtual void SetMultipleValue(const string &key, int value);
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
                                const string &value);
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
-                               const unsigned int value);
+                               unsigned int value);
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
-                               const int value);
+                               int value);
 
   virtual string GetValue(const string &key) const;
   virtual vector<string> GetMultipleValue(const string &key) const;

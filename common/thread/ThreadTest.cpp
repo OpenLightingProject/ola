@@ -20,8 +20,6 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <iostream>
-
 #include "ola/thread/Thread.h"
 #include "ola/testing/TestUtils.h"
 
@@ -30,8 +28,6 @@ using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
 using ola::thread::MutexLocker;
 using ola::thread::Thread;
-using std::cout;
-using std::endl;
 
 class ThreadTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ThreadTest);
@@ -78,8 +74,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
  * Check that basic thread functionality works.
  */
 void ThreadTest::testThread() {
-  cout << "Starting testThread" << endl;
-
   MockThread thread;
   OLA_ASSERT_FALSE(thread.HasRan());
   OLA_ASSERT_TRUE(thread.Start());
@@ -89,8 +83,6 @@ void ThreadTest::testThread() {
   OLA_ASSERT_TRUE(thread.Join());
   OLA_ASSERT_FALSE(thread.IsRunning());
   OLA_ASSERT_TRUE(thread.HasRan());
-
-  cout << "Finished testThread" << endl;
 }
 
 
@@ -124,8 +116,6 @@ class MockConditionThread: public Thread {
  * Check that a condition variable works
  */
 void ThreadTest::testConditionVariable() {
-  cout << "Starting testConditionVariable" << endl;
-
   Mutex mutex;
   ConditionVariable condition;
   MockConditionThread thread(&mutex, &condition);
@@ -138,6 +128,4 @@ void ThreadTest::testConditionVariable() {
   mutex.Unlock();
 
   thread.Join();
-
-  cout << "Finished testConditionVariable" << endl;
 }

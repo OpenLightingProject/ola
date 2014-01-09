@@ -20,8 +20,6 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <iostream>
-
 #include "ola/Logging.h"
 #include "ola/thread/Future.h"
 #include "ola/thread/Thread.h"
@@ -32,8 +30,6 @@ using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
 using ola::thread::MutexLocker;
 using ola::thread::Future;
-using std::cout;
-using std::endl;
 
 class FutureTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(FutureTest);
@@ -79,8 +75,6 @@ class AdderThread: public ola::thread::Thread {
  * Check that single threaded Future functionality works.
  */
 void FutureTest::testSingleThreadedFuture() {
-  cout << "Starting testSingleThreadedFuture" << endl;
-
   Future<bool> f1;
   OLA_ASSERT_FALSE(f1.IsComplete());
   f1.Set(true);
@@ -103,16 +97,12 @@ void FutureTest::testSingleThreadedFuture() {
   f5.Set(false);
   OLA_ASSERT_EQ(false, f4.Get());
   OLA_ASSERT_EQ(false, f5.Get());
-
-  cout << "Finished testSingleThreadedFuture" << endl;
 }
 
 /*
  * Check that single threaded Future functionality works.
  */
 void FutureTest::testSingleThreadedVoidFuture() {
-  cout << "Starting testSingleThreadedVoidFuture" << endl;
-
   Future<void> f1;
   OLA_ASSERT_FALSE(f1.IsComplete());
   f1.Set();
@@ -135,21 +125,15 @@ void FutureTest::testSingleThreadedVoidFuture() {
   f5.Set();
   f4.Get();
   f5.Get();
-
-  cout << "Finished testSingleThreadedVoidFuture" << endl;
 }
 
 /*
  * Check that Futures work in a multithreaded environment
  */
 void FutureTest::testMultithreadedFuture() {
-  cout << "Starting testMultithreadedFuture" << endl;
-
   Future<int> f1;
   AdderThread thread(3, 5, &f1);
   OLA_ASSERT_FALSE(f1.IsComplete());
   thread.Run();
   OLA_ASSERT_EQ(8, f1.Get());
-
-  cout << "Finished testMultithreadedFuture" << endl;
 }
