@@ -28,7 +28,7 @@ nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
 if BUILD_TESTS
-TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester
+TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -41,9 +41,8 @@ DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
 DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD)
 
-RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp \
-                    UIDAllocatorTest.cpp \
-                    UIDTest.cpp
+RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp
+
 RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RDMTester_LDADD = $(COMMON_TEST_LDADD) \
                   ../io/libolaio.la \
