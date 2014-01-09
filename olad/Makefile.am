@@ -57,8 +57,8 @@ if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic
 endif
 olad_LDADD = libolaserver.la \
-             $(top_builddir)/common/libolacommon.la
-             $(top_builddir)/ola/libola.la \
+             $(top_builddir)/common/libolacommon.la \
+             $(top_builddir)/ola/libola.la
 
 if HAVE_LIBFTDI
 olad_LDADD += -lftdi -lusb
