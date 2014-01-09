@@ -42,7 +42,7 @@ DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD)
 
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp \
-                    QueueingRDMControllerTest.cpp UIDAllocatorTest.cpp \
+                    UIDAllocatorTest.cpp \
                     UIDTest.cpp
 RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RDMTester_LDADD = $(COMMON_TEST_LDADD) \
