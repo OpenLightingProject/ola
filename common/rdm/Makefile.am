@@ -37,34 +37,12 @@ COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../base/libolabase.la \
                     ../utils/libolautils.la
 
-DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
-DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD)
-
 RDMTester_SOURCES = RDMAPITest.cpp
-
 RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RDMTester_LDADD = $(COMMON_TEST_LDADD) \
                   ../io/libolaio.la \
                   ../messaging/libolamessaging.la \
                   ../network/libolanetwork.la
-
-PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
-                         PidStoreTest.cpp
-PidStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-PidStoreTester_LDADD = $(COMMON_TEST_LDADD) \
-                       ../messaging/libolamessaging.la
-
-RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
-                           MessageSerializerTest.cpp \
-                           MessageDeserializerTest.cpp \
-                           RDMMessageInterationTest.cpp \
-                           StringMessageBuilderTest.cpp \
-                           VariableFieldSizeCalculatorTest.cpp
-RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-RDMMessageTester_LDADD = $(COMMON_TEST_LDADD) \
-                         ../messaging/libolamessaging.la \
-                         ../network/libolanetwork.la
 
 Pids.pb.cc Pids.pb.h: Pids.proto
 	$(PROTOC) --cpp_out ./ Pids.proto
