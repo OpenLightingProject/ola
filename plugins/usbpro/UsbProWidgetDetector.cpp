@@ -41,7 +41,6 @@
 
 #include <string.h>
 
-#include <map>
 #include <string>
 
 #include "ola/Logging.h"
@@ -54,6 +53,9 @@
 namespace ola {
 namespace plugin {
 namespace usbpro {
+
+using std::string;
+
 
 UsbProWidgetInformation& UsbProWidgetInformation::operator=(
     const UsbProWidgetInformation &other) {

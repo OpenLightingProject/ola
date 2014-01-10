@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
 
+#include "common/io/PollerInterface.h"
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
@@ -33,6 +34,7 @@ using ola::ExportMap;
 using ola::IntegerVariable;
 using ola::TimeStamp;
 using ola::io::LoopbackDescriptor;
+using ola::io::PollerInterface;
 using ola::io::SelectServer;
 using ola::network::UDPSocket;
 
@@ -133,10 +135,10 @@ void SelectServerTest::tearDown() {
 void SelectServerTest::testAddRemoveReadDescriptor() {
   LoopbackDescriptor bad_socket;
   IntegerVariable *connected_socket_count =
-    m_map->GetIntegerVar(SelectServer::K_CONNECTED_DESCRIPTORS_VAR);
+    m_map->GetIntegerVar(PollerInterface::K_CONNECTED_DESCRIPTORS_VAR);
   IntegerVariable *socket_count =
-    m_map->GetIntegerVar(SelectServer::K_READ_DESCRIPTOR_VAR);
-  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+    m_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR);
+  OLA_ASSERT_EQ(1, connected_socket_count->Get());  // internal socket
   OLA_ASSERT_EQ(0, socket_count->Get());
   // adding and removin a non-connected socket should fail
   OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
@@ -144,12 +146,12 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
 
   LoopbackDescriptor loopback_socket;
   loopback_socket.Init();
-  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(1, connected_socket_count->Get());
   OLA_ASSERT_EQ(0, socket_count->Get());
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
   // Adding a second time should fail
   OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&loopback_socket));
-  OLA_ASSERT_EQ(1, connected_socket_count->Get());
+  OLA_ASSERT_EQ(2, connected_socket_count->Get());
   OLA_ASSERT_EQ(0, socket_count->Get());
 
   // Add a udp socket
@@ -157,15 +159,15 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   OLA_ASSERT_TRUE(udp_socket.Init());
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&udp_socket));
   OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&udp_socket));
-  OLA_ASSERT_EQ(1, connected_socket_count->Get());
+  OLA_ASSERT_EQ(2, connected_socket_count->Get());
   OLA_ASSERT_EQ(1, socket_count->Get());
 
   // Check remove works
   OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&loopback_socket));
-  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(1, connected_socket_count->Get());
   OLA_ASSERT_EQ(1, socket_count->Get());
   OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&udp_socket));
-  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(1, connected_socket_count->Get());
   OLA_ASSERT_EQ(0, socket_count->Get());
 
   // Remove again should fail
@@ -243,7 +245,7 @@ void SelectServerTest::testOffByOneTimeout() {
       ola::NewSingleCallback(this, &SelectServerTest::SingleIncrementTimeout));
 
   now += ola::TimeInterval(0, 10000);
-  ss.CheckTimeouts(now);
+  ss.m_timeout_manager->ExecuteTimeouts(&now);
   OLA_ASSERT_EQ(m_timeout_counter, 1u);
 }
 

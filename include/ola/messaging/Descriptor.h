@@ -30,9 +30,6 @@
 #include <vector>
 #include <utility>
 
-using std::string;
-using std::vector;
-
 namespace ola {
 namespace messaging {
 
@@ -46,7 +43,7 @@ class FieldDescriptorInterface {
     virtual ~FieldDescriptorInterface() {}
 
     // Returns the name of this field
-    virtual const string& Name() const = 0;
+    virtual const std::string& Name() const = 0;
 
     // Call back into a FieldDescriptorVisitor
     virtual void Accept(FieldDescriptorVisitor *visitor) const = 0;
@@ -68,16 +65,16 @@ class FieldDescriptorInterface {
  */
 class FieldDescriptor: public FieldDescriptorInterface {
  public:
-    explicit FieldDescriptor(const string &name)
+    explicit FieldDescriptor(const std::string &name)
         : m_name(name) {
     }
     virtual ~FieldDescriptor() {}
 
     // Returns the name of this field
-    const string& Name() const { return m_name; }
+    const std::string& Name() const { return m_name; }
 
  private:
-    string m_name;
+    std::string m_name;
 };
 
 
@@ -86,7 +83,7 @@ class FieldDescriptor: public FieldDescriptorInterface {
  */
 class BoolFieldDescriptor: public FieldDescriptor {
  public:
-    explicit BoolFieldDescriptor(const string &name)
+    explicit BoolFieldDescriptor(const std::string &name)
         : FieldDescriptor(name) {
     }
 
@@ -105,7 +102,7 @@ class BoolFieldDescriptor: public FieldDescriptor {
  */
 class IPV4FieldDescriptor: public FieldDescriptor {
  public:
-    explicit IPV4FieldDescriptor(const string &name)
+    explicit IPV4FieldDescriptor(const std::string &name)
         : FieldDescriptor(name) {
     }
 
@@ -124,7 +121,7 @@ class IPV4FieldDescriptor: public FieldDescriptor {
  */
 class MACFieldDescriptor: public FieldDescriptor {
  public:
-    explicit MACFieldDescriptor(const string &name)
+    explicit MACFieldDescriptor(const std::string &name)
         : FieldDescriptor(name) {
     }
 
@@ -143,7 +140,7 @@ class MACFieldDescriptor: public FieldDescriptor {
  */
 class UIDFieldDescriptor: public FieldDescriptor {
  public:
-    explicit UIDFieldDescriptor(const string &name)
+    explicit UIDFieldDescriptor(const std::string &name)
         : FieldDescriptor(name) {
     }
 
@@ -162,7 +159,7 @@ class UIDFieldDescriptor: public FieldDescriptor {
  */
 class StringFieldDescriptor: public FieldDescriptor {
  public:
-    StringFieldDescriptor(const string &name,
+    StringFieldDescriptor(const std::string &name,
                           uint8_t min_size,
                           uint8_t max_size)
         : FieldDescriptor(name),
@@ -193,10 +190,10 @@ template <typename type>
 class IntegerFieldDescriptor: public FieldDescriptor {
  public:
     typedef std::pair<type, type> Interval;
-    typedef vector<std::pair<type, type> > IntervalVector;
-    typedef std::map<string, type> LabeledValues;
+    typedef std::vector<std::pair<type, type> > IntervalVector;
+    typedef std::map<std::string, type> LabeledValues;
 
-    IntegerFieldDescriptor(const string &name,
+    IntegerFieldDescriptor(const std::string &name,
                            bool little_endian = false,
                            int8_t multiplier = 0)
         : FieldDescriptor(name),
@@ -204,7 +201,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
           m_multipler(multiplier) {
     }
 
-    IntegerFieldDescriptor(const string &name,
+    IntegerFieldDescriptor(const std::string &name,
                            const IntervalVector &intervals,
                            const LabeledValues &labels,
                            bool little_endian = false,
@@ -238,7 +235,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
 
     const LabeledValues &Labels() const { return m_labels; }
 
-    bool LookupLabel(const string &label, type *value) const {
+    bool LookupLabel(const std::string &label, type *value) const {
       typename LabeledValues::const_iterator iter = m_labels.find(label);
       if (iter == m_labels.end())
         return false;
@@ -246,7 +243,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
       return true;
     }
 
-    const string LookupValue(type value) const {
+    const std::string LookupValue(type value) const {
       typename LabeledValues::const_iterator iter = m_labels.begin();
       for (; iter != m_labels.end(); ++iter) {
         if (iter->second == value)
@@ -324,8 +321,8 @@ class FieldDescriptorGroup: public FieldDescriptor {
  public:
     static const int16_t UNLIMITED_BLOCKS;
 
-    FieldDescriptorGroup(const string &name,
-                         const vector<const FieldDescriptor*> &fields,
+    FieldDescriptorGroup(const std::string &name,
+                         const std::vector<const FieldDescriptor*> &fields,
                          uint16_t min_blocks,
                          int16_t max_blocks)
       : FieldDescriptor(name),
@@ -383,7 +380,7 @@ class FieldDescriptorGroup: public FieldDescriptor {
     virtual void Accept(FieldDescriptorVisitor *visitor) const;
 
  protected:
-    vector<const class FieldDescriptor *> m_fields;
+    std::vector<const class FieldDescriptor *> m_fields;
 
  private:
     uint16_t m_min_blocks;
@@ -401,8 +398,8 @@ class FieldDescriptorGroup: public FieldDescriptor {
  */
 class Descriptor: public FieldDescriptorGroup {
  public:
-    Descriptor(const string &name,
-               const vector<const FieldDescriptor*> &fields)
+    Descriptor(const std::string &name,
+               const std::vector<const FieldDescriptor*> &fields)
         : FieldDescriptorGroup(name, fields, 1, 1) {}
 
     void Accept(FieldDescriptorVisitor *visitor) const;

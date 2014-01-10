@@ -30,7 +30,7 @@ namespace osc {
 
 struct OSCTarget {
   ola::network::IPV4SocketAddress socket_address;
-  string osc_address;
+  std::string osc_address;
 
   // The default constructor.
   OSCTarget() {}
@@ -57,7 +57,7 @@ struct OSCTarget {
    * @param out the ostream
    * @param uid the UID to write.
    */
-  friend ostream& operator<<(ostream &out, const OSCTarget &target) {
+  friend std::ostream& operator<<(std::ostream &out, const OSCTarget &target) {
     return out << target.ToString();
   }
 };

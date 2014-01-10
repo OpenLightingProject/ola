@@ -1,5 +1,6 @@
 SOURCES = Backoff.h \
-          SequenceNumber.h
+          SequenceNumber.h \
+          Utils.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

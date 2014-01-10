@@ -42,7 +42,6 @@ namespace ola {
  * @addtogroup cred
  * @{
  */
-using std::string;
 
 // These functions wrap their POSIX counterparts.
 
@@ -110,10 +109,10 @@ bool SetGID(gid_t new_gid);
  */
 typedef struct {
   /** @brief name of the user */
-  string pw_name;
+  std::string pw_name;
 
   /** @brief Unused currently*/
-  string pw_passwd;  // no passwd for now
+  std::string pw_passwd;  // no passwd for now
 
   /** @brief real User ID */
   uid_t pw_uid;
@@ -122,10 +121,10 @@ typedef struct {
   gid_t pw_gid;
 
   /** @brief user's home directory */
-  string pw_dir;
+  std::string pw_dir;
 
   /** @brief user's shell program */
-  string pw_shell;
+  std::string pw_shell;
 } PasswdEntry;
 
 /**
@@ -144,7 +143,7 @@ typedef struct {
  * @param[out] passwd struct to hold information for username name
  * @return true on success, false otherwise
  */
-bool GetPasswdName(const string &name, PasswdEntry *passwd);
+bool GetPasswdName(const std::string &name, PasswdEntry *passwd);
 
 /**
  * @brief Lookup a user account by UID.
@@ -168,12 +167,12 @@ bool GetPasswdUID(uid_t uid, PasswdEntry *passwd);
  */
 typedef struct {
   /** @brief name of the group */
-  string gr_name;
+  std::string gr_name;
   /**
    * @brief password for the group
    * @note UNUSED
    */
-  string gr_passwd;  // no passwd for now
+  std::string gr_passwd;  // no passwd for now
   /** @brief Group ID */
   gid_t gr_gid;
   // vector<string> gr_mem;  // no members for now
@@ -194,7 +193,7 @@ typedef struct {
  * @param[out] passwd is a GroupEntry to be populated upon success
  * @returns true on success and false otherwise
  */
-bool GetGroupName(const string &name, GroupEntry *passwd);
+bool GetGroupName(const std::string &name, GroupEntry *passwd);
 
 /**
  * @brief Lookup a group account by GID.

@@ -28,6 +28,7 @@
 namespace ola {
 namespace slp {
 
+using ola::io::ConnectedDescriptor;
 using std::string;
 using std::vector;
 

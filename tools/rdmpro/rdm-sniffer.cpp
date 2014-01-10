@@ -14,19 +14,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * rdm-sniffer.cpp
- * RDM Sniffer software for the Enttec RDM Pro.
+ * RDM Sniffer software for the ENTTEC RDM Pro.
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <getopt.h>
 #include <string.h>
 #include <time.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
-#include <ola/base/SysExits.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
+#include <ola/base/Flags.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/CommandPrinter.h>
@@ -61,14 +61,18 @@ using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
 
-typedef struct {
-  bool help;
-  bool timestamp;
-  ola::log_level log_level;
-  vector<string> args;  // extra args
-  string read_file;  // file to read data from
-} options;
-
+DEFINE_s_bool(display_dmx, d, false,
+              "Display DMX frames. Defaults to false.");
+DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_string(readfile, p, "",
+                "Display data from a previously captured file.");
+DEFINE_s_string(savefile, w, "",
+                "Also write the captured data to a file.");
+DEFINE_bool(display_asc, false,
+              "Display non-RDM alternate start code frames.");
+DEFINE_int16(dmx_slot_limit, 512,
+             "Only display the first N slots of DMX data.");
 
 /**
  * A list of bytes
@@ -389,124 +393,6 @@ void RDMSniffer::MaybePrintTimestamp() {
     " ";
 }
 
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc,
-                  char *argv[],
-                  options *opts,
-                  RDMSniffer::RDMSnifferOptions *sniffer_options) {
-  static struct option long_options[] = {
-      {"display-asc", no_argument, 0, 'a'},
-      {"display-dmx", no_argument, 0, 'd'},
-      {"dmx-slot-limit", required_argument, 0, 's'},
-      {"full-rdm", no_argument, 0, 'r'},
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"write-raw-dump", required_argument, 0, 'w'},
-      {"parse-raw-dump", required_argument, 0, 'p'},
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "adhl:s:truw:p:", long_options,
-                        &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'a':
-        sniffer_options->display_non_rdm_asc_frames = true;
-        break;
-      case 'd':
-        sniffer_options->display_dmx_frames = true;
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 's':
-        sniffer_options->dmx_slot_limit = atoi(optarg);
-        break;
-      case 't':
-        sniffer_options->timestamp = true;
-        break;
-      case 'r':
-        sniffer_options->summarize_rdm_frames = false;
-        break;
-      case 'w':
-        if (!opts->read_file.empty())
-          return;
-        sniffer_options->write_file = optarg;
-        break;
-      case 'p':
-        if (!sniffer_options->write_file.empty())
-          return;
-        opts->read_file = optarg;
-        break;
-      case '?':
-        break;
-      default:
-       break;
-    }
-  }
-
-  int index = optind;
-  for (; index < argc; index++)
-    opts->args.push_back(argv[index]);
-  return;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options] <device>\n"
-  "\n"
-  "Sniff traffic from a Enttec RDM Pro device.\n"
-  "\n"
-  "  -a, --display-asc   Display non-RDM alternate start code frames\n"
-  "  -d, --display-dmx   Display DMX Frames (default false)\n"
-  "  --dmx-slot-limit N  Only display N slots\n"
-  "  -h, --help          Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -p, --parse-raw-dump <file>  Parse data from binary file.\n"
-  "  -r, --full-rdm      Display the full RDM frame\n"
-  "  -t, --timestamp     Include timestamps.\n"
-  "  -w, --write-raw-dump <file>  Write data to binary file.\n"
-  << endl;
-  exit(0);
-}
-
-
 void Stop(ola::io::SelectServer *ss) {
   ss->Terminate();
 }
@@ -553,18 +439,25 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
+  ola::SetHelpString(
+      "[options] <usb-device-path>",
+      "Sniff traffic from a ENTTEC RDM Pro device.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
+
+  if (!FLAGS_savefile.str().empty() && !FLAGS_readfile.str().empty()) {
+    ola::DisplayUsage();
+    exit(ola::EXIT_USAGE);
+  }
+
   RDMSniffer::RDMSnifferOptions sniffer_options;
   RDMSniffer::InitOptions(&sniffer_options);
-  options opts;
-  opts.log_level = ola::OLA_LOG_INFO;
-  opts.help = false;
-  opts.timestamp = false;
-  ParseOptions(argc, argv, &opts, &sniffer_options);
-
-  if (opts.help)
-    DisplayHelpAndExit(argv);
-
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
+  sniffer_options.display_non_rdm_asc_frames = FLAGS_display_asc;
+  sniffer_options.display_dmx_frames = FLAGS_display_dmx;
+  sniffer_options.dmx_slot_limit = FLAGS_dmx_slot_limit;
+  sniffer_options.timestamp = FLAGS_timestamp;
+  sniffer_options.summarize_rdm_frames = !FLAGS_full_rdm;
+  sniffer_options.write_file = FLAGS_savefile.str();
 
   // if we're writing to a file
   if (!sniffer_options.write_file.empty()) {
@@ -578,16 +471,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (!opts.read_file.empty()) {
+  if (!FLAGS_readfile.str().empty()) {
     // we're reading from a file
-    ParseFile(&sniffer_options, opts.read_file);
+    ParseFile(&sniffer_options, FLAGS_readfile.str());
     return ola::EXIT_OK;
   }
 
-  if (opts.args.size() != 1)
-    DisplayHelpAndExit(argv);
+  if (argc != 2) {
+    ola::DisplayUsage();
+    exit(ola::EXIT_USAGE);
+  }
 
-  const string device = opts.args[0];
+  const string device = argv[1];
 
   ola::io::ConnectedDescriptor *descriptor =
       ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(device);

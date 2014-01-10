@@ -39,13 +39,13 @@ using std::auto_ptr;
 class StageProfiDevice: public Device {
  public:
     StageProfiDevice(AbstractPlugin *owner,
-                     const string &name,
-                     const string &dev_path);
+                     const std::string &name,
+                     const std::string &dev_path);
     ~StageProfiDevice();
 
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
-    string DeviceId() const { return m_path; }
+    std::string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
  protected:
@@ -53,8 +53,8 @@ class StageProfiDevice: public Device {
     void PrePortStop();
 
  private:
-    string m_path;
-    auto_ptr<class StageProfiWidget> m_widget;
+    std::string m_path;
+    std::auto_ptr<class StageProfiWidget> m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin

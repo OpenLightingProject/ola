@@ -28,6 +28,9 @@
 namespace ola {
 namespace testing {
 
+using std::string;
+
+
 /*
  * Assert that two blocks of data match.
  * @param line the line number of this assert

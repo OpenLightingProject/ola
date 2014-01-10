@@ -305,8 +305,7 @@ SoftwareBackend::SoftwareBackend(const Options &options,
       m_output_sizes(options.outputs, 0),
       m_latch_bytes(options.outputs, 0),
       m_output(NULL),
-      m_length(0),
-      m_buffer_size(0) {
+      m_length(0) {
   if (export_map) {
     m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
                                            SPI_DROP_VAR_KEY);

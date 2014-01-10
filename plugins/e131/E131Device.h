@@ -32,9 +32,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::Plugin;
-using ola::plugin::e131::Request;
-using std::vector;
 
 class E131InputPort;
 class E131OutputPort;
@@ -59,7 +56,7 @@ class E131Device: public ola::Device {
       }
     };
 
-    E131Device(Plugin *owner,
+    E131Device(ola::Plugin *owner,
                const ola::acn::CID &cid,
                std::string ip_addr,
                class PluginAdaptor *plugin_adaptor,
@@ -85,12 +82,14 @@ class E131Device: public ola::Device {
     bool m_ignore_preview;
     uint8_t m_dscp;
     const unsigned int m_input_port_count, m_output_port_count;
-    vector<E131InputPort*> m_input_ports;
-    vector<E131OutputPort*> m_output_ports;
+    std::vector<E131InputPort*> m_input_ports;
+    std::vector<E131OutputPort*> m_output_ports;
     std::string m_ip_addr;
     ola::acn::CID m_cid;
 
-    void HandlePreviewMode(Request *request, string *response);
+    void HandlePreviewMode(ola::plugin::e131::Request *request,
+                           string *response);
+
     void HandlePortStatusRequest(string *response);
     E131InputPort *GetE131InputPort(unsigned int port_id);
     E131OutputPort *GetE131OutputPort(unsigned int port_id);

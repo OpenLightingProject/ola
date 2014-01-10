@@ -42,10 +42,6 @@
 
 namespace ola {
 
-using std::map;
-using std::set;
-using std::vector;
-
 /**
  * @addtogroup stl
  * @{
@@ -134,7 +130,7 @@ inline bool STLContains(const T1 &container, const T2 &value) {
  * @param[out] keys the vector to populate with the keys.
  */
 template<typename T1>
-void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
+void STLKeys(const T1 &container, std::vector<typename T1::key_type> *keys) {
   keys->reserve(keys->size() + container.size());
   typename T1::const_iterator iter = container.begin();
   for (; iter != container.end(); ++iter)
@@ -149,7 +145,7 @@ void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
  * @param[out] values the vector to populate with the values.
  */
 template<typename T1, typename T2>
-void STLValues(const T1 &container, vector<T2> *values) {
+void STLValues(const T1 &container, std::vector<T2> *values) {
   values->reserve(values->size() + container.size());
   typename T1::const_iterator iter = container.begin();
   for (; iter != container.end(); ++iter)

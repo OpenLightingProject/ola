@@ -106,6 +106,16 @@ void Escape(std::string *original);
 std::string EscapeString(const std::string &original);
 
 /**
+ * @brief Replace all instances of the find string with the replace string.
+ * @param original the string to operate on.
+ * @param find the string to find
+ * @param replace what to replace it with
+ */
+void ReplaceAll(std::string *original,
+                const std::string &find,
+                const std::string &replace);
+
+/**
  * @brief Encode any unprintable characters in a string as hex, returning a
  * copy.
  *

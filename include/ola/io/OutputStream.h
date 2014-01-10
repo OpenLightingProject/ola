@@ -75,7 +75,8 @@ class OutputStream: public OutputStreamInterface {
 
     template<typename T>
     OutputStream& Write(const T &val) {
-      m_buffer->Write(reinterpret_cast<const uint8_t*>(&val), sizeof(val));
+      m_buffer->Write(reinterpret_cast<const uint8_t*>(&val),
+                      static_cast<unsigned int>(sizeof(val)));
       return *this;
     }
 

@@ -45,8 +45,10 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-
 using ola::io::ConnectedDescriptor;
+using std::string;
+using std::vector;
+
 
 /**
  * Constructor

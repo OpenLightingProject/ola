@@ -30,8 +30,6 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-using ola::io::ConnectedDescriptor;
-using ola::io::SelectServer;
 
 class StageProfiWidget {
  public:
@@ -43,10 +41,10 @@ class StageProfiWidget {
     virtual ~StageProfiWidget();
 
     // these methods are for communicating with the device
-    virtual bool Connect(const string &path) = 0;
+    virtual bool Connect(const std::string &path) = 0;
     int Disconnect();
-    string GetDevicePath() { return m_device_path; }
-    ConnectedDescriptor *GetSocket() { return m_socket; }
+    std::string GetDevicePath() { return m_device_path; }
+    ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
     bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
     void SocketReady();
@@ -59,9 +57,9 @@ class StageProfiWidget {
     // instance variables
     bool m_enabled;
     bool m_got_response;
-    string m_device_path;
-    ConnectedDescriptor *m_socket;
-    SelectServer *m_ss;
+    std::string m_device_path;
+    ola::io::ConnectedDescriptor *m_socket;
+    ola::io::SelectServer *m_ss;
 
     enum { DMX_MSG_LEN = 255 };
     enum { DMX_HEADER_SIZE = 4};

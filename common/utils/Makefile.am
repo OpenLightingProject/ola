@@ -4,7 +4,8 @@ noinst_LTLIBRARIES = libolautils.la
 libolautils_la_SOURCES = ActionQueue.cpp \
                          DmxBuffer.cpp \
                          StringUtils.cpp \
-                         TokenBucket.cpp
+                         TokenBucket.cpp \
+                         Utils.cpp
 
 if BUILD_TESTS
 TESTS = UtilsTester
@@ -13,7 +14,7 @@ check_PROGRAMS = $(TESTS)
 UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
                       CallbackTest.cpp DmxBufferTest.cpp \
                       MultiCallbackTest.cpp StringUtilsTest.cpp \
-                      TokenBucketTest.cpp
+                      TokenBucketTest.cpp UtilsTest.cpp
 UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 UtilsTester_LDADD = $(COMMON_TESTING_LIBS) \
                     libolautils.la \

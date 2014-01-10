@@ -51,7 +51,7 @@ typedef SingleUseCallback2<void, const Result&, const std::vector<OlaPlugin>&>
  * @param result the Result of the API call.
  * @param description the plugin description.
  */
-typedef SingleUseCallback2<void, const Result&, const string&>
+typedef SingleUseCallback2<void, const Result&, const std::string&>
     PluginDescriptionCallback;
 
 /**
@@ -111,7 +111,7 @@ typedef SingleUseCallback2<void, const Result&, const OlaUniverse&>
  * @param result the Result of the API call.
  * @param response the raw data returned by the device.
  */
-typedef SingleUseCallback2<void, const Result&, const string&>
+typedef SingleUseCallback2<void, const Result&, const std::string&>
     ConfigureDeviceCallback;
 
 /**

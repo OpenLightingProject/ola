@@ -206,7 +206,6 @@ class SoftwareBackend : public SPIBackendInterface,
     vector<unsigned int> m_latch_bytes;
     uint8_t *m_output;
     unsigned int m_length;
-    unsigned int m_buffer_size;
 };
 
 

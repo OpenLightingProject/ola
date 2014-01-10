@@ -59,12 +59,6 @@
 namespace ola {
 namespace web {
 
-using std::map;
-using std::ostream;
-using std::string;
-using std::stringstream;
-using std::vector;
-
 /**
  * @addtogroup json
  * @{
@@ -82,7 +76,7 @@ class JsonValue {
      * @param output the ostream to output to.
      * @param indent the number of spaces to prepend.
      */
-    virtual void ToString(ostream *output, unsigned int indent) const = 0;
+    virtual void ToString(std::ostream *output, unsigned int indent) const = 0;
 
  protected:
     /**
@@ -90,8 +84,8 @@ class JsonValue {
      * @param output the ostream to append to
      * @param indent the number of spaces to append
      */
-    void Indent(ostream *output, unsigned int indent) const {
-      *output << string(indent, ' ');
+    void Indent(std::ostream *output, unsigned int indent) const {
+      *output << std::string(indent, ' ');
     }
 
     /**
@@ -110,16 +104,16 @@ class JsonStringValue: public JsonValue {
      * @brief Create a new JsonStringValue
      * @param value the string to use.
      */
-    explicit JsonStringValue(const string &value)
+    explicit JsonStringValue(const std::string &value)
         : m_value(value) {
     }
 
-    void ToString(ostream *output, unsigned int) const {
+    void ToString(std::ostream *output, unsigned int) const {
       *output << '"' << EscapeString(EncodeString(m_value)) << '"';
     }
 
  private:
-    const string m_value;
+    const std::string m_value;
 };
 
 
@@ -136,7 +130,7 @@ class JsonUIntValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output, unsigned int) const {
+    void ToString(std::ostream *output, unsigned int) const {
       *output << m_value;
     }
 
@@ -158,7 +152,7 @@ class JsonIntValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output, unsigned int) const {
+    void ToString(std::ostream *output, unsigned int) const {
       *output << m_value;
     }
 
@@ -180,7 +174,7 @@ class JsonBoolValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output, unsigned int) const {
+    void ToString(std::ostream *output, unsigned int) const {
       *output << (m_value ? "true" : "false");
     }
 
@@ -199,7 +193,7 @@ class JsonNullValue: public JsonValue {
      */
     explicit JsonNullValue() {}
 
-    void ToString(ostream *output, unsigned int) const {
+    void ToString(std::ostream *output, unsigned int) const {
       *output << "null";
     }
 };
@@ -214,16 +208,16 @@ class JsonRawValue: public JsonValue {
      * @brief Create a new JsonRawValue
      * @param value the raw data to insert.
      */
-    explicit JsonRawValue(const string &value)
+    explicit JsonRawValue(const std::string &value)
       : m_value(value) {
     }
 
-    void ToString(ostream *output, unsigned int) const {
+    void ToString(std::ostream *output, unsigned int) const {
       *output << m_value;
     }
 
  private:
-    const string m_value;
+    const std::string m_value;
 };
 
 
@@ -249,67 +243,67 @@ class JsonObject: public JsonValue {
      * @param key the key to set.
      * @param value the value to add.
      */
-    void Add(const string &key, const string &value);
+    void Add(const std::string &key, const std::string &value);
 
     /**
      * @brief Set the given key to a string value.
      * @param key the key to set.
      * @param value the value to add
      */
-    void Add(const string &key, const char *value);
+    void Add(const std::string &key, const char *value);
 
     /**
      * @brief Set the given key to a unsigned int value.
      * @param key the key to set.
      * @param i the value to add
      */
-    void Add(const string &key, unsigned int i);
+    void Add(const std::string &key, unsigned int i);
 
     /**
      * @brief Set the given key to a int value.
      * @param key the key to set.
      * @param i the value to add
      */
-    void Add(const string &key, int i);
+    void Add(const std::string &key, int i);
 
     /**
      * @brief Set the given key to a bool value.
      * @param key the key to set.
      * @param value the value to add
      */
-    void Add(const string &key, bool value);
+    void Add(const std::string &key, bool value);
 
     /**
      * @brief Set the given key to a null value.
      * @param key the key to set.
      */
-    void Add(const string &key);
+    void Add(const std::string &key);
 
     /**
      * @brief Set the given key to a JsonObject.
      * @param key the key to add
      * @returns the new JsonObject.
      */
-    JsonObject* AddObject(const string &key);
+    JsonObject* AddObject(const std::string &key);
 
     /**
      * @brief Set the given key to a JsonArray.
      * @param key the key to add
      * @returns the new JsonObject.
      */
-    class JsonArray* AddArray(const string &key);
+    class JsonArray* AddArray(const std::string &key);
 
     /**
      * @brief Set the given key to a raw value.
      * @param key the key to add
      * @param value the raw value to append.
      */
-    void AddRaw(const string &key, const string &value);
+    void AddRaw(const std::string &key, const std::string &value);
 
-    void ToString(ostream *output, unsigned int indent) const;
+    void ToString(std::ostream *output, unsigned int indent) const;
 
  private:
-    typedef map<string, JsonValue*> MemberMap;
+    typedef std::map<std::string, JsonValue*> MemberMap;
     MemberMap m_members;
 
     DISALLOW_COPY_AND_ASSIGN(JsonObject);
@@ -329,7 +323,7 @@ class JsonArray: public JsonValue {
      * @brief Append a string value to the array
      * @param value the value to append
      */
-    void Append(const string &value) {
+    void Append(const std::string &value) {
       m_values.push_back(new JsonStringValue(value));
     }
 
@@ -399,14 +393,14 @@ class JsonArray: public JsonValue {
     /**
      * @brief Append a raw value to the array
      */
-    void AppendRaw(const string &value) {
+    void AppendRaw(const std::string &value) {
       m_values.push_back(new JsonRawValue(value));
     }
 
-    void ToString(ostream *output, unsigned int indent) const;
+    void ToString(std::ostream *output, unsigned int indent) const;
 
  private:
-    typedef vector<JsonValue*> ValuesVector;
+    typedef std::vector<JsonValue*> ValuesVector;
     ValuesVector m_values;
     // true if this array contains a nested object or array
     bool m_complex_type;
@@ -424,13 +418,13 @@ class JsonWriter {
      * @param output the ostream to write to
      * @param value the JsonValue to serialize.
      */
-    static void Write(ostream *output, const JsonValue &value);
+    static void Write(std::ostream *output, const JsonValue &value);
 
     /**
      * @brief Get the string representation of the JsonValue.
      * @param value the JsonValue to serialize.
      */
-    static string AsString(const JsonValue &value);
+    static std::string AsString(const JsonValue &value);
 };
 /**@}*/
 }  // namespace web

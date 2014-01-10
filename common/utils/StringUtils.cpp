@@ -253,6 +253,20 @@ string EncodeString(const string &original) {
   return encoded.str();
 }
 
+void ReplaceAll(string *original, const string &find, const string &replace) {
+  if (original->empty())
+    return;  // No text, so nothing to do
+
+  if (find.empty())
+    return;  // Nothing to find, so nothing to do
+
+  size_t start = 0;
+  while ((start = original->find(find, start)) != string::npos) {
+    original->replace(start, find.length(), replace);
+    start += find.length();  // Move to the end of the replaced section
+  }
+}
+
 bool HexStringToInt(const string &value, uint8_t *output) {
   uint32_t temp;
   if (!HexStringToInt(value, &temp))

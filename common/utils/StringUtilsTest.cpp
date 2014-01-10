@@ -36,6 +36,7 @@ using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
 using ola::PrefixedHexStringToInt;
+using ola::ReplaceAll;
 using ola::ShortenString;
 using ola::StringEndsWith;
 using ola::StringJoin;
@@ -72,6 +73,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCustomCapitalizeLabel);
   CPPUNIT_TEST(testFormatData);
   CPPUNIT_TEST(testStringJoin);
+  CPPUNIT_TEST(testReplaceAll);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -97,6 +99,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testCustomCapitalizeLabel();
     void testFormatData();
     void testStringJoin();
+    void testReplaceAll();
 };
 
 
@@ -751,3 +754,32 @@ void StringUtilsTest::testStringJoin() {
   strings.push_back("three");
   OLA_ASSERT_EQ(string("one,two,three"), StringJoin(",", strings));
 }
+
+void StringUtilsTest::testReplaceAll() {
+  string input = "";
+  ReplaceAll(&input, "", "");
+  OLA_ASSERT_EQ(string(""), input);
+
+  input = "abc";
+  ReplaceAll(&input, "", "");
+  OLA_ASSERT_EQ(string("abc"), input);
+  ReplaceAll(&input, "", "def");
+  OLA_ASSERT_EQ(string("abc"), input);
+
+  input = "abc";
+  ReplaceAll(&input, "b", "d");
+  OLA_ASSERT_EQ(string("adc"), input);
+
+  input = "aaa";
+  ReplaceAll(&input, "a", "b");
+  OLA_ASSERT_EQ(string("bbb"), input);
+
+  input = "abcdef";
+  ReplaceAll(&input, "cd", "cds");
+  OLA_ASSERT_EQ(string("abcdsef"), input);
+
+  input = "abcdefabcdef";
+  ReplaceAll(&input, "cd", "gh");
+  OLA_ASSERT_EQ(string("abghefabghef"), input);
+}
+

@@ -30,16 +30,12 @@ namespace ola {
 namespace messaging {
 
 
-using std::string;
-using std::vector;
-
-
 /**
  * This visitor builds a Message object from a list of strings.
  */
 class StringMessageBuilder: public FieldDescriptorVisitor {
  public:
-    explicit StringMessageBuilder(const vector<string> &input)
+    explicit StringMessageBuilder(const std::vector<std::string> &input)
         : m_input(input) {
     }
     ~StringMessageBuilderVisitor() {}
@@ -59,7 +55,7 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
     void PostVisit(const FieldDescriptorGroup*);
 
  private:
-    vector<string> m_input;
+    std::vector<std::string> m_input;
 };
 }  // namespace messaging
 }  // namespace ola

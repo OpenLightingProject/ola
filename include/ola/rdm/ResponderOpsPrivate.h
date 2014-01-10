@@ -74,7 +74,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
                                             RDMCallback *on_complete) {
   // Take ownership of the request object, so the targets don't have to.
   auto_ptr<const RDMRequest> request(raw_request);
-  vector<string> packets;
+  std::vector<string> packets;
 
   if (!on_complete) {
     OLA_WARN << "Null callback passed!";
@@ -190,7 +190,7 @@ RDMResponse *ResponderOps<Target>::HandleSupportedParams(
   if (request->ParamDataSize())
     return NackWithReason(request, NR_FORMAT_ERROR);
 
-  vector<uint16_t> params;
+  std::vector<uint16_t> params;
   params.reserve(m_handlers.size());
   typename RDMHandlers::const_iterator iter = m_handlers.begin();
   for (; iter != m_handlers.end(); ++iter) {
@@ -208,7 +208,7 @@ RDMResponse *ResponderOps<Target>::HandleSupportedParams(
   }
   sort(params.begin(), params.end());
 
-  vector<uint16_t>::iterator param_iter = params.begin();
+  std::vector<uint16_t>::iterator param_iter = params.begin();
   for (; param_iter != params.end(); ++param_iter) {
     *param_iter = ola::network::HostToNetwork(*param_iter);
   }

@@ -23,8 +23,6 @@
 
 #include <map>
 #include <memory>
-#include <queue>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,19 +44,6 @@
 namespace ola {
 namespace plugin {
 namespace artnet {
-
-using ola::network::IPV4Address;
-using ola::rdm::RDMCallback;
-using ola::rdm::RDMCommand;
-using ola::rdm::RDMDiscoveryCallback;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
-using ola::rdm::UID;
-using ola::rdm::UIDSet;
-using std::map;
-using std::queue;
-using std::set;
-using std::string;
 
 
 // The directions are the opposite from what OLA uses
@@ -121,10 +106,10 @@ class ArtNetNodeImpl {
 
 
   // Various parameters to control the behaviour
-  bool SetShortName(const string &name);
-  string ShortName() const { return m_short_name; }
-  bool SetLongName(const string &name);
-  string LongName() const { return m_long_name; }
+  bool SetShortName(const std::string &name);
+  std::string ShortName() const { return m_short_name; }
+  bool SetLongName(const std::string &name);
+  std::string LongName() const { return m_long_name; }
 
   uint8_t NetAddress() const { return m_net_address; }
   bool SetNetAddress(uint8_t net_address);
@@ -161,42 +146,46 @@ class ArtNetNodeImpl {
   void RunIncrementalDiscovery(uint8_t port_id,
                                ola::rdm::RDMDiscoveryCallback *callback);
   void SendRDMRequest(uint8_t port_id,
-                      const RDMRequest *request,
-                      RDMCallback *on_complete);
+                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMCallback *on_complete);
   bool SetUnsolicitedUIDSetHandler(
       uint8_t port_id,
       ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod);
-  void GetSubscribedNodes(uint8_t port_id,
-                          std::vector<IPV4Address> *node_addresses);
+  void GetSubscribedNodes(
+      uint8_t port_id,
+      std::vector<ola::network::IPV4Address> *node_addresses);
 
   // The following apply to Output Ports (those which receive data);
   bool SetDMXHandler(uint8_t port_id,
                      DmxBuffer *buffer,
                      ola::Callback0<void> *handler);
-  bool SendTod(uint8_t port_id, const UIDSet &uid_set);
+  bool SendTod(uint8_t port_id, const ola::rdm::UIDSet &uid_set);
   bool SetOutputPortRDMHandlers(
       uint8_t port_id,
       ola::Callback0<void> *on_discover,
       ola::Callback0<void> *on_flush,
-      ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request);
+      ola::Callback2<void,
+                     const ola::rdm::RDMRequest*,
+                     ola::rdm::RDMCallback*> *on_rdm_request);
 
   // send time code
   bool SendTimeCode(const ola::timecode::TimeCode &timecode);
 
  private:
   class InputPort;
-  typedef vector<InputPort*> InputPorts;
+  typedef std::vector<InputPort*> InputPorts;
 
   // map a uid to a IP address and the number of times we've missed a
   // response.
-  typedef map<UID, std::pair<IPV4Address, uint8_t> > uid_map;
+  typedef std::map<ola::rdm::UID,
+                   std::pair<ola::network::IPV4Address, uint8_t> > uid_map;
 
   enum { MAX_MERGE_SOURCES = 2 };
 
   struct DMXSource {
     DmxBuffer buffer;
     TimeStamp timestamp;
-    IPV4Address address;
+    ola::network::IPV4Address address;
   };
 
   // Output Ports receive ArtNet data
@@ -208,18 +197,20 @@ class ArtNetNodeImpl {
     bool is_merging;
     DMXSource sources[MAX_MERGE_SOURCES];
     DmxBuffer *buffer;
-    map<UID, IPV4Address> uid_map;
+    std::map<ola::rdm::UID, ola::network::IPV4Address> uid_map;
     Callback0<void> *on_data;
     Callback0<void> *on_discover;
     Callback0<void> *on_flush;
-    ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request;
+    ola::Callback2<void,
+                   const ola::rdm::RDMRequest*,
+                   ola::rdm::RDMCallback*> *on_rdm_request;
   };
 
   bool m_running;
   uint8_t m_net_address;  // this is the 'net' portion of the Artnet address
   bool m_send_reply_on_change;
-  string m_short_name;
-  string m_long_name;
+  std::string m_short_name;
+  std::string m_long_name;
   unsigned int m_broadcast_threshold;
   unsigned int m_unsolicited_replies;
   ola::io::SelectServerInterface *m_ss;
@@ -242,77 +233,78 @@ class ArtNetNodeImpl {
   void SocketReady();
   bool SendPollIfAllowed();
   bool SendPollReplyIfRequired();
-  bool SendPollReply(const IPV4Address &destination);
-  bool SendIPReply(const IPV4Address &destination);
-  void HandlePacket(const IPV4Address &source_address,
+  bool SendPollReply(const ola::network::IPV4Address &destination);
+  bool SendIPReply(const ola::network::IPV4Address &destination);
+  void HandlePacket(const ola::network::IPV4Address &source_address,
                     const artnet_packet &packet,
                     unsigned int packet_size);
-  void HandlePollPacket(const IPV4Address &source_address,
+  void HandlePollPacket(const ola::network::IPV4Address &source_address,
                         const artnet_poll_t &packet,
                         unsigned int packet_size);
-  void HandleReplyPacket(const IPV4Address &source_address,
+  void HandleReplyPacket(const ola::network::IPV4Address &source_address,
                          const artnet_reply_t &packet,
                          unsigned int packet_size);
-  void HandleDataPacket(const IPV4Address &source_address,
+  void HandleDataPacket(const ola::network::IPV4Address &source_address,
                         const artnet_dmx_t &packet,
                         unsigned int packet_size);
-  void HandleTodRequest(const IPV4Address &source_address,
+  void HandleTodRequest(const ola::network::IPV4Address &source_address,
                         const artnet_todrequest_t &packet,
                         unsigned int packet_size);
-  void HandleTodData(const IPV4Address &source_address,
+  void HandleTodData(const ola::network::IPV4Address &source_address,
                      const artnet_toddata_t &packet,
                      unsigned int packet_size);
-  void HandleTodControl(const IPV4Address &source_address,
+  void HandleTodControl(const ola::network::IPV4Address &source_address,
                         const artnet_todcontrol_t &packet,
                         unsigned int packet_size);
-  void HandleRdm(const IPV4Address &source_address,
+  void HandleRdm(const ola::network::IPV4Address &source_address,
                  const artnet_rdm_t &packet,
                  unsigned int packet_size);
-  void RDMRequestCompletion(IPV4Address destination,
+  void RDMRequestCompletion(ola::network::IPV4Address destination,
                             uint8_t port_id,
                             uint8_t universe_address,
                             ola::rdm::rdm_response_code code,
-                            const RDMResponse *response,
+                            const ola::rdm::RDMResponse *response,
                             const std::vector<std::string> &packets);
   void HandleRDMResponse(InputPort *port,
-                         const string &rdm_data,
-                         const IPV4Address &source_address);
-  void HandleIPProgram(const IPV4Address &source_address,
+                         const std::string &rdm_data,
+                         const ola::network::IPV4Address &source_address);
+  void HandleIPProgram(const ola::network::IPV4Address &source_address,
                        const artnet_ip_prog_t &packet,
                        unsigned int packet_size);
   void PopulatePacketHeader(artnet_packet *packet, uint16_t op_code);
   bool SendPacket(const artnet_packet &packet,
                   unsigned int size,
-                  const IPV4Address &destination);
+                  const ola::network::IPV4Address &destination);
   void TimeoutRDMRequest(InputPort *port);
-  bool SendRDMCommand(const RDMCommand &command,
-                      const IPV4Address &destination,
+  bool SendRDMCommand(const ola::rdm::RDMCommand &command,
+                      const ola::network::IPV4Address &destination,
                       uint8_t universe);
   void UpdatePortFromSource(OutputPort *port, const DMXSource &source);
-  bool CheckPacketVersion(const IPV4Address &source_address,
-                          const string &packet_type,
+  bool CheckPacketVersion(const ola::network::IPV4Address &source_address,
+                          const std::string &packet_type,
                           uint16_t version);
-  bool CheckPacketSize(const IPV4Address &source_address,
-                       const string &packet_type,
+  bool CheckPacketSize(const ola::network::IPV4Address &source_address,
+                       const std::string &packet_type,
                        unsigned int actual_size,
                        unsigned int expected_size);
 
   // methods for accessing Input & Output ports
   InputPort *GetInputPort(uint8_t port_id, bool warn = true);
   const InputPort *GetInputPort(uint8_t port_id) const;
-  InputPort *GetEnabledInputPort(uint8_t port_id, const string &action);
+  InputPort *GetEnabledInputPort(uint8_t port_id, const std::string &action);
 
   OutputPort *GetOutputPort(uint8_t port_id);
   const OutputPort *GetOutputPort(uint8_t port_id) const;
-  OutputPort *GetEnabledOutputPort(uint8_t port_id, const string &action);
+  OutputPort *GetEnabledOutputPort(uint8_t port_id, const std::string &action);
 
   void UpdatePortFromTodPacket(InputPort *port,
-                               const IPV4Address &source_address,
+                               const ola::network::IPV4Address &source_address,
                                const artnet_toddata_t &packet,
                                unsigned int packet_size);
 
   void ReleaseDiscoveryLock(InputPort *port);
-  bool StartDiscoveryProcess(InputPort *port, RDMDiscoveryCallback *callback);
+  bool StartDiscoveryProcess(InputPort *port,
+                             ola::rdm::RDMDiscoveryCallback *callback);
 
   bool InitNetwork();
 
@@ -359,11 +351,11 @@ class ArtNetNodeImplRDMWrapper
     m_impl->SendRDMRequest(m_port_id, request, on_complete);
   }
 
-  void RunFullDiscovery(RDMDiscoveryCallback *callback) {
+  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
     m_impl->RunFullDiscovery(m_port_id, callback);
   }
 
-  void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
     m_impl->RunIncrementalDiscovery(m_port_id, callback);
   }
 
@@ -395,10 +387,16 @@ class ArtNetNode {
   }
 
   // Various parameters to control the behaviour
-  bool SetShortName(const string &name) { return m_impl.SetShortName(name); }
-  string ShortName() const { return m_impl.ShortName(); }
-  bool SetLongName(const string &name) { return m_impl.SetLongName(name); }
-  string LongName() const { return m_impl.LongName(); }
+  bool SetShortName(const std::string &name) {
+    return m_impl.SetShortName(name);
+  }
+
+  std::string ShortName() const { return m_impl.ShortName(); }
+  bool SetLongName(const std::string &name) {
+    return m_impl.SetLongName(name);
+  }
+
+  std::string LongName() const { return m_impl.LongName(); }
 
   uint8_t NetAddress() const { return m_impl.NetAddress(); }
   bool SetNetAddress(uint8_t net_address) {
@@ -463,7 +461,7 @@ class ArtNetNode {
   void RunIncrementalDiscovery(uint8_t port_id,
                                ola::rdm::RDMDiscoveryCallback *callback);
   void SendRDMRequest(uint8_t port_id,
-                      const RDMRequest *request,
+                      const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   /*
@@ -475,8 +473,9 @@ class ArtNetNode {
       ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod) {
     return m_impl.SetUnsolicitedUIDSetHandler(port_id, on_tod);
   }
-  void GetSubscribedNodes(uint8_t port_id,
-                          std::vector<IPV4Address> *node_addresses) {
+  void GetSubscribedNodes(
+      uint8_t port_id,
+      std::vector<ola::network::IPV4Address> *node_addresses) {
     m_impl.GetSubscribedNodes(port_id, node_addresses);
   }
 
@@ -486,14 +485,16 @@ class ArtNetNode {
                      ola::Callback0<void> *handler) {
     return m_impl.SetDMXHandler(port_id, buffer, handler);
   }
-  bool SendTod(uint8_t port_id, const UIDSet &uid_set) {
+  bool SendTod(uint8_t port_id, const ola::rdm::UIDSet &uid_set) {
     return m_impl.SendTod(port_id, uid_set);
   }
   bool SetOutputPortRDMHandlers(
       uint8_t port_id,
       ola::Callback0<void> *on_discover,
       ola::Callback0<void> *on_flush,
-      ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
+      ola::Callback2<void,
+                     const ola::rdm::RDMRequest*,
+                     ola::rdm::RDMCallback*> *on_rdm_request) {
     return m_impl.SetOutputPortRDMHandlers(port_id,
                                            on_discover,
                                            on_flush,
@@ -507,8 +508,8 @@ class ArtNetNode {
 
  private:
   ArtNetNodeImpl m_impl;
-  vector<ArtNetNodeImplRDMWrapper*> m_wrappers;
-  vector<ola::rdm::DiscoverableQueueingRDMController*> m_controllers;
+  std::vector<ArtNetNodeImplRDMWrapper*> m_wrappers;
+  std::vector<ola::rdm::DiscoverableQueueingRDMController*> m_controllers;
 
   bool CheckInputPortId(uint8_t port_id);
 };

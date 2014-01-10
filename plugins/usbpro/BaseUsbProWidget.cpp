@@ -38,6 +38,9 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using std::string;
+
+
 const unsigned int BaseUsbProWidget::HEADER_SIZE =
   sizeof(BaseUsbProWidget::message_header);
 

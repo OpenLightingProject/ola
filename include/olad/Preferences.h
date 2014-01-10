@@ -150,29 +150,97 @@ class IPv4Validator: public Validator {
 class Preferences {
  public:
   explicit Preferences(const string name): m_preference_name(name) {}
+
+  /**
+   * Destroy this object
+   */
   virtual ~Preferences() {}
 
+  /**
+   * Load the preferences from storage
+   */
   virtual bool Load() = 0;
+
+  /**
+   * Save the preferences to storage
+   */
   virtual bool Save() const = 0;
+
+  /**
+   * Clear the preferences
+   */
   virtual void Clear() = 0;
 
   // The location of where these preferences are stored.
   virtual string Source() const = 0;
 
+  /**
+   * @brief Set a preference value, overiding the existing value.
+   * @param key
+   * @param value
+   */
   virtual void SetValue(const string &key, const string &value) = 0;
+
+  /**
+   * @brief Adds this preference value to the store
+   * @param key
+   * @param value
+   */
   virtual void SetMultipleValue(const string &key, const string &value) = 0;
+
+  /**
+   * @brief Set a preference value only if it doesn't pass the validator.
+   * @note Note this only checks the first value.
+   * @param key
+   * @param validator A Validator object
+   * @param value the new value
+   * @return true if we set the value, false if it already existed
+   */
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
                                const string &value) = 0;
 
+  /**
+   * @brief Get a preference value
+   * @param key the key to fetch
+   * @return the value corresponding to key, or the empty string if the key
+   * doesn't exist.
+   */
   virtual string GetValue(const string &key) const = 0;
+
+  /**
+   * @brief Returns all preference values corrosponding to this key
+   * @param key the key to fetch 
+   * @return a vector of strings.
+   */
   virtual vector<string> GetMultipleValue(const string &key) const = 0;
+
+  /**
+   * @brief Check if a preference key exists
+   * @param key the key to check
+   * @return true if the key exists, false otherwise.
+   */
   virtual bool HasKey(const string &key) const = 0;
 
+  /**
+   * @brief Remove a preference value.
+   * @param key
+   */
   virtual void RemoveValue(const string &key) = 0;
 
   // bool helper methods
+  /**
+   * @brief Get a preference value as a bool
+   * @param key the key to fetch
+   * @return true if the value is 'true' or false otherwise
+   */
   virtual bool GetValueAsBool(const string &key) const = 0;
+
+  /**
+   * @brief Set a value as a bool.
+   * @param key
+   * @param value
+   */
   virtual void SetValueAsBool(const string &key, bool value) = 0;
 
  protected:
@@ -183,14 +251,23 @@ class Preferences {
 };
 
 
-/*
+/**
  * A PreferencesFactory creates preferences objects
  */
 class PreferencesFactory {
  public:
   PreferencesFactory() {}
+
+  /**
+   * Cleanup
+   */
   virtual ~PreferencesFactory();
+
+  /**
+   * Lookup a preference object
+   */
   virtual Preferences *NewPreference(const string &name);
+
  private:
   virtual Preferences *Create(const string &name) = 0;
   map<string, Preferences*> m_preferences_map;
@@ -255,14 +332,34 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   void SavePreferences(const string &filename,
                        const PreferencesMap &preferences);
 
+  /**
+   * Called by the new thread.
+   */
   void *Run();
+
+  /**
+   * Stop the saving thread
+   */
   bool Join(void *ptr = NULL);
+
+  /**
+   * This can be used to syncronize with the file saving thread. Useful if you
+   * want to make sure the files have been written to disk before continuing.
+   * This blocks until all pending save requests are complete.
+   */
   void Syncronize();
 
  private:
   ola::io::SelectServer m_ss;
 
+  /**
+   * Perform the save
+   */
   void SaveToFile(const string *filename, const PreferencesMap *preferences);
+
+  /**
+   * Notify the blocked thread we're done
+   */
   void CompleteSyncronization(ola::thread::ConditionVariable *condition,
                               ola::thread::Mutex *mutex);
 };
@@ -279,8 +376,14 @@ class FileBackedPreferences: public MemoryPreferences {
       : MemoryPreferences(name),
         m_directory(directory),
         m_saver_thread(saver_thread) {}
+
   virtual bool Load();
   virtual bool Save() const;
+
+  /**
+   * @brief Load these preferences from a file
+   * @param filename the filename to load from
+   */
   bool LoadFromFile(const string &filename);
 
   string Source() const { return FileName(); }
@@ -290,6 +393,10 @@ class FileBackedPreferences: public MemoryPreferences {
   FilePreferenceSaverThread *m_saver_thread;
 
   bool ChangeDir() const;
+
+  /**
+   * Return the name of the file used to save the preferences
+   */
   const string FileName() const;
   static const char OLA_CONFIG_PREFIX[];
   static const char OLA_CONFIG_SUFFIX[];

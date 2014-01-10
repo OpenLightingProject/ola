@@ -31,6 +31,9 @@
 namespace ola {
 namespace slp {
 
+using ola::io::ConnectedDescriptor;
+using ola::rpc::RpcChannel;
+using ola::rpc::RpcController;
 using ola::slp::proto::SLPService_Stub;
 using std::string;
 using std::vector;

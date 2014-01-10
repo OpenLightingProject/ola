@@ -67,8 +67,8 @@ class UsbProWidgetInformation {
   uint16_t device_id;
   DeviceSerialNumber serial;
   DeviceFirmwareVersion firmware_version;
-  string manufacturer;
-  string device;
+  std::string manufacturer;
+  std::string device;
   bool dual_port;
 };
 

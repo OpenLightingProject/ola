@@ -45,7 +45,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     ~SchemaPrinter() {}
 
     bool Descend() const { return true; }
-    string AsString() { return m_str.str(); }
+    std::string AsString() { return m_str.str(); }
     void Reset() { m_str.str(""); }
 
     void Visit(const BoolFieldDescriptor*);
@@ -67,7 +67,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     std::stringstream m_str;
     unsigned int m_indent, m_indent_size;
 
-    void AppendHeading(const string &name, const string &type);
+    void AppendHeading(const std::string &name, const std::string &type);
 
     template<class vector_class>
     void MaybeAppendIntervals(const vector_class &intervals) {
@@ -92,7 +92,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
         return;
       typename map_class::const_iterator iter = labels.begin();
       for (; iter != labels.end(); ++iter) {
-        m_str << std::endl << string(m_indent + m_indent_size, ' ') <<
+        m_str << std::endl << std::string(m_indent + m_indent_size, ' ') <<
             iter->first << ": " << static_cast<int64_t>(iter->second);
       }
     }
