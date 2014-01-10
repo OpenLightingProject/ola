@@ -65,10 +65,6 @@ class RenardDevice: public ola::Device {
     static const uint8_t DEFAULT_DMX_OFFSET;
     static const uint8_t DEFAULT_NUM_CHANNELS;
     static const uint32_t DEFAULT_BAUDRATE;
-    static const char BAUDRATE_19200[];
-    static const char BAUDRATE_38400[];
-    static const char BAUDRATE_57600[];
-    static const char BAUDRATE_115200[];
 };
 }  // namespace renard
 }  // namespace plugin

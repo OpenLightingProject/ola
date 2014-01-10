@@ -36,14 +36,12 @@ namespace milinst {
 using std::set;
 using std::string;
 
-const char MilInstWidget1553::BAUDRATE_9600[] = "9600";
-const char MilInstWidget1553::BAUDRATE_19200[] = "19200";
 const speed_t MilInstWidget1553::DEFAULT_BAUDRATE = B9600;
 
-const char MilInstWidget1553::CHANNELS_128[] = "128";
-const char MilInstWidget1553::CHANNELS_256[] = "256";
-const char MilInstWidget1553::CHANNELS_512[] = "512";
-const uint16_t MilInstWidget1553::DEFAULT_CHANNELS = 128;
+const uint16_t MilInstWidget1553::CHANNELS_128 = 128;
+const uint16_t MilInstWidget1553::CHANNELS_256 = 256;
+const uint16_t MilInstWidget1553::CHANNELS_512 = 512;
+const uint16_t MilInstWidget1553::DEFAULT_CHANNELS = CHANNELS_128;
 
 
 MilInstWidget1553::MilInstWidget1553(const std::string &path,
@@ -175,25 +173,27 @@ string MilInstWidget1553::ChannelsKey() const {
 void MilInstWidget1553::SetWidgetDefaults() {
   bool save = false;
 
-  set<string> valid_baudrates;
-  valid_baudrates.insert(BAUDRATE_9600);
-  valid_baudrates.insert(BAUDRATE_19200);
+  set<unsigned int> valid_baudrates;
+  valid_baudrates.insert(ola::io::BAUD_RATE_9600);
+  valid_baudrates.insert(ola::io::BAUD_RATE_19200);
 
-  set<string> valid_channels;
+  set<unsigned int> valid_channels;
   valid_channels.insert(CHANNELS_128);
   valid_channels.insert(CHANNELS_256);
   valid_channels.insert(CHANNELS_512);
 
   // Set 1-553 widget options
-  save |= m_preferences->SetDefaultValue(BaudRateKey(),
-                                         SetValidator<string>(valid_baudrates),
-                                         BAUDRATE_9600);
+  save |= m_preferences->SetDefaultValue(
+      BaudRateKey(),
+      SetValidator<unsigned int>(valid_baudrates),
+      ola::io::BAUD_RATE_9600);
 
   // TODO(Peter): Fix me, default to 512 once we can set the channel count or it
   // behaves properly when sending higher channel counts when limited
-  save |= m_preferences->SetDefaultValue(ChannelsKey(),
-                                         SetValidator<string>(valid_channels),
-                                         IntToString(DEFAULT_CHANNELS));
+  save |= m_preferences->SetDefaultValue(
+      ChannelsKey(),
+      SetValidator<unsigned int>(valid_channels),
+      DEFAULT_CHANNELS);
 
   if (save)
     m_preferences->Save();

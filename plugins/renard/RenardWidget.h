@@ -26,6 +26,7 @@
 #include <string>
 
 #include "ola/io/SelectServer.h"
+#include "ola/io/Serial.h"
 #include "ola/DmxBuffer.h"
 
 namespace ola {
