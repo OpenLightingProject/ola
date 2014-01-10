@@ -33,16 +33,11 @@ endif
 check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    libolardm.la \
-                    ../base/libolabase.la \
-                    ../utils/libolautils.la
+                    ../libolacommon.la
 
 RDMTester_SOURCES = RDMAPITest.cpp
 RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-RDMTester_LDADD = $(COMMON_TEST_LDADD) \
-                  ../io/libolaio.la \
-                  ../messaging/libolamessaging.la \
-                  ../network/libolanetwork.la
+RDMTester_LDADD = $(COMMON_TEST_LDADD)
 
 Pids.pb.cc Pids.pb.h: Pids.proto
 	$(PROTOC) --cpp_out ./ Pids.proto
