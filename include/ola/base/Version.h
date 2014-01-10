@@ -14,27 +14,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Version.h
- * A wrapper for ola/base/Version.h; provides version information for the client
- * library.
- * Copyright (C) 2013 Simon Newton
+ * Provides version information for all of OLA.
+ * Copyright (C) 2014 Peter Newman
  */
 
-#ifndef INCLUDE_OLA_CLIENT_VERSION_H_
-#define INCLUDE_OLA_CLIENT_VERSION_H_
+#ifndef INCLUDE_OLA_BASE_VERSION_H_
+#define INCLUDE_OLA_BASE_VERSION_H_
 
 #include <ola/base/Macro.h>
 #include <string>
 
 namespace ola {
-namespace client {
+namespace base {
 
-#define OLA_CLIENT_VERSION_MAJOR OLA_BASE_VERSION_MAJOR
-#define OLA_CLIENT_VERSION_MINOR OLA_BASE_VERSION_MINOR
-#define OLA_CLIENT_VERSION_REVISION OLA_BASE_VERSION_REVISION
+#define OLA_BASE_VERSION_MAJOR 0
+#define OLA_BASE_VERSION_MINOR 9
+#define OLA_BASE_VERSION_REVISION 0
 
 /**
- * @class Version ola/client/Version.h
- * @brief Provides version information. Wraps ola/base/Version.h
+ * @class Version ola/base/Version.h
+ * @brief Provides version information.
  * OLA Version numbers are in the form major.minor.revision.
  */
 class Version {
@@ -78,6 +77,6 @@ class Version {
  private:
   DISALLOW_COPY_AND_ASSIGN(Version);
 };
-}  // namespace client
+}  // namespace base
 }  // namespace ola
-#endif  // INCLUDE_OLA_CLIENT_VERSION_H_
+#endif  // INCLUDE_OLA_BASE_VERSION_H_
