@@ -4,7 +4,7 @@ AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
 
 include aminclude.am
 
-SUBDIRS = include common
+SUBDIRS = include protoc common
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc libolaserver.pc
