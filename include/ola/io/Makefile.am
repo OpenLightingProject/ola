@@ -13,6 +13,7 @@ SOURCES = BigEndianStream.h \
           OutputStream.h \
           SelectServer.h \
           SelectServerInterface.h \
+          Serial.h \
           StdinHandler.h
 
 EXTRA_DIST = $(SOURCES)

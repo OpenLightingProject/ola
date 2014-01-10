@@ -22,7 +22,7 @@
 #include <set>
 #include <string>
 
-#include "ola/io/IOUtils.h"
+#include "ola/io/Serial.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/util/Utils.h"

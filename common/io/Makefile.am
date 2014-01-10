@@ -10,6 +10,7 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       PollerInterface.cpp \
                       SelectPoller.cpp \
                       SelectServer.cpp \
+                      Serial.cpp \
                       StdinHandler.cpp \
                       TimeoutManager.cpp
 
