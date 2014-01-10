@@ -28,7 +28,7 @@ nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
 if BUILD_TESTS
-TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
+TESTS = RDMTester
 endif
 check_PROGRAMS = $(TESTS)
 
