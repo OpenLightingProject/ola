@@ -60,9 +60,9 @@ class UsbDmxPlugin: public ola::Plugin {
     };
 
     bool m_anyma_devices_missing_serial_numbers;
-    vector<class UsbDevice*> m_devices;  // list of our devices
-    vector<ola::io::DeviceDescriptor*> m_descriptors;
-    set<std::pair<uint8_t, uint8_t> > m_registered_devices;
+    std::vector<class UsbDevice*> m_devices;  // list of our devices
+    std::vector<ola::io::DeviceDescriptor*> m_descriptors;
+    std::set<std::pair<uint8_t, uint8_t> > m_registered_devices;
 
     bool StartHook();
     bool LoadFirmware();

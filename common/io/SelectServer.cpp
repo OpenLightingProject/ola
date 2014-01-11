@@ -33,35 +33,22 @@
 #include <string>
 #include <vector>
 
+#include "common/io/SelectPoller.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/stl/STLUtils.h"
 
-
 namespace ola {
 namespace io {
 
-// # of descriptors registered
-const char SelectServer::K_READ_DESCRIPTOR_VAR[] = "ss-read-descriptors";
-// # of descriptors registered for writing
-const char SelectServer::K_WRITE_DESCRIPTOR_VAR[] = "ss-write-descriptor";
-// # of connected descriptors registered
-const char SelectServer::K_CONNECTED_DESCRIPTORS_VAR[] =
-    "ss-connected-descriptors";
-// # of timer functions registered
-const char SelectServer::K_TIMER_VAR[] = "ss-timers";
-// time spent processing events/timeouts in microseconds
-const char SelectServer::K_LOOP_TIME[] = "ss-loop-time";
-// iterations through the select server
-const char SelectServer::K_LOOP_COUNT[] = "ss-loop-count";
-
 using ola::Callback0;
 using ola::ExportMap;
-using ola::thread::INVALID_TIMEOUT;
 using ola::thread::timeout_id;
 using std::max;
+
+const TimeStamp SelectServer::empty_time;
 
 
 /*
@@ -72,44 +59,55 @@ using std::max;
  */
 SelectServer::SelectServer(ExportMap *export_map,
                            Clock *clock)
-    : m_terminate(false),
+    : m_export_map(export_map),
+      m_terminate(false),
       m_is_running(false),
       m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
-      m_export_map(export_map),
-      m_loop_iterations(NULL),
-      m_loop_time(NULL),
       m_clock(clock),
       m_free_clock(false) {
-
-  if (m_export_map) {
-    m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR);
-    m_export_map->GetIntegerVar(K_TIMER_VAR);
-    m_loop_time = m_export_map->GetCounterVar(K_LOOP_TIME);
-    m_loop_iterations = m_export_map->GetCounterVar(K_LOOP_COUNT);
-  }
-
   if (!m_clock) {
     m_clock = new Clock;
     m_free_clock = true;
   }
+
+  if (m_export_map) {
+    m_export_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR);
+    m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR);
+    m_export_map->GetIntegerVar(PollerInterface::K_CONNECTED_DESCRIPTORS_VAR);
+  }
+
+  m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
+  m_poller.reset(new SelectPoller(export_map, m_clock));
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())
     OLA_FATAL << "Failed to init LoopbackDescriptor, Execute() won't work!";
   m_incoming_descriptor.SetOnData(
       ola::NewCallback(this, &SelectServer::DrainAndExecute));
+  AddReadDescriptor(&m_incoming_descriptor);
 }
-
 
 /*
  * Clean up
  */
 SelectServer::~SelectServer() {
-  UnregisterAll();
+  while (!m_incoming_queue.empty()) {
+    delete m_incoming_queue.front();
+    m_incoming_queue.pop();
+  }
+
+  STLDeleteElements(&m_loop_closures);
   if (m_free_clock)
     delete m_clock;
 }
 
+const TimeStamp *SelectServer::WakeUpTime() const {
+  if (m_poller.get()) {
+    return m_poller->WakeUpTime();
+  } else {
+    return &empty_time;
+  }
+}
 
 /**
  * A thread safe terminate
@@ -126,7 +124,6 @@ void SelectServer::Terminate() {
 void SelectServer::SetDefaultInterval(const TimeInterval &poll_interval) {
   m_poll_interval = poll_interval;
 }
-
 
 /*
  * Run the select server until Terminate() is called.
@@ -147,7 +144,6 @@ void SelectServer::Run() {
   m_is_running = false;
 }
 
-
 /*
  * Run one iteration of the select server
  */
@@ -158,129 +154,57 @@ void SelectServer::RunOnce(unsigned int delay_sec,
   m_is_running = false;
 }
 
-
-/*
- * Register a ReadFileDescriptor with the select server.
- * @param descriptor the ReadFileDescriptor to register. The OnData method of
- * this descriptor will be called when there is data available for reading.
- * @return true on success, false on failure.
- */
 bool SelectServer::AddReadDescriptor(ReadFileDescriptor *descriptor) {
-  if (!descriptor->ValidReadDescriptor()) {
-    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
-    return false;
+  bool added =  m_poller->AddReadDescriptor(descriptor);
+  if (added && m_export_map) {
+    (*m_export_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR))++;
   }
-
-  if (STLInsertIfNotPresent(&m_read_descriptors, descriptor)) {
-    SafeIncrement(K_READ_DESCRIPTOR_VAR);
-    return true;
-  }
-  return false;
+  return added;
 }
 
-
-/*
- * Register a ConnectedDescriptor with the select server for read events.
- * @param descriptor the ConnectedDescriptor to register. The OnData method
- * will be called when there is data available for reading. Additionally,
- * OnClose will be called if the other end closes the connection.
- * @param delete_on_close controls whether the select server deletes the
- *   descriptor once it's closed.
- * @return true on success, false on failure.
- */
 bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
                                      bool delete_on_close) {
-  if (!descriptor->ValidReadDescriptor()) {
-    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
-    return false;
+  bool added =  m_poller->AddReadDescriptor(descriptor, delete_on_close);
+  if (added && m_export_map) {
+    (*m_export_map->GetIntegerVar(
+        PollerInterface::K_CONNECTED_DESCRIPTORS_VAR))++;
   }
-
-  // We make use of the fact that connected_descriptor_t_lt operates on the
-  // descriptor value alone.
-  connected_descriptor_t registered_descriptor = {descriptor, delete_on_close};
-
-  if (STLInsertIfNotPresent(&m_connected_read_descriptors,
-                             registered_descriptor)) {
-    SafeIncrement(K_CONNECTED_DESCRIPTORS_VAR);
-    return true;
-  }
-  return false;
+  return added;
 }
 
-
-/*
- * Unregister a ReadFileDescriptor with the select server
- * @param descriptor the ReadFileDescriptor to remove
- * @return true if removed successfully, false otherwise
- */
 bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
-  if (!descriptor->ValidReadDescriptor())
-    OLA_WARN << "Removing an invalid file descriptor";
-
-  if (STLRemove(&m_read_descriptors, descriptor)) {
-    SafeDecrement(K_READ_DESCRIPTOR_VAR);
-    return true;
+  bool removed = m_poller->RemoveReadDescriptor(descriptor);
+  if (removed && m_export_map) {
+    (*m_export_map->GetIntegerVar(
+        PollerInterface::K_READ_DESCRIPTOR_VAR))--;
   }
-  return false;
+  return removed;
 }
 
-
-/*
- * Unregister a ConnectedDescriptor with the select server
- * @param descriptor the ConnectedDescriptor to remove
- * @return true if removed successfully, false otherwise
- */
 bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
-  if (!descriptor->ValidReadDescriptor())
-    OLA_WARN << "Removing an invalid file descriptor";
-
-  // Comparison is based on descriptor only, so the second value is redundant.
-  connected_descriptor_t registered_descriptor = {descriptor, false};
-  if (STLRemove(&m_connected_read_descriptors, registered_descriptor)) {
-    SafeDecrement(K_CONNECTED_DESCRIPTORS_VAR);
-    return true;
+  bool removed = m_poller->RemoveReadDescriptor(descriptor);
+  if (removed && m_export_map) {
+    (*m_export_map->GetIntegerVar(
+        PollerInterface::K_CONNECTED_DESCRIPTORS_VAR))--;
   }
-  return false;
+  return removed;
 }
 
-
-/*
- * Register a WriteFileDescriptor to receive ready-to-write event notifications
- * @param descriptor the WriteFileDescriptor to register. The PerformWrite
- * method will be called when the descriptor is ready for writing.
- * @return true on success, false on failure.
- */
 bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
-  if (!descriptor->ValidWriteDescriptor()) {
-    OLA_WARN << "AddWriteDescriptor called with invalid descriptor";
-    return false;
+  bool added = m_poller->AddWriteDescriptor(descriptor);
+  if (added && m_export_map) {
+    (*m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR))++;
   }
-
-  if (STLInsertIfNotPresent(&m_write_descriptors, descriptor)) {
-    SafeIncrement(K_WRITE_DESCRIPTOR_VAR);
-    return true;
-  }
-  return false;
+  return added;
 }
 
-
-/*
- * UnRegister a WriteFileDescriptor from receiving ready-to-write event
- * notifications
- * @param descriptor the WriteFileDescriptor to register.
- * @return true on success, false on failure.
- */
 bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
-  if (!descriptor->ValidWriteDescriptor())
-    OLA_WARN << "Removing a closed descriptor";
-
-  if (STLRemove(&m_write_descriptors, descriptor)) {
-    SafeDecrement(K_WRITE_DESCRIPTOR_VAR);
-    return true;
+  bool removed = m_poller->RemoveWriteDescriptor(descriptor);
+  if (removed && m_export_map) {
+    (*m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR))--;
   }
-  return false;
+  return removed;
 }
-
 
 /*
  * Register a repeating timeout function. Returning 0 from the closure will
@@ -294,10 +218,10 @@ bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
 timeout_id SelectServer::RegisterRepeatingTimeout(
     unsigned int ms,
     ola::Callback0<bool> *closure) {
-  return RegisterRepeatingTimeout(TimeInterval(ms / 1000, ms % 1000 * 1000),
-                                  closure);
+  return m_timeout_manager->RegisterRepeatingTimeout(
+      TimeInterval(ms / 1000, ms % 1000 * 1000),
+      closure);
 }
-
 
 /*
  * Register a repeating timeout function. Returning 0 from the closure will
@@ -311,16 +235,8 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
 timeout_id SelectServer::RegisterRepeatingTimeout(
     const TimeInterval &interval,
     ola::Callback0<bool> *closure) {
-  if (!closure)
-    return INVALID_TIMEOUT;
-
-  SafeIncrement(K_TIMER_VAR);
-
-  Event *event = new RepeatingEvent(interval, m_clock, closure);
-  m_events.push(event);
-  return event;
+  return m_timeout_manager->RegisterRepeatingTimeout(interval, closure);
 }
-
 
 /*
  * Register a single use timeout function.
@@ -332,10 +248,10 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
 timeout_id SelectServer::RegisterSingleTimeout(
     unsigned int ms,
     ola::SingleUseCallback0<void> *closure) {
-  return RegisterSingleTimeout(TimeInterval(ms / 1000, ms % 1000 * 1000),
-                               closure);
+  return m_timeout_manager->RegisterSingleTimeout(
+      TimeInterval(ms / 1000, ms % 1000 * 1000),
+      closure);
 }
-
 
 /*
  * Register a single use timeout function.
@@ -347,29 +263,16 @@ timeout_id SelectServer::RegisterSingleTimeout(
 timeout_id SelectServer::RegisterSingleTimeout(
     const TimeInterval &interval,
     ola::SingleUseCallback0<void> *closure) {
-  if (!closure)
-    return INVALID_TIMEOUT;
-
-  SafeIncrement(K_TIMER_VAR);
-
-  Event *event = new SingleEvent(interval, m_clock, closure);
-  m_events.push(event);
-  return event;
+  return m_timeout_manager->RegisterSingleTimeout(interval, closure);
 }
-
 
 /*
  * Remove a previously registered timeout
  * @param timeout_id the id of the timeout
  */
 void SelectServer::RemoveTimeout(timeout_id id) {
-  if (id == INVALID_TIMEOUT)
-    return;
-
-  if (!m_removed_timeouts.insert(id).second)
-    OLA_WARN << "timeout " << id << " already in remove set";
+  return m_timeout_manager->CancelTimeout(id);
 }
-
 
 /*
  * Add a closure to be run every loop iteration. The closure is run after any
@@ -379,8 +282,6 @@ void SelectServer::RemoveTimeout(timeout_id id) {
 void SelectServer::RunInLoop(Callback0<void> *closure) {
   m_loop_closures.insert(closure);
 }
-
-
 
 /**
  * Execute this callback in the main select thread. This method can be called
@@ -401,284 +302,23 @@ void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
   m_incoming_descriptor.Send(&wake_up, sizeof(wake_up));
 }
 
-
 /*
  * One iteration of the select() loop.
  * @return false on error, true on success.
  */
 bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
-  int maxsd;
-  fd_set r_fds, w_fds;
-  TimeStamp now;
-  TimeInterval sleep_interval = poll_interval;
-  struct timeval tv;
-
   LoopClosureSet::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     (*loop_iter)->Run();
 
-  maxsd = 0;
-  FD_ZERO(&r_fds);
-  FD_ZERO(&w_fds);
-  m_clock->CurrentTime(&now);
-  now = CheckTimeouts(now);
-
-  // adding descriptors should be the last thing we do, they may have changed
-  // due to timeouts above.
-  bool closed_descriptors = AddDescriptorsToSet(&r_fds, &w_fds, &maxsd);
-
-  // take care of stats accounting
-  if (m_wake_up_time.IsSet()) {
-    TimeInterval loop_time = now - m_wake_up_time;
-    OLA_DEBUG << "ss process time was " << loop_time.ToString();
-    if (m_loop_time)
-      (*m_loop_time) += loop_time.AsInt();
-    if (m_loop_iterations)
-      (*m_loop_iterations)++;
+  TimeInterval default_poll_interval = poll_interval;
+  // if we've been told to terminate, make this very short.
+  if (m_terminate) {
+    default_poll_interval = std::min(
+        default_poll_interval, TimeInterval(0, 1000));
   }
-
-  if (!m_events.empty()) {
-    TimeInterval interval = m_events.top()->NextTime() - now;
-    sleep_interval = std::min(interval, sleep_interval);
-  }
-
-  // if we've already been told to terminate OR there are closed descriptors,
-  // set the timeout to something
-  // very small (1ms). This ensures we at least make a pass through the
-  // descriptors.
-  if (m_terminate || closed_descriptors)
-    sleep_interval = std::min(sleep_interval, TimeInterval(0, 1000));
-
-  sleep_interval.AsTimeval(&tv);
-  switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
-    case 0:
-      // timeout
-      m_clock->CurrentTime(&m_wake_up_time);
-      CheckTimeouts(m_wake_up_time);
-
-      if (closed_descriptors) {
-        // there were closed descriptors before the select() we need to deal
-        // with them.
-        FD_ZERO(&r_fds);
-        FD_ZERO(&w_fds);
-        CheckDescriptors(&r_fds, &w_fds);
-      }
-      return true;
-    case -1:
-      if (errno == EINTR)
-        return true;
-      OLA_WARN << "select() error, " << strerror(errno);
-      return false;
-    default:
-      m_clock->CurrentTime(&m_wake_up_time);
-      CheckDescriptors(&r_fds, &w_fds);
-      m_clock->CurrentTime(&m_wake_up_time);
-      CheckTimeouts(m_wake_up_time);
-  }
-
-  return true;
-}
-
-
-/*
- * Add all the descriptors to the FD_SET
- * @returns true if there are closed descriptors.
- */
-bool SelectServer::AddDescriptorsToSet(fd_set *r_set,
-                                       fd_set *w_set,
-                                       int *max_sd) {
-  bool closed_descriptors = false;
-
-  ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
-  while (iter != m_read_descriptors.end()) {
-    ReadDescriptorSet::iterator this_iter = iter;
-    iter++;
-
-    if ((*this_iter)->ValidReadDescriptor()) {
-      *max_sd = max(*max_sd, (*this_iter)->ReadDescriptor());
-      FD_SET((*this_iter)->ReadDescriptor(), r_set);
-    } else {
-      // The descriptor was probably closed without removing it from the select
-      // server
-      SafeDecrement(K_READ_DESCRIPTOR_VAR);
-      m_read_descriptors.erase(this_iter);
-      OLA_WARN << "Removed a inactive descriptor from the select server";
-    }
-  }
-
-  ConnectedDescriptorSet::iterator con_iter =
-      m_connected_read_descriptors.begin();
-  while (con_iter != m_connected_read_descriptors.end()) {
-    ConnectedDescriptorSet::iterator this_iter = con_iter;
-    con_iter++;
-
-    if (this_iter->descriptor->ValidReadDescriptor()) {
-      *max_sd = max(*max_sd, this_iter->descriptor->ReadDescriptor());
-      FD_SET(this_iter->descriptor->ReadDescriptor(), r_set);
-    } else {
-      closed_descriptors = true;
-    }
-  }
-
-  WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
-  while (write_iter != m_write_descriptors.end()) {
-    WriteDescriptorSet::iterator this_iter = write_iter;
-    write_iter++;
-
-    if ((*this_iter)->ValidWriteDescriptor()) {
-      *max_sd = max(*max_sd, (*this_iter)->WriteDescriptor());
-      FD_SET((*this_iter)->WriteDescriptor(), w_set);
-    } else {
-      // The descriptor was probably closed without removing it from the select
-      // server
-      SafeDecrement(K_WRITE_DESCRIPTOR_VAR);
-      m_write_descriptors.erase(this_iter);
-      OLA_WARN << "Removed a disconnected descriptor from the select server";
-    }
-  }
-
-  // finally add the loopback descriptor
-  FD_SET(m_incoming_descriptor.ReadDescriptor(), r_set);
-  *max_sd = max(*max_sd, m_incoming_descriptor.ReadDescriptor());
-  return closed_descriptors;
-}
-
-
-/*
- * Check all the registered descriptors:
- *  - Execute the callback for descriptors with data
- *  - Excute OnClose if a remote end closed the connection
- */
-void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
-  // Because the callbacks can add or remove descriptors from the select
-  // server, we have to call them after we've used the iterators.
-  std::queue<ReadFileDescriptor*> read_ready_queue;
-  std::queue<WriteFileDescriptor*> write_ready_queue;
-  std::queue<connected_descriptor_t> closed_queue;
-
-  ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
-  for (; iter != m_read_descriptors.end(); ++iter) {
-    if (FD_ISSET((*iter)->ReadDescriptor(), r_set))
-      read_ready_queue.push(*iter);
-  }
-
-  // check the read sockets
-  ConnectedDescriptorSet::iterator con_iter =
-      m_connected_read_descriptors.begin();
-  while (con_iter != m_connected_read_descriptors.end()) {
-    ConnectedDescriptorSet::iterator this_iter = con_iter;
-    con_iter++;
-    bool closed = false;
-    if (!this_iter->descriptor->ValidReadDescriptor()) {
-      closed = true;
-    } else if (FD_ISSET(this_iter->descriptor->ReadDescriptor(), r_set)) {
-      if (this_iter->descriptor->IsClosed())
-        closed = true;
-      else
-        read_ready_queue.push(this_iter->descriptor);
-    }
-
-    if (closed) {
-      closed_queue.push(*this_iter);
-      m_connected_read_descriptors.erase(this_iter);
-    }
-  }
-
-  // check the write sockets
-  WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
-  for (; write_iter != m_write_descriptors.end(); write_iter++) {
-    if (FD_ISSET((*write_iter)->WriteDescriptor(), w_set))
-      write_ready_queue.push(*write_iter);
-  }
-
-  // deal with anything that needs an action
-  while (!read_ready_queue.empty()) {
-    ReadFileDescriptor *descriptor = read_ready_queue.front();
-    descriptor->PerformRead();
-    read_ready_queue.pop();
-  }
-
-  while (!write_ready_queue.empty()) {
-    WriteFileDescriptor *descriptor = write_ready_queue.front();
-    descriptor->PerformWrite();
-    write_ready_queue.pop();
-  }
-
-  while (!closed_queue.empty()) {
-    const connected_descriptor_t &connected_descriptor = closed_queue.front();
-    ConnectedDescriptor::OnCloseCallback *on_close =
-      connected_descriptor.descriptor->TransferOnClose();
-    if (on_close)
-      on_close->Run();
-    if (connected_descriptor.delete_on_close)
-      delete connected_descriptor.descriptor;
-    SafeDecrement(K_CONNECTED_DESCRIPTORS_VAR);
-    closed_queue.pop();
-  }
-
-  if (FD_ISSET(m_incoming_descriptor.ReadDescriptor(), r_set))
-    DrainAndExecute();
-}
-
-
-/*
- * Check for expired timeouts and call them.
- * @returns a struct timeval of the time up to where we checked.
- */
-TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
-  TimeStamp now = current_time;
-
-  Event *e;
-  if (m_events.empty())
-    return now;
-
-  for (e = m_events.top(); !m_events.empty() && (e->NextTime() <= now);
-       e = m_events.top()) {
-    m_events.pop();
-
-    // if this was removed, skip it
-    if (m_removed_timeouts.erase(e)) {
-      delete e;
-      SafeDecrement(K_TIMER_VAR);
-      continue;
-    }
-
-    if (e->Trigger()) {
-      // true implies we need to run this again
-      e->UpdateTime(now);
-      m_events.push(e);
-    } else {
-      delete e;
-      SafeDecrement(K_TIMER_VAR);
-    }
-    m_clock->CurrentTime(&now);
-  }
-  return now;
-}
-
-
-/*
- * Remove all registrations.
- */
-void SelectServer::UnregisterAll() {
-  ConnectedDescriptorSet::iterator iter = m_connected_read_descriptors.begin();
-  for (; iter != m_connected_read_descriptors.end(); ++iter) {
-    if (iter->delete_on_close) {
-      delete iter->descriptor;
-    }
-  }
-  m_read_descriptors.clear();
-  m_connected_read_descriptors.clear();
-  m_write_descriptors.clear();
-  m_removed_timeouts.clear();
-
-  while (!m_events.empty()) {
-    delete m_events.top();
-    m_events.pop();
-  }
-
-  STLDeleteElements(&m_loop_closures);
+  return m_poller->Poll(m_timeout_manager.get(), default_poll_interval);
 }
 
 void SelectServer::DrainAndExecute() {
@@ -702,16 +342,6 @@ void SelectServer::DrainAndExecute() {
     if (callback)
       callback->Run();
   }
-}
-
-void SelectServer::SafeIncrement(const string &var_name) {
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(var_name))++;
-}
-
-void SelectServer::SafeDecrement(const string &var_name) {
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(var_name))--;
 }
 }  // namespace io
 }  // namespace ola

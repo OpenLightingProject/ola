@@ -32,8 +32,6 @@
 
 namespace ola {
 
-using ola::proto::Ack;
-using ola::rpc::RpcController;
 
 /*
  * This class forms part of the core of the Server. It implements all the
@@ -63,97 +61,97 @@ class OlaServerServiceImpl {
       m_uid(uid) {}
     ~OlaServerServiceImpl() {}
 
-    void GetDmx(RpcController* controller,
+    void GetDmx(ola::rpc::RpcController* controller,
                 const ola::proto::UniverseRequest* request,
                 ola::proto::DmxData* response,
                 ola::rpc::RpcService::CompletionCallback* done);
-    void RegisterForDmx(RpcController* controller,
+    void RegisterForDmx(ola::rpc::RpcController* controller,
                         const ola::proto::RegisterDmxRequest* request,
-                        Ack* response,
+                        ola::proto::Ack* response,
                         ola::rpc::RpcService::CompletionCallback* done,
                         class Client *client);
-    void UpdateDmxData(RpcController* controller,
+    void UpdateDmxData(ola::rpc::RpcController* controller,
                        const ola::proto::DmxData* request,
-                       Ack* response,
+                       ola::proto::Ack* response,
                        ola::rpc::RpcService::CompletionCallback* done,
                        class Client *client);
-    void StreamDmxData(RpcController* controller,
+    void StreamDmxData(ola::rpc::RpcController* controller,
                        const ::ola::proto::DmxData* request,
                        ::ola::proto::STREAMING_NO_RESPONSE* response,
                        ola::rpc::RpcService::CompletionCallback* done,
                        class Client *client);
-    void SetUniverseName(RpcController* controller,
+    void SetUniverseName(ola::rpc::RpcController* controller,
                          const ola::proto::UniverseNameRequest* request,
-                         Ack* response,
+                         ola::proto::Ack* response,
                          ola::rpc::RpcService::CompletionCallback* done);
-    void SetMergeMode(RpcController* controller,
+    void SetMergeMode(ola::rpc::RpcController* controller,
                       const ola::proto::MergeModeRequest* request,
-                      Ack* response,
+                      ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done);
-    void PatchPort(RpcController* controller,
+    void PatchPort(ola::rpc::RpcController* controller,
                    const ola::proto::PatchPortRequest* request,
-                   Ack* response,
+                   ola::proto::Ack* response,
                    ola::rpc::RpcService::CompletionCallback* done);
-    void SetPortPriority(RpcController* controller,
+    void SetPortPriority(ola::rpc::RpcController* controller,
                          const ola::proto::PortPriorityRequest* request,
-                         Ack* response,
+                         ola::proto::Ack* response,
                          ola::rpc::RpcService::CompletionCallback* done);
-    void GetUniverseInfo(RpcController* controller,
+    void GetUniverseInfo(ola::rpc::RpcController* controller,
                          const ola::proto::OptionalUniverseRequest* request,
                          ola::proto::UniverseInfoReply* response,
                          ola::rpc::RpcService::CompletionCallback* done);
-    void GetPlugins(RpcController* controller,
+    void GetPlugins(ola::rpc::RpcController* controller,
                        const ola::proto::PluginListRequest* request,
                        ola::proto::PluginListReply* response,
                        ola::rpc::RpcService::CompletionCallback* done);
     void GetPluginDescription(
-        RpcController* controller,
+        ola::rpc::RpcController* controller,
         const ola::proto::PluginDescriptionRequest* request,
         ola::proto::PluginDescriptionReply* response,
         ola::rpc::RpcService::CompletionCallback* done);
     void GetPluginState(
-        RpcController* controller,
+        ola::rpc::RpcController* controller,
         const ola::proto::PluginStateRequest* request,
         ola::proto::PluginStateReply* response,
         ola::rpc::RpcService::CompletionCallback* done);
-    void GetDeviceInfo(RpcController* controller,
+    void GetDeviceInfo(ola::rpc::RpcController* controller,
                        const ola::proto::DeviceInfoRequest* request,
                        ola::proto::DeviceInfoReply* response,
                        ola::rpc::RpcService::CompletionCallback* done);
-    void GetCandidatePorts(RpcController* controller,
+    void GetCandidatePorts(ola::rpc::RpcController* controller,
                            const ola::proto::OptionalUniverseRequest* request,
                            ola::proto::DeviceInfoReply* response,
                            ola::rpc::RpcService::CompletionCallback* done);
-    void ConfigureDevice(RpcController* controller,
+    void ConfigureDevice(ola::rpc::RpcController* controller,
                          const ola::proto::DeviceConfigRequest* request,
                          ola::proto::DeviceConfigReply* response,
                          ola::rpc::RpcService::CompletionCallback* done);
-    void GetUIDs(RpcController* controller,
+    void GetUIDs(ola::rpc::RpcController* controller,
                  const ola::proto::UniverseRequest* request,
                  ola::proto::UIDListReply* response,
                  ola::rpc::RpcService::CompletionCallback* done);
-    void ForceDiscovery(RpcController* controller,
+    void ForceDiscovery(ola::rpc::RpcController* controller,
                         const ola::proto::DiscoveryRequest* request,
                         ola::proto::UIDListReply* response,
                         ola::rpc::RpcService::CompletionCallback* done);
-    void RDMCommand(RpcController* controller,
+    void RDMCommand(ola::rpc::RpcController* controller,
                     const ::ola::proto::RDMRequest* request,
                     ola::proto::RDMResponse* response,
                     ola::rpc::RpcService::CompletionCallback* done,
-                    const UID *uid,
+                    const ola::rdm::UID *uid,
                     class Client *client);
-    void RDMDiscoveryCommand(RpcController* controller,
+    void RDMDiscoveryCommand(ola::rpc::RpcController* controller,
                              const ::ola::proto::RDMDiscoveryRequest* request,
                              ola::proto::RDMResponse* response,
                              ola::rpc::RpcService::CompletionCallback* done,
-                             const UID *uid,
+                             const ola::rdm::UID *uid,
                              class Client *client);
-    void SetSourceUID(RpcController* controller,
+    void SetSourceUID(ola::rpc::RpcController* controller,
                       const ::ola::proto::UID* request,
                       ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done);
 
-    void SendTimeCode(RpcController* controller,
+    void SendTimeCode(ola::rpc::RpcController* controller,
                       const ::ola::proto::TimeCode* request,
                       ::ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done);
@@ -170,10 +168,10 @@ class OlaServerServiceImpl {
                               ola::proto::UIDListReply *response,
                               const ola::rdm::UIDSet &uids);
 
-    void MissingUniverseError(RpcController* controller);
-    void MissingPluginError(RpcController* controller);
-    void MissingDeviceError(RpcController* controller);
-    void MissingPortError(RpcController* controller);
+    void MissingUniverseError(ola::rpc::RpcController* controller);
+    void MissingPluginError(ola::rpc::RpcController* controller);
+    void MissingDeviceError(ola::rpc::RpcController* controller);
+    void MissingPortError(ola::rpc::RpcController* controller);
 
     void AddPlugin(class AbstractPlugin *plugin,
                    ola::proto::PluginInfo *plugin_info) const;
@@ -221,63 +219,63 @@ class OlaClientService: public ola::proto::OlaServerService {
       m_impl->GetDmx(controller, request, response, done);
     }
 
-    void RegisterForDmx(RpcController* controller,
+    void RegisterForDmx(ola::rpc::RpcController* controller,
                         const ola::proto::RegisterDmxRequest* request,
-                        Ack* response,
+                        ola::proto::Ack* response,
                         ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->RegisterForDmx(controller, request, response, done, m_client);
     }
 
-    void UpdateDmxData(RpcController* controller,
+    void UpdateDmxData(ola::rpc::RpcController* controller,
                        const ola::proto::DmxData* request,
-                       Ack* response,
+                       ola::proto::Ack* response,
                        ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->UpdateDmxData(controller, request, response, done, m_client);
     }
 
-    void StreamDmxData(RpcController* controller,
+    void StreamDmxData(ola::rpc::RpcController* controller,
                        const ::ola::proto::DmxData* request,
                        ::ola::proto::STREAMING_NO_RESPONSE* response,
                        ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->StreamDmxData(controller, request, response, done, m_client);
     }
 
-    void SetUniverseName(RpcController* controller,
+    void SetUniverseName(ola::rpc::RpcController* controller,
                          const ola::proto::UniverseNameRequest* request,
-                         Ack* response,
+                         ola::proto::Ack* response,
                          ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->SetUniverseName(controller, request, response, done);
     }
 
-    void SetMergeMode(RpcController* controller,
+    void SetMergeMode(ola::rpc::RpcController* controller,
                       const ola::proto::MergeModeRequest* request,
-                      Ack* response,
+                      ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->SetMergeMode(controller, request, response, done);
     }
 
-    void PatchPort(RpcController* controller,
+    void PatchPort(ola::rpc::RpcController* controller,
                    const ola::proto::PatchPortRequest* request,
-                   Ack* response,
+                   ola::proto::Ack* response,
                    ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->PatchPort(controller, request, response, done);
     }
 
-    void SetPortPriority(RpcController* controller,
+    void SetPortPriority(ola::rpc::RpcController* controller,
                          const ola::proto::PortPriorityRequest* request,
-                         Ack* response,
+                         ola::proto::Ack* response,
                          ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->SetPortPriority(controller, request, response, done);
     }
 
-    void GetUniverseInfo(RpcController* controller,
+    void GetUniverseInfo(ola::rpc::RpcController* controller,
                          const ola::proto::OptionalUniverseRequest* request,
                          ola::proto::UniverseInfoReply* response,
                          ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->GetUniverseInfo(controller, request, response, done);
     }
 
-    void GetPlugins(RpcController* controller,
+    void GetPlugins(ola::rpc::RpcController* controller,
                        const ola::proto::PluginListRequest* request,
                        ola::proto::PluginListReply* response,
                        ola::rpc::RpcService::CompletionCallback* done) {
@@ -285,7 +283,7 @@ class OlaClientService: public ola::proto::OlaServerService {
     }
 
     void GetPluginDescription(
-        RpcController* controller,
+        ola::rpc::RpcController* controller,
         const ola::proto::PluginDescriptionRequest* request,
         ola::proto::PluginDescriptionReply* response,
         ola::rpc::RpcService::CompletionCallback* done) {
@@ -293,56 +291,56 @@ class OlaClientService: public ola::proto::OlaServerService {
     }
 
     void GetPluginState(
-        RpcController* controller,
+        ola::rpc::RpcController* controller,
         const ola::proto::PluginStateRequest* request,
         ola::proto::PluginStateReply* response,
         ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->GetPluginState(controller, request, response, done);
     }
 
-    void GetDeviceInfo(RpcController* controller,
+    void GetDeviceInfo(ola::rpc::RpcController* controller,
                        const ola::proto::DeviceInfoRequest* request,
                        ola::proto::DeviceInfoReply* response,
                        ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->GetDeviceInfo(controller, request, response, done);
     }
 
-    void GetCandidatePorts(RpcController* controller,
+    void GetCandidatePorts(ola::rpc::RpcController* controller,
                            const ola::proto::OptionalUniverseRequest* request,
                            ola::proto::DeviceInfoReply* response,
                            ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->GetCandidatePorts(controller, request, response, done);
     }
 
-    void ConfigureDevice(RpcController* controller,
+    void ConfigureDevice(ola::rpc::RpcController* controller,
                          const ola::proto::DeviceConfigRequest* request,
                          ola::proto::DeviceConfigReply* response,
                          ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->ConfigureDevice(controller, request, response, done);
     }
 
-    void GetUIDs(RpcController* controller,
+    void GetUIDs(ola::rpc::RpcController* controller,
                  const ola::proto::UniverseRequest* request,
                  ola::proto::UIDListReply* response,
                  ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->GetUIDs(controller, request, response, done);
     }
 
-    void ForceDiscovery(RpcController* controller,
+    void ForceDiscovery(ola::rpc::RpcController* controller,
                         const ola::proto::DiscoveryRequest* request,
                         ola::proto::UIDListReply* response,
                         ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->ForceDiscovery(controller, request, response, done);
     }
 
-    void RDMCommand(RpcController* controller,
+    void RDMCommand(ola::rpc::RpcController* controller,
                     const ::ola::proto::RDMRequest* request,
                     ola::proto::RDMResponse* response,
                     ola::rpc::RpcService::CompletionCallback* done) {
       m_impl->RDMCommand(controller, request, response, done, m_uid, m_client);
     }
 
-    void RDMDiscoveryCommand(RpcController* controller,
+    void RDMDiscoveryCommand(ola::rpc::RpcController* controller,
                              const ::ola::proto::RDMDiscoveryRequest* request,
                              ola::proto::RDMResponse* response,
                              ola::rpc::RpcService::CompletionCallback* done) {
@@ -350,12 +348,12 @@ class OlaClientService: public ola::proto::OlaServerService {
                                   m_client);
     }
 
-    void SetSourceUID(RpcController* controller,
+    void SetSourceUID(ola::rpc::RpcController* controller,
                       const ::ola::proto::UID* request,
                       ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done);
 
-    void SendTimeCode(RpcController* controller,
+    void SendTimeCode(ola::rpc::RpcController* controller,
                       const ::ola::proto::TimeCode* request,
                       ::ola::proto::Ack* response,
                       ola::rpc::RpcService::CompletionCallback* done) {

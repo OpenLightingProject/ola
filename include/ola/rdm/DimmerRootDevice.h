@@ -39,14 +39,12 @@
 namespace ola {
 namespace rdm {
 
-using std::vector;
-
 /**
  * The root device in the simulated dimmer.
  */
 class DimmerRootDevice: public RDMControllerInterface {
  public:
-    typedef const map<uint16_t, class DimmerSubDevice*> SubDeviceMap;
+    typedef const std::map<uint16_t, class DimmerSubDevice*> SubDeviceMap;
 
     DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices);
 

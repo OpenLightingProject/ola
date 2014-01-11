@@ -238,11 +238,14 @@ void PreferencesTest::testSave() {
   unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";
+  string key3 = "/dev/ttyUSB0";
   string value1 = "bar";
   string value2 = "baz";
+  string value3 = "boo";
   string multi_key = "multi";
   preferences->SetValue(key1, value1);
   preferences->SetValue(key2, value2);
+  preferences->SetValue(key3, value3);
   preferences->SetMultipleValue(multi_key, "1");
   preferences->SetMultipleValue(multi_key, "2");
   preferences->SetMultipleValue(multi_key, "3");

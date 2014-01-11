@@ -18,9 +18,12 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+
 #include "olad/BonjourDiscoveryAgent.h"
 
 #include <dns_sd.h>
+#include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/thread/CallbackThread.h>

@@ -45,13 +45,15 @@ namespace e131 {
 const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
 
 using ola::rpc::RpcController;
+using std::string;
+using std::stringstream;
 
 /*
  * Create a new device
  */
 E131Device::E131Device(Plugin *owner,
                        const ola::acn::CID &cid,
-                       std::string ip_addr,
+                       string ip_addr,
                        PluginAdaptor *plugin_adaptor,
                        const E131DeviceOptions &options)
     : Device(owner, DEVICE_NAME),

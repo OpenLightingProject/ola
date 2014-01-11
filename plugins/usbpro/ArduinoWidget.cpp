@@ -35,6 +35,7 @@ namespace usbpro {
 
 using ola::rdm::RDMCommandSerializer;
 using std::string;
+using std::stringstream;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
 

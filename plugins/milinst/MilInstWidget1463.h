@@ -31,18 +31,20 @@ namespace milinst {
 
 class MilInstWidget1463: public MilInstWidget {
  public:
-    explicit MilInstWidget1463(const std::string &path): MilInstWidget(path) {}
-    ~MilInstWidget1463() {}
+  explicit MilInstWidget1463(const std::string &path): MilInstWidget(path) {}
+  ~MilInstWidget1463() {}
 
-    bool Connect();
-    bool DetectDevice();
-    bool SendDmx(const DmxBuffer &buffer) const;
+  bool Connect();
+  bool DetectDevice();
+  bool SendDmx(const DmxBuffer &buffer) const;
+  std::string Type() { return "Milford Instruments 1-463 Widget"; }
+
  protected:
-    int SetChannel(unsigned int chan, uint8_t val) const;
-    int Send112(const DmxBuffer &buffer) const;
+  int SetChannel(unsigned int chan, uint8_t val) const;
+  int Send112(const DmxBuffer &buffer) const;
 
-    // This interface can only transmit 112 channels
-    enum { DMX_MAX_TRANSMIT_CHANNELS = 112 };
+  // This interface can only transmit 112 channels
+  enum { DMX_MAX_TRANSMIT_CHANNELS = 112 };
 };
 }  // namespace milinst
 }  // namespace plugin

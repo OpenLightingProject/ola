@@ -52,9 +52,17 @@ using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMCallback;
+using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::UID;
+using ola::rdm::UIDSet;
 using std::auto_ptr;
+using std::map;
 using std::pair;
+using std::set;
 using std::string;
 using std::vector;
 

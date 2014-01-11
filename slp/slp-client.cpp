@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
       "   " << argv[0] << " findsrvs service:myserv.x\n"
       "   " << argv[0] << " findsrvs service:myserv.x";
 
-  ola::SetHelpString(" [options] command-and-arguments", help_msg.str());
+  ola::SetHelpString("[options] command-and-arguments", help_msg.str());
   ola::ParseFlags(&argc, argv);
 
   vector<string> args;

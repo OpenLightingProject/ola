@@ -35,31 +35,29 @@ class MilInstDevice;
 
 class MilInstPlugin: public Plugin {
  public:
-    explicit MilInstPlugin(PluginAdaptor *plugin_adaptor)
-        : Plugin(plugin_adaptor) {}
+  explicit MilInstPlugin(PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor) {}
 
-    ~MilInstPlugin() {}
+  ~MilInstPlugin() {}
 
-    std::string Name() const { return PLUGIN_NAME; }
-    ola_plugin_id Id() const { return OLA_PLUGIN_MILINST; }
-    std::string Description() const;
-    int SocketClosed(ola::io::ConnectedDescriptor *socket);
-    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_MILINST; }
+  std::string Description() const;
+  int SocketClosed(ola::io::ConnectedDescriptor *socket);
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    bool StartHook();
-    bool StopHook();
-    bool SetDefaultPreferences();
-    void DeleteDevice(MilInstDevice *device);
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
+  void DeleteDevice(MilInstDevice *device);
 
-    std::vector<MilInstDevice*> m_devices;  // list of our devices
+  std::vector<MilInstDevice*> m_devices;  // list of our devices
 
-    static const char MILINST_DEVICE_PATH[];
-    static const char MILINST_BASE_DEVICE_NAME[];
-    static const char MILINST_1463_DEVICE_NAME[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
-    static const char DEVICE_KEY[];
+  static const char MILINST_DEVICE_PATH[];
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
+  static const char DEVICE_KEY[];
 };
 }  // namespace milinst
 }  // namespace plugin

@@ -27,6 +27,10 @@
 namespace ola {
 namespace web {
 
+using std::ostream;
+using std::string;
+using std::stringstream;
+
 JsonObject::~JsonObject() {
   STLDeleteValues(&m_members);
 }

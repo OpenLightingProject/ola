@@ -36,7 +36,7 @@ class PathportDevice: public ola::Device {
                    class Preferences *preferences,
                    class PluginAdaptor *plugin_adaptor);
 
-    string DeviceId() const { return "1"; }
+    std::string DeviceId() const { return "1"; }
     PathportNode *GetNode() const { return m_node; }
     bool SendArpReply();
 

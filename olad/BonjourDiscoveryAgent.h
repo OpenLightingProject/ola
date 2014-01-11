@@ -71,14 +71,14 @@ class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
       class DNSSDDescriptor *descriptor;
     };
 
-    typedef vector<ServiceRef> ServiceRefs;
+    typedef std::vector<ServiceRef> ServiceRefs;
 
     ola::io::SelectServer m_ss;
     std::auto_ptr<thread::CallbackThread> m_thread;
     ServiceRefs m_refs;
 
     void InternalRegisterService(RegisterArgs *args);
-    string BuildTxtRecord(const RegisterOptions::TxtData &txt_data);
+    std::string BuildTxtRecord(const RegisterOptions::TxtData &txt_data);
     DISALLOW_COPY_AND_ASSIGN(BonjourDiscoveryAgent);
 };
 }  // namespace ola
