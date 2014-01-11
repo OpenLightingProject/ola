@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 
+#include <limits>
+
 namespace ola {
 namespace utils {
 
@@ -32,7 +34,12 @@ namespace utils {
  * @param[out] high the high byte
  * @param[out] low the low byte
  */
-void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low);
+inline void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low) {
+  *high = (input >> std::numeric_limits<uint8_t>::digits) &
+      std::numeric_limits<uint8_t>::max();
+  *low = input & std::numeric_limits<uint8_t>::max();
+}
+
 
 /**
  * @brief Convert two uint8_t's to a uint16_t
@@ -40,7 +47,10 @@ void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low);
  * @param low the low byte
  * @return the combined uint16_t
  */
-uint16_t JoinUInt8(uint8_t high, uint8_t low);
+inline uint16_t JoinUInt8(uint8_t high, uint8_t low)  {
+  return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
+      | low);
+}
 }  // namespace utils
 }  // namespace ola
 #endif  // INCLUDE_OLA_UTIL_UTILS_H_
