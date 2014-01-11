@@ -1,7 +1,6 @@
 language: cpp
 compiler:
   - gcc
-  - clang
 script: autoreconf -i && ./configure --enable-rdm-tests && make && make check
 
 before_install:
