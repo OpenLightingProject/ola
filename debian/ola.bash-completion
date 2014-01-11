@@ -576,7 +576,7 @@ have ola_usbpro && _ola_usbpro()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=($( compgen -W '--assignments --brk --dev --mab --port --rate --serial' -- $cur ) )
+  COMPREPLY=($( compgen -W '--assignments --brk --dev --get-params --mab --port --rate --serial' -- $cur ) )
 }
 complete -F _ola_usbpro ola_usbpro
 
