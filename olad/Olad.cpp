@@ -37,7 +37,7 @@
 #include "ola/base/Flags.h"
 #include "ola/base/Init.h"
 #include "ola/base/SysExits.h"
-#include "ola/client/Version.h"
+#include "ola/base/Version.h"
 #include "ola/thread/SignalThread.h"
 #include "olad/OlaDaemon.h"
 
@@ -80,13 +80,13 @@ int main(int argc, char *argv[]) {
   ola::ParseFlags(&argc, argv);
 
   if (FLAGS_version) {
-    cout << "OLA Daemon version " << ola::client::Version::GetVersion() <<
+    cout << "OLA Daemon version " << ola::base::Version::GetVersion() <<
         endl;
     exit(ola::EXIT_OK);
   }
 
   ola::InitLoggingFromFlags();
-  OLA_INFO << "OLA Daemon version " << ola::client::Version::GetVersion();
+  OLA_INFO << "OLA Daemon version " << ola::base::Version::GetVersion();
 
   #ifndef OLAD_SKIP_ROOT_CHECK
   if (!ola::GetEUID()) {

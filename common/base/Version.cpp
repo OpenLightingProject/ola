@@ -29,15 +29,15 @@ namespace base {
 using std::string;
 
 unsigned int Version::GetMajor() {
-  return OLA_BASE_VERSION_MAJOR;
+  return OLA_VERSION_MAJOR;
 }
 
 unsigned int Version::GetMinor() {
-  return OLA_BASE_VERSION_MINOR;
+  return OLA_VERSION_MINOR;
 }
 
 unsigned int Version::GetRevision() {
-  return OLA_BASE_VERSION_REVISION;
+  return OLA_VERSION_REVISION;
 }
 
 std::string Version::GetVersion() {

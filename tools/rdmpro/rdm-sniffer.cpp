@@ -440,9 +440,7 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(&argc,
-               argv,
-               "[options] <usb-device-path>",
+  ola::AppInit(&argc, argv, "[options] <usb-device-path>",
                "Sniff traffic from a ENTTEC RDM Pro device.");
 
   if (!FLAGS_savefile.str().empty() && !FLAGS_readfile.str().empty()) {

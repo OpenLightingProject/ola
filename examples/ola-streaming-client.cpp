@@ -63,12 +63,9 @@ bool SendDataFromString(StreamingClient *client,
 }
 
 int main(int argc, char *argv[]) {
-  ola::AppInit(
-      &argc,
-      argv,
-      "--dmx <dmx_data> --universe <universe_id>",
-      "Send DMX512 data to OLA. If DMX512 data isn't provided, it will read "
-      "from STDIN.");
+  ola::AppInit(&argc, argv, "--dmx <dmx_data> --universe <universe_id>",
+               "Send DMX512 data to OLA. If DMX512 data isn't provided, it "
+               "will read from STDIN.");
 
   StreamingClient ola_client;
   if (!ola_client.Setup()) {

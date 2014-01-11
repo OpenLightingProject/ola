@@ -104,24 +104,17 @@ bool ServerInit(int *argc,
 }
 
 
-bool AppInit(int argc, char *argv[]) {
-  ola::math::InitRandom();
-  if (!InstallSEGVHandler())
-    return false;
-  return true;
-  (void) argc;
-  (void) argv;
-}
-
-
 bool AppInit(int *argc,
              char *argv[],
              const std::string &first_line,
              const std::string &description) {
+  ola::math::InitRandom();
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
   InitLoggingFromFlags();
-  return AppInit(*argc, argv);
+  if (!InstallSEGVHandler())
+    return false;
+  return true;
 }
 
 

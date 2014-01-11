@@ -214,11 +214,9 @@ bool SimpleE133Monitor::EndpointRequest(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(
-      &argc,
-      argv,
-      "[options]",
-      "Open a TCP connection to E1.33 Devices and wait for E1.33 messages.");
+  ola::AppInit(&argc, argv, "[options]",
+               "Open a TCP connection to E1.33 Devices and wait for E1.33 "
+               "messages.");
 
   PidStoreHelper pid_helper(FLAGS_pid_location, 4);
 

@@ -147,9 +147,7 @@ void Tracker::StartSignalThread() {
 }
 
 int main(int argc, char *argv[]) {
-  ola::AppInit(&argc,
-               argv,
-               "[options]",
+  ola::AppInit(&argc, argv, "[options]",
                "Measure the latency of RPCs to olad.");
 
   Tracker tracker;

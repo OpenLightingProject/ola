@@ -87,17 +87,7 @@ bool ServerInit(int *argc,
 
 /**
  * @brief Used to initialize a application. Installs the SEGV handler and
- * initializes the random number generator.
- * @param argc argument count
- * @param argv pointer to the argument strings
- * @return true on success and false otherwise
- * @note If you are a server then call ServerInit() instead.
- */
-bool AppInit(int argc, char *argv[]);
-
-/**
- * @brief Used to initialize a application. Installs the SEGV handler and
- * initializes the random number generator. Also sets the help string for the
+ * initializes the random number generator, sets the help string for the
  * program, parses flags and initialises logging from flags.
  * @param argc argument count
  * @param argv pointer to the argument strings
