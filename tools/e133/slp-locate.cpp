@@ -69,10 +69,7 @@ static void InteruptSignal(int signo) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(argc, argv);
-  ola::SetHelpString("[options]", "Locate E1.33 SLP services.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Locate E1.33 SLP services.");
 
   ola::InstallSignal(SIGINT, InteruptSignal);
 

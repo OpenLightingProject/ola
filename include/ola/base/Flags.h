@@ -82,7 +82,6 @@ namespace ola {
  * @param first_line the inital line that is displayed in the help section.
  * This is displayed after argv[0].
  * @param description a multiline description of the program
- *
  */
 void SetHelpString(const std::string &first_line,
                    const std::string &description);

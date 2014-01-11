@@ -26,6 +26,7 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
@@ -439,11 +440,10 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options] <usb-device-path>",
-      "Sniff traffic from a ENTTEC RDM Pro device.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc,
+               argv,
+               "[options] <usb-device-path>",
+               "Sniff traffic from a ENTTEC RDM Pro device.");
 
   if (!FLAGS_savefile.str().empty() && !FLAGS_readfile.str().empty()) {
     ola::DisplayUsage();

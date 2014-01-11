@@ -213,8 +213,7 @@ int main(int argc, char *argv[]) {
       "   " << argv[0] << " findsrvs service:myserv.x\n"
       "   " << argv[0] << " findsrvs service:myserv.x";
 
-  ola::SetHelpString("[options] command-and-arguments", help_msg.str());
-  ola::ParseFlags(&argc, argv);
+  ola::AppInit(&argc, argv, "[options] command-and-arguments", help_msg.str());
 
   vector<string> args;
   for (int i = 1; i < argc; i++) {
@@ -226,9 +225,6 @@ int main(int argc, char *argv[]) {
     ola::DisplayUsage();
     exit(ola::EXIT_OK);
   }
-
-  ola::InitLoggingFromFlags();
-  ola::AppInit(argc, argv);
 
   ola::slp::SLPClientWrapper client_wrapper;
   if (!client_wrapper.Setup())

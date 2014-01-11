@@ -44,11 +44,13 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/math/Random.h>
 
 #include <iostream>
+#include <string>
 
 namespace ola {
 
@@ -90,6 +92,18 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 }
 
 
+bool ServerInit(int *argc,
+                char *argv[],
+                ExportMap *export_map,
+                const std::string &first_line,
+                const std::string &description) {
+  SetHelpString(first_line, description);
+  ParseFlags(argc, argv);
+  InitLoggingFromFlags();
+  return ServerInit(*argc, argv, export_map);
+}
+
+
 bool AppInit(int argc, char *argv[]) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
@@ -97,6 +111,17 @@ bool AppInit(int argc, char *argv[]) {
   return true;
   (void) argc;
   (void) argv;
+}
+
+
+bool AppInit(int *argc,
+             char *argv[],
+             const std::string &first_line,
+             const std::string &description) {
+  SetHelpString(first_line, description);
+  ParseFlags(argc, argv);
+  InitLoggingFromFlags();
+  return AppInit(*argc, argv);
 }
 
 

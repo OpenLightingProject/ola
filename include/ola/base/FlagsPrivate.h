@@ -223,7 +223,7 @@ class FlagRegistry {
     void ParseFlags(int *argc, char **argv);
 
     void SetFirstLine(const std::string &help);
-    void SetDecription(const std::string &help);
+    void SetDescription(const std::string &help);
     void DisplayUsage();
     void GenManPage();
 

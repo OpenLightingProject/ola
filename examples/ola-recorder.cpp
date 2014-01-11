@@ -147,12 +147,12 @@ int VerifyShow(const string &filename) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
+  ola::AppInit(
+      &argc,
+      argv,
       "[--record <file> --universes <universe_list>] [--playback <file>] "
-      "[--verify <file>]\n",
+      "[--verify <file>]",
       "Record a series of universes, or playback a previously recorded show.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
 
   if (!FLAGS_playback.str().empty()) {
     ShowPlayer player(FLAGS_playback.str());

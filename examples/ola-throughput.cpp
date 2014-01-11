@@ -43,10 +43,7 @@ DEFINE_s_uint32(sleep, s, 40000, "Time between DMX updates in micro-seconds");
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(argc, argv);
-  ola::SetHelpString("[options]", "Send DMX512 data to OLA.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Send DMX512 data to OLA.");
 
   StreamingClient ola_client;
   if (!ola_client.Setup()) {

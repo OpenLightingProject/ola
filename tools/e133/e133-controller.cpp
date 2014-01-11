@@ -27,6 +27,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/ACNVectors.h>
@@ -474,9 +475,7 @@ void SimpleE133Controller::HandleStatusMessage(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString("[options]", "E1.33 Controller.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "E1.33 Controller.");
 
   PidStoreHelper pid_helper(FLAGS_pid_location.str());
 

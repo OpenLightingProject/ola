@@ -73,13 +73,14 @@ const char Flag<bool>::NO_PREFIX[] = "no";
 
 void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetFirstLine(first_line);
-  GetRegistry()->SetDecription(description);
+  GetRegistry()->SetDescription(description);
 }
 
 
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
 }
+
 
 void GenManPage() {
   GetRegistry()->GenManPage();
@@ -215,7 +216,7 @@ void FlagRegistry::SetFirstLine(const string &first_line) {
 }
 
 
-void FlagRegistry::SetDecription(const string &description) {
+void FlagRegistry::SetDescription(const string &description) {
   m_description = description;
 }
 

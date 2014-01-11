@@ -186,7 +186,8 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
 
   ola::InitLogging(options.log_level, ola::OLA_LOG_STDERR);
-  ola::AppInit(argc, argv);
+  ola::AppInit(argc, argv);  // TODO(Peter): Switch this to the combined
+  // AppInit when this program switches to using flags.
 
   vector<string> tests_to_run;
   if (!options.test_names.empty()) {
