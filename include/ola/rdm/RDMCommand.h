@@ -32,7 +32,6 @@
 
 #include <stdint.h>
 #include <ola/io/OutputStream.h>
-#include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/RDMResponseCodes.h>
@@ -178,19 +177,6 @@ class RDMCommand {
     /** @} */
 
     /**
-     * @brief Used to print the data in an RDM Command to a CommandPrinter
-     * @param print CommandPrinter wish will use the information
-     * @param summarize enable a one line summary
-     * @param unpack_param_data if the summary isn't enabled, this controls if
-     * we unpack and display parameter data
-     */
-    virtual void Print(CommandPrinter *printer,
-                       bool summarize,
-                       bool unpack_param_data) const {
-      printer->Print(this, summarize, unpack_param_data);
-    }
-
-    /**
      * @brief Write this RDMCommand to an OutputStream
      * @param stream is a pointer to an OutputStream
      */
@@ -292,12 +278,6 @@ class RDMRequest: public RDMCommand {
         ParamId(),
         ParamData(),
         ParamDataSize());
-    }
-
-    virtual void Print(CommandPrinter *printer,
-                       bool summarize,
-                       bool unpack_param_data) const {
-      printer->Print(this, summarize, unpack_param_data);
     }
 
     // Convert a block of data to an RDMCommand object
@@ -414,12 +394,6 @@ class RDMResponse: public RDMCommand {
     }
 
     uint8_t ResponseType() const { return m_port_id; }
-
-    virtual void Print(CommandPrinter *printer,
-                       bool summarize,
-                       bool unpack_param_data) const {
-      printer->Print(this, summarize, unpack_param_data);
-    }
 
     RDMCommandClass CommandClass() const { return m_command_class; }
 
@@ -547,12 +521,6 @@ class RDMDiscoveryRequest: public RDMRequest {
 
     uint8_t PortId() const { return m_port_id; }
 
-    virtual void Print(CommandPrinter *printer,
-                       bool summarize,
-                       bool unpack_param_data) const {
-      printer->Print(this, summarize, unpack_param_data);
-    }
-
     static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
                                                 unsigned int length);
     static RDMDiscoveryRequest* InflateFromData(const string &data);
@@ -613,12 +581,6 @@ class RDMDiscoveryResponse: public RDMResponse {
                       param_id,
                       data,
                       length) {
-    }
-
-    virtual void Print(CommandPrinter *printer,
-                       bool summarize,
-                       bool unpack_param_data) const {
-      printer->Print(this, summarize, unpack_param_data);
     }
 
     static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,

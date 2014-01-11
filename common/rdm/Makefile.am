@@ -8,21 +8,7 @@ EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
-                       CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
-                       DimmerResponder.cpp DimmerRootDevice.cpp \
-                       DimmerSubDevice.cpp DiscoveryAgent.cpp \
-                       DummyResponder.cpp GroupSizeCalculator.cpp \
-                       MessageDeserializer.cpp MessageSerializer.cpp \
-                       MovingLightResponder.cpp OpenLightingEnums.cpp \
-                       PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
-                       QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
-                       RDMCommandSerializer.cpp RDMHelper.cpp \
-                       ResponderHelper.cpp ResponderLoadSensor.cpp \
-                       ResponderPersonality.cpp ResponderSlotData.cpp \
-                       ResponderSettings.cpp SensorResponder.cpp \
-                       StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
-                       UID.cpp VariableFieldSizeCalculator.cpp
+libolardm_la_SOURCES = RDMAPI.cpp RDMCommand.cpp UID.cpp
 
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
