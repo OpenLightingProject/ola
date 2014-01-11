@@ -3025,7 +3025,8 @@ void RDMAPI::_HandleGetParameterDescriptor(
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
              std::min(static_cast<unsigned int>(data.size()), max));
-      description.description[LABEL_SIZE] = 0;
+      raw_description.description[LABEL_SIZE] = 0;
+
       description.pid = NetworkToHost(raw_description.pid);
       description.pdl_size = raw_description.pdl_size;
       description.data_type = raw_description.data_type;
