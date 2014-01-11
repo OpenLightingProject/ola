@@ -25,6 +25,8 @@ X/Y/2013 ola-0.9.0`
  * Show dashes in the CLI DMX monitor if a universe has fewer than 512
    channels.
  * Added initial support for the MilInst 1-553 interface.
+ * Added a version option to all flags based commands; removed the -v verify
+   short option from ola_recorder that clashed.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265.

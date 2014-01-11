@@ -361,13 +361,13 @@ have ola_recorder && _ola_recorder()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--log-level --record --playback --universes --verify --delay --iterations'
+  opts='--log-level --record --playback --universes --verify --version --delay --iterations'
 
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
       ;;
-    -r | --record | -p | --playback | -v | --verify)
+    -r | --record | -p | --playback | --verify)
       #Record, playback and verify all want files
       #We're not interested in supplying opts, so set compreply and break out with a return
       _filedir
@@ -435,7 +435,7 @@ have ola_streaming_client && _ola_streaming_client()
       ;;
   esac;
   
-  COMPREPLY=($( compgen -W '--universe --dmx' -- $cur ) )
+  COMPREPLY=($( compgen -W '--universe --dmx --version' -- $cur ) )
 }
 complete -F _ola_streaming_client ola_streaming_client
 
@@ -588,7 +588,7 @@ have rdmpro_sniffer && _rdmpro_sniffer()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --write-raw-dump'
+  opts='--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --version --write-raw-dump'
 
   case "$prev" in
     -l | --log-level)

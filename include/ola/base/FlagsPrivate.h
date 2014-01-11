@@ -225,6 +225,7 @@ class FlagRegistry {
     void SetFirstLine(const std::string &help);
     void SetDescription(const std::string &help);
     void DisplayUsage();
+    void DisplayVersion();
     void GenManPage();
 
  private:

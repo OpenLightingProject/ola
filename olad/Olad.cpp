@@ -49,7 +49,6 @@ using std::endl;
 DEFINE_bool(http, true, "Disable the HTTP server.");
 DEFINE_bool(http_quit, true, "Disable the HTTP /quit handler.");
 DEFINE_s_bool(daemon, f, false, "Fork and run in the background.");
-DEFINE_s_bool(version, v, false, "Print version information.");
 DEFINE_s_string(http_data_dir, d, "", "The path to the static www content.");
 DEFINE_s_string(interface, i, "",
                 "The interface name (e.g. eth0) or IP of the network interface "
@@ -78,12 +77,6 @@ void StartSignalThread(ola::io::SelectServer *ss,
 int main(int argc, char *argv[]) {
   ola::SetHelpString("[options]", "Start the OLA Daemon.");
   ola::ParseFlags(&argc, argv);
-
-  if (FLAGS_version) {
-    cout << "OLA Daemon version " << ola::base::Version::GetVersion() <<
-        endl;
-    exit(ola::EXIT_OK);
-  }
 
   ola::InitLoggingFromFlags();
   OLA_INFO << "OLA Daemon version " << ola::base::Version::GetVersion();
