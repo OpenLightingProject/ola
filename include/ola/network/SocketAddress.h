@@ -103,11 +103,7 @@ class IPV4SocketAddress: public SocketAddress {
     uint16_t Port() const { return m_port; }
     void Port(uint16_t port) { m_port = port; }
 
-    string ToString() const {
-      std::ostringstream str;
-      str << Host() << ":" << Port();
-      return str.str();
-    }
+    string ToString() const;
 
     static bool FromString(const string &str,
                            IPV4SocketAddress *socket_address);
