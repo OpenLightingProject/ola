@@ -13,27 +13,40 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Utils.cpp
- * Basic util helper functions.
- * Copyright (C) 2013 Peter Newman
+ * Serial.cpp
+ * Serial I/O Helper methods.
+ * Copyright (C) 2014 Peter Newman
  */
 
-#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
-#include <stdint.h>
+#include "ola/io/Serial.h"
 
-#include <limits>
+#include "ola/Logging.h"
 
 namespace ola {
-namespace utils {
+namespace io {
 
-void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low) {
-  *high = (input >> std::numeric_limits<uint8_t>::digits) & UINT8_MAX;
-  *low = input & UINT8_MAX;
+bool UIntToSpeedT(uint32_t value, speed_t *output) {
+  switch (value) {
+    case BAUD_RATE_9600:
+      *output = B9600;
+      return true;
+    case BAUD_RATE_19200:
+      *output = B19200;
+      return true;
+    case BAUD_RATE_38400:
+      *output = B38400;
+      return true;
+    case BAUD_RATE_57600:
+      *output = B57600;
+      return true;
+    case BAUD_RATE_115200:
+      *output = B115200;
+      return true;
+    case BAUD_RATE_230400:
+      *output = B230400;
+      return true;
+  }
+  return false;
 }
-
-uint16_t JoinUInt8(uint8_t high, uint8_t low) {
-  return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
-      | low);
-}
-}  // namespace utils
+}  // namespace io
 }  // namespace ola

@@ -28,6 +28,7 @@
 #include <ola/StringUtils.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/e133/DeviceManager.h>
 #include <ola/e133/E133URLParser.h>
@@ -213,11 +214,9 @@ bool SimpleE133Monitor::EndpointRequest(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options]",
-      "Open a TCP connection to E1.33 Devices and wait for E1.33 messages.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]",
+               "Open a TCP connection to E1.33 Devices and wait for E1.33 "
+               "messages.");
 
   PidStoreHelper pid_helper(FLAGS_pid_location, 4);
 

@@ -28,6 +28,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/base/Version.h"
 #include "ola/dmx/SourcePriorities.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/web/Json.h"
@@ -35,7 +36,6 @@
 #include "olad/HttpServerActions.h"
 #include "olad/OladHTTPServer.h"
 #include "olad/OlaServer.h"
-#include "olad/OlaVersion.h"
 
 
 namespace ola {
@@ -188,7 +188,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
   json.Add("hw_address", m_interface.hw_address.ToString());
-  json.Add("version", OLA_VERSION);
+  json.Add("version", ola::base::Version::GetVersion());
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
 

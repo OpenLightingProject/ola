@@ -72,13 +72,14 @@ class StringValidator: public Validator {
 /*
  * Check that a value is one of a set of values
  */
+template <class T>
 class SetValidator: public Validator {
  public:
-  explicit SetValidator(const set<string> &values) : m_values(values) {}
+  explicit SetValidator(const set<T> &values) : m_values(values) {}
   bool IsValid(const string &value) const;
 
  private:
-  set<string> m_values;
+  set<T> m_values;
 };
 
 
@@ -114,7 +115,7 @@ class UIntValidator: public Validator {
 
 
 /*
- * Check that a value falls within a range of unsigned ints.
+ * Check that a value falls within a range of ints.
  */
 class IntValidator: public Validator {
  public:
@@ -129,7 +130,7 @@ class IntValidator: public Validator {
 
 
 /*
- * Check a IPv4 address is valid
+ * Check an IPv4 address is valid
  */
 class IPv4Validator: public Validator {
  public:
@@ -171,7 +172,10 @@ class Preferences {
    */
   virtual void Clear() = 0;
 
-  // The location of where these preferences are stored.
+  /**
+   * @brief The location of where these preferences are stored.
+   * @return the location
+   */
   virtual string Source() const = 0;
 
   /**
@@ -182,16 +186,49 @@ class Preferences {
   virtual void SetValue(const string &key, const string &value) = 0;
 
   /**
-   * @brief Adds this preference value to the store
+   * @brief Set a preference value, overiding the existing value. This helper
+   * accepts an unsigned int.
+   * @param key
+   * @param value
+   */
+  virtual void SetValue(const string &key, unsigned int value) = 0;
+
+  /**
+   * @brief Set a preference value, overiding the existing value. This helper
+   * accepts an int.
+   * @param key
+   * @param value
+   */
+  virtual void SetValue(const string &key, int value) = 0;
+
+  /**
+   * @brief Adds this preference value to the store.
    * @param key
    * @param value
    */
   virtual void SetMultipleValue(const string &key, const string &value) = 0;
 
   /**
-   * @brief Set a preference value only if it doesn't pass the validator.
-   * @note Note this only checks the first value.
+   * @brief Adds this preference value to the store. This helper accepts an
+   * unsigned int.
    * @param key
+   * @param value
+   */
+  virtual void SetMultipleValue(const string &key, unsigned int value) = 0;
+
+  /**
+   * @brief Adds this preference value to the store. This helper accepts an
+   * int.
+   * @param key
+   * @param value
+   */
+  virtual void SetMultipleValue(const string &key, int value) = 0;
+
+  /**
+   * @brief Set a preference value if it doesn't already exist, or if it exists
+   * and doesn't pass the validator.
+   * @note Note this only checks the first value's validity.
+   * @param key the key to check/set
    * @param validator A Validator object
    * @param value the new value
    * @return true if we set the value, false if it already existed
@@ -199,6 +236,32 @@ class Preferences {
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
                                const string &value) = 0;
+
+  /**
+   * @brief Set a preference value if it doesn't already exist, or if it exists
+   * and doesn't pass the validator. This helper accepts an unsigned int value
+   * @note Note this only checks the first value's validity.
+   * @param key the key to check/set
+   * @param validator A Validator object
+   * @param value the new value
+   * @return true if we set the value, false if it already existed
+   */
+  virtual bool SetDefaultValue(const string &key,
+                               const Validator &validator,
+                               unsigned int value) = 0;
+
+  /**
+   * @brief Set a preference value if it doesn't already exist, or if it exists
+   * and doesn't pass the validator. This helper accepts an int value
+   * @note Note this only checks the first value's validity.
+   * @param key the key to check/set
+   * @param validator A Validator object
+   * @param value the new value
+   * @return true if we set the value, false if it already existed
+   */
+  virtual bool SetDefaultValue(const string &key,
+                               const Validator &validator,
+                               int value) = 0;
 
   /**
    * @brief Get a preference value
@@ -210,7 +273,7 @@ class Preferences {
 
   /**
    * @brief Returns all preference values corrosponding to this key
-   * @param key the key to fetch 
+   * @param key the key to fetch
    * @return a vector of strings.
    */
   virtual vector<string> GetMultipleValue(const string &key) const = 0;
@@ -288,10 +351,20 @@ class MemoryPreferences: public Preferences {
   virtual string Source() const { return "Not Saved"; }
 
   virtual void SetValue(const string &key, const string &value);
+  virtual void SetValue(const string &key, unsigned int value);
+  virtual void SetValue(const string &key, int value);
   virtual void SetMultipleValue(const string &key, const string &value);
+  virtual void SetMultipleValue(const string &key, unsigned int value);
+  virtual void SetMultipleValue(const string &key, int value);
   virtual bool SetDefaultValue(const string &key,
                                const Validator &validator,
                                const string &value);
+  virtual bool SetDefaultValue(const string &key,
+                               const Validator &validator,
+                               unsigned int value);
+  virtual bool SetDefaultValue(const string &key,
+                               const Validator &validator,
+                               int value);
 
   virtual string GetValue(const string &key) const;
   virtual vector<string> GetMultipleValue(const string &key) const;

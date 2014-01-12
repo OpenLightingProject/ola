@@ -14,30 +14,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Version.cpp
- * Provides version information for the client library.
- * Copyright (C) 2013 Simon Newton
+ * Provides version information for all of OLA.
+ * Copyright (C) 2014 Peter Newman
  */
 
-#include "ola/client/Version.h"
+#include "ola/base/Version.h"
 
 #include <sstream>
 #include <string>
 
 namespace ola {
-namespace client {
+namespace base {
 
 using std::string;
 
 unsigned int Version::GetMajor() {
-  return OLA_CLIENT_VERSION_MAJOR;
+  return OLA_VERSION_MAJOR;
 }
 
 unsigned int Version::GetMinor() {
-  return OLA_CLIENT_VERSION_MINOR;
+  return OLA_VERSION_MINOR;
 }
 
 unsigned int Version::GetRevision() {
-  return OLA_CLIENT_VERSION_REVISION;
+  return OLA_VERSION_REVISION;
 }
 
 std::string Version::GetVersion() {
@@ -54,5 +54,5 @@ bool Version::IsAtLeast(unsigned int major,
       GetMinor() >= minor &&
       GetRevision() >= revision);
 }
-}  // namespace client
+}  // namespace base
 }  // namespace ola

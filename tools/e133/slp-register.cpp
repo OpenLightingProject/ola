@@ -135,13 +135,10 @@ void ProcessService(const string &service_spec,
  * main
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(argc, argv);
-  ola::SetHelpString("[options] [services]",
-    "Register one or more E1.33 services with SLP. [services] is\n"
-    "a list of IP, UIDs in the form: uid[@ip], e.g. \n"
-    "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options] [services]",
+               "Register one or more E1.33 services with SLP. [services] is\n"
+               "a list of IP, UIDs in the form: uid[@ip], e.g. \n"
+               "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n");
 
   if (argc < 2) {
     ola::DisplayUsage();

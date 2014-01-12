@@ -105,11 +105,7 @@ void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options]",
-      "Run a very simple E1.33 Responder.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 Responder.");
 
   auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
   if (!uid.get()) {

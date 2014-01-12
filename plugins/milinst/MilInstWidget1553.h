@@ -47,13 +47,11 @@ class MilInstWidget1553: public MilInstWidget {
 
   static const uint8_t MILINST_1553_LOAD_COMMAND = 0x01;
 
-  static const char BAUDRATE_9600[];
-  static const char BAUDRATE_19200[];
   static const speed_t DEFAULT_BAUDRATE;
 
-  static const char CHANNELS_128[];
-  static const char CHANNELS_256[];
-  static const char CHANNELS_512[];
+  static const uint16_t CHANNELS_128;
+  static const uint16_t CHANNELS_256;
+  static const uint16_t CHANNELS_512;
   static const uint16_t DEFAULT_CHANNELS;
 
  private:

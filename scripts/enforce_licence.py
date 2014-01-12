@@ -32,7 +32,6 @@ IGNORED_FILES = [
   'examples/ola-dmxmonitor.cpp',
   'include/ola/gen_callbacks.py',
   'ola/common.h',
-  'olad/OlaVersion.h',
   'tools/ola_trigger/config.tab.cpp',
   'tools/ola_trigger/config.tab.h',
   'tools/ola_trigger/lex.yy.cpp',

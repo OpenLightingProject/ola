@@ -13,32 +13,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * IOUtils.cpp
- * I/O Helper methods.
- * Copyright (C) 2013 Simon Newton
+ * Serial.h
+ * Serial IO functions.
+ * Copyright (C) 2014 Peter Newman
  */
 
-#include "ola/io/IOUtils.h"
+#ifndef INCLUDE_OLA_IO_SERIAL_H_
+#define INCLUDE_OLA_IO_SERIAL_H_
 
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <string>
-
-#include "ola/Logging.h"
+#include <stdint.h>
+#include <termios.h>
 
 namespace ola {
 namespace io {
 
-using std::string;
+typedef enum {
+  BAUD_RATE_9600 = 9600,
+  BAUD_RATE_19200 = 19200,
+  BAUD_RATE_38400 = 38400,
+  BAUD_RATE_57600 = 57600,
+  BAUD_RATE_115200 = 115200,
+  BAUD_RATE_230400 = 230400,
+} baud_rate;
 
-bool Open(const string &path, int oflag, int *fd) {
-  *fd = open(path.c_str(), oflag);
-  if (*fd < 0) {
-    OLA_WARN << "Failed to open " << path << ": " << strerror(errno);
-    return false;
-  }
-  return true;
-}
+/**
+ * @brief Convert an integer baud rate to the termios struct speed_t
+ * @param[in] value the baudrate value to convert
+ * @param[out] output a pointer where the value will be stored
+ * @returns true if the value was converted, false if the baud rate wasn't
+ * supported by the method.
+ */
+bool UIntToSpeedT(uint32_t value, speed_t *output);
 }  // namespace io
 }  // namespace ola
+#endif  // INCLUDE_OLA_IO_SERIAL_H_

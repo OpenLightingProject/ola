@@ -175,6 +175,7 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
   if (enttec_port == NULL) {
       controller->SetFailed("Invalid port id");
       done->Run();
+      return;
   }
 
   if (request->has_parameters() &&

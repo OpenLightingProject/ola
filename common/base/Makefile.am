@@ -5,7 +5,8 @@ libolabase_la_SOURCES = Credentials.cpp \
                         Flags.cpp \
                         Init.cpp \
                         Logging.cpp \
-                        SysExits.cpp
+                        SysExits.cpp \
+                        Version.cpp
 
 if BUILD_TESTS
 TESTS = CredentialsTester FlagsTester LoggingTester

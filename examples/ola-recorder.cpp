@@ -46,7 +46,7 @@ using std::string;
 
 DEFINE_s_string(playback, p, "", "The show file to playback.");
 DEFINE_s_string(record, r, "", "The show file to record data to.");
-DEFINE_s_string(verify, v, "", "The show file to verify.");
+DEFINE_string(verify, "", "The show file to verify.");
 DEFINE_s_string(universes, u, "",
                 "A comma separated list of universes to record");
 DEFINE_s_uint32(delay, d, 0, "The delay in ms between successive iterations.");
@@ -147,12 +147,11 @@ int VerifyShow(const string &filename) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[--record <file> --universes <universe_list>] [--playback <file>] "
-      "[--verify <file>]\n",
-      "Record a series of universes, or playback a previously recorded show.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv,
+               "[--record <file> --universes <universe_list>] [--playback "
+               "<file>] [--verify <file>]",
+               "Record a series of universes, or playback a previously "
+               "recorded show.");
 
   if (!FLAGS_playback.str().empty()) {
     ShowPlayer player(FLAGS_playback.str());

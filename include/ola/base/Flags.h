@@ -82,15 +82,19 @@ namespace ola {
  * @param first_line the inital line that is displayed in the help section.
  * This is displayed after argv[0].
  * @param description a multiline description of the program
- *
  */
 void SetHelpString(const std::string &first_line,
                    const std::string &description);
 
 /**
- * @brief Print the usage text to stderr.
+ * @brief Print the usage text to stdout.
  */
 void DisplayUsage();
+
+/**
+ * @brief Print the version text to stdout.
+ */
+void DisplayVersion();
 
 /**
  * @brief Parses the command line flags up to the first non-flag value. argv is

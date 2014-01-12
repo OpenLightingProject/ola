@@ -26,6 +26,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
+#include "ola/base/Init.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
 #include "plugins/artnet/ArtNetNode.h"
@@ -58,9 +59,7 @@ bool SendFrames(ArtNetNode *node, DmxBuffer *buffer,
 }
 
 int main(int argc, char* argv[]) {
-  ola::SetHelpString("", "Run the E1.31 load test.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "", "Run the E1.31 load test.");
 
   if (FLAGS_universes == 0 || FLAGS_fps == 0)
     return -1;
