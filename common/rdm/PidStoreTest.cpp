@@ -35,7 +35,6 @@
 #include "ola/testing/TestUtils.h"
 
 
-
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;

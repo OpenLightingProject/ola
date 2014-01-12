@@ -58,6 +58,7 @@ class EnttecPort
     bool ChangeToReceiveMode(bool change_only);
     void GetParameters(usb_pro_params_callback *callback);
     bool SetParameters(uint8_t break_time, uint8_t mab_time, uint8_t rate);
+    bool SupportsRDM() const { return m_enable_rdm; }
 
     // the following are from DiscoverableRDMControllerInterface
     void SendRDMRequest(const ola::rdm::RDMRequest *request,

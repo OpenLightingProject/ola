@@ -34,6 +34,7 @@
 #include "ola/base/Array.h"
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
+#include "ola/base/Version.h"
 #include "ola/stl/STLUtils.h"
 
 /**
@@ -41,6 +42,7 @@
  * @brief Define the help flag
  */
 DEFINE_s_bool(help, h, false, "Display the help message");
+DEFINE_s_bool(version, v, false, "Display version information");
 DEFINE_bool(gen_manpage, false, "Generate a man page snippet");
 
 namespace ola {
@@ -73,13 +75,19 @@ const char Flag<bool>::NO_PREFIX[] = "no";
 
 void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetFirstLine(first_line);
-  GetRegistry()->SetDecription(description);
+  GetRegistry()->SetDescription(description);
 }
 
 
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
 }
+
+
+void DisplayVersion() {
+  GetRegistry()->DisplayVersion();
+}
+
 
 void GenManPage() {
   GetRegistry()->GenManPage();
@@ -195,6 +203,11 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     exit(EXIT_OK);
   }
 
+  if (FLAGS_version) {
+    DisplayVersion();
+    exit(EXIT_OK);
+  }
+
   if (FLAGS_gen_manpage) {
     GenManPage();
     exit(EXIT_OK);
@@ -215,17 +228,17 @@ void FlagRegistry::SetFirstLine(const string &first_line) {
 }
 
 
-void FlagRegistry::SetDecription(const string &description) {
+void FlagRegistry::SetDescription(const string &description) {
   m_description = description;
 }
 
 /*
- * @brief Print the usage text to stderr
+ * @brief Print the usage text to stdout
  */
 void FlagRegistry::DisplayUsage() {
-  cerr << "Usage: " << m_argv0 << " " << m_first_line << endl << endl;
+  cout << "Usage: " << m_argv0 << " " << m_first_line << endl << endl;
   if (!m_description.empty()) {
-    cerr << m_description << endl << endl;
+    cout << m_description << endl << endl;
   }
 
   // - comes before a-z which means flags without long options appear first. To
@@ -257,6 +270,14 @@ void FlagRegistry::DisplayUsage() {
 
   PrintFlags(&short_flag_lines);
   PrintFlags(&long_flag_lines);
+}
+
+/*
+ * @brief Print the version text to stdout
+ */
+void FlagRegistry::DisplayVersion() {
+  cout << "OLA " << m_argv0 << " version: " << ola::base::Version::GetVersion()
+      << endl;
 }
 
 void FlagRegistry::GenManPage() {
@@ -369,13 +390,13 @@ struct option *FlagRegistry::GetLongOpts(FlagMap *flag_map) {
 
 
 /**
- * @brief Given a vector of flags lines, sort them and print to stderr.
+ * @brief Given a vector of flags lines, sort them and print to stdout.
  */
 void FlagRegistry::PrintFlags(std::vector<string> *lines) {
   std::sort(lines->begin(), lines->end());
   vector<string>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter)
-    cerr << *iter;
+    cout << *iter;
 }
 
 void FlagRegistry::PrintManPageFlags(std::vector<OptionPair> *lines) {

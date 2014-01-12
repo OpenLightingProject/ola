@@ -215,7 +215,8 @@ void SPIDevice::SetDefaults() {
   set<string> valid_backends;
   valid_backends.insert(HARDWARE_BACKEND);
   valid_backends.insert(SOFTWARE_BACKEND);
-  m_preferences->SetDefaultValue(SPIBackendKey(), SetValidator(valid_backends),
+  m_preferences->SetDefaultValue(SPIBackendKey(),
+                                 SetValidator<string>(valid_backends),
                                  SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, 32000000),
                                  "1000000");

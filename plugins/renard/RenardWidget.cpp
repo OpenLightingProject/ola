@@ -23,6 +23,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
+#include "ola/io/Serial.h"
 #include "plugins/renard/RenardWidget.h"
 
 namespace ola {

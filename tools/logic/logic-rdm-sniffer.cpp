@@ -349,10 +349,8 @@ void DisplayReminder(LogicReader *reader) {
  * Main.
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString("[options]",
-                     "Decode DMX/RDM data from a Saleae Logic device");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]",
+               "Decode DMX/RDM data from a Saleae Logic device");
 
   SelectServer ss;
   LogicReader reader(&ss, FLAGS_sample_rate);

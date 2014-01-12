@@ -131,7 +131,7 @@ bool StringToInt(const string &value, uint16_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
     return false;
-  if (v > 0xffff)
+  if (v > UINT16_MAX)
     return false;
   *output = static_cast<uint16_t>(v);
   return true;
@@ -141,7 +141,7 @@ bool StringToInt(const string &value, uint8_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
     return false;
-  if (v > 0xff)
+  if (v > UINT8_MAX)
     return false;
   *output = static_cast<uint8_t>(v);
   return true;

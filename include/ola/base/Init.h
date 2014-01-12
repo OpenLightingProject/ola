@@ -46,6 +46,7 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Callback.h>
+#include <string>
 
 namespace ola {
 /**
@@ -65,14 +66,42 @@ namespace ola {
 bool ServerInit(int argc, char *argv[], ExportMap *export_map);
 
 /**
+ * @brief Used to initialize a server. Installs the SEGV handler, initializes
+ * the random number generator and populates the export map. Also sets the help
+ * string for the program, parses flags and initialises logging from flags.
+ * @param argc argument count
+ * @param argv pointer to argument strings
+ * @param export_map an optional pointer to an ExportMap
+ * @param first_line the inital line that is displayed in the help section.
+ * This is displayed after argv[0].
+ * @param description a multiline description of the program
+ * @return true on success and false otherwise
+ * @note If you are a client/application then call AppInit() instead.
+ * @sa ola::SetHelpString ola::ParseFlags ola::InitLoggingFromFlags
+ */
+bool ServerInit(int *argc,
+                char *argv[],
+                ExportMap *export_map,
+                const std::string &first_line,
+                const std::string &description);
+
+/**
  * @brief Used to initialize a application. Installs the SEGV handler and
- * initializes the random number generator.
+ * initializes the random number generator, sets the help string for the
+ * program, parses flags and initialises logging from flags.
  * @param argc argument count
  * @param argv pointer to the argument strings
+ * @param first_line the inital line that is displayed in the help section.
+ * This is displayed after argv[0].
+ * @param description a multiline description of the program
  * @return true on success and false otherwise
  * @note If you are a server then call ServerInit() instead.
+ * @sa ola::SetHelpString ola::ParseFlags ola::InitLoggingFromFlags
  */
-bool AppInit(int argc, char *argv[]);
+bool AppInit(int *argc,
+             char *argv[],
+             const std::string &first_line,
+             const std::string &description);
 
 /**
  * @brief Install a signal handler.

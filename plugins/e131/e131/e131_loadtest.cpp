@@ -25,6 +25,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
+#include "ola/base/Init.h"
 #include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/E131Node.h"
 
@@ -49,9 +50,7 @@ bool SendFrames(E131Node *node, DmxBuffer *buffer,
 }
 
 int main(int argc, char* argv[]) {
-  ola::SetHelpString("", "Run the E1.31 load test.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "", "Run the E1.31 load test.");
 
   if (FLAGS_universes == 0 || FLAGS_fps == 0)
     return -1;

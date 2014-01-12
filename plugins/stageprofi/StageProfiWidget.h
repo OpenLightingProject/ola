@@ -51,8 +51,8 @@ class StageProfiWidget {
     void Timeout();
 
  protected:
-    int Send255(unsigned int start, const uint8_t *buf, unsigned int len) const;
-    int SetChannel(unsigned int chan, uint8_t val) const;
+    int Send255(uint16_t start, const uint8_t *buf, unsigned int len) const;
+    int SetChannel(uint16_t chan, uint8_t val) const;
 
     // instance variables
     bool m_enabled;

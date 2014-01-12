@@ -4,8 +4,7 @@ noinst_LTLIBRARIES = libolautils.la
 libolautils_la_SOURCES = ActionQueue.cpp \
                          DmxBuffer.cpp \
                          StringUtils.cpp \
-                         TokenBucket.cpp \
-                         Utils.cpp
+                         TokenBucket.cpp
 
 if BUILD_TESTS
 TESTS = UtilsTester

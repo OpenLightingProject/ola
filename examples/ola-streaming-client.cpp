@@ -24,6 +24,7 @@
 #include <ola/client/StreamingClient.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/dmx/SourcePriorities.h>
 
 #include <iostream>
@@ -62,12 +63,9 @@ bool SendDataFromString(StreamingClient *client,
 }
 
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "--dmx <dmx_data> --universe <universe_id>",
-      "Send DMX512 data to OLA. If DMX512 data isn't provided, it will read "
-      "from STDIN.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "--dmx <dmx_data> --universe <universe_id>",
+               "Send DMX512 data to OLA. If DMX512 data isn't provided, it "
+               "will read from STDIN.");
 
   StreamingClient ola_client;
   if (!ola_client.Setup()) {

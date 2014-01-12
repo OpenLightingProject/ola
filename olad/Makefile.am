@@ -43,11 +43,9 @@ endif
 
 
 EXTRA_DIST = BonjourDiscoveryAgent.h Client.h ClientBroker.h DeviceManager.h \
-             DiscoveryAgent.h DynamicPluginLoader.h \
-             HttpServerActions.h \
-             OladHTTPServer.h OlaVersion.h \
-             OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortManager.h RDMHTTPModule.h TestCommon.h \
+             DiscoveryAgent.h DynamicPluginLoader.h HttpServerActions.h \
+             OladHTTPServer.h OlaServerServiceImpl.h PluginLoader.h \
+             PluginManager.h PortManager.h RDMHTTPModule.h TestCommon.h \
              UniverseStore.h
 
 # Olad Server
@@ -59,7 +57,8 @@ if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic
 endif
 olad_LDADD = libolaserver.la \
-             $(top_builddir)/common/libolacommon.la
+             $(top_builddir)/common/libolacommon.la \
+             $(top_builddir)/ola/libola.la
 
 if HAVE_LIBFTDI
 olad_LDADD += -lftdi -lusb

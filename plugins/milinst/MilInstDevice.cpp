@@ -128,7 +128,7 @@ void MilInstDevice::SetDeviceDefaults() {
 
   // Set generic device options
   save |= m_preferences->SetDefaultValue(DeviceTypeKey(),
-                                         SetValidator(valid_types),
+                                         SetValidator<string>(valid_types),
                                          TYPE_1463);
 
   if (save)

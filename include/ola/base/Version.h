@@ -14,25 +14,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Version.h
- * Provides version information for the client library.
- * Copyright (C) 2013 Simon Newton
+ * Provides version information for all of OLA.
+ * Copyright (C) 2014 Peter Newman
  */
 
-#ifndef INCLUDE_OLA_CLIENT_VERSION_H_
-#define INCLUDE_OLA_CLIENT_VERSION_H_
+#ifndef INCLUDE_OLA_BASE_VERSION_H_
+#define INCLUDE_OLA_BASE_VERSION_H_
 
 #include <ola/base/Macro.h>
 #include <string>
 
 namespace ola {
-namespace client {
+namespace base {
 
-#define OLA_CLIENT_VERSION_MAJOR 0
-#define OLA_CLIENT_VERSION_MINOR 9
-#define OLA_CLIENT_VERSION_REVISION 0
+#define OLA_VERSION_MAJOR 0
+#define OLA_VERSION_MINOR 9
+#define OLA_VERSION_REVISION 0
 
 /**
- * @class Version ola/client/Version.h
+ * @class Version ola/base/Version.h
  * @brief Provides version information.
  * OLA Version numbers are in the form major.minor.revision.
  */
@@ -40,25 +40,25 @@ class Version {
  public:
   /**
    * @brief the Major version number
-   * @returns the major version number.
+   * @return the major version number.
    */
   static unsigned int GetMajor();
 
   /**
    * @brief the Minor version number
-   * @returns the minor version number.
+   * @return the minor version number.
    */
   static unsigned int GetMinor();
 
   /**
    * @brief the revision number
-   * @returns the revision number.
+   * @return the revision number.
    */
   static unsigned int GetRevision();
 
   /**
    * @brief the version number as a string.
-   * @returns the version number as a string.
+   * @return the version number as a string.
    */
   static std::string GetVersion();
 
@@ -68,7 +68,7 @@ class Version {
    * @param major the major version.
    * @param major the minor version.
    * @param major the revision.
-   * @returns true if the running version is >= major.minor,revision.
+   * @return true if the running version is >= major.minor.revision.
    */
   static bool IsAtLeast(unsigned int major,
                         unsigned int minor,
@@ -77,6 +77,6 @@ class Version {
  private:
   DISALLOW_COPY_AND_ASSIGN(Version);
 };
-}  // namespace client
+}  // namespace base
 }  // namespace ola
-#endif  // INCLUDE_OLA_CLIENT_VERSION_H_
+#endif  // INCLUDE_OLA_BASE_VERSION_H_

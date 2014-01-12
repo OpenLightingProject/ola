@@ -74,8 +74,7 @@ int main(int argc, char *argv[]) {
       "   " << FilenameFromPath(argv[0]) << " 192.168.0.1\n"
       "   " << FilenameFromPath(argv[0]) << " 192.168.0.1:5568";
 
-  ola::SetHelpString("[options] <ip>[:port]", help_msg.str());
-  ola::ParseFlags(&argc, argv);
+  ola::AppInit(&argc, argv, "[options] <ip>[:port]", help_msg.str());
 
   if (FLAGS_list_tests)
     DisplayTestsAndExit();
@@ -84,9 +83,6 @@ int main(int argc, char *argv[]) {
     ola::DisplayUsage();
     exit(ola::EXIT_OK);
   }
-
-  ola::InitLoggingFromFlags();
-  ola::AppInit(argc, argv);
 
   vector<string> tests_to_run;
   if (!FLAGS_tests.str().empty()) {
