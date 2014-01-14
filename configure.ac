@@ -574,7 +574,9 @@ if test "${enable_python_libs}" = "yes"; then
   PYTHON="python"
  fi
  PYTHON_NAME=`basename $PYTHON`
- AX_PYTHON_MODULE("google.protobuf", "fatal")
+ AC_CACHE_CHECK([$PYTHON_NAME module: google.protobuf],
+    [ac_cv_have_pymod_google_protobuf],
+    [AX_PYTHON_MODULE([google.protobuf], [fatal])])
 fi
 
 # Maybe build the logic sniffer tools
