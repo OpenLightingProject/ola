@@ -570,6 +570,10 @@ AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${enable_rdm_tests}" = "yes")
 
 if test "${enable_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.6)
+ if test -z $PYTHON; then
+  PYTHON="python"
+ fi
+ PYTHON_NAME=`basename $PYTHON`
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
