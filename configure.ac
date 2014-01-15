@@ -570,7 +570,13 @@ AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${enable_rdm_tests}" = "yes")
 
 if test "${enable_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.6)
- AX_PYTHON_MODULE("google.protobuf", "fatal")
+ if test -z $PYTHON; then
+  PYTHON="python"
+ fi
+ PYTHON_NAME=`basename $PYTHON`
+ AC_CACHE_CHECK([$PYTHON_NAME module: google.protobuf],
+    [ac_cv_have_pymod_google_protobuf],
+    [AX_PYTHON_MODULE([google.protobuf], [fatal])])
 fi
 
 # Maybe build the logic sniffer tools
