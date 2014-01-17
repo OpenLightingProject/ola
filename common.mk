@@ -1,6 +1,6 @@
 # here we define common flags for C++ targets
 WARNING_CXXFLAGS = -I$(top_builddir)/include \
-                   -Wall -Wformat -W \
+                   -Wall -Wformat -W -fvisibility-inlines-hidden \
                    $(libprotobuf_CFLAGS)
 
 COMMON_CXXFLAGS = $(WARNING_CXXFLAGS)

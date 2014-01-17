@@ -31,6 +31,13 @@ namespace network {
 
 using std::string;
 
+
+string IPV4SocketAddress::ToString() const {
+  std::ostringstream str;
+  str << Host() << ":" << Port();
+  return str.str();
+}
+
 /**
  * Copy this IPV4SocketAddress into a sockaddr.
  */
