@@ -29,9 +29,10 @@
 #include <string.h>
 #include <time.h>
 
-#include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
+#include <ola/Logging.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>

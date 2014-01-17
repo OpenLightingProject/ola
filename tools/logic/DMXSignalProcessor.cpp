@@ -48,6 +48,14 @@
 
 using std::vector;
 
+const double DMXSignalProcessor::MIN_BREAK_TIME = 88.0;
+const double DMXSignalProcessor::MIN_MAB_TIME = 8.0;
+const double DMXSignalProcessor::MAX_MAB_TIME = 1000000.0;
+const double DMXSignalProcessor::MIN_BIT_TIME = 3.75;
+const double DMXSignalProcessor::MAX_BIT_TIME = 4.08;
+const double DMXSignalProcessor::MIN_LAST_BIT_TIME = 2.64;
+const double DMXSignalProcessor::MAX_MARK_BETWEEN_SLOTS = 1000000.0;
+
 /**
  * Create a new DMXSignalProcessor which runs the specified callback when a new
  * frame is received.
