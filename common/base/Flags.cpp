@@ -277,7 +277,7 @@ void FlagRegistry::DisplayUsage() {
  */
 void FlagRegistry::DisplayVersion() {
   cout << "OLA " << m_argv0 << " version: " << ola::base::Version::GetVersion()
-      << endl;
+       << endl;
 }
 
 void FlagRegistry::GenManPage() {
