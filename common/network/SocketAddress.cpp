@@ -85,6 +85,11 @@ IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
 }
 
 
+bool GenericSocketAddress::IsValid() const {
+  return Family() != AF_UNSPEC;
+}
+
+
 string GenericSocketAddress::ToString() const {
   switch (Family()) {
     case AF_INET:

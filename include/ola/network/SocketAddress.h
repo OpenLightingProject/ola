@@ -132,9 +132,7 @@ class GenericSocketAddress: public SocketAddress {
       memset(reinterpret_cast<uint8_t*>(&m_addr), 0, sizeof(m_addr));
     }
 
-    bool IsValid() const {
-      return Family() != AF_UNSPEC;
-    }
+    bool IsValid() const;
 
     uint16_t Family() const {
       return m_addr.sa_family;
