@@ -653,7 +653,9 @@ class GetSupportedParameters(ResponderTestFixture):
 
   # Banned PIDs, these are pid values that can not appear in the list of
   # supported parameters (these are used for discovery)
-  BANNED_PID_VALUES = [1, 2, 3]
+  BANNED_PIDS = ['DISC_UNIQUE_BRANCH',
+                 'DISC_MUTE',
+                 'DISC_UN_MUTE']
 
   # If responders support any of the pids in these groups, the should really
   # support all of them.
@@ -698,6 +700,11 @@ class GetSupportedParameters(ResponderTestFixture):
       pid = self.LookupPid(p)
       mandatory_pids[pid.value] = pid
 
+    banned_pids = {}
+    for p in self.BANNED_PIDS:
+      pid = self.LookupPid(p)
+      banned_pids[pid.value] = pid
+
     supported_parameters = []
     manufacturer_parameters = []
     count_by_pid = {}
@@ -705,8 +712,9 @@ class GetSupportedParameters(ResponderTestFixture):
     for item in fields['params']:
       param_id = item['param_id']
       count_by_pid[param_id] = count_by_pid.get(param_id, 0) + 1
-      if param_id in self.BANNED_PID_VALUES:
-        self.AddWarning('%d listed in supported parameters' % param_id)
+      if param_id in banned_pids:
+        self.AddWarning('%s listed in supported parameters' %
+                        banned_pids[param_id].name)
         continue
 
       if param_id in mandatory_pids:
