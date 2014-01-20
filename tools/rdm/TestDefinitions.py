@@ -69,7 +69,7 @@ class MuteDevice(ResponderTestFixture):
           self.AddWarning(
             'Binding UID manufacturer ID 0x%04hx does not equal device '
             'manufacturer ID of 0x%04hx' % (
-              binding_uids[0].manufacturer_id,
+              binding_uids[0]['binding_uid'].manufacturer_id,
               self.uid.manufacturer_id))
 
 
