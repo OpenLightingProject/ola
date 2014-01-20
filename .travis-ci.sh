@@ -6,7 +6,7 @@ CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.
 if [[ $CC = 'gcc' ]]; then
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
-  cpplint.py \
+  ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
     $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
   if [[ $? -ne 0 ]]; then
