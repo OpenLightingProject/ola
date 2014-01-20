@@ -2,7 +2,8 @@ language: cpp
 compiler:
   - clang
   - gcc
-script: autoreconf -i && ./configure --enable-rdm-tests && make && make check
+script:
+  - "bash -ex .travis-ci.sh"
 
 before_install:
  - sudo apt-get update -qq
