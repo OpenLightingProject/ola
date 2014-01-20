@@ -301,7 +301,8 @@ void BaseInflatorTest::testInflatePDU() {
   TestInflator inflator;  // test with a vector size of 2
   HeaderSet header_set;
   uint8_t flags = PDU::VFLAG_MASK;
-  unsigned int data_size = PDU::TWO_BYTES + sizeof(PDU_DATA);
+  unsigned int data_size = static_cast<unsigned int>(PDU::TWO_BYTES +
+      sizeof(PDU_DATA));
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
   data[0] = 0x01;
@@ -322,8 +323,8 @@ void BaseInflatorTest::testInflatePDUBlock() {
   const unsigned int length_size = 2;
 
   // inflate a single pdu block
-  unsigned int data_size = (length_size + PDU::TWO_BYTES +
-    sizeof(PDU_DATA));
+  unsigned int data_size = static_cast<unsigned int>(
+      length_size + PDU::TWO_BYTES + sizeof(PDU_DATA));
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
   data[0] = PDU::VFLAG_MASK;
