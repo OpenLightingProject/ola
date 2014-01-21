@@ -95,35 +95,35 @@ class HardwareBackend : public ola::thread::Thread,
 
  private:
     class OutputData {
-      public:
-        OutputData()
-            : m_data(NULL),
-              m_write_pending(false),
-              m_size(0),
-              m_actual_size(0),
-              m_latch_bytes(0) {
-        }
+     public:
+      OutputData()
+          : m_data(NULL),
+            m_write_pending(false),
+            m_size(0),
+            m_actual_size(0),
+            m_latch_bytes(0) {
+      }
 
-        ~OutputData() { delete[] m_data; }
+      ~OutputData() { delete[] m_data; }
 
-        uint8_t *Resize(unsigned int length);
-        void SetLatchBytes(unsigned int latch_bytes);
-        void SetPending();
-        bool IsPending() const { return m_write_pending; }
-        void ResetPending() { m_write_pending = false; }
-        const uint8_t *GetData() const { return m_data; }
-        unsigned int Size() const { return m_size; }
+      uint8_t *Resize(unsigned int length);
+      void SetLatchBytes(unsigned int latch_bytes);
+      void SetPending();
+      bool IsPending() const { return m_write_pending; }
+      void ResetPending() { m_write_pending = false; }
+      const uint8_t *GetData() const { return m_data; }
+      unsigned int Size() const { return m_size; }
 
-        OutputData& operator=(const OutputData &other);
+      OutputData& operator=(const OutputData &other);
 
-      private:
-        uint8_t *m_data;
-        bool m_write_pending;
-        unsigned int m_size;
-        unsigned int m_actual_size;
-        unsigned int m_latch_bytes;
+     private:
+      uint8_t *m_data;
+      bool m_write_pending;
+      unsigned int m_size;
+      unsigned int m_actual_size;
+      unsigned int m_latch_bytes;
 
-        OutputData(const OutputData&);
+      OutputData(const OutputData&);
     };
 
     typedef vector<int> GPIOFds;
@@ -237,13 +237,13 @@ class FakeSPIBackend : public SPIBackendInterface {
 
  private:
     class Output {
-      public:
-        Output() : data(NULL), length(0), writes(0) {}
-        ~Output() { delete[] data; }
+     public:
+      Output() : data(NULL), length(0), writes(0) {}
+      ~Output() { delete[] data; }
 
-        uint8_t *data;
-        unsigned int length;
-        unsigned int writes;
+      uint8_t *data;
+      unsigned int length;
+      unsigned int writes;
     };
 
     typedef vector<Output*> Outputs;

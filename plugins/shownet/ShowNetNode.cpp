@@ -309,7 +309,7 @@ unsigned int ShowNetNode::PopulatePacket(shownet_data_packet *packet,
   packet->slotSize[0] = buffer.Size();
 
   unsigned int enc_len = sizeof(packet->data);
-  if (!m_encoder.Encode(buffer, packet->data, enc_len))
+  if (!m_encoder.Encode(buffer, packet->data, &enc_len))
     OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
   packet->indexBlock[0] = MAGIC_INDEX_OFFSET;

@@ -39,7 +39,7 @@ using std::stringstream;
 using std::vector;
 
 void StringSplit(const string &input,
-                 vector<string> &tokens,
+                 vector<string> &tokens,  // NOLINT
                  const string &delimiters) {
   string::size_type start_offset = 0;
   string::size_type end_offset = 0;

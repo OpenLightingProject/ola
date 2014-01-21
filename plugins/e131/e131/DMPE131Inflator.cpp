@@ -94,7 +94,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
       DecodeAddress(dmp_header.Size(),
                     dmp_header.Type(),
                     data,
-                    available_length));
+                    &available_length));
 
   if (!address.get()) {
     OLA_INFO << "DMP address parsing failed, the length is probably too small";

@@ -57,8 +57,8 @@ void RDMInflator::SetRDMHandler(RDMMessageHandler *handler) {
 bool RDMInflator::DecodeHeader(HeaderSet *,
                                const uint8_t*,
                                unsigned int,
-                               unsigned int &bytes_used) {
-  bytes_used = 0;
+                               unsigned int *bytes_used) {
+  *bytes_used = 0;
   return true;
 }
 

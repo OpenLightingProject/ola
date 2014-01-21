@@ -54,11 +54,11 @@ class E133StatusInflator: public BaseInflator {
 
  protected:
     // The 'header' is 0 bytes in length.
-    bool DecodeHeader(HeaderSet *,
+    bool DecodeHeader(HeaderSet*,
                       const uint8_t*,
                       unsigned int,
-                      unsigned int &bytes_used) {
-      bytes_used = 0;
+                      unsigned int *bytes_used) {
+      *bytes_used = 0;
       return true;
     }
 

@@ -43,7 +43,7 @@ namespace ola {
  * @param delimiters the delimiiter to use for splitting. Defaults to ' '
  */
 void StringSplit(const std::string &input,
-                 std::vector<std::string> &tokens,
+                 std::vector<std::string> &tokens,  // NOLINT
                  const std::string &delimiters=" ");
 
 /**

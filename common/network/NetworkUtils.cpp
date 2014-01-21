@@ -59,15 +59,15 @@ using ola::network::IPV4Address;
 using std::string;
 using std::vector;
 
-bool StringToAddress(const string &address, struct in_addr &addr) {
+bool StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
 
 #ifdef HAVE_INET_ATON
-  ok = (1 == inet_aton(address.data(), &addr));
+  ok = (1 == inet_aton(address.data(), addr));
 #else
   in_addr_t ip_addr4 = inet_addr(address.c_str());
   ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
-  addr.s_addr = ip_addr4;
+  addr->s_addr = ip_addr4;
 #endif
 
   if (!ok) {

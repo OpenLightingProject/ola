@@ -40,7 +40,7 @@ using ola::network::NetworkToHost;
 bool E131Inflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
-                                unsigned int &bytes_used) {
+                                unsigned int *bytes_used) {
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E131Header::e131_pdu_header)) {
@@ -57,15 +57,15 @@ bool E131Inflator::DecodeHeader(HeaderSet *headers,
       m_last_header = header;
       m_last_header_valid = true;
       headers->SetE131Header(header);
-      bytes_used = sizeof(E131Header::e131_pdu_header);
+      *bytes_used = sizeof(E131Header::e131_pdu_header);
       return true;
     }
-    bytes_used = 0;
+    *bytes_used = 0;
     return false;
   }
 
   // use the last header if it exists
-  bytes_used = 0;
+  *bytes_used = 0;
   if (!m_last_header_valid) {
     OLA_WARN << "Missing E131 Header data";
     return false;
@@ -86,7 +86,7 @@ bool E131Inflator::DecodeHeader(HeaderSet *headers,
 bool E131InflatorRev2::DecodeHeader(HeaderSet *headers,
                                     const uint8_t *data,
                                     unsigned int length,
-                                    unsigned int &bytes_used) {
+                                    unsigned int *bytes_used) {
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E131Rev2Header::e131_rev2_pdu_header)) {
@@ -100,15 +100,15 @@ bool E131InflatorRev2::DecodeHeader(HeaderSet *headers,
       m_last_header = header;
       m_last_header_valid = true;
       headers->SetE131Header(header);
-      bytes_used = sizeof(E131Rev2Header::e131_rev2_pdu_header);
+      *bytes_used = sizeof(E131Rev2Header::e131_rev2_pdu_header);
       return true;
     }
-    bytes_used = 0;
+    *bytes_used = 0;
     return false;
   }
 
   // use the last header if it exists
-  bytes_used = 0;
+  *bytes_used = 0;
   if (!m_last_header_valid) {
     OLA_WARN << "Missing E131 Header data";
     return false;

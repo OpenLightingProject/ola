@@ -35,7 +35,7 @@ std::string IPV4Address::ToString() const {
 
 IPV4Address* IPV4Address::FromString(const std::string &address) {
   struct in_addr addr;
-  if (!StringToAddress(address, addr))
+  if (!StringToAddress(address, &addr))
     return NULL;
 
   return new IPV4Address(addr);
@@ -44,7 +44,7 @@ IPV4Address* IPV4Address::FromString(const std::string &address) {
 
 bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   struct in_addr addr;
-  if (!StringToAddress(address, addr))
+  if (!StringToAddress(address, &addr))
     return false;
   *target = IPV4Address(addr);
   return true;
@@ -53,7 +53,7 @@ bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
 
 IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
   struct in_addr addr;
-  assert(StringToAddress(address, addr));
+  assert(StringToAddress(address, &addr));
   return IPV4Address(addr);
 }
 

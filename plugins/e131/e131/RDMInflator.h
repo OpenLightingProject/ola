@@ -55,7 +55,7 @@ class RDMInflator: public BaseInflator {
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
-                      unsigned int &bytes_used);
+                      unsigned int *bytes_used);
 
     void ResetHeaderField() {}  // namespace noop
 

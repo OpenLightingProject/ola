@@ -63,7 +63,7 @@ void IPAddressTest::testIPV4Address() {
   OLA_ASSERT_TRUE(wildcard_address.IsWildcard());
 
   struct in_addr in_addr1;
-  OLA_ASSERT_TRUE(ola::network::StringToAddress("192.168.1.1", in_addr1));
+  OLA_ASSERT_TRUE(ola::network::StringToAddress("192.168.1.1", &in_addr1));
   IPV4Address address1(in_addr1);
   OLA_ASSERT_EQ(in_addr1.s_addr, address1.Address().s_addr);
   OLA_ASSERT_NE(wildcard_address, address1);

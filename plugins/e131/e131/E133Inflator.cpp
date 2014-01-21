@@ -40,7 +40,7 @@ using ola::network::NetworkToHost;
 bool E133Inflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
-                                unsigned int &bytes_used) {
+                                unsigned int *bytes_used) {
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E133Header::e133_pdu_header)) {
@@ -54,15 +54,15 @@ bool E133Inflator::DecodeHeader(HeaderSet *headers,
       m_last_header = header;
       m_last_header_valid = true;
       headers->SetE133Header(header);
-      bytes_used = sizeof(E133Header::e133_pdu_header);
+      *bytes_used = sizeof(E133Header::e133_pdu_header);
       return true;
     }
-    bytes_used = 0;
+    *bytes_used = 0;
     return false;
   }
 
   // use the last header if it exists
-  bytes_used = 0;
+  *bytes_used = 0;
   if (!m_last_header_valid) {
     OLA_WARN << "Missing E1.33 Header data";
     return false;

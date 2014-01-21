@@ -254,7 +254,7 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
  */
 int ConnectedDescriptor::Receive(uint8_t *buffer,
                                  unsigned int size,
-                                 unsigned int &data_read) {
+                                 unsigned int &data_read) { // NOLINT
   int ret;
   uint8_t *data = buffer;
   data_read = 0;

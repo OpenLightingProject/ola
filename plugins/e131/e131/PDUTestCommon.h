@@ -158,12 +158,12 @@ class MockInflator: public BaseInflator {
 
  protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet *,
+    bool DecodeHeader(HeaderSet*,
                       const uint8_t *data,
                       unsigned int,
-                      unsigned int &bytes_used) {
+                      unsigned int *bytes_used) {
       if (data) {
-        bytes_used = 4;
+        *bytes_used = 4;
         memcpy(&m_last_header, data, sizeof(m_last_header));
       }
       return true;

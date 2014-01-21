@@ -232,7 +232,7 @@ const BaseDMPAddress *NewRangeAddress(unsigned int value,
 const BaseDMPAddress *DecodeAddress(dmp_address_size size,
                                     dmp_address_type type,
                                     const uint8_t *data,
-                                    unsigned int &length);
+                                    unsigned int *length);
 
 
 /*
