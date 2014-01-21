@@ -58,7 +58,7 @@ void DMPInflatorTest::testDecodeHeader() {
   uint8_t header_data = header.Header();
 
   OLA_ASSERT(inflator.DecodeHeader(&header_set, &header_data,
-                                   sizeof(header_data), bytes_used));
+                                   sizeof(header_data), &bytes_used));
   OLA_ASSERT_EQ((unsigned int) sizeof(header_data), bytes_used);
   DMPHeader decoded_header = header_set.GetDMPHeader();
   OLA_ASSERT(decoded_header.IsVirtual());
@@ -68,11 +68,11 @@ void DMPInflatorTest::testDecodeHeader() {
 
   // try an undersized header
   OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set, &header_data, 0,
-                                         bytes_used));
+                                         &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test inherting the header from the prev call
-  OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetDMPHeader();
   OLA_ASSERT(decoded_header.IsVirtual());
@@ -81,7 +81,7 @@ void DMPInflatorTest::testDecodeHeader() {
   OLA_ASSERT(TWO_BYTES == decoded_header.Size());
 
   inflator.ResetHeaderField();
-  OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set2, NULL, 0, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 }
 

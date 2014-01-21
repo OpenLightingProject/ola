@@ -264,7 +264,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
  */
 bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
-                         IPV4Address &source) const {
+                         IPV4Address &source) const {  // NOLINT
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
   bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);
@@ -285,8 +285,8 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
  */
 bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
-                         IPV4Address &source,
-                         uint16_t &port) const {
+                         IPV4Address &source,  // NOLINT
+                         uint16_t &port) const {  // NOLINT
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
   bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);

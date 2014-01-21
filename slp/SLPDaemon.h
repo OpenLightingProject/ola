@@ -97,41 +97,41 @@ class SLPDaemon {
      * The implementation of the SLP Service.
      */
     class SLPServiceImpl : public ola::slp::proto::SLPService {
-      public:
-        explicit SLPServiceImpl(SLPServer *server)
-            : m_slp_server(server) {
-        }
-        ~SLPServiceImpl() {}
+     public:
+      explicit SLPServiceImpl(SLPServer *server)
+          : m_slp_server(server) {
+      }
+      ~SLPServiceImpl() {}
 
-        void FindService(ola::rpc::RpcController* controller,
-                         const ola::slp::proto::ServiceRequest* request,
-                         ola::slp::proto::ServiceReply* response,
-                         CompletionCallback* done);
+      void FindService(ola::rpc::RpcController* controller,
+                       const ola::slp::proto::ServiceRequest* request,
+                       ola::slp::proto::ServiceReply* response,
+                       CompletionCallback* done);
 
-        void RegisterService(
-            ola::rpc::RpcController* controller,
-            const ola::slp::proto::ServiceRegistration* request,
-            ola::slp::proto::ServiceAck* response,
-            CompletionCallback* done);
+      void RegisterService(
+          ola::rpc::RpcController* controller,
+          const ola::slp::proto::ServiceRegistration* request,
+          ola::slp::proto::ServiceAck* response,
+          CompletionCallback* done);
 
-        void DeRegisterService(
-            ola::rpc::RpcController* controller,
-            const ola::slp::proto::ServiceDeRegistration* request,
-            ola::slp::proto::ServiceAck* response,
-            CompletionCallback* done);
+      void DeRegisterService(
+          ola::rpc::RpcController* controller,
+          const ola::slp::proto::ServiceDeRegistration* request,
+          ola::slp::proto::ServiceAck* response,
+          CompletionCallback* done);
 
-        void GetServerInfo(
-            ola::rpc::RpcController* controller,
-            const ola::slp::proto::ServerInfoRequest* request,
-            ola::slp::proto::ServerInfoReply* response,
-            CompletionCallback* done);
+      void GetServerInfo(
+          ola::rpc::RpcController* controller,
+          const ola::slp::proto::ServerInfoRequest* request,
+          ola::slp::proto::ServerInfoReply* response,
+          CompletionCallback* done);
 
-      private:
-        SLPServer *m_slp_server;
+     private:
+       SLPServer *m_slp_server;
 
-        void FindServiceHandler(ola::slp::proto::ServiceReply* response,
-                                CompletionCallback* done,
-                                const URLEntries &urls);
+       void FindServiceHandler(ola::slp::proto::ServiceReply* response,
+                               CompletionCallback* done,
+                               const URLEntries &urls);
     };
 
     typedef vector<class ConnectedClient*> DisconnectedClients;

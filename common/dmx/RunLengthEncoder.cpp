@@ -26,10 +26,10 @@ namespace dmx {
 
 bool RunLengthEncoder::Encode(const DmxBuffer &src,
                               uint8_t *data,
-                              unsigned int &data_size) {
+                              unsigned int *data_size) {
   unsigned int src_size = src.Size();
-  unsigned int dst_size = data_size;
-  unsigned int &dst_index = data_size;
+  unsigned int dst_size = *data_size;
+  unsigned int &dst_index = *data_size;
   dst_index = 0;
 
   unsigned int i;

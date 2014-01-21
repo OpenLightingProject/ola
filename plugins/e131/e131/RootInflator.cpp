@@ -37,18 +37,18 @@ namespace e131 {
 bool RootInflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
-                                unsigned int &bytes_used) {
+                                unsigned int *bytes_used) {
   if (data) {
     if (length >= CID::CID_LENGTH) {
       CID cid = CID::FromData(data);
       m_last_hdr.SetCid(cid);
       headers->SetRootHeader(m_last_hdr);
-      bytes_used = CID::CID_LENGTH;
+      *bytes_used = CID::CID_LENGTH;
       return true;
     }
     return false;
   }
-  bytes_used = 0;
+  *bytes_used = 0;
   if (m_last_hdr.GetCid().IsNil()) {
     OLA_WARN << "Missing CID data";
     return false;

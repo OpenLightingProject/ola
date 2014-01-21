@@ -37,7 +37,7 @@ namespace e131 {
 bool DMPInflator::DecodeHeader(HeaderSet *headers,
                                const uint8_t *data,
                                unsigned int length,
-                               unsigned int &bytes_used) {
+                               unsigned int *bytes_used) {
   if (data) {
     // the header bit was set, decode it
     if (length >= DMPHeader::DMP_HEADER_SIZE) {
@@ -45,15 +45,15 @@ bool DMPInflator::DecodeHeader(HeaderSet *headers,
       m_last_header = header;
       m_last_header_valid = true;
       headers->SetDMPHeader(header);
-      bytes_used = DMPHeader::DMP_HEADER_SIZE;
+      *bytes_used = DMPHeader::DMP_HEADER_SIZE;
       return true;
     }
-    bytes_used = 0;
+    *bytes_used = 0;
     return false;
   }
 
   // use the last header if it exists
-  bytes_used = 0;
+  *bytes_used = 0;
   if (!m_last_header_valid) {
     OLA_WARN << "Missing DMP Header data";
     return false;

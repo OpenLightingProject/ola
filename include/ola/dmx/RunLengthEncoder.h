@@ -51,7 +51,7 @@ class RunLengthEncoder {
    */
   bool Encode(const DmxBuffer &src,
               uint8_t *data,
-              unsigned int &size);
+              unsigned int *size);
 
   /**
    * Decode an DMX frame and place the output in a DmxBuffer

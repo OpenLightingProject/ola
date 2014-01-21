@@ -47,33 +47,33 @@ namespace ola {
 namespace acn {
 
 class CIDImpl {
-  public :
-    enum { CIDImpl_LENGTH = 16 };
+ public :
+  enum { CIDImpl_LENGTH = 16 };
 
-    CIDImpl();
-    CIDImpl(const CIDImpl& other);
-    ~CIDImpl();
+  CIDImpl();
+  CIDImpl(const CIDImpl& other);
+  ~CIDImpl();
 
-    bool IsNil() const;
-    void Pack(uint8_t *buf) const;
-    std::string ToString() const;
-    void Write(ola::io::OutputBufferInterface *output) const;
+  bool IsNil() const;
+  void Pack(uint8_t *buf) const;
+  std::string ToString() const;
+  void Write(ola::io::OutputBufferInterface *output) const;
 
-    CIDImpl& operator=(const CIDImpl& c1);
-    bool operator==(const CIDImpl& c1) const;
-    bool operator!=(const CIDImpl& c1) const;
+  CIDImpl& operator=(const CIDImpl& c1);
+  bool operator==(const CIDImpl& c1) const;
+  bool operator!=(const CIDImpl& c1) const;
 
-    static CIDImpl* Generate();
-    static CIDImpl* FromData(const uint8_t *data);
-    static CIDImpl* FromString(const std::string &cid);
+  static CIDImpl* Generate();
+  static CIDImpl* FromData(const uint8_t *data);
+  static CIDImpl* FromString(const std::string &cid);
 
  private:
 #ifdef USE_OSSP_UUID
-    uuid_t *m_uuid;
-    explicit CIDImpl(uuid_t *uuid);
+  uuid_t *m_uuid;
+  explicit CIDImpl(uuid_t *uuid);
 #else
-    uuid_t m_uuid;
-    explicit CIDImpl(uuid_t uuid);
+  uuid_t m_uuid;
+  explicit CIDImpl(uuid_t uuid);
 #endif
 };
 }  // namespace acn

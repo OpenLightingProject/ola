@@ -66,7 +66,7 @@ class RootInflator: public BaseInflator {
  protected:
   // Decode a header block and adds any PduHeaders to the HeaderSet object
   bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
-                    unsigned int len, unsigned int &bytes_used);
+                    unsigned int len, unsigned int *bytes_used);
 
   void ResetHeaderField();
   bool PostHeader(uint32_t vector, const HeaderSet &headers);
