@@ -133,20 +133,20 @@ class SLPServer {
      * A class that cleans up an operation when it goes out of scope.
      */
     class UnicastOperationDeleter {
-      public:
-        UnicastOperationDeleter(UnicastSrvRegOperation *op, SLPServer *server)
-          : op(op),
-            server(server) {
-        }
+     public:
+      UnicastOperationDeleter(UnicastSrvRegOperation *op, SLPServer *server)
+        : op(op),
+          server(server) {
+      }
 
-        // Cancel the clean up
-        void Cancel();
+      // Cancel the clean up
+      void Cancel();
 
-        ~UnicastOperationDeleter();
+      ~UnicastOperationDeleter();
 
-      private:
-        UnicastSrvRegOperation *op;
-        SLPServer *server;
+     private:
+      UnicastSrvRegOperation *op;
+      SLPServer *server;
     };
 
     // timing parameters

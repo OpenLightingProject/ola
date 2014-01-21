@@ -97,7 +97,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
     TCPSocket *m_connected_socket;
 
     void ConfirmState(unsigned int line,
-                      AdvancedTCPConnector &connector,
+                      const AdvancedTCPConnector &connector,
                       const IPV4SocketAddress &endpoint,
                       AdvancedTCPConnector::ConnectionState state,
                       unsigned int failed_attempts);
@@ -318,7 +318,7 @@ void AdvancedTCPConnectorTest::testEarlyDestruction() {
  */
 void AdvancedTCPConnectorTest::ConfirmState(
     unsigned int line,
-    AdvancedTCPConnector &connector,
+    const AdvancedTCPConnector &connector,
     const IPV4SocketAddress &endpoint,
     AdvancedTCPConnector::ConnectionState expected_state,
     unsigned int expected_attempts) {

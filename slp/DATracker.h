@@ -146,19 +146,19 @@ class DATracker {
 
  private:
     class InternalDirectoryAgent : public DirectoryAgent {
-      public:
-        InternalDirectoryAgent(): DirectoryAgent() {}
+     public:
+      InternalDirectoryAgent(): DirectoryAgent() {}
 
-        InternalDirectoryAgent(const ScopeSet &scopes,
-                               const string &url,
-                               const IPV4Address &address,
-                               uint32_t boot_timestamp)
-            : DirectoryAgent(scopes, url, address, boot_timestamp) {
-        }
+      InternalDirectoryAgent(const ScopeSet &scopes,
+                             const string &url,
+                             const IPV4Address &address,
+                             uint32_t boot_timestamp)
+          : DirectoryAgent(scopes, url, address, boot_timestamp) {
+      }
 
-        void SetBootTimestamp(uint32_t boot_timestamp) const {
-          m_boot_time = boot_timestamp;
-        }
+      void SetBootTimestamp(uint32_t boot_timestamp) const {
+        m_boot_time = boot_timestamp;
+      }
     };
 
     typedef map<string, InternalDirectoryAgent> DAMap;  // keyed by url

@@ -53,17 +53,17 @@ class ManagementEndpoint: public E133Endpoint {
      * The RDM Operations for the MovingLightResponder.
      */
     class RDMOps : public ola::rdm::ResponderOps<ManagementEndpoint> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+     public:
+      static RDMOps *Instance() {
+        if (!instance)
+          instance = new RDMOps();
+        return instance;
+      }
 
-      private:
-        RDMOps() : ola::rdm::ResponderOps<ManagementEndpoint>(PARAM_HANDLERS) {}
+     private:
+      RDMOps() : ola::rdm::ResponderOps<ManagementEndpoint>(PARAM_HANDLERS) {}
 
-        static RDMOps *instance;
+      static RDMOps *instance;
     };
 
     const ola::rdm::UID m_uid;

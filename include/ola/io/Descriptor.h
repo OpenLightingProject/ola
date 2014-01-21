@@ -182,7 +182,7 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
 
   virtual int Receive(uint8_t *buffer,
                       unsigned int size,
-                      unsigned int &data_read);
+                      unsigned int &data_read);  // NOLINT
 
   virtual bool SetReadNonBlocking() {
     return SetNonBlocking(ReadDescriptor());

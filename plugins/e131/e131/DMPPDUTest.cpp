@@ -104,7 +104,7 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
       vector == DMP_SET_PROPERTY_VECTOR) {
     unsigned int length = pdu_len;
     const BaseDMPAddress *addr = DecodeAddress(header.Size(), header.Type(),
-                                               data, length);
+                                               data, &length);
     OLA_ASSERT(addr);
     OLA_ASSERT_EQ(expected_start, addr->Start());
     OLA_ASSERT_EQ(expected_increment, addr->Increment());

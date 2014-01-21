@@ -45,7 +45,7 @@ class E133Inflator: public BaseInflator {
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
-                      unsigned int &bytes_used);
+                      unsigned int *bytes_used);
 
     void ResetHeaderField() {
       m_last_header_valid = false;

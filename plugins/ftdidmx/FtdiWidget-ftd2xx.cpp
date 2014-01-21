@@ -54,9 +54,9 @@ using std::string;
  * @return FT_OK if strings were extracted successfully
  */
 static FT_STATUS qlcftdi_get_strings(DWORD deviceIndex,
-                                     string& vendor,
-                                     string& description,
-                                     string& serial) {
+                                     string *vendor,
+                                     string *description,
+                                     string *serial) {
   char cVendor[256];
   char cVendorId[256];
   char cDescription[256];
@@ -78,9 +78,9 @@ static FT_STATUS qlcftdi_get_strings(DWORD deviceIndex,
   pData.SerialNumber = cSerial;
   status = FT_EE_Read(handle, &pData);
   if (status == FT_OK) {
-    vendor = string(cVendor);
-    description = string(cDescription);
-    serial = string(cSerial);
+    *vendor = string(cVendor);
+    *description = string(cDescription);
+    *serial = string(cSerial);
   }
 
   FT_Close(handle);
@@ -89,8 +89,8 @@ static FT_STATUS qlcftdi_get_strings(DWORD deviceIndex,
 }
 
 FtdiWidget::FtdiWidget(const string& serial,
-                             const string& name,
-                             uint32_t id)
+                       const string& name,
+                       uint32_t id)
   : m_serial(serial)
   , m_name(name)
   , m_id(id) {
@@ -123,7 +123,7 @@ void FtdiWidget::Widgets(FtdiWidgetInfoVector *widgets) {
     for (DWORD i = 0; i < num; i++) {
       string vendor, description, serial;
 
-      if (qlcftdi_get_strings(i, vendor, description, serial) != FT_OK)
+      if (qlcftdi_get_strings(i, &vendor, &description, &serial) != FT_OK)
         continue;
 
       if (vendor.toUpper().contains("FTDI") == true)

@@ -88,11 +88,11 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
-                          IPV4Address &source) const = 0;
+                          IPV4Address &source) const = 0;  // NOLINT
     virtual bool RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
-                          IPV4Address &source,
-                          uint16_t &port) const = 0;
+                          IPV4Address &source,  // NOLINT
+                          uint16_t &port) const = 0;  // NOLINT
 
     virtual bool EnableBroadcast() = 0;
     virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
@@ -146,11 +146,11 @@ class UDPSocket: public UDPSocketInterface {
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  IPV4Address &source) const;
+                  IPV4Address &source) const;  // NOLINT
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  IPV4Address &source,
-                  uint16_t &port) const;
+                  IPV4Address &source,  // NOLINT
+                  uint16_t &port) const;  // NOLINT
 
     bool EnableBroadcast();
     bool SetMulticastInterface(const IPV4Address &iface);

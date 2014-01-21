@@ -34,7 +34,7 @@
 namespace ola {
 namespace network {
 
-bool StringToAddress(const std::string &address, struct in_addr &addr);
+bool StringToAddress(const std::string &address, struct in_addr *addr);
 std::string AddressToString(const struct in_addr &addr);
 
 bool IsBigEndian();
