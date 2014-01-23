@@ -129,9 +129,11 @@ class MockPDU: public PDU {
                    sizeof(header));
       unsigned int vector = HostToNetwork(TEST_DATA_VECTOR);
       stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-      PrependFlagsAndLength(stack,
-                            sizeof(data) + sizeof(header) + sizeof(vector),
-                            VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
+      PrependFlagsAndLength(
+          stack,
+          static_cast<unsigned int>(
+              sizeof(data) + sizeof(header) + sizeof(vector)),
+          VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
     }
 
     // This is used to id 'Mock' PDUs in the higher level protocol

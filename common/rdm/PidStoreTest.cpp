@@ -279,8 +279,7 @@ void PidStoreTest::testPidStoreLoad() {
 
   // this is ugly but it's a test
   const FieldDescriptorGroup *group_descriptor =
-    dynamic_cast<const FieldDescriptorGroup*>(
-        proxied_group);
+    dynamic_cast<const FieldDescriptorGroup*>(proxied_group);  // NOLINT
   OLA_ASSERT_TRUE(group_descriptor);
 
   // check all the group properties
