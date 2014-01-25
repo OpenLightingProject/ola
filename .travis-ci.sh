@@ -14,4 +14,4 @@ if [[ $CC = 'gcc' ]]; then
   fi;
 fi
 
-autoreconf -i && ./configure --enable-rdm-tests && make && make check
+route && autoreconf -i && ./configure --enable-rdm-tests && make && make check
