@@ -44,53 +44,53 @@ namespace rdm {
  * A simulated responder with no footprint and E1.37-2 support.
  */
 class NetworkResponder: public RDMControllerInterface {
-  public:
-    explicit NetworkResponder(const UID &uid);
-    ~NetworkResponder();
+ public:
+  explicit NetworkResponder(const UID &uid);
+  ~NetworkResponder();
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
-  private:
-    /**
-     * The RDM Operations for the NetworkResponder.
-     */
-    class RDMOps : public ResponderOps<NetworkResponder> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+ private:
+  /**
+   * The RDM Operations for the NetworkResponder.
+   */
+  class RDMOps : public ResponderOps<NetworkResponder> {
+   public:
+    static RDMOps *Instance() {
+      if (!instance)
+        instance = new RDMOps();
+        return instance;
+      }
 
-      private:
-        RDMOps() : ResponderOps<NetworkResponder>(PARAM_HANDLERS) {}
+   private:
+    RDMOps() : ResponderOps<NetworkResponder>(PARAM_HANDLERS) {}
 
-        static RDMOps *instance;
-    };
+    static RDMOps *instance;
+  };
 
-    const UID m_uid;
-    bool m_identify_mode;
-    std::auto_ptr<GlobalNetworkGetter> m_global_network_getter;
+  const UID m_uid;
+  bool m_identify_mode;
+  std::auto_ptr<GlobalNetworkGetter> m_global_network_getter;
 
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetProductDetailList(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-    const RDMResponse *GetListInterfaces(const RDMRequest *request);
-    const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
-    const RDMResponse *GetInterfaceHardwareAddressType1(
-        const RDMRequest *request);
-    const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
-    const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
-    const RDMResponse *GetDNSHostname(const RDMRequest *request);
-    const RDMResponse *GetDNSDomainName(const RDMRequest *request);
-    const RDMResponse *GetDNSNameServer(const RDMRequest *request);
+  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  const RDMResponse *GetProductDetailList(const RDMRequest *request);
+  const RDMResponse *GetIdentify(const RDMRequest *request);
+  const RDMResponse *SetIdentify(const RDMRequest *request);
+  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  const RDMResponse *GetListInterfaces(const RDMRequest *request);
+  const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
+  const RDMResponse *GetInterfaceHardwareAddressType1(
+      const RDMRequest *request);
+  const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
+  const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
+  const RDMResponse *GetDNSHostname(const RDMRequest *request);
+  const RDMResponse *GetDNSDomainName(const RDMRequest *request);
+  const RDMResponse *GetDNSNameServer(const RDMRequest *request);
 
-    static const ResponderOps<NetworkResponder>::ParamHandler PARAM_HANDLERS[];
+  static const ResponderOps<NetworkResponder>::ParamHandler PARAM_HANDLERS[];
 };
 }  // namespace rdm
 }  // namespace ola

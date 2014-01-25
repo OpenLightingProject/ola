@@ -708,7 +708,7 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   string label9 = "dns_via_ipv4_dhcp";
   CustomCapitalizeLabel(&label9);
   OLA_ASSERT_EQ(string("DNS Via IPV4 DHCP"), label9);
-};
+}
 
 
 void StringUtilsTest::testFormatData() {

@@ -108,7 +108,8 @@ const ResponderOps<NetworkResponder>::ParamHandler
  */
 class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
  public:
-  FakeGlobalNetworkGetter(vector<Interface> &interfaces,
+// Todo(Peter): fix the below line to remove the no lint as appropriate
+  FakeGlobalNetworkGetter(vector<Interface> &interfaces, // NOLINT
                           const IPV4Address ipv4_default_route,
                           const string &hostname,
                           const string &domain_name,
@@ -118,9 +119,9 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
         m_hostname(hostname),
         m_domain_name(domain_name),
         m_name_servers(name_servers) {
-    // Todo(Peter): should be FakeInterfacePicker when I can get it working
+    // Todo(Peter): fixme, should be FakeInterfacePicker when I get it working
     m_interface_picker.reset(InterfacePicker::NewPicker());
-    //m_interface_picker.reset(new FakeInterfacePicker(interfaces));
+    // m_interface_picker.reset(new FakeInterfacePicker(interfaces));
     if (interfaces.size() > 0) {}
   }
 
@@ -215,7 +216,8 @@ NetworkResponder::NetworkResponder(const UID &uid)
       "foo",
       "bar.com",
       name_servers));
-  //m_global_network_getter.reset(new RealGlobalNetworkGetter());
+  // Todo(Peter): fixme when I can get it working
+  // m_global_network_getter.reset(new RealGlobalNetworkGetter());
 }
 
 
