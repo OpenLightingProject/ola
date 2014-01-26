@@ -147,6 +147,9 @@ bool NameServers(std::vector<ola::network::IPV4Address> *name_servers);
  * Get the default route.
  * @param a pointer to the default route
  * @return true on success, false otherwise
+ * @note if it manages to fetch the route information and there isn't a route,
+ * it will return the special wildcard address, which can be tested for with
+ * IsWildcard().
  */
 bool DefaultRoute(ola::network::IPV4Address *default_route);
 }  // namespace network

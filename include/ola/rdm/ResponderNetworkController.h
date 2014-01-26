@@ -63,7 +63,11 @@ class GlobalNetworkGetter {
 
   /**
    * Get the IPv4 default route
-   * @return the machine's default route as an IPV4Address object
+   * @param[out] the machine's default route as an IPV4Address object
+   * @return true if we managed to fetch the default route, false otherwise
+   * @note if it manages to fetch the route information and there isn't a route,
+   * it will return the special wildcard address, which can be tested for with
+   * IsWildcard().
    */
   virtual bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route)
       const = 0;

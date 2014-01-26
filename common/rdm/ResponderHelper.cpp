@@ -755,9 +755,12 @@ const RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
   if (!global_network_getter->GetIPV4DefaultRoute(&default_route)) {
     return NackWithReason(request, NR_HARDWARE_FAULT);
   }
-  return GetIPV4Address(request,
-                        default_route,
-                        queued_message_count);
+  if (default_route.IsWildcard()) {
+    // No default route set, return special value
+    return GetUInt32Value(request, NO_DEFAULT_ROUTE, queued_message_count);
+  } else {
+    return GetIPV4Address(request, default_route, queued_message_count);
+  }
 }
 
 
