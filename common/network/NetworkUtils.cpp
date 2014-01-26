@@ -468,7 +468,7 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
       for (rtattr* rt_attr = reinterpret_cast<rtattr*>(RTM_RTA(rt_msg));
            RTA_OK(rt_attr, rt_len);
            rt_attr = RTA_NEXT(rt_attr, rt_len)) {
-        OLA_WARN << "Checking attr";
+        OLA_WARN << "Checking attr" << (int)(rt_attr->rta_type);
         switch (rt_attr->rta_type) {
           case RTA_OIF:
             OLA_WARN << "Index: " <<
@@ -488,6 +488,7 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
               OLA_WARN << "Default GW:";
             } else {
               invalidDefaultRoute = true;
+              OLA_WARN << "Default GW: Zero";
             }
             OLA_WARN << "Dest: " <<
                 static_cast<int>(
