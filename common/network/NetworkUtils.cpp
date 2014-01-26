@@ -444,8 +444,8 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
     return false;
   }
 
+  unsigned int routeCount = 0;
   bool foundDefaultRoute = false;
-  bool invalidDefaultRoute = false;
   in_addr *defaultRouteIp = new in_addr;
 
   // We have to convert the type of the NLMSG_OK length, as otherwise it
@@ -457,7 +457,6 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
     rtmsg* rt_msg = reinterpret_cast<rtmsg*>(NLMSG_DATA(nl_msg));
 
     foundDefaultRoute = false;
-    invalidDefaultRoute = false;
 
     OLA_WARN << "Checking msg";
 
@@ -468,11 +467,12 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
       for (rtattr* rt_attr = reinterpret_cast<rtattr*>(RTM_RTA(rt_msg));
            RTA_OK(rt_attr, rt_len);
            rt_attr = RTA_NEXT(rt_attr, rt_len)) {
-        OLA_WARN << "Checking attr" << (int)(rt_attr->rta_type);
+        OLA_WARN << "Checking attr " << static_cast<int>(rt_attr->rta_type);
         switch (rt_attr->rta_type) {
           case RTA_OIF:
             OLA_WARN << "Index: " <<
                 *(reinterpret_cast<int*>(RTA_DATA(rt_attr)));
+            routeCount++;
             break;
           case RTA_GATEWAY:
             OLA_WARN << "GW: " <<
@@ -486,9 +486,6 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
           case RTA_DST:
             if ((reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr == 0) {
               OLA_WARN << "Default GW:";
-            } else {
-              invalidDefaultRoute = true;
-              OLA_WARN << "Default GW: Zero";
             }
             OLA_WARN << "Dest: " <<
                 static_cast<int>(
@@ -499,11 +496,13 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
         }
       }
       OLA_WARN << "====================================";
-      if (foundDefaultRoute && !invalidDefaultRoute)
+      if (foundDefaultRoute)
         break;
     }
   }
   close(sd);
+
+  OLA_WARN << "Found " << routeCount << " routes";
 
   if (!foundDefaultRoute) {
     OLA_WARN << "Couldn't find default route";
