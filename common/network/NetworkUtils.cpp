@@ -505,8 +505,14 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
   OLA_WARN << "Found " << routeCount << " routes";
 
   if (!foundDefaultRoute) {
-    OLA_WARN << "Couldn't find default route";
-    return false;
+    if (routeCount > 0) {
+      OLA_WARN << "No default route found, but found " << routeCount
+               << " routes, so setting default route to zero";
+      defaultRouteIp->s_addr = 0;
+    } else {
+      OLA_WARN << "Couldn't find default route";
+      return false;
+    }
   }
 
   *default_route = IPV4Address(defaultRouteIp->s_addr);
