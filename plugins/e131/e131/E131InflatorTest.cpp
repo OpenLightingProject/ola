@@ -82,10 +82,11 @@ void E131InflatorTest::testDecodeRev2Header() {
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Universe());
 
   // try an undersized header
-  OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set,
-                                         reinterpret_cast<uint8_t*>(&header),
-                                         sizeof(header) - 1,
-                                         &bytes_used));
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(
+        &header_set,
+        reinterpret_cast<uint8_t*>(&header),
+        static_cast<unsigned int>(sizeof(header) - 1),
+        &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test inherting the header from the prev call
@@ -129,10 +130,11 @@ void E131InflatorTest::testDecodeHeader() {
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Universe());
 
   // try an undersized header
-  OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set,
-                                         reinterpret_cast<uint8_t*>(&header),
-                                         sizeof(header) - 1,
-                                         &bytes_used));
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(
+      &header_set,
+      reinterpret_cast<uint8_t*>(&header),
+      static_cast<unsigned int>(sizeof(header) - 1),
+      &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test inherting the header from the prev call
