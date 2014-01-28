@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 VERSION_FILE="include/ola/base/Version.h"
 
