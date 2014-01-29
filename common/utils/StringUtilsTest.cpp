@@ -15,7 +15,7 @@
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -267,6 +267,7 @@ void StringUtilsTest::testEscape() {
       result);
 }
 
+
 /**
  * Test encoding string
  */
@@ -287,6 +288,7 @@ void StringUtilsTest::testEncodeString() {
   s1 = string("newline" "\x00" "test", 12);
   OLA_ASSERT_EQ(string("newline\\x00test"), EncodeString(s1));
 }
+
 
 void StringUtilsTest::testStringToBool() {
   bool value;
@@ -315,6 +317,7 @@ void StringUtilsTest::testStringToBool() {
   OLA_ASSERT_TRUE(StringToBool("0", &value));
   OLA_ASSERT_EQ(value, false);
 }
+
 
 void StringUtilsTest::testStringToUInt() {
   unsigned int value;
@@ -705,9 +708,9 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   CustomCapitalizeLabel(&label8);
   OLA_ASSERT_EQ(string("Device RDM UID"), label8);
 
-  string label9 = "dns_via_dhcp";
+  string label9 = "dns_via_ipv4_dhcp";
   CustomCapitalizeLabel(&label9);
-  OLA_ASSERT_EQ(string("DNS Via DHCP"), label9);
+  OLA_ASSERT_EQ(string("DNS Via IPV4 DHCP"), label9);
 }
 
 
@@ -741,6 +744,7 @@ void StringUtilsTest::testFormatData() {
       str.str());
 }
 
+
 void StringUtilsTest::testStringJoin() {
   vector<int> ints;
   ints.push_back(1);
@@ -754,6 +758,7 @@ void StringUtilsTest::testStringJoin() {
   strings.push_back("three");
   OLA_ASSERT_EQ(string("one,two,three"), StringJoin(",", strings));
 }
+
 
 void StringUtilsTest::testReplaceAll() {
   string input = "";
@@ -782,4 +787,3 @@ void StringUtilsTest::testReplaceAll() {
   ReplaceAll(&input, "cd", "gh");
   OLA_ASSERT_EQ(string("abghefabghef"), input);
 }
-

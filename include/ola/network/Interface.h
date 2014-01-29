@@ -15,12 +15,23 @@
  *
  * Interface.h
  * Represents a network interface.
- * Copyright (C) 2010 Simon Newton
+ * Copyright (C) 2010-2014 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
 #define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
+#ifdef WIN32
+// TODO(Peter): Do something else
+#else
+#include <net/if_arp.h>
+#ifndef ARPHRD_VOID
+// Not defined on FreeBSD
+#define ARPHRD_VOID       0xFFFF        /* Void type, nothing is known.  */
+#endif  // ARPHRD_VOID
+#endif
+
+#include <stdint.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/MACAddress.h>
 #include <string>
@@ -35,23 +46,29 @@ using std::string;
  */
 class Interface {
  public:
-    Interface();
-    Interface(const string &name,
-              const IPV4Address &ip_address,
-              const IPV4Address &broadcast_address,
-              const IPV4Address &subnet_mask,
-              const MACAddress &hw_address,
-              bool loopback);
-    Interface(const Interface &other);
-    Interface& operator=(const Interface &other);
-    bool operator==(const Interface &other);
+  enum { DEFAULT_INDEX = -1 };
 
-    std::string name;
-    IPV4Address ip_address;
-    IPV4Address bcast_address;
-    IPV4Address subnet_mask;
-    MACAddress hw_address;
-    bool loopback;
+  Interface();
+  Interface(const string &name,
+            const IPV4Address &ip_address,
+            const IPV4Address &broadcast_address,
+            const IPV4Address &subnet_mask,
+            const MACAddress &hw_address,
+            bool loopback,
+            int32_t index = DEFAULT_INDEX,
+            uint16_t type = ARPHRD_VOID);
+  Interface(const Interface &other);
+  Interface& operator=(const Interface &other);
+  bool operator==(const Interface &other);
+
+  std::string name;
+  IPV4Address ip_address;
+  IPV4Address bcast_address;
+  IPV4Address subnet_mask;
+  MACAddress hw_address;
+  bool loopback;
+  int32_t index;
+  uint16_t type;
 };
 
 
@@ -60,44 +77,50 @@ class Interface {
  */
 class InterfaceBuilder {
  public:
-    InterfaceBuilder();
-    ~InterfaceBuilder() {}
+  InterfaceBuilder();
+  ~InterfaceBuilder() {}
 
-    void SetName(const string &name) { m_name = name; }
+  void SetName(const string &name) { m_name = name; }
 
-    bool SetAddress(const string &ip_address);
-    void SetAddress(const IPV4Address &ip_address) {
-      m_ip_address = ip_address;
-    }
+  bool SetAddress(const string &ip_address);
+  void SetAddress(const IPV4Address &ip_address) {
+    m_ip_address = ip_address;
+  }
 
-    bool SetBroadcast(const string &broadcast_address);
-    void SetBroadcast(const IPV4Address &broadcast_address) {
-      m_broadcast_address = broadcast_address;
-    }
+  bool SetBroadcast(const string &broadcast_address);
+  void SetBroadcast(const IPV4Address &broadcast_address) {
+    m_broadcast_address = broadcast_address;
+  }
 
-    bool SetSubnetMask(const string &mask);
-    void SetSubnetMask(const IPV4Address &mask) {
-      m_subnet_mask = mask;
-    }
+  bool SetSubnetMask(const string &mask);
+  void SetSubnetMask(const IPV4Address &mask) {
+    m_subnet_mask = mask;
+  }
 
-    void SetHardwareAddress(const MACAddress &mac_address) {
-      m_hw_address = mac_address;
-    }
+  void SetHardwareAddress(const MACAddress &mac_address) {
+    m_hw_address = mac_address;
+  }
 
-    void SetLoopback(bool loopback);
+  void SetLoopback(bool loopback);
 
-    void Reset();
-    Interface Construct();
+  void SetIndex(int32_t index);
+
+  void SetType(uint16_t type);
+
+  void Reset();
+  Interface Construct();
 
  private:
-    std::string m_name;
-    IPV4Address m_ip_address;
-    IPV4Address m_broadcast_address;
-    IPV4Address m_subnet_mask;
-    MACAddress m_hw_address;
-    bool m_loopback;
+  std::string m_name;
+  IPV4Address m_ip_address;
+  IPV4Address m_broadcast_address;
+  IPV4Address m_subnet_mask;
+  MACAddress m_hw_address;
+  bool m_loopback;
+  int32_t m_index;
+  uint16_t m_type;
 
-    bool SetAddress(const string &str, IPV4Address *target);
+  bool SetAddress(const string &str, IPV4Address *target);
 };
 }  // namespace network
 }  // namespace ola
