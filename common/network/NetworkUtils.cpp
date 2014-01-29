@@ -13,9 +13,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * NetworkUtils.h
+ * NetworkUtils.cpp
  * Abstract various network functions.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #if HAVE_CONFIG_H
@@ -23,10 +23,9 @@
 #endif
 
 #ifdef WIN32
-#include <winsock2.h>
 typedef uint32_t in_addr_t;
 #else
-#include <arpa/inet.h>
+#include <resolv.h>
 #endif
 
 #include <errno.h>
@@ -41,14 +40,16 @@ typedef uint32_t in_addr_t;
 #include "ola/StringUtils.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
+#include "ola/network/NetworkUtils.h"
 
 
 namespace ola {
 namespace network {
 
-/*
- * Convert a string to a struct in_addr
- */
+using ola::network::IPV4Address;
+using std::string;
+using std::vector;
+
 bool StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
 
@@ -72,9 +73,6 @@ string AddressToString(const struct in_addr &addr) {
 }
 
 
-/**
- * True if we're big endian, false otherwise.
- */
 bool IsBigEndian() {
 #ifdef HAVE_ENDIAN_H
   return BYTE_ORDER == __BIG_ENDIAN;
@@ -89,17 +87,11 @@ uint8_t NetworkToHost(uint8_t value) {
 }
 
 
-/*
- * Convert a uint16_t from network to host byte order
- */
 uint16_t NetworkToHost(uint16_t value) {
   return ntohs(value);
 }
 
 
-/*
- * Convert a uint32_t from network to host byte order
- */
 uint32_t NetworkToHost(uint32_t value) {
   return ntohl(value);
 }
@@ -110,17 +102,11 @@ int8_t NetworkToHost(int8_t value) {
 }
 
 
-/*
- * Convert a int16_t from network to host byte order
- */
 int16_t NetworkToHost(int16_t value) {
   return ntohs(value);
 }
 
 
-/*
- * Convert a int32_t from network to host byte order
- */
 int32_t NetworkToHost(int32_t value) {
   return ntohl(value);
 }
@@ -135,9 +121,7 @@ int8_t HostToNetwork(int8_t value) {
   return value;
 }
 
-/*
- * Convert a uint16_t from network to host byte order
- */
+
 uint16_t HostToNetwork(uint16_t value) {
   return htons(value);
 }
@@ -148,9 +132,6 @@ int16_t HostToNetwork(int16_t value) {
 }
 
 
-/*
- * Convert a uint32_t from host to network byte order
- */
 uint32_t HostToNetwork(uint32_t value) {
   return htonl(value);
 }
@@ -252,10 +233,29 @@ int32_t LittleEndianToHost(int32_t value) {
 }
 
 
-/*
- * Return the full hostname
- */
-string FullHostname() {
+string HostnameFromFQDN(const string &fqdn) {
+  string::size_type first_dot = fqdn.find_first_of(".");
+  if (first_dot == string::npos)
+    return fqdn;
+  return fqdn.substr(0, (first_dot));  // Don't return the dot itself
+}
+
+
+string DomainNameFromFQDN(const string &fqdn) {
+  string::size_type first_dot = string::npos;
+  first_dot = fqdn.find_first_of(".");
+  if (first_dot == string::npos)
+    return "";
+  return fqdn.substr(first_dot + 1);  // Don't return the dot itself
+}
+
+
+string DomainName() {
+  return DomainNameFromFQDN(FQDN());
+}
+
+
+string FQDN() {
 #ifdef _POSIX_HOST_NAME_MAX
   char hostname[_POSIX_HOST_NAME_MAX];
 #else
@@ -271,14 +271,34 @@ string FullHostname() {
 }
 
 
-/*
- * Return the hostname as a string.
- */
+string FullHostname() {
+  return FQDN();
+}
+
+
 string Hostname() {
-  string hostname = FullHostname();
-  std::vector<string> tokens;
-  StringSplit(hostname, tokens, ".");
-  return string(tokens[0]);
+  return HostnameFromFQDN(FQDN());
+}
+
+
+bool NameServers(vector<IPV4Address> *name_servers) {
+  // TODO(Peter): Do something on Windows
+  OLA_DEBUG << "Getting nameservers";
+
+  // Init the resolver info each time so it's always current for the RDM
+  // responders in case we've set it via RDM too
+  if (res_init() != 0) {
+    OLA_WARN << "Error getting nameservers";
+    return false;
+  }
+
+  for (int32_t i = 0; i < _res.nscount; i++) {
+    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr);
+    OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
+    name_servers->push_back(addr);
+  }
+
+  return true;
 }
 }  // namespace network
 }  // namespace ola
