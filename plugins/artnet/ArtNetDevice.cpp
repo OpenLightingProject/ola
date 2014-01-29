@@ -15,7 +15,7 @@
  *
  * artnetdevice.cpp
  * Art-Net device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  *
  * An Art-Net device is an instance of libartnet bound to a single IP address
  * Art-Net is limited to four ports per direction per IP, so in this case
@@ -102,10 +102,12 @@ bool ArtNetDevice::StartHook() {
   ola::network::Interface interface;
   auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
+  ola::network::InterfacePicker::ChooseInterfaceOptions options;
+  options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);
   if (!picker->ChooseInterface(
           &interface,
           m_preferences->GetValue(K_IP_KEY),
-          m_preferences->GetValueAsBool(K_LOOPBACK_KEY))) {
+          options)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
