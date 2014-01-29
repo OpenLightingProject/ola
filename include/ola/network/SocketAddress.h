@@ -18,6 +18,14 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+/**
+ * @addtogroup network
+ * @{
+ * @file SocketAddress.h
+ * @brief Represents Socket Addresses.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 #define INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 
@@ -30,11 +38,15 @@
 namespace ola {
 namespace network {
 
-using std::string;
+/**
+ * @addtogroup network
+ * @{
+ */
 
 /**
- * The base SocketAddress. One day if we support V6 there will be another
- * derived class.
+ * @brief The base SocketAddress.
+ *
+ * One day if we support V6 there will be another derived class.
  **/
 class SocketAddress {
  public:
@@ -42,15 +54,18 @@ class SocketAddress {
 
     virtual uint16_t Family() const = 0;
     virtual bool ToSockAddr(struct sockaddr *addr, unsigned int size) const = 0;
-    virtual string ToString() const = 0;
+    virtual std::string ToString() const = 0;
 
-    friend ostream& operator<< (ostream &out, const SocketAddress &address) {
+    friend std::ostream& operator<<(std::ostream &out,
+                                    const SocketAddress &address) {
       return out << address.ToString();
     }
 };
 
 
 /**
+ * @brief An IPv4 SocketAddress.
+ *
  * Wraps a sockaddr_in.
  */
 class IPV4SocketAddress: public SocketAddress {
@@ -103,9 +118,9 @@ class IPV4SocketAddress: public SocketAddress {
     uint16_t Port() const { return m_port; }
     void Port(uint16_t port) { m_port = port; }
 
-    string ToString() const;
+    std::string ToString() const;
 
-    static bool FromString(const string &str,
+    static bool FromString(const std::string &str,
                            IPV4SocketAddress *socket_address);
 
     // useful for testing
@@ -120,6 +135,8 @@ class IPV4SocketAddress: public SocketAddress {
 
 
 /**
+ * @brief a Generic Socket Address
+ *
  * Wraps a struct sockaddr.
  */
 class GenericSocketAddress: public SocketAddress {
@@ -151,7 +168,7 @@ class GenericSocketAddress: public SocketAddress {
       (void) size;
     }
 
-    string ToString() const;
+    std::string ToString() const;
 
     // Return a IPV4SocketAddress object, only valid if Family() is AF_INET
     IPV4SocketAddress V4Addr() const;
@@ -160,6 +177,9 @@ class GenericSocketAddress: public SocketAddress {
  private:
     struct sockaddr m_addr;
 };
+/**
+ * @}
+ */
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_

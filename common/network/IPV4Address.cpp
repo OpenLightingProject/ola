@@ -32,7 +32,6 @@ std::string IPV4Address::ToString() const {
   return AddressToString(m_address);
 }
 
-
 IPV4Address* IPV4Address::FromString(const std::string &address) {
   struct in_addr addr;
   if (!StringToAddress(address, &addr))
@@ -40,7 +39,6 @@ IPV4Address* IPV4Address::FromString(const std::string &address) {
 
   return new IPV4Address(addr);
 }
-
 
 bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   struct in_addr addr;
@@ -50,13 +48,11 @@ bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   return true;
 }
 
-
 IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
   struct in_addr addr;
   assert(StringToAddress(address, &addr));
   return IPV4Address(addr);
 }
-
 
 bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
   uint32_t netmask = NetworkToHost(address.AsInt());
@@ -76,7 +72,6 @@ bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
   *mask = bits;
   return true;
 }
-
 
 IPV4Address IPV4Address::Loopback() {
   return IPV4Address(HostToNetwork(0x7f000001));

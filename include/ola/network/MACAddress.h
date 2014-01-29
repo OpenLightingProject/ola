@@ -21,6 +21,14 @@
 #ifndef INCLUDE_OLA_NETWORK_MACADDRESS_H_
 #define INCLUDE_OLA_NETWORK_MACADDRESS_H_
 
+/**
+ * @addtogroup network
+ * @{
+ * @file MACAddress.h
+ * @brief Represents a MAC Address.
+ * @}
+ */
+
 #ifdef WIN32
 #include <winsock2.h>
 // TODO(Peter): Do something else, possibly define the type locally
@@ -46,8 +54,14 @@
 namespace ola {
 namespace network {
 
-/*
- * Represents a MAC Address.
+/**
+ * @addtogroup network
+ * @{
+ */
+
+/**
+ * @brief Represents a MAC Address.
+ *
  * All methods use network byte order unless otherwise mentioned.
  * TODO(Peter): Is the above actually true for MAC addresses?
  */
@@ -151,6 +165,9 @@ class MACAddress {
  private:
     struct ether_addr m_address;
 };
+/**
+ * @}
+ */
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_MACADDRESS_H_
