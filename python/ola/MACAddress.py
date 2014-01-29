@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # MACAddress.py
-# Copyright (C) 2013 Peter Newman
+# Copyright (C) 2013-2014 Peter Newman
 
 """The MACAddress class."""
 
@@ -28,7 +28,14 @@ class Error(Exception):
 
 class MACAddress(object):
   """Represents a MAC Address."""
+
   def __init__(self, mac_address):
+    """Create a new MAC Address object.
+
+    Args:
+      mac_address: The byte array representation of the MAC Address, e.g.
+      bytearray([0x01, 0x23, 0x45, 0x67, 0x89 0xab]).
+    """
     self._mac_address = mac_address
 
   @property
