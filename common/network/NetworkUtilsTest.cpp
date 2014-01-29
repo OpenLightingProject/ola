@@ -15,7 +15,7 @@
  *
  * NetworkUtilsTest.cpp
  * Test fixture for the NetworkUtils class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -125,6 +125,7 @@ void NetworkUtilsTest::testNameServers() {
   vector<IPV4Address> name_servers;
   OLA_ASSERT_TRUE(NameServers(&name_servers));
 }
+
 
 /*
  * Check that default route fetching returns true (it may not actually return

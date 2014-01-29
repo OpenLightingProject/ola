@@ -15,7 +15,7 @@
  *
  * NetworkUtils.h
  * Abstract various network functions.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
