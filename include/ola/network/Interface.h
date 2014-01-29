@@ -46,7 +46,7 @@ using std::string;
  */
 class Interface {
  public:
-  enum { DEFAULT_INDEX = 0 };
+  enum { DEFAULT_INDEX = -1 };
 
   Interface();
   Interface(const string &name,
