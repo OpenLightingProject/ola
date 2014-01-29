@@ -185,7 +185,7 @@ OSCNode::NodeOSCTarget::~NodeOSCTarget() {
  * Create a new OSCNode.
  * @param ss the SelectServer to use
  * @param export_map a pointer to an ExportMap (may be NULL)
- * @para options the OSCNodeOptions
+ * @param options the OSCNodeOptions
  */
 OSCNode::OSCNode(SelectServerInterface *ss,
                  ExportMap *export_map,
