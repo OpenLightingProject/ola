@@ -35,44 +35,68 @@ namespace ola {
 namespace network {
 
 
-/*
- * Chooses an interface
+/**
+ * @addtogroup network
+ * @{
+ */
+
+/**
+ * @brief Given some intial parameters, find the best network interface to use.
+ *
+ * The InterfacePicker tries to find a valid network interface that matches:
+ *  - an interface name i.e. eth0
+ *  - an IP address
+ *  - an index.
+ *
+ * If the requested interface can't be found, it can fall back to returning any
+ * configured interface.
  */
 class InterfacePicker {
  public:
-  struct ChooseInterfaceOptions {
+  struct Options {
    public:
     // Include the loopback interface when searching
     bool include_loopback;
+
     /**
      * True if we're only interested in the specific interface when
      * searching, false to ensure we return something even if we didn't find a match
      */
     bool specific_only;
 
-    ChooseInterfaceOptions()
+    Options()
       : include_loopback(false),
         specific_only(false) {
     }
   };
 
+  /**
+   * @brief Constructor
+   */
   InterfacePicker() {}
+
+  /**
+   * @brief Destructor
+   */
   virtual ~InterfacePicker() {}
 
   // stupid windows, 'interface' seems to be a struct so we use iface here.
   bool ChooseInterface(
       Interface *iface,
       const std::string &ip_or_name,
-      const ChooseInterfaceOptions &options = ChooseInterfaceOptions()) const;
+      const Options &options = Options()) const;
   bool ChooseInterface(
       Interface *iface,
       int32_t index,
-      const ChooseInterfaceOptions &options = ChooseInterfaceOptions()) const;
+      const Options &options = Options()) const;
 
   virtual std::vector<Interface> GetInterfaces(bool include_loopback) const = 0;
 
   static InterfacePicker *NewPicker();
 };
+/**
+ * @}
+ */
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_

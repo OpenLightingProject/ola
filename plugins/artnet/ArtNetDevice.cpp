@@ -102,7 +102,7 @@ bool ArtNetDevice::StartHook() {
   ola::network::Interface interface;
   auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-  ola::network::InterfacePicker::ChooseInterfaceOptions options;
+  ola::network::InterfacePicker::Options options;
   options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);
   if (!picker->ChooseInterface(
           &interface,
