@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # MACAddressTest.py
-# Copyright (C) 2013 Peter Newman
+# Copyright (C) 2013-2014 Peter Newman
 
 """Test cases for the MACAddress class."""
 
@@ -30,14 +30,13 @@ class MACAddressTest(unittest.TestCase):
     self.assertEquals(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
     self.assertEquals('01:23:45:67:89:ab', str(mac))
 
-#TODO(Peter): Do these
-#    self.assertTrue(uid > None)
-#    uid2 = UID(0x707a, 0x12345679)
-#    self.assertTrue(uid2 > uid)
-#    uid3 = UID(0x7079, 0x12345678)
-#    self.assertTrue(uid > uid3)
-#    uids = [uid, uid2, uid3]
-#    self.assertEquals([uid3, uid, uid2], sorted(uids))
+    self.assertTrue(mac > None)
+    mac2 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xcd]))
+    self.assertTrue(mac2 > mac)
+    mac3 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x88, 0xab]))
+    self.assertTrue(mac > mac3)
+    macs = [mac, mac2, mac3]
+    self.assertEquals([mac3, mac, mac2], sorted(macs))
 
   def testFromString(self):
     self.assertEquals(None, MACAddress.FromString(''))
@@ -56,15 +55,14 @@ class MACAddressTest(unittest.TestCase):
     self.assertEquals(b'\x98\x76\x54\xfe\xdc\xba', bytes(mac2.mac_address))
     self.assertEquals('98:76:54:fe:dc:ba', str(mac2))
 
-#TODO(Peter): Do these
-#  def testSorting(self):
-#    u1 = UID(0x4845, 0xfffffffe)
-#    u2 = UID(0x4845, 0x0000022e)
-#    u3 = UID(0x4844, 0x0000022e)
-#    u4 = UID(0x4846, 0x0000022e)
-#    uids = [u1, u2, u3, u4]
-#    uids.sort()
-#    self.assertEquals([u3, u2, u1, u4], uids)
+  def testSorting(self):
+    m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
+    m2 = MACAddress(bytearray([0x48, 0x45, 0x00, 0x00, 0x02, 0x2e]))
+    m3 = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
+    m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
+    macs = [m1, m2, m3, m4]
+    macs.sort()
+    self.assertEquals([m3, m2, m1, m4], macs)
 
 if __name__ == '__main__':
   unittest.main()
