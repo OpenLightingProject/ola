@@ -15,7 +15,7 @@
  *
  * Interface.cpp
  * Represents network interface.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #include <stdint.h>

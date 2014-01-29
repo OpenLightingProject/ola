@@ -15,7 +15,7 @@
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -267,6 +267,7 @@ void StringUtilsTest::testEscape() {
       result);
 }
 
+
 /**
  * Test encoding string
  */
@@ -287,6 +288,7 @@ void StringUtilsTest::testEncodeString() {
   s1 = string("newline" "\x00" "test", 12);
   OLA_ASSERT_EQ(string("newline\\x00test"), EncodeString(s1));
 }
+
 
 void StringUtilsTest::testStringToBool() {
   bool value;
@@ -315,6 +317,7 @@ void StringUtilsTest::testStringToBool() {
   OLA_ASSERT_TRUE(StringToBool("0", &value));
   OLA_ASSERT_EQ(value, false);
 }
+
 
 void StringUtilsTest::testStringToUInt() {
   unsigned int value;
@@ -756,6 +759,7 @@ void StringUtilsTest::testStringJoin() {
   OLA_ASSERT_EQ(string("one,two,three"), StringJoin(",", strings));
 }
 
+
 void StringUtilsTest::testReplaceAll() {
   string input = "";
   ReplaceAll(&input, "", "");
@@ -783,4 +787,3 @@ void StringUtilsTest::testReplaceAll() {
   ReplaceAll(&input, "cd", "gh");
   OLA_ASSERT_EQ(string("abghefabghef"), input);
 }
-

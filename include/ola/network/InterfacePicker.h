@@ -15,7 +15,7 @@
  *
  * InterfacePicker.h
  * Choose an interface to listen on
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_

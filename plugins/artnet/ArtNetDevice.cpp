@@ -15,7 +15,7 @@
  *
  * artnetdevice.cpp
  * Art-Net device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  *
  * An Art-Net device is an instance of libartnet bound to a single IP address
  * Art-Net is limited to four ports per direction per IP, so in this case

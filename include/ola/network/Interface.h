@@ -15,7 +15,7 @@
  *
  * Interface.h
  * Represents a network interface.
- * Copyright (C) 2010 Simon Newton
+ * Copyright (C) 2010-2014 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
@@ -46,7 +46,7 @@ using std::string;
  */
 class Interface {
  public:
-  enum { DEFAULT_INDEX = 0 };
+  enum { DEFAULT_INDEX = -1 };
 
   Interface();
   Interface(const string &name,

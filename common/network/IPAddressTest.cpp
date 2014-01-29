@@ -15,7 +15,7 @@
  *
  * IPAddressTest.cpp
  * Test fixture for the IPV4Address class
- * Copyright (C) 2011 Simon Newton
+ * Copyright (C) 2011-2014 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

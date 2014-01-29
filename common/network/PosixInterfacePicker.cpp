@@ -15,7 +15,7 @@
  *
  * PosixInterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #if HAVE_CONFIG_H
@@ -189,7 +189,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
 #ifdef SIOCGIFHWADDR
     if (ifrcopy.ifr_flags & SIOCGIFHWADDR) {
       if (ioctl(sd, SIOCGIFHWADDR, &ifrcopy) < 0) {
-        OLA_WARN << "ioctl error" << strerror(errno);
+        OLA_WARN << "ioctl error " << strerror(errno);
       } else {
         interface.type = ifrcopy.ifr_hwaddr.sa_family;
         // TODO(Peter): We probably shouldn't do this if it's not ARPHRD_ETHER
@@ -200,10 +200,10 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
 #endif
 
     // fetch index
-#ifdef SIOGIFINDEX
-    if (ifrcopy.ifr_flags & SIOGIFINDEX) {
-      if (ioctl(sd, SIOGIFINDEX, &ifrcopy) < 0) {
-        OLA_WARN << "ioctl error" << strerror(errno);
+#ifdef SIOCGIFINDEX
+    if (ifrcopy.ifr_flags & SIOCGIFINDEX) {
+      if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
+        OLA_WARN << "ioctl error " << strerror(errno);
       } else {
         interface.index = ifrcopy.ifr_ifindex;
       }
