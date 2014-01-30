@@ -47,7 +47,7 @@ class DiscoveryAgentInterface {
      */
     struct RegisterOptions {
       /**
-       * @typdef The data type that stores the key : values for the TXT record.
+       * @typedef The data type that stores the key : values for the TXT record.
        */
       typedef std::map<std::string, std::string> TxtData;
 
