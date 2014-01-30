@@ -618,7 +618,7 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
   }
 
   Interface *interface = new Interface();
-  InterfacePicker::ChooseInterfaceOptions options;
+  InterfacePicker::Options options;
   options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
@@ -662,7 +662,7 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
   }
 
   Interface *interface = new Interface();
-  InterfacePicker::ChooseInterfaceOptions options;
+  InterfacePicker::Options options;
   options.specific_only = true;
   if (!global_network_getter->GetInterfacePicker()->ChooseInterface(
       interface, static_cast<int32_t>(index), options)) {
@@ -703,7 +703,7 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
   }
 
   Interface *interface = new Interface();
-  InterfacePicker::ChooseInterfaceOptions options;
+  InterfacePicker::Options options;
   options.specific_only = true;
   // TODO(Peter): For some reason reinterpret_cast throws an error, despite the
   // fact we're not losing precision
