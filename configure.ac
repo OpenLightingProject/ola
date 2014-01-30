@@ -60,6 +60,13 @@ AC_CHECK_HEADERS([arpa/inet.h assert.h endian.h errno.h execinfo.h fcntl.h \
                   sys/uio.h sysexits.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([random])
 
+# These both need sa_family_t from bits/sockaddr.h
+AC_CHECK_HEADERS([bits/sockaddr.h linux/netlink.h linux/rtnetlink.h], [], [],
+                 [[#ifdef HAVE_BITS_SOCKADDR_H
+                     #include <bits/sockaddr.h>
+                   #endif
+                  ]])
+
 AC_PROG_LIBTOOL
 
 # windows platform support

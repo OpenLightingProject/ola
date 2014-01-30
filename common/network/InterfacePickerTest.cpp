@@ -25,11 +25,13 @@
 #include <string>
 #include <vector>
 
+#include "common/network/FakeInterfacePicker.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
 
+using ola::network::FakeInterfacePicker;
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::network::InterfacePicker;
@@ -57,21 +59,6 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     }
 };
 
-
-class MockPicker: public InterfacePicker {
- public:
-    explicit MockPicker(const vector<Interface> &interfaces)
-        : InterfacePicker(),
-          m_interfaces(interfaces) {}
-
-    std::vector<Interface> GetInterfaces(bool loopback) const {
-      return m_interfaces;
-      (void) loopback;
-    }
- private:
-    const vector<Interface> &m_interfaces;
-};
-
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
 
 
@@ -87,9 +74,11 @@ void InterfacePickerTest::testGetInterfaces() {
   cout << endl;
   for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
     cout << iter->name << endl;
+    cout << " index: " << iter->index << endl;
     cout << " ip: " << iter->ip_address << endl;
     cout << " bcast: " << iter->bcast_address << endl;
     cout << " subnet: " << iter->subnet_mask << endl;
+    cout << " type: " << iter->type << endl;
     cout << " hw_addr: " << iter->hw_address << endl;
     cout << endl;
     cout << "---------------" << endl;
@@ -117,7 +106,7 @@ void InterfacePickerTest::testGetLoopbackInterfaces() {
 
 void InterfacePickerTest::testChooseInterface() {
   vector<Interface> interfaces;
-  MockPicker picker(interfaces);
+  FakeInterfacePicker picker(interfaces);
 
   // no interfaces
   Interface iface;

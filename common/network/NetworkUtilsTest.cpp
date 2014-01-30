@@ -36,6 +36,7 @@ using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::LittleEndianToHost;
 using ola::network::NameServers;
+using ola::network::DefaultRoute;
 using ola::network::NetworkToHost;
 
 using std::string;
@@ -47,6 +48,7 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToFromLittleEndian);
   CPPUNIT_TEST(testNameProcessing);
   CPPUNIT_TEST(testNameServers);
+  CPPUNIT_TEST(testDefaultRoute);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -54,6 +56,7 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
     void testToFromLittleEndian();
     void testNameProcessing();
     void testNameServers();
+    void testDefaultRoute();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
@@ -121,4 +124,14 @@ void NetworkUtilsTest::testNameProcessing() {
 void NetworkUtilsTest::testNameServers() {
   vector<IPV4Address> name_servers;
   OLA_ASSERT_TRUE(NameServers(&name_servers));
+}
+
+
+/*
+ * Check that default route fetching returns true (it may not actually return
+ * one)
+ */
+void NetworkUtilsTest::testDefaultRoute() {
+  IPV4Address default_route;
+  OLA_ASSERT_TRUE(DefaultRoute(&default_route));
 }
