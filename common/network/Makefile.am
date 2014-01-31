@@ -15,6 +15,8 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            SocketHelper.cpp \
                            TCPConnector.cpp \
                            TCPSocket.cpp
+libolanetwork_la_LIBADD = -lresolv
+
 
 if USING_WIN32
 libolanetwork_la_SOURCES += WindowsInterfacePicker.cpp
