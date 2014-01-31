@@ -11,7 +11,7 @@ EXTRA_DIST = Ola.proto
 BUILT_SOURCES = Ola.pb.cc Ola.pb.h OlaService.pb.h OlaService.pb.cpp
 
 Ola.pb.cc Ola.pb.h: Ola.proto
-	$(PROTOC)  --cpp_out ./ Ola.proto
+	$(PROTOC) --cpp_out ./ Ola.proto
 
 OlaService.pb.cpp OlaService.pb.h: Ola.proto
 	$(OLA_PROTOC)  --cppservice_out ./ Ola.proto

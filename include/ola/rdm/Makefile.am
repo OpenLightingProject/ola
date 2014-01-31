@@ -20,8 +20,8 @@ pkginclude_HEADERS = $(SOURCES) RDMResponseCodes.h
 pkgincludedir = $(includedir)/ola/rdm/
 
 
-RDMResponseCodes.h: ../../../common/protocol/Ola.proto
-	sh ./make_rdm_codes.sh
+RDMResponseCodes.h: make_rdm_codes.sh ../../../common/protocol/Ola.proto
+	sh $(srcdir)/make_rdm_codes.sh
 
 clean-local:
 	rm -f RDMResponseCodes.h

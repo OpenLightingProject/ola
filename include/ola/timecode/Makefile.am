@@ -7,8 +7,8 @@ pkgincludedir = $(includedir)/ola/timecode/
 
 EXTRA_DIST = $(SOURCES) make_timecode.sh
 
-TimeCodeEnums.h:
-	sh ./make_timecode.sh
+TimeCodeEnums.h: make_timecode.sh
+	sh $(srcdir)/make_timecode.sh
 
 clean-local:
 	rm -f TimeCodeEnums.h
