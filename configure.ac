@@ -22,13 +22,21 @@ AC_LIBTOOL_WIN32_DLL
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
+AC_TYPE_UID_T
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_INT8_T
 AC_TYPE_PID_T
-AC_HEADER_TIME
+AC_C_RESTRICT
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
 # Doxygen
@@ -659,113 +667,110 @@ _EOF_
   have_threads=$have_threads
 ])
 
-
-# output
-AC_CONFIG_FILES([
-    Makefile \
-    common/Makefile \
-    common/base/Makefile \
-    common/dmx/Makefile \
-    common/export_map/Makefile \
-    common/file/Makefile \
-    common/http/Makefile \
-    common/io/Makefile \
-    common/math/Makefile \
-    common/messaging/Makefile \
-    common/network/Makefile \
-    common/protocol/Makefile \
-    common/rdm/Makefile \
-    common/rdm/testdata/Makefile \
-    common/rdm/testdata/pids/Makefile \
-    common/rpc/Makefile \
-    common/system/Makefile \
-    common/testing/Makefile \
-    common/thread/Makefile \
-    common/timecode/Makefile \
-    common/utils/Makefile \
-    common/web/Makefile \
-    data/Makefile \
-    data/rdm/Makefile \
-    doxygen/Makefile \
-    doxygen/examples/Makefile \
-    examples/Makefile \
-    debian/Makefile \
-    include/Makefile \
-    include/ola/Makefile \
-    include/ola/acn/Makefile \
-    include/ola/base/Makefile \
-    include/ola/client/Makefile \
-    include/ola/dmx/Makefile \
-    include/ola/file/Makefile \
-    include/ola/e133/Makefile \
-    include/ola/http/Makefile \
-    include/ola/io/Makefile \
-    include/ola/math/Makefile \
-    include/ola/messaging/Makefile \
-    include/ola/network/Makefile \
-    include/ola/rdm/Makefile \
-    include/ola/slp/Makefile \
-    include/ola/stl/Makefile \
-    include/ola/system/Makefile \
-    include/ola/testing/Makefile \
-    include/ola/thread/Makefile \
-    include/ola/timecode/Makefile \
-    include/ola/util/Makefile \
-    include/ola/web/Makefile \
-    include/olad/Makefile \
-    java/Makefile \
-    man/Makefile \
-    ola/Makefile \
-    python/Makefile \
-    python/examples/Makefile \
-    python/ola/Makefile \
-    python/ola/rpc/Makefile \
-    olad/Makefile \
-    olad/testdata/Makefile \
-    olad/www/Makefile \
-    plugins/Makefile \
-    plugins/artnet/Makefile \
-    plugins/artnet/messages/Makefile \
-    plugins/artnet/messages/libolaartnetconf.pc \
-    plugins/dmx4linux/Makefile \
-    plugins/dummy/Makefile \
-    plugins/e131/Makefile \
-    plugins/e131/e131/Makefile \
-    plugins/e131/e131/libolaacn.pc \
-    plugins/e131/messages/Makefile \
-    plugins/e131/messages/libolae131conf.pc \
-    plugins/espnet/Makefile \
-    plugins/ftdidmx/Makefile \
-    plugins/karate/Makefile \
-    plugins/kinet/Makefile \
-    plugins/milinst/Makefile \
-    plugins/opendmx/Makefile \
-    plugins/osc/Makefile \
-    plugins/pathport/Makefile \
-    plugins/renard/Makefile \
-    plugins/sandnet/Makefile \
-    plugins/shownet/Makefile \
-    plugins/spi/Makefile \
-    plugins/stageprofi/Makefile \
-    plugins/usbdmx/Makefile \
-    plugins/usbpro/Makefile \
-    plugins/usbpro/messages/Makefile \
-    plugins/usbpro/messages/libolausbproconf.pc \
-    protoc/Makefile \
-    slp/Makefile \
-    slp/libolaslpclient.pc \
-    slp/libolaslpserver.pc \
-    tools/Makefile \
-    tools/ola_trigger/Makefile \
-    tools/e133/Makefile \
-    tools/e133/libolae133controller.pc \
-    tools/e133/libolae133common.pc \
-    tools/e133/libolae133slp.pc \
-    tools/logic/Makefile \
-    tools/rdm/Makefile \
-    tools/rdmpro/Makefile \
-    tools/usbpro/Makefile \
-    libola.pc \
-    libolaserver.pc \
-    ])
+AC_CONFIG_FILES([libola.pc
+                 libolaserver.pc
+                 plugins/artnet/messages/libolaartnetconf.pc
+                 plugins/e131/e131/libolaacn.pc
+                 plugins/e131/messages/libolae131conf.pc
+                 plugins/usbpro/messages/libolausbproconf.pc
+                 slp/libolaslpclient.pc
+                 slp/libolaslpserver.pc
+                 tools/e133/libolae133common.pc
+                 tools/e133/libolae133controller.pc
+                 tools/e133/libolae133slp.pc
+                 ])
+AC_CONFIG_FILES([Makefile
+                 common/Makefile
+                 common/base/Makefile
+                 common/dmx/Makefile
+                 common/export_map/Makefile
+                 common/file/Makefile
+                 common/http/Makefile
+                 common/io/Makefile
+                 common/math/Makefile
+                 common/messaging/Makefile
+                 common/network/Makefile
+                 common/protocol/Makefile
+                 common/rdm/Makefile
+                 common/rdm/testdata/Makefile
+                 common/rdm/testdata/pids/Makefile
+                 common/rpc/Makefile
+                 common/system/Makefile
+                 common/testing/Makefile
+                 common/thread/Makefile
+                 common/timecode/Makefile
+                 common/utils/Makefile
+                 common/web/Makefile
+                 data/Makefile
+                 data/rdm/Makefile
+                 debian/Makefile
+                 doxygen/Makefile
+                 doxygen/examples/Makefile
+                 examples/Makefile
+                 include/Makefile
+                 include/ola/Makefile
+                 include/ola/acn/Makefile
+                 include/ola/base/Makefile
+                 include/ola/client/Makefile
+                 include/ola/dmx/Makefile
+                 include/ola/e133/Makefile
+                 include/ola/file/Makefile
+                 include/ola/http/Makefile
+                 include/ola/io/Makefile
+                 include/ola/math/Makefile
+                 include/ola/messaging/Makefile
+                 include/ola/network/Makefile
+                 include/ola/rdm/Makefile
+                 include/ola/slp/Makefile
+                 include/ola/stl/Makefile
+                 include/ola/system/Makefile
+                 include/ola/testing/Makefile
+                 include/ola/thread/Makefile
+                 include/ola/timecode/Makefile
+                 include/ola/util/Makefile
+                 include/ola/web/Makefile
+                 include/olad/Makefile
+                 java/Makefile
+                 man/Makefile
+                 ola/Makefile
+                 olad/Makefile
+                 olad/testdata/Makefile
+                 olad/www/Makefile
+                 plugins/Makefile
+                 plugins/artnet/Makefile
+                 plugins/artnet/messages/Makefile
+                 plugins/dmx4linux/Makefile
+                 plugins/dummy/Makefile
+                 plugins/e131/Makefile
+                 plugins/e131/e131/Makefile
+                 plugins/e131/messages/Makefile
+                 plugins/espnet/Makefile
+                 plugins/ftdidmx/Makefile
+                 plugins/karate/Makefile
+                 plugins/kinet/Makefile
+                 plugins/milinst/Makefile
+                 plugins/opendmx/Makefile
+                 plugins/osc/Makefile
+                 plugins/pathport/Makefile
+                 plugins/renard/Makefile
+                 plugins/sandnet/Makefile
+                 plugins/shownet/Makefile
+                 plugins/spi/Makefile
+                 plugins/stageprofi/Makefile
+                 plugins/usbdmx/Makefile
+                 plugins/usbpro/Makefile
+                 plugins/usbpro/messages/Makefile
+                 protoc/Makefile
+                 python/Makefile
+                 python/examples/Makefile
+                 python/ola/Makefile
+                 python/ola/rpc/Makefile
+                 slp/Makefile
+                 tools/Makefile
+                 tools/e133/Makefile
+                 tools/logic/Makefile
+                 tools/ola_trigger/Makefile
+                 tools/rdm/Makefile
+                 tools/rdmpro/Makefile
+                 tools/usbpro/Makefile])
 AC_OUTPUT
