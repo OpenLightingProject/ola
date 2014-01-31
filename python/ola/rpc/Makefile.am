@@ -9,7 +9,7 @@ rpcpython_PYTHON = SimpleRpcController.py StreamRpcChannel.py __init__.py
 BUILT_SOURCES = Rpc_pb2.py
 
 Rpc_pb2.py: ${top_builddir}/common/rpc/Rpc.proto
-	protoc --python_out ./ -I ${top_builddir}/common/rpc/ ${top_builddir}/common/rpc/Rpc.proto
+	$(PROTOC) --python_out ./ -I ${top_builddir}/common/rpc/ ${top_builddir}/common/rpc/Rpc.proto
 
 clean-local:
 	rm -f Rpc_pb2.*
