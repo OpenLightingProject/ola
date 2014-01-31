@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(ola, m4_esyscmd([./version.sh | tr -d '\n']))
+AC_INIT([ola], m4_esyscmd([./version.sh | tr -d '\n']))
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
@@ -661,7 +661,8 @@ _EOF_
 
 
 # output
-AC_OUTPUT( Makefile \
+AC_CONFIG_FILES([
+    Makefile \
     common/Makefile \
     common/base/Makefile \
     common/dmx/Makefile \
@@ -766,4 +767,5 @@ AC_OUTPUT( Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \
-    )
+    ])
+AC_OUTPUT
