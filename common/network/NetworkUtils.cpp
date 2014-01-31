@@ -237,7 +237,7 @@ string HostnameFromFQDN(const string &fqdn) {
   string::size_type first_dot = fqdn.find_first_of(".");
   if (first_dot == string::npos)
     return fqdn;
-  return fqdn.substr(0, (first_dot));  // Don't return the dot itself
+  return fqdn.substr(0, first_dot);  // Don't return the dot itself
 }
 
 
@@ -283,7 +283,6 @@ string Hostname() {
 
 bool NameServers(vector<IPV4Address> *name_servers) {
   // TODO(Peter): Do something on Windows
-  OLA_DEBUG << "Getting nameservers";
 
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
