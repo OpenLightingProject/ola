@@ -127,11 +127,15 @@ class RDMCommand {
      * @returns A string containing the source and destination UIDS, transaction
      * number, port ID, Message count, Sub Device, Cmd Class, Param ID, Data,
      * and a raw string of the parameter data.
-     * @param out ostream to output to
-     * @param command is the RDMCommand to print
      */
     std::string ToString() const;
 
+    /**
+     * @brief Output an RDMCommand object to an ostream.
+     * @param out ostream to output to
+     * @param command is the RDMCommand to print
+     * @sa ToString()
+     */
     friend ostream& operator<< (ostream &out, const RDMCommand &command) {
       return out << command.ToString();
     }
@@ -179,7 +183,7 @@ class RDMCommand {
 
     /**
      * @brief Used to print the data in an RDM Command to a CommandPrinter
-     * @param print CommandPrinter wish will use the information
+     * @param printer CommandPrinter which will use the information
      * @param summarize enable a one line summary
      * @param unpack_param_data if the summary isn't enabled, this controls if
      * we unpack and display parameter data

@@ -55,7 +55,7 @@ struct OSCTarget {
   /**
    * @brief A helper function to write a OSCTarget to an ostream.
    * @param out the ostream
-   * @param uid the UID to write.
+   * @param target the OSCTarget to write.
    */
   friend std::ostream& operator<<(std::ostream &out, const OSCTarget &target) {
     return out << target.ToString();

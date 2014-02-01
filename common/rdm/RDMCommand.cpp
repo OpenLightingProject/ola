@@ -546,7 +546,7 @@ RDMResponse* RDMResponse::InflateFromData(const string &data,
  * This combines two RDMResponses into one. It's used to combine the data from
  * two responses in an ACK_OVERFLOW session together.
  * @param response1 the first response.
- * @param response1 the second response.
+ * @param response2 the second response.
  * @return A new response with the data from the first and second combined or
  * NULL if the size limit is reached.
  */
@@ -609,7 +609,7 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
  * Guess the type of an RDM message, so we know whether we should unpack it as
  * a request or response. This doesn't perform any data checking (that's left
  * to the Inflate* methods).
- * @param type a pointer to a rdm_message_type variable which is set to
+ * @param type_arg a pointer to a rdm_message_type variable which is set to
  * RDM_REQUEST or RDM_RESPONSE.
  * @param data a pointer to the rdm message (excluding the start code)
  * @param length length of the rdm data

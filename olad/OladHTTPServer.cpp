@@ -70,7 +70,7 @@ const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
  * @param export_map the ExportMap to display when /debug is called
  * @param client_socket A ConnectedDescriptor which is used to communicate with
  *   the server.
- * @param
+ * @param interface the network interface to bind to
  */
 OladHTTPServer::OladHTTPServer(ExportMap *export_map,
                                const OladHTTPServerOptions &options,
@@ -572,6 +572,7 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
 /**
  * Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
+ * @param plugin_id the plugin id.
  * @param description the plugin description.
  */
 void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
@@ -593,6 +594,7 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
  * Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
  * @param description the plugin description.
+ * @param state the state of the plugin.
  */
 void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
                                       string description,

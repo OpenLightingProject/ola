@@ -58,7 +58,7 @@ class RunLengthEncoder {
    * @param[in] start_channel the first channel for the RLE'ed data
    * @param[in] data the encoded frame.
    * @param[in] length the length of the encoded frame.
-   * @param[out] The DmxBuffer to store the frame in
+   * @param[out] output the DmxBuffer to store the frame in
    * @returns true if decoding was successful, false otherwise.
    */
   bool Decode(unsigned int start_channel,
