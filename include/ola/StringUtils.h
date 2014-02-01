@@ -338,7 +338,8 @@ bool PrefixedHexStringToInt(const std::string &input, int_type *output) {
 
 /**
  * @brief Join a vector of a type.
- * @param T can be any type for which the << operator is defined
+ * @param delim the delimiter to use between items in the vector
+ * @param input T can be any type for which the << operator is defined
  */
 template<typename T>
 std::string StringJoin(const std::string &delim, const T &input) {

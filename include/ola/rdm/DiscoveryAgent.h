@@ -21,7 +21,7 @@
 /**
  * @addtogroup rdm_controller
  * @{
- * @file DiscoveryAgent.h
+ * @file include/ola/rdm/DiscoveryAgent.h
  * @brief Implements the RDM Discovery algorithm
  * @}
  */

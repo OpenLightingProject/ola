@@ -74,7 +74,7 @@ UsbProWidgetInformation& UsbProWidgetInformation::operator=(
  * @param scheduler a SchedulingExecutorInterface to use to register events.
  * @param on_success A callback to run if discovery succeeds.
  * @param on_failure A callback to run if discovery fails.
- * @param timeout the time in ms between each discovery message.
+ * @param message_interval the time in ms between each discovery message.
  */
 UsbProWidgetDetector::UsbProWidgetDetector(
     ola::thread::SchedulingExecutorInterface *scheduler,

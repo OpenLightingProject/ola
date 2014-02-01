@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * opendmxdevice.h
+ * OpenDmxDevice.h
  * Interface for the Open DMX device
  * Copyright (C) 2005  Simon Newton
  */

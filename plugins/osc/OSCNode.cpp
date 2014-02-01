@@ -341,6 +341,7 @@ bool OSCNode::RemoveTarget(unsigned int group, const OSCTarget &target) {
 /**
  * Send the DMX data to all targets registered for this group.
  * @param group the group to send the data to
+ * @param data_format the format of data to send
  * @param dmx_data the DmxBuffer to send
  * @returns true if sucesfully sent, false if any error occured.
  */
@@ -375,7 +376,7 @@ bool OSCNode::SendData(unsigned int group, DataFormat data_format,
  * Register a callback to be run when we receive data for an address.
  * De-registration can be performed by passing NULL as a callback. Attempting
  * to register more than once on the same address will return false.
- * @param address the OSC address to register.
+ * @param osc_address the OSC address to register.
  * @param callback the callback to run, ownership is transferred. The callback
  *   can be set to NULL to de-register.
  * @returns false if callback was non-NULL, but the address was already
@@ -408,7 +409,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
 /**
  * Called by OSCDataHandler when there is new data.
  * @param osc_address the OSC address this data arrived on
- * @param data, the DmxBuffer containing the data.
+ * @param data the DmxBuffer containing the data.
  * @param size the number of slots.
  */
 void OSCNode::SetUniverse(const string &osc_address, const uint8_t *data,

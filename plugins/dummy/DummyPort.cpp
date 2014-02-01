@@ -73,10 +73,9 @@ void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
 /**
  * Create a new DummyPort
  * @param parent the parent device for this port
+ * @param option the config for the DummyPort such as the number of fake RDM
+ * devices to create
  * @param id the ID of this port
- * @param device_count the number of fake RDM devices to create
- * @param subdevice_count the number of subdevices each fake device should
- *   have.
  */
 DummyPort::DummyPort(DummyDevice *parent,
                      const Options &options,

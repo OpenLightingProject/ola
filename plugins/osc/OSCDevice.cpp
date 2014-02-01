@@ -41,8 +41,7 @@ const char OSCDevice::DEVICE_NAME[] = "OSC Device";
  * @param udp_port the UDP port to listen on
  * @param addresses a list of strings to use as OSC addresses for the input
  *   ports.
- * @param targets a vector-of-vectors of OSCTargets to use for the output
- *   ports.
+ * @param port_configs config to use for the ports
  */
 OSCDevice::OSCDevice(AbstractPlugin *owner,
                      PluginAdaptor *plugin_adaptor,

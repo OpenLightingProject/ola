@@ -108,7 +108,6 @@ class SlotData {
      * @param slot_type the secondary slot type
      * @param primary_slot the primary slot index.
      * @param default_slot_value the default value for the slot
-     * @param description the slot description
      * @returns a SlotData object.
      */
     static SlotData SecondarySlot(
