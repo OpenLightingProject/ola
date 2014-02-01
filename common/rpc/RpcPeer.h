@@ -59,7 +59,7 @@ class RpcPeer {
     /**
      * @brief A helper function to write a UID to an ostream.
      * @param out the ostream
-     * @param uid the UID to write.
+     * @param peer the RpcPeer to write.
      */
     friend ostream& operator<<(ostream &out, const RpcPeer &peer) {
       return out << peer.ToString();

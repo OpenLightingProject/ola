@@ -66,8 +66,8 @@ class Version {
    * @brief Check the running version is newer than or equal to a specific
    * version.
    * @param major the major version.
-   * @param major the minor version.
-   * @param major the revision.
+   * @param minor the minor version.
+   * @param revision the revision.
    * @return true if the running version is >= major.minor.revision.
    */
   static bool IsAtLeast(unsigned int major,

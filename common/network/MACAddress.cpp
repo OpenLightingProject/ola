@@ -54,7 +54,7 @@ string MACAddress::ToString() const {
 
 /**
  * Convert a string to a ether_addr struct
- * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
+ * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
  * 'nn.nn.nn.nn.nn.nn'
  * @param target a pointer to a ether_addr struct
  * @return true if it worked, false otherwise

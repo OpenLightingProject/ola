@@ -313,7 +313,7 @@ const string HTTPRequest::GetPostParameter(const string &key) const {
 
 /**
  * Set the content-type header
- * @param type, the content type
+ * @param type the content type
  * @return true if the header was set correctly, false otherwise
  */
 void HTTPResponse::SetContentType(const string &type) {
@@ -386,8 +386,7 @@ int HTTPResponse::Send() {
 
 /**
  * Setup the HTTP server.
- * @param port the port to listen on
- * @param data_dir the directory to serve static content from
+ * @param options the configuration options for the server
  */
 HTTPServer::HTTPServer(const HTTPServerOptions &options)
     : Thread(),

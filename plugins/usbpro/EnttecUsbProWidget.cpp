@@ -297,7 +297,7 @@ void EnttecPortImpl::RunIncrementalDiscovery(
 /**
  * Mute a responder
  * @param target the UID to mute
- * @param MuteDeviceCallback the callback to run once the mute request
+ * @param mute_complete the callback to run once the mute request
  * completes.
  */
 void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
@@ -314,7 +314,7 @@ void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
 
 /**
  * Unmute all responders
- * @param UnMuteDeviceCallback the callback to run once the unmute request
+ * @param unmute_complete the callback to run once the unmute request
  * completes.
  */
 void EnttecPortImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {

@@ -50,8 +50,7 @@ const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
  * Create a new IncommingStreamTransport.
  * @param inflator the inflator to call for each PDU
  * @param descriptor the descriptor to read from
- * @param ip_address the IP to use in the transport header
- * @param port the port to use in the transport header
+ * @param source the IP and port to use in the transport header
  */
 IncommingStreamTransport::IncommingStreamTransport(
     BaseInflator *inflator,
