@@ -114,7 +114,7 @@ string OpenDmxPlugin::Description() const {
 "--- Config file : ola-opendmx.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
-"The path to the open dmx usb device. Multiple entries are supported.\n"
+"The path to the Open DMX USB device. Multiple entries are supported.\n"
 "\n";
 }
 

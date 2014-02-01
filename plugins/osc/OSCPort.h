@@ -42,7 +42,7 @@ class OSCInputPort: public BasicInputPort {
  public:
     /**
      * Create an OSCInputPort.
-     * @param device the parent device
+     * @param parent the parent device
      * @param port_id the id for this port
      * @param plugin_adaptor a PluginAdaptor object, used by the base class.
      * @param node the OSCNode object to use
@@ -93,7 +93,6 @@ class OSCOutputPort: public BasicOutputPort {
      * @param device the parent device
      * @param port_id the id for this port
      * @param node the OSCNode object to use
-     * @param description the string description for this port.
      */
     OSCOutputPort(OSCDevice *device,
                   unsigned int port_id,

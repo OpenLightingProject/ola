@@ -138,7 +138,7 @@ std::string Hostname();
 
 /**
  * Get a vector of name server IP addresses.
- * @param a pointer to a vector of name servers to populate
+ * @param name_servers a pointer to a vector of name servers to populate
  * @return true on success, false otherwise
  */
 bool NameServers(std::vector<ola::network::IPV4Address> *name_servers);
