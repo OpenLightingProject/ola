@@ -3,16 +3,17 @@
 
 AC_PREREQ(2.57)
 AC_INIT([ola], m4_esyscmd([./version.sh | tr -d '\n']))
-AC_CONFIG_SRCDIR([configure.ac])
+AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
-AC_CONFIG_HEADERS(config.h)
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_LANG(C++)
 AC_PROG_CXX
+AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -20,11 +21,17 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_LIBTOOL_WIN32_DLL
 
+# Checks for header files.
+AC_HEADER_RESOLV
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
+                  linux/if_packet.h math.h net/ethernet.h \
+                  net/if_arp.h sys/types.h sys/uio.h sysexits.h])
+AC_CHECK_HEADERS([random])
+
 # Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_SIZE_T
-AC_TYPE_UID_T
 AC_HEADER_STDBOOL
-AC_C_CONST
+AC_TYPE_UID_T
 AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
@@ -39,16 +46,10 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
-# Doxygen
-DX_PDF_FEATURE(OFF)
-DX_PS_FEATURE(OFF)
-DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
-
 # Checks for library functions.
-AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_FORK
-AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MALLOC
+AC_FUNC_REALLOC
 AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_STAT
@@ -61,14 +62,13 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h assert.h endian.h errno.h execinfo.h fcntl.h \
-                  limits.h linux/if_packet.h math.h net/ethernet.h \
-                  net/if_arp.h netinet/in.h resolv.h stdint.h stdlib.h \
-                  string.h sys/ioctl.h sys/socket.h sys/time.h sys/types.h \
-                  sys/uio.h sysexits.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([random])
 
 AC_PROG_LIBTOOL
+
+# Doxygen
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
