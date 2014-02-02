@@ -30,11 +30,11 @@ typedef uint32_t in_addr_t;
 #include <resolv.h>
 #endif
 
-#ifdef HAVE_LINUX_NETLINK_H
-  #ifdef HAVE_LINUX_RTNETLINK_H
-    #include <linux/netlink.h>
-    #include <linux/rtnetlink.h>
-  #endif
+#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
+#else
+// Do something else if we don't have netlink/on Windows
 #endif
 
 #include <errno.h>
@@ -311,6 +311,7 @@ bool NameServers(vector<IPV4Address> *name_servers) {
 
 
 int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
+#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
   nlmsghdr* nl_hdr;
 
   unsigned int msglen = 0;
@@ -341,13 +342,21 @@ int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
            (static_cast<int>(nl_hdr->nlmsg_pid) != pid));
 
   return msglen;
+#else
+  // No netlink, can't do anything
+  (void) sd;
+  (void) *buf;
+  (void) bufsize;
+  (void) seq;
+  (void) pid;
+  return -1;
+#endif
 }
 
 
 bool DefaultRoute(ola::network::IPV4Address *default_route) {
+#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
   OLA_WARN << "Getting default route";
-  // TODO(Peter): Do something else on Windows/machines without netlink
-  (void) default_route;
 
   static const unsigned int BUFSIZE = 8192;
 
@@ -519,6 +528,13 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
   OLA_WARN << "Got default: " << *default_route;
 
   return true;
+#else
+  // TODO(Peter): Do something else on Windows/machines without netlink
+  // No netlink, can't do anything
+  (void) default_route;
+
+  return false;
+#endif
 }
 }  // namespace network
 }  // namespace ola
