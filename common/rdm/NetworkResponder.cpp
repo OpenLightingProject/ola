@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * NetworkResponder.cpp
- * Copyright (C) 2013 Peter Newman
+ * Copyright (C) 2013-2014 Peter Newman
  */
 
 #if HAVE_CONFIG_H
@@ -108,8 +108,7 @@ const ResponderOps<NetworkResponder>::ParamHandler
  */
 class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
  public:
-// Todo(Peter): fix the below line to remove the no lint as appropriate
-  FakeGlobalNetworkGetter(vector<Interface> &interfaces, // NOLINT
+  FakeGlobalNetworkGetter(const vector<Interface> &interfaces,
                           const IPV4Address ipv4_default_route,
                           const string &hostname,
                           const string &domain_name,
@@ -119,10 +118,7 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
         m_hostname(hostname),
         m_domain_name(domain_name),
         m_name_servers(name_servers) {
-    // Todo(Peter): fixme, should be FakeInterfacePicker when I get it working
-    m_interface_picker.reset(InterfacePicker::NewPicker());
-    // m_interface_picker.reset(new FakeInterfacePicker(interfaces));
-    if (interfaces.size() > 0) {}
+    m_interface_picker.reset(new FakeInterfacePicker(interfaces));
   }
 
   const ola::network::InterfacePicker *GetInterfacePicker() const;
@@ -142,11 +138,6 @@ class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
 
 
 const InterfacePicker *FakeGlobalNetworkGetter::GetInterfacePicker() const {
-  OLA_INFO << "Looking at get IF picker";
-  (void) m_interface_picker.get()->GetInterfaces(false);
-  OLA_INFO << "Got an IF picker";
-  OLA_INFO << "Found " << m_interface_picker.get()->GetInterfaces(false).size()
-      << " fake interfaces in IF picker fetch check";
   return m_interface_picker.get();
 }
 
@@ -192,18 +183,24 @@ NetworkResponder::NetworkResponder(const UID &uid)
   vector<Interface> interfaces;
 
   interfaces.push_back(Interface(
-      "eth1",
+      "eth0",
       IPV4Address::FromStringOrDie("10.0.0.20"),
       IPV4Address::FromStringOrDie("10.0.0.255"),
-      IPV4Address::FromStringOrDie("255.255.255.0"),
+      IPV4Address::FromStringOrDie("255.255.0.0"),
       MACAddress::FromStringOrDie("01:23:45:67:89:ab"),
       false,
-      1));
+      1,
+      ARPHRD_ETHER));
 
-  auto_ptr<InterfacePicker> test_picker;
-  test_picker.reset(new FakeInterfacePicker(interfaces));
-  OLA_INFO << "Found " << test_picker.get()->GetInterfaces(false).size() <<
-      " fake interfaces in test";
+  interfaces.push_back(Interface(
+      "eth2",
+      IPV4Address::FromStringOrDie("192.168.0.1"),
+      IPV4Address::FromStringOrDie("192.168.0.254"),
+      IPV4Address::FromStringOrDie("255.255.255.0"),
+      MACAddress::FromStringOrDie("45:67:89:ab:cd:ef"),
+      false,
+      2,
+      ARPHRD_ETHER));
 
   vector<IPV4Address> name_servers;
   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));
@@ -216,7 +213,7 @@ NetworkResponder::NetworkResponder(const UID &uid)
       "foo",
       "bar.com",
       name_servers));
-  // Todo(Peter): fixme when I can get it working
+  // Todo(Peter): remove this when I've finished testing everything
   // m_global_network_getter.reset(new RealGlobalNetworkGetter());
 }
 
