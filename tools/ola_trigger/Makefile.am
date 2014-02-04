@@ -33,9 +33,7 @@ lex.yy.cpp: config.lex
 config.tab.cpp config.tab.h: config.ypp
 	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp config.ypp
 
-clean-local:
-	rm -f lex.yy.cpp config.tab.cpp config.tab.h
-
+CLEANFILES = lex.yy.cpp config.tab.cpp config.tab.h
 
 # Test Programs
 if BUILD_TESTS

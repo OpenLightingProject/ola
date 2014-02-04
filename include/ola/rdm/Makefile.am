@@ -23,5 +23,4 @@ pkgincludedir = $(includedir)/ola/rdm/
 RDMResponseCodes.h: make_rdm_codes.sh ../../../common/protocol/Ola.proto
 	sh $(srcdir)/make_rdm_codes.sh
 
-clean-local:
-	rm -f RDMResponseCodes.h
+CLEANFILES = RDMResponseCodes.h
