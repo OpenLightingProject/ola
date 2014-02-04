@@ -188,8 +188,8 @@ void GroupSizeCalculator::PostVisit(
  * single instance of the group. This assumes that the group does not contain
  * any variable-sized groups but it may contain fixed sized nested groups.
  * @param descriptor the group descriptor
- * @param group_input_size the number of inputs required to build a single
- * instance of this group.
+ * @param token_count the number of inputs required to build a single instance
+ * of this group.
  * @return true if we could calculate the inputs required, false if this group
  * was of a variable size.
  */

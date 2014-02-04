@@ -189,7 +189,7 @@ const RootPidStore *RootPidStore::LoadFromDirectory(
 
 /**
  * Create a new PidStore
- * @param a list of PidDescriptors for this store.
+ * @param pids a list of PidDescriptors for this store.
  * @pre the names and values for the pids in the vector are unique.
  */
 PidStore::PidStore(const vector<const PidDescriptor*> &pids) {
@@ -216,7 +216,7 @@ PidStore::~PidStore() {
 
 /**
  * Return a list of all pids
- * @param a pointer to a vector in which to put the PidDescriptors.
+ * @param pids a pointer to a vector in which to put the PidDescriptors.
  */
 void PidStore::AllPids(vector<const PidDescriptor*> *pids) const {
   pids->reserve(pids->size() + m_pid_by_value.size());

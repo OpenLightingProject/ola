@@ -56,7 +56,7 @@ class TimeoutManager {
   /**
    * @brief Register a repeating timeout.
    * Returning false from the Callback will cancel this timer.
-   * @param TimeInterval the delay before the closure will be run.
+   * @param interval the delay before the closure will be run.
    * @param closure the closure to invoke when the event triggers. Ownership is
    * given up to the select server - make sure nothing else uses this Callback.
    * @returns the identifier for this timeout, this can be used to remove it
@@ -79,7 +79,7 @@ class TimeoutManager {
 
   /**
    * @brief Cancel a timeout.
-   * @param timeout_id the id of the timeout
+   * @param id the id of the timeout
    */
   void CancelTimeout(ola::thread::timeout_id id);
 

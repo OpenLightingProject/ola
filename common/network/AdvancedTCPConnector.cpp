@@ -35,7 +35,6 @@ using std::pair;
  * @param ss the SelectServerInterface to use for scheduling
  * @param socket_factory the factory to use for creating new sockets
  * @param connection_timeout the timeout for TCP connects
- * @param max_backoff the maximum time to wait between connects.
  */
 AdvancedTCPConnector::AdvancedTCPConnector(
     ola::io::SelectServerInterface *ss,

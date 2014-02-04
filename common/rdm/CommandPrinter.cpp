@@ -172,7 +172,7 @@ void CommandPrinter::DisplayResponse(const RDMResponse *response,
 
 /**
  * Write out a RDM discovery request
- * @param response the request to format
+ * @param request the request to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
