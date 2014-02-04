@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([ola], m4_esyscmd([./version.sh | tr -d '\n']))
+AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']))
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
@@ -774,3 +774,17 @@ AC_CONFIG_FILES([Makefile
                  tools/rdmpro/Makefile
                  tools/usbpro/Makefile])
 AC_OUTPUT
+
+echo \
+"-------------------------------------------------------
+${PACKAGE_NAME} Version ${PACKAGE_VERSION}
+
+Prefix: '${prefix}'
+Compiler: '${CXX} ${CXXFLAGS}'
+
+Now type 'make @<:@<target>@:>@'
+  where the optional <target> is:
+    all          - build everything
+    check        - run the tests
+    doxygen-doc  - generate the html documentation
+-------------------------------------------------------"
