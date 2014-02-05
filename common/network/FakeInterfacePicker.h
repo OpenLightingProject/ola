@@ -28,30 +28,27 @@ namespace ola {
 namespace network {
 
 
-using std::vector;
-
-
 /*
  * The InterfacePicker for dummy systems and testing
  */
 class FakeInterfacePicker: public InterfacePicker {
  public:
-  explicit FakeInterfacePicker(const vector<Interface> &interfaces)
+  explicit FakeInterfacePicker(const std::vector<Interface> &interfaces)
       : InterfacePicker(),
         m_interfaces(interfaces) {
-    OLA_INFO << "Started with " << interfaces.size() << " fake interfaces";
-    OLA_INFO << "Transfered to " << m_interfaces.size() << " fake interfaces";
   }
 
-  std::vector<Interface> GetInterfaces(bool loopback) const {
-    OLA_INFO << "Getting fake interfaces";
-    OLA_INFO << "Found " << m_interfaces.size() << " fake interfaces";
-    return m_interfaces;
-    (void) loopback;
+  std::vector<Interface> GetInterfaces(bool include_loopback) const {
+    if (include_loopback) {
+      return m_interfaces;
+    } else {
+      // Todo(Peter): Filter out loopback interfaces
+      return m_interfaces;
+    }
   }
 
  private:
-  const vector<Interface> &m_interfaces;
+  const std::vector<Interface> m_interfaces;
 };
 }  // namespace network
 }  // namespace ola

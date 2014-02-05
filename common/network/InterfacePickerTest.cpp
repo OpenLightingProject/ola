@@ -117,7 +117,9 @@ void InterfacePickerTest::testChooseInterface() {
   iface1.name = "eth0";
   OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
+
+  FakeInterfacePicker picker2(interfaces);
+  OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "192.168.1.1"));
   OLA_ASSERT_TRUE(iface1 == iface);
 
   // check that preferred works
@@ -125,17 +127,19 @@ void InterfacePickerTest::testChooseInterface() {
   iface2.name = "eth1";
   OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
   interfaces.push_back(iface2);
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
+
+  FakeInterfacePicker picker3(interfaces);
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "192.168.1.1"));
   OLA_ASSERT_TRUE(iface2 == iface);
 
   // now check for iface name
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "eth0"));
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth0"));
   OLA_ASSERT_TRUE(iface1 == iface);
 
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "eth1"));
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth1"));
   OLA_ASSERT_TRUE(iface2 == iface);
 
   // a invalid address should return the first one
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "foo"));
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo"));
   OLA_ASSERT_TRUE(iface1 == iface);
 }
