@@ -1,5 +1,2 @@
-SOURCES = Json.h JsonSections.h
-
-EXTRA_DIST = $(SOURCES)
-pkginclude_HEADERS = $(SOURCES)
 pkgincludedir = $(includedir)/ola/web/
+pkginclude_HEADERS = Json.h JsonSections.h
