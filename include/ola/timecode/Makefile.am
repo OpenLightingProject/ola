@@ -1,11 +1,11 @@
-SOURCES = TimeCode.h
-BUILT_SOURCES = TimeCodeEnums.h
-
-pkginclude_HEADERS = $(SOURCES) $(BUILT_SOURCES)
 pkgincludedir = $(includedir)/ola/timecode/
 
+BUILT_SOURCES = TimeCodeEnums.h
 
-EXTRA_DIST = $(SOURCES) make_timecode.sh
+pkginclude_HEADERS = TimeCode.h
+nodist_pkginclude_HEADERS = TimeCodeEnums.h
+
+EXTRA_DIST = make_timecode.sh
 
 TimeCodeEnums.h: make_timecode.sh
 	sh $(srcdir)/make_timecode.sh

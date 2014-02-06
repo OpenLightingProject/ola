@@ -1,12 +1,11 @@
 include $(top_srcdir)/common.mk
 
 DEPRECATED = OlaCallbackClient.h OlaDevice.h StreamingClient.h
-HEADER_FILES = AutoStart.h OlaClientWrapper.h common.h $(DEPRECATED)
 
 pkgincludedir = $(includedir)/ola
-pkginclude_HEADERS = $(HEADER_FILES)
+pkginclude_HEADERS = AutoStart.h OlaClientWrapper.h common.h $(DEPRECATED)
 
-EXTRA_DIST = $(HEADER_FILES) OlaClientCore.h common-h.in
+EXTRA_DIST = OlaClientCore.h common-h.in
 
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = AutoStart.cpp \
