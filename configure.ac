@@ -2,16 +2,17 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']))
+AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
+        [<open-lighting@googlegroups.com>])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE()
 
 # Checks for programs.
-AC_LANG(C++)
+AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_AWK
 AC_PROG_CC
