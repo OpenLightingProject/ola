@@ -35,8 +35,7 @@ RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                   $(libprotobuf_LIBS) \
                   ../libolacommon.la
 
-clean-local:
-	rm -f *.pb.{h,cc,cpp}
+CLEANFILES = *.pb.{h,cc,cpp}
 
 # this has the problem that it doesn't get rebuilt if a dependency changes.
 ../network/libnetwork.la:

@@ -16,5 +16,4 @@ Ola.pb.cc Ola.pb.h: Ola.proto
 OlaService.pb.cpp OlaService.pb.h: Ola.proto
 	$(OLA_PROTOC)  --cppservice_out ./ Ola.proto
 
-clean-local:
-	rm -f *.pb.{h,cc,cpp}
+CLEANFILES = *.pb.{h,cc,cpp}

@@ -11,8 +11,6 @@ BUILT_SOURCES = Rpc_pb2.py
 Rpc_pb2.py: ${top_builddir}/common/rpc/Rpc.proto
 	$(PROTOC) --python_out ./ -I ${top_builddir}/common/rpc/ ${top_builddir}/common/rpc/Rpc.proto
 
-clean-local:
-	rm -f Rpc_pb2.*
 
 TESTS_ENVIRONMENT = PYTHON=$(PYTHON)
 TESTS = SimpleRpcControllerTest.sh
@@ -20,3 +18,4 @@ TESTS = SimpleRpcControllerTest.sh
 endif
 
 EXTRA_DIST = SimpleRpcControllerTest.py SimpleRpcControllerTest.sh
+CLEANFILES = Rpc_pb2.*
