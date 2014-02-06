@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
-        [<open-lighting@googlegroups.com>])
+        [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
@@ -233,13 +233,13 @@ AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
 
 # LIBRARY: pthread
-AC_CHECK_HEADER([pthread.h],
-                [],
-                [AC_MSG_ERROR([Missing pthread, please install it])])
-AC_CHECK_LIB([pthread], [pthread_create], [use_lpthread="yes"])
-if test "${use_lpthread}" = "yes"; then
-  LIBS="-lpthread $LIBS"
-fi
+ACX_PTHREAD([
+             LIBS="$PTHREAD_LIBS $LIBS"
+             CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+             CXXFLAGS="$CXXFLAGS $PTHREAD_CXXFLAGS"
+             CC="$PTHREAD_CC"
+             CXX="$PTHREAD_CXX"],
+            [AC_MSG_ERROR([Missing pthread, please install it])])
 
 # LIBRARY: resolv
 SAVED_LDFLAGS=$LDFLAGS
