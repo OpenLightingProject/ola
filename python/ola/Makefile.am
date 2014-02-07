@@ -43,11 +43,11 @@ PidStoreLocation.py: ../../configure.ac
 Version.py: ../../configure.ac
 	echo "version = '${VERSION}'" > Version.py
 
-clean-local:
-	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* \
-      UsbProConfigMessages_pb2.* PidStoreLocation.py Version.py
-
 TESTS_ENVIRONMENT = PYTHONPATH=${top_builddir}/python
 TESTS = DUBDecoderTest.py MACAddressTest.py UIDTest.py
 
 endif
+
+CLEANFILES = ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* \
+             UsbProConfigMessages_pb2.* PidStoreLocation.py Version.py
+

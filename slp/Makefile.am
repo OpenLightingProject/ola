@@ -92,8 +92,7 @@ slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    libolaslpclient.la \
                    libolaslpcore.la
 
-clean-local:
-	rm -f *.pb.{h,cc,cpp} *.gcno *.gcda
+CLEANFILES = *.pb.{h,cc,cpp} *.gcno *.gcda
 
 # Tests
 if BUILD_TESTS

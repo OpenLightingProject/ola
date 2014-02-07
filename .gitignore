@@ -86,8 +86,6 @@ include/ola/timecode/TimeCodeEnums.h
 java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/
-ola/common.h
-ola/stamp-common
 olad/olad
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
