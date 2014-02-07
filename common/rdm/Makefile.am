@@ -73,5 +73,4 @@ Pids.pb.cc Pids.pb.h: Pids.proto
 TestService.pb.cc TestService.pb.h: TestService.proto
 	$(PROTOC) --cpp_out ./ TestService.proto
 
-clean-local:
-	rm -f *.pb.{h,cc}
+CLEANFILES = *.pb.{h,cc}

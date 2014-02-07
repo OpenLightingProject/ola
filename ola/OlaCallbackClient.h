@@ -26,7 +26,6 @@
 #include <ola/OlaDevice.h>
 #include <ola/client/Result.h>
 #include <ola/base/Macro.h>
-#include <ola/common.h>
 #include <ola/network/Socket.h>
 #include <ola/plugin_id.h>
 #include <ola/rdm/RDMAPIImplInterface.h>

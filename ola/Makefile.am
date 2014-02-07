@@ -3,9 +3,9 @@ include $(top_srcdir)/common.mk
 DEPRECATED = OlaCallbackClient.h OlaDevice.h StreamingClient.h
 
 pkgincludedir = $(includedir)/ola
-pkginclude_HEADERS = AutoStart.h OlaClientWrapper.h common.h $(DEPRECATED)
+pkginclude_HEADERS = AutoStart.h OlaClientWrapper.h $(DEPRECATED)
 
-EXTRA_DIST = OlaClientCore.h common-h.in
+EXTRA_DIST = OlaClientCore.h
 
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = AutoStart.cpp \
@@ -30,21 +30,3 @@ OlaClientTester_LDADD = $(COMMON_TESTING_LIBS) \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/olad/libolaserver.la \
                         ./libola.la
-
-## @end 1
-## @start 2
-# Regenerate common.h with config.status whenever common-h.in changes.
-common.h: stamp-common
-	@:
-stamp-common: $(srcdir)/common-h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS= CONFIG_OTHER=sic/common.h \
-	  $(SHELL) ./config.status
-	echo timestamp > $@
-## @end 2
-distclean-local:
-	rm -f $(builddir)/common.h $(builddir)/stamp-common
-
-# Don't distribute common.h, since it is build host dependent!
-dist-hook:
-	rm -f $(distdir)/common.h

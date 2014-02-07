@@ -1,6 +1,8 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = ArtnetConfigMessages.proto
+CLEANFILES = *.pb.{h,cc}
+
 pkgincludedir = $(includedir)/ola/artnet
 
 if USE_ARTNET
@@ -18,6 +20,5 @@ libolaartnetconf_la_LIBADD = $(libprotobuf_LIBS)
 ArtnetConfigMessages.pb.cc ArtnetConfigMessages.pb.h: ArtnetConfigMessages.proto
 	$(PROTOC) --cpp_out ./ ArtnetConfigMessages.proto
 
-clean-local:
-	rm -f *.pb.{h,cc}
 endif
+
