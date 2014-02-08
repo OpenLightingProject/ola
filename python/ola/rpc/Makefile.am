@@ -11,11 +11,13 @@ BUILT_SOURCES = Rpc_pb2.py
 Rpc_pb2.py: ${top_builddir}/common/rpc/Rpc.proto
 	$(PROTOC) --python_out ./ -I ${top_builddir}/common/rpc/ ${top_builddir}/common/rpc/Rpc.proto
 
+SimpleRpcControllerTest.sh: Makefile
+	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > SimpleRpcControllerTest.sh
+	chmod +x SimpleRpcControllerTest.sh
 
-TESTS_ENVIRONMENT = PYTHON=$(PYTHON)
 TESTS = SimpleRpcControllerTest.sh
 
 endif
 
-EXTRA_DIST = SimpleRpcControllerTest.py SimpleRpcControllerTest.sh
-CLEANFILES = Rpc_pb2.*
+EXTRA_DIST = SimpleRpcControllerTest.py
+CLEANFILES = Rpc_pb2.* SimpleRpcControllerTest.sh
