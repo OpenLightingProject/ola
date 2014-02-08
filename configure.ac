@@ -623,7 +623,8 @@ if test "${enable_root_check}" = "no"; then
            [Defined if olad is allowed to run as root])
 fi
 
-AC_CONFIG_FILES([libola.pc
+AC_CONFIG_FILES([Doxyfile
+                 libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
                  plugins/e131/e131/libolaacn.pc
