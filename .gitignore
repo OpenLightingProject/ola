@@ -13,6 +13,7 @@
 *.tar.gz
 *.trs
 *_pb2.py
+Doxyfile
 INSTALL
 Makefile
 Makefile.in
@@ -45,6 +46,7 @@ config/lt~obsolete.m4
 config/missing
 config/py-compile
 *Tester
+data/rdm/PidDataTest.sh
 debian/files
 debian/*.debhelper.log
 debian/*.substvars
