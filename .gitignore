@@ -13,6 +13,7 @@
 *.tar.gz
 *.trs
 *_pb2.py
+Doxyfile
 INSTALL
 Makefile
 Makefile.in
@@ -45,6 +46,7 @@ config/lt~obsolete.m4
 config/missing
 config/py-compile
 *Tester
+data/rdm/PidDataTest.sh
 debian/files
 debian/*.debhelper.log
 debian/*.substvars
@@ -94,6 +96,7 @@ plugins/e131/e131/e131_transmit_test
 protoc/ola_protoc
 python/ola/PidStoreLocation.py
 python/ola/Version.py
+python/ola/rpc/SimpleRpcControllerTest.sh
 slp/slp_client
 slp/slp_server
 tools/e133/e133_controller
