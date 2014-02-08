@@ -23,6 +23,7 @@ libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        ResponderSettings.cpp SensorResponder.cpp \
                        StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
                        UID.cpp VariableFieldSizeCalculator.cpp
+libolardm_la_CXXFLAGS = $(COMMON_CXXFLAGS) -DPID_DATA_DIR=\"$(piddatadir)\"
 
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)

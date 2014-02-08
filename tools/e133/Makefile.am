@@ -105,7 +105,6 @@ e133_receiver_LDADD += $(top_builddir)/plugins/spi/libolaspicore.la
 endif
 
 e133_monitor_SOURCES = e133-monitor.cpp
-e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_monitor_LDADD = $(top_builddir)/common/libolacommon.la \
                      $(top_builddir)/plugins/e131/e131/libolaacn.la \
                      libolae133slp.la \
@@ -114,7 +113,6 @@ e133_monitor_LDADD = $(top_builddir)/common/libolacommon.la \
 
 e133_controller_SOURCES = e133-controller.cpp
 # required for PID_DATA_FILE
-e133_controller_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_controller_LDADD = $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/plugins/e131/e131/libolae131core.la \
                         libolae133slp.la \

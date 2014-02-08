@@ -125,7 +125,7 @@ class StatusMessagePrinter: public MessagePrinter {
 
  protected:
   void PostStringHook() {
-    vector<status_message>::const_iterator iter = m_messages.begin();
+    std::vector<status_message>::const_iterator iter = m_messages.begin();
     for (; iter != m_messages.end(); ++iter) {
       if (!iter->status_type_defined ||
           iter->uint_offset != MAX_UINT_FIELDS ||
@@ -168,7 +168,7 @@ class StatusMessagePrinter: public MessagePrinter {
     status_message() : uint_offset(0), int_offset(0), status_type(0),
         status_type_defined(false) {}
   };
-  vector<status_message> m_messages;
+  std::vector<status_message> m_messages;
 };
 
 
@@ -351,7 +351,7 @@ class SlotInfoPrinter: public MessagePrinter {
 
  protected:
   void PostStringHook() {
-    vector<slot_info>::const_iterator iter = m_slot_info.begin();
+    std::vector<slot_info>::const_iterator iter = m_slot_info.begin();
     for (; iter != m_slot_info.end(); ++iter) {
       if (!iter->offset_defined ||
           !iter->type_defined ||
@@ -385,7 +385,7 @@ class SlotInfoPrinter: public MessagePrinter {
     slot_info() : offset(0), offset_defined(false), type(0),
         type_defined(false), label(0), label_defined(false) {}
   };
-  vector<slot_info> m_slot_info;
+  std::vector<slot_info> m_slot_info;
 };
 
 
