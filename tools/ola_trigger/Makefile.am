@@ -28,10 +28,10 @@ ola_trigger_LDADD = $(top_builddir)/common/libolacommon.la \
                     $(LEXLIB)
 
 lex.yy.cpp: config.lex
-	$(LEX) -olex.yy.cpp config.lex
+	$(LEX) -olex.yy.cpp $(srcdir)/config.lex
 
 config.tab.cpp config.tab.h: config.ypp
-	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp config.ypp
+	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp $(srcdir)/config.ypp
 
 CLEANFILES = lex.yy.cpp config.tab.cpp config.tab.h
 

@@ -12,13 +12,13 @@ BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h \
                 TestServiceService.pb.h TestServiceService.pb.cpp
 
 Rpc.pb.cc Rpc.pb.h: Rpc.proto
-	$(PROTOC) --cpp_out ./ Rpc.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/Rpc.proto
 
 TestService.pb.cc TestService.pb.h: TestService.proto
-	$(PROTOC) --cpp_out ./ TestService.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/TestService.proto
 
 TestServiceService.pb.cpp TestServiceService.pb.h: TestService.proto
-	$(OLA_PROTOC) --cppservice_out ./ TestService.proto
+	$(OLA_PROTOC) --cppservice_out ./ --proto_path $(srcdir) $(srcdir)/TestService.proto
 
 if BUILD_TESTS
 TESTS = RpcTester

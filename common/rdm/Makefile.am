@@ -7,6 +7,11 @@ EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
+Pids.pb.cc Pids.pb.h: Pids.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/Pids.proto
+
+CLEANFILES = *.pb.{h,cc}
+
 noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
@@ -67,11 +72,3 @@ RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RDMMessageTester_LDADD = $(COMMON_TEST_LDADD) \
                          ../messaging/libolamessaging.la \
                          ../network/libolanetwork.la
-
-Pids.pb.cc Pids.pb.h: Pids.proto
-	$(PROTOC) --cpp_out ./ Pids.proto
-
-TestService.pb.cc TestService.pb.h: TestService.proto
-	$(PROTOC) --cpp_out ./ TestService.proto
-
-CLEANFILES = *.pb.{h,cc}

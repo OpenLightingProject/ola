@@ -18,7 +18,7 @@ libolaartnetconf_la_LIBADD = $(libprotobuf_LIBS)
 
 
 ArtnetConfigMessages.pb.cc ArtnetConfigMessages.pb.h: ArtnetConfigMessages.proto
-	$(PROTOC) --cpp_out ./ ArtnetConfigMessages.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/ArtnetConfigMessages.proto
 
 endif
 
