@@ -51,14 +51,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-using std::vector;
-using ola::SingleUseCallback1;
-using ola::SingleUseCallback2;
-using ola::SingleUseCallback3;
-using ola::SingleUseCallback4;
-
-
 /*
  * Represents a Status Message
  */
@@ -84,7 +76,7 @@ typedef struct {
   uint32_t min_value;
   uint32_t default_value;
   uint32_t max_value;
-  string description;
+  std::string description;
 } ParameterDescriptor;
 
 
@@ -143,7 +135,7 @@ typedef struct {
   int16_t normal_min;
   int16_t normal_max;
   uint8_t recorded_value_support;
-  string description;
+  std::string description;
 } SensorDescriptor;
 
 
@@ -185,60 +177,63 @@ class QueuedMessageHandler {
                                     uint16_t device_count,
                                     bool list_changed) = 0;
     virtual void ProxiedDevices(const ResponseStatus &status,
-                                const vector<UID> &uids) = 0;
+                                const std::vector<UID> &uids) = 0;
     virtual void CommStatus(const ResponseStatus &status,
                             uint16_t short_message,
                             uint16_t length_mismatch,
                             uint16_t checksum_fail) = 0;
     virtual void StatusMessages(const ResponseStatus &status,
-                                const vector<StatusMessage> &messages) = 0;
+                                const std::vector<StatusMessage> &messages) = 0;
     virtual void StatusIdDescription(const ResponseStatus &status,
-                                     const string &status_id) = 0;
+                                     const std::string &status_id) = 0;
     virtual void SubDeviceReporting(const ResponseStatus &status,
                                     uint8_t status_type) = 0;
-    virtual void SupportedParameters(const ResponseStatus &status,
-                                     const vector<uint16_t> &parameters) = 0;
+    virtual void SupportedParameters(
+        const ResponseStatus &status,
+        const std::vector<uint16_t> &parameters) = 0;
     virtual void ParameterDescription(
         const ResponseStatus &status,
         const ParameterDescriptor &description) = 0;
     virtual void DeviceInfo(const ResponseStatus &status,
                             const DeviceDescriptor &device_info) = 0;
     virtual void ProductDetailIdList(const ResponseStatus &status,
-                                     const vector<uint16_t> &ids) = 0;
+                                     const std::vector<uint16_t> &ids) = 0;
     virtual void DeviceModelDescription(const ResponseStatus &status,
-                                        const string &description) = 0;
+                                        const std::string &description) = 0;
     virtual void ManufacturerLabel(const ResponseStatus &status,
-                                   const string &label) = 0;
+                                   const std::string &label) = 0;
     virtual void DeviceLabel(const ResponseStatus &status,
-                             const string &label) = 0;
+                             const std::string &label) = 0;
     virtual void FactoryDefaults(const ResponseStatus &status,
                                  bool using_defaults) = 0;
-    virtual void LanguageCapabilities(const ResponseStatus &status,
-                                      const vector<string> &langs) = 0;
+    virtual void LanguageCapabilities(
+        const ResponseStatus &status,
+        const std::vector<std::string> &langs) = 0;
     virtual void Language(const ResponseStatus &status,
-                          const string &language) = 0;
+                          const std::string &language) = 0;
     virtual void SoftwareVersionLabel(const ResponseStatus &status,
-                                      const string &label) = 0;
+                                      const std::string &label) = 0;
     virtual void BootSoftwareVersion(const ResponseStatus &status,
                                      uint32_t version) = 0;
     virtual void BootSoftwareVersionLabel(const ResponseStatus &status,
-                                          const string &label) = 0;
+                                          const std::string &label) = 0;
     virtual void DMXPersonality(const ResponseStatus &status,
                                 uint8_t current_personality,
                                 uint8_t personality_count) = 0;
     virtual void DMXPersonalityDescription(const ResponseStatus &status,
                                            uint8_t personality,
                                            uint16_t slots_requires,
-                                           const string &label) = 0;
+                                           const std::string &label) = 0;
     virtual void DMXAddress(const ResponseStatus &status,
                             uint16_t start_address) = 0;
     virtual void SlotInfo(const ResponseStatus &status,
-                          const vector<SlotDescriptor> &slots) = 0;
+                          const std::vector<SlotDescriptor> &slots) = 0;
     virtual void SlotDescription(const ResponseStatus &status,
                                  uint16_t slot_offset,
-                                 const string &description) = 0;
-    virtual void SlotDefaultValues(const ResponseStatus &status,
-                                   const vector<SlotDefault> &defaults) = 0;
+                                 const std::string &description) = 0;
+    virtual void SlotDefaultValues(
+        const ResponseStatus &status,
+        const std::vector<SlotDefault> &defaults) = 0;
     virtual void SensorDefinition(const ResponseStatus &status,
                                   const SensorDescriptor &descriptor) = 0;
     virtual void SensorValue(const ResponseStatus &status,
@@ -277,14 +272,14 @@ class QueuedMessageHandler {
                                  bool is_enabled) = 0;
     virtual void SelfTestDescription(const ResponseStatus &status,
                                      uint8_t self_test_number,
-                                     const string &description) = 0;
+                                     const std::string &description) = 0;
     virtual void PresetPlaybackMode(const ResponseStatus &status,
                                     uint16_t preset_mode,
                                     uint8_t level) = 0;
 
     virtual void DefaultHandler(const ResponseStatus &status,
                                 uint16_t pid,
-                                const string &data) = 0;
+                                const std::string &data) = 0;
 };
 
 
@@ -305,36 +300,36 @@ class RDMAPI {
     bool GetProxiedDeviceCount(
         unsigned int universe,
         const UID &uid,
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           bool> *callback,
-        string *error);
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                bool> *callback,
+        std::string *error);
 
     bool GetProxiedDevices(
         unsigned int universe,
         const UID &uid,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<UID>&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<UID>&> *callback,
+        std::string *error);
 
     // Network Managment Methods
     bool GetCommStatus(
         unsigned int universe,
         const UID &uid,
-        SingleUseCallback4<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           uint16_t,
-                           uint16_t> *callback,
-        string *error);
+        ola::SingleUseCallback4<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                uint16_t,
+                                uint16_t> *callback,
+        std::string *error);
 
     bool ClearCommStatus(
         unsigned int universe,
         const UID &uid,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     // There are two types of queued message calls, one that takes a
     // QueuedMessageHandler and the other than just takes a callback.
@@ -345,7 +340,7 @@ class RDMAPI {
         const UID &uid,
         rdm_status_type status_type,
         QueuedMessageHandler *handler,
-        string *error);
+        std::string *error);
 
     // When complete, the callback will be run. It's up to the caller to unpack
     // the message.
@@ -353,561 +348,569 @@ class RDMAPI {
         unsigned int universe,
         const UID &uid,
         rdm_status_type status_type,
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetStatusMessage(
         unsigned int universe,
         const UID &uid,
         rdm_status_type status_type,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<StatusMessage>&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<StatusMessage>&> *callback,
+        std::string *error);
 
     bool GetStatusIdDescription(
         unsigned int universe,
         const UID &uid,
         uint16_t status_id,
-        SingleUseCallback2<void, const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool ClearStatusId(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetSubDeviceReporting(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint8_t> *callback,
+        std::string *error);
 
     bool SetSubDeviceReporting(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         rdm_status_type status_type,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     // Information Methods
     bool GetSupportedParameters(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<uint16_t> &> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<uint16_t> &> *callback,
+        std::string *error);
 
     bool GetParameterDescription(
         unsigned int universe,
         const UID &uid,
         uint16_t pid,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const ParameterDescriptor&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const ParameterDescriptor&> *callback,
+        std::string *error);
 
     bool GetDeviceInfo(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const DeviceDescriptor&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DeviceDescriptor&> *callback,
+        std::string *error);
 
     bool GetProductDetailIdList(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<uint16_t> &> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<uint16_t> &> *callback,
+        std::string *error);
 
     bool GetDeviceModelDescription(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetManufacturerLabel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetDeviceLabel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool SetDeviceLabel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        const string &label,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        const std::string &label,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetFactoryDefaults(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           bool> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                bool> *callback,
+        std::string *error);
 
     bool ResetToFactoryDefaults(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetLanguageCapabilities(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<string>&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<std::string>&> *callback,
+        std::string *error);
 
     bool GetLanguage(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool SetLanguage(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        const string &language,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        const std::string &language,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetSoftwareVersionLabel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetBootSoftwareVersion(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint32_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
+        std::string *error);
 
     bool GetBootSoftwareVersionLabel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetDMXPersonality(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint8_t,
-                           uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint8_t> *callback,
+        std::string *error);
 
     bool SetDMXPersonality(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t personality,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetDMXPersonalityDescription(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t personality,
-        SingleUseCallback4<void,
-                           const ResponseStatus&,
-                           uint8_t,
-                           uint16_t,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback4<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint16_t,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetDMXAddress(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint16_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
+        std::string *error);
 
     bool SetDMXAddress(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint16_t start_address,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetSlotInfo(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<SlotDescriptor>&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<SlotDescriptor>&> *callback,
+        std::string *error);
 
     bool GetSlotDescription(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint16_t slot_offset,
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool GetSlotDefaultValues(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<SlotDefault>&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<SlotDefault>&> *callback,
+        std::string *error);
 
     bool GetSensorDefinition(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const SensorDescriptor&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const SensorDescriptor&> *callback,
+        std::string *error);
 
     bool GetSensorValue(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const SensorValueDescriptor&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const SensorValueDescriptor&> *callback,
+        std::string *error);
 
     bool SetSensorValue(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const SensorValueDescriptor&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const SensorValueDescriptor&> *callback,
+        std::string *error);
 
     bool RecordSensors(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetDeviceHours(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
+        std::string *error);
 
     bool SetDeviceHours(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t device_hours,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetLampHours(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
+        std::string *error);
 
     bool SetLampHours(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t lamp_hours,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetLampStrikes(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
+        std::string *error);
 
     bool SetLampStrikes(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t lamp_strikes,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetLampState(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetLampState(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t lamp_state,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetLampMode(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetLampMode(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t lamp_mode,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetDevicePowerCycles(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
+        std::string *error);
 
     bool SetDevicePowerCycles(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t power_cycles,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetDisplayInvert(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetDisplayInvert(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t display_invert,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetDisplayLevel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetDisplayLevel(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t display_level,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetPanInvert(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetPanInvert(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t invert,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetTiltInvert(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetTiltInvert(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t invert,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetPanTiltSwap(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetPanTiltSwap(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t swap,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetClock(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const ClockValue&> *callback,
-        string *error);
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const ClockValue&> *callback,
+        std::string *error);
 
     bool SetClock(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         const ClockValue &clock,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetIdentifyMode(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+        std::string *error);
 
     bool IdentifyDevice(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         bool mode,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool ResetDevice(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         bool warm_reset,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool GetPowerState(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        std::string *error);
 
     bool SetPowerState(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         rdm_power_state power_state,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool SetResetDevice(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         rdm_reset_device_mode reset_device,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
-        string *error);
+        ola::SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+        std::string *error);
 
     bool PerformSelfTest(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t self_test_number,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool SelfTestDescription(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t self_test_number,
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint8_t,
-                           const string&> *callback,
-        string *error);
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
+        std::string *error);
 
     bool CapturePreset(
         unsigned int universe,
@@ -917,18 +920,18 @@ class RDMAPI {
         uint16_t fade_up_time,
         uint16_t fade_down_time,
         uint16_t wait_time,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     bool PresetPlaybackMode(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           uint8_t> *callback,
-        string *error);
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                uint8_t> *callback,
+        std::string *error);
 
     bool SetPresetPlaybackMode(
         unsigned int universe,
@@ -936,221 +939,221 @@ class RDMAPI {
         uint16_t sub_device,
         uint16_t playback_mode,
         uint8_t level,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
-        string *error);
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
 
     // Handlers, these are called by the RDMAPIImpl.
 
     // Generic handlers
     void _HandleLabelResponse(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleBoolResponse(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           bool> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                bool> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleU8Response(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint8_t> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint8_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleU32Response(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint32_t> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleEmptyResponse(
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     // specific handlers follow
     void _HandleGetProxiedDeviceCount(
-      SingleUseCallback3<void,
-                         const ResponseStatus&,
-                         uint16_t,
-                         bool> *callback,
+      ola::SingleUseCallback3<void,
+                              const ResponseStatus&,
+                              uint16_t,
+                              bool> *callback,
       const ResponseStatus &status,
-      const string &data);
+      const std::string &data);
 
     void _HandleGetProxiedDevices(
-      SingleUseCallback2<void,
-                         const ResponseStatus&,
-                         const vector<UID>&> *callback,
+      ola::SingleUseCallback2<void,
+                              const ResponseStatus&,
+                              const std::vector<UID>&> *callback,
       const ResponseStatus &status,
-      const string &data);
+      const std::string &data);
 
     void _HandleGetCommStatus(
-        SingleUseCallback4<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           uint16_t,
-                           uint16_t> *callback,
+        ola::SingleUseCallback4<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                uint16_t,
+                                uint16_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleQueuedMessage(
         QueuedMessageHandler *handler,
         const ResponseStatus &status,
         uint16_t pid,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetStatusMessage(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<StatusMessage>&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<StatusMessage>&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetSubDeviceReporting(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint8_t> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint8_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetSupportedParameters(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<uint16_t>&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<uint16_t>&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetParameterDescriptor(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const ParameterDescriptor&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const ParameterDescriptor&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetDeviceDescriptor(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const DeviceDescriptor&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DeviceDescriptor&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetProductDetailIdList(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<uint16_t>&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<uint16_t>&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetLanguageCapabilities(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<string>&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<std::string>&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetLanguage(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const string&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetBootSoftwareVersion(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint32_t> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetDMXPersonality(
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint8_t,
-                           uint8_t> *callback,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint8_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetDMXPersonalityDescription(
-        SingleUseCallback4<void,
-                           const ResponseStatus&,
-                           uint8_t,
-                           uint16_t,
-                           const string&> *callback,
+        ola::SingleUseCallback4<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint16_t,
+                                const std::string&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetDMXAddress(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           uint16_t> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetSlotInfo(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<SlotDescriptor>&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<SlotDescriptor>&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetSlotDescription(
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           const string&> *callback,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                const std::string&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetSlotDefaultValues(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const vector<SlotDefault>&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::vector<SlotDefault>&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleGetSensorDefinition(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const SensorDescriptor&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const SensorDescriptor&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleSensorValue(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const SensorValueDescriptor&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const SensorValueDescriptor&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleClock(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           const ClockValue&> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const ClockValue&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandleSelfTestDescription(
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint8_t,
-                           const string&> *callback,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
     void _HandlePlaybackMode(
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           uint8_t> *callback,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint16_t,
+                                uint8_t> *callback,
         const ResponseStatus &status,
-        const string &data);
+        const std::string &data);
 
  private:
     class RDMAPIImplInterface *m_impl;
@@ -1162,39 +1165,41 @@ class RDMAPI {
         unsigned int universe,
         const UID &uid,
         uint8_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        ola::SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         uint16_t pid,
-        string *error);
+        std::string *error);
 
     bool GenericSetU8(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t value,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         uint16_t pid,
-        string *error);
+        std::string *error);
 
     bool GenericGetU32(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
-        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint32_t> *callback,
         uint16_t pid,
-        string *error);
+        std::string *error);
 
     bool GenericSetU32(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t value,
-        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         uint16_t pid,
-        string *error);
+        std::string *error);
 
     // Check that a callback is not null
     template <typename callback_type>
-    bool CheckCallback(string *error, const callback_type *cb) {
+    bool CheckCallback(std::string *error, const callback_type *cb) {
       if (cb == NULL) {
         if (error)
           *error = "Callback is null, this is a programming error";
@@ -1205,7 +1210,7 @@ class RDMAPI {
 
     // Check that a UID is not a broadcast address
     template <typename callback_type>
-    bool CheckNotBroadcast(const UID &uid, string *error,
+    bool CheckNotBroadcast(const UID &uid, std::string *error,
                            const callback_type *cb) {
       if (uid.IsBroadcast()) {
         if (error)
@@ -1220,7 +1225,7 @@ class RDMAPI {
     template <typename callback_type>
     bool CheckValidSubDevice(uint16_t sub_device,
                              bool broadcast_allowed,
-                             string *error,
+                             std::string *error,
                              const callback_type *cb) {
       if (sub_device <= 0x0200)
         return false;
@@ -1237,7 +1242,7 @@ class RDMAPI {
       return true;
     }
 
-    bool CheckReturnStatus(bool status, string *error);
+    bool CheckReturnStatus(bool status, std::string *error);
     void SetIncorrectPDL(ResponseStatus *status,
                          unsigned int actual,
                          unsigned int expected);

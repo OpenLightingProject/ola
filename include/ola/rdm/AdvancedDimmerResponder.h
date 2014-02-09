@@ -40,8 +40,6 @@
 namespace ola {
 namespace rdm {
 
-using std::auto_ptr;
-
 /**
  * A dimmer that supports many of the E1.37-1 PIDs.
  */
