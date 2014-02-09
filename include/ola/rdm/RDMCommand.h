@@ -136,7 +136,8 @@ class RDMCommand {
      * @param command is the RDMCommand to print
      * @sa ToString()
      */
-    friend ostream& operator<< (ostream &out, const RDMCommand &command) {
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const RDMCommand &command) {
       return out << command.ToString();
     }
 

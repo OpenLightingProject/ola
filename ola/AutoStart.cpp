@@ -31,6 +31,7 @@
 namespace ola {
 namespace client {
 
+using ola::network::TCPSocket;
 
 /*
  * Open a connection to the server.

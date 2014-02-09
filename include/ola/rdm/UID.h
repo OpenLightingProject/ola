@@ -36,9 +36,6 @@
 namespace ola {
 namespace rdm {
 
-using std::ostream;
-using std::string;
-
 /**
  * @addtogroup rdm_uid
  * @{
@@ -197,7 +194,7 @@ class UID {
      * @param out the ostream
      * @param uid the UID to write.
      */
-    friend ostream& operator<< (ostream &out, const UID &uid) {
+    friend std::ostream& operator<< (std::ostream &out, const UID &uid) {
       return out << uid.ToString();
     }
 
@@ -253,7 +250,7 @@ class UID {
      * @return a new UID object, or NULL if the string is not a valid UID.
      * Ownership of the new UID object is transferred to the caller.
      */
-    static UID* FromString(const string &uid);
+    static UID* FromString(const std::string &uid);
 
     /**
      * The size of a UID.
