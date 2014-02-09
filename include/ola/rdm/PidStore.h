@@ -44,6 +44,7 @@ namespace rdm {
 class PidStore;
 class PidDescriptor;
 
+// The following % before Device is to stop Doxygen interpretting it as a class
 /**
  * @brief The root of the RDM parameter descriptor store.
  *
@@ -56,7 +57,7 @@ class PidDescriptor;
  *
  * PLASA PIDs are those defined by the E1.X series of documents. To date this
  * includes:
- *   - E1.20, Remote Device Management.
+ *   - E1.20, Remote %Device Management.
  *   - E1.37-1, Additional Message Sets for Dimmers.
  *   - E1.37-2, Additional Message Sets for IPv4 & DNS Configuration.
  */
