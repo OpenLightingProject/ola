@@ -22,13 +22,14 @@
 #define COMMON_RDM_RESPONDERSLOTDATA_H_
 
 #include <string>
-#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/rdm/ResponderSlotData.h"
 
 namespace ola {
 namespace rdm {
+
+using std::string;
 
 SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
                                uint8_t default_slot_value) {
