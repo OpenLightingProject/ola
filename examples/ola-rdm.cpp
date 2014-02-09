@@ -69,7 +69,7 @@ typedef struct {
 void ParseOptions(int argc, char *argv[], options *opts) {
   opts->cmd = argv[0];
   opts->set_mode = false;
-  opts->pid_location = PID_DATA_DIR;
+  opts->pid_location = "";
   opts->list_pids = false;
   opts->help = false;
   opts->universe = 1;

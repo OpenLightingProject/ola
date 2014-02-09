@@ -1,10 +1,6 @@
-SOURCES = ACNPort.h ACNVectors.h CID.h
-
-EXTRA_DIST = $(SOURCES)
-
-pkginclude_HEADERS =
 pkgincludedir = $(includedir)/ola/acn/
+pkginclude_HEADERS =
 
 if INSTALL_ACN
-pkginclude_HEADERS += $(SOURCES)
+pkginclude_HEADERS += ACNPort.h ACNVectors.h CID.h
 endif

@@ -126,7 +126,7 @@ class RDMSniffer {
       options->summarize_rdm_frames = true;
       options->unpack_param_data = true;
       options->display_non_rdm_asc_frames = true;
-      options->pid_location = PID_DATA_DIR;
+      options->pid_location = "";
       options->write_file = "";
       options->timestamp = false;
     }
