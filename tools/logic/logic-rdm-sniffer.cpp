@@ -86,7 +86,7 @@ DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
               "Only display the first N slots of DMX data.");
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
-DEFINE_string(pid_location, PID_DATA_DIR,
+DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 
 void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
