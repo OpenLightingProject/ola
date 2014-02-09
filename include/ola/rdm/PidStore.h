@@ -41,9 +41,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-using ola::messaging::Descriptor;
-
 class PidStore;
 class PidDescriptor;
 
@@ -59,7 +56,7 @@ class PidDescriptor;
  *
  * PLASA PIDs are those defined by the E1.X series of documents. To date this
  * includes:
- *   - E1.20, Remote %Device Management.
+ *   - E1.20, Remote Device Management.
  *   - E1.37-1, Additional Message Sets for Dimmers.
  *   - E1.37-2, Additional Message Sets for IPv4 & DNS Configuration.
  */
@@ -112,7 +109,7 @@ class RootPidStore {
    * @param pid_name the name of the parameter.
    * @return a PidDescriptor or NULL if the parameter wasn't found.
    */
-  const PidDescriptor *GetDescriptor(const string &pid_name) const;
+  const PidDescriptor *GetDescriptor(const std::string &pid_name) const;
 
   /**
    * @brief Lookup a parameter by name in both the PLASA and the specified
@@ -121,7 +118,7 @@ class RootPidStore {
    * @param manufacturer_id the ESTA id of the manufacturer.
    * @return a PidDescriptor or NULL if the parameter wasn't found.
    */
-  const PidDescriptor *GetDescriptor(const string &pid_name,
+  const PidDescriptor *GetDescriptor(const std::string &pid_name,
                                      uint16_t manufacturer_id) const;
 
   /**
@@ -164,14 +161,15 @@ class RootPidStore {
    * @brief Returns the location of the installed PID data.
    * @returns the directory where the pid data was installed.
    */
-  static const string DataLocation();
+  static const std::string DataLocation();
 
  private:
   std::auto_ptr<const PidStore> m_esta_store;
   ManufacturerMap m_manufacturer_store;
   uint64_t m_version;
 
-  const PidDescriptor *InternalESTANameLookup(const string &pid_name) const;
+  const PidDescriptor *InternalESTANameLookup(
+      const std::string &pid_name) const;
 
   DISALLOW_COPY_AND_ASSIGN(RootPidStore);
 };
@@ -224,11 +222,11 @@ class PidStore {
    * @param pid_name the name of the parameter to look for.
    * @return a PidDescriptor or NULL if the parameter wasn't found.
    */
-  const PidDescriptor *LookupPID(const string &pid_name) const;
+  const PidDescriptor *LookupPID(const std::string &pid_name) const;
 
  private:
   typedef std::map<uint16_t, const PidDescriptor*> PidMap;
-  typedef std::map<string, const PidDescriptor*> PidNameMap;
+  typedef std::map<std::string, const PidDescriptor*> PidNameMap;
   PidMap m_pid_by_value;
   PidNameMap m_pid_by_name;
 
@@ -251,12 +249,12 @@ class PidDescriptor {
     SPECIFIC_SUB_DEVICE,  // 1- 512
   } sub_device_valiator;
 
-  PidDescriptor(const string &name,
+  PidDescriptor(const std::string &name,
                 uint16_t value,
-                const Descriptor *get_request,
-                const Descriptor *get_response,
-                const Descriptor *set_request,
-                const Descriptor *set_response,
+                const ola::messaging::Descriptor *get_request,
+                const ola::messaging::Descriptor *get_response,
+                const ola::messaging::Descriptor *set_request,
+                const ola::messaging::Descriptor *set_response,
                 sub_device_valiator get_sub_device_range,
                 sub_device_valiator set_sub_device_range)
       : m_name(name),
@@ -270,23 +268,27 @@ class PidDescriptor {
   }
   ~PidDescriptor();
 
-  const string &Name() const { return m_name; }
+  const std::string &Name() const { return m_name; }
   uint16_t Value() const { return m_pid_value; }
-  const Descriptor *GetRequest() const { return m_get_request; }
-  const Descriptor *GetResponse() const { return m_get_response; }
-  const Descriptor *SetRequest() const { return m_set_request; }
-  const Descriptor *SetResponse() const { return m_set_response; }
+  const ola::messaging::Descriptor *GetRequest() const { return m_get_request; }
+  const ola::messaging::Descriptor *GetResponse() const {
+    return m_get_response;
+  }
+  const ola::messaging::Descriptor *SetRequest() const { return m_set_request; }
+  const ola::messaging::Descriptor *SetResponse() const {
+    return m_set_response;
+  }
 
   bool IsGetValid(uint16_t sub_device) const;
   bool IsSetValid(uint16_t sub_device) const;
 
  private:
-  const string m_name;
+  const std::string m_name;
   uint16_t m_pid_value;
-  const Descriptor *m_get_request;
-  const Descriptor *m_get_response;
-  const Descriptor *m_set_request;
-  const Descriptor *m_set_response;
+  const ola::messaging::Descriptor *m_get_request;
+  const ola::messaging::Descriptor *m_get_response;
+  const ola::messaging::Descriptor *m_set_request;
+  const ola::messaging::Descriptor *m_set_response;
   sub_device_valiator m_get_subdevice_range;
   sub_device_valiator m_set_subdevice_range;
 

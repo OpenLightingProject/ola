@@ -37,10 +37,6 @@
 namespace ola {
 namespace client {
 
-using ola::io::SelectServer;
-using ola::network::TCPSocket;
-using std::auto_ptr;
-
 /*
  * The base class, not used directly.
  */
@@ -49,17 +45,17 @@ class BaseClientWrapper {
     BaseClientWrapper() {}
     virtual ~BaseClientWrapper();
 
-    SelectServer *GetSelectServer() { return &m_ss; }
+    ola::io::SelectServer *GetSelectServer() { return &m_ss; }
 
     bool Setup();
     bool Cleanup();
     void SocketClosed();
 
  protected:
-    auto_ptr<TCPSocket> m_socket;
+    std::auto_ptr<ola::network::TCPSocket> m_socket;
 
  private:
-    SelectServer m_ss;
+    ola::io::SelectServer m_ss;
 
     virtual void CreateClient() = 0;
     virtual bool StartupClient() = 0;
@@ -82,7 +78,7 @@ class GenericClientWrapper: public BaseClientWrapper {
     ClientClass *GetClient() const { return m_client.get(); }
 
  private:
-    auto_ptr<ClientClass> m_client;
+    std::auto_ptr<ClientClass> m_client;
     bool m_auto_start;
 
     void CreateClient() {
@@ -103,7 +99,7 @@ class GenericClientWrapper: public BaseClientWrapper {
       if (m_auto_start) {
         m_socket.reset(ola::client::ConnectToServer(OLA_DEFAULT_PORT));
       } else {
-        m_socket.reset(TCPSocket::Connect(
+        m_socket.reset(ola::network::TCPSocket::Connect(
             ola::network::IPV4SocketAddress(
               ola::network::IPV4Address::Loopback(),
              OLA_DEFAULT_PORT)));

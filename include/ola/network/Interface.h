@@ -39,8 +39,6 @@
 namespace ola {
 namespace network {
 
-using std::string;
-
 /*
  * Represents an interface.
  */
@@ -49,7 +47,7 @@ class Interface {
   enum { DEFAULT_INDEX = -1 };
 
   Interface();
-  Interface(const string &name,
+  Interface(const std::string &name,
             const IPV4Address &ip_address,
             const IPV4Address &broadcast_address,
             const IPV4Address &subnet_mask,
@@ -80,19 +78,19 @@ class InterfaceBuilder {
   InterfaceBuilder();
   ~InterfaceBuilder() {}
 
-  void SetName(const string &name) { m_name = name; }
+  void SetName(const std::string &name) { m_name = name; }
 
-  bool SetAddress(const string &ip_address);
+  bool SetAddress(const std::string &ip_address);
   void SetAddress(const IPV4Address &ip_address) {
     m_ip_address = ip_address;
   }
 
-  bool SetBroadcast(const string &broadcast_address);
+  bool SetBroadcast(const std::string &broadcast_address);
   void SetBroadcast(const IPV4Address &broadcast_address) {
     m_broadcast_address = broadcast_address;
   }
 
-  bool SetSubnetMask(const string &mask);
+  bool SetSubnetMask(const std::string &mask);
   void SetSubnetMask(const IPV4Address &mask) {
     m_subnet_mask = mask;
   }
@@ -120,7 +118,7 @@ class InterfaceBuilder {
   int32_t m_index;
   uint16_t m_type;
 
-  bool SetAddress(const string &str, IPV4Address *target);
+  bool SetAddress(const std::string &str, IPV4Address *target);
 };
 }  // namespace network
 }  // namespace ola
