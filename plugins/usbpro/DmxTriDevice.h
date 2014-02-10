@@ -37,7 +37,7 @@ namespace usbpro {
 class DmxTriDevice: public UsbSerialDevice {
  public:
     DmxTriDevice(ola::AbstractPlugin *owner,
-                 const string &name,
+                 const std::string &name,
                  DmxTriWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
@@ -45,11 +45,11 @@ class DmxTriDevice: public UsbSerialDevice {
                  uint16_t firmware_version);
     ~DmxTriDevice() {}
 
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
     void PrePortStop();
 
  private:
-    string m_device_id;
+    std::string m_device_id;
     DmxTriWidget *m_tri_widget;
 };
 
@@ -61,12 +61,12 @@ class DmxTriOutputPort: public BasicOutputPort {
  public:
     DmxTriOutputPort(DmxTriDevice *parent,
                      DmxTriWidget *widget,
-                     const string &description);
+                     const std::string &description);
 
     ~DmxTriOutputPort();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback) {
@@ -83,7 +83,7 @@ class DmxTriOutputPort: public BasicOutputPort {
 
  private:
     DmxTriWidget *m_tri_widget;
-    const string m_description;
+    const std::string m_description;
 };
 }  // namespace usbpro
 }  // namespace plugin

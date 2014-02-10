@@ -34,6 +34,7 @@ using ola::rdm::RDMCallback;
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
+using std::string;
 
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackendInterface *backend,
                              const UID &uid,
