@@ -36,15 +36,15 @@ namespace usbpro {
 class DmxterDevice: public UsbSerialDevice {
  public:
     DmxterDevice(ola::AbstractPlugin *owner,
-                 const string &name,
+                 const std::string &name,
                  DmxterWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial);
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
 
  private:
-    string m_device_id;
+    std::string m_device_id;
 };
 
 
@@ -77,7 +77,7 @@ class DmxterOutputPort: public BasicOutputPort {
       m_widget->RunIncrementalDiscovery(on_complete);
     }
 
-    string Description() const { return "RDM Only"; }
+    std::string Description() const { return "RDM Only"; }
 
  private:
     DmxterWidget *m_widget;

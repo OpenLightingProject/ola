@@ -73,7 +73,7 @@ class OSCInputPort: public BasicInputPort {
  private:
     OSCNode *m_node;
     DmxBuffer m_buffer;
-    const string m_address;
+    const std::string m_address;
     std::string m_actual_address;
 
     /**
@@ -123,7 +123,7 @@ class OSCOutputPort: public BasicOutputPort {
 
  private:
     OSCNode *m_node;
-    const vector<OSCTarget> m_template_targets;
+    const std::vector<OSCTarget> m_template_targets;
     std::vector<OSCTarget> m_registered_targets;
     std::string m_description;
     OSCNode::DataFormat m_data_format;

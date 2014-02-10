@@ -28,15 +28,13 @@
 
 namespace ola {
 
-using std::vector;
-
 class PluginLoader;
 class PluginAdaptor;
 class AbstractPlugin;
 
 class PluginManager {
  public:
-    PluginManager(const vector<PluginLoader*> &plugin_loaders,
+    PluginManager(const std::vector<PluginLoader*> &plugin_loaders,
                   PluginAdaptor *plugin_adaptor);
     ~PluginManager();
 
@@ -45,12 +43,12 @@ class PluginManager {
 
     // Return a list of all loaded plugins, this includes active and inactive
     // plugins.
-    void Plugins(vector<AbstractPlugin*> *plugins) const;
+    void Plugins(std::vector<AbstractPlugin*> *plugins) const;
 
     // Return a list of all plugins that are active. Note that even though a
     // plugin may be enabled, it may not be active due to conflicts with
     // other plugins.
-    void ActivePlugins(vector<AbstractPlugin*> *plugins) const;
+    void ActivePlugins(std::vector<AbstractPlugin*> *plugins) const;
 
     // Lookup a plugin by ID
     AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const;
@@ -60,12 +58,12 @@ class PluginManager {
 
     // Return a list of plugins that conflict with this plugin
     void GetConflictList(ola_plugin_id plugin_id,
-                         vector<AbstractPlugin*> *plugins);
+                         std::vector<AbstractPlugin*> *plugins);
 
  private:
     typedef std::map<ola_plugin_id, AbstractPlugin*> PluginMap;
 
-    vector<PluginLoader*> m_plugin_loaders;
+    std::vector<PluginLoader*> m_plugin_loaders;
     PluginMap m_loaded_plugins;  // plugins that are loaded
     PluginMap m_active_plugins;  // active plugins
     PluginAdaptor *m_plugin_adaptor;

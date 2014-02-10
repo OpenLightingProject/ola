@@ -29,7 +29,6 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-
 /*
  * Start this device.
  */

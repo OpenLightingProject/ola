@@ -55,7 +55,7 @@ class MilInstDevice: public ola::Device {
   static const char MILINST_DEVICE_NAME[];
 
   // Per device options
-  string DeviceTypeKey() const;
+  std::string DeviceTypeKey() const;
 
   void SetDeviceDefaults();
 

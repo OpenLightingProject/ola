@@ -22,7 +22,6 @@
 #define PLUGINS_SPI_SPIPORT_H_
 
 #include <string>
-#include <vector>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "plugins/spi/SPIDevice.h"
@@ -44,7 +43,7 @@ class SPIOutputPort: public BasicOutputPort {
     bool SetStartAddress(uint16_t start_address);
     unsigned int PixelCount() const;
 
-    string Description() const;
+    std::string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
