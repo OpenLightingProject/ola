@@ -77,9 +77,9 @@ def ParseOptions():
   parser.add_option('-u', '--universe', default=0,
                     type='int',
                     help='The universe number to use, default is universe 0.')
-  parser.add_option('--delay', default=0,
+  parser.add_option('--inter-test-delay', default=0,
                     type='int',
-                    help='The delay inbetween tests, defaults to 0.')
+                    help='The delay (ms) inbetween tests, defaults to 0.')
 
   options, args = parser.parse_args()
 
