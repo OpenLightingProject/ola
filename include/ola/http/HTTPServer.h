@@ -43,46 +43,41 @@
 namespace ola {
 namespace http {
 
-using std::map;
-using std::multimap;
-using std::string;
-using std::vector;
-
 /*
  * Represents the HTTP request
  */
 class HTTPRequest {
  public:
-  HTTPRequest(const string &url,
-              const string &method,
-              const string &version,
+  HTTPRequest(const std::string &url,
+              const std::string &method,
+              const std::string &version,
               struct MHD_Connection *connection);
   ~HTTPRequest();
   bool Init();
 
   // accessors
-  const string Url() const { return m_url; }
-  const string Method() const { return m_method; }
-  const string Version() const { return m_version; }
+  const std::string Url() const { return m_url; }
+  const std::string Method() const { return m_method; }
+  const std::string Version() const { return m_version; }
 
-  void AddHeader(const string &key, const string &value);
-  void AddPostParameter(const string &key, const string &value);
+  void AddHeader(const std::string &key, const std::string &value);
+  void AddPostParameter(const std::string &key, const std::string &value);
   void ProcessPostData(const char *data, size_t *data_size);
-  const string GetHeader(const string &key) const;
-  bool CheckParameterExists(const string &key) const;
-  const string GetParameter(const string &key) const;
-  const string GetPostParameter(const string &key) const;
+  const std::string GetHeader(const std::string &key) const;
+  bool CheckParameterExists(const std::string &key) const;
+  const std::string GetParameter(const std::string &key) const;
+  const std::string GetPostParameter(const std::string &key) const;
 
   bool InFlight() const { return m_in_flight; }
   void SetInFlight() { m_in_flight = true; }
 
  private:
-  string m_url;
-  string m_method;
-  string m_version;
+  std::string m_url;
+  std::string m_method;
+  std::string m_version;
   struct MHD_Connection *m_connection;
-  map<string, string> m_headers;
-  map<string, string> m_post_params;
+  std::map<std::string, std::string> m_headers;
+  std::map<std::string, std::string> m_post_params;
   struct MHD_PostProcessor *m_processor;
   bool m_in_flight;
 
@@ -101,18 +96,18 @@ class HTTPResponse {
     m_connection(connection),
     m_status_code(MHD_HTTP_OK) {}
 
-  void Append(const string &data) { m_data.append(data); }
-  void SetContentType(const string &type);
-  void SetHeader(const string &key, const string &value);
+  void Append(const std::string &data) { m_data.append(data); }
+  void SetContentType(const std::string &type);
+  void SetHeader(const std::string &key, const std::string &value);
   void SetStatus(unsigned int status) { m_status_code = status; }
   void SetNoCache();
   int SendJson(const ola::web::JsonValue &json);
   int Send();
   struct MHD_Connection *Connection() const { return m_connection; }
  private:
-  string m_data;
+  std::string m_data;
   struct MHD_Connection *m_connection;
-  typedef multimap<string, string> HeadersMultiMap;
+  typedef std::multimap<std::string, std::string> HeadersMultiMap;
   HeadersMultiMap m_headers;
   unsigned int m_status_code;
 
@@ -151,7 +146,7 @@ class HTTPServer: public ola::thread::Thread {
     // The port to listen on
     uint16_t port;
     // The root for content served with ServeStaticContent();
-    string data_dir;
+    std::string data_dir;
 
     HTTPServerOptions()
       : port(0),
@@ -175,28 +170,28 @@ class HTTPServer: public ola::thread::Thread {
   int DispatchRequest(const HTTPRequest *request, HTTPResponse *response);
 
   // Register a callback handler.
-  bool RegisterHandler(const string &path, BaseHTTPCallback *handler);
+  bool RegisterHandler(const std::string &path, BaseHTTPCallback *handler);
 
   // Register a file handler.
-  bool RegisterFile(const string &path,
-                    const string &content_type);
-  bool RegisterFile(const string &path,
-                    const string &file,
-                    const string &content_type);
+  bool RegisterFile(const std::string &path,
+                    const std::string &content_type);
+  bool RegisterFile(const std::string &path,
+                    const std::string &file,
+                    const std::string &content_type);
   // Set the default handler.
   void RegisterDefaultHandler(BaseHTTPCallback *handler);
 
-  void Handlers(vector<string> *handlers) const;
-  const string DataDir() const { return m_data_dir; }
+  void Handlers(std::vector<std::string> *handlers) const;
+  const std::string DataDir() const { return m_data_dir; }
 
   // Return an error
-  int ServeError(HTTPResponse *response, const string &details="");
+  int ServeError(HTTPResponse *response, const std::string &details="");
   int ServeNotFound(HTTPResponse *response);
-  static int ServeRedirect(HTTPResponse *response, const string &location);
+  static int ServeRedirect(HTTPResponse *response, const std::string &location);
 
   // Return the contents of a file.
-  int ServeStaticContent(const string &path,
-                         const string &content_type,
+  int ServeStaticContent(const std::string &path,
+                         const std::string &content_type,
                          HTTPResponse *response);
 
   static const char CONTENT_TYPE_PLAIN[];
@@ -211,8 +206,8 @@ class HTTPServer: public ola::thread::Thread {
 
  private :
   typedef struct {
-    string file_path;
-    string content_type;
+    std::string file_path;
+    std::string content_type;
   } static_file_info;
 
   typedef std::set<ola::io::UnmanagedFileDescriptor*,
@@ -222,11 +217,11 @@ class HTTPServer: public ola::thread::Thread {
   ola::io::SelectServer m_select_server;
   SocketSet m_sockets;
 
-  map<string, BaseHTTPCallback*> m_handlers;
-  map<string, static_file_info> m_static_content;
+  std::map<std::string, BaseHTTPCallback*> m_handlers;
+  std::map<std::string, static_file_info> m_static_content;
   BaseHTTPCallback *m_default_handler;
   unsigned int m_port;
-  string m_data_dir;
+  std::string m_data_dir;
 
   int ServeStaticContent(static_file_info *file_info,
                          HTTPResponse *response);

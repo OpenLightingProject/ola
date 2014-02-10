@@ -29,10 +29,6 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-using std::string;
-
 class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
@@ -43,10 +39,10 @@ class ArtNetPlugin : public Plugin {
 
   ~ArtNetPlugin() {}
 
-  string Name() const { return PLUGIN_NAME; }
+  std::string Name() const { return PLUGIN_NAME; }
   ola_plugin_id Id() const { return OLA_PLUGIN_ARTNET; }
-  string Description() const;
-  string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Description() const;
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
   bool StartHook();

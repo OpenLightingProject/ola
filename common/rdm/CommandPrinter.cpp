@@ -31,6 +31,7 @@
 namespace ola {
 namespace rdm {
 
+using ola::messaging::Descriptor;
 using ola::messaging::Message;
 using ola::network::NetworkToHost;
 using std::auto_ptr;

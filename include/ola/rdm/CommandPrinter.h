@@ -28,9 +28,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-
-
 class CommandPrinter {
  public:
     CommandPrinter(std::ostream *output,

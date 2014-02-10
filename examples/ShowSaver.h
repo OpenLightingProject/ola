@@ -24,8 +24,6 @@
 #include <string>
 #include <fstream>
 
-using std::string;
-
 #ifndef EXAMPLES_SHOWSAVER_H_
 #define EXAMPLES_SHOWSAVER_H_
 
@@ -34,7 +32,7 @@ using std::string;
  */
 class ShowSaver {
  public:
-    explicit ShowSaver(const string &filename);
+    explicit ShowSaver(const std::string &filename);
     ~ShowSaver();
 
     bool Open();
@@ -45,7 +43,7 @@ class ShowSaver {
                   const ola::DmxBuffer &data);
 
  private:
-    const string m_filename;
+    const std::string m_filename;
     std::ofstream m_show_file;
     ola::TimeStamp m_last_frame;
 
