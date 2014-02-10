@@ -29,9 +29,6 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-
 class DummyDevice;
 
 class DummyPlugin: public Plugin {
@@ -40,10 +37,10 @@ class DummyPlugin: public Plugin {
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
-    string Name() const { return PLUGIN_NAME; }
-    string Description() const;
+    std::string Name() const { return PLUGIN_NAME; }
+    std::string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_DUMMY; }
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     bool StartHook();

@@ -38,9 +38,11 @@
 namespace ola {
 namespace rdm {
 
+using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using std::map;
 using std::set;
+using std::string;
 using std::stringstream;
 using std::vector;
 

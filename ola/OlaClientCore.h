@@ -44,18 +44,13 @@
 namespace ola {
 namespace client {
 
-using std::string;
-using ola::io::ConnectedDescriptor;
-using ola::rpc::RpcController;
-using ola::rpc::RpcChannel;
-
 /**
  * @brief The low level C++ API to olad.
  * Clients shouldn't use this directly. Instead use ola::client::OlaClient.
  */
 class OlaClientCore: public ola::proto::OlaClientService {
  public:
-    explicit OlaClientCore(ConnectedDescriptor *descriptor);
+    explicit OlaClientCore(ola::io::ConnectedDescriptor *descriptor);
     ~OlaClientCore();
 
     bool Setup();
@@ -128,7 +123,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
      * @param callback the ConfigureDeviceCallback invoked upon completion.
      */
     void ConfigureDevice(unsigned int device_alias,
-                         const string &msg,
+                         const std::string &msg,
                          ConfigureDeviceCallback *callback);
 
     /**
@@ -178,7 +173,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
      * @param callback the SetCallback to invoke upon completion.
      */
     void SetUniverseName(unsigned int universe,
-                         const string &name,
+                         const std::string &name,
                          SetCallback *callback);
 
     /**
@@ -305,93 +300,93 @@ class OlaClientCore: public ola::proto::OlaClientService {
                        CompletionCallback* done);
 
  private:
-    ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
     std::auto_ptr<RepeatableDMXCallback> m_dmx_callback;
-    std::auto_ptr<RpcChannel> m_channel;
+    std::auto_ptr<ola::rpc::RpcChannel> m_channel;
     std::auto_ptr<ola::proto::OlaServerService_Stub> m_stub;
     int m_connected;
 
     /**
      * @brief Called when GetPlugins() completes.
      */
-    void HandlePluginList(RpcController *controller_ptr,
+    void HandlePluginList(ola::rpc::RpcController *controller_ptr,
                           ola::proto::PluginListReply *reply_ptr,
                           PluginListCallback *callback);
 
     /**
      * @brief Called when GetPluginDescription() completes.
      */
-    void HandlePluginDescription(RpcController *controller,
+    void HandlePluginDescription(ola::rpc::RpcController *controller,
                                  ola::proto::PluginDescriptionReply *reply,
                                  PluginDescriptionCallback *callback);
 
     /**
      * @brief Called when GetPluginState() completes.
      */
-    void HandlePluginState(RpcController *controller,
+    void HandlePluginState(ola::rpc::RpcController *controller,
                            ola::proto::PluginStateReply *reply,
                            PluginStateCallback *callback);
 
     /**
      * @brief Called when GetDeviceInfo() completes.
      */
-    void HandleDeviceInfo(RpcController *controller,
+    void HandleDeviceInfo(ola::rpc::RpcController *controller,
                           ola::proto::DeviceInfoReply *reply,
                           DeviceInfoCallback *callback);
 
     /**
      * @brief Called when ConfigureDevice() completes.
      */
-    void HandleDeviceConfig(RpcController *controller,
+    void HandleDeviceConfig(ola::rpc::RpcController *controller,
                             ola::proto::DeviceConfigReply *reply,
                             ConfigureDeviceCallback *callback);
 
     /**
      * @brief Called when a Set* request completes.
      */
-    void HandleAck(RpcController *controller,
+    void HandleAck(ola::rpc::RpcController *controller,
                    ola::proto::Ack *reply,
                    SetCallback *callback);
 
     /**
      * @brief Called when a Set* request completes.
      */
-    void HandleGeneralAck(RpcController *controller,
+    void HandleGeneralAck(ola::rpc::RpcController *controller,
                           ola::proto::Ack *reply,
                           GeneralSetCallback *callback);
 
     /**
      * @brief Called when a GetUniverseInfo() request completes.
      */
-    void HandleUniverseList(RpcController *controller,
+    void HandleUniverseList(ola::rpc::RpcController *controller,
                             ola::proto::UniverseInfoReply *reply,
                             UniverseListCallback *callback);
 
     /**
      * @brief Called when a GetUniverseInfo() request completes.
      */
-    void HandleUniverseInfo(RpcController *controller,
+    void HandleUniverseInfo(ola::rpc::RpcController *controller,
                             ola::proto::UniverseInfoReply *reply,
                             UniverseInfoCallback *callback);
 
     /**
      * @brief Called when a GetDmx() request completes.
      */
-    void HandleGetDmx(RpcController *controller,
+    void HandleGetDmx(ola::rpc::RpcController *controller,
                       ola::proto::DmxData *reply,
                       DMXCallback *callback);
 
     /**
      * @brief Called when a RunDiscovery() request completes.
      */
-    void HandleUIDList(RpcController *controller_ptr,
+    void HandleUIDList(ola::rpc::RpcController *controller_ptr,
                        ola::proto::UIDListReply *reply_ptr,
                        DiscoveryCallback *callback);
 
     /**
      * @brief Called when a RDM request completes.
      */
-    void HandleRDM(RpcController *controller,
+    void HandleRDM(ola::rpc::RpcController *controller,
                    ola::proto::RDMResponse *reply,
                    RDMCallback *callback);
 

@@ -31,7 +31,6 @@
 namespace ola {
 namespace http {
 
-
 /*
  * A HTTP Server with ExportMap support. You can inherit from this class to
  * implement specific handlers.
@@ -55,7 +54,8 @@ class OlaHTTPServer {
     /**
      * Register a static file to serve
      */
-    void RegisterFile(const std::string &file, const string &content_type) {
+    void RegisterFile(const std::string &file,
+                      const std::string &content_type) {
         m_server.RegisterFile("/" + file, file, content_type);
     }
 

@@ -40,9 +40,6 @@
 namespace ola {
 namespace rdm {
 
-
-using std::queue;
-
 /**
  * This is the interface for classes which want to act as a discovery
  * controller. Such clases must implement the Mute, UnMute & Discovery Unique

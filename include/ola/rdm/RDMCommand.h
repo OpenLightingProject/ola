@@ -136,7 +136,8 @@ class RDMCommand {
      * @param command is the RDMCommand to print
      * @sa ToString()
      */
-    friend ostream& operator<< (ostream &out, const RDMCommand &command) {
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const RDMCommand &command) {
       return out << command.ToString();
     }
 
@@ -307,7 +308,7 @@ class RDMRequest: public RDMCommand {
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
                                        unsigned int length);
-    static RDMRequest* InflateFromData(const string &data);
+    static RDMRequest* InflateFromData(const std::string &data);
 
  private:
     RDMCommandClass m_command_class;
@@ -441,10 +442,10 @@ class RDMResponse: public RDMCommand {
                                         rdm_response_code *response_code,
                                         const RDMRequest *request,
                                         uint8_t transaction_number);
-    static RDMResponse* InflateFromData(const string &data,
+    static RDMResponse* InflateFromData(const std::string &data,
                                         rdm_response_code *response_code,
                                         const RDMRequest *request = NULL);
-    static RDMResponse* InflateFromData(const string &data,
+    static RDMResponse* InflateFromData(const std::string &data,
                                         rdm_response_code *response_code,
                                         const RDMRequest *request,
                                         uint8_t transaction_number);
@@ -559,7 +560,7 @@ class RDMDiscoveryRequest: public RDMRequest {
 
     static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
                                                 unsigned int length);
-    static RDMDiscoveryRequest* InflateFromData(const string &data);
+    static RDMDiscoveryRequest* InflateFromData(const std::string &data);
 };
 
 
@@ -627,7 +628,7 @@ class RDMDiscoveryResponse: public RDMResponse {
 
     static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,
                                                  unsigned int length);
-    static RDMDiscoveryResponse* InflateFromData(const string &data);
+    static RDMDiscoveryResponse* InflateFromData(const std::string &data);
 };
 /** @} */
 }  // namespace rdm

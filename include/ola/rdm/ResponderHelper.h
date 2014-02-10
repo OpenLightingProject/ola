@@ -192,20 +192,20 @@ class ResponderHelper {
         uint32_t min_value,
         uint32_t default_value,
         uint32_t max_value,
-        string description,
+        std::string description,
         uint8_t queued_message_count = 0);
     static const RDMResponse *GetASCIIParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         rdm_command_class command_class,
-        string description,
+        std::string description,
         uint8_t queued_message_count = 0);
     static const RDMResponse *GetBitFieldParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         uint8_t pdl_size,
         rdm_command_class command_class,
-        string description,
+        std::string description,
         uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetIPV4Address(const RDMRequest *request,

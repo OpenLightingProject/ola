@@ -32,19 +32,17 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-
 /**
  * Represents a personality.
  */
 class Personality {
  public:
-    Personality(uint16_t footprint, const string &description);
-    Personality(uint16_t footprint, const string &description,
+    Personality(uint16_t footprint, const std::string &description);
+    Personality(uint16_t footprint, const std::string &description,
                 const SlotDataCollection &slot_data);
 
     uint16_t Footprint() const { return m_footprint; }
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     const SlotDataCollection* GetSlotData() const { return &m_slot_data; }
 
@@ -54,7 +52,7 @@ class Personality {
 
  private:
     uint16_t m_footprint;
-    string m_description;
+    std::string m_description;
     SlotDataCollection m_slot_data;
 };
 
@@ -98,7 +96,7 @@ class PersonalityManager {
     uint8_t ActivePersonalityNumber() const { return m_active_personality; }
     const Personality *ActivePersonality() const;
     uint16_t ActivePersonalityFootprint() const;
-    string ActivePersonalityDescription() const;
+    std::string ActivePersonalityDescription() const;
     const Personality *Lookup(uint8_t personality) const;
 
  private:

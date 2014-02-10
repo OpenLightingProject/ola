@@ -27,12 +27,10 @@
 namespace ola {
 namespace client {
 
-using ola::network::TCPSocket;
-
 /*
  * Open a connection to the server.
  */
-TCPSocket *ConnectToServer(unsigned short port);
+ola::network::TCPSocket *ConnectToServer(unsigned short port);
 }  // namespace client
 }  // namespace ola
 #endif  // OLA_AUTOSTART_H_

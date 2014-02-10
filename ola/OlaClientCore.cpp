@@ -41,7 +41,10 @@
 namespace ola {
 namespace client {
 
+using ola::io::ConnectedDescriptor;
 using ola::proto::OlaServerService_Stub;
+using ola::rpc::RpcChannel;
+using ola::rpc::RpcController;
 using std::auto_ptr;
 using std::string;
 using std::vector;

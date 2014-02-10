@@ -22,7 +22,6 @@
 #define COMMON_RDM_RESPONDERPERSONALITY_H_
 
 #include <string>
-#include <vector>
 
 #include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/ResponderSlotData.h"
@@ -30,6 +29,8 @@
 
 namespace ola {
 namespace rdm {
+
+using std::string;
 
 /**
  * Create a new personality.
