@@ -35,6 +35,8 @@
 namespace ola {
 namespace rdm {
 
+using std::string;
+
 /**
  * @addtogroup rdm_command
  * @{

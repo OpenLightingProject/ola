@@ -32,6 +32,8 @@ namespace ola {
 namespace rdm {
 
 using ola::messaging::MessageFieldInterface;
+using std::string;
+using std::vector;
 
 MessageDeserializer::MessageDeserializer()
     : m_data(NULL),

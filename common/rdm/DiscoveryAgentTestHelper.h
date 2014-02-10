@@ -31,11 +31,6 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/DiscoveryAgent.h"
 
-using ola::rdm::UID;
-using ola::rdm::UIDSet;
-using ola::rdm::DiscoveryAgent;
-using std::vector;
-
 
 typedef std::vector<class MockResponderInterface*> ResponderList;
 
@@ -47,11 +42,11 @@ class MockResponderInterface {
  public:
     virtual ~MockResponderInterface() {}
 
-    virtual const UID& GetUID() const = 0;
+    virtual const ola::rdm::UID& GetUID() const = 0;
     virtual void UnMute() = 0;
-    virtual bool Mute(const UID &uid) = 0;
-    virtual bool FormResponse(const UID &upper,
-                              const UID &lower,
+    virtual bool Mute(const ola::rdm::UID &uid) = 0;
+    virtual bool FormResponse(const ola::rdm::UID &upper,
+                              const ola::rdm::UID &lower,
                               uint8_t *data,
                               unsigned int *length) const = 0;
 
@@ -64,15 +59,15 @@ class MockResponderInterface {
  */
 class MockResponder: public MockResponderInterface {
  public:
-    explicit MockResponder(const UID &uid)
+    explicit MockResponder(const ola::rdm::UID &uid)
         : m_uid(uid),
           m_muted(false) {
     }
 
-    const UID& GetUID() const { return m_uid; }
+    const ola::rdm::UID& GetUID() const { return m_uid; }
     void UnMute() { m_muted = false; }
 
-    virtual bool Mute(const UID &uid) {
+    virtual bool Mute(const ola::rdm::UID &uid) {
       if (m_uid == uid) {
         m_muted = true;
         return true;
@@ -80,8 +75,8 @@ class MockResponder: public MockResponderInterface {
       return false;
     }
 
-    bool FormResponse(const UID &lower,
-                      const UID &upper,
+    bool FormResponse(const ola::rdm::UID &lower,
+                      const ola::rdm::UID &upper,
                       uint8_t *data,
                       unsigned int *length) const {
       if (!ShouldRespond(lower, upper))
@@ -121,7 +116,8 @@ class MockResponder: public MockResponderInterface {
     }
 
  protected:
-    virtual bool ShouldRespond(const UID &lower, const UID &upper) const {
+    virtual bool ShouldRespond(const ola::rdm::UID &lower,
+                               const ola::rdm::UID &upper) const {
       if (m_uid < lower || m_uid > upper)
         return false;
 
@@ -130,7 +126,7 @@ class MockResponder: public MockResponderInterface {
       return true;
     }
 
-    UID m_uid;
+    ola::rdm::UID m_uid;
     bool m_muted;
 
  private:
@@ -150,12 +146,13 @@ class MockResponder: public MockResponderInterface {
  */
 class BiPolarResponder: public MockResponder {
  public:
-    explicit BiPolarResponder(const UID &uid)
+    explicit BiPolarResponder(const ola::rdm::UID &uid)
         : MockResponder(uid) {
     }
 
  protected:
-    bool ShouldRespond(const UID &lower, const UID &upper) const {
+    bool ShouldRespond(const ola::rdm::UID &lower,
+                       const ola::rdm::UID &upper) const {
       if (m_uid < lower || m_uid > upper)
         return false;
 
@@ -175,12 +172,13 @@ class BiPolarResponder: public MockResponder {
  */
 class ObnoxiousResponder: public MockResponder {
  public:
-    explicit ObnoxiousResponder(const UID &uid)
+    explicit ObnoxiousResponder(const ola::rdm::UID &uid)
         : MockResponder(uid) {
     }
 
  protected:
-    bool ShouldRespond(const UID &lower, const UID &upper) const {
+    bool ShouldRespond(const ola::rdm::UID &lower,
+                       const ola::rdm::UID &upper) const {
       if (m_uid < lower || m_uid > upper)
         return false;
       return true;
@@ -193,12 +191,12 @@ class ObnoxiousResponder: public MockResponder {
  */
 class RamblingResponder: public MockResponder {
  public:
-    explicit RamblingResponder(const UID &uid)
+    explicit RamblingResponder(const ola::rdm::UID &uid)
         : MockResponder(uid) {
     }
 
-    bool FormResponse(const UID &lower,
-                      const UID &upper,
+    bool FormResponse(const ola::rdm::UID &lower,
+                      const ola::rdm::UID &upper,
                       uint8_t *data,
                       unsigned int *length) const {
       unsigned int data_size = *length;
@@ -218,12 +216,12 @@ class RamblingResponder: public MockResponder {
  */
 class BriefResponder: public MockResponder {
  public:
-    explicit BriefResponder(const UID &uid)
+    explicit BriefResponder(const ola::rdm::UID &uid)
         : MockResponder(uid) {
     }
 
-    bool FormResponse(const UID &lower,
-                      const UID &upper,
+    bool FormResponse(const ola::rdm::UID &lower,
+                      const ola::rdm::UID &upper,
                       uint8_t *data,
                       unsigned int *length) const {
       bool ok = MockResponder::FormResponse(lower, upper, data, length);
@@ -239,11 +237,11 @@ class BriefResponder: public MockResponder {
  */
 class NonMutingResponder: public MockResponder {
  public:
-    explicit NonMutingResponder(const UID &uid)
+    explicit NonMutingResponder(const ola::rdm::UID &uid)
         : MockResponder(uid) {
     }
 
-    bool Mute(const UID&) { return false; }
+    bool Mute(const ola::rdm::UID&) { return false; }
 };
 
 
@@ -252,14 +250,14 @@ class NonMutingResponder: public MockResponder {
  */
 class FlakeyMutingResponder: public MockResponder {
  public:
-    explicit FlakeyMutingResponder(const UID &uid,
+    explicit FlakeyMutingResponder(const ola::rdm::UID &uid,
                                   unsigned int threshold = 2)
         : MockResponder(uid),
           m_threshold(threshold),
           m_attempts(0) {
     }
 
-    bool Mute(const UID &uid) {
+    bool Mute(const ola::rdm::UID &uid) {
       if (m_uid != uid)
         return false;
 
@@ -284,7 +282,7 @@ class FlakeyMutingResponder: public MockResponder {
  */
 class ProxyResponder: public MockResponder {
  public:
-    explicit ProxyResponder(const UID &uid,
+    explicit ProxyResponder(const ola::rdm::UID &uid,
                             const ResponderList &responders)
         : MockResponder(uid),
           m_responders(responders) {
@@ -304,7 +302,7 @@ class ProxyResponder: public MockResponder {
         (*iter)->UnMute();
     }
 
-    bool Mute(const UID &uid) {
+    bool Mute(const ola::rdm::UID &uid) {
       bool r = MockResponder::Mute(uid);
       if (m_muted) {
         ResponderList::const_iterator iter = m_responders.begin();
@@ -314,8 +312,8 @@ class ProxyResponder: public MockResponder {
       return r;
     }
 
-    bool FormResponse(const UID &lower,
-                      const UID &upper,
+    bool FormResponse(const ola::rdm::UID &lower,
+                      const ola::rdm::UID &upper,
                       uint8_t *data,
                       unsigned int *length) const {
       bool r = MockResponder::FormResponse(lower, upper, data, length);
@@ -351,7 +349,8 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
     }
 
     // Mute a device
-    void MuteDevice(const UID &target, MuteDeviceCallback *mute_complete) {
+    void MuteDevice(const ola::rdm::UID &target,
+                    MuteDeviceCallback *mute_complete) {
       ResponderList::const_iterator iter = m_responders.begin();
       for (; iter != m_responders.end(); ++iter) {
         if ((*iter)->Mute(target)) {
@@ -372,7 +371,9 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
     }
 
     // Send a branch request
-    void Branch(const UID &lower, const UID &upper, BranchCallback *callback) {
+    void Branch(const ola::rdm::UID &lower,
+                const ola::rdm::UID &upper,
+                BranchCallback *callback) {
       // alloc twice the amount we need
       unsigned int data_size = 2 * MockResponder::DISCOVERY_RESPONSE_SIZE;
       uint8_t data[data_size];
@@ -400,7 +401,7 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
     }
 
     // Remove a responder from the list
-    void RemoveResponder(const UID &uid) {
+    void RemoveResponder(const ola::rdm::UID &uid) {
       ResponderList::iterator iter = m_responders.begin();
       for (; iter != m_responders.end(); ++iter) {
         if ((*iter)->GetUID() == uid) {

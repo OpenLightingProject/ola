@@ -26,6 +26,7 @@ namespace ola {
 namespace rdm {
 
 using ola::messaging::FieldDescriptorGroup;
+using ola::messaging::StringFieldDescriptor;
 
 
 /**

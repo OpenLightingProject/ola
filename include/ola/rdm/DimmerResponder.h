@@ -40,8 +40,6 @@
 namespace ola {
 namespace rdm {
 
-using std::auto_ptr;
-
 /**
  * A RDM responder that simulates a dimmer rack. This has a configurable number
  * of sub-devices.
@@ -55,7 +53,7 @@ class DimmerResponder: public RDMControllerInterface {
 
  private:
   SubDeviceDispatcher m_dispatcher;
-  auto_ptr<DimmerRootDevice> m_root_device;
+  std::auto_ptr<DimmerRootDevice> m_root_device;
   std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;
 };
 }  // namespace rdm
