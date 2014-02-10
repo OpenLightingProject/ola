@@ -32,7 +32,7 @@ namespace espnet {
 
 class EspNetPortHelper {
  public:
-    string Description(Universe *universe) const;
+    std::string Description(Universe *universe) const;
     uint8_t EspNetUniverseId(Universe *universe) const;
 };
 
@@ -47,7 +47,9 @@ class EspNetInputPort: public BasicInputPort {
           m_node(node) {}
     ~EspNetInputPort() {}
 
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
@@ -66,7 +68,9 @@ class EspNetOutputPort: public BasicOutputPort {
           m_node(node) {}
     ~EspNetOutputPort() {}
 
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
  private:

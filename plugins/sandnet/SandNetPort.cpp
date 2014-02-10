@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
-#include <vector>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "olad/Universe.h"
@@ -35,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
+using std::string;
 
 /*
  * We override the set universe method to update the universe -> port hash

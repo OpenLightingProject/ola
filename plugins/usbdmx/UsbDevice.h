@@ -36,7 +36,7 @@ namespace usbdmx {
 class UsbDevice: public ola::Device {
  public:
     UsbDevice(ola::AbstractPlugin *owner,
-              const string &name,
+              const std::string &name,
               libusb_device *device):
         Device(owner, name),
         m_usb_device(device) {

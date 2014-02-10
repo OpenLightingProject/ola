@@ -28,6 +28,7 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using std::string;
 
 /*
  * Start this device.

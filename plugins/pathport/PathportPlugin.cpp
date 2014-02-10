@@ -130,7 +130,7 @@ bool PathportPlugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
                                          UIntValidator(0, UINT_MAX),
-                                         IntToString(product_id));
+                                         product_id);
 
   if (save)
     m_preferences->Save();

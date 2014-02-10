@@ -39,7 +39,7 @@ class SunliteDevice: public UsbDevice {
         UsbDevice(owner, "Sunlite USB Device", usb_device) {
     }
 
-    string DeviceId() const { return "usbdmx2"; }
+    std::string DeviceId() const { return "usbdmx2"; }
 
  protected:
     bool StartHook();
