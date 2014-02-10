@@ -36,9 +36,11 @@ namespace ola {
 namespace http {
 
 using std::ifstream;
+using std::map;
 using std::pair;
 using std::set;
 using std::string;
+using std::vector;
 using ola::io::UnmanagedFileDescriptor;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;

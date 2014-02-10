@@ -33,17 +33,15 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::io::ConnectedDescriptor;
-
 class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
  public:
     explicit UsbSerialPlugin(PluginAdaptor *plugin_adaptor);
 
-    string Name() const { return PLUGIN_NAME; }
-    string Description() const;
+    std::string Name() const { return PLUGIN_NAME; }
+    std::string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
     void DeviceRemoved(UsbSerialDevice *device);
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     void NewWidget(ArduinoWidget *widget,
                    const UsbProWidgetInformation &information);
@@ -64,12 +62,12 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     bool StopHook();
     bool SetDefaultPreferences();
     void DeleteDevice(UsbSerialDevice *device);
-    string GetDeviceName(const UsbProWidgetInformation &information);
+    std::string GetDeviceName(const UsbProWidgetInformation &information);
     unsigned int GetProFrameLimit();
     unsigned int GetDmxTriFrameLimit();
     unsigned int GetUltraDMXProFrameLimit();
 
-    vector<UsbSerialDevice*> m_devices;  // list of our devices
+    std::vector<UsbSerialDevice*> m_devices;  // list of our devices
     WidgetDetectorThread m_detector_thread;
 
     static const char DEFAULT_DEVICE_DIR[];
