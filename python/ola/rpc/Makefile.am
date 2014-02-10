@@ -8,8 +8,8 @@ rpcpython_PYTHON = SimpleRpcController.py StreamRpcChannel.py __init__.py
 
 BUILT_SOURCES = Rpc_pb2.py
 
-Rpc_pb2.py: ${top_builddir}/common/rpc/Rpc.proto
-	$(PROTOC) --python_out ./ -I ${top_builddir}/common/rpc/ ${top_builddir}/common/rpc/Rpc.proto
+Rpc_pb2.py: ${top_srcdir}/common/rpc/Rpc.proto
+	$(PROTOC) --python_out ./ -I ${top_srcdir}/common/rpc/ ${top_srcdir}/common/rpc/Rpc.proto
 
 SimpleRpcControllerTest.sh: Makefile
 	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > SimpleRpcControllerTest.sh
