@@ -53,9 +53,6 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    RDMMessageInterationTest();
-    ~RDMMessageInterationTest();
-
     void testProxiedDevices();
     void testDeviceInfoRequest();
     void testDeviceModelDescription();
@@ -63,13 +60,16 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-      OLA_ASSERT_NOT_NULL(m_store);
+      ola::rdm::PidStoreLoader loader;
+      m_store.reset(loader.LoadFromFile(
+            TEST_SRC_DIR "/testdata/test_pids.proto"));
+      OLA_ASSERT_NOT_NULL(m_store.get());
       m_esta_store = m_store->EstaStore();
       OLA_ASSERT_NOT_NULL(m_esta_store);
     }
 
  private:
-    const ola::rdm::RootPidStore *m_store;
+    std::auto_ptr<const ola::rdm::RootPidStore> m_store;
     const ola::rdm::PidStore *m_esta_store;
     ola::rdm::StringMessageBuilder m_builder;
     ola::messaging::GenericMessagePrinter m_printer;
@@ -79,17 +79,6 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMMessageInterationTest);
-
-RDMMessageInterationTest::RDMMessageInterationTest() {
-  ola::rdm::PidStoreLoader loader;
-  m_store = loader.LoadFromFile("./testdata/test_pids.proto");
-}
-
-
-RDMMessageInterationTest::~RDMMessageInterationTest() {
-  delete m_store;
-}
-
 
 /**
  * test PROXIED_DEVICES

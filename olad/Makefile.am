@@ -90,3 +90,5 @@ OlaTester_LDADD = $(COMMON_TEST_LDADD)
 UniverseTester_SOURCES = UniverseTest.cpp
 UniverseTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 UniverseTester_LDADD = $(COMMON_TEST_LDADD)
+
+CLEANFILES = testdata/ola-output.conf
