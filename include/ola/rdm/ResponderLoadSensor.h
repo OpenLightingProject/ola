@@ -40,7 +40,7 @@ namespace rdm {
 class LoadSensor: public Sensor {
  public:
   LoadSensor(const ola::system::load_averages load_average,
-             const string &description)
+             const std::string &description)
       : Sensor(SENSOR_OTHER,
                UNITS_NONE,
                PREFIX_CENTI,

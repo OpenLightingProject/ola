@@ -98,7 +98,7 @@ class AckTimerResponder: public RDMControllerInterface {
 
   ResponseQueue m_queued_messages;
   PendingResponses m_upcoming_queued_messages;
-  auto_ptr<class QueuedResponse> m_last_queued_message;
+  std::auto_ptr<class QueuedResponse> m_last_queued_message;
   ola::Clock m_clock;
 
   uint16_t Footprint() const {

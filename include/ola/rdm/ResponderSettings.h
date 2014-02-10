@@ -29,8 +29,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-
 /**
  * @brief The base class all Settings inherit from.
  */
@@ -42,7 +40,7 @@ class SettingInterface {
      * @brief The text description of this setting
      * @returns the string description of the setting.
      */
-    virtual string Description() const = 0;
+    virtual std::string Description() const = 0;
 
     /**
      * @brief Return the size of the _DESCRIPTION parameter data.
@@ -75,7 +73,7 @@ class BasicSetting : SettingInterface {
      * @brief The text description of this setting
      * @returns the string description of the setting.
      */
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     unsigned int DescriptionResponseSize() const {
       return sizeof(description_s);
@@ -90,7 +88,7 @@ class BasicSetting : SettingInterface {
       char description[MAX_RDM_STRING_LENGTH];
     } __attribute__((packed));
 
-    string m_description;
+    std::string m_description;
 };
 
 
@@ -120,7 +118,7 @@ class FrequencyModulationSetting : SettingInterface {
      * @brief The text description of this setting
      * @returns the string description of the setting.
      */
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     /**
      * @brief returns the frequency for this setting.
@@ -142,7 +140,7 @@ class FrequencyModulationSetting : SettingInterface {
     } __attribute__((packed));
 
     uint32_t m_frequency;
-    string m_description;
+    std::string m_description;
 };
 
 

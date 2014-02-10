@@ -38,8 +38,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-
 /**
  * @brief Holds information about a single DMX slot.
  */
@@ -79,7 +77,7 @@ class SlotData {
      * Used in the SLOT_DESCRIPTION message.
      * @returns the slot description.
      */
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     /**
      * @brief Create a new Primary slot
@@ -101,7 +99,7 @@ class SlotData {
     static SlotData PrimarySlot(
         rdm_slot_definition slot_definition,
         uint8_t default_slot_value,
-        const string &description);
+        const std::string &description);
 
     /**
      * @brief Create a new Secondary slot.
@@ -127,7 +125,7 @@ class SlotData {
         rdm_slot_type slot_type,
         uint16_t primary_slot,
         uint8_t default_slot_value,
-        const string &description);
+        const std::string &description);
 
  private:
     SlotData(rdm_slot_type slot_type,
@@ -137,13 +135,13 @@ class SlotData {
     SlotData(rdm_slot_type slot_type,
              uint16_t slot_id,
              uint8_t default_slot_value,
-             const string &description);
+             const std::string &description);
 
     rdm_slot_type m_slot_type;
     uint16_t m_slot_id;
     uint8_t m_default_slot_value;
     bool m_has_description;
-    string m_description;
+    std::string m_description;
 };
 
 
