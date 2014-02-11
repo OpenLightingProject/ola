@@ -20,7 +20,6 @@
  */
 
 #include <algorithm>
-#include <set>
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
@@ -73,8 +72,8 @@ using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rpc::RpcController;
-using std::set;
-
+using std::string;
+using std::vector;
 
 typedef CallbackRunner<ola::rpc::RpcService::CompletionCallback> ClosureRunner;
 

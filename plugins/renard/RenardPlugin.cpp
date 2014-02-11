@@ -33,6 +33,7 @@ namespace renard {
 
 using ola::io::ConnectedDescriptor;
 using std::string;
+using std::vector;
 
 // Blank default path, so we don't start using a serial port without being asked
 const char RenardPlugin::RENARD_DEVICE_PATH[] = "";

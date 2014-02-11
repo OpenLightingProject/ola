@@ -29,6 +29,8 @@
 namespace ola {
 
 using ola::io::SelectServerInterface;
+using ola::thread::timeout_id;
+using std::string;
 
 /*
  * Create a new PluginAdaptor

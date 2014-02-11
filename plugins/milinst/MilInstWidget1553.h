@@ -59,8 +59,8 @@ class MilInstWidget1553: public MilInstWidget {
   uint16_t m_channels;
 
   // Per widget options
-  string BaudRateKey() const;
-  string ChannelsKey() const;
+  std::string BaudRateKey() const;
+  std::string ChannelsKey() const;
 
   void SetWidgetDefaults();
 };
