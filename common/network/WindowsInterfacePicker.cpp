@@ -37,7 +37,8 @@ using std::vector;
 /*
  * Return a vector of interfaces on the system.
  */
-vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
+vector<Interface> WindowsInterfacePicker::GetInterfaces(
+    bool include_loopback) const {
   vector<Interface> interfaces;
 
   PIP_ADAPTER_INFO pAdapter = NULL;
