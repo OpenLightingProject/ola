@@ -6,7 +6,7 @@ dist_piddata_DATA = draft_pids.proto pids.proto manufacturer_pids.proto
 EXTRA_DIST = download.sh PidDataTest.py
 
 PidDataTest.sh: Makefile
-	echo "export PYTHONPATH=${top_builddir}/python; export PIDDATA=${srcdir}; $(PYTHON) ${srcdir}/PidDataTest.py; exit \$$?" > PidDataTest.sh
+	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir} $(PYTHON) ${srcdir}/PidDataTest.py; exit \$$?" > PidDataTest.sh
 	chmod +x PidDataTest.sh
 
 CLEANFILES = PidDataTest.sh
