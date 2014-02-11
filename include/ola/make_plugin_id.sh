@@ -1,8 +1,9 @@
 #!/bin/bash
 # Autogenerate the plugin_id.h file from the protobuf definition.
 
-if [ $# != 2 ]; then
+if [ $# != 1 ]; then
   echo "Usage: $0 <path-to-proto>";
+  exit;
 fi
 
 proto=$1;
