@@ -34,6 +34,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::acn::CID;
+using std::string;
 
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
@@ -198,7 +199,7 @@ bool E131Plugin::SetDefaultPreferences() {
       BoolValidator(),
       BoolValidator::ENABLED);
 
-  set<string> revision_values;
+  std::set<string> revision_values;
   revision_values.insert(REVISION_0_2);
   revision_values.insert(REVISION_0_46);
 

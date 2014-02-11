@@ -21,7 +21,6 @@
 #ifndef OLAD_PORTMANAGER_H_
 #define OLAD_PORTMANAGER_H_
 
-#include <string>
 #include <vector>
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
@@ -71,7 +70,7 @@ class PortManager {
                                      unsigned int universe_id) const;
 
     template<class PortClass>
-    bool CheckForPortMatchingUniverse(const vector<PortClass*> &ports,
+    bool CheckForPortMatchingUniverse(const std::vector<PortClass*> &ports,
                                       unsigned int universe_id) const;
 
     UniverseStore * const m_universe_store;

@@ -34,6 +34,7 @@ namespace milinst {
 using ola::AbstractPlugin;
 using ola::io::ConnectedDescriptor;
 using std::set;
+using std::string;
 
 const char MilInstDevice::MILINST_DEVICE_NAME[] = "Milford Instruments Device";
 

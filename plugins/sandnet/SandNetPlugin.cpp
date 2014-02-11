@@ -28,6 +28,8 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
+using std::string;
+
 const char SandNetPlugin::SANDNET_NODE_NAME[] = "ola-SandNet";
 const char SandNetPlugin::PLUGIN_NAME[] = "SandNet";
 const char SandNetPlugin::PLUGIN_PREFIX[] = "sandnet";

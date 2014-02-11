@@ -26,7 +26,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -63,10 +62,12 @@
 
 namespace ola {
 
+using ola::proto::OlaClientService_Stub;
 using ola::rdm::RootPidStore;
 using ola::rpc::RpcChannel;
 using std::auto_ptr;
 using std::pair;
+using std::vector;
 
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";

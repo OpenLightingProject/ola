@@ -36,6 +36,7 @@ using ola::messaging::Message;
 using ola::network::NetworkToHost;
 using std::auto_ptr;
 using std::endl;
+using std::string;
 using std::stringstream;
 
 /**

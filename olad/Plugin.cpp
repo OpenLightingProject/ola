@@ -26,6 +26,8 @@
 
 namespace ola {
 
+using std::string;
+
 const char Plugin::ENABLED_KEY[] = "enabled";
 
 

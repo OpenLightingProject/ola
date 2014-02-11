@@ -32,6 +32,8 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
+using std::string;
+using std::vector;
 
 const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";

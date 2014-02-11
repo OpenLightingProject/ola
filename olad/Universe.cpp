@@ -53,6 +53,7 @@ namespace ola {
 
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
+using std::map;
 using std::set;
 using std::string;
 using std::stringstream;

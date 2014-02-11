@@ -30,6 +30,7 @@
 namespace ola {
 namespace rdm {
 
+using std::string;
 using std::vector;
 
 /**

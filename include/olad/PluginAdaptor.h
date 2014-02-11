@@ -31,8 +31,6 @@
 
 namespace ola {
 
-using ola::thread::timeout_id;
-
 class PluginAdaptor: public ola::io::SelectServerInterface {
  public:
     PluginAdaptor(class DeviceManager *device_manager,
@@ -50,15 +48,18 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
     bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
-    timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                        Callback0<bool> *closure);
-    timeout_id RegisterRepeatingTimeout(const TimeInterval &interval,
-                                        Callback0<bool> *closure);
-    timeout_id RegisterSingleTimeout(unsigned int ms,
-                                     SingleUseCallback0<void> *closure);
-    timeout_id RegisterSingleTimeout(const TimeInterval &interval,
-                                     SingleUseCallback0<void> *closure);
-    void RemoveTimeout(timeout_id id);
+    ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
+                                                     Callback0<bool> *closure);
+    ola::thread::timeout_id RegisterRepeatingTimeout(
+        const TimeInterval &interval,
+        Callback0<bool> *closure);
+    ola::thread::timeout_id RegisterSingleTimeout(
+        unsigned int ms,
+        SingleUseCallback0<void> *closure);
+    ola::thread::timeout_id RegisterSingleTimeout(
+        const TimeInterval &interval,
+        SingleUseCallback0<void> *closure);
+    void RemoveTimeout(ola::thread::timeout_id id);
 
     void Execute(ola::BaseCallback0<void> *closure);
 
