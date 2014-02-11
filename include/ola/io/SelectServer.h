@@ -38,9 +38,6 @@ class SelectServerTest;
 namespace ola {
 namespace io {
 
-using ola::thread::timeout_id;
-
-
 /**
  * This is the core of the event driven system. The SelectServer is responsible
  * for invoking Callbacks when events occur. All methods except Execute() and
@@ -73,16 +70,20 @@ class SelectServer: public SelectServerInterface {
   bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
   bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
 
-  timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                      ola::Callback0<bool> *closure);
-  timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
-                                      ola::Callback0<bool> *closure);
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      unsigned int ms,
+      ola::Callback0<bool> *closure);
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      const ola::TimeInterval &interval,
+      ola::Callback0<bool> *closure);
 
-  timeout_id RegisterSingleTimeout(unsigned int ms,
-                                   ola::SingleUseCallback0<void> *closure);
-  timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
-                                   ola::SingleUseCallback0<void> *closure);
-  void RemoveTimeout(timeout_id id);
+  ola::thread::timeout_id RegisterSingleTimeout(
+      unsigned int ms,
+      ola::SingleUseCallback0<void> *closure);
+  ola::thread::timeout_id RegisterSingleTimeout(
+      const ola::TimeInterval &interval,
+      ola::SingleUseCallback0<void> *closure);
+  void RemoveTimeout(ola::thread::timeout_id id);
 
   void RunInLoop(ola::Callback0<void> *closure);
 

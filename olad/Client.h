@@ -35,13 +35,10 @@ namespace proto {
 
 namespace ola {
 
-using std::map;
-using ola::proto::OlaClientService_Stub;
-
 class Client {
  public :
-  explicit Client(OlaClientService_Stub *client_stub):
-    m_client_stub(client_stub) {}
+  explicit Client(ola::proto::OlaClientService_Stub *client_stub)
+    : m_client_stub(client_stub) {}
   virtual ~Client();
   virtual bool SendDMX(unsigned int universe_id, uint8_t priority,
                        const DmxBuffer &buffer);
@@ -50,11 +47,13 @@ class Client {
                        ola::proto::Ack *ack);
   void DMXReceived(unsigned int universe, const DmxSource &source);
   const DmxSource SourceData(unsigned int universe) const;
-  class OlaClientService_Stub *Stub() const { return m_client_stub; }
+  class ola::proto::OlaClientService_Stub *Stub() const {
+    return m_client_stub;
+  }
 
  private:
-  class OlaClientService_Stub *m_client_stub;
-  map<unsigned int, DmxSource> m_data_map;
+  class ola::proto::OlaClientService_Stub *m_client_stub;
+  std::map<unsigned int, DmxSource> m_data_map;
 
   DISALLOW_COPY_AND_ASSIGN(Client);
 };

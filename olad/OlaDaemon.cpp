@@ -25,7 +25,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string>
-#include <vector>
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -53,6 +52,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::thread::MutexLocker;
 using std::auto_ptr;
+using std::string;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";

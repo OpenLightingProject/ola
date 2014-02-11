@@ -19,7 +19,6 @@
  */
 
 #include <sstream>
-#include <string>
 #include <vector>
 
 #include "ola/Logging.h"
@@ -37,6 +36,7 @@ namespace plugin {
 namespace pathport {
 
 using std::stringstream;
+using std::vector;
 
 const char PathportDevice::K_DEFAULT_NODE_NAME[] = "ola-Pathport";
 const char PathportDevice::K_DSCP_KEY[] = "dscp";

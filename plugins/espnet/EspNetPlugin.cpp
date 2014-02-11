@@ -28,6 +28,8 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
+using std::string;
+
 const char EspNetPlugin::ESPNET_NODE_NAME[] = "ola-EspNet";
 const char EspNetPlugin::PLUGIN_NAME[] = "ESP Net";
 const char EspNetPlugin::PLUGIN_PREFIX[] = "espnet";

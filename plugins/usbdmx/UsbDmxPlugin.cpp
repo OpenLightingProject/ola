@@ -51,6 +51,7 @@ namespace usbdmx {
 using ola::io::DeviceDescriptor;
 using std::pair;
 using std::string;
+using std::vector;
 
 const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
