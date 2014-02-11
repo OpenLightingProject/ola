@@ -11,6 +11,6 @@ pkginclude_HEADERS = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h \
 nodist_pkginclude_HEADERS = $(BUILT_SOURCES)
 
 plugin_id.h: make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto
-	sh $(srcdir)/make_plugin_id.sh
+	sh $(srcdir)/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto
 
 CLEANFILES = plugin_id.h
