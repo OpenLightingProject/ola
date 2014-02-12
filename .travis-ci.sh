@@ -14,6 +14,5 @@ if [[ $TASK = 'lint' ]]; then
   fi;
 else
   # Otherwise compile and check as normal
-  autoreconf -i && ./configure --enable-rdm-tests && make && make check
+  autoreconf -i && ./configure && make distcheck
 fi
-
