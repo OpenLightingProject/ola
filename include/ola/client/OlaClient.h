@@ -26,7 +26,6 @@
 #include <ola/client/ClientArgs.h>
 #include <ola/client/ClientTypes.h>
 #include <ola/base/Macro.h>
-#include <ola/common.h>
 #include <ola/io/Descriptor.h>
 #include <ola/plugin_id.h>
 #include <ola/rdm/UID.h>

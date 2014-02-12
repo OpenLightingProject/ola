@@ -30,6 +30,7 @@
 namespace ola {
 namespace rdm {
 
+using std::string;
 using std::vector;
 
 /**
@@ -37,7 +38,8 @@ using std::vector;
  */
 PidStoreHelper::PidStoreHelper(const string &pid_location,
                                unsigned int initial_indent)
-    : m_pid_location(pid_location),
+    : m_pid_location(pid_location.empty() ? RootPidStore::DataLocation() :
+                     pid_location),
       m_root_store(NULL),
       m_message_printer(initial_indent) {
 }

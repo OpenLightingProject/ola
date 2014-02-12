@@ -7,7 +7,7 @@ EXTRA_DIST = CppGenerator.h CppFileGenerator.h GeneratorHelpers.h \
 #########################
 if BUILD_OLA_PROTOC
 noinst_PROGRAMS = ola_protoc
-endif 
+endif
 
 ola_protoc_SOURCES = ola-protoc.cpp \
                      CppGenerator.cpp \

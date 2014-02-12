@@ -67,10 +67,10 @@ libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h SLPService.pb.h SLPService.pb.h
 
 SLP.pb.cc SLP.pb.h: SLP.proto
-	$(PROTOC)  --cpp_out ./ SLP.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/SLP.proto
 
 SLPService.pb.cpp SLPService.pb.h: SLP.proto
-	$(OLA_PROTOC)  --cppservice_out ./ SLP.proto
+	$(OLA_PROTOC)  --cppservice_out ./ --proto_path $(srcdir) $(srcdir)/SLP.proto
 
 # Programs
 noinst_PROGRAMS = slp_client
@@ -92,8 +92,7 @@ slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    libolaslpclient.la \
                    libolaslpcore.la
 
-clean-local:
-	rm -f *.pb.{h,cc,cpp} *.gcno *.gcda
+CLEANFILES = *.pb.{h,cc,cpp} *.gcno *.gcda
 
 # Tests
 if BUILD_TESTS

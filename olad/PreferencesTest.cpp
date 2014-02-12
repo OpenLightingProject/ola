@@ -304,7 +304,7 @@ void PreferencesTest::testLoad() {
       "", "dummy", NULL);
   preferences->Clear();
   preferences->SetValue("foo", "bad");
-  preferences->LoadFromFile("./testdata/test_preferences.conf");
+  preferences->LoadFromFile(TEST_SRC_DIR "/testdata/test_preferences.conf");
 
   OLA_ASSERT_EQ(string("bar"), preferences->GetValue("foo"));
   OLA_ASSERT(preferences->HasKey("foo"));

@@ -6,13 +6,13 @@ if BUILD_PYTHON_LIBS
 
 SUBDIRS = rpc
 
-artnet_path = ${top_builddir}/plugins/artnet/messages
+artnet_path = ${top_srcdir}/plugins/artnet/messages
 artnet_proto = $(artnet_path)/ArtnetConfigMessages.proto
-ola_path = ${top_builddir}/common/protocol
+ola_path = ${top_srcdir}/common/protocol
 ola_proto = $(ola_path)/Ola.proto
-pids_path = ${top_builddir}/common/rdm
+pids_path = ${top_srcdir}/common/rdm
 pids_proto = $(pids_path)/Pids.proto
-usbpro_path = ${top_builddir}/plugins/usbpro/messages
+usbpro_path = ${top_srcdir}/plugins/usbpro/messages
 usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
@@ -36,18 +36,17 @@ Pids_pb2.py: $(pids_proto)
 UsbProConfigMessages_pb2.py: $(usbpro_proto)
 	$(PROTOC) --python_out ./ -I $(usbpro_path) $(usbpro_proto)
 
-# This is a hack, but I can't find any other way to do it
 PidStoreLocation.py: ../../configure.ac
 	echo "location = '${pid_datadir}'" > PidStoreLocation.py
 
 Version.py: ../../configure.ac
 	echo "version = '${VERSION}'" > Version.py
 
-clean-local:
-	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* \
-      UsbProConfigMessages_pb2.* PidStoreLocation.py Version.py
-
-TESTS_ENVIRONMENT = PYTHONPATH=${top_builddir}/python
+TESTS_ENVIRONMENT = PYTHONPATH=${top_srcdir}/python
 TESTS = DUBDecoderTest.py MACAddressTest.py UIDTest.py
 
 endif
+
+CLEANFILES = ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* \
+             UsbProConfigMessages_pb2.* PidStoreLocation.py Version.py *.pyc
+

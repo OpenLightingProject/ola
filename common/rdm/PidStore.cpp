@@ -20,30 +20,24 @@
 
 #include <string>
 #include <vector>
+
 #include "common/rdm/PidStoreLoader.h"
 #include "ola/StringUtils.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace rdm {
 
+using std::string;
 using std::vector;
 
-
-/**
- * Clean up
- */
 RootPidStore::~RootPidStore() {
-  CleanStore();
+  m_esta_store.reset();
+  STLDeleteValues(&m_manufacturer_store);
 }
 
-
-/**
- * Lookup a PidStore based on Manufacturer Id
- * @param esta_id the manufacturer id
- * @returns A pointer to a PidStore or NULL if not found
- */
 const PidStore *RootPidStore::ManufacturerStore(uint16_t esta_id) const {
   ManufacturerMap::const_iterator iter = m_manufacturer_store.find(esta_id);
   if (iter == m_manufacturer_store.end())
@@ -51,27 +45,12 @@ const PidStore *RootPidStore::ManufacturerStore(uint16_t esta_id) const {
   return iter->second;
 }
 
-
-/**
- * Lookup a PidDescriptor by name.
- * @param pid_name the name of the pid
- * @return a PidDescriptor or NULL if the pid wasn't found.
- */
-const PidDescriptor *RootPidStore::GetDescriptor(
-    const string &pid_name) const {
+const PidDescriptor *RootPidStore::GetDescriptor(const string &pid_name) const {
   string canonical_pid_name = pid_name;
   ola::ToUpper(&canonical_pid_name);
   return InternalESTANameLookup(canonical_pid_name);
 }
 
-
-/**
- * Lookup a PidDescriptor by name in both the ESTA PIDs and any manufacturer
- * PIDs.
- * @param manufacturer_id the ESTA id of the manufacturer_id
- * @param pid_name the name of the pid
- * @return a PidDescriptor or NULL if the pid wasn't found.
- */
 const PidDescriptor *RootPidStore::GetDescriptor(
     const string &pid_name,
     uint16_t manufacturer_id) const {
@@ -89,30 +68,15 @@ const PidDescriptor *RootPidStore::GetDescriptor(
   return NULL;
 }
 
-
-/**
- * Lookup a PidDescriptor by pid value.
- * @param pid_value the pid to lookup
- * @return a PidDescriptor or NULL if the pid wasn't found.
- */
 const PidDescriptor *RootPidStore::GetDescriptor(uint16_t pid_value) const {
-  if (m_esta_store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      m_esta_store->LookupPID(pid_value);
+  if (m_esta_store.get()) {
+    const PidDescriptor *descriptor = m_esta_store->LookupPID(pid_value);
     if (descriptor)
       return descriptor;
   }
   return NULL;
 }
 
-
-/**
- * Lookup a PidDescriptor by pid value in both the ESTA PIDs and any
- * manufacturer PIDs.
- * @param manufacturer_id the ESTA id of the manufacturer_id
- * @param pid_value the pid to lookup
- * @return a PidDescriptor or NULL if the pid wasn't found.
- */
 const PidDescriptor *RootPidStore::GetDescriptor(
     uint16_t pid_value,
     uint16_t manufacturer_id) const {
@@ -123,75 +87,46 @@ const PidDescriptor *RootPidStore::GetDescriptor(
   // now try the specific manufacturer store
   const PidStore *store = ManufacturerStore(manufacturer_id);
   if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(pid_value);
+    const PidDescriptor *descriptor = store->LookupPID(pid_value);
     if (descriptor)
       return descriptor;
   }
   return NULL;
 }
 
-
-
-/**
- * Lookup an ESTA Pid by canonical name.
- */
 const PidDescriptor *RootPidStore::InternalESTANameLookup(
     const string &canonical_pid_name) const {
-  if (m_esta_store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      m_esta_store->LookupPID(canonical_pid_name);
+  if (m_esta_store.get()) {
+    const PidDescriptor *descriptor = m_esta_store->LookupPID(
+        canonical_pid_name);
     if (descriptor)
       return descriptor;
   }
   return NULL;
 }
 
-
-/**
- * Empty the store and delete all objects. This is dangerous as all other
- * objects like in-flight messages will be pointing to the underlying
- * descriptors.
- */
-void RootPidStore::CleanStore() {
-  if (m_esta_store) {
-    delete m_esta_store;
-    m_esta_store = NULL;
-  }
-  ManufacturerMap::const_iterator iter = m_manufacturer_store.begin();
-  for (; iter != m_manufacturer_store.end(); ++iter) {
-    delete iter->second;
-  }
-  m_manufacturer_store.clear();
-}
-
-
-/**
- * Load a pid store from a file
- */
 const RootPidStore *RootPidStore::LoadFromFile(const std::string &file,
                                                bool validate) {
   PidStoreLoader loader;
   return loader.LoadFromFile(file, validate);
 }
 
-
-/**
- * Load all pid definition files in a directory
- */
 const RootPidStore *RootPidStore::LoadFromDirectory(
     const std::string &directory,
     bool validate) {
   PidStoreLoader loader;
-  return loader.LoadFromDirectory(directory, validate);
+  string data_source = directory;
+  if (directory.empty()) {
+    data_source = DataLocation();
+  }
+  return loader.LoadFromDirectory(data_source, validate);
 }
 
+const string RootPidStore::DataLocation() {
+  // Provided at compile time.
+  return PID_DATA_DIR;
+}
 
-/**
- * Create a new PidStore
- * @param pids a list of PidDescriptors for this store.
- * @pre the names and values for the pids in the vector are unique.
- */
 PidStore::PidStore(const vector<const PidDescriptor*> &pids) {
   vector<const PidDescriptor*>::const_iterator iter = pids.begin();
   for (; iter != pids.end(); ++iter) {
@@ -200,24 +135,11 @@ PidStore::PidStore(const vector<const PidDescriptor*> &pids) {
   }
 }
 
-
-/**
- * Clean up.
- */
 PidStore::~PidStore() {
-  PidMap::const_iterator iter = m_pid_by_value.begin();
-  for (; iter != m_pid_by_value.end(); ++iter) {
-    delete iter->second;
-  }
-  m_pid_by_value.clear();
+  STLDeleteValues(&m_pid_by_value);
   m_pid_by_name.clear();
 }
 
-
-/**
- * Return a list of all pids
- * @param pids a pointer to a vector in which to put the PidDescriptors.
- */
 void PidStore::AllPids(vector<const PidDescriptor*> *pids) const {
   pids->reserve(pids->size() + m_pid_by_value.size());
 

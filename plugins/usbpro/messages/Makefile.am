@@ -14,7 +14,6 @@ libolausbproconf_la_LIBADD = $(libprotobuf_LIBS)
 EXTRA_DIST = UsbProConfigMessages.proto
 
 UsbProConfigMessages.pb.cc UsbProConfigMessages.pb.h: UsbProConfigMessages.proto
-	$(PROTOC) --cpp_out ./ UsbProConfigMessages.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/UsbProConfigMessages.proto
 
-clean-local:
-	rm -f *.pb.{h,cc}
+CLEANFILES = *.pb.{h,cc}

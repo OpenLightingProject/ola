@@ -62,7 +62,7 @@ class PidStoreLoader {
     const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
                                    bool validate);
     template <typename pb_object>
-    bool GetPidList(vector<const PidDescriptor*> *pids,
+    bool GetPidList(std::vector<const PidDescriptor*> *pids,
                     const pb_object &store,
                     bool validate,
                     bool limit_pid_values);

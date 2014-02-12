@@ -47,20 +47,16 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-using std::vector;
-
-
 class PidStoreHelper {
  public:
-    explicit PidStoreHelper(const string &pid_location,
+    explicit PidStoreHelper(const std::string &pid_location,
                             unsigned int initial_indent = 0);
     ~PidStoreHelper();
 
     bool Init();
 
     const ola::rdm::PidDescriptor *GetDescriptor(
-        const string &pid_name,
+        const std::string &pid_name,
         uint16_t manufacturer_id) const;
     const ola::rdm::PidDescriptor *GetDescriptor(
         uint16_t param_id,
@@ -68,7 +64,7 @@ class PidStoreHelper {
 
     const ola::messaging::Message *BuildMessage(
         const ola::messaging::Descriptor *descriptor,
-        const vector<string> &inputs);
+        const std::vector<std::string> &inputs);
 
     const uint8_t *SerializeMessage(const ola::messaging::Message *message,
                                     unsigned int *data_length);
@@ -78,25 +74,26 @@ class PidStoreHelper {
         const uint8_t *data,
         unsigned int data_length);
 
-    const string MessageToString(const ola::messaging::Message *message);
+    const std::string MessageToString(const ola::messaging::Message *message);
 
-    const string PrettyPrintMessage(
+    const std::string PrettyPrintMessage(
         uint16_t manufacturer_id,
         bool is_set,
         uint16_t pid,
         const ola::messaging::Message *message);
 
-    const string SchemaAsString(const ola::messaging::Descriptor *descriptor);
+    const std::string SchemaAsString(
+        const ola::messaging::Descriptor *descriptor);
 
     void SupportedPids(uint16_t manufacturer_id,
-                       vector<string> *pid_names) const;
+                       std::vector<std::string> *pid_names) const;
 
     void SupportedPids(
         uint16_t manufacturer_id,
-        vector<const ola::rdm::PidDescriptor*> *descriptors) const;
+        std::vector<const ola::rdm::PidDescriptor*> *descriptors) const;
 
  private:
-    const string m_pid_location;
+    const std::string m_pid_location;
     const ola::rdm::RootPidStore *m_root_store;
     ola::rdm::StringMessageBuilder m_string_builder;
     ola::rdm::MessageSerializer m_serializer;

@@ -42,8 +42,8 @@ class FtdiDmxPlugin : public Plugin {
   }
 
   ola_plugin_id Id() const { return OLA_PLUGIN_FTDIDMX; }
-  string Name() const { return PLUGIN_NAME; }
-  string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
   // This plugin is disabled unless explicitly enabled by a user.
   bool DefaultMode() const { return false; }
 
@@ -52,10 +52,10 @@ class FtdiDmxPlugin : public Plugin {
     conflict_set->insert(ola::OLA_PLUGIN_OPENDMX);
   }
 
-  string Description() const;
+  std::string Description() const;
 
  private:
-  typedef vector<FtdiDmxDevice*> FtdiDeviceVector;
+  typedef std::vector<FtdiDmxDevice*> FtdiDeviceVector;
   FtdiDeviceVector m_devices;
 
   void AddDevice(FtdiDmxDevice *device);

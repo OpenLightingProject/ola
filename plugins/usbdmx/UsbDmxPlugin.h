@@ -34,8 +34,6 @@ namespace plugin {
 
 namespace usbdmx {
 
-using ola::io::ConnectedDescriptor;
-
 class UsbDmxPlugin: public ola::Plugin {
  public:
     explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor):
@@ -43,10 +41,10 @@ class UsbDmxPlugin: public ola::Plugin {
       m_anyma_devices_missing_serial_numbers(false) {
     }
 
-    string Name() const { return PLUGIN_NAME; }
-    string Description() const;
+    std::string Name() const { return PLUGIN_NAME; }
+    std::string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBDMX; }
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     bool AddDeviceDescriptor(int fd);
     bool RemoveDeviceDescriptor(int fd);
@@ -54,9 +52,9 @@ class UsbDmxPlugin: public ola::Plugin {
 
  private:
     struct USBDeviceInformation {
-      string manufacturer;
-      string product;
-      string serial;
+      std::string manufacturer;
+      std::string product;
+      std::string serial;
     };
 
     bool m_anyma_devices_missing_serial_numbers;
@@ -77,11 +75,12 @@ class UsbDmxPlugin: public ola::Plugin {
         struct libusb_device_handle *usb_handle,
         const struct libusb_device_descriptor &device_descriptor,
         USBDeviceInformation *device_info);
-    bool MatchManufacturer(const string &expected, const string &actual);
-    bool MatchProduct(const string &expected, const string &actual);
+    bool MatchManufacturer(const std::string &expected,
+                           const std::string &actual);
+    bool MatchProduct(const std::string &expected, const std::string &actual);
     bool GetDescriptorString(libusb_device_handle *usb_handle,
                              uint8_t desc_index,
-                             string *data);
+                             std::string *data);
 
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];

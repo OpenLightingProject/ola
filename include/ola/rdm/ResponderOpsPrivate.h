@@ -45,8 +45,6 @@
 namespace ola {
 namespace rdm {
 
-using std::auto_ptr;
-
 template <class Target>
 ResponderOps<Target>::ResponderOps(const ParamHandler param_handlers[],
                                    bool include_required_pids)
@@ -73,8 +71,8 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
                                             const RDMRequest *raw_request,
                                             RDMCallback *on_complete) {
   // Take ownership of the request object, so the targets don't have to.
-  auto_ptr<const RDMRequest> request(raw_request);
-  std::vector<string> packets;
+  std::auto_ptr<const RDMRequest> request(raw_request);
+  std::vector<std::string> packets;
 
   if (!on_complete) {
     OLA_WARN << "Null callback passed!";

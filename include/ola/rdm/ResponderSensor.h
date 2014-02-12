@@ -39,8 +39,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-
 /**
  * @brief Holds information about a single sensor.
  */
@@ -78,7 +76,7 @@ class Sensor {
   Sensor(ola::rdm::rdm_sensor_type type,
          ola::rdm::rdm_pid_unit unit,
          ola::rdm::rdm_pid_prefix prefix,
-         const string &description,
+         const std::string &description,
          const SensorOptions &options)
       : m_type(type),
         m_unit(unit),
@@ -101,7 +99,7 @@ class Sensor {
   int16_t RangeMax() const { return m_range_max; }
   int16_t NormalMin() const { return m_normal_min; }
   int16_t NormalMax() const { return m_normal_max; }
-  const string& Description() const { return m_description; }
+  const std::string& Description() const { return m_description; }
 
   int16_t Lowest() const {
     if (m_recorded_range_support) {
@@ -178,7 +176,7 @@ class Sensor {
   const ola::rdm::rdm_sensor_type m_type;
   const ola::rdm::rdm_pid_unit m_unit;
   const ola::rdm::rdm_pid_prefix m_prefix;
-  const string m_description;
+  const std::string m_description;
   const bool m_recorded_value_support;
   const bool m_recorded_range_support;
   const int16_t m_range_min;

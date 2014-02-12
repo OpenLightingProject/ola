@@ -30,10 +30,6 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-using std::string;
-
 class KiNetPlugin : public Plugin {
  public:
     explicit KiNetPlugin(PluginAdaptor *plugin_adaptor):
@@ -41,10 +37,10 @@ class KiNetPlugin : public Plugin {
 
     ~KiNetPlugin();
 
-    string Name() const { return PLUGIN_NAME; }
+    std::string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_KINET; }
-    string Description() const;
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string Description() const;
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     std::auto_ptr<class KiNetDevice> m_device;  // only have one device

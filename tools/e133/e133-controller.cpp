@@ -63,7 +63,7 @@
 DEFINE_s_uint16(endpoint, e, 0, "The endpoint to use");
 DEFINE_s_string(target, t, "", "List of IPs to connect to, overrides SLP");
 DEFINE_string(listen_ip, "", "The IP address to listen on");
-DEFINE_s_string(pid_location, p, PID_DATA_DIR,
+DEFINE_s_string(pid_location, p, "",
                 "The directory to read PID definitiions from");
 DEFINE_s_bool(set, s, false, "Perform a SET (default is GET)");
 DEFINE_bool(list_pids, false, "Display a list of pids");

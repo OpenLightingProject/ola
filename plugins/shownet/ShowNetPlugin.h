@@ -29,10 +29,6 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-using std::string;
-
 class ShowNetDevice;
 
 class ShowNetPlugin: public Plugin {
@@ -42,10 +38,10 @@ class ShowNetPlugin: public Plugin {
       m_device(NULL) {}
     ~ShowNetPlugin() {}
 
-    string Name() const { return PLUGIN_NAME; }
+    std::string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_SHOWNET; }
-    string Description() const;
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string Description() const;
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     bool StartHook();

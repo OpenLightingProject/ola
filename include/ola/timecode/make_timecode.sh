@@ -1,6 +1,13 @@
 #!/bin/bash
 # Autogenerate the TimeCodeEnums.h file from the protobuf definition.
 
+if [ $# != 1 ]; then
+  echo "Usage: $0 <path-to-proto>";
+  exit;
+fi
+
+proto=$1;
+
 (
 cat <<EOM
 /*
@@ -33,7 +40,7 @@ namespace timecode {
 
 typedef enum {
 EOM
-grep TIMECODE_ ../../../common/protocol/Ola.proto | sed "s/;/,/"
+grep TIMECODE_ $proto | sed "s/;/,/"
 cat <<EOM
 } TimeCodeType;
 }  // namespace timecode

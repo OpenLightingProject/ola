@@ -2,16 +2,17 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([ola], m4_esyscmd([./version.sh | tr -d '\n']))
+AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
+        [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE()
 
 # Checks for programs.
-AC_LANG(C++)
+AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_AWK
 AC_PROG_CC
@@ -76,7 +77,7 @@ AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 # Disable -Werror
 AC_ARG_ENABLE(
   fatal-warnings,
-  AC_HELP_STRING([--disable-fatal-warnings], [Make compiler warnings non-fatal]),)
+  AS_HELP_STRING([--disable-fatal-warnings], [Make compiler warnings non-fatal]),)
 
 AM_CONDITIONAL(FATAL_WARNINGS, test "${enable_fatal_warnings}" != "no")
 
@@ -232,13 +233,13 @@ AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
 
 # LIBRARY: pthread
-AC_CHECK_HEADER([pthread.h],
-                [],
-                [AC_MSG_ERROR([Missing pthread, please install it])])
-AC_CHECK_LIB([pthread], [pthread_create], [use_lpthread="yes"])
-if test "${use_lpthread}" = "yes"; then
-  LIBS="-lpthread $LIBS"
-fi
+ACX_PTHREAD([
+             LIBS="$PTHREAD_LIBS $LIBS"
+             CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+             CXXFLAGS="$CXXFLAGS $PTHREAD_CXXFLAGS"
+             CC="$PTHREAD_CC"
+             CXX="$PTHREAD_CXX"],
+            [AC_MSG_ERROR([Missing pthread, please install it])])
 
 # LIBRARY: resolv
 SAVED_LDFLAGS=$LDFLAGS
@@ -263,7 +264,7 @@ esac
 
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
-              AC_HELP_STRING([--enable-java-libs], [Build the Java interface]))
+              AS_HELP_STRING([--enable-java-libs], [Build the Java interface]))
 if test "${enable_java_libs}" = "yes"; then
   AC_PROG_JAVA_CC()
   MAVEN_SUPPORT([2.2.1])
@@ -426,7 +427,7 @@ AM_CONDITIONAL(HAVE_LIBFTD2XX, test "${have_libftd2xx}" = "yes")
 # & LDFLAGS so we can find it.
 AC_ARG_ENABLE(
   slp,
-  AC_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
+  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
 
 openslp_LIBS=""
 have_slp=no
@@ -516,18 +517,18 @@ AC_SUBST(OLA_SERVER_LIBS)
 plugindir=$libdir/olad
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
-pid_datadir=$datadir/ola/pids
+piddatadir=$datadir/ola/pids
 AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
-AC_SUBST(pid_datadir)
+AC_SUBST(piddatadir)
 
-OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" -DPID_DATA_DIR=\\\"$pid_datadir\\\" "
+OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\""
 AC_SUBST(OLAD_DEFINES)
 
 # check for cppunit
 AC_ARG_ENABLE(
   unittests,
-  AC_HELP_STRING([--disable-unittests], [Disable all unittests]),)
+  AS_HELP_STRING([--disable-unittests], [Disable all unittests]),)
 
 if test "${enable_unittests}" != "no"; then
 AM_PATH_CPPUNIT(
@@ -541,7 +542,7 @@ AM_CONDITIONAL(BUILD_TESTS, test "${enable_unittests}" != "no")
 # gcov
 AC_ARG_ENABLE(
   gcov,
-  AC_HELP_STRING([--enable-gcov], [turn on code coverage analysis tools]))
+  AS_HELP_STRING([--enable-gcov], [turn on code coverage analysis tools]))
 
 if test "${enable_gov}" = "yes"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
@@ -549,7 +550,7 @@ if test "${enable_gov}" = "yes"; then
 fi
 
 # tcmalloc
-AC_ARG_ENABLE(tcmalloc, AC_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
+AC_ARG_ENABLE(tcmalloc, AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 
 if test "${enable_tcmalloc}" = "yes"; then
   LDFLAGS="$LDFLAGS -ltcmalloc"
@@ -558,7 +559,7 @@ fi
 # Decide if we should build the example programs
 AC_ARG_ENABLE(
   examples,
-  AC_HELP_STRING([--disable-examples],
+  AS_HELP_STRING([--disable-examples],
                  [Disable the OLA example client programs]),)
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
@@ -566,7 +567,7 @@ AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
 # Optionally install the E1.33 library.
 AC_ARG_ENABLE(
   e133,
-  AC_HELP_STRING([--enable-e133], [Install the E1.33 library]),)
+  AS_HELP_STRING([--enable-e133], [Install the E1.33 library]),)
 # For now we install the ACN lib if the E1.33 lib is requested
 AM_CONDITIONAL(INSTALL_ACN, test "${enable_e133}" == "yes")
 AM_CONDITIONAL(INSTALL_E133, test "${enable_e133}" == "yes")
@@ -574,11 +575,11 @@ AM_CONDITIONAL(INSTALL_E133, test "${enable_e133}" == "yes")
 # python wrappers & RDM Responder tests.
 AC_ARG_ENABLE(
   python-libs,
-  AC_HELP_STRING([--enable-python-libs], [Build the python interface]))
+  AS_HELP_STRING([--enable-python-libs], [Build the python interface]))
 
 AC_ARG_ENABLE(
   rdm-tests,
-  AC_HELP_STRING([--enable-rdm-tests], [Install the RDM responder tests]))
+  AS_HELP_STRING([--enable-rdm-tests], [Install the RDM responder tests]))
 
 if test "${enable_rdm_tests}" = "yes"; then
   enable_python_libs="yes";
@@ -605,7 +606,7 @@ SALEAE_DEVICE
 # Enable running as root
 AC_ARG_ENABLE(
   root-check,
-  AC_HELP_STRING([--disable-root-check],
+  AS_HELP_STRING([--disable-root-check],
                  [Disable the check that prevents olad from running as root]),
 )
 
@@ -615,59 +616,22 @@ if test "${enable_root_check}" = "no"; then
            [Defined if olad is allowed to run as root])
 fi
 
-# common.h
-AC_OUTPUT_COMMANDS([
-  if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
-    # If both these vars are non-empty, then config.status wasn't run by
-    # automake rules (which always set one or the other to empty).
-    CONFIG_OTHER=${CONFIG_OTHER-ola/common.h}
-  fi
-  echo $CONFIG_OTHER
-  case "$CONFIG_OTHER" in
-  *ola/common.h*)
-    outfile=ola/common.h
-    stampfile=ola/stamp-common
-    tmpfile=${outfile}T
-    dirname="sed s,^.*/,,g"
+# Hack alert!
+# Python modules can't be split over two directories. This is a problem when
+# doing VPATH builds since the genrated files like
+# ${builddir}/python/ola/Ola_pb.py will be in a separate path ($builddir) from
+# the non-generated files ${srcdir}/python/ols/PidStore.py). To get the tests
+# to pass we symlink the files we need for the tests from the builddir to the
+# srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
+AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/UID.py:python/ola/UID.py
+                 python/ola/__init__.py:python/ola/__init__.py])
 
-    echo creating $outfile
-    cat > $tmpfile << _EOF_
-/*  -*- Mode: C -*-
- * --------------------------------------------------------------------
- * DO NOT EDIT THIS FILE!  It has been automatically generated
- * from:    configure.in and `echo $outfile|$dirname`.in
- * on host: `(hostname || uname -n) 2>/dev/null | sed 1q`
- * --------------------------------------------------------------------
- */
-
-#ifndef OLA_COMMON_H
-#define OLA_COMMON_H 1
-
-_EOF_
-
-    # The ugly but portable cpp stuff comes from here
-    infile=$srcdir/ola/`echo $outfile | sed 's,.*/,,g;s,\..*$,,g'`-h.in
-    sed '/^##.*$/d' $infile >> $tmpfile
-
-    cat >> $tmpfile << '_EOF_'
-
-#endif /* OLA_COMMON_H */
-_EOF_
-
-    if cmp -s $tmpfile $outfile; then
-      echo $outfile is unchanged
-      rm -f $tmpfile
-    else
-      mv $tmpfile $outfile
-      touch $stampfile
-    fi
-  esac;
-],[
-  srcdir=$srcdir
-  have_threads=$have_threads
-])
-
-AC_CONFIG_FILES([libola.pc
+# Non-makefile generted files.
+AC_CONFIG_FILES([Doxyfile
+                 libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
                  plugins/e131/e131/libolaacn.pc
@@ -679,6 +643,7 @@ AC_CONFIG_FILES([libola.pc
                  tools/e133/libolae133controller.pc
                  tools/e133/libolae133slp.pc
                  ])
+# Makefiles
 AC_CONFIG_FILES([Makefile
                  common/Makefile
                  common/base/Makefile
@@ -774,3 +739,17 @@ AC_CONFIG_FILES([Makefile
                  tools/rdmpro/Makefile
                  tools/usbpro/Makefile])
 AC_OUTPUT
+
+echo \
+"-------------------------------------------------------
+${PACKAGE_NAME} Version ${PACKAGE_VERSION}
+
+Prefix: '${prefix}'
+Compiler: '${CXX} ${CXXFLAGS}'
+
+Now type 'make @<:@<target>@:>@'
+  where the optional <target> is:
+    all          - build everything
+    check        - run the tests
+    doxygen-doc  - generate the html documentation
+-------------------------------------------------------"

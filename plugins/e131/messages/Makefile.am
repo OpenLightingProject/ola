@@ -14,7 +14,6 @@ libolae131conf_la_LIBADD = $(libprotobuf_LIBS)
 EXTRA_DIST = E131ConfigMessages.proto
 
 E131ConfigMessages.pb.cc E131ConfigMessages.pb.h: E131ConfigMessages.proto
-	$(PROTOC) --cpp_out ./ E131ConfigMessages.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/E131ConfigMessages.proto
 
-clean-local:
-	rm -f *.pb.{h,cc}
+CLEANFILES = *.pb.{h,cc}

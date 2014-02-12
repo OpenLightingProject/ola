@@ -39,7 +39,7 @@ class VellemanDevice: public UsbDevice {
         UsbDevice(owner, "Velleman USB Device", usb_device) {
     }
 
-    string DeviceId() const { return "velleman"; }
+    std::string DeviceId() const { return "velleman"; }
 
  protected:
     bool StartHook();

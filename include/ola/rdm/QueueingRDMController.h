@@ -38,9 +38,6 @@
 namespace ola {
 namespace rdm {
 
-using std::pair;
-using std::vector;
-
 /*
  * A RDM controller that only sends a single request at a time. This also
  * handles timing out messages that we don't get a response for.
@@ -70,7 +67,7 @@ class QueueingRDMController: public RDMControllerInterface {
     bool m_active;  // true if the controller is active
     RDMCallback *m_callback;
     const ola::rdm::RDMResponse *m_response;
-    vector<std::string> m_packets;
+    std::vector<std::string> m_packets;
 
     virtual void TakeNextAction();
     virtual bool CheckForBlockingCondition();
@@ -79,7 +76,7 @@ class QueueingRDMController: public RDMControllerInterface {
 
     void HandleRDMResponse(rdm_response_code status,
                            const ola::rdm::RDMResponse *response,
-                           const vector<std::string> &packets);
+                           const std::vector<std::string> &packets);
 };
 
 
@@ -102,8 +99,8 @@ class DiscoverableQueueingRDMController: public QueueingRDMController {
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
 
  private:
-    typedef vector<RDMDiscoveryCallback*> DiscoveryCallbacks;
-    typedef vector<pair<bool, RDMDiscoveryCallback*> >
+    typedef std::vector<RDMDiscoveryCallback*> DiscoveryCallbacks;
+    typedef std::vector<std::pair<bool, RDMDiscoveryCallback*> >
         PendingDiscoveryCallbacks;
 
     DiscoverableRDMControllerInterface *m_discoverable_controller;

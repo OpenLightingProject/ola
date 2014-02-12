@@ -38,13 +38,13 @@ class RobeDevice: public UsbSerialDevice {
  public:
     RobeDevice(ola::PluginAdaptor *plugin_adaptor,
                ola::AbstractPlugin *owner,
-               const string &name,
+               const std::string &name,
                RobeWidget *widget);
 
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
 
  private:
-    string m_device_id;
+    std::string m_device_id;
     class RobeOutputPort *m_output_port;
     class RobeInputPort *m_input_port;
 };
@@ -74,10 +74,10 @@ class RobeInputPort: public BasicInputPort {
         m_widget->ChangeToReceiveMode();
     }
 
-    string Description() const { return ""; }
+    std::string Description() const { return ""; }
 
  private:
-    string m_path;
+    std::string m_path;
     RobeWidget *m_widget;
 };
 
@@ -90,7 +90,7 @@ class RobeOutputPort: public BasicOutputPort {
  public:
     RobeOutputPort(RobeDevice *parent, RobeWidget *widget);
 
-    string Description() const { return ""; }
+    std::string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,

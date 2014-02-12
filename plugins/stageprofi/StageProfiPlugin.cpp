@@ -33,7 +33,9 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+using ola::io::ConnectedDescriptor;
 using std::string;
+using std::vector;
 
 const char StageProfiPlugin::STAGEPROFI_DEVICE_PATH[] = "/dev/ttyUSB0";
 const char StageProfiPlugin::STAGEPROFI_DEVICE_NAME[] = "StageProfi Device";

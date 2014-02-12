@@ -39,6 +39,8 @@ namespace rdm {
 using ola::messaging::MessageFieldInterface;
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 
 StringMessageBuilder::StringMessageBuilder()

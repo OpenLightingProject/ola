@@ -88,7 +88,7 @@ class MovingLightResponder: public RDMControllerInterface {
 
   const UID m_uid;
   uint16_t m_start_address;
-  string m_language;
+  std::string m_language;
   bool m_identify_mode;
   bool m_pan_invert;
   bool m_tilt_invert;
@@ -102,7 +102,7 @@ class MovingLightResponder: public RDMControllerInterface {
   uint8_t m_display_level;
   bool m_pan_tilt_swap;
   rdm_power_state m_power_state;
-  string m_device_label;
+  std::string m_device_label;
   PersonalityManager m_personality_manager;
 
   const RDMResponse *GetParamDescription(const RDMRequest *request);

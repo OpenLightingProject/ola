@@ -62,7 +62,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-DEFINE_s_string(pid_location, p, PID_DATA_DIR,
+DEFINE_s_string(pid_location, p, "",
                 "The directory to read PID definitiions from");
 DEFINE_s_string(target_addresses, t, "",
                 "List of IPs to connect to, overrides SLP");

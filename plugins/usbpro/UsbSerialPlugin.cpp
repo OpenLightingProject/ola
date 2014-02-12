@@ -47,6 +47,8 @@ namespace plugin {
 namespace usbpro {
 
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
 const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";

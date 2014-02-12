@@ -8,15 +8,16 @@ rpcpython_PYTHON = SimpleRpcController.py StreamRpcChannel.py __init__.py
 
 BUILT_SOURCES = Rpc_pb2.py
 
-Rpc_pb2.py: ${top_builddir}/common/rpc/Rpc.proto
-	$(PROTOC) --python_out ./ -I ${top_builddir}/common/rpc/ ${top_builddir}/common/rpc/Rpc.proto
+Rpc_pb2.py: ${top_srcdir}/common/rpc/Rpc.proto
+	$(PROTOC) --python_out ./ -I ${top_srcdir}/common/rpc/ ${top_srcdir}/common/rpc/Rpc.proto
 
-clean-local:
-	rm -f Rpc_pb2.*
+SimpleRpcControllerTest.sh: Makefile
+	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > SimpleRpcControllerTest.sh
+	chmod +x SimpleRpcControllerTest.sh
 
-TESTS_ENVIRONMENT = PYTHON=$(PYTHON)
 TESTS = SimpleRpcControllerTest.sh
 
 endif
 
-EXTRA_DIST = SimpleRpcControllerTest.py SimpleRpcControllerTest.sh
+EXTRA_DIST = SimpleRpcControllerTest.py
+CLEANFILES = Rpc_pb2.* SimpleRpcControllerTest.sh

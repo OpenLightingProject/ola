@@ -52,6 +52,8 @@ launcher_files = \
 
 EXTRA_DIST = $(launcher_files)
 
+CLEANFILES = DataLocation.py
+
 if INSTALL_RDM_TESTS
 
 BUILT_SOURCES = DataLocation.py
@@ -82,9 +84,5 @@ dist_testserver_static_DATA = $(testserver_static_files)
 
 testserver_imagesdir = $(datadir)/ola/rdm-server/images
 dist_testserver_images_DATA = $(testserver_image_files)
-
-clean-local:
-	rm -f DataLocation.py
-
 
 endif

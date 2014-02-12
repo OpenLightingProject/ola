@@ -1,6 +1,13 @@
 #!/bin/bash
 # Autogenerate the plugin_id.h file from the protobuf definition.
 
+if [ $# != 1 ]; then
+  echo "Usage: $0 <path-to-proto>";
+  exit;
+fi
+
+proto=$1;
+
 (
 cat <<EOM
 /*
@@ -32,7 +39,7 @@ namespace ola {
 
 typedef enum {
 EOM
-grep -E "^[ \t]+OLA_PLUGIN_" ../../common/protocol/Ola.proto | sed "s/;/,/"
+grep -E "^[ \t]+OLA_PLUGIN_" $proto | sed "s/;/,/"
 cat <<EOM
 } ola_plugin_id;
 }  // namespace ola

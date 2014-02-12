@@ -30,7 +30,6 @@
 
 namespace ola {
 
-using std::string;
 class PluginAdaptor;
 
 /*
@@ -45,7 +44,7 @@ class AbstractPlugin {
   virtual bool LoadPreferences() = 0;
   // The location for preferences. This can be anything really but should
   // indicate to the user how how the preferences were loaded.
-  virtual string PreferenceSource() const = 0;
+  virtual std::string PreferenceSource() const = 0;
   // true if this plugin is enabled
   virtual bool IsEnabled() const = 0;
   // start the plugin
@@ -55,9 +54,9 @@ class AbstractPlugin {
   // return the plugin_id of this plugin
   virtual ola_plugin_id Id() const = 0;
   // return the name of this plugin
-  virtual string Name() const = 0;
+  virtual std::string Name() const = 0;
   // return the description of this plugin
-  virtual string Description() const = 0;
+  virtual std::string Description() const = 0;
 
   virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) = 0;
 
@@ -85,7 +84,7 @@ class Plugin: public AbstractPlugin {
   virtual ~Plugin() {}
 
   bool LoadPreferences();
-  string PreferenceSource() const;
+  std::string PreferenceSource() const;
   bool IsEnabled() const;
   virtual bool Start();
   virtual bool Stop();
@@ -94,7 +93,7 @@ class Plugin: public AbstractPlugin {
   virtual ola_plugin_id Id() const = 0;
 
   // return the prefix used to identify this plugin
-  virtual string PluginPrefix() const = 0;
+  virtual std::string PluginPrefix() const = 0;
 
   // by default we don't conflict with any other plugins
   virtual void ConflictsWith(std::set<ola_plugin_id>*) {}

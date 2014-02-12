@@ -38,9 +38,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 #ifndef EXAMPLES_OLACONFIGURATOR_H_
 #define EXAMPLES_OLACONFIGURATOR_H_
 
@@ -70,13 +67,13 @@ class OlaConfigurator {
     bool Setup();
     void Run() { m_ss->Run(); }
     void Terminate() { m_ss->Terminate(); }
-    void HandleDevices(const vector <ola::OlaDevice> &devices,
-                       const string &error);
+    void HandleDevices(const std::vector <ola::OlaDevice> &devices,
+                       const std::string &error);
     bool SendMessage(const google::protobuf::Message &message);
 
     // Subclasses implement this
-    virtual void HandleConfigResponse(const string &reply,
-                                      const string &error) = 0;
+    virtual void HandleConfigResponse(const std::string &reply,
+                                      const std::string &error) = 0;
     virtual void SendConfigRequest() = 0;
 
  protected:

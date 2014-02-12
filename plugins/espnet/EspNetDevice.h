@@ -35,7 +35,7 @@ class EspNetDevice: public Device {
                  class Preferences *prefs,
                  class PluginAdaptor *plugin_adaptor);
 
-    string DeviceId() const { return "1"; }
+    std::string DeviceId() const { return "1"; }
 
     static const char IP_KEY[];
     static const char NODE_NAME_KEY[];

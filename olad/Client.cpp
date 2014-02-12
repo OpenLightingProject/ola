@@ -30,6 +30,7 @@
 namespace ola {
 
 using ola::rpc::RpcController;
+using std::map;
 
 Client::~Client() {
   m_data_map.clear();
