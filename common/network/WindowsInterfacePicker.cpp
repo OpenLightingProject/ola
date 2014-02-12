@@ -37,7 +37,8 @@ using std::vector;
 /*
  * Return a vector of interfaces on the system.
  */
-vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
+vector<Interface> WindowsInterfacePicker::GetInterfaces(
+    bool include_loopback) const {
   vector<Interface> interfaces;
 
   PIP_ADAPTER_INFO pAdapter = NULL;
@@ -45,6 +46,8 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
   IP_ADDR_STRING *ipAddress;
   ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
   uint32_t net, mask;
+  (void)include_loopback;  // We don't currently use this but its a required
+                           // part of the InterfacePicker interface..
 
   while (1) {
     pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));
