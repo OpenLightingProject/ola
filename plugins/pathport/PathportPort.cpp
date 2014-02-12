@@ -30,6 +30,7 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
+using std::string;
 
 string PathportPortHelper::Description(const Universe *universe) const {
   if (!universe)

@@ -29,9 +29,6 @@
 
 namespace ola {
 
-using std::string;
-
-
 /*
  * The base action
  */
@@ -70,7 +67,7 @@ class SetNameAction: public BaseHttpAction {
  public:
     SetNameAction(client::OlaClient *client,
                   unsigned int universe,
-                  const string &name,
+                  const std::string &name,
                   bool is_fatal):
       BaseHttpAction(client),
       m_universe(universe),
@@ -85,7 +82,7 @@ class SetNameAction: public BaseHttpAction {
 
  private:
     unsigned int m_universe;
-    string m_name;
+    std::string m_name;
     bool m_is_fatal;
 
     DISALLOW_COPY_AND_ASSIGN(SetNameAction);

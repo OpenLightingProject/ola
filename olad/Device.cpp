@@ -37,7 +37,10 @@
 
 namespace ola {
 
+using std::map;
 using std::pair;
+using std::string;
+using std::vector;
 
 /*
  * Create a new device

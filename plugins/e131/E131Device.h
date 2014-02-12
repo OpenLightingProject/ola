@@ -62,11 +62,11 @@ class E131Device: public ola::Device {
                class PluginAdaptor *plugin_adaptor,
                const E131DeviceOptions &options);
 
-    string DeviceId() const { return "1"; }
+    std::string DeviceId() const { return "1"; }
 
     void Configure(ola::rpc::RpcController *controller,
-                   const string &request,
-                   string *response,
+                   const std::string &request,
+                   std::string *response,
                    ConfigureCallback *done);
 
  protected:
@@ -88,9 +88,9 @@ class E131Device: public ola::Device {
     ola::acn::CID m_cid;
 
     void HandlePreviewMode(ola::plugin::e131::Request *request,
-                           string *response);
+                           std::string *response);
 
-    void HandlePortStatusRequest(string *response);
+    void HandlePortStatusRequest(std::string *response);
     E131InputPort *GetE131InputPort(unsigned int port_id);
     E131OutputPort *GetE131OutputPort(unsigned int port_id);
 

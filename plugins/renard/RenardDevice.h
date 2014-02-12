@@ -53,9 +53,9 @@ class RenardDevice: public ola::Device {
     class Preferences *m_preferences;
 
     // Per device options
-    string DeviceBaudrateKey() const;
-    string DeviceChannelsKey() const;
-    string DeviceDmxOffsetKey() const;
+    std::string DeviceBaudrateKey() const;
+    std::string DeviceChannelsKey() const;
+    std::string DeviceDmxOffsetKey() const;
 
     void SetDefaults();
 

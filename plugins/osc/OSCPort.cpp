@@ -33,6 +33,8 @@ namespace plugin {
 namespace osc {
 
 using std::ostringstream;
+using std::string;
+using std::vector;
 
 OSCInputPort::OSCInputPort(
     OSCDevice *parent,

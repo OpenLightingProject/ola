@@ -29,6 +29,7 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
+using std::string;
 
 const char ShowNetPlugin::SHOWNET_NODE_NAME[] = "ola-ShowNet";
 const char ShowNetPlugin::PLUGIN_NAME[] = "ShowNet";

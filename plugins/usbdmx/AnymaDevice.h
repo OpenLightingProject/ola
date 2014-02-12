@@ -38,9 +38,9 @@ class AnymaDevice: public UsbDevice {
     AnymaDevice(ola::AbstractPlugin *owner,
                 libusb_device *usb_device,
                 libusb_device_handle *usb_handle,
-                const string &serial);
+                const std::string &serial);
 
-    string DeviceId() const;
+    std::string DeviceId() const;
 
     static const char EXPECTED_MANUFACTURER[];
     static const char EXPECTED_PRODUCT[];

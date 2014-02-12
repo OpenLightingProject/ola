@@ -49,7 +49,7 @@ class KiNetOutputPort: public BasicOutputPort {
       (void) priority;
     }
 
-    string Description() const {
+    std::string Description() const {
       return "Power Supply: " + m_target.ToString();
     }
 

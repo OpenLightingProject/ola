@@ -30,6 +30,7 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
+using std::string;
 using std::vector;
 
 const char OSCDevice::DEVICE_NAME[] = "OSC Device";

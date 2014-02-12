@@ -1,6 +1,13 @@
 #!/bin/bash
 # Autogenerate the RDMResponseCodes.h file from the protobuf definition.
 
+if [ $# != 1 ]; then
+  echo "Usage: $0 <path-to-proto>";
+  exit;
+fi
+
+proto=$1;
+
 (
 cat <<EOM
 /*
@@ -42,15 +49,13 @@ namespace rdm {
 
 typedef enum {
 EOM
-sed -ne  '/^enum RDMResponseCode/,/^}/p' ../../../common/protocol/Ola.proto |
-grep RDM_ | sed "s/;/,/"
+sed -ne  '/^enum RDMResponseCode/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
 } rdm_response_code;
 
 typedef enum {
 EOM
-sed -ne  '/^enum RDMResponseType/,/^}/p' ../../../common/protocol/Ola.proto |
-grep RDM_ | sed "s/;/,/"
+sed -ne  '/^enum RDMResponseType/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
 } rdm_response_type;
 }  // namespace rdm

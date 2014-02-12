@@ -42,7 +42,7 @@ class EuroliteProDevice: public UsbDevice {
         m_output_port(NULL) {
     }
 
-    string DeviceId() const;
+    std::string DeviceId() const;
 
  protected:
     bool StartHook();
