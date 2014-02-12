@@ -328,7 +328,7 @@ class TestRunner(object):
 
       test.Run()
 
-      time.sleep(self._delay/1000)
+      time.sleep(self._delay / 1000)
       
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
       tests_completed += 1
