@@ -24,7 +24,7 @@
 #include "tools/ola_trigger/Context.h"
 #include "ola/testing/TestUtils.h"
 
-
+using std::string;
 
 class ContextTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ContextTest);
