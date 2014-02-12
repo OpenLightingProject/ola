@@ -27,9 +27,6 @@
 
 #include "tools/ola_trigger/Action.h"
 
-using std::queue;
-
-
 /**
  * The MockAction we use for testing.
  */
@@ -58,7 +55,7 @@ class MockAction: public Action {
     bool NoCalls() const { return m_values.empty(); }
 
  private:
-    queue<uint8_t> m_values;
+    std::queue<uint8_t> m_values;
 };
 
 
