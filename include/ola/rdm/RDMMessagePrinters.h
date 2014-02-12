@@ -44,28 +44,15 @@
 namespace ola {
 namespace rdm {
 
-using ola::messaging::BoolMessageField;
-using ola::messaging::GenericMessagePrinter;
-using ola::messaging::GroupMessageField;
-using ola::messaging::Int16MessageField;
-using ola::messaging::Int32MessageField;
-using ola::messaging::Int8MessageField;
-using ola::messaging::MessagePrinter;
-using ola::messaging::StringMessageField;
-using ola::messaging::UInt16MessageField;
-using ola::messaging::UInt32MessageField;
-using ola::messaging::UInt8MessageField;
-using ola::messaging::UIDMessageField;
-
-
 /**
  * A RDM specific printer that transforms field names
  */
-class RDMMessagePrinter: public GenericMessagePrinter {
+class RDMMessagePrinter: public ola::messaging::GenericMessagePrinter {
  public:
   explicit RDMMessagePrinter(unsigned int initial_ident = 0)
-    : GenericMessagePrinter(GenericMessagePrinter::DEFAULT_INDENT,
-                            initial_ident) {
+    : ola::messaging::GenericMessagePrinter(
+          ola::messaging::GenericMessagePrinter::DEFAULT_INDENT,
+          initial_ident) {
   }
  protected:
   std::string TransformLabel(const std::string &label) {
@@ -79,9 +66,9 @@ class RDMMessagePrinter: public GenericMessagePrinter {
 /**
  * Print a list of proxied UIDs
  */
-class ProxiedDevicesPrinter: public MessagePrinter {
+class ProxiedDevicesPrinter: public ola::messaging::MessagePrinter {
  public:
-  void Visit(const UIDMessageField *field) {
+  void Visit(const ola::messaging::UIDMessageField *field) {
     Stream() << field->Value() << std::endl;
   }
 };
@@ -90,16 +77,16 @@ class ProxiedDevicesPrinter: public MessagePrinter {
 /**
  * Print a status message.
  */
-class StatusMessagePrinter: public MessagePrinter {
+class StatusMessagePrinter: public ola::messaging::MessagePrinter {
  public:
-  void Visit(const UInt8MessageField *field) {
+  void Visit(const ola::messaging::UInt8MessageField *field) {
     if (m_messages.empty())
       return;
     m_messages.back().status_type = field->Value();
     m_messages.back().status_type_defined = true;
   }
 
-  void Visit(const Int16MessageField *field) {
+  void Visit(const ola::messaging::Int16MessageField *field) {
     if (m_messages.empty())
       return;
     status_message &message = m_messages.back();
@@ -107,7 +94,7 @@ class StatusMessagePrinter: public MessagePrinter {
       message.int16_fields[message.int_offset++] = field->Value();
   }
 
-  void Visit(const UInt16MessageField *field) {
+  void Visit(const ola::messaging::UInt16MessageField *field) {
     if (m_messages.empty())
       return;
     status_message &message = m_messages.back();
@@ -115,7 +102,7 @@ class StatusMessagePrinter: public MessagePrinter {
       message.uint16_fields[message.uint_offset++] = field->Value();
   }
 
-  void Visit(const GroupMessageField*) {
+  void Visit(const ola::messaging::GroupMessageField*) {
     status_message message;
     m_messages.push_back(message);
   }
@@ -172,14 +159,14 @@ class StatusMessagePrinter: public MessagePrinter {
 /**
  * Print a list of supported params with their canonical names
  */
-class SupportedParamsPrinter: public MessagePrinter {
+class SupportedParamsPrinter: public ola::messaging::MessagePrinter {
  public:
   SupportedParamsPrinter(uint16_t manufacturer_id,
                          const RootPidStore *root_store)
       : m_manufacturer_id(manufacturer_id),
         m_root_store(root_store) {}
 
-  void Visit(const UInt16MessageField *message) {
+  void Visit(const ola::messaging::UInt16MessageField *message) {
     m_pids.insert(message->Value());
   }
 
@@ -209,15 +196,15 @@ class SupportedParamsPrinter: public MessagePrinter {
 /**
  * Print the device info message.
  */
-class DeviceInfoPrinter: public GenericMessagePrinter {
+class DeviceInfoPrinter: public ola::messaging::GenericMessagePrinter {
  public:
-  void Visit(const UInt16MessageField *message) {
+  void Visit(const ola::messaging::UInt16MessageField *message) {
     const std::string name = message->GetDescriptor()->Name();
     if (name == "product_category")
       Stream() << TransformLabel(name) << ": " <<
         ProductCategoryToString(message->Value()) << std::endl;
     else
-      GenericMessagePrinter::Visit(message);
+      ola::messaging::GenericMessagePrinter::Visit(message);
   }
 
  protected:
@@ -232,9 +219,9 @@ class DeviceInfoPrinter: public GenericMessagePrinter {
 /**
  * Print the string fields of a message
  */
-class LabelPrinter: public MessagePrinter {
+class LabelPrinter: public ola::messaging::MessagePrinter {
  public:
-  void Visit(const StringMessageField *message) {
+  void Visit(const ola::messaging::StringMessageField *message) {
     Stream() << EncodeString(message->Value()) << std::endl;
   }
 };
@@ -243,9 +230,9 @@ class LabelPrinter: public MessagePrinter {
 /**
  * Print the list of product detail ids
  */
-class ProductIdPrinter: public MessagePrinter {
+class ProductIdPrinter: public ola::messaging::MessagePrinter {
  public:
-  void Visit(const UInt16MessageField *message) {
+  void Visit(const ola::messaging::UInt16MessageField *message) {
     m_product_ids.insert(message->Value());
   }
 
@@ -264,9 +251,9 @@ class ProductIdPrinter: public MessagePrinter {
 /**
  * Print the list of supported languages.
  */
-class LanguageCapabilityPrinter: public MessagePrinter {
+class LanguageCapabilityPrinter: public ola::messaging::MessagePrinter {
  public:
-    void Visit(const StringMessageField *message) {
+    void Visit(const ola::messaging::StringMessageField *message) {
       m_languages.insert(message->Value());
     }
 
@@ -284,14 +271,14 @@ class LanguageCapabilityPrinter: public MessagePrinter {
 /**
  * Print the real time clock info
  */
-class ClockPrinter: public MessagePrinter {
+class ClockPrinter: public ola::messaging::MessagePrinter {
  public:
-  ClockPrinter() : MessagePrinter(), m_offset(0) {}
-  void Visit(const UInt16MessageField *message) {
+  ClockPrinter() : ola::messaging::MessagePrinter(), m_offset(0) {}
+  void Visit(const ola::messaging::UInt16MessageField *message) {
     m_year = message->Value();
   }
 
-  void Visit(const UInt8MessageField *message) {
+  void Visit(const ola::messaging::UInt8MessageField *message) {
     if (m_offset < CLOCK_FIELDS)
       m_fields[m_offset] = message->Value();
     m_offset++;
@@ -320,16 +307,16 @@ class ClockPrinter: public MessagePrinter {
 /**
  * Print slot info.
  */
-class SlotInfoPrinter: public MessagePrinter {
+class SlotInfoPrinter: public ola::messaging::MessagePrinter {
  public:
-  void Visit(const UInt8MessageField *field) {
+  void Visit(const ola::messaging::UInt8MessageField *field) {
     if (m_slot_info.empty())
       return;
     m_slot_info.back().type = field->Value();
     m_slot_info.back().type_defined = true;
   }
 
-  void Visit(const UInt16MessageField *field) {
+  void Visit(const ola::messaging::UInt16MessageField *field) {
     if (m_slot_info.empty())
       return;
     if (!m_slot_info.back().offset_defined) {
@@ -341,7 +328,7 @@ class SlotInfoPrinter: public MessagePrinter {
     }
   }
 
-  void Visit(const GroupMessageField*) {
+  void Visit(const ola::messaging::GroupMessageField*) {
     slot_info slot;
     m_slot_info.push_back(slot);
   }
@@ -389,9 +376,9 @@ class SlotInfoPrinter: public MessagePrinter {
 /**
  * Print sensor definition.
  */
-class SensorDefinitionPrinter: public GenericMessagePrinter {
+class SensorDefinitionPrinter: public ola::messaging::GenericMessagePrinter {
  public:
-  void Visit(const UInt8MessageField *message) {
+  void Visit(const ola::messaging::UInt8MessageField *message) {
     const std::string name = message->GetDescriptor()->Name();
     if (name == "type") {
       Stream() << TransformLabel(name) << ": " <<
@@ -423,7 +410,7 @@ class SensorDefinitionPrinter: public GenericMessagePrinter {
       }
       Stream() << std::endl;
     } else {
-      GenericMessagePrinter::Visit(message);
+      ola::messaging::GenericMessagePrinter::Visit(message);
     }
   }
 

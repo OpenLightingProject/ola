@@ -28,6 +28,7 @@
 #include "tools/ola_trigger/Action.h"
 #include "tools/ola_trigger/MockAction.h"
 
+using std::string;
 
 class SlotTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SlotTest);
