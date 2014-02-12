@@ -36,9 +36,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::plugin::usbpro::Request;
-
-
 /*
  * An Enttec Usb Pro device
  */
@@ -46,17 +43,17 @@ class UsbProDevice: public UsbSerialDevice {
  public:
   UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                ola::AbstractPlugin *owner,
-               const string &name,
+               const std::string &name,
                EnttecUsbProWidget *widget,
                uint32_t serial,
                uint16_t firmware_version,
                unsigned int fps_limit);
 
-  string DeviceId() const { return m_serial; }
+  std::string DeviceId() const { return m_serial; }
 
   void Configure(ola::rpc::RpcController *controller,
-                 const string &request,
-                 string *response,
+                 const std::string &request,
+                 std::string *response,
                  ConfigureCallback *done);
 
   bool AllowMultiPortPatching() const { return true; }
@@ -76,39 +73,39 @@ class UsbProDevice: public UsbSerialDevice {
                     const usb_pro_parameters &params);
 
   void HandleParametersRequest(ola::rpc::RpcController *controller,
-                               const Request *request,
-                               string *response,
+                               const ola::plugin::usbpro::Request *request,
+                               std::string *response,
                                ConfigureCallback *done);
 
   void HandleParametersResponse(ola::rpc::RpcController *controller,
-                                string *response,
+                                std::string *response,
                                 ConfigureCallback *done,
                                 unsigned int port_id,
                                 bool status,
                                 const usb_pro_parameters &params);
 
   void HandleSerialRequest(ola::rpc::RpcController *controller,
-                           const Request *request,
-                           string *response,
+                           const ola::plugin::usbpro::Request *request,
+                           std::string *response,
                            ConfigureCallback *done);
 
   void HandlePortAssignmentRequest(ola::rpc::RpcController *controller,
-                                   const Request *request,
-                                   string *response,
+                                   const ola::plugin::usbpro::Request *request,
+                                   std::string *response,
                                    ConfigureCallback *done);
 
   void HandlePortAssignmentResponse(ola::rpc::RpcController *controller,
-                                    string *response,
+                                    std::string *response,
                                     ConfigureCallback *done,
                                     bool status,
                                     uint8_t port1_assignment,
                                     uint8_t port2_assignment);
 
-  static string SerialToString(uint32_t serial);
+  static std::string SerialToString(uint32_t serial);
 
   EnttecUsbProWidget *m_pro_widget;
-  string m_serial;
-  vector<PortParams> m_port_params;
+  std::string m_serial;
+  std::vector<PortParams> m_port_params;
 };
 
 
@@ -122,7 +119,7 @@ class UsbProInputPort: public BasicInputPort {
                   EnttecPort *port,
                   unsigned int id,
                   ola::PluginAdaptor *plugin_adaptor,
-                  const string &description)
+                  const std::string &description)
       : BasicInputPort(parent, id, plugin_adaptor),
         m_description(description),
         m_port(port) {}
@@ -131,10 +128,10 @@ class UsbProInputPort: public BasicInputPort {
     return m_port->FetchDMX();
   }
 
-  string Description() const { return m_description; }
+  std::string Description() const { return m_description; }
 
  private:
-  const string m_description;
+  const std::string m_description;
   EnttecPort *m_port;
 };
 
@@ -148,7 +145,7 @@ class UsbProOutputPort: public BasicOutputPort {
   UsbProOutputPort(UsbProDevice *parent,
                    EnttecPort *port,
                    unsigned int id,
-                   const string &description,
+                   const std::string &description,
                    const TimeStamp *wake_time,
                    unsigned int max_burst,
                    unsigned int rate)
@@ -184,10 +181,10 @@ class UsbProOutputPort: public BasicOutputPort {
     m_port->RunIncrementalDiscovery(callback);
   }
 
-  string Description() const { return m_description; }
+  std::string Description() const { return m_description; }
 
  private:
-  const string m_description;
+  const std::string m_description;
   EnttecPort *m_port;
   TokenBucket m_bucket;
   const TimeStamp *m_wake_time;

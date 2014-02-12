@@ -38,8 +38,10 @@ namespace plugin {
 namespace spi {
 
 using std::auto_ptr;
+using std::set;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
 const char SPIDevice::HARDWARE_BACKEND[] = "hardware";

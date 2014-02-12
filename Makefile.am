@@ -7,6 +7,9 @@ include aminclude.am
 SUBDIRS = include data protoc common ola plugins slp olad python tools \
           examples debian java man doxygen
 
+# We want to build the python code when running distcheck.
+AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc libolaserver.pc
 

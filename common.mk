@@ -1,6 +1,8 @@
 # here we define common flags for C++ targets
 WARNING_CXXFLAGS = -I$(top_srcdir)/include \
+                   -I$(top_builddir)/include \
                    -I$(top_srcdir) \
+                   -I$(top_builddir) \
                    -Wall -Wformat -W -fvisibility-inlines-hidden \
                    $(libprotobuf_CFLAGS)
 
@@ -20,4 +22,5 @@ COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
                       $(top_builddir)/common/testing/libolatesting.la \
                       $(top_builddir)/common/testing/libtestmain.la
 
-COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
+                       -DTEST_SRC_DIR=\"$(srcdir)\"

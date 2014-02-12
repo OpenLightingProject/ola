@@ -34,6 +34,8 @@ namespace renard {
 
 using ola::AbstractPlugin;
 using ola::io::ConnectedDescriptor;
+using std::set;
+using std::string;
 
 const char RenardDevice::RENARD_DEVICE_NAME[] = "Renard Device";
 // The default Renard firmware has 0x80 as start address. It would be

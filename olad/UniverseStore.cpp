@@ -20,7 +20,6 @@
  */
 
 #include <iostream>
-#include <map>
 #include <set>
 #include <sstream>
 #include <string>
@@ -37,6 +36,9 @@
 namespace ola {
 
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 const unsigned int UniverseStore::MINIMUM_RDM_DISCOVERY_INTERVAL = 30;
 

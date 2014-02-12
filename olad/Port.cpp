@@ -30,6 +30,8 @@
 
 namespace ola {
 
+using std::string;
+
 /*
  * Create a new basic input port
  */

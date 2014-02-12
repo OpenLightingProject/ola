@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string>
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -26,6 +25,8 @@
 #include "olad/Port.h"
 
 namespace ola {
+
+using std::vector;
 
 /*
  * Patch a port

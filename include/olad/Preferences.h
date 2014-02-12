@@ -35,12 +35,6 @@
 
 namespace ola {
 
-using std::map;
-using std::multimap;
-using std::set;
-using std::string;
-using std::vector;
-
 /*
  * Checks the value of a variable
  */
@@ -49,7 +43,7 @@ class Validator {
   Validator() {}
   virtual ~Validator() {}
 
-  virtual bool IsValid(const string &value) const = 0;
+  virtual bool IsValid(const std::string &value) const = 0;
 };
 
 
@@ -62,7 +56,7 @@ class StringValidator: public Validator {
       : Validator(),
         m_empty_ok(empty_ok) {
   }
-  bool IsValid(const string &value) const;
+  bool IsValid(const std::string &value) const;
 
  private:
     const bool m_empty_ok;
@@ -75,11 +69,11 @@ class StringValidator: public Validator {
 template <class T>
 class SetValidator: public Validator {
  public:
-  explicit SetValidator(const set<T> &values) : m_values(values) {}
-  bool IsValid(const string &value) const;
+  explicit SetValidator(const std::set<T> &values) : m_values(values) {}
+  bool IsValid(const std::string &value) const;
 
  private:
-  set<T> m_values;
+  std::set<T> m_values;
 };
 
 
@@ -89,7 +83,7 @@ class SetValidator: public Validator {
 class BoolValidator: public Validator {
  public:
   BoolValidator(): Validator() {}
-  bool IsValid(const string &value) const;
+  bool IsValid(const std::string &value) const;
 
   // On win32 TRUE and FALSE are #define'd. We can #undef them here but that
   // doesn't fix the case in the calling code. So we use ENABLED and DISABLED
@@ -107,7 +101,7 @@ class UIntValidator: public Validator {
   UIntValidator(unsigned int greater_than, unsigned int less_than)
       : m_gt(greater_than),
         m_lt(less_than) {}
-  bool IsValid(const string &value) const;
+  bool IsValid(const std::string &value) const;
 
  private:
   unsigned int m_gt, m_lt;
@@ -122,7 +116,7 @@ class IntValidator: public Validator {
   IntValidator(int greater_than, int less_than)
       : m_gt(greater_than),
         m_lt(less_than) {}
-  bool IsValid(const string &value) const;
+  bool IsValid(const std::string &value) const;
 
  private:
   int m_gt, m_lt;
@@ -137,7 +131,7 @@ class IPv4Validator: public Validator {
   explicit IPv4Validator(bool empty_ok = true):
     m_empty_ok(empty_ok) {}
 
-  bool IsValid(const string &value) const;
+  bool IsValid(const std::string &value) const;
  private:
   bool m_empty_ok;
 
@@ -150,7 +144,7 @@ class IPv4Validator: public Validator {
  */
 class Preferences {
  public:
-  explicit Preferences(const string name): m_preference_name(name) {}
+  explicit Preferences(const std::string name): m_preference_name(name) {}
 
   /**
    * Destroy this object
@@ -176,14 +170,14 @@ class Preferences {
    * @brief The location of where these preferences are stored.
    * @return the location
    */
-  virtual string Source() const = 0;
+  virtual std::string Source() const = 0;
 
   /**
    * @brief Set a preference value, overiding the existing value.
    * @param key
    * @param value
    */
-  virtual void SetValue(const string &key, const string &value) = 0;
+  virtual void SetValue(const std::string &key, const std::string &value) = 0;
 
   /**
    * @brief Set a preference value, overiding the existing value. This helper
@@ -191,7 +185,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetValue(const string &key, unsigned int value) = 0;
+  virtual void SetValue(const std::string &key, unsigned int value) = 0;
 
   /**
    * @brief Set a preference value, overiding the existing value. This helper
@@ -199,14 +193,15 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetValue(const string &key, int value) = 0;
+  virtual void SetValue(const std::string &key, int value) = 0;
 
   /**
    * @brief Adds this preference value to the store.
    * @param key
    * @param value
    */
-  virtual void SetMultipleValue(const string &key, const string &value) = 0;
+  virtual void SetMultipleValue(const std::string &key,
+                                const std::string &value) = 0;
 
   /**
    * @brief Adds this preference value to the store. This helper accepts an
@@ -214,7 +209,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetMultipleValue(const string &key, unsigned int value) = 0;
+  virtual void SetMultipleValue(const std::string &key, unsigned int value) = 0;
 
   /**
    * @brief Adds this preference value to the store. This helper accepts an
@@ -222,7 +217,7 @@ class Preferences {
    * @param key
    * @param value
    */
-  virtual void SetMultipleValue(const string &key, int value) = 0;
+  virtual void SetMultipleValue(const std::string &key, int value) = 0;
 
   /**
    * @brief Set a preference value if it doesn't already exist, or if it exists
@@ -233,9 +228,9 @@ class Preferences {
    * @param value the new value
    * @return true if we set the value, false if it already existed
    */
-  virtual bool SetDefaultValue(const string &key,
+  virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
-                               const string &value) = 0;
+                               const std::string &value) = 0;
 
   /**
    * @brief Set a preference value if it doesn't already exist, or if it exists
@@ -246,7 +241,7 @@ class Preferences {
    * @param value the new value
    * @return true if we set the value, false if it already existed
    */
-  virtual bool SetDefaultValue(const string &key,
+  virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
                                unsigned int value) = 0;
 
@@ -259,7 +254,7 @@ class Preferences {
    * @param value the new value
    * @return true if we set the value, false if it already existed
    */
-  virtual bool SetDefaultValue(const string &key,
+  virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
                                int value) = 0;
 
@@ -269,27 +264,28 @@ class Preferences {
    * @return the value corresponding to key, or the empty string if the key
    * doesn't exist.
    */
-  virtual string GetValue(const string &key) const = 0;
+  virtual std::string GetValue(const std::string &key) const = 0;
 
   /**
    * @brief Returns all preference values corrosponding to this key
    * @param key the key to fetch
    * @return a vector of strings.
    */
-  virtual vector<string> GetMultipleValue(const string &key) const = 0;
+  virtual std::vector<std::string> GetMultipleValue(
+      const std::string &key) const = 0;
 
   /**
    * @brief Check if a preference key exists
    * @param key the key to check
    * @return true if the key exists, false otherwise.
    */
-  virtual bool HasKey(const string &key) const = 0;
+  virtual bool HasKey(const std::string &key) const = 0;
 
   /**
    * @brief Remove a preference value.
    * @param key
    */
-  virtual void RemoveValue(const string &key) = 0;
+  virtual void RemoveValue(const std::string &key) = 0;
 
   // bool helper methods
   /**
@@ -297,17 +293,17 @@ class Preferences {
    * @param key the key to fetch
    * @return true if the value is 'true' or false otherwise
    */
-  virtual bool GetValueAsBool(const string &key) const = 0;
+  virtual bool GetValueAsBool(const std::string &key) const = 0;
 
   /**
    * @brief Set a value as a bool.
    * @param key
    * @param value
    */
-  virtual void SetValueAsBool(const string &key, bool value) = 0;
+  virtual void SetValueAsBool(const std::string &key, bool value) = 0;
 
  protected:
-  string m_preference_name;
+  std::string m_preference_name;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Preferences);
@@ -329,11 +325,11 @@ class PreferencesFactory {
   /**
    * Lookup a preference object
    */
-  virtual Preferences *NewPreference(const string &name);
+  virtual Preferences *NewPreference(const std::string &name);
 
  private:
-  virtual Preferences *Create(const string &name) = 0;
-  map<string, Preferences*> m_preferences_map;
+  virtual Preferences *Create(const std::string &name) = 0;
+  std::map<std::string, Preferences*> m_preferences_map;
 };
 
 
@@ -342,53 +338,55 @@ class PreferencesFactory {
  */
 class MemoryPreferences: public Preferences {
  public:
-  explicit MemoryPreferences(const string name): Preferences(name) {}
+  explicit MemoryPreferences(const std::string name): Preferences(name) {}
   virtual ~MemoryPreferences();
   virtual bool Load() { return true; }
   virtual bool Save() const { return true; }
   virtual void Clear();
 
-  virtual string Source() const { return "Not Saved"; }
+  virtual std::string Source() const { return "Not Saved"; }
 
-  virtual void SetValue(const string &key, const string &value);
-  virtual void SetValue(const string &key, unsigned int value);
-  virtual void SetValue(const string &key, int value);
-  virtual void SetMultipleValue(const string &key, const string &value);
-  virtual void SetMultipleValue(const string &key, unsigned int value);
-  virtual void SetMultipleValue(const string &key, int value);
-  virtual bool SetDefaultValue(const string &key,
+  virtual void SetValue(const std::string &key, const std::string &value);
+  virtual void SetValue(const std::string &key, unsigned int value);
+  virtual void SetValue(const std::string &key, int value);
+  virtual void SetMultipleValue(const std::string &key,
+                                const std::string &value);
+  virtual void SetMultipleValue(const std::string &key, unsigned int value);
+  virtual void SetMultipleValue(const std::string &key, int value);
+  virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
-                               const string &value);
-  virtual bool SetDefaultValue(const string &key,
+                               const std::string &value);
+  virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
                                unsigned int value);
-  virtual bool SetDefaultValue(const string &key,
+  virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
                                int value);
 
-  virtual string GetValue(const string &key) const;
-  virtual vector<string> GetMultipleValue(const string &key) const;
-  virtual bool HasKey(const string &key) const;
+  virtual std::string GetValue(const std::string &key) const;
+  virtual std::vector<std::string> GetMultipleValue(
+      const std::string &key) const;
+  virtual bool HasKey(const std::string &key) const;
 
-  virtual void RemoveValue(const string &key);
+  virtual void RemoveValue(const std::string &key);
 
   // bool helper methods
-  virtual bool GetValueAsBool(const string &key) const;
-  virtual void SetValueAsBool(const string &key, bool value);
+  virtual bool GetValueAsBool(const std::string &key) const;
+  virtual void SetValueAsBool(const std::string &key, bool value);
 
   bool operator==(const MemoryPreferences &other) {
     return m_pref_map == other.m_pref_map;
   }
 
  protected:
-  typedef multimap<string, string> PreferencesMap;
+  typedef std::multimap<std::string, std::string> PreferencesMap;
   PreferencesMap m_pref_map;
 };
 
 
 class MemoryPreferencesFactory: public PreferencesFactory {
  private:
-  MemoryPreferences *Create(const string &name) {
+  MemoryPreferences *Create(const std::string &name) {
     return new MemoryPreferences(name);
   }
 };
@@ -399,10 +397,10 @@ class MemoryPreferencesFactory: public PreferencesFactory {
  */
 class FilePreferenceSaverThread: public ola::thread::Thread {
  public:
-  typedef multimap<string, string> PreferencesMap;
+  typedef std::multimap<std::string, std::string> PreferencesMap;
   FilePreferenceSaverThread();
 
-  void SavePreferences(const string &filename,
+  void SavePreferences(const std::string &filename,
                        const PreferencesMap &preferences);
 
   /**
@@ -428,7 +426,8 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   /**
    * Perform the save
    */
-  void SaveToFile(const string *filename, const PreferencesMap *preferences);
+  void SaveToFile(const std::string *filename,
+                  const PreferencesMap *preferences);
 
   /**
    * Notify the blocked thread we're done
@@ -443,8 +442,8 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
  */
 class FileBackedPreferences: public MemoryPreferences {
  public:
-  explicit FileBackedPreferences(const string &directory,
-                                 const string &name,
+  explicit FileBackedPreferences(const std::string &directory,
+                                 const std::string &name,
                                  FilePreferenceSaverThread *saver_thread)
       : MemoryPreferences(name),
         m_directory(directory),
@@ -457,12 +456,12 @@ class FileBackedPreferences: public MemoryPreferences {
    * @brief Load these preferences from a file
    * @param filename the filename to load from
    */
-  bool LoadFromFile(const string &filename);
+  bool LoadFromFile(const std::string &filename);
 
-  string Source() const { return FileName(); }
+  std::string Source() const { return FileName(); }
 
  private:
-  const string m_directory;
+  const std::string m_directory;
   FilePreferenceSaverThread *m_saver_thread;
 
   bool ChangeDir() const;
@@ -470,7 +469,7 @@ class FileBackedPreferences: public MemoryPreferences {
   /**
    * Return the name of the file used to save the preferences
    */
-  const string FileName() const;
+  const std::string FileName() const;
   static const char OLA_CONFIG_PREFIX[];
   static const char OLA_CONFIG_SUFFIX[];
 };
@@ -478,7 +477,7 @@ class FileBackedPreferences: public MemoryPreferences {
 
 class FileBackedPreferencesFactory: public PreferencesFactory {
  public:
-  explicit FileBackedPreferencesFactory(const string &directory)
+  explicit FileBackedPreferencesFactory(const std::string &directory)
       : m_directory(directory) {
     m_saver_thread.Start();
   }
@@ -488,10 +487,10 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
   }
 
  private:
-  const string m_directory;
+  const std::string m_directory;
   FilePreferenceSaverThread m_saver_thread;
 
-  FileBackedPreferences *Create(const string &name) {
+  FileBackedPreferences *Create(const std::string &name) {
     return new FileBackedPreferences(m_directory, name, &m_saver_thread);
   }
 };

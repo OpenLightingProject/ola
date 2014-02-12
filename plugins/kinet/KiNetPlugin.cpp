@@ -33,8 +33,9 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using std::vector;
 using ola::network::IPV4Address;
+using std::string;
+using std::vector;
 
 const char KiNetPlugin::POWER_SUPPLY_KEY[] = "power_supply";
 const char KiNetPlugin::PLUGIN_NAME[] = "KiNET";

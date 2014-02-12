@@ -30,8 +30,6 @@
 namespace ola {
 namespace io {
 
-using std::string;
-
 // An abstract class that guarantees byte order will be converted.
 class BigEndianInputStreamInterface: public InputStreamInterface {};
 
@@ -55,7 +53,7 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
     bool operator>>(int32_t &val) { return ExtractAndConvert(&val); }
     bool operator>>(uint32_t &val) { return ExtractAndConvert(&val); }
 
-    unsigned int ReadString(string *output, unsigned int size) {
+    unsigned int ReadString(std::string *output, unsigned int size) {
       return m_stream->ReadString(output, size);
     }
 
@@ -93,7 +91,7 @@ class BigEndianInputStream: public BigEndianInputStreamInterface {
     bool operator>>(int32_t &val) { return m_adaptor >> val; }
     bool operator>>(uint32_t &val) { return m_adaptor >> val; }
 
-    unsigned int ReadString(string *output, unsigned int size) {
+    unsigned int ReadString(std::string *output, unsigned int size) {
       return m_adaptor.ReadString(output, size);
     }
 

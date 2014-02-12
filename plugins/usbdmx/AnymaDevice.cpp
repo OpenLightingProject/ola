@@ -29,6 +29,7 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using std::string;
 
 const char AnymaDevice::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
 const char AnymaDevice::EXPECTED_PRODUCT[] = "uDMX";

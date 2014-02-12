@@ -46,12 +46,12 @@ class OSCDevice: public Device {
       OSCNode::DataFormat data_format;
     };
 
-    typedef vector<PortConfig> PortConfigs;
+    typedef std::vector<PortConfig> PortConfigs;
 
     OSCDevice(AbstractPlugin *owner,
               PluginAdaptor *plugin_adaptor,
               uint16_t udp_port,
-              const vector<std::string> &addresses,
+              const std::vector<std::string> &addresses,
               const PortConfigs &port_configs);
     std::string DeviceId() const { return "1"; }
 
@@ -59,7 +59,7 @@ class OSCDevice: public Device {
 
  protected:
     PluginAdaptor *m_plugin_adaptor;
-    const vector<string> m_port_addresses;
+    const std::vector<std::string> m_port_addresses;
     const PortConfigs m_port_configs;
     std::auto_ptr<class OSCNode> m_osc_node;
 

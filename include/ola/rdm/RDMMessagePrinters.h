@@ -56,9 +56,6 @@ using ola::messaging::UInt16MessageField;
 using ola::messaging::UInt32MessageField;
 using ola::messaging::UInt8MessageField;
 using ola::messaging::UIDMessageField;
-using std::endl;
-using std::set;
-using std::string;
 
 
 /**
@@ -71,8 +68,8 @@ class RDMMessagePrinter: public GenericMessagePrinter {
                             initial_ident) {
   }
  protected:
-  string TransformLabel(const string &label) {
-    string new_label = label;
+  std::string TransformLabel(const std::string &label) {
+    std::string new_label = label;
     ola::CustomCapitalizeLabel(&new_label);
     return new_label;
   }
@@ -85,7 +82,7 @@ class RDMMessagePrinter: public GenericMessagePrinter {
 class ProxiedDevicesPrinter: public MessagePrinter {
  public:
   void Visit(const UIDMessageField *field) {
-    Stream() << field->Value() << endl;
+    Stream() << field->Value() << std::endl;
   }
 };
 
@@ -134,7 +131,7 @@ class StatusMessagePrinter: public MessagePrinter {
         continue;
       }
 
-      const string message = StatusMessageIdToString(
+      const std::string message = StatusMessageIdToString(
           iter->uint16_fields[1],
           iter->int16_fields[0],
           iter->int16_fields[1]);
@@ -146,9 +143,9 @@ class StatusMessagePrinter: public MessagePrinter {
       if (message.empty()) {
         Stream() << " message-id: " <<
           iter->uint16_fields[1] << ", data1: " << iter->int16_fields[0] <<
-          ", data2: " << iter->int16_fields[1] << endl;
+          ", data2: " << iter->int16_fields[1] << std::endl;
       } else {
-        Stream() << message << endl;
+        Stream() << message << std::endl;
       }
     }
   }
@@ -188,22 +185,22 @@ class SupportedParamsPrinter: public MessagePrinter {
 
  protected:
   void PostStringHook() {
-    set<uint16_t>::const_iterator iter = m_pids.begin();
+    std::set<uint16_t>::const_iterator iter = m_pids.begin();
     for (; iter != m_pids.end(); ++iter) {
       Stream() << "  0x" << std::hex << *iter;
       const PidDescriptor *descriptor = m_root_store->GetDescriptor(
           *iter, m_manufacturer_id);
       if (descriptor) {
-        string name = descriptor->Name();
+        std::string name = descriptor->Name();
         ola::ToLower(&name);
         Stream() << " (" << name << ")";
       }
-      Stream() << endl;
+      Stream() << std::endl;
     }
   }
 
  private:
-  set<uint16_t> m_pids;
+  std::set<uint16_t> m_pids;
   uint16_t m_manufacturer_id;
   const RootPidStore *m_root_store;
 };
@@ -215,17 +212,17 @@ class SupportedParamsPrinter: public MessagePrinter {
 class DeviceInfoPrinter: public GenericMessagePrinter {
  public:
   void Visit(const UInt16MessageField *message) {
-    const string name = message->GetDescriptor()->Name();
+    const std::string name = message->GetDescriptor()->Name();
     if (name == "product_category")
       Stream() << TransformLabel(name) << ": " <<
-        ProductCategoryToString(message->Value()) << endl;
+        ProductCategoryToString(message->Value()) << std::endl;
     else
       GenericMessagePrinter::Visit(message);
   }
 
  protected:
-  string TransformLabel(const string &label) {
-    string new_label = label;
+  std::string TransformLabel(const std::string &label) {
+    std::string new_label = label;
     ola::CustomCapitalizeLabel(&new_label);
     return new_label;
   }
@@ -238,7 +235,7 @@ class DeviceInfoPrinter: public GenericMessagePrinter {
 class LabelPrinter: public MessagePrinter {
  public:
   void Visit(const StringMessageField *message) {
-    Stream() << EncodeString(message->Value()) << endl;
+    Stream() << EncodeString(message->Value()) << std::endl;
   }
 };
 
@@ -253,14 +250,14 @@ class ProductIdPrinter: public MessagePrinter {
   }
 
   void PostStringHook() {
-    set<uint16_t>::const_iterator iter = m_product_ids.begin();
+    std::set<uint16_t>::const_iterator iter = m_product_ids.begin();
     for (; iter != m_product_ids.end(); ++iter) {
-      Stream() << ProductDetailToString(*iter) << endl;
+      Stream() << ProductDetailToString(*iter) << std::endl;
     }
   }
 
  private:
-  set<uint16_t> m_product_ids;
+  std::set<uint16_t> m_product_ids;
 };
 
 
@@ -274,13 +271,13 @@ class LanguageCapabilityPrinter: public MessagePrinter {
     }
 
     void PostStringHook() {
-      set<string>::const_iterator iter = m_languages.begin();
+      std::set<std::string>::const_iterator iter = m_languages.begin();
       for (; iter != m_languages.end(); ++iter) {
-        Stream() << EncodeString(*iter) << endl;
+        Stream() << EncodeString(*iter) << std::endl;
       }
     }
  private:
-    set<string> m_languages;
+    std::set<std::string> m_languages;
 };
 
 
@@ -310,7 +307,7 @@ class ClockPrinter: public MessagePrinter {
       m_year << " " <<
       static_cast<int>(m_fields[2]) << ":" <<
       static_cast<int>(m_fields[3]) << ":" <<
-      static_cast<int>(m_fields[4]) << endl;
+      static_cast<int>(m_fields[4]) << std::endl;
   }
 
  private:
@@ -360,14 +357,14 @@ class SlotInfoPrinter: public MessagePrinter {
         continue;
       }
 
-      const string slot = SlotInfoToString(iter->type, iter->label);
+      const std::string slot = SlotInfoToString(iter->type, iter->label);
 
       if (slot.empty()) {
         Stream() << " offset: " <<
           iter->offset << ", type: " << iter->type <<
-          ", label: " << iter->label << endl;
+          ", label: " << iter->label << std::endl;
       } else {
-        Stream() << "Slot offset " << iter->offset << ": " << slot << endl;
+        Stream() << "Slot offset " << iter->offset << ": " << slot << std::endl;
       }
     }
   }
@@ -395,10 +392,10 @@ class SlotInfoPrinter: public MessagePrinter {
 class SensorDefinitionPrinter: public GenericMessagePrinter {
  public:
   void Visit(const UInt8MessageField *message) {
-    const string name = message->GetDescriptor()->Name();
+    const std::string name = message->GetDescriptor()->Name();
     if (name == "type") {
       Stream() << TransformLabel(name) << ": " <<
-        SensorTypeToString(message->Value()) << endl;
+        SensorTypeToString(message->Value()) << std::endl;
     } else if (name == "unit") {
       Stream() << TransformLabel(name) << ": ";
       if (message->Value() == UNITS_NONE) {
@@ -406,7 +403,7 @@ class SensorDefinitionPrinter: public GenericMessagePrinter {
       } else {
         Stream() << UnitToString(message->Value());
       }
-      Stream() << endl;
+      Stream() << std::endl;
     } else if (name == "prefix") {
       Stream() << TransformLabel(name) << ": ";
       if (message->Value() == PREFIX_NONE) {
@@ -414,25 +411,25 @@ class SensorDefinitionPrinter: public GenericMessagePrinter {
       } else {
         Stream() << PrefixToString(message->Value());
       }
-      Stream() << endl;
+      Stream() << std::endl;
     } else if (name == "supports_recording") {
       Stream() << TransformLabel(name) << ": ";
-      string supports_recording =
+      std::string supports_recording =
           SensorSupportsRecordingToString(message->Value());
       if (supports_recording.empty()) {
         Stream() << "None";
       } else {
         Stream() << supports_recording;
       }
-      Stream() << endl;
+      Stream() << std::endl;
     } else {
       GenericMessagePrinter::Visit(message);
     }
   }
 
  protected:
-  string TransformLabel(const string &label) {
-    string new_label = label;
+  std::string TransformLabel(const std::string &label) {
+    std::string new_label = label;
     ola::CustomCapitalizeLabel(&new_label);
     return new_label;
   }

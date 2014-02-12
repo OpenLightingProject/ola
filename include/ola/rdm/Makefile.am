@@ -23,6 +23,6 @@ pkginclude_HEADERS = AckTimerResponder.h AdvancedDimmerResponder.h \
 nodist_pkginclude_HEADERS = RDMResponseCodes.h
 
 RDMResponseCodes.h: make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto
-	sh $(srcdir)/make_rdm_codes.sh
+	sh $(srcdir)/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto
 
 CLEANFILES = RDMResponseCodes.h

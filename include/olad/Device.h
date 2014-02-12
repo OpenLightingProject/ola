@@ -38,11 +38,6 @@ namespace ola {
 
 class AbstractPlugin;
 
-using std::map;
-using std::pair;
-using std::string;
-using std::vector;
-
 /*
  * The interface for a Device
  */
@@ -54,13 +49,13 @@ class AbstractDevice {
     virtual ~AbstractDevice() {}
 
     // return the name of this device
-    virtual const string Name() const = 0;
+    virtual const std::string Name() const = 0;
     // return the plugin that owns this device
     virtual AbstractPlugin *Owner() const = 0;
 
     // return the a unique id of this device, this is guaranteed to be unique
     // and persist across restarts.
-    virtual string UniqueId() const = 0;
+    virtual std::string UniqueId() const = 0;
 
     // stop the device
     virtual bool Stop() = 0;
@@ -73,8 +68,8 @@ class AbstractDevice {
     virtual bool AllowMultiPortPatching() const = 0;
 
     // Fetch a list of all ports in this device
-    virtual void InputPorts(vector<InputPort*> *ports) const = 0;
-    virtual void OutputPorts(vector<OutputPort*> *ports) const = 0;
+    virtual void InputPorts(std::vector<InputPort*> *ports) const = 0;
+    virtual void OutputPorts(std::vector<OutputPort*> *ports) const = 0;
 
     // Lookup a particular port in this device
     virtual InputPort *GetInputPort(unsigned int port_id) const = 0;
@@ -82,8 +77,8 @@ class AbstractDevice {
 
     // configure this device
     virtual void Configure(ola::rpc::RpcController *controller,
-                           const string &request,
-                           string *response,
+                           const std::string &request,
+                           std::string *response,
                            ConfigureCallback *done) = 0;
 };
 
@@ -93,17 +88,17 @@ class AbstractDevice {
  */
 class Device: public AbstractDevice {
  public:
-    Device(AbstractPlugin *owner, const string &name);
+    Device(AbstractPlugin *owner, const std::string &name);
     virtual ~Device();
 
-    const string Name() const { return m_name; }
-    void SetName(const string &name) { m_name = name; }
+    const std::string Name() const { return m_name; }
+    void SetName(const std::string &name) { m_name = name; }
 
     AbstractPlugin *Owner() const { return m_owner; }
-    string UniqueId() const;
+    std::string UniqueId() const;
 
     // Returns an id which is unique within the plugin
-    virtual string DeviceId() const = 0;
+    virtual std::string DeviceId() const = 0;
 
     bool IsEnabled() const { return m_enabled; }
 
@@ -116,8 +111,8 @@ class Device: public AbstractDevice {
 
     bool AddPort(InputPort *port);
     bool AddPort(OutputPort *port);
-    void InputPorts(vector<InputPort*> *ports) const;
-    void OutputPorts(vector<OutputPort*> *ports) const;
+    void InputPorts(std::vector<InputPort*> *ports) const;
+    void OutputPorts(std::vector<OutputPort*> *ports) const;
 
     InputPort *GetInputPort(unsigned int port_id) const;
     OutputPort *GetOutputPort(unsigned int port_id) const;
@@ -127,8 +122,8 @@ class Device: public AbstractDevice {
 
     // Handle a Configure request
     virtual void Configure(ola::rpc::RpcController *controller,
-                           const string &request,
-                           string *response,
+                           const std::string &request,
+                           std::string *response,
                            ConfigureCallback *done);
 
  protected:
@@ -137,19 +132,19 @@ class Device: public AbstractDevice {
     virtual void PostPortStop() {}
 
  private:
-    typedef map<unsigned int, InputPort*> input_port_map;
-    typedef map<unsigned int, OutputPort*> output_port_map;
+    typedef std::map<unsigned int, InputPort*> input_port_map;
+    typedef std::map<unsigned int, OutputPort*> output_port_map;
 
     bool m_enabled;
     AbstractPlugin *m_owner;  // which plugin owns this device
-    string m_name;  // device name
-    mutable string m_unique_id;  // device id
+    std::string m_name;  // device name
+    mutable std::string m_unique_id;  // device id
     input_port_map m_input_ports;
     output_port_map m_output_ports;
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,
-                        map<unsigned int, PortClass*> *ports);
+                        std::map<unsigned int, PortClass*> *ports);
 
     template <class PortClass>
     void GenericDeletePort(PortClass *p);

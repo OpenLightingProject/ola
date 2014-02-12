@@ -41,12 +41,14 @@
 
 namespace ola {
 
-using std::ifstream;
-using std::ofstream;
-using std::pair;
 using ola::thread::Mutex;
 using ola::thread::ConditionVariable;
-
+using std::ifstream;
+using std::ofstream;
+using std::map;
+using std::pair;
+using std::string;
+using std::vector;
 
 const char BoolValidator::ENABLED[] = "true";
 const char BoolValidator::DISABLED[] = "false";

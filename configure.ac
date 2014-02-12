@@ -623,6 +623,20 @@ if test "${enable_root_check}" = "no"; then
            [Defined if olad is allowed to run as root])
 fi
 
+# Hack alert!
+# Python modules can't be split over two directories. This is a problem when
+# doing VPATH builds since the genrated files like
+# ${builddir}/python/ola/Ola_pb.py will be in a separate path ($builddir) from
+# the non-generated files ${srcdir}/python/ols/PidStore.py). To get the tests
+# to pass we symlink the files we need for the tests from the builddir to the
+# srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
+AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/UID.py:python/ola/UID.py
+                 python/ola/__init__.py:python/ola/__init__.py])
+
+# Non-makefile generted files.
 AC_CONFIG_FILES([Doxyfile
                  libola.pc
                  libolaserver.pc
@@ -636,6 +650,7 @@ AC_CONFIG_FILES([Doxyfile
                  tools/e133/libolae133controller.pc
                  tools/e133/libolae133slp.pc
                  ])
+# Makefiles
 AC_CONFIG_FILES([Makefile
                  common/Makefile
                  common/base/Makefile

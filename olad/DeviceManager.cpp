@@ -35,6 +35,11 @@
 
 namespace ola {
 
+using std::map;
+using std::set;
+using std::string;
+using std::vector;
+
 const unsigned int DeviceManager::MISSING_DEVICE_ALIAS = 0;
 const char DeviceManager::PORT_PREFERENCES[] = "port";
 const char DeviceManager::PRIORITY_VALUE_SUFFIX[] = "_priority_value";
