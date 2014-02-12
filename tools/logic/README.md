@@ -1,8 +1,7 @@
 In order to compile the logic rdm sniffer, you need to set the include path to your SaleaeDeviceSDK. Example:
 
 ```
-export CPPFLAGS="$CPPFLAGS -I/path/to/your/SaleaeDeviceSdk-1.1.9/include"
-./configure
+./configure CPPFLAGS="-I/path/to/your/SaleaeDeviceSdk-1.1.9/include""
 ```
 
 The configure script should output something like this:
