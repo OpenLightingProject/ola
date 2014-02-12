@@ -21,7 +21,6 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import datetime
 import inspect
 import logging
-import time
 from ola.testing.rdm import ResponderTest
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
@@ -207,10 +206,11 @@ def GetTestClasses(module):
       classes.append(cls)
   return classes
 
+
 class TestRunner(object):
   """The Test Runner executes the tests."""
   def __init__(self, universe, uid, broadcast_write_delay, pid_store,
-               wrapper, timestamp = False, delay = 0):
+               wrapper, timestamp = False):
     """Create a new TestRunner.
 
     Args:
@@ -220,7 +220,6 @@ class TestRunner(object):
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
       timestamp: true to print timestamps with each test
-      delay: Delay in ms inbetween tests
     """
     self._universe = universe
     self._uid = uid
@@ -229,7 +228,6 @@ class TestRunner(object):
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
-    self._delay = delay
 
     # maps device properties to the tests that provide them
     self._property_map = {}
@@ -328,8 +326,6 @@ class TestRunner(object):
 
       test.Run()
 
-      time.sleep(self._delay/1000)
-      
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
       tests_completed += 1
     return tests, device
