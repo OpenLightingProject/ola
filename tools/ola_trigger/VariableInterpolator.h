@@ -24,10 +24,8 @@
 #include <string>
 #include "tools/ola_trigger/Context.h"
 
-using std::string;
-
-bool InterpolateVariables(const string &input,
-                          string *output,
+bool InterpolateVariables(const std::string &input,
+                          std::string *output,
                           const Context &context);
 
 #endif  // TOOLS_OLA_TRIGGER_VARIABLEINTERPOLATOR_H_

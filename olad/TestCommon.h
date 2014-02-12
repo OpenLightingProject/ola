@@ -35,37 +35,26 @@
 #include "olad/Port.h"
 #include "olad/PortManager.h"
 
-using ola::AbstractDevice;
-using ola::BasicInputPort;
-using ola::BasicOutputPort;
-using ola::DmxBuffer;
-using ola::TimeStamp;
-using ola::rdm::UIDSet;
-using std::set;
-using std::string;
-using std::vector;
-
-
 /*
  * Mock out an Input Port
  */
-class TestMockInputPort: public BasicInputPort {
+class TestMockInputPort: public ola::BasicInputPort {
  public:
-    TestMockInputPort(AbstractDevice *parent,
+    TestMockInputPort(ola::AbstractDevice *parent,
                       unsigned int port_id,
                       const ola::PluginAdaptor *plugin_adaptor):
-      BasicInputPort(parent, port_id, plugin_adaptor) {}
+      ola::BasicInputPort(parent, port_id, plugin_adaptor) {}
     ~TestMockInputPort() {}
 
-    string Description() const { return ""; }
-    bool WriteDMX(const DmxBuffer &buffer) {
+    std::string Description() const { return ""; }
+    bool WriteDMX(const ola::DmxBuffer &buffer) {
       m_buffer = buffer;
       return true;
     }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    const ola::DmxBuffer &ReadDMX() const { return m_buffer; }
 
  private:
-    DmxBuffer m_buffer;
+    ola::DmxBuffer m_buffer;
 };
 
 
@@ -74,7 +63,7 @@ class TestMockInputPort: public BasicInputPort {
  */
 class TestMockPriorityInputPort: public TestMockInputPort {
  public:
-    TestMockPriorityInputPort(AbstractDevice *parent,
+    TestMockPriorityInputPort(ola::AbstractDevice *parent,
                               unsigned int port_id,
                               const ola::PluginAdaptor *plugin_adaptor):
         TestMockInputPort(parent, port_id, plugin_adaptor),
@@ -100,27 +89,27 @@ class TestMockPriorityInputPort: public TestMockInputPort {
 /*
  * Mock out an OutputPort
  */
-class TestMockOutputPort: public BasicOutputPort {
+class TestMockOutputPort: public ola::BasicOutputPort {
  public:
-    TestMockOutputPort(AbstractDevice *parent,
+    TestMockOutputPort(ola::AbstractDevice *parent,
                        unsigned int port_id,
                        bool start_rdm_discovery_on_patch = false,
                        bool supports_rdm = false):
-      BasicOutputPort(parent, port_id, start_rdm_discovery_on_patch,
+      ola::BasicOutputPort(parent, port_id, start_rdm_discovery_on_patch,
                       supports_rdm) {
     }
     ~TestMockOutputPort() {}
 
-    string Description() const { return ""; }
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    std::string Description() const { return ""; }
+    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority) {
       m_buffer = buffer;
       (void) priority;
       return true;
     }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    const ola::DmxBuffer &ReadDMX() const { return m_buffer; }
 
  private:
-    DmxBuffer m_buffer;
+    ola::DmxBuffer m_buffer;
 };
 
 
@@ -133,9 +122,9 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
                                const ola::rdm::RDMRequest*,
                                ola::rdm::RDMCallback*> RDMRequestHandler;
 
-    TestMockRDMOutputPort(AbstractDevice *parent,
+    TestMockRDMOutputPort(ola::AbstractDevice *parent,
                           unsigned int port_id,
-                          UIDSet *uids,
+                          ola::rdm::UIDSet *uids,
                           bool start_rdm_discovery_on_patch = false,
                           RDMRequestHandler *rdm_handler = NULL)
         : TestMockOutputPort(parent,
@@ -160,7 +149,7 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
       }
 
       // otherwise just return a RDM_FAILED_TO_SEND
-      vector<string> packets;
+      std::vector<std::string> packets;
       delete request;
       callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     }
@@ -176,7 +165,7 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
     }
 
  private:
-    UIDSet *m_uids;
+    ola::rdm::UIDSet *m_uids;
     std::auto_ptr<RDMRequestHandler> m_rdm_handler;
 };
 
@@ -186,7 +175,8 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
  */
 class TestMockPriorityOutputPort: public TestMockOutputPort {
  public:
-    TestMockPriorityOutputPort(AbstractDevice *parent, unsigned int port_id):
+    TestMockPriorityOutputPort(ola::AbstractDevice *parent,
+                               unsigned int port_id):
       TestMockOutputPort(parent, port_id) {}
  protected:
     bool SupportsPriorities() const { return true; }
@@ -198,9 +188,9 @@ class TestMockPriorityOutputPort: public TestMockOutputPort {
  */
 class MockDevice: public ola::Device {
  public:
-    MockDevice(ola::AbstractPlugin *owner, const string &name):
+    MockDevice(ola::AbstractPlugin *owner, const std::string &name):
       Device(owner, name) {}
-    string DeviceId() const { return Name(); }
+    std::string DeviceId() const { return Name(); }
     bool AllowLooping() const { return false; }
     bool AllowMultiPortPatching() const { return false; }
 };
@@ -211,9 +201,9 @@ class MockDevice: public ola::Device {
  */
 class MockDeviceLoopAndMulti: public ola::Device {
  public:
-    MockDeviceLoopAndMulti(ola::AbstractPlugin *owner, const string &name):
+    MockDeviceLoopAndMulti(ola::AbstractPlugin *owner, const std::string &name):
       Device(owner, name) {}
-    string DeviceId() const { return Name(); }
+    std::string DeviceId() const { return Name(); }
     bool AllowLooping() const { return true; }
     bool AllowMultiPortPatching() const { return true; }
 };
@@ -234,31 +224,31 @@ class TestMockPlugin: public ola::Plugin {
 
     TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
                    ola::ola_plugin_id plugin_id,
-                   const set<ola::ola_plugin_id> &conflict_set)
+                   const std::set<ola::ola_plugin_id> &conflict_set)
         : Plugin(plugin_adaptor),
           m_start_run(false),
           m_enabled(true),
           m_id(plugin_id),
           m_conflict_set(conflict_set) {}
 
-    void ConflictsWith(set<ola::ola_plugin_id> *conflict_set) {
+    void ConflictsWith(std::set<ola::ola_plugin_id> *conflict_set) {
       *conflict_set = m_conflict_set;
     }
     bool LoadPreferences() { return true; }
-    string PreferencesSource() const { return ""; }
+    std::string PreferencesSource() const { return ""; }
     bool IsEnabled() const { return m_enabled; }
     bool StartHook() {
       m_start_run = true;
       return true;
     }
-    string Name() const {
+    std::string Name() const {
       std::stringstream str;
       str << m_id;
       return str.str();
     }
-    string Description() const { return "bar"; }
+    std::string Description() const { return "bar"; }
     ola::ola_plugin_id Id() const { return m_id; }
-    string PluginPrefix() const { return "test"; }
+    std::string PluginPrefix() const { return "test"; }
 
     bool WasStarted() { return m_start_run; }
 
@@ -266,7 +256,7 @@ class TestMockPlugin: public ola::Plugin {
     bool m_start_run;
     bool m_enabled;
     ola::ola_plugin_id m_id;
-    set<ola::ola_plugin_id> m_conflict_set;
+    std::set<ola::ola_plugin_id> m_conflict_set;
 };
 
 
@@ -276,7 +266,7 @@ class TestMockPlugin: public ola::Plugin {
  */
 class MockSelectServer: public ola::io::SelectServerInterface {
  public:
-    explicit MockSelectServer(const TimeStamp *wake_up):
+    explicit MockSelectServer(const ola::TimeStamp *wake_up):
       SelectServerInterface(),
       m_wake_up(wake_up) {}
     ~MockSelectServer() {}
@@ -334,7 +324,7 @@ class MockSelectServer: public ola::io::SelectServerInterface {
       return ola::thread::INVALID_TIMEOUT;
     }
     void RemoveTimeout(ola::thread::timeout_id id) { (void) id; }
-    const TimeStamp *WakeUpTime() const { return m_wake_up; }
+    const ola::TimeStamp *WakeUpTime() const { return m_wake_up; }
 
     void Execute(ola::BaseCallback0<void> *callback) {
       callback->Run();
@@ -342,6 +332,6 @@ class MockSelectServer: public ola::io::SelectServerInterface {
 
 
  private:
-    const TimeStamp *m_wake_up;
+    const ola::TimeStamp *m_wake_up;
 };
 #endif  // OLAD_TESTCOMMON_H_

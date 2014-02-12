@@ -44,6 +44,7 @@
 
 using ola::DmxBuffer;
 using std::map;
+using std::string;
 using std::vector;
 
 // prototype of bison-generated parser function
