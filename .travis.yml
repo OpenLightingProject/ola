@@ -9,10 +9,6 @@ matrix:
       env: TASK='compile'
     - compiler: gcc
       env: TASK='compile'
-    - compiler: clang
-      env: TASK='make check'
-    - compiler: gcc
-      env: TASK='make check'
     - env: TASK='lint'
   fast_finish: true
 
