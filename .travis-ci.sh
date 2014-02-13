@@ -12,6 +12,9 @@ if [[ $TASK = 'lint' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+elif [[ $TASK = 'make check' ]]
+  # Otherwise compile and check as we used to
+  autoreconf -i && ./configure --enable-rdm-tests && make && make check
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make distcheck
