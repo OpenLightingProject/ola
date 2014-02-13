@@ -1,6 +1,5 @@
 pkgincludedir = $(includedir)/ola/rdm/
 
-BUILT_SOURCES = RDMResponseCodes.h
 EXTRA_DIST = make_rdm_codes.sh
 
 pkginclude_HEADERS = AckTimerResponder.h AdvancedDimmerResponder.h \
