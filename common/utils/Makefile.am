@@ -22,4 +22,4 @@ UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
 UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 UtilsTester_LDADD = $(COMMON_TESTING_LIBS) \
                     libolautils.la \
-                    $(top_srcdir)/base/libolabase.la
+                    $(top_srcdir)/common/base/libolabase.la
