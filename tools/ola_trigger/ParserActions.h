@@ -25,17 +25,15 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 class Action;
 
-void SetDefaultValue(vector<string> *input);
-Action *CreateAssignmentAction(vector<string> *input);
-Action *CreateCommandAction(const string &command, vector<string> *input);
+void SetDefaultValue(std::vector<std::string> *input);
+Action *CreateAssignmentAction(std::vector<std::string> *input);
+Action *CreateCommandAction(const std::string &command,
+                            std::vector<std::string> *input);
 ValueInterval *CreateInterval(unsigned int lower, unsigned int upper);
 void SetSlotAction(unsigned int slot,
-                   vector<class ValueInterval*> *slot_values,
+                   std::vector<class ValueInterval*> *slot_values,
                    Action *rising_action,
                    Action *falling_action);
 void SetDefaultAction(unsigned int slot,

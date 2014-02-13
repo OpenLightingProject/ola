@@ -30,9 +30,6 @@
 #include <string>
 #include HASH_MAP_H
 
-using std::string;
-
-
 /**
  * A context is a collection of variables and their values.
  */
@@ -41,20 +38,21 @@ class Context {
     Context() {}
     ~Context();
 
-    bool Lookup(const string &name, string *value) const;
-    void Update(const string &name, const string &value);
+    bool Lookup(const std::string &name, std::string *value) const;
+    void Update(const std::string &name, const std::string &value);
 
     void SetSlotValue(uint8_t value);
     void SetSlotOffset(uint16_t offset);
 
-    string AsString() const;
+    std::string AsString() const;
     friend std::ostream& operator<<(std::ostream &out, const Context&);
 
     static const char SLOT_VALUE_VARIABLE[];
     static const char SLOT_OFFSET_VARIABLE[];
 
  private:
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;
+    typedef HASH_NAMESPACE::HASH_MAP_CLASS<std::string,
+                                           std::string> VariableMap;
     VariableMap m_variables;
 };
 #endif  // TOOLS_OLA_TRIGGER_CONTEXT_H_

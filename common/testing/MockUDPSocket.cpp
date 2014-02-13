@@ -38,8 +38,10 @@ namespace ola {
 namespace testing {
 
 using ola::io::IOQueue;
+using ola::io::IOVecInterface;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 
 MockUDPSocket::MockUDPSocket()
     : ola::network::UDPSocketInterface(),

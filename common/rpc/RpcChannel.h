@@ -41,9 +41,6 @@
 namespace ola {
 namespace rpc {
 
-using google::protobuf::Message;
-using google::protobuf::MethodDescriptor;
-
 class RpcMessage;
 class RpcService;
 
@@ -57,7 +54,7 @@ class OutstandingRequest {
 
     int id;
     RpcController *controller;
-    Message *response;
+    google::protobuf::Message *response;
 };
 
 /**
@@ -121,10 +118,10 @@ class RpcChannel {
     /**
      * @brief Invoke an RPC method on this channel.
      */
-    void CallMethod(const MethodDescriptor *method,
+    void CallMethod(const google::protobuf::MethodDescriptor *method,
                     RpcController *controller,
-                    const Message *request,
-                    Message *response,
+                    const google::protobuf::Message *request,
+                    google::protobuf::Message *response,
                     SingleUseCallback0<void> *done);
 
     /**

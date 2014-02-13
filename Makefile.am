@@ -16,6 +16,8 @@ pkgconfig_DATA = libola.pc libolaserver.pc
 ACLOCAL         = aclocal -I $(auxdir)
 ACLOCAL_AMFLAGS = -I config
 
+dvi:  # dvi is run from make distcheck. Do nothing.
+
 EXTRA_DIST = \
   config/ac_prog_java_cc.m4 \
   config/ac_python_devel.m4 \

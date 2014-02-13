@@ -7,7 +7,7 @@ nodist_pkginclude_HEADERS = $(BUILT_SOURCES)
 
 EXTRA_DIST = make_timecode.sh
 
-TimeCodeEnums.h: make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto
+TimeCodeEnums.h: Makefile make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto
 	sh $(srcdir)/make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto
 
 CLEANFILES = TimeCodeEnums.h
