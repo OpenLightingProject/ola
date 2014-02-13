@@ -38,6 +38,7 @@ namespace plugin {
 namespace opendmx {
 
 using ola::PluginAdaptor;
+using std::string;
 using std::vector;
 
 const char OpenDmxPlugin::OPENDMX_DEVICE_PATH[] = "/dev/dmx0";

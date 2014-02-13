@@ -23,7 +23,6 @@
 
 #include <string>
 #include "ola/acn/ACNPort.h"
-#include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDU.h"
@@ -31,8 +30,6 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
-
-using ola::network::IPV4Address;
 
 /*
  * The interface that all Outgoing (sending) Transports inherit from. This

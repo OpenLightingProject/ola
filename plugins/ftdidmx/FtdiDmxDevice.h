@@ -32,10 +32,6 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-using std::string;
-using ola::Device;
-using std::auto_ptr;
-
 class FtdiDmxDevice : public Device {
  public:
   FtdiDmxDevice(AbstractPlugin *owner,
@@ -43,15 +39,15 @@ class FtdiDmxDevice : public Device {
                 unsigned int frequency);
   ~FtdiDmxDevice();
 
-  string DeviceId() const { return m_widget->Serial(); }
-  string Description() const { return m_widget_info.Description(); }
+  std::string DeviceId() const { return m_widget->Serial(); }
+  std::string Description() const { return m_widget_info.Description(); }
   FtdiWidget* GetDevice() {return m_widget.get(); }
 
  protected:
   bool StartHook();
 
  private:
-  auto_ptr<FtdiWidget> m_widget;
+  std::auto_ptr<FtdiWidget> m_widget;
   const FtdiWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };

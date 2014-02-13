@@ -42,9 +42,9 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
-using std::string;
 using ola::thread::Mutex;
 using ola::thread::MutexLocker;
+using std::string;
 
 /*
  * Create a new KarateThread object

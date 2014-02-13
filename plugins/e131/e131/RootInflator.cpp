@@ -25,6 +25,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 
 /*
  * Decode the root headers. If data is null we're expected to use the last

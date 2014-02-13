@@ -39,6 +39,7 @@ using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::NetworkToHost;
+using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 
 class RootPDUTest: public CppUnit::TestFixture {

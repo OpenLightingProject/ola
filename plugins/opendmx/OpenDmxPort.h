@@ -31,13 +31,11 @@ namespace ola {
 namespace plugin {
 namespace opendmx {
 
-using std::string;
-
 class OpenDmxOutputPort: public BasicOutputPort {
  public:
     OpenDmxOutputPort(OpenDmxDevice *parent,
                       unsigned int id,
-                      const string &path)
+                      const std::string &path)
         : BasicOutputPort(parent, id),
           m_thread(path),
           m_path(path) {
@@ -48,7 +46,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
       m_thread.Stop();
     }
 
-    string Description() const { return "Open Dmx at " + m_path; }
+    std::string Description() const { return "Open Dmx at " + m_path; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);
@@ -57,7 +55,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
 
  private:
     OpenDmxThread m_thread;
-    string m_path;
+    std::string m_path;
 };
 }  // namespace opendmx
 }  // namespace plugin

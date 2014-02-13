@@ -32,8 +32,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::acn::CID;
-
 /*
  * This isn't a PDU at all, it just packs a uint32 for testing.
  */
@@ -65,7 +63,7 @@ class FakePDU: public PDU {
     }
 
     void Write(ola::io::OutputStream *stream) const {
-      *stream << HostToNetwork(m_value);
+      *stream << ola::network::HostToNetwork(m_value);
     }
 
     void PackHeader(ola::io::OutputStream*) const {}
@@ -127,7 +125,7 @@ class MockPDU: public PDU {
                    sizeof(data));
       stack->Write(reinterpret_cast<const uint8_t*>(&header),
                    sizeof(header));
-      unsigned int vector = HostToNetwork(TEST_DATA_VECTOR);
+      unsigned int vector = ola::network::HostToNetwork(TEST_DATA_VECTOR);
       stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
       PrependFlagsAndLength(
           stack,
@@ -152,7 +150,7 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
  public:
-    MockInflator(const CID &cid, Callback0<void> *on_recv = NULL):
+    MockInflator(const ola::acn::CID &cid, Callback0<void> *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}
@@ -190,7 +188,7 @@ class MockInflator: public BaseInflator {
     }
 
  private:
-    CID m_cid;
+    ola::acn::CID m_cid;
     Callback0<void> *m_on_recv;
     unsigned int m_last_header;
 };

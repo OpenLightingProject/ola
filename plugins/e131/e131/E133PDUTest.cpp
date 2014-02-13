@@ -39,6 +39,7 @@ using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
+using std::string;
 
 class E133PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E133PDUTest);

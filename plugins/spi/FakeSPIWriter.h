@@ -30,14 +30,12 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-using std::string;
-
 /**
  * A Fake SPI Writer used for testing
  */
 class FakeSPIWriter : public SPIWriterInterface {
  public:
-    explicit FakeSPIWriter(const string &device_path)
+    explicit FakeSPIWriter(const std::string &device_path)
       : m_device_path(device_path),
         m_write_pending(0),
         m_writes(0),
@@ -51,7 +49,7 @@ class FakeSPIWriter : public SPIWriterInterface {
 
     bool Init() { return true; }
 
-    string DevicePath() const { return m_device_path; }
+    std::string DevicePath() const { return m_device_path; }
 
     bool WriteSPIData(const uint8_t *data, unsigned int length);
 
@@ -68,7 +66,7 @@ class FakeSPIWriter : public SPIWriterInterface {
                           unsigned int length);
 
  private:
-    const string m_device_path;
+    const std::string m_device_path;
     bool m_write_pending;  // GUARDED_BY(m_mutex)
     unsigned int m_writes;  // GUARDED_BY(m_mutex)
     unsigned int m_last_write_size;  // GUARDED_BY(m_mutex)

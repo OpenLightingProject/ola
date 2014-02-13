@@ -30,13 +30,10 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::DmxBuffer;
-
-
 class E131PortHelper {
  public:
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description(Universe *universe) const;
+    std::string Description(Universe *universe) const;
  private:
     static const unsigned int MAX_E131_UNIVERSE = 63999;
 };
@@ -55,13 +52,15 @@ class E131InputPort: public BasicInputPort {
       return m_helper.PreSetUniverse(old_universe, new_universe);
     }
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description() const { return m_helper.Description(GetUniverse()); }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
+    const ola::DmxBuffer &ReadDMX() const { return m_buffer; }
     bool SupportsPriorities() const { return true; }
     uint8_t InheritedPriority() const { return m_priority; }
 
  private:
-    DmxBuffer m_buffer;
+    ola::DmxBuffer m_buffer;
     E131Node *m_node;
     E131PortHelper m_helper;
     uint8_t m_priority;
@@ -81,10 +80,12 @@ class E131OutputPort: public BasicOutputPort {
       return m_helper.PreSetUniverse(old_universe, new_universe);
     }
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    void UniverseNameChanged(const string &new_name);
+    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority);
+    void UniverseNameChanged(const std::string &new_name);
 
     void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
     bool PreviewMode() const { return m_preview_on; }
@@ -93,7 +94,7 @@ class E131OutputPort: public BasicOutputPort {
  private:
     bool m_prepend_hostname;
     bool m_preview_on;
-    DmxBuffer m_buffer;
+    ola::DmxBuffer m_buffer;
     E131Node *m_node;
     E131PortHelper m_helper;
 };

@@ -34,9 +34,6 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
-using ola::network::IPV4Address;
-using ola::network::UDPSocket;
-
 class PathportNode {
  public:
     explicit PathportNode(const std::string &preferred_ip, uint32_t device_id,
@@ -48,8 +45,8 @@ class PathportNode {
     const ola::network::Interface &GetInterface() const {
       return m_interface;
     }
-    UDPSocket *GetSocket() { return &m_socket; }
-    void SocketReady(UDPSocket *socket);
+    ola::network::UDPSocket *GetSocket() { return &m_socket; }
+    void SocketReady(ola::network::UDPSocket *socket);
 
     bool SetHandler(uint8_t universe,
                     DmxBuffer *buffer,
@@ -111,7 +108,7 @@ class PathportNode {
     bool SendArpRequest(uint32_t destination = PATHPORT_ID_BROADCAST);
     bool SendPacket(const pathport_packet_s &packet,
                     unsigned int size,
-                    IPV4Address dest);
+                    ola::network::IPV4Address dest);
 
     bool m_running;
     uint8_t m_dscp;
@@ -121,10 +118,10 @@ class PathportNode {
 
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
-    UDPSocket m_socket;
-    IPV4Address m_config_addr;
-    IPV4Address m_status_addr;
-    IPV4Address m_data_addr;
+    ola::network::UDPSocket m_socket;
+    ola::network::IPV4Address m_config_addr;
+    ola::network::IPV4Address m_status_addr;
+    ola::network::IPV4Address m_data_addr;
 
     static const uint16_t PATHPORT_PORT = 0xed0;
     static const uint16_t PATHPORT_PROTOCOL = 0xed01;

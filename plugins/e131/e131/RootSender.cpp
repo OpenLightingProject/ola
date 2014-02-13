@@ -26,6 +26,8 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
+
 /*
  * Create a new RootSender
  * @param cid The CID to send in the Root PDU.

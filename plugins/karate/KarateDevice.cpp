@@ -29,6 +29,7 @@ namespace plugin {
 namespace karate {
 
 using ola::Device;
+using std::string;
 
 /*
  * Create a new device

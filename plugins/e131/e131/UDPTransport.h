@@ -32,8 +32,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::network::IPV4Address;
-
 /*
  * The OutgoingUDPTransport is a small shim that provides the options to
  * UDPTransportImpl.
@@ -41,7 +39,7 @@ using ola::network::IPV4Address;
 class OutgoingUDPTransport: public OutgoingTransport {
  public:
     OutgoingUDPTransport(class OutgoingUDPTransportImpl *impl,
-                         const IPV4Address &destination,
+                         const ola::network::IPV4Address &destination,
                          uint16_t port = ola::acn::ACN_PORT)
         : m_impl(impl),
           m_destination(destination),
@@ -53,7 +51,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
 
  private:
     class OutgoingUDPTransportImpl *m_impl;
-    IPV4Address m_destination;
+    ola::network::IPV4Address m_destination;
     uint16_t m_port;
 
     OutgoingUDPTransport(const OutgoingUDPTransport&);
@@ -82,7 +80,7 @@ class OutgoingUDPTransportImpl {
     }
 
     bool Send(const PDUBlock<PDU> &pdu_block,
-              const IPV4Address &destination,
+              const ola::network::IPV4Address &destination,
               uint16_t port);
 
  private:

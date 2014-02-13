@@ -32,6 +32,7 @@ namespace artnet {
 
 using ola::NewCallback;
 using ola::rdm::RDMCommand;
+using std::string;
 
 /*
  * Set the DMX Handlers as needed

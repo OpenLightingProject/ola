@@ -48,11 +48,11 @@ class E133PDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int *length) const;
     bool PackData(uint8_t *data, unsigned int *length) const;
 
-    void PackHeader(OutputStream *stream) const;
-    void PackData(OutputStream *stream) const;
+    void PackHeader(ola::io::OutputStream *stream) const;
+    void PackData(ola::io::OutputStream *stream) const;
 
     static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
-                           const string &source, uint32_t sequence_number,
+                           const std::string &source, uint32_t sequence_number,
                            uint16_t endpoint_id);
 
  private:

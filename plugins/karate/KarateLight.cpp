@@ -40,6 +40,8 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
+using std::string;
+
 /**
  * Default constructor
  * \param dev the filename of the device to use

@@ -25,11 +25,11 @@
 #include "plugins/e131/E131Port.h"
 #include "plugins/e131/E131Device.h"
 
-
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using std::string;
 
 bool E131PortHelper::PreSetUniverse(Universe *old_universe,
                                     Universe *new_universe) {
