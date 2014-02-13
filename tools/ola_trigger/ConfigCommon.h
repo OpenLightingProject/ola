@@ -31,16 +31,11 @@
 #ifndef TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_
 #define TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_
 
-#include <string>
 #include <utility>
 #include <vector>
 #include "tools/ola_trigger/Action.h"
 
-using std::string;
-using std::vector;
-using std::pair;
-
-typedef vector<ValueInterval*> IntervalList;
-typedef pair<Action*, Action*> ActionPair;
+typedef std::vector<ValueInterval*> IntervalList;
+typedef std::pair<Action*, Action*> ActionPair;
 
 #endif  // TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_

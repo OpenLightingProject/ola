@@ -2,8 +2,8 @@
 
 CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
 
-# run the lint tool only if this is the gcc build
-if [[ $CC = 'gcc' ]]; then
+if [[ $TASK = 'lint' ]]; then
+  # run the lint tool only if it is the requested task
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
   ./cpplint.py \
@@ -12,6 +12,7 @@ if [[ $CC = 'gcc' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+else
+  # Otherwise compile and check as normal
+  autoreconf -i && ./configure && make distcheck
 fi
-
-autoreconf -i && ./configure --enable-rdm-tests && make && make check

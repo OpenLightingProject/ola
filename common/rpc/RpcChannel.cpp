@@ -38,6 +38,8 @@
 namespace ola {
 namespace rpc {
 
+using google::protobuf::Message;
+using google::protobuf::MethodDescriptor;
 using google::protobuf::ServiceDescriptor;
 using std::auto_ptr;
 using std::string;
