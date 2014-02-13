@@ -686,6 +686,7 @@ void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
     json_uid->Add("device_id", iter->DeviceId());
     json_uid->Add("device", device);
     json_uid->Add("manufacturer", manufacturer);
+    json_uid->Add("uid", iter->ToString());
   }
 
   response->SetNoCache();
