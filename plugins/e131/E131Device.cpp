@@ -47,6 +47,7 @@ const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
 using ola::rpc::RpcController;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 /*
  * Create a new device

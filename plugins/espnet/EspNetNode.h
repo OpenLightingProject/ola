@@ -35,8 +35,6 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-using ola::network::IPV4Address;
-
 // the node types
 typedef enum {
     ESPNET_NODE_TYPE_SINGLE_OUT = 0x0001,  // ip to dmx
@@ -48,11 +46,9 @@ typedef enum {
 
 enum { ESPNET_MAX_UNIVERSES = 512 };
 
-using std::string;
-
 class EspNetNode {
  public:
-    explicit EspNetNode(const string &ip_address);
+    explicit EspNetNode(const std::string &ip_address);
     virtual ~EspNetNode();
 
     bool Start();
@@ -62,7 +58,7 @@ class EspNetNode {
       return m_interface;
     }
 
-    void SetName(const string &name) { m_node_name = name; }
+    void SetName(const std::string &name) { m_node_name = name; }
     void SetType(espnet_node_type type) { m_type = type; }
     void SetUniverse(uint8_t universe) { m_universe = universe; }
 
@@ -89,24 +85,24 @@ class EspNetNode {
     EspNetNode& operator=(const EspNetNode&);
     bool InitNetwork();
     void HandlePoll(const espnet_poll_t &poll, ssize_t length,
-                    const IPV4Address &source);
+                    const ola::network::IPV4Address &source);
     void HandleReply(const espnet_poll_reply_t &reply,
                      ssize_t length,
-                     const IPV4Address &source);
+                     const ola::network::IPV4Address &source);
     void HandleAck(const espnet_ack_t &ack, ssize_t length,
-                   const IPV4Address &source);
+                   const ola::network::IPV4Address &source);
     void HandleData(const espnet_data_t &data, ssize_t length,
-                    const IPV4Address &source);
+                    const ola::network::IPV4Address &source);
 
-    bool SendEspPoll(const IPV4Address &dst, bool full);
-    bool SendEspAck(const IPV4Address &dst,
+    bool SendEspPoll(const ola::network::IPV4Address &dst, bool full);
+    bool SendEspAck(const ola::network::IPV4Address &dst,
                     uint8_t status,
                     uint8_t crc);
-    bool SendEspPollReply(const IPV4Address &dst);
-    bool SendEspData(const IPV4Address &dst,
+    bool SendEspPollReply(const ola::network::IPV4Address &dst);
+    bool SendEspData(const ola::network::IPV4Address &dst,
                      uint8_t universe,
                      const DmxBuffer &buffer);
-    bool SendPacket(const IPV4Address &dst,
+    bool SendPacket(const ola::network::IPV4Address &dst,
                     const espnet_packet_union_t &packet,
                     unsigned int size);
 
@@ -116,8 +112,8 @@ class EspNetNode {
     uint8_t m_ttl;
     uint8_t m_universe;
     espnet_node_type m_type;
-    string m_node_name;
-    string m_preferred_ip;
+    std::string m_node_name;
+    std::string m_preferred_ip;
     std::map<uint8_t, universe_handler> m_handlers;
     ola::network::Interface m_interface;
     ola::network::UDPSocket m_socket;

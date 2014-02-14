@@ -51,7 +51,7 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
       return m_thread.WriteDMX(buffer);
     }
 
-    string Description() const { return m_device->Description(); }
+    std::string Description() const { return m_device->Description(); }
 
  private:
     FtdiWidget *m_device;

@@ -32,11 +32,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::rdm::RDMRequest;
-using ola::rdm::UID;
-using ola::rdm::UIDSet;
-
-
 enum {
   // port 1 labels
   GET_PARAMS_1 = 3,
@@ -88,7 +83,7 @@ class EnttecPortImpl
     typedef ola::Callback3<bool, uint8_t, const uint8_t*, unsigned int>
       SendCallback;
 
-    EnttecPortImpl(const OperationLabels &ops, const UID &uid,
+    EnttecPortImpl(const OperationLabels &ops, const ola::rdm::UID &uid,
                    SendCallback *send_cb);
 
     void Stop();

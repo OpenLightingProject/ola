@@ -52,11 +52,11 @@ class RDMPDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int *length) const;
     bool PackData(uint8_t *data, unsigned int *length) const;
 
-    void PackHeader(OutputStream *stream) const {
+    void PackHeader(ola::io::OutputStream *stream) const {
       (void) stream;
     }
 
-    void PackData(OutputStream *stream) const;
+    void PackData(ola::io::OutputStream *stream) const;
 
     static void PrependPDU(ola::io::IOStack *stack);
 

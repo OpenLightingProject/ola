@@ -31,13 +31,10 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using std::vector;
-using ola::network::IPV4Address;
-
 class KiNetDevice: public ola::Device {
  public:
     KiNetDevice(AbstractPlugin *owner,
-                const vector<IPV4Address> &power_supplies,
+                const std::vector<ola::network::IPV4Address> &power_supplies,
                 class PluginAdaptor *plugin_adaptor);
 
     // Only one KiNet device
@@ -49,7 +46,7 @@ class KiNetDevice: public ola::Device {
     void PostPortStop();
 
  private:
-    const vector<IPV4Address> m_power_supplies;
+    const std::vector<ola::network::IPV4Address> m_power_supplies;
     class KiNetNode *m_node;
     class PluginAdaptor *m_plugin_adaptor;
 };

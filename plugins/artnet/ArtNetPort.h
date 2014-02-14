@@ -45,7 +45,7 @@ class ArtNetInputPort: public BasicInputPort {
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
   void RespondWithTod();
 
-  string Description() const;
+  std::string Description() const;
 
  private:
   DmxBuffer m_buffer;
@@ -71,7 +71,7 @@ class ArtNetOutputPort: public BasicOutputPort {
 
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
-  string Description() const;
+  std::string Description() const;
 
   // only the first output port supports timecode, otherwise we send it
   // multiple times.
