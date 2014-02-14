@@ -34,7 +34,7 @@ typedef uint32_t in_addr_t;
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #else
-// Do something else if we don't have netlink/on Windows
+// Do something else if we don't have Netlink/on Windows
 #endif
 
 #include <errno.h>
@@ -50,6 +50,7 @@ typedef uint32_t in_addr_t;
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketCloser.h"
 
 
 namespace ola {
@@ -343,7 +344,7 @@ int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
 
   return msglen;
 #else
-  // No netlink, can't do anything
+  // No Netlink, can't do anything
   (void) sd;
   (void) *buf;
   (void) bufsize;
@@ -356,17 +357,20 @@ int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
 
 bool DefaultRoute(ola::network::IPV4Address *default_route) {
 #if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
-  OLA_WARN << "Getting default route";
+  OLA_INFO << "Getting default route";
 
   static const unsigned int BUFSIZE = 8192;
 
   int sd = socket(PF_ROUTE, SOCK_DGRAM, NETLINK_ROUTE);
   if (sd < 0) {
-    OLA_WARN << "Could not create socket " << strerror(errno);
+    OLA_WARN << "Could not create Netlink socket " << strerror(errno);
     return false;
   }
 
+  SocketCloser closer(sd);
+
   int seq = 0;
+  // TODO(Peter): Fix me when linking behaves: ola::math::Random(0, INT_MAX);
 
   char msg[BUFSIZE];
   memset(msg, 0, BUFSIZE);
@@ -376,11 +380,11 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
   nl_msg->nlmsg_type = RTM_GETROUTE;
   nl_msg->nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
   nl_msg->nlmsg_seq = seq++;
-  nl_msg->nlmsg_pid = getpid();
+  nl_msg->nlmsg_pid = 0;
 
   if (send(sd, nl_msg, nl_msg->nlmsg_len, 0) < 0) {
     close(sd);
-    OLA_WARN << "Could not send data to netlink " << strerror(errno);
+    OLA_WARN << "Could not send data to Netlink " << strerror(errno);
     return false;
   }
 
@@ -395,6 +399,10 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
                           BUFSIZE,
                           nl_msg->nlmsg_seq,
                           nl_msg->nlmsg_pid);
+  if (len == static_cast<int>(BUFSIZE)) {
+    OLA_WARN << "Number of bytes fetched == buffer size (" << BUFSIZE << "), "
+                "Netlink data may be truncated";
+  }
 
  /*
   * do {
@@ -443,18 +451,18 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
   * if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0)
   *   break;
   *} while (((int)nl_hdr->nlmsg_seq != seq) ||
-  *        ((int)nl_hdr->nlmsg_pid != getpid()));
+  *        ((int)nl_hdr->nlmsg_pid != 0));
  */
 
   if (len < 0) {
     close(sd);
-    OLA_WARN << "No data received from netlink " << strerror(errno);
+    OLA_WARN << "No data received from Netlink " << strerror(errno);
     return false;
   }
 
-  unsigned int routeCount = 0;
-  bool foundDefaultRoute = false;
-  in_addr *defaultRouteIp = new in_addr;
+  unsigned int route_count = 0;
+  bool found_default_route = false;
+  in_addr default_route_ip = in_addr();
 
   // We have to convert the type of the NLMSG_OK length, as otherwise it
   // generates "comparison between signed and unsigned integer expressions"
@@ -462,9 +470,13 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
   for (;
        NLMSG_OK(nl_msg, (unsigned int)len);
        nl_msg = NLMSG_NEXT(nl_msg, len)) {
+    if (nl_msg->nlmsg_type == NLMSG_DONE) {
+      break;
+    }
+
     rtmsg* rt_msg = reinterpret_cast<rtmsg*>(NLMSG_DATA(nl_msg));
 
-    foundDefaultRoute = false;
+    found_default_route = false;
 
     OLA_WARN << "Checking msg";
 
@@ -480,7 +492,7 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
           case RTA_OIF:
             OLA_WARN << "Index: " <<
                 *(reinterpret_cast<int*>(RTA_DATA(rt_attr)));
-            routeCount++;
+            route_count++;
             break;
           case RTA_GATEWAY:
             OLA_WARN << "GW: " <<
@@ -488,8 +500,9 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
                     (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr) <<
                 " = " << IPV4Address(
                     (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr);
-            defaultRouteIp = reinterpret_cast<in_addr*>(RTA_DATA(rt_attr));
-            foundDefaultRoute = true;
+            default_route_ip.s_addr = reinterpret_cast<in_addr*>(
+                RTA_DATA(rt_attr))->s_addr;
+            found_default_route = true;
             break;
           case RTA_DST:
             if ((reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr == 0) {
@@ -504,33 +517,33 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
         }
       }
       OLA_WARN << "====================================";
-      if (foundDefaultRoute)
+      if (found_default_route)
         break;
     }
   }
   close(sd);
 
-  OLA_WARN << "Found " << routeCount << " routes";
+  OLA_DEBUG << "Found " << route_count << " routes";
 
-  if (!foundDefaultRoute) {
-    if (routeCount > 0) {
-      OLA_WARN << "No default route found, but found " << routeCount
+  if (!found_default_route) {
+    if (route_count > 0) {
+      OLA_WARN << "No default route found, but found " << route_count
                << " routes, so setting default route to zero";
-      defaultRouteIp->s_addr = 0;
+      default_route_ip.s_addr = 0;
     } else {
       OLA_WARN << "Couldn't find default route";
       return false;
     }
   }
 
-  *default_route = IPV4Address(defaultRouteIp->s_addr);
+  *default_route = IPV4Address(default_route_ip.s_addr);
 
-  OLA_WARN << "Got default: " << *default_route;
+  OLA_INFO << "Got default route: " << *default_route;
 
   return true;
 #else
-  // TODO(Peter): Do something else on Windows/machines without netlink
-  // No netlink, can't do anything
+  // TODO(Peter): Do something else on Windows/machines without Netlink
+  // No Netlink, can't do anything
   (void) default_route;
 
   return false;
