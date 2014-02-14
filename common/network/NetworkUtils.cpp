@@ -383,7 +383,6 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
   nl_msg->nlmsg_pid = 0;
 
   if (send(sd, nl_msg, nl_msg->nlmsg_len, 0) < 0) {
-    close(sd);
     OLA_WARN << "Could not send data to Netlink " << strerror(errno);
     return false;
   }
@@ -455,7 +454,6 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
  */
 
   if (len < 0) {
-    close(sd);
     OLA_WARN << "No data received from Netlink " << strerror(errno);
     return false;
   }
@@ -521,7 +519,6 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
         break;
     }
   }
-  close(sd);
 
   OLA_DEBUG << "Found " << route_count << " routes";
 
