@@ -31,6 +31,7 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
+using std::string;
 
 string EspNetPortHelper::Description(Universe *universe) const {
   std::stringstream str;

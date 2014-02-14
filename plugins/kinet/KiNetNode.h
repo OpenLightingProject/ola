@@ -34,8 +34,6 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using ola::network::IPV4Address;
-
 class KiNetNode {
  public:
     KiNetNode(ola::io::SelectServerInterface *ss,
@@ -46,7 +44,8 @@ class KiNetNode {
     bool Stop();
 
     // The following apply to Input Ports (those which send data)
-    bool SendDMX(const IPV4Address &target, const ola::DmxBuffer &buffer);
+    bool SendDMX(const ola::network::IPV4Address &target,
+                 const ola::DmxBuffer &buffer);
 
  private:
     bool m_running;

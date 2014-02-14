@@ -36,6 +36,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using std::string;
 
 class E133InflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E133InflatorTest);

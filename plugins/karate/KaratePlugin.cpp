@@ -39,6 +39,7 @@ namespace plugin {
 namespace karate {
 
 using ola::PluginAdaptor;
+using std::string;
 using std::vector;
 
 const char KaratePlugin::KARATE_DEVICE_PATH[] = "/dev/kldmx0";

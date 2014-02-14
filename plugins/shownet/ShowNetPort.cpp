@@ -30,6 +30,8 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
+using std::string;
+
 string ShowNetInputPort::Description() const {
   std::stringstream str;
   str << "ShowNet " << PortId() * DMX_UNIVERSE_SIZE + 1 << "-" <<

@@ -32,10 +32,12 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::Callback0;
+using ola::acn::CID;
+using ola::io::OutputStream;
 using std::map;
 using std::pair;
 using std::vector;
-using ola::Callback0;
 
 const TimeInterval DMPE131Inflator::EXPIRY_INTERVAL(2500000);
 

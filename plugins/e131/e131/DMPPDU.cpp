@@ -25,6 +25,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::io::OutputStream;
 
 /*
  * Pack the header portion.

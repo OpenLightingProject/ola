@@ -34,16 +34,14 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-using std::string;
-
 class ShowNetNode {
  public:
-    explicit ShowNetNode(const string &ip_address);
+    explicit ShowNetNode(const std::string &ip_address);
     virtual ~ShowNetNode();
 
     bool Start();
     bool Stop();
-    void SetName(const string &name);
+    void SetName(const std::string &name);
 
     bool SendDMX(unsigned int universe, const ola::DmxBuffer &buffer);
     bool SetHandler(unsigned int universe,
@@ -70,8 +68,8 @@ class ShowNetNode {
 
     bool m_running;
     uint16_t m_packet_count;
-    string m_node_name;
-    string m_preferred_ip;
+    std::string m_node_name;
+    std::string m_preferred_ip;
     std::map<unsigned int, universe_handler> m_handlers;
     ola::network::Interface m_interface;
     ola::dmx::RunLengthEncoder m_encoder;

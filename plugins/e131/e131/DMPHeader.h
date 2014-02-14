@@ -22,14 +22,11 @@
 #define PLUGINS_E131_E131_DMPHEADER_H_
 
 #include <stdint.h>
-#include <string>
 #include "plugins/e131/e131/DMPAddress.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
-
-using std::string;
 
 /*
  * Header for the DMP layer

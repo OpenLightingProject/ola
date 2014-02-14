@@ -27,7 +27,10 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 using ola::io::IOStack;
+using ola::io::OutputStream;
+using ola::network::HostToNetwork;
 
 /*
  * Pack the header into a buffer.

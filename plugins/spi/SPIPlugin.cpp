@@ -38,6 +38,8 @@ namespace spi {
 
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 const char SPIPlugin::DEFAULT_BASE_UID[] = "7a70:00000100";
 const char SPIPlugin::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";
