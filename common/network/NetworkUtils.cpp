@@ -460,7 +460,7 @@ bool DefaultRoute(ola::network::IPV4Address *default_route) {
 
   unsigned int route_count = 0;
   bool found_default_route = false;
-  in_addr default_route_ip = in_addr();
+  in_addr default_route_ip = {0};
 
   // We have to convert the type of the NLMSG_OK length, as otherwise it
   // generates "comparison between signed and unsigned integer expressions"
