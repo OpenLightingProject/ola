@@ -30,7 +30,9 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
+using std::string;
 
 /*
  * Size of the header portion.

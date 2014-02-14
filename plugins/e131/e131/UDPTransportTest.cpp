@@ -34,7 +34,9 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 
 class UDPTransportTest: public CppUnit::TestFixture {

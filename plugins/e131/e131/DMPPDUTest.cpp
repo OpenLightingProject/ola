@@ -37,6 +37,7 @@ namespace e131 {
 
 using ola::acn::DMP_GET_PROPERTY_VECTOR;
 using ola::acn::DMP_SET_PROPERTY_VECTOR;
+using std::vector;
 
 class MockDMPInflator: public DMPInflator {
  public:

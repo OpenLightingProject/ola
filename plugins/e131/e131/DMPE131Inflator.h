@@ -57,7 +57,7 @@ class DMPE131Inflator: public DMPInflator {
 
  private:
     typedef struct {
-      CID cid;
+      ola::acn::CID cid;
       uint8_t sequence;
       TimeStamp last_heard_from;
       DmxBuffer buffer;

@@ -30,8 +30,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::network::HostToNetwork;
-
 typedef enum {
   ONE_BYTES = 0x00,
   TWO_BYTES = 0x01,
@@ -134,14 +132,14 @@ class DMPAddress: public BaseDMPAddress {
         *length = 0;
         return false;
       }
-      type field = HostToNetwork(m_start);
+      type field = ola::network::HostToNetwork(m_start);
       memcpy(data, &field, BaseSize());
       *length = Size();
       return true;
     }
 
     void Write(ola::io::OutputStream *stream) const {
-      *stream << HostToNetwork(m_start);
+      *stream << ola::network::HostToNetwork(m_start);
     }
 
     bool IsRange() const { return false; }
@@ -188,9 +186,9 @@ class RangeDMPAddress: public BaseDMPAddress {
         return false;
       }
       type field[3];
-      field[0] = HostToNetwork(m_start);
-      field[1] = HostToNetwork(m_increment);
-      field[2] = HostToNetwork(m_number);
+      field[0] = ola::network::HostToNetwork(m_start);
+      field[1] = ola::network::HostToNetwork(m_increment);
+      field[2] = ola::network::HostToNetwork(m_number);
       memcpy(data, &field, Size());
       *length = Size();
       return true;
@@ -198,9 +196,9 @@ class RangeDMPAddress: public BaseDMPAddress {
 
     void Write(ola::io::OutputStream *stream) const {
       type field[3];
-      field[0] = HostToNetwork(m_start);
-      field[1] = HostToNetwork(m_increment);
-      field[2] = HostToNetwork(m_number);
+      field[0] = ola::network::HostToNetwork(m_start);
+      field[1] = ola::network::HostToNetwork(m_increment);
+      field[2] = ola::network::HostToNetwork(m_number);
       stream->Write(reinterpret_cast<uint8_t*>(&field), Size());
     }
 

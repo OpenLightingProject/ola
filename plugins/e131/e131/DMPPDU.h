@@ -33,8 +33,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using std::vector;
-
 /*
  * The base DMPPDU class.
  * More specific dmp pdus like the SetPropery inherit from this.
@@ -49,7 +47,7 @@ class DMPPDU: public PDU {
 
     unsigned int HeaderSize() const { return DMPHeader::DMP_HEADER_SIZE; }
     bool PackHeader(uint8_t *data, unsigned int *length) const;
-    void PackHeader(OutputStream *stream) const;
+    void PackHeader(ola::io::OutputStream *stream) const;
 
  protected:
     DMPHeader m_header;
@@ -65,7 +63,7 @@ template <typename Address>
 class DMPGetProperty: public DMPPDU {
  public:
     DMPGetProperty(const DMPHeader &header,
-                   const vector<Address> &addresses):
+                   const std::vector<Address> &addresses):
       DMPPDU(ola::acn::DMP_GET_PROPERTY_VECTOR, header),
       m_addresses(addresses) {}
 
@@ -75,7 +73,7 @@ class DMPGetProperty: public DMPPDU {
     }
 
     bool PackData(uint8_t *data, unsigned int *length) const {
-      typename vector<Address>::const_iterator iter;
+      typename std::vector<Address>::const_iterator iter;
       unsigned int offset = 0;
       for (iter = m_addresses.begin(); iter != m_addresses.end(); ++iter) {
         unsigned int remaining = *length - offset;
@@ -87,14 +85,14 @@ class DMPGetProperty: public DMPPDU {
       return true;
     }
 
-    void PackData(OutputStream *stream) const {
-      typename vector<Address>::const_iterator iter;
+    void PackData(ola::io::OutputStream *stream) const {
+      typename std::vector<Address>::const_iterator iter;
       for (iter = m_addresses.begin(); iter != m_addresses.end(); ++iter)
         iter->Write(stream);
     }
 
  private:
-    vector<Address> m_addresses;
+    std::vector<Address> m_addresses;
 };
 
 
@@ -109,7 +107,7 @@ template <typename type>
 const DMPPDU *NewDMPGetProperty(
     bool is_virtual,
     bool is_relative,
-    const vector<DMPAddress<type> > &addresses) {
+    const std::vector<DMPAddress<type> > &addresses) {
   DMPHeader header(is_virtual,
                    is_relative,
                    NON_RANGE,
@@ -127,7 +125,7 @@ const DMPPDU *_CreateDMPGetProperty(bool is_virtual,
                                     bool is_relative,
                                     unsigned int start) {
   DMPAddress<type> address((type) start);
-  vector<DMPAddress<type> > addresses;
+  std::vector<DMPAddress<type> > addresses;
   addresses.push_back(address);
   return NewDMPGetProperty<type>(is_virtual, is_relative, addresses);
 }
@@ -157,7 +155,7 @@ template <typename type>
 const DMPPDU *NewRangeDMPGetProperty(
     bool is_virtual,
     bool is_relative,
-    const vector<RangeDMPAddress<type> > &addresses) {
+    const std::vector<RangeDMPAddress<type> > &addresses) {
   DMPHeader header(is_virtual,
                    is_relative,
                    RANGE_SINGLE,
@@ -172,7 +170,7 @@ const DMPPDU *_CreateRangeDMPGetProperty(bool is_virtual,
                                          unsigned int start,
                                          unsigned int increment,
                                          unsigned int number) {
-  vector<RangeDMPAddress<type> > addresses;
+  std::vector<RangeDMPAddress<type> > addresses;
   RangeDMPAddress<type> address((type) start, (type) increment, (type) number);
   addresses.push_back(address);
   return NewRangeDMPGetProperty<type>(is_virtual, is_relative, addresses);
@@ -205,7 +203,7 @@ const DMPPDU *NewRangeDMPGetProperty(
 template <typename type>
 class DMPSetProperty: public DMPPDU {
  public:
-    typedef vector<DMPAddressData<type> > AddressDataChunks;
+    typedef std::vector<DMPAddressData<type> > AddressDataChunks;
 
     DMPSetProperty(const DMPHeader &header, const AddressDataChunks &chunks):
       DMPPDU(ola::acn::DMP_SET_PROPERTY_VECTOR, header),
@@ -232,7 +230,7 @@ class DMPSetProperty: public DMPPDU {
       return true;
     }
 
-    void PackData(OutputStream *stream) const {
+    void PackData(ola::io::OutputStream *stream) const {
       typename AddressDataChunks::const_iterator iter;
       for (iter = m_chunks.begin(); iter != m_chunks.end(); ++iter)
         iter->Write(stream);
@@ -250,7 +248,7 @@ template <typename type>
 const DMPPDU *NewDMPSetProperty(
     bool is_virtual,
     bool is_relative,
-    const vector<DMPAddressData<DMPAddress<type> > > &chunks) {
+    const std::vector<DMPAddressData<DMPAddress<type> > > &chunks) {
 
   DMPHeader header(is_virtual,
                    is_relative,
@@ -271,7 +269,7 @@ template <typename type>
 const DMPPDU *NewRangeDMPSetProperty(
     bool is_virtual,
     bool is_relative,
-    const vector<DMPAddressData<RangeDMPAddress<type> > > &chunks,
+    const std::vector<DMPAddressData<RangeDMPAddress<type> > > &chunks,
     bool multiple_elements = true,
     bool equal_size_elements = true) {
 

@@ -34,10 +34,6 @@ class Preferences;
 namespace plugin {
 namespace artnet {
 
-using ola::Device;
-using ola::plugin::artnet::Request;
-using std::string;
-
 class ArtNetDevice: public Device {
  public:
   ArtNetDevice(AbstractPlugin *owner,
@@ -45,14 +41,14 @@ class ArtNetDevice: public Device {
                class PluginAdaptor *plugin_adaptor);
 
   // only one ArtNet device
-  string DeviceId() const { return "1"; }
+  std::string DeviceId() const { return "1"; }
 
   void EnterConfigurationMode() { m_node->EnterConfigurationMode(); }
   void ExitConfigurationMode() { m_node->ExitConfigurationMode(); }
 
   void Configure(ola::rpc::RpcController *controller,
-                 const string &request,
-                 string *response,
+                 const std::string &request,
+                 std::string *response,
                  ConfigureCallback *done);
 
   static const char K_ALWAYS_BROADCAST_KEY[];
@@ -79,9 +75,9 @@ class ArtNetDevice: public Device {
   class PluginAdaptor *m_plugin_adaptor;
   ola::thread::timeout_id m_timeout_id;
 
-  void HandleOptions(Request *request, string *response);
+  void HandleOptions(Request *request, std::string *response);
   void HandleNodeList(Request *request,
-                      string *response,
+                      std::string *response,
                       ola::rpc::RpcController *controller);
 };
 }  // namespace artnet

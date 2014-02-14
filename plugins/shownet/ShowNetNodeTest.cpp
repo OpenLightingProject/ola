@@ -37,6 +37,7 @@ namespace shownet {
 
 using ola::DmxBuffer;
 using std::map;
+using std::string;
 
 class ShowNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ShowNetNodeTest);

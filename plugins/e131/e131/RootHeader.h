@@ -27,8 +27,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::acn::CID;
-
 /*
  * The header for the root layer
  */
@@ -36,14 +34,14 @@ class RootHeader {
  public:
     RootHeader() {}
     ~RootHeader() {}
-    void SetCid(CID cid) { m_cid = cid; }
-    CID GetCid() const { return m_cid; }
+    void SetCid(ola::acn::CID cid) { m_cid = cid; }
+    ola::acn::CID GetCid() const { return m_cid; }
 
     bool operator==(const RootHeader &other) const {
       return m_cid == other.m_cid;
     }
  private:
-    CID m_cid;
+    ola::acn::CID m_cid;
 };
 }  // namespace e131
 }  // namespace plugin

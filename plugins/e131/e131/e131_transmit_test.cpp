@@ -28,6 +28,9 @@
 #include "ola/Logging.h"
 #include "plugins/e131/e131/E131TestFramework.h"
 
+using ola::DmxBuffer;
+using std::string;
+
 DmxBuffer BufferFromString(const string &data) {
   DmxBuffer buffer;
   buffer.SetFromString(data);
@@ -213,7 +216,7 @@ TestState *states[] = {&s1, &s2, &s3, &s4, &s5, &s6, &s7, &s8, &s9, &s10,
  * Display the help message
  */
 void DisplayHelp(const char *binary_name) {
-  cout << "Usage: " << binary_name << " [--interactive]\n"
+  std::cout << "Usage: " << binary_name << " [--interactive]\n"
   "\n"
   "Run the E1.31 Transmit test. This test can run in one of two modes:\n"
   "  * interactive mode. This sends data to the multicast addresses\n"
@@ -223,7 +226,7 @@ void DisplayHelp(const char *binary_name) {
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
   "  -i, --interactive           Run in interactive mode.\n"
-  << endl;
+  << std::endl;
 }
 
 
