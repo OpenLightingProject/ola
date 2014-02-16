@@ -1,15 +1,13 @@
-# RDM PIDs config
 include $(top_srcdir)/common.mk
-
-dist_piddata_DATA = draft_pids.proto pids.proto manufacturer_pids.proto
 
 EXTRA_DIST = download.sh PidDataTest.py
 
-PidDataTest.sh: Makefile
-	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir} $(PYTHON) ${srcdir}/PidDataTest.py; exit \$$?" > PidDataTest.sh
-	chmod +x PidDataTest.sh
+# DATA
+################################################
+dist_piddata_DATA = draft_pids.proto pids.proto manufacturer_pids.proto
 
-CLEANFILES = PidDataTest.sh
+# TESTS
+################################################
 
 if BUILD_TESTS
 TESTS = PidDataTester
@@ -20,7 +18,13 @@ TESTS += PidDataTest.sh
 endif
 endif
 
+PidDataTest.sh: Makefile
+	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir} $(PYTHON) ${srcdir}/PidDataTest.py; exit \$$?" > PidDataTest.sh
+	chmod +x PidDataTest.sh
+
 PidDataTester_SOURCES = PidDataTest.cpp
 PidDataTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) -DDATADIR=\"$(srcdir)/\"
-PidDataTester_LDADD = $(COMMON_TESTING_LIBS) \
-                      $(top_builddir)/common/libolacommon.la
+PidDataTester_LDADD = $(top_builddir)/common/libolacommon.la \
+                      $(COMMON_TESTING_LIBS)
+
+CLEANFILES = PidDataTest.sh

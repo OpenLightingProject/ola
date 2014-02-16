@@ -2,6 +2,8 @@ include $(top_srcdir)/common.mk
 
 EXTRA_DIST = PosixInterfacePicker.h SocketHelper.h WindowsInterfacePicker.h
 
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libolanetwork.la
 libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            HealthCheckedConnection.cpp \
@@ -24,6 +26,8 @@ else
 libolanetwork_la_SOURCES += PosixInterfacePicker.cpp
 endif
 
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = HealthCheckedConnectionTester NetworkTester TCPConnectorTester
 endif
@@ -48,7 +52,8 @@ NetworkTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 NetworkTester_LDADD = $(COMMON_TEST_LDADD)
 
 if USING_WIN32
-  NetworkTester_LDFLAGS = -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 -ldpnet -lwsock32
+NetworkTester_LDFLAGS = -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 \
+                        -ldpnet -lwsock32
 endif
 
 TCPConnectorTester_SOURCES = AdvancedTCPConnectorTest.cpp \

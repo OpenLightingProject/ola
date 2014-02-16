@@ -1,17 +1,15 @@
 include $(top_srcdir)/common.mk
 
 SUBDIRS = testdata
+
 EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
              GroupSizeCalculator.h Pids.proto \
              PidStoreLoader.h VariableFieldSizeCalculator.h
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
-Pids.pb.cc Pids.pb.h: Pids.proto
-	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/Pids.proto
-
-CLEANFILES = *.pb.{h,cc}
-
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
@@ -33,6 +31,13 @@ libolardm_la_CXXFLAGS = $(COMMON_CXXFLAGS) -DPID_DATA_DIR=\"${piddatadir}\"
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
+Pids.pb.cc Pids.pb.h: Pids.proto
+	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/Pids.proto
+
+CLEANFILES = *.pb.{h,cc}
+
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
 endif
