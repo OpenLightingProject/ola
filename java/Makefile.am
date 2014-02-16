@@ -13,12 +13,11 @@ src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
 	mvn package
-ola_jar_SOURCES =
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
              src/main/java/ola/rpc/Rpc.java
 
 if BUILD_JAVA_LIBS
-# hardly a program...
-noinst_PROGRAMS = ola.jar
+# .jars aren't really data, but it sure ain't a program.
+noinst_DATA = ola.jar
 endif
