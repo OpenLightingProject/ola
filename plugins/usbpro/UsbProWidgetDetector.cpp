@@ -42,6 +42,7 @@
 #include <string.h>
 
 #include <string>
+#include <ostream>
 
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
@@ -64,6 +65,7 @@ UsbProWidgetInformation& UsbProWidgetInformation::operator=(
   manufacturer = other.manufacturer;
   device = other.device;
   serial = other.serial;
+  has_firmware_version = other.has_firmware_version;
   firmware_version = other.firmware_version;
   return *this;
 }
@@ -417,8 +419,7 @@ void UsbProWidgetDetector::HandleGetParams(DispatchingUsbProWidget *widget,
   } else {
     const widget_params *params = reinterpret_cast<const widget_params*>(data);
     UsbProWidgetInformation &information = iter->second.information;
-    information.firmware_version =
-        (params->firmware_hi << 8) + params->firmware_lo;
+    information.SetFirmware((params->firmware_hi << 8) + params->firmware_lo);
   }
 
   MaybeSendHardwareVersionRequest(widget);
@@ -495,10 +496,23 @@ void UsbProWidgetDetector::CompleteWidgetDiscovery(
     return;
   }
 
-  OLA_INFO << "Detected USB Device: ESTA Id: 0x" << std::hex <<
-    information.esta_id  << " (" << information.manufacturer << "), device: "
-    << information.device_id << " (" << information.device << "), serial: " <<
-    "0x" << information.serial;
+  std::ostringstream str;
+  str << "ESTA Id: 0x" << std::hex << information.esta_id;
+  if (!information.manufacturer.empty()) {
+    str << " (" << information.manufacturer << ")";
+  }
+  str << ", device Id: " << information.device_id;
+  if (!information.device.empty()) {
+    str << " (" << information.device << ")";
+  }
+  str << ", serial: " << "0x" << information.serial << ", f/w version: ";
+  if (information.has_firmware_version) {
+     str << std::dec << (information.firmware_version >> 8) << "." <<
+       (information.firmware_version & 0xff);
+  } else {
+    str << "N/A";
+  }
+  OLA_INFO << "Detected USB Device: " << str.str();
 
   const UsbProWidgetInformation *widget_info = new UsbProWidgetInformation(
       information);
