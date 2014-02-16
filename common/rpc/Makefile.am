@@ -6,12 +6,13 @@ BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h \
 # LIBRARIES
 ##################################################
 noinst_LTLIBRARIES = libstreamrpcchannel.la
-libstreamrpcchannel_la_SOURCES = RpcChannel.cpp RpcController.cpp
+libstreamrpcchannel_la_SOURCES = RpcChannel.cpp RpcChannel.h \
+                                 RpcController.cpp RpcController.h \
+                                 RpcHeader.h RpcPeer.h RpcService.h
 nodist_libstreamrpcchannel_la_SOURCES = Rpc.pb.cc
 libstreamrpcchannel_la_LIBADD = $(libprotobuf_LIBS)
 
-EXTRA_DIST = Rpc.proto RpcChannel.h RpcController.h RpcHeader.h \
-             RpcPeer.h RpcService.h TestService.proto
+EXTRA_DIST = Rpc.proto TestService.proto
 
 Rpc.pb.cc Rpc.pb.h: Rpc.proto
 	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/Rpc.proto

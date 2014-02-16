@@ -1,54 +1,58 @@
 include $(top_srcdir)/common.mk
-SUBDIRS = www testdata
+SUBDIRS = www
 
-# Header files
+dist_noinst_DATA = testdata/test_preferences.conf
+
+# HEADERS
+##################################################
 pkgincludedir = $(includedir)/olad
 pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
+noinst_HEADERS = TestCommon.h
 
-OLASERVER_SOURCES = AvahiDiscoveryAgent.h Client.cpp ClientBroker.cpp \
-                    Device.cpp DeviceManager.cpp DmxSource.cpp \
-                    DiscoveryAgent.cpp \
-                    DynamicPluginLoader.cpp \
-                    OlaServerServiceImpl.cpp \
-                    Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
-                    Preferences.cpp Port.cpp PortBroker.cpp PortManager.cpp \
-                    Universe.cpp UniverseStore.cpp
-
-
-# lib olaserver
-lib_LTLIBRARIES = libolaserver.la
-libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
-libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
-libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
-                         $(top_builddir)/common/libolacommon.la \
-                         $(top_builddir)/common/web/libolaweb.la \
-                         $(top_builddir)/ola/libola.la
+# LIBRARIES
+##################################################
+ola_server_sources = Client.h Client.cpp ClientBroker.h ClientBroker.cpp \
+                     Device.cpp DeviceManager.h DeviceManager.cpp \
+                     DiscoveryAgent.h DynamicPluginLoader.h DmxSource.cpp \
+                     DiscoveryAgent.cpp DynamicPluginLoader.cpp \
+                     HttpServerActions.h OladHTTPServer.h \
+                     OlaServerServiceImpl.h OlaServerServiceImpl.cpp \
+                     Plugin.cpp PluginAdaptor.cpp PluginLoader.h \
+                     PluginManager.h PluginManager.cpp \
+                     Preferences.cpp Port.cpp PortBroker.cpp PortManager.h \
+                     PortManager.cpp RDMHTTPModule.h Universe.cpp \
+                     UniverseStore.h UniverseStore.cpp
+ola_server_additional_libs =
 
 if HAVE_DNSSD
-OLASERVER_SOURCES += BonjourDiscoveryAgent.cpp
+ola_server_sources += BonjourDiscoveryAgent.h BonjourDiscoveryAgent.cpp
 endif
 
 if HAVE_AVAHI
-OLASERVER_SOURCES += AvahiDiscoveryAgent.cpp
-libolaserver_la_LIBADD += $(avahi_LIBS)
+ola_server_sources += AvahiDiscoveryAgent.h AvahiDiscoveryAgent.cpp
+ola_server_additional_libs += $(avahi_LIBS)
 endif
 
 if HAVE_LIBMICROHTTPD
-libolaserver_la_SOURCES += HttpServerActions.cpp \
-                           OladHTTPServer.cpp \
-                           RDMHTTPModule.cpp
-libolaserver_la_LIBADD += $(top_builddir)/common/http/libolahttp.la
+ola_server_sources += HttpServerActions.cpp \
+                     OladHTTPServer.cpp \
+                     RDMHTTPModule.cpp
+ola_server_additional_libs += ../common/http/libolahttp.la
 endif
 
+# lib olaserver
+lib_LTLIBRARIES = libolaserver.la
+libolaserver_la_SOURCES = $(ola_server_sources) OlaServer.cpp OlaDaemon.cpp
+libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
+libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
+                         ../common/libolacommon.la \
+                         ../common/web/libolaweb.la \
+                         ../ola/libola.la \
+                         $(ola_server_additional_libs)
 
-EXTRA_DIST = BonjourDiscoveryAgent.h Client.h ClientBroker.h DeviceManager.h \
-             DiscoveryAgent.h DynamicPluginLoader.h HttpServerActions.h \
-             OladHTTPServer.h OlaServerServiceImpl.h PluginLoader.h \
-             PluginManager.h PortManager.h RDMHTTPModule.h TestCommon.h \
-             UniverseStore.h
-
-# Olad Server
+# PROGRAMS
+##################################################
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
 olad_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
@@ -57,21 +61,22 @@ if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic
 endif
 olad_LDADD = libolaserver.la \
-             $(top_builddir)/common/libolacommon.la \
-             $(top_builddir)/ola/libola.la
+             ../common/libolacommon.la \
+             ../ola/libola.la
 
 if HAVE_LIBFTDI
 olad_LDADD += -lftdi -lusb
 endif
 
-# Test Programs
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = DeviceTester OlaTester PortTester UniverseTester
 endif
 check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
-                    $(top_builddir)/olad/libolaserver.la \
-                    $(top_builddir)/common/libolacommon.la
+                    ../olad/libolaserver.la \
+                    ../common/libolacommon.la
 
 DeviceTester_SOURCES = DeviceTest.cpp DeviceManagerTest.cpp
 DeviceTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

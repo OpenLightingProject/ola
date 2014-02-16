@@ -1,6 +1,6 @@
 pkgincludedir = $(includedir)/ola/rdm/
 
-EXTRA_DIST = make_rdm_codes.sh
+dist_noinst_SCRIPTS = make_rdm_codes.sh
 
 pkginclude_HEADERS = AckTimerResponder.h AdvancedDimmerResponder.h \
                      CommandPrinter.h DimmerResponder.h DimmerRootDevice.h \

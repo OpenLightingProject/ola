@@ -699,7 +699,6 @@ AC_CONFIG_FILES([Makefile
                  man/Makefile
                  ola/Makefile
                  olad/Makefile
-                 olad/testdata/Makefile
                  olad/www/Makefile
                  plugins/Makefile
                  plugins/artnet/Makefile

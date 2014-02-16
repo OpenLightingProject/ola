@@ -2,10 +2,6 @@ include $(top_srcdir)/common.mk
 
 SUBDIRS = testdata
 
-EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
-             GroupSizeCalculator.h Pids.proto \
-             PidStoreLoader.h VariableFieldSizeCalculator.h
-
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 # LIBRARIES
@@ -13,19 +9,22 @@ BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
-                       DimmerResponder.cpp DimmerRootDevice.cpp \
-                       DimmerSubDevice.cpp DiscoveryAgent.cpp \
+                       DescriptorConsistencyChecker.h DimmerResponder.cpp \
+                       DimmerRootDevice.cpp DimmerSubDevice.cpp \
+                       DiscoveryAgent.cpp DiscoveryAgentTestHelper.h \
                        DummyResponder.cpp GroupSizeCalculator.cpp \
-                       MessageDeserializer.cpp MessageSerializer.cpp \
-                       MovingLightResponder.cpp OpenLightingEnums.cpp \
-                       PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
+                       GroupSizeCalculator.h MessageDeserializer.cpp \
+                       MessageSerializer.cpp MovingLightResponder.cpp \
+                       OpenLightingEnums.cpp PidStore.cpp PidStoreHelper.cpp \
+                       PidStoreLoader.cpp PidStoreLoader.h Pids.proto \
                        QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
                        RDMCommandSerializer.cpp RDMHelper.cpp \
                        ResponderHelper.cpp ResponderLoadSensor.cpp \
-                       ResponderPersonality.cpp ResponderSlotData.cpp \
-                       ResponderSettings.cpp SensorResponder.cpp \
+                       ResponderPersonality.cpp ResponderSettings.cpp \
+                       ResponderSlotData.cpp SensorResponder.cpp \
                        StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
-                       UID.cpp VariableFieldSizeCalculator.cpp
+                       UID.cpp VariableFieldSizeCalculator.cpp \
+                       VariableFieldSizeCalculator.h
 libolardm_la_CXXFLAGS = $(COMMON_CXXFLAGS) -DPID_DATA_DIR=\"${piddatadir}\"
 
 nodist_libolardm_la_SOURCES = Pids.pb.cc

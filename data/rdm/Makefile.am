@@ -1,10 +1,12 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = download.sh PidDataTest.py
-
 # DATA
 ################################################
 dist_piddata_DATA = draft_pids.proto pids.proto manufacturer_pids.proto
+
+# SCRIPTS
+################################################
+dist_noinst_SCRIPTS = download.sh PidDataTest.py
 
 # TESTS
 ################################################
@@ -17,6 +19,7 @@ if BUILD_PYTHON_LIBS
 TESTS += PidDataTest.sh
 endif
 endif
+
 
 PidDataTest.sh: Makefile
 	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir} $(PYTHON) ${srcdir}/PidDataTest.py; exit \$$?" > PidDataTest.sh

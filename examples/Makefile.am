@@ -5,9 +5,6 @@ include $(top_srcdir)/common.mk
 # to the right, not the left.
 # See http://www.network-theory.co.uk/docs/gccintro/gccintro_18.html
 
-EXTRA_DIST = OlaConfigurator.h ShowLoader.h ShowPlayer.h ShowRecorder.h \
-             ShowSaver.h
-
 if BUILD_EXAMPLES
 
 # The following should match what pkg-config --libs libola returns
@@ -18,7 +15,7 @@ LDADD = $(COMMON_LIBS)
 # LIBRARIES
 ##################################################
 noinst_LTLIBRARIES = libolaconfig.la
-libolaconfig_la_SOURCES = OlaConfigurator.cpp
+libolaconfig_la_SOURCES = OlaConfigurator.h OlaConfigurator.cpp
 
 
 # PROGRAMS
@@ -53,9 +50,9 @@ ola_rdm_get_SOURCES = ola-rdm.cpp
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
 
-ola_recorder_SOURCES = ola-recorder.cpp ShowLoader.cpp ShowPlayer.cpp \
-                       ShowRecorder.cpp ShowSaver.cpp
-
+ola_recorder_SOURCES = ola-recorder.cpp ShowLoader.h ShowLoader.cpp \
+                       ShowPlayer.h ShowPlayer.cpp ShowRecorder.h \
+                       ShowRecorder.cpp ShowSaver.h ShowSaver.cpp
 ola_timecode_SOURCES = ola-timecode.cpp
 
 ola_uni_stats_SOURCES = ola-uni-stats.cpp

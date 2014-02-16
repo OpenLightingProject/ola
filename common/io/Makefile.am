@@ -1,7 +1,5 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = PollerInterface.h SelectPoller.h TimeoutManager.h
-
 # LIBRARIES
 ##################################################
 noinst_LTLIBRARIES = libolaio.la
@@ -10,11 +8,14 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       IOStack.cpp \
                       IOUtils.cpp \
                       PollerInterface.cpp \
+                      PollerInterface.h \
                       SelectPoller.cpp \
+                      SelectPoller.h \
                       SelectServer.cpp \
                       Serial.cpp \
                       StdinHandler.cpp \
-                      TimeoutManager.cpp
+                      TimeoutManager.cpp \
+                      TimeoutManager.h
 
 # TESTS
 ##################################################
