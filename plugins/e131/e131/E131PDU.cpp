@@ -29,6 +29,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
 /*

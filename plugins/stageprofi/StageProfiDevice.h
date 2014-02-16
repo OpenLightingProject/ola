@@ -33,9 +33,6 @@ class AbstractPlugin;
 namespace plugin {
 namespace stageprofi {
 
-using ola::Device;
-using std::auto_ptr;
-
 class StageProfiDevice: public Device {
  public:
     StageProfiDevice(AbstractPlugin *owner,

@@ -32,6 +32,7 @@ namespace plugin {
 namespace opendmx {
 
 using ola::Device;
+using std::string;
 
 
 /*

@@ -31,13 +31,11 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
-using std::string;
-
 class KarateOutputPort: public BasicOutputPort {
  public:
     KarateOutputPort(KarateDevice *parent,
                      unsigned int id,
-                     const string &path)
+                     const std::string &path)
         : BasicOutputPort(parent, id),
           m_thread(path),
           m_path(path) {
@@ -48,16 +46,16 @@ class KarateOutputPort: public BasicOutputPort {
       m_thread.Stop();
     }
 
-    string Description() const { return "KarateLight at " + m_path; }
+    std::string Description() const { return "KarateLight at " + m_path; }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);
       (void) priority;
     }
 
  private:
     KarateThread m_thread;
-    string m_path;
+    std::string m_path;
 };
 }  // namespace karate
 }  // namespace plugin

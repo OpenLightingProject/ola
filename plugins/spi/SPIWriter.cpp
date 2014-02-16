@@ -28,7 +28,6 @@
 #include <numeric>
 #include <sstream>
 #include <string>
-#include <vector>
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
@@ -38,13 +37,14 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using ola::thread::MutexLocker;
+using std::string;
+
 const uint8_t SPIWriter::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIWriter::SPI_MODE = 0;
 const char SPIWriter::SPI_DEVICE_KEY[] = "device";
 const char SPIWriter::SPI_ERROR_VAR[] = "spi-write-errors";
 const char SPIWriter::SPI_WRITE_VAR[] = "spi-writes";
-
-using ola::thread::MutexLocker;
 
 SPIWriter::SPIWriter(const string &spi_device,
                      const Options &options,

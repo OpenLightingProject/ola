@@ -33,6 +33,8 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
+using std::string;
+
 const char ArtNetPlugin::ARTNET_LONG_NAME[] = "OLA - ArtNet node";
 const char ArtNetPlugin::ARTNET_SHORT_NAME[] = "OLA - ArtNet node";
 const char ArtNetPlugin::ARTNET_NET[] = "0";

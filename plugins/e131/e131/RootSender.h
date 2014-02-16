@@ -30,11 +30,9 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::acn::CID;
-
 class RootSender {
  public:
-    explicit RootSender(const CID &cid);
+    explicit RootSender(const ola::acn::CID &cid);
     ~RootSender() {}
 
     // Convenience method to encapsulate & send a single PDU
@@ -47,7 +45,7 @@ class RootSender {
     // Use for testing to force a message from a particular cid
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
-                 const CID &cid,
+                 const ola::acn::CID &cid,
                  OutgoingTransport *transport);
     // Encapsulation & send a block of PDUs
     bool SendPDUBlock(unsigned int vector,

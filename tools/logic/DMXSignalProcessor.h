@@ -21,20 +21,11 @@
 #ifndef TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
 #define TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
 
-#include <ola/io/SelectServer.h>
-#include <ola/thread/Mutex.h>
-
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/network/NetworkUtils.h>
 
 #include <vector>
-
-using ola::io::SelectServer;
-
-using ola::thread::Mutex;
-using ola::thread::MutexLocker;
-using ola::NewSingleCallback;
 
 /**
  * Process a DMX signal.

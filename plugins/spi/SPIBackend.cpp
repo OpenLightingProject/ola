@@ -42,6 +42,8 @@ namespace plugin {
 namespace spi {
 
 using ola::thread::MutexLocker;
+using std::string;
+using std::vector;
 
 const char SPIBackendInterface::SPI_DROP_VAR[] = "spi-drops";
 const char SPIBackendInterface::SPI_DROP_VAR_KEY[] = "device";

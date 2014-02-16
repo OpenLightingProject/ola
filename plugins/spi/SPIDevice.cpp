@@ -37,6 +37,7 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using ola::rdm::UID;
 using std::auto_ptr;
 using std::set;
 using std::string;

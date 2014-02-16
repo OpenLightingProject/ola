@@ -34,11 +34,12 @@ namespace e131 {
 
 using ola::Callback0;
 using ola::DmxBuffer;
+using ola::acn::CID;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using std::map;
 using std::string;
-
+using std::vector;
 
 /*
  * Create a new E1.31 node

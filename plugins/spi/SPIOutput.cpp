@@ -69,6 +69,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
 using std::min;
+using std::string;
 
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;

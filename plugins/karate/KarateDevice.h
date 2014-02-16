@@ -28,24 +28,22 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
-using std::string;
-
 class KarateDevice: public ola::Device {
  public:
     KarateDevice(ola::AbstractPlugin *owner,
-                 const string &name,
-                 const string &path,
+                 const std::string &name,
+                 const std::string &path,
                  unsigned int device_id);
 
     // we only support one widget for now
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
 
  protected:
     bool StartHook();
 
  private:
-    string m_path;
-    string m_device_id;
+    std::string m_path;
+    std::string m_device_id;
 };
 }  // namespace karate
 }  // namespace plugin

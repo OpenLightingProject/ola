@@ -36,10 +36,12 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::IOStack;
 using ola::network::IPV4SocketAddress;
 using std::auto_ptr;
+using std::string;
 
 class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TCPTransportTest);

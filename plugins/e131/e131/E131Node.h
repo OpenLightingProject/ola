@@ -41,13 +41,10 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::acn::CID;
-using std::string;
-
 class E131Node {
  public:
-    E131Node(const string &ip_address,
-             const CID &cid = CID::Generate(),
+    E131Node(const std::string &ip_address,
+             const ola::acn::CID &cid = ola::acn::CID::Generate(),
              bool use_rev2 = false,
              bool ignore_preview = true,
              uint8_t dscp_value = 0,  // default off
@@ -57,7 +54,7 @@ class E131Node {
     bool Start();
     bool Stop();
 
-    bool SetSourceName(unsigned int universe, const string &source);
+    bool SetSourceName(unsigned int universe, const std::string &source);
     bool SendDMX(uint16_t universe,
                  const ola::DmxBuffer &buffer,
                  uint8_t priority = DEFAULT_PRIORITY,
@@ -85,14 +82,14 @@ class E131Node {
 
  private:
     typedef struct {
-      string source;
+      std::string source;
       uint8_t sequence;
     } tx_universe;
 
-    string m_preferred_ip;
+    std::string m_preferred_ip;
     ola::network::Interface m_interface;
     ola::network::UDPSocket m_socket;
-    CID m_cid;
+    ola::acn::CID m_cid;
     bool m_use_rev2;
     uint8_t m_dscp;
     uint16_t m_udp_port;
