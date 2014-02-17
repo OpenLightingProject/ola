@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 # LIBRARIES
 ##################################################
-if HAVE_LIBLO
+if USE_OSC
 # This is a library which isn't coupled to olad
 noinst_LTLIBRARIES = libolaoscnode.la
 libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCAddressTemplate.h \
