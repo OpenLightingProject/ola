@@ -1,7 +1,12 @@
 include $(top_srcdir)/common.mk
 
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libolafile.la
 libolafile_la_SOURCES = Util.cpp
+
+# TESTS
+##################################################
 
 if BUILD_TESTS
 TESTS = UtilTester

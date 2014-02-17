@@ -529,9 +529,6 @@ AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
 
-OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\""
-AC_SUBST(OLAD_DEFINES)
-
 # check for cppunit
 AC_ARG_ENABLE(
   unittests,
@@ -706,7 +703,6 @@ AC_CONFIG_FILES([Makefile
                  man/Makefile
                  ola/Makefile
                  olad/Makefile
-                 olad/testdata/Makefile
                  olad/www/Makefile
                  plugins/Makefile
                  plugins/artnet/Makefile

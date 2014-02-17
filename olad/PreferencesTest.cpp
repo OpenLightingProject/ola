@@ -324,10 +324,10 @@ void PreferencesTest::testSave() {
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
   FileBackedPreferences *preferences = new FileBackedPreferences(
-      "./testdata", "output", &saver_thread);
+      ".", "output", &saver_thread);
   preferences->Clear();
 
-  string data_path = "./testdata/ola-output.conf";
+  string data_path = "./ola-output.conf";
   unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";

@@ -1,38 +1,42 @@
 include $(top_srcdir)/common.mk
 
 SUBDIRS = testdata
-EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
-             GroupSizeCalculator.h Pids.proto \
-             PidStoreLoader.h VariableFieldSizeCalculator.h
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
+
+# LIBRARIES
+##################################################
+noinst_LTLIBRARIES = libolardm.la
+libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
+                       CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
+                       DescriptorConsistencyChecker.h DimmerResponder.cpp \
+                       DimmerRootDevice.cpp DimmerSubDevice.cpp \
+                       DiscoveryAgent.cpp DiscoveryAgentTestHelper.h \
+                       DummyResponder.cpp GroupSizeCalculator.cpp \
+                       GroupSizeCalculator.h MessageDeserializer.cpp \
+                       MessageSerializer.cpp MovingLightResponder.cpp \
+                       OpenLightingEnums.cpp PidStore.cpp PidStoreHelper.cpp \
+                       PidStoreLoader.cpp PidStoreLoader.h Pids.proto \
+                       QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
+                       RDMCommandSerializer.cpp RDMHelper.cpp \
+                       ResponderHelper.cpp ResponderLoadSensor.cpp \
+                       ResponderPersonality.cpp ResponderSettings.cpp \
+                       ResponderSlotData.cpp SensorResponder.cpp \
+                       StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
+                       UID.cpp VariableFieldSizeCalculator.cpp \
+                       VariableFieldSizeCalculator.h
+libolardm_la_CXXFLAGS = $(COMMON_CXXFLAGS) -DPID_DATA_DIR=\"${piddatadir}\"
+
+nodist_libolardm_la_SOURCES = Pids.pb.cc
+libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
 Pids.pb.cc Pids.pb.h: Pids.proto
 	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/Pids.proto
 
 CLEANFILES = *.pb.{h,cc}
 
-noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
-                       CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
-                       DimmerResponder.cpp DimmerRootDevice.cpp \
-                       DimmerSubDevice.cpp DiscoveryAgent.cpp \
-                       DummyResponder.cpp GroupSizeCalculator.cpp \
-                       MessageDeserializer.cpp MessageSerializer.cpp \
-                       MovingLightResponder.cpp OpenLightingEnums.cpp \
-                       PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
-                       QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
-                       RDMCommandSerializer.cpp RDMHelper.cpp \
-                       ResponderHelper.cpp ResponderLoadSensor.cpp \
-                       ResponderPersonality.cpp ResponderSlotData.cpp \
-                       ResponderSettings.cpp SensorResponder.cpp \
-                       StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
-                       UID.cpp VariableFieldSizeCalculator.cpp
-libolardm_la_CXXFLAGS = $(COMMON_CXXFLAGS) -DPID_DATA_DIR=\"${piddatadir}\"
-
-nodist_libolardm_la_SOURCES = Pids.pb.cc
-libolardm_la_LIBADD = $(libprotobuf_LIBS)
-
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
 endif

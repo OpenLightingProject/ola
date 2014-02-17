@@ -1,8 +1,8 @@
 include $(top_srcdir)/common.mk
 
 # The following should match what pkg-config --libs libola returns
-LDADD = $(top_builddir)/common/libolacommon.la \
-        $(top_builddir)/ola/libola.la
+LDADD = ../../common/libolacommon.la \
+        ../../ola/libola.la
 
 if BUILD_EXAMPLES
 noinst_PROGRAMS =  callback_client_transmit flags receiver streaming_client

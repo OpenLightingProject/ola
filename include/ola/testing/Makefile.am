@@ -1,2 +1,2 @@
 # These aren't installed
-EXTRA_DIST = MockUDPSocket.h TestUtils.h
+noinst_HEADERS = MockUDPSocket.h TestUtils.h
