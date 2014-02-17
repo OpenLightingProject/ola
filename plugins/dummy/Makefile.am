@@ -1,15 +1,16 @@
 include $(top_srcdir)/common.mk
-libdir = $(plugindir)
 
-EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h
-
+# LIBRARIES
+##################################################
 if USE_DUMMY
-lib_LTLIBRARIES = liboladummy.la
+plugin_LTLIBRARIES = liboladummy.la
 
-liboladummy_la_SOURCES = DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp
-liboladummy_la_LIBADD = $(top_builddir)/common/libolacommon.la
+liboladummy_la_SOURCES = DummyDevice.cpp DummyDevice.h DummyPlugin.cpp \
+                         DummyPlugin.h DummyPort.cpp DummyPort.h
+liboladummy_la_LIBADD = ../../common/libolacommon.la
 
-# Test programs
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = DummyPluginTester
 endif

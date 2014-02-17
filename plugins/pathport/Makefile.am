@@ -1,13 +1,12 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-
-EXTRA_DIST = PathportPlugin.h PathportDevice.h PathportPort.h \
-             PathportNode.h PathportPackets.h
-
+# LIBRARIES
+##################################################
 if USE_PATHPORT
-lib_LTLIBRARIES = libolapathport.la
-libolapathport_la_SOURCES = PathportPlugin.cpp PathportDevice.cpp \
-                            PathportPort.cpp PathportNode.cpp
+plugin_LTLIBRARIES = libolapathport.la
+libolapathport_la_SOURCES = PathportDevice.cpp PathportDevice.h \
+                            PathportNode.cpp PathportNode.h \
+                            PathportPackets.h PathportPlugin.cpp \
+                            PathportPlugin.h PathportPort.cpp PathportPort.h
 libolapathport_la_LIBADD = ../../common/libolacommon.la
 endif

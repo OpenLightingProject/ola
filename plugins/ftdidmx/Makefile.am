@@ -1,16 +1,15 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-
-EXTRA_DIST = FtdiDmxDevice.h FtdiDmxPlugin.h FtdiDmxPort.h FtdiDmxThread.h \
-             FtdiWidget.h
-
+# LIBRARIES
+##################################################
 if HAVE_LIBFTDI
-  lib_LTLIBRARIES = libolaftdidmx.la
-  libolaftdidmx_la_SOURCES = FtdiDmxDevice.cpp FtdiDmxPlugin.cpp \
-                             FtdiDmxThread.cpp FtdiWidget-libftdi.cpp
-  libolaftdidmx_la_LIBADD = $(libftdi_LIBS) \
-                            ../../common/libolacommon.la
+plugin_LTLIBRARIES = libolaftdidmx.la
+libolaftdidmx_la_SOURCES = FtdiDmxDevice.cpp FtdiDmxDevice.h \
+                           FtdiDmxPlugin.cpp FtdiDmxPlugin.h FtdiDmxPort.h \
+                           FtdiDmxThread.cpp FtdiDmxThread.h \
+                           FtdiWidget-libftdi.cpp FtdiWidget.h
+libolaftdidmx_la_LIBADD = $(libftdi_LIBS) \
+                          ../../common/libolacommon.la
 endif
 
 # This isn't used yet.

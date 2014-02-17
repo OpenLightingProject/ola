@@ -1,11 +1,11 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-EXTRA_DIST = OpenDmxPlugin.h OpenDmxDevice.h OpenDmxPort.h OpenDmxThread.h
-
+# LIBRARIES
+##################################################
 if USE_OPENDMX
-lib_LTLIBRARIES = libolaopendmx.la
-libolaopendmx_la_SOURCES =  OpenDmxPlugin.cpp OpenDmxDevice.cpp \
-                            OpenDmxThread.cpp
+plugin_LTLIBRARIES = libolaopendmx.la
+libolaopendmx_la_SOURCES = OpenDmxDevice.cpp OpenDmxDevice.h \
+                           OpenDmxPlugin.cpp OpenDmxPlugin.h OpenDmxPort.h \
+                           OpenDmxThread.cpp OpenDmxThread.h
 libolaopendmx_la_LIBADD = ../../common/libolacommon.la
 endif

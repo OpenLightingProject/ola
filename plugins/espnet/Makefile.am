@@ -1,16 +1,17 @@
 include $(top_srcdir)/common.mk
-libdir = $(plugindir)
 
-EXTRA_DIST = EspNetPlugin.h EspNetDevice.h EspNetPort.h EspNetPackets.h \
-             EspNetNode.h EspNetPluginCommon.h RunLengthDecoder.h
-
+# LIBRARIES
+##################################################
 if USE_ESPNET
-lib_LTLIBRARIES = libolaespnet.la
-libolaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \
-                          EspNetNode.cpp RunLengthDecoder.cpp
+plugin_LTLIBRARIES = libolaespnet.la
+libolaespnet_la_SOURCES = EspNetDevice.cpp EspNetDevice.h EspNetNode.cpp \
+                          EspNetNode.h EspNetPackets.h EspNetPlugin.cpp \
+                          EspNetPlugin.h EspNetPluginCommon.h EspNetPort.cpp \
+                          EspNetPort.h RunLengthDecoder.cpp RunLengthDecoder.h
 libolaespnet_la_LIBADD = ../../common/libolacommon.la
 
-# Test Programs
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = EspNetTester
 endif
