@@ -16,7 +16,7 @@ Rpc_pb2.py: ${top_srcdir}/common/rpc/Rpc.proto
 if BUILD_PYTHON_LIBS
 TESTS = SimpleRpcControllerTest.sh
 endif
-check_SCRIPTS = SimpleRpcControllerTest.py
+dist_check_SCRIPTS = SimpleRpcControllerTest.py
 
 SimpleRpcControllerTest.sh: Makefile
 	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > SimpleRpcControllerTest.sh

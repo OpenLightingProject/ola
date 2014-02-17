@@ -48,7 +48,7 @@ TESTS_ENVIRONMENT = PYTHONPATH=${top_srcdir}/python
 if BUILD_PYTHON_LIBS
 TESTS = DUBDecoderTest.py MACAddressTest.py UIDTest.py
 endif
-check_SCRIPTS = DUBDecoderTest.py MACAddressTest.py UIDTest.py
+dist_check_SCRIPTS = DUBDecoderTest.py MACAddressTest.py UIDTest.py
 
 
 CLEANFILES = ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* \
