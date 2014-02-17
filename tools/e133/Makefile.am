@@ -50,7 +50,7 @@ libolae133common_la_SOURCES = E133HealthCheckedConnection.cpp \
                               MessageQueue.cpp \
                               MessageQueue.h \
                               MessageBuilder.cpp
-libolae133common_la_LIBADD = ../plugins/e131/e131/libolae131core.la
+libolae133common_la_LIBADD = ../../plugins/e131/e131/libolae131core.la
 
 # libolae133controller
 # Controller side.

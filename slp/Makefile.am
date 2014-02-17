@@ -3,7 +3,7 @@ include $(top_srcdir)/common.mk
 CLEANFILES = *.pb.{h,cc,cpp} *.gcno *.gcda
 
 EXTRA_DIST = SLP.proto
-noinst_HEADERS = RLListVerifier.h SLPServerTestHelper.h
+noinst_HEADERS = URLListVerifier.h SLPServerTestHelper.h
 
 # pkg-config
 ##################################################

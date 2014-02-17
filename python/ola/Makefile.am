@@ -14,9 +14,12 @@ usbpro_path = ${top_srcdir}/plugins/usbpro/messages
 usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 if BUILD_PYTHON_LIBS
-nodist_pkgpython_PYTHON = ArtnetConfigMessages_pb2.py Ola_pb2.py \
-                          UsbProConfigMessages_pb2.py Pids_pb2.py \
-                          PidStoreLocation.py Version.py
+output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
+               UsbProConfigMessages_pb2.py Pids_pb2.py \
+               PidStoreLocation.py Version.py
+BUILT_SOURCES = $(output_files)
+
+nodist_pkgpython_PYTHON = $(output_files)
 pkgpython_PYTHON = ClientWrapper.py DUBDecoder.py MACAddress.py OlaClient.py \
                    RDMAPI.py RDMConstants.py PidStore.py UID.py __init__.py
 endif

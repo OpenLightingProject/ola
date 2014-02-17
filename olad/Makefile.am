@@ -44,7 +44,8 @@ endif
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
 libolaserver_la_SOURCES = $(ola_server_sources) OlaServer.cpp OlaDaemon.cpp
-libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
+libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) \
+                           -DHTTP_DATA_DIR=\"${www_datadir}\"
 libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                          ../common/libolacommon.la \
                          ../common/web/libolaweb.la \
@@ -55,7 +56,7 @@ libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
 ##################################################
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
-olad_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
+olad_CXXFLAGS = $(COMMON_CXXFLAGS)
 
 if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic
