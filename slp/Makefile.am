@@ -1,112 +1,96 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = DATracker.h \
-             RegistrationFileParser.h \
-             SLP.proto \
-             SLPClientCore.h \
-             SLPDaemon.h \
-             SLPPacketBuilder.h \
-             SLPPacketConstants.h \
-             SLPPacketParser.h \
-             SLPPendingOperations.h \
-             SLPServer.h \
-             SLPServerTestHelper.h \
-             SLPStore.h \
-             SLPStrings.h \
-             SLPUDPSender.h \
-             SLPUtil.h \
-             ScopeSet.h \
-             ServerCommon.h \
-             ServiceEntry.h \
-             URLListVerifier.h \
-             XIDAllocator.h
+CLEANFILES = *.pb.{h,cc,cpp} *.gcno *.gcda
 
+EXTRA_DIST = SLP.proto
+noinst_HEADERS = RLListVerifier.h SLPServerTestHelper.h
+
+# pkg-config
+##################################################
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libolaslpclient.pc libolaslpserver.pc
 
-# Libraries
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libolaslpproto.la
-
 lib_LTLIBRARIES = libolaslpcore.la \
                   libolaslpserver.la \
                   libolaslpclient.la
 
-# libolaslpproto.la
+# libolaslpproto
 nodist_libolaslpproto_la_SOURCES = SLP.pb.cc SLPService.pb.cpp
 libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
-# required, otherwise we get build errors
+# Required, otherwise we get build errors
 libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
-
-# libolaslpcore.la
-libolaslpcore_la_SOURCES = SLPUtil.cpp \
-                           URLEntry.cpp
-
-# libolaslpserver.la
-# This is an SLP server, without the RPC interface.
-libolaslpserver_la_SOURCES = DATracker.cpp \
-                             RegistrationFileParser.cpp \
-                             SLPPacketBuilder.cpp \
-                             SLPPacketParser.cpp \
-                             SLPPendingOperations.cpp \
-                             SLPServer.cpp \
-                             SLPStore.cpp \
-                             SLPStrings.cpp \
-                             SLPUDPSender.cpp \
-                             ScopeSet.cpp
-libolaslpserver_la_LIBADD = $(top_builddir)/common/libolacommon.la \
-                            libolaslpcore.la
-
-#libolaslpclient.la
-libolaslpclient_la_SOURCES = SLPClient.cpp \
-                             SLPClientCore.cpp
-libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
-                            $(top_builddir)/ola/libola.la \
-                            libolaslpproto.la \
-                            libolaslpcore.la
 
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h SLPService.pb.h SLPService.pb.h
 
-SLP.pb.cc SLP.pb.h: SLP.proto
+SLP.pb.cc SLP.pb.h: Makefile SLP.proto
 	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/SLP.proto
 
-SLPService.pb.cpp SLPService.pb.h: SLP.proto
+SLPService.pb.cpp SLPService.pb.h: Makefile SLP.proto
 	$(OLA_PROTOC)  --cppservice_out ./ --proto_path $(srcdir) $(srcdir)/SLP.proto
 
-# Programs
+# libolaslpcore
+libolaslpcore_la_SOURCES = SLPUtil.cpp SLPUtil.h URLEntry.cpp
+
+# libolaslpserver
+# This is an SLP server, without the RPC interface.
+libolaslpserver_la_SOURCES = DATracker.cpp DATracker.h \
+                             RegistrationFileParser.cpp \
+                             RegistrationFileParser.h SLPPacketBuilder.cpp \
+                             SLPPacketBuilder.h SLPPacketConstants.h \
+                             SLPPacketParser.cpp SLPPacketParser.h \
+                             SLPPendingOperations.cpp SLPPendingOperations.h \
+                             SLPServer.cpp SLPServer.h SLPStore.cpp \
+                             SLPStore.h SLPStrings.cpp SLPStrings.h \
+                             SLPUDPSender.cpp SLPUDPSender.h ScopeSet.cpp \
+                             ScopeSet.h ServerCommon.h ServiceEntry.h \
+                             XIDAllocator.h
+libolaslpserver_la_LIBADD = ../common/libolacommon.la \
+                            libolaslpcore.la
+
+# libolaslpclient
+libolaslpclient_la_SOURCES = SLPClient.cpp SLPClientCore.cpp SLPClientCore.h
+libolaslpclient_la_LIBADD = ../common/libolacommon.la \
+                            ../ola/libola.la \
+                            libolaslpproto.la \
+                            libolaslpcore.la
+
+# PROGRAMS
+##################################################
 noinst_PROGRAMS = slp_client
 
 if HAVE_LIBMICROHTTPD
 noinst_PROGRAMS += slp_server
 endif
 
-slp_server_SOURCES = SLPDaemon.cpp \
-                     slp-server.cpp
-slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
-                   $(top_builddir)/common/http/libolahttp.la \
+slp_server_SOURCES = SLPDaemon.cpp SLPDaemon.h slp-server.cpp
+slp_server_LDADD = ../common/libolacommon.la \
+                   ../common/http/libolahttp.la \
                    libolaslpproto.la \
                    libolaslpserver.la
 
 slp_client_SOURCES = slp-client.cpp
-slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
-                   $(top_builddir)/ola/libola.la \
+slp_client_LDADD = ../common/libolacommon.la \
+                   ../ola/libola.la \
                    libolaslpclient.la \
                    libolaslpcore.la
 
-CLEANFILES = *.pb.{h,cc,cpp} *.gcno *.gcda
-
-# Tests
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = DATrackerTester PacketBuilderTester PacketParserTester \
         RegistrationFileParserTester SLPServerDATester SLPServerNetworkTester \
         SLPServerSATester SLPServerUATester SLPStoreTester SLPStringsTester \
         ScopeSetTester ServiceEntryTester XIDAllocatorTester
 endif
+check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    $(top_builddir)/common/libolacommon.la \
+                    ../common/libolacommon.la \
                     libolaslpcore.la \
                     libolaslpserver.la
 
-check_PROGRAMS = $(TESTS)
 DATrackerTester_SOURCES = DATrackerTest.cpp
 DATrackerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DATrackerTester_LDADD = $(COMMON_TEST_LDADD)
