@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 # LIBRARIES
 ##################################################
-if HAVE_LIBFTDI
+if USE_FTDI
 plugin_LTLIBRARIES = libolaftdidmx.la
 libolaftdidmx_la_SOURCES = FtdiDmxDevice.cpp FtdiDmxDevice.h \
                            FtdiDmxPlugin.cpp FtdiDmxPlugin.h FtdiDmxPort.h \

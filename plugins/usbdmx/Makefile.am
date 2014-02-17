@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 # LIBRARIES
 ##################################################
-if HAVE_LIBUSB
+if USE_LIBUSB
 plugin_LTLIBRARIES = libolausbdmx.la
 libolausbdmx_la_SOURCES = AnymaDevice.cpp AnymaDevice.h AnymaOutputPort.cpp \
                           AnymaOutputPort.h EuroliteProDevice.cpp \
