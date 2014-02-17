@@ -46,13 +46,11 @@ using std::vector;
 
 class PreferencesTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PreferencesTest);
-  /*
   CPPUNIT_TEST(testValidators);
   CPPUNIT_TEST(testGetSetRemove);
   CPPUNIT_TEST(testBool);
   CPPUNIT_TEST(testFactory);
   CPPUNIT_TEST(testLoad);
-  */
   CPPUNIT_TEST(testSave);
   CPPUNIT_TEST_SUITE_END();
 
