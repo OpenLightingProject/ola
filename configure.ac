@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.69)
+AC_PREREQ(2.57)
 AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
         [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
