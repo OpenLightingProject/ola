@@ -34,7 +34,7 @@ AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
 AC_CHECK_HEADERS([random])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
+AC_HEADER_STDBOOL
 AC_TYPE_UID_T
 AC_C_INLINE
 AC_TYPE_INT16_T
