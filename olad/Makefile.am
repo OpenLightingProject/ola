@@ -65,7 +65,7 @@ olad_LDADD = libolaserver.la \
              ../common/libolacommon.la \
              ../ola/libola.la
 
-if HAVE_LIBFTDI
+if USE_FTDI
 olad_LDADD += -lftdi -lusb
 endif
 

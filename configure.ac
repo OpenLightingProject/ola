@@ -1,12 +1,12 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.69)
 AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
         [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
-AC_CONFIG_AUX_DIR(config)
-AC_SUBST(ac_aux_dir)
+AC_CONFIG_AUX_DIR([config])
+AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE()
@@ -20,10 +20,13 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_MKDIR_P
 AC_LIBTOOL_WIN32_DLL
 
 # Checks for header files.
+AC_HEADER_DIRENT
 AC_HEADER_RESOLV
+AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
@@ -31,7 +34,7 @@ AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
 AC_CHECK_HEADERS([random])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
+AC_CHECK_HEADER_STDBOOL
 AC_TYPE_UID_T
 AC_C_INLINE
 AC_TYPE_INT16_T
@@ -46,6 +49,7 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
+AC_CXX_STL_HASH  # hash_map
 
 # Checks for library functions.
 AC_FUNC_FORK
@@ -59,11 +63,9 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 inet_ntoa inet_aton select socket strerror getifaddrs \
                 getloadavg getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
+AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
 
-# Checks for header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
-
+LT_INIT
 AC_PROG_LIBTOOL
 
 # Doxygen
@@ -71,51 +73,19 @@ DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
-# windows platform support
-AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
-
-# Disable -Werror
-AC_ARG_ENABLE(
-  fatal-warnings,
-  AS_HELP_STRING([--disable-fatal-warnings], [Make compiler warnings non-fatal]),)
-
-AM_CONDITIONAL(FATAL_WARNINGS, test "${enable_fatal_warnings}" != "no")
-
-# check for hash_map
-AC_CXX_STL_HASH
-
-# epoll
-AX_HAVE_EPOLL(
-  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+# Decide if we're building on Windows early on.
+AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
 old_cppflags=$CPPFLAGS
 CPPFLAGS="${CPPFLAGS} -rdynamic -Wall -Werror"
 AC_CACHE_VAL(ac_cv_rdynamic,
-  AC_TRY_COMPILE(
-    [],
-    [],
-    ac_cv_rdynamic=yes,
-    ac_cv_rdynamic=no))
+  AC_TRY_COMPILE([], [], ac_cv_rdynamic=yes, ac_cv_rdynamic=no))
 CPPFLAGS=$old_cppflags
 AC_MSG_RESULT($ac_cv_rdynamic)
 
-AM_CONDITIONAL(SUPPORTS_RDYNAMIC, test "${ac_cv_rdynamic}" = "yes")
-
-# check for lex
-AC_PROG_LEX
-if test "${LEX}" = ":"; then
- AC_MSG_ERROR([lex not found, please install flex or lex])
-fi
-
-# check for bison
-BISON=""
-AC_CHECK_PROG(BISON, [bison -V], bison)
-if test "${BISON}" != "bison"; then
- AC_MSG_ERROR([bison not found, please install it])
-fi
-AC_SUBST(BISON)
+AM_CONDITIONAL([SUPPORTS_RDYNAMIC], [test "x$ac_cv_rdynamic" = xyes])
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
@@ -139,32 +109,33 @@ AC_CACHE_VAL(ac_cv_ipv6,
         ac_cv_ipv6=no,
         ac_cv_ipv6=no))
 AC_MSG_RESULT($ac_cv_ipv6)
-if test $ac_cv_ipv6 = yes ; then
-  AC_DEFINE(IPV6, 1, Define to 1 if the system supports IPv6)
-fi
+AS_IF([test "x$ac_cv_ipv6" = xyes],
+      [AC_DEFINE([IPV6], [1], [Define to 1 if the system supports IPv6])])
 
 # Check if sockaddr{} has sa_len member.
 AC_CHECK_MEMBER(
   [struct sockaddr.sa_len],
-  AC_DEFINE(HAVE_SOCKADDR_SA_LEN, 1, define if socket address structures have length fields),
+  AC_DEFINE([HAVE_SOCKADDR_SA_LEN], [1],
+            [Define if socket address structures have length fields]),
   ,
   [#include <sys/types.h>
    #include <sys/socket.h>])
 
 AC_CHECK_MEMBER(
   struct sockaddr_dl.sdl_family,
-  AC_DEFINE(HAVE_SOCKADDR_DL_STRUCT, 1, define if we have sockaddr_dl),
+  AC_DEFINE([HAVE_SOCKADDR_DL_STRUCT], [1], [define if we have sockaddr_dl]),
   ,
   [#include <sys/types.h>
    #include <net/if_dl.h>])
 
 # check for time_t and suseconds_t
 AC_CHECK_TYPE(time_t,
-              AC_DEFINE(HAVE_TIME_T, 1, define if we have time_t),
+              AC_DEFINE([HAVE_TIME_T], [1], [define if we have time_t]),
               ,
               [#include <sys/time.h>])
 AC_CHECK_TYPE(suseconds_t,
-              AC_DEFINE(HAVE_SUSECONDS_T, 1, define if we have suseconds_t),
+              AC_DEFINE([HAVE_SUSECONDS_T], [1],
+                        [define if we have suseconds_t]),
               ,
               [#include <sys/time.h>])
 
@@ -198,41 +169,60 @@ if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_signal}" = "no" && \
  AC_MSG_ERROR([Your system needs either MSG_NOSIGNAL or SO_NOSIGPIPE])
 fi
 
-# Check for pkg-config
-PKG_PROG_PKG_CONFIG
-
-if test -z "$PKG_CONFIG"; then
-  AC_MSG_ERROR([Missing pkg-config, please install it])
-fi
-
-# We build a list of plugins that we're going to compile here so the olad
-# knows what to link against.
-PLUGINS=""
-
-PLUGIN_SUPPORT(artnet, USE_ARTNET)
-PLUGIN_SUPPORT(dummy, USE_DUMMY)
-PLUGIN_SUPPORT(e131, USE_E131)
-PLUGIN_SUPPORT(espnet, USE_ESPNET)
-PLUGIN_SUPPORT(karate, USE_KARATE)
-PLUGIN_SUPPORT(kinet, USE_KINET)
-PLUGIN_SUPPORT(milinst, USE_MILINST)
-PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
-PLUGIN_SUPPORT(pathport, USE_PATHPORT)
-PLUGIN_SUPPORT(renard, USE_RENARD)
-PLUGIN_SUPPORT(sandnet, USE_SANDNET)
-PLUGIN_SUPPORT(shownet, USE_SHOWNET)
-
-# SPI support is only enabled if the header is found
+# Headers.
+#####################################################
 AC_CHECK_HEADER([linux/spi/spidev.h], [have_spi="yes"], [have_spi="no"])
-PLUGIN_SUPPORT(spi, USE_SPI, $have_spi)
-PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
-PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
-# LIBRARY: ncurses
+# Programs.
+#####################################################
+
+# bison
+BISON=""
+AC_CHECK_PROG(BISON, [bison -V], bison)
+AS_IF([test "x$BISON" != xbison],
+      [AC_MSG_ERROR([bison not found, please install it])])
+AC_SUBST(BISON)
+
+# lex
+AC_PROG_LEX
+AS_IF([test "x$LEX" = "x:"],
+      [AC_MSG_ERROR([lex not found, please install flex or lex])])
+
+# pkg-config
+PKG_PROG_PKG_CONFIG
+AS_IF([test -z "$PKG_CONFIG"],
+      [AC_MSG_ERROR([Missing pkg-config, please install it])])
+
+# Libraries.
+#####################################################
+
+# dmx4linux
+have_dmx4linux="no"
+AC_CHECK_LIB(dmx4linux, DMXdev, [have_dmx4linux="yes"])
+AC_CHECK_HEADER([dmx/dmxioctl.h], [], [have_dmx4linux="no"])
+
+AS_IF([test "x$have_dmx4linux" = xyes],
+      [AC_DEFINE([HAVE_DMX4LINUX], [1], [define if dmx4linux is installed])])
+
+# libexecinfo
+# FreeBSD required -lexecinfo to call backtrace - checking for presence of
+# header execinfo.h isn't enough
+AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+case "${host_os}" in
+  *freebsd*)
+  LIBS="$LIBS -lexecinfo"
+  ;;
+esac
+
+# libftd2xx (for now this is intentionally disabled, TODO)
+have_libftd2xx="no"
+AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
+
+# ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
-AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
+AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
 
-# LIBRARY: pthread
+# pthread
 ACX_PTHREAD([
              LIBS="$PTHREAD_LIBS $LIBS"
              CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
@@ -241,7 +231,7 @@ ACX_PTHREAD([
              CXX="$PTHREAD_CXX"],
             [AC_MSG_ERROR([Missing pthread, please install it])])
 
-# LIBRARY: resolv
+# resolv
 SAVED_LDFLAGS=$LDFLAGS
 LDFLAGS="$LDFLAGS -lresolv"
 AC_LINK_IFELSE(
@@ -251,37 +241,7 @@ AC_LINK_IFELSE(
   [AC_MSG_ERROR([Missing resolv, please install it])])
 LDFLAGS=$SAVED_LDFLAGS
 
-# LIBRARY: libexecinfo
-# FreeBSD required -lexecinfo to call backtrace - checking for presence of header execinfo.h isn't enough
-
-AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
-case "${host_os}" in
-  *freebsd*)
-  LIBS="$LIBS -lexecinfo"
-  ;;
-esac
-
-
-# Java API, this requires Maven
-AC_ARG_ENABLE(java-libs,
-              AS_HELP_STRING([--enable-java-libs], [Build the Java interface]))
-if test "${enable_java_libs}" = "yes"; then
-  AC_PROG_JAVA_CC()
-  MAVEN_SUPPORT([2.2.1])
-fi
-
-AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${enable_java_libs}" = "yes")
-
-
-# LIBRARY: protobuf
-# We require 2.4.0 for the java libs
-if test "${build_java_libs}" = "yes"; then
-  PROTOBUF_SUPPORT([2.4.0])
-else
-  PROTOBUF_SUPPORT([2.3.0])
-fi
-
-# LIBRARY: uuid
+# uuid
 # We've had to revert to os matching here because ossp uuid conflicts with the
 # built in uuid on OS X.
 # On other platforms, we can use either the OSSP uuid or the one
@@ -360,153 +320,246 @@ esac
 AC_SUBST(uuid_CFLAGS)
 AC_SUBST(uuid_LIBS)
 
-if test "${use_ossp_uuid}" = "yes"; then
-  AC_DEFINE(USE_OSSP_UUID, 1, [defined if we should use the ossp uuid lib])
-fi
-
-# LIBRARY: dmx4linux
-have_dmx4linux=""
-AC_CHECK_LIB(dmx4linux, DMXdev, [have_dmx4linux="yes"])
-AC_CHECK_HEADER(
-   [dmx/dmxioctl.h],
-   [],
-   [have_dmx4linux=""])
-
-AM_CONDITIONAL(HAVE_DMX4LINUX, test "${have_dmx4linux}" = "yes")
-
-if test "${have_dmx4linux}" = "yes"; then
- PLUGINS="${PLUGINS} dmx4linux"
- AC_DEFINE(HAVE_DMX4LINUX, 1, [define if dmx4linux is installed])
-fi
-
-# LIBRARY: libusb
-# look for libusb if the user asked us to
-AC_ARG_ENABLE(
-  [libusb],
-  AS_HELP_STRING([--disable-libusb], [Avoid using libusb even if it exists]))
-
-have_libusb="no"
-
-if test "${enable_libusb}" != "no"; then
-  PKG_CHECK_MODULES(libusb, [libusb-1.0 >= 1.0.2], [have_libusb="yes"], [true])
-fi
-AM_CONDITIONAL(HAVE_LIBUSB, test "${have_libusb}" = "yes")
-
-if test "${have_libusb}" = "yes"; then
- PLUGINS="${PLUGINS} usbdmx"
- AC_DEFINE(HAVE_LIBUSB, 1, [define if libusb is installed])
-fi
-
-# LIBRARY: libftdi
-# look for libftdi (this requires libusb-0.1.4+ don't know if I should also check for it, since the libusb check above is not for 0.1.4 but for libusb-1
-AC_ARG_ENABLE(
-  [libftdi],
-  AS_HELP_STRING([--disable-libftdi], [Avoid using libftdi even if it exists]))
-
-
-have_libftdi="no"
-
-if test "${enable_libftdi}" != "no"; then
-  PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
-fi
-
-AM_CONDITIONAL(HAVE_LIBFTDI, test "${have_libftdi}" = "yes")
-
-if test "${have_libftdi}" = "yes"; then
-  PLUGINS="${PLUGINS} ftdidmx"
-  AC_DEFINE(HAVE_LIBFTDI, 1, [define if libftdi is installed])
-fi
-
-# LIBRARY: libftd2xx (for now this is intentionally disabled, TODO)
-have_libftd2xx="no"
-AM_CONDITIONAL(HAVE_LIBFTD2XX, test "${have_libftd2xx}" = "yes")
-
-# LIBRARY: openslp
-# This is used for E1.33 support
-# openslp doesn't come use pkg-config, so the users may need to pass CPPFLAGS
-# & LDFLAGS so we can find it.
-AC_ARG_ENABLE(
-  slp,
-  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
-
-openslp_LIBS=""
-have_slp=no
-if test "${enable_slp}" != "no"; then
-  AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
-fi
-
-AM_CONDITIONAL(HAVE_SLP, test "${have_slp}" = "yes")
-
-if test "${have_slp}" = "yes"; then
-  AC_DEFINE(HAVE_LIBSLP, 1, [define if libslp is installed])
-  openslp_LIBS="-lslp"
-fi
-AC_SUBST(openslp_LIBS)
-
-# LIBRARY: liblo (OSC)
-# look for liblo if the user asked us to
-AC_ARG_ENABLE(
-  [osc],
-  AS_HELP_STRING([--disable-osc], [Disable the OSC plugin even if liblo exists]))
-
-have_liblo="no"
-
-if test "${enable_osc}" != "no"; then
-  PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])
-fi
-AM_CONDITIONAL(HAVE_LIBLO, test "${have_liblo}" = "yes")
-
-if test "${have_liblo}" = "yes"; then
- PLUGINS="${PLUGINS} osc"
- AC_DEFINE(HAVE_LIBLO, 1, [define if liblo is installed])
-fi
-
-# LIBRARY: libmicrohttpd
-# look for microhttpd if the user asked us to
-AC_ARG_ENABLE(
-  [http],
-  AS_HELP_STRING([--disable-http], [Disable the built in HTTP server]))
-
-have_microhttpd="no"
-
-if test "${enable_http}" != "no"; then
-  PKG_CHECK_MODULES(libmicrohttpd, [libmicrohttpd], [have_microhttpd="yes"], [true])
-fi
-AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
-
-if test "${have_microhttpd}" = "yes"; then
-  AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
-fi
+AS_IF([test "x$use_ossp_uuid" = xyes],
+      [AC_DEFINE([USE_OSSP_UUID], [1],
+                 [Defined if we should use the ossp uuid lib])])
 
 # DNS-SD support
-# LIBRARY: dns_sd
+# We use either avahi or the Apple DNS-SD library.
+
+# dns_sd
 AC_CHECK_HEADER(
-  dns_sd.h,
+  [dns_sd.h],
   [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
 
-if test "${have_dnssd}" = "yes"; then
-  AC_DEFINE(HAVE_DNSSD, 1, [Defined to use Bonjour DNS_SD])
-fi
-AM_CONDITIONAL(HAVE_DNSSD, test "${have_dnssd}" = "yes")
+AS_IF([test "x$have_dnssd" = xyes],
+      [AC_DEFINE([HAVE_DNSSD], [1], [Defined to use Bonjour DNS_SD])])
+AM_CONDITIONAL([HAVE_DNSSD], [test "x$have_dnssd" = xyes])
 
-# LIBRARY: avahi
+# avahi
 PKG_CHECK_MODULES(
   avahi,
   [avahi-client],
   [have_avahi="yes"],
   [true])
 
-if test "${have_avahi}" = "yes"; then
-  AC_DEFINE(HAVE_AVAHI, 1, [Defined to use Avahi])
-fi
-AM_CONDITIONAL(HAVE_AVAHI, test "${have_avahi}" = "yes")
+AS_IF([test "x$have_avahi" = xyes],
+      [AC_DEFINE([HAVE_AVAHI], [1], [Defined to use Avahi])])
+AM_CONDITIONAL([HAVE_AVAHI], [test "x$have_avahi" = xyes])
 
-# Now build a list of plugin libs
+# Look for -lSaleaeDevice, if we have it we build the logic sniffer.
+SALEAE_DEVICE
+
+
+# Features
+#####################################################
+
+# Cppunit, which is used by the tests.
+AC_ARG_ENABLE(
+  [unittests],
+  [AS_HELP_STRING([--disable-unittests], [Disable all unittests])])
+AS_IF([test "x$enable_unittests" != xno],
+      [AM_PATH_CPPUNIT([1.9.6], [],
+          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+      ])
+AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
+
+# Optionally install the E1.33 library.
+AC_ARG_ENABLE(
+  [e133],
+  [AS_HELP_STRING([--install-e133], [Install the E1.33 library])])
+# For now we install the ACN lib if the E1.33 lib is requested
+AM_CONDITIONAL([INSTALL_ACN], [test "x$enable_e133" = xyes])
+AM_CONDITIONAL([INSTALL_E133], [test "x$enable_e133" = xyes])
+
+# Decide if we should build the example programs.
+AC_ARG_ENABLE(
+  [examples],
+  [AS_HELP_STRING([--disable-examples],
+                  [Disable the OLA example client programs])])
+AM_CONDITIONAL([BUILD_EXAMPLES], [test "x$enable_examples" != xno])
+
+# Make -Werror non-fatal. By default errors cause the build to abort. We do
+# this to catch problems early so lets be nice and give the user a work around.
+AC_ARG_ENABLE(
+  [fatal-warnings],
+  [AS_HELP_STRING([--disable-fatal-warnings],
+                  [Make compiler warnings non-fatal])])
+AM_CONDITIONAL([FATAL_WARNINGS], [test "x$enable_fatal_warnings" != xno])
+
+# Enable gcov to produce coverage data.
+AC_ARG_ENABLE(
+  [gcov],
+  [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
+AS_IF([test "x$enable_gov" = xyes],
+      [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+       CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"])
+
+# Enable HTTP support. This requires libmicrohttpd.
+AC_ARG_ENABLE(
+  [http],
+  [AS_HELP_STRING([--disable-http], [Disable the built in HTTP server])])
+
+have_microhttpd="no"
+AS_IF([test "x$enable_http" != xno],
+      [PKG_CHECK_MODULES([libmicrohttpd], [libmicrohttpd],
+                         [have_microhttpd="yes"], [true])])
+AM_CONDITIONAL([HAVE_LIBMICROHTTPD], [test "x$have_microhttpd" = xyes])
+AS_IF([test "x$have_microhttpd" = xyes],
+      [AC_DEFINE([HAVE_LIBMICROHTTPD], [1],
+                 [define if libmicrohttpd is installed])])
+
+# Java API, this requires Maven
+AC_ARG_ENABLE(
+  [java-libs],
+  [AS_HELP_STRING([--enable-java-libs], [Build the Java interface])])
+AS_IF([test "x$enable_java_libs" = xyes],
+      [AC_PROG_JAVA_CC()
+       MAVEN_SUPPORT([2.2.1])])
+AM_CONDITIONAL([BUILD_JAVA_LIBS], [test "x$enable_java_libs" = xyes])
+
+# libftdi: this requires libusb-0.1.4+ don't know if I should also
+# check for it, since the libusb check above is not for 0.1.4 but for libusb-1
+AC_ARG_ENABLE(
+  [libftdi],
+  [AS_HELP_STRING([--disable-libftdi],
+                  [Avoid using libftdi even if it exists])])
+
+have_libftdi="no"
+AS_IF([test "x$enable_libftdi" != xno],
+      [PKG_CHECK_MODULES([libftdi], [libftdi >= 0.18], [have_libftdi="yes"],
+                         [true])])
+AS_IF([test "x$have_libftdi" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi is installed])])
+
+# libusb
+AC_ARG_ENABLE(
+  [libusb],
+  [AS_HELP_STRING([--disable-libusb], [Avoid using libusb even if it exists])])
+
+have_libusb="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.2], [have_libusb="yes"],
+                         [true])])
+AS_IF([test "x$have_libusb" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
+
+# OSC Support.
+# look for liblo if the user asked us to
+AC_ARG_ENABLE(
+  [osc],
+  [AS_HELP_STRING([--disable-osc],
+                  [Disable the OSC plugin even if liblo exists])])
+
+have_liblo="no"
+AS_IF([test "x$enable_osc" != xno],
+      [PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])])
+AS_IF([test "x$have_liblo" = xyes],
+      [AC_DEFINE([HAVE_LIBLO], [1], [define if liblo is installed])])
+
+# Python API
+AC_ARG_ENABLE(
+  [python-libs],
+  [AS_HELP_STRING([--enable-python-libs], [Build the Python API Module])])
+
+# RDM tests, if requested this enables the Python API as well.
+AC_ARG_ENABLE(
+  [rdm-tests],
+  [AS_HELP_STRING([--enable-rdm-tests], [Install the RDM responder tests])])
+AS_IF([test "x$enable_rdm_tests" = xyes], [enable_python_libs="yes"])
+AM_CONDITIONAL([INSTALL_RDM_TESTS], [test "x$enable_rdm_tests" = xyes])
+
+# By default olad refuses to run as root. However some people want to use root
+# for embedded platforms so we give them an option.
+AC_ARG_ENABLE(
+  [root-check],
+  [AS_HELP_STRING([--disable-root-check],
+                  [Disable the check that prevents olad from running as root])])
+AS_IF([test "x$enable_root_check" = xno],
+      [AC_DEFINE([OLAD_SKIP_ROOT_CHECK], [1],
+                 [Defined if olad is allowed to run as root])])
+
+# OpenSLP is used for E1.33 support
+# This should be removed if we decide that E1.33 is going to use DNS-SD.
+# Openslp doesn't use pkg-config, so the users may need to pass CPPFLAGS
+# & LDFLAGS so we can find it.
+AC_ARG_ENABLE(
+  [slp],
+  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
+
+openslp_LIBS=""
+have_slp=no
+AS_IF([test "x$enable_slp" != xno],
+      [AC_CHECK_LIB([slp], [SLPOpen],
+                    [have_slp="yes" openslp_LIBS="-lslp"])])
+
+AM_CONDITIONAL([HAVE_SLP], [test "x$have_slp" = xyes])
+AS_IF([test "x$have_slp" = xyes],
+      [AC_DEFINE([HAVE_LIBSLP], [1], [define if libslp is installed])])
+AC_SUBST(openslp_LIBS)
+
+# Use tcmalloc. This is used by the buildbot leak checks.
+AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
+AS_IF([test "x$enable_tcmalloc" = xyes],
+      [LDFLAGS="$LDFLAGS -ltcmalloc"])
+
+
+# Python wrappers & RDM Responder tests.
+#####################################################
+AM_CONDITIONAL([BUILD_PYTHON_LIBS], [test "x$enable_python_libs" = xyes])
+
+AS_IF([test "${enable_python_libs}" = "yes"],
+      [AM_PATH_PYTHON(2.6)
+       AS_IF([test -z $PYTHON], [PYTHON="python"])
+       PYTHON_NAME=`basename $PYTHON`
+       AC_CACHE_CHECK([for $PYTHON_NAME module: google.protobuf],
+          [ac_cv_have_pymod_google_protobuf],
+          [AX_PYTHON_MODULE([google.protobuf], [fatal])
+           eval ac_cv_have_pymod_google_protobuf=\$AS_TR_CPP([HAVE_PYMOD_google.protobuf])])
+     ])
+
+# Libraries, that depend on the feature args above.
+#####################################################
+
+# LIBRARY: protobuf
+# We require 2.4.0 for the java libs
+AS_IF([test "x$build_java_libs" = xyes],
+      [PROTOBUF_SUPPORT([2.4.0])],
+      [PROTOBUF_SUPPORT([2.3.0])])
+
+
+# Plugins
+#####################################################
+
+# We build a list of plugins that we're going to compile here so the olad
+# knows what to link against.
+PLUGINS=""
+
+PLUGIN_SUPPORT(artnet, USE_ARTNET)
+PLUGIN_SUPPORT(dmx4linux, USE_DMX4LINUX, [$have_dmx4linux])
+PLUGIN_SUPPORT(dummy, USE_DUMMY)
+PLUGIN_SUPPORT(e131, USE_E131)
+PLUGIN_SUPPORT(espnet, USE_ESPNET)
+PLUGIN_SUPPORT(ftdidmx, USE_FTDI, [$have_libftdi])
+PLUGIN_SUPPORT(karate, USE_KARATE)
+PLUGIN_SUPPORT(kinet, USE_KINET)
+PLUGIN_SUPPORT(milinst, USE_MILINST)
+PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(osc, USE_OSC, [$have_liblo])
+PLUGIN_SUPPORT(pathport, USE_PATHPORT)
+PLUGIN_SUPPORT(renard, USE_RENARD)
+PLUGIN_SUPPORT(sandnet, USE_SANDNET)
+PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
+PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(usbpro, USE_USBPRO)
+PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
+
+# Finally build a list of the required plugin libs.
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
 for p in $PLUGINS; do
-  LIB_NAME="libola${p}"
-  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/$LIB_NAME.la"
+  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/libola${p}.la"
   OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 
@@ -522,102 +575,13 @@ AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
 
-# check for cppunit
-AC_ARG_ENABLE(
-  unittests,
-  AS_HELP_STRING([--disable-unittests], [Disable all unittests]),)
-
-if test "${enable_unittests}" != "no"; then
-AM_PATH_CPPUNIT(
-  1.9.6,
-  [],
-  [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
-fi
-
-AM_CONDITIONAL(BUILD_TESTS, test "${enable_unittests}" != "no")
-
-# gcov
-AC_ARG_ENABLE(
-  gcov,
-  AS_HELP_STRING([--enable-gcov], [turn on code coverage analysis tools]))
-
-if test "${enable_gov}" = "yes"; then
-  CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-  CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-fi
-
-# tcmalloc
-AC_ARG_ENABLE(tcmalloc, AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
-
-if test "${enable_tcmalloc}" = "yes"; then
-  LDFLAGS="$LDFLAGS -ltcmalloc"
-fi
-
-# Decide if we should build the example programs
-AC_ARG_ENABLE(
-  examples,
-  AS_HELP_STRING([--disable-examples],
-                 [Disable the OLA example client programs]),)
-
-AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
-
-# Optionally install the E1.33 library.
-AC_ARG_ENABLE(
-  e133,
-  AS_HELP_STRING([--enable-e133], [Install the E1.33 library]),)
-# For now we install the ACN lib if the E1.33 lib is requested
-AM_CONDITIONAL(INSTALL_ACN, test "${enable_e133}" == "yes")
-AM_CONDITIONAL(INSTALL_E133, test "${enable_e133}" == "yes")
-
-# python wrappers & RDM Responder tests.
-AC_ARG_ENABLE(
-  python-libs,
-  AS_HELP_STRING([--enable-python-libs], [Build the python interface]))
-
-AC_ARG_ENABLE(
-  rdm-tests,
-  AS_HELP_STRING([--enable-rdm-tests], [Install the RDM responder tests]))
-
-if test "${enable_rdm_tests}" = "yes"; then
-  enable_python_libs="yes";
-fi
-
-AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${enable_python_libs}" = "yes")
-AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${enable_rdm_tests}" = "yes")
-
-if test "${enable_python_libs}" = "yes"; then
- AM_PATH_PYTHON(2.6)
- if test -z $PYTHON; then
-  PYTHON="python"
- fi
- PYTHON_NAME=`basename $PYTHON`
- AC_CACHE_CHECK([for $PYTHON_NAME module: google.protobuf],
-    [ac_cv_have_pymod_google_protobuf],
-    [AX_PYTHON_MODULE([google.protobuf], [fatal])
-     eval ac_cv_have_pymod_google_protobuf=\$AS_TR_CPP([HAVE_PYMOD_google.protobuf])])
-fi
-
-# Maybe build the logic sniffer tools
-SALEAE_DEVICE
-
-# Enable running as root
-AC_ARG_ENABLE(
-  root-check,
-  AS_HELP_STRING([--disable-root-check],
-                 [Disable the check that prevents olad from running as root]),
-)
-
-if test "${enable_root_check}" = "no"; then
- AC_DEFINE(OLAD_SKIP_ROOT_CHECK,
-           1,
-           [Defined if olad is allowed to run as root])
-fi
-
+# Output
+#####################################################
 # Hack alert!
 # Python modules can't be split over two directories. This is a problem when
-# doing VPATH builds since the genrated files like
-# ${builddir}/python/ola/Ola_pb.py will be in a separate path ($builddir) from
-# the non-generated files ${srcdir}/python/ols/PidStore.py). To get the tests
+# doing VPATH builds since the generated files like
+# ${builddir}/python/ola/Ola_pb.py will be in a separate path ( $builddir ) from
+# the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
 # to pass we symlink the files we need for the tests from the builddir to the
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
 AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
@@ -741,7 +705,8 @@ echo \
 ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 
 Prefix: '${prefix}'
-Compiler: '${CXX} ${CXXFLAGS}'
+Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
+Linker: '${LD} ${LDFLAGS} ${LIBS}'
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
