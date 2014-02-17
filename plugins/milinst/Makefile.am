@@ -1,14 +1,14 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-
-EXTRA_DIST = MilInstPlugin.h MilInstDevice.h MilInstPort.h MilInstWidget.h \
-             MilInstWidget1463.h  MilInstWidget1553.h
-
+# LIBRARIES
+##################################################
 if USE_MILINST
-lib_LTLIBRARIES = libolamilinst.la
-libolamilinst_la_SOURCES = MilInstPlugin.cpp MilInstDevice.cpp MilInstPort.cpp \
-                           MilInstWidget.cpp MilInstWidget1463.cpp \
-                           MilInstWidget1553.cpp
+plugin_LTLIBRARIES = libolamilinst.la
+libolamilinst_la_SOURCES = MilInstDevice.cpp MilInstDevice.h \
+                           MilInstPlugin.cpp MilInstPlugin.h \
+                           MilInstPort.cpp MilInstPort.h MilInstWidget.cpp \
+                           MilInstWidget.h MilInstWidget1463.cpp \
+                           MilInstWidget1463.h MilInstWidget1553.cpp \
+                           MilInstWidget1553.h
 libolamilinst_la_LIBADD = ../../common/libolacommon.la
 endif

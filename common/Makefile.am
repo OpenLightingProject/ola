@@ -1,3 +1,9 @@
+
+SUBDIRS = base dmx export_map file web http io protocol rpc utils network \
+          math messaging rdm system thread testing timecode
+
+# LIBRARIES
+##################################################
 lib_LTLIBRARIES = libolacommon.la
 libolacommon_la_SOURCES =
 libolacommon_la_LIBADD = base/libolabase.la \
@@ -16,5 +22,3 @@ libolacommon_la_LIBADD = base/libolabase.la \
                          timecode/libtimecode.la \
                          utils/libolautils.la
 
-SUBDIRS = base dmx export_map file web http io protocol rpc utils network \
-          math messaging rdm system thread testing timecode

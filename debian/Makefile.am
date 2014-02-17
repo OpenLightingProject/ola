@@ -1,4 +1,4 @@
-# debian build files
+# Debian build files
 EXTRA_DIST = changelog \
              compat \
              control \

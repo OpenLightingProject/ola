@@ -1,13 +1,11 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-
-EXTRA_DIST = RenardPlugin.h RenardDevice.h RenardPort.h \
-             RenardWidget.h
-
+# LIBRARIES
+##################################################
 if USE_RENARD
-lib_LTLIBRARIES = libolarenard.la
-libolarenard_la_SOURCES = RenardPlugin.cpp RenardDevice.cpp \
-                          RenardPort.cpp RenardWidget.cpp
+plugin_LTLIBRARIES = libolarenard.la
+libolarenard_la_SOURCES = RenardDevice.cpp RenardDevice.h RenardPlugin.cpp \
+                          RenardPlugin.h RenardPort.cpp RenardPort.h \
+                          RenardWidget.cpp RenardWidget.h
 libolarenard_la_LIBADD = ../../common/libolacommon.la
 endif

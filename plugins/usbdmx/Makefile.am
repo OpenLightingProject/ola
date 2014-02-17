@@ -1,20 +1,20 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-EXTRA_DIST = AnymaDevice.h AnymaOutputPort.h EuroliteProDevice.h \
-             EuroliteProOutputPort.h FirmwareLoader.h SunliteDevice.h \
-             SunliteFirmware.h SunliteFirmwareLoader.h SunliteOutputPort.h \
-             UsbDmxPlugin.h UsbDevice.h VellemanDevice.h VellemanOutputPort.h
-
+# LIBRARIES
+##################################################
 if HAVE_LIBUSB
-  lib_LTLIBRARIES = libolausbdmx.la
-  libolausbdmx_la_SOURCES = AnymaDevice.cpp AnymaOutputPort.cpp \
-                            EuroliteProDevice.cpp EuroliteProOutputPort.cpp \
-                            SunliteDevice.cpp SunliteFirmwareLoader.cpp \
-                            SunliteOutputPort.cpp \
-                            UsbDmxPlugin.cpp VellemanDevice.cpp \
-                            VellemanOutputPort.cpp
-  libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
-  libolausbdmx_la_LIBADD = $(libusb_LIBS) \
-                           ../../common/libolacommon.la
+plugin_LTLIBRARIES = libolausbdmx.la
+libolausbdmx_la_SOURCES = AnymaDevice.cpp AnymaDevice.h AnymaOutputPort.cpp \
+                          AnymaOutputPort.h EuroliteProDevice.cpp \
+                          EuroliteProDevice.h EuroliteProOutputPort.cpp \
+                          EuroliteProOutputPort.h FirmwareLoader.h \
+                          SunliteDevice.cpp SunliteDevice.h SunliteFirmware.h \
+                          SunliteFirmwareLoader.cpp SunliteFirmwareLoader.h \
+                          SunliteOutputPort.cpp SunliteOutputPort.h \
+                          UsbDevice.h UsbDmxPlugin.cpp UsbDmxPlugin.h \
+                          VellemanDevice.cpp VellemanDevice.h \
+                          VellemanOutputPort.cpp VellemanOutputPort.h
+libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
+libolausbdmx_la_LIBADD = $(libusb_LIBS) \
+                         ../../common/libolacommon.la
 endif

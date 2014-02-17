@@ -10,7 +10,6 @@ libolautils_la_SOURCES = ActionQueue.cpp \
 
 # TESTS
 ################################################
-
 if BUILD_TESTS
 TESTS = UtilsTester
 endif
@@ -21,5 +20,5 @@ UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
                       TokenBucketTest.cpp UtilsTest.cpp
 UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 UtilsTester_LDADD = $(COMMON_TESTING_LIBS) \
-                    libolautils.la \
-                    $(top_builddir)/common/base/libolabase.la
+                    ./libolautils.la \
+                    ../base/libolabase.la
