@@ -1,9 +1,13 @@
 include $(top_srcdir)/common.mk
 
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libthread.la
 libthread_la_SOURCES = ConsumerThread.cpp Mutex.cpp SignalThread.cpp \
                        Thread.cpp ThreadPool.cpp
 
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = ThreadTester FutureTester
 endif

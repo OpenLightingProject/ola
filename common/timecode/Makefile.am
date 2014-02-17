@@ -1,8 +1,12 @@
 include $(top_srcdir)/common.mk
 
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libtimecode.la
 libtimecode_la_SOURCES = TimeCode.cpp
 
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = TimeCodeTester
 endif

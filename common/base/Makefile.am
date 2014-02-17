@@ -1,5 +1,7 @@
 include $(top_srcdir)/common.mk
 
+# LIBRARIES
+##################################################
 noinst_LTLIBRARIES = libolabase.la
 libolabase_la_SOURCES = Credentials.cpp \
                         Flags.cpp \
@@ -7,6 +9,9 @@ libolabase_la_SOURCES = Credentials.cpp \
                         Logging.cpp \
                         SysExits.cpp \
                         Version.cpp
+
+# TESTS
+##################################################
 
 if BUILD_TESTS
 TESTS = CredentialsTester FlagsTester LoggingTester

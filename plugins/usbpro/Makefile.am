@@ -1,48 +1,43 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
 SUBDIRS = messages
-EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
-             BaseRobeWidget.h CommonWidgetTest.h DmxTriDevice.h \
-             DmxTriWidget.h DmxterDevice.h DmxterWidget.h \
-             EnttecUsbProWidget.h EnttecUsbProWidgetImpl.h \
-             GenericUsbProWidget.h MockEndpoint.h \
-             RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
-             SerialWidgetInterface.h SerialWidgetInterface.h \
-             UltraDMXProDevice.h UltraDMXProWidget.h \
-             UsbSerialDevice.h UsbProDevice.h \
-             UsbProWidgetDetector.h UsbSerialPlugin.h \
-             WidgetDetectorInterface.h WidgetDetectorThread.h
 
-# This is a library which doesn't contain any coupling to olad
+# LIBRARIES
+##################################################
+# This is a library which isn't coupled to olad
 noinst_LTLIBRARIES = libolausbprowidget.la
-libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
-                                DmxTriWidget.cpp \
-                                BaseRobeWidget.cpp \
-                                BaseUsbProWidget.cpp \
-                                DmxterWidget.cpp \
-                                GenericUsbProWidget.cpp \
-                                RobeDevice.cpp \
-                                RobeWidget.cpp \
-                                RobeWidgetDetector.cpp \
-                                EnttecUsbProWidget.cpp \
-                                UltraDMXProDevice.cpp \
-                                UltraDMXProWidget.cpp \
-                                UsbProWidgetDetector.cpp \
-                                WidgetDetectorThread.cpp
+libolausbprowidget_la_SOURCES = ArduinoWidget.cpp ArduinoWidget.h \
+                                BaseRobeWidget.cpp BaseRobeWidget.h \
+                                BaseUsbProWidget.cpp BaseUsbProWidget.h \
+                                DmxTriWidget.cpp DmxTriWidget.h \
+                                DmxterWidget.cpp DmxterWidget.h \
+                                EnttecUsbProWidget.cpp EnttecUsbProWidget.h \
+                                EnttecUsbProWidgetImpl.h \
+                                GenericUsbProWidget.cpp GenericUsbProWidget.h \
+                                RobeWidget.cpp RobeWidget.h \
+                                RobeWidgetDetector.cpp RobeWidgetDetector.h \
+                                SerialWidgetInterface.h \
+                                SerialWidgetInterface.h UltraDMXProWidget.cpp \
+                                UltraDMXProWidget.h UsbProWidgetDetector.cpp \
+                                UsbProWidgetDetector.h \
+                                WidgetDetectorInterface.h \
+                                WidgetDetectorThread.cpp WidgetDetectorThread.h
 libolausbprowidget_la_LIBADD = ../../common/libolacommon.la
 
 if USE_USBPRO
 # The OLA USB Pro Plugin
-lib_LTLIBRARIES = libolausbpro.la
-libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp DmxTriDevice.cpp \
-                          DmxterDevice.cpp UsbProDevice.cpp \
-                          UsbSerialPlugin.cpp
+plugin_LTLIBRARIES = libolausbpro.la
+libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp ArduinoRGBDevice.h \
+                          DmxTriDevice.cpp DmxTriDevice.h DmxterDevice.cpp \
+                          DmxterDevice.h RobeDevice.cpp RobeDevice.h \
+                          UltraDMXProDevice.cpp UltraDMXProDevice.h \
+                          UsbProDevice.cpp UsbProDevice.h UsbSerialDevice.h \
+                          UsbSerialPlugin.cpp UsbSerialPlugin.h
 libolausbpro_la_LIBADD = libolausbprowidget.la \
                          messages/libolausbproconf.la
 
-
-# Test programs
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = ArduinoWidgetTester BaseRobeWidgetTester BaseUsbProWidgetTester \
         DmxTriWidgetTester DmxterWidgetTester EnttecUsbProWidgetTester \
@@ -54,8 +49,8 @@ check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ./libolausbprowidget.la
 
-common_test_sources = CommonWidgetTest.cpp \
-                      MockEndpoint.cpp
+common_test_sources = CommonWidgetTest.cpp CommonWidgetTest.h \
+                      MockEndpoint.cpp MockEndpoint.h
 
 ArduinoWidgetTester_SOURCES = ArduinoWidgetTest.cpp \
                               $(common_test_sources)

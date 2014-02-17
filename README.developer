@@ -185,3 +185,20 @@ We use the Google Python style guide:
 
 However we deviate from the standard and use 2 space indents, so it's
 consistent with the C++ code.
+
+Build System
+===============================================================================
+
+Autotools is a complex beast. Even after reading two books and a using it for a
+decade I still feel like I hardly understand it.
+
+Useful tips
+-----------
+
+* Run `make distcheck` to ensure you haven't broken anything.
+* Use $(srcdir), $(top_srcdir) to reference files where required. This is to
+  support VPATH builds:
+  http://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html
+* Prefer manualy dependiencies over BUILT_SOURCES where possible, see
+  http://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
+  As far as I can tell this doesn't work for libraries.
