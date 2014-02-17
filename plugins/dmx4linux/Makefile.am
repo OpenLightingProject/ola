@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 # LIBRARIES
 ##################################################
-if HAVE_DMX4LINUX
+if USE_DMX4LINUX
 plugin_LTLIBRARIES = liboladmx4linux.la
 liboladmx4linux_la_SOURCES = Dmx4LinuxDevice.cpp Dmx4LinuxDevice.h \
                              Dmx4LinuxPlugin.cpp Dmx4LinuxPlugin.h \
