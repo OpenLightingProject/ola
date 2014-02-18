@@ -31,8 +31,14 @@ typedef uint32_t in_addr_t;
 #endif
 
 #if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
+#define USE_NETLINK_FOR_DEFAULT_ROUTE 1
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#elif defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_NET_ROUTE_H) && \
+      defined(HAVE_DECL_PF_ROUTE) && defined(HAVE_DECL_NET_RT_DUMP)
+#define USE_SYSCTL_FOR_DEFAULT_ROUTE 1
+#include <net/route.h>
+#include <sys/sysctl.h>
 #else
 // Do something else if we don't have Netlink/on Windows
 #endif
@@ -56,7 +62,6 @@ typedef uint32_t in_addr_t;
 namespace ola {
 namespace network {
 
-using ola::network::IPV4Address;
 using std::string;
 using std::vector;
 
@@ -310,9 +315,8 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   return true;
 }
 
-
+#ifdef USE_NETLINK_FOR_DEFAULT_ROUTE
 int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
-#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
   nlmsghdr* nl_hdr;
 
   unsigned int msglen = 0;
@@ -343,20 +347,66 @@ int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
            (static_cast<int>(nl_hdr->nlmsg_pid) != pid));
 
   return msglen;
-#else
-  // No Netlink, can't do anything
-  (void) sd;
-  (void) *buf;
-  (void) bufsize;
-  (void) seq;
-  (void) pid;
-  return -1;
-#endif
 }
+#endif
+
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+
+#ifndef SA_SIZE
+# define SA_SIZE(sa)                        \
+    (  (!(sa) || ((struct sockaddr *)(sa))->sa_len == 0) ?  \
+           sizeof(long)     :               \
+           1 + ( (((struct sockaddr *)(sa))->sa_len - 1) | (sizeof(long) - 1) ) )
+#endif
+
+/*
+ * Use sysctl() to get the default route
+ */
+static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
+  int mib[] = {CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0};
+
+  size_t space_required;
+  int ret = sysctl(mib, 6, NULL, &space_required, NULL, 0);
+
+  if (ret < 0) {
+    OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, NULL) failed: "
+             << strerror(errno);
+    return false;
+  }
+
+  uint8_t *buffer = new uint8_t[space_required];
+
+  ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
+  if (ret < 0) {
+    OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, !NULL)"
+             << " failed: " << strerror(errno);
+    delete[] buffer;
+    return false;
+  }
 
 
-bool DefaultRoute(ola::network::IPV4Address *default_route) {
-#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
+  struct rt_msghdr *rtm = NULL;
+  uint8_t *end = buffer + space_required;
+  for (uint8_t *next = buffer; next < end; next += rtm->rtm_msglen) {
+    rtm = reinterpret_cast<struct rt_msghdr*>(next);
+    struct sockaddr *sa = reinterpret_cast<struct sockaddr*>(rtm + 1);
+    sa = reinterpret_cast<struct sockaddr*>(SA_SIZE(sa) + (char *)sa);
+    struct sockaddr_in *sockin = reinterpret_cast<struct sockaddr_in*>(sa);
+
+    IPV4Address dest(sockin->sin_addr);
+    OLA_INFO << "Default route is " << dest;
+    *default_route = dest;
+    delete[] buffer;
+    return true;
+  }
+  return false;
+}
+#endif
+
+bool DefaultRoute(IPV4Address *default_route) {
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+  return GetDefaultRouteWithSysctl(default_route);
+#elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   OLA_INFO << "Getting default route";
 
   static const unsigned int BUFSIZE = 8192;
