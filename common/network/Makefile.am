@@ -4,6 +4,7 @@ include $(top_srcdir)/common.mk
 ##################################################
 noinst_LTLIBRARIES = libolanetwork.la
 libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
+                           FakeInterfacePicker.h \
                            HealthCheckedConnection.cpp \
                            IPV4Address.cpp \
                            Interface.cpp \
