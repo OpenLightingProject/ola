@@ -89,6 +89,7 @@ java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/
 olad/olad
+olad/ola-output.conf
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
 plugins/e131/e131/e131_loadtest
