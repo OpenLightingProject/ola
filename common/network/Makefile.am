@@ -1,6 +1,5 @@
 include $(top_srcdir)/common.mk
 
-=======
 # LIBRARIES
 ##################################################
 noinst_LTLIBRARIES = libolanetwork.la
