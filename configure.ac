@@ -30,7 +30,8 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
-                  net/if_arp.h sys/types.h sys/uio.h sysexits.h])
+                  net/if_arp.h net/route.h sys/sysctl.h sys/types.h sys/uio.h \
+                  sysexits.h])
 AC_CHECK_HEADERS([random])
 
 # These both need sa_family_t from bits/sockaddr.h
@@ -147,27 +148,28 @@ AC_CHECK_TYPE(suseconds_t,
               [#include <sys/time.h>])
 
 # check for SO_NOSIGPIPE or MSG_NOSIGNAL
-AC_CHECK_DECLS(MSG_NOSIGNAL,
-               ,
-               have_msg_no_signal=no,
+AC_CHECK_DECLS(MSG_NOSIGNAL, , have_msg_no_signal=no,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-AC_CHECK_DECLS(SO_NOSIGPIPE,
-               ,
-               have_so_no_pipe=no,
+AC_CHECK_DECLS(SO_NOSIGPIPE, , have_so_no_pipe=no,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-AC_CHECK_DECLS(SO_REUSEADDR,
-               ,
-               have_so_reuseaddr=no,
+AC_CHECK_DECLS(PF_ROUTE, , have_msg_no_signal=no,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-AC_CHECK_DECLS(SO_REUSEPORT,
-               ,
-               have_so_reuseport=no,
+AC_CHECK_DECLS(NET_RT_DUMP, , ,
+               [#include <sys/types.h>
+                #include <sys/socket.h>])
+
+
+AC_CHECK_DECLS(SO_REUSEADDR, , ,
+               [#include <sys/types.h>
+                #include <sys/socket.h>])
+
+AC_CHECK_DECLS(SO_REUSEPORT, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 

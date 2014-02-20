@@ -37,6 +37,11 @@ namespace ola {
 namespace network {
 
 /**
+ * Return the length of a sockaddr
+ */
+unsigned int SockAddrLen(const struct sockaddr &sa);
+
+/**
  * Convert a string to a struct in_addr
  */
 bool StringToAddress(const std::string &address, struct in_addr *addr);

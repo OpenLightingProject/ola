@@ -231,27 +231,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
  */
 unsigned int PosixInterfacePicker::GetIfReqSize(const char *data) const {
   const struct ifreq *iface = (struct ifreq*) data;
-
-#ifdef HAVE_SOCKADDR_SA_LEN
-  unsigned int socket_len = iface->ifr_addr.sa_len;
-#else
-  unsigned int socket_len = sizeof(struct sockaddr);
-  switch (iface->ifr_addr.sa_family) {
-    case AF_INET:
-      socket_len = sizeof(struct sockaddr_in);
-      break;
-#ifdef IPV6
-    case AF_INET6:
-      socket_len = sizeof(struct sockaddr_in6);
-      break;
-#endif
-#ifdef HAVE_SOCKADDR_DL_STRUCT
-    case AF_LINK:
-      socket_len = sizeof(struct sockaddr_dl);
-      break;
-#endif
-  }
-#endif
+  unsigned int socket_len = SockAddrLen(iface->ifr_addr);
 
   // We can't assume sizeof(ifreq) = IFNAMSIZ + sizeof(sockaddr), this isn't
   // the case on some 64bit linux systems.

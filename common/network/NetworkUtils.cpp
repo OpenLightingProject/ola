@@ -31,8 +31,14 @@ typedef uint32_t in_addr_t;
 #endif
 
 #if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
+#define USE_NETLINK_FOR_DEFAULT_ROUTE 1
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+#elif defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_NET_ROUTE_H) && \
+      defined(HAVE_DECL_PF_ROUTE) && defined(HAVE_DECL_NET_RT_DUMP)
+#define USE_SYSCTL_FOR_DEFAULT_ROUTE 1
+#include <net/route.h>
+#include <sys/sysctl.h>
 #else
 // Do something else if we don't have Netlink/on Windows
 #endif
@@ -56,9 +62,32 @@ typedef uint32_t in_addr_t;
 namespace ola {
 namespace network {
 
-using ola::network::IPV4Address;
 using std::string;
 using std::vector;
+
+unsigned int SockAddrLen(const struct sockaddr &sa) {
+#ifdef HAVE_SOCKADDR_SA_LEN
+  return sa.sa_len;
+#else
+  unsigned int socket_len = sizeof(struct sockaddr);
+  switch (sa.sa_family) {
+    case AF_INET:
+      return sizeof(struct sockaddr_in);
+#ifdef IPV6
+    case AF_INET6:
+      return sizeof(struct sockaddr_in6);
+#endif
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    case AF_LINK:
+      return sizeof(struct sockaddr_dl);
+#endif
+    default:
+      OLA_WARN << "Can't determine size of sockaddr: " << sa.sa_family;
+      return sizeof(struct sockaddr);
+  }
+#endif
+}
+
 
 bool StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
@@ -310,9 +339,8 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   return true;
 }
 
-
+#ifdef USE_NETLINK_FOR_DEFAULT_ROUTE
 int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
-#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
   nlmsghdr* nl_hdr;
 
   unsigned int msglen = 0;
@@ -343,20 +371,112 @@ int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
            (static_cast<int>(nl_hdr->nlmsg_pid) != pid));
 
   return msglen;
-#else
-  // No Netlink, can't do anything
-  (void) sd;
-  (void) *buf;
-  (void) bufsize;
-  (void) seq;
-  (void) pid;
-  return -1;
+}
 #endif
+
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+
+/**
+ * Try to extract an AF_INET address from a sockaddr. If successful, sa points
+ * to the next sockaddr and true is returned.
+ */
+bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
+                                    IPV4Address *ip) {
+  const struct sockaddr *sa = reinterpret_cast<const struct sockaddr*>(*data);
+  if (sa->sa_family != AF_INET) {
+    return false;
+  }
+
+  *ip = IPV4Address(
+      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr);
+  *data += SockAddrLen(*sa);
+  return true;
 }
 
+/**
+ * Use sysctl() to get the default route
+ */
+static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
+  int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
 
-bool DefaultRoute(ola::network::IPV4Address *default_route) {
-#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
+  size_t space_required;
+  uint8_t *buffer = NULL;
+  // loop until we know we've read all the data.
+  while (1) {
+    int ret = sysctl(mib, 6, NULL, &space_required, NULL, 0);
+
+    if (ret < 0) {
+      OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, NULL) "
+               << "failed: " << strerror(errno);
+      return false;
+    }
+    buffer = reinterpret_cast<uint8_t*>(malloc(space_required));
+
+    ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
+    if (ret < 0) {
+      free(buffer);
+      if (errno == ENOMEM) {
+        continue;
+      } else {
+        OLA_WARN
+            << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, !NULL)"
+            << " failed: " << strerror(errno);
+        return false;
+      }
+    } else {
+      break;
+    }
+  }
+
+  const struct rt_msghdr *rtm = NULL;
+  const uint8_t *end = buffer + space_required;
+
+  for (const uint8_t *next = buffer; next < end; next += rtm->rtm_msglen) {
+    rtm = reinterpret_cast<const struct rt_msghdr*>(next);
+    if (rtm->rtm_version != RTM_VERSION) {
+      OLA_WARN << "Old RTM_VERSION, was " << rtm->rtm_version << ", expected "
+               << RTM_VERSION;
+      continue;
+    }
+
+    const uint8_t *data_start = reinterpret_cast<const uint8_t*>(rtm + 1);
+
+    IPV4Address dest, gateway, netmask;
+    if (rtm->rtm_flags & RTA_DST) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &dest)) {
+        continue;
+      }
+    }
+
+    if (rtm->rtm_flags & RTA_GATEWAY) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &gateway)) {
+        continue;
+      }
+    }
+
+    if (rtm->rtm_flags & RTA_NETMASK) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &netmask)) {
+        continue;
+      }
+    }
+
+    if (dest.IsWildcard() && netmask.IsWildcard()) {
+      OLA_INFO << "Default route is " << dest << ", gw " << gateway << ", mask "
+               << netmask;
+      *default_route = dest;
+      free(buffer);
+      return true;
+    }
+  }
+  free(buffer);
+  return false;
+}
+#endif
+
+bool DefaultRoute(IPV4Address *default_route) {
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+  return GetDefaultRouteWithSysctl(default_route);
+#elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   OLA_INFO << "Getting default route";
 
   static const unsigned int BUFSIZE = 8192;
