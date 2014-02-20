@@ -69,7 +69,6 @@ unsigned int SockAddrLen(const struct sockaddr &sa) {
 #ifdef HAVE_SOCKADDR_SA_LEN
   return sa.sa_len;
 #else
-  unsigned int socket_len = sizeof(struct sockaddr);
   switch (sa.sa_family) {
     case AF_INET:
       return sizeof(struct sockaddr_in);
