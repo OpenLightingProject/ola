@@ -52,11 +52,12 @@ typedef uint32_t in_addr_t;
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
+#include "ola/math/Random.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketCloser.h"
+#include "ola/StringUtils.h"
 
 
 namespace ola {
@@ -460,8 +461,6 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
     }
 
     if (dest.IsWildcard() && netmask.IsWildcard()) {
-      OLA_INFO << "Default route is " << dest << ", gw " << gateway << ", mask "
-               << netmask;
       *default_route = dest;
       free(buffer);
       return true;
@@ -470,16 +469,12 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
   free(buffer);
   return false;
 }
-#endif
-
-bool DefaultRoute(IPV4Address *default_route) {
-#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
-  return GetDefaultRouteWithSysctl(default_route);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
-  OLA_INFO << "Getting default route";
 
-  static const unsigned int BUFSIZE = 8192;
-
+/**
+ * Get the default route using a netlink socket
+ */
+static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
   int sd = socket(PF_ROUTE, SOCK_DGRAM, NETLINK_ROUTE);
   if (sd < 0) {
     OLA_WARN << "Could not create Netlink socket " << strerror(errno);
@@ -488,13 +483,13 @@ bool DefaultRoute(IPV4Address *default_route) {
 
   SocketCloser closer(sd);
 
-  int seq = 0;
-  // TODO(Peter): Fix me when linking behaves: ola::math::Random(0, INT_MAX);
+  int seq = ola::math::Random(0, INT_MAX);
 
+  const unsigned int BUFSIZE = 8192;
   char msg[BUFSIZE];
   memset(msg, 0, BUFSIZE);
-  nlmsghdr* nl_msg = reinterpret_cast<nlmsghdr*>(msg);
 
+  nlmsghdr* nl_msg = reinterpret_cast<nlmsghdr*>(msg);
   nl_msg->nlmsg_len = NLMSG_LENGTH(sizeof(rtmsg));
   nl_msg->nlmsg_type = RTM_GETROUTE;
   nl_msg->nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
@@ -506,15 +501,9 @@ bool DefaultRoute(IPV4Address *default_route) {
     return false;
   }
 
-  int len = 0;
-
-  // nlmsghdr* nl_hdr;
-
   // TODO(Peter): Switch to the inline code below when we can get
   // *msg += readlen; working properly.
-  len = ReadNetlinkSocket(sd,
-                          msg,
-                          BUFSIZE,
+  int len = ReadNetlinkSocket(sd, msg, BUFSIZE,
                           nl_msg->nlmsg_seq,
                           nl_msg->nlmsg_pid);
   if (len == static_cast<int>(BUFSIZE)) {
@@ -577,91 +566,62 @@ bool DefaultRoute(IPV4Address *default_route) {
     return false;
   }
 
-  unsigned int route_count = 0;
-  bool found_default_route = false;
-  in_addr default_route_ip = {0};
-
   // We have to convert the type of the NLMSG_OK length, as otherwise it
   // generates "comparison between signed and unsigned integer expressions"
   // errors
-  for (;
-       NLMSG_OK(nl_msg, (unsigned int)len);
-       nl_msg = NLMSG_NEXT(nl_msg, len)) {
+  for (; NLMSG_OK(nl_msg, (unsigned int)len);
+         nl_msg = NLMSG_NEXT(nl_msg, len)) {
     if (nl_msg->nlmsg_type == NLMSG_DONE) {
       break;
     }
 
-    rtmsg* rt_msg = reinterpret_cast<rtmsg*>(NLMSG_DATA(nl_msg));
+    // Unless RTA_DST is provided, RTA_GATEWAY implies it's the default route.
+    bool is_default_route = true;
+    IPV4Address gateway;
 
-    found_default_route = false;
-
-    OLA_WARN << "Checking msg";
-
-    if ((rt_msg->rtm_family == AF_INET) &&
-        (rt_msg->rtm_table == RT_TABLE_MAIN)) {
+    // Loop over the attributes looking for RTA_GATEWAY and RTA_DST
+    const rtmsg *rt_msg = reinterpret_cast<const rtmsg*>(NLMSG_DATA(nl_msg));
+    if (rt_msg->rtm_family == AF_INET && rt_msg->rtm_table == RT_TABLE_MAIN) {
       int rt_len = RTM_PAYLOAD(nl_msg);
 
       for (rtattr* rt_attr = reinterpret_cast<rtattr*>(RTM_RTA(rt_msg));
            RTA_OK(rt_attr, rt_len);
            rt_attr = RTA_NEXT(rt_attr, rt_len)) {
-        OLA_WARN << "Checking attr " << static_cast<int>(rt_attr->rta_type);
         switch (rt_attr->rta_type) {
-          case RTA_OIF:
-            OLA_WARN << "Index: " <<
-                *(reinterpret_cast<int*>(RTA_DATA(rt_attr)));
-            route_count++;
-            break;
           case RTA_GATEWAY:
-            OLA_WARN << "GW: " <<
-                static_cast<int>(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr) <<
-                " = " << IPV4Address(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr);
-            default_route_ip.s_addr = reinterpret_cast<in_addr*>(
-                RTA_DATA(rt_attr))->s_addr;
-            found_default_route = true;
+            gateway = IPV4Address(
+                *(reinterpret_cast<in_addr*>(RTA_DATA(rt_attr))));
             break;
           case RTA_DST:
-            if ((reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr == 0) {
-              OLA_WARN << "Default GW:";
-            }
-            OLA_WARN << "Dest: " <<
-                static_cast<int>(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr) <<
-                " = " << IPV4Address(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr);
+            IPV4Address dest(*(reinterpret_cast<in_addr*>(RTA_DATA(rt_attr))));
+            is_default_route = dest.IsWildcard();
             break;
         }
       }
-      OLA_WARN << "====================================";
-      if (found_default_route)
-        break;
+    }
+
+    if (is_default_route) {
+      *default_route = gateway;
+      OLA_INFO << "Got default route: " << *default_route;
+      return true;
     }
   }
 
-  OLA_DEBUG << "Found " << route_count << " routes";
-
-  if (!found_default_route) {
-    if (route_count > 0) {
-      OLA_WARN << "No default route found, but found " << route_count
-               << " routes, so setting default route to zero";
-      default_route_ip.s_addr = 0;
-    } else {
-      OLA_WARN << "Couldn't find default route";
-      return false;
-    }
-  }
-
-  *default_route = IPV4Address(default_route_ip.s_addr);
-
-  OLA_INFO << "Got default route: " << *default_route;
-
+  OLA_WARN << "No default route found, so setting default route to zero";
+  *default_route = IPV4Address();
   return true;
+}
+#endif
+
+bool DefaultRoute(IPV4Address *default_route) {
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+  return GetDefaultRouteWithSysctl(default_route);
+#elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
+  return GetDefaultRouteWithNetlink(default_route);
 #else
+#error DefaultRoute not implemented
   // TODO(Peter): Do something else on Windows/machines without Netlink
   // No Netlink, can't do anything
-  (void) default_route;
-
   return false;
 #endif
 }
