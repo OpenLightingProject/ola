@@ -65,6 +65,30 @@ namespace network {
 using std::string;
 using std::vector;
 
+unsigned int SockAddrLen(const struct sockaddr &sa) {
+#ifdef HAVE_SOCKADDR_SA_LEN
+  return sa.sa_len;
+#else
+  unsigned int socket_len = sizeof(struct sockaddr);
+  switch (sa.sa_family) {
+    case AF_INET:
+      return sizeof(struct sockaddr_in);
+#ifdef IPV6
+    case AF_INET6:
+      return sizeof(struct sockaddr_in6);
+#endif
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    case AF_LINK:
+      return sizeof(struct sockaddr_dl);
+#endif
+    default:
+      OLA_WARN << "Can't determine size of sockaddr: " << sa.sa_family;
+      return sizeof(struct sockaddr);
+  }
+#endif
+}
+
+
 bool StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
 
@@ -352,53 +376,99 @@ int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
 
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
 
-#ifndef SA_SIZE
-# define SA_SIZE(sa)                        \
-    (  (!(sa) || ((struct sockaddr *)(sa))->sa_len == 0) ?  \
-           sizeof(long)     :               \
-           1 + ( (((struct sockaddr *)(sa))->sa_len - 1) | (sizeof(long) - 1) ) )
-#endif
+/**
+ * Try to extract an AF_INET address from a sockaddr. If successful, sa points
+ * to the next sockaddr and true is returned.
+ */
+bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
+                                    IPV4Address *ip) {
+  const struct sockaddr *sa = reinterpret_cast<const struct sockaddr*>(*data);
+  if (sa->sa_family != AF_INET) {
+    return false;
+  }
 
-/*
+  *ip = IPV4Address(
+      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr);
+  *data += SockAddrLen(*sa);
+  return true;
+}
+
+/**
  * Use sysctl() to get the default route
  */
 static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
-  int mib[] = {CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0};
+  int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
 
   size_t space_required;
-  int ret = sysctl(mib, 6, NULL, &space_required, NULL, 0);
+  uint8_t *buffer = NULL;
+  // loop until we know we've read all the data.
+  while (1) {
+    int ret = sysctl(mib, 6, NULL, &space_required, NULL, 0);
 
-  if (ret < 0) {
-    OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, NULL) failed: "
-             << strerror(errno);
-    return false;
+    if (ret < 0) {
+      OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, NULL) "
+               << "failed: " << strerror(errno);
+      return false;
+    }
+    buffer = reinterpret_cast<uint8_t*>(malloc(space_required));
+
+    ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
+    if (ret < 0) {
+      free(buffer);
+      if (errno == ENOMEM) {
+        continue;
+      } else {
+        OLA_WARN
+            << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, !NULL)"
+            << " failed: " << strerror(errno);
+        return false;
+      }
+    } else {
+      break;
+    }
   }
 
-  uint8_t *buffer = new uint8_t[space_required];
+  const struct rt_msghdr *rtm = NULL;
+  const uint8_t *end = buffer + space_required;
 
-  ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
-  if (ret < 0) {
-    OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, !NULL)"
-             << " failed: " << strerror(errno);
-    delete[] buffer;
-    return false;
+  for (const uint8_t *next = buffer; next < end; next += rtm->rtm_msglen) {
+    rtm = reinterpret_cast<const struct rt_msghdr*>(next);
+    if (rtm->rtm_version != RTM_VERSION) {
+      OLA_WARN << "Old RTM_VERSION, was " << rtm->rtm_version << ", expected "
+               << RTM_VERSION;
+      continue;
+    }
+
+    const uint8_t *data_start = reinterpret_cast<const uint8_t*>(rtm + 1);
+
+    IPV4Address dest, gateway, netmask;
+    if (rtm->rtm_flags & RTA_DST) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &dest)) {
+        continue;
+      }
+    }
+
+    if (rtm->rtm_flags & RTA_GATEWAY) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &gateway)) {
+        continue;
+      }
+    }
+
+    if (rtm->rtm_flags & RTA_NETMASK) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &netmask)) {
+        continue;
+      }
+    }
+
+    if (dest.IsWildcard() && netmask.IsWildcard()) {
+      OLA_INFO << "Default route is " << dest << ", gw " << gateway << ", mask "
+               << netmask;
+      *default_route = dest;
+      free(buffer);
+      return true;
+    }
   }
-
-
-  struct rt_msghdr *rtm = NULL;
-  uint8_t *end = buffer + space_required;
-  for (uint8_t *next = buffer; next < end; next += rtm->rtm_msglen) {
-    rtm = reinterpret_cast<struct rt_msghdr*>(next);
-    struct sockaddr *sa = reinterpret_cast<struct sockaddr*>(rtm + 1);
-    sa = reinterpret_cast<struct sockaddr*>(SA_SIZE(sa) + (char *)sa);
-    struct sockaddr_in *sockin = reinterpret_cast<struct sockaddr_in*>(sa);
-
-    IPV4Address dest(sockin->sin_addr);
-    OLA_INFO << "Default route is " << dest;
-    *default_route = dest;
-    delete[] buffer;
-    return true;
-  }
+  free(buffer);
   return false;
 }
 #endif
