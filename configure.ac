@@ -160,16 +160,16 @@ AC_CHECK_DECLS(PF_ROUTE, , have_msg_no_signal=no,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-AC_CHECK_DECLS(NET_RT_DUMP, , have_msg_no_signal=no,
+AC_CHECK_DECLS(NET_RT_DUMP, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
 
-AC_CHECK_DECLS(SO_REUSEADDR, , have_so_reuseaddr=no,
+AC_CHECK_DECLS(SO_REUSEADDR, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-AC_CHECK_DECLS(SO_REUSEPORT, , have_so_reuseport=no,
+AC_CHECK_DECLS(SO_REUSEPORT, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
