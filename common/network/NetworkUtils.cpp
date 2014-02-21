@@ -600,7 +600,7 @@ static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
       }
     }
 
-    if (is_default_route) {
+    if (is_default_route && !gateway.IsWildcard()) {
       *default_route = gateway;
       OLA_INFO << "Got default route: " << *default_route;
       return true;
