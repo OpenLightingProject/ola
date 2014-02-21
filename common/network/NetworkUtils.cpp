@@ -339,41 +339,6 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   return true;
 }
 
-#ifdef USE_NETLINK_FOR_DEFAULT_ROUTE
-int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
-  nlmsghdr* nl_hdr;
-
-  unsigned int msglen = 0;
-
-  do {
-    int readlen = recv(sd, buf, bufsize - msglen, 0);
-    if (readlen < 0) return -1;
-
-    nl_hdr = reinterpret_cast<nlmsghdr*>(buf);
-
-    // We have to convert the type of the NLMSG_OK length, as otherwise it
-    // generates "comparison between signed and unsigned integer expressions"
-    // errors
-    if (NLMSG_OK(nl_hdr, (unsigned int)readlen) == 0)
-      return -1;
-
-    if (nl_hdr->nlmsg_type == NLMSG_ERROR)
-      return -1;
-
-    if (nl_hdr->nlmsg_type == NLMSG_DONE)
-      break;
-
-    buf += readlen;
-    msglen += readlen;
-
-    if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0) break;
-  } while ((static_cast<int>(nl_hdr->nlmsg_seq) != seq) ||
-           (static_cast<int>(nl_hdr->nlmsg_pid) != pid));
-
-  return msglen;
-}
-#endif
-
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
 
 /**
@@ -472,6 +437,43 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
 
 /**
+ * Read a message from the netlink socket. This continues to read until the
+ * expected seq / pid combination is returned.
+ */
+int ReadNetlinkSocket(int sd, uint8_t *buffer, int bufsize, int seq, int pid) {
+  nlmsghdr* nl_hdr;
+
+  unsigned int msglen = 0;
+
+  do {
+    int readlen = recv(sd, buffer, bufsize - msglen, 0);
+    if (readlen < 0) {
+      return -1;
+    }
+
+    nl_hdr = reinterpret_cast<nlmsghdr*>(buffer);
+    if (NLMSG_OK(nl_hdr, static_cast<unsigned int>(readlen)) == 0)
+      return -1;
+
+    if (nl_hdr->nlmsg_type == NLMSG_ERROR)
+      return -1;
+
+    if (nl_hdr->nlmsg_type == NLMSG_DONE)
+      break;
+
+    buffer += readlen;
+    msglen += readlen;
+
+    if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0) {
+      break;
+    }
+  } while ((static_cast<int>(nl_hdr->nlmsg_seq) != seq) ||
+           (static_cast<int>(nl_hdr->nlmsg_pid) != pid));
+
+  return msglen;
+}
+
+/**
  * Get the default route using a netlink socket
  */
 static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
@@ -486,7 +488,7 @@ static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
   int seq = ola::math::Random(0, INT_MAX);
 
   const unsigned int BUFSIZE = 8192;
-  char msg[BUFSIZE];
+  uint8_t msg[BUFSIZE];
   memset(msg, 0, BUFSIZE);
 
   nlmsghdr* nl_msg = reinterpret_cast<nlmsghdr*>(msg);
@@ -501,65 +503,13 @@ static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
     return false;
   }
 
-  // TODO(Peter): Switch to the inline code below when we can get
-  // *msg += readlen; working properly.
   int len = ReadNetlinkSocket(sd, msg, BUFSIZE,
-                          nl_msg->nlmsg_seq,
-                          nl_msg->nlmsg_pid);
+                              nl_msg->nlmsg_seq,
+                              nl_msg->nlmsg_pid);
   if (len == static_cast<int>(BUFSIZE)) {
     OLA_WARN << "Number of bytes fetched == buffer size (" << BUFSIZE << "), "
                 "Netlink data may be truncated";
   }
-
- /*
-  * do {
-  *   OLA_WARN << "Looping len: " << len;
-  *
-  *
-  *   int readlen = recv(sd, &msg, BUFSIZE - len, 0);
-  *   if (readlen < 0) {
-  *     len = -1;
-  *     break;
-  *   }
-  *
-  *
-  *   nl_hdr = (nlmsghdr*)msg;
-  *
-  *
-  *   // We have to convert the type of the NLMSG_OK length, as otherwise it
-  *   // generates "comparison between signed and unsigned integer expressions"
-  *   // errors
-  *   if (NLMSG_OK(nl_hdr, (unsigned int)readlen) == 0) {
-  *     OLA_WARN << "nlmsg ok";
-  *     len = -1;
-  *     break;
-  *   }
-  *
-  *
-  *   if (nl_hdr->nlmsg_type == NLMSG_ERROR) {
-  *     OLA_WARN << "nlmsg err";
-  *     len = -1;
-  *     break;
-  *   }
-  *
-  *
-  *   if (nl_hdr->nlmsg_type == NLMSG_DONE) {
-  *     OLA_WARN << "nlmsg err";
-  *     break;
-  *   }
-  *
-  *
-  *   *msg += readlen;
-  *   len += readlen;
-  *
-  *
-  * OLA_WARN << "Postinc len: " << len;
-
-  * if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0)
-  *   break;
-  *} while (((int)nl_hdr->nlmsg_seq != seq) ||
-  *        ((int)nl_hdr->nlmsg_pid != 0));
- */
 
   if (len < 0) {
     OLA_WARN << "No data received from Netlink " << strerror(errno);
