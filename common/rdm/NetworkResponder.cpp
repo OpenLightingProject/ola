@@ -29,6 +29,8 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/NetworkResponder.h"
@@ -44,6 +46,8 @@ namespace rdm {
 
 using ola::network::FakeInterfacePicker;
 using ola::network::HostToNetwork;
+using ola::network::Interface;
+using ola::network::InterfacePicker;
 using ola::network::IPV4Address;
 using ola::network::MACAddress;
 using ola::network::NetworkToHost;

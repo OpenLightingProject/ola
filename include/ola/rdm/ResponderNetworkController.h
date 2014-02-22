@@ -15,7 +15,7 @@
  *
  * ResponderNetworkController.h
  * Talks to the machine's network systems to get/set data.
- * Copyright (C) 2013 Peter Newman
+ * Copyright (C) 2013-2014 Peter Newman
  */
 
 /**

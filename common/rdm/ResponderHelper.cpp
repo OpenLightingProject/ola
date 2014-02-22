@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * ResponderHelper.cpp
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2013-2014 Simon Newton
  */
 
 #include <stdint.h>
@@ -31,6 +31,8 @@
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/ResponderHelper.h"
@@ -41,6 +43,9 @@ namespace ola {
 namespace rdm {
 
 using ola::network::HostToNetwork;
+using ola::network::Interface;
+using ola::network::InterfacePicker;
+using ola::network::IPV4Address;
 using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using std::min;

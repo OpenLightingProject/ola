@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * ResponderHelper.h
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2013-2014 Simon Newton
  */
 
 /**
@@ -29,8 +29,6 @@
 
 #include <string>
 #include <vector>
-#include "ola/network/Interface.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/ResponderNetworkController.h"
@@ -39,10 +37,6 @@
 
 namespace ola {
 namespace rdm {
-
-using ola::network::Interface;
-using ola::network::InterfacePicker;
-using ola::network::IPV4Address;
 
 /**
  * Helper methods for building RDM responders. These don't check that the
@@ -208,9 +202,10 @@ class ResponderHelper {
         std::string description,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetIPV4Address(const RDMRequest *request,
-                                             const IPV4Address &value,
-                                             uint8_t queued_message_count = 0);
+    static const RDMResponse *GetIPV4Address(
+        const RDMRequest *request,
+        const ola::network::IPV4Address &value,
+        uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,
