@@ -132,7 +132,7 @@ void NetworkUtilsTest::testNameServers() {
  * one)
  */
 void NetworkUtilsTest::testDefaultRoute() {
+  int32_t if_index;
   IPV4Address default_route;
-  // TODO(Simon): Change this to an OLA_ASSERT_TRUE when we can fetch on a Mac
-  DefaultRoute(&default_route);
+  OLA_ASSERT_TRUE(DefaultRoute(&if_index, &default_route));
 }

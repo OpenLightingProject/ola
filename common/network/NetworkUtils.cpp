@@ -48,15 +48,18 @@ typedef uint32_t in_addr_t;
 #include <string.h>
 #include <unistd.h>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
+#include "ola/math/Random.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketCloser.h"
+#include "ola/StringUtils.h"
 
 
 namespace ola {
@@ -69,7 +72,6 @@ unsigned int SockAddrLen(const struct sockaddr &sa) {
 #ifdef HAVE_SOCKADDR_SA_LEN
   return sa.sa_len;
 #else
-  unsigned int socket_len = sizeof(struct sockaddr);
   switch (sa.sa_family) {
     case AF_INET:
       return sizeof(struct sockaddr_in);
@@ -339,41 +341,6 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   return true;
 }
 
-#ifdef USE_NETLINK_FOR_DEFAULT_ROUTE
-int ReadNetlinkSocket(int sd, char *buf, int bufsize, int seq, int pid) {
-  nlmsghdr* nl_hdr;
-
-  unsigned int msglen = 0;
-
-  do {
-    int readlen = recv(sd, buf, bufsize - msglen, 0);
-    if (readlen < 0) return -1;
-
-    nl_hdr = reinterpret_cast<nlmsghdr*>(buf);
-
-    // We have to convert the type of the NLMSG_OK length, as otherwise it
-    // generates "comparison between signed and unsigned integer expressions"
-    // errors
-    if (NLMSG_OK(nl_hdr, (unsigned int)readlen) == 0)
-      return -1;
-
-    if (nl_hdr->nlmsg_type == NLMSG_ERROR)
-      return -1;
-
-    if (nl_hdr->nlmsg_type == NLMSG_DONE)
-      break;
-
-    buf += readlen;
-    msglen += readlen;
-
-    if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0) break;
-  } while ((static_cast<int>(nl_hdr->nlmsg_seq) != seq) ||
-           (static_cast<int>(nl_hdr->nlmsg_pid) != pid));
-
-  return msglen;
-}
-#endif
-
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
 
 /**
@@ -396,7 +363,8 @@ bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
 /**
  * Use sysctl() to get the default route
  */
-static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
+static bool GetDefaultRouteWithSysctl(int32_t *if_index,
+                                      IPV4Address *default_gateway) {
   int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
 
   size_t space_required;
@@ -442,6 +410,7 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
     const uint8_t *data_start = reinterpret_cast<const uint8_t*>(rtm + 1);
 
     IPV4Address dest, gateway, netmask;
+
     if (rtm->rtm_flags & RTA_DST) {
       if (!ExtractIPV4AddressFromSockAddr(&data_start, &dest)) {
         continue;
@@ -461,41 +430,139 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
     }
 
     if (dest.IsWildcard() && netmask.IsWildcard()) {
-      OLA_INFO << "Default route is " << dest << ", gw " << gateway << ", mask "
-               << netmask;
-      *default_route = dest;
+      *default_gateway = gateway;
+      *if_index = rtm->rtm_index;
       free(buffer);
+      OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
+               << *if_index;
       return true;
     }
   }
   free(buffer);
-  return false;
+  OLA_WARN << "No default route found";
+  return true;
 }
-#endif
-
-bool DefaultRoute(IPV4Address *default_route) {
-#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
-  return GetDefaultRouteWithSysctl(default_route);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
-  OLA_INFO << "Getting default route";
 
-  static const unsigned int BUFSIZE = 8192;
+/**
+ * Handle a netlink message. If this message is a routing table message and it
+ * contains the default route, then either:
+ *   i) default_gateway is updated with the address of the gateway.
+ *   ii) if_index is updated with the interface index for the default route.
+ * @param if_index[out] possibly updated with interface index for the default
+ *   route.
+ * @param default_gateway[out] possibly updated with the default gateway.
+ * @param nl_hdr the netlink message.
+ */
+void MessageHandler(int32_t *if_index,
+                    IPV4Address *default_gateway,
+                    const struct nlmsghdr *nl_hdr) {
+  // Unless RTA_DST is provided, an RTA_GATEWAY or RTA_OIF attribute implies
+  // it's the default route.
+  IPV4Address gateway;
+  int32_t index = -1;
 
+  bool is_default_route = true;
+
+  // Loop over the attributes looking for RTA_GATEWAY and/or RTA_DST
+  const rtmsg *rt_msg = reinterpret_cast<const rtmsg*>(NLMSG_DATA(nl_hdr));
+  if (rt_msg->rtm_family == AF_INET && rt_msg->rtm_table == RT_TABLE_MAIN) {
+    int rt_len = RTM_PAYLOAD(nl_hdr);
+
+    for (const rtattr* rt_attr = reinterpret_cast<const rtattr*>(
+            RTM_RTA(rt_msg));
+         RTA_OK(rt_attr, rt_len);
+         rt_attr = RTA_NEXT(rt_attr, rt_len)) {
+      switch (rt_attr->rta_type) {
+        case RTA_OIF:
+          index = *(reinterpret_cast<int32_t*>(RTA_DATA(rt_attr)));
+          break;
+        case RTA_GATEWAY:
+          gateway = IPV4Address(
+              *(reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))));
+          break;
+        case RTA_DST:
+          IPV4Address dest(*(reinterpret_cast<const in_addr*>(
+              RTA_DATA(rt_attr))));
+          is_default_route = dest.IsWildcard();
+          break;
+      }
+    }
+  }
+
+  if (is_default_route && (!gateway.IsWildcard() || index != -1)) {
+    *default_gateway = gateway;
+    *if_index = index;
+  }
+}
+
+typedef ola::Callback1<void, const struct nlmsghdr*> NetlinkCallback;
+
+/**
+ * Read a message from the netlink socket. This continues to read until the
+ * expected sequence number is seend. Returns true if the desired message was
+ * seen, false if there was an error reading from the netlink socket.
+ */
+bool ReadNetlinkSocket(int sd, uint8_t *buffer, int bufsize, unsigned int seq,
+                       NetlinkCallback *handler) {
+  OLA_DEBUG << "Looking for netlink response with seq: " << seq;
+  while (true) {
+    int len = recv(sd, buffer, bufsize, 0);
+    if (len < 0) {
+      return false;
+    }
+    if (len == static_cast<int>(bufsize)) {
+      OLA_WARN << "Number of bytes fetched == buffer size ("
+               << bufsize << "), Netlink data may be truncated";
+    }
+
+    struct nlmsghdr* nl_hdr;
+    for (nl_hdr = reinterpret_cast<struct nlmsghdr*>(buffer);
+         NLMSG_OK(nl_hdr, static_cast<unsigned int>(len));
+         nl_hdr = NLMSG_NEXT(nl_hdr, len)) {
+      OLA_DEBUG << "Read seq " << nl_hdr->nlmsg_seq << ", pid "
+                << nl_hdr->nlmsg_pid << ", type "
+                << nl_hdr->nlmsg_type << ", from netlink socket";
+
+      if (static_cast<unsigned int>(nl_hdr->nlmsg_seq) != seq) {
+        continue;
+      }
+
+      if (nl_hdr->nlmsg_type == NLMSG_ERROR) {
+        struct nlmsgerr* err = reinterpret_cast<struct nlmsgerr*>(
+            NLMSG_DATA(nl_hdr));
+        OLA_WARN << "Netlink returned error: " << err->error;
+        return false;
+      }
+
+      handler->Run(nl_hdr);
+      if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0 ||
+          nl_hdr->nlmsg_type == NLMSG_DONE) {
+        return true;
+      }
+    }
+  }
+}
+
+/**
+ * Get the default route using a netlink socket
+ */
+static bool GetDefaultRouteWithNetlink(int32_t *if_index,
+                                       IPV4Address *default_gateway) {
   int sd = socket(PF_ROUTE, SOCK_DGRAM, NETLINK_ROUTE);
   if (sd < 0) {
     OLA_WARN << "Could not create Netlink socket " << strerror(errno);
     return false;
   }
-
   SocketCloser closer(sd);
 
-  int seq = 0;
-  // TODO(Peter): Fix me when linking behaves: ola::math::Random(0, INT_MAX);
+  int seq = ola::math::Random(0, INT_MAX);
 
-  char msg[BUFSIZE];
+  const unsigned int BUFSIZE = 8192;
+  uint8_t msg[BUFSIZE];
   memset(msg, 0, BUFSIZE);
-  nlmsghdr* nl_msg = reinterpret_cast<nlmsghdr*>(msg);
 
+  nlmsghdr* nl_msg = reinterpret_cast<nlmsghdr*>(msg);
   nl_msg->nlmsg_len = NLMSG_LENGTH(sizeof(rtmsg));
   nl_msg->nlmsg_type = RTM_GETROUTE;
   nl_msg->nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
@@ -507,162 +574,32 @@ bool DefaultRoute(IPV4Address *default_route) {
     return false;
   }
 
-  int len = 0;
-
-  // nlmsghdr* nl_hdr;
-
-  // TODO(Peter): Switch to the inline code below when we can get
-  // *msg += readlen; working properly.
-  len = ReadNetlinkSocket(sd,
-                          msg,
-                          BUFSIZE,
-                          nl_msg->nlmsg_seq,
-                          nl_msg->nlmsg_pid);
-  if (len == static_cast<int>(BUFSIZE)) {
-    OLA_WARN << "Number of bytes fetched == buffer size (" << BUFSIZE << "), "
-                "Netlink data may be truncated";
-  }
-
- /*
-  * do {
-  *   OLA_WARN << "Looping len: " << len;
-  *
-  *
-  *   int readlen = recv(sd, &msg, BUFSIZE - len, 0);
-  *   if (readlen < 0) {
-  *     len = -1;
-  *     break;
-  *   }
-  *
-  *
-  *   nl_hdr = (nlmsghdr*)msg;
-  *
-  *
-  *   // We have to convert the type of the NLMSG_OK length, as otherwise it
-  *   // generates "comparison between signed and unsigned integer expressions"
-  *   // errors
-  *   if (NLMSG_OK(nl_hdr, (unsigned int)readlen) == 0) {
-  *     OLA_WARN << "nlmsg ok";
-  *     len = -1;
-  *     break;
-  *   }
-  *
-  *
-  *   if (nl_hdr->nlmsg_type == NLMSG_ERROR) {
-  *     OLA_WARN << "nlmsg err";
-  *     len = -1;
-  *     break;
-  *   }
-  *
-  *
-  *   if (nl_hdr->nlmsg_type == NLMSG_DONE) {
-  *     OLA_WARN << "nlmsg err";
-  *     break;
-  *   }
-  *
-  *
-  *   *msg += readlen;
-  *   len += readlen;
-  *
-  *
-  * OLA_WARN << "Postinc len: " << len;
-
-  * if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0)
-  *   break;
-  *} while (((int)nl_hdr->nlmsg_seq != seq) ||
-  *        ((int)nl_hdr->nlmsg_pid != 0));
- */
-
-  if (len < 0) {
-    OLA_WARN << "No data received from Netlink " << strerror(errno);
+  std::auto_ptr<NetlinkCallback> cb(
+      ola::NewCallback(MessageHandler, if_index, default_gateway));
+  if (!ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get())) {
     return false;
   }
 
-  unsigned int route_count = 0;
-  bool found_default_route = false;
-  in_addr default_route_ip = {0};
-
-  // We have to convert the type of the NLMSG_OK length, as otherwise it
-  // generates "comparison between signed and unsigned integer expressions"
-  // errors
-  for (;
-       NLMSG_OK(nl_msg, (unsigned int)len);
-       nl_msg = NLMSG_NEXT(nl_msg, len)) {
-    if (nl_msg->nlmsg_type == NLMSG_DONE) {
-      break;
-    }
-
-    rtmsg* rt_msg = reinterpret_cast<rtmsg*>(NLMSG_DATA(nl_msg));
-
-    found_default_route = false;
-
-    OLA_WARN << "Checking msg";
-
-    if ((rt_msg->rtm_family == AF_INET) &&
-        (rt_msg->rtm_table == RT_TABLE_MAIN)) {
-      int rt_len = RTM_PAYLOAD(nl_msg);
-
-      for (rtattr* rt_attr = reinterpret_cast<rtattr*>(RTM_RTA(rt_msg));
-           RTA_OK(rt_attr, rt_len);
-           rt_attr = RTA_NEXT(rt_attr, rt_len)) {
-        OLA_WARN << "Checking attr " << static_cast<int>(rt_attr->rta_type);
-        switch (rt_attr->rta_type) {
-          case RTA_OIF:
-            OLA_WARN << "Index: " <<
-                *(reinterpret_cast<int*>(RTA_DATA(rt_attr)));
-            route_count++;
-            break;
-          case RTA_GATEWAY:
-            OLA_WARN << "GW: " <<
-                static_cast<int>(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr) <<
-                " = " << IPV4Address(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr);
-            default_route_ip.s_addr = reinterpret_cast<in_addr*>(
-                RTA_DATA(rt_attr))->s_addr;
-            found_default_route = true;
-            break;
-          case RTA_DST:
-            if ((reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr == 0) {
-              OLA_WARN << "Default GW:";
-            }
-            OLA_WARN << "Dest: " <<
-                static_cast<int>(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr) <<
-                " = " << IPV4Address(
-                    (reinterpret_cast<in_addr*>(RTA_DATA(rt_attr)))->s_addr);
-            break;
-        }
-      }
-      OLA_WARN << "====================================";
-      if (found_default_route)
-        break;
-    }
+  if (default_gateway->IsWildcard() && *if_index == -1) {
+    OLA_WARN << "No default route found";
   }
-
-  OLA_DEBUG << "Found " << route_count << " routes";
-
-  if (!found_default_route) {
-    if (route_count > 0) {
-      OLA_WARN << "No default route found, but found " << route_count
-               << " routes, so setting default route to zero";
-      default_route_ip.s_addr = 0;
-    } else {
-      OLA_WARN << "Couldn't find default route";
-      return false;
-    }
-  }
-
-  *default_route = IPV4Address(default_route_ip.s_addr);
-
-  OLA_INFO << "Got default route: " << *default_route;
-
+  OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
+           << *if_index;
   return true;
+}
+#endif
+
+bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
+  *default_gateway = IPV4Address();
+  *if_index = -1;
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+  return GetDefaultRouteWithSysctl(if_index, default_gateway);
+#elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
+  return GetDefaultRouteWithNetlink(if_index, default_gateway);
 #else
+#error "DefaultRoute not implemented for this platform, please report this."
   // TODO(Peter): Do something else on Windows/machines without Netlink
   // No Netlink, can't do anything
-  (void) default_route;
-
   return false;
 #endif
 }
