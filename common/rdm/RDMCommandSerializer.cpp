@@ -61,7 +61,7 @@ bool RDMCommandSerializer::Pack(const RDMCommand &command,
 /**
  * Pack this RDMRequest into a memory buffer, using the supplied parameters to
  *   override what's in the request.
- * @param command the RDMRequest to pack
+ * @param request the RDMRequest to pack
  * @param buffer a pointer to the memory location to use
  * @param size the size of the memory location. Update with the number of bytes
  *   written.
