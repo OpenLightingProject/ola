@@ -351,7 +351,7 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
 /**
  * Inflate from some data
  */
-RDMRequest* RDMRequest::InflateFromData(const string &data) {
+RDMRequest* RDMRequest::InflateFromData(const std::string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -519,7 +519,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 /**
  * Inflate from some data
  */
-RDMResponse* RDMResponse::InflateFromData(const string &data,
+RDMResponse* RDMResponse::InflateFromData(const std::string &data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
@@ -532,7 +532,7 @@ RDMResponse* RDMResponse::InflateFromData(const string &data,
 /**
  * Inflate from some data
  */
-RDMResponse* RDMResponse::InflateFromData(const string &data,
+RDMResponse* RDMResponse::InflateFromData(const std::string &data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request,
                                           uint8_t transaction_number) {
@@ -809,7 +809,8 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
 /*
  * Inflate a discovery request from some data.
  */
-RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(const string &data) {
+RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
+    const std::string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -919,7 +920,7 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
  * Inflate a discovery response from some data.
  */
 RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
-    const string &data) {
+    const std::string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }

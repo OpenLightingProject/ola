@@ -34,7 +34,6 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-using std::string;
 using std::map;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -50,7 +49,7 @@ const char EspNetNode::NODE_NAME[] = "OLA Node";
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-EspNetNode::EspNetNode(const string &ip_address)
+EspNetNode::EspNetNode(const std::string &ip_address)
     : m_running(false),
       m_options(DEFAULT_OPTIONS),
       m_tos(DEFAULT_TOS),
