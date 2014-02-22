@@ -85,14 +85,6 @@ MACAddress* MACAddress::FromString(const std::string &address) {
   return new MACAddress(addr);
 }
 
-
-/**
- * Convert a string to a MACAddress object
- * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
- * 'nn.nn.nn.nn.nn.nn'
- * @param target a pointer to a MACAddress object
- * @return true if it worked, false otherwise
- */
 bool MACAddress::FromString(const std::string &address, MACAddress *target) {
   struct ether_addr addr;
 
@@ -102,7 +94,6 @@ bool MACAddress::FromString(const std::string &address, MACAddress *target) {
   *target = MACAddress(addr);
   return true;
 }
-
 
 MACAddress MACAddress::FromStringOrDie(const string &address) {
   struct ether_addr addr;
