@@ -143,20 +143,26 @@ std::string Hostname();
 
 /**
  * Get a vector of name server IP addresses.
- * @param name_servers a pointer to a vector of name servers to populate
+ * @param[out] name_servers a pointer to a vector of name servers to populate
  * @return true on success, false otherwise
  */
 bool NameServers(std::vector<ola::network::IPV4Address> *name_servers);
 
 /**
  * Get the default route.
- * @param a pointer to the default route
- * @return true on success, false otherwise
- * @note if it manages to fetch the route information and there isn't a route,
- * it will return the special wildcard address, which can be tested for with
- * IsWildcard().
+ * @param[out] if_index a pointer to an int32 which is updated
+ *   with the interface to use for the default route.
+ * @param[out] default_gateway a pointer to an IPV4Address which is updated
+ *   with the default gateway.
+ * @return true if a default route was found, false if there was an error
+ *   fetching the routing table.
+ * @note if the routing table was read correctly but there was no default
+ *   route, if_index will be ola::network::Interface::DEFAULT_INDEX and
+ *   default_gateway will be the wildcard address. The latter can be tested for
+ *   with default_gateway.IsWildcard().
  */
-bool DefaultRoute(ola::network::IPV4Address *default_route);
+bool DefaultRoute(int32_t *if_index,
+                  ola::network::IPV4Address *default_gateway);
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_NETWORKUTILS_H_

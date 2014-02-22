@@ -156,7 +156,7 @@ AC_CHECK_DECLS(SO_NOSIGPIPE, , have_so_no_pipe=no,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-AC_CHECK_DECLS(PF_ROUTE, , have_msg_no_signal=no,
+AC_CHECK_DECLS(PF_ROUTE, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 

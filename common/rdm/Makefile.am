@@ -43,10 +43,7 @@ TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
 endif
 check_PROGRAMS = $(TESTS)
 
-COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    libolardm.la \
-                    ../base/libolabase.la \
-                    ../utils/libolautils.la
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) ../libolacommon.la
 
 DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
 DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
@@ -56,16 +53,12 @@ RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp \
                     QueueingRDMControllerTest.cpp UIDAllocatorTest.cpp \
                     UIDTest.cpp
 RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-RDMTester_LDADD = $(COMMON_TEST_LDADD) \
-                  ../io/libolaio.la \
-                  ../messaging/libolamessaging.la \
-                  ../network/libolanetwork.la
+RDMTester_LDADD = $(COMMON_TEST_LDADD)
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
                          PidStoreTest.cpp
 PidStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-PidStoreTester_LDADD = $(COMMON_TEST_LDADD) \
-                       ../messaging/libolamessaging.la
+PidStoreTester_LDADD = $(COMMON_TEST_LDADD)
 
 RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
                            MessageSerializerTest.cpp \
@@ -74,6 +67,4 @@ RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
                            StringMessageBuilderTest.cpp \
                            VariableFieldSizeCalculatorTest.cpp
 RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-RDMMessageTester_LDADD = $(COMMON_TEST_LDADD) \
-                         ../messaging/libolamessaging.la \
-                         ../network/libolanetwork.la
+RDMMessageTester_LDADD = $(COMMON_TEST_LDADD)
