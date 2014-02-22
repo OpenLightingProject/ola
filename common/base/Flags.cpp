@@ -59,7 +59,8 @@ using std::string;
 using std::vector;
 
 /**
- * @brief the prefix used on inverted bool flags
+ * @var Flag<bool>::NO_PREFIX
+ * The prefix used on inverted bool flags
  * @examplepara
  *   @code
  *   DEFINE_s_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")

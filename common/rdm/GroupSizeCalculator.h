@@ -91,7 +91,7 @@ class GroupSizeCalculator: public ola::messaging::FieldDescriptorVisitor {
     bool Descend() const { return false; }
     calculator_state CalculateGroupSize(
         unsigned int token_count,
-        const class ola::messaging::Descriptor*,
+        const class ola::messaging::Descriptor *descriptor,
         unsigned int *group_repeat_count);
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
