@@ -157,8 +157,8 @@ bool NameServers(std::vector<ola::network::IPV4Address> *name_servers);
  * @return true if a default route was found, false if there was an error
  *   fetching the routing table.
  * @note if the routing table was read correctly but there was no default
- * route, if_index will be 0 and default_gateway will be the wildcard address.
- * The latter can be tested for with default_gateway.IsWildcard().
+ *   route, if_index will be 0 and default_gateway will be the wildcard address.
+ *   The latter can be tested for with default_gateway.IsWildcard().
  */
 bool DefaultRoute(int32_t *if_index,
                   ola::network::IPV4Address *default_gateway);
