@@ -77,7 +77,7 @@ bool StringToEther(const string &address, ether_addr *target) {
 }
 
 
-MACAddress* MACAddress::FromString(const string &address) {
+MACAddress* MACAddress::FromString(const std::string &address) {
   struct ether_addr addr;
   if (!StringToEther(address, &addr))
     return NULL;
@@ -93,7 +93,7 @@ MACAddress* MACAddress::FromString(const string &address) {
  * @param target a pointer to a MACAddress object
  * @return true if it worked, false otherwise
  */
-bool MACAddress::FromString(const string &address, MACAddress *target) {
+bool MACAddress::FromString(const std::string &address, MACAddress *target) {
   struct ether_addr addr;
 
   if (!StringToEther(address, &addr))
