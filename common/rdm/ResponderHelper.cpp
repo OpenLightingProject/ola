@@ -444,12 +444,12 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     int16_t normal_min;
     int16_t normal_max;
     uint8_t recorded_support;
-    char description[32];
+    char description[MAX_RDM_STRING_LENGTH];
   } __attribute__((packed));
 
   const Sensor *sensor = sensor_list.at(sensor_number);
   struct sensor_definition_s sensor_definition;
-  sensor_definition.sensor =  sensor_number;
+  sensor_definition.sensor = sensor_number;
   sensor_definition.type = sensor->Type();
   sensor_definition.unit = sensor->Unit();
   sensor_definition.prefix = sensor->Prefix();
