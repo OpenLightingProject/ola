@@ -14,8 +14,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DummyPortTest.cpp
- * Test fixture for the E131PDU class
- * Copyright (C) 2005-2009 Simon Newton
+ * Test class for the dummy responders
+ * Copyright (C) 2005-2014 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
