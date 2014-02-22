@@ -52,7 +52,8 @@ bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
 
 bool RealGlobalNetworkGetter::GetIPV4DefaultRoute(
     IPV4Address *default_route) const {
-  return ola::network::DefaultRoute(default_route);
+  int32_t index;
+  return ola::network::DefaultRoute(&index, default_route);
 }
 
 
