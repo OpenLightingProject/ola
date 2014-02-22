@@ -28,27 +28,67 @@ typedef uint32_t in_addr_t;
 #include <resolv.h>
 #endif
 
+#if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
+#define USE_NETLINK_FOR_DEFAULT_ROUTE 1
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
+#elif defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_NET_ROUTE_H) && \
+      defined(HAVE_DECL_PF_ROUTE) && defined(HAVE_DECL_NET_RT_DUMP)
+#define USE_SYSCTL_FOR_DEFAULT_ROUTE 1
+#include <net/route.h>
+#include <sys/sysctl.h>
+#else
+// Do something else if we don't have Netlink/on Windows
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
 #include <unistd.h>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
+#include "ola/math/Random.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketCloser.h"
+#include "ola/StringUtils.h"
 
 
 namespace ola {
 namespace network {
 
-using ola::network::IPV4Address;
 using std::string;
 using std::vector;
+using ola::network::Interface;
+
+unsigned int SockAddrLen(const struct sockaddr &sa) {
+#ifdef HAVE_SOCKADDR_SA_LEN
+  return sa.sa_len;
+#else
+  switch (sa.sa_family) {
+    case AF_INET:
+      return sizeof(struct sockaddr_in);
+#ifdef IPV6
+    case AF_INET6:
+      return sizeof(struct sockaddr_in6);
+#endif
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    case AF_LINK:
+      return sizeof(struct sockaddr_dl);
+#endif
+    default:
+      OLA_WARN << "Can't determine size of sockaddr: " << sa.sa_family;
+      return sizeof(struct sockaddr);
+  }
+#endif
+}
+
 
 bool StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
@@ -298,6 +338,270 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   }
 
   return true;
+}
+
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+
+/**
+ * Try to extract an AF_INET address from a sockaddr. If successful, sa points
+ * to the next sockaddr and true is returned.
+ */
+bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
+                                    IPV4Address *ip) {
+  const struct sockaddr *sa = reinterpret_cast<const struct sockaddr*>(*data);
+  if (sa->sa_family != AF_INET) {
+    return false;
+  }
+
+  *ip = IPV4Address(
+      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr);
+  *data += SockAddrLen(*sa);
+  return true;
+}
+
+/**
+ * Use sysctl() to get the default route
+ */
+static bool GetDefaultRouteWithSysctl(int32_t *if_index,
+                                      IPV4Address *default_gateway) {
+  int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
+
+  size_t space_required;
+  uint8_t *buffer = NULL;
+  // loop until we know we've read all the data.
+  while (1) {
+    int ret = sysctl(mib, 6, NULL, &space_required, NULL, 0);
+
+    if (ret < 0) {
+      OLA_WARN << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, NULL) "
+               << "failed: " << strerror(errno);
+      return false;
+    }
+    buffer = reinterpret_cast<uint8_t*>(malloc(space_required));
+
+    ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
+    if (ret < 0) {
+      free(buffer);
+      if (errno == ENOMEM) {
+        continue;
+      } else {
+        OLA_WARN
+            << "sysctl({CTL_NET, PF_ROUTE, 0, 0, NET_RT_DUMP, 0}, 6, !NULL)"
+            << " failed: " << strerror(errno);
+        return false;
+      }
+    } else {
+      break;
+    }
+  }
+
+  const struct rt_msghdr *rtm = NULL;
+  const uint8_t *end = buffer + space_required;
+
+  for (const uint8_t *next = buffer; next < end; next += rtm->rtm_msglen) {
+    rtm = reinterpret_cast<const struct rt_msghdr*>(next);
+    if (rtm->rtm_version != RTM_VERSION) {
+      OLA_WARN << "Old RTM_VERSION, was " << rtm->rtm_version << ", expected "
+               << RTM_VERSION;
+      continue;
+    }
+
+    const uint8_t *data_start = reinterpret_cast<const uint8_t*>(rtm + 1);
+
+    IPV4Address dest, gateway, netmask;
+
+    if (rtm->rtm_flags & RTA_DST) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &dest)) {
+        continue;
+      }
+    }
+
+    if (rtm->rtm_flags & RTA_GATEWAY) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &gateway)) {
+        continue;
+      }
+    }
+
+    if (rtm->rtm_flags & RTA_NETMASK) {
+      if (!ExtractIPV4AddressFromSockAddr(&data_start, &netmask)) {
+        continue;
+      }
+    }
+
+    if (dest.IsWildcard() && netmask.IsWildcard()) {
+      *default_gateway = gateway;
+      *if_index = rtm->rtm_index;
+      free(buffer);
+      OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
+               << *if_index;
+      return true;
+    }
+  }
+  free(buffer);
+  OLA_WARN << "No default route found";
+  return true;
+}
+#elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
+
+/**
+ * Handle a netlink message. If this message is a routing table message and it
+ * contains the default route, then either:
+ *   i) default_gateway is updated with the address of the gateway.
+ *   ii) if_index is updated with the interface index for the default route.
+ * @param if_index[out] possibly updated with interface index for the default
+ *   route.
+ * @param default_gateway[out] possibly updated with the default gateway.
+ * @param nl_hdr the netlink message.
+ */
+void MessageHandler(int32_t *if_index,
+                    IPV4Address *default_gateway,
+                    const struct nlmsghdr *nl_hdr) {
+  // Unless RTA_DST is provided, an RTA_GATEWAY or RTA_OIF attribute implies
+  // it's the default route.
+  IPV4Address gateway;
+  int32_t index = Interface::DEFAULT_INDEX;
+
+  bool is_default_route = true;
+
+  // Loop over the attributes looking for RTA_GATEWAY and/or RTA_DST
+  const rtmsg *rt_msg = reinterpret_cast<const rtmsg*>(NLMSG_DATA(nl_hdr));
+  if (rt_msg->rtm_family == AF_INET && rt_msg->rtm_table == RT_TABLE_MAIN) {
+    int rt_len = RTM_PAYLOAD(nl_hdr);
+
+    for (const rtattr* rt_attr = reinterpret_cast<const rtattr*>(
+            RTM_RTA(rt_msg));
+         RTA_OK(rt_attr, rt_len);
+         rt_attr = RTA_NEXT(rt_attr, rt_len)) {
+      switch (rt_attr->rta_type) {
+        case RTA_OIF:
+          index = *(reinterpret_cast<int32_t*>(RTA_DATA(rt_attr)));
+          break;
+        case RTA_GATEWAY:
+          gateway = IPV4Address(
+              *(reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))));
+          break;
+        case RTA_DST:
+          IPV4Address dest(*(reinterpret_cast<const in_addr*>(
+              RTA_DATA(rt_attr))));
+          is_default_route = dest.IsWildcard();
+          break;
+      }
+    }
+  }
+
+  if (is_default_route &&
+      (!gateway.IsWildcard() || index != Interface::DEFAULT_INDEX)) {
+    *default_gateway = gateway;
+    *if_index = index;
+  }
+}
+
+typedef ola::Callback1<void, const struct nlmsghdr*> NetlinkCallback;
+
+/**
+ * Read a message from the netlink socket. This continues to read until the
+ * expected sequence number is seend. Returns true if the desired message was
+ * seen, false if there was an error reading from the netlink socket.
+ */
+bool ReadNetlinkSocket(int sd, uint8_t *buffer, int bufsize, unsigned int seq,
+                       NetlinkCallback *handler) {
+  OLA_DEBUG << "Looking for netlink response with seq: " << seq;
+  while (true) {
+    int len = recv(sd, buffer, bufsize, 0);
+    if (len < 0) {
+      return false;
+    }
+    if (len == static_cast<int>(bufsize)) {
+      OLA_WARN << "Number of bytes fetched == buffer size ("
+               << bufsize << "), Netlink data may be truncated";
+    }
+
+    struct nlmsghdr* nl_hdr;
+    for (nl_hdr = reinterpret_cast<struct nlmsghdr*>(buffer);
+         NLMSG_OK(nl_hdr, static_cast<unsigned int>(len));
+         nl_hdr = NLMSG_NEXT(nl_hdr, len)) {
+      OLA_DEBUG << "Read seq " << nl_hdr->nlmsg_seq << ", pid "
+                << nl_hdr->nlmsg_pid << ", type "
+                << nl_hdr->nlmsg_type << ", from netlink socket";
+
+      if (static_cast<unsigned int>(nl_hdr->nlmsg_seq) != seq) {
+        continue;
+      }
+
+      if (nl_hdr->nlmsg_type == NLMSG_ERROR) {
+        struct nlmsgerr* err = reinterpret_cast<struct nlmsgerr*>(
+            NLMSG_DATA(nl_hdr));
+        OLA_WARN << "Netlink returned error: " << err->error;
+        return false;
+      }
+
+      handler->Run(nl_hdr);
+      if ((nl_hdr->nlmsg_flags & NLM_F_MULTI) == 0 ||
+          nl_hdr->nlmsg_type == NLMSG_DONE) {
+        return true;
+      }
+    }
+  }
+}
+
+/**
+ * Get the default route using a netlink socket
+ */
+static bool GetDefaultRouteWithNetlink(int32_t *if_index,
+                                       IPV4Address *default_gateway) {
+  int sd = socket(PF_ROUTE, SOCK_DGRAM, NETLINK_ROUTE);
+  if (sd < 0) {
+    OLA_WARN << "Could not create Netlink socket " << strerror(errno);
+    return false;
+  }
+  SocketCloser closer(sd);
+
+  int seq = ola::math::Random(0, INT_MAX);
+
+  const unsigned int BUFSIZE = 8192;
+  uint8_t msg[BUFSIZE];
+  memset(msg, 0, BUFSIZE);
+
+  nlmsghdr* nl_msg = reinterpret_cast<nlmsghdr*>(msg);
+  nl_msg->nlmsg_len = NLMSG_LENGTH(sizeof(rtmsg));
+  nl_msg->nlmsg_type = RTM_GETROUTE;
+  nl_msg->nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
+  nl_msg->nlmsg_seq = seq++;
+  nl_msg->nlmsg_pid = 0;
+
+  if (send(sd, nl_msg, nl_msg->nlmsg_len, 0) < 0) {
+    OLA_WARN << "Could not send data to Netlink " << strerror(errno);
+    return false;
+  }
+
+  std::auto_ptr<NetlinkCallback> cb(
+      ola::NewCallback(MessageHandler, if_index, default_gateway));
+  if (!ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get())) {
+    return false;
+  }
+
+  if (default_gateway->IsWildcard() && *if_index == Interface::DEFAULT_INDEX) {
+    OLA_WARN << "No default route found";
+  }
+  OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
+           << *if_index;
+  return true;
+}
+#endif
+
+bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
+  *default_gateway = IPV4Address();
+  *if_index = Interface::DEFAULT_INDEX;
+#ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
+  return GetDefaultRouteWithSysctl(if_index, default_gateway);
+#elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
+  return GetDefaultRouteWithNetlink(if_index, default_gateway);
+#else
+#error "DefaultRoute not implemented for this platform, please report this."
+  // TODO(Peter): Do something else on Windows/machines without Netlink
+  // No Netlink, can't do anything
+  return false;
+#endif
 }
 }  // namespace network
 }  // namespace ola
