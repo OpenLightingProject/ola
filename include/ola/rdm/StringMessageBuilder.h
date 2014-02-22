@@ -57,7 +57,7 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     bool Descend() const { return false; }
     const ola::messaging::Message *GetMessage(
         const std::vector<std::string> &inputs,
-        const class ola::messaging::Descriptor*);
+        const class ola::messaging::Descriptor *descriptor);
     const std::string GetError() const { return m_error_string; }
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);

@@ -157,8 +157,23 @@ class MACAddress {
       return out << address.ToString();
     }
 
+    /**
+     * Convert a string to a MACAddress object
+     * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
+     * 'nn.nn.nn.nn.nn.nn'
+     * @return a pointer to a MACAddress object if it worked, NULL otherwise
+     */
     static MACAddress* FromString(const std::string &address);
+
+    /**
+     * Convert a string to a MACAddress object
+     * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
+     * 'nn.nn.nn.nn.nn.nn'
+     * @param[out] target a pointer to a MACAddress object
+     * @return true if it worked, false otherwise
+     */
     static bool FromString(const std::string &address, MACAddress *target);
+
     // useful for testing
     static MACAddress FromStringOrDie(const std::string &address);
 

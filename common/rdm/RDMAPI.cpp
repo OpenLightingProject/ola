@@ -267,7 +267,7 @@ bool RDMAPI::GetStatusMessage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<StatusMessage>&> *callback,
-  string *error) {
+    std::string *error) {
   if (CheckCallback(error, callback))
     return false;
   if (CheckNotBroadcast(uid, error, callback))

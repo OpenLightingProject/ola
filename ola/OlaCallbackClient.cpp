@@ -245,8 +245,8 @@ bool OlaCallbackClient::RegisterUniverse(
 
 bool OlaCallbackClient::SendDmx(
     unsigned int universe,
-    const ola::DmxBuffer &data,
-    ola::SingleUseCallback1<void, const string&> *callback) {
+    const DmxBuffer &data,
+    SingleUseCallback1<void, const std::string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   m_core->SendDMX(universe, data, args);
@@ -255,8 +255,8 @@ bool OlaCallbackClient::SendDmx(
 
 bool OlaCallbackClient::SendDmx(
     unsigned int universe,
-    const ola::DmxBuffer &data,
-    ola::Callback1<void, const string&> *callback) {
+    const DmxBuffer &data,
+    Callback1<void, const std::string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleRepeatableSetCallback,
         callback));
