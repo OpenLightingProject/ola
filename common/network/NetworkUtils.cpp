@@ -67,6 +67,7 @@ namespace network {
 
 using std::string;
 using std::vector;
+using ola::network::Interface;
 
 unsigned int SockAddrLen(const struct sockaddr &sa) {
 #ifdef HAVE_SOCKADDR_SA_LEN
@@ -460,7 +461,7 @@ void MessageHandler(int32_t *if_index,
   // Unless RTA_DST is provided, an RTA_GATEWAY or RTA_OIF attribute implies
   // it's the default route.
   IPV4Address gateway;
-  int32_t index = -1;
+  int32_t index = Interface::DEFAULT_INDEX;
 
   bool is_default_route = true;
 
@@ -490,7 +491,8 @@ void MessageHandler(int32_t *if_index,
     }
   }
 
-  if (is_default_route && (!gateway.IsWildcard() || index != -1)) {
+  if (is_default_route &&
+      (!gateway.IsWildcard() || index != Interface::DEFAULT_INDEX)) {
     *default_gateway = gateway;
     *if_index = index;
   }
@@ -580,7 +582,7 @@ static bool GetDefaultRouteWithNetlink(int32_t *if_index,
     return false;
   }
 
-  if (default_gateway->IsWildcard() && *if_index == -1) {
+  if (default_gateway->IsWildcard() && *if_index == Interface::DEFAULT_INDEX) {
     OLA_WARN << "No default route found";
   }
   OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
@@ -591,7 +593,7 @@ static bool GetDefaultRouteWithNetlink(int32_t *if_index,
 
 bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
   *default_gateway = IPV4Address();
-  *if_index = -1;
+  *if_index = Interface::DEFAULT_INDEX;
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
   return GetDefaultRouteWithSysctl(if_index, default_gateway);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
