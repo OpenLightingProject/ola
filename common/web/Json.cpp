@@ -35,31 +35,31 @@ JsonObject::~JsonObject() {
   STLDeleteValues(&m_members);
 }
 
-void JsonObject::Add(const string &key, const string &value) {
+void JsonObject::Add(const std::string &key, const std::string &value) {
   STLReplaceAndDelete(&m_members, key, new JsonStringValue(value));
 }
 
-void JsonObject::Add(const string &key, const char *value) {
+void JsonObject::Add(const std::string &key, const char *value) {
   Add(key, string(value));
 }
 
-void JsonObject::Add(const string &key, unsigned int i) {
+void JsonObject::Add(const std::string &key, unsigned int i) {
   STLReplaceAndDelete(&m_members, key, new JsonUIntValue(i));
 }
 
-void JsonObject::Add(const string &key, int i) {
+void JsonObject::Add(const std::string &key, int i) {
   STLReplaceAndDelete(&m_members, key, new JsonIntValue(i));
 }
 
-void JsonObject::Add(const string &key, bool value) {
+void JsonObject::Add(const std::string &key, bool value) {
   STLReplaceAndDelete(&m_members, key, new JsonBoolValue(value));
 }
 
-void JsonObject::Add(const string &key) {
+void JsonObject::Add(const std::string &key) {
   STLReplaceAndDelete(&m_members, key, new JsonNullValue());
 }
 
-void JsonObject::AddRaw(const string &key, const string &value) {
+void JsonObject::AddRaw(const std::string &key, const std::string &value) {
   STLReplaceAndDelete(&m_members, key, new JsonRawValue(value));
 }
 

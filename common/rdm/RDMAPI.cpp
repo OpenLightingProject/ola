@@ -200,7 +200,7 @@ bool RDMAPI::GetQueuedMessage(
         const UID &uid,
         rdm_status_type status_type,
         QueuedMessageHandler *handler,
-        string *error) {
+        std::string *error) {
   if (!handler) {
     if (error)
       *error = "Callback is null, this is a programming error";
@@ -235,7 +235,7 @@ bool RDMAPI::GetQueuedMessage(
         SingleUseCallback3<void,
                            const ResponseStatus&,
                            uint16_t,
-                           const string&> *callback,
+                           const std::string&> *callback,
         string *error) {
   if (CheckCallback(error, callback))
     return false;

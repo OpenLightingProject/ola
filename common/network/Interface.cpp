@@ -47,7 +47,7 @@ Interface::Interface()
 }
 
 
-Interface::Interface(const string &name,
+Interface::Interface(const std::string &name,
                      const IPV4Address &ip_address,
                      const IPV4Address &broadcast_address,
                      const IPV4Address &subnet_mask,
@@ -117,7 +117,7 @@ InterfaceBuilder::InterfaceBuilder()
 /**
  * Set the address of the interface to build.
  */
-bool InterfaceBuilder::SetAddress(const string &ip_address) {
+bool InterfaceBuilder::SetAddress(const std::string &ip_address) {
   return SetAddress(ip_address, &m_ip_address);
 }
 
@@ -125,7 +125,7 @@ bool InterfaceBuilder::SetAddress(const string &ip_address) {
 /**
  * Set the broadcast address of the interface to build.
  */
-bool InterfaceBuilder::SetBroadcast(const string &broadcast_address) {
+bool InterfaceBuilder::SetBroadcast(const std::string &broadcast_address) {
   return SetAddress(broadcast_address, &m_broadcast_address);
 }
 
@@ -133,7 +133,7 @@ bool InterfaceBuilder::SetBroadcast(const string &broadcast_address) {
 /**
  * Set the subnet mask of the interface to build.
  */
-bool InterfaceBuilder::SetSubnetMask(const string &mask) {
+bool InterfaceBuilder::SetSubnetMask(const std::string &mask) {
   return SetAddress(mask, &m_subnet_mask);
 }
 
@@ -198,7 +198,8 @@ Interface InterfaceBuilder::Construct() {
 /**
  * Set a IPV4Address object from a string
  */
-bool InterfaceBuilder::SetAddress(const string &str, IPV4Address *target) {
+bool InterfaceBuilder::SetAddress(const std::string &str,
+                                  IPV4Address *target) {
   IPV4Address tmp_address;
   if (!IPV4Address::FromString(str, &tmp_address))
     return false;

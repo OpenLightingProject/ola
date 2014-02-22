@@ -94,7 +94,7 @@ class TimeoutManager {
 
   /**
    * @brief Execute any expired timeouts.
-   * @param now[in|out] the current time, set to the last time events were
+   * @param now[in,out] the current time, set to the last time events were
    * checked.
    * @returns the time until the next event.
    */

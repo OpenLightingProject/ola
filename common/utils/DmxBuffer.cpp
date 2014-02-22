@@ -73,7 +73,7 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
 }
 
 
-DmxBuffer::DmxBuffer(const string &data)
+DmxBuffer::DmxBuffer(const std::string &data)
     : m_ref_count(0),
       m_copy_on_write(false),
       m_data(NULL),
@@ -150,7 +150,7 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
 }
 
 
-bool DmxBuffer::Set(const string &data) {
+bool DmxBuffer::Set(const std::string &data) {
   return Set(reinterpret_cast<const uint8_t*>(data.data()), data.length());
 }
 

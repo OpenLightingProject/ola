@@ -105,7 +105,7 @@ bool OlaCallbackClient::FetchCandidatePorts(
         unsigned int universe_id,
         SingleUseCallback2<void,
                            const std::vector<OlaDevice>&,
-                           const string&> *callback) {
+                           const std::string&> *callback) {
   m_core->FetchCandidatePorts(
       universe_id,
       NewSingleCallback(this, &OlaCallbackClient::HandleDeviceInfo,
@@ -116,7 +116,7 @@ bool OlaCallbackClient::FetchCandidatePorts(
 bool OlaCallbackClient::FetchCandidatePorts(
         SingleUseCallback2<void,
                            const std::vector<OlaDevice>&,
-                           const string&> *callback) {
+                           const std::string&> *callback) {
   m_core->FetchCandidatePorts(
       NewSingleCallback(this, &OlaCallbackClient::HandleDeviceInfo,
                         callback));
@@ -205,7 +205,7 @@ bool OlaCallbackClient::Patch(
     ola::PortDirection port_direction,
     ola::PatchAction action,
     unsigned int universe,
-    SingleUseCallback1<void, const string&> *callback) {
+    ola::SingleUseCallback1<void, const std::string&> *callback) {
   m_core->Patch(
       device_alias, port,
       port_direction == INPUT_PORT ? client::INPUT_PORT: client::OUTPUT_PORT,
@@ -216,13 +216,19 @@ bool OlaCallbackClient::Patch(
 }
 
 void OlaCallbackClient::SetDmxCallback(
-    Callback3<void, unsigned int, const DmxBuffer&, const string&> *callback) {
+    ola::Callback3<void,
+                   unsigned int,
+                   const ola::DmxBuffer&,
+                   const std::string&> *callback) {
   m_dmx_callback.reset(callback);
 }
 
 void OlaCallbackClient::SetDmxCallback(
-    Callback4<void, unsigned int, uint8_t, const DmxBuffer&, const string&>
-        *callback) {
+    ola::Callback4<void,
+                   unsigned int,
+                   uint8_t,
+                   const ola::DmxBuffer&,
+                   const std::string&> *callback) {
   m_priority_dmx_callback.reset(callback);
 }
 
@@ -239,8 +245,8 @@ bool OlaCallbackClient::RegisterUniverse(
 
 bool OlaCallbackClient::SendDmx(
     unsigned int universe,
-    const DmxBuffer &data,
-    SingleUseCallback1<void, const string&> *callback) {
+    const ola::DmxBuffer &data,
+    ola::SingleUseCallback1<void, const string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   m_core->SendDMX(universe, data, args);
@@ -249,8 +255,8 @@ bool OlaCallbackClient::SendDmx(
 
 bool OlaCallbackClient::SendDmx(
     unsigned int universe,
-    const DmxBuffer &data,
-    Callback1<void, const string&> *callback) {
+    const ola::DmxBuffer &data,
+    ola::Callback1<void, const string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleRepeatableSetCallback,
         callback));

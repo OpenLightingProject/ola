@@ -142,8 +142,8 @@ class RootPidStore {
   /**
    * @brief Load a RootPidStore from a file.
    * @param file the file to load
-   * @param validate, perform validation on the data. Validation can be
-   * turned off for faster load times.
+   * @param validate whether to perform validation on the data. Validation can
+   * be turned off for faster load times.
    */
   static const RootPidStore *LoadFromFile(const std::string &file,
                                           bool validate = true);
@@ -152,8 +152,8 @@ class RootPidStore {
    * @brief Load a RootPidStore from a directory.
    * @param directory the directory containing the PID data. If directory is
    * empty, the installed location will be used.
-   * @param validate, perform validation on the data. Validation can be
-   * turned off for faster load times.
+   * @param validate whether to perform validation on the data. Validation can
+   * be turned off for faster load times.
    */
   static const RootPidStore *LoadFromDirectory(const std::string &directory,
                                                bool validate = true);

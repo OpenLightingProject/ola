@@ -50,7 +50,7 @@ using std::vector;
 // TODO(Simon): Change these to callback based code to reduce duplication.
 bool InterfacePicker::ChooseInterface(
     Interface *iface,
-    const string &ip_or_name,
+    const std::string &ip_or_name,
     const Options &options) const {
   bool found = false;
   vector<Interface> interfaces = GetInterfaces(options.include_loopback);
