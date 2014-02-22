@@ -16,8 +16,6 @@
  * NetworkUtils.cpp
  * Abstract various network functions.
  * Copyright (C) 2005-2014 Simon Newton
- * Default Route code based on code by Arvid Norberg from:
- * http://code.google.com/p/libtorrent/source/browse/src/enum_net.cpp
  */
 
 #if HAVE_CONFIG_H
