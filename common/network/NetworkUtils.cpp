@@ -440,16 +440,22 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
 
 /**
  * Handle a netlink message. If this message is a routing table message and it
- * contains the default route, then default_route is updated with the address
- * of the gateway.
- * @param default_route[out] possibly updated with the default gateway.
+ * contains the default route, then either:
+ *   i) default_gateway is updated with the address of the gateway.
+ *   ii) if_index is updated with the interface index for the default route.
+ * @param if_index[out] possibly updated with interface index for the default
+ *   route.
+ * @param default_gateway[out] possibly updated with the default gateway.
  * @param nl_hdr the netlink message.
  */
-void MessageHandler(IPV4Address *default_route,
+void MessageHandler(int32_t *if_index,
+                    IPV4Address *default_gateway,
                     const struct nlmsghdr *nl_hdr) {
-  // Unless RTA_DST is provided, an RTA_GATEWAY attribute implies it's the
-  // default route.
+  // Unless RTA_DST is provided, an RTA_GATEWAY or RTA_OIF attribute implies
+  // it's the default route.
   IPV4Address gateway;
+  int32_t index = 0;
+
   bool is_default_route = true;
 
   // Loop over the attributes looking for RTA_GATEWAY and/or RTA_DST
@@ -462,6 +468,9 @@ void MessageHandler(IPV4Address *default_route,
          RTA_OK(rt_attr, rt_len);
          rt_attr = RTA_NEXT(rt_attr, rt_len)) {
       switch (rt_attr->rta_type) {
+        case RTA_OIF:
+          index = *(reinterpret_cast<int32_t*>(RTA_DATA(rt_attr)));
+          break;
         case RTA_GATEWAY:
           gateway = IPV4Address(
               *(reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))));
@@ -475,8 +484,9 @@ void MessageHandler(IPV4Address *default_route,
     }
   }
 
-  if (is_default_route && !gateway.IsWildcard()) {
-    *default_route = gateway;
+  if (is_default_route && (!gateway.IsWildcard() || index)) {
+    *default_gateway = gateway;
+    *if_index = index;
   }
 }
 
@@ -531,7 +541,8 @@ bool ReadNetlinkSocket(int sd, uint8_t *buffer, int bufsize, unsigned int seq,
 /**
  * Get the default route using a netlink socket
  */
-static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
+static bool GetDefaultRouteWithNetlink(int32_t *if_index,
+                                       IPV4Address *default_gateway) {
   int sd = socket(PF_ROUTE, SOCK_DGRAM, NETLINK_ROUTE);
   if (sd < 0) {
     OLA_WARN << "Could not create Netlink socket " << strerror(errno);
@@ -557,27 +568,29 @@ static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
     return false;
   }
 
-  *default_route = IPV4Address();
+  *default_gateway = IPV4Address();
+  *if_index = 0;
   std::auto_ptr<NetlinkCallback> cb(
-      ola::NewCallback(MessageHandler, default_route));
+      ola::NewCallback(MessageHandler, if_index, default_gateway));
   bool ok = ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get());
   if (!ok) {
     return false;
   }
 
-  if (default_route->IsWildcard()) {
-    OLA_WARN << "No default route found, so setting default route to 0.0.0.0";
+  if (default_gateway->IsWildcard() && *if_index == 0) {
+    OLA_WARN << "No default route found";
   }
-  OLA_INFO << "Default route is " << *default_route;
+  OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
+           << *if_index;
   return ok;
 }
 #endif
 
-bool DefaultRoute(IPV4Address *default_route) {
+bool DefaultRoute(int32_t *if_index, IPV4Address *default_route) {
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
-  return GetDefaultRouteWithSysctl(default_route);
+  return GetDefaultRouteWithSysctl(if_index, default_route);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
-  return GetDefaultRouteWithNetlink(default_route);
+  return GetDefaultRouteWithNetlink(if_index, default_route);
 #else
 #error DefaultRoute not implemented
   // TODO(Peter): Do something else on Windows/machines without Netlink
