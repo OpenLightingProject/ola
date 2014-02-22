@@ -561,6 +561,9 @@ static bool GetDefaultRouteWithNetlink(IPV4Address *default_route) {
   std::auto_ptr<NetlinkCallback> cb(
       ola::NewCallback(MessageHandler, default_route));
   bool ok = ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get());
+  if (!ok) {
+    return false;
+  }
 
   if (default_route->IsWildcard()) {
     OLA_WARN << "No default route found, so setting default route to 0.0.0.0";
