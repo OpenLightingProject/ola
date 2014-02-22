@@ -59,6 +59,7 @@ RDMTester_LDADD = $(COMMON_TEST_LDADD) \
                   ../io/libolaio.la \
                   ../messaging/libolamessaging.la \
                   ../network/libolanetwork.la
+                  ../math/libolamath.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
                          PidStoreTest.cpp
