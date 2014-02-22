@@ -615,8 +615,8 @@ bool HTTPServer::RegisterHandler(const string &path,
  * @param path the URL path for the file e.g. '/foo.png'
  * @param content_type the content type.
  */
-bool HTTPServer::RegisterFile(const string &path,
-                              const string &content_type) {
+bool HTTPServer::RegisterFile(const std::string &path,
+                              const std::string &content_type) {
   if (path.empty() || path[0] != '/') {
     OLA_WARN << "Invalid static file: " << path;
     return false;
@@ -632,9 +632,9 @@ bool HTTPServer::RegisterFile(const string &path,
  * images/foo.png
  * @param content_type the content type.
  */
-bool HTTPServer::RegisterFile(const string &path,
-                              const string &file,
-                              const string &content_type) {
+bool HTTPServer::RegisterFile(const std::string &path,
+                              const std::string &file,
+                              const std::string &content_type) {
   map<string, static_file_info>::const_iterator file_iter = (
       m_static_content.find(path));
 
@@ -725,8 +725,8 @@ int HTTPServer::ServeRedirect(HTTPResponse *response, const string &location) {
 /**
  * Return the contents of a file
  */
-int HTTPServer::ServeStaticContent(const string &path,
-                                   const string &content_type,
+int HTTPServer::ServeStaticContent(const std::string &path,
+                                   const std::string &content_type,
                                    HTTPResponse *response) {
   static_file_info file_info;
   file_info.file_path = path;

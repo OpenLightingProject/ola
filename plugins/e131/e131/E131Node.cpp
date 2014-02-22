@@ -34,7 +34,6 @@ namespace e131 {
 
 using ola::Callback0;
 using ola::DmxBuffer;
-using ola::acn::CID;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using std::map;
@@ -51,7 +50,7 @@ using std::vector;
  * @param port the UDP port to bind to, defaults to ACN_PORT
  */
 E131Node::E131Node(const string &ip_address,
-                   const CID &cid,
+                   const ola::acn::CID &cid,
                    bool use_rev2,
                    bool ignore_preview,
                    uint8_t dscp_value,

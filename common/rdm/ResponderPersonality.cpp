@@ -37,12 +37,12 @@ using std::string;
  * @param footprint the number of dmx slots consumed
  * @param description the personality name (32 chars)
  */
-Personality::Personality(uint16_t footprint, const string &description)
+Personality::Personality(uint16_t footprint, const std::string &description)
     : m_footprint(footprint),
       m_description(description) {
 }
 
-Personality::Personality(uint16_t footprint, const string &description,
+Personality::Personality(uint16_t footprint, const std::string &description,
                          const SlotDataCollection &slot_data)
     : m_footprint(footprint),
       m_description(description),

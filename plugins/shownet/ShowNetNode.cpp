@@ -47,7 +47,7 @@ using ola::Callback0;
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-ShowNetNode::ShowNetNode(const string &ip_address)
+ShowNetNode::ShowNetNode(const std::string &ip_address)
     : m_running(false),
       m_packet_count(0),
       m_node_name(),
