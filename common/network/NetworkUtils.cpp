@@ -460,7 +460,7 @@ void MessageHandler(int32_t *if_index,
   // Unless RTA_DST is provided, an RTA_GATEWAY or RTA_OIF attribute implies
   // it's the default route.
   IPV4Address gateway;
-  int32_t index = 0;
+  int32_t index = -1;
 
   bool is_default_route = true;
 
@@ -490,7 +490,7 @@ void MessageHandler(int32_t *if_index,
     }
   }
 
-  if (is_default_route && (!gateway.IsWildcard() || index)) {
+  if (is_default_route && (!gateway.IsWildcard() || index != -1)) {
     *default_gateway = gateway;
     *if_index = index;
   }
@@ -574,31 +574,30 @@ static bool GetDefaultRouteWithNetlink(int32_t *if_index,
     return false;
   }
 
-  *default_gateway = IPV4Address();
-  *if_index = 0;
   std::auto_ptr<NetlinkCallback> cb(
       ola::NewCallback(MessageHandler, if_index, default_gateway));
-  bool ok = ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get());
-  if (!ok) {
+  if (!ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get())) {
     return false;
   }
 
-  if (default_gateway->IsWildcard() && *if_index == 0) {
+  if (default_gateway->IsWildcard() && *if_index == -1) {
     OLA_WARN << "No default route found";
   }
   OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
            << *if_index;
-  return ok;
+  return true;
 }
 #endif
 
-bool DefaultRoute(int32_t *if_index, IPV4Address *default_route) {
+bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
+  *default_gateway = IPV4Address();
+  *if_index = -1;
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
-  return GetDefaultRouteWithSysctl(if_index, default_route);
+  return GetDefaultRouteWithSysctl(if_index, default_gateway);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
-  return GetDefaultRouteWithNetlink(if_index, default_route);
+  return GetDefaultRouteWithNetlink(if_index, default_gateway);
 #else
-#error DefaultRoute not implemented
+#error "DefaultRoute not implemented for this platform, please report this."
   // TODO(Peter): Do something else on Windows/machines without Netlink
   // No Netlink, can't do anything
   return false;

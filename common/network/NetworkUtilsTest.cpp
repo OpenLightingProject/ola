@@ -134,5 +134,5 @@ void NetworkUtilsTest::testNameServers() {
 void NetworkUtilsTest::testDefaultRoute() {
   int32_t if_index;
   IPV4Address default_route;
-  OLA_ASSERT(DefaultRoute(&if_index, &default_route));
+  OLA_ASSERT_TRUE(DefaultRoute(&if_index, &default_route));
 }
