@@ -363,7 +363,8 @@ bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
 /**
  * Use sysctl() to get the default route
  */
-static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
+static bool GetDefaultRouteWithSysctl(int32_t *if_index,
+                                      IPV4Address *default_gateway) {
   int mib[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
 
   size_t space_required;
@@ -409,6 +410,7 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
     const uint8_t *data_start = reinterpret_cast<const uint8_t*>(rtm + 1);
 
     IPV4Address dest, gateway, netmask;
+
     if (rtm->rtm_flags & RTA_DST) {
       if (!ExtractIPV4AddressFromSockAddr(&data_start, &dest)) {
         continue;
@@ -428,13 +430,17 @@ static bool GetDefaultRouteWithSysctl(IPV4Address *default_route) {
     }
 
     if (dest.IsWildcard() && netmask.IsWildcard()) {
-      *default_route = dest;
+      *default_gateway = gateway;
+      *if_index = rtm->rtm_index;
       free(buffer);
+      OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
+               << *if_index;
       return true;
     }
   }
   free(buffer);
-  return false;
+  OLA_WARN << "No default route found";
+  return true;
 }
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
 
