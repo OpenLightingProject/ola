@@ -54,7 +54,7 @@ const InterfacePicker *FakeNetworkManager::GetInterfacePicker() const {
 rdm_dhcp_status FakeNetworkManager::GetDHCPStatus(
     const Interface &iface) const {
   // Mix things up a bit. The status depends on the index.
-  return static_cast<dhcp_status>(iface.index % DHCP_STATUS_MAX);
+  return static_cast<rdm_dhcp_status>(iface.index % DHCP_STATUS_MAX);
 }
 
 bool FakeNetworkManager::GetIPV4DefaultRoute(
