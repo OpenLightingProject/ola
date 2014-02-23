@@ -35,6 +35,24 @@ namespace ola {
 using std::auto_ptr;
 using std::string;
 
+static void RegisterCallback(DNSServiceRef service,
+                             DNSServiceFlags flags,
+                             DNSServiceErrorType error_code,
+                             const char *name,
+                             const char *type,
+                             const char *domain,
+                             void *context) {
+  if (error_code != kDNSServiceErr_NoError) {
+    OLA_WARN << "DNSServiceRegister for " << name << "." << type << domain
+             << " returned error " << error_code;
+  } else {
+    OLA_INFO << "Registered: " << name << "." << type << domain;
+  }
+  (void) service;
+  (void) flags;
+  (void) context;
+}
+
 class DNSSDDescriptor : public ola::io::ReadFileDescriptor {
  public:
     explicit DNSSDDescriptor(DNSServiceRef service_ref)
@@ -119,7 +137,7 @@ void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
       NULL,  // use default host name
       htons(args->port),
       txt_data.size(), txt_data.c_str(),
-      NULL,  // call back function
+      &RegisterCallback,  // call back function
       NULL);  // no context
 
   if (error != kDNSServiceErr_NoError) {
