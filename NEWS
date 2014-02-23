@@ -28,6 +28,7 @@ X/Y/2013 ola-0.9.0
  * Added initial support for the MilInst 1-553 interface.
  * Added a version option to all flags based commands; removed the -v verify
    short option from ola_recorder that clashed.
+ * Added a dummy responder which implements the draft E1.37-2 PIDs.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265.
