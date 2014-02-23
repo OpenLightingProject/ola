@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * ResponderHelper.h
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2013-2014 Simon Newton
  */
 
 /**
@@ -27,6 +27,9 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 #define INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 
+#include <ola/network/IPV4Address.h>
+#include <ola/network/Interface.h>
+#include <ola/rdm/NetworkManagerInterface.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/ResponderPersonality.h>
 #include <ola/rdm/ResponderSensor.h>
@@ -49,6 +52,7 @@ class ResponderHelper {
     static bool ExtractUInt32(const RDMRequest *request, uint32_t *output);
 
     // Response Generation methods
+    // E1.20 Helpers
     static const RDMResponse *GetDeviceInfo(
         const RDMRequest *request,
         uint16_t device_model,
@@ -130,10 +134,6 @@ class ResponderHelper {
     static const RDMResponse *RecordSensor(
         const RDMRequest *request, const Sensors &sensor_list);
 
-    static const RDMResponse *GetRealTimeClock(
-        const RDMRequest *request,
-        uint8_t queued_message_count = 0);
-
     static const RDMResponse *GetParamDescription(
         const RDMRequest *request,
         uint16_t pid,
@@ -161,6 +161,57 @@ class ResponderHelper {
         std::string description,
         uint8_t queued_message_count = 0);
 
+    static const RDMResponse *GetRealTimeClock(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
+    // E1.37-2 Helpers
+    static const RDMResponse *GetListInterfaces(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetInterfaceLabel(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetInterfaceHardwareAddressType1(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetIPV4CurrentAddress(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetIPV4DefaultRoute(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetDNSHostname(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetDNSDomainName(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetDNSNameServer(
+        const RDMRequest *request,
+        const NetworkManagerInterface *network_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetIPV4Address(
+        const RDMRequest *request,
+        const ola::network::IPV4Address &value,
+        uint8_t queued_message_count = 0);
+
+    // Generic Helpers.
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,
                                         uint8_t queued_message_count = 0);
@@ -208,6 +259,12 @@ class ResponderHelper {
       int16_t highest;
       int16_t recorded;
     } __attribute__((packed));
+
+ private:
+  static bool FindInterface(
+      const NetworkManagerInterface *network_manager,
+      ola::network::Interface *interface,
+      uint32_t index);
 };
 }  // namespace rdm
 }  // namespace ola

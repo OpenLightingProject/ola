@@ -859,11 +859,11 @@ pid {
       type: GROUP
       name: "interfaces"
       field {
-        type: UINT16
+        type: UINT32
         name: "interface_identifier"
         range {
           min: 0
-          max: 65280
+          max: 4294967040
         }
       }
       field {
@@ -887,17 +887,17 @@ pid {
   value: 65505
   get_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
   get_response {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -913,17 +913,17 @@ pid {
   value: 65506
   get_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
   get_response {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -938,17 +938,17 @@ pid {
   value: 65507
   get_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
   get_response {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -959,7 +959,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -976,17 +976,17 @@ pid {
   value: 65508
   get_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
   get_response {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -997,7 +997,7 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -1014,17 +1014,17 @@ pid {
   value: 65509
   get_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
   get_response {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -1044,8 +1044,20 @@ pid {
       }
     }
     field {
-      type: BOOL
-      name: "dhcp_address"
+      type: UINT8
+      name: "dhcp_mode"
+      label {
+        value: 0
+        label: "Inactive"
+      }
+      label {
+        value: 1
+        label: "Active"
+      }
+      label {
+        value: 2
+        label: "Unknown"
+      }
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1055,17 +1067,17 @@ pid {
   value: 65510
   get_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
   get_response {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
     }
     field {
@@ -1088,11 +1100,11 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
     field {
@@ -1121,11 +1133,11 @@ pid {
   value: 65511
   set_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
@@ -1138,11 +1150,11 @@ pid {
   value: 65512
   set_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
@@ -1155,11 +1167,11 @@ pid {
   value: 65513
   set_request {
     field {
-      type: UINT16
+      type: UINT32
       name: "interface_identifier"
       range {
         min: 0
-        max: 65280
+        max: 4294967040
       }
     }
   }
@@ -1198,7 +1210,7 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
-  name: "DNS_NAME_SERVER"
+  name: "DNS_IPV4_NAME_SERVER"
   value: 65515
   get_request {
     field {
@@ -1297,4 +1309,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-version: 1383707857
+version: 1393127518

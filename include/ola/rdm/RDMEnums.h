@@ -651,6 +651,16 @@ typedef enum {
 static const uint16_t IPV4_UNCONFIGURED = 0x00000000;
 static const uint16_t NO_DEFAULT_ROUTE = 0x00000000;
 
+typedef enum {
+  DHCP_STATUS_INACTIVE = 0x00,
+  DHCP_STATUS_ACTIVE = 0x01,
+  DHCP_STATUS_UNKNOWN = 0x02,
+  DHCP_STATUS_MAX,
+} rdm_dhcp_status;
+
+static const uint8_t MAX_RDM_HOSTNAME_LENGTH = 63;
+static const uint8_t MAX_RDM_DOMAIN_NAME_LENGTH = 231;
+
 static const int16_t DNS_NAME_SERVER_MAX_INDEX = 2;
 }  // namespace rdm
 }  // namespace ola

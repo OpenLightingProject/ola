@@ -6,12 +6,14 @@ pkginclude_HEADERS = AckTimerResponder.h AdvancedDimmerResponder.h \
                      CommandPrinter.h DimmerResponder.h DimmerRootDevice.h \
                      DimmerSubDevice.h DiscoveryAgent.h DummyResponder.h \
                      MessageDeserializer.h MessageSerializer.h \
-                     MovingLightResponder.h OpenLightingEnums.h PidStore.h \
+                     MovingLightResponder.h NetworkManagerInterface.h \
+                     NetworkResponder.h OpenLightingEnums.h PidStore.h \
                      PidStoreHelper.h QueueingRDMController.h RDMAPI.h \
-                     RDMAPIImplInterface.h RDMCommand.h RDMCommandSerializer.h \
-                     RDMControllerAdaptor.h RDMControllerInterface.h \
-                     RDMEnums.h RDMHelper.h RDMMessagePrinters.h RDMPacket.h \
-                     ResponderHelper.h ResponderLoadSensor.h ResponderOps.h \
+                     RDMAPIImplInterface.h RDMCommand.h \
+                     RDMCommandSerializer.h RDMControllerAdaptor.h \
+                     RDMControllerInterface.h RDMEnums.h RDMHelper.h \
+                     RDMMessagePrinters.h RDMPacket.h ResponderHelper.h \
+                     ResponderLoadSensor.h ResponderOps.h \
                      ResponderOpsPrivate.h ResponderPersonality.h \
                      ResponderSensor.h ResponderSettings.h \
                      ResponderSlotData.h SensorResponder.h \
