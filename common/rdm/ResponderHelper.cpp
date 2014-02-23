@@ -810,7 +810,7 @@ const RDMResponse *ResponderHelper::GetDNSDomainName(
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
   string domain_name = network_manager->GetDomainName().substr(
-      0, MAX_RDM_DOMAINNAME_LENGTH);
+      0, MAX_RDM_DOMAIN_NAME_LENGTH);
   return GetString(request,
                    network_manager->GetDomainName(),
                    queued_message_count);

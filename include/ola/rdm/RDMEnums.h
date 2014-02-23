@@ -659,7 +659,7 @@ typedef enum {
 } rdm_dhcp_status;
 
 static const uint8_t MAX_RDM_HOSTNAME_LENGTH = 63;
-static const uint8_t MAX_RDM_DOMAINNAME_LENGTH = 231;
+static const uint8_t MAX_RDM_DOMAIN_NAME_LENGTH = 231;
 
 static const int16_t DNS_NAME_SERVER_MAX_INDEX = 2;
 }  // namespace rdm
