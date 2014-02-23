@@ -31,6 +31,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
@@ -624,7 +625,8 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
 
   std::vector<Interface> interfaces =
       network_manager->GetInterfacePicker()->GetInterfaces(false);
-  // TODO(Peter): Sort by index
+  std::sort(interfaces.begin(), interfaces.end(),
+            ola::network::InterfaceIndexOrdering());
   if (interfaces.size() == 0) {
     return EmptyGetResponse(request, queued_message_count);
   }
