@@ -56,7 +56,7 @@ class NetworkManagerInterface {
   /**
    * Get the DHCP status of an interface
    * @param iface the interface to check the DHCP status of
-   * @return One of DHCP_STATUS_ENABLED, DHCP_STATUS_DISABLED or
+   * @return One of DHCP_STATUS_ACTIVE, DHCP_STATUS_INACTIVE or
    * DHCP_STATUS_UNKNOWN.
    */
   virtual rdm_dhcp_status GetDHCPStatus(

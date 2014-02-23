@@ -795,9 +795,9 @@ const RDMResponse *ResponderHelper::GetDNSHostname(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
-  const string hostname = network_manager->GetHostname().substr(
-      0, MAX_RDM_HOSTNAME_LENGTH);
-  if (hostname.empty()) {
+  const string hostname = network_manager->GetHostname();
+  if (hostname.empty() || hostname.length() > MAX_RDM_HOSTNAME_LENGTH) {
+    // Hostname outside of the allowed parameters for RDM, return an error
     return NackWithReason(request, NR_HARDWARE_FAULT);
   } else {
     return GetString(request, hostname, queued_message_count);
@@ -809,11 +809,13 @@ const RDMResponse *ResponderHelper::GetDNSDomainName(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
-  string domain_name = network_manager->GetDomainName().substr(
-      0, MAX_RDM_DOMAIN_NAME_LENGTH);
-  return GetString(request,
-                   network_manager->GetDomainName(),
-                   queued_message_count);
+  string domain_name = network_manager->GetDomainName();
+  if (domain_name.length() > MAX_RDM_DOMAIN_NAME_LENGTH) {
+    // Domain name outside of the allowed parameters for RDM, return an error
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  } else {
+    return GetString(request, domain_name, queued_message_count);
+  }
 }
 
 const RDMResponse *ResponderHelper::GetDNSNameServer(

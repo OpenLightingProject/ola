@@ -35,7 +35,7 @@ namespace ola {
 namespace rdm {
 
 /**
- * @brief An implementation of NetworkManagerInterface which simulated a
+ * @brief An implementation of NetworkManagerInterface which simulates a
  * network configuration.
  */
 class FakeNetworkManager : public NetworkManagerInterface {
@@ -56,43 +56,17 @@ class FakeNetworkManager : public NetworkManagerInterface {
       const std::vector<ola::network::IPV4Address> &name_servers);
   ~FakeNetworkManager() {}
 
-  /**
-   * Get the interface picker
-   */
   const ola::network::InterfacePicker *GetInterfacePicker() const;
 
-  /**
-   * Get the DHCP status of an interface
-   * @param iface the interface to check the DHCP status of
-   * @return One of DHCP_STATUS_ENABLED, DHCP_STATUS_DISABLED or
-   * DHCP_STATUS_UNKNOWN.
-   */
   rdm_dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
 
-  /**
-   * Get the IPv4 default route
-   * @param[out] the machine's default route as an IPV4Address object
-   * @return true if we managed to fetch the default route, false otherwise
-   * @note if it manages to fetch the route information and there isn't a route,
-   * it will return the special wildcard address, which can be tested for with
-   * IsWildcard().
-   */
   bool GetIPV4DefaultRoute(
       ola::network::IPV4Address *default_route) const;
 
-  /**
-   * Get the hostname
-   */
   const std::string GetHostname() const;
 
-  /**
-   * Get the domain name
-   */
   const std::string GetDomainName() const;
 
-  /**
-   * Get name servers
-   */
   bool GetNameServers(
       std::vector<ola::network::IPV4Address> *name_servers) const;
 
