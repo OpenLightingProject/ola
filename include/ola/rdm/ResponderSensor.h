@@ -31,10 +31,10 @@
 
 #include <ola/rdm/RDMEnums.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
-
 
 namespace ola {
 namespace rdm {

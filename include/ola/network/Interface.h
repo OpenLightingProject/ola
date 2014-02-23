@@ -120,6 +120,13 @@ class InterfaceBuilder {
 
   bool SetAddress(const std::string &str, IPV4Address *target);
 };
+
+// Sorts interfaces by index.
+struct InterfaceIndexOrdering {
+  inline bool operator() (const Interface &if1, const Interface &if2) {
+    return (if1.index < if2.index);
+  }
+};
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACE_H_
