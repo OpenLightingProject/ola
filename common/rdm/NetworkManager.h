@@ -29,6 +29,7 @@
 #ifndef COMMON_RDM_NETWORKMANAGER_H_
 #define COMMON_RDM_NETWORKMANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

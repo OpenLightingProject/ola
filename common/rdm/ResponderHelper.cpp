@@ -17,6 +17,7 @@
  * Copyright (C) 2013-2014 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <stdint.h>
 
 #ifdef WIN32
