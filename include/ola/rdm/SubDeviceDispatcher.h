@@ -32,7 +32,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "ola/rdm/RDMControllerInterface.h"
+#include <ola/rdm/RDMControllerInterface.h>
 
 namespace ola {
 namespace rdm {

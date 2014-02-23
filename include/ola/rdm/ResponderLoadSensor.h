@@ -29,8 +29,8 @@
 #define INCLUDE_OLA_RDM_RESPONDERLOADSENSOR_H_
 
 #include <string>
-#include "ola/rdm/ResponderSensor.h"
-#include "ola/system/SystemUtils.h"
+#include <ola/rdm/ResponderSensor.h>
+#include <ola/system/SystemUtils.h>
 
 namespace ola {
 namespace rdm {

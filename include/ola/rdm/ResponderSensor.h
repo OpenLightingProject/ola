@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/rdm/RDMEnums.h"
+#include <ola/rdm/RDMEnums.h>
 
 namespace ola {
 namespace rdm {

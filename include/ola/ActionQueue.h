@@ -26,7 +26,7 @@
 #define INCLUDE_OLA_ACTIONQUEUE_H_
 
 #include <vector>
-#include "ola/Callback.h"
+#include <ola/Callback.h>
 
 namespace ola {
 

@@ -32,10 +32,10 @@
 
 #include <map>
 #include <memory>
-#include "ola/rdm/DimmerRootDevice.h"
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/SubDeviceDispatcher.h"
-#include "ola/rdm/UID.h"
+#include <ola/rdm/DimmerRootDevice.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/SubDeviceDispatcher.h>
+#include <ola/rdm/UID.h>
 
 namespace ola {
 namespace rdm {

@@ -26,8 +26,8 @@
 #include <string>
 #include <vector>
 
-#include "ola/Logging.h"
-#include "ola/rdm/ResponderSlotData.h"
+#include <ola/Logging.h>
+#include <ola/rdm/ResponderSlotData.h>
 
 namespace ola {
 namespace rdm {
