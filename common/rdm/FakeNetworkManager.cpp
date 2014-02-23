@@ -18,11 +18,11 @@
  * Copyright (C) 2014 Simon Newton
  */
 
+#include "common/rdm/FakeNetworkManager.h"
+
 #include <string>
 #include <vector>
 
-#include "ola/rdm/FakeNetworkManager.h"
-#include "common/network/FakeInterfacePicker.h"
 
 namespace ola {
 namespace rdm {
@@ -40,7 +40,7 @@ FakeNetworkManager::FakeNetworkManager(
     const string &domain_name,
     const vector<IPV4Address> &name_servers)
     : NetworkManagerInterface(),
-      m_interface_picker(new ola::network::FakeInterfacePicker(interfaces)),
+      m_interface_picker(interfaces),
       m_ipv4_default_route(ipv4_default_route),
       m_hostname(hostname),
       m_domain_name(domain_name),
@@ -48,7 +48,7 @@ FakeNetworkManager::FakeNetworkManager(
 }
 
 const InterfacePicker *FakeNetworkManager::GetInterfacePicker() const {
-  return m_interface_picker.get();
+  return &m_interface_picker;
 }
 
 NetworkManagerInterface::DhcpStatus FakeNetworkManager::GetDHCPStatus(

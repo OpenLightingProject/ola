@@ -13,9 +13,10 @@ libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        DimmerRootDevice.cpp DimmerSubDevice.cpp \
                        DiscoveryAgent.cpp DiscoveryAgentTestHelper.h \
                        DummyResponder.cpp FakeNetworkManager.cpp \
-                       GroupSizeCalculator.cpp GroupSizeCalculator.h \
-                       MessageDeserializer.cpp MessageSerializer.cpp \
-                       MovingLightResponder.cpp NetworkManager.cpp \
+                       FakeNetworkManager.h GroupSizeCalculator.cpp \
+                       GroupSizeCalculator.h MessageDeserializer.cpp \
+                       MessageSerializer.cpp MovingLightResponder.cpp \
+                       NetworkManager.cpp NetworkManager.h \
                        NetworkResponder.cpp OpenLightingEnums.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
                        PidStoreLoader.h Pids.proto QueueingRDMController.cpp \

@@ -18,18 +18,18 @@
  * Copyright (C) 2013-2014 Peter Newman
  */
 
-#ifndef INCLUDE_OLA_RDM_FAKENETWORKMANAGER_H_
-#define INCLUDE_OLA_RDM_FAKENETWORKMANAGER_H_
+#ifndef COMMON_RDM_FAKENETWORKMANAGER_H_
+#define COMMON_RDM_FAKENETWORKMANAGER_H_
 
-#include <ola/rdm/NetworkManagerInterface.h>
+#include "ola/rdm/NetworkManagerInterface.h"
 
-#include <ola/network/Interface.h>
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/IPV4Address.h>
-
-#include <memory>
 #include <string>
 #include <vector>
+
+#include "common/network/FakeInterfacePicker.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 
 namespace ola {
 namespace rdm {
@@ -96,7 +96,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
       std::vector<ola::network::IPV4Address> *name_servers) const;
 
  private:
-  std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
+  ola::network::FakeInterfacePicker m_interface_picker;
   ola::network::IPV4Address m_ipv4_default_route;
   std::string m_hostname;
   std::string m_domain_name;
@@ -104,4 +104,4 @@ class FakeNetworkManager : public NetworkManagerInterface {
 };
 }  // namespace rdm
 }  // namespace ola
-#endif  // INCLUDE_OLA_RDM_FAKENETWORKMANAGER_H_
+#endif  // COMMON_RDM_FAKENETWORKMANAGER_H_

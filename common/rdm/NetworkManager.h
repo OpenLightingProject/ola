@@ -26,13 +26,13 @@
  * @}
  */
 
-#ifndef INCLUDE_OLA_RDM_NETWORKMANAGER_H_
-#define INCLUDE_OLA_RDM_NETWORKMANAGER_H_
+#ifndef COMMON_RDM_NETWORKMANAGER_H_
+#define COMMON_RDM_NETWORKMANAGER_H_
 
 #include <string>
 #include <vector>
 
-#include <ola/rdm/NetworkManagerInterface.h>
+#include "ola/rdm/NetworkManagerInterface.h"
 
 namespace ola {
 namespace rdm {
@@ -59,4 +59,4 @@ class NetworkManager : public NetworkManagerInterface {
 };
 }  // namespace rdm
 }  // namespace ola
-#endif  // INCLUDE_OLA_RDM_NETWORKMANAGER_H_
+#endif  // COMMON_RDM_NETWORKMANAGER_H_

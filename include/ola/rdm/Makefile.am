@@ -5,9 +5,8 @@ dist_noinst_SCRIPTS = make_rdm_codes.sh
 pkginclude_HEADERS = AckTimerResponder.h AdvancedDimmerResponder.h \
                      CommandPrinter.h DimmerResponder.h DimmerRootDevice.h \
                      DimmerSubDevice.h DiscoveryAgent.h DummyResponder.h \
-                     FakeNetworkManager.h MessageDeserializer.h \
-                     MessageSerializer.h MovingLightResponder.h \
-                     NetworkManager.h NetworkManagerInterface.h \
+                     MessageDeserializer.h MessageSerializer.h \
+                     MovingLightResponder.h NetworkManagerInterface.h \
                      NetworkResponder.h OpenLightingEnums.h PidStore.h \
                      PidStoreHelper.h QueueingRDMController.h RDMAPI.h \
                      RDMAPIImplInterface.h RDMCommand.h \

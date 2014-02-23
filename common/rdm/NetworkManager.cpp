@@ -17,7 +17,7 @@
  * Copyright (C) 2013-2014 Peter Newman
  */
 
-#include "ola/rdm/NetworkManager.h"
+#include "common/rdm/NetworkManager.h"
 
 #include <string>
 #include <vector>
