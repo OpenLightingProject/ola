@@ -64,9 +64,10 @@ class FakeNetworkManager : public NetworkManagerInterface {
   /**
    * Get the DHCP status of an interface
    * @param iface the interface to check the DHCP status of
-   * @return true if the interface is using DHCP, false otherwise
+   * @return One of DHCP_STATUS_ENABLED, DHCP_STATUS_DISABLED or
+   * DHCP_STATUS_UNKNOWN.
    */
-  DhcpStatus GetDHCPStatus(const ola::network::Interface &iface) const;
+  dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
 
   /**
    * Get the IPv4 default route

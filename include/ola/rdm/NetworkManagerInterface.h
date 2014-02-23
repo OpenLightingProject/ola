@@ -29,9 +29,10 @@
 #ifndef INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_
 #define INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_
 
+#include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
 #include <ola/network/InterfacePicker.h>
-#include <ola/network/IPV4Address.h>
+#include <ola/rdm/RDMEnums.h>
 
 #include <string>
 #include <vector>
@@ -44,12 +45,6 @@ namespace rdm {
  */
 class NetworkManagerInterface {
  public:
-  enum DhcpStatus {
-    DHCP_STATUS_ENABLED,
-    DHCP_STATUS_DISABLED,
-    DHCP_STATUS_UNKNOWN,
-    DHCP_STATUS_MAX,
-  };
   NetworkManagerInterface() {}
   virtual ~NetworkManagerInterface() {}
 
@@ -61,9 +56,10 @@ class NetworkManagerInterface {
   /**
    * Get the DHCP status of an interface
    * @param iface the interface to check the DHCP status of
-   * @return true if the interface is using DHCP, false otherwise
+   * @return One of DHCP_STATUS_ENABLED, DHCP_STATUS_DISABLED or
+   * DHCP_STATUS_UNKNOWN.
    */
-  virtual DhcpStatus GetDHCPStatus(
+  virtual dhcp_status GetDHCPStatus(
       const ola::network::Interface &iface) const = 0;
 
   /**

@@ -626,11 +626,13 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
 
   std::vector<Interface> interfaces =
       network_manager->GetInterfacePicker()->GetInterfaces(false);
-  std::sort(interfaces.begin(), interfaces.end(),
-            ola::network::InterfaceIndexOrdering());
+
   if (interfaces.size() == 0) {
     return EmptyGetResponse(request, queued_message_count);
   }
+
+  std::sort(interfaces.begin(), interfaces.end(),
+            ola::network::InterfaceIndexOrdering());
 
   struct list_interfaces_s {
     uint32_t index;
@@ -793,7 +795,8 @@ const RDMResponse *ResponderHelper::GetDNSHostname(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
-  const string hostname = network_manager->GetHostname().substr(0, 63);
+  const string hostname = network_manager->GetHostname().substr(
+      0, MAX_RDM_HOSTNAME_LENGTH);
   return GetString(request, hostname, queued_message_count);
 }
 
@@ -802,7 +805,8 @@ const RDMResponse *ResponderHelper::GetDNSDomainName(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
-  string domain_name = network_manager->GetDomainName().substr(0, 231);
+  string domain_name = network_manager->GetDomainName().substr(
+      0, MAX_RDM_DOMAINNAME_LENGTH);
   return GetString(request,
                    network_manager->GetDomainName(),
                    queued_message_count);
