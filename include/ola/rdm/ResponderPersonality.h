@@ -22,12 +22,13 @@
 #define INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 
 #include <ola/base/Macro.h>
+#include <ola/Logging.h>
+#include <ola/rdm/ResponderSlotData.h>
+
 #include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "ola/Logging.h"
-#include "ola/rdm/ResponderSlotData.h"
 
 namespace ola {
 namespace rdm {

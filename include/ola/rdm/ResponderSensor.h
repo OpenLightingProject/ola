@@ -29,12 +29,12 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERSENSOR_H_
 #define INCLUDE_OLA_RDM_RESPONDERSENSOR_H_
 
+#include <ola/rdm/RDMEnums.h>
 #include <stdint.h>
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "ola/rdm/RDMEnums.h"
 
 namespace ola {
 namespace rdm {

@@ -29,11 +29,11 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERSLOTDATA_H_
 #define INCLUDE_OLA_RDM_RESPONDERSLOTDATA_H_
 
+#include <ola/rdm/RDMEnums.h>
+
 #include <stdint.h>
 #include <string>
 #include <vector>
-
-#include "ola/rdm/RDMEnums.h"
 
 namespace ola {
 namespace rdm {
