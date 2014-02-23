@@ -31,7 +31,6 @@
 #include <ola/rdm/NetworkManagerInterface.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMEnums.h>
-#include <ola/rdm/ResponderNetworkController.h>
 #include <ola/rdm/ResponderOps.h>
 #include <ola/rdm/UID.h>
 
