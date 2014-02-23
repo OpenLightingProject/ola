@@ -64,7 +64,8 @@ class NetworkManagerInterface {
 
   /**
    * Get the IPv4 default route
-   * @param[out] the machine's default route as an IPV4Address object
+   * @param[out] default_route the machine's default route as an IPV4Address
+   *   object
    * @return true if we managed to fetch the default route, false otherwise
    * @note if it manages to fetch the route information and there isn't a route,
    * it will return the special wildcard address, which can be tested for with
