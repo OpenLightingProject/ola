@@ -21,6 +21,7 @@
 #ifndef PLUGINS_DUMMY_DUMMYPORT_H_
 #define PLUGINS_DUMMY_DUMMYPORT_H_
 
+#include <stdint.h>
 #include <string>
 #include <map>
 #include <vector>
@@ -45,7 +46,7 @@ class DummyPort: public BasicOutputPort {
           number_of_moving_lights(1),
           number_of_dummy_responders(1),
           number_of_ack_timer_responders(0),
-          number_of_advanced_dimmers(0),
+          number_of_advanced_dimmers(1),
           number_of_sensor_responders(1),
           number_of_network_responders(1) {
     }

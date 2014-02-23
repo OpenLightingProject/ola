@@ -245,8 +245,7 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
 };
 
 /**
- * Create a new dimmer root device. Ownership of the DimmerSubDevices is not
- * transferred.
+ * Create a new dimmer device.
  */
 AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
     : m_uid(uid),
