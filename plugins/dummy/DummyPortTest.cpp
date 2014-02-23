@@ -21,7 +21,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <algorithm>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -34,7 +33,6 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "ola/StringUtils.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/dummy/DummyPort.h"
 
@@ -51,6 +49,7 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::testing::ASSERT_DATA_EQUALS;
 using std::min;
 using std::string;
 using std::vector;
@@ -160,10 +159,18 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response) {
-    const uint8_t *data = reinterpret_cast<const uint8_t*>(&response);
-    ola::FormatData(&std::cout, data, sizeof(data));
+    ASSERT_DATA_EQUALS(__LINE__,
+                       m_expected_response->ParamData(),
+                       m_expected_response->ParamDataSize(),
+                       response->ParamData(),
+                       response->ParamDataSize());
     OLA_ASSERT(*m_expected_response == *response);
   } else {
+    // ASSERT_DATA_EQUALS(__LINE__,
+    //                    m_expected_response->ParamData(),
+    //                    m_expected_response->ParamDataSize(),
+    //                    response->ParamData(),
+    //                    response->ParamDataSize());
     OLA_ASSERT_EQ(m_expected_response, response);
   }
   delete response;
@@ -253,9 +260,9 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
     ola::rdm::PID_IPV4_CURRENT_ADDRESS,
     ola::rdm::PID_IPV4_DEFAULT_ROUTE,
+    ola::rdm::PID_DNS_NAME_SERVER,
     ola::rdm::PID_DNS_HOSTNAME,
     ola::rdm::PID_DNS_DOMAIN_NAME,
-    ola::rdm::PID_DNS_NAME_SERVER,
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
