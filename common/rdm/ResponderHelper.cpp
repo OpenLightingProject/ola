@@ -797,7 +797,11 @@ const RDMResponse *ResponderHelper::GetDNSHostname(
     uint8_t queued_message_count) {
   const string hostname = network_manager->GetHostname().substr(
       0, MAX_RDM_HOSTNAME_LENGTH);
-  return GetString(request, hostname, queued_message_count);
+  if (hostname.empty()) {
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  } else {
+    return GetString(request, hostname, queued_message_count);
+  }
 }
 
 
