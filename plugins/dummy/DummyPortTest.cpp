@@ -166,12 +166,7 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                        response->ParamDataSize());
     OLA_ASSERT(*m_expected_response == *response);
   } else {
-    // ASSERT_DATA_EQUALS(__LINE__,
-    //                    m_expected_response->ParamData(),
-    //                    m_expected_response->ParamDataSize(),
-    //                    response->ParamData(),
-    //                    response->ParamDataSize());
-    OLA_ASSERT_EQ(m_expected_response, response);
+    OLA_ASSERT_NULL(response);
   }
   delete response;
   delete m_expected_response;
