@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RealGlobalNetworkGetter.h
+ * NetworkManager.h
  * Talks to the machine's network systems to get/set data.
  * Copyright (C) 2013 Peter Newman
  */
@@ -21,36 +21,33 @@
 /**
  * @addtogroup rdm_resp
  * @{
- * @file RealGlobalNetworkGetter.h
+ * @file NetworkManager.h
  * @brief Gets/sets real config about a network.
  * @}
  */
 
-#ifndef INCLUDE_OLA_RDM_REALGLOBALNETWORKGETTER_H_
-#define INCLUDE_OLA_RDM_REALGLOBALNETWORKGETTER_H_
+#ifndef INCLUDE_OLA_RDM_NETWORKMANAGER_H_
+#define INCLUDE_OLA_RDM_NETWORKMANAGER_H_
 
 #include <string>
 #include <vector>
 
-#include "ola/rdm/ResponderNetworkController.h"
-#include "ola/network/InterfacePicker.h"
-#include "ola/network/IPV4Address.h"
+#include <ola/rdm/NetworkManagerInterface.h>
 
 namespace ola {
 namespace rdm {
 
 /**
- * A class which represents a real network getter.
+ * @brief A NetworkManager which reflects the actual host network configuration.
  */
-class RealGlobalNetworkGetter: public GlobalNetworkGetter {
+class NetworkManager : public NetworkManagerInterface {
  public:
-  RealGlobalNetworkGetter()
-      : GlobalNetworkGetter() {
+  NetworkManager() : NetworkManagerInterface() {
     m_interface_picker.reset(ola::network::InterfacePicker::NewPicker());
   }
 
   const ola::network::InterfacePicker *GetInterfacePicker() const;
-  bool GetDHCPStatus(const ola::network::Interface &iface) const;
+  DhcpStatus GetDHCPStatus(const ola::network::Interface &iface) const;
   bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route) const;
   const std::string GetHostname() const;
   const std::string GetDomainName() const;
@@ -62,4 +59,4 @@ class RealGlobalNetworkGetter: public GlobalNetworkGetter {
 };
 }  // namespace rdm
 }  // namespace ola
-#endif  // INCLUDE_OLA_RDM_REALGLOBALNETWORKGETTER_H_
+#endif  // INCLUDE_OLA_RDM_NETWORKMANAGER_H_

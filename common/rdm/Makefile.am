@@ -12,19 +12,20 @@ libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        DescriptorConsistencyChecker.h DimmerResponder.cpp \
                        DimmerRootDevice.cpp DimmerSubDevice.cpp \
                        DiscoveryAgent.cpp DiscoveryAgentTestHelper.h \
-                       DummyResponder.cpp GroupSizeCalculator.cpp \
-                       GroupSizeCalculator.h MessageDeserializer.cpp \
-                       MessageSerializer.cpp MovingLightResponder.cpp \
+                       DummyResponder.cpp FakeNetworkManager.cpp \
+                       GroupSizeCalculator.cpp GroupSizeCalculator.h \
+                       MessageDeserializer.cpp MessageSerializer.cpp \
+                       MovingLightResponder.cpp NetworkManager.cpp \
                        NetworkResponder.cpp OpenLightingEnums.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
                        PidStoreLoader.h Pids.proto QueueingRDMController.cpp \
                        RDMAPI.cpp RDMCommand.cpp RDMCommandSerializer.cpp \
-                       RDMHelper.cpp RealGlobalNetworkGetter.cpp \
-                       ResponderHelper.cpp ResponderLoadSensor.cpp \
-                       ResponderPersonality.cpp ResponderSettings.cpp \
-                       ResponderSlotData.cpp SensorResponder.cpp \
-                       StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
-                       UID.cpp VariableFieldSizeCalculator.cpp \
+                       RDMHelper.cpp ResponderHelper.cpp \
+                       ResponderLoadSensor.cpp ResponderPersonality.cpp \
+                       ResponderSettings.cpp ResponderSlotData.cpp \
+                       SensorResponder.cpp StringMessageBuilder.cpp \
+                       SubDeviceDispatcher.cpp UID.cpp \
+                       VariableFieldSizeCalculator.cpp \
                        VariableFieldSizeCalculator.h
 libolardm_la_CXXFLAGS = $(COMMON_CXXFLAGS) -DPID_DATA_DIR=\"${piddatadir}\"
 

@@ -28,23 +28,22 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
-#include "ola/stl/STLUtils.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/FakeNetworkManager.h"
 #include "ola/rdm/NetworkResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/RealGlobalNetworkGetter.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderNetworkController.h"
-#include "common/network/FakeInterfacePicker.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace rdm {
 
-using ola::network::FakeInterfacePicker;
 using ola::network::HostToNetwork;
 using ola::network::Interface;
 using ola::network::InterfacePicker;
@@ -109,77 +108,6 @@ const ResponderOps<NetworkResponder>::ParamHandler
 
 
 /**
- * A class which represents a fake network getter.
- */
-class FakeGlobalNetworkGetter: public GlobalNetworkGetter {
- public:
-  FakeGlobalNetworkGetter(const vector<Interface> &interfaces,
-                          const IPV4Address ipv4_default_route,
-                          const string &hostname,
-                          const string &domain_name,
-                          const vector<IPV4Address> &name_servers)
-      : GlobalNetworkGetter(),
-        m_ipv4_default_route(ipv4_default_route),
-        m_hostname(hostname),
-        m_domain_name(domain_name),
-        m_name_servers(name_servers) {
-    m_interface_picker.reset(new FakeInterfacePicker(interfaces));
-  }
-
-  const ola::network::InterfacePicker *GetInterfacePicker() const;
-  bool GetDHCPStatus(const ola::network::Interface &iface) const;
-  bool GetIPV4DefaultRoute(IPV4Address *default_route) const;
-  const string GetHostname() const;
-  const string GetDomainName() const;
-  bool GetNameServers(vector<IPV4Address> *name_servers) const;
-
- private:
-  auto_ptr<InterfacePicker> m_interface_picker;
-  IPV4Address m_ipv4_default_route;
-  string m_hostname;
-  string m_domain_name;
-  vector<IPV4Address> m_name_servers;
-};
-
-
-const InterfacePicker *FakeGlobalNetworkGetter::GetInterfacePicker() const {
-  return m_interface_picker.get();
-}
-
-
-bool FakeGlobalNetworkGetter::GetDHCPStatus(
-    const ola::network::Interface &iface) const {
-  // TODO(Peter): Fixme - actually do the work!
-  if (iface.index > 0) {}
-  return false;
-}
-
-
-bool FakeGlobalNetworkGetter::GetIPV4DefaultRoute(
-    IPV4Address *default_route) const {
-  *default_route = m_ipv4_default_route;
-  return true;
-}
-
-
-const string FakeGlobalNetworkGetter::GetHostname() const {
-  return m_hostname;
-}
-
-
-const string FakeGlobalNetworkGetter::GetDomainName() const {
-  return m_domain_name;
-}
-
-
-bool FakeGlobalNetworkGetter::GetNameServers(
-    vector<IPV4Address> *name_servers) const {
-  *name_servers = m_name_servers;
-  return true;
-}
-
-
-/**
  * New NetworkResponder
  */
 NetworkResponder::NetworkResponder(const UID &uid)
@@ -212,14 +140,14 @@ NetworkResponder::NetworkResponder(const UID &uid)
   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.2"));
   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.3"));
 
-  m_global_network_getter.reset(new FakeGlobalNetworkGetter(
+  m_network_manager.reset(new FakeNetworkManager(
       interfaces,
       IPV4Address::FromStringOrDie("10.0.0.254"),
       "foo",
       "bar.com",
       name_servers));
   // Todo(Peter): remove this when I've finished testing everything
-  // m_global_network_getter.reset(new RealGlobalNetworkGetter());
+  // m_network_manager.reset(new RealGlobalNetworkGetter());
 }
 
 
@@ -289,50 +217,50 @@ const RDMResponse *NetworkResponder::GetSoftwareVersionLabel(
 const RDMResponse *NetworkResponder::GetListInterfaces(
     const RDMRequest *request) {
   return ResponderHelper::GetListInterfaces(request,
-                                            m_global_network_getter.get());
+                                            m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetInterfaceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceLabel(request,
-                                            m_global_network_getter.get());
+                                            m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetInterfaceHardwareAddressType1(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceHardwareAddressType1(
       request,
-      m_global_network_getter.get());
+      m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetIPV4CurrentAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetIPV4CurrentAddress(request,
-                                                m_global_network_getter.get());
+                                                m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetIPV4DefaultRoute(
     const RDMRequest *request) {
   return ResponderHelper::GetIPV4DefaultRoute(request,
-                                              m_global_network_getter.get());
+                                              m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetDNSHostname(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSHostname(request,
-                                         m_global_network_getter.get());
+                                         m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetDNSDomainName(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSDomainName(request,
-                                           m_global_network_getter.get());
+                                           m_network_manager.get());
 }
 
 const RDMResponse *NetworkResponder::GetDNSNameServer(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSNameServer(request,
-                                           m_global_network_getter.get());
+                                           m_network_manager.get());
 }
 }  // namespace rdm
 }  // namespace ola

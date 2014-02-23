@@ -13,30 +13,28 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ResponderNetworkController.h
- * Talks to the machine's network systems to get/set data.
+ * NetworkManagerInterface.h
+ * The glue between the ResponderHelper and the OLA network code.
  * Copyright (C) 2013-2014 Peter Newman
  */
 
 /**
  * @addtogroup rdm_resp
  * @{
- * @file ResponderNetworkController.h
- * @brief Gets/sets config about a network.
+ * @file NetworkManagerInterface.h
+ * @brief The interface for the NetworkManager.
  * @}
  */
 
-#ifndef INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
-#define INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
+#ifndef INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_
+#define INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
-#include "ola/rdm/RDMEnums.h"
-#include "ola/network/Interface.h"
-#include "ola/network/InterfacePicker.h"
-#include "ola/network/IPV4Address.h"
+#include <ola/network/Interface.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/network/IPV4Address.h>
 
 namespace ola {
 namespace rdm {
@@ -44,10 +42,16 @@ namespace rdm {
 /**
  * @brief Gets global network information.
  */
-class GlobalNetworkGetter {
+class NetworkManagerInterface {
  public:
-  GlobalNetworkGetter() {}
-  virtual ~GlobalNetworkGetter() {}
+  enum DhcpStatus {
+    DHCP_STATUS_ENABLED,
+    DHCP_STATUS_DISABLED,
+    DHCP_STATUS_UNKNOWN,
+    DHCP_STATUS_MAX,
+  };
+  NetworkManagerInterface() {}
+  virtual ~NetworkManagerInterface() {}
 
   /**
    * Get the interface picker
@@ -59,7 +63,8 @@ class GlobalNetworkGetter {
    * @param iface the interface to check the DHCP status of
    * @return true if the interface is using DHCP, false otherwise
    */
-  virtual bool GetDHCPStatus(const ola::network::Interface &iface) const = 0;
+  virtual DhcpStatus GetDHCPStatus(
+      const ola::network::Interface &iface) const = 0;
 
   /**
    * Get the IPv4 default route
@@ -69,8 +74,8 @@ class GlobalNetworkGetter {
    * it will return the special wildcard address, which can be tested for with
    * IsWildcard().
    */
-  virtual bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route)
-      const = 0;
+  virtual bool GetIPV4DefaultRoute(
+      ola::network::IPV4Address *default_route) const = 0;
 
   /**
    * Get the hostname
@@ -88,7 +93,6 @@ class GlobalNetworkGetter {
   virtual bool GetNameServers(
       std::vector<ola::network::IPV4Address> *name_servers) const = 0;
 };
-// TODO(Peter): Set global network information.
 }  // namespace rdm
 }  // namespace ola
-#endif  // INCLUDE_OLA_RDM_RESPONDERNETWORKCONTROLLER_H_
+#endif  // INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_

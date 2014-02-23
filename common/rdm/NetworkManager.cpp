@@ -13,20 +13,16 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * RealGlobalNetworkGetter.cpp
+ * NetworkManager.cpp
  * Copyright (C) 2013-2014 Peter Newman
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "ola/rdm/NetworkManager.h"
 
 #include <string>
 #include <vector>
 
-#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/rdm/RealGlobalNetworkGetter.h"
 
 namespace ola {
 namespace rdm {
@@ -37,38 +33,33 @@ using ola::network::IPV4Address;
 using std::string;
 using std::vector;
 
-
-const InterfacePicker *RealGlobalNetworkGetter::GetInterfacePicker() const {
+const InterfacePicker *NetworkManager::GetInterfacePicker() const {
   return m_interface_picker.get();
 }
 
-
-bool RealGlobalNetworkGetter::GetDHCPStatus(const Interface &iface) const {
-  // TODO(Peter): Fixme - actually do the work!
-  if (iface.index > 0) {}
-  return false;
+NetworkManagerInterface::DhcpStatus NetworkManager::GetDHCPStatus(
+    const Interface&) const {
+  // It's a challenge to determine DHCP state, so we already return
+  // DHCP_STATUS_UNKNOWN.
+  return DHCP_STATUS_UNKNOWN;
 }
 
-
-bool RealGlobalNetworkGetter::GetIPV4DefaultRoute(
+bool NetworkManager::GetIPV4DefaultRoute(
     IPV4Address *default_route) const {
-  int32_t index;
-  return ola::network::DefaultRoute(&index, default_route);
+  // if_index is ignored for now.
+  int32_t if_index;
+  return ola::network::DefaultRoute(&if_index, default_route);
 }
 
-
-const string RealGlobalNetworkGetter::GetHostname() const {
+const string NetworkManager::GetHostname() const {
   return ola::network::Hostname();
 }
 
-
-const string RealGlobalNetworkGetter::GetDomainName() const {
+const string NetworkManager::GetDomainName() const {
   return ola::network::DomainName();
 }
 
-
-bool RealGlobalNetworkGetter::GetNameServers(
-    vector<IPV4Address> *name_servers) const {
+bool NetworkManager::GetNameServers(vector<IPV4Address> *name_servers) const {
   return ola::network::NameServers(name_servers);
 }
 }  // namespace rdm

@@ -21,27 +21,29 @@
  * @addtogroup rdm_resp
  * @{
  * @file NetworkResponder.h
- * @brief A soft RDM responder that supports E1.37-2 PIDs
+ * @brief An RDM responder that supports E1.37-2 PIDs
  * @}
  */
 
 #ifndef INCLUDE_OLA_RDM_NETWORKRESPONDER_H_
 #define INCLUDE_OLA_RDM_NETWORKRESPONDER_H_
 
+#include <ola/rdm/NetworkManagerInterface.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/ResponderNetworkController.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/UID.h>
+
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/ResponderNetworkController.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
 
 /**
- * A simulated responder with no footprint and E1.37-2 support.
+ * A responder with no footprint and E1.37-2 support.
  */
 class NetworkResponder: public RDMControllerInterface {
  public:
@@ -70,7 +72,7 @@ class NetworkResponder: public RDMControllerInterface {
 
   const UID m_uid;
   bool m_identify_mode;
-  std::auto_ptr<GlobalNetworkGetter> m_global_network_getter;
+  std::auto_ptr<NetworkManagerInterface> m_network_manager;
 
   const RDMResponse *GetDeviceInfo(const RDMRequest *request);
   const RDMResponse *GetProductDetailList(const RDMRequest *request);
