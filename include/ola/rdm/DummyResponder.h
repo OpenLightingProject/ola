@@ -27,6 +27,7 @@
 #ifndef INCLUDE_OLA_RDM_DUMMYRESPONDER_H_
 #define INCLUDE_OLA_RDM_DUMMYRESPONDER_H_
 
+#include <ola/rdm/NetworkManagerInterface.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/ResponderOps.h>
@@ -34,6 +35,7 @@
 #include <ola/rdm/ResponderSensor.h>
 #include <ola/rdm/UID.h>
 
+#include <memory>
 #include <string>
 
 namespace ola {
@@ -90,6 +92,7 @@ class DummyResponder: public RDMControllerInterface {
   uint32_t m_lamp_strikes;
   PersonalityManager m_personality_manager;
   Sensors m_sensors;
+  std::auto_ptr<NetworkManagerInterface> m_network_manager;
 
   const RDMResponse *GetParamDescription(const RDMRequest *request);
   const RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -118,6 +121,15 @@ class DummyResponder: public RDMControllerInterface {
   const RDMResponse *GetSensorValue(const RDMRequest *request);
   const RDMResponse *SetSensorValue(const RDMRequest *request);
   const RDMResponse *RecordSensor(const RDMRequest *request);
+  const RDMResponse *GetListInterfaces(const RDMRequest *request);
+  const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
+  const RDMResponse *GetInterfaceHardwareAddressType1(
+      const RDMRequest *request);
+  const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
+  const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
+  const RDMResponse *GetDNSHostname(const RDMRequest *request);
+  const RDMResponse *GetDNSDomainName(const RDMRequest *request);
+  const RDMResponse *GetDNSNameServer(const RDMRequest *request);
 
   static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint8_t DEFAULT_PERSONALITY = 2;

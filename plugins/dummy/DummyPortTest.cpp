@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/StringUtils.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/dummy/DummyPort.h"
 
@@ -157,10 +159,13 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const ola::rdm::RDMResponse *response,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
-  if (m_expected_response)
+  if (m_expected_response) {
+    const uint8_t *data = reinterpret_cast<const uint8_t*>(&response);
+    ola::FormatData(&std::cout, data, sizeof(data));
     OLA_ASSERT(*m_expected_response == *response);
-  else
+  } else {
     OLA_ASSERT_EQ(m_expected_response, response);
+  }
   delete response;
   delete m_expected_response;
   m_expected_response = NULL;
@@ -242,7 +247,15 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_RECORD_SENSORS,
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
-    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
+    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
+    ola::rdm::PID_LIST_INTERFACES,
+    ola::rdm::PID_INTERFACE_LABEL,
+    ola::rdm::PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
+    ola::rdm::PID_IPV4_CURRENT_ADDRESS,
+    ola::rdm::PID_IPV4_DEFAULT_ROUTE,
+    ola::rdm::PID_DNS_HOSTNAME,
+    ola::rdm::PID_DNS_DOMAIN_NAME,
+    ola::rdm::PID_DNS_NAME_SERVER,
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
