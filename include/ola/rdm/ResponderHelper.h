@@ -27,11 +27,12 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 #define INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 
+#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/ResponderPersonality.h>
+#include <ola/rdm/ResponderSensor.h>
+
 #include <string>
 #include <vector>
-#include "ola/rdm/RDMCommand.h"
-#include "ola/rdm/ResponderPersonality.h"
-#include "ola/rdm/ResponderSensor.h"
 
 namespace ola {
 namespace rdm {

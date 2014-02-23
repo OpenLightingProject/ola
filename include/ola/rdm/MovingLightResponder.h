@@ -29,12 +29,13 @@
 #ifndef INCLUDE_OLA_RDM_MOVINGLIGHTRESPONDER_H_
 #define INCLUDE_OLA_RDM_MOVINGLIGHTRESPONDER_H_
 
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/ResponderPersonality.h>
+#include <ola/rdm/UID.h>
+
 #include <string>
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/ResponderPersonality.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {

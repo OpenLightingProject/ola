@@ -29,10 +29,11 @@
 #ifndef INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 #define INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 
+#include <ola/rdm/RDMControllerInterface.h>
+
 #include <map>
 #include <string>
 #include <vector>
-#include "ola/rdm/RDMControllerInterface.h"
 
 namespace ola {
 namespace rdm {
