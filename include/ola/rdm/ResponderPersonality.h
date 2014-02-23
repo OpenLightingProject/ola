@@ -25,6 +25,9 @@
 #include <ola/rdm/ResponderSlotData.h>
 
 #include <ola/base/Macro.h>
+#include <ola/Logging.h>
+#include <ola/rdm/ResponderSlotData.h>
+
 #include <stdint.h>
 #include <string>
 #include <vector>
