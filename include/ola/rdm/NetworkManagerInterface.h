@@ -59,7 +59,7 @@ class NetworkManagerInterface {
    * @return One of DHCP_STATUS_ENABLED, DHCP_STATUS_DISABLED or
    * DHCP_STATUS_UNKNOWN.
    */
-  virtual dhcp_status GetDHCPStatus(
+  virtual rdm_dhcp_status GetDHCPStatus(
       const ola::network::Interface &iface) const = 0;
 
   /**

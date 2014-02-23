@@ -656,7 +656,7 @@ typedef enum {
   DHCP_STATUS_DISABLED = 0x01,
   DHCP_STATUS_UNKNOWN = 0x02,
   DHCP_STATUS_MAX,
-} dhcp_status;
+} rdm_dhcp_status;
 
 static const uint8_t MAX_RDM_HOSTNAME_LENGTH = 63;
 static const uint8_t MAX_RDM_DOMAINNAME_LENGTH = 231;

@@ -51,12 +51,14 @@ const InterfacePicker *FakeNetworkManager::GetInterfacePicker() const {
   return &m_interface_picker;
 }
 
-dhcp_status FakeNetworkManager::GetDHCPStatus(const Interface &iface) const {
+rdm_dhcp_status FakeNetworkManager::GetDHCPStatus(
+    const Interface &iface) const {
   // Mix things up a bit. The status depends on the index.
   return static_cast<dhcp_status>(iface.index % DHCP_STATUS_MAX);
 }
 
-bool FakeNetworkManager::GetIPV4DefaultRoute(IPV4Address *default_route) const {
+bool FakeNetworkManager::GetIPV4DefaultRoute(
+    IPV4Address *default_route) const {
   *default_route = m_ipv4_default_route;
   return true;
 }

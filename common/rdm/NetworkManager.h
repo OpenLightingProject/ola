@@ -39,7 +39,8 @@ namespace ola {
 namespace rdm {
 
 /**
- * @brief A NetworkManager which reflects the actual host network configuration.
+ * @brief A NetworkManager which reflects the actual host network
+ * configuration.
  */
 class NetworkManager : public NetworkManagerInterface {
  public:
@@ -48,7 +49,7 @@ class NetworkManager : public NetworkManagerInterface {
   }
 
   const ola::network::InterfacePicker *GetInterfacePicker() const;
-  dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
+  rdm_dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
   bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route) const;
   const std::string GetHostname() const;
   const std::string GetDomainName() const;

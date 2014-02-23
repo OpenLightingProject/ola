@@ -37,7 +37,7 @@ const InterfacePicker *NetworkManager::GetInterfacePicker() const {
   return m_interface_picker.get();
 }
 
-dhcp_status NetworkManager::GetDHCPStatus(const Interface&) const {
+rdm_dhcp_status NetworkManager::GetDHCPStatus(const Interface&) const {
   // It's a challenge to determine DHCP state, so we already return
   // DHCP_STATUS_UNKNOWN.
   return DHCP_STATUS_UNKNOWN;
