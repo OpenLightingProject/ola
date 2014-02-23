@@ -24,6 +24,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "common/rdm/FakeNetworkManager.h"
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
@@ -32,13 +33,10 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/rdm/FakeNetworkManager.h"
 #include "ola/rdm/NetworkResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/RealGlobalNetworkGetter.h"
 #include "ola/rdm/ResponderHelper.h"
-#include "ola/rdm/ResponderNetworkController.h"
 #include "ola/stl/STLUtils.h"
 
 namespace ola {
