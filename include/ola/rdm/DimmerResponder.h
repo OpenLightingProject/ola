@@ -30,12 +30,13 @@
 #ifndef INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 
-#include <map>
-#include <memory>
 #include <ola/rdm/DimmerRootDevice.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/SubDeviceDispatcher.h>
 #include <ola/rdm/UID.h>
+
+#include <map>
+#include <memory>
 
 namespace ola {
 namespace rdm {

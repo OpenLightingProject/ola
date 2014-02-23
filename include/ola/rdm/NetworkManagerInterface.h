@@ -29,12 +29,12 @@
 #ifndef INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_
 #define INCLUDE_OLA_RDM_NETWORKMANAGERINTERFACE_H_
 
-#include <string>
-#include <vector>
-
 #include <ola/network/Interface.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/IPV4Address.h>
+
+#include <string>
+#include <vector>
 
 namespace ola {
 namespace rdm {
