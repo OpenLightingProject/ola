@@ -21,7 +21,6 @@
 #ifndef COMMON_RDM_FAKENETWORKMANAGER_H_
 #define COMMON_RDM_FAKENETWORKMANAGER_H_
 
-#include "ola/rdm/NetworkManagerInterface.h"
 
 #include <string>
 #include <vector>
@@ -30,6 +29,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
+#include "ola/rdm/NetworkManagerInterface.h"
 
 namespace ola {
 namespace rdm {
