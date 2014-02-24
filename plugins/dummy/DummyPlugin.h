@@ -21,6 +21,7 @@
 #ifndef PLUGINS_DUMMY_DUMMYPLUGIN_H_
 #define PLUGINS_DUMMY_DUMMYPLUGIN_H_
 
+#include <stdint.h>
 #include <string>
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
@@ -50,9 +51,9 @@ class DummyPlugin: public Plugin {
     DummyDevice *m_device;  // the dummy device
     static const char ACK_TIMER_COUNT_KEY[];
     static const char ADVANCED_DIMMER_KEY[];
-    static const char DEFAULT_DEVICE_COUNT[];
-    static const char DEFAULT_ACK_TIMER_DEVICE_COUNT[];
-    static const char DEFAULT_SUBDEVICE_COUNT[];
+    static const uint8_t DEFAULT_DEVICE_COUNT;
+    static const uint8_t DEFAULT_ACK_TIMER_DEVICE_COUNT;
+    static const uint16_t DEFAULT_SUBDEVICE_COUNT;
     static const char DEVICE_NAME[];
     static const char DIMMER_COUNT_KEY[];
     static const char DIMMER_SUBDEVICE_COUNT_KEY[];

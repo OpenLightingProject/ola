@@ -485,7 +485,9 @@ AC_ARG_ENABLE(
 # RDM tests, if requested this enables the Python API as well.
 AC_ARG_ENABLE(
   [rdm-tests],
-  [AS_HELP_STRING([--enable-rdm-tests], [Install the RDM responder tests])])
+  [AS_HELP_STRING(
+      [--enable-rdm-tests],
+      [Install the RDM responder tests, adds --enable-python-libs])])
 AS_IF([test "x$enable_rdm_tests" = xyes], [enable_python_libs="yes"])
 AM_CONDITIONAL([INSTALL_RDM_TESTS], [test "x$enable_rdm_tests" = xyes])
 

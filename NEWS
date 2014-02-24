@@ -1,17 +1,9 @@
 X/Y/2013 ola-0.9.0
- API:
- * Added the ability to specify the priority of the DMX data in the C++ API -
-   #266
- * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
- * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
-
  Features:
  * Added priority support for input ports - #259
  * Added DNS-SD registration support with both Bonjour and Avahi so that the
    OLA web UI appears as _http._tcp - #270
  * Added plugin for Renard serial protocol (Renard SS24, SS8, etc) - #277
- * Added more RDM responder tests to cover some slot related edge cases.
- * Log an error if we try and run an RDM test that doesn't exist.
  * Refactor sensor functionality in the software RDM responders and add a load
    average sensor to them and the SPI responder.
  * Add a class to represent MAC addresses and support for MAC address RDM types
@@ -20,24 +12,40 @@ X/Y/2013 ola-0.9.0
  * Add a warning if the firmware in an Enttec USB Pro widget doesn't support
    RDM - #275.
  * Print a warning if no Logic device is found when using the RDM sniffer.
- * Added checks to the RDM tests to flag if non-printable characters are
-   returned in any RDM strings - #262.
  * Added support for the P9813 family of SPI pixels.
  * Show dashes in the CLI DMX monitor if a universe has fewer than 512
    channels.
  * Added initial support for the MilInst 1-553 interface.
  * Added a version option to all flags based commands; removed the -v verify
    short option from ola_recorder that clashed.
+ * Added a dummy responder which implements the draft E1.37-2 PIDs.
+
+ API:
+ * Added the ability to specify the priority of the DMX data in the C++ API -
+   #266
+ * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
+ * Added a Version API.
+ * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
+
+ RDM Tests:
+ * Added more RDM responder tests to cover some slot related edge cases.
+ * Log an error if we try and run an RDM test that doesn't exist.
+ * Added the --inter-test-delay option
+ * Added checks to the RDM tests to flag if non-printable characters are
+   returned in any RDM strings - #262.
+ * Fixed bugs in the MuteDevice, Fail & Startup mode tests.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265.
  * Build fixes for FreeBSD 10.0-BETA3.
- * Fix a bug in the RDM tests relating to Fail & Startup modes.
  * Fix the web and CLI UIs so they work if strings from RDM devices have
    unprintable characters in them - #263.
  * Fix a bug in the KiNet plugin - #276
 
  Internal:
+ * Cleaned up the autotools configuration, `make distcheck` now works.
+ * Cleaned up public header files.
+ * Added configuration for Travis continuous integration.
  * Switched to using a custom generator for the C++ RPC Code.
  * Split PID data into 3 files.
  * Added more code documentation, cleaned up some new linter warnings.
@@ -45,6 +53,12 @@ X/Y/2013 ola-0.9.0
  * Refactor load average function out into system utils.
  * Switch the SPI RDM responders to using the core personality management code.
  * Renamed SetDecription(sic) to SetDescription in ola::Flags
+
+Documentation:
+ * Changed links from google code to github.
+ * Added more doxygen comments.
+ * Added more man pages.
+ * Updated README, CONTRIBUTING and README.developer
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)

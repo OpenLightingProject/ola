@@ -55,10 +55,10 @@ class PidStoreHelper {
 
     bool Init();
 
-    const ola::rdm::PidDescriptor *GetDescriptor(
+    const PidDescriptor *GetDescriptor(
         const std::string &pid_name,
         uint16_t manufacturer_id) const;
-    const ola::rdm::PidDescriptor *GetDescriptor(
+    const PidDescriptor *GetDescriptor(
         uint16_t param_id,
         uint16_t manufacturer_id) const;
 
@@ -90,15 +90,15 @@ class PidStoreHelper {
 
     void SupportedPids(
         uint16_t manufacturer_id,
-        std::vector<const ola::rdm::PidDescriptor*> *descriptors) const;
+        std::vector<const PidDescriptor*> *descriptors) const;
 
  private:
     const std::string m_pid_location;
-    const ola::rdm::RootPidStore *m_root_store;
-    ola::rdm::StringMessageBuilder m_string_builder;
-    ola::rdm::MessageSerializer m_serializer;
-    ola::rdm::MessageDeserializer m_deserializer;
-    ola::rdm::RDMMessagePrinter m_message_printer;
+    const RootPidStore *m_root_store;
+    StringMessageBuilder m_string_builder;
+    MessageSerializer m_serializer;
+    MessageDeserializer m_deserializer;
+    RDMMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
 };
 }  // namespace rdm
