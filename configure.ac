@@ -453,6 +453,17 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
 
+# UART direct plugin
+AC_ARG_ENABLE(
+  [uart],
+  [AS_HELP_STRING([--disable-uart],
+                  [Avoid using native uart support])])
+
+AC_CHECK_HEADERS([asm/termios.h], [have_termios="yes"], [have_termios="no"])
+AS_IF([test "x$have_termios" = xyes],
+      [AC_DEFINE([USE_UART], [1], [define if asm/termios.h is available and direct UART support should be enabled])])
+
+
 # OSC Support.
 # look for liblo if the user asked us to
 AC_ARG_ENABLE(
@@ -563,6 +574,7 @@ PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_termios])
 
 # Finally build a list of the required plugin libs.
 PLUGIN_LIBS=''
@@ -692,6 +704,7 @@ AC_CONFIG_FILES([Makefile
                  plugins/spi/Makefile
                  plugins/stageprofi/Makefile
                  plugins/usbdmx/Makefile
+                 plugins/uartdmx/Makefile
                  plugins/usbpro/Makefile
                  plugins/usbpro/messages/Makefile
                  protoc/Makefile

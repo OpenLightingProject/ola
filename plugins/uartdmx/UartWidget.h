@@ -24,19 +24,11 @@
  * to follow OLA coding standards.
  *
  * by Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
-#ifndef PLUGINS_FTDIDMX_FTDIWIDGET_H_
-#define PLUGINS_FTDIDMX_FTDIWIDGET_H_
-
-#ifdef FTD2XX
-#  ifdef WIN32
-#    include <windows.h>
-#  endif
-#  include <ftd2xx.h>
-#else
-#  include <ftdi.h>
-#endif
+#ifndef PLUGINS_UARTDMX_UARTWIDGET_H_
+#define PLUGINS_UARTDMX_UARTWIDGET_H_
 
 #include <string>
 #include <vector>
@@ -45,14 +37,14 @@
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
 /**
  * This class holds information about an attached ftdi chip
  */
-class FtdiWidgetInfo {
+class UartWidgetInfo {
  public:
-    FtdiWidgetInfo(const std::string &name,
+    UartWidgetInfo(const std::string &name,
                    const std::string &serial,
                    int unsigned id)
       : m_name(name),
@@ -60,13 +52,13 @@ class FtdiWidgetInfo {
         m_id(id) {
     }
 
-    FtdiWidgetInfo(const FtdiWidgetInfo &info)
+    UartWidgetInfo(const UartWidgetInfo &info)
       : m_name(info.Name()),
         m_serial(info.Serial()),
         m_id(info.Id()) {
     }
 
-    virtual ~FtdiWidgetInfo() {}
+    virtual ~UartWidgetInfo() {}
 
     std::string Name() const { return m_name; }
     std::string Serial() const { return m_serial; }
@@ -76,7 +68,7 @@ class FtdiWidgetInfo {
       return m_name + " with serial number : " + m_serial + " ";
     }
 
-    FtdiWidgetInfo& operator=(const FtdiWidgetInfo &other) {
+    UartWidgetInfo& operator=(const UartWidgetInfo &other) {
       if (this != &other) {
         m_name = other.Name();
         m_serial = other.Serial();
@@ -93,25 +85,25 @@ class FtdiWidgetInfo {
 
 
 /**
- * An FTDI widget
+ * An UART widget
  */
-class FtdiWidget {
+class UartWidget {
  public:
     static const int VID = 0x0403;  // FTDI Vendor ID
     static const int PID = 0x6001;  // FTDI Product ID
 
     /**
-     * Construct a new FtdiWidget instance for one widget.
+     * Construct a new UartWidget instance for one widget.
      * @param serial The widget's USB serial number
      * @param name The widget's USB name (description)
      * @param id The ID of the device (used only when FTD2XX is the backend)
      */
-    FtdiWidget(const std::string &serial,
+    UartWidget(const std::string &serial,
                const std::string &name,
                uint32_t id = 0);
 
     /** Destructor */
-    virtual ~FtdiWidget();
+    virtual ~UartWidget();
 
     /** Get the widget's USB serial number */
     std::string Serial() const { return m_serial; }
@@ -167,9 +159,9 @@ class FtdiWidget {
 
     /**
      * Build a list of available ftdi widgets.
-     * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
+     * @param widgets a pointer to a vector of UartWidgetInfo objects.
      */
-    static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
+    static void Widgets(std::vector<UartWidgetInfo> *widgets);
 
  private:
     std::string m_serial;
@@ -182,7 +174,7 @@ class FtdiWidget {
     struct ftdi_context m_handle;
 #endif
 };
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_FTDIDMX_FTDIWIDGET_H_
+#endif  // PLUGINS_UARTDMX_UARTWIDGET_H_

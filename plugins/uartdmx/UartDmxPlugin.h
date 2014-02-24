@@ -13,13 +13,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * FtdiDmxPlugin.h
- * The FTDI usb chipset DMX plugin for ola
+ * UartDmxPlugin.h
+ * The DMX through a UART plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
-#ifndef PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
-#define PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
+#ifndef PLUGINS_UARTDMX_UARTDMXPLUGIN_H_
+#define PLUGINS_UARTDMX_UARTDMXPLUGIN_H_
 
 #include <set>
 #include <string>
@@ -28,16 +29,16 @@
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
 
-#include "plugins/ftdidmx/FtdiDmxDevice.h"
+#include "plugins/uartdmx/UartDmxDevice.h"
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
 
-class FtdiDmxPlugin : public Plugin {
+class UartDmxPlugin : public Plugin {
  public:
-  explicit FtdiDmxPlugin(ola::PluginAdaptor *plugin_adaptor)
+  explicit UartDmxPlugin(ola::PluginAdaptor *plugin_adaptor)
       : Plugin(plugin_adaptor) {
   }
 
@@ -55,21 +56,23 @@ class FtdiDmxPlugin : public Plugin {
   std::string Description() const;
 
  private:
-  typedef std::vector<FtdiDmxDevice*> FtdiDeviceVector;
+  typedef std::vector<UartDmxDevice*> FtdiDeviceVector;
   FtdiDeviceVector m_devices;
 
-  void AddDevice(FtdiDmxDevice *device);
+  void AddDevice(UartDmxDevice *device);
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
   unsigned int GetFrequency();
 
-  static const char DEFAULT_FREQUENCY[];
-  static const char K_FREQUENCY[];
+  static const char DEFAULT_MALF[];
+  static const char K_MALF[];
+  static const char DEFAULT_BREAK[];
+  static const char K_BREAK[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
 };
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
+#endif  // PLUGINS_UARTDMX_UARTDMXPLUGIN_H_

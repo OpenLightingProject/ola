@@ -13,47 +13,48 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * FtdiDmxDevice.cpp
- * The FTDI usb chipset DMX plugin for ola
+ * UartDmxDevice.cpp
+ * The DMX through a UART plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
 #include <string>
 #include <memory>
 #include "ola/Logging.h"
-#include "plugins/ftdidmx/FtdiDmxDevice.h"
-#include "plugins/ftdidmx/FtdiDmxPort.h"
+#include "plugins/uartdmx/UartDmxDevice.h"
+#include "plugins/uartdmx/UartDmxPort.h"
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
 using std::string;
 
-FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
-                             const FtdiWidgetInfo &widget_info,
+UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
+                             const UartWidgetInfo &widget_info,
                              unsigned int frequency)
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
       m_frequency(frequency) {
   m_widget.reset(
-      new FtdiWidget(widget_info.Serial(),
+      new UartWidget(widget_info.Serial(),
                      widget_info.Name(),
                      widget_info.Id()));
 }
 
-FtdiDmxDevice::~FtdiDmxDevice() {
+UartDmxDevice::~UartDmxDevice() {
   if (m_widget->IsOpen())
     m_widget->Close();
 }
 
-bool FtdiDmxDevice::StartHook() {
-  AddPort(new FtdiDmxOutputPort(this,
+bool UartDmxDevice::StartHook() {
+  AddPort(new UartDmxOutputPort(this,
                                 m_widget.get(),
                                 m_widget_info.Id(),
                                 m_frequency));
   return true;
 }
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

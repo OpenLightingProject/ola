@@ -13,9 +13,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * FtdiDmxThread.cpp
- * The FTDI usb chipset DMX plugin for ola
+ * UartDmxThread.cpp
+ * The DMX through a UART plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
 #include <math.h>
@@ -24,21 +25,21 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "plugins/ftdidmx/FtdiWidget.h"
-#include "plugins/ftdidmx/FtdiDmxThread.h"
+#include "plugins/uartdmx/UartWidget.h"
+#include "plugins/uartdmx/UartDmxThread.h"
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
-FtdiDmxThread::FtdiDmxThread(FtdiWidget *widget, unsigned int frequency)
+UartDmxThread::UartDmxThread(FtdiWidget *widget, unsigned int frequency)
   : m_granularity(UNKNOWN),
     m_widget(widget),
     m_term(false),
     m_frequency(frequency) {
 }
 
-FtdiDmxThread::~FtdiDmxThread() {
+UartDmxThread::~UartDmxThread() {
   Stop();
 }
 
@@ -46,7 +47,7 @@ FtdiDmxThread::~FtdiDmxThread() {
 /**
  * Stop this thread
  */
-bool FtdiDmxThread::Stop() {
+bool UartDmxThread::Stop() {
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
@@ -58,7 +59,7 @@ bool FtdiDmxThread::Stop() {
 /**
  * Copy a DMXBuffer to the output thread
  */
-bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
+bool UartDmxThread::WriteDMX(const DmxBuffer &buffer) {
   {
     ola::thread::MutexLocker locker(&m_buffer_mutex);
     m_buffer.Set(buffer);
@@ -70,7 +71,7 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 /**
  * The method called by the thread
  */
-void *FtdiDmxThread::Run() {
+void *UartDmxThread::Run() {
   TimeStamp ts1, ts2;
   Clock clock;
   CheckTimeGranularity();
@@ -137,7 +138,7 @@ void *FtdiDmxThread::Run() {
 /**
  * Check the granularity of usleep.
  */
-void FtdiDmxThread::CheckTimeGranularity() {
+void UartDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
   Clock clock;
 
@@ -150,6 +151,6 @@ void FtdiDmxThread::CheckTimeGranularity() {
   OLA_INFO << "Granularity for ftdi thread is " <<
     (m_granularity == GOOD ? "GOOD" : "BAD");
 }
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

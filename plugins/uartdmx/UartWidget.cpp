@@ -24,10 +24,10 @@
  * to follow OLA coding standards.
  *
  * by Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
 #include <strings.h>
-#include <ftdi.h>
 #include <assert.h>
 
 #include <string>
@@ -36,16 +36,16 @@
 
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
-#include "plugins/ftdidmx/FtdiWidget.h"
+#include "plugins/uartdmx/UartWidget.h"
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
 using std::string;
 using std::vector;
 
-FtdiWidget::FtdiWidget(const string& serial,
+UartWidget::UartWidget(const string& serial,
                        const string& name,
                        uint32_t id)
     : m_serial(serial),
@@ -55,18 +55,18 @@ FtdiWidget::FtdiWidget(const string& serial,
   ftdi_init(&m_handle);
 }
 
-FtdiWidget::~FtdiWidget() {
+UartWidget::~UartWidget() {
   if (IsOpen())
     Close();
   ftdi_deinit(&m_handle);
 }
 
 
-bool FtdiWidget::Open() {
+bool UartWidget::Open() {
   if (Serial().empty()) {
     OLA_WARN << Name() << " has no serial number, "
       "might cause issues with multiple devices";
-    if (ftdi_usb_open(&m_handle, FtdiWidget::VID, FtdiWidget::PID) < 0) {
+    if (ftdi_usb_open(&m_handle, UartWidget::VID, UartWidget::PID) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -74,7 +74,7 @@ bool FtdiWidget::Open() {
     }
   } else {
     OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
-    if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
+    if (ftdi_usb_open_desc(&m_handle, UartWidget::VID, UartWidget::PID,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
@@ -84,7 +84,7 @@ bool FtdiWidget::Open() {
   }
 }
 
-bool FtdiWidget::Close() {
+bool UartWidget::Close() {
   if (ftdi_usb_close(&m_handle) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -93,11 +93,11 @@ bool FtdiWidget::Close() {
   }
 }
 
-bool FtdiWidget::IsOpen() const {
+bool UartWidget::IsOpen() const {
   return (m_handle.usb_dev != NULL) ? true : false;
 }
 
-bool FtdiWidget::Reset() {
+bool UartWidget::Reset() {
   if (ftdi_usb_reset(&m_handle) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -106,7 +106,7 @@ bool FtdiWidget::Reset() {
   }
 }
 
-bool FtdiWidget::SetLineProperties() {
+bool UartWidget::SetLineProperties() {
   if (ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -115,7 +115,7 @@ bool FtdiWidget::SetLineProperties() {
   }
 }
 
-bool FtdiWidget::SetBaudRate() {
+bool UartWidget::SetBaudRate() {
   if (ftdi_set_baudrate(&m_handle, 250000) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -124,7 +124,7 @@ bool FtdiWidget::SetBaudRate() {
   }
 }
 
-bool FtdiWidget::SetFlowControl() {
+bool UartWidget::SetFlowControl() {
   if (ftdi_setflowctrl(&m_handle, SIO_DISABLE_FLOW_CTRL) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -133,7 +133,7 @@ bool FtdiWidget::SetFlowControl() {
   }
 }
 
-bool FtdiWidget::ClearRts() {
+bool UartWidget::ClearRts() {
   if (ftdi_setrts(&m_handle, 0) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -142,7 +142,7 @@ bool FtdiWidget::ClearRts() {
   }
 }
 
-bool FtdiWidget::PurgeBuffers() {
+bool UartWidget::PurgeBuffers() {
   if (ftdi_usb_purge_buffers(&m_handle) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
@@ -151,7 +151,7 @@ bool FtdiWidget::PurgeBuffers() {
   }
 }
 
-bool FtdiWidget::SetBreak(bool on) {
+bool UartWidget::SetBreak(bool on) {
   ftdi_break_type type;
   if (on == true)
     type = BREAK_ON;
@@ -166,7 +166,7 @@ bool FtdiWidget::SetBreak(bool on) {
   }
 }
 
-bool FtdiWidget::Write(const ola::DmxBuffer& data) {
+bool UartWidget::Write(const ola::DmxBuffer& data) {
   unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
   int unsigned length = DMX_UNIVERSE_SIZE;
   buffer[0] = 0x00;
@@ -181,7 +181,7 @@ bool FtdiWidget::Write(const ola::DmxBuffer& data) {
   }
 }
 
-bool FtdiWidget::Read(unsigned char *buff, int size) {
+bool UartWidget::Read(unsigned char *buff, int size) {
   int read = ftdi_read_data(&m_handle, buff, size);
   if (read <= 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -196,7 +196,7 @@ bool FtdiWidget::Read(unsigned char *buff, int size) {
  * Mainly used to test if device is working correctly
  * before AddDevice()
  */
-bool FtdiWidget::SetupOutput() {
+bool UartWidget::SetupOutput() {
   // Setup the widget
   if (Open() == false) {
     OLA_WARN << "Error Opening widget";
@@ -240,7 +240,7 @@ bool FtdiWidget::SetupOutput() {
 /**
  * Build a list of all attached ftdi devices
  */
-void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
+void UartWidget::Widgets(vector<UartWidgetInfo> *widgets) {
   int i = -1;
   widgets->clear();
   struct ftdi_context *ftdi = ftdi_new();
@@ -250,8 +250,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   }
 
   struct ftdi_device_list* list = NULL;
-  int devices_found = ftdi_usb_find_all(ftdi, &list, FtdiWidget::VID,
-                                        FtdiWidget::PID);
+  int devices_found = ftdi_usb_find_all(ftdi, &list, UartWidget::VID,
+                                        UartWidget::PID);
   if (devices_found < 0)
     OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
 
@@ -294,7 +294,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI") ||
         std::string::npos != v.find("KMTRONIC") ||
         std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+      widgets->push_back(UartWidgetInfo(sname, sserial, i));
     } else {
       OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
@@ -303,6 +303,6 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   ftdi_list_free(&list);
   ftdi_free(ftdi);
 }
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

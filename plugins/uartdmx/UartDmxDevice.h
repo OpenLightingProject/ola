@@ -13,45 +13,46 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * FtdiDmxDevice.h
- * The FTDI usb chipset DMX plugin for ola
+ * UartDmxDevice.h
+ * The DMX through a UART plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
-#ifndef PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_
-#define PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_
+#ifndef PLUGINS_UARTDMX_UARTDMXDEVICE_H_
+#define PLUGINS_UARTDMX_UARTDMXDEVICE_H_
 
 #include <string>
 #include <memory>
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
-#include "plugins/ftdidmx/FtdiWidget.h"
+#include "plugins/uartdmx/UartWidget.h"
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
-class FtdiDmxDevice : public Device {
+class UartDmxDevice : public Device {
  public:
-  FtdiDmxDevice(AbstractPlugin *owner,
+  UartDmxDevice(AbstractPlugin *owner,
                 const FtdiWidgetInfo &widget_info,
                 unsigned int frequency);
-  ~FtdiDmxDevice();
+  ~UartDmxDevice();
 
   std::string DeviceId() const { return m_widget->Serial(); }
   std::string Description() const { return m_widget_info.Description(); }
-  FtdiWidget* GetDevice() {return m_widget.get(); }
+  UartWidget* GetDevice() {return m_widget.get(); }
 
  protected:
   bool StartHook();
 
  private:
-  std::auto_ptr<FtdiWidget> m_widget;
-  const FtdiWidgetInfo m_widget_info;
+  std::auto_ptr<UartWidget> m_widget;
+  const UartWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_
+#endif  // PLUGINS_UARTDMX_UARTDMXDEVICE_H_

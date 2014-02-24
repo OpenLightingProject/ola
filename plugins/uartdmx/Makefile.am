@@ -2,21 +2,12 @@ include $(top_srcdir)/common.mk
 
 # LIBRARIES
 ##################################################
-if USE_FTDI
-plugin_LTLIBRARIES = libolaftdidmx.la
-libolaftdidmx_la_SOURCES = FtdiDmxDevice.cpp FtdiDmxDevice.h \
-                           FtdiDmxPlugin.cpp FtdiDmxPlugin.h FtdiDmxPort.h \
-                           FtdiDmxThread.cpp FtdiDmxThread.h \
-                           FtdiWidget-libftdi.cpp FtdiWidget.h
-libolaftdidmx_la_LIBADD = $(libftdi_LIBS) \
-                          ../../common/libolacommon.la
+if USE_UART
+plugin_LTLIBRARIES = libolauartdmx.la
+libolauartdmx_la_SOURCES = UartDmxDevice.cpp UartDmxDevice.h \
+                           UartDmxPlugin.cpp UartDmxPlugin.h UartDmxPort.h \
+                           UartDmxThread.cpp UartDmxThread.h \
+                           UartWidget.cpp UartWidget.h
+libolauartdmx_la_LIBADD = ../../common/libolacommon.la
 endif
 
-# This isn't used yet.
-#if HAVE_LIBFTD2XX
-#  lib_LTLIBRARIES = libolaftdidmx.la
-#  libolaftdidmx_la_SOURCES = FtdiDmxDevice.cpp FtdiDmxPlugin.cpp \
-#                             FtdiDmxThread.cpp FtdiWidget-ftd2xx.cpp
-#  libolaftdidmx_la_LIBADD = -lftd2xx \
-#                            ../../common/libolacommon.la
-#endif
