@@ -144,8 +144,6 @@ NetworkResponder::NetworkResponder(const UID &uid)
       "foo",
       "bar.com",
       name_servers));
-  // Todo(Peter): remove this when I've finished testing everything
-  // m_network_manager.reset(new RealGlobalNetworkGetter());
 }
 
 

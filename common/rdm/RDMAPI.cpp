@@ -193,7 +193,6 @@ bool RDMAPI::ClearCommStatus(
 
 /**
  * Send a queued message request.
- *
  */
 bool RDMAPI::GetQueuedMessage(
         unsigned int universe,
@@ -236,7 +235,7 @@ bool RDMAPI::GetQueuedMessage(
                            const ResponseStatus&,
                            uint16_t,
                            const std::string&> *callback,
-        string *error) {
+        std::string *error) {
   if (CheckCallback(error, callback))
     return false;
   uint8_t type = status_type;

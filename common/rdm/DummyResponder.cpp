@@ -30,6 +30,7 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DummyResponder.h"
+#include "common/rdm/NetworkManager.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
@@ -135,6 +136,30 @@ const ResponderOps<DummyResponder>::ParamHandler
     NULL,
     &DummyResponder::RecordSensor},
 #endif
+  { PID_LIST_INTERFACES,
+    &DummyResponder::GetListInterfaces,
+    NULL},
+  { PID_INTERFACE_LABEL,
+    &DummyResponder::GetInterfaceLabel,
+    NULL},
+  { PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
+    &DummyResponder::GetInterfaceHardwareAddressType1,
+    NULL},
+  { PID_IPV4_CURRENT_ADDRESS,
+    &DummyResponder::GetIPV4CurrentAddress,
+    NULL},
+  { PID_IPV4_DEFAULT_ROUTE,
+    &DummyResponder::GetIPV4DefaultRoute,
+    NULL},
+  { PID_DNS_HOSTNAME,
+    &DummyResponder::GetDNSHostname,
+    NULL},
+  { PID_DNS_DOMAIN_NAME,
+    &DummyResponder::GetDNSDomainName,
+    NULL},
+  { PID_DNS_NAME_SERVER,
+    &DummyResponder::GetDNSNameServer,
+    NULL},
   { OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyResponder::GetOlaCodeVersion,
     NULL},
@@ -158,6 +183,8 @@ DummyResponder::DummyResponder(const UID &uid)
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
                                      "Load Average 15 minutes"));
 #endif
+
+  m_network_manager.reset(new NetworkManager());
 }
 
 DummyResponder::~DummyResponder() {
@@ -354,6 +381,58 @@ const RDMResponse *DummyResponder::SetSensorValue(const RDMRequest *request) {
  */
 const RDMResponse *DummyResponder::RecordSensor(const RDMRequest *request) {
   return ResponderHelper::RecordSensor(request, m_sensors);
+}
+
+/**
+ * E1.37-2 PIDs
+ */
+const RDMResponse *DummyResponder::GetListInterfaces(
+    const RDMRequest *request) {
+  return ResponderHelper::GetListInterfaces(request,
+                                            m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetInterfaceLabel(
+    const RDMRequest *request) {
+  return ResponderHelper::GetInterfaceLabel(request,
+                                            m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetInterfaceHardwareAddressType1(
+    const RDMRequest *request) {
+  return ResponderHelper::GetInterfaceHardwareAddressType1(
+      request,
+      m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetIPV4CurrentAddress(
+    const RDMRequest *request) {
+  return ResponderHelper::GetIPV4CurrentAddress(request,
+                                                m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetIPV4DefaultRoute(
+    const RDMRequest *request) {
+  return ResponderHelper::GetIPV4DefaultRoute(request,
+                                              m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetDNSHostname(
+    const RDMRequest *request) {
+  return ResponderHelper::GetDNSHostname(request,
+                                         m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetDNSDomainName(
+    const RDMRequest *request) {
+  return ResponderHelper::GetDNSDomainName(request,
+                                           m_network_manager.get());
+}
+
+const RDMResponse *DummyResponder::GetDNSNameServer(
+    const RDMRequest *request) {
+  return ResponderHelper::GetDNSNameServer(request,
+                                           m_network_manager.get());
 }
 
 const RDMResponse *DummyResponder::GetOlaCodeVersion(

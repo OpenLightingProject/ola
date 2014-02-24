@@ -49,6 +49,7 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::testing::ASSERT_DATA_EQUALS;
 using std::min;
 using std::string;
 using std::vector;
@@ -157,10 +158,16 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const ola::rdm::RDMResponse *response,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
-  if (m_expected_response)
+  if (m_expected_response) {
+    ASSERT_DATA_EQUALS(__LINE__,
+                       m_expected_response->ParamData(),
+                       m_expected_response->ParamDataSize(),
+                       response->ParamData(),
+                       response->ParamDataSize());
     OLA_ASSERT(*m_expected_response == *response);
-  else
-    OLA_ASSERT_EQ(m_expected_response, response);
+  } else {
+    OLA_ASSERT_NULL(response);
+  }
   delete response;
   delete m_expected_response;
   m_expected_response = NULL;
@@ -242,7 +249,15 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_RECORD_SENSORS,
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
-    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
+    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
+    ola::rdm::PID_LIST_INTERFACES,
+    ola::rdm::PID_INTERFACE_LABEL,
+    ola::rdm::PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
+    ola::rdm::PID_IPV4_CURRENT_ADDRESS,
+    ola::rdm::PID_IPV4_DEFAULT_ROUTE,
+    ola::rdm::PID_DNS_NAME_SERVER,
+    ola::rdm::PID_DNS_HOSTNAME,
+    ola::rdm::PID_DNS_DOMAIN_NAME,
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -788,7 +803,7 @@ void DummyPortTest::testSlotInfo() {
 
 void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
   UIDSet expected_uids;
-  for (unsigned int i = 0; i < 5; i++) {
+  for (unsigned int i = 0; i < 6; i++) {
     UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00 + i);
     expected_uids.AddUID(uid);
   }

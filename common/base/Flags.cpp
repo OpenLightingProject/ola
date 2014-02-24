@@ -59,7 +59,6 @@ using std::string;
 using std::vector;
 
 /**
- * @var Flag<bool>::NO_PREFIX
  * The prefix used on inverted bool flags
  * @examplepara
  *   @code
