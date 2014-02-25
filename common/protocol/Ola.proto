@@ -102,7 +102,7 @@ enum RDMResponseCode {
   RDM_DEST_UID_MISMATCH = 10;
   //Incorrect sub start code
   RDM_WRONG_SUB_START_CODE = 11;
-  //RDM response was smaller than the mimimun size
+  //RDM response was smaller than the minimum size
   RDM_PACKET_TOO_SHORT = 12;
   //The length field of packet didn't match length received
   RDM_PACKET_LENGTH_MISMATCH = 13;

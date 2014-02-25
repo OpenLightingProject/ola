@@ -1745,7 +1745,7 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
 
 
 /*
- * Check the version number of a incomming packet
+ * Check the version number of a incoming packet
  */
 bool ArtNetNodeImpl::CheckPacketVersion(const IPV4Address &source_address,
                                         const string &packet_type,

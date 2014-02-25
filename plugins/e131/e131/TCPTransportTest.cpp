@@ -79,7 +79,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     CID m_cid;
     auto_ptr<Callback0<void> > m_rx_callback;
     auto_ptr<MockInflator> m_inflator;
-    auto_ptr<IncommingStreamTransport> m_transport;
+    auto_ptr<IncomingStreamTransport> m_transport;
 
     void SendEmptyPDUBLock(unsigned int line);
     void SendPDU(unsigned int line);
@@ -105,7 +105,7 @@ void TCPTransportTest::setUp() {
 
   // transport to test
   m_transport.reset(
-      new IncommingStreamTransport(m_inflator.get(), &m_loopback, m_localhost));
+      new IncomingStreamTransport(m_inflator.get(), &m_loopback, m_localhost));
 
   // SelectServer
   m_ss.reset(new ola::io::SelectServer());

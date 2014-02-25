@@ -265,11 +265,11 @@ bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
 PidDescriptor *PidStoreLoader::PidToDescriptor(const ola::rdm::pid::Pid &pid,
                                                bool validate) {
   // populate sub device validators
-  PidDescriptor::sub_device_valiator get_validator =
+  PidDescriptor::sub_device_validator get_validator =
     PidDescriptor::ANY_SUB_DEVICE;
   if (pid.has_get_sub_device_range())
     get_validator = ConvertSubDeviceValidator(pid.get_sub_device_range());
-  PidDescriptor::sub_device_valiator set_validator =
+  PidDescriptor::sub_device_validator set_validator =
     PidDescriptor::ANY_SUB_DEVICE;
   if (pid.has_set_sub_device_range())
     set_validator = ConvertSubDeviceValidator(pid.set_sub_device_range());
@@ -535,7 +535,7 @@ const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
 /**
  * Convert a protobuf sub device enum to a PidDescriptor one.
  */
-PidDescriptor::sub_device_valiator PidStoreLoader::ConvertSubDeviceValidator(
+PidDescriptor::sub_device_validator PidStoreLoader::ConvertSubDeviceValidator(
     const ola::rdm::pid::SubDeviceRange &sub_device_range) {
   switch (sub_device_range) {
     case ola::rdm::pid::ROOT_DEVICE:

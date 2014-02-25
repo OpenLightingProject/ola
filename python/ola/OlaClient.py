@@ -324,7 +324,7 @@ class RDMResponse(object):
         'Destination UID in response doesn\'t match'),
       Ola_pb2.RDM_WRONG_SUB_START_CODE: 'Incorrect sub start code',
       Ola_pb2.RDM_PACKET_TOO_SHORT: (
-        'RDM response was smaller than the mimimun size'),
+        'RDM response was smaller than the minimum size'),
       Ola_pb2.RDM_PACKET_LENGTH_MISMATCH: (
         'The length field of packet didn\'t match length received'),
       Ola_pb2.RDM_PARAM_LENGTH_MISMATCH: (

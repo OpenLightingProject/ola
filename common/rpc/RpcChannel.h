@@ -165,7 +165,7 @@ class RpcChannel {
     // the descriptor to read/write to.
     class ola::io::ConnectedDescriptor *m_descriptor;
     SequenceNumber<uint32_t> m_sequence;
-    uint8_t *m_buffer;  // buffer for incomming msgs
+    uint8_t *m_buffer;  // buffer for incoming msgs
     unsigned int m_buffer_size;  // size of the buffer
     unsigned int m_expected_size;  // the total size of the current msg
     unsigned int m_current_size;  // the amount of data read for the current msg

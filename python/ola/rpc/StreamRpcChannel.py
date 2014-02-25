@@ -56,7 +56,7 @@ class StreamRpcChannel(service.RpcChannel):
 
     Args:
       socket: the socket to communicate on
-      service: the service to route incomming requests to
+      service: the service to route incoming requests to
     """
     self._service = service_impl
     self._socket = socket
@@ -82,7 +82,7 @@ class StreamRpcChannel(service.RpcChannel):
       return False
 
     self._buffer.append(data)
-    self._ProcessIncommingData()
+    self._ProcessIncomingData()
     return True
 
   def CallMethod(self, method, controller, request, response_pb, done):
@@ -231,7 +231,7 @@ class StreamRpcChannel(service.RpcChannel):
 
     return ''.join(data)
 
-  def _ProcessIncommingData(self):
+  def _ProcessIncomingData(self):
     """Process the received data."""
 
     while True:

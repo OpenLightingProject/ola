@@ -173,14 +173,14 @@ class Preferences {
   virtual std::string Source() const = 0;
 
   /**
-   * @brief Set a preference value, overiding the existing value.
+   * @brief Set a preference value, overriding the existing value.
    * @param key
    * @param value
    */
   virtual void SetValue(const std::string &key, const std::string &value) = 0;
 
   /**
-   * @brief Set a preference value, overiding the existing value. This helper
+   * @brief Set a preference value, overriding the existing value. This helper
    * accepts an unsigned int.
    * @param key
    * @param value
@@ -188,7 +188,7 @@ class Preferences {
   virtual void SetValue(const std::string &key, unsigned int value) = 0;
 
   /**
-   * @brief Set a preference value, overiding the existing value. This helper
+   * @brief Set a preference value, overriding the existing value. This helper
    * accepts an int.
    * @param key
    * @param value

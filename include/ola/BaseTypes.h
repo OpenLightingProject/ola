@@ -53,7 +53,7 @@ static const uint8_t DMX_MAX_CHANNEL_VALUE = ola::DMX_MAX_SLOT_VALUE;
 static const uint8_t DMX512_START_CODE = ola::DMX512_START_CODE;
 
 /**
- * @brief The default port which olad listens on for incomming RPC connections.
+ * @brief The default port which olad listens on for incoming RPC connections.
  */
 static const int OLA_DEFAULT_PORT = ola::OLA_DEFAULT_PORT;
 

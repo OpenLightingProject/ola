@@ -212,7 +212,7 @@ bool PidDescriptor::IsSetValid(uint16_t sub_device) const {
  * Returns is a request is valid
  */
 bool PidDescriptor::RequestValid(uint16_t sub_device,
-                                 const sub_device_valiator &validator) const {
+                                 const sub_device_validator &validator) const {
   switch (validator) {
     case ROOT_DEVICE:  // 0 only
       return sub_device == 0;
