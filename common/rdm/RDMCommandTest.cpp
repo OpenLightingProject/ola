@@ -234,6 +234,7 @@ void RDMCommandTest::testRDMCommand() {
                              232);  // data length
 
   OLA_ASSERT_EQ(232u, long_command.ParamDataSize());
+  delete[] data;
 
   uint32_t data_value = 0xa5a5a5a5;
   RDMSetRequest command3(source,
@@ -246,9 +247,8 @@ void RDMCommandTest::testRDMCommand() {
                          reinterpret_cast<uint8_t*>(&data_value),  // data
                          sizeof(data_value));  // data length
 
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, command.CommandType());
+  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, command3.CommandType());
   PackAndVerify(command3, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
-  delete[] data;
 }
 
 
