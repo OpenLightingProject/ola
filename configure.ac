@@ -718,6 +718,7 @@ ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 Prefix: '${prefix}'
 Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
 Linker: '${LD} ${LDFLAGS} ${LIBS}'
+Enable HTTP Server: ${have_microhttpd}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
