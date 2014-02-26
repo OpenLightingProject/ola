@@ -29,7 +29,12 @@
 
 #include <strings.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 #include <termios.h>
+#include <unistd.h>
 
 #include <string>
 #include <algorithm>
@@ -70,7 +75,7 @@ bool UartWidget::Open() {
 
 bool UartWidget::Close() {
   if (close(m_filed) > 0) {
-    OLA_WARN << Name() << " " << perror("");
+    OLA_WARN << Name() << " error closing";
 	m_filed = -2;
     return false;
   } else {
@@ -118,7 +123,7 @@ bool UartWidget::ClearRts() {
     return true;
   }
 }
-*/
+
 bool UartWidget::PurgeBuffers() {
   if (ftdi_usb_purge_buffers(&m_handle) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -127,16 +132,16 @@ bool UartWidget::PurgeBuffers() {
     return true;
   }
 }
-
+*/
 bool UartWidget::SetBreak(bool on) {
-  ftdi_break_type type;
+  unsigned long request;
   if (on == true)
-    type = BREAK_ON;
+    request = TIOCSBRK;
   else
-    type = BREAK_OFF;
+    request = TIOCCBRK;
 
-  if (ftdi_set_line_property2(&m_handle, BITS_8, STOP_BIT_2, NONE, type) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+  if (ioctl(m_filed, request, NULL) < 0) {
+    OLA_WARN << Name() << " ioctl() failed";
     return false;
   } else {
     return true;
@@ -146,12 +151,13 @@ bool UartWidget::SetBreak(bool on) {
 bool UartWidget::Write(const ola::DmxBuffer& data) {
   unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
   int unsigned length = DMX_UNIVERSE_SIZE;
-  buffer[0] = 0x00;
+  buffer[0] = 0x00;  // start code of 0 for dimmer control messages
 
   data.Get(buffer + 1, &length);
 
-  if (ftdi_write_data(&m_handle, buffer, length + 1) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+  if (write(m_filed, buffer, length + 1) <= 0) {
+    // TODO: handle errors better as per the test code, especially if we alter the scheduling!
+    OLA_WARN << Name() << " Short or failed write!";
     return false;
   } else {
     return true;
@@ -159,9 +165,9 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
 }
 
 bool UartWidget::Read(unsigned char *buff, int size) {
-  int read = ftdi_read_data(&m_handle, buff, size);
-  if (read <= 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+  int readb = read(m_filed, buff, size);
+  if (readb <= 0) {
+    OLA_WARN << Name() << " read error";
     return false;
   } else {
     return true;
@@ -236,7 +242,7 @@ bool UartWidget::SetupOutput() {
   return true;
 }
 
-
+#if 0
 /**
  * Build a list of all attached ftdi devices
  */
@@ -303,6 +309,7 @@ void UartWidget::Widgets(vector<UartWidgetInfo> *widgets) {
   ftdi_list_free(&list);
   ftdi_free(ftdi);
 }
+#endif
 }  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

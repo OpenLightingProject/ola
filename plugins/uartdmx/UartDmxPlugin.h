@@ -42,7 +42,7 @@ class UartDmxPlugin : public Plugin {
       : Plugin(plugin_adaptor) {
   }
 
-  ola_plugin_id Id() const { return OLA_PLUGIN_UARTDMX; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_EXPERIMENTAL; } // change before release!
   std::string Name() const { return PLUGIN_NAME; }
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
   // This plugin is disabled unless explicitly enabled by a user.
@@ -67,6 +67,7 @@ class UartDmxPlugin : public Plugin {
   static const char K_BREAK[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
+  static const char K_DEVICE[];
 };
 }  // namespace uartdmx
 }  // namespace plugin

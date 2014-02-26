@@ -23,6 +23,7 @@
 #define PLUGINS_UARTDMX_UARTDMXDEVICE_H_
 
 #include <string>
+#include <sstream>
 #include <memory>
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
@@ -36,12 +37,15 @@ namespace uartdmx {
 class UartDmxDevice : public Device {
  public:
   UartDmxDevice(AbstractPlugin *owner,
-                const UartWidgetInfo &widget_info,
+                const std::string &name,
+                const std::string &path,
+                unsigned int device_id,
                 unsigned int breakt,
-				unsigned int malft);
+                unsigned int malft);
   ~UartDmxDevice();
 
-  std::string Description() const { return m_widget_info.Description(); }
+  std::string DeviceId() const { return static_cast<std::ostringstream*>( &(std::ostringstream() << m_widget->Number()) )->str(); }
+  std::string Description() const { return m_name + " path: " + m_path + " id: " + DeviceId(); }
   UartWidget* GetDevice() {return m_widget.get(); }
 
  protected:
@@ -49,7 +53,9 @@ class UartDmxDevice : public Device {
 
  private:
   std::auto_ptr<UartWidget> m_widget;
-  const UartWidgetInfo m_widget_info;
+  std::string m_name;
+  std::string m_path;
+  unsigned int m_device_id;
   unsigned int m_breakt;
   unsigned int m_malft;
 };

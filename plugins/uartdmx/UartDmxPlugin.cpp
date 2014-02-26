@@ -19,10 +19,14 @@
  * Copyright (C) 2014 Richard Ash
  */
 
+#include <fcntl.h>
+#include <errno.h>
+
 #include <vector>
 #include <string>
 
 #include "ola/StringUtils.h"
+#include "ola/io/IOUtils.h"
 #include "olad/Preferences.h"
 #include "olad/PluginAdaptor.h"
 #include "plugins/uartdmx/UartDmxPlugin.h"
@@ -42,41 +46,42 @@ const char UartDmxPlugin::DEFAULT_MALF[] = "100";
 const char UartDmxPlugin::K_MALF[] = "malf";
 const char UartDmxPlugin::PLUGIN_NAME[] = "UART native DMX";
 const char UartDmxPlugin::PLUGIN_PREFIX[] = "uartdmx";
-
-/**
- * Attempt to start a device and, if successfull, register it
- * Ownership of the UartDmxDevice is transfered to us here.
- */
-void UartDmxPlugin::AddDevice(UartDmxDevice *device) {
-  // Check if device is working before adding
-  if (device->GetDevice()->SetupOutput() == false) {
-    OLA_WARN << "Unable to setup device for output, device ignored "
-             << device->Description();
-    delete device;
-    return;
-  }
-
-  if (device->Start()) {
-      m_devices.push_back(device);
-      m_plugin_adaptor->RegisterDevice(device);
-  } else {
-    OLA_WARN << "Failed to start UART " << device->Description();
-    delete device;
-  }
-}
+const char UartDmxPlugin::K_DEVICE[] = "device";
 
 
 /**
- * Fetch a list of all UARTS and create a new device for each of them.
+ * Start the plug-in, using only the configured device (we cannot sensibly scan for
+ * UARTs!) Stolen from the opendmx plugin
  */
 bool UartDmxPlugin::StartHook() {
-  typedef vector<UartWidgetInfo> UartInfoVector;
-  UartWidgetInfoVector widgets;
-  UartWidget::Widgets(&widgets);
+  vector<string> devices = m_preferences->GetMultipleValue(K_DEVICE);
+  vector<string>::const_iterator iter = devices.begin();
 
-  UartWidgetInfoVector::const_iterator iter;
-  for (iter = widgets.begin(); iter != widgets.end(); ++iter) {
-    AddDevice(new UartDmxDevice(this, *iter, GetFrequency()));
+  // start counting device ids from 0
+  unsigned int device_id = 0;
+
+  for (; iter != devices.end(); ++iter) {
+    // first check if it's there
+    int fd;
+    if (ola::io::Open(*iter, O_WRONLY, &fd)) {
+      close(fd);
+      UartDmxDevice *device = new UartDmxDevice(
+          this,
+          PLUGIN_NAME,
+          *iter,
+          device_id++,
+          GetBreak(),
+          GetMalf());
+      if (device->Start()) {
+        m_devices.push_back(device);
+        m_plugin_adaptor->RegisterDevice(device);
+      } else {
+        OLA_WARN << "Failed to start UartDevice for " << *iter;
+        delete device;
+      }
+    } else {
+      OLA_WARN << "Could not open " << *iter << " " << strerror(errno);
+    }
   }
   return true;
 }

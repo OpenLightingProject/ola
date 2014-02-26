@@ -20,6 +20,9 @@
  */
 
 #include <math.h>
+
+#include <unistd.h>
+
 #include <string>
 
 #include "ola/Clock.h"

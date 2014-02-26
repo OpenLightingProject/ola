@@ -32,15 +32,19 @@ namespace uartdmx {
 using std::string;
 
 UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
-                             const UartWidgetInfo &widget_info,
+                             const std::string &name,
+                             const std::string &path,
+                             unsigned int device_id,
                              unsigned int breakt,
-							 unsigned int malft)
-    : Device(owner, widget_info.Description()),
-      m_widget_info(widget_info),
+                             unsigned int malft)
+    : Device(owner, name),
+      m_name(name),
+      m_path(path),
+      m_device_id(device_id),
       m_breakt(breakt),
       m_malft(malft){
   m_widget.reset(
-      new UartWidget(widget_info.Name()));
+      new UartWidget(name));
 }
 
 UartDmxDevice::~UartDmxDevice() {

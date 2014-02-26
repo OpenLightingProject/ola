@@ -69,6 +69,7 @@ class UartWidgetInfo {
 
  private:
     std::string m_name;
+
 };
 
 
@@ -90,6 +91,7 @@ class UartWidget {
     /** Get the widget's device name */
     std::string Name() const { return m_name; }
 
+    int Number() const { return m_number; }
     std::string Description() const {
       return m_name;
     }
@@ -102,10 +104,7 @@ class UartWidget {
 
     /** Check if the widget is open */
     bool IsOpen() const;
-
-    /** Reset the communications line */
-    bool Reset();
-
+#if 0
     /** Setup communications line for 8N2 traffic */
     bool SetLineProperties();
 
@@ -120,7 +119,7 @@ class UartWidget {
 
     /** Purge TX & RX buffers */
     bool PurgeBuffers();
-
+#endif
     /** Toggle communications line BREAK condition on/off */
     bool SetBreak(bool on);
 
@@ -142,10 +141,11 @@ class UartWidget {
  private:
     std::string m_name;
 
-	/**
-	 * variable to hold the Unix file descriptor used to open and manipulate
-	 * the port. Set to -2 when port is not open.
-	 */
+    int m_number;   // a number to tell different ports apart (in the future)
+	 /**
+	  * variable to hold the Unix file descriptor used to open and manipulate
+	  * the port. Set to -2 when port is not open.
+	  */
     int m_filed;
 };
 }  // namespace uartdmx
