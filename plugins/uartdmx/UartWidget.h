@@ -69,17 +69,8 @@ class UartWidget {
     /** Check if the widget is open */
     bool IsOpen() const;
 #if 0
-    /** Setup communications line for 8N2 traffic */
-    bool SetLineProperties();
-
     /** Set 250kbps baud rate */
     bool SetBaudRate();
-
-    /** Disable flow control */
-    bool SetFlowControl();
-
-    /** Clear the RTS bit */
-    bool ClearRts();
 
     /** Purge TX & RX buffers */
     bool PurgeBuffers();

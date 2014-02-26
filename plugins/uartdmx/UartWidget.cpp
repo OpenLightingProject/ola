@@ -43,6 +43,7 @@
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
 #include "plugins/uartdmx/UartWidget.h"
+#include "plugins/uartdmx/UartLinuxHelper.h"
 
 namespace ola {
 namespace plugin {
@@ -89,42 +90,6 @@ bool UartWidget::IsOpen() const {
   return (m_filed > 0) ? true : false;
 }
 /*
-bool UartWidget::SetLineProperties() {
-  if (ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }
-}
-
-bool UartWidget::SetBaudRate() {
-  if (ftdi_set_baudrate(&m_handle, 250000) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }
-}
-
-bool UartWidget::SetFlowControl() {
-  if (ftdi_setflowctrl(&m_handle, SIO_DISABLE_FLOW_CTRL) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }
-}
-
-bool UartWidget::ClearRts() {
-  if (ftdi_setrts(&m_handle, 0) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }
-}
-
 bool UartWidget::PurgeBuffers() {
   if (ftdi_usb_purge_buffers(&m_handle) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -177,7 +142,7 @@ bool UartWidget::Read(unsigned char *buff, int size) {
 
 /**
  * Setup our device for DMX send
- * Mainly used to test if device is working correctly
+ * Also used to test if device is working correctly
  * before AddDevice()
  */
 bool UartWidget::SetupOutput() {
@@ -197,7 +162,6 @@ bool UartWidget::SetupOutput() {
   cfmakeraw(&my_tios);		// make it a binary data port
 
   my_tios.c_cflag |= CLOCAL;	// port is local, no flow control
-
   my_tios.c_cflag &= ~CSIZE;
   my_tios.c_cflag |= CS8;		// 8 bit chars
   my_tios.c_cflag &= ~PARENB;	// no parity
@@ -210,107 +174,21 @@ bool UartWidget::SetupOutput() {
     return false;
 	}
 
-/*  if (Reset() == false) {
-    OLA_WARN << "Error Resetting widget";
-    return false;
-  }
-
-  if (SetBaudRate() == false) {
-    OLA_WARN << "Error Setting baudrate";
-    return false;
-  }
-
-  if (SetLineProperties() == false) {
-    OLA_WARN << "Error setting line properties";
-    return false;
-  }
-
-  if (SetFlowControl() == false) {
-    OLA_WARN << "Error setting flow control";
-    return false;
-  }
-
+/*
   if (PurgeBuffers() == false) {
     OLA_WARN << "Error purging buffers";
     return false;
   }
-
-  if (ClearRts() == false) {
-    OLA_WARN << "Error clearing rts";
+*/
+  /* Do the platform-specific initialisation of the Uart to 250kbaud */
+  if (!LinuxHelper::SetDmxBaud(m_filed)) {
+    OLA_WARN << "Failed to set baud rate to 250k";
     return false;
   }
-*/
+  /* everything must have worked to get here */
   return true;
 }
 
-#if 0
-/**
- * Build a list of all attached ftdi devices
- */
-void UartWidget::Widgets(vector<UartWidgetInfo> *widgets) {
-  int i = -1;
-  widgets->clear();
-  struct ftdi_context *ftdi = ftdi_new();
-  if (!ftdi) {
-    OLA_WARN << "Failed to allocated FTDI context";
-    return;
-  }
-
-  struct ftdi_device_list* list = NULL;
-  int devices_found = ftdi_usb_find_all(ftdi, &list, UartWidget::VID,
-                                        UartWidget::PID);
-  if (devices_found < 0)
-    OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
-
-  while (list != NULL) {
-    struct usb_device *dev = list->dev;
-    list = list->next;
-    i++;
-
-    if (!dev) {
-      OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
-      continue;
-    }
-
-    char serial[256];
-    char name[256];
-    char vendor[256];
-
-    int r = ftdi_usb_get_strings(ftdi, dev,
-                                 vendor, sizeof(vendor),
-                                 name, sizeof(name),
-                                 serial, sizeof(serial));
-
-    // libftdi doesn't enumerate error codes, -9 is 'get serial number failed'
-    if (r < 0 && r != -9) {
-      OLA_WARN << "Unable to fetch string information from USB device: " <<
-        ftdi_get_error_string(ftdi);
-      continue;
-    }
-
-    string v = string(vendor);
-    string sname = string(name);
-    string sserial = string(serial);
-    if (sserial == "?" || r == -9) {
-      // this means there wasn't a serial number
-      sserial.clear();
-    }
-    OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
-      "', Serial: '" << sserial << "'";
-    std::transform(v.begin(), v.end(), v.begin(), ::toupper);
-    if (std::string::npos != v.find("FTDI") ||
-        std::string::npos != v.find("KMTRONIC") ||
-        std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(UartWidgetInfo(sname, sserial, i));
-    } else {
-      OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
-    }
-  }
-
-  ftdi_list_free(&list);
-  ftdi_free(ftdi);
-}
-#endif
 }  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola
