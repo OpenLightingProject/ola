@@ -248,7 +248,7 @@ class PidDescriptor {
     ANY_SUB_DEVICE,  // 0 - 512 or ALL_DEVICES
     NON_BROADCAST_SUB_DEVICE,  // 0 - 512
     SPECIFIC_SUB_DEVICE,  // 1- 512
-  } sub_device_valiator;
+  } sub_device_validator;
 
   PidDescriptor(const std::string &name,
                 uint16_t value,
@@ -256,8 +256,8 @@ class PidDescriptor {
                 const ola::messaging::Descriptor *get_response,
                 const ola::messaging::Descriptor *set_request,
                 const ola::messaging::Descriptor *set_response,
-                sub_device_valiator get_sub_device_range,
-                sub_device_valiator set_sub_device_range)
+                sub_device_validator get_sub_device_range,
+                sub_device_validator set_sub_device_range)
       : m_name(name),
         m_pid_value(value),
         m_get_request(get_request),
@@ -290,11 +290,11 @@ class PidDescriptor {
   const ola::messaging::Descriptor *m_get_response;
   const ola::messaging::Descriptor *m_set_request;
   const ola::messaging::Descriptor *m_set_response;
-  sub_device_valiator m_get_subdevice_range;
-  sub_device_valiator m_set_subdevice_range;
+  sub_device_validator m_get_subdevice_range;
+  sub_device_validator m_set_subdevice_range;
 
   bool RequestValid(uint16_t sub_device,
-                    const sub_device_valiator &validator) const;
+                    const sub_device_validator &validator) const;
 
   DISALLOW_COPY_AND_ASSIGN(PidDescriptor);
 };

@@ -435,7 +435,7 @@ void EnttecPortImpl::HandleParameters(const uint8_t *data,
 
 
 /**
- * Handle an incomming frame.
+ * Handle an incoming frame.
  * @param data the incoming data buffer
  * @param length the length of the data buffer.
  *
@@ -443,8 +443,8 @@ void EnttecPortImpl::HandleParameters(const uint8_t *data,
  * The second byte is the start code
  * The remaining bytes are the actual data.
  */
-void EnttecPortImpl::HandleIncommingDataMessage(const uint8_t *data,
-                                                unsigned int length) {
+void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
+                                               unsigned int length) {
   bool waiting_for_dub_response = (
       m_branch_callback != NULL || (
       (m_rdm_request_callback && IsDUBRequest(m_pending_request))));
@@ -461,7 +461,7 @@ void EnttecPortImpl::HandleIncommingDataMessage(const uint8_t *data,
   // Do we still get the timeout message or is this the only response?
   // I need to check with Nic.
   if (data[0]) {
-    OLA_WARN << "Incomming frame corrupted";
+    OLA_WARN << "Incoming frame corrupted";
     return;
   }
 
@@ -857,7 +857,7 @@ void EnttecUsbProWidgetImpl::HandleLabel(EnttecPortImpl *port,
   } else if (ops.rdm_timeout == label) {
     port->HandleRDMTimeout(length);
   } else if (ops.recv_dmx == label) {
-    port->HandleIncommingDataMessage(data, length);
+    port->HandleIncomingDataMessage(data, length);
   } else if (ops.cos_dmx == label) {
     port->HandleDMXDiff(data, length);
   } else {

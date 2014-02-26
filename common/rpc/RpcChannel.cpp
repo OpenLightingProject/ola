@@ -292,7 +292,7 @@ bool RpcChannel::SendMsg(RpcMessage *msg) {
 
 
 /*
- * Allocate an incomming message buffer
+ * Allocate an incoming message buffer
  * @param size the size of the new buffer to allocate
  * @returns the size of the new buffer
  */
