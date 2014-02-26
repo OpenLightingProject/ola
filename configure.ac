@@ -419,6 +419,7 @@ AS_IF([test "x$have_microhttpd" = xyes],
                  [define if libmicrohttpd is installed])])
 
 # Java API, this requires Maven
+enable_java_libs="no"
 AC_ARG_ENABLE(
   [java-libs],
   [AS_HELP_STRING([--enable-java-libs], [Build the Java interface])])
@@ -467,11 +468,13 @@ AS_IF([test "x$have_liblo" = xyes],
       [AC_DEFINE([HAVE_LIBLO], [1], [define if liblo is installed])])
 
 # Python API
+enable_python_libs="no"
 AC_ARG_ENABLE(
   [python-libs],
   [AS_HELP_STRING([--enable-python-libs], [Build the Python API Module])])
 
 # RDM tests, if requested this enables the Python API as well.
+enable_rdm_tests="no"
 AC_ARG_ENABLE(
   [rdm-tests],
   [AS_HELP_STRING(
@@ -718,7 +721,11 @@ ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 Prefix: '${prefix}'
 Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
 Linker: '${LD} ${LDFLAGS} ${LIBS}'
+
+Python API: ${enable_python_libs}
+Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
+RDM Responder Tests: ${enable_rdm_tests}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
