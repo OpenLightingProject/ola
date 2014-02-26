@@ -64,6 +64,7 @@ bool UartDmxPlugin::StartHook() {
     // first check if it's there
     int fd;
     if (ola::io::Open(*iter, O_WRONLY, &fd)) {
+      // can open device, so shut the temporary file descriptor
       close(fd);
       UartDmxDevice *device = new UartDmxDevice(
           this,
@@ -72,6 +73,15 @@ bool UartDmxPlugin::StartHook() {
           device_id++,
           GetBreak(),
           GetMalf());
+      // got a device, now lets see if we can configure it before we announce it to the world
+      if (device->GetWidget()->SetupOutput() == false) {
+        // that failed, but other devices may succeed
+        OLA_WARN << "Unable to setup device for output, device ignored "
+                 << device->Description();
+        delete device;
+        continue;
+      }
+      // OK, device is good to go
       if (device->Start()) {
         m_devices.push_back(device);
         m_plugin_adaptor->RegisterDevice(device);
