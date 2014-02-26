@@ -82,7 +82,7 @@ class PidStoreLoader {
         const ola::rdm::pid::Field &field);
     const ola::messaging::FieldDescriptor *GroupFieldToFieldDescriptor(
         const ola::rdm::pid::Field &field);
-    PidDescriptor::sub_device_valiator ConvertSubDeviceValidator(
+    PidDescriptor::sub_device_validator ConvertSubDeviceValidator(
         const ola::rdm::pid::SubDeviceRange &sub_device_range);
     void CleanStore();
 };

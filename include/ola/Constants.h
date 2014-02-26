@@ -53,7 +53,7 @@ static const uint8_t DMX_MAX_SLOT_VALUE = 255;
 static const uint8_t DMX512_START_CODE = 0;
 
 /**
- * @brief The default port which olad listens on for incomming RPC connections.
+ * @brief The default port which olad listens on for incoming RPC connections.
  */
 static const int OLA_DEFAULT_PORT = 9010;
 

@@ -113,7 +113,7 @@ class EnttecPortImpl
     // Called by the EnttecUsbProWidgetImpl
     void HandleRDMTimeout(unsigned int length);
     void HandleParameters(const uint8_t *data, unsigned int length);
-    void HandleIncommingDataMessage(const uint8_t *data, unsigned int length);
+    void HandleIncomingDataMessage(const uint8_t *data, unsigned int length);
     void HandleDMXDiff(const uint8_t *data, unsigned int length);
 
  private:

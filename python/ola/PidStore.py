@@ -824,7 +824,7 @@ def SubDeviceValidator(args):
   return True
 
 
-def NonBroadcastSubDeviceValiator(args):
+def NonBroadcastSubDeviceValidator(args):
   """Ensure the sub device is in the range 0 - 512."""
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device > MAX_VALID_SUB_DEVICE):
@@ -1114,7 +1114,7 @@ class PidStore(object):
     elif range == Pids_pb2.ROOT_OR_ALL_SUBDEVICE:
       return SubDeviceValidator
     elif range == Pids_pb2.ROOT_OR_SUBDEVICE:
-      return NonBroadcastSubDeviceValiator
+      return NonBroadcastSubDeviceValidator
     elif range == Pids_pb2.ONLY_SUBDEVICES:
       return SpecificSubDeviceValidator
 

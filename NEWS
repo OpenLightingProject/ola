@@ -26,6 +26,9 @@ X/Y/2013 ola-0.9.0
  * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
  * Added a Version API.
  * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
+ * Renamed valiator(sic) to validator, incomming(sic) to incoming, mimimun(sic)
+   to minimum and overiding(sic) to overriding, all of which may or may not
+   have impact to APIs.
 
  RDM Tests:
  * Added more RDM responder tests to cover some slot related edge cases.
