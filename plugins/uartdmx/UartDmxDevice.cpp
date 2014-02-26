@@ -33,14 +33,14 @@ using std::string;
 
 UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
                              const UartWidgetInfo &widget_info,
-                             unsigned int frequency)
+                             unsigned int breakt,
+							 unsigned int malft)
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
-      m_frequency(frequency) {
+      m_breakt(breakt),
+      m_malft(malft){
   m_widget.reset(
-      new UartWidget(widget_info.Serial(),
-                     widget_info.Name(),
-                     widget_info.Id()));
+      new UartWidget(widget_info.Name()));
 }
 
 UartDmxDevice::~UartDmxDevice() {
@@ -51,8 +51,8 @@ UartDmxDevice::~UartDmxDevice() {
 bool UartDmxDevice::StartHook() {
   AddPort(new UartDmxOutputPort(this,
                                 m_widget.get(),
-                                m_widget_info.Id(),
-                                m_frequency));
+                                m_breakt,
+								m_malft));
   return true;
 }
 }  // namespace uartdmx

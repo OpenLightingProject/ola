@@ -38,7 +38,7 @@ namespace uartdmx {
 class UartDmxOutputPort : public ola::BasicOutputPort {
  public:
     UartDmxOutputPort(UartDmxDevice *parent,
-                      FtdiWidget *device,
+                      UartWidget *device,
                       unsigned int id,
                       unsigned int freq)
         : BasicOutputPort(parent, id),
@@ -55,7 +55,7 @@ class UartDmxOutputPort : public ola::BasicOutputPort {
     std::string Description() const { return m_device->Description(); }
 
  private:
-    FtdiWidget *m_device;
+    UartWidget *m_device;
     UartDmxThread m_thread;
 };
 }  // namespace uartdmx

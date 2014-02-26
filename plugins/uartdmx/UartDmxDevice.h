@@ -36,11 +36,11 @@ namespace uartdmx {
 class UartDmxDevice : public Device {
  public:
   UartDmxDevice(AbstractPlugin *owner,
-                const FtdiWidgetInfo &widget_info,
-                unsigned int frequency);
+                const UartWidgetInfo &widget_info,
+                unsigned int breakt,
+				unsigned int malft);
   ~UartDmxDevice();
 
-  std::string DeviceId() const { return m_widget->Serial(); }
   std::string Description() const { return m_widget_info.Description(); }
   UartWidget* GetDevice() {return m_widget.get(); }
 
@@ -50,7 +50,8 @@ class UartDmxDevice : public Device {
  private:
   std::auto_ptr<UartWidget> m_widget;
   const UartWidgetInfo m_widget_info;
-  unsigned int m_frequency;
+  unsigned int m_breakt;
+  unsigned int m_malft;
 };
 }  // namespace uartdmx
 }  // namespace plugin

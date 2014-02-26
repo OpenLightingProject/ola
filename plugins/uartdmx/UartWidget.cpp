@@ -29,6 +29,7 @@
 
 #include <strings.h>
 #include <assert.h>
+#include <termios.h>
 
 #include <string>
 #include <algorithm>
@@ -45,67 +46,43 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-UartWidget::UartWidget(const string& serial,
-                       const string& name,
-                       uint32_t id)
-    : m_serial(serial),
-      m_name(name),
-      m_id(id) {
-  bzero(&m_handle, sizeof(struct ftdi_context));
-  ftdi_init(&m_handle);
+UartWidget::UartWidget(const string& name)
+    : m_name(name) {
+  m_filed = -2;
 }
 
 UartWidget::~UartWidget() {
   if (IsOpen())
     Close();
-  ftdi_deinit(&m_handle);
 }
 
 
 bool UartWidget::Open() {
-  if (Serial().empty()) {
-    OLA_WARN << Name() << " has no serial number, "
-      "might cause issues with multiple devices";
-    if (ftdi_usb_open(&m_handle, UartWidget::VID, UartWidget::PID) < 0) {
-      OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-      return false;
-    } else {
-      return true;
-    }
+  OLA_DEBUG << "Opened serial port " << Name();
+  m_filed = open(Name().c_str(), O_WRONLY);
+  if (m_filed == -1) {
+    OLA_WARN << Name() << " failed to open";
+    return false;
   } else {
-    OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
-    if (ftdi_usb_open_desc(&m_handle, UartWidget::VID, UartWidget::PID,
-                           Name().c_str(), Serial().c_str()) < 0) {
-      OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-      return false;
-    } else {
-      return true;
-    }
+    return true;
   }
 }
 
 bool UartWidget::Close() {
-  if (ftdi_usb_close(&m_handle) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+  if (close(m_filed) > 0) {
+    OLA_WARN << Name() << " " << perror("");
+	m_filed = -2;
     return false;
   } else {
+	m_filed = -2;
     return true;
   }
 }
 
 bool UartWidget::IsOpen() const {
-  return (m_handle.usb_dev != NULL) ? true : false;
+  return (m_filed > 0) ? true : false;
 }
-
-bool UartWidget::Reset() {
-  if (ftdi_usb_reset(&m_handle) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }
-}
-
+/*
 bool UartWidget::SetLineProperties() {
   if (ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -141,7 +118,7 @@ bool UartWidget::ClearRts() {
     return true;
   }
 }
-
+*/
 bool UartWidget::PurgeBuffers() {
   if (ftdi_usb_purge_buffers(&m_handle) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -197,13 +174,36 @@ bool UartWidget::Read(unsigned char *buff, int size) {
  * before AddDevice()
  */
 bool UartWidget::SetupOutput() {
-  // Setup the widget
+  struct termios my_tios;
+  // Setup the Uart for DMX
   if (Open() == false) {
     OLA_WARN << "Error Opening widget";
     return false;
   }
+  /* do the port settings */
 
-  if (Reset() == false) {
+  if (tcgetattr(m_filed, &my_tios) < 0)	// get current settings
+    {
+    OLA_WARN << "Failed to get POSIX port settings";
+    return false;
+	}
+  cfmakeraw(&my_tios);		// make it a binary data port
+
+  my_tios.c_cflag |= CLOCAL;	// port is local, no flow control
+
+  my_tios.c_cflag &= ~CSIZE;
+  my_tios.c_cflag |= CS8;		// 8 bit chars
+  my_tios.c_cflag &= ~PARENB;	// no parity
+  my_tios.c_cflag |= CSTOPB;	// 2 stop bit for DMX
+  my_tios.c_cflag &= ~CRTSCTS;	// no CTS/RTS flow control
+
+  if (tcsetattr(m_filed, TCSANOW, &my_tios) < 0)	// apply settings
+    {
+    OLA_WARN << "Failed to get POSIX port settings";
+    return false;
+	}
+
+/*  if (Reset() == false) {
     OLA_WARN << "Error Resetting widget";
     return false;
   }
@@ -232,7 +232,7 @@ bool UartWidget::SetupOutput() {
     OLA_WARN << "Error clearing rts";
     return false;
   }
-
+*/
   return true;
 }
 

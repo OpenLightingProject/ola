@@ -42,28 +42,24 @@ class UartDmxPlugin : public Plugin {
       : Plugin(plugin_adaptor) {
   }
 
-  ola_plugin_id Id() const { return OLA_PLUGIN_FTDIDMX; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_UARTDMX; }
   std::string Name() const { return PLUGIN_NAME; }
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
   // This plugin is disabled unless explicitly enabled by a user.
   bool DefaultMode() const { return false; }
 
-  void ConflictsWith(std::set<ola_plugin_id> *conflict_set) {
-    conflict_set->insert(ola::OLA_PLUGIN_USBPRO);
-    conflict_set->insert(ola::OLA_PLUGIN_OPENDMX);
-  }
-
   std::string Description() const;
 
  private:
-  typedef std::vector<UartDmxDevice*> FtdiDeviceVector;
-  FtdiDeviceVector m_devices;
+  typedef std::vector<UartDmxDevice*> UartDeviceVector;
+  UartDeviceVector m_devices;
 
   void AddDevice(UartDmxDevice *device);
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
-  unsigned int GetFrequency();
+  unsigned int GetBreak();
+  unsigned int GetMalf();
 
   static const char DEFAULT_MALF[];
   static const char K_MALF[];

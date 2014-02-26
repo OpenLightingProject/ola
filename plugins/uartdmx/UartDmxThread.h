@@ -13,25 +13,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * FtdiDmxThread.h
- * The FTDI usb chipset DMX plugin for ola
+ * DmxThread.h
+ * The DMX through a UART plugin for ola
  * Copyright (C) 2011 Rui Barreiros
- */
+ * Copyright (C) 2014 Richard Ash
+		 */
 
-#ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
-#define PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
+#ifndef PLUGINS_UARTDMX_UARTDMXTHREAD_H_
+#define PLUGINS_UARTDMX_UARTDMXTHREAD_H_
 
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
 
 namespace ola {
 namespace plugin {
-namespace ftdidmx {
+namespace uartdmx {
 
-class FtdiDmxThread : public ola::thread::Thread {
+class UartDmxThread : public ola::thread::Thread {
  public:
-    FtdiDmxThread(FtdiWidget *widget, unsigned int frequency);
-    ~FtdiDmxThread();
+    UartDmxThread(UartWidget *widget, unsigned int frequency);
+    ~UartDmxThread();
 
     bool Stop();
     void *Run();
@@ -41,7 +42,7 @@ class FtdiDmxThread : public ola::thread::Thread {
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
-    FtdiWidget *m_widget;
+    UartWidget *m_widget;
     bool m_term;
     int unsigned m_frequency;
     DmxBuffer m_buffer;
@@ -53,7 +54,7 @@ class FtdiDmxThread : public ola::thread::Thread {
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
 };
-}  // namespace ftdidmx
+}  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
+#endif  // PLUGINS_UARTDMX_UARTDMXTHREAD_H_

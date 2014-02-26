@@ -40,47 +40,35 @@ namespace plugin {
 namespace uartdmx {
 
 /**
- * This class holds information about an attached ftdi chip
+ * This class holds information about a serial port
  */
 class UartWidgetInfo {
  public:
-    UartWidgetInfo(const std::string &name,
-                   const std::string &serial,
-                   int unsigned id)
-      : m_name(name),
-        m_serial(serial),
-        m_id(id) {
+    UartWidgetInfo(const std::string &name)
+      : m_name(name) {
     }
 
     UartWidgetInfo(const UartWidgetInfo &info)
-      : m_name(info.Name()),
-        m_serial(info.Serial()),
-        m_id(info.Id()) {
+      : m_name(info.Name()) {
     }
 
     virtual ~UartWidgetInfo() {}
 
     std::string Name() const { return m_name; }
-    std::string Serial() const { return m_serial; }
-    int unsigned Id() const { return m_id; }
 
     std::string Description() const {
-      return m_name + " with serial number : " + m_serial + " ";
+      return m_name;
     }
 
     UartWidgetInfo& operator=(const UartWidgetInfo &other) {
       if (this != &other) {
         m_name = other.Name();
-        m_serial = other.Serial();
-        m_id = other.Id();
       }
       return *this;
     }
 
  private:
     std::string m_name;
-    std::string m_serial;
-    int unsigned m_id;
 };
 
 
@@ -89,33 +77,21 @@ class UartWidgetInfo {
  */
 class UartWidget {
  public:
-    static const int VID = 0x0403;  // FTDI Vendor ID
-    static const int PID = 0x6001;  // FTDI Product ID
 
     /**
      * Construct a new UartWidget instance for one widget.
-     * @param serial The widget's USB serial number
-     * @param name The widget's USB name (description)
-     * @param id The ID of the device (used only when FTD2XX is the backend)
+     * @param name The device file name (path) of the serial port
      */
-    UartWidget(const std::string &serial,
-               const std::string &name,
-               uint32_t id = 0);
+    UartWidget(const std::string &name);
 
     /** Destructor */
     virtual ~UartWidget();
 
-    /** Get the widget's USB serial number */
-    std::string Serial() const { return m_serial; }
-
-    /** Get the widget's USB name */
+    /** Get the widget's device name */
     std::string Name() const { return m_name; }
 
-    /** Get the widget's FTD2XX ID number */
-    uint32_t Id() const { return m_id; }
-
     std::string Description() const {
-      return m_name + " with serial number : " + m_serial +" ";
+      return m_name;
     }
 
     /** Open the widget */
@@ -164,15 +140,13 @@ class UartWidget {
     static void Widgets(std::vector<UartWidgetInfo> *widgets);
 
  private:
-    std::string m_serial;
     std::string m_name;
-    uint32_t m_id;
 
-#ifdef FTD2XX
-    FT_HANDLE m_handle;
-#else
-    struct ftdi_context m_handle;
-#endif
+	/**
+	 * variable to hold the Unix file descriptor used to open and manipulate
+	 * the port. Set to -2 when port is not open.
+	 */
+    int m_filed;
 };
 }  // namespace uartdmx
 }  // namespace plugin

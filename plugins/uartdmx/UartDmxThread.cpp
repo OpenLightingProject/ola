@@ -32,7 +32,7 @@ namespace ola {
 namespace plugin {
 namespace uartdmx {
 
-UartDmxThread::UartDmxThread(FtdiWidget *widget, unsigned int frequency)
+UartDmxThread::UartDmxThread(UartWidget *widget, unsigned int frequency)
   : m_granularity(UNKNOWN),
     m_widget(widget),
     m_term(false),
