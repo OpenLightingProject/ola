@@ -40,10 +40,11 @@ class UartDmxOutputPort : public ola::BasicOutputPort {
     UartDmxOutputPort(UartDmxDevice *parent,
                       UartWidget *device,
                       unsigned int id,
-                      unsigned int freq)
+                      unsigned int breakt,
+                      unsigned int malft)
         : BasicOutputPort(parent, id),
           m_device(device),
-          m_thread(device, freq) {
+          m_thread(device, breakt, malft) {
       m_thread.Start();
     }
     ~UartDmxOutputPort() { m_thread.Stop(); }

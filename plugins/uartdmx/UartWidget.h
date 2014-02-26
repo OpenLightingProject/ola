@@ -40,61 +40,25 @@ namespace plugin {
 namespace uartdmx {
 
 /**
- * This class holds information about a serial port
- */
-class UartWidgetInfo {
- public:
-    UartWidgetInfo(const std::string &name)
-      : m_name(name) {
-    }
-
-    UartWidgetInfo(const UartWidgetInfo &info)
-      : m_name(info.Name()) {
-    }
-
-    virtual ~UartWidgetInfo() {}
-
-    std::string Name() const { return m_name; }
-
-    std::string Description() const {
-      return m_name;
-    }
-
-    UartWidgetInfo& operator=(const UartWidgetInfo &other) {
-      if (this != &other) {
-        m_name = other.Name();
-      }
-      return *this;
-    }
-
- private:
-    std::string m_name;
-
-};
-
-
-/**
- * An UART widget
+ * An UART widget (i.e. a serial port with suitable hardware attached)
  */
 class UartWidget {
  public:
 
     /**
      * Construct a new UartWidget instance for one widget.
-     * @param name The device file name (path) of the serial port
+     * @param path The device file path of the serial port
      */
-    UartWidget(const std::string &name);
+    UartWidget(const std::string &path, int device_id);
 
     /** Destructor */
     virtual ~UartWidget();
 
     /** Get the widget's device name */
-    std::string Name() const { return m_name; }
+    std::string Name() const { return m_path; }
+    std::string Description() const { return m_path; }
 
-    int Number() const { return m_number; }
-    std::string Description() const {
-      return m_name;
-    }
+    int Number() const { return m_device_id; }
 
     /** Open the widget */
     bool Open();
@@ -132,16 +96,10 @@ class UartWidget {
     /** Setup device for DMX Output **/
     bool SetupOutput();
 
-    /**
-     * Build a list of available ftdi widgets.
-     * @param widgets a pointer to a vector of UartWidgetInfo objects.
-     */
-    static void Widgets(std::vector<UartWidgetInfo> *widgets);
-
  private:
-    std::string m_name;
+    std::string m_path;
 
-    int m_number;   // a number to tell different ports apart (in the future)
+    int m_device_id;   // a number to tell different ports apart (in the future)
 	 /**
 	  * variable to hold the Unix file descriptor used to open and manipulate
 	  * the port. Set to -2 when port is not open.

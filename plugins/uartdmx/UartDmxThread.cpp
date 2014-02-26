@@ -35,11 +35,12 @@ namespace ola {
 namespace plugin {
 namespace uartdmx {
 
-UartDmxThread::UartDmxThread(UartWidget *widget, unsigned int frequency)
+UartDmxThread::UartDmxThread(UartWidget *widget, unsigned int breakt, unsigned int malft)
   : m_granularity(UNKNOWN),
     m_widget(widget),
     m_term(false),
-    m_frequency(frequency) {
+    m_breakt(breakt),
+    m_malft(malft) {
 }
 
 UartDmxThread::~UartDmxThread() {
@@ -80,8 +81,8 @@ void *UartDmxThread::Run() {
   CheckTimeGranularity();
   DmxBuffer buffer;
 
-  int frameTime = static_cast<int>(floor(
-    (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
+//  int frameTime = static_cast<int>(floor(
+//    (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
   // Setup the widget
   if (!m_widget->IsOpen())
@@ -99,13 +100,13 @@ void *UartDmxThread::Run() {
       buffer.Set(m_buffer);
     }
 
-    clock.CurrentTime(&ts1);
+//    clock.CurrentTime(&ts1);
 
     if (!m_widget->SetBreak(true))
       goto framesleep;
 
     if (m_granularity == GOOD)
-      usleep(DMX_BREAK);
+      usleep(m_breakt);
 
     if (!m_widget->SetBreak(false))
       goto framesleep;
@@ -118,9 +119,10 @@ void *UartDmxThread::Run() {
 
   framesleep:
     // Sleep for the remainder of the DMX frame time
-    clock.CurrentTime(&ts2);
-    TimeInterval elapsed = ts2 - ts1;
-
+//    clock.CurrentTime(&ts2);
+//    TimeInterval elapsed = ts2 - ts1;
+    usleep(m_malft);
+#if 0
     if (m_granularity == GOOD) {
       while (elapsed.InMilliSeconds() < frameTime) {
         usleep(1000);
@@ -133,6 +135,7 @@ void *UartDmxThread::Run() {
         elapsed = ts2 - ts1;
       }
     }
+#endif
   }
   return NULL;
 }

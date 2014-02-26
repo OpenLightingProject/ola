@@ -31,7 +31,7 @@ namespace uartdmx {
 
 class UartDmxThread : public ola::thread::Thread {
  public:
-    UartDmxThread(UartWidget *widget, unsigned int frequency);
+    UartDmxThread(UartWidget *widget, unsigned int breakt, unsigned int malft);
     ~UartDmxThread();
 
     bool Stop();
@@ -44,7 +44,8 @@ class UartDmxThread : public ola::thread::Thread {
     TimerGranularity m_granularity;
     UartWidget *m_widget;
     bool m_term;
-    int unsigned m_frequency;
+    int unsigned m_breakt;
+    int unsigned m_malft;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
@@ -52,7 +53,7 @@ class UartDmxThread : public ola::thread::Thread {
     void CheckTimeGranularity();
 
     static const uint32_t DMX_MAB = 16;
-    static const uint32_t DMX_BREAK = 110;
+//    static const uint32_t DMX_BREAK = 110;
 };
 }  // namespace uartdmx
 }  // namespace plugin

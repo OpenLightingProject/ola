@@ -44,7 +44,7 @@ UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
       m_breakt(breakt),
       m_malft(malft){
   m_widget.reset(
-      new UartWidget(name));
+      new UartWidget(path, device_id));
 }
 
 UartDmxDevice::~UartDmxDevice() {
@@ -55,8 +55,9 @@ UartDmxDevice::~UartDmxDevice() {
 bool UartDmxDevice::StartHook() {
   AddPort(new UartDmxOutputPort(this,
                                 m_widget.get(),
+                                m_device_id,
                                 m_breakt,
-								m_malft));
+                                m_malft));
   return true;
 }
 }  // namespace uartdmx

@@ -51,8 +51,9 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-UartWidget::UartWidget(const string& name)
-    : m_name(name) {
+UartWidget::UartWidget(const string& path, int device_id)
+    : m_path(path),
+      m_device_id(device_id) {
   m_filed = -2;
 }
 
@@ -64,7 +65,7 @@ UartWidget::~UartWidget() {
 
 bool UartWidget::Open() {
   OLA_DEBUG << "Opened serial port " << Name();
-  m_filed = open(Name().c_str(), O_WRONLY);
+  m_filed = open(m_path.c_str(), O_WRONLY);
   if (m_filed == -1) {
     OLA_WARN << Name() << " failed to open";
     return false;
