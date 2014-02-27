@@ -95,6 +95,10 @@
 #include "plugins/ftdidmx/FtdiDmxPlugin.h"
 #endif
 
+#ifdef USE_UART
+#include "plugins/uartdmx/UartDmxPlugin.h"
+#endif
+
 #ifdef HAVE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
@@ -215,5 +219,10 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::ftdidmx::FtdiDmxPlugin(m_plugin_adaptor));
 #endif
+#ifdef USE_UART
+  m_plugins.push_back(
+      new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
+#endif
+
 }
 }  // namespace ola
