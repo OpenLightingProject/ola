@@ -361,7 +361,7 @@ int main(int argc, char *argv[]) {
   DevicesManagerInterface::BeginConnect();
 
   OLA_INFO << "Running...";
-  ss.RegisterSingleTimeout(1000, NewSingleCallback(DisplayReminder, &reader));
+  ss.RegisterSingleTimeout(3000, NewSingleCallback(DisplayReminder, &reader));
   ss.Run();
   reader.Stop();
   return ola::EXIT_OK;
