@@ -43,8 +43,8 @@ def Usage():
 
     -d, --debug               Print extra debug info.
     -h, --help                Display this help message and exit.
-    --pid_file                The PID data store to use.
-    --skip_queued_messages    Don't attempt to fetch queued messages for the
+    -p, --pid-location        The directory to read PID definitions from.
+    --skip-queued-messages    Don't attempt to fetch queued messages for the
                               device.
     -u, --universe <universe> Universe number.""")
 
@@ -54,14 +54,14 @@ def main():
     opts, args = getopt.getopt(
         sys.argv[1:],
         'dhp:u:',
-        ['debug', 'help', 'skip_queued_messages', 'pid_file=', 'universe='])
+        ['debug', 'help', 'skip-queued-messages', 'pid-location=', 'universe='])
   except getopt.GetoptError, err:
     print str(err)
     Usage()
     sys.exit(2)
 
   universe = None
-  pid_file = None
+  pid_location = None
   level = logging.INFO
   skip_queued_messages = False
   for o, a in opts:
@@ -70,10 +70,10 @@ def main():
     elif o in ('-h', '--help'):
       Usage()
       sys.exit()
-    elif o in ('--skip_queued_messages'):
+    elif o in ('--skip-queued-messages'):
       skip_queued_messages = True
-    elif o in ('--pid_file',):
-      pid_file = a
+    elif o in ('-p', '--pid-location',):
+      pid_location = a
     elif o in ('-u', '--universe'):
       universe = int(a)
 
@@ -86,7 +86,7 @@ def main():
       format='%(message)s')
 
   client_wrapper = ClientWrapper()
-  pid_store = PidStore.GetStore(pid_file)
+  pid_store = PidStore.GetStore(pid_location)
   controller = ModelCollector(client_wrapper, pid_store)
   data = controller.Run(universe, skip_queued_messages)
   pprint.pprint(data)

@@ -60,7 +60,7 @@ def ParseOptions():
                     help='Also log to the file named FILE.uid.timestamp.')
   parser.add_option('--list-tests', action='store_true',
                     help='Display a list of all tests')
-  parser.add_option('-p', '--pid-store', metavar='FILE',
+  parser.add_option('-p', '--pid-location', metavar='DIR',
                     help='The location of the PID definitions.')
   parser.add_option('-s', '--skip-check', action='store_true',
                     help='Skip the check for multiple devices.')
@@ -204,7 +204,7 @@ def main():
 
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
-  pid_store = PidStore.GetStore(options.pid_store,
+  pid_store = PidStore.GetStore(options.pid_location,
                                 ('pids.proto','draft_pids.proto'))
   wrapper = ClientWrapper()
 

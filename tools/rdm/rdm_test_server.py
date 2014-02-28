@@ -945,14 +945,14 @@ def parse_options():
     production lighting rig.
   """)
   parser = OptionParser(usage, description=description)
-  parser.add_option('-p', '--pid_store', metavar='FILE',
-                    help='The file to load the PID definitions from.')
-  parser.add_option('-d', '--www_dir', default=DataLocation.location,
+  parser.add_option('-p', '--pid-location', metavar='DIR',
+                    help='The directory to load the PID definitions from.')
+  parser.add_option('-d', '--www-dir', default=DataLocation.location,
                     help='The root directory to serve static files.')
-  parser.add_option('-l', '--log_directory',
+  parser.add_option('-l', '--log-directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')
-  parser.add_option('--world_writeable',
+  parser.add_option('--world-writeable',
                     action="store_true",
                     help='Make the log directory world writeable.')
 
@@ -987,7 +987,8 @@ def SetupLogDirectory(options):
 def main():
   options = parse_options()
   settings.update(options.__dict__)
-  pid_store = PidStore.GetStore(options.pid_store, ('pids.proto'))
+  pid_store = PidStore.GetStore(options.pid_location,
+                                ('pids.proto','draft_pids.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 
