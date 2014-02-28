@@ -262,7 +262,7 @@ def main():
                                  pid_store,
                                  wrapper,
                                  options.timestamp,
-                                 options.delay)
+                                 options.inter_test_delay)
 
   for test_class in test_classes:
     runner.RegisterTest(test_class)
