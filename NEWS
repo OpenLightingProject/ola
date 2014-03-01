@@ -1,4 +1,4 @@
-X/Y/2013 ola-0.9.0
+1/3/2014 ola-0.9.0
  Features:
  * Added priority support for input ports - #259
  * Added DNS-SD registration support with both Bonjour and Avahi so that the
