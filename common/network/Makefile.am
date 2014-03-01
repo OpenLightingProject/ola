@@ -17,7 +17,7 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            SocketHelper.h \
                            TCPConnector.cpp \
                            TCPSocket.cpp
-libolanetwork_la_LIBADD = -lresolv
+libolanetwork_la_LIBADD = $(RESOLV_LIBS)
 
 
 if USING_WIN32

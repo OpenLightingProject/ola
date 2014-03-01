@@ -241,14 +241,7 @@ ACX_PTHREAD([
             [AC_MSG_ERROR([Missing pthread, please install it])])
 
 # resolv
-SAVED_LDFLAGS=$LDFLAGS
-LDFLAGS="$LDFLAGS -lresolv"
-AC_LINK_IFELSE(
-  [AC_LANG_PROGRAM([#include <resolv.h>],
-    [res_init()])],
-  [TEST_LIBS="$TEST_LIBS -lresolv"] [],
-  [AC_MSG_ERROR([Missing resolv, please install it])])
-LDFLAGS=$SAVED_LDFLAGS
+ACX_RESOLV()
 
 # uuid
 # We've had to revert to os matching here because ossp uuid conflicts with the
@@ -724,6 +717,7 @@ ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 Prefix: '${prefix}'
 Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
 Linker: '${LD} ${LDFLAGS} ${LIBS}'
+Python: ${PYTHON}
 
 Python API: ${enable_python_libs}
 Java API: ${enable_java_libs}

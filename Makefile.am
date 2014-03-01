@@ -30,6 +30,7 @@ EXTRA_DIST = \
   config/maven.m4 \
   config/ola.m4 \
   config/pkg.m4 \
+  config/resolv.m4 \
   config/stl_hash.m4 \
   GPL \
   LGPL \
