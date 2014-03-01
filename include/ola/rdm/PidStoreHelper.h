@@ -23,7 +23,7 @@
  * @addtogroup rdm_pids
  * @{
  * @file PidStoreHelper.h
- * @brief Provices helper methods for loading / accessing the pid store, and
+ * @brief Provides helper methods for loading / accessing the pid store, and
  * dealing with pids.
  * @}
  */

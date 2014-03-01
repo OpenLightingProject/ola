@@ -19,6 +19,11 @@ X/Y/2013 ola-0.9.0
  * Added a version option to all flags based commands; removed the -v verify
    short option from ola_recorder that clashed.
  * Added a dummy responder which implements the draft E1.37-2 PIDs.
+ * Standardised all the following long arguments from _ to - in programs and
+   completion: --skip_queued_messages --www_dir --log_directory
+   --world_writeable
+ * Standardised on --pid-location in Python programs and
+   completion.
 
  API:
  * Added the ability to specify the priority of the DMX data in the C++ API -

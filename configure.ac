@@ -419,10 +419,11 @@ AS_IF([test "x$have_microhttpd" = xyes],
                  [define if libmicrohttpd is installed])])
 
 # Java API, this requires Maven
-enable_java_libs="no"
 AC_ARG_ENABLE(
   [java-libs],
-  [AS_HELP_STRING([--enable-java-libs], [Build the Java interface])])
+  [AS_HELP_STRING([--enable-java-libs], [Build the Java interface])],
+  ,
+  enable_java_libs="no")
 AS_IF([test "x$enable_java_libs" = xyes],
       [AC_PROG_JAVA_CC()
        MAVEN_SUPPORT([2.2.1])])
@@ -479,18 +480,20 @@ AS_IF([test "x$have_liblo" = xyes],
       [AC_DEFINE([HAVE_LIBLO], [1], [define if liblo is installed])])
 
 # Python API
-enable_python_libs="no"
 AC_ARG_ENABLE(
   [python-libs],
-  [AS_HELP_STRING([--enable-python-libs], [Build the Python API Module])])
+  [AS_HELP_STRING([--enable-python-libs], [Build the Python API Module])],
+  ,
+  enable_python_libs="no")
 
 # RDM tests, if requested this enables the Python API as well.
-enable_rdm_tests="no"
 AC_ARG_ENABLE(
   [rdm-tests],
   [AS_HELP_STRING(
       [--enable-rdm-tests],
-      [Install the RDM responder tests, adds --enable-python-libs])])
+      [Install the RDM responder tests, adds --enable-python-libs])],
+  ,
+  enable_rdm_tests="no")
 AS_IF([test "x$enable_rdm_tests" = xyes], [enable_python_libs="yes"])
 AM_CONDITIONAL([INSTALL_RDM_TESTS], [test "x$enable_rdm_tests" = xyes])
 
