@@ -538,6 +538,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
           'u': $('#universe_options').val(),
           'uid': $('#devices_list').val(),
           'w': $('#write_delay').val(),
+          'i': $('#inter_test_delay').val(),
           'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
                 $('#dmx_frame_rate').val() : 0),
           'c': $('#slot_count').val(),
@@ -779,6 +780,7 @@ RDMTests.prototype.validate_form = function() {
   }
 
   if (!(this.isNumberField($('#write_delay')) &&
+        this.isNumberField($('#inter_test_delay')) &&
         this.isNumberField($('#dmx_frame_rate')) &&
         this.isNumberField($('#slot_count')))) {
     return false;

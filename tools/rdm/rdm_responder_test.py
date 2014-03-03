@@ -77,7 +77,7 @@ def ParseOptions():
   parser.add_option('-u', '--universe', default=0,
                     type='int',
                     help='The universe number to use, default is universe 0.')
-  parser.add_option('--inter-test-delay', default=0,
+  parser.add_option('-i', '--inter-test-delay', default=0,
                     type='int',
                     help='The delay in ms to wait between tests, defaults to 0.')
 
@@ -253,16 +253,17 @@ def main():
     test_filter = set(options.tests.split(','))
 
   logging.info(
-      'Starting tests, universe %d, UID %s, broadcast write delay %dms' %
-      (options.universe, options.uid, options.broadcast_write_delay))
+      'Starting tests, universe %d, UID %s, broadcast write delay %dms, '
+      'inter-test delay %dms' % (options.universe, options.uid,
+      options.broadcast_write_delay, options.inter_test_delay))
 
   runner = TestRunner.TestRunner(options.universe,
                                  options.uid,
                                  options.broadcast_write_delay,
+                                 options.inter_test_delay,
                                  pid_store,
                                  wrapper,
-                                 options.timestamp,
-                                 options.inter_test_delay)
+                                 options.timestamp)
 
   for test_class in test_classes:
     runner.RegisterTest(test_class)
