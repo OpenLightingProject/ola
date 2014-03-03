@@ -326,10 +326,11 @@ class TestRunner(object):
         tests_completed += 1
         continue
 
+      if (tests_completed > 0):
+        time.sleep(self._inter_test_delay / 1000)
+      
       test.Run()
 
-      time.sleep(self._inter_test_delay / 1000)
-      
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
       tests_completed += 1
     return tests, device
