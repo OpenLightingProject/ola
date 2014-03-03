@@ -39,7 +39,7 @@ class DMXSender(object):
     self._send = True
 
     if (frame_rate > 0 and slot_count > 0):
-      logging.info('Sending %d fps of DMX data with %d slots' %
+      logging.info('Sending %d FPS of DMX data with %d slots' %
                    (frame_rate, self._slot_count))
       for i in xrange(0, self._slot_count):
         self._data.append(0)

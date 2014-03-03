@@ -253,7 +253,7 @@ class RDMTestThread(Thread):
 
     dmx_sender = None
     if dmx_frame_rate > 0 and slot_count > 0:
-      logging.info('Starting DMXServer with slot cout %d and fps of %d' %
+      logging.info('Starting DMXSender with slot count %d and FPS of %d' %
                    (slot_count, dmx_frame_rate))
       dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate, slot_count)
 
@@ -274,6 +274,7 @@ class RDMTestThread(Thread):
     end_time = datetime.now()
     test_parameters = {
       'broadcast_write_delay': broadcast_write_delay,
+      'inter_test_delay': inter_test_delay,
       'dmx_frame_rate': dmx_frame_rate,
       'dmx_slot_count': slot_count,
     }
@@ -749,7 +750,7 @@ class RunTestsHandler(OLAServerRequestHandler):
       else:
         test_filter = set(test_filter.split(','))
 
-    broadcast_write_delay = request.GetParam('w')
+    broadcast_write_delay = request.GetParam('broadcast_write_delay')
     if broadcast_write_delay is None:
       broadcast_write_delay = 0
     try:
@@ -757,7 +758,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid broadcast write delay')
 
-    inter_test_delay = request.GetParam('i')
+    inter_test_delay = request.GetParam('inter_test_delay')
     if inter_test_delay is None:
       inter_test_delay = 0
     try:
@@ -765,17 +766,17 @@ class RunTestsHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid inter-test delay')
 
-    slot_count = request.GetParam('c')
+    slot_count = request.GetParam('slot_count')
     if slot_count is None:
       slot_count = 0
     try:
       slot_count = int(slot_count)
     except ValueError:
       raise ServerException('Invalid slot count')
-    if slot_count not in range(1, 513):
+    if slot_count not in range(0, 513):
       raise ServerException('Slot count not in range 0..512')
 
-    dmx_frame_rate = request.GetParam('f')
+    dmx_frame_rate = request.GetParam('dmx_frame_rate')
     if dmx_frame_rate is None:
       dmx_frame_rate = 0
     try:
