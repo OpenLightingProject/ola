@@ -25,6 +25,7 @@ import binascii
 import math
 import ola.RDMConstants
 import os
+import socket
 import struct
 import sys
 from google.protobuf import text_format
@@ -425,6 +426,9 @@ class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
     super(IPV4, self).__init__(name, 'I', 0xffffffff, **kwargs)
+
+  def Unpack(self, data):
+    return socket.inet_ntoa(data)
 
 
 class MACAtom(FixedSizeAtom):
