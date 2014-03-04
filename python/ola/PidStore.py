@@ -421,7 +421,7 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
-#TODO(Peter): pretty print this
+#TODO(Peter): parse dotted decimal format addresses back into this.
 class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
