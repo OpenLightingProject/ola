@@ -4,6 +4,7 @@ X/Y/2014 ola-0.9.1
  API:
 
  RDM Tests:
+ * Added the inter-test delay option to the Web UI too.
 
  Bugs:
 

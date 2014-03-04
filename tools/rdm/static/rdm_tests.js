@@ -537,12 +537,12 @@ RDMTests.prototype.run_tests = function(test_filter) {
       {
           'u': $('#universe_options').val(),
           'uid': $('#devices_list').val(),
-          'w': $('#write_delay').val(),
-          'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
-                $('#dmx_frame_rate').val() : 0),
-          'c': $('#slot_count').val(),
-          'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
-                $('#slot_count').val() : 128),
+          'broadcast_write_delay': $('#write_delay').val(),
+          'inter_test_delay': $('#inter_test_delay').val(),
+          'dmx_frame_rate': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+                             $('#dmx_frame_rate').val() : 0),
+          'slot_count': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+                         $('#slot_count').val() : 0),
           't': test_filter.join(',')
       },
       function(data) {
@@ -778,14 +778,18 @@ RDMTests.prototype.validate_form = function() {
     return false;
   }
 
-  if (!(this.isNumberField($('#write_delay')) &&
-        this.isNumberField($('#dmx_frame_rate')) &&
-        this.isNumberField($('#slot_count')))) {
+  if (!this.isNumberField($('#write_delay')) ||
+      !this.isNumberField($('#inter_test_delay')) ||
+      ($('#rdm-tests-send_dmx_in_bg').attr('checked') &&
+       (!this.isNumberField($('#dmx_frame_rate')) ||
+        !this.isNumberField($('#slot_count'))))) {
+    rdmtests.display_dialog_message('Error', 'Invalid options entered');
     return false;
   }
 
   var slot_count_val = parseFloat($('#slot_count').val());
-  if (slot_count_val < 1 || slot_count_val > 512) {
+  if ($('#rdm-tests-send_dmx_in_bg').attr('checked') &&
+      (slot_count_val < 1 || slot_count_val > 512)) {
     rdmtests.display_dialog_message(
         'Error',
         'Invalid number of slots (expected: [1-512])');

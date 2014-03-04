@@ -209,27 +209,27 @@ def GetTestClasses(module):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, broadcast_write_delay, pid_store,
-               wrapper, timestamp = False, delay = 0):
+  def __init__(self, universe, uid, broadcast_write_delay, inter_test_delay,
+               pid_store, wrapper, timestamp = False):
     """Create a new TestRunner.
 
     Args:
       universe: The universe number to use
       uid: The UID object to test
       broadcast_write_delay: the delay to use after sending broadcast sets
+      inter_test_delay: the delay to use between tests
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
       timestamp: true to print timestamps with each test
-      delay: Delay in ms inbetween tests
     """
     self._universe = universe
     self._uid = uid
     self._broadcast_write_delay = broadcast_write_delay
+    self._inter_test_delay = inter_test_delay
     self._timestamp = timestamp
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
-    self._delay = delay
 
     # maps device properties to the tests that provide them
     self._property_map = {}
@@ -328,7 +328,9 @@ class TestRunner(object):
 
       test.Run()
 
-      time.sleep(self._delay / 1000)
+      #Use inter_test_delay on all but the last test
+      if test != tests[-1]:
+        time.sleep(self._inter_test_delay / 1000)
       
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
       tests_completed += 1
