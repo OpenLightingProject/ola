@@ -80,10 +80,19 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
 
   switch (state) {
     case GroupSizeCalculator::INSUFFICIENT_TOKENS:
+      SetError("Insufficient tokens");
+      return NULL;
     case GroupSizeCalculator::EXTRA_TOKENS:
+      SetError("Extra tokens");
+      return NULL;
     case GroupSizeCalculator::MISMATCHED_TOKENS:
+      SetError("Mismatched tokens");
+      return NULL;
     case GroupSizeCalculator::MULTIPLE_VARIABLE_GROUPS:
+      SetError("Multiple variable groups");
+      return NULL;
     case GroupSizeCalculator::NESTED_VARIABLE_GROUPS:
+      SetError("Nested variable groups");
       return NULL;
     case GroupSizeCalculator::SINGLE_VARIABLE_GROUP:
     case GroupSizeCalculator::NO_VARIABLE_GROUPS:

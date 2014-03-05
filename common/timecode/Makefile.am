@@ -17,5 +17,5 @@ TimeCodeTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 TimeCodeTester_LDADD = $(COMMON_TESTING_LIBS) \
                        ./libtimecode.la \
                        ../base/libolabase.la \
-                        ../utils/libolautils.la
+                       ../utils/libolautils.la
 

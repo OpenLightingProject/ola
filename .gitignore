@@ -95,6 +95,7 @@ plugins/artnet/artnet_loadtest
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
 protoc/ola_protoc
+python/examples/ola_rdm_set.py
 python/ola/PidStoreLocation.py
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh

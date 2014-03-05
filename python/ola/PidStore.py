@@ -421,7 +421,6 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
-#TODO(Peter): parse dotted decimal format addresses back into this.
 class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
@@ -429,6 +428,12 @@ class IPV4(IntAtom):
 
   def Unpack(self, data):
     return socket.inet_ntoa(data)
+
+  def Pack(self, args):
+    #TODO(Peter): See if this can be tidied up, as it's probably repeating
+    #stuff
+    return super(IntAtom, self).Pack(struct.unpack("!I",
+                                                   socket.inet_aton(args[0])))
 
 
 class MACAtom(FixedSizeAtom):
