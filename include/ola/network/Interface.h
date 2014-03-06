@@ -24,6 +24,7 @@
 #ifdef WIN32
 // TODO(Peter): Do something else
 #else
+#include <sys/socket.h>
 #include <net/if_arp.h>
 #ifndef ARPHRD_VOID
 // Not defined on FreeBSD

@@ -25,6 +25,7 @@
 #ifdef WIN32
 typedef uint32_t in_addr_t;
 #else
+#include <netinet/in.h>
 #include <resolv.h>
 #endif
 
