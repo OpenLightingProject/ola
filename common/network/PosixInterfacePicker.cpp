@@ -205,7 +205,11 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
+#ifdef __FreeBSD__
+        interface.index = ifrcopy.ifr_index;
+#else
         interface.index = ifrcopy.ifr_ifindex;
+#endif
       }
     }
 #endif

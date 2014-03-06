@@ -30,9 +30,19 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
-                  net/if_arp.h net/route.h sys/sysctl.h sys/types.h sys/uio.h \
+                  sys/sysctl.h sys/types.h sys/uio.h \
                   sysexits.h])
 AC_CHECK_HEADERS([random])
+
+# These both need stuff in sys/socket.h and sys/types.h on FreeBSD
+AC_CHECK_HEADERS([sys/socket.h sys/types.h net/if_arp.h net/route.h], [], [],
+                 [[#ifdef HAVE_SYS_SOCKET_H
+                     #include <sys/socket.h>
+                   #endif
+                   #ifdef HAVE_SYS_TYPES_H
+                     #include <sys/types.h>
+                   #endif
+                  ]])
 
 # These both need sa_family_t from bits/sockaddr.h
 AC_CHECK_HEADERS([bits/sockaddr.h linux/netlink.h linux/rtnetlink.h], [], [],
