@@ -35,7 +35,7 @@ AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
 AC_CHECK_HEADERS([random])
 
 # These both need stuff in sys/socket.h and sys/types.h on FreeBSD
-AC_CHECK_HEADERS([sys/socket.h sys/types.h net/if_arp.h net/route.h], [], [],
+AC_CHECK_HEADERS([net/if_arp.h net/route.h], [], [],
                  [[#ifdef HAVE_SYS_SOCKET_H
                      #include <sys/socket.h>
                    #endif
