@@ -34,6 +34,12 @@
 // TODO(Peter): Do something else, possibly define the type locally
 #else
 #include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
+  #ifdef __NetBSD__  // NetBSD doesn't have net/ethernet.h
+  #include <net/if.h>
+  #include <net/if_ether.h>
+  #else
+  #include <net/ethernet.h>
+  #endif
 #include <net/ethernet.h>
 #endif
 
