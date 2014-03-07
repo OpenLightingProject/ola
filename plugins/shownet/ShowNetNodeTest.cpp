@@ -27,6 +27,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/shownet/ShowNetNode.h"
@@ -44,6 +45,7 @@ using std::string;
 class ShowNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ShowNetNodeTest);
   CPPUNIT_TEST(testHandlePacket);
+  CPPUNIT_TEST(testExtractPacket);
   CPPUNIT_TEST(testPopulatePacket);
   CPPUNIT_TEST(testSendAndReceive);
   CPPUNIT_TEST_SUITE_END();
@@ -52,12 +54,13 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
     void setUp();
 
     void testHandlePacket();
+    void testExtractPacket();
     void testPopulatePacket();
     void testSendAndReceive();
     void UpdateData(unsigned int universe);
     void SendAndReceiveForUniverse(unsigned int universe);
  private:
-    bool m_hander_called;
+    int m_hander_called;
     std::auto_ptr<ShowNetNode> m_node;
 
     static const uint8_t EXPECTED_PACKET[];
@@ -90,14 +93,13 @@ const uint8_t ShowNetNodeTest::EXPECTED_PACKET2[] = {
 
 void ShowNetNodeTest::setUp() {
   m_node.reset(new ShowNetNode(""));
-  m_hander_called = false;
 }
 
 /*
  * Called when there is new data
  */
 void ShowNetNodeTest::UpdateData(unsigned int) {
-  m_hander_called = true;
+  m_hander_called++;
 }
 
 /*
@@ -120,72 +122,104 @@ void ShowNetNodeTest::testHandlePacket() {
       ola::NewCallback(this, &ShowNetNodeTest::UpdateData, universe));
 
   // short packets
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, 0));
-  OLA_ASSERT_FALSE(m_hander_called);
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, 5));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, 0));
+  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, 5));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // invalid header
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // add a header
   packet.type = HostToNetwork(static_cast<uint16_t>(COMPRESSED_DMX_PACKET));
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // add invalid indexBlocks
   compressed_dmx->indexBlock[0] = 4;
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // invalid block length
   compressed_dmx->indexBlock[0] = ShowNetNode::MAGIC_INDEX_OFFSET;
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // add a valid netslot
   compressed_dmx->netSlot[0] = 1;  // universe 0
-  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // valid block length, but not enough data
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
   compressed_dmx->indexBlock[1] = ShowNetNode::MAGIC_INDEX_OFFSET;
   OLA_ASSERT_EQ(false,
-                m_node->HandlePacket(packet,
+                m_node->HandlePacket(&packet,
                 header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // now do a block length larger than the packet
   compressed_dmx->indexBlock[1] = 100 + ShowNetNode::MAGIC_INDEX_OFFSET;
   OLA_ASSERT_EQ(false,
-      m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_FALSE(m_hander_called);
+      m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // test invalid slot size
   compressed_dmx->indexBlock[1] = (ShowNetNode::MAGIC_INDEX_OFFSET +
       sizeof(ENCODED_DATA));
 
   OLA_ASSERT_EQ(false,
-      m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_FALSE(m_hander_called);
+      m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // check a valid packet, but different universe
   compressed_dmx->netSlot[0] = 513;  // universe 1
   compressed_dmx->slotSize[0] = sizeof(EXPECTED_DATA);
   OLA_ASSERT_EQ(false,
-      m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_FALSE(m_hander_called);
+      m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
+  OLA_ASSERT_EQ(0, m_hander_called);
 
   // now check with the correct universe
   compressed_dmx->netSlot[0] = 1;  // universe 0
   OLA_ASSERT_EQ(true,
-      m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_TRUE(m_hander_called);
+      m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
+  OLA_ASSERT_EQ(1, m_hander_called);
   OLA_ASSERT_EQ(0,
       memcmp(expected_dmx.GetRaw(), received_data.GetRaw(),
              expected_dmx.Size()));
+}
+
+
+void ShowNetNodeTest::testExtractPacket() {
+  unsigned int universe = 10;
+  DmxBuffer received_data;
+  m_node->SetHandler(
+      universe,
+      &received_data,
+      ola::NewCallback(this, &ShowNetNodeTest::UpdateData, universe));
+
+  // Packets from https://code.google.com/p/open-lighting/issues/detail?id=218
+  const uint8_t packet1[] = {
+    0x80, 0x8f, 0x01, 0xb6, 0xc0, 0xa8,  // header
+    0x01, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // net slots
+    0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // slot sizes
+    0x0b, 0x00, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // index blocks
+    0x00, 0x71, 0x00, 0x00, 0x00, 0x04,
+    0x49, 0x6e, 0x70, 0x75, 0x74, 0x00, 0x00, 0x00, 0x00,  // name
+    0x05, 0x11, 0x4e, 0x32, 0x3c, 0x05, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,
+    0xfe, 0x00
+  };
+  DmxBuffer expected_data1;
+  expected_data1.Blackout();
+  const uint8_t expected_dmx_data1[] = {17, 78, 50, 60, 5};
+  expected_data1.SetRange(0, expected_dmx_data1, sizeof(expected_dmx_data1));
+
+  OLA_ASSERT_TRUE(m_node->HandlePacket(
+      reinterpret_cast<const shownet_packet*>(packet1), sizeof(packet1)));
+  OLA_ASSERT_EQ(1, m_hander_called);
+  ASSERT_DATA_EQUALS(__LINE__, expected_data1.GetRaw(), expected_data1.Size(),
+                     received_data.GetRaw(), received_data.Size());
 }
 
 /*
@@ -244,26 +278,26 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
 
   // zero first
   size = m_node->BuildCompressedPacket(&packet, universe, zero_buffer);
-  m_node->HandlePacket(packet, size);
+  m_node->HandlePacket(&packet, size);
   OLA_ASSERT(received_data == zero_buffer);
 
   // send a test packet
   size = m_node->BuildCompressedPacket(&packet, universe, buffer1);
-  m_node->HandlePacket(packet, size);
+  m_node->HandlePacket(&packet, size);
   OLA_ASSERT_EQ(
       0,
       memcmp(buffer1.GetRaw(), received_data.GetRaw(), buffer1.Size()));
 
   // send another test packet
   size = m_node->BuildCompressedPacket(&packet, universe, buffer2);
-  m_node->HandlePacket(packet, size);
+  m_node->HandlePacket(&packet, size);
   OLA_ASSERT_EQ(
       0,
       memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));
 
   // check that we don't mix up universes
   size = m_node->BuildCompressedPacket(&packet, universe + 1, buffer1);
-  m_node->HandlePacket(packet, size);
+  m_node->HandlePacket(&packet, size);
   OLA_ASSERT_EQ(
       0,
       memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));

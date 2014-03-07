@@ -217,28 +217,28 @@ void ShowNetNode::SocketReady() {
 
   // skip packets sent by us
   if (source != m_interface.ip_address)
-    HandlePacket(packet, packet_size);
+    HandlePacket(&packet, packet_size);
 }
 
 
 /*
  * Handle a shownet packet
  */
-bool ShowNetNode::HandlePacket(const shownet_packet &packet,
+bool ShowNetNode::HandlePacket(const shownet_packet *packet,
                                unsigned int packet_size) {
-  unsigned int header_size = sizeof(packet) - sizeof(packet.data);
+  unsigned int header_size = sizeof(*packet) - sizeof(packet->data);
 
   if (packet_size <= header_size) {
     OLA_WARN << "Skipping small shownet packet received, size=" << packet_size;
     return false;
   }
 
-  if (NetworkToHost(packet.type) != COMPRESSED_DMX_PACKET) {
+  if (NetworkToHost(packet->type) != COMPRESSED_DMX_PACKET) {
     OLA_INFO << "Skipping a packet that isn't a compressed shownet packet";
     return false;
   }
 
-  const shownet_compressed_dmx *dmx_packet = &packet.data.compressed_dmx;
+  const shownet_compressed_dmx *dmx_packet = &packet->data.compressed_dmx;
   return HandleCompressedPacket(dmx_packet, packet_size - header_size);
 }
 
