@@ -1,3 +1,4 @@
+*.core
 *.gcda
 *.gcno
 *.la

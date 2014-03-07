@@ -154,11 +154,13 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     }
 
     if ((interface.name == last_dl_iface_name) && hwaddr) {
-      if (hwlen != MACAddress::LENGTH) {
-        OLA_WARN << "hwlen was not expected length; got " <<
-        static_cast<int>(hwlen) << ", expecting " << MACAddress::LENGTH;
+      if (hwlen == MACAddress::LENGTH) {
+        interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
+      } else {
+        OLA_WARN << "hwlen was not expected length, so didn't obtain MAC "
+                 << "address; got " << static_cast<int>(hwlen)
+                 << ", expecting " << MACAddress::LENGTH;
       }
-      interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
     }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = IPV4Address(sin->sin_addr);
