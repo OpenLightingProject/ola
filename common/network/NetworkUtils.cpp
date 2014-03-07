@@ -328,7 +328,7 @@ bool NameServers(vector<IPV4Address> *name_servers) {
 
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
-  if (res_init() != 0) {
+  if (res_ninit(&_res) != 0) {
     OLA_WARN << "Error getting nameservers";
     return false;
   }
@@ -338,6 +338,8 @@ bool NameServers(vector<IPV4Address> *name_servers) {
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
+
+  res_nclose(&_res);
 
   return true;
 }
