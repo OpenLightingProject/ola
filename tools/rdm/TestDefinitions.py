@@ -4875,11 +4875,22 @@ class GetLockPin(OptionalParameterTestFixture):
     if response.WasAcked():
       self.SetPropertyFromDict(fields, 'pin_code')
 
-class GetLockPinWithData(TestMixins.GetWithDataMixin,
-                         OptionalParameterTestFixture):
+class GetLockPinWithData(OptionalParameterTestFixture):
   """Get LOCK_PIN with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
+  DATA = 'foo'
+
+  def Test(self):
+    # We can't use the GetWithNoDataMixin because NR_UNSUPPORTED_COMMAND_CLASS
+    # is a valid response here.
+    self.AddIfGetSupported([
+      self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
+        warning='Get %s with data returned an ack' % self.pid.name)
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
                               OptionalParameterTestFixture):
