@@ -76,7 +76,7 @@ class ShowNetNode {
     ola::dmx::RunLengthEncoder m_encoder;
     ola::network::UDPSocket *m_socket;
 
-    bool HandlePacket(const shownet_packet &packet, unsigned int size);
+    bool HandlePacket(const shownet_packet *packet, unsigned int size);
     bool HandleCompressedPacket(const shownet_compressed_dmx *packet,
                                 unsigned int packet_size);
     unsigned int BuildCompressedPacket(shownet_packet *packet,
