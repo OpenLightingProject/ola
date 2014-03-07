@@ -326,20 +326,23 @@ string Hostname() {
 bool NameServers(vector<IPV4Address> *name_servers) {
   // TODO(Peter): Do something on Windows
 
+  struct __res_state res;
+  memset(&res, 0, sizeof(struct __res_state));
+
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
-  if (res_ninit(&_res) != 0) {
+  if (res_ninit(&res) != 0) {
     OLA_WARN << "Error getting nameservers";
     return false;
   }
 
-  for (int32_t i = 0; i < _res.nscount; i++) {
-    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr);
+  for (int32_t i = 0; i < res.nscount; i++) {
+    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr);
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
 
-  res_nclose(&_res);
+  res_nclose(&res);
 
   return true;
 }
