@@ -56,7 +56,7 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
     return INSUFFICIENT_TOKENS;
 
   // this takes care of the easy case where there are no groups
-  if (!m_groups.size()) {
+  if (m_groups.empty()) {
     if (required_tokens == token_count) {
       return NO_VARIABLE_GROUPS;
     } else {
