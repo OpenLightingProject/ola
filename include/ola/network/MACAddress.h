@@ -40,7 +40,6 @@
   #else
   #include <net/ethernet.h>
   #endif
-#include <net/ethernet.h>
 #endif
 
 #ifdef __FreeBSD__
