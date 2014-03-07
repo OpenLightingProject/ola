@@ -27,15 +27,21 @@ AC_LIBTOOL_WIN32_DLL
 AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h net/if.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
-                  sys/sysctl.h sys/types.h sys/uio.h \
-                  sysexits.h])
+                  sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([random])
 
-# These both need stuff in sys/socket.h and sys/types.h on FreeBSD
-AC_CHECK_HEADERS([net/if_arp.h net/route.h], [], [],
+# This needs stuff in sys/param.h on OpenBSD
+AC_CHECK_HEADERS([sys/sysctl.h], [], [],
+                 [[#ifdef HAVE_SYS_PARAM_H
+                     #include <sys/param.h>
+                   #endif
+                  ]])
+
+# These all need stuff in sys/socket.h and sys/types.h on FreeBSD/OpenBSD
+AC_CHECK_HEADERS([net/if.h net/if_arp.h net/route.h], [], [],
                  [[#ifdef HAVE_SYS_SOCKET_H
                      #include <sys/socket.h>
                    #endif
