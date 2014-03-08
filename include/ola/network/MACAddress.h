@@ -21,6 +21,10 @@
 #ifndef INCLUDE_OLA_NETWORK_MACADDRESS_H_
 #define INCLUDE_OLA_NETWORK_MACADDRESS_H_
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 /**
  * @addtogroup network
  * @{
