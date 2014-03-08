@@ -37,6 +37,9 @@ typedef uint32_t in_addr_t;
       defined(HAVE_DECL_PF_ROUTE) && defined(HAVE_DECL_NET_RT_DUMP)
 #define USE_SYSCTL_FOR_DEFAULT_ROUTE 1
 #include <net/route.h>
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 #include <sys/sysctl.h>
 #else
 // Do something else if we don't have Netlink/on Windows
