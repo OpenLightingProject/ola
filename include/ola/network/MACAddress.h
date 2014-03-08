@@ -42,6 +42,9 @@
 #include <net/ethernet.h>
 #endif
 // NetBSD and OpenBSD don't have net/ethernet.h
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
 #ifdef HAVE_NET_IF_H
 #include <net/if.h>
 #endif
