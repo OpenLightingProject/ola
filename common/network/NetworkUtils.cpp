@@ -26,6 +26,9 @@
 typedef uint32_t in_addr_t;
 #else
 #include <netinet/in.h>
+#endif
+
+#ifdef HAVE_RESOLV_H
 #include <resolv.h>
 #endif
 
