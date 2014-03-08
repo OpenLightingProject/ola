@@ -18,9 +18,12 @@
  * Copyright (C) 2005-2014 Simon Newton
  */
 
+#include "ola/network/NetworkUtils.h"
+
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
 
 #ifdef WIN32
 typedef uint32_t in_addr_t;
@@ -52,14 +55,14 @@ typedef uint32_t in_addr_t;
 #include <sstream>
 #include <string>
 #include <vector>
+#include "common/network/NetworkUtilsInternal.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/math/Random.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
-#include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketCloser.h"
-#include "ola/StringUtils.h"
 
 
 namespace ola {

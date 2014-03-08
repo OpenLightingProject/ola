@@ -32,6 +32,7 @@ AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
                   net/if_arp.h net/route.h sys/sysctl.h sys/types.h sys/uio.h \
                   sysexits.h])
+AC_CHECK_HEADERS([winsock2.h])
 AC_CHECK_HEADERS([random])
 
 # These both need sa_family_t from bits/sockaddr.h

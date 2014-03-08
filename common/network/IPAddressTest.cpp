@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "common/network/NetworkUtilsInternal.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"

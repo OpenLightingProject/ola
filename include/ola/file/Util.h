@@ -27,11 +27,7 @@
 namespace ola {
 namespace file {
 
-#ifdef WIN32
-  const char PATH_SEPARATOR = '\\';
-#else
-  const char PATH_SEPARATOR = '/';
-#endif
+extern const char PATH_SEPARATOR;
 
 void FindMatchingFiles(const std::string &directory,
                        const std::string &prefix,
