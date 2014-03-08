@@ -24,7 +24,9 @@
 
 #ifdef WIN32
 typedef uint32_t in_addr_t;
-#else
+#endif
+
+#ifdef HAVE_RESOLV_H
 #include <resolv.h>
 #endif
 

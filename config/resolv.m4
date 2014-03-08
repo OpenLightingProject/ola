@@ -23,6 +23,7 @@
 # -----------------------------------------------------------------------------
 AC_DEFUN([ACX_RESOLV],
 [
+AC_CHECK_HEADERS([resolv.h])
 am_save_LDFLAGS="$LDFLAGS"
 RESOLV_LIBS=""
 
@@ -46,5 +47,24 @@ if test -z "$RESOLV_LIBS"; then
   AC_MSG_ERROR([Missing resolv, please install it])
 fi
 AC_SUBST(RESOLV_LIBS)
+
+# Check for res_ninit
+AC_CHECK_DECLS([res_ninit], [], [], [[
+  #ifdef HAVE_SYS_TYPES_H
+  # include <sys/types.h>
+  #endif
+  #ifdef HAVE_SYS_SOCKET_H
+  # include <sys/socket.h>      /* inet_ functions / structs */
+  #endif
+  #ifdef HAVE_NETINET_IN_H
+  # include <netinet/in.h>      /* inet_ functions / structs */
+  #endif
+  #ifdef HAVE_ARPA_NAMESER_H
+  #  include <arpa/nameser.h> /* DNS HEADER struct */
+  #endif
+  #ifdef HAVE_RESOLV_H
+  # include <resolv.h>
+  #endif
+  ]])
 LDFLAGS="$am_save_LDFLAGS"
 ])
