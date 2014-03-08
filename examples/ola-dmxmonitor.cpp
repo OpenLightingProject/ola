@@ -30,9 +30,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>

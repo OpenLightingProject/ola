@@ -23,8 +23,8 @@
 #ifdef WIN32
 // TODO(Peter): Do something else
 #else
+#include <sys/types.h>  // Required by FreeBSD, order is important for OpenBSD
 #include <sys/socket.h>  // Required by FreeBSD
-#include <sys/types.h>  // Required by FreeBSD
 #include <net/if_arp.h>
 #endif
 

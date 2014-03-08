@@ -30,6 +30,9 @@
   #endif
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+  #include <sys/types.h>  // Required by OpenBSD
+#endif
 #ifdef HAVE_SYS_SOCKET_H
   #include <sys/socket.h>  // order is important for FreeBSD
 #endif
