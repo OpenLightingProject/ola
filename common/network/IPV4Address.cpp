@@ -21,9 +21,11 @@
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
-#include <ola/network/IPV4Address.h>
-#include <ola/network/NetworkUtils.h>
 #include <string>
+
+#include "ola/network/IPV4Address.h"
+#include "ola/network/NetworkUtils.h"
+#include "common/network/NetworkUtilsInternal.h"
 
 namespace ola {
 namespace network {

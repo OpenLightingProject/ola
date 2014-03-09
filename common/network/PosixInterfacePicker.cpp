@@ -49,6 +49,7 @@
 #include <string>
 #include <vector>
 
+#include "common/network/NetworkUtilsInternal.h"
 #include "common/network/PosixInterfacePicker.h"
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"

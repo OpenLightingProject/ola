@@ -21,12 +21,6 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 #define INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <netinet/in.h>
-#endif
-
 #include <ola/network/Interface.h>
 #include <string>
 #include <vector>

@@ -44,8 +44,8 @@
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/SchedulerInterface.h>
-
 
 namespace ola {
 namespace network {
@@ -110,6 +110,8 @@ class HealthCheckedConnection {
 
     bool SendNextHeartbeat();
     void UpdateReceiveTimer();
+
+    DISALLOW_COPY_AND_ASSIGN(HealthCheckedConnection);
 };
 }  // namespace network
 }  // namespace ola

@@ -21,12 +21,6 @@
 #ifndef INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 #define INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <arpa/inet.h>
-#endif
-
 #include <ola/network/Interface.h>
 #include <ola/network/IPV4Address.h>
 #include <string>
@@ -35,18 +29,6 @@
 
 namespace ola {
 namespace network {
-
-/**
- * Return the length of a sockaddr
- */
-unsigned int SockAddrLen(const struct sockaddr &sa);
-
-/**
- * Convert a string to a struct in_addr
- */
-bool StringToAddress(const std::string &address, struct in_addr *addr);
-
-std::string AddressToString(const struct in_addr &addr);
 
 /**
  * @return true if we're big endian, false otherwise.

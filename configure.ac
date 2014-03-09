@@ -31,6 +31,7 @@ AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h 
 AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
+AC_CHECK_HEADERS([winsock2.h])
 AC_CHECK_HEADERS([random])
 
 # This needs stuff in sys/param.h on OpenBSD
