@@ -19,7 +19,6 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <unistd.h>
 #include <string>
 
 #include "ola/Callback.h"

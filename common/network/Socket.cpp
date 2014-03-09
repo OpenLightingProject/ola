@@ -198,7 +198,7 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
-  destination.sin_addr = ip.Address();
+  destination.sin_addr.s_addr = ip.AsInt();
   ssize_t bytes_sent = sendto(
     m_fd,
     reinterpret_cast<const char*>(buffer),
@@ -239,7 +239,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
-  destination.sin_addr = ip.Address();
+  destination.sin_addr.s_addr = ip.AsInt();
 
   struct msghdr message;
   message.msg_name = &destination;
@@ -291,7 +291,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
   socklen_t src_size = sizeof(src_sockaddr);
   bool ok = ReceiveFrom(m_fd, buffer, data_read, &src_sockaddr, &src_size);
   if (ok)
-    source = IPV4Address(src_sockaddr.sin_addr);
+    source = IPV4Address(src_sockaddr.sin_addr.s_addr);
   return ok;
 }
 
@@ -313,7 +313,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
   socklen_t src_size = sizeof(src_sockaddr);
   bool ok = ReceiveFrom(m_fd, buffer, data_read, &src_sockaddr, &src_size);
   if (ok) {
-    source = IPV4Address(src_sockaddr.sin_addr);
+    source = IPV4Address(src_sockaddr.sin_addr.s_addr);
     port = NetworkToHost(src_sockaddr.sin_port);
   }
   return ok;
@@ -346,7 +346,8 @@ bool UDPSocket::EnableBroadcast() {
  * Set the outgoing interface to be used for multicast transmission
  */
 bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
-  struct in_addr addr = iface.Address();
+  struct in_addr addr;
+  addr.s_addr = iface.AsInt();
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
                       IP_MULTICAST_IF,
@@ -371,8 +372,8 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                               bool multicast_loop) {
   char loop = multicast_loop;
   struct ip_mreq mreq;
-  mreq.imr_interface = iface.Address();
-  mreq.imr_multiaddr = group.Address();
+  mreq.imr_interface.s_addr = iface.AsInt();
+  mreq.imr_multiaddr.s_addr = group.AsInt();
 
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -405,8 +406,8 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
 bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
                                const IPV4Address &group) {
   struct ip_mreq mreq;
-  mreq.imr_interface = iface.Address();
-  mreq.imr_multiaddr = group.Address();
+  mreq.imr_interface.s_addr = iface.AsInt();
+  mreq.imr_multiaddr.s_addr = group.AsInt();
 
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,

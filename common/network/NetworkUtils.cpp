@@ -100,30 +100,6 @@ unsigned int SockAddrLen(const struct sockaddr &sa) {
 #endif
 }
 
-
-bool StringToAddress(const string &address, struct in_addr *addr) {
-  bool ok;
-
-#ifdef HAVE_INET_ATON
-  ok = (1 == inet_aton(address.data(), addr));
-#else
-  in_addr_t ip_addr4 = inet_addr(address.c_str());
-  ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
-  addr->s_addr = ip_addr4;
-#endif
-
-  if (!ok) {
-    OLA_WARN << "Could not convert address " << address;
-  }
-  return ok;
-}
-
-
-string AddressToString(const struct in_addr &addr) {
-  return inet_ntoa(addr);
-}
-
-
 bool IsBigEndian() {
 #ifdef HAVE_ENDIAN_H
   return BYTE_ORDER == __BIG_ENDIAN;
@@ -132,76 +108,61 @@ bool IsBigEndian() {
 #endif
 }
 
-
 uint8_t NetworkToHost(uint8_t value) {
   return value;
 }
-
 
 uint16_t NetworkToHost(uint16_t value) {
   return ntohs(value);
 }
 
-
 uint32_t NetworkToHost(uint32_t value) {
   return ntohl(value);
 }
-
 
 int8_t NetworkToHost(int8_t value) {
   return value;
 }
 
-
 int16_t NetworkToHost(int16_t value) {
   return ntohs(value);
 }
-
 
 int32_t NetworkToHost(int32_t value) {
   return ntohl(value);
 }
 
-
 uint8_t HostToNetwork(uint8_t value) {
   return value;
 }
-
 
 int8_t HostToNetwork(int8_t value) {
   return value;
 }
 
-
 uint16_t HostToNetwork(uint16_t value) {
   return htons(value);
 }
-
 
 int16_t HostToNetwork(int16_t value) {
   return htons(value);
 }
 
-
 uint32_t HostToNetwork(uint32_t value) {
   return htonl(value);
 }
-
 
 int32_t HostToNetwork(int32_t value) {
   return htonl(value);
 }
 
-
 uint8_t HostToLittleEndian(uint8_t value) {
   return value;
 }
 
-
 int8_t HostToLittleEndian(int8_t value) {
   return value;
 }
-
 
 uint16_t HostToLittleEndian(uint16_t value) {
   if (IsBigEndian())
@@ -210,14 +171,12 @@ uint16_t HostToLittleEndian(uint16_t value) {
     return value;
 }
 
-
 int16_t HostToLittleEndian(int16_t value) {
   if (IsBigEndian())
     return ((value & 0xff) << 8) | (value >> 8);
   else
     return value;
 }
-
 
 uint32_t _ByteSwap(uint32_t value) {
   return ((value & 0x000000ff) << 24) |
@@ -362,7 +321,7 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   }
 
   for (int32_t i = 0; i < _res.nscount; i++) {
-    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr);
+    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr.s_addr);
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
@@ -386,7 +345,7 @@ bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
   }
 
   *ip = IPV4Address(
-      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr);
+      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr.s_addr);
   *data += SockAddrLen(*sa);
   return true;
 }
@@ -510,11 +469,11 @@ void MessageHandler(int32_t *if_index,
           break;
         case RTA_GATEWAY:
           gateway = IPV4Address(
-              *(reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))));
+              reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))->s_addr);
           break;
         case RTA_DST:
-          IPV4Address dest(*(reinterpret_cast<const in_addr*>(
-              RTA_DATA(rt_attr))));
+          IPV4Address dest(
+              reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))->s_addr);
           is_default_route = dest.IsWildcard();
           break;
       }

@@ -39,7 +39,6 @@
 #include "ola/rdm/DiscoveryAgent.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "string"
 
 namespace ola {
 namespace rdm {

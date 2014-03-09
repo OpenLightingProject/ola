@@ -20,14 +20,6 @@
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <stdint.h>
 
-#ifdef WIN32
-// TODO(Peter): Do something else
-#else
-#include <sys/types.h>  // Required by FreeBSD, order is important for OpenBSD
-#include <sys/socket.h>  // Required by FreeBSD
-#include <net/if_arp.h>
-#endif
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -709,7 +701,7 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
   }
 
   // Only return type 1 (Ethernet)
-  if (interface.type != ARPHRD_ETHER) {
+  if (interface.type != Interface::ARP_ETHERNET_TYPE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
