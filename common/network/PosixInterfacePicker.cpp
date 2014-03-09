@@ -218,6 +218,12 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
 #endif
       }
     }
+#elif defined(HAVE_IF_NAMETOINDEX)
+    // fetch index on NetBSD and other platforms without SIOCGIFINDEX
+    unsigned int index = if_nametoindex(iface->ifr_name);
+    if (index != 0) {
+      interface.index = index;
+    }
 #endif
 
     /* ok, if that all failed we should prob try and use sysctl to work out the
