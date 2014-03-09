@@ -27,16 +27,59 @@ AC_LIBTOOL_WIN32_DLL
 AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
-                  net/if_arp.h net/route.h sys/sysctl.h sys/types.h sys/uio.h \
-                  sysexits.h])
+                  sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
 AC_CHECK_HEADERS([random])
 
+# This needs stuff in sys/param.h on OpenBSD
+AC_CHECK_HEADERS([sys/sysctl.h], [], [],
+                 [[#ifdef HAVE_SYS_PARAM_H
+                     #include <sys/param.h>
+                   #endif
+                  ]])
+
+# These all need stuff in sys/types.h and sys/socket.h on FreeBSD/OpenBSD
+# OpenBSD is fussy about the ordering
+AC_CHECK_HEADERS([net/if.h net/if_arp.h net/route.h], [], [],
+                 [[#ifdef HAVE_SYS_TYPES_H
+                     #include <sys/types.h>
+                   #endif
+                   #ifdef HAVE_SYS_SOCKET_H
+                     #include <sys/socket.h>
+                   #endif
+                  ]])
+
+# This needs stuff in net/if.h on NetBSD
+AC_CHECK_HEADERS([net/if_ether.h], [], [],
+                 [[#ifdef HAVE_NET_IF_H
+                     #include <net/if.h>
+                   #endif
+                  ]])
+
+# This needs stuff in lots of headers on OpenBSD
+AC_CHECK_HEADERS([netinet/if_ether.h], [], [],
+                 [[#ifdef HAVE_SYS_TYPES_H
+                     #include <sys/types.h>
+                   #endif
+                   #ifdef HAVE_SYS_SOCKET_H
+                     #include <sys/socket.h>
+                   #endif
+                   #ifdef HAVE_NET_IF_H
+                     #include <net/if.h>
+                   #endif
+                   #ifdef HAVE_NET_IF_ARP_H
+                     #include <net/if_arp.h>
+                   #endif
+                   #ifdef HAVE_ARPA_INET_H
+                     #include <arpa/inet.h>
+                   #endif
+                  ]])
+
 # These both need sa_family_t from bits/sockaddr.h
-AC_CHECK_HEADERS([bits/sockaddr.h linux/netlink.h linux/rtnetlink.h], [], [],
+AC_CHECK_HEADERS([linux/netlink.h linux/rtnetlink.h], [], [],
                  [[#ifdef HAVE_BITS_SOCKADDR_H
                      #include <bits/sockaddr.h>
                    #endif
@@ -70,8 +113,9 @@ AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
-                inet_ntoa inet_aton select socket strerror getifaddrs \
-                getloadavg getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
+                if_nametoindex inet_ntoa inet_aton select socket strerror \
+                getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
+                getgrgid_r])
 AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
 
 LT_INIT

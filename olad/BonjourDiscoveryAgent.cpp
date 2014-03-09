@@ -23,6 +23,7 @@
 #include "olad/BonjourDiscoveryAgent.h"
 
 #include <dns_sd.h>
+#include <netinet/in.h>  // For htons
 #include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>

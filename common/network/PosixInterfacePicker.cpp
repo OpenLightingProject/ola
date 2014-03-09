@@ -30,6 +30,9 @@
   #endif
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+  #include <sys/types.h>  // Required by OpenBSD
+#endif
 #ifdef HAVE_SYS_SOCKET_H
   #include <sys/socket.h>  // order is important for FreeBSD
 #endif
@@ -155,11 +158,13 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     }
 
     if ((interface.name == last_dl_iface_name) && hwaddr) {
-      if (hwlen != MACAddress::LENGTH) {
-        OLA_WARN << "hwlen was not expected length; got " <<
-        static_cast<int>(hwlen) << ", expecting " << MACAddress::LENGTH;
+      if (hwlen == MACAddress::LENGTH) {
+        interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
+      } else {
+        OLA_WARN << "hwlen was not expected length, so didn't obtain MAC "
+                 << "address; got " << static_cast<int>(hwlen)
+                 << ", expecting " << MACAddress::LENGTH;
       }
-      interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
     }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = IPV4Address(sin->sin_addr.s_addr);
@@ -206,8 +211,18 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
+#ifdef __FreeBSD__
+        interface.index = ifrcopy.ifr_index;
+#else
         interface.index = ifrcopy.ifr_ifindex;
+#endif
       }
+    }
+#elif defined(HAVE_IF_NAMETOINDEX)
+    // fetch index on NetBSD and other platforms without SIOCGIFINDEX
+    unsigned int index = if_nametoindex(iface->ifr_name);
+    if (index != 0) {
+      interface.index = index;
     }
 #endif
 

@@ -33,6 +33,12 @@
 #include "common/network/PosixInterfacePicker.h"
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>  // Required by FreeBSD
+#endif
 #ifdef HAVE_NET_IF_ARP_H
 #include <net/if_arp.h>
 #endif
@@ -51,7 +57,7 @@ const uint16_t Interface::ARP_VOID_TYPE = 0xffff;
 #endif
 
 #ifdef ARPHRD_ETHER
-static const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
+const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
 #else
 const uint16_t Interface::ARP_ETHERNET_TYPE = 1;
 #endif

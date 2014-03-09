@@ -27,6 +27,8 @@
 
 #ifdef WIN32
 typedef uint32_t in_addr_t;
+#else
+#include <netinet/in.h>
 #endif
 
 #ifdef HAVE_RESOLV_H
@@ -41,6 +43,9 @@ typedef uint32_t in_addr_t;
       defined(HAVE_DECL_PF_ROUTE) && defined(HAVE_DECL_NET_RT_DUMP)
 #define USE_SYSCTL_FOR_DEFAULT_ROUTE 1
 #include <net/route.h>
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 #include <sys/sysctl.h>
 #else
 // Do something else if we don't have Netlink/on Windows
@@ -48,6 +53,7 @@ typedef uint32_t in_addr_t;
 
 #include <errno.h>
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <iomanip>
@@ -288,10 +294,29 @@ string Hostname() {
 bool NameServers(vector<IPV4Address> *name_servers) {
   // TODO(Peter): Do something on Windows
 
+#if HAVE_DECL_RES_NINIT
+  struct __res_state res;
+  memset(&res, 0, sizeof(struct __res_state));
+
+  // Init the resolver info each time so it's always current for the RDM
+  // responders in case we've set it via RDM too
+  if (res_ninit(&res) != 0) {
+    OLA_WARN << "Error getting nameservers via res_ninit";
+    return false;
+  }
+
+  for (int32_t i = 0; i < res.nscount; i++) {
+    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr.s_addr);
+    OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
+    name_servers->push_back(addr);
+  }
+
+  res_nclose(&res);
+#else
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
   if (res_init() != 0) {
-    OLA_WARN << "Error getting nameservers";
+    OLA_WARN << "Error getting nameservers via res_init";
     return false;
   }
 
@@ -300,9 +325,11 @@ bool NameServers(vector<IPV4Address> *name_servers) {
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
+#endif
 
   return true;
 }
+
 
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
 
