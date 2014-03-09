@@ -23,9 +23,7 @@
 #include "olad/BonjourDiscoveryAgent.h"
 
 #include <dns_sd.h>
-#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // For htons
-#endif
 #include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
