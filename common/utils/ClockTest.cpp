@@ -25,8 +25,6 @@
 #include "ola/Clock.h"
 #include "ola/testing/TestUtils.h"
 
-
-
 class ClockTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClockTest);
   CPPUNIT_TEST(testTimeStamp);
