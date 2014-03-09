@@ -332,26 +332,39 @@ string Hostname() {
 bool NameServers(vector<IPV4Address> *name_servers) {
   // TODO(Peter): Do something on Windows
 
+#if HAVE_DECL_RES_NINIT
   struct __res_state res;
   memset(&res, 0, sizeof(struct __res_state));
 
+#define RES_VAR res
+#else
+#define RES_VAR _res
+#endif
+
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
-  if (res_ninit(&res) != 0) {
+#if HAVE_DECL_RES_NINIT
+  if (res_ninit(&RES_VAR) != 0) {
+#else
+  if (res_init() != 0) {
+#endif
     OLA_WARN << "Error getting nameservers";
     return false;
   }
 
-  for (int32_t i = 0; i < res.nscount; i++) {
-    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr);
+  for (int32_t i = 0; i < RES_VAR.nscount; i++) {
+    IPV4Address addr = IPV4Address(RES_VAR.nsaddr_list[i].sin_addr);
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
 
+#if HAVE_DECL_RES_NINIT
   res_nclose(&res);
+#endif
 
   return true;
 }
+
 
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
 
