@@ -162,7 +162,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
     }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
-    interface.ip_address = IPV4Address(sin->sin_addr);
+    interface.ip_address = IPV4Address(sin->sin_addr.s_addr);
 
     // fetch bcast address
 #ifdef SIOCGIFBRDADDR
@@ -171,7 +171,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
         sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
-        interface.bcast_address = IPV4Address(sin->sin_addr);
+        interface.bcast_address = IPV4Address(sin->sin_addr.s_addr);
       }
     }
 #endif
@@ -182,7 +182,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       OLA_WARN << "ioctl error " << strerror(errno);
     } else {
       sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
-      interface.subnet_mask = IPV4Address(sin->sin_addr);
+      interface.subnet_mask = IPV4Address(sin->sin_addr.s_addr);
     }
 #endif
 

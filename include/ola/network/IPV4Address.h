@@ -34,12 +34,6 @@
 #ifndef INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_
 #define INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_
 
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <netinet/in.h>
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <sstream>
@@ -69,23 +63,15 @@ class IPV4Address {
      * @brief Create a new IPv4 Address set to INADDR_ANY (0.0.0.0).
      */
     IPV4Address() {
-      m_address.s_addr = 0;
-    }
-
-    /**
-     * @brief Create a new IPv4 Address from an in_addr.
-     * @param address the in_addr, in network byte order.
-     */
-    explicit IPV4Address(const struct in_addr &address)
-        : m_address(address) {
+      m_address = 0;
     }
 
     /**
      * @brief Create a new IPv4 Address from an uint32.
      * @param address the ip address, in network byte order.
      */
-    explicit IPV4Address(unsigned int address) {
-      m_address.s_addr = address;
+    explicit IPV4Address(uint32_t address) {
+      m_address = address;
     }
 
     /**
@@ -113,7 +99,7 @@ class IPV4Address {
      * @returns true if both IPV4Addresses are equal.
      */
     bool operator==(const IPV4Address &other) const {
-      return m_address.s_addr == other.m_address.s_addr;
+      return m_address == other.m_address;
     }
 
     /**
@@ -131,7 +117,7 @@ class IPV4Address {
      * human's expectations.
      */
     bool operator<(const IPV4Address &other) const {
-      return m_address.s_addr < other.m_address.s_addr;
+      return m_address < other.m_address;
     }
 
     /**
@@ -140,30 +126,20 @@ class IPV4Address {
      * human's expectations.
      */
     bool operator>(const IPV4Address &other) const {
-      return m_address.s_addr > other.m_address.s_addr;
-    }
-
-    /**
-     * @brief Return the IPV4Address as an in_addr in network-byte order.
-     * @returns An in_addr.
-     */
-    const struct in_addr Address() const {
-      return m_address;
+      return m_address > other.m_address;
     }
 
     /**
      * @brief Return the IPV4Address as an int in network-byte order.
      * @returns An uint32 representing the IP address.
      */
-    uint32_t AsInt() const { return m_address.s_addr; }
+    uint32_t AsInt() const { return m_address; }
 
     /**
      * @brief Checks if this address is the wildcard address (0.0.0.0).
      * @returns true if this address is the wildcard address.
      */
-    bool IsWildcard() const {
-      return m_address.s_addr == INADDR_ANY;
-    }
+    bool IsWildcard() const;
 
     /**
      * @brief Copy the IPV4Address to a memory location.
@@ -172,9 +148,7 @@ class IPV4Address {
      * @note The address is copied in network byte order.
      */
     void Get(uint8_t ptr[LENGTH]) {
-      memcpy(ptr,
-             reinterpret_cast<uint8_t*>(&m_address.s_addr),
-             LENGTH);
+      memcpy(ptr, reinterpret_cast<uint8_t*>(&m_address), LENGTH);
     }
 
     /**
@@ -231,17 +205,13 @@ class IPV4Address {
      * @brief Returns the wildcard address INADDR_ANY (0.0.0.0).
      * @return an IPV4Address representing the wildcard address.
      */
-    static IPV4Address WildCard() {
-      return IPV4Address(INADDR_ANY);
-    }
+    static IPV4Address WildCard();
 
     /**
      * @brief Returns the broadcast address INADDR_NONE (255.255.255.255).
      * @return an IPV4Address representing the broadcast address.
      */
-    static IPV4Address Broadcast() {
-      return IPV4Address(INADDR_NONE);
-    }
+    static IPV4Address Broadcast();
 
     /**
      * @brief Returns the loopback address (127.0.0.1).
@@ -250,7 +220,7 @@ class IPV4Address {
     static IPV4Address Loopback();
 
  private:
-    struct in_addr m_address;
+    uint32_t m_address;
 };
 /**
  * @}

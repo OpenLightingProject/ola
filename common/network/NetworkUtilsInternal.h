@@ -43,13 +43,6 @@ namespace network {
  */
 unsigned int SockAddrLen(const struct sockaddr &sa);
 
-/**
- * Convert a string to a struct in_addr
- */
-bool StringToAddress(const std::string &address, struct in_addr *addr);
-
-std::string AddressToString(const struct in_addr &addr);
-
 }  // namespace network
 }  // namespace ola
 #endif  // COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
