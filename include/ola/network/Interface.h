@@ -21,18 +21,6 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
 #define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
-#ifdef WIN32
-// TODO(Peter): Do something else
-#else
-#include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
-#include <sys/socket.h>  // Required by FreeBSD
-#include <net/if_arp.h>
-#ifndef ARPHRD_VOID
-// Not defined on FreeBSD
-#define ARPHRD_VOID       0xFFFF        /* Void type, nothing is known.  */
-#endif  // ARPHRD_VOID
-#endif
-
 #include <stdint.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/MACAddress.h>
@@ -56,7 +44,7 @@ class Interface {
             const MACAddress &hw_address,
             bool loopback,
             int32_t index = DEFAULT_INDEX,
-            uint16_t type = ARPHRD_VOID);
+            uint16_t type = ARP_VOID_TYPE);
   Interface(const Interface &other);
   Interface& operator=(const Interface &other);
   bool operator==(const Interface &other);
@@ -69,6 +57,10 @@ class Interface {
   bool loopback;
   int32_t index;
   uint16_t type;
+
+  /* Void type, nothing is known */
+  static const uint16_t ARP_VOID_TYPE;
+  static const uint16_t ARP_ETHERNET_TYPE;
 };
 
 

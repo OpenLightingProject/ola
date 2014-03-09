@@ -29,21 +29,45 @@
 
 #ifdef WIN32
 #include "common/network/WindowsInterfacePicker.h"
+// TODO(Peter): Do something else for ARPHRD_VOID
 #else
 #include "common/network/PosixInterfacePicker.h"
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>  // Required by FreeBSD
+#endif
+#ifdef HAVE_NET_IF_ARP_H
+#include <net/if_arp.h>
+#endif
+
 namespace ola {
+
 namespace network {
 
 using std::string;
 using std::vector;
 
+#ifdef ARPHRD_VOID
+const uint16_t Interface::ARP_VOID_TYPE = ARPHRD_VOID;
+#else
+const uint16_t Interface::ARP_VOID_TYPE = 0xffff;
+#endif
+
+#ifdef ARPHRD_ETHER
+static const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
+#else
+const uint16_t Interface::ARP_ETHERNET_TYPE = 1;
+#endif
+
 
 Interface::Interface()
     : loopback(false),
       index(DEFAULT_INDEX),
-      type(ARPHRD_VOID) {
+      type(ARP_VOID_TYPE) {
 }
 
 
@@ -173,7 +197,7 @@ void InterfaceBuilder::Reset() {
   m_hw_address = MACAddress();
   m_loopback = false;
   m_index = Interface::DEFAULT_INDEX;
-  m_type = ARPHRD_VOID;
+  m_type = Interface::ARP_VOID_TYPE;
 }
 
 
