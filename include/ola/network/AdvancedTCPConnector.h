@@ -23,6 +23,7 @@
 #include <math.h>
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/TCPConnector.h>
 #include <ola/network/TCPSocketFactory.h>
@@ -105,6 +106,8 @@ class AdvancedTCPConnector {
     void ConnectionResult(IPPortPair key, int fd, int error);
     void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
     void AbortConnection(ConnectionInfo *state);
+
+    DISALLOW_COPY_AND_ASSIGN(AdvancedTCPConnector);
 };
 }  // namespace network
 }  // namespace ola
