@@ -306,7 +306,7 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   }
 
   for (int32_t i = 0; i < res.nscount; i++) {
-    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr);
+    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr.s_addr);
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }

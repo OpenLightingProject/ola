@@ -29,7 +29,6 @@
 
 #ifdef WIN32
 #include "common/network/WindowsInterfacePicker.h"
-// TODO(Peter): Do something else for ARPHRD_VOID
 #else
 #include "common/network/PosixInterfacePicker.h"
 #endif
