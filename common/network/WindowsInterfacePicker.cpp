@@ -50,7 +50,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
                            // part of the InterfacePicker interface..
 
   while (1) {
-    pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));
+    pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(new uin8_t[ulOutBufLen]);
     if (!pAdapterInfo) {
       OLA_WARN << "Error allocating memory needed for GetAdaptersinfo";
       return interfaces;
@@ -62,7 +62,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
     if (status == NO_ERROR)
       break;
 
-    free(pAdapterInfo);
+    delete[] pAdapterInfo;
     if (status != ERROR_BUFFER_OVERFLOW) {
       OLA_WARN << "GetAdaptersInfo failed with error: " <<
         static_cast<int>(status);
@@ -96,7 +96,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
       }
     }
   }
-  free(pAdapterInfo);
+  delete[] pAdapterInfo;
   return interfaces;
 }
 }  // namespace network
