@@ -339,30 +339,33 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   struct __res_state res;
   memset(&res, 0, sizeof(struct __res_state));
 
-#define RES_VAR res
-#else
-#define RES_VAR _res
-#endif
-
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
-#if HAVE_DECL_RES_NINIT
-  if (res_ninit(&RES_VAR) != 0) {
-#else
-  if (res_init() != 0) {
-#endif
-    OLA_WARN << "Error getting nameservers";
+  if (res_ninit(&res) != 0) {
+    OLA_WARN << "Error getting nameservers via res_ninit";
     return false;
   }
 
-  for (int32_t i = 0; i < RES_VAR.nscount; i++) {
-    IPV4Address addr = IPV4Address(RES_VAR.nsaddr_list[i].sin_addr);
+  for (int32_t i = 0; i < res.nscount; i++) {
+    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr);
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
 
-#if HAVE_DECL_RES_NINIT
   res_nclose(&res);
+#else
+  // Init the resolver info each time so it's always current for the RDM
+  // responders in case we've set it via RDM too
+  if (res_init() != 0) {
+    OLA_WARN << "Error getting nameservers via res_init";
+    return false;
+  }
+
+  for (int32_t i = 0; i < _res.nscount; i++) {
+    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr);
+    OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
+    name_servers->push_back(addr);
+  }
 #endif
 
   return true;
