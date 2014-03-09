@@ -23,16 +23,17 @@
 #include "olad/BonjourDiscoveryAgent.h"
 
 #include <dns_sd.h>
-#include <netinet/in.h>  // For htons
 #include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/thread/CallbackThread.h>
 
 #include <string>
 
 namespace ola {
 
+using ola::network::HostToNetwork;
 using std::auto_ptr;
 using std::string;
 
@@ -136,7 +137,7 @@ void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
       0, args->if_index, args->service_name.c_str(), args->type.c_str(),
       args->domain.c_str(),
       NULL,  // use default host name
-      htons(args->port),
+      HostToNetwork(args->port),
       txt_data.size(), txt_data.c_str(),
       &RegisterCallback,  // call back function
       NULL);  // no context
