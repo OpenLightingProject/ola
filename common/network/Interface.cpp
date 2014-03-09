@@ -58,7 +58,7 @@ const uint16_t Interface::ARP_VOID_TYPE = 0xffff;
 #endif
 
 #ifdef ARPHRD_ETHER
-static const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
+const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
 #else
 const uint16_t Interface::ARP_ETHERNET_TYPE = 1;
 #endif
