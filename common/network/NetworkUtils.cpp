@@ -442,11 +442,11 @@ void MessageHandler(int32_t *if_index,
           break;
         case RTA_GATEWAY:
           gateway = IPV4Address(
-              *(reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))));
+              reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))->s_addr);
           break;
         case RTA_DST:
-          IPV4Address dest(*(reinterpret_cast<const in_addr*>(
-              RTA_DATA(rt_attr))));
+          IPV4Address dest(
+              reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))->s_addr);
           is_default_route = dest.IsWildcard();
           break;
       }
