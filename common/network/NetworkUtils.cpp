@@ -368,11 +368,11 @@ static bool GetDefaultRouteWithSysctl(int32_t *if_index,
                << "failed: " << strerror(errno);
       return false;
     }
-    buffer = reinterpret_cast<uint8_t*>(malloc(space_required));
+    buffer = new uint8_t[space_required];
 
     ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
     if (ret < 0) {
-      free(buffer);
+      delete[] buffer;
       if (errno == ENOMEM) {
         continue;
       } else {
@@ -422,13 +422,13 @@ static bool GetDefaultRouteWithSysctl(int32_t *if_index,
     if (dest.IsWildcard() && netmask.IsWildcard()) {
       *default_gateway = gateway;
       *if_index = rtm->rtm_index;
-      free(buffer);
+      delete[] buffer;
       OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
                << *if_index;
       return true;
     }
   }
-  free(buffer);
+  delete[] buffer;
   OLA_WARN << "No default route found";
   return true;
 }
