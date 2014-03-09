@@ -53,7 +53,7 @@ typedef uint32_t in_addr_t;
 
 #include <errno.h>
 #include <limits.h>
-#include <stdlib.h>  // Required by NetBSD for malloc and free
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <iomanip>
