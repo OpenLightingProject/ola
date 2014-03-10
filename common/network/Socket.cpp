@@ -18,6 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include "ola/network/Socket.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -32,9 +34,18 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>
+#endif
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
 #endif
 
 #include <string>
@@ -42,11 +53,22 @@
 #include "common/network/SocketHelper.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/Socket.h"
 #include "ola/network/TCPSocketFactory.h"
 
 namespace ola {
 namespace network {
+
+bool ReceiveFrom(int fd, uint8_t *buffer, ssize_t *data_read,
+                 struct sockaddr_in *source, socklen_t *src_size) {
+  *data_read = recvfrom(
+    fd, reinterpret_cast<char*>(buffer), *data_read,
+    0, reinterpret_cast<struct sockaddr*>(source), src_size);
+  if (*data_read < 0) {
+    OLA_WARN << "recvfrom fd: " << fd << " failed: " << strerror(errno);
+    return false;
+  }
+  return true;
+}
 
 
 // UDPSocket
@@ -176,7 +198,7 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
-  destination.sin_addr = ip.Address();
+  destination.sin_addr.s_addr = ip.AsInt();
   ssize_t bytes_sent = sendto(
     m_fd,
     reinterpret_cast<const char*>(buffer),
@@ -217,7 +239,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
-  destination.sin_addr = ip.Address();
+  destination.sin_addr.s_addr = ip.AsInt();
 
   struct msghdr message;
   message.msg_name = &destination;
@@ -250,7 +272,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
  */
 bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   socklen_t length = 0;
-  return _RecvFrom(buffer, data_read, NULL, &length);
+  return ReceiveFrom(m_fd, buffer, data_read, NULL, &length);
 }
 
 
@@ -267,9 +289,9 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
                          IPV4Address &source) const {  // NOLINT
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
-  bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);
+  bool ok = ReceiveFrom(m_fd, buffer, data_read, &src_sockaddr, &src_size);
   if (ok)
-    source = IPV4Address(src_sockaddr.sin_addr);
+    source = IPV4Address(src_sockaddr.sin_addr.s_addr);
   return ok;
 }
 
@@ -289,9 +311,9 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
                          uint16_t &port) const {  // NOLINT
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
-  bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);
+  bool ok = ReceiveFrom(m_fd, buffer, data_read, &src_sockaddr, &src_size);
   if (ok) {
-    source = IPV4Address(src_sockaddr.sin_addr);
+    source = IPV4Address(src_sockaddr.sin_addr.s_addr);
     port = NetworkToHost(src_sockaddr.sin_port);
   }
   return ok;
@@ -324,7 +346,8 @@ bool UDPSocket::EnableBroadcast() {
  * Set the outgoing interface to be used for multicast transmission
  */
 bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
-  struct in_addr addr = iface.Address();
+  struct in_addr addr;
+  addr.s_addr = iface.AsInt();
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
                       IP_MULTICAST_IF,
@@ -349,8 +372,8 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                               bool multicast_loop) {
   char loop = multicast_loop;
   struct ip_mreq mreq;
-  mreq.imr_interface = iface.Address();
-  mreq.imr_multiaddr = group.Address();
+  mreq.imr_interface.s_addr = iface.AsInt();
+  mreq.imr_multiaddr.s_addr = group.AsInt();
 
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -383,8 +406,8 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
 bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
                                const IPV4Address &group) {
   struct ip_mreq mreq;
-  mreq.imr_interface = iface.Address();
-  mreq.imr_multiaddr = group.Address();
+  mreq.imr_interface.s_addr = iface.AsInt();
+  mreq.imr_multiaddr.s_addr = group.AsInt();
 
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -394,25 +417,6 @@ bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
   if (ok < 0) {
     OLA_WARN << "Failed to leave multicast group " << group <<
     ": " << strerror(errno);
-    return false;
-  }
-  return true;
-}
-
-
-bool UDPSocket::_RecvFrom(uint8_t *buffer,
-                          ssize_t *data_read,
-                          struct sockaddr_in *source,
-                          socklen_t *src_size) const {
-  *data_read = recvfrom(
-    m_fd,
-    reinterpret_cast<char*>(buffer),
-    *data_read,
-    0,
-    reinterpret_cast<struct sockaddr*>(source),
-    src_size);
-  if (*data_read < 0) {
-    OLA_WARN << "recvfrom failed: " << strerror(errno);
     return false;
   }
   return true;

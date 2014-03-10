@@ -28,9 +28,6 @@
 #include <curses.h>
 #include <errno.h>
 #include <getopt.h>
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>

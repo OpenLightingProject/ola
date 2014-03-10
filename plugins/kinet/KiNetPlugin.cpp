@@ -41,6 +41,10 @@ const char KiNetPlugin::POWER_SUPPLY_KEY[] = "power_supply";
 const char KiNetPlugin::PLUGIN_NAME[] = "KiNET";
 const char KiNetPlugin::PLUGIN_PREFIX[] = "kinet";
 
+KiNetPlugin::KiNetPlugin(PluginAdaptor *plugin_adaptor)
+    : Plugin(plugin_adaptor) {
+}
+
 KiNetPlugin::~KiNetPlugin() {}
 
 /*

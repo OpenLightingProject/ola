@@ -23,6 +23,11 @@
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -32,6 +37,12 @@ namespace file {
 
 using std::string;
 using std::vector;
+
+#ifdef WIN32
+const char PATH_SEPARATOR = '\\';
+#else
+const char PATH_SEPARATOR = '/';
+#endif
 
 /**
  * Find all files in a directory that match the given prefix.

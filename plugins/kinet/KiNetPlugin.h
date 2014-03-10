@@ -32,9 +32,7 @@ namespace kinet {
 
 class KiNetPlugin : public Plugin {
  public:
-    explicit KiNetPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
-
+    explicit KiNetPlugin(PluginAdaptor *plugin_adaptor);
     ~KiNetPlugin();
 
     std::string Name() const { return PLUGIN_NAME; }

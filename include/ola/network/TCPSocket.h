@@ -30,54 +30,43 @@
 
 #include <stdint.h>
 
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-
+#include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
 
-
 namespace ola {
 namespace network {
-
 
 /*
  * A TCPSocket
  */
 class TCPSocket: public ola::io::ConnectedDescriptor {
  public:
-    explicit TCPSocket(int sd)
-        : m_sd(sd) {
-      SetNoSigPipe(sd);
-    }
+  explicit TCPSocket(int sd) : m_sd(sd) {
+    SetNoSigPipe(sd);
+  }
 
-    ~TCPSocket() { Close(); }
+  ~TCPSocket() { Close(); }
 
-    int ReadDescriptor() const { return m_sd; }
-    int WriteDescriptor() const { return m_sd; }
-    bool Close();
+  int ReadDescriptor() const { return m_sd; }
+  int WriteDescriptor() const { return m_sd; }
+  bool Close();
 
-    GenericSocketAddress GetLocalAddress() const;
-    GenericSocketAddress GetPeerAddress() const;
+  GenericSocketAddress GetLocalAddress() const;
+  GenericSocketAddress GetPeerAddress() const;
 
-    static TCPSocket* Connect(const SocketAddress &endpoint);
+  static TCPSocket* Connect(const SocketAddress &endpoint);
 
-    bool SetNoDelay();
+  bool SetNoDelay();
 
  protected:
-    bool IsSocket() const { return true; }
+  bool IsSocket() const { return true; }
 
  private:
-    int m_sd;
+  int m_sd;
 
-    TCPSocket(const TCPSocket &other);
-    TCPSocket& operator=(const TCPSocket &other);
+  DISALLOW_COPY_AND_ASSIGN(TCPSocket);
 };
 
 
@@ -86,25 +75,24 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
  */
 class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
  public:
-    explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
-    ~TCPAcceptingSocket();
-    bool Listen(const SocketAddress &endpoint, int backlog = 10);
-    int ReadDescriptor() const { return m_sd; }
-    bool Close();
-    void PerformRead();
+  explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
+  ~TCPAcceptingSocket();
+  bool Listen(const SocketAddress &endpoint, int backlog = 10);
+  int ReadDescriptor() const { return m_sd; }
+  bool Close();
+  void PerformRead();
 
-    void SetFactory(class TCPSocketFactoryInterface *factory) {
-      m_factory = factory;
-    }
+  void SetFactory(class TCPSocketFactoryInterface *factory) {
+    m_factory = factory;
+  }
 
-    GenericSocketAddress GetLocalAddress() const;
+  GenericSocketAddress GetLocalAddress() const;
 
  private:
-    int m_sd;
-    class TCPSocketFactoryInterface *m_factory;
+  int m_sd;
+  class TCPSocketFactoryInterface *m_factory;
 
-    TCPAcceptingSocket(const TCPAcceptingSocket &other);
-    TCPAcceptingSocket& operator=(const TCPAcceptingSocket &other);
+  DISALLOW_COPY_AND_ASSIGN(TCPAcceptingSocket);
 };
 }  // namespace network
 }  // namespace ola

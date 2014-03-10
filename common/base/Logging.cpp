@@ -184,14 +184,19 @@ void StdErrorLogDestination::Write(log_level level, const string &log_line) {
 }
 
 
+SyslogDestination::SyslogDestination()
+    : LogDestination(),
+      m_eventlog(NULL) {
+}
+
 bool SyslogDestination::Init() {
 #ifdef WIN32
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
+#endif
   if (!m_eventlog) {
     printf("Failed to initialize event logging\n");
     return false;
   }
-#endif
   return true;
 }
 
@@ -218,7 +223,7 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
     default:
       pri = EVENTLOG_INFORMATION_TYPE;
   }
-  ReportEventA(m_eventlog,
+  ReportEventA(reinterpret_cast<HANDLE>(m_eventlog),
                pri,
                (WORD) NULL,
                (DWORD) NULL,

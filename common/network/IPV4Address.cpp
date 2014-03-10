@@ -18,40 +18,80 @@
  * Copyright (C) 2011-2014 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
-#include <ola/network/IPV4Address.h>
-#include <ola/network/NetworkUtils.h>
 #include <string>
+
+#include "common/network/NetworkUtilsInternal.h"
+#include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/NetworkUtils.h"
 
 namespace ola {
 namespace network {
 
+using std::string;
+
+bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
+  bool ok;
+
+#ifdef HAVE_INET_ATON
+  ok = (1 == inet_aton(address.data(), addr));
+#else
+  in_addr_t ip_addr4 = inet_addr(address.c_str());
+  ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
+  addr->s_addr = ip_addr4;
+#endif
+
+  if (!ok) {
+    OLA_WARN << "Could not convert address " << address;
+  }
+  return ok;
+}
+
+bool IPV4Address::IsWildcard() const {
+  return m_address == INADDR_ANY;
+}
+
 std::string IPV4Address::ToString() const {
-  return AddressToString(m_address);
+  struct in_addr addr;
+  addr.s_addr = m_address;
+  return inet_ntoa(addr);
 }
 
 IPV4Address* IPV4Address::FromString(const std::string &address) {
   struct in_addr addr;
-  if (!StringToAddress(address, &addr))
+  if (!IPV4StringToAddress(address, &addr))
     return NULL;
 
-  return new IPV4Address(addr);
+  return new IPV4Address(addr.s_addr);
 }
 
 bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   struct in_addr addr;
-  if (!StringToAddress(address, &addr))
+  if (!IPV4StringToAddress(address, &addr))
     return false;
-  *target = IPV4Address(addr);
+  *target = IPV4Address(addr.s_addr);
   return true;
 }
 
 IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
   struct in_addr addr;
-  assert(StringToAddress(address, &addr));
-  return IPV4Address(addr);
+  assert(IPV4StringToAddress(address, &addr));
+  return IPV4Address(addr.s_addr);
 }
 
 bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
@@ -71,6 +111,14 @@ bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
   }
   *mask = bits;
   return true;
+}
+
+IPV4Address IPV4Address::WildCard() {
+  return IPV4Address(INADDR_ANY);
+}
+
+IPV4Address IPV4Address::Broadcast() {
+  return IPV4Address(INADDR_NONE);
 }
 
 IPV4Address IPV4Address::Loopback() {

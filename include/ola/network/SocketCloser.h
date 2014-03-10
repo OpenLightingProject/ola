@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_NETWORK_SOCKETCLOSER_H_
 
 #include <unistd.h>
+#include <ola/base/Macro.h>
 
 namespace ola {
 namespace network {
@@ -79,6 +80,8 @@ class SocketCloser {
 
  private:
   int m_fd;
+
+  DISALLOW_COPY_AND_ASSIGN(SocketCloser);
 };
 /**
  * @}

@@ -121,7 +121,7 @@ NetworkResponder::NetworkResponder(const UID &uid)
       MACAddress::FromStringOrDie("01:23:45:67:89:ab"),
       false,
       1,
-      ARPHRD_ETHER));
+      Interface::ARP_ETHERNET_TYPE));
 
   interfaces.push_back(Interface(
       "eth2",
@@ -131,7 +131,7 @@ NetworkResponder::NetworkResponder(const UID &uid)
       MACAddress::FromStringOrDie("45:67:89:ab:cd:ef"),
       false,
       2,
-      ARPHRD_ETHER));
+      Interface::ARP_ETHERNET_TYPE));
 
   vector<IPV4Address> name_servers;
   name_servers.push_back(IPV4Address::FromStringOrDie("10.0.0.1"));

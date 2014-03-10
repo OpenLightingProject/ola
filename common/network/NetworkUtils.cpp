@@ -18,13 +18,20 @@
  * Copyright (C) 2005-2014 Simon Newton
  */
 
+#include "ola/network/NetworkUtils.h"
+
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
+
 #ifdef WIN32
 typedef uint32_t in_addr_t;
 #else
+#include <netinet/in.h>
+#endif
+
+#ifdef HAVE_RESOLV_H
 #include <resolv.h>
 #endif
 
@@ -36,6 +43,9 @@ typedef uint32_t in_addr_t;
       defined(HAVE_DECL_PF_ROUTE) && defined(HAVE_DECL_NET_RT_DUMP)
 #define USE_SYSCTL_FOR_DEFAULT_ROUTE 1
 #include <net/route.h>
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 #include <sys/sysctl.h>
 #else
 // Do something else if we don't have Netlink/on Windows
@@ -43,6 +53,7 @@ typedef uint32_t in_addr_t;
 
 #include <errno.h>
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <iomanip>
@@ -50,14 +61,14 @@ typedef uint32_t in_addr_t;
 #include <sstream>
 #include <string>
 #include <vector>
+#include "common/network/NetworkUtilsInternal.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/math/Random.h"
 #include "ola/network/Interface.h"
 #include "ola/network/MACAddress.h"
-#include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketCloser.h"
-#include "ola/StringUtils.h"
 
 
 namespace ola {
@@ -89,30 +100,6 @@ unsigned int SockAddrLen(const struct sockaddr &sa) {
 #endif
 }
 
-
-bool StringToAddress(const string &address, struct in_addr *addr) {
-  bool ok;
-
-#ifdef HAVE_INET_ATON
-  ok = (1 == inet_aton(address.data(), addr));
-#else
-  in_addr_t ip_addr4 = inet_addr(address.c_str());
-  ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
-  addr->s_addr = ip_addr4;
-#endif
-
-  if (!ok) {
-    OLA_WARN << "Could not convert address " << address;
-  }
-  return ok;
-}
-
-
-string AddressToString(const struct in_addr &addr) {
-  return inet_ntoa(addr);
-}
-
-
 bool IsBigEndian() {
 #ifdef HAVE_ENDIAN_H
   return BYTE_ORDER == __BIG_ENDIAN;
@@ -121,76 +108,61 @@ bool IsBigEndian() {
 #endif
 }
 
-
 uint8_t NetworkToHost(uint8_t value) {
   return value;
 }
-
 
 uint16_t NetworkToHost(uint16_t value) {
   return ntohs(value);
 }
 
-
 uint32_t NetworkToHost(uint32_t value) {
   return ntohl(value);
 }
-
 
 int8_t NetworkToHost(int8_t value) {
   return value;
 }
 
-
 int16_t NetworkToHost(int16_t value) {
   return ntohs(value);
 }
-
 
 int32_t NetworkToHost(int32_t value) {
   return ntohl(value);
 }
 
-
 uint8_t HostToNetwork(uint8_t value) {
   return value;
 }
-
 
 int8_t HostToNetwork(int8_t value) {
   return value;
 }
 
-
 uint16_t HostToNetwork(uint16_t value) {
   return htons(value);
 }
-
 
 int16_t HostToNetwork(int16_t value) {
   return htons(value);
 }
 
-
 uint32_t HostToNetwork(uint32_t value) {
   return htonl(value);
 }
-
 
 int32_t HostToNetwork(int32_t value) {
   return htonl(value);
 }
 
-
 uint8_t HostToLittleEndian(uint8_t value) {
   return value;
 }
 
-
 int8_t HostToLittleEndian(int8_t value) {
   return value;
 }
-
 
 uint16_t HostToLittleEndian(uint16_t value) {
   if (IsBigEndian())
@@ -199,14 +171,12 @@ uint16_t HostToLittleEndian(uint16_t value) {
     return value;
 }
 
-
 int16_t HostToLittleEndian(int16_t value) {
   if (IsBigEndian())
     return ((value & 0xff) << 8) | (value >> 8);
   else
     return value;
 }
-
 
 uint32_t _ByteSwap(uint32_t value) {
   return ((value & 0x000000ff) << 24) |
@@ -324,21 +294,42 @@ string Hostname() {
 bool NameServers(vector<IPV4Address> *name_servers) {
   // TODO(Peter): Do something on Windows
 
+#if HAVE_DECL_RES_NINIT
+  struct __res_state res;
+  memset(&res, 0, sizeof(struct __res_state));
+
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
-  if (res_init() != 0) {
-    OLA_WARN << "Error getting nameservers";
+  if (res_ninit(&res) != 0) {
+    OLA_WARN << "Error getting nameservers via res_ninit";
     return false;
   }
 
-  for (int32_t i = 0; i < _res.nscount; i++) {
-    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr);
+  for (int32_t i = 0; i < res.nscount; i++) {
+    IPV4Address addr = IPV4Address(res.nsaddr_list[i].sin_addr.s_addr);
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
 
+  res_nclose(&res);
+#else
+  // Init the resolver info each time so it's always current for the RDM
+  // responders in case we've set it via RDM too
+  if (res_init() != 0) {
+    OLA_WARN << "Error getting nameservers via res_init";
+    return false;
+  }
+
+  for (int32_t i = 0; i < _res.nscount; i++) {
+    IPV4Address addr = IPV4Address(_res.nsaddr_list[i].sin_addr.s_addr);
+    OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
+    name_servers->push_back(addr);
+  }
+#endif
+
   return true;
 }
+
 
 #ifdef USE_SYSCTL_FOR_DEFAULT_ROUTE
 
@@ -354,7 +345,7 @@ bool ExtractIPV4AddressFromSockAddr(const uint8_t **data,
   }
 
   *ip = IPV4Address(
-      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr);
+      reinterpret_cast<const struct sockaddr_in*>(*data)->sin_addr.s_addr);
   *data += SockAddrLen(*sa);
   return true;
 }
@@ -377,11 +368,11 @@ static bool GetDefaultRouteWithSysctl(int32_t *if_index,
                << "failed: " << strerror(errno);
       return false;
     }
-    buffer = reinterpret_cast<uint8_t*>(malloc(space_required));
+    buffer = new uint8_t[space_required];
 
     ret = sysctl(mib, 6, buffer, &space_required, NULL, 0);
     if (ret < 0) {
-      free(buffer);
+      delete[] buffer;
       if (errno == ENOMEM) {
         continue;
       } else {
@@ -431,13 +422,13 @@ static bool GetDefaultRouteWithSysctl(int32_t *if_index,
     if (dest.IsWildcard() && netmask.IsWildcard()) {
       *default_gateway = gateway;
       *if_index = rtm->rtm_index;
-      free(buffer);
+      delete[] buffer;
       OLA_INFO << "Default gateway: " << *default_gateway << ", if_index: "
                << *if_index;
       return true;
     }
   }
-  free(buffer);
+  delete[] buffer;
   OLA_WARN << "No default route found";
   return true;
 }
@@ -478,11 +469,11 @@ void MessageHandler(int32_t *if_index,
           break;
         case RTA_GATEWAY:
           gateway = IPV4Address(
-              *(reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))));
+              reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))->s_addr);
           break;
         case RTA_DST:
-          IPV4Address dest(*(reinterpret_cast<const in_addr*>(
-              RTA_DATA(rt_attr))));
+          IPV4Address dest(
+              reinterpret_cast<const in_addr*>(RTA_DATA(rt_attr))->s_addr);
           is_default_route = dest.IsWildcard();
           break;
       }

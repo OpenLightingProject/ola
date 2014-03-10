@@ -1,3 +1,4 @@
+*.core
 *.gcda
 *.gcno
 *.la
@@ -33,6 +34,7 @@ stamp-h1
 .AppleDouble/
 .deps
 .libs
+config/compile
 config/config.guess
 config/config.sub
 config/depcomp
@@ -45,6 +47,7 @@ config/ltversion.m4
 config/lt~obsolete.m4
 config/missing
 config/py-compile
+config/test-driver
 *Tester
 data/rdm/PidDataTest.sh
 debian/files

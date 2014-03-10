@@ -9,8 +9,9 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            IPV4Address.cpp \
                            Interface.cpp \
                            InterfacePicker.cpp \
-                           NetworkUtils.cpp \
                            MACAddress.cpp \
+                           NetworkUtils.cpp \
+                           NetworkUtilsInternal.h \
                            Socket.cpp \
                            SocketAddress.cpp \
                            SocketHelper.cpp \
