@@ -18,6 +18,39 @@
  * Copyright (C) 2013 Peter Newman
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef WIN32
+#include <winsock2.h>
+// TODO(Peter): Do something else, possibly define the type locally
+#else
+#include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
+#ifdef HAVE_NET_ETHERNET_H
+#include <net/ethernet.h>
+#endif
+// NetBSD and OpenBSD don't have net/ethernet.h
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif
+#ifdef HAVE_NET_IF_ETHER_H
+#include <net/if_ether.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_NET_IF_ARP_H
+#include <net/if_arp.h>
+#endif
+#ifdef HAVE_NETINET_IF_ETHER_H
+#include <netinet/if_ether.h>
+#endif
+#endif
+
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <algorithm>
@@ -28,7 +61,6 @@
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
-
 
 using ola::network::MACAddress;
 using std::auto_ptr;
@@ -59,20 +91,11 @@ void MACAddressTest::testMACAddress() {
   MACAddress address1;
   OLA_ASSERT_TRUE(MACAddress::FromString(string("01:23:45:67:89:ab"),
                                          &address1));
-  OLA_ASSERT_EQ(
-      0,
-      memcmp(address1.Address().ether_addr_octet,
-             reinterpret_cast<uint8_t*>(&ether_addr1.ether_addr_octet),
-             MACAddress::LENGTH));
 
   // Test Get()
   uint8_t addr[MACAddress::LENGTH];
   address1.Get(addr);
-  OLA_ASSERT_EQ(
-      0,
-      memcmp(addr,
-             reinterpret_cast<uint8_t*>(&ether_addr1),
-             MACAddress::LENGTH));
+  OLA_ASSERT_EQ(0, memcmp(addr, hw_address, MACAddress::LENGTH));
 
   // test copy and assignment
   MACAddress address2(address1);

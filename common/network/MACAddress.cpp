@@ -18,13 +18,58 @@
  * Copyright (C) 2013 Peter Newman
  */
 
+#include "ola/network/MACAddress.h"
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef WIN32
+#include <winsock2.h>
+// TODO(Peter): Do something else, possibly define the type locally
+#else
+#include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
+#ifdef HAVE_NET_ETHERNET_H
+#include <net/ethernet.h>
+#endif
+// NetBSD and OpenBSD don't have net/ethernet.h
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NET_IF_H
+#include <net/if.h>
+#endif
+#ifdef HAVE_NET_IF_ETHER_H
+#include <net/if_ether.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+#ifdef HAVE_NET_IF_ARP_H
+#include <net/if_arp.h>
+#endif
+#ifdef HAVE_NETINET_IF_ETHER_H
+#include <netinet/if_ether.h>
+#endif
+#endif
+
+#ifdef __FreeBSD__
+// In the FreeBSD struct ether_addr, the single field is named octet, instead
+// of ether_addr_octet.
+// OS X does this too, but avoids it by adding the following line to its
+// header, for compatibility with linux and others:
+// http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/net/ethernet.h
+#define ether_addr_octet octet
+#endif
+
 #include <assert.h>
-#include <ola/network/MACAddress.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/StringUtils.h>
+#include <string.h>
 #include <iomanip>
 #include <string>
 #include <vector>
+
+#include "ola/network/NetworkUtils.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 namespace network {
@@ -32,10 +77,41 @@ namespace network {
 using std::string;
 using std::vector;
 
-/*
- * Convert a mac address to a human readable string
- * @return a string
- */
+MACAddress::MACAddress() {
+  memset(m_address, 0, LENGTH);
+}
+
+MACAddress::MACAddress(const uint8_t address[LENGTH]) {
+  memcpy(m_address, address, LENGTH);
+}
+
+MACAddress::MACAddress(const MACAddress &other) {
+  memcpy(m_address, other.m_address, LENGTH);
+}
+
+MACAddress& MACAddress::operator=(const MACAddress &other) {
+  if (this != &other) {
+    memcpy(m_address, other.m_address, LENGTH);
+  }
+  return *this;
+}
+
+bool MACAddress::operator==(const MACAddress &other) const {
+  return (memcmp(m_address, other.m_address, LENGTH) == 0);
+}
+
+bool MACAddress::operator<(const MACAddress &other) const {
+  return (memcmp(m_address, other.m_address, LENGTH) < 0);
+}
+
+bool MACAddress::operator>(const MACAddress &other) const {
+  return (memcmp(m_address, other.m_address, LENGTH) > 0);
+}
+
+void MACAddress::Get(uint8_t ptr[LENGTH]) const {
+  memcpy(ptr, m_address, LENGTH);
+}
+
 string MACAddress::ToString() const {
   /**
    * ether_ntoa_r doesn't exist on Mac, so can't use it; ether_ntoa isn't
@@ -46,7 +122,7 @@ string MACAddress::ToString() const {
     if (i != 0)
       str << ":";
     str << std::hex << std::setfill('0') << std::setw(2) <<
-      static_cast<int>(m_address.ether_addr_octet[i]);
+      static_cast<int>(m_address[i]);
   }
   return str.str();
 }
@@ -82,7 +158,7 @@ MACAddress* MACAddress::FromString(const std::string &address) {
   if (!StringToEther(address, &addr))
     return NULL;
 
-  return new MACAddress(addr);
+  return new MACAddress(addr.ether_addr_octet);
 }
 
 bool MACAddress::FromString(const std::string &address, MACAddress *target) {
@@ -91,14 +167,14 @@ bool MACAddress::FromString(const std::string &address, MACAddress *target) {
   if (!StringToEther(address, &addr))
     return false;
 
-  *target = MACAddress(addr);
+  *target = MACAddress(addr.ether_addr_octet);
   return true;
 }
 
 MACAddress MACAddress::FromStringOrDie(const string &address) {
   struct ether_addr addr;
   assert(StringToEther(address, &addr));
-  return MACAddress(addr);
+  return MACAddress(addr.ether_addr_octet);
 }
 }  // namespace network
 }  // namespace ola

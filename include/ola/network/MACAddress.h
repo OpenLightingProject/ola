@@ -21,10 +21,6 @@
 #ifndef INCLUDE_OLA_NETWORK_MACADDRESS_H_
 #define INCLUDE_OLA_NETWORK_MACADDRESS_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 /**
  * @addtogroup network
  * @{
@@ -33,46 +29,7 @@
  * @}
  */
 
-#ifdef WIN32
-#include <winsock2.h>
-// TODO(Peter): Do something else, possibly define the type locally
-#else
-#include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
-#ifdef HAVE_NET_ETHERNET_H
-#include <net/ethernet.h>
-#endif
-// NetBSD and OpenBSD don't have net/ethernet.h
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#ifdef HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-#ifdef HAVE_NET_IF_ETHER_H
-#include <net/if_ether.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_NET_IF_ARP_H
-#include <net/if_arp.h>
-#endif
-#ifdef HAVE_NETINET_IF_ETHER_H
-#include <netinet/if_ether.h>
-#endif
-#endif
-
-#ifdef __FreeBSD__
-// In the FreeBSD struct ether_addr, the single field is named octet, instead
-// of ether_addr_octet.
-// OS X does this too, but avoids it by adding the following line to its
-// header, for compatibility with linux and others:
-// http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/net/ethernet.h
-#define ether_addr_octet octet
-#endif
-
 #include <stdint.h>
-#include <string.h>
 #include <sstream>
 #include <string>
 
@@ -92,118 +49,86 @@ namespace network {
  */
 class MACAddress {
  public:
-    enum { LENGTH = ETHER_ADDR_LEN };
+  enum { LENGTH = 6 };
 
-    MACAddress() {
-      memset(m_address.ether_addr_octet, 0, LENGTH);
-    }
+  MACAddress();
 
-    explicit MACAddress(const struct ether_addr &address)
-        : m_address(address) {
-    }
+  /**
+   * @brief Construct a new MAC address from binary data.
+   * @param data a pointer to the memory containing the MAC address data. The
+   * data should be most significant byte first.
+   */
+  explicit MACAddress(const uint8_t address[LENGTH]);
 
-    /**
-     * @brief Construct a new MAC address from binary data.
-     * @param data a pointer to the memory containing the MAC address data. The
-     * data should be most significant byte first.
-     */
-    explicit MACAddress(const uint8_t *data) {
-      memcpy(m_address.ether_addr_octet, data, LENGTH);
-    }
+  MACAddress(const MACAddress &other);
 
-    MACAddress(const MACAddress &other)
-        : m_address(other.m_address) {
-    }
+  MACAddress& operator=(const MACAddress &other);
 
-    MACAddress& operator=(const MACAddress &other) {
-      if (this != &other) {
-        m_address = other.m_address;
-      }
-      return *this;
-    }
+  bool operator==(const MACAddress &other) const;
 
-    bool operator==(const MACAddress &other) const {
-      return (memcmp(m_address.ether_addr_octet,
-                     other.m_address.ether_addr_octet,
-                     LENGTH) == 0);
-    }
+  bool operator!=(const MACAddress &other) const {
+    return !(*this == other);
+  }
 
-    bool operator!=(const MACAddress &other) const {
-      return !(*this == other);
-    }
+  /**
+   * @brief Order addresses. Note that this won't order how humans expect
+   * because ether_addr is in network byte order.
+   * TODO(Peter): Check if this is actually true for MAC Addresses
+   */
+  bool operator<(const MACAddress &other) const;
 
-    /**
-     * @brief Order addresses. Note that this won't order how humans expect
-     * because ether_addr is in network byte order.
-     * TODO(Peter): Check if this is actually true for MAC Addresses
-     */
-    bool operator<(const MACAddress &other) const {
-      return (memcmp(m_address.ether_addr_octet,
-                     other.m_address.ether_addr_octet,
-                     LENGTH) < 0);
-    }
+  bool operator>(const MACAddress &other) const;
 
-    bool operator>(const MACAddress &other) const {
-      return (memcmp(m_address.ether_addr_octet,
-                     other.m_address.ether_addr_octet,
-                     LENGTH) > 0);
-    }
+  // copy the address in network byte order to a location. The location
+  // should be at least LENGTH bytes.
+  void Get(uint8_t ptr[LENGTH]) const;
 
-    const struct ether_addr& Address() const {
-      return m_address;
-    }
+  /**
+   * @brief Write the binary representation of the MAC address to memory.
+   * @param buffer a pointer to memory to write the MAC address to
+   * @param length the size of the memory block, should be at least LENGTH.
+   * @returns true if length was >= LENGTH, false otherwise.
+   */
+  bool Pack(uint8_t *buffer, unsigned int length) const {
+    if (length < LENGTH)
+      return false;
+    Get(buffer);
+    return true;
+  }
 
-    // copy the address in network byte order to a location. The location
-    // should be at least LENGTH bytes.
-    void Get(uint8_t ptr[LENGTH]) const {
-      memcpy(ptr,
-             reinterpret_cast<const uint8_t*>(&m_address),
-             LENGTH);
-    }
+  /**
+   * @brief Convert a mac address to a human readable string
+   * @return a string
+   */
+  std::string ToString() const;
 
-    /**
-     * @brief Write the binary representation of the MAC address to memory.
-     * @param buffer a pointer to memory to write the MAC address to
-     * @param length the size of the memory block, should be at least LENGTH.
-     * @returns true if length was >= LENGTH, false otherwise.
-     */
-    bool Pack(uint8_t *buffer, unsigned int length) const {
-      if (length < LENGTH)
-        return false;
-      Get(buffer);
-      return true;
-    }
+  friend std::ostream& operator<< (std::ostream &out,
+                                   const MACAddress &address) {
+    return out << address.ToString();
+  }
 
+  /**
+   * @brief Convert a string to a MACAddress object
+   * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
+   * 'nn.nn.nn.nn.nn.nn'
+   * @return a pointer to a MACAddress object if it worked, NULL otherwise
+   */
+  static MACAddress* FromString(const std::string &address);
 
-    std::string ToString() const;
+  /**
+   * @brief Convert a string to a MACAddress object
+   * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
+   * 'nn.nn.nn.nn.nn.nn'
+   * @param[out] target a pointer to a MACAddress object
+   * @return true if it worked, false otherwise
+   */
+  static bool FromString(const std::string &address, MACAddress *target);
 
-    friend std::ostream& operator<< (std::ostream &out,
-                                     const MACAddress &address) {
-      return out << address.ToString();
-    }
-
-    /**
-     * Convert a string to a MACAddress object
-     * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
-     * 'nn.nn.nn.nn.nn.nn'
-     * @return a pointer to a MACAddress object if it worked, NULL otherwise
-     */
-    static MACAddress* FromString(const std::string &address);
-
-    /**
-     * Convert a string to a MACAddress object
-     * @param address a string in the form 'nn:nn:nn:nn:nn:nn' or
-     * 'nn.nn.nn.nn.nn.nn'
-     * @param[out] target a pointer to a MACAddress object
-     * @return true if it worked, false otherwise
-     */
-    static bool FromString(const std::string &address, MACAddress *target);
-
-    // useful for testing
-    static MACAddress FromStringOrDie(const std::string &address);
+  // useful for testing
+  static MACAddress FromStringOrDie(const std::string &address);
 
  private:
-    struct ether_addr m_address;
+  uint8_t m_address[LENGTH];
 };
 /**
  * @}
