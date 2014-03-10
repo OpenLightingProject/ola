@@ -140,7 +140,7 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
     m_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR);
   OLA_ASSERT_EQ(1, connected_socket_count->Get());  // internal socket
   OLA_ASSERT_EQ(0, socket_count->Get());
-  // adding and removin a non-connected socket should fail
+  // adding and removing a non-connected socket should fail
   OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
   OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&bad_socket));
 

@@ -47,6 +47,8 @@ using std::string;
 
 bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
+// TODO(Peter): This currently allows some rather quirky values as per
+// inet_aton, we may want to restrict that in future to match IPV4Validator
 
 #ifdef HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), addr));
