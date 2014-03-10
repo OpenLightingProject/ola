@@ -38,7 +38,8 @@ void SchemaPrinter::Visit(const BoolFieldDescriptor *descriptor) {
 
 
 void SchemaPrinter::Visit(const IPV4FieldDescriptor *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": IPv4" << endl;
+  m_str << string(m_indent, ' ') << descriptor->Name() << ": IPv4 address"
+        << endl;
 }
 
 
