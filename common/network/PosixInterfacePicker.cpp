@@ -37,6 +37,9 @@
   #include <sys/socket.h>  // order is important for FreeBSD
 #endif
 #include <arpa/inet.h>
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>  // Required by FreeBSD
+#endif
 #include <errno.h>
 #include <net/if.h>
 #ifdef HAVE_SOCKADDR_DL_STRUCT
