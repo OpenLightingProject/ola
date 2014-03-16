@@ -16,7 +16,7 @@
  * JsonParser.h
  * A class for Parsing Json data.
  * See http://www.json.org/
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2014 Simon Newton
  */
 
 /**

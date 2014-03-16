@@ -15,7 +15,7 @@
  *
  * TreeHandler.h
  * A JsonHandlerInterface implementation that builds a parse tree.
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2014 Simon Newton
  */
 
 /**

@@ -16,7 +16,7 @@
  * JsonParser.cpp
  * A Json Parser.
  * See http://www.json.org/
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2014 Simon Newton
  */
 #include "ola/web/JsonParser.h"
 
@@ -193,13 +193,13 @@ static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
       return false;
     }
 
-    uint64_t unsignend_exponent;
+    uint64_t unsigned_exponent;
     if (isdigit(**input)) {
-      ExtractDigits(input, &unsignend_exponent);
+      ExtractDigits(input, &unsigned_exponent);
     } else {
       return false;
     }
-    int64_t exponent = (negative_exponent ? -1 : 1) * unsignend_exponent;
+    int64_t exponent = (negative_exponent ? -1 : 1) * unsigned_exponent;
 
     if (is_decimal) {
       d *= pow(10, exponent);
