@@ -50,6 +50,7 @@
 
 #include <ola/StringUtils.h>
 #include <ola/base/Macro.h>
+#include <stdint.h>
 #include <map>
 #include <ostream>
 #include <sstream>
@@ -158,6 +159,70 @@ class JsonIntValue: public JsonValue {
 
  private:
     const int m_value;
+};
+
+/**
+ * @brief A unsigned int value.
+ */
+class JsonUInt64Value: public JsonValue {
+ public:
+    /**
+     * @brief Create a new JsonUIntValue
+     * @param value the unsigned int to use.
+     */
+    explicit JsonUInt64Value(uint64_t value)
+        : m_value(value) {
+    }
+
+    void ToString(std::ostream *output, unsigned int) const {
+      *output << m_value;
+    }
+
+ private:
+    const uint64_t m_value;
+};
+
+
+/**
+ * @brief A signed int value.
+ */
+class JsonInt64Value: public JsonValue {
+ public:
+    /**
+     * @brief Create a new JsonIntValue
+     * @param value the int to use.
+     */
+    explicit JsonInt64Value(int64_t value)
+        : m_value(value) {
+    }
+
+    void ToString(std::ostream *output, unsigned int) const {
+      *output << m_value;
+    }
+
+ private:
+    const int64_t m_value;
+};
+
+/**
+ * @brief A double value.
+ */
+class JsonDoubleValue: public JsonValue {
+ public:
+    /**
+     * @brief Create a new JsonUIntValue
+     * @param value the unsigned int to use.
+     */
+    explicit JsonDoubleValue(long double value)
+        : m_value(value) {
+    }
+
+    void ToString(std::ostream *output, unsigned int) const {
+      *output << m_value;
+    }
+
+ private:
+    const long double m_value;
 };
 
 
@@ -294,6 +359,13 @@ class JsonObject: public JsonValue {
     class JsonArray* AddArray(const std::string &key);
 
     /**
+     * @brief Set the key to the supplied JsonValue.
+     * @param key the key to add
+     * @param the JsonValue object, ownership is transferred.
+     */
+    void AddValue(const std::string &key, JsonValue *value);
+
+    /**
      * @brief Set the given key to a raw value.
      * @param key the key to add
      * @param value the raw value to append.
@@ -303,7 +375,7 @@ class JsonObject: public JsonValue {
     void ToString(std::ostream *output, unsigned int indent) const;
 
  private:
-    typedef std::map<std::string, JsonValue*> MemberMap;
+    typedef std::map<std::string, const JsonValue*> MemberMap;
     MemberMap m_members;
 
     DISALLOW_COPY_AND_ASSIGN(JsonObject);
@@ -367,6 +439,13 @@ class JsonArray: public JsonValue {
     }
 
     /**
+     * @brief Append a JsonValue. Takes ownership of the pointer.
+     */
+    void Append(const JsonValue *value) {
+      m_values.push_back(value);
+    }
+
+    /**
      * @brief Append a JsonObject to the array
      * @returns the new JsonObject. Ownership is not transferred and the
      * pointer is valid for the lifetime of this JsonArray.
@@ -400,7 +479,7 @@ class JsonArray: public JsonValue {
     void ToString(std::ostream *output, unsigned int indent) const;
 
  private:
-    typedef std::vector<JsonValue*> ValuesVector;
+    typedef std::vector<const JsonValue*> ValuesVector;
     ValuesVector m_values;
     // true if this array contains a nested object or array
     bool m_complex_type;
@@ -413,18 +492,18 @@ class JsonArray: public JsonValue {
  */
 class JsonWriter {
  public:
-    /**
-     * @brief Write the string representation of the JsonValue to a ostream.
-     * @param output the ostream to write to
-     * @param value the JsonValue to serialize.
-     */
-    static void Write(std::ostream *output, const JsonValue &value);
+  /**
+   * @brief Write the string representation of the JsonValue to a ostream.
+   * @param output the ostream to write to
+   * @param value the JsonValue to serialize.
+   */
+  static void Write(std::ostream *output, const JsonValue &value);
 
-    /**
-     * @brief Get the string representation of the JsonValue.
-     * @param value the JsonValue to serialize.
-     */
-    static std::string AsString(const JsonValue &value);
+  /**
+   * @brief Get the string representation of the JsonValue.
+   * @param value the JsonValue to serialize.
+   */
+  static std::string AsString(const JsonValue &value);
 };
 /**@}*/
 }  // namespace web

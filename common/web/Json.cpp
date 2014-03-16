@@ -75,8 +75,17 @@ JsonArray* JsonObject::AddArray(const string &key) {
   return array;
 }
 
+void JsonObject::AddValue(const string &key, JsonValue *value) {
+  STLReplaceAndDelete(&m_members, key, value);
+}
+
 void JsonObject::ToString(ostream *output, unsigned int indent) const {
   Indent(output, indent);
+  if (m_members.empty()) {
+    *output << "{}";
+    return;
+  }
+
   *output << "{\n";
   MemberMap::const_iterator iter = m_members.begin();
   string separator = "";
