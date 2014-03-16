@@ -22,8 +22,9 @@
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 
-#include <stdint.h>
 #include <math.h>
+#include <stdint.h>
+#include <string.h>
 
 #include <memory>
 #include <string>
