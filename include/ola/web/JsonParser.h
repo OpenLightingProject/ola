@@ -32,12 +32,11 @@
 #ifndef INCLUDE_OLA_WEB_JSONPARSER_H_
 #define INCLUDE_OLA_WEB_JSONPARSER_H_
 
+#include <ola/web/JsonHandler.h>
 #include <string>
 
 namespace ola {
 namespace web {
-
-class JsonValue;
 
 /**
  * @addtogroup json
@@ -52,13 +51,15 @@ class JsonParser {
   /**
    * @brief Parse a string with json data
    * @param input the input string
-   * @param error set to an error message if parsing fails.
-   * @return a JsonValue or NULL if parsing failed.
+   * @param handler the JsonHandlerInterface to pass tokens to.
+   * @return true if parsing was successfull, false otherwise.
    */
-  static JsonValue* Parse(const std::string &input, std::string *error);
+  static bool Parse(const std::string &input,
+                    JsonHandlerInterface *handler);
 
  private:
-  static JsonValue* ParseRaw(const char *input, std::string *error);
+  static bool ParseRaw(const char *input,
+                       JsonHandlerInterface *handler);
 };
 
 /**@}*/

@@ -39,7 +39,7 @@ using std::auto_ptr;
 using std::string;
 using std::stringstream;
 
-static JsonValue *ParseTrimedInput(const char **input, string *error);
+static bool ParseTrimedInput(const char **input, JsonHandlerInterface *handler);
 
 /**
  * @brief Trim leading whitespace from a string.
@@ -109,11 +109,11 @@ static bool ParseString(const char **input, string* str) {
           OLA_INFO << "unicode character found";
           break;
         default:
-          // *str = "Invalid escape character: \\" << **input;
+          OLA_WARN << "Invalid escape character: \\" << **input;
           return false;
       }
       str->push_back(append_char);
-      *input += 1;
+      (*input)++;
     }
   }
   return true;
@@ -138,13 +138,13 @@ bool ExtractDigits(const char **input, uint64_t *i,
 /**
  * Parse a JsonNumber
  */
-static JsonValue* ParseNumber(const char **input) {
+static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
   bool is_decimal = false;
   bool is_negative = (**input == '-');
   if (is_negative) {
     (*input)++;
     if (**input == 0) {
-      return NULL;
+      return false;
     }
   }
 
@@ -158,7 +158,7 @@ static JsonValue* ParseNumber(const char **input) {
   } else if (isdigit(**input)) {
     ExtractDigits(input, &i);
   } else {
-    return NULL;
+    return false;
   }
 
   if (**input == '.') {
@@ -190,14 +190,14 @@ static JsonValue* ParseNumber(const char **input) {
     }
 
     if (**input == 0) {
-      return NULL;
+      return false;
     }
 
     uint64_t unsignend_exponent;
     if (isdigit(**input)) {
       ExtractDigits(input, &unsignend_exponent);
     } else {
-      return NULL;
+      return false;
     }
     int64_t exponent = (negative_exponent ? -1 : 1) * unsignend_exponent;
 
@@ -219,62 +219,63 @@ static JsonValue* ParseNumber(const char **input) {
     if (fabs(d) == 0.0) {
       d = 0.0;
     }
-    return new JsonDoubleValue(d);
+    handler->Number(d);
   } else if (is_negative) {
     int64_t value = -1 * i;
     if (value < INT32_MIN || value > INT32_MAX) {
-      return new JsonInt64Value(value);
+      handler->Number(value);
     } else {
-      return new JsonIntValue(value);
+      handler->Number(static_cast<int32_t>(value));
     }
   } else {
     if (i > UINT32_MAX) {
-      return new JsonUInt64Value(i);
+      handler->Number(i);
     } else {
-      return new JsonUIntValue(i);
+      handler->Number(static_cast<uint32_t>(i));
     }
   }
+  return true;
 }
 
 /**
  * Starts from the first character after the  '['.
  */
-static JsonValue* ParseArray(const char **input, string *error) {
+static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
   if (!TrimWhitespace(input)) {
-    return NULL;
+    return false;
   }
+
+  handler->OpenArray();
 
   if (**input == ']') {
     (*input)++;
-    return new JsonArray();
+    handler->CloseArray();
+    return true;
   }
-
-  auto_ptr<JsonArray> array(new JsonArray());
 
   while (true) {
     if (!TrimWhitespace(input)) {
-      return NULL;
+      return false;
     }
 
-    auto_ptr<JsonValue> value(ParseTrimedInput(input, error));
-    if (value.get()) {
-      array->Append(value.release());
-    } else {
-      return NULL;
+    bool result = ParseTrimedInput(input, handler);
+    if (!result) {
+      return false;
     }
 
     if (!TrimWhitespace(input)) {
-      return NULL;
+      return false;
     }
 
     switch (**input) {
       case ']':
         (*input)++;  // move past the ]
-        return array.release();
+        handler->CloseArray();
+        return true;
       case ',':
         break;
       default:
-        return NULL;
+        return false;
     }
     (*input)++;  // move past the ,
   }
@@ -283,75 +284,73 @@ static JsonValue* ParseArray(const char **input, string *error) {
 /**
  * Starts from the first character after the  '{'.
  */
-static JsonValue* ParseObject(const char **input, string *error) {
+static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
   if (!TrimWhitespace(input)) {
-    return NULL;
+    return false;
   }
+
+  handler->OpenObject();
 
   if (**input == '}') {
     (*input)++;
-    return new JsonObject();
+    handler->CloseObject();
+    return true;
   }
-
-  auto_ptr<JsonObject> object(new JsonObject());
 
   while (true) {
     if (!TrimWhitespace(input)) {
-      return NULL;
+      return false;
     }
 
     if (**input != '"') {
-      return NULL;
+      return false;
     }
     (*input)++;
 
     string key;
     if (!ParseString(input, &key)) {
-      return NULL;
+      return false;
     }
-    OLA_INFO << "input is now . " << *input << ".";
+    handler->ObjectKey(key);
 
     if (!TrimWhitespace(input)) {
-      return NULL;
+      return false;
     }
 
     if (**input != ':') {
-      return NULL;
+      return false;
     }
     (*input)++;
 
     if (!TrimWhitespace(input)) {
-      return NULL;
+      return false;
     }
 
-    auto_ptr<JsonValue> value(ParseTrimedInput(input, error));
-    if (value.get()) {
-      object->AddValue(key, value.release());
-    } else {
-      return NULL;
+    bool result = ParseTrimedInput(input, handler);
+    if (!result) {
+      return false;
     }
 
     if (!TrimWhitespace(input)) {
-      return NULL;
+      return false;
     }
 
     switch (**input) {
       case '}':
         (*input)++;  // move past the }
-        return object.release();
+        handler->CloseObject();
+        return true;
       case ',':
         break;
       default:
-        return NULL;
+        return false;
     }
     (*input)++;  // move past the ,
   }
 }
 
-/**
- *
- */
-static JsonValue *ParseTrimedInput(const char **input, string *error) {
+static bool ParseTrimedInput(const char **input,
+                             JsonHandlerInterface *handler) {
   static const char TRUE_STR[] = "true";
   static const char FALSE_STR[] = "false";
   static const char NULL_STR[] = "null";
@@ -360,56 +359,59 @@ static JsonValue *ParseTrimedInput(const char **input, string *error) {
     (*input)++;
     string str;
     if (ParseString(input, &str)) {
-      return new JsonStringValue(str);
+      handler->String(str);
+      return true;
     }
-    return NULL;
+    return false;
   } else if (strncmp(*input, TRUE_STR, sizeof(TRUE_STR) - 1) == 0) {
     *input += sizeof(TRUE_STR) - 1;
-    return new JsonBoolValue(true);
+    handler->Bool(true);
+    return true;
   } else if (strncmp(*input, FALSE_STR, sizeof(FALSE_STR) - 1) == 0) {
     *input += sizeof(FALSE_STR) - 1;
-    return new JsonBoolValue(false);
+    handler->Bool(false);
+    return true;
   } else if (strncmp(*input, NULL_STR, sizeof(NULL_STR) - 1) == 0) {
     *input += sizeof(NULL_STR) - 1;
-    return new JsonNullValue();
+    handler->Null();
+    return true;
   } else if (**input == '-' || isdigit(**input)) {
-    return ParseNumber(input);
+    return ParseNumber(input, handler);
   } else if (**input == '[') {
     (*input)++;
-    return ParseArray(input, error);
+    return ParseArray(input, handler);
   } else if (**input == '{') {
     (*input)++;
-    return ParseObject(input, error);
+    return ParseObject(input, handler);
   }
-  return NULL;
+  return false;
 }
 
-JsonValue* JsonParser::Parse(const std::string &input, string *error) {
+bool JsonParser::Parse(const std::string &input,
+                       JsonHandlerInterface *handler) {
   // TODO(simon): Do we need to convert to unicode here? I think this may be
   // an issue on Windows.
-  OLA_INFO << "-------------------";
   char* input_data = new char[input.size() + 1];
-  OLA_INFO << "input size is " << input.size() << ", " << input;
   strncpy(input_data, input.c_str(), input.size() + 1);
-  OLA_INFO << "copied size is " << strlen(input_data);
 
-  JsonValue *value = ParseRaw(input_data, error);
+  bool result = ParseRaw(input_data, handler);
   delete[] input_data;
-  return value;
-  (void) error;
+  return result;
 }
 
-
-JsonValue* JsonParser::ParseRaw(const char *input, string *error) {
+bool JsonParser::ParseRaw(const char *input,
+                          JsonHandlerInterface *handler) {
   if (!TrimWhitespace(&input)) {
-    return NULL;
+    return false;
   }
 
-  auto_ptr<JsonValue> value(ParseTrimedInput(&input, error));
-  if (TrimWhitespace(&input)) {
-    return NULL;
+  handler->Begin();
+  bool result = ParseTrimedInput(&input, handler);
+  if (!result) {
+    return false;
   }
-  return value.release();
+  handler->End();
+  return !TrimWhitespace(&input);
 }
 }  // namespace web
 }  // namespace ola

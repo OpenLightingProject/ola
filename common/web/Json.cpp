@@ -75,7 +75,7 @@ JsonArray* JsonObject::AddArray(const string &key) {
   return array;
 }
 
-void JsonObject::AddValue(const string &key, JsonValue *value) {
+void JsonObject::AddValue(const string &key, const JsonValue *value) {
   STLReplaceAndDelete(&m_members, key, value);
 }
 

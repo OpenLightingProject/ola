@@ -48,6 +48,31 @@ namespace ola {
  */
 
 /**
+ * @brief Clear a stack.
+ * @tparam T A stack.
+ * @post The stack is empty.
+ */
+template<typename T>
+void STLEmptyStack(T *stack) {
+  while (!stack->empty()) {
+    stack->pop();
+  }
+}
+
+/**
+ * @brief Clear a stack and delete all pointers..
+ * @tparam T A stack of pointers.
+ * @post The stack is empty.
+ */
+template<typename T>
+void STLEmptyStackAndDelete(T *stack) {
+  while (!stack->empty()) {
+    delete stack->top();
+    stack->pop();
+  }
+}
+
+/**
  * @brief Delete the elements of a Sequence.
  * @param sequence the Sequence to delete the elements from.
  * @tparam T A Sequence.
