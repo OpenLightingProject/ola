@@ -32,6 +32,7 @@
 #ifndef INCLUDE_OLA_WEB_JSONHANDLER_H_
 #define INCLUDE_OLA_WEB_JSONHANDLER_H_
 
+#include <stdint.h>
 #include <ola/base/Macro.h>
 #include <string>
 
