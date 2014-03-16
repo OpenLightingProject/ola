@@ -56,10 +56,6 @@ class JsonParser {
    */
   static bool Parse(const std::string &input,
                     JsonHandlerInterface *handler);
-
- private:
-  static bool ParseRaw(const char *input,
-                       JsonHandlerInterface *handler);
 };
 
 /**@}*/

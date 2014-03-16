@@ -387,20 +387,8 @@ static bool ParseTrimedInput(const char **input,
   return false;
 }
 
-bool JsonParser::Parse(const std::string &input,
-                       JsonHandlerInterface *handler) {
-  // TODO(simon): Do we need to convert to unicode here? I think this may be
-  // an issue on Windows.
-  char* input_data = new char[input.size() + 1];
-  strncpy(input_data, input.c_str(), input.size() + 1);
 
-  bool result = ParseRaw(input_data, handler);
-  delete[] input_data;
-  return result;
-}
-
-bool JsonParser::ParseRaw(const char *input,
-                          JsonHandlerInterface *handler) {
+bool ParseRaw(const char *input, JsonHandlerInterface *handler) {
   if (!TrimWhitespace(&input)) {
     return false;
   }
@@ -412,6 +400,19 @@ bool JsonParser::ParseRaw(const char *input,
   }
   handler->End();
   return !TrimWhitespace(&input);
+}
+
+bool JsonParser::Parse(const std::string &input,
+                       JsonHandlerInterface *handler) {
+  // TODO(simon): Do we need to convert to unicode here? I think this may be
+  // an issue on Windows.
+  // Copying the input sucks though, so we should use input.c_str() if we can.
+  char* input_data = new char[input.size() + 1];
+  strncpy(input_data, input.c_str(), input.size() + 1);
+
+  bool result = ParseRaw(input_data, handler);
+  delete[] input_data;
+  return result;
 }
 }  // namespace web
 }  // namespace ola
