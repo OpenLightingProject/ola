@@ -18,8 +18,19 @@
  * Copyright (C) 2005-2014 Simon Newton
  */
 
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>  // Required by FreeBSD
+#endif
+#ifdef HAVE_NET_IF_ARP_H
+#include <net/if_arp.h>
+#endif
+
 #include <stdint.h>
 #include <string.h>
+
 #include <string>
 #include <vector>
 
@@ -31,16 +42,6 @@
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>  // Required by FreeBSD
-#endif
-#ifdef HAVE_NET_IF_ARP_H
-#include <net/if_arp.h>
 #endif
 
 namespace ola {
