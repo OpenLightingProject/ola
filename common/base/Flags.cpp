@@ -285,13 +285,21 @@ void FlagRegistry::GenManPage() {
   time_t curtime;
   curtime = time(NULL);
   struct tm loctime;
+#ifdef WIN32
+  loctime = *gmtime(&curtime);
+#else
   gmtime_r(&curtime, &loctime);
+#endif
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
   // Not using FilenameFromPath to avoid further dependancies
-  // This won't work on Windows as it's using the wrong path separator
   string exe_name = m_argv0;
-  string::size_type last_path_sep = m_argv0.find_last_of('/');
+#ifdef WIN32
+  char directory_separator = '\\';
+#else
+  char directory_separator = '/';
+#endif
+  string::size_type last_path_sep = m_argv0.find_last_of(directory_separator);
   if (last_path_sep != string::npos) {
     // Don't return the path sep itself
     exe_name = m_argv0.substr(last_path_sep + 1);
