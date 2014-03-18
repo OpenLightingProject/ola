@@ -286,7 +286,7 @@ void FlagRegistry::GenManPage() {
   curtime = time(NULL);
   struct tm loctime;
 #ifdef WIN32
-  loctime = *gmtime(&curtime);
+  loctime = *gmtime(&curtime);  // NOLINT(runtime/threadsafe_fn)
 #else
   gmtime_r(&curtime, &loctime);
 #endif
