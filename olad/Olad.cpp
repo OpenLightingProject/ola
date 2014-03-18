@@ -48,7 +48,9 @@ using std::endl;
 
 DEFINE_bool(http, true, "Disable the HTTP server.");
 DEFINE_bool(http_quit, true, "Disable the HTTP /quit handler.");
+#ifndef WIN32
 DEFINE_s_bool(daemon, f, false, "Fork and run in the background.");
+#endif
 DEFINE_s_string(http_data_dir, d, "", "The path to the static www content.");
 DEFINE_s_string(interface, i, "",
                 "The interface name (e.g. eth0) or IP of the network interface "
@@ -90,8 +92,10 @@ int main(int argc, char *argv[]) {
   }
   #endif
 
+#ifndef WIN32
   if (FLAGS_daemon)
     ola::Daemonise();
+#endif
 
   ola::ExportMap export_map;
   ola::ServerInit(argc, argv, &export_map);
