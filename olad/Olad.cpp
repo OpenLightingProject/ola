@@ -82,7 +82,9 @@ int main(int argc, char *argv[]) {
   OLA_INFO << "OLA Daemon version " << ola::base::Version::GetVersion();
 
   #ifndef OLAD_SKIP_ROOT_CHECK
-  if (!ola::GetEUID()) {
+  uid_t uid;
+  ola::GetEUID(&uid);
+  if (ola::SupportsUIDs() && !uid) {
     OLA_FATAL << "Attempting to run as root, aborting.";
     return ola::EXIT_UNAVAILABLE;
   }

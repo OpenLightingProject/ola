@@ -68,11 +68,22 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CredentialsTest);
  * Check we're not running as root.
  */
 void CredentialsTest::testGetUIDs() {
-  uid_t uid = GetUID();
-  OLA_ASSERT_TRUE_MSG(uid, "Don't run the tests as root!");
+  if (SupportsUIDs()) {
+    uid_t uid;
+    OLA_ASSERT_TRUE(GetUID(&uid));
+    OLA_ASSERT_TRUE_MSG(uid, "Don't run the tests as root!");
 
-  uid_t euid = GetEUID();
-  OLA_ASSERT_TRUE_MSG(euid, "Don't run the tests as suid root!");
+    uid_t euid;
+    OLA_ASSERT_TRUE(GetEUID(&euid));
+    OLA_ASSERT_TRUE_MSG(euid, "Don't run the tests as suid root!");
+  } else {
+    // Make sure the Get*UID functions actually return false.
+    uid_t uid;
+    OLA_ASSERT_FALSE(GetUID(&uid));
+
+    uid_t euid;
+    OLA_ASSERT_FALSE(GetEUID(&euid));
+  }
 }
 
 
@@ -80,11 +91,22 @@ void CredentialsTest::testGetUIDs() {
  * Check we're not running as root.
  */
 void CredentialsTest::testGetGIDs() {
-  gid_t gid = GetGID();
-  OLA_ASSERT_TRUE_MSG(gid, "Don't run the tests as root!");
+  if (SupportsUIDs()) {
+    gid_t gid;
+    OLA_ASSERT_TRUE(GetGID(&gid));
+    OLA_ASSERT_TRUE_MSG(success && gid, "Don't run the tests as root!");
 
-  gid_t egid = GetEGID();
-  OLA_ASSERT_TRUE_MSG(egid, "Don't run the tests as sgid root!");
+    gid_t egid;
+    OLA_ASSERT_TRUE(GetEGID(&egid));
+    OLA_ASSERT_TRUE_MSG(success && egid, "Don't run the tests as sgid root!");
+  } else {
+    // Make sure the Get*GID functions actually return false.
+    gid_t gid;
+    OLA_ASSERT_FALSE(GetGID(&gid));
+
+    gid_t egid;
+    OLA_ASSERT_FALSE(GetEGID(&egid));
+  }
 }
 
 
@@ -92,12 +114,15 @@ void CredentialsTest::testGetGIDs() {
  * Check SetUID as much as we can.
  */
 void CredentialsTest::testSetUID() {
-  uid_t euid = GetEUID();
+  if (SupportsUIDs()) {
+    uid_t euid;
+    OLA_ASSERT_TRUE(GetEUID(&euid));
 
-  if (euid) {
-    OLA_ASSERT_TRUE(SetUID(euid));
-    OLA_ASSERT_FALSE(SetUID(0));
-    OLA_ASSERT_FALSE(SetUID(euid + 1));
+    if (euid) {
+      OLA_ASSERT_TRUE(SetUID(euid));
+      OLA_ASSERT_FALSE(SetUID(0));
+      OLA_ASSERT_FALSE(SetUID(euid + 1));
+    }
   }
 }
 
@@ -106,12 +131,15 @@ void CredentialsTest::testSetUID() {
  * Check SetGID as much as we can.
  */
 void CredentialsTest::testSetGID() {
-  gid_t egid = GetEGID();
+  if (SupportsUIDs()) {
+    gid_t egid;
+    OLA_ASSERT_TRUE(GetEGID(&egid));
 
-  if (egid) {
-    OLA_ASSERT_TRUE(SetGID(egid));
-    OLA_ASSERT_FALSE(SetGID(0));
-    OLA_ASSERT_FALSE(SetGID(egid + 1));
+    if (egid) {
+      OLA_ASSERT_TRUE(SetGID(egid));
+      OLA_ASSERT_FALSE(SetGID(0));
+      OLA_ASSERT_FALSE(SetGID(egid + 1));
+    }
   }
 }
 
@@ -120,19 +148,29 @@ void CredentialsTest::testSetGID() {
  * Check the GetPasswd functions work.
  */
 void CredentialsTest::testGetPasswd() {
-  uid_t uid = GetUID();
+  if (SupportsUIDs()) {
+    uid_t uid;
+    OLA_ASSERT_TRUE(GetUID(&uid));
 
-  PasswdEntry passwd_entry;
-  OLA_ASSERT_TRUE(GetPasswdUID(uid, &passwd_entry));
-  // at the very least we shoud have a name
-  OLA_ASSERT_FALSE(passwd_entry.pw_name.empty());
-  OLA_ASSERT_EQ(uid, passwd_entry.pw_uid);
+    PasswdEntry passwd_entry;
+    OLA_ASSERT_TRUE(GetPasswdUID(uid, &passwd_entry));
+    // at the very least we shoud have a name
+    OLA_ASSERT_FALSE(passwd_entry.pw_name.empty());
+    OLA_ASSERT_EQ(uid, passwd_entry.pw_uid);
 
-  // now fetch by name and check it's the same
-  // this could fail. if the accounts were really messed up
-  PasswdEntry passwd_entry2;
-  OLA_ASSERT_TRUE(GetPasswdName(passwd_entry.pw_name, &passwd_entry2));
-  OLA_ASSERT_EQ(uid, passwd_entry2.pw_uid);
+    // now fetch by name and check it's the same
+    // this could fail. if the accounts were really messed up
+    PasswdEntry passwd_entry2;
+    OLA_ASSERT_TRUE(GetPasswdName(passwd_entry.pw_name, &passwd_entry2));
+    OLA_ASSERT_EQ(uid, passwd_entry2.pw_uid);
+  } else {
+    // Make sure GetPasswd* actually return false.
+    PasswdEntry unused;
+    OLA_ASSERT_FALSE(GetPasswdUID(0, &unused));
+
+    // Check with an account name that likely exists.
+    OLA_ASSERT_FALSE(GetPasswdName("SYSTEM", &unused));
+  }
 }
 
 
@@ -140,21 +178,31 @@ void CredentialsTest::testGetPasswd() {
  * Check the GetGroup functions work.
  */
 void CredentialsTest::testGetGroup() {
-  gid_t gid = GetGID();
+  if (SupportsUIDs()) {
+    gid_t gid;
+    OLA_ASSERT_TRUE(GetGID(&gid));
 
-  GroupEntry group_entry;
-  // not all systems will be configured with a group entry so this isn't a
-  // failure.
-  bool ok = GetGroupGID(gid, &group_entry);
-  if (ok) {
-    // at the very least we shoud have a name
-    OLA_ASSERT_FALSE(group_entry.gr_name.empty());
-    OLA_ASSERT_EQ(gid, group_entry.gr_gid);
+    GroupEntry group_entry;
+    // not all systems will be configured with a group entry so this isn't a
+    // failure.
+    bool ok = GetGroupGID(gid, &group_entry);
+    if (ok) {
+      // at the very least we shoud have a name
+      OLA_ASSERT_FALSE(group_entry.gr_name.empty());
+      OLA_ASSERT_EQ(gid, group_entry.gr_gid);
 
-    // now fetch by name and check it's the same
-    // this could fail. if the accounts were really messed up
-    GroupEntry group_entry2;
-    OLA_ASSERT_TRUE(GetGroupName(group_entry.gr_name, &group_entry2));
-    OLA_ASSERT_EQ(gid, group_entry2.gr_gid);
+      // now fetch by name and check it's the same
+      // this could fail. if the accounts were really messed up
+      GroupEntry group_entry2;
+      OLA_ASSERT_TRUE(GetGroupName(group_entry.gr_name, &group_entry2));
+      OLA_ASSERT_EQ(gid, group_entry2.gr_gid);
+    }
+  } else {
+  // Make sure GetPasswd* actually return false.
+    GroupEntry unused;
+    OLA_ASSERT_FALSE(GetGroupGID(0, &unused));
+
+    // Check with a group name that might exist.
+    OLA_ASSERT_FALSE(GetGroupName("SYSTEM", &unused));
   }
 }

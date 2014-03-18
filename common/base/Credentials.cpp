@@ -30,8 +30,10 @@
 #endif
 
 #include <errno.h>
+#ifndef WIN32
 #include <grp.h>
 #include <pwd.h>
+#endif
 #include <string.h>
 #include <unistd.h>
 
@@ -48,46 +50,106 @@ using std::string;
  * @{
  */
 
-uid_t GetUID() {
-  return getuid();
+bool SupportsUIDs() {
+#ifdef WIN32
+  return false;
+#else
+  return true;
+#endif
+}
+
+bool GetUID(uid_t* uid) {
+#ifdef WIN32
+  (void)uid;
+  return false;
+#else
+  if (uid) {
+    *uid = getuid();
+    return true;
+  } else {
+    return false;
+  }
+#endif
 }
 
 
-uid_t GetEUID() {
-  return geteuid();
+bool GetEUID(uid_t* euid) {
+#ifdef WIN32
+  (void)euid;
+  return false;
+#else
+  if (uid) {
+    *uid = geteuid();
+    return true;
+  } else {
+    return false;
+  }
+#endif
 }
 
 
-gid_t GetGID() {
-  return getgid();
+bool GetGID(gid_t* gid) {
+#ifdef WIN32
+  (void)gid;
+  return false;
+#else
+  if (gid) {
+    *gid = getgid();
+    return true;
+  } else {
+    return false;
+  }
+#endif
 }
 
 
-gid_t GetEGID() {
-  return getegid();
+bool GetEGID(gid_t* egid) {
+#ifdef WIN32
+  (void)egid;
+  return false;
+#else
+  if (gid) {
+    *gid = getegid();
+    return true;
+  } else {
+    return false;
+  }
+#endif
 }
 
 
 bool SetUID(uid_t new_uid) {
+#ifdef WIN32
+  (void)new_uid;
+  return false;
+#else
   if (setuid(new_uid)) {
     OLA_WARN << "setuid failed with " << strerror(errno);
     return false;
   }
   return true;
+#endif
 }
 
 
 bool SetGID(gid_t new_gid) {
+#ifdef WIN32
+  (void)new_gid;
+  return false;
+#else
   if (setgid(new_gid)) {
     OLA_WARN << "setgid failed with " << strerror(errno);
     return false;
   }
   return true;
+#endif
 }
 
 /**
  * @}
  */
+
+#ifndef WIN32
 
 /** @private */
 template <typename F, typename arg>
@@ -151,24 +213,39 @@ bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
   return true;
 }
 
+#endif  // !WIN32
+
 
 bool GetPasswdName(const string &name, PasswdEntry *passwd) {
+#ifdef WIN32
+  (void)name;
+  (void)passwd;
+  return false;
+#else
 #ifdef HAVE_GETPWNAM_R
   return GenericGetPasswdReentrant(getpwnam_r, name.c_str(), passwd);
 #else
   return GenericGetPasswd(getpwnam, name.c_str(), passwd);
 #endif
+#endif
 }
 
 
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
+#ifdef WIN32
+  (void)uid;
+  (void)passwd;
+  return false;
+#else
 #ifdef HAVE_GETPWUID_R
   return GenericGetPasswdReentrant(getpwuid_r, uid, passwd);
 #else
   return GenericGetPasswd(getpwuid, uid, passwd);
 #endif
+#endif
 }
 
+#ifndef WIN32
 
 /** @private */
 template <typename F, typename arg>
@@ -227,21 +304,35 @@ bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
   return true;
 }
 
+#endif  // !Win32
+
 
 bool GetGroupName(const string &name, GroupEntry *group_entry) {
+#ifdef WIN32
+  (void)name;
+  (void)group_entry;
+  return false;
+#else
 #ifdef HAVE_GETGRNAM_R
   return GenericGetGroupReentrant(getgrnam_r, name.c_str(), group_entry);
 #else
   return GenericGetGroup(getgrnam, name.c_str(), group_entry);
 #endif
+#endif
 }
 
 
 bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
+#ifdef WIN32
+  (void)uid;
+  (void)group_entry;
+  return false;
+#else
 #ifdef HAVE_GETGRGID_R
   return GenericGetGroupReentrant(getgrgid_r, uid, group_entry);
 #else
   return GenericGetGroup(getgrgid, uid, group_entry);
+#endif
 #endif
 }
 }  // namespace ola
