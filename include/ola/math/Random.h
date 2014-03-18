@@ -24,7 +24,6 @@
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
-#include <sys/uio.h>
 #include <deque>
 #include <iostream>
 #include <queue>
