@@ -1,0 +1,65 @@
+!!! The Windows port of OLA is work-in-progress !!!
+
+==================
+Basic Requirements
+==================
+
+To build OLA on Windows with MinGW, you need an up-to-date installation. The MinGW project provides a package manager (MinGW Installation Manager, available at http://sourceforge.net/projects/mingw/files/Installer/).
+
+You need to select:
+- mingw-developer-toolkit
+- msys-base
+- msys-coreutils
+- msys-wget
+
+!!! TODO: Check and update the list above !!!
+
+Open a MSYS shell an edit ~/.bashrc. Add the following lines:
+
+
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+export CPPFLAGS="-I/usr/local/include"
+export LDFLAGS="-L/usr/local/lib"
+
+In addition, edit ~/.profile and add
+
+[ -f ~/.bashrc ] && . ~/.bashrc
+
+
+==============================
+Additional tools and libraries
+==============================
+
+pkg-config
+----------
+- Download pkg-config-lite from http://sourceforge.net/projects/pkgconfiglite/files/
+- Extract to MinGW directory
+
+msys-git
+--------
+- Download msysgit from https://code.google.com/p/msysgit/downloads/list
+- Install and make sure to select "Check-out as is, commit UNIX-style"
+
+libuuid
+-------
+- Download and extract the latest libuuid tarball from https://code.google.com/p/gnome-build-stage-1/downloads/list
+- Configure, compile and install it using the MinGW MSYS shell
+
+protobuf
+--------
+- Download and extract the latest protobuf tarball from https://code.google.com/p/protobuf/downloads/list
+- Configure, compile and install it using the MinGW MSYS shell
+
+============
+Building OLA
+============
+
+* cd ~/your/development/directory
+* git clone https://github.com/OpenLightingProject/ola.git ola
+* cd ola
+* autoreconf -i -f
+* ./configure --disable-doxygen-doc --disable-unittests --disable-examples --disable-http --disable-libftdi --disable-libusb --disable-osc --disable-root-check --disable-slp --disable-artnet --disable-dmx4linux --disable-dummy --disable-e131 --disable-espnet --disable-ftdidmx --disable-karate --disable-kinet --disable-milinst --disable-opendmx --disable-osc --disable-pathport --disable-renard --disable-sandnet --disable-shownet --disable-spi --disable-stageprofi --disable-usbpro --disable-usbdmx
+* make
+
+!!! TODO: Fix the minimal build described above !!!
+!!! TODO: Continue porting to reduce the number of disabled features !!!

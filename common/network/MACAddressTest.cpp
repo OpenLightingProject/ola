@@ -18,39 +18,6 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef WIN32
-#include <winsock2.h>
-// TODO(Peter): Do something else, possibly define the type locally
-#else
-#include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
-#ifdef HAVE_NET_ETHERNET_H
-#include <net/ethernet.h>
-#endif
-// NetBSD and OpenBSD don't have net/ethernet.h
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#ifdef HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-#ifdef HAVE_NET_IF_ETHER_H
-#include <net/if_ether.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_NET_IF_ARP_H
-#include <net/if_arp.h>
-#endif
-#ifdef HAVE_NETINET_IF_ETHER_H
-#include <netinet/if_ether.h>
-#endif
-#endif
-
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <algorithm>
@@ -86,8 +53,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MACAddressTest);
 void MACAddressTest::testMACAddress() {
   uint8_t hw_address[ola::network::MACAddress::LENGTH] = {
     0x01, 0x23, 0x45, 0x67, 0x89, 0xab};
-  ether_addr ether_addr1;
-  memcpy(ether_addr1.ether_addr_octet, hw_address, MACAddress::LENGTH);
   MACAddress address1;
   OLA_ASSERT_TRUE(MACAddress::FromString(string("01:23:45:67:89:ab"),
                                          &address1));
