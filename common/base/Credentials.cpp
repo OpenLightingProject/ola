@@ -78,8 +78,8 @@ bool GetEUID(uid_t* euid) {
   (void)euid;
   return false;
 #else
-  if (uid) {
-    *uid = geteuid();
+  if (euid) {
+    *euid = geteuid();
     return true;
   } else {
     return false;
@@ -108,8 +108,8 @@ bool GetEGID(gid_t* egid) {
   (void)egid;
   return false;
 #else
-  if (gid) {
-    *gid = getegid();
+  if (egid) {
+    *egid = getegid();
     return true;
   } else {
     return false;

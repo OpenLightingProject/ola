@@ -24,6 +24,7 @@
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
+using ola::SupportsUIDs;
 using ola::GetEGID;
 using ola::GetEUID;
 using ola::GetGID;
@@ -94,11 +95,11 @@ void CredentialsTest::testGetGIDs() {
   if (SupportsUIDs()) {
     gid_t gid;
     OLA_ASSERT_TRUE(GetGID(&gid));
-    OLA_ASSERT_TRUE_MSG(success && gid, "Don't run the tests as root!");
+    OLA_ASSERT_TRUE_MSG(gid, "Don't run the tests as root!");
 
     gid_t egid;
     OLA_ASSERT_TRUE(GetEGID(&egid));
-    OLA_ASSERT_TRUE_MSG(success && egid, "Don't run the tests as sgid root!");
+    OLA_ASSERT_TRUE_MSG(egid, "Don't run the tests as sgid root!");
   } else {
     // Make sure the Get*GID functions actually return false.
     gid_t gid;
