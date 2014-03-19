@@ -60,7 +60,6 @@ using ola::io::SelectServer;
 using std::string;
 
 static const unsigned int DEFAULT_UNIVERSE = 0;
-static const unsigned char CHANNEL_NUDGE_VALUE = 0x10;
 static const unsigned char CHANNEL_DISPLAY_WIDTH = 4;
 static const unsigned char ROWS_PER_CHANNEL_ROW = 2;
 
