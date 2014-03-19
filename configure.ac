@@ -286,7 +286,9 @@ ACX_PTHREAD([
             [AC_MSG_ERROR([Missing pthread, please install it])])
 
 # resolv
-ACX_RESOLV()
+AS_IF([test -z "${USING_WIN32_FALSE}"],
+  [ACX_RESOLV()],
+  [AC_CHECK_LIB([Iphlpapi], [main], [have_iphlpapi="yes"])]) # Use equivalent library on windows
 
 # uuid
 # We've had to revert to os matching here because ossp uuid conflicts with the
