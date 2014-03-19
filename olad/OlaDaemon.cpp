@@ -174,11 +174,18 @@ ola::network::GenericSocketAddress OlaDaemon::RPCAddress() const {
  * Return the home directory for the current user
  */
 string OlaDaemon::DefaultConfigDir() {
-  PasswdEntry passwd_entry;
-  if (!GetPasswdUID(GetUID(), &passwd_entry))
-    return "";
+  if (SupportsUIDs()) {
+    PasswdEntry passwd_entry;
+    uid_t uid;
+    if (!GetUID(&uid))
+      return "";
+    if (!GetPasswdUID(uid, &passwd_entry))
+      return "";
 
-  return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
+    return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
+  } else {
+    return "";
+  }
 }
 
 /**
