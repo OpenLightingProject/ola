@@ -18,9 +18,10 @@
  * See http://www.json.org/
  * Copyright (C) 2014 Simon Newton
  */
-#include "ola/web/JsonParser.h"
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+
+#include "ola/web/JsonParser.h"
 
 #include <math.h>
 #include <stdint.h>
