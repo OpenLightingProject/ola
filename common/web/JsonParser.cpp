@@ -39,7 +39,8 @@ using std::auto_ptr;
 using std::string;
 using std::stringstream;
 
-static bool ParseTrimedInput(const char **input, JsonHandlerInterface *handler);
+static bool ParseTrimmedInput(const char **input,
+                              JsonHandlerInterface *handler);
 
 /**
  * @brief Trim leading whitespace from a string.
@@ -261,7 +262,7 @@ static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
       return false;
     }
 
-    bool result = ParseTrimedInput(input, handler);
+    bool result = ParseTrimmedInput(input, handler);
     if (!result) {
       return false;
     }
@@ -329,7 +330,7 @@ static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
       return false;
     }
 
-    bool result = ParseTrimedInput(input, handler);
+    bool result = ParseTrimmedInput(input, handler);
     if (!result) {
       return false;
     }
@@ -352,7 +353,7 @@ static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
   }
 }
 
-static bool ParseTrimedInput(const char **input,
+static bool ParseTrimmedInput(const char **input,
                              JsonHandlerInterface *handler) {
   static const char TRUE_STR[] = "true";
   static const char FALSE_STR[] = "false";
@@ -397,7 +398,7 @@ bool ParseRaw(const char *input, JsonHandlerInterface *handler) {
   }
 
   handler->Begin();
-  bool result = ParseTrimedInput(&input, handler);
+  bool result = ParseTrimmedInput(&input, handler);
   if (!result) {
     return false;
   }

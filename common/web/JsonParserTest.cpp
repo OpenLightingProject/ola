@@ -14,8 +14,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * JsonParserTest.cpp
- * Unittest for Json classses.
- * Copyright (C) 2012 Simon Newton
+ * Unittest for the Json Parser.
+ * Copyright (C) 2014 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
