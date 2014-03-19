@@ -94,8 +94,8 @@ bool SetUID(uid_t new_uid);
 bool GetGID(gid_t* gid);
 
 /**
- * @brief egid the effective group ID
- * @param uid is the variable to receive the effective Group ID
+ * @brief Get the effective group ID
+ * @param egid is the variable to receive the effective Group ID
  * @return true on success, false otherwise
  */
 bool GetEGID(gid_t* egid);
