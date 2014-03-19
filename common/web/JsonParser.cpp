@@ -46,6 +46,9 @@ static bool ParseTrimedInput(const char **input, JsonHandlerInterface *handler);
  * @param input A pointer to a pointer with the data. This is updated to point
  * to the first non-whitespace character.
  * @returns true if more data remains, false if the string is now empty.
+ * @note This is static within JsonParser.cpp because we should be using
+ * strings rather than char[]s. The only reason this doesn't use a string is
+ * because I think we'll need a wchar on Windows.
  */
 static bool TrimWhitespace(const char **input) {
   while (**input != 0 &&
@@ -405,7 +408,7 @@ bool ParseRaw(const char *input, JsonHandlerInterface *handler) {
 bool JsonParser::Parse(const std::string &input,
                        JsonHandlerInterface *handler) {
   // TODO(simon): Do we need to convert to unicode here? I think this may be
-  // an issue on Windows.
+  // an issue on Windows. Consider mbstowcs.
   // Copying the input sucks though, so we should use input.c_str() if we can.
   char* input_data = new char[input.size() + 1];
   strncpy(input_data, input.c_str(), input.size() + 1);
