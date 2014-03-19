@@ -65,7 +65,7 @@ bool GetUID(uid_t* uid);
 
 /**
  * @brief Get the effective UID of the process.
- * @param uid is the variable to receive the effective UID
+ * @param euid is the variable to receive the effective UID
  * @return true on success, false otherwise
  */
 bool GetEUID(uid_t* euid);
@@ -88,13 +88,13 @@ bool SetUID(uid_t new_uid);
 
 /**
  * @brief Get the real Group ID
- * @param uid is the variable to receive the real Group ID
+ * @param gid is the variable to receive the real Group ID
  * @return true on success, false otherwise
  */
 bool GetGID(gid_t* gid);
 
 /**
- * @brief Get the effective group ID
+ * @brief egid the effective group ID
  * @param uid is the variable to receive the effective Group ID
  * @return true on success, false otherwise
  */
