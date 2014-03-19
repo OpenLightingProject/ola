@@ -159,9 +159,6 @@ bool InstallSEGVHandler() {
 
 
 void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
-#ifndef WIN32
-  struct rlimit rl;
-#endif
   ola::StringVariable *var = export_map->GetStringVar("binary");
   var->Set(argv[0]);
 
@@ -181,6 +178,7 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
     var->Set(out.str());
   }
 #else
+  struct rlimit rl;
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     var->Set("undetermined");
   } else {
