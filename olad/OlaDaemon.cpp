@@ -26,6 +26,10 @@
 #include <unistd.h>
 #include <string>
 
+#ifdef WIN32
+#include <Shlobj.h>
+#endif
+
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/base/Credentials.h"
@@ -184,7 +188,16 @@ string OlaDaemon::DefaultConfigDir() {
 
     return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
   } else {
+#ifdef WIN32
+    char path[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
+      return string(path);
+    } else {
+      return "";
+    }
+#else
     return "";
+#endif
   }
 }
 
