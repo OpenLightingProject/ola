@@ -61,7 +61,7 @@ class IOQueueTest: public CppUnit::TestFixture {
  private:
     auto_ptr<IOQueue> m_buffer;
 
-    unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
+    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 
@@ -75,9 +75,9 @@ void IOQueueTest::setUp() {
 
 
 /**
- * Sum up the length of data in a iovec
+ * Sum up the length of data in a IOVec
  */
-unsigned int IOQueueTest::SumLengthOfIOVec(const struct iovec *iov,
+unsigned int IOQueueTest::SumLengthOfIOVec(const struct IOVec *iov,
                                             int iocnt) {
   unsigned int sum = 0;
   for (int i = 0; i < iocnt; iov++, i++)
@@ -276,7 +276,7 @@ void IOQueueTest::testPeek() {
 
 
 /**
- * Test getting / setting iovecs work.
+ * Test getting / setting IOVec work.
  */
 void IOQueueTest::testIOVec() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -286,7 +286,7 @@ void IOQueueTest::testIOVec() {
   OLA_ASSERT_FALSE(m_buffer->Empty());
 
   int iocnt;
-  const struct iovec *vector = m_buffer->AsIOVec(&iocnt);
+  const struct IOVec *vector = m_buffer->AsIOVec(&iocnt);
   OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
   OLA_ASSERT_EQ(1, iocnt);
   m_buffer->FreeIOVec(vector);

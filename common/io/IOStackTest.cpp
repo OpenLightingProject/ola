@@ -58,7 +58,7 @@ class IOStackTest: public CppUnit::TestFixture {
     void testBlockReuse();
 
  private:
-    unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
+    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 
@@ -66,9 +66,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IOStackTest);
 
 
 /**
- * Sum up the length of data in a iovec
+ * Sum up the length of data in a IOVec
  */
-unsigned int IOStackTest::SumLengthOfIOVec(const struct iovec *iov,
+unsigned int IOStackTest::SumLengthOfIOVec(const struct IOVec *iov,
                                             int iocnt) {
   unsigned int sum = 0;
   for (int i = 0; i < iocnt; iov++, i++)
@@ -143,7 +143,7 @@ void IOStackTest::testBlockOverflow() {
 
 
 /**
- * Test getting / setting iovecs work.
+ * Test getting / setting IOVec work.
  */
 void IOStackTest::testIOVec() {
   MemoryBlockPool pool(4);
@@ -157,7 +157,7 @@ void IOStackTest::testIOVec() {
   OLA_ASSERT_FALSE(stack.Empty());
 
   int iocnt;
-  const struct iovec *vector = stack.AsIOVec(&iocnt);
+  const struct IOVec *vector = stack.AsIOVec(&iocnt);
   OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
   OLA_ASSERT_EQ(3, iocnt);
   stack.FreeIOVec(vector);

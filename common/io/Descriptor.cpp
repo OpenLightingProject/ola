@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/uio.h>
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
@@ -36,6 +35,7 @@
 #else
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #endif
 
 #include <string>
@@ -46,6 +46,10 @@
 namespace ola {
 namespace io {
 
+#ifndef WIN32
+// Check binary compatibility between IOVec and iovec
+static bool iovec_compatible = StaticAssertTypeEq<struct iovec, struct IOVec>();
+#endif
 
 /**
  * Helper function to create a annonymous pipe
@@ -214,9 +218,23 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
     return 0;
 
   int iocnt;
-  const struct iovec *iov = ioqueue->AsIOVec(&iocnt);
+  const struct IOVec *iov = ioqueue->AsIOVec(&iocnt);
 
-  ssize_t bytes_sent;
+  ssize_t bytes_sent = 0;
+
+#ifdef WIN32
+  int bytes_written = 0;
+  for (int io = 0; io < iocnt; ++io) {
+    bytes_written = write(WriteDescriptor(), iov[io].iov_base,
+      iov[io].iov_len);
+    if (bytes_written == -1) {
+      OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
+        strerror(errno);
+      break;
+      bytes_sent += bytes_written;
+    }
+  }
+#else
 #if HAVE_DECL_MSG_NOSIGNAL
   if (IsSocket()) {
     struct msghdr message;
@@ -232,6 +250,7 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
 #endif
     bytes_sent = writev(WriteDescriptor(), iov, iocnt);
   }
+#endif
 
   ioqueue->FreeIOVec(iov);
   if (bytes_sent < 0) {
@@ -412,6 +431,8 @@ bool PipeDescriptor::CloseClient() {
 }
 
 
+#ifndef WIN32
+
 // UnixSocket
 // ------------------------------------------------
 
@@ -469,6 +490,8 @@ bool UnixSocket::CloseClient() {
   m_fd = INVALID_DESCRIPTOR;
   return true;
 }
+
+#endif
 
 
 // DeviceDescriptor
