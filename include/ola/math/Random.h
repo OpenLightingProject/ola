@@ -21,15 +21,6 @@
 #ifndef INCLUDE_OLA_MATH_RANDOM_H_
 #define INCLUDE_OLA_MATH_RANDOM_H_
 
-#include <ola/io/InputBuffer.h>
-#include <ola/io/OutputBuffer.h>
-#include <stdint.h>
-#include <sys/uio.h>
-#include <deque>
-#include <iostream>
-#include <queue>
-#include <string>
-
 namespace ola {
 namespace math {
 
