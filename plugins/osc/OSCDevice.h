@@ -55,6 +55,7 @@ class OSCDevice: public Device {
               const PortConfigs &port_configs);
     std::string DeviceId() const { return "1"; }
 
+    bool AllowLooping() const { return true; }
     bool AllowMultiPortPatching() const { return true; }
 
  protected:
