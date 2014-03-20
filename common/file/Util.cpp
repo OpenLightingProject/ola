@@ -23,6 +23,10 @@
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
+#ifdef WIN32
+#define VC_EXTRALEAN
+#include <windows.h>
+#endif
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -67,6 +71,29 @@ void FindMatchingFiles(const string &directory,
   if (directory.empty() || prefixes.empty())
     return;
 
+#ifdef WIN32
+  WIN32_FIND_DATA find_file_data;
+  HANDLE h_find;
+
+  h_find = FindFirstFileA(directory.data(), &find_file_data);
+  if (h_find == INVALID_HANDLE_VALUE) {
+    OLA_WARN << "Find first file failed: " << GetLastError();
+    return;
+  }
+
+  do {
+    vector<string>::const_iterator iter;
+    for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
+      if (!strncmp(find_file_data.cFileName, iter->data(), iter->size())) {
+        std::ostringstream str;
+        str << directory << PATH_SEPARATOR << find_file_data.cFileName;
+        files->push_back(str.str());
+      }
+    }
+  } while (FindNextFile(h_find, &find_file_data));
+
+  FindClose(h_find);
+#else
   DIR *dp;
   struct dirent dir_ent;
   struct dirent *dir_ent_p;
@@ -81,13 +108,14 @@ void FindMatchingFiles(const string &directory,
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
       if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
         std::ostringstream str;
-        str << directory << "/" << dir_ent_p->d_name;
+        str << directory << PATH_SEPARATOR << dir_ent_p->d_name;
         files->push_back(str.str());
       }
     }
     readdir_r(dp, &dir_ent, &dir_ent_p);
   }
   closedir(dp);
+#endif
 }
 
 string FilenameFromPath(const string &path) {
