@@ -296,8 +296,6 @@ class PipeDescriptor: public ConnectedDescriptor {
   PipeDescriptor& operator=(const PipeDescriptor &other);
 };
 
-#ifndef WIN32
-
 /*
  * A unix domain socket pair.
  */
@@ -329,9 +327,6 @@ class UnixSocket: public ConnectedDescriptor {
   UnixSocket(const UnixSocket &other);
   UnixSocket& operator=(const UnixSocket &other);
 };
-
-#endif
-
 
 /*
  * A descriptor which represents a connection to a device

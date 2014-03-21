@@ -431,8 +431,6 @@ bool PipeDescriptor::CloseClient() {
 }
 
 
-#ifndef WIN32
-
 // UnixSocket
 // ------------------------------------------------
 
@@ -440,6 +438,9 @@ bool PipeDescriptor::CloseClient() {
  * Create a new unix socket
  */
 bool UnixSocket::Init() {
+#ifdef WIN32
+  return false;
+#else
   int pair[2];
   if (m_fd != INVALID_DESCRIPTOR || m_other_end)
     return false;
@@ -455,6 +456,7 @@ bool UnixSocket::Init() {
   m_other_end = new UnixSocket(pair[1], this);
   m_other_end->SetReadNonBlocking();
   return true;
+#endif
 }
 
 
@@ -484,14 +486,14 @@ bool UnixSocket::Close() {
  * Close the write portion of this UnixSocket
  */
 bool UnixSocket::CloseClient() {
+#ifndef WIN32
   if (m_fd != INVALID_DESCRIPTOR)
     shutdown(m_fd, SHUT_WR);
+#endif
 
   m_fd = INVALID_DESCRIPTOR;
   return true;
 }
-
-#endif
 
 
 // DeviceDescriptor
