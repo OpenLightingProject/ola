@@ -41,6 +41,7 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/base/Macro.h"
 #include "ola/io/Descriptor.h"
 
 namespace ola {
@@ -48,7 +49,9 @@ namespace io {
 
 #ifndef WIN32
 // Check binary compatibility between IOVec and iovec
-static bool iovec_compatible = StaticAssertTypeEq<struct iovec, struct IOVec>();
+STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec))
+STATIC_ASSERT(offsetof(iovec, iov_base) == offsetof(IOVec, iov_base))
+STATIC_ASSERT(offsetof(iovec, iov_len) == offsetof(IOVec, iov_len))
 #endif
 
 /**
@@ -241,14 +244,15 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
     memset(&message, 0, sizeof(message));
     message.msg_name = NULL;
     message.msg_namelen = 0;
-    message.msg_iov = const_cast<struct iovec*>(iov);
+    message.msg_iov = reinterpret_cast<iovec*>(const_cast<IOVec*>(iov));
     message.msg_iovlen = iocnt;
     bytes_sent = sendmsg(WriteDescriptor(), &message, MSG_NOSIGNAL);
   } else {
 #else
   {
 #endif
-    bytes_sent = writev(WriteDescriptor(), iov, iocnt);
+    bytes_sent = writev(WriteDescriptor(),
+      reinterpret_cast<const struct iovec*>(iov), iocnt);
   }
 #endif
 

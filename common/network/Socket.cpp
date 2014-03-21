@@ -230,7 +230,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
     return 0;
 
   int io_len;
-  const struct IOVec *iov = data->AsIOVec(&io_len);
+  const struct ola::io::IOVec *iov = data->AsIOVec(&io_len);
 
   if (iov == NULL)
     return 0;
@@ -283,7 +283,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   struct msghdr message;
   message.msg_name = &destination;
   message.msg_namelen = sizeof(destination);
-  message.msg_iov = const_cast<struct iovec*>(iov);
+  message.msg_iov = reinterpret_cast<iovec*>(const_cast<IOVec*>(iov));
   message.msg_iovlen = io_len;
   message.msg_control = NULL;
   message.msg_controllen = 0;
