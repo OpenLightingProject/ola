@@ -134,7 +134,7 @@ const char RDMHTTPModule::DISPLAY_INVERT_SECTION_NAME[] = "Display Invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION_NAME[] = "Display Level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION_NAME[] = "DMX Start Address";
 const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION_NAME[] = "Factory Defaults";
-const char RDMHTTPModule::IDENTIFY_SECTION_NAME[] = "Identify Mode";
+const char RDMHTTPModule::IDENTIFY_SECTION_NAME[] = "Identify Device";
 const char RDMHTTPModule::LAMP_HOURS_SECTION_NAME[] = "Lamp Hours";
 const char RDMHTTPModule::LAMP_MODE_SECTION_NAME[] = "Lamp On Mode";
 const char RDMHTTPModule::LAMP_STATE_SECTION_NAME[] = "Lamp State";
@@ -2911,7 +2911,7 @@ string RDMHTTPModule::GetIdentifyMode(HTTPResponse *response,
       NewSingleCallback(this,
                         &RDMHTTPModule::GenericBoolHandler,
                         response,
-                        string("Identify Mode")),
+                        string("Identify Device")),
       &error);
   return error;
 }
