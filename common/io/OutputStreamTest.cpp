@@ -54,7 +54,7 @@ class OutputStreamTest: public CppUnit::TestFixture {
  private:
     IOQueue m_buffer;
 
-    unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
+    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 
