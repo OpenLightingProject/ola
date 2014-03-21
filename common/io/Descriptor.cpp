@@ -241,14 +241,14 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
     memset(&message, 0, sizeof(message));
     message.msg_name = NULL;
     message.msg_namelen = 0;
-    message.msg_iov = const_cast<struct iovec*>(iov);
+    message.msg_iov = reinterpret_cast<struct iovec*>(iov);
     message.msg_iovlen = iocnt;
     bytes_sent = sendmsg(WriteDescriptor(), &message, MSG_NOSIGNAL);
   } else {
 #else
   {
 #endif
-    bytes_sent = writev(WriteDescriptor(), iov, iocnt);
+    bytes_sent = writev(WriteDescriptor(), reinterpret_cast<const struct iovec*>(iov), iocnt);
   }
 #endif
 
