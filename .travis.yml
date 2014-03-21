@@ -20,6 +20,6 @@ before_install:
  - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev  libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
 
 notifications:
-  irc: "chat.freenode.net#openlighting"
+#  irc: "chat.freenode.net#openlighting"
   on_success: change
   on_failure: change
