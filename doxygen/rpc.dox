@@ -128,6 +128,12 @@
  * write an implementation of an RpcChannel. The C++ implementation is
  * ola::rpc::RpcChannel .
  *
+ * Putting it all together produces the flow shown in the diagram below. The
+ * yellow code is auto-generated, the blue code has to be written.
+ *
+ * \image html rpc.png "The control flow from the Client to the Server"
+ *
+ *
  * @section sec_OLA_RPC OLA's Model
  *
  * By default, olad listens on localhost:9010 . Clients open a TCP connection
@@ -227,7 +233,7 @@
  *     many implementations</a> available. It doesn't have to have a service
  *     generator (see the first point below).
  *   - A sockets library.
- *   - If you're writing an asyncronous client (it we recommend you do) you'll
+ *   - If you're writing an asyncronous client (and we recommend you do) you'll
  *     either need non-blocking I/O or a threading library.
  *
  * I'd tackle the problem in the following steps:
