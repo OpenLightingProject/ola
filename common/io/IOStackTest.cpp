@@ -31,6 +31,7 @@
 
 using ola::io::IOStack;
 using ola::io::IOQueue;
+using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;

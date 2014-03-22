@@ -84,7 +84,7 @@ class BaseTimeVal {
   // Returns the seconds portion.
   time_t Seconds() const { return m_tv.tv_sec; }
   // Returns the microseconds portion
-  int32_t MicroSeconds() const { return static_cast<long>(m_tv.tv_usec); }
+  int32_t MicroSeconds() const { return static_cast<int32_t>(m_tv.tv_usec); }
 
   // Returns the entire BaseTimeVal as milliseconds
   int64_t InMilliSeconds() const;

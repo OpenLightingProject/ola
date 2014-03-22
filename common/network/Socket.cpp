@@ -283,7 +283,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   struct msghdr message;
   message.msg_name = &destination;
   message.msg_namelen = sizeof(destination);
-  message.msg_iov = reinterpret_cast<iovec*>(const_cast<IOVec*>(iov));
+  message.msg_iov = reinterpret_cast<iovec*>(const_cast<io::IOVec*>(iov));
   message.msg_iovlen = io_len;
   message.msg_control = NULL;
   message.msg_controllen = 0;

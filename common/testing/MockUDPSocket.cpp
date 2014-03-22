@@ -38,6 +38,7 @@ namespace ola {
 namespace testing {
 
 using ola::io::IOQueue;
+using ola::io::IOVec;
 using ola::io::IOVecInterface;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;

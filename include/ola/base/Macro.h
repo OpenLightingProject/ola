@@ -45,23 +45,27 @@
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+#ifdef __cplusplus
+
+#define JOIN(X, Y) JOIN2(X, Y)
+#define JOIN2(X, Y) X##Y
 
 namespace internal {
-// This template is declared, but intentionally undefined.
-template <bool Condition>
-struct StaticAssertHelper;
+  template <bool> struct STATIC_ASSERT_FAILURE;
+  template <> struct STATIC_ASSERT_FAILURE<true> { enum { value = 1 }; };
 
-template <>
-struct StaticAssertHelper<true> {};
+  template<int x> struct static_assert_test{};
+}
 
-}  // namespace internal
+#define STATIC_ASSERT(x) \
+  typedef ::internal::static_assert_test<\
+    sizeof(::internal::STATIC_ASSERT_FAILURE< static_cast<bool>( x ) >)>\
+      JOIN(_static_assert_typedef, __LINE__)
 
-/**
- * @def STATIC_ASSERT(Condition)
- * @brief Compile time assert.
- */
-#define STATIC_ASSERT(Condition) \
-  enum { dummy##__FILE__##__LINE__ = \
-  sizeof(internal::StaticAssertHelper<(bool)(Condition)> }
+#else  // __cplusplus
+
+#define STATIC_ASSERT(x) extern int __dummy[static_cast<int>x]
+
+#endif  // __cplusplus
 
 #endif  // INCLUDE_OLA_BASE_MACRO_H_

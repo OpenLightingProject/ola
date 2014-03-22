@@ -49,9 +49,7 @@ namespace io {
 
 #ifndef WIN32
 // Check binary compatibility between IOVec and iovec
-STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec))
-STATIC_ASSERT(offsetof(iovec, iov_base) == offsetof(IOVec, iov_base))
-STATIC_ASSERT(offsetof(iovec, iov_len) == offsetof(IOVec, iov_len))
+STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
 #endif
 
 /**

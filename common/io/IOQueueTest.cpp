@@ -29,6 +29,7 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
+using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
