@@ -274,18 +274,19 @@
  *
  * @section sec_SimpleExample A Very Simple Example
  *
- * A quick example in Python style pseudo code:
+ * A quick example in Python style pseudo code. This constructs a DmxData
+ * message, sends it to the server and the extracts the Ack response.
   ~~~~~~~~~~~~~~~~~~~~~
   # connect to socket
   server = socket.connect("127.0.0.1", 9010)
 
   # Build the request
-  DmxData dmx_data
+  Ola_pb2.DmxData dmx_data
   dmx_data.universe = 1
   dmx_data.data = .....
 
   # Wrap in the outer layer
-  RpcMessage rpc_message
+  Rpc_pb2.RpcMessage rpc_message
   rpc_message.type = RpcMessage::REQUEST
   rpc_message.id = 1
   rpc_message.name = 'UpdateDmxData'
@@ -294,7 +295,25 @@
   server.write(rpc_message.Serialize())
 
   # wait for response on socket
-  data = self._socket.recv(1000)
+  response_data = server.recv(1000)
+  header = struct.unpack('<L', response_data)[0]
+  # grab the first 4 bytes which is the header
+  version, size = ((header & 0xf0000000) >> 28, header & 0x0ffffff)
+
+  if version != 1:
+    # Bad reply!
+    return
+  response = Rpc_pb2.RpcMessage()
+  response.ParseFromString(response_data[4:size])
+  if message.type != RpcMessage::RESPONSE:
+    # not a response
+    return
+  if message.id != 1:
+    # not the response we're looking for
+    return
+
+  Ola_pb2.Ack ack
+  ack.ParseFromString(response.buffer)
   ~~~~~~~~~~~~~~~~~~~~~
  *
  */
