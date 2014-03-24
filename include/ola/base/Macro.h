@@ -45,6 +45,12 @@
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+/*
+ * This code was adapted from:
+ * http://blogs.msdn.com/b/abhinaba/archive/
+ *   2008/10/27/c-c-compile-time-asserts.aspx
+ */
+
 #ifdef __cplusplus
 
 #define JOIN(X, Y) JOIN2(X, Y)
@@ -67,5 +73,9 @@ namespace internal {
 #define STATIC_ASSERT(x) extern int __dummy[static_cast<int>x]
 
 #endif  // __cplusplus
+
+/*
+ * End of adapted code.
+ */
 
 #endif  // INCLUDE_OLA_BASE_MACRO_H_
