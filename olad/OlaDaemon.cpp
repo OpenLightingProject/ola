@@ -24,6 +24,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#ifdef WIN32
+#include <Shlobj.h>
+#endif
 #include <string>
 
 #include "ola/ExportMap.h"
@@ -40,7 +43,8 @@
 #include "olad/Preferences.h"
 
 DEFINE_s_string(config_dir, c, "",
-                "The path to the config directory, Defaults to ~/.ola/ .");
+                "The path to the config directory, Defaults to ~/.ola/ " \
+                "on *nix and %LOCALAPPDATA%\\.ola\\ on Windows.");
 DEFINE_s_uint16(rpc_port, r, ola::OlaDaemon::DEFAULT_RPC_PORT,
                 "The port to listen for RPCs on. Defaults to 9010.");
 
@@ -184,7 +188,16 @@ string OlaDaemon::DefaultConfigDir() {
 
     return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
   } else {
+#ifdef WIN32
+    char path[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
+      return string(path) + "\\" + OLA_CONFIG_DIR;
+    } else {
+      return "";
+    }
+#else
     return "";
+#endif
   }
 }
 

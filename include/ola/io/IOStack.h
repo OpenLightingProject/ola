@@ -25,7 +25,6 @@
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
-#include <sys/uio.h>
 #include <deque>
 #include <iostream>
 #include <queue>
@@ -61,7 +60,7 @@ class IOStack: public IOVecInterface,
     unsigned int Read(std::string *output, unsigned int length);
 
     // From IOVecInterface
-    const struct iovec *AsIOVec(int *io_count) const;
+    const struct IOVec *AsIOVec(int *io_count) const;
     void Pop(unsigned int n);
 
     // 0-copy append to an IOQueue

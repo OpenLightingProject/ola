@@ -22,7 +22,6 @@
 #define INCLUDE_OLA_IO_IOUTILS_H_
 
 #include <stdint.h>
-#include <termios.h>
 
 #include <string>
 

@@ -230,11 +230,50 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
     return 0;
 
   int io_len;
-  const struct iovec *iov = data->AsIOVec(&io_len);
+  const struct ola::io::IOVec *iov = data->AsIOVec(&io_len);
 
   if (iov == NULL)
     return 0;
 
+#ifdef WIN32
+  WSABUF* buffers = new WSABUF[io_len];
+  for (int buffer = 0; buffer < io_len; ++buffer) {
+    buffers[i].len = iov[i].iov_len;
+    buffers[i].buf = iov[i].iov_base;
+  }
+
+  sockaddr_in destination;
+  memset(&destination, 0, sizeof(destination));
+  destination.sin_family = AF_INET;
+  destination.sin_port = HostToNetwork(port);
+  destination.sin_addr.s_addr = ip.AsInt();
+
+  SOCKET_ADDRESS address;
+  address.lpSockaddr = &destination;
+  address.iSockaddrLength = sizeof(destination);
+
+  WSAMSG message;
+  message.name = &address;
+  message.namelen = sizeof(address);
+  message.lpBuffers = buffers;
+  message.dwBufferCount = io_len;
+  message.Control.len = 0;
+  message.Control.buf = NULL;
+  message.dwFlags = 0;
+
+  ssize_t bytes_sent = 0;
+  DWORD platform_bytes_sent = 0;
+
+  if (WSASendMsg(WriteDescriptor(), &message, 0, &platform_bytes_sent,
+                 NULL, NULL) == 0) {
+    bytes_sent = static_cast<ssize_t>(platform_bytes_sent);
+  } else {
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to addr: "
+             << ip << " : " <<  WSAGetLastError();
+  }
+
+  delete [] buffers;
+#else
   struct sockaddr_in destination;
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
@@ -244,13 +283,14 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   struct msghdr message;
   message.msg_name = &destination;
   message.msg_namelen = sizeof(destination);
-  message.msg_iov = const_cast<struct iovec*>(iov);
+  message.msg_iov = reinterpret_cast<iovec*>(const_cast<io::IOVec*>(iov));
   message.msg_iovlen = io_len;
   message.msg_control = NULL;
   message.msg_controllen = 0;
   message.msg_flags = 0;
 
   ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
+#endif
   data->FreeIOVec(iov);
 
   if (bytes_sent < 0) {

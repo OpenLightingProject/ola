@@ -25,7 +25,6 @@
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
-#include <sys/uio.h>
 #include <deque>
 #include <iostream>
 #include <queue>
@@ -62,7 +61,7 @@ class IOQueue: public InputBufferInterface,
     unsigned int Peek(uint8_t *data, unsigned int length) const;
 
     // From IOVecInterface
-    const struct iovec *AsIOVec(int *io_count) const;
+    const struct IOVec *AsIOVec(int *io_count) const;
     void Pop(unsigned int n);
 
     // Append a MemoryBlock to this IOQueue. Ownership of the block is taken.
