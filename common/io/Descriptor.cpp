@@ -224,16 +224,20 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   ssize_t bytes_sent = 0;
 
 #ifdef WIN32
+  /* There is no scatter/gather functionality for generic descriptors on
+   * Windows, so this is implemented as a write loop. Derived classes should
+   * re-implement Send() using scatter/gather I/O where available.
+   */
   int bytes_written = 0;
   for (int io = 0; io < iocnt; ++io) {
     bytes_written = write(WriteDescriptor(), iov[io].iov_base,
-      iov[io].iov_len);
+                          iov[io].iov_len);
     if (bytes_written == -1) {
       OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
         strerror(errno);
       break;
-      bytes_sent += bytes_written;
     }
+    bytes_sent += bytes_written;
   }
 #else
 #if HAVE_DECL_MSG_NOSIGNAL
@@ -250,7 +254,7 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   {
 #endif
     bytes_sent = writev(WriteDescriptor(),
-      reinterpret_cast<const struct iovec*>(iov), iocnt);
+                        reinterpret_cast<const struct iovec*>(iov), iocnt);
   }
 #endif
 
