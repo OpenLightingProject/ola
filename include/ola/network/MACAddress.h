@@ -55,7 +55,7 @@ class MACAddress {
 
   /**
    * @brief Construct a new MAC address from binary data.
-   * @param data a pointer to the memory containing the MAC address data. The
+   * @param address a pointer to the memory containing the MAC address data. The
    * data should be most significant byte first.
    */
   explicit MACAddress(const uint8_t address[LENGTH]);

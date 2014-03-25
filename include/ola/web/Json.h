@@ -119,7 +119,7 @@ class JsonStringValue: public JsonValue {
 
 
 /**
- * @brief A unsigned int value.
+ * @brief An unsigned int value.
  */
 class JsonUIntValue: public JsonValue {
  public:
@@ -162,13 +162,13 @@ class JsonIntValue: public JsonValue {
 };
 
 /**
- * @brief A unsigned int value.
+ * @brief An unsigned int 64 value.
  */
 class JsonUInt64Value: public JsonValue {
  public:
     /**
-     * @brief Create a new JsonUIntValue
-     * @param value the unsigned int to use.
+     * @brief Create a new JsonUInt64Value
+     * @param value the unsigned int 64 to use.
      */
     explicit JsonUInt64Value(uint64_t value)
         : m_value(value) {
@@ -184,13 +184,13 @@ class JsonUInt64Value: public JsonValue {
 
 
 /**
- * @brief A signed int value.
+ * @brief A signed int 64 value.
  */
 class JsonInt64Value: public JsonValue {
  public:
     /**
-     * @brief Create a new JsonIntValue
-     * @param value the int to use.
+     * @brief Create a new JsonInt64Value
+     * @param value the int 64 to use.
      */
     explicit JsonInt64Value(int64_t value)
         : m_value(value) {
@@ -210,8 +210,8 @@ class JsonInt64Value: public JsonValue {
 class JsonDoubleValue: public JsonValue {
  public:
     /**
-     * @brief Create a new JsonUIntValue
-     * @param value the unsigned int to use.
+     * @brief Create a new JsonDoubleValue
+     * @param value the double to use.
      */
     explicit JsonDoubleValue(long double value)
         : m_value(value) {
