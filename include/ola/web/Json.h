@@ -361,7 +361,7 @@ class JsonObject: public JsonValue {
     /**
      * @brief Set the key to the supplied JsonValue.
      * @param key the key to add
-     * @param the JsonValue object, ownership is transferred.
+     * @param value the JsonValue object, ownership is transferred.
      */
     void AddValue(const std::string &key, const JsonValue *value);
 
