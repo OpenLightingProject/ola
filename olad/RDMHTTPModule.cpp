@@ -1094,7 +1094,7 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
       for (unsigned int i = 0; i < device.sensor_count; ++i) {
         stringstream heading, hint;
         hint << i;
-        heading << "Sensor " << std::setfill(' ') << std::setw(3) << (i + 1);
+        heading << "Sensor " << std::setfill(' ') << std::setw(3) << i;
         AddSection(&sections, SENSOR_SECTION, heading.str(), hint.str());
       }
     }
