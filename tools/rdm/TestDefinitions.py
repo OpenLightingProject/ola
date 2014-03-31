@@ -5065,11 +5065,11 @@ class GetDimmerInfo(OptionalParameterTestFixture):
 
     self.CheckFieldsAreUnsupported(
         'MINIMUM_LEVEL', fields,
-        {'minimum_level_lower': 0, 'minimum_level_upper': 0xffff,
+        {'minimum_level_lower': 0, 'minimum_level_upper': 0,
          'split_levels_supported': 0})
     self.CheckFieldsAreUnsupported(
         'MAXIMUM_LEVEL', fields,
-        {'maximum_level_lower': 0, 'maximum_level_upper': 0xffff})
+        {'maximum_level_lower': 0xffff, 'maximum_level_upper': 0xffff})
 
   def CheckFieldsAreUnsupported(self, pid_name, fields, keys):
     if self.LookupPid(pid_name).value in self.Property('supported_parameters'):

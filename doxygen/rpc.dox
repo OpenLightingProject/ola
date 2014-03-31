@@ -270,7 +270,7 @@
  * internally.
  *
  * The last part is the least technically challenging, but it does require good
- * API design so that new methods and arguments can be adeded later.
+ * API design so that new methods and arguments can be added later.
  *
  * @section sec_SimpleExample A Very Simple Example
  *
