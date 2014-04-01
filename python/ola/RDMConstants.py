@@ -21,8 +21,10 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+RDM_ZERO_FOOTPRINT_DMX_ADDRESS = 0xFFFF;
+
 RDM_MANUFACTURER_PID_MIN = 0x8000;
-RDM_MANUFACTURER_PID_MAX = 0xFFDF
+RDM_MANUFACTURER_PID_MAX = 0xFFDF;
 
 def _ReverseDict(input):
   output = {}
