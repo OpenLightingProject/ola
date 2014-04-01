@@ -1739,7 +1739,7 @@ class GetPersonality(OptionalParameterTestFixture):
 
 
 class GetPersonalityWithData(TestMixins.GetWithDataMixin,
-                          OptionalParameterTestFixture):
+                             OptionalParameterTestFixture):
   """Get DMX_PERSONALITY with invalid data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
