@@ -2175,7 +2175,7 @@ bool RDMAPI::SetClock(
 
 
 /*
- * Check the identify mode for a device
+ * Check the identify state for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2210,7 +2210,7 @@ bool RDMAPI::GetIdentifyMode(
 
 
 /*
- * Change the identify mode for a device
+ * Change the identify state for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param mode the identify mode to set
@@ -2272,13 +2272,13 @@ bool RDMAPI::ResetDevice(
     this,
     &RDMAPI::_HandleEmptyResponse,
     callback);
-  uint8_t option = warm_reset ? 0x01 : 0xff;
+  uint8_t option = warm_reset ? RESET_WARM : RESET_COLD;
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
                    universe,
                    uid,
                    sub_device,
-                   PID_IDENTIFY_DEVICE,
+                   PID_RESET_DEVICE,
                    &option,
                    sizeof(option)),
     error);

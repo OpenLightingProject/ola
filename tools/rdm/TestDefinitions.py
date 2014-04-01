@@ -1738,6 +1738,13 @@ class GetPersonality(OptionalParameterTestFixture):
         warning_str, personality_count, fields['personality_count']))
 
 
+class GetPersonalityWithData(TestMixins.GetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Get DMX_PERSONALITY with invalid data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_PERSONALITY'
+
+
 class GetPersonalityDescriptions(OptionalParameterTestFixture):
   """Get information about all the personalities."""
   CATEGORY = TestCategory.DMX_SETUP
