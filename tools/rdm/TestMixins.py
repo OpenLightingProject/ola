@@ -40,7 +40,7 @@ MAX_LABEL_SIZE = 32
 MAX_DMX_ADDRESS = 512
 
 def UnsupportedSetNacks(pid):
-  """Repsonders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
+  """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
   return [
     NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
