@@ -29,7 +29,7 @@ from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
-from ola.RDMConstants import RDM_ZERO_FOOTPRINT_DMX_ADDRESS, RDM_MANUFACTURER_PID_MIN, RDM_MANUFACTURER_PID_MAX
+from ola.RDMConstants import *
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
