@@ -138,6 +138,20 @@ class GetWithDataMixin(object):
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
+class GetMandatoryPIDWithDataMixin(object):
+  """GET a mandatory PID with junk param data."""
+  DATA = 'foo'
+
+  def Test(self):
+    # PID must return something as this PID is required (can't return
+    # unsupported)
+    self.AddExpectedResults([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
+        warning='Get %s with data returned an ack' % self.pid.name)
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
 class GetWithNoDataMixin(object):
   """GET with no data, expect NR_FORMAT_ERROR."""
   def Test(self):

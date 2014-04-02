@@ -1545,19 +1545,11 @@ class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
   EXPECTED_FIELD = 'label'
 
 
-class GetSoftwareVersionLabelWithData(ResponderTestFixture):
+class GetSoftwareVersionLabelWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                                      ResponderTestFixture):
   """GET the software_version_label with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
-
-  def Test(self):
-    # don't inherit from GetWithDataMixin because this PID is required
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
@@ -1945,19 +1937,11 @@ class GetStartAddress(ResponderTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
-class GetStartAddressWithData(ResponderTestFixture):
+class GetStartAddressWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                              ResponderTestFixture):
   """GET the DMX start address with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-
-  def Test(self):
-    # don't inherit from GetWithDataMixin because this PID is required
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
@@ -3553,19 +3537,11 @@ class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
   EXPECTED_FIELD = 'identify_state'
 
 
-class GetIdentifyDeviceWithData(ResponderTestFixture):
+class GetIdentifyDeviceWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                                ResponderTestFixture):
   """Get the identify state with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
-
-  def Test(self):
-    # don't inherit from GetWithDataMixin because this PID is required
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetIdentifyDevice(ResponderTestFixture):
@@ -4907,8 +4883,8 @@ class GetLockPinWithData(OptionalParameterTestFixture):
   DATA = 'foo'
 
   def Test(self):
-    # We can't use the GetWithNoDataMixin because NR_UNSUPPORTED_COMMAND_CLASS
-    # is a valid response here.
+    # We can't use the GetWithDataMixin because NR_UNSUPPORTED_COMMAND_CLASS is
+    # a valid response here.
     self.AddIfGetSupported([
       self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
