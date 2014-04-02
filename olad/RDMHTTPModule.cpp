@@ -317,7 +317,7 @@ int RDMHTTPModule::JsonUIDIdentifyDevice(const HTTPRequest *request,
     return OladHTTPServer::ServeHelpRedirect(response);
 
   string error;
-  bool ok = m_rdm_api.GetIdentifyMode(
+  bool ok = m_rdm_api.GetIdentifyDevice(
       universe_id,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
@@ -2904,7 +2904,7 @@ string RDMHTTPModule::GetIdentifyDevice(HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string error;
-  m_rdm_api.GetIdentifyMode(
+  m_rdm_api.GetIdentifyDevice(
       universe_id,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,

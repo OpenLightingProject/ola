@@ -2182,7 +2182,7 @@ bool RDMAPI::SetClock(
  * @param error a pointer to a string which it set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
-bool RDMAPI::GetIdentifyMode(
+bool RDMAPI::GetIdentifyDevice(
     unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
