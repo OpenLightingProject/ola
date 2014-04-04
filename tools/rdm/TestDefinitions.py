@@ -1467,6 +1467,13 @@ class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'language'
 
 
+class GetLanguageWithData(TestMixins.GetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """GET the language with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LANGUAGE'
+
+
 class SetLanguage(OptionalParameterTestFixture):
   """SET the language."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
