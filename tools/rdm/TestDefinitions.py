@@ -1547,11 +1547,11 @@ class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
 
 class GetSoftwareVersionLabelWithData(ResponderTestFixture):
   """GET the software_version_label with param data."""
-  # We don't use the GetLabelMixin here because this PID is mandatory
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
 
   def Test(self):
+    # don't inherit from GetWithDataMixin because this PID is required
     self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
@@ -1943,6 +1943,21 @@ class GetStartAddress(ResponderTestFixture):
           'DMX_START_ADDRESS (%d) doesn\'t match what was in DEVICE_INFO (%d)'
           % (fields['dmx_address'], self.Property('dmx_start_address')))
     self.SetPropertyFromDict(fields, 'dmx_address')
+
+
+class GetStartAddressWithData(ResponderTestFixture):
+  """GET the DMX start address with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_START_ADDRESS'
+
+  def Test(self):
+    # don't inherit from GetWithDataMixin because this PID is required
+    self.AddExpectedResults([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
+        warning='Get %s with data returned an ack' % self.pid.name)
+    ])
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
@@ -3544,7 +3559,7 @@ class GetIdentifyDeviceWithData(ResponderTestFixture):
   PID = 'IDENTIFY_DEVICE'
 
   def Test(self):
-    # don't inherit from GetWithDataMixin because this is required
+    # don't inherit from GetWithDataMixin because this PID is required
     self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
