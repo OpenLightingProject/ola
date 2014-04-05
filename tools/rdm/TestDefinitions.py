@@ -1944,11 +1944,32 @@ class GetStartAddress(ResponderTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
-class GetStartAddressWithData(TestMixins.GetMandatoryPIDWithDataMixin,
-                              ResponderTestFixture):
+class GetStartAddressWithData(ResponderTestFixture):
   """GET the DMX start address with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
+  REQUIRES = ['dmx_footprint']
+
+  def Test(self):
+    if self.Property('dmx_footprint') > 0:
+      # If we have a footprint, PID must return something as this PID is
+      # required (can't return unsupported)
+      results = [
+        self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+        self.AckGetResult(
+          warning='Get %s with data returned an ack' % self.pid.name)
+      ]
+    else:
+      # If we don't have a footprint, PID may return something, or may return
+      # unsupported, as this PID becomes optional
+      results = [
+          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+          self.AckGetResult(
+            warning='Get %s with data returned an ack' % self.pid.name),
+      ]
+    self.AddExpectedResults(results)
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
