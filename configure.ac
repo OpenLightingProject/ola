@@ -560,6 +560,16 @@ AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
       [LDFLAGS="$LDFLAGS -ltcmalloc"])
 
+# Optionally set the Doxygen version to "Latest Git" for website latest
+# version.
+DOXYGEN_VERSION=$PACKAGE_VERSION
+AC_ARG_ENABLE(
+  [doxygen-version],
+  [AS_HELP_STRING([--disable-doxygen-version],
+  [Substitute the Doxygen version with latest, for the website])])
+AS_IF([test "x$enable_doxygen_version" = xno],
+      [DOXYGEN_VERSION="\"Latest Git\""])
+AC_SUBST(DOXYGEN_VERSION)
 
 # Python wrappers & RDM Responder tests.
 #####################################################
