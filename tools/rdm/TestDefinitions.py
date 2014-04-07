@@ -1467,6 +1467,13 @@ class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'language'
 
 
+class GetLanguageWithData(TestMixins.GetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """GET the language with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LANGUAGE'
+
+
 class SetLanguage(OptionalParameterTestFixture):
   """SET the language."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1545,19 +1552,11 @@ class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
   EXPECTED_FIELD = 'label'
 
 
-class GetSoftwareVersionLabelWithData(ResponderTestFixture):
+class GetSoftwareVersionLabelWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                                      ResponderTestFixture):
   """GET the software_version_label with param data."""
-  # We don't use the GetLabelMixin here because this PID is mandatory
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
-
-  def Test(self):
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
@@ -1943,6 +1942,34 @@ class GetStartAddress(ResponderTestFixture):
           'DMX_START_ADDRESS (%d) doesn\'t match what was in DEVICE_INFO (%d)'
           % (fields['dmx_address'], self.Property('dmx_start_address')))
     self.SetPropertyFromDict(fields, 'dmx_address')
+
+
+class GetStartAddressWithData(ResponderTestFixture):
+  """GET the DMX start address with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_START_ADDRESS'
+  REQUIRES = ['dmx_footprint']
+
+  def Test(self):
+    if self.Property('dmx_footprint') > 0:
+      # If we have a footprint, PID must return something as this PID is
+      # required (can't return unsupported)
+      results = [
+        self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+        self.AckGetResult(
+          warning='Get %s with data returned an ack' % self.pid.name)
+      ]
+    else:
+      # If we don't have a footprint, PID may return something, or may return
+      # unsupported, as this PID becomes optional
+      results = [
+          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+          self.AckGetResult(
+            warning='Get %s with data returned an ack' % self.pid.name),
+      ]
+    self.AddExpectedResults(results)
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
@@ -3538,19 +3565,11 @@ class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
   EXPECTED_FIELD = 'identify_state'
 
 
-class GetIdentifyDeviceWithData(ResponderTestFixture):
+class GetIdentifyDeviceWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                                ResponderTestFixture):
   """Get the identify state with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
-
-  def Test(self):
-    # don't inherit from GetWithDataMixin because this is required
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetIdentifyDevice(ResponderTestFixture):
@@ -4892,8 +4911,8 @@ class GetLockPinWithData(OptionalParameterTestFixture):
   DATA = 'foo'
 
   def Test(self):
-    # We can't use the GetWithNoDataMixin because NR_UNSUPPORTED_COMMAND_CLASS
-    # is a valid response here.
+    # We can't use the GetWithDataMixin because NR_UNSUPPORTED_COMMAND_CLASS is
+    # a valid response here.
     self.AddIfGetSupported([
       self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
