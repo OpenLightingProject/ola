@@ -154,7 +154,7 @@ void UartDmxThread::CheckTimeGranularity() {
 
   TimeInterval interval = ts2 - ts1;
   m_granularity = interval.InMilliSeconds() > 3 ? BAD : GOOD;
-  OLA_INFO << "Granularity for ftdi thread is " <<
+  OLA_INFO << "Granularity for Uart thread is " <<
     (m_granularity == GOOD ? "GOOD" : "BAD");
 }
 }  // namespace uartdmx
