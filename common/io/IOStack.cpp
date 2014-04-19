@@ -147,15 +147,15 @@ unsigned int IOStack::Read(std::string *output, unsigned int length) {
 
 
 /**
- * Return this IOStack as an array of iovec structures.
- * Note: The iovec array points at internal memory structures. This array is
+ * Return this IOStack as an array of IOVec structures.
+ * Note: The IOVec array points at internal memory structures. This array is
  * invalidated when any non-const methods are called (Append, Pop etc.)
  *
  * Is the IOStack is empty, this will return NULL and set iocnt to 0.
  *
- * Use FreeIOVec() to release the iovec array.
+ * Use FreeIOVec() to release the IOVec array.
  */
-const struct iovec *IOStack::AsIOVec(int *iocnt) const {
+const struct IOVec *IOStack::AsIOVec(int *iocnt) const {
   if (m_blocks.empty()) {
     *iocnt = 0;
     return NULL;
@@ -164,8 +164,8 @@ const struct iovec *IOStack::AsIOVec(int *iocnt) const {
   int max_number_of_blocks = m_blocks.size();
   int number_of_blocks = 0;
 
-  struct iovec *vector = new struct iovec[max_number_of_blocks];
-  struct iovec *ptr = vector;
+  struct IOVec *vector = new struct IOVec[max_number_of_blocks];
+  struct IOVec *ptr = vector;
   BlockVector::const_iterator iter = m_blocks.begin();
   for (; iter != m_blocks.end(); ++iter, ++ptr, number_of_blocks++) {
     ptr->iov_base = (*iter)->Data();

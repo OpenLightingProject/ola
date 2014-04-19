@@ -9,15 +9,16 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            IPV4Address.cpp \
                            Interface.cpp \
                            InterfacePicker.cpp \
-                           NetworkUtils.cpp \
                            MACAddress.cpp \
+                           NetworkUtils.cpp \
+                           NetworkUtilsInternal.h \
                            Socket.cpp \
                            SocketAddress.cpp \
                            SocketHelper.cpp \
                            SocketHelper.h \
                            TCPConnector.cpp \
                            TCPSocket.cpp
-libolanetwork_la_LIBADD = -lresolv
+libolanetwork_la_LIBADD = $(RESOLV_LIBS)
 
 
 if USING_WIN32

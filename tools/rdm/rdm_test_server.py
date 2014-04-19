@@ -152,7 +152,7 @@ class RDMTestThread(Thread):
     self._cv.release()
 
   def ScheduleTests(self, universe, uid, test_filter, broadcast_write_delay,
-                    dmx_frame_rate, slot_count):
+                    inter_test_delay, dmx_frame_rate, slot_count):
     """Schedule the tests to be run. Callable from any thread. Callbable by any
        thread.
 
@@ -169,7 +169,8 @@ class RDMTestThread(Thread):
 
     self._request = lambda : self._RunTests(universe, uid, test_filter,
                                             broadcast_write_delay,
-                                            dmx_frame_rate, slot_count)
+                                            inter_test_delay, dmx_frame_rate,
+                                            slot_count)
     self._cv.notify()
     self._cv.release()
     return None
@@ -231,7 +232,7 @@ class RDMTestThread(Thread):
     self._test_state_lock.release()
 
   def _RunTests(self, universe, uid, test_filter, broadcast_write_delay,
-                dmx_frame_rate, slot_count):
+                inter_test_delay, dmx_frame_rate, slot_count):
     self._test_state_lock.acquire()
     self._test_state = {
       'action': self.TESTS,
@@ -244,14 +245,15 @@ class RDMTestThread(Thread):
     self._test_state_lock.release()
 
     runner = TestRunner.TestRunner(universe, uid, broadcast_write_delay,
-                                   self._pid_store, self._wrapper)
+                                   inter_test_delay, self._pid_store,
+                                   self._wrapper)
 
     for test in TestRunner.GetTestClasses(TestDefinitions):
       runner.RegisterTest(test)
 
     dmx_sender = None
     if dmx_frame_rate > 0 and slot_count > 0:
-      logging.info('Starting DMXServer with slot cout %d and fps of %d' %
+      logging.info('Starting DMXSender with slot count %d and FPS of %d' %
                    (slot_count, dmx_frame_rate))
       dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate, slot_count)
 
@@ -272,6 +274,7 @@ class RDMTestThread(Thread):
     end_time = datetime.now()
     test_parameters = {
       'broadcast_write_delay': broadcast_write_delay,
+      'inter_test_delay': inter_test_delay,
       'dmx_frame_rate': dmx_frame_rate,
       'dmx_slot_count': slot_count,
     }
@@ -747,7 +750,7 @@ class RunTestsHandler(OLAServerRequestHandler):
       else:
         test_filter = set(test_filter.split(','))
 
-    broadcast_write_delay = request.GetParam('w')
+    broadcast_write_delay = request.GetParam('broadcast_write_delay')
     if broadcast_write_delay is None:
       broadcast_write_delay = 0
     try:
@@ -755,17 +758,25 @@ class RunTestsHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid broadcast write delay')
 
-    slot_count = request.GetParam('c')
+    inter_test_delay = request.GetParam('inter_test_delay')
+    if inter_test_delay is None:
+      inter_test_delay = 0
+    try:
+      inter_test_delay = int(inter_test_delay)
+    except ValueError:
+      raise ServerException('Invalid inter-test delay')
+
+    slot_count = request.GetParam('slot_count')
     if slot_count is None:
       slot_count = 0
     try:
       slot_count = int(slot_count)
     except ValueError:
       raise ServerException('Invalid slot count')
-    if slot_count not in range(1, 513):
+    if slot_count not in range(0, 513):
       raise ServerException('Slot count not in range 0..512')
 
-    dmx_frame_rate = request.GetParam('f')
+    dmx_frame_rate = request.GetParam('dmx_frame_rate')
     if dmx_frame_rate is None:
       dmx_frame_rate = 0
     try:
@@ -775,7 +786,8 @@ class RunTestsHandler(OLAServerRequestHandler):
 
     ret = self._test_thread.ScheduleTests(universe, uid, test_filter,
                                           broadcast_write_delay,
-                                          dmx_frame_rate, slot_count)
+                                          inter_test_delay, dmx_frame_rate,
+                                          slot_count)
     if ret is not None:
       raise ServerException(ret)
 

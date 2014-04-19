@@ -18,6 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 /* FreeBSD needs types.h before tcp.h */
@@ -28,15 +32,18 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #ifdef WIN32
 #include <winsock2.h>
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>  // Required by FreeBSD
 #endif
 
 #include <string>

@@ -1,4 +1,24 @@
-X/Y/2013 ola-0.9.0
+X/Y/2014 ola-0.9.1
+ Features:
+ * Pretty print IPV4 addresses within the Python RDM code.
+
+ API:
+ * Change GetIdentifyMode to GetIdentifyDevice in the RDM API to clarify it's
+   the IDENTIFY_DEVICE PID not the newer IDENTIFY_MODE one.
+
+ RDM Tests:
+ * Added the inter-test delay option to the Web UI too.
+
+ Bugs:
+ * Fix the recent code changes to work with FreeBSD, NetBSD and OpenBSD
+ * Fix sensor numbering from 0 on web UI so it matches CLI
+ * Fix the minimum and maximum level supported RDM tests
+ * Add a GetPersonalityWithData RDM test
+
+ Internal:
+
+
+1/3/2014 ola-0.9.0
  Features:
  * Added priority support for input ports - #259
  * Added DNS-SD registration support with both Bonjour and Avahi so that the

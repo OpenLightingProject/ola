@@ -39,7 +39,11 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>
+#ifdef WIN32
+#include <stdio.h>
+#else
 #include <sys/resource.h>
+#endif
 #include <unistd.h>
 
 #include <ola/ExportMap.h>
@@ -119,6 +123,12 @@ bool AppInit(int *argc,
 
 
 bool InstallSignal(int signal, void(*fp)(int signo)) {
+#ifdef WIN32
+  if (::signal(signal, fp) == SIG_ERR) {
+    OLA_WARN << "Failed to install signal for " << signal;
+    return false;
+  }
+#else
   struct sigaction action;
   action.sa_handler = fp;
   sigemptyset(&action.sa_mask);
@@ -128,15 +138,18 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
     OLA_WARN << "Failed to install signal for " << signal;
     return false;
   }
+#endif  // WIN32
   return true;
 }
 
 
 bool InstallSEGVHandler() {
+#ifndef WIN32
   if (!InstallSignal(SIGBUS, _SIGSEGV_Handler)) {
     OLA_WARN << "Failed to install signal SIGBUS";
     return false;
   }
+#endif  // !WIN32
   if (!InstallSignal(SIGSEGV, _SIGSEGV_Handler)) {
     OLA_WARN << "Failed to install signal SIGSEGV";
     return false;
@@ -146,7 +159,6 @@ bool InstallSEGVHandler() {
 
 
 void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
-  struct rlimit rl;
   ola::StringVariable *var = export_map->GetStringVar("binary");
   var->Set(argv[0]);
 
@@ -159,17 +171,27 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
   var->Set(out.str());
 
   var = export_map->GetStringVar("fd-limit");
+#ifdef WIN32
+  {
+    std::stringstream out;
+    out << _getmaxstdio();
+    var->Set(out.str());
+  }
+#else
+  struct rlimit rl;
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-    var->Set("undertermined");
+    var->Set("undetermined");
   } else {
     std::stringstream out;
     out << rl.rlim_cur;
     var->Set(out.str());
   }
+#endif  // WIN32
 }
 
 
 void Daemonise() {
+#ifndef WIN32
   pid_t pid;
   unsigned int i;
   int fd0, fd1, fd2;
@@ -230,6 +252,7 @@ void Daemonise() {
       << fd2;
     exit(EXIT_OSERR);
   }
+#endif  // WIN32
 }
 /**@}*/
 }  // namespace ola

@@ -18,6 +18,17 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>  // Required by FreeBSD
+#endif
+
 #include <assert.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
@@ -52,7 +63,7 @@ bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr,
   memset(v4_addr, 0, size);
   v4_addr->sin_family = AF_INET;
   v4_addr->sin_port = HostToNetwork(m_port);
-  v4_addr->sin_addr = m_host.Address();
+  v4_addr->sin_addr.s_addr = m_host.AsInt();
   return true;
 }
 
@@ -111,7 +122,7 @@ IPV4SocketAddress GenericSocketAddress::V4Addr() const {
   if (Family() == AF_INET) {
     const struct sockaddr_in *v4_addr =
       reinterpret_cast<const struct sockaddr_in*>(&m_addr);
-    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr),
+    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr.s_addr),
                              NetworkToHost(v4_addr->sin_port));
   } else {
     OLA_FATAL << "Invalid conversion of socket family " << Family();

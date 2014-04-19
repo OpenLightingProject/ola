@@ -37,6 +37,7 @@ using std::string;
 using std::map;
 using ola::network::UDPSocket;
 using ola::network::HostToNetwork;
+using ola::network::NetworkToHost;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::Callback0;
@@ -136,8 +137,8 @@ bool ShowNetNode::SendDMX(unsigned int universe,
     return false;
   }
 
-  shownet_data_packet packet;
-  unsigned int size = PopulatePacket(&packet, universe, buffer);
+  shownet_packet packet;
+  unsigned int size = BuildCompressedPacket(&packet, universe, buffer);
   unsigned int bytes_sent = m_socket->SendTo(
       reinterpret_cast<uint8_t*>(&packet),
       size,
@@ -206,56 +207,62 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
  * Called when there is data on this socket
  */
 void ShowNetNode::SocketReady() {
-  shownet_data_packet packet;
+  shownet_packet packet;
   ssize_t packet_size = sizeof(packet);
   ola::network::IPV4Address source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                          &packet_size,
-                          source))
+                          &packet_size, source))
     return;
 
   // skip packets sent by us
   if (source != m_interface.ip_address)
-    HandlePacket(packet, packet_size);
+    HandlePacket(&packet, packet_size);
 }
 
 
 /*
  * Handle a shownet packet
  */
-bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
+bool ShowNetNode::HandlePacket(const shownet_packet *packet,
                                unsigned int packet_size) {
-  unsigned int header_size = sizeof(packet) - sizeof(packet.data);
+  unsigned int header_size = sizeof(*packet) - sizeof(packet->data);
 
   if (packet_size <= header_size) {
     OLA_WARN << "Skipping small shownet packet received, size=" << packet_size;
     return false;
   }
 
-  if (packet.sigHi != SHOWNET_ID_HIGH || packet.sigLo != SHOWNET_ID_LOW) {
-    OLA_INFO << "Skipping a packet that isn't shownet";
+  if (NetworkToHost(packet->type) != COMPRESSED_DMX_PACKET) {
+    OLA_INFO << "Skipping a packet that isn't a compressed shownet packet";
     return false;
   }
 
-  if (packet.indexBlock[0] < MAGIC_INDEX_OFFSET) {
+  const shownet_compressed_dmx *dmx_packet = &packet->data.compressed_dmx;
+  return HandleCompressedPacket(dmx_packet, packet_size - header_size);
+}
+
+bool ShowNetNode::HandleCompressedPacket(const shownet_compressed_dmx *packet,
+                                         unsigned int packet_size) {
+  if (packet->indexBlock[0] < MAGIC_INDEX_OFFSET) {
     OLA_WARN << "Strange ShowNet packet, indexBlock[0] is " <<
-      packet.indexBlock[0] << ", please contact the developers!";
+      packet->indexBlock[0] << ", please contact the developers!";
     return false;
   }
 
   // We only handle data from the first slot
   // enc_length is the size of the received (optionally encoded) DMX data
-  int enc_len = packet.indexBlock[1] - packet.indexBlock[0];
-  if (enc_len < 1 || packet.netSlot[0] == 0) {
+  int enc_len = packet->indexBlock[1] - packet->indexBlock[0];
+  if (enc_len < 1 || packet->netSlot[0] == 0) {
     OLA_WARN << "Invalid shownet packet, enc_len=" << enc_len << ", netSlot="
-      << packet.netSlot[0];
+      << packet->netSlot[0];
     return false;
   }
 
   // the offset into packet.data of the actual data
-  unsigned int data_offset = packet.indexBlock[0] - MAGIC_INDEX_OFFSET;
-  unsigned int received_data_size = packet_size - header_size;
+  unsigned int data_offset = packet->indexBlock[0] - MAGIC_INDEX_OFFSET;
+  unsigned int received_data_size = packet_size - (
+      sizeof(packet) - SHOWNET_COMPRESSED_DATA_LENGTH);
 
   if (data_offset + enc_len > received_data_size) {
     OLA_WARN << "Not enough shownet data: offset=" << data_offset <<
@@ -263,13 +270,13 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
     return false;
   }
 
-  if (!packet.slotSize[0]) {
-    OLA_WARN << "Malformed shownet packet, slotSize=" << packet.slotSize[0];
+  if (!packet->slotSize[0]) {
+    OLA_WARN << "Malformed shownet packet, slotSize=" << packet->slotSize[0];
     return false;
   }
 
-  unsigned int start_channel = (packet.netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
-  unsigned int universe_id = (packet.netSlot[0] - 1) / DMX_UNIVERSE_SIZE;
+  unsigned int start_channel = (packet->netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
+  unsigned int universe_id = (packet->netSlot[0] - 1) / DMX_UNIVERSE_SIZE;
   map<unsigned int, universe_handler>::iterator iter =
     m_handlers.find(universe_id);
 
@@ -279,12 +286,12 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
     return false;
   }
 
-  if (packet.slotSize[0] != enc_len) {
-    m_encoder.Decode(start_channel, packet.data + data_offset,
+  if (packet->slotSize[0] != enc_len) {
+    m_encoder.Decode(start_channel, packet->data + data_offset,
                      enc_len, iter->second.buffer);
   } else {
     iter->second.buffer->SetRange(start_channel,
-                                  packet.data + data_offset,
+                                  packet->data + data_offset,
                                   enc_len);
   }
   iter->second.closure->Run();
@@ -295,31 +302,30 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
 /*
  * Populate a shownet data packet
  */
-unsigned int ShowNetNode::PopulatePacket(shownet_data_packet *packet,
-                                         unsigned int universe,
-                                         const DmxBuffer &buffer) {
+unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
+                                                unsigned int universe,
+                                                const DmxBuffer &buffer) {
   memset(packet, 0, sizeof(*packet));
-
-  // setup the fields in the shownet packet
-  packet->sigHi = SHOWNET_ID_HIGH;
-  packet->sigLo = SHOWNET_ID_LOW;
+  packet->type = HostToNetwork(static_cast<uint16_t>(COMPRESSED_DMX_PACKET));
   memcpy(packet->ip, &m_interface.ip_address, sizeof(packet->ip));
 
-  packet->netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
-  packet->slotSize[0] = buffer.Size();
+  shownet_compressed_dmx *compressed_dmx = &packet->data.compressed_dmx;
+
+  compressed_dmx->netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
+  compressed_dmx->slotSize[0] = buffer.Size();
 
   unsigned int enc_len = sizeof(packet->data);
-  if (!m_encoder.Encode(buffer, packet->data, &enc_len))
+  if (!m_encoder.Encode(buffer, compressed_dmx->data, &enc_len))
     OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
-  packet->indexBlock[0] = MAGIC_INDEX_OFFSET;
-  packet->indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
+  compressed_dmx->indexBlock[0] = MAGIC_INDEX_OFFSET;
+  compressed_dmx->indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
 
-  packet->packetCountHi = ShortGetHigh(m_packet_count);
-  packet->packetCountLo = ShortGetLow(m_packet_count);
+  compressed_dmx->sequence = HostToNetwork(m_packet_count);
 
-  strncpy(packet->name, m_node_name.data(), SHOWNET_NAME_LENGTH);
-  return sizeof(*packet) - sizeof(packet->data) + enc_len;
+  strncpy(compressed_dmx->name, m_node_name.data(), SHOWNET_NAME_LENGTH);
+  return (sizeof(*packet) - sizeof(packet->data)) +
+         (sizeof(*compressed_dmx) - SHOWNET_COMPRESSED_DATA_LENGTH + enc_len);
 }
 
 

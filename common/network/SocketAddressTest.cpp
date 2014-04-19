@@ -18,6 +18,17 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>  // Required by FreeBSD
+#endif
+
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
@@ -65,7 +76,7 @@ void SocketAddressTest::testIPV4SocketAddress() {
     reinterpret_cast<struct sockaddr_in*>(&sock_addr);
   OLA_ASSERT_EQ(ola::network::HostToNetwork(static_cast<uint16_t>(8080)),
                 sock_addr_in->sin_port);
-  IPV4Address actual_ip(sock_addr_in->sin_addr);
+  IPV4Address actual_ip(sock_addr_in->sin_addr.s_addr);
   OLA_ASSERT_EQ(ip_address, actual_ip);
 
   // test comparison operators

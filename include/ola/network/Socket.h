@@ -30,15 +30,8 @@
 
 #include <stdint.h>
 
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/IOQueue.h>
 #include <ola/network/IPV4Address.h>
@@ -56,56 +49,55 @@ namespace network {
  */
 class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
  public:
-    UDPSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
-    ~UDPSocketInterface() {}
-    virtual bool Init() = 0;
-    virtual bool Bind(const IPV4SocketAddress &endpoint) = 0;
+  UDPSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
+  ~UDPSocketInterface() {}
+  virtual bool Init() = 0;
+  virtual bool Bind(const IPV4SocketAddress &endpoint) = 0;
 
-    // Deprecated. Do not use in new code.
-    bool Bind(const IPV4Address &ip, unsigned short port) {
-      return Bind(IPV4SocketAddress(ip, port));
-    }
+  // Deprecated. Do not use in new code.
+  bool Bind(const IPV4Address &ip, unsigned short port) {
+    return Bind(IPV4SocketAddress(ip, port));
+  }
 
-    virtual bool GetSocketAddress(IPV4SocketAddress *address) const = 0;
+  virtual bool GetSocketAddress(IPV4SocketAddress *address) const = 0;
 
-    virtual bool Close() = 0;
-    virtual int ReadDescriptor() const = 0;
-    virtual int WriteDescriptor() const = 0;
+  virtual bool Close() = 0;
+  virtual int ReadDescriptor() const = 0;
+  virtual int WriteDescriptor() const = 0;
 
-    virtual ssize_t SendTo(const uint8_t *buffer,
-                           unsigned int size,
-                           const IPV4Address &ip,
-                           unsigned short port) const = 0;
-    virtual ssize_t SendTo(const uint8_t *buffer,
-                           unsigned int size,
-                           const IPV4SocketAddress &dest) const = 0;
-    virtual ssize_t SendTo(ola::io::IOVecInterface *data,
-                           const IPV4Address &ip,
-                           unsigned short port) const = 0;
-    virtual ssize_t SendTo(ola::io::IOVecInterface *data,
-                           const IPV4SocketAddress &dest) const = 0;
+  virtual ssize_t SendTo(const uint8_t *buffer,
+                         unsigned int size,
+                         const IPV4Address &ip,
+                         unsigned short port) const = 0;
+  virtual ssize_t SendTo(const uint8_t *buffer,
+                         unsigned int size,
+                         const IPV4SocketAddress &dest) const = 0;
+  virtual ssize_t SendTo(ola::io::IOVecInterface *data,
+                         const IPV4Address &ip,
+                         unsigned short port) const = 0;
+  virtual ssize_t SendTo(ola::io::IOVecInterface *data,
+                         const IPV4SocketAddress &dest) const = 0;
 
-    virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
-    virtual bool RecvFrom(uint8_t *buffer,
-                          ssize_t *data_read,
-                          IPV4Address &source) const = 0;  // NOLINT
-    virtual bool RecvFrom(uint8_t *buffer,
-                          ssize_t *data_read,
-                          IPV4Address &source,  // NOLINT
-                          uint16_t &port) const = 0;  // NOLINT
+  virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
+  virtual bool RecvFrom(uint8_t *buffer,
+                        ssize_t *data_read,
+                        IPV4Address &source) const = 0;  // NOLINT
+  virtual bool RecvFrom(uint8_t *buffer,
+                        ssize_t *data_read,
+                        IPV4Address &source,  // NOLINT
+                        uint16_t &port) const = 0;  // NOLINT
 
-    virtual bool EnableBroadcast() = 0;
-    virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
-    virtual bool JoinMulticast(const IPV4Address &iface,
-                               const IPV4Address &group,
-                               bool loop = false) = 0;
-    virtual bool LeaveMulticast(const IPV4Address &iface,
-                                const IPV4Address &group) = 0;
-    virtual bool SetTos(uint8_t tos) = 0;
+  virtual bool EnableBroadcast() = 0;
+  virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
+  virtual bool JoinMulticast(const IPV4Address &iface,
+                             const IPV4Address &group,
+                             bool loop = false) = 0;
+  virtual bool LeaveMulticast(const IPV4Address &iface,
+                              const IPV4Address &group) = 0;
+  virtual bool SetTos(uint8_t tos) = 0;
 
  private:
-    UDPSocketInterface(const UDPSocketInterface &other);
-    UDPSocketInterface& operator=(const UDPSocketInterface &other);
+  DISALLOW_COPY_AND_ASSIGN(UDPSocketInterface);
 };
 
 
@@ -114,63 +106,59 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
  */
 class UDPSocket: public UDPSocketInterface {
  public:
-    UDPSocket(): UDPSocketInterface(),
-                 m_fd(ola::io::INVALID_DESCRIPTOR),
-                 m_bound_to_port(false) {}
-    ~UDPSocket() { Close(); }
-    bool Init();
-    bool Bind(const IPV4SocketAddress &endpoint);
+  UDPSocket(): UDPSocketInterface(),
+               m_fd(ola::io::INVALID_DESCRIPTOR),
+               m_bound_to_port(false) {}
+  ~UDPSocket() { Close(); }
+  bool Init();
+  bool Bind(const IPV4SocketAddress &endpoint);
 
-    bool GetSocketAddress(IPV4SocketAddress *address) const;
+  bool GetSocketAddress(IPV4SocketAddress *address) const;
 
-    bool Close();
-    int ReadDescriptor() const { return m_fd; }
-    int WriteDescriptor() const { return m_fd; }
-    ssize_t SendTo(const uint8_t *buffer,
-                   unsigned int size,
-                   const IPV4Address &ip,
-                   unsigned short port) const;
-    ssize_t SendTo(const uint8_t *buffer,
-                   unsigned int size,
-                   const IPV4SocketAddress &dest) const {
-      return SendTo(buffer, size, dest.Host(), dest.Port());
-    }
-    ssize_t SendTo(ola::io::IOVecInterface *data,
-                   const IPV4Address &ip,
-                   unsigned short port) const;
-    ssize_t SendTo(ola::io::IOVecInterface *data,
-                   const IPV4SocketAddress &dest) const {
-      return SendTo(data, dest.Host(), dest.Port());
-    }
+  bool Close();
+  int ReadDescriptor() const { return m_fd; }
+  int WriteDescriptor() const { return m_fd; }
+  ssize_t SendTo(const uint8_t *buffer,
+                 unsigned int size,
+                 const IPV4Address &ip,
+                 unsigned short port) const;
+  ssize_t SendTo(const uint8_t *buffer,
+                 unsigned int size,
+                 const IPV4SocketAddress &dest) const {
+    return SendTo(buffer, size, dest.Host(), dest.Port());
+  }
+  ssize_t SendTo(ola::io::IOVecInterface *data,
+                 const IPV4Address &ip,
+                 unsigned short port) const;
+  ssize_t SendTo(ola::io::IOVecInterface *data,
+                 const IPV4SocketAddress &dest) const {
+    return SendTo(data, dest.Host(), dest.Port());
+  }
 
-    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
-    bool RecvFrom(uint8_t *buffer,
-                  ssize_t *data_read,
-                  IPV4Address &source) const;  // NOLINT
-    bool RecvFrom(uint8_t *buffer,
-                  ssize_t *data_read,
-                  IPV4Address &source,  // NOLINT
-                  uint16_t &port) const;  // NOLINT
+  bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
+  bool RecvFrom(uint8_t *buffer,
+                ssize_t *data_read,
+                IPV4Address &source) const;  // NOLINT
+  bool RecvFrom(uint8_t *buffer,
+                ssize_t *data_read,
+                IPV4Address &source,  // NOLINT
+                uint16_t &port) const;  // NOLINT
 
-    bool EnableBroadcast();
-    bool SetMulticastInterface(const IPV4Address &iface);
-    bool JoinMulticast(const IPV4Address &iface,
-                       const IPV4Address &group,
-                       bool loop = false);
-    bool LeaveMulticast(const IPV4Address &iface,
-                        const IPV4Address &group);
+  bool EnableBroadcast();
+  bool SetMulticastInterface(const IPV4Address &iface);
+  bool JoinMulticast(const IPV4Address &iface,
+                     const IPV4Address &group,
+                     bool loop = false);
+  bool LeaveMulticast(const IPV4Address &iface,
+                      const IPV4Address &group);
 
-    bool SetTos(uint8_t tos);
+  bool SetTos(uint8_t tos);
 
  private:
-    int m_fd;
-    bool m_bound_to_port;
-    UDPSocket(const UDPSocket &other);
-    UDPSocket& operator=(const UDPSocket &other);
-    bool _RecvFrom(uint8_t *buffer,
-                   ssize_t *data_read,
-                   struct sockaddr_in *source,
-                   socklen_t *src_size) const;
+  int m_fd;
+  bool m_bound_to_port;
+
+  DISALLOW_COPY_AND_ASSIGN(UDPSocket);
 };
 }  // namespace network
 }  // namespace ola

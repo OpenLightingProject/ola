@@ -17,14 +17,20 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include "ola/rdm/DimmerSubDevice.h"
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <string>
 #include <vector>
+
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/rdm/DimmerSubDevice.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"

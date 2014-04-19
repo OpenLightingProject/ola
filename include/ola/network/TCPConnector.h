@@ -22,6 +22,7 @@
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/IPV4Address.h>
@@ -89,11 +90,12 @@ class TCPConnector {
   ola::io::SelectServerInterface *m_ss;
   ConnectionSet m_connections;
 
-
   void SocketWritable(PendingTCPConnection *connection);
   void FreePendingConnection(PendingTCPConnection *connection);
   void Timeout(const ConnectionSet::iterator &iter);
   void TimeoutEvent(PendingTCPConnection *connection);
+
+  DISALLOW_COPY_AND_ASSIGN(TCPConnector);
 };
 }  // namespace network
 }  // namespace ola

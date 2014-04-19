@@ -1,3 +1,4 @@
+*.core
 *.gcda
 *.gcno
 *.la
@@ -33,6 +34,7 @@ stamp-h1
 .AppleDouble/
 .deps
 .libs
+config/compile
 config/config.guess
 config/config.sub
 config/depcomp
@@ -45,6 +47,7 @@ config/ltversion.m4
 config/lt~obsolete.m4
 config/missing
 config/py-compile
+config/test-driver
 *Tester
 data/rdm/PidDataTest.sh
 debian/files
@@ -95,6 +98,8 @@ plugins/artnet/artnet_loadtest
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
 protoc/ola_protoc
+protoc/ola_protoc.exe
+python/examples/ola_rdm_set.py
 python/ola/PidStoreLocation.py
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh

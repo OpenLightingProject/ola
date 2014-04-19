@@ -30,10 +30,16 @@
   #endif
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+  #include <sys/types.h>  // Required by OpenBSD
+#endif
 #ifdef HAVE_SYS_SOCKET_H
   #include <sys/socket.h>  // order is important for FreeBSD
 #endif
 #include <arpa/inet.h>
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>  // Required by FreeBSD
+#endif
 #include <errno.h>
 #include <net/if.h>
 #ifdef HAVE_SOCKADDR_DL_STRUCT
@@ -46,6 +52,7 @@
 #include <string>
 #include <vector>
 
+#include "common/network/NetworkUtilsInternal.h"
 #include "common/network/PosixInterfacePicker.h"
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
@@ -154,14 +161,16 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     }
 
     if ((interface.name == last_dl_iface_name) && hwaddr) {
-      if (hwlen != MACAddress::LENGTH) {
-        OLA_WARN << "hwlen was not expected length; got " <<
-        static_cast<int>(hwlen) << ", expecting " << MACAddress::LENGTH;
+      if (hwlen == MACAddress::LENGTH) {
+        interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
+      } else {
+        OLA_WARN << "hwlen was not expected length, so didn't obtain MAC "
+                 << "address; got " << static_cast<int>(hwlen)
+                 << ", expecting " << MACAddress::LENGTH;
       }
-      interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
     }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
-    interface.ip_address = IPV4Address(sin->sin_addr);
+    interface.ip_address = IPV4Address(sin->sin_addr.s_addr);
 
     // fetch bcast address
 #ifdef SIOCGIFBRDADDR
@@ -170,7 +179,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
         sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
-        interface.bcast_address = IPV4Address(sin->sin_addr);
+        interface.bcast_address = IPV4Address(sin->sin_addr.s_addr);
       }
     }
 #endif
@@ -181,7 +190,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       OLA_WARN << "ioctl error " << strerror(errno);
     } else {
       sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
-      interface.subnet_mask = IPV4Address(sin->sin_addr);
+      interface.subnet_mask = IPV4Address(sin->sin_addr.s_addr);
     }
 #endif
 
@@ -205,8 +214,18 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
+#ifdef __FreeBSD__
+        interface.index = ifrcopy.ifr_index;
+#else
         interface.index = ifrcopy.ifr_ifindex;
+#endif
       }
+    }
+#elif defined(HAVE_IF_NAMETOINDEX)
+    // fetch index on NetBSD and other platforms without SIOCGIFINDEX
+    unsigned int index = if_nametoindex(iface->ifr_name);
+    if (index != 0) {
+      interface.index = index;
     }
 #endif
 

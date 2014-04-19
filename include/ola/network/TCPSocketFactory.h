@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_NETWORK_TCPSOCKETFACTORY_H_
 
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/network/TCPSocket.h>
 
 namespace ola {
@@ -32,9 +33,9 @@ namespace network {
  */
 class TCPSocketFactoryInterface {
  public:
-    virtual ~TCPSocketFactoryInterface() {}
+  virtual ~TCPSocketFactoryInterface() {}
 
-    virtual void NewTCPSocket(int fd) = 0;
+  virtual void NewTCPSocket(int fd) = 0;
 };
 
 
@@ -44,25 +45,27 @@ class TCPSocketFactoryInterface {
 template<class SocketType>
 class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
  public:
-    typedef ola::Callback1<void, SocketType*> NewSocketCallback;
+  typedef ola::Callback1<void, SocketType*> NewSocketCallback;
 
-    explicit GenericTCPSocketFactory(NewSocketCallback *on_accept)
-        : m_new_socket(on_accept) {
-    }
+  explicit GenericTCPSocketFactory(NewSocketCallback *on_accept)
+      : m_new_socket(on_accept) {
+  }
 
-    ~GenericTCPSocketFactory() {
-      if (m_new_socket)
-        delete m_new_socket;
-    }
+  ~GenericTCPSocketFactory() {
+    if (m_new_socket)
+      delete m_new_socket;
+  }
 
-    void NewTCPSocket(int fd) {
-      SocketType *socket = new SocketType(fd);
-      socket->SetReadNonBlocking();
-      m_new_socket->Run(socket);
-    }
+  void NewTCPSocket(int fd) {
+    SocketType *socket = new SocketType(fd);
+    socket->SetReadNonBlocking();
+    m_new_socket->Run(socket);
+  }
 
  private:
-    NewSocketCallback *m_new_socket;
+  NewSocketCallback *m_new_socket;
+
+  DISALLOW_COPY_AND_ASSIGN(GenericTCPSocketFactory);
 };
 
 typedef GenericTCPSocketFactory<TCPSocket> TCPSocketFactory;

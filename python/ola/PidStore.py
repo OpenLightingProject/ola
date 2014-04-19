@@ -25,6 +25,7 @@ import binascii
 import math
 import ola.RDMConstants
 import os
+import socket
 import struct
 import sys
 from google.protobuf import text_format
@@ -420,11 +421,25 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
-#TODO(Peter): pretty print this
 class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
     super(IPV4, self).__init__(name, 'I', 0xffffffff, **kwargs)
+
+  def Unpack(self, data):
+    try:
+      return socket.inet_ntoa(data)
+    except socket.error, e:
+      raise ArgsValidationError("Can't unpack data: %s" % e)
+
+  def Pack(self, args):
+    #TODO(Peter): This currently allows some rather quirky values as per
+    #inet_aton, we may want to restrict that in future
+    try:
+      value = struct.unpack("!I", socket.inet_aton(args[0]))
+    except socket.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return super(IntAtom, self).Pack(value)
 
 
 class MACAtom(FixedSizeAtom):

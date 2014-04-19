@@ -56,8 +56,15 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
     return INSUFFICIENT_TOKENS;
 
   // this takes care of the easy case where there are no groups
-  if (!m_groups.size())
-    return required_tokens == token_count ? NO_VARIABLE_GROUPS : EXTRA_TOKENS;
+  if (m_groups.empty()) {
+    if (required_tokens == token_count) {
+      return NO_VARIABLE_GROUPS;
+    } else {
+      OLA_WARN << "Got an incorrect number of tokens, expecting "
+               << required_tokens << " tokens, got " << token_count;
+      return EXTRA_TOKENS;
+    }
+  }
 
   // check all groups, looking for multiple non-fixed sized groups
   unsigned int variable_group_counter = 0;
@@ -83,8 +90,15 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
   if (required_tokens > token_count)
     return INSUFFICIENT_TOKENS;
 
-  if (!variable_group_counter)
-    return required_tokens == token_count ? NO_VARIABLE_GROUPS : EXTRA_TOKENS;
+  if (!variable_group_counter) {
+    if (required_tokens == token_count) {
+      return NO_VARIABLE_GROUPS;
+    } else {
+      OLA_WARN << "Got an incorrect number of tokens, expecting "
+               << required_tokens << " tokens, got " << token_count;
+      return EXTRA_TOKENS;
+    }
+  }
 
   // now we have a single variable sized group and a 0 or more tokens remaining
   unsigned int remaining_tokens = token_count - required_tokens;

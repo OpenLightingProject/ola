@@ -40,7 +40,7 @@ MAX_LABEL_SIZE = 32
 MAX_DMX_ADDRESS = 512
 
 def UnsupportedSetNacks(pid):
-  """Repsonders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
+  """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
   return [
     NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
@@ -132,6 +132,20 @@ class GetWithDataMixin(object):
 
   def Test(self):
     self.AddIfGetSupported([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
+        warning='Get %s with data returned an ack' % self.pid.name)
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+class GetMandatoryPIDWithDataMixin(object):
+  """GET a mandatory PID with junk param data."""
+  DATA = 'foo'
+
+  def Test(self):
+    # PID must return something as this PID is required (can't return
+    # unsupported)
+    self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)

@@ -29,7 +29,6 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 
-
 using ola::network::MACAddress;
 using std::auto_ptr;
 using std::string;
@@ -54,25 +53,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MACAddressTest);
 void MACAddressTest::testMACAddress() {
   uint8_t hw_address[ola::network::MACAddress::LENGTH] = {
     0x01, 0x23, 0x45, 0x67, 0x89, 0xab};
-  ether_addr ether_addr1;
-  memcpy(ether_addr1.ether_addr_octet, hw_address, MACAddress::LENGTH);
   MACAddress address1;
   OLA_ASSERT_TRUE(MACAddress::FromString(string("01:23:45:67:89:ab"),
                                          &address1));
-  OLA_ASSERT_EQ(
-      0,
-      memcmp(address1.Address().ether_addr_octet,
-             reinterpret_cast<uint8_t*>(&ether_addr1.ether_addr_octet),
-             MACAddress::LENGTH));
 
   // Test Get()
   uint8_t addr[MACAddress::LENGTH];
   address1.Get(addr);
-  OLA_ASSERT_EQ(
-      0,
-      memcmp(addr,
-             reinterpret_cast<uint8_t*>(&ether_addr1),
-             MACAddress::LENGTH));
+  OLA_ASSERT_EQ(0, memcmp(addr, hw_address, MACAddress::LENGTH));
 
   // test copy and assignment
   MACAddress address2(address1);
