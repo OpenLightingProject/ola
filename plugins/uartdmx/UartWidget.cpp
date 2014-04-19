@@ -89,16 +89,7 @@ bool UartWidget::Close() {
 bool UartWidget::IsOpen() const {
   return (m_filed > 0) ? true : false;
 }
-/*
-bool UartWidget::PurgeBuffers() {
-  if (ftdi_usb_purge_buffers(&m_handle) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }
-}
-*/
+
 bool UartWidget::SetBreak(bool on) {
   unsigned long request;
   if (on == true)
