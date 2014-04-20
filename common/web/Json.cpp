@@ -119,7 +119,7 @@ void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
 
-void JsonObject::VisitProperties(JsonValueVisitorInterface *visitor) const {
+void JsonObject::VisitProperties(JsonObjectPropertyVisitor *visitor) const {
   MemberMap::const_iterator iter = m_members.begin();
   for (; iter != m_members.end(); ++iter) {
     visitor->VisitProperty(iter->first, *(iter->second));
