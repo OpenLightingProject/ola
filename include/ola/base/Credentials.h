@@ -51,16 +51,24 @@ namespace ola {
  * */
 
 /**
- * @brief Get the real UID of the process.
- * @return real user id of the proccess
+ * @brief Check whether the current platform supports User and Group IDs.
+ * @return true on *nix, false on Windows
  */
-uid_t GetUID();
+bool SupportsUIDs();
+
+/**
+ * @brief Get the real UID of the process.
+ * @param uid is the variable to receive the real UID
+ * @return true on success, false otherwise
+ */
+bool GetUID(uid_t* uid);
 
 /**
  * @brief Get the effective UID of the process.
- * @return effective user id of the process
+ * @param euid is the variable to receive the effective UID
+ * @return true on success, false otherwise
  */
-uid_t GetEUID();
+bool GetEUID(uid_t* euid);
 
 /**
  * @brief Set the effective UID of the process.
@@ -80,15 +88,17 @@ bool SetUID(uid_t new_uid);
 
 /**
  * @brief Get the real Group ID
- * @return the real Group ID
+ * @param gid is the variable to receive the real Group ID
+ * @return true on success, false otherwise
  */
-gid_t GetGID();
+bool GetGID(gid_t* gid);
 
 /**
  * @brief Get the effective group ID
- * @return the effective Group ID
+ * @param egid is the variable to receive the effective Group ID
+ * @return true on success, false otherwise
  */
-gid_t GetEGID();
+bool GetEGID(gid_t* egid);
 
 /**
  * @brief Set the effective Group ID of the process

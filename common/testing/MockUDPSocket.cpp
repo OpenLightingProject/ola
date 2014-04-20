@@ -38,6 +38,7 @@ namespace ola {
 namespace testing {
 
 using ola::io::IOQueue;
+using ola::io::IOVec;
 using ola::io::IOVecInterface;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -116,7 +117,7 @@ ssize_t MockUDPSocket::SendTo(IOVecInterface *data,
   // This incurs a copy but it's only testing code.
 
   int io_len;
-  const struct iovec *iov = data->AsIOVec(&io_len);
+  const struct IOVec *iov = data->AsIOVec(&io_len);
   if (iov == NULL)
     return 0;
 

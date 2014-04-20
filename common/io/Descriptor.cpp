@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/uio.h>
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
@@ -36,16 +35,22 @@
 #else
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #endif
 
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/base/Macro.h"
 #include "ola/io/Descriptor.h"
 
 namespace ola {
 namespace io {
 
+#ifndef WIN32
+// Check binary compatibility between IOVec and iovec
+STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
+#endif
 
 /**
  * Helper function to create a annonymous pipe
@@ -214,24 +219,44 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
     return 0;
 
   int iocnt;
-  const struct iovec *iov = ioqueue->AsIOVec(&iocnt);
+  const struct IOVec *iov = ioqueue->AsIOVec(&iocnt);
 
-  ssize_t bytes_sent;
+  ssize_t bytes_sent = 0;
+
+#ifdef WIN32
+  /* There is no scatter/gather functionality for generic descriptors on
+   * Windows, so this is implemented as a write loop. Derived classes should
+   * re-implement Send() using scatter/gather I/O where available.
+   */
+  int bytes_written = 0;
+  for (int io = 0; io < iocnt; ++io) {
+    bytes_written = write(WriteDescriptor(), iov[io].iov_base,
+                          iov[io].iov_len);
+    if (bytes_written == -1) {
+      OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
+        strerror(errno);
+      break;
+    }
+    bytes_sent += bytes_written;
+  }
+#else
 #if HAVE_DECL_MSG_NOSIGNAL
   if (IsSocket()) {
     struct msghdr message;
     memset(&message, 0, sizeof(message));
     message.msg_name = NULL;
     message.msg_namelen = 0;
-    message.msg_iov = const_cast<struct iovec*>(iov);
+    message.msg_iov = reinterpret_cast<iovec*>(const_cast<IOVec*>(iov));
     message.msg_iovlen = iocnt;
     bytes_sent = sendmsg(WriteDescriptor(), &message, MSG_NOSIGNAL);
   } else {
 #else
   {
 #endif
-    bytes_sent = writev(WriteDescriptor(), iov, iocnt);
+    bytes_sent = writev(WriteDescriptor(),
+                        reinterpret_cast<const struct iovec*>(iov), iocnt);
   }
+#endif
 
   ioqueue->FreeIOVec(iov);
   if (bytes_sent < 0) {
@@ -419,6 +444,9 @@ bool PipeDescriptor::CloseClient() {
  * Create a new unix socket
  */
 bool UnixSocket::Init() {
+#ifdef WIN32
+  return false;
+#else
   int pair[2];
   if (m_fd != INVALID_DESCRIPTOR || m_other_end)
     return false;
@@ -434,6 +462,7 @@ bool UnixSocket::Init() {
   m_other_end = new UnixSocket(pair[1], this);
   m_other_end->SetReadNonBlocking();
   return true;
+#endif
 }
 
 
@@ -463,8 +492,10 @@ bool UnixSocket::Close() {
  * Close the write portion of this UnixSocket
  */
 bool UnixSocket::CloseClient() {
+#ifndef WIN32
   if (m_fd != INVALID_DESCRIPTOR)
     shutdown(m_fd, SHUT_WR);
+#endif
 
   m_fd = INVALID_DESCRIPTOR;
   return true;

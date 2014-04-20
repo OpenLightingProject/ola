@@ -84,7 +84,7 @@ class BaseTimeVal {
   // Returns the seconds portion.
   time_t Seconds() const { return m_tv.tv_sec; }
   // Returns the microseconds portion
-  suseconds_t MicroSeconds() const { return m_tv.tv_usec; }
+  int32_t MicroSeconds() const { return static_cast<int32_t>(m_tv.tv_usec); }
 
   // Returns the entire BaseTimeVal as milliseconds
   int64_t InMilliSeconds() const;
@@ -139,7 +139,7 @@ class TimeInterval {
   void AsTimeval(struct timeval *tv) const { m_interval.AsTimeval(tv); }
 
   time_t Seconds() const { return m_interval.Seconds(); }
-  suseconds_t MicroSeconds() const { return m_interval.MicroSeconds(); }
+  int32_t MicroSeconds() const { return m_interval.MicroSeconds(); }
 
   int64_t InMilliSeconds() const { return m_interval.InMilliSeconds(); }
   int64_t AsInt() const { return m_interval.AsInt(); }
@@ -193,7 +193,7 @@ class TimeStamp {
     bool IsSet() const { return m_tv.IsSet(); }
 
     time_t Seconds() const { return m_tv.Seconds(); }
-    suseconds_t MicroSeconds() const { return m_tv.MicroSeconds(); }
+    int32_t MicroSeconds() const { return m_tv.MicroSeconds(); }
 
     std::string ToString() const { return m_tv.ToString(); }
 

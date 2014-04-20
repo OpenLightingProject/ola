@@ -29,6 +29,7 @@ from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
+from ola.RDMConstants import *
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
@@ -526,7 +527,8 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 
     start_address = fields['dmx_start_address']
     if (start_address == 0 or
-        (start_address > 512 and start_address != 0xffff)):
+        (start_address > MAX_DMX_ADDRESS and
+         start_address != RDM_ZERO_FOOTPRINT_DMX_ADDRESS)):
       self.AddWarning('Invalid DMX address %d in DEVICE_INFO' % start_address)
 
     sub_devices = fields['sub_device_count']
@@ -723,7 +725,7 @@ class GetSupportedParameters(ResponderTestFixture):
         continue
 
       supported_parameters.append(param_id)
-      if param_id >= 0x8000 and param_id < 0xffe0:
+      if param_id >= RDM_MANUFACTURER_PID_MIN and param_id <= RDM_MANUFACTURER_PID_MAX:
         manufacturer_parameters.append(param_id)
 
     pid_store = PidStore.GetStore()
@@ -1465,6 +1467,13 @@ class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'language'
 
 
+class GetLanguageWithData(TestMixins.GetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """GET the language with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LANGUAGE'
+
+
 class SetLanguage(OptionalParameterTestFixture):
   """SET the language."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1543,19 +1552,11 @@ class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
   EXPECTED_FIELD = 'label'
 
 
-class GetSoftwareVersionLabelWithData(ResponderTestFixture):
+class GetSoftwareVersionLabelWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                                      ResponderTestFixture):
   """GET the software_version_label with param data."""
-  # We don't use the GetLabelMixin here because this PID is mandatory
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
-
-  def Test(self):
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
@@ -1738,6 +1739,13 @@ class GetPersonality(OptionalParameterTestFixture):
         warning_str, personality_count, fields['personality_count']))
 
 
+class GetPersonalityWithData(TestMixins.GetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Get DMX_PERSONALITY with invalid data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_PERSONALITY'
+
+
 class GetPersonalityDescriptions(OptionalParameterTestFixture):
   """Get information about all the personalities."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -1845,7 +1853,7 @@ class SetPersonality(OptionalParameterTestFixture):
     expected_results = [
       AckGetResult(
         address_pid.value,
-        field_values={'dmx_address': 0xffff},
+        field_values={'dmx_address': RDM_ZERO_FOOTPRINT_DMX_ADDRESS},
         action=self.NextPersonality),
     ]
     if not self._consumes_slots:
@@ -1916,7 +1924,8 @@ class GetStartAddress(ResponderTestFixture):
       results = self.AckGetResult(field_names=['dmx_address'])
     else:
       results = [
-          self.AckGetResult(field_values={'dmx_address': 0xffff}),
+          self.AckGetResult(field_values={
+              'dmx_address': RDM_ZERO_FOOTPRINT_DMX_ADDRESS}),
           self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       ]
@@ -1935,6 +1944,34 @@ class GetStartAddress(ResponderTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
+class GetStartAddressWithData(ResponderTestFixture):
+  """GET the DMX start address with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_START_ADDRESS'
+  REQUIRES = ['dmx_footprint']
+
+  def Test(self):
+    if self.Property('dmx_footprint') > 0:
+      # If we have a footprint, PID must return something as this PID is
+      # required (can't return unsupported)
+      results = [
+        self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+        self.AckGetResult(
+          warning='Get %s with data returned an ack' % self.pid.name)
+      ]
+    else:
+      # If we don't have a footprint, PID may return something, or may return
+      # unsupported, as this PID becomes optional
+      results = [
+          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+          self.AckGetResult(
+            warning='Get %s with data returned an ack' % self.pid.name),
+      ]
+    self.AddExpectedResults(results)
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
 class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
   """Set the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -1947,7 +1984,7 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
     current_address = self.Property('dmx_address')
     self.start_address = 1
 
-    if footprint == 0 or current_address == 0xffff:
+    if footprint == 0 or current_address == RDM_ZERO_FOOTPRINT_DMX_ADDRESS:
       results = [
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
@@ -3528,19 +3565,11 @@ class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
   EXPECTED_FIELD = 'identify_state'
 
 
-class GetIdentifyDeviceWithData(ResponderTestFixture):
+class GetIdentifyDeviceWithData(TestMixins.GetMandatoryPIDWithDataMixin,
+                                ResponderTestFixture):
   """Get the identify state with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
-
-  def Test(self):
-    # don't inherit from GetWithDataMixin because this is required
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetIdentifyDevice(ResponderTestFixture):
@@ -4069,7 +4098,7 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       if (base_address == 0 or
           (base_address > MAX_DMX_ADDRESS and
            base_address != self.NON_CONTIGUOUS)):
-        self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
+        self.AddWarning('Base DMX address is outside range 1-512, was %d' %
                         base_address)
 
       if footprint != self.expected_footprint:
@@ -4882,8 +4911,8 @@ class GetLockPinWithData(OptionalParameterTestFixture):
   DATA = 'foo'
 
   def Test(self):
-    # We can't use the GetWithNoDataMixin because NR_UNSUPPORTED_COMMAND_CLASS
-    # is a valid response here.
+    # We can't use the GetWithDataMixin because NR_UNSUPPORTED_COMMAND_CLASS is
+    # a valid response here.
     self.AddIfGetSupported([
       self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
@@ -5065,11 +5094,11 @@ class GetDimmerInfo(OptionalParameterTestFixture):
 
     self.CheckFieldsAreUnsupported(
         'MINIMUM_LEVEL', fields,
-        {'minimum_level_lower': 0, 'minimum_level_upper': 0xffff,
+        {'minimum_level_lower': 0, 'minimum_level_upper': 0,
          'split_levels_supported': 0})
     self.CheckFieldsAreUnsupported(
         'MAXIMUM_LEVEL', fields,
-        {'maximum_level_lower': 0, 'maximum_level_upper': 0xffff})
+        {'maximum_level_lower': 0xffff, 'maximum_level_upper': 0xffff})
 
   def CheckFieldsAreUnsupported(self, pid_name, fields, keys):
     if self.LookupPid(pid_name).value in self.Property('supported_parameters'):
