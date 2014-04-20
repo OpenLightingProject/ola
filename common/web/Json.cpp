@@ -31,6 +31,42 @@ using std::ostream;
 using std::string;
 using std::stringstream;
 
+void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonBoolValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonNullValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonRawValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonIntValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonUIntValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonUInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
 JsonObject::~JsonObject() {
   STLDeleteValues(&m_members);
 }
@@ -79,59 +115,134 @@ void JsonObject::AddValue(const string &key, const JsonValue *value) {
   STLReplaceAndDelete(&m_members, key, value);
 }
 
-void JsonObject::ToString(ostream *output, unsigned int indent) const {
-  Indent(output, indent);
-  if (m_members.empty()) {
-    *output << "{}";
-    return;
-  }
+void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
 
-  *output << "{\n";
+void JsonObject::VisitProperties(JsonValueVisitorInterface *visitor) const {
   MemberMap::const_iterator iter = m_members.begin();
-  string separator = "";
   for (; iter != m_members.end(); ++iter) {
-    *output << separator;
-    Indent(output, indent + DEFAULT_INDENT);
-    *output << '"' << EscapeString(iter->first) << "\": ";
-    iter->second->ToString(output, indent + DEFAULT_INDENT);
-    separator = ",\n";
+    visitor->VisitProperty(iter->first, *(iter->second));
   }
-  *output << "\n";
-  Indent(output, indent);
-  *output << "}";
 }
 
 JsonArray::~JsonArray() {
   STLDeleteElements(&m_values);
 }
 
-void JsonArray::ToString(ostream *output, unsigned int indent) const {
-  *output << "[";
-  ValuesVector::const_iterator iter = m_values.begin();
-  string separator = m_complex_type ? "\n" : "";
-  unsigned int child_indent = m_complex_type ? indent + DEFAULT_INDENT : 0;
-  for (; iter != m_values.end(); ++iter) {
-    *output << separator;
-    (*iter)->ToString(output, child_indent);
-    separator = (m_complex_type ? ",\n" : ", ");
-  }
-  if (m_complex_type) {
-    *output << "\n";
-    Indent(output, indent);
-    *output << "]";
+void JsonArray::Accept(JsonValueVisitorInterface *visitor) const {
+  visitor->Visit(*this);
+}
+
+const JsonValue *JsonArray::ElementAt(unsigned int i) const {
+  if (i < m_values.size()) {
+    return m_values[i];
   } else {
-    *output << "]";
+    return NULL;
   }
 }
 
 void JsonWriter::Write(ostream *output, const JsonValue &obj) {
-  obj.ToString(output, 0);
+  JsonWriter writer(output);
+  obj.Accept(&writer);
 }
 
 string JsonWriter::AsString(const JsonValue &obj) {
   stringstream str;
-  obj.ToString(&str, 0);
+  JsonWriter writer(&str);
+  obj.Accept(&writer);
   return str.str();
+}
+
+void JsonWriter::Visit(const JsonStringValue &value) {
+  *m_output << '"' << EscapeString(EncodeString(value.Value())) << '"';
+}
+
+void JsonWriter::Visit(const JsonBoolValue &value) {
+  *m_output << (value.Value() ? "true" : "false");
+}
+
+void JsonWriter::Visit(const JsonNullValue &) {
+  *m_output << "null";
+}
+
+void JsonWriter::Visit(const JsonRawValue &value) {
+  *m_output << '"' << value.Value() << '"';
+}
+
+void JsonWriter::Visit(const JsonObject &value) {
+  if (value.IsEmpty()) {
+    *m_output << "{}";
+    return;
+  }
+
+  string old_separator = m_separator;
+  m_separator = "";
+  m_indent += DEFAULT_INDENT;
+  *m_output << "{\n";
+
+  value.VisitProperties(this);
+  m_indent -= DEFAULT_INDENT;
+
+  *m_output << "\n" << string(m_indent, ' ');
+  *m_output << "}";
+  m_separator = old_separator;
+}
+
+void JsonWriter::Visit(const JsonArray &value) {
+  *m_output << "[";
+  string default_separator = ", ";
+
+  if (value.IsComplexType()) {
+    m_indent += DEFAULT_INDENT;
+    *m_output << "\n" << string(m_indent, ' ');
+    default_separator = ",\n";
+    default_separator.append(m_indent, ' ');
+  }
+
+  string separator;
+
+  for (unsigned int i = 0; i < value.Size(); i++) {
+    *m_output << separator;
+    value.ElementAt(i)->Accept(this);
+    separator = default_separator;
+  }
+
+  if (value.IsComplexType()) {
+    *m_output << "\n";
+    m_indent -= DEFAULT_INDENT;
+    *m_output << string(m_indent, ' ');
+  }
+
+  *m_output << "]";
+}
+
+void JsonWriter::Visit(const JsonUIntValue &value) {
+  *m_output << value.Value();
+}
+
+void JsonWriter::Visit(const JsonUInt64Value &value) {
+  *m_output << value.Value();
+}
+
+void JsonWriter::Visit(const JsonIntValue &value) {
+  *m_output << value.Value();
+}
+
+void JsonWriter::Visit(const JsonInt64Value &value) {
+  *m_output << value.Value();
+}
+
+void JsonWriter::Visit(const JsonDoubleValue &value) {
+  *m_output << value.Value();
+}
+
+void JsonWriter::VisitProperty(const std::string &property,
+                               const JsonValue &value) {
+  *m_output << m_separator << string(m_indent, ' ') << "\""
+            << EscapeString(property) << "\": ";
+  value.Accept(this);
+  m_separator = ",\n";
 }
 }  // namespace web
 }  // namespace ola
