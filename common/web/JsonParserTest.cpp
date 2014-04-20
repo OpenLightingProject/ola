@@ -319,7 +319,7 @@ void JsonParserTest::testArray() {
   value.reset(BasicJsonParser::Parse(
         "[\"test]\", 1, [\"nested\"], 4] ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("[\n\"test]\",\n1,\n[\"nested\"],\n4\n]"),
+  OLA_ASSERT_EQ(string("[\n  \"test]\",\n  1,\n  [\"nested\"],\n  4\n]"),
                 JsonWriter::AsString(*value.get()));
 
   // Invalid input
@@ -365,7 +365,7 @@ void JsonParserTest::testObject() {
         "{\"key1\"  : 1, \"key2\"  : {\"age\": 24}} ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(
-      string("{\n  \"key1\": 1,\n  \"key2\":   {\n    \"age\": 24\n  }\n}"),
+      string("{\n  \"key1\": 1,\n  \"key2\": {\n    \"age\": 24\n  }\n}"),
       JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse(
@@ -498,7 +498,7 @@ void JsonParserTest::testStressTests() {
 
   value.reset(BasicJsonParser::Parse("[ { }, { }, []]", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("[\n  {},\n  {},\n[]\n]"),
+  OLA_ASSERT_EQ(string("[\n  {},\n  {},\n  []\n]"),
                 JsonWriter::AsString(*value.get()));
 
   /*

@@ -45,6 +45,7 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testBool);
   CPPUNIT_TEST(testNull);
   CPPUNIT_TEST(testSimpleArray);
+  CPPUNIT_TEST(testEmptyObject);
   CPPUNIT_TEST(testSimpleObject);
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST_SUITE_END();
@@ -55,6 +56,7 @@ class JsonTest: public CppUnit::TestFixture {
     void testBool();
     void testNull();
     void testSimpleArray();
+    void testEmptyObject();
     void testSimpleObject();
     void testComplexObject();
 };
@@ -133,6 +135,15 @@ void JsonTest::testSimpleArray() {
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(array));
 }
 
+/*
+ * Test an empty object.
+ */
+void JsonTest::testEmptyObject() {
+  JsonObject object;
+
+  string expected = "{}";
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
+}
 
 /*
  * Test a simple object.
@@ -151,7 +162,6 @@ void JsonTest::testSimpleObject() {
       "}");
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
 }
-
 
 /*
  * Test a complex object.
