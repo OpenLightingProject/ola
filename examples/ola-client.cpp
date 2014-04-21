@@ -333,11 +333,7 @@ void InitOptions(options *opts) {
  * Decide what mode we're running in
  */
 void SetMode(options *opts) {
-  string cmd = ola::file::FilenameFromPath(opts->cmd);
-
-  if (!cmd.empty()) {
-    opts->cmd = cmd;
-  }
+  opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
 
   if (opts->cmd == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;

@@ -77,13 +77,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->uid = NULL;
   opts->sub_device = 0;
 
-  string cmd = ola::file::FilenameFromPath(argv[0]);
-
-  if (cmd.empty()) {
-    cmd = argv[0];
-  }
-
-  if (cmd == "ola_rdm_set") {
+  if (ola::file::FilenameFromPathOrPath(argv[0]) == "ola_rdm_set") {
     opts->set_mode = true;
   }
 

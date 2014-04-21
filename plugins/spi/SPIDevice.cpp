@@ -61,12 +61,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),
       m_spi_device_name(spi_device) {
-
-  string device_name = ola::file::FilenameFromPath(spi_device);
-
-  if (!device_name.empty()) {
-    m_spi_device_name = device_name;
-  }
+  m_spi_device_name = ola::file::FilenameFromPathOrPath(m_spi_device_name);
 
   SetDefaults();
   unsigned int port_count = 0;

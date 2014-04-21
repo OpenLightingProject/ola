@@ -53,6 +53,7 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using ola::file::FilenameFromPathOrPath;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
 using ola::rdm::LoadSensor;
@@ -145,7 +146,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       m_pixel_count(options.pixel_count),
       m_start_address(1),
       m_identify_mode(false) {
-  m_spi_device_name = ola::file::FilenameFromPath(m_backend->DevicePath());
+  m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
   personalities.push_back(Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
