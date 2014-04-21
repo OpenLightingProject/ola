@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ola/web/Json.h"
 #include "ola/web/JsonSchema.h"
@@ -37,11 +38,15 @@ using ola::web::JsonUIntValue;
 using ola::web::ObjectValidator;
 using ola::web::StringValidator;
 using ola::web::NumberValidator;
+using ola::web::ArrayValidator;
+using ola::web::WildcardValidator;
 using ola::web::MultipleOfConstraint;
 using ola::web::MaximumConstraint;
 using ola::web::MinimumConstraint;
+using ola::web::ValidatorInterface;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 class JsonSchemaTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonSchemaTest);
@@ -57,15 +62,35 @@ CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaTest);
 
 void JsonSchemaTest::testParseBool() {
   ObjectValidator root_validator;
-  StringValidator name_validator((StringValidator::Options()));
-  root_validator.AddValidator("test", &name_validator);
+  vector<ValidatorInterface*> validators;
+  validators.push_back(
+      new StringValidator(StringValidator::Options()));
+  /*
+  ArrayValidator array_validator(
+      &validators,
+      new NumberValidator(),
+      ArrayValidator::Options());
+  */
 
+  ArrayValidator::Options array_options;
+  ArrayValidator array_validator(
+      new ArrayValidator(new WildcardValidator(), ArrayValidator::Options()),
+      array_options);
+  root_validator.AddValidator("array", &array_validator);
+
+  /*
   NumberValidator number_validator;
   number_validator.AddConstraint(new MaximumConstraint(7, false));
   root_validator.AddValidator("age", &number_validator);
+  */
 
   JsonObject object;
-  object.Add("age", 7);
+  JsonArray *array = object.AddArray("array");
+  JsonArray *inner_array = array->AppendArray();
+  // *inner_array = array->AppendArray();
+  inner_array->Append("test");
+  // array->Append(1);
+
   object.Accept(&root_validator);
   OLA_ASSERT_TRUE(root_validator.IsValid());
 }

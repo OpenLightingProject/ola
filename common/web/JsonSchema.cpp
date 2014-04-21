@@ -32,6 +32,72 @@ namespace web {
 using std::string;
 using std::vector;
 
+ReferenceValidator::ReferenceValidator(const SchemaDefintions *definitions,
+                                       const string &schema)
+    : m_definitions(definitions),
+      m_schema(schema),
+      m_validator(NULL) {
+}
+
+bool ReferenceValidator::IsValid() const {
+  return m_validator ? m_validator->IsValid() : false;
+}
+
+void ReferenceValidator::Visit(const JsonStringValue &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonBoolValue &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonNullValue &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonRawValue &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonObject &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonArray &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonUIntValue &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonUInt64Value &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonIntValue &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonInt64Value &value) {
+  Validate(value);
+}
+
+void ReferenceValidator::Visit(const JsonDoubleValue &value) {
+  Validate(value);
+}
+
+template <typename T>
+void ReferenceValidator::Validate(const T &value) {
+  if (!m_validator) {
+    m_validator = m_definitions->Lookup(m_schema);
+  }
+
+  if (m_validator) {
+    value.Accept(m_validator);
+  }
+}
+
 void StringValidator::Visit(const JsonStringValue &str) {
   const std::string& value = str.Value();
   size_t str_size = value.size();
@@ -94,7 +160,7 @@ void NumberValidator::CheckValue(T t) {
 }
 
 void ObjectValidator::AddValidator(const std::string &property,
-                                   BaseValidator *validator) {
+                                   ValidatorInterface *validator) {
   STLReplace(&m_property_validators, property, validator);
 }
 
@@ -106,7 +172,8 @@ void ObjectValidator::Visit(const JsonObject &obj) {
 void ObjectValidator::VisitProperty(const std::string &property,
                                     const JsonValue &value) {
   OLA_INFO << "Looking for property " << property;
-  BaseValidator *validator = STLFindOrNull(m_property_validators, property);
+  ValidatorInterface *validator = STLFindOrNull(
+      m_property_validators, property);
   if (!validator) {
     OLA_WARN << "No such property " << property;
     m_is_valid &= false;
@@ -115,6 +182,143 @@ void ObjectValidator::VisitProperty(const std::string &property,
 
   value.Accept(validator);
   m_is_valid &= validator->IsValid();
+}
+
+ArrayValidator::ArrayValidator(ValidatorInterface *validator,
+                               const Options &options)
+  : m_default_validator(validator),
+    m_options(options) {
+}
+
+ArrayValidator::ArrayValidator(ValidatorList *validators,
+                               ValidatorInterface *schema,
+                               const Options &options)
+    : m_validators(*validators),
+      m_default_validator(schema),
+      m_options(options) {
+  validators->clear();
+}
+
+ArrayValidator::~ArrayValidator() {
+  STLDeleteElements(&m_validators);
+}
+
+// items: array or schema (object)
+// additionalItems : schema (object) or bool
+//
+// items = object
+// items = array, additional = bool
+// items = array, additional = schema
+void ArrayValidator::Visit(const JsonArray &array) {
+  if (array.Size() < m_options.min_items) {
+    m_is_valid = false;
+    return;
+  }
+
+  if (m_options.max_items > 0 &&
+      array.Size() > static_cast<size_t>(m_options.max_items)) {
+    m_is_valid = false;
+    return;
+  }
+
+  // TODO(simon): implement unique_items here.
+
+  ArrayElementValidator element_validator(
+      m_validators, m_default_validator.get());
+
+  for (unsigned int i = 0; i < array.Size(); i++) {
+    OLA_INFO << "Checking element at " << i;
+    array.ElementAt(i)->Accept(&element_validator);
+    if (!element_validator.IsValid()) {
+      break;
+    }
+  }
+  m_is_valid = element_validator.IsValid();
+}
+
+ArrayValidator::ArrayElementValidator::ArrayElementValidator(
+    const ValidatorList &validators,
+    ValidatorInterface *default_validator)
+    : m_item_validators(validators.begin(), validators.end()),
+      m_default_validator(default_validator) {
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(
+    const JsonStringValue &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonBoolValue &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonNullValue &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonRawValue &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonObject &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonArray &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonUIntValue &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(
+    const JsonUInt64Value &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonIntValue &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(const JsonInt64Value &value) {
+  ValidateItem(value);
+}
+
+void ArrayValidator::ArrayElementValidator::Visit(
+    const JsonDoubleValue &value) {
+  ValidateItem(value);
+}
+
+template <typename T>
+void ArrayValidator::ArrayElementValidator::ValidateItem(const T &item) {
+  ValidatorInterface *validator = NULL;
+
+  if (!m_item_validators.empty()) {
+    validator = m_item_validators.front();
+    m_item_validators.pop_front();
+  } else if (!m_default_validator) {
+    // additional items aren't allowed
+    m_is_valid = false;
+    return;
+  } else {
+    validator = m_default_validator;
+  }
+  item.Accept(validator);
+  m_is_valid = validator->IsValid();
+}
+
+SchemaDefintions::~SchemaDefintions() {
+  STLDeleteValues(&m_validators);
+}
+
+void SchemaDefintions::Add(const string &schema_name,
+                           ValidatorInterface *validator) {
+  STLReplaceAndDelete(&m_validators, schema_name, validator);
+}
+
+ValidatorInterface *SchemaDefintions::Lookup(const string &schema_name) const {
+  return STLFindOrNull(m_validators, schema_name);
 }
 
 }  // namespace web
