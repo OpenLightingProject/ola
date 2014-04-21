@@ -25,6 +25,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/base/SysExits.h>
+#include <ola/file/Util.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMEnums.h>
@@ -76,10 +77,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->uid = NULL;
   opts->sub_device = 0;
 
-  std::vector<string> tokens;
-  ola::StringSplit(argv[0], tokens, "/");
-
-  if (string(tokens[tokens.size() - 1]) == "ola_rdm_set")
+  if (ola::file::FilenameFromPath(argv[0]) == "ola_rdm_set")
     opts->set_mode = true;
 
   int uid_set = 0;
