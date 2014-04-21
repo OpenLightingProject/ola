@@ -22,4 +22,4 @@ SimpleRpcControllerTest.sh: Makefile
 	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > SimpleRpcControllerTest.sh
 	chmod +x SimpleRpcControllerTest.sh
 
-CLEANFILES = Rpc_pb2.* SimpleRpcControllerTest.sh
+CLEANFILES = Rpc_pb2.* SimpleRpcControllerTest.sh *pyc
