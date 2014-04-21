@@ -56,7 +56,7 @@ EOF
 esac
 
 #create the olad user, add it to groups
-getent passwd olad > /dev/null || adduser --system --no-create-home olad
+getent passwd olad > /dev/null || adduser --system --home /usr/lib/olad --no-create-home olad
 getent group olad > /dev/null || addgroup --system olad
 groups olad | grep dialout > /dev/null || adduser olad dialout
 groups olad | grep plugdev > /dev/null || adduser olad plugdev
