@@ -12,5 +12,3 @@ dist_man_MANS = logic_rdm_sniffer.1 \
                 ola_usbpro.1 \
                 olad.1 \
                 rdmpro_sniffer.1
-
-EXTRA_DIST = generate-html.sh

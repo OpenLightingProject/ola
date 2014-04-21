@@ -25,5 +25,3 @@ KiNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 KiNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                      libolakinetnode.la
 endif
-
-EXTRA_DIST = kinet.cpp
