@@ -55,7 +55,7 @@ launcher_files = \
 
 EXTRA_DIST = $(launcher_files)
 
-CLEANFILES = DataLocation.py
+CLEANFILES = DataLocation.py *.pyc
 
 if INSTALL_RDM_TESTS
 
