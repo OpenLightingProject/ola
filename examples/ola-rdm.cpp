@@ -77,8 +77,15 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->uid = NULL;
   opts->sub_device = 0;
 
-  if (ola::file::FilenameFromPath(argv[0]) == "ola_rdm_set")
+  string cmd = ola::file::FilenameFromPath(argv[0]);
+
+  if (cmd.empty()) {
+    cmd = argv[0];
+  }
+
+  if (cmd == "ola_rdm_set") {
     opts->set_mode = true;
+  }
 
   int uid_set = 0;
   static struct option long_options[] = {
