@@ -9,3 +9,5 @@ libolakarate_la_SOURCES = KaratePlugin.cpp KarateDevice.cpp KarateThread.cpp \
                           KaratePort.h KarateThread.h KarateLight.h
 libolakarate_la_LIBADD = ../../common/libolacommon.la
 endif
+
+EXTRA_DIST = README.protocol

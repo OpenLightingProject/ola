@@ -8,3 +8,5 @@ logic_rdm_sniffer_SOURCES = DMXSignalProcessor.cpp DMXSignalProcessor.h \
                             logic-rdm-sniffer.cpp
 logic_rdm_sniffer_LDADD = ../../common/libolacommon.la \
                           $(libSaleaeDevice_LIBS)
+
+EXTRA_DIST = README.md
