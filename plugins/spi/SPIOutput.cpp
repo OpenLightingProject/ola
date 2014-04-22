@@ -34,6 +34,7 @@
 #include "ola/base/Array.h"
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/file/Util.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMCommand.h"
@@ -52,6 +53,7 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using ola::file::FilenameFromPathOrPath;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
 using ola::rdm::LoadSensor;
@@ -144,10 +146,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       m_pixel_count(options.pixel_count),
       m_start_address(1),
       m_identify_mode(false) {
-  const string device_path(m_backend->DevicePath());
-  size_t pos = device_path.find_last_of("/");
-  if (pos != string::npos)
-    m_spi_device_name = device_path.substr(pos + 1);
+  m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
   personalities.push_back(Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
