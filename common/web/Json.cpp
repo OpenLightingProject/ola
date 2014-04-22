@@ -167,7 +167,7 @@ void JsonWriter::Visit(const JsonNullValue &) {
 }
 
 void JsonWriter::Visit(const JsonRawValue &value) {
-  *m_output << '"' << value.Value() << '"';
+  *m_output << value.Value();
 }
 
 void JsonWriter::Visit(const JsonObject &value) {
