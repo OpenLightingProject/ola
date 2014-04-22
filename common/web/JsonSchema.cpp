@@ -349,6 +349,63 @@ void ArrayValidator::ArrayElementValidator::ValidateItem(const T &item) {
   m_is_valid = validator->IsValid();
 }
 
+ConjunctionValidator::ConjunctionValidator(ValidatorList *validators)
+    : BaseValidator(),
+      m_validators(*validators) {
+  validators->clear();
+}
+
+ConjunctionValidator::~ConjunctionValidator() {
+  STLDeleteElements(&m_validators);
+}
+
+void AllOfValidator::Validate(const JsonValue &value) {
+  ValidatorList::iterator iter = m_validators.begin();
+  for (; iter != m_validators.end(); ++iter) {
+    value.Accept(*iter);
+    if (!(*iter)->IsValid()) {
+      m_is_valid = false;
+      return;
+    }
+  }
+  m_is_valid = true;
+}
+
+void AnyOfValidator::Validate(const JsonValue &value) {
+  ValidatorList::iterator iter = m_validators.begin();
+  for (; iter != m_validators.end(); ++iter) {
+    value.Accept(*iter);
+    if ((*iter)->IsValid()) {
+      m_is_valid = true;
+      return;
+    }
+  }
+  m_is_valid = false;
+}
+
+void OneOfValidator::Validate(const JsonValue &value) {
+  bool matched = false;
+  ValidatorList::iterator iter = m_validators.begin();
+  for (; iter != m_validators.end(); ++iter) {
+    value.Accept(*iter);
+    if ((*iter)->IsValid()) {
+      if (matched) {
+        m_is_valid = false;
+        return;
+      } else {
+        matched = true;
+      }
+    }
+  }
+  m_is_valid = matched;
+}
+
+
+void NotValidator::Validate(const JsonValue &value) {
+  value.Accept(m_validator.get());
+  m_is_valid = !m_validator->IsValid();
+}
+
 SchemaDefintions::~SchemaDefintions() {
   STLDeleteValues(&m_validators);
 }
