@@ -31,10 +31,12 @@ IGNORED_FILES = [
   'examples/ola-dmxconsole.cpp',
   'examples/ola-dmxmonitor.cpp',
   'include/ola/gen_callbacks.py',
-  'ola/common.h',
+  'python/ola/PidStoreLocation.py',
+  'python/ola/Version.py',
   'tools/ola_trigger/config.tab.cpp',
   'tools/ola_trigger/config.tab.h',
   'tools/ola_trigger/lex.yy.cpp',
+  'tools/rdm/DataLocation.py',
 ]
 
 def Usage(arg0):

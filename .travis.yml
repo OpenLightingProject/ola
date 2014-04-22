@@ -4,6 +4,7 @@ script:
   - "bash -ex .travis-ci.sh"
 
 matrix:
+  fast_finish: true
   include:
     - compiler: clang
       env: TASK='compile'
@@ -11,7 +12,6 @@ matrix:
       env: TASK='compile'
     - env: TASK='lint'
     - env: TASK='check-licences'
-  fast_finish: true
 
 cache: apt
 
