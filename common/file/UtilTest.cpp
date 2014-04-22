@@ -63,7 +63,8 @@ void UtilTest::testFilenameFromPath() {
   OLA_ASSERT_EQ(string(""), FilenameFromPathOrDefault("/foo/", "bak"));
   OLA_ASSERT_EQ(string("bar"), FilenameFromPathOrDefault("/foo/bar", "bak"));
   OLA_ASSERT_EQ(string(""), FilenameFromPathOrDefault("/foo/bar/", "bak"));
-  OLA_ASSERT_EQ(string("baz"), FilenameFromPathOrDefault("/foo/bar/baz", "bak"));
+  OLA_ASSERT_EQ(string("baz"),
+                FilenameFromPathOrDefault("/foo/bar/baz", "bak"));
 
   OLA_ASSERT_EQ(string(""), FilenameFromPathOrPath(""));
   OLA_ASSERT_EQ(string("foo"), FilenameFromPathOrPath("foo"));
