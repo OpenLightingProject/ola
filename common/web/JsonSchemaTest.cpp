@@ -61,16 +61,23 @@ CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaTest);
 
 
 void JsonSchemaTest::testParseBool() {
-  ObjectValidator root_validator;
+  ObjectValidator::Options root_options;
+  root_options.required_properties.insert("name");
+  root_options.required_properties.insert("age");
+
+  ObjectValidator root_validator(root_options);
+  root_validator.AddValidator(
+      "name",
+      new StringValidator(StringValidator::Options()));
+  root_validator.AddValidator("age", new NumberValidator());
+  /*
   vector<ValidatorInterface*> validators;
   validators.push_back(
       new StringValidator(StringValidator::Options()));
-  /*
   ArrayValidator array_validator(
       &validators,
       new NumberValidator(),
       ArrayValidator::Options());
-  */
 
   ArrayValidator::Options array_options;
   ArrayValidator array_validator(
@@ -78,18 +85,21 @@ void JsonSchemaTest::testParseBool() {
       array_options);
   root_validator.AddValidator("array", &array_validator);
 
-  /*
   NumberValidator number_validator;
   number_validator.AddConstraint(new MaximumConstraint(7, false));
   root_validator.AddValidator("age", &number_validator);
   */
 
   JsonObject object;
+  object.Add("name", "simon");
+  object.Add("age", 1);
+  /*
   JsonArray *array = object.AddArray("array");
   JsonArray *inner_array = array->AppendArray();
   // *inner_array = array->AppendArray();
   inner_array->Append("test");
   // array->Append(1);
+  */
 
   object.Accept(&root_validator);
   OLA_ASSERT_TRUE(root_validator.IsValid());

@@ -20,8 +20,11 @@
  */
 
 #include <math.h>
+#include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
+
 #include "ola/stl/STLUtils.h"
 #include "ola/web/JsonSchema.h"
 #include "ola/Logging.h"
@@ -29,6 +32,7 @@
 namespace ola {
 namespace web {
 
+using std::set;
 using std::string;
 using std::vector;
 
@@ -159,19 +163,56 @@ void NumberValidator::CheckValue(T t) {
   m_is_valid = true;
 }
 
+ObjectValidator::ObjectValidator(const Options &options)
+    : BaseValidator(),
+      m_options(options) {
+}
+
+ObjectValidator::~ObjectValidator() {
+  STLDeleteValues(&m_property_validators);
+}
+
 void ObjectValidator::AddValidator(const std::string &property,
                                    ValidatorInterface *validator) {
-  STLReplace(&m_property_validators, property, validator);
+  STLReplaceAndDelete(&m_property_validators, property, validator);
 }
 
 void ObjectValidator::Visit(const JsonObject &obj) {
   m_is_valid = true;
+
+  if (obj.Size() < m_options.min_properties) {
+    m_is_valid = false;
+    return;
+  }
+
+  if (m_options.max_properties > 0 &&
+      obj.Size() > static_cast<size_t>(m_options.max_properties)) {
+    m_is_valid = false;
+    return;
+  }
+
+  m_seen_properties.clear();
   obj.VisitProperties(this);
+
+  set<string> missing_properties;
+  std::set_difference(m_options.required_properties.begin(),
+                      m_options.required_properties.end(),
+                      m_seen_properties.begin(),
+                      m_seen_properties.end(),
+                      std::inserter(missing_properties,
+                                    missing_properties.end()));
+  if (!missing_properties.empty()) {
+    OLA_INFO << "Missing " << missing_properties.size()
+             << " required properties";
+    m_is_valid = false;
+  }
 }
 
 void ObjectValidator::VisitProperty(const std::string &property,
                                     const JsonValue &value) {
   OLA_INFO << "Looking for property " << property;
+  m_seen_properties.insert(property);
+
   ValidatorInterface *validator = STLFindOrNull(
       m_property_validators, property);
   if (!validator) {

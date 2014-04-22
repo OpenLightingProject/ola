@@ -382,6 +382,8 @@ class JsonObject: public JsonValue {
 
   void VisitProperties(JsonObjectPropertyVisitor *visitor) const;
 
+  unsigned int Size() const { return m_members.size(); }
+
  private:
   typedef std::map<std::string, const JsonValue*> MemberMap;
   MemberMap m_members;
