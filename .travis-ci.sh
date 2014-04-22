@@ -12,7 +12,7 @@ if [[ $TASK = 'lint' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
-else if [[ $TASK = 'check-licences' ]]; then
+elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
