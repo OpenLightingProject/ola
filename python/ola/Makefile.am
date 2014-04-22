@@ -45,6 +45,8 @@ Version.py: ../../configure.ac
 # TESTS
 ##################################################
 TESTS_ENVIRONMENT = PYTHONPATH=${top_srcdir}/python
+TEST_EXTENSIONS = .py
+PY_LOG_COMPILER = $(PYTHON)
 if BUILD_PYTHON_LIBS
 TESTS = DUBDecoderTest.py MACAddressTest.py UIDTest.py
 endif
