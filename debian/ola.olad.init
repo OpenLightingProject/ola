@@ -50,7 +50,7 @@ case "$1" in
       log_end_msg $?
     fi
     ;;
-  reload|restart)
+  reload|force-reload|restart)
     $0 stop && $0 start
     ;;
   status)
