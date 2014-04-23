@@ -32,6 +32,7 @@
 #include <ola/base/Macro.h>
 #include <ola/web/Json.h>
 #include <deque>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -71,6 +72,12 @@ class ValidatorInterface : public JsonValueVisitorInterface {
   virtual void Visit(const JsonIntValue&) = 0;
   virtual void Visit(const JsonInt64Value&) = 0;
   virtual void Visit(const JsonDoubleValue&) = 0;
+
+  // Returns the Schema as a JsonObject.
+  virtual JsonObject* GetSchema() const = 0;
+
+  virtual void SetTitle(const std::string &title) = 0;
+  virtual void SetDescription(const std::string &title) = 0;
 };
 
 /**
@@ -131,8 +138,20 @@ class BaseValidator : public ValidatorInterface {
     m_is_valid = false;
   }
 
+  virtual JsonObject* GetSchema() const;
+
+  void SetTitle(const std::string &title);
+  void SetDescription(const std::string &title);
+
  protected:
   bool m_is_valid;
+  std::string m_title;
+  std::string m_description;
+
+  // Child classes can hook in here to extend the schema.
+  virtual void ExtendSchema(JsonObject *schema) const {
+    (void) schema;
+  }
 };
 
 /**
@@ -173,6 +192,8 @@ class ReferenceValidator : public ValidatorInterface {
   void Visit(const JsonInt64Value &value);
   void Visit(const JsonDoubleValue &value);
 
+  JsonObject* GetSchema() const;
+
  private:
   const SchemaDefintions *m_definitions;
   const std::string m_schema;
@@ -195,8 +216,9 @@ class StringValidator : public BaseValidator {
 
     unsigned int min_length;
     int max_length;
-    // Regexes aren't supported.
+    // Formats & Regexes aren't supported.
     // std::string pattern
+    // std::string format
   };
 
   explicit StringValidator(const Options &options)
@@ -208,6 +230,9 @@ class StringValidator : public BaseValidator {
 
  private:
   const Options m_options;
+
+  void ExtendSchema(JsonObject *schema) const;
+
   DISALLOW_COPY_AND_ASSIGN(StringValidator);
 };
 
@@ -250,6 +275,8 @@ class NumberConstraint {
   virtual bool IsValid(uint64_t i) = 0;
   virtual bool IsValid(int64_t i) = 0;
   virtual bool IsValid(long double d) = 0;
+
+  virtual void ExtendSchema(JsonObject *schema) const = 0;
 };
 
 /**
@@ -257,7 +284,7 @@ class NumberConstraint {
  */
 class MultipleOfConstraint : public NumberConstraint {
  public:
-  MultipleOfConstraint(int multiple_of)
+  explicit MultipleOfConstraint(int multiple_of)
       : m_multiple_of(multiple_of) {
   }
 
@@ -277,6 +304,10 @@ class MultipleOfConstraint : public NumberConstraint {
   }
 
   bool IsValid(long double d);
+
+  void ExtendSchema(JsonObject *schema) const {
+    schema->Add("multipleOf", m_multiple_of);
+  }
 
  private:
   int m_multiple_of;
@@ -329,6 +360,13 @@ class MaximumConstraint : public NumberConstraint {
 
   bool IsValid(long double d) {
     return m_is_exclusive ? d < m_limit : d <= m_limit;
+  }
+
+  void ExtendSchema(JsonObject *schema) const {
+    schema->Add("maximum", m_limit);
+    if (m_is_exclusive) {
+      schema->Add("exclusiveMaximum", true);
+    }
   }
 
  private:
@@ -385,6 +423,13 @@ class MinimumConstraint : public NumberConstraint {
     return m_is_exclusive ? d > m_limit : d >= m_limit;
   }
 
+  void ExtendSchema(JsonObject *schema) const {
+    schema->Add("minimum", m_limit);
+    if (m_is_exclusive) {
+      schema->Add("exclusiveMinimum", true);
+    }
+  }
+
  private:
   long double m_limit;
   bool m_is_exclusive;
@@ -413,6 +458,8 @@ class NumberValidator : public BaseValidator {
  private:
   std::vector<NumberConstraint*> m_constraints;
 
+  void ExtendSchema(JsonObject *schema) const;
+
   template <typename T>
   void CheckValue(T t);
 
@@ -434,7 +481,8 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
     unsigned int min_properties;
     std::set<std::string> required_properties;
   };
-  ObjectValidator(const Options &options);
+
+  explicit ObjectValidator(const Options &options);
   ~ObjectValidator();
 
   /**
@@ -449,10 +497,13 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
   void VisitProperty(const std::string &property, const JsonValue &value);
 
  private:
+  typedef std::map<std::string, ValidatorInterface*> PropertyValidators;
   const Options m_options;
 
   std::map<std::string, ValidatorInterface*> m_property_validators;
   std::set<std::string> m_seen_properties;
+
+  void ExtendSchema(JsonObject *schema) const;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectValidator);
 };
@@ -531,6 +582,8 @@ class ArrayValidator : public BaseValidator {
     DISALLOW_COPY_AND_ASSIGN(ArrayElementValidator);
   };
 
+  void ExtendSchema(JsonObject *schema) const;
+
   DISALLOW_COPY_AND_ASSIGN(ArrayValidator);
 };
 
@@ -543,10 +596,11 @@ class ConjunctionValidator : public BaseValidator {
  public:
   /**
    * @brief
+   * @param keyword the name of the conjunction.
    * @param validators the list of schemas to validate against. Ownership of
    *   the validators in the list is transferred.
    */
-  ConjunctionValidator(ValidatorList *validators);
+  ConjunctionValidator(const std::string &keyword, ValidatorList *validators);
   virtual ~ConjunctionValidator();
 
   void Visit(const JsonStringValue &value) {
@@ -594,7 +648,10 @@ class ConjunctionValidator : public BaseValidator {
   }
 
  protected:
+  std::string m_keyword;
   ValidatorList m_validators;
+
+  void ExtendSchema(JsonObject *schema) const;
 
   virtual void Validate(const JsonValue &value) = 0;
 };
@@ -609,8 +666,8 @@ class AllOfValidator : public ConjunctionValidator {
    * @param validators the list of schemas to validate against. Ownership of
    *   the validators in the list is transferred.
    */
-  AllOfValidator(ValidatorList *validators)
-      : ConjunctionValidator(validators) {
+  explicit AllOfValidator(ValidatorList *validators)
+      : ConjunctionValidator("allOf", validators) {
   }
 
  protected:
@@ -631,8 +688,8 @@ class AnyOfValidator : public ConjunctionValidator {
    * @param validators the list of schemas to validate against. Ownership of
    *   the validators in the list is transferred.
    */
-  AnyOfValidator(ValidatorList *validators)
-      : ConjunctionValidator(validators) {
+  explicit AnyOfValidator(ValidatorList *validators)
+      : ConjunctionValidator("anyOf", validators) {
   }
 
  protected:
@@ -653,8 +710,8 @@ class OneOfValidator : public ConjunctionValidator {
    * @param validators the list of schemas to validate against. Ownership of
    *   the validators in the list is transferred.
    */
-  OneOfValidator(ValidatorList *validators)
-      : ConjunctionValidator(validators) {
+  explicit OneOfValidator(ValidatorList *validators)
+      : ConjunctionValidator("oneOf", validators) {
   }
 
  protected:
@@ -669,7 +726,7 @@ class OneOfValidator : public ConjunctionValidator {
  */
 class NotValidator : public BaseValidator {
  public:
-  NotValidator(ValidatorInterface *validator)
+  explicit NotValidator(ValidatorInterface *validator)
       : BaseValidator(),
         m_validator(validator) {
   }
@@ -723,37 +780,10 @@ class NotValidator : public BaseValidator {
 
   void Validate(const JsonValue &value);
 
+  void ExtendSchema(JsonObject *schema) const;
+
   DISALLOW_COPY_AND_ASSIGN(NotValidator);
 };
-
-/**
- * @brief A JsonHandlerInterface implementation that builds a parse tree.
-class JsonSchema {
- public:
-  JsonSchema() {}
-  ~JsonSchema();
-
-   * @brief The URI which defines which version of the schema this is
-  std::string SchemaURI() const;
-
-  std::string Description();
-  std::string Type();
-
-  bool Visit(const JsonValue *value);
-
- private:
-  bool VisitMember(const std::string &property, const JsonObject &object) {
-    BaseValidator *validator = m_validators[property];
-    validator->Visit(object);
-  }
-
-  bool VisitMember(const std::string &property, const JsonArray &array);
-  // etc..
-
-  DISALLOW_COPY_AND_ASSIGN(JsonSchema);
-};
- */
-
 
 class SchemaDefintions {
  public:
@@ -765,9 +795,47 @@ class SchemaDefintions {
 
  private:
   std::map<std::string, ValidatorInterface*> m_validators;
-
-
 };
+
+
+/**
+ * @brief A JsonHandlerInterface implementation that builds a parse tree.
+ */
+class JsonSchema {
+ public:
+  ~JsonSchema() {}
+
+  /*
+   * @brief The URI which defines which version of the schema this is.
+   */
+  std::string SchemaURI() const;
+
+  /**
+   * @brief Validate a JsonValue against this schema
+   */
+  bool IsValid(const JsonValue &value);
+
+  /**
+   * @brief Return the schema as Json.
+   */
+  const JsonValue* AsJson() const;
+
+  /**
+   * @brief Parse a string and return a new schema
+   * @returns A JsonSchema object, or NULL if the string wasn't a valid schema.
+   */
+  static JsonSchema* FromString(const std::string& schema_string);
+
+ private:
+  std::string m_schema_uri;
+  std::auto_ptr<ValidatorInterface> m_root_validator;
+  std::auto_ptr<SchemaDefintions> m_schema_defs;
+
+  JsonSchema() {}
+
+  DISALLOW_COPY_AND_ASSIGN(JsonSchema);
+};
+
 /*
 class JsonSchemaCache {
  public:

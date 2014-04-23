@@ -336,6 +336,13 @@ class JsonObject: public JsonValue {
   void Add(const std::string &key, int i);
 
   /**
+   * @brief Set the given key to a double value.
+   * @param key the key to set.
+   * @param d the value to add
+   */
+  void Add(const std::string &key, long double d);
+
+  /**
    * @brief Set the given key to a bool value.
    * @param key the key to set.
    * @param value the value to add

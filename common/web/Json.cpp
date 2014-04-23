@@ -87,6 +87,10 @@ void JsonObject::Add(const std::string &key, int i) {
   STLReplaceAndDelete(&m_members, key, new JsonIntValue(i));
 }
 
+void JsonObject::Add(const std::string &key, long double d) {
+  STLReplaceAndDelete(&m_members, key, new JsonDoubleValue(d));
+}
+
 void JsonObject::Add(const std::string &key, bool value) {
   STLReplaceAndDelete(&m_members, key, new JsonBoolValue(value));
 }
