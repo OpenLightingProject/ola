@@ -118,11 +118,12 @@ void FindMatchingFiles(const string &directory,
 #endif
 }
 
-string FilenameFromPath(const string &path) {
+string FilenameFromPathOrDefault(const string &path,
+                                 const string &default_value) {
   string::size_type last_path_sep = string::npos;
   last_path_sep = path.find_last_of(PATH_SEPARATOR);
   if (last_path_sep == string::npos)
-    return "";
+    return default_value;
   return path.substr(last_path_sep + 1);  // Don't return the path sep itself
 }
 }  // namespace file

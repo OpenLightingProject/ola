@@ -36,7 +36,7 @@
 #include "tools/e133/SLPSATestRunner.h"
 #include "slp/ServerCommon.h"
 
-using ola::file::FilenameFromPath;
+using ola::file::FilenameFromPathOrPath;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using std::cout;
@@ -71,8 +71,8 @@ int main(int argc, char *argv[]) {
       "Stress test an SLP SA.\n"
       "\n"
       "Examples:\n"
-      "   " << FilenameFromPath(argv[0]) << " 192.168.0.1\n"
-      "   " << FilenameFromPath(argv[0]) << " 192.168.0.1:5568";
+      "   " << FilenameFromPathOrPath(argv[0]) << " 192.168.0.1\n"
+      "   " << FilenameFromPathOrPath(argv[0]) << " 192.168.0.1:5568";
 
   ola::AppInit(&argc, argv, "[options] <ip>[:port]", help_msg.str());
 

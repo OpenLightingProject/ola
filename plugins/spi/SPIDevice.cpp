@@ -25,6 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -60,9 +61,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),
       m_spi_device_name(spi_device) {
-  size_t pos = spi_device.find_last_of("/");
-  if (pos != string::npos)
-    m_spi_device_name = spi_device.substr(pos + 1);
+  m_spi_device_name = ola::file::FilenameFromPathOrPath(m_spi_device_name);
 
   SetDefaults();
   unsigned int port_count = 0;
