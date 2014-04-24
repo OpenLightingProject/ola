@@ -748,7 +748,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   char *data;
   unsigned int length;
   string file_path = m_data_dir;
-  file_path.append(&ola::file::PATH_SEPARATOR);
+  file_path.push_back(ola::file::PATH_SEPARATOR);
   // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
   ifstream i_stream(file_path.data());
