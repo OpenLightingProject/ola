@@ -606,7 +606,7 @@ class DownloadModelDataHandler(RequestHandler):
     model_data = request.PostParam('model_data') or ''
     logging.info(model_data)
 
-    filename = 'model-data.txt'
+    filename = 'model-data.%s.txt' % int(time())
     response.SetStatus(HTTPResponse.OK)
     response.SetHeader('Content-disposition',
                        'attachment; filename="%s"' % filename)
