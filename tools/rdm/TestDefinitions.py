@@ -913,7 +913,7 @@ class FindSubDevices(ResponderTestFixture):
       if fields['sub_device_count'] != self._device_count:
         self.SetFailed(
             'For sub-device %d, DEVICE_INFO reported %d sub devices '
-            ' but the root device reported %s. See section 10.5' %
+            ' but the root device reported %s. See section 10.5.1' %
             (self._current_index, fields['sub_device_count'],
              self._device_count))
         self.Stop()
