@@ -343,14 +343,15 @@ class RDMResponse(object):
 
   def __init__(self, controller, response):
     self.status = RequestStatus(controller)
-    self._response_code = response.response_code
-    self._response_type = response.response_type
-    self._queued_messages = response.message_count
-    self.sub_device = response.sub_device
-    self.command_class = response.command_class
-    self.pid = response.param_id
-    self.data = response.data
-    self._raw_responses = response.raw_response
+    if (self.status.Succeeded() and (response != None)):
+      self._response_code = response.response_code
+      self._response_type = response.response_type
+      self._queued_messages = response.message_count
+      self.sub_device = response.sub_device
+      self.command_class = response.command_class
+      self.pid = response.param_id
+      self.data = response.data
+      self._raw_responses = response.raw_response
 
     # we populate these below if required
     self._nack_reason = None
