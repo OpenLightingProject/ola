@@ -42,7 +42,7 @@ UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
       m_path(path),
       m_device_id(device_id),
       m_breakt(breakt),
-      m_malft(malft){
+      m_malft(malft) {
   m_widget.reset(
       new UartWidget(path, device_id));
 }

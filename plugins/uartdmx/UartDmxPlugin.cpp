@@ -73,7 +73,8 @@ bool UartDmxPlugin::StartHook() {
           device_id++,
           GetBreak(),
           GetMalf());
-      // got a device, now lets see if we can configure it before we announce it to the world
+      // got a device, now lets see if we can configure it before we announce
+      // it to the world
       if (device->GetWidget()->SetupOutput() == false) {
         // that failed, but other devices may succeed
         OLA_WARN << "Unable to setup device for output, device ignored "

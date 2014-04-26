@@ -33,7 +33,7 @@ namespace uartdmx {
  * platform specfic-includes clash with the POSIX ones there
  */
 class LinuxHelper {
-public:
+ public:
   /**
    * Set the baud rate of the serial port to 250k using the non-standard
    * speed selection mechanism from the Linux kernel.

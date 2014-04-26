@@ -44,8 +44,10 @@ class UartDmxDevice : public Device {
                 unsigned int malft);
   ~UartDmxDevice();
 
-  std::string DeviceId() const { return static_cast<std::ostringstream*>( &(std::ostringstream() << m_widget->Number()) )->str(); }
-  std::string Description() const { return "name: " + m_name + " path: " + m_path + " id: " + DeviceId(); }
+  std::string DeviceId() const { return static_cast<std::ostringstream*>
+     (&(std::ostringstream() << m_widget->Number()))->str(); }
+  std::string Description() const {
+     return "name: " + m_name + " path: " + m_path + " id: " + DeviceId(); }
   UartWidget* GetWidget() {return m_widget.get(); }
 
  protected:

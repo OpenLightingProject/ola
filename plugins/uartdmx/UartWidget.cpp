@@ -78,10 +78,10 @@ bool UartWidget::Open() {
 bool UartWidget::Close() {
   if (close(m_filed) > 0) {
     OLA_WARN << Name() << " error closing";
-	m_filed = -2;
+    m_filed = -2;
     return false;
   } else {
-	m_filed = -2;
+    m_filed = -2;
     return true;
   }
 }
@@ -113,7 +113,8 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
   data.Get(buffer + 1, &length);
 
   if (write(m_filed, buffer, length + 1) <= 0) {
-    // TODO: handle errors better as per the test code, especially if we alter the scheduling!
+    // TODO(richardash1981): handle errors better as per the test code,
+    // especially if we alter the scheduling!
     OLA_WARN << Name() << " Short or failed write!";
     return false;
   } else {
@@ -145,32 +146,24 @@ bool UartWidget::SetupOutput() {
   }
   /* do the port settings */
 
-  if (tcgetattr(m_filed, &my_tios) < 0)	// get current settings
-    {
+  if (tcgetattr(m_filed, &my_tios) < 0) {  // get current settings
     OLA_WARN << "Failed to get POSIX port settings";
-    return false;
-	}
-  cfmakeraw(&my_tios);		// make it a binary data port
-
-  my_tios.c_cflag |= CLOCAL;	// port is local, no flow control
-  my_tios.c_cflag &= ~CSIZE;
-  my_tios.c_cflag |= CS8;		// 8 bit chars
-  my_tios.c_cflag &= ~PARENB;	// no parity
-  my_tios.c_cflag |= CSTOPB;	// 2 stop bit for DMX
-  my_tios.c_cflag &= ~CRTSCTS;	// no CTS/RTS flow control
-
-  if (tcsetattr(m_filed, TCSANOW, &my_tios) < 0)	// apply settings
-    {
-    OLA_WARN << "Failed to get POSIX port settings";
-    return false;
-	}
-
-/*
-  if (PurgeBuffers() == false) {
-    OLA_WARN << "Error purging buffers";
     return false;
   }
-*/
+  cfmakeraw(&my_tios);  // make it a binary data port
+
+  my_tios.c_cflag |= CLOCAL;    // port is local, no flow control
+  my_tios.c_cflag &= ~CSIZE;
+  my_tios.c_cflag |= CS8;       // 8 bit chars
+  my_tios.c_cflag &= ~PARENB;   // no parity
+  my_tios.c_cflag |= CSTOPB;    // 2 stop bit for DMX
+  my_tios.c_cflag &= ~CRTSCTS;  // no CTS/RTS flow control
+
+  if (tcsetattr(m_filed, TCSANOW, &my_tios) < 0) {  // apply settings
+    OLA_WARN << "Failed to get POSIX port settings";
+    return false;
+  }
+
   /* Do the platform-specific initialisation of the Uart to 250kbaud */
   if (!LinuxHelper::SetDmxBaud(m_filed)) {
     OLA_WARN << "Failed to set baud rate to 250k";

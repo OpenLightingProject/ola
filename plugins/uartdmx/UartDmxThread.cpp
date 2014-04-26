@@ -35,7 +35,8 @@ namespace ola {
 namespace plugin {
 namespace uartdmx {
 
-UartDmxThread::UartDmxThread(UartWidget *widget, unsigned int breakt, unsigned int malft)
+UartDmxThread::UartDmxThread(UartWidget *widget, unsigned int breakt,
+    unsigned int malft)
   : m_granularity(UNKNOWN),
     m_widget(widget),
     m_term(false),

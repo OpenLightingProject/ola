@@ -44,7 +44,6 @@ namespace uartdmx {
  */
 class UartWidget {
  public:
-
     /**
      * Construct a new UartWidget instance for one widget.
      * @param path The device file path of the serial port
