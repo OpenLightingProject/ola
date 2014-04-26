@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # RDMConstants.py
-# Copyright (C) 2010 Simon Newton
+# Copyright (C) 2014 Simon Newton
 
 """Constants defined in E1.20 (RDM)."""
 
@@ -25,6 +25,9 @@ RDM_ZERO_FOOTPRINT_DMX_ADDRESS = 0xFFFF
 
 RDM_MANUFACTURER_PID_MIN = 0x8000
 RDM_MANUFACTURER_PID_MAX = 0xFFDF
+
+RDM_MANUFACTURER_SD_MIN = 0x8000
+RDM_MANUFACTURER_SD_MAX = 0xFFDF
 
 def _ReverseDict(input):
   output = {}
