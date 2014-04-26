@@ -30,7 +30,7 @@ namespace io {
 
 /**
  * @brief Wrapper around open().
- * This logs a message is the open fails.
+ * This logs a message if the open fails.
  * @param path the path to open
  * @param oflag flags passed to open
  * @param[out] fd a pointer to the fd which is returned.

@@ -126,5 +126,13 @@ string FilenameFromPathOrDefault(const string &path,
     return default_value;
   return path.substr(last_path_sep + 1);  // Don't return the path sep itself
 }
+
+string FilenameFromPathOrPath(const string &path) {
+  return FilenameFromPathOrDefault(path, path);
+}
+
+string FilenameFromPath(const string &path) {
+  return FilenameFromPathOrDefault(path, "");
+}
 }  // namespace file
 }  // namespace ola
