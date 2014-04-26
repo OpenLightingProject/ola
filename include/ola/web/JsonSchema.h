@@ -818,7 +818,7 @@ class JsonSchema {
   /**
    * @brief Return the schema as Json.
    */
-  const JsonValue* AsJson() const;
+  const JsonObject* AsJson() const;
 
   /**
    * @brief Parse a string and return a new schema
@@ -831,26 +831,12 @@ class JsonSchema {
   std::auto_ptr<ValidatorInterface> m_root_validator;
   std::auto_ptr<SchemaDefintions> m_schema_defs;
 
-  JsonSchema() {}
+  JsonSchema(const std::string &schema_url,
+             ValidatorInterface *root_validator,
+             SchemaDefintions *schema_defs);
 
   DISALLOW_COPY_AND_ASSIGN(JsonSchema);
 };
-
-/*
-class JsonSchemaCache {
- public:
-  JsonSchemaCache() {}
-
-   * @brief Add a schema to the cache.
-   * @param schema the JsonSchema to add, ownership is transferred
-  void AddSchema(const std::string& schema_uri, JsonSchema *schema);
-
-  JsonSchema* Lookup(const std::string& schema_uri) const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(JsonSchemaCache);
-};
-*/
 
 /**@}*/
 }  // namespace web

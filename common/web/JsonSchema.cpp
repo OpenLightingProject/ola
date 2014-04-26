@@ -25,9 +25,11 @@
 #include <string>
 #include <vector>
 
-#include "ola/stl/STLUtils.h"
-#include "ola/web/JsonSchema.h"
 #include "ola/Logging.h"
+#include "common/web/SchemaParser.h"
+#include "ola/stl/STLUtils.h"
+#include "ola/web/JsonParser.h"
+#include "ola/web/JsonSchema.h"
 
 namespace ola {
 namespace web {
@@ -533,6 +535,14 @@ ValidatorInterface *SchemaDefintions::Lookup(const string &schema_name) const {
   return STLFindOrNull(m_validators, schema_name);
 }
 
+JsonSchema::JsonSchema(const std::string &schema_url,
+                       ValidatorInterface *root_validator,
+                       SchemaDefintions *schema_defs)
+    : m_schema_uri(schema_url),
+      m_root_validator(root_validator),
+      m_schema_defs(schema_defs) {
+}
+
 string JsonSchema::SchemaURI() const {
   return m_schema_uri;
 }
@@ -542,13 +552,18 @@ bool JsonSchema::IsValid(const JsonValue &value) {
   return m_root_validator->IsValid();
 }
 
-const JsonValue* JsonSchema::AsJson() const {
+const JsonObject* JsonSchema::AsJson() const {
   return m_root_validator->GetSchema();
 }
 
 JsonSchema* JsonSchema::FromString(const string& schema_string) {
-  (void) schema_string;
-  return NULL;
+  SchemaParser schema_parser;
+  bool ok = JsonParser::Parse(schema_string, &schema_parser);
+  if (!ok || !schema_parser.IsValidSchema()) {
+    return NULL;
+  }
+  return new JsonSchema("", schema_parser.GetRootValidator(),
+                        schema_parser.GetSchemaDefs());
 }
 }  // namespace web
 }  // namespace ola
