@@ -31,6 +31,7 @@ using ola::web::JsonBoolValue;
 using ola::web::JsonIntValue;
 using ola::web::JsonNullValue;
 using ola::web::JsonObject;
+using ola::web::JsonRawValue;
 using ola::web::JsonStringValue;
 using ola::web::JsonUIntValue;
 using ola::web::JsonValue;
@@ -42,9 +43,11 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonTest);
   CPPUNIT_TEST(testString);
   CPPUNIT_TEST(testNumberValues);
+  CPPUNIT_TEST(testRaw);
   CPPUNIT_TEST(testBool);
   CPPUNIT_TEST(testNull);
   CPPUNIT_TEST(testSimpleArray);
+  CPPUNIT_TEST(testEmptyObject);
   CPPUNIT_TEST(testSimpleObject);
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST_SUITE_END();
@@ -52,9 +55,11 @@ class JsonTest: public CppUnit::TestFixture {
  public:
     void testString();
     void testNumberValues();
+    void testRaw();
     void testBool();
     void testNull();
     void testSimpleArray();
+    void testEmptyObject();
     void testSimpleObject();
     void testComplexObject();
 };
@@ -89,6 +94,23 @@ void JsonTest::testNumberValues() {
   JsonIntValue int_value(-10);
   expected = "-10";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(int_value));
+}
+
+
+/*
+ * Test raw.
+ * This is used by the web DMX console
+ */
+void JsonTest::testRaw() {
+  // A printable character
+  JsonRawValue value("\x41");
+  string expected = "\x41";
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(value));
+
+  // And an unprintable one
+  JsonRawValue value2("\x7f");
+  expected = "\x7f";
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(value2));
 }
 
 
@@ -133,6 +155,15 @@ void JsonTest::testSimpleArray() {
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(array));
 }
 
+/*
+ * Test an empty object.
+ */
+void JsonTest::testEmptyObject() {
+  JsonObject object;
+
+  string expected = "{}";
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
+}
 
 /*
  * Test a simple object.
@@ -151,7 +182,6 @@ void JsonTest::testSimpleObject() {
       "}");
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
 }
-
 
 /*
  * Test a complex object.

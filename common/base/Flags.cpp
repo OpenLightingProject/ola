@@ -292,7 +292,7 @@ void FlagRegistry::GenManPage() {
 #endif
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
-  // Not using FilenameFromPath to avoid further dependancies
+  // Not using FilenameFromPathOrPath to avoid further dependancies
   string exe_name = m_argv0;
 #ifdef WIN32
   char directory_separator = '\\';

@@ -31,10 +31,12 @@ IGNORED_FILES = [
   'examples/ola-dmxconsole.cpp',
   'examples/ola-dmxmonitor.cpp',
   'include/ola/gen_callbacks.py',
-  'ola/common.h',
+  'python/ola/PidStoreLocation.py',
+  'python/ola/Version.py',
   'tools/ola_trigger/config.tab.cpp',
   'tools/ola_trigger/config.tab.h',
   'tools/ola_trigger/lex.yy.cpp',
+  'tools/rdm/DataLocation.py',
 ]
 
 def Usage(arg0):
@@ -143,7 +145,7 @@ def GetDirectoryLicences(root_dir):
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      print 'Adding LICENCE for %s' % dir_name
+      print 'Found LICENCE for directory %s' % dir_name
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
@@ -154,25 +156,28 @@ def GetDirectoryLicences(root_dir):
 
 def CheckLicenceForDir(dir_name, licence, diff, fix):
   """Check all files in a directory contain the correct licence."""
+  errors = 0
   # glob doesn't support { } so we iterate instead
   for match in ['*.h', '*.cpp']:
     for file_name in glob.glob(os.path.join(dir_name, match)):
       # skip the generated protobuf code
       if '.pb.' in file_name:
         continue
-      CheckLicenceForFile(file_name, licence, CPP, diff, fix)
+      errors += CheckLicenceForFile(file_name, licence, CPP, diff, fix)
 
   for file_name in glob.glob(os.path.join(dir_name, '*.py')):
     # skip the generated protobuf code
     if file_name.endswith('__init__.py') or file_name.endswith('pb2.py'):
       continue
     python_licence = TransformCppToPythonLicence(licence)
-    CheckLicenceForFile(file_name, python_licence, PYTHON, diff, fix)
+    errors += CheckLicenceForFile(file_name, python_licence, PYTHON, diff, fix)
+
+  return errors
 
 def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   """Check a file contains the correct licence."""
   if IgnoreFile(file_name):
-    return
+    return 0
 
   f = open(file_name)
   header_size = len(licence)
@@ -182,13 +187,14 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   header = f.read(header_size)
   f.close()
   if header == licence:
-    return
+    return 0
 
   if fix:
     print 'Fixing %s' % file_name
     if lang == PYTHON:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
+    return 1
   else:
     print "File %s does not start with \"%s...\"" % (
         file_name,
@@ -197,12 +203,19 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
       pprint.pprint(result)
+    return 1
 
 def main():
   diff, fix = ParseArgs()
   licences = GetDirectoryLicences(os.getcwd())
+  errors = 0
   for dir_name, licence in licences.iteritems():
-    CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
+    errors += CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
+  print 'Found %d files with incorrect licences' % errors
+  if errors > 0:
+    sys.exit(1)
+  else:
+    sys.exit()
 
 if __name__ == '__main__':
   main()

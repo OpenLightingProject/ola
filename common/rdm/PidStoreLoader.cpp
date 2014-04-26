@@ -32,6 +32,7 @@
 #include "common/rdm/Pids.pb.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 
@@ -96,7 +97,7 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
       continue;
 
     stringstream str;
-    str << directory << "/" << file_name;
+    str << directory << ola::file::PATH_SEPARATOR << file_name;
     files.push_back(str.str());
   }
   closedir(dir);

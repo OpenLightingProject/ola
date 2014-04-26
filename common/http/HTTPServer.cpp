@@ -20,9 +20,10 @@
 
 #include <stdio.h>
 #include <ola/Logging.h>
+#include <ola/file/Util.h>
+#include <ola/http/HTTPServer.h>
 #include <ola/io/Descriptor.h>
 #include <ola/web/Json.h>
-#include <ola/http/HTTPServer.h>
 
 #include <fstream>
 #include <iostream>
@@ -635,6 +636,8 @@ bool HTTPServer::RegisterFile(const std::string &path,
 bool HTTPServer::RegisterFile(const std::string &path,
                               const std::string &file,
                               const std::string &content_type) {
+  // TODO(Peter): The file detail probably needs slashes swapping on Windows
+  // here or above.
   map<string, static_file_info>::const_iterator file_iter = (
       m_static_content.find(path));
 
@@ -745,7 +748,8 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   char *data;
   unsigned int length;
   string file_path = m_data_dir;
-  file_path.append("/");
+  file_path.push_back(ola::file::PATH_SEPARATOR);
+  // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
   ifstream i_stream(file_path.data());
 

@@ -4,20 +4,21 @@ script:
   - "bash -ex .travis-ci.sh"
 
 matrix:
+  fast_finish: true
   include:
     - compiler: clang
       env: TASK='compile'
     - compiler: gcc
       env: TASK='compile'
     - env: TASK='lint'
-  fast_finish: true
+    - env: TASK='check-licences'
 
 cache: apt
 
 before_install:
  - sudo apt-get update -qq
  - sudo apt-cache search microhttpd
- - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev  libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
+ - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
 
 notifications:
   irc:
