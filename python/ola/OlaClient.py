@@ -307,6 +307,7 @@ class RDMResponse(object):
       the NACK.
     ack_timer: If the response type was ACK_TIMER, this is the number of ms to
       wait before checking for queued messages.
+    transaction_number:
   """
 
   RESPONSE_CODES_TO_STRING = {
@@ -347,6 +348,7 @@ class RDMResponse(object):
       self._response_code = response.response_code
       self._response_type = response.response_type
       self._queued_messages = response.message_count
+      self._transaction_number = response.transaction_number
       self.sub_device = response.sub_device
       self.command_class = response.command_class
       self.pid = response.param_id
@@ -389,6 +391,10 @@ class RDMResponse(object):
   @property
   def nack_reason(self):
     return self._nack_reason
+
+  @property
+  def transaction_number(self):
+    return self._transaction_number
 
   @property
   def raw_response(self):

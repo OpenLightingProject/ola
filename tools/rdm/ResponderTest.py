@@ -537,15 +537,16 @@ class ResponderTestFixture(TestFixture):
     # now log the result
     if response.WasAcked():
       if unpack_exception:
-        self.LogDebug(' Response: %s, PID: 0x%04hx, Error: %s' %
-                      (response, response.pid, unpack_exception))
+        self.LogDebug(' Response: %s, PID: 0x%04hx, Trans: %d, Error: %s' %
+                      (response, response.pid, response.transaction_number,
+                       unpack_exception))
       else:
         escaped_string = '%s' % self._EscapeData(unpacked_data)
-        self.LogDebug(' Response: %s, PID: 0x%04hx, PDL: %d, data: %s' %
-                      (response, response.pid, len(response.data),
+        self.LogDebug(' Response: %s, PID: 0x%04hx, Trans: %d, PDL: %d, data: %s' %
+                      (response, response.pid, response.transaction_number, len(response.data),
                        escaped_string))
     else:
-      self.LogDebug(' Response: %s, PID: 0x%04hx' % (response, response.pid))
+      self.LogDebug(' Response: %s, PID: 0x%04hx, Trans: %d' % (response, response.pid, response.transaction_number))
 
     return True
 

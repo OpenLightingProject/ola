@@ -414,6 +414,12 @@ class ModelCollector(object):
       else:
         self._NextState()
     else:
+      if self.personalities:
+        this_version = self._GetVersion()
+        for personality_index in self.personalities:
+          this_version['personalities'].append({
+            'index': personality_index,
+          })
       logging.debug("Skipping pid %s as it's not supported on this device" %
                     pid)
       self._NextState()
