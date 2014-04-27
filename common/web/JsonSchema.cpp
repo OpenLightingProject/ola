@@ -560,10 +560,11 @@ JsonSchema* JsonSchema::FromString(const string& schema_string) {
   SchemaParser schema_parser;
   bool ok = JsonParser::Parse(schema_string, &schema_parser);
   if (!ok || !schema_parser.IsValidSchema()) {
+    OLA_INFO << "Schema parse error: " << schema_parser.Error();
     return NULL;
   }
-  return new JsonSchema("", schema_parser.GetRootValidator(),
-                        schema_parser.GetSchemaDefs());
+  return new JsonSchema("", schema_parser.ClaimRootValidator(),
+                        schema_parser.ClaimSchemaDefs());
 }
 }  // namespace web
 }  // namespace ola

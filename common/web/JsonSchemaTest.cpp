@@ -33,10 +33,12 @@ using ola::web::AllOfValidator;
 using ola::web::AnyOfValidator;
 using ola::web::ArrayValidator;
 using ola::web::JsonArray;
+using ola::web::JsonValue;
 using ola::web::JsonBoolValue;
 using ola::web::JsonIntValue;
 using ola::web::JsonNullValue;
 using ola::web::JsonObject;
+using ola::web::JsonSchema;
 using ola::web::JsonStringValue;
 using ola::web::JsonUIntValue;
 using ola::web::MaximumConstraint;
@@ -56,10 +58,12 @@ using std::vector;
 class JsonSchemaTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonSchemaTest);
   CPPUNIT_TEST(testParseBool);
+  CPPUNIT_TEST(testParseFromString);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testParseBool();
+    void testParseFromString();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaTest);
@@ -112,7 +116,7 @@ void JsonSchemaTest::testParseBool() {
   root_validator.AddValidator("age", new NotValidator(number_validator));
   auto_ptr<JsonObject> schema(root_validator.GetSchema());
 
-  OLA_INFO << ola::web::JsonWriter::AsString(*schema.get());
+  //OLA_INFO << ola::web::JsonWriter::AsString(*schema.get());
   /*
   JsonObject object;
   object.Add("age", true);
@@ -128,4 +132,34 @@ void JsonSchemaTest::testParseBool() {
 
   // object.Accept(&root_validator);
   // OLA_ASSERT_TRUE(root_validator.IsValid());
+}
+
+void JsonSchemaTest::testParseFromString() {
+  /*
+  auto_ptr<JsonSchema> schema(JsonSchema::FromString(
+        "{"
+        " \"title\": \"Hi\""
+        "}"
+  ));
+  */
+
+  auto_ptr<JsonSchema> schema(JsonSchema::FromString(
+        "{"
+        "  \"definitions\": {"
+        "    \"foo\": {"
+        "    }"
+        "  },"
+        "  \"title\": \"Hi\""
+        ""
+  ));
+
+  if (schema.get()) {
+    OLA_INFO << "Json Schema was valid";
+    const JsonObject *value = schema->AsJson();
+    if (value) {
+      OLA_INFO << ola::web::JsonWriter::AsString(*value);
+    }
+  } else {
+    OLA_WARN << "Parsing failed";
+  }
 }
