@@ -92,14 +92,14 @@ class UartWidget {
 	  * the port. Set to -2 when port is not open.
 	  */
     int m_filed;
-	/**
-	 * Constant value for file is not open
-	 */
-	const int NOT_OPEN = -2;
-	/**
-	 * Constant value for failed to open file
-	 */
-	const int FAILED_OPEN = -1;
+    /**
+     * Constant value for file is not open
+     */
+    static const int NOT_OPEN = -2;
+    /**
+     * Constant value for failed to open file
+     */
+    static const int FAILED_OPEN = -1;
 };
 }  // namespace uartdmx
 }  // namespace plugin

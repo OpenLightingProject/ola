@@ -40,9 +40,9 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-unsigned int UartDmxPlugin::DEFAULT_BREAK[] = "100";
+const unsigned int UartDmxPlugin::DEFAULT_BREAK = 100;
 const char UartDmxPlugin::K_BREAK[] = "break";
-unsigned int UartDmxPlugin::DEFAULT_MALF[] = "100";
+const unsigned int UartDmxPlugin::DEFAULT_MALF = 100;
 const char UartDmxPlugin::K_MALF[] = "malf";
 const char UartDmxPlugin::PLUGIN_NAME[] = "UART native DMX";
 const char UartDmxPlugin::PLUGIN_PREFIX[] = "uartdmx";
@@ -146,18 +146,19 @@ bool UartDmxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(UartDmxPlugin::K_BREAK,
+  if (m_preferences->SetDefaultValue(K_BREAK,
                                      UIntValidator(88, 1000000),
                                      DEFAULT_BREAK))
-  if (m_preferences->SetDefaultValue(UartDmxPlugin::K_MALF,
-                                     UIntValidator(8, 1000000)
+    m_preferences->Save();
+  if (m_preferences->SetDefaultValue(K_MALF,
+                                     UIntValidator(8, 1000000),
                                      DEFAULT_MALF))
 
     m_preferences->Save();
 
-  if (m_preferences->GetValue(UartDmxPlugin::K_BREAK).empty())
+  if (m_preferences->GetValue(K_BREAK).empty())
     return false;
-  if (m_preferences->GetValue(UartDmxPlugin::K_MALF).empty())
+  if (m_preferences->GetValue(K_MALF).empty())
     return false;
 
   return true;
@@ -171,7 +172,7 @@ int unsigned UartDmxPlugin::GetBreak() {
   unsigned int breakt;
 
   if (!StringToInt(m_preferences->GetValue(K_BREAK), &breakt))
-    StringToInt(DEFAULT_BREAK, &breakt);
+    breakt = DEFAULT_BREAK;
   return breakt;
 }
 
@@ -182,7 +183,7 @@ int unsigned UartDmxPlugin::GetMalf() {
   unsigned int malft;
 
   if (!StringToInt(m_preferences->GetValue(K_MALF), &malft))
-    StringToInt(DEFAULT_MALF, &malft);
+    malft = DEFAULT_MALF;
   return malft;
 }
 
