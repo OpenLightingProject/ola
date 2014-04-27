@@ -68,15 +68,33 @@ class JsonHandlerInterface {
 
   /**
    * @brief Called when a string is encounted.
-   *
    * This is not called for object keys, see ObjectKey() below.
    */
   virtual void String(const std::string &value) = 0;
 
+  /**
+   * @brief Called when a uint32_t is encounted.
+   */
   virtual void Number(uint32_t value) = 0;
+
+  /**
+   * @brief Called when a int32_t is encounted.
+   */
   virtual void Number(int32_t value) = 0;
+
+  /**
+   * @brief Called when a uint64_t is encounted.
+   */
   virtual void Number(uint64_t value) = 0;
+
+  /**
+   * @brief Called when a int64_t is encounted.
+   */
   virtual void Number(int64_t value) = 0;
+
+  /**
+   * @brief Called when a double is encounted.
+   */
   virtual void Number(long double value) = 0;
 
   /**
