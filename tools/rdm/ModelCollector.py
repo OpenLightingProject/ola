@@ -212,7 +212,8 @@ class ModelCollector(object):
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
       if (param_info['param_id'] >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN
-          and param_info['param_id'] <= ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
+          and param_info['param_id'] <=
+            ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
         self.manufacturer_pids.append(param_info['param_id'])
     self._NextState()
 
@@ -416,6 +417,8 @@ class ModelCollector(object):
         self._NextState()
     else:
       if self.personalities:
+        # If we have personalities but no description, we still need the basic
+        # data structure to add the other info to
         this_version = self._GetVersion()
         for personality_index in self.personalities:
           this_version['personalities'].append({
