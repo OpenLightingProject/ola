@@ -35,11 +35,12 @@
 #  endif
 #  include <ftd2xx.h>
 #else
-#  include <ftdi.h>
+#  include <libftdi1/ftdi.h>
 #endif
 
 #include <string>
 #include <vector>
+#include <libusb-1.0/libusb.h>
 
 #include "ola/DmxBuffer.h"
 
@@ -54,16 +55,24 @@ class FtdiWidgetInfo {
  public:
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
-                   int unsigned id)
+                   int unsigned id,
+									 const int vid = 0x0403,
+									 const int pid = 0x6001
+									)
       : m_name(name),
         m_serial(serial),
-        m_id(id) {
+        m_id(id),
+        m_vid(vid),
+        m_pid(pid)
+        {
     }
 
     FtdiWidgetInfo(const FtdiWidgetInfo &info)
       : m_name(info.Name()),
         m_serial(info.Serial()),
-        m_id(info.Id()) {
+        m_id(info.Id()),
+        m_vid(info.Vid()),
+        m_pid(info.Pid()){
     }
 
     virtual ~FtdiWidgetInfo() {}
@@ -71,6 +80,8 @@ class FtdiWidgetInfo {
     std::string Name() const { return m_name; }
     std::string Serial() const { return m_serial; }
     int unsigned Id() const { return m_id; }
+    int unsigned Vid() const { return m_vid; }
+    int unsigned Pid() const { return m_pid; }
 
     std::string Description() const {
       return m_name + " with serial number : " + m_serial + " ";
@@ -89,6 +100,8 @@ class FtdiWidgetInfo {
     std::string m_name;
     std::string m_serial;
     int unsigned m_id;
+		const int m_vid;
+		const int m_pid;
 };
 
 
@@ -108,7 +121,10 @@ class FtdiWidget {
      */
     FtdiWidget(const std::string &serial,
                const std::string &name,
-               uint32_t id = 0);
+               uint32_t id = 0,
+							 const int vid = 0x0403,
+							 const int pid = 0x6001
+							);
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -175,6 +191,8 @@ class FtdiWidget {
     std::string m_serial;
     std::string m_name;
     uint32_t m_id;
+		const int m_vid;
+		const int m_pid;
 
 #ifdef FTD2XX
     FT_HANDLE m_handle;
@@ -182,6 +200,12 @@ class FtdiWidget {
     struct ftdi_context m_handle;
 #endif
 };
+
+/*class FtdiWidget2 : FtdiWidget {
+public:
+   static const int VID = 0x0403;  // FTDI Vendor ID
+   static const int PID = 0x6011;  // FTDI Product ID
+};*/
 }  // namespace ftdidmx
 }  // namespace plugin
 }  // namespace ola

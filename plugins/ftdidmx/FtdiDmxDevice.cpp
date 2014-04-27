@@ -39,7 +39,10 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
   m_widget.reset(
       new FtdiWidget(widget_info.Serial(),
                      widget_info.Name(),
-                     widget_info.Id()));
+                     widget_info.Id(),
+										 widget_info.Vid(),
+										 widget_info.Pid()
+										));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
@@ -48,6 +51,7 @@ FtdiDmxDevice::~FtdiDmxDevice() {
 }
 
 bool FtdiDmxDevice::StartHook() {
+
   AddPort(new FtdiDmxOutputPort(this,
                                 m_widget.get(),
                                 m_widget_info.Id(),

@@ -27,12 +27,13 @@
  */
 
 #include <strings.h>
-#include <ftdi.h>
+#include <libftdi1/ftdi.h>
 #include <assert.h>
 
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <libusb-1.0/libusb.h>
 
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
@@ -47,10 +48,15 @@ using std::vector;
 
 FtdiWidget::FtdiWidget(const string& serial,
                        const string& name,
-                       uint32_t id)
+                       uint32_t id,
+											 const int vid,
+											 const int pid
+											)
     : m_serial(serial),
       m_name(name),
-      m_id(id) {
+      m_id(id),
+      m_vid(vid),
+      m_pid(pid) {
   bzero(&m_handle, sizeof(struct ftdi_context));
   ftdi_init(&m_handle);
 }
@@ -66,7 +72,7 @@ bool FtdiWidget::Open() {
   if (Serial().empty()) {
     OLA_WARN << Name() << " has no serial number, "
       "might cause issues with multiple devices";
-    if (ftdi_usb_open(&m_handle, FtdiWidget::VID, FtdiWidget::PID) < 0) {
+    if (ftdi_usb_open(&m_handle, m_vid, m_pid) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -74,9 +80,15 @@ bool FtdiWidget::Open() {
     }
   } else {
     OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
-    if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
+			if(ftdi_set_interface(&m_handle, INTERFACE_B) < 0) {
+				OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+			} else {
+				OLA_INFO << "enabled port 2";
+			}
+    if (ftdi_usb_open_desc(&m_handle, m_vid, m_pid,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+			OLA_INFO << "VID: " << m_vid << " PID: " << m_pid;
       return false;
     } else {
       return true;
@@ -107,7 +119,7 @@ bool FtdiWidget::Reset() {
 }
 
 bool FtdiWidget::SetLineProperties() {
-  if (ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0) {
+    if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)/* || (ftdi_set_interface(&m_handle, 2) < 0)*/) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -252,11 +264,14 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   struct ftdi_device_list* list = NULL;
   int devices_found = ftdi_usb_find_all(ftdi, &list, FtdiWidget::VID,
                                         FtdiWidget::PID);
-  if (devices_found < 0)
+  int devices_found_4232 = ftdi_usb_find_all(ftdi, &list, 0x0403,
+                                             0x6011);
+
+  if ((devices_found + devices_found_4232) < 0)
     OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
 
   while (list != NULL) {
-    struct usb_device *dev = list->dev;
+    struct libusb_device *dev = list->dev;
     list = list->next;
     i++;
 
@@ -280,8 +295,40 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         ftdi_get_error_string(ftdi);
       continue;
     }
+    libusb_device_handle *handle;
+		
+		if(libusb_open(dev, &handle) != 0) {
+			OLA_WARN << "Failed to libusb_open!";
+			continue;
+		}
+		
+		ftdi_set_usbdev(ftdi, handle);
+    int vendor_id;
+		int product_id;
+		if(ftdi_read_eeprom(ftdi) < 0) {
+			OLA_WARN << "Failed to read EEPROM: " <<
+				ftdi_get_error_string(ftdi);
+			continue;
+		}
+		if(ftdi_eeprom_decode(ftdi, 1) < 0) {
+			OLA_WARN << "Failed to decode EEPROM: " <<
+				ftdi_get_error_string(ftdi);
+			continue;
+		}
+		//OLA_INFO << ftdi->eeprom->vendor_id;
+		if(ftdi_get_eeprom_value(ftdi, VENDOR_ID, &vendor_id) < 0){
+			OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
+				ftdi_get_error_string(ftdi);
+			continue;
+		}
 
-    string v = string(vendor);
+		if(ftdi_get_eeprom_value(ftdi, PRODUCT_ID, &product_id) < 0){
+			OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
+				ftdi_get_error_string(ftdi);
+			continue;
+		}
+		OLA_INFO << "Got VID, PID: " << vendor_id << ", " << product_id;
+		string v = string(vendor);
     string sname = string(name);
     string sserial = string(serial);
     if (sserial == "?" || r == -9) {
@@ -294,7 +341,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI") ||
         std::string::npos != v.find("KMTRONIC") ||
         std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+      widgets->push_back(FtdiWidgetInfo(sname, sserial, i, vendor_id, product_id));
     } else {
       OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
