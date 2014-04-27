@@ -56,9 +56,9 @@ class FtdiWidgetInfo {
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
                    int unsigned id,
-									 const int vid = 0x0403,
-									 const int pid = 0x6001
-									)
+                   const int vid = 0x0403,
+                   const int pid = 0x6001
+                  )
       : m_name(name),
         m_serial(serial),
         m_id(id),
@@ -100,8 +100,8 @@ class FtdiWidgetInfo {
     std::string m_name;
     std::string m_serial;
     int unsigned m_id;
-		const int m_vid;
-		const int m_pid;
+    const int m_vid;
+    const int m_pid;
 };
 
 
@@ -110,21 +110,20 @@ class FtdiWidgetInfo {
  */
 class FtdiWidget {
  public:
-    static const int VID = 0x0403;  // FTDI Vendor ID
-    static const int PID = 0x6001;  // FTDI Product ID
-
     /**
      * Construct a new FtdiWidget instance for one widget.
      * @param serial The widget's USB serial number
      * @param name The widget's USB name (description)
      * @param id The ID of the device (used only when FTD2XX is the backend)
+     * @param vid The VendorID of the device, defaults to old value of FtdiWidget::VID
+     * @param pid The ProductID of the device, defaults to old value of FtdiWidget::PID
      */
     FtdiWidget(const std::string &serial,
                const std::string &name,
                uint32_t id = 0,
-							 const int vid = 0x0403,
-							 const int pid = 0x6001
-							);
+               const int vid = 0x0403,
+               const int pid = 0x6001
+              );
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -191,8 +190,8 @@ class FtdiWidget {
     std::string m_serial;
     std::string m_name;
     uint32_t m_id;
-		const int m_vid;
-		const int m_pid;
+    const int m_vid;
+    const int m_pid;
 
 #ifdef FTD2XX
     FT_HANDLE m_handle;
@@ -200,12 +199,6 @@ class FtdiWidget {
     struct ftdi_context m_handle;
 #endif
 };
-
-/*class FtdiWidget2 : FtdiWidget {
-public:
-   static const int VID = 0x0403;  // FTDI Vendor ID
-   static const int PID = 0x6011;  // FTDI Product ID
-};*/
 }  // namespace ftdidmx
 }  // namespace plugin
 }  // namespace ola

@@ -40,9 +40,8 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
       new FtdiWidget(widget_info.Serial(),
                      widget_info.Name(),
                      widget_info.Id(),
-										 widget_info.Vid(),
-										 widget_info.Pid()
-										));
+                     widget_info.Vid(),
+                     widget_info.Pid()));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {

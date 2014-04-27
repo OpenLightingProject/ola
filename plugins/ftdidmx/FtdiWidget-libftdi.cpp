@@ -49,9 +49,9 @@ using std::vector;
 FtdiWidget::FtdiWidget(const string& serial,
                        const string& name,
                        uint32_t id,
-											 const int vid,
-											 const int pid
-											)
+                       const int vid,
+                       const int pid
+                      )
     : m_serial(serial),
       m_name(name),
       m_id(id),
@@ -80,15 +80,15 @@ bool FtdiWidget::Open() {
     }
   } else {
     OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
-			if(ftdi_set_interface(&m_handle, INTERFACE_B) < 0) {
-				OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-			} else {
-				OLA_INFO << "enabled port 2";
-			}
+    if(ftdi_set_interface(&m_handle, INTERFACE_B) < 0) {
+      OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+    } else {
+      OLA_INFO << "enabled port 2";
+    }
     if (ftdi_usb_open_desc(&m_handle, m_vid, m_pid,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-			OLA_INFO << "VID: " << m_vid << " PID: " << m_pid;
+      OLA_INFO << "VID: " << m_vid << " PID: " << m_pid;
       return false;
     } else {
       return true;
@@ -296,39 +296,39 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       continue;
     }
     libusb_device_handle *handle;
-		
-		if(libusb_open(dev, &handle) != 0) {
-			OLA_WARN << "Failed to libusb_open!";
-			continue;
-		}
-		
-		ftdi_set_usbdev(ftdi, handle);
-    int vendor_id;
-		int product_id;
-		if(ftdi_read_eeprom(ftdi) < 0) {
-			OLA_WARN << "Failed to read EEPROM: " <<
-				ftdi_get_error_string(ftdi);
-			continue;
-		}
-		if(ftdi_eeprom_decode(ftdi, 1) < 0) {
-			OLA_WARN << "Failed to decode EEPROM: " <<
-				ftdi_get_error_string(ftdi);
-			continue;
-		}
-		//OLA_INFO << ftdi->eeprom->vendor_id;
-		if(ftdi_get_eeprom_value(ftdi, VENDOR_ID, &vendor_id) < 0){
-			OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
-				ftdi_get_error_string(ftdi);
-			continue;
-		}
 
-		if(ftdi_get_eeprom_value(ftdi, PRODUCT_ID, &product_id) < 0){
-			OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
-				ftdi_get_error_string(ftdi);
-			continue;
-		}
-		OLA_INFO << "Got VID, PID: " << vendor_id << ", " << product_id;
-		string v = string(vendor);
+    if(libusb_open(dev, &handle) != 0) {
+      OLA_WARN << "Failed to libusb_open!";
+      continue;
+    }
+
+    ftdi_set_usbdev(ftdi, handle);
+    int vendor_id;
+    int product_id;
+    if(ftdi_read_eeprom(ftdi) < 0) {
+      OLA_WARN << "Failed to read EEPROM: " <<
+        ftdi_get_error_string(ftdi);
+      continue;
+    }
+    if(ftdi_eeprom_decode(ftdi, 1) < 0) {
+      OLA_WARN << "Failed to decode EEPROM: " <<
+        ftdi_get_error_string(ftdi);
+      continue;
+    }
+    //OLA_INFO << ftdi->eeprom->vendor_id;
+    if(ftdi_get_eeprom_value(ftdi, VENDOR_ID, &vendor_id) < 0){
+      OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
+        ftdi_get_error_string(ftdi);
+      continue;
+    }
+
+    if(ftdi_get_eeprom_value(ftdi, PRODUCT_ID, &product_id) < 0){
+      OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
+        ftdi_get_error_string(ftdi);
+      continue;
+    }
+    OLA_INFO << "Got VID, PID: " << vendor_id << ", " << product_id;
+    string v = string(vendor);
     string sname = string(name);
     string sserial = string(serial);
     if (sserial == "?" || r == -9) {
