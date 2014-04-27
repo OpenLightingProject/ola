@@ -260,8 +260,8 @@ class QueuedMessageHandler {
                             uint8_t inverted) = 0;
     virtual void PanTiltSwap(const ResponseStatus &status,
                              uint8_t inverted) = 0;
-    virtual void IdentifyMode(const ResponseStatus &status,
-                              bool mode) = 0;
+    virtual void IdentifyDevice(const ResponseStatus &status,
+                                bool mode) = 0;
     virtual void Clock(const ResponseStatus &status,
                        const ClockValue &clock) = 0;
     virtual void PowerState(const ResponseStatus &status,
@@ -840,7 +840,7 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
-    bool GetIdentifyMode(
+    bool GetIdentifyDevice(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,

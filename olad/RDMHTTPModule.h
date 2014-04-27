@@ -59,8 +59,8 @@ class RDMHTTPModule {
     // these are used by the RDM Patcher
     int JsonUIDInfo(const ola::http::HTTPRequest *request,
                     ola::http::HTTPResponse *response);
-    int JsonUIDIdentifyMode(const ola::http::HTTPRequest *request,
-                            ola::http::HTTPResponse *response);
+    int JsonUIDIdentifyDevice(const ola::http::HTTPRequest *request,
+                              ola::http::HTTPResponse *response);
     int JsonUIDPersonalities(const ola::http::HTTPRequest *request,
                              ola::http::HTTPResponse *response);
 
@@ -162,9 +162,9 @@ class RDMHTTPModule {
                         const ola::rdm::DeviceDescriptor &device);
 
     // uid identify handler
-    void UIDIdentifyHandler(ola::http::HTTPResponse *response,
-                            const ola::rdm::ResponseStatus &status,
-                            bool value);
+    void UIDIdentifyDeviceHandler(ola::http::HTTPResponse *response,
+                                  const ola::rdm::ResponseStatus &status,
+                                  bool value);
 
     // personality handler
     void SendPersonalityResponse(ola::http::HTTPResponse *response,
@@ -518,14 +518,14 @@ class RDMHTTPModule {
                           unsigned int universe_id,
                           const ola::rdm::UID &uid);
 
-    std::string GetIdentifyMode(ola::http::HTTPResponse *response,
-                                unsigned int universe_id,
-                                const ola::rdm::UID &uid);
+    std::string GetIdentifyDevice(ola::http::HTTPResponse *response,
+                                  unsigned int universe_id,
+                                  const ola::rdm::UID &uid);
 
-    std::string SetIdentifyMode(const ola::http::HTTPRequest *request,
-                                ola::http::HTTPResponse *response,
-                                unsigned int universe_id,
-                                const ola::rdm::UID &uid);
+    std::string SetIdentifyDevice(const ola::http::HTTPRequest *request,
+                                  ola::http::HTTPResponse *response,
+                                  unsigned int universe_id,
+                                  const ola::rdm::UID &uid);
 
     std::string GetPowerState(ola::http::HTTPResponse *response,
                               unsigned int universe_id,
@@ -605,7 +605,7 @@ class RDMHTTPModule {
     static const char GENERIC_BOOL_FIELD[];
     static const char GENERIC_STRING_FIELD[];
     static const char GENERIC_UINT_FIELD[];
-    static const char IDENTIFY_FIELD[];
+    static const char IDENTIFY_DEVICE_FIELD[];
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
     static const char RECORD_SENSOR_FIELD[];
@@ -621,7 +621,7 @@ class RDMHTTPModule {
     static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
     static const char FACTORY_DEFAULTS_SECTION[];
-    static const char IDENTIFY_SECTION[];
+    static const char IDENTIFY_DEVICE_SECTION[];
     static const char LAMP_HOURS_SECTION[];
     static const char LAMP_MODE_SECTION[];
     static const char LAMP_STATE_SECTION[];
@@ -649,7 +649,7 @@ class RDMHTTPModule {
     static const char DISPLAY_LEVEL_SECTION_NAME[];
     static const char DMX_ADDRESS_SECTION_NAME[];
     static const char FACTORY_DEFAULTS_SECTION_NAME[];
-    static const char IDENTIFY_SECTION_NAME[];
+    static const char IDENTIFY_DEVICE_SECTION_NAME[];
     static const char LAMP_HOURS_SECTION_NAME[];
     static const char LAMP_MODE_SECTION_NAME[];
     static const char LAMP_STATE_SECTION_NAME[];
