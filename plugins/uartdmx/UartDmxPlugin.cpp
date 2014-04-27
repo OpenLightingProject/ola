@@ -40,9 +40,9 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-const char UartDmxPlugin::DEFAULT_BREAK[] = "100";
+unsigned int UartDmxPlugin::DEFAULT_BREAK[] = "100";
 const char UartDmxPlugin::K_BREAK[] = "break";
-const char UartDmxPlugin::DEFAULT_MALF[] = "100";
+unsigned int UartDmxPlugin::DEFAULT_MALF[] = "100";
 const char UartDmxPlugin::K_MALF[] = "malf";
 const char UartDmxPlugin::PLUGIN_NAME[] = "UART native DMX";
 const char UartDmxPlugin::PLUGIN_PREFIX[] = "uartdmx";
@@ -127,10 +127,14 @@ string UartDmxPlugin::Description() const {
 "\n"
 "--- Config file : ola-uartdmx.conf ---\n"
 "\n"
+"enabled = true\n"
+"Enable this plugin (DISABLED by default).\n"
+"device = /dev/ttyACM0\n"
+"The device to use for DMX output (optional).\n"
 "break = 100\n"
-"The DMX break time in microseconds.\n"
+"The DMX break time in microseconds (optional).\n"
 "malf = 100\n"
-"The Mark After Last Frame time in microseconds.\n"
+"The Mark After Last Frame time in microseconds (optional).\n"
 "\n";
 }
 
@@ -146,7 +150,7 @@ bool UartDmxPlugin::SetDefaultPreferences() {
                                      UIntValidator(88, 1000000),
                                      DEFAULT_BREAK))
   if (m_preferences->SetDefaultValue(UartDmxPlugin::K_MALF,
-                                     UIntValidator(8, 1000000),
+                                     UIntValidator(8, 1000000)
                                      DEFAULT_MALF))
 
     m_preferences->Save();

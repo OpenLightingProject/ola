@@ -36,7 +36,7 @@ namespace plugin {
 namespace uartdmx {
 
 UartDmxThread::UartDmxThread(UartWidget *widget, unsigned int breakt,
-    unsigned int malft)
+                             unsigned int malft)
   : m_granularity(UNKNOWN),
     m_widget(widget),
     m_term(false),
@@ -82,9 +82,6 @@ void *UartDmxThread::Run() {
   CheckTimeGranularity();
   DmxBuffer buffer;
 
-//  int frameTime = static_cast<int>(floor(
-//    (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
-
   // Setup the widget
   if (!m_widget->IsOpen())
     m_widget->SetupOutput();
@@ -100,8 +97,6 @@ void *UartDmxThread::Run() {
       ola::thread::MutexLocker locker(&m_buffer_mutex);
       buffer.Set(m_buffer);
     }
-
-//    clock.CurrentTime(&ts1);
 
     if (!m_widget->SetBreak(true))
       goto framesleep;
@@ -120,23 +115,7 @@ void *UartDmxThread::Run() {
 
   framesleep:
     // Sleep for the remainder of the DMX frame time
-//    clock.CurrentTime(&ts2);
-//    TimeInterval elapsed = ts2 - ts1;
     usleep(m_malft);
-#if 0
-    if (m_granularity == GOOD) {
-      while (elapsed.InMilliSeconds() < frameTime) {
-        usleep(1000);
-        clock.CurrentTime(&ts2);
-        elapsed = ts2 - ts1;
-      }
-    } else {
-      while (elapsed.InMilliSeconds() < frameTime) {
-        clock.CurrentTime(&ts2);
-        elapsed = ts2 - ts1;
-      }
-    }
-#endif
   }
   return NULL;
 }
@@ -148,13 +127,17 @@ void *UartDmxThread::Run() {
 void UartDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
   Clock clock;
+  /** If sleeping for 1ms takes longer than this, don't trust
+   * usleep for this session
+   */
+  const int threshold = 3;
 
   clock.CurrentTime(&ts1);
   usleep(1000);
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = interval.InMilliSeconds() > 3 ? BAD : GOOD;
+  m_granularity = interval.InMilliSeconds() > threshold ? BAD : GOOD;
   OLA_INFO << "Granularity for Uart thread is " <<
     (m_granularity == GOOD ? "GOOD" : "BAD");
 }

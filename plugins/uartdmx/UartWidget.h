@@ -70,9 +70,6 @@ class UartWidget {
 #if 0
     /** Set 250kbps baud rate */
     bool SetBaudRate();
-
-    /** Purge TX & RX buffers */
-    bool PurgeBuffers();
 #endif
     /** Toggle communications line BREAK condition on/off */
     bool SetBreak(bool on);
@@ -95,6 +92,14 @@ class UartWidget {
 	  * the port. Set to -2 when port is not open.
 	  */
     int m_filed;
+	/**
+	 * Constant value for file is not open
+	 */
+	const int NOT_OPEN = -2;
+	/**
+	 * Constant value for failed to open file
+	 */
+	const int FAILED_OPEN = -1;
 };
 }  // namespace uartdmx
 }  // namespace plugin

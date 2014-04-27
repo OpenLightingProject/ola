@@ -55,7 +55,7 @@ using std::vector;
 UartWidget::UartWidget(const string& path, int device_id)
     : m_path(path),
       m_device_id(device_id) {
-  m_filed = -2;
+  m_filed = NOT_OPEN;
 }
 
 UartWidget::~UartWidget() {
@@ -65,12 +65,13 @@ UartWidget::~UartWidget() {
 
 
 bool UartWidget::Open() {
-  OLA_DEBUG << "Opened serial port " << Name();
-  m_filed = open(m_path.c_str(), O_WRONLY);
-  if (m_filed == -1) {
+  OLA_DEBUG << "Opening serial port " << Name();
+  if (!ola::io::Open(m_path, O_WRONLY, &m_filed)) {
+	m_filed == FAILED_OPEN;
     OLA_WARN << Name() << " failed to open";
     return false;
   } else {
+    OLA_DEBUG << "Opened serial port " << Name();
     return true;
   }
 }
@@ -78,16 +79,20 @@ bool UartWidget::Open() {
 bool UartWidget::Close() {
   if (close(m_filed) > 0) {
     OLA_WARN << Name() << " error closing";
-    m_filed = -2;
+    m_filed = NOT_OPEN;
     return false;
   } else {
-    m_filed = -2;
+    m_filed = NOT_OPEN;
     return true;
   }
 }
 
 bool UartWidget::IsOpen() const {
-  return (m_filed > 0) ? true : false;
+  if (m_filed > 0) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 bool UartWidget::SetBreak(bool on) {
@@ -108,7 +113,7 @@ bool UartWidget::SetBreak(bool on) {
 bool UartWidget::Write(const ola::DmxBuffer& data) {
   unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
   int unsigned length = DMX_UNIVERSE_SIZE;
-  buffer[0] = 0x00;  // start code of 0 for dimmer control messages
+  buffer[0] = DMX512_START_CODE;
 
   data.Get(buffer + 1, &length);
 

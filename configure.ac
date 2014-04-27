@@ -501,8 +501,8 @@ AC_ARG_ENABLE(
   [AS_HELP_STRING([--disable-uart],
                   [Avoid using native uart support])])
 
-AC_CHECK_HEADERS([asm/termios.h], [have_termios="yes"], [have_termios="no"])
-AS_IF([test "x$have_termios" = xyes],
+AC_CHECK_HEADERS([asm/termios.h], [have_asm_termios="yes"], [have_asm_termios="no"])
+AS_IF([test "x$have_asm_termios" = xyes],
       [AC_DEFINE([USE_UART], [1], [define if asm/termios.h is available and direct UART support should be enabled])])
 
 
@@ -630,9 +630,9 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_asm_termios])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
-PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_termios])
 
 # Finally build a list of the required plugin libs.
 PLUGIN_LIBS=''
