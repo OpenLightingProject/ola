@@ -92,6 +92,8 @@ class FtdiWidgetInfo {
         m_name = other.Name();
         m_serial = other.Serial();
         m_id = other.Id();
+        m_vid = other.Vid();
+        m_pid = other.Pid();
       }
       return *this;
     }
@@ -100,8 +102,8 @@ class FtdiWidgetInfo {
     std::string m_name;
     std::string m_serial;
     int unsigned m_id;
-    const int m_vid;
-    const int m_pid;
+    int m_vid;
+    int m_pid;
 };
 
 
@@ -180,6 +182,9 @@ class FtdiWidget {
     /** Setup device for DMX Output **/
     bool SetupOutput();
 
+    /** Get Widget interface count **/
+    int GetInterfaceCount();
+
     /**
      * Build a list of available ftdi widgets.
      * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
@@ -199,6 +204,59 @@ class FtdiWidget {
     struct ftdi_context m_handle;
 #endif
 };
+
+class FtdiInterface {
+    FtdiInterface(const FtdiWidget * parent,
+                  const ftdi_interface interface)
+      : m_parent(parent),
+        m_interface(interface) {
+      memset(&m_handle, \0, sizeof(struct ftdi_context));
+      ftdi_init(&m_handle);
+    }
+    /** Open the widget */
+    bool Open();
+
+    /** Close the widget */
+    bool Close();
+
+    /** Check if the widget is open */
+    bool IsOpen() const;
+
+    /** Reset the communications line */
+    bool Reset();
+
+    /** Setup communications line for 8N2 traffic */
+    bool SetLineProperties();
+
+    /** Set 250kbps baud rate */
+    bool SetBaudRate();
+
+    /** Disable flow control */
+    bool SetFlowControl();
+
+    /** Clear the RTS bit */
+    bool ClearRts();
+
+    /** Purge TX & RX buffers */
+    bool PurgeBuffers();
+
+    /** Toggle communications line BREAK condition on/off */
+    bool SetBreak(bool on);
+
+    /** Write data to a previously-opened line */
+    bool Write(const ola::DmxBuffer &data);
+
+    /** Read data from a previously-opened line */
+    bool Read(unsigned char* buff, int size);
+
+    /** Setup device for DMX Output **/
+    bool SetupOutput();
+
+  private:
+    const FtdiWidget * m_parent;
+    struct ftdi_context m_handle;
+    const ftdi_interface m_interface;
+}
 }  // namespace ftdidmx
 }  // namespace plugin
 }  // namespace ola
