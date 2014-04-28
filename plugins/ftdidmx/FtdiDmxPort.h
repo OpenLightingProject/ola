@@ -37,12 +37,12 @@ namespace ftdidmx {
 class FtdiDmxOutputPort : public ola::BasicOutputPort {
  public:
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
-                      FtdiWidget *device,
+                      FtdiInterface *interface,
                       unsigned int id,
                       unsigned int freq)
         : BasicOutputPort(parent, id),
-          m_device(device),
-          m_thread(device, freq) {
+          m_interface(interface),
+          m_thread(interface, freq) {
       m_thread.Start();
     }
     ~FtdiDmxOutputPort() { m_thread.Stop(); }
@@ -51,10 +51,10 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
       return m_thread.WriteDMX(buffer);
     }
 
-    std::string Description() const { return m_device->Description(); }
+    std::string Description() const { return m_interface->Description(); }
 
  private:
-    FtdiWidget *m_device;
+    FtdiInterface *m_interface;
     FtdiDmxThread m_thread;
 };
 }  // namespace ftdidmx

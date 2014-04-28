@@ -50,11 +50,14 @@ FtdiDmxDevice::~FtdiDmxDevice() {
 }
 
 bool FtdiDmxDevice::StartHook() {
-
-  AddPort(new FtdiDmxOutputPort(this,
-                                m_widget.get(),
-                                m_widget_info.Id(),
-                                m_frequency));
+  int interfaceCount = m_widget.get()->GetInterfaceCount();
+  OLA_INFO << "there are " << interfaceCount << " interfaces.";
+  for (int i = 1; i < 3; i++) {
+    AddPort(new FtdiDmxOutputPort(this,
+                                  new FtdiInterface(m_widget.get(), static_cast<ftdi_interface>(i)),
+                                  i,
+                                  m_frequency));
+  }
   return true;
 }
 }  // namespace ftdidmx

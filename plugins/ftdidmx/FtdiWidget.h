@@ -209,6 +209,7 @@ class FtdiWidget {
 };
 
 class FtdiInterface {
+  public:
     FtdiInterface(const FtdiWidget * parent,
                   const ftdi_interface interface)
       : m_parent(parent),
@@ -218,6 +219,10 @@ class FtdiInterface {
     }
 
     virtual ~FtdiInterface();
+
+    std::string Description() const {
+      return m_parent->Description();
+    }
 
     /** Set interface on the widget */
     bool SetInterface();

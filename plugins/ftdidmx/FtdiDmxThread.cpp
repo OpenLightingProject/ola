@@ -32,9 +32,9 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-FtdiDmxThread::FtdiDmxThread(FtdiWidget *widget, unsigned int frequency)
+FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface, unsigned int frequency)
   : m_granularity(UNKNOWN),
-    m_widget(widget),
+    m_interface(interface),
     m_term(false),
     m_frequency(frequency) {
 }
@@ -80,9 +80,9 @@ void *FtdiDmxThread::Run() {
   int frameTime = static_cast<int>(floor(
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
-  // Setup the widget
-  if (!m_widget->IsOpen())
-    m_widget->SetupOutput();
+  // Setup the interface
+  if (!m_interface->IsOpen())
+    m_interface->SetupOutput();
 
   while (1) {
     {
@@ -98,19 +98,19 @@ void *FtdiDmxThread::Run() {
 
     clock.CurrentTime(&ts1);
 
-    if (!m_widget->SetBreak(true))
+    if (!m_interface->SetBreak(true))
       goto framesleep;
 
     if (m_granularity == GOOD)
       usleep(DMX_BREAK);
 
-    if (!m_widget->SetBreak(false))
+    if (!m_interface->SetBreak(false))
       goto framesleep;
 
     if (m_granularity == GOOD)
       usleep(DMX_MAB);
 
-    if (!m_widget->Write(buffer))
+    if (!m_interface->Write(buffer))
       goto framesleep;
 
   framesleep:

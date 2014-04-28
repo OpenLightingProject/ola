@@ -368,7 +368,7 @@ bool FtdiInterface::Open() {
     }
   } else {
     OLA_DEBUG << "Opening FTDI device " << m_parent->Name() << ", serial: " 
-              << m_parent->Serial() << "interface: " << m_interface;
+              << m_parent->Serial() << ", interface: " << m_interface;
 
     if (ftdi_usb_open_desc(&m_handle, m_parent->Vid(), m_parent->Pid(),
                            m_parent->Name().c_str(), m_parent->Serial().c_str()) < 0) {

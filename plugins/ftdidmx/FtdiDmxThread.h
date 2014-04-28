@@ -30,7 +30,7 @@ namespace ftdidmx {
 
 class FtdiDmxThread : public ola::thread::Thread {
  public:
-    FtdiDmxThread(FtdiWidget *widget, unsigned int frequency);
+    FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
     ~FtdiDmxThread();
 
     bool Stop();
@@ -41,7 +41,7 @@ class FtdiDmxThread : public ola::thread::Thread {
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
-    FtdiWidget *m_widget;
+    FtdiInterface *m_interface;
     bool m_term;
     int unsigned m_frequency;
     DmxBuffer m_buffer;
