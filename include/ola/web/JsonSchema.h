@@ -46,7 +46,7 @@ namespace web {
  * @{
  */
 
-class SchemaDefintions;
+class SchemaDefinitions;
 
 /**
  * @brief The interface Json Schema Validators.
@@ -171,11 +171,11 @@ class WildcardValidator : public BaseValidator {
 class ReferenceValidator : public ValidatorInterface {
  public:
   /**
-   * @param definitions A SchemaDefintions object with which to resolve
+   * @param definitions A SchemaDefinitions object with which to resolve
    * references.
    * @param schema The $ref link to the other schema.
    */
-  ReferenceValidator(const SchemaDefintions *definitions,
+  ReferenceValidator(const SchemaDefinitions *definitions,
                      const std::string &schema);
 
   bool IsValid() const;
@@ -195,7 +195,7 @@ class ReferenceValidator : public ValidatorInterface {
   JsonObject* GetSchema() const;
 
  private:
-  const SchemaDefintions *m_definitions;
+  const SchemaDefinitions *m_definitions;
   const std::string m_schema;
   ValidatorInterface *m_validator;
 
@@ -785,16 +785,22 @@ class NotValidator : public BaseValidator {
   DISALLOW_COPY_AND_ASSIGN(NotValidator);
 };
 
-class SchemaDefintions {
+class SchemaDefinitions {
  public:
-  SchemaDefintions() {}
-  ~SchemaDefintions();
+  SchemaDefinitions() {}
+  ~SchemaDefinitions();
 
   void Add(const std::string &schema_name, ValidatorInterface *validator);
   ValidatorInterface *Lookup(const std::string &schema_name) const;
 
+  void AddToJsonObject(JsonObject *json) const;
+
  private:
-  std::map<std::string, ValidatorInterface*> m_validators;
+  typedef std::map<std::string, ValidatorInterface*> SchemaMap;
+
+  SchemaMap m_validators;
+
+  DISALLOW_COPY_AND_ASSIGN(SchemaDefinitions);
 };
 
 
@@ -824,16 +830,17 @@ class JsonSchema {
    * @brief Parse a string and return a new schema
    * @returns A JsonSchema object, or NULL if the string wasn't a valid schema.
    */
-  static JsonSchema* FromString(const std::string& schema_string);
+  static JsonSchema* FromString(const std::string& schema_string,
+                                std::string *error);
 
  private:
   std::string m_schema_uri;
   std::auto_ptr<ValidatorInterface> m_root_validator;
-  std::auto_ptr<SchemaDefintions> m_schema_defs;
+  std::auto_ptr<SchemaDefinitions> m_schema_defs;
 
   JsonSchema(const std::string &schema_url,
              ValidatorInterface *root_validator,
-             SchemaDefintions *schema_defs);
+             SchemaDefinitions *schema_defs);
 
   DISALLOW_COPY_AND_ASSIGN(JsonSchema);
 };

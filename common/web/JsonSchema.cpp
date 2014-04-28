@@ -43,7 +43,7 @@ JsonObject* BaseValidator::GetSchema() const {
   if (!m_title.empty()) {
     schema->Add("title", m_title);
   }
-  if (!m_title.empty()) {
+  if (!m_description.empty()) {
     schema->Add("description", m_description);
   }
   ExtendSchema(schema);
@@ -58,7 +58,7 @@ void BaseValidator::SetDescription(const string &description) {
   m_description = description;
 }
 
-ReferenceValidator::ReferenceValidator(const SchemaDefintions *definitions,
+ReferenceValidator::ReferenceValidator(const SchemaDefinitions *definitions,
                                        const string &schema)
     : m_definitions(definitions),
       m_schema(schema),
@@ -522,22 +522,30 @@ void NotValidator::ExtendSchema(JsonObject *schema) const {
   schema->AddValue("not", child_schema);
 }
 
-SchemaDefintions::~SchemaDefintions() {
+SchemaDefinitions::~SchemaDefinitions() {
   STLDeleteValues(&m_validators);
 }
 
-void SchemaDefintions::Add(const string &schema_name,
+void SchemaDefinitions::Add(const string &schema_name,
                            ValidatorInterface *validator) {
   STLReplaceAndDelete(&m_validators, schema_name, validator);
 }
 
-ValidatorInterface *SchemaDefintions::Lookup(const string &schema_name) const {
+ValidatorInterface *SchemaDefinitions::Lookup(const string &schema_name) const {
   return STLFindOrNull(m_validators, schema_name);
+}
+
+void SchemaDefinitions::AddToJsonObject(JsonObject *json) const {
+  SchemaMap::const_iterator iter = m_validators.begin();
+  for (; iter != m_validators.end(); ++iter) {
+    JsonObject *schema = iter->second->GetSchema();
+    json->AddValue(iter->first, schema);
+  }
 }
 
 JsonSchema::JsonSchema(const std::string &schema_url,
                        ValidatorInterface *root_validator,
-                       SchemaDefintions *schema_defs)
+                       SchemaDefinitions *schema_defs)
     : m_schema_uri(schema_url),
       m_root_validator(root_validator),
       m_schema_defs(schema_defs) {
@@ -553,14 +561,22 @@ bool JsonSchema::IsValid(const JsonValue &value) {
 }
 
 const JsonObject* JsonSchema::AsJson() const {
-  return m_root_validator->GetSchema();
+  JsonObject *json =  m_root_validator->GetSchema();
+  if (json) {
+    JsonObject *definitions = json->AddObject("definitions");
+    m_schema_defs->AddToJsonObject(definitions);
+  }
+  return json;
 }
 
-JsonSchema* JsonSchema::FromString(const string& schema_string) {
+JsonSchema* JsonSchema::FromString(const string& schema_string,
+                                   string *error) {
+  *error = "";
   SchemaParser schema_parser;
   bool ok = JsonParser::Parse(schema_string, &schema_parser);
   if (!ok || !schema_parser.IsValidSchema()) {
-    OLA_INFO << "Schema parse error: " << schema_parser.Error();
+    OLA_INFO << "Error " << schema_parser.Error();
+    *error = schema_parser.Error();
     return NULL;
   }
   return new JsonSchema("", schema_parser.ClaimRootValidator(),

@@ -39,7 +39,7 @@ namespace web {
 
 /**
  * @brief This called receives events from a JsonParser and constructs a
- * validator and SchemaDefintions.
+ * validator and SchemaDefinitions.
  */
 class SchemaParser : public JsonHandlerInterface {
  public:
@@ -90,17 +90,20 @@ class SchemaParser : public JsonHandlerInterface {
   ValidatorInterface* ClaimRootValidator();
 
   /**
-   * @brief Claim the SchemaDefintions that were created by parsing the schema.
-   * @returns A SchemaDefintions object, or NULL if the schema wasn't valid.
-   *   Ownership of the SchemaDefintions is transferred to the caller.
+   * @brief Claim the SchemaDefinitions that were created by parsing the schema.
+   * @returns A SchemaDefinitions object, or NULL if the schema wasn't valid.
+   *   Ownership of the SchemaDefinitions is transferred to the caller.
    */
-  SchemaDefintions* ClaimSchemaDefs();
+  SchemaDefinitions* ClaimSchemaDefs();
 
  private:
-  bool m_verified;
-  std::auto_ptr<ValidatorInterface> m_root_validator;
-  std::string m_schema_uri;
+  // TODO(simonn): can probably be a string
   std::ostringstream m_error;
+
+  std::auto_ptr<SchemaDefinitions> m_schema_defs;
+  std::auto_ptr<SchemaParseContext> m_root_context;
+
+  std::auto_ptr<ValidatorInterface> m_root_validator;
 
   std::stack<class SchemaParseContextInterface*> m_context_stack;
   PointerTracker m_pointer;

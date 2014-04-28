@@ -107,6 +107,11 @@ const string PointerTracker::GetPointer() const {
   return m_cached_path;
 }
 
+void PointerTracker::Reset() {
+  m_tokens.clear();
+  m_cached_path = "";
+}
+
 void PointerTracker::UpdatePath() {
   if (m_tokens.empty()) {
     m_cached_path = "";

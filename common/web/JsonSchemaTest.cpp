@@ -116,7 +116,7 @@ void JsonSchemaTest::testParseBool() {
   root_validator.AddValidator("age", new NotValidator(number_validator));
   auto_ptr<JsonObject> schema(root_validator.GetSchema());
 
-  //OLA_INFO << ola::web::JsonWriter::AsString(*schema.get());
+  // OLA_INFO << ola::web::JsonWriter::AsString(*schema.get());
   /*
   JsonObject object;
   object.Add("age", true);
@@ -143,6 +143,7 @@ void JsonSchemaTest::testParseFromString() {
   ));
   */
 
+  /*
   auto_ptr<JsonSchema> schema(JsonSchema::FromString(
         "{"
         "  \"definitions\": {"
@@ -153,6 +154,15 @@ void JsonSchemaTest::testParseFromString() {
         ""
   ));
 
+  auto_ptr<JsonSchema> schema(JsonSchema::FromString(
+        "{"
+        "  \"definitions\": {"
+        "    \"foo\": {"
+        "    }"
+        "  },"
+        "  \"title\": \"Hi\""
+        ""));
+
   if (schema.get()) {
     OLA_INFO << "Json Schema was valid";
     const JsonObject *value = schema->AsJson();
@@ -162,4 +172,5 @@ void JsonSchemaTest::testParseFromString() {
   } else {
     OLA_WARN << "Parsing failed";
   }
+  */
 }

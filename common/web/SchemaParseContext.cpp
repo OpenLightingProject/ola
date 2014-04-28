@@ -35,21 +35,26 @@ namespace web {
 using std::auto_ptr;
 using std::string;
 
-SchemaParseContextInterface* DefinitionsParseContext::OpenObject() {
-  OLA_INFO << "open new def";
-  m_current_schema.reset(new SchemaParseContext());
+SchemaParseContextInterface* DefinitionsParseContext::OpenObject(
+    const string &path) {
+  OLA_INFO << "Starting a new definition at " << path;
+  m_current_schema.reset(new SchemaParseContext(m_schema_defs));
   return m_current_schema.get();
 }
 
-void DefinitionsParseContext::CloseObject() {
+void DefinitionsParseContext::CloseObject(const string &path) {
   if (!(HasKey() && m_current_schema.get())) {
     OLA_WARN << "Bad call to DefinitionsParseContext::CloseObject";
     return;
   }
 
   string key = TakeKey();
-  m_schema_defs->Add(TakeKey(), m_current_schema->GetValidator());
+
+  ValidatorInterface *schema = m_current_schema->GetValidator();
+  OLA_INFO << "Setting validator for " << key << " to " << schema;
+  m_schema_defs->Add(TakeKey(), schema);
   m_current_schema.release();
+  (void) path;
 }
 
 
@@ -64,7 +69,7 @@ ValidatorInterface* SchemaParseContext::GetValidator() {
   return validator;
 }
 
-void SchemaParseContext::String(const std::string &value) {
+void SchemaParseContext::String(const string &path, const string &value) {
   if (!HasKey()) {
     OLA_WARN << "No key defined for " << value;
     return;
@@ -78,64 +83,68 @@ void SchemaParseContext::String(const std::string &value) {
     OLA_WARN << "Unknown key in schema " << key;
   }
 
+  (void) path;
 }
 
-void SchemaParseContext::Number(uint32_t value) {
+void SchemaParseContext::Number(const string &path, uint32_t value) {
   if (!TypeIsValidForCurrentKey(JSON_NUMBER)) {
     return;
   }
 
   (void) value;
+  (void) path;
 }
 
-void SchemaParseContext::Number(int32_t value) {
-
+void SchemaParseContext::Number(const string &path, int32_t value) {
   (void) value;
+  (void) path;
 }
 
-void SchemaParseContext::Number(uint64_t value) {
-
+void SchemaParseContext::Number(const string &path, uint64_t value) {
   (void) value;
+  (void) path;
 }
 
-void SchemaParseContext::Number(int64_t value) {
-
+void SchemaParseContext::Number(const string &path, int64_t value) {
   (void) value;
+  (void) path;
 }
 
-void SchemaParseContext::Number(long double value) {
-
+void SchemaParseContext::Number(const string &path, long double value) {
   (void) value;
+  (void) path;
 }
 
-void SchemaParseContext::Bool(bool value) {
-
+void SchemaParseContext::Bool(const string &path, bool value) {
   (void) value;
+  (void) path;
 }
 
-void SchemaParseContext::OpenArray() {
-
+void SchemaParseContext::OpenArray(const string &path) {
+  (void) path;
 }
 
-void SchemaParseContext::CloseArray() {
-
+void SchemaParseContext::CloseArray(const string &path) {
+  (void) path;
 }
 
-SchemaParseContextInterface* SchemaParseContext::OpenObject() {
+SchemaParseContextInterface* SchemaParseContext::OpenObject(
+    const string &path) {
   if (!TypeIsValidForCurrentKey(JSON_OBJECT)) {
     return NULL;
   }
 
   string key = TakeKey();
   if (key == "definitions") {
-    return new DefinitionsParseContext();
+    return new DefinitionsParseContext(m_schema_defs);
   }
   OLA_INFO << "unknown open schema obj";
   return NULL;
+  (void) path;
 }
 
-void SchemaParseContext::CloseObject() {
-  OLA_INFO << "closing schema ";
+void SchemaParseContext::CloseObject(const string &path) {
+  OLA_INFO << "SchemaParseContext: closing object " << path;
 }
 
 bool SchemaParseContext::TypeIsValidForCurrentKey(JsonType type) {

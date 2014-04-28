@@ -32,37 +32,44 @@ namespace web {
 using std::auto_ptr;
 using std::string;
 
-class SchemaParseContext;
-
 SchemaParser::SchemaParser()
-    : JsonHandlerInterface(),
-      m_verified(false) {
+    : JsonHandlerInterface() {
 }
 
 SchemaParser::~SchemaParser() {
 }
 
 void SchemaParser::Begin() {
-  m_verified = false;
+  m_schema_defs.reset();
+  m_root_context.reset();
   m_root_validator.reset();
+  STLEmptyStackAndDelete(&m_context_stack);
+  m_pointer.Reset();
   m_error.str("");
 }
 
-void SchemaParser::End() {
-  OLA_INFO << "End()";
-}
+void SchemaParser::End() {}
 
 void SchemaParser::String(const string &value) {
+  OLA_INFO << "string " << value;
+  if (!m_error.str().empty()) {
+    OLA_INFO << "empty";
+    return;
+  }
+
+  if (!m_root_context.get()) {
+    m_error << "Invalid string for first element: " << value;
+    return;
+  }
+
   m_pointer.IncrementIndex();
 
-  if (!m_context_stack.empty()) {
-    if (m_context_stack.top()) {
-      m_context_stack.top()->String(value);
-    } else {
-      OLA_INFO << "In null context, skipping value " << value;
-    }
+  OLA_INFO << "Setting string for " << m_pointer.GetPointer() << " size is "
+           << m_context_stack.size();
+  if (m_context_stack.top()) {
+    m_context_stack.top()->String(m_pointer.GetPointer(), value);
   } else {
-    OLA_WARN << "Invalid schema : " << value;
+    OLA_INFO << "In null context, skipping value " << value;
   }
 }
 
@@ -87,99 +94,137 @@ void SchemaParser::Number(long double value) {
 }
 
 void SchemaParser::Bool(bool value) {
+  if (!m_error.str().empty()) {
+    return;
+  }
+
+  if (!m_root_context.get()) {
+    m_error << "Invalid bool for first element:" << value;
+    return;
+  }
+
   m_pointer.IncrementIndex();
-  if (!m_context_stack.empty()) {
-    m_context_stack.top()->Bool(value);
+
+  if (m_context_stack.top()) {
+    m_context_stack.top()->Bool(m_pointer.GetPointer(), value);
   } else {
-    OLA_WARN << "Invalid schema : " << value;
+    OLA_INFO << "In null context, skipping value " << value;
   }
 }
 
 void SchemaParser::Null() {
+  if (!m_error.str().empty()) {
+    return;
+  }
+
+  if (!m_root_context.get()) {
+    m_error << "Invalid null for first element";
+    return;
+  }
+
   m_pointer.IncrementIndex();
-  if (!m_context_stack.empty()) {
-    m_context_stack.top()->Null();
+
+  if (m_context_stack.top()) {
+    m_context_stack.top()->Null(m_pointer.GetPointer());
   } else {
-    OLA_WARN << "Invalid schema with null";
+    OLA_INFO << "In null context, skipping null";
   }
 }
 
 void SchemaParser::OpenArray() {
+  if (!m_error.str().empty()) {
+    return;
+  }
+
+  if (!m_root_context.get()) {
+    m_error << "Invalid array for first element";
+    return;
+  }
+
   m_pointer.OpenArray();
-  if (!m_context_stack.empty()) {
-    m_context_stack.top()->OpenArray();
+
+  if (m_context_stack.top()) {
+    m_context_stack.top()->OpenArray(m_pointer.GetPointer());
   } else {
-    OLA_WARN << "Invalid schema with array";
+    OLA_INFO << "In null context, skipping OpenArray";
   }
 }
 
 void SchemaParser::CloseArray() {
+  if (!m_error.str().empty() || !m_root_context.get()) {
+    return;
+  }
+
   m_pointer.CloseArray();
-  if (!m_context_stack.empty()) {
-    m_context_stack.top()->CloseArray();
+  if (!m_context_stack.top()) {
+    m_context_stack.top()->CloseArray(m_pointer.GetPointer());
   } else {
-    OLA_WARN << "Invalid schema with array";
+    OLA_INFO << "In null context, skipping CloseArray";
   }
 }
 
 void SchemaParser::OpenObject() {
+  if (!m_error.str().empty()) {
+    return;
+  }
+
   m_pointer.OpenObject();
-  OLA_INFO << "open obj";
-  if (m_context_stack.empty()) {
-    m_context_stack.push(new SchemaParseContext());
+
+  if (!m_root_context.get()) {
+    m_schema_defs.reset(new SchemaDefinitions());
+    m_root_context.reset(new SchemaParseContext(m_schema_defs.get()));
+    m_context_stack.push(m_root_context.get());
   } else {
     if (m_context_stack.top()) {
-      m_context_stack.push(m_context_stack.top()->OpenObject());
-      OLA_INFO << "pushed " << m_context_stack.top();
+      m_context_stack.push(
+          m_context_stack.top()->OpenObject(m_pointer.GetPointer()));
+      OLA_INFO << "Opened " << m_pointer.GetPointer() <<  " ("
+          << m_context_stack.top() << ") size is now "
+          << m_context_stack.size();
     } else {
-      OLA_INFO << "In null context, skipping open ";
+      OLA_INFO << "In null context, skipping OpenObject";
       m_context_stack.push(NULL);
     }
   }
 }
 
 void SchemaParser::ObjectKey(const std::string &key) {
-  m_pointer.SetProperty(key);
-  OLA_INFO << "setting key " << key;
+  if (!m_error.str().empty()) {
+    return;
+  }
 
-  if (!m_context_stack.empty()) {
-    if (m_context_stack.top()) {
-      m_context_stack.top()->ObjectKey(key);
-    } else {
-      OLA_INFO << "In null context, skipping key " << key;
-    }
+  m_pointer.SetProperty(key);
+
+  if (m_context_stack.top()) {
+    OLA_INFO << "Setting key for " << m_pointer.GetPointer();
+    m_context_stack.top()->ObjectKey(m_pointer.GetPointer(), key);
   } else {
-    OLA_WARN << "Invalid schema : " << key;
+    OLA_INFO << "In null context, skipping key " << key;
   }
 }
 
 void SchemaParser::CloseObject() {
-  m_pointer.CloseObject();
-
-  OLA_INFO << "close, size is " << m_context_stack.size();
-  if (m_context_stack.empty()) {
-    OLA_INFO << "Missing ParseContext!";
-    m_verified = false;
+  if (!m_error.str().empty()) {
     return;
   }
 
+  m_pointer.CloseObject();
+
+  OLA_INFO << "CloseObject";
   if (m_context_stack.size() == 1) {
     // We're at the root
-    auto_ptr<SchemaParseContextInterface> context(m_context_stack.top());
     m_context_stack.pop();
-
-    // TODO(simonn): FIX ME
-    SchemaParseContext *root = dynamic_cast<SchemaParseContext*>(context.get());
-    m_root_validator.reset(root->GetValidator());
-    m_verified = true;
-
+    m_root_validator.reset(m_root_context->GetValidator());
   } else {
     m_context_stack.pop();
-    OLA_INFO << "closing context, size is now " << m_context_stack.size();
+    OLA_INFO << "closing context " << m_pointer.GetPointer()
+             << ", size is now " << m_context_stack.size();
     if (m_context_stack.top()) {
-      m_context_stack.top()->CloseObject();
+      m_context_stack.top()->CloseObject(m_pointer.GetPointer());
     }
   }
+  OLA_INFO << "Close of " << m_pointer.GetPointer() << " complete, size is "
+      << m_context_stack.size();
 }
 
 void SchemaParser::SetError(const string &error) {
@@ -187,7 +232,7 @@ void SchemaParser::SetError(const string &error) {
 }
 
 bool SchemaParser::IsValidSchema() {
-  return m_verified;
+  return m_root_validator.get() != NULL;
 }
 
 std::string SchemaParser::Error() const {
@@ -195,28 +240,29 @@ std::string SchemaParser::Error() const {
 }
 
 ValidatorInterface* SchemaParser::ClaimRootValidator() {
-  if (m_verified) {
-    return m_root_validator.release();
-  } else {
-    return NULL;
-  }
+  return m_root_validator.release();
 }
 
-SchemaDefintions* SchemaParser::ClaimSchemaDefs() {
-  return NULL;
+SchemaDefinitions* SchemaParser::ClaimSchemaDefs() {
+  return m_schema_defs.release();
 }
 
 template <typename T>
 void SchemaParser::HandleNumber(T t) {
+  if (!m_error.str().empty()) {
+    return;
+  }
+
+  if (!m_root_context.get()) {
+    m_error << "Invalid number for first element: " << t;
+    return;
+  }
+
   m_pointer.IncrementIndex();
-  if (!m_context_stack.empty()) {
-    if (m_context_stack.top()) {
-      m_context_stack.top()->Number(t);
-    } else {
-      OLA_INFO << "In null context, skipping value " << t;
-    }
+  if (m_context_stack.top()) {
+    m_context_stack.top()->Number(m_pointer.GetPointer(), t);
   } else {
-    OLA_WARN << "Invalid schema : " << t;
+    OLA_INFO << "In null context, skipping number " << t;
   }
 }
 }  // namespace web
