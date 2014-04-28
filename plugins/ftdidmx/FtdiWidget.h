@@ -136,6 +136,8 @@ class FtdiWidget {
 
     /** Get the widget's USB name */
     std::string Name() const { return m_name; }
+    int unsigned Vid() const { return m_vid; }
+    int unsigned Pid() const { return m_pid; }
 
     /** Get the widget's FTD2XX ID number */
     uint32_t Id() const { return m_id; }
@@ -214,46 +216,49 @@ class FtdiInterface {
      memset(&m_handle, '\0', sizeof(struct ftdi_context));
       ftdi_init(&m_handle);
     }
-    /** Set interface\ on the widget */
-//    bool SetInterface(ftdi_interface interface);
+
+    virtual ~FtdiInterface();
+
+    /** Set interface on the widget */
+    bool SetInterface();
     /** Open the widget */
-//    bool Open();
+    bool Open();
 
     /** Close the widget */
-//    bool Close();
+    bool Close();
 
     /** Check if the widget is open */
-//    bool IsOpen() const;
+    bool IsOpen() const;
 
     /** Reset the communications line */
-//    bool Reset();
+    bool Reset();
 
     /** Setup communications line for 8N2 traffic */
-//    bool SetLineProperties();
+    bool SetLineProperties();
 
     /** Set 250kbps baud rate */
-//    bool SetBaudRate();
+    bool SetBaudRate();
 
     /** Disable flow control */
-//    bool SetFlowControl();
+    bool SetFlowControl();
 
     /** Clear the RTS bit */
-//    bool ClearRts();
+    bool ClearRts();
 
     /** Purge TX & RX buffers */
-//    bool PurgeBuffers();
+    bool PurgeBuffers();
 
     /** Toggle communications line BREAK condition on/off */
-//    bool SetBreak(bool on);
+    bool SetBreak(bool on);
 
     /** Write data to a previously-opened line */
-//    bool Write(const ola::DmxBuffer &data);
+    bool Write(const ola::DmxBuffer &data);
 
     /** Read data from a previously-opened line */
-//    bool Read(unsigned char* buff, int size);
+    bool Read(unsigned char* buff, int size);
 
     /** Setup device for DMX Output **/
-//    bool SetupOutput();
+    bool SetupOutput();
 
   private:
     const FtdiWidget * m_parent;

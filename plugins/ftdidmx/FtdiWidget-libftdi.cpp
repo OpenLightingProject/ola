@@ -80,11 +80,12 @@ bool FtdiWidget::Open() {
     }
   } else {
     OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
-    if(ftdi_set_interface(&m_handle, INTERFACE_B) < 0) {
+    if(ftdi_set_interface(&m_handle, INTERFACE_C) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     } else {
-      OLA_INFO << "enabled port 2";
+      OLA_INFO << "enabled port 3";
     }
+    OLA_INFO << "Device has " << GetInterfaceCount() << " ports.";
     if (ftdi_usb_open_desc(&m_handle, m_vid, m_pid,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -248,6 +249,21 @@ bool FtdiWidget::SetupOutput() {
   return true;
 }
 
+/**
+ * Get the number of physical interfaces our widgit has to offer.
+ * 
+ * This does not deal with product names being all caps etc.
+ * Originally I had hoped to use ftdi_context::type however, it only gets set properly after the device has been opened.
+ */
+int FtdiWidget::GetInterfaceCount() {
+  if(std::string::npos != m_name.find("Plus4")) {
+    return 4;
+  } else  if (std::string::npos != m_name.find("Plus2")) {
+    return 2;
+  } else {
+    return 1;
+  }
+}
 
 /**
  * Build a list of all attached ftdi devices
@@ -257,28 +273,32 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   widgets->clear();
   struct ftdi_context *ftdi = ftdi_new();
   if (!ftdi) {
-    OLA_WARN << "Failed to allocated FTDI context";
+    OLA_WARN << "Failed to allocate FTDI context";
     return;
   }
 
   struct ftdi_device_list* list = NULL;
-  int devices_found = ftdi_usb_find_all(ftdi, &list, FtdiWidget::VID,
-                                        FtdiWidget::PID);
-  int devices_found_4232 = ftdi_usb_find_all(ftdi, &list, 0x0403,
-                                             0x6011);
 
-  if ((devices_found + devices_found_4232) < 0)
+  int devices_found = ftdi_usb_find_all(ftdi, &list, 0x0403, 0x6001);
+  if (devices_found < 0)
+    OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
+
+  int devices_found_4232 = ftdi_usb_find_all(ftdi, &list, 0x0403, 0x6011);
+
+  if (devices_found_4232 < 0)
     OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
 
   while (list != NULL) {
     struct libusb_device *dev = list->dev;
     list = list->next;
     i++;
-
+    OLA_INFO << dev;
     if (!dev) {
       OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
       continue;
     }
+    struct libusb_device_descriptor device_descriptor;
+    libusb_get_device_descriptor(dev, &device_descriptor);
 
     char serial[256];
     char name[256];
@@ -295,39 +315,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         ftdi_get_error_string(ftdi);
       continue;
     }
-    libusb_device_handle *handle;
 
-    if(libusb_open(dev, &handle) != 0) {
-      OLA_WARN << "Failed to libusb_open!";
-      continue;
-    }
-
-    ftdi_set_usbdev(ftdi, handle);
-    int vendor_id;
-    int product_id;
-    if(ftdi_read_eeprom(ftdi) < 0) {
-      OLA_WARN << "Failed to read EEPROM: " <<
-        ftdi_get_error_string(ftdi);
-      continue;
-    }
-    if(ftdi_eeprom_decode(ftdi, 1) < 0) {
-      OLA_WARN << "Failed to decode EEPROM: " <<
-        ftdi_get_error_string(ftdi);
-      continue;
-    }
-    //OLA_INFO << ftdi->eeprom->vendor_id;
-    if(ftdi_get_eeprom_value(ftdi, VENDOR_ID, &vendor_id) < 0){
-      OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
-        ftdi_get_error_string(ftdi);
-      continue;
-    }
-
-    if(ftdi_get_eeprom_value(ftdi, PRODUCT_ID, &product_id) < 0){
-      OLA_WARN << "Unable to fetch VendorID from device EEPROM: " <<
-        ftdi_get_error_string(ftdi);
-      continue;
-    }
-    OLA_INFO << "Got VID, PID: " << vendor_id << ", " << product_id;
     string v = string(vendor);
     string sname = string(name);
     string sserial = string(serial);
@@ -341,15 +329,209 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI") ||
         std::string::npos != v.find("KMTRONIC") ||
         std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i, vendor_id, product_id));
+      widgets->push_back(FtdiWidgetInfo(sname, sserial, i, device_descriptor.idVendor, device_descriptor.idProduct));
     } else {
       OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
-  }
+
+  }// while (list != NULL)
 
   ftdi_list_free(&list);
   ftdi_free(ftdi);
 }
+
+FtdiInterface::~FtdiInterface() {
+  if(IsOpen()) {
+    Close();
+  }
+  ftdi_deinit(&m_handle);
+}
+
+bool FtdiInterface::SetInterface() {
+  if(ftdi_set_interface(&m_handle, m_interface) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::Open() {
+  if (m_parent->Serial().empty()) {
+    OLA_WARN << m_parent->Name() << " has no serial number, "
+      "might cause issues with multiple devices";
+    if (ftdi_usb_open(&m_handle, m_parent->Vid(), m_parent->Pid()) < 0) {
+      OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    OLA_DEBUG << "Opening FTDI device " << m_parent->Name() << ", serial: " 
+              << m_parent->Serial() << "interface: " << m_interface;
+
+    if (ftdi_usb_open_desc(&m_handle, m_parent->Vid(), m_parent->Pid(),
+                           m_parent->Name().c_str(), m_parent->Serial().c_str()) < 0) {
+      OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+bool FtdiInterface::Close() {
+  if (ftdi_usb_close(&m_handle) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::IsOpen() const {
+  return (m_handle.usb_dev != NULL) ? true : false;
+}
+
+bool FtdiInterface::Reset() {
+  if (ftdi_usb_reset(&m_handle) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::SetLineProperties() {
+    if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)/* || (ftdi_set_interface(&m_handle, 2) < 0)*/) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::SetBaudRate() {
+  if (ftdi_set_baudrate(&m_handle, 250000) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::SetFlowControl() {
+  if (ftdi_setflowctrl(&m_handle, SIO_DISABLE_FLOW_CTRL) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::ClearRts() {
+  if (ftdi_setrts(&m_handle, 0) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::PurgeBuffers() {
+  if (ftdi_usb_purge_buffers(&m_handle) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::SetBreak(bool on) {
+  ftdi_break_type type;
+  if (on == true)
+    type = BREAK_ON;
+  else
+    type = BREAK_OFF;
+
+  if (ftdi_set_line_property2(&m_handle, BITS_8, STOP_BIT_2, NONE, type) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::Write(const ola::DmxBuffer& data) {
+  unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
+  int unsigned length = DMX_UNIVERSE_SIZE;
+  buffer[0] = 0x00;
+
+  data.Get(buffer + 1, &length);
+
+  if (ftdi_write_data(&m_handle, buffer, length + 1) < 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::Read(unsigned char *buff, int size) {
+  int read = ftdi_read_data(&m_handle, buff, size);
+  if (read <= 0) {
+    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool FtdiInterface::SetupOutput() {
+  // Setup the widget
+  if (SetInterface() == false) {
+    OLA_WARN << "Error setting the device interface.";
+    return false;
+  }
+
+  if (Open() == false) {
+    OLA_WARN << "Error Opening widget";
+    return false;
+  }
+
+  if (Reset() == false) {
+    OLA_WARN << "Error Resetting widget";
+    return false;
+  }
+
+  if (SetBaudRate() == false) {
+    OLA_WARN << "Error Setting baudrate";
+    return false;
+  }
+
+  if (SetLineProperties() == false) {
+    OLA_WARN << "Error setting line properties";
+    return false;
+  }
+
+  if (SetFlowControl() == false) {
+    OLA_WARN << "Error setting flow control";
+    return false;
+  }
+
+  if (PurgeBuffers() == false) {
+    OLA_WARN << "Error purging buffers";
+    return false;
+  }
+
+  if (ClearRts() == false) {
+    OLA_WARN << "Error clearing rts";
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace ftdidmx
 }  // namespace plugin
 }  // namespace ola
