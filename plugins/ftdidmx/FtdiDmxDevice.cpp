@@ -45,14 +45,14 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
-  if (m_widget->IsOpen())
-    m_widget->Close();
+/*  if (m_widget->IsOpen())
+    m_widget->Close();*/
 }
 
 bool FtdiDmxDevice::StartHook() {
   int interfaceCount = m_widget.get()->GetInterfaceCount();
   OLA_INFO << "there are " << interfaceCount << " interfaces.";
-  for (int i = 1; i < 3; i++) {
+  for (int i = 1; i <= interfaceCount; i++) {
     AddPort(new FtdiDmxOutputPort(this,
                                   new FtdiInterface(m_widget.get(), static_cast<ftdi_interface>(i)),
                                   i,

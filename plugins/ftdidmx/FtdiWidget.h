@@ -146,45 +146,6 @@ class FtdiWidget {
       return m_name + " with serial number : " + m_serial +" ";
     }
 
-    /** Open the widget */
-    bool Open();
-
-    /** Close the widget */
-    bool Close();
-
-    /** Check if the widget is open */
-    bool IsOpen() const;
-
-    /** Reset the communications line */
-    bool Reset();
-
-    /** Setup communications line for 8N2 traffic */
-    bool SetLineProperties();
-
-    /** Set 250kbps baud rate */
-    bool SetBaudRate();
-
-    /** Disable flow control */
-    bool SetFlowControl();
-
-    /** Clear the RTS bit */
-    bool ClearRts();
-
-    /** Purge TX & RX buffers */
-    bool PurgeBuffers();
-
-    /** Toggle communications line BREAK condition on/off */
-    bool SetBreak(bool on);
-
-    /** Write data to a previously-opened line */
-    bool Write(const ola::DmxBuffer &data);
-
-    /** Read data from a previously-opened line */
-    bool Read(unsigned char* buff, int size);
-
-    /** Setup device for DMX Output **/
-    bool SetupOutput();
-
     /** Get Widget interface count **/
     int GetInterfaceCount();
 
@@ -200,12 +161,6 @@ class FtdiWidget {
     uint32_t m_id;
     const int m_vid;
     const int m_pid;
-
-#ifdef FTD2XX
-    FT_HANDLE m_handle;
-#else
-    struct ftdi_context m_handle;
-#endif
 };
 
 class FtdiInterface {

@@ -45,13 +45,13 @@ const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
  * Ownership of the FtdiDmxDevice is transfered to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
-  // Check if device is working before adding
+/*  // Check if device is working before adding
   if (device->GetDevice()->SetupOutput() == false) {
     OLA_WARN << "Unable to setup device for output, device ignored "
              << device->Description();
     delete device;
     return;
-  }
+  }*/
 
   if (device->Start()) {
       m_devices.push_back(device);
