@@ -109,6 +109,10 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     struct libusb_device_descriptor device_descriptor;
     libusb_get_device_descriptor(dev, &device_descriptor);
 
+    if(device_descriptor.idProduct != 0x6001 || device_descriptor.idProduct != 0x6011) {
+      // Since all FTDI devices are found by ftdi_usb_find_all and I only know that these IDs are supported by this code.
+      continue;
+    }
     char serial[256];
     char name[256];
     char vendor[256];
