@@ -42,6 +42,7 @@
 
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
+#include "ola/io/IOUtils.h"
 #include "plugins/uartdmx/UartWidget.h"
 #include "plugins/uartdmx/UartLinuxHelper.h"
 
@@ -67,7 +68,7 @@ UartWidget::~UartWidget() {
 bool UartWidget::Open() {
   OLA_DEBUG << "Opening serial port " << Name();
   if (!ola::io::Open(m_path, O_WRONLY, &m_filed)) {
-	m_filed == FAILED_OPEN;
+    m_filed = FAILED_OPEN;
     OLA_WARN << Name() << " failed to open";
     return false;
   } else {
