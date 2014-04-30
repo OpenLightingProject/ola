@@ -76,7 +76,7 @@ class FtdiWidgetInfo {
         m_pid(info.Pid()){
     }
 
-    virtual ~FtdiWidgetInfo() {}
+    ~FtdiWidgetInfo() {}
 
     std::string Name() const { return m_name; }
     std::string Serial() const { return m_serial; }
@@ -106,7 +106,6 @@ class FtdiWidgetInfo {
     int m_vid;
     int m_pid;
 };
-
 
 /**
  * An FTDI widget
@@ -146,7 +145,7 @@ class FtdiWidget {
       return m_name + " with serial number : " + m_serial +" ";
     }
 
-    /** Get Widget interface count **/
+    /** Get Widget available interface count **/
     int GetInterfaceCount();
 
     /**
@@ -166,12 +165,7 @@ class FtdiWidget {
 class FtdiInterface {
   public:
     FtdiInterface(const FtdiWidget * parent,
-                  const ftdi_interface interface)
-      : m_parent(parent),
-        m_interface(interface) {
-     memset(&m_handle, '\0', sizeof(struct ftdi_context));
-      ftdi_init(&m_handle);
-    }
+                  const ftdi_interface interface);
 
     virtual ~FtdiInterface();
 

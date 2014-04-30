@@ -56,12 +56,9 @@ FtdiWidget::FtdiWidget(const string& serial,
       m_name(name),
       m_id(id),
       m_vid(vid),
-      m_pid(pid) {
-}
+      m_pid(pid) {}
 
 FtdiWidget::~FtdiWidget() {
-/*  if (IsOpen())
-    Close();*/
 }
 
 /**
@@ -94,18 +91,15 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 
   struct ftdi_device_list* list = NULL;
 
-  int devices_found = ftdi_usb_find_all(ftdi, &list, 0x0403, 0x6001);
+  int devices_found = ftdi_usb_find_all(ftdi, &list, 0, 0);
   if (devices_found < 0)
     OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
 
-  int devices_found_4232 = ftdi_usb_find_all(ftdi, &list, 0x0403, 0x6011);
+  ftdi_device_list* current_device = list;
 
-  if (devices_found_4232 < 0)
-    OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
-
-  while (list != NULL) {
-    struct libusb_device *dev = list->dev;
-    list = list->next;
+  while (current_device != NULL) {
+    struct libusb_device *dev = current_device->dev;
+    current_device = current_device->next;
     i++;
     OLA_INFO << dev;
     if (!dev) {
@@ -150,10 +144,19 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     }
 
   }// while (list != NULL)
-
+  OLA_DEBUG << "Freeing list";
   ftdi_list_free(&list);
   ftdi_free(ftdi);
 }
+
+FtdiInterface::FtdiInterface(const FtdiWidget * parent, 
+                             const ftdi_interface interface)
+      : m_parent(parent),
+        m_interface(interface) {
+  memset(&m_handle, '\0', sizeof(struct ftdi_context));
+  ftdi_init(&m_handle);
+}
+
 
 FtdiInterface::~FtdiInterface() {
   if(IsOpen()) {
