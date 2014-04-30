@@ -30,6 +30,18 @@
 #include <string>
 #include HASH_MAP_H
 
+#ifndef HAVE_UNORDERED_MAP
+// This adds support for hashing strings if it's not present
+namespace HASH_NAMESPACE {
+
+template<> struct hash<std::string> {
+  size_t operator()(const std::string& x) const {
+    return hash<const char*>()(x.c_str());
+  }
+};
+}  // namespace HASH_NAMESPACE
+#endif
+
 /**
  * A context is a collection of variables and their values.
  */

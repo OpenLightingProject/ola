@@ -32,6 +32,7 @@ EXTRA_DIST = \
   config/pkg.m4 \
   config/resolv.m4 \
   config/stl_hash.m4 \
+  CONTRIBUTING \
   GPL \
   LGPL \
   LICENCE \
@@ -40,6 +41,7 @@ EXTRA_DIST = \
   README.rpm ola.spec \
   javascript/README \
   javascript/ola/base_frame.js \
+  javascript/ola/common/dmx_constants.js \
   javascript/ola/common/dmx_monitor.js \
   javascript/ola/common/keypad_controller.js \
   javascript/ola/common/keypad_parser.js \
@@ -79,4 +81,5 @@ EXTRA_DIST = \
   javascript/ola/universe_item.js \
   mac_build.sh \
   tests/recvdmx.py \
-  tests/regression.py
+  tests/regression.py \
+  version.sh

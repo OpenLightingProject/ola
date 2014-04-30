@@ -54,18 +54,14 @@ std::string FilenameFromPathOrDefault(const std::string &path,
  * @return the filename (basename) part of the path or the whole path if it
  *   can't be found
  */
-inline std::string FilenameFromPathOrPath(const std::string &path) {
-  return FilenameFromPathOrDefault(path, path);
-}
+std::string FilenameFromPathOrPath(const std::string &path);
 
 /**
  * Convert a path to a filename
  * @param path a full path to a file
  * @return the filename (basename) part of the path or "" if it can't be found
  */
-inline std::string FilenameFromPath(const std::string &path) {
-  return FilenameFromPathOrDefault(path, "");
-}
+std::string FilenameFromPath(const std::string &path);
 }  // namespace file
 }  // namespace ola
 #endif  // INCLUDE_OLA_FILE_UTIL_H_
