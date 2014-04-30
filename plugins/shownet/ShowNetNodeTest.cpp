@@ -60,7 +60,7 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
     void UpdateData(unsigned int universe);
     void SendAndReceiveForUniverse(unsigned int universe);
  private:
-    int m_hander_called;
+    int m_handler_called;
     std::auto_ptr<ShowNetNode> m_node;
 
     static const uint8_t EXPECTED_PACKET[];
@@ -92,6 +92,7 @@ const uint8_t ShowNetNodeTest::EXPECTED_PACKET2[] = {
 };
 
 void ShowNetNodeTest::setUp() {
+  m_handler_called = 0;
   m_node.reset(new ShowNetNode(""));
 }
 
@@ -99,7 +100,7 @@ void ShowNetNodeTest::setUp() {
  * Called when there is new data
  */
 void ShowNetNodeTest::UpdateData(unsigned int) {
-  m_hander_called++;
+  m_handler_called++;
 }
 
 /*
@@ -123,33 +124,33 @@ void ShowNetNodeTest::testHandlePacket() {
 
   // short packets
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, 0));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, 5));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // invalid header
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // add a header
   packet.type = HostToNetwork(static_cast<uint16_t>(COMPRESSED_DMX_PACKET));
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // add invalid indexBlocks
   compressed_dmx->indexBlock[0] = 4;
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // invalid block length
   compressed_dmx->indexBlock[0] = ShowNetNode::MAGIC_INDEX_OFFSET;
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // add a valid netslot
   compressed_dmx->netSlot[0] = 1;  // universe 0
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // valid block length, but not enough data
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
@@ -157,13 +158,13 @@ void ShowNetNodeTest::testHandlePacket() {
   OLA_ASSERT_EQ(false,
                 m_node->HandlePacket(&packet,
                 header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // now do a block length larger than the packet
   compressed_dmx->indexBlock[1] = 100 + ShowNetNode::MAGIC_INDEX_OFFSET;
   OLA_ASSERT_EQ(false,
       m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // test invalid slot size
   compressed_dmx->indexBlock[1] = (ShowNetNode::MAGIC_INDEX_OFFSET +
@@ -171,20 +172,20 @@ void ShowNetNodeTest::testHandlePacket() {
 
   OLA_ASSERT_EQ(false,
       m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // check a valid packet, but different universe
   compressed_dmx->netSlot[0] = 513;  // universe 1
   compressed_dmx->slotSize[0] = sizeof(EXPECTED_DATA);
   OLA_ASSERT_EQ(false,
       m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_EQ(0, m_hander_called);
+  OLA_ASSERT_EQ(0, m_handler_called);
 
   // now check with the correct universe
   compressed_dmx->netSlot[0] = 1;  // universe 0
   OLA_ASSERT_EQ(true,
       m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
-  OLA_ASSERT_EQ(1, m_hander_called);
+  OLA_ASSERT_EQ(1, m_handler_called);
   OLA_ASSERT_EQ(0,
       memcmp(expected_dmx.GetRaw(), received_data.GetRaw(),
              expected_dmx.Size()));
@@ -217,7 +218,7 @@ void ShowNetNodeTest::testExtractPacket() {
 
   OLA_ASSERT_TRUE(m_node->HandlePacket(
       reinterpret_cast<const shownet_packet*>(packet1), sizeof(packet1)));
-  OLA_ASSERT_EQ(1, m_hander_called);
+  OLA_ASSERT_EQ(1, m_handler_called);
   ASSERT_DATA_EQUALS(__LINE__, expected_data1.GetRaw(), expected_data1.Size(),
                      received_data.GetRaw(), received_data.Size());
 }

@@ -818,6 +818,12 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, fixture speed";
       case SD_MACRO:
         return "Primary, macro";
+      case SD_POWER_CONTROL:
+        return "Primary, relay or power control";
+      case SD_FAN_CONTROL:
+        return "Primary, fan control";
+      case SD_HEATER_CONTROL:
+        return "Primary, heater control";
       case SD_UNDEFINED:
         return "Primary, undefined";
       default:
