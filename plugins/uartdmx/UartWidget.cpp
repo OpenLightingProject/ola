@@ -97,7 +97,10 @@ bool UartWidget::IsOpen() const {
 }
 
 bool UartWidget::SetBreak(bool on) {
-  unsigned long request;
+  unsigned long request;  /* NOLINT(runtime/int) */
+  /* this is passed to ioctl, which is declared to take
+   * unsigned long as it's second argument
+   */
   if (on == true)
     request = TIOCSBRK;
   else
