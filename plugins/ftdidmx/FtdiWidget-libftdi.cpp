@@ -101,7 +101,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     struct libusb_device *dev = current_device->dev;
     current_device = current_device->next;
     i++;
-    OLA_INFO << dev;
+
     if (!dev) {
       OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
       continue;
@@ -109,7 +109,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     struct libusb_device_descriptor device_descriptor;
     libusb_get_device_descriptor(dev, &device_descriptor);
 
-    if(device_descriptor.idProduct != 0x6001 || device_descriptor.idProduct != 0x6011) {
+    if(device_descriptor.idProduct != 0x6001 && device_descriptor.idProduct != 0x6011) {
       // Since all FTDI devices are found by ftdi_usb_find_all and I only know that these IDs are supported by this code.
       continue;
     }
