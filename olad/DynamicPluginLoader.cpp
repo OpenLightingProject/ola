@@ -223,6 +223,5 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
 #endif
-
 }
 }  // namespace ola
