@@ -26,7 +26,7 @@
 // Define types and constants to mimic termios.h
 #define B9600 9600
 #define B19200 19200
-#define B38400	38400
+#define B38400 38400
 #define B57600 57600
 #define B115200 115200
 #define B230400 230400
