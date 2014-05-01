@@ -36,25 +36,24 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
       m_frequency(frequency) {
-  m_widget.reset(
+  m_widget =
       new FtdiWidget(widget_info.Serial(),
                      widget_info.Name(),
                      widget_info.Id(),
                      widget_info.Vid(),
-                     widget_info.Pid()));
+                     widget_info.Pid());
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
-/*  if (m_widget->IsOpen())
-    m_widget->Close();*/
+  delete m_widget;
 }
 
 bool FtdiDmxDevice::StartHook() {
-  int interfaceCount = m_widget.get()->GetInterfaceCount();
+  int interfaceCount = m_widget->GetInterfaceCount();
   OLA_INFO << "there are " << interfaceCount << " interfaces.";
   for (int i = 1; i <= interfaceCount; i++) {
     AddPort(new FtdiDmxOutputPort(this,
-                                  new FtdiInterface(m_widget.get(), static_cast<ftdi_interface>(i)),
+                                  new FtdiInterface(m_widget, static_cast<ftdi_interface>(i)),
                                   i,
                                   m_frequency));
   }
