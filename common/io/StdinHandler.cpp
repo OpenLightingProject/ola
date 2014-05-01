@@ -19,7 +19,9 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#ifndef WIN32
 #include <termios.h>
+#endif
 #include <stdio.h>
 
 #include <ola/Callback.h>
@@ -30,16 +32,24 @@ namespace io {
 
 StdinHandler::StdinHandler(SelectServerInterface *ss,
                            InputCallback *callback)
+#ifdef WIN32
+    : m_stdin_descriptor(0),
+#else
     : m_stdin_descriptor(STDIN_FILENO),
+#endif
       m_ss(ss),
       m_callback(callback) {
   m_stdin_descriptor.SetOnData(
     ola::NewCallback(this, &StdinHandler::HandleData));
   // turn off buffering
+#ifdef WIN32
+  setbuf(stdin, NULL);
+#else
   tcgetattr(STDIN_FILENO, &m_old_tc);
   termios new_tc = m_old_tc;
   new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
+#endif
 
   // Add to the SelectServer
   m_ss->AddReadDescriptor(&m_stdin_descriptor);
@@ -48,7 +58,9 @@ StdinHandler::StdinHandler(SelectServerInterface *ss,
 
 StdinHandler::~StdinHandler() {
   m_ss->RemoveReadDescriptor(&m_stdin_descriptor);
+#ifndef WIN32
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
+#endif
 }
 
 

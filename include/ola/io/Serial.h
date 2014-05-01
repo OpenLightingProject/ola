@@ -22,7 +22,18 @@
 #define INCLUDE_OLA_IO_SERIAL_H_
 
 #include <stdint.h>
+#ifdef WIN32
+// Define types and constants to mimic termios.h
+#define B9600 9600
+#define B19200 19200
+#define B38400	38400
+#define B57600 57600
+#define B115200 115200
+#define B230400 230400
+typedef unsigned speed_t;
+#else
 #include <termios.h>
+#endif
 
 namespace ola {
 namespace io {
