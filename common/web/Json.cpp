@@ -87,6 +87,10 @@ void JsonObject::Add(const std::string &key, int i) {
   STLReplaceAndDelete(&m_members, key, new JsonIntValue(i));
 }
 
+void JsonObject::Add(const std::string &key, long double d) {
+  STLReplaceAndDelete(&m_members, key, new JsonDoubleValue(d));
+}
+
 void JsonObject::Add(const std::string &key, bool value) {
   STLReplaceAndDelete(&m_members, key, new JsonBoolValue(value));
 }
@@ -119,7 +123,7 @@ void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
 
-void JsonObject::VisitProperties(JsonValueVisitorInterface *visitor) const {
+void JsonObject::VisitProperties(JsonObjectPropertyVisitor *visitor) const {
   MemberMap::const_iterator iter = m_members.begin();
   for (; iter != m_members.end(); ++iter) {
     visitor->VisitProperty(iter->first, *(iter->second));

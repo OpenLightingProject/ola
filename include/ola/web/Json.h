@@ -66,6 +66,7 @@ namespace web {
  */
 
 class JsonValueVisitorInterface;
+class JsonObjectPropertyVisitor;
 
 /**
  * @brief The base class for JSON values.
@@ -335,6 +336,13 @@ class JsonObject: public JsonValue {
   void Add(const std::string &key, int i);
 
   /**
+   * @brief Set the given key to a double value.
+   * @param key the key to set.
+   * @param d the value to add
+   */
+  void Add(const std::string &key, long double d);
+
+  /**
    * @brief Set the given key to a bool value.
    * @param key the key to set.
    * @param value the value to add
@@ -379,7 +387,9 @@ class JsonObject: public JsonValue {
 
   bool IsEmpty() const { return m_members.empty(); }
 
-  void VisitProperties(JsonValueVisitorInterface *visitor) const;
+  void VisitProperties(JsonObjectPropertyVisitor *visitor) const;
+
+  unsigned int Size() const { return m_members.size(); }
 
  private:
   typedef std::map<std::string, const JsonValue*> MemberMap;
@@ -500,6 +510,15 @@ class JsonArray: public JsonValue {
   DISALLOW_COPY_AND_ASSIGN(JsonArray);
 };
 
+
+class JsonObjectPropertyVisitor {
+ public:
+  virtual ~JsonObjectPropertyVisitor() {}
+
+  virtual void VisitProperty(const std::string &property,
+                             const JsonValue &value) = 0;
+};
+
 /**
  * @brief The interface for the JsonValueVisitor class.
  */
@@ -518,16 +537,13 @@ class JsonValueVisitorInterface {
   virtual void Visit(const JsonIntValue &value) = 0;
   virtual void Visit(const JsonInt64Value &value) = 0;
   virtual void Visit(const JsonDoubleValue &value) = 0;
-
-  virtual void VisitProperty(const std::string &property,
-                             const JsonValue &value) = 0;
 };
 
 
 /**
  * @brief A class that writes a JsonValue to an output stream.
  */
-class JsonWriter : public JsonValueVisitorInterface {
+class JsonWriter : public JsonValueVisitorInterface, JsonObjectPropertyVisitor {
  public:
   explicit JsonWriter(std::ostream *output)
       : m_output(output),

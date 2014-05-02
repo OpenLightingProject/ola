@@ -121,6 +121,11 @@ class PointerTracker {
    */
   const std::string GetPointer() const;
 
+  /**
+   * @brief Reset this pointer tracker.
+   */
+  void Reset();
+
  private:
   enum TokenType {
     TOKEN_OBJECT,
