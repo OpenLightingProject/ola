@@ -36,38 +36,34 @@ SchemaParser::SchemaParser()
     : JsonHandlerInterface() {
 }
 
-SchemaParser::~SchemaParser() {
-}
+SchemaParser::~SchemaParser() {}
 
 void SchemaParser::Begin() {
   m_schema_defs.reset();
   m_root_context.reset();
   m_root_validator.reset();
   STLEmptyStackAndDelete(&m_context_stack);
-  m_pointer.Reset();
-  m_error.str("");
+  m_error_logger.Reset();
 }
 
 void SchemaParser::End() {}
 
 void SchemaParser::String(const string &value) {
-  OLA_INFO << "string " << value;
-  if (!m_error.str().empty()) {
-    OLA_INFO << "empty";
+  if (m_error_logger.HasError()) {
     return;
   }
 
   if (!m_root_context.get()) {
-    m_error << "Invalid string for first element: " << value;
+    m_error_logger.Error() << "Invalid string for first element: " << value;
     return;
   }
 
-  m_pointer.IncrementIndex();
+  m_error_logger.IncrementIndex();
 
-  OLA_INFO << "Setting string for " << m_pointer.GetPointer() << " size is "
-           << m_context_stack.size();
+  OLA_INFO << "Setting string for " << m_error_logger.GetPointer()
+     << " size is " << m_context_stack.size();
   if (m_context_stack.top()) {
-    m_context_stack.top()->String(m_pointer.GetPointer(), value);
+    m_context_stack.top()->String(&m_error_logger, value);
   } else {
     OLA_INFO << "In null context, skipping value " << value;
   }
@@ -94,81 +90,81 @@ void SchemaParser::Number(long double value) {
 }
 
 void SchemaParser::Bool(bool value) {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
   if (!m_root_context.get()) {
-    m_error << "Invalid bool for first element:" << value;
+    m_error_logger.Error() << "Invalid bool for first element:" << value;
     return;
   }
 
-  m_pointer.IncrementIndex();
+  m_error_logger.IncrementIndex();
 
   if (m_context_stack.top()) {
-    m_context_stack.top()->Bool(m_pointer.GetPointer(), value);
+    m_context_stack.top()->Bool(&m_error_logger, value);
   } else {
     OLA_INFO << "In null context, skipping value " << value;
   }
 }
 
 void SchemaParser::Null() {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
   if (!m_root_context.get()) {
-    m_error << "Invalid null for first element";
+    m_error_logger.Error() << "Invalid null for first element";
     return;
   }
 
-  m_pointer.IncrementIndex();
+  m_error_logger.IncrementIndex();
 
   if (m_context_stack.top()) {
-    m_context_stack.top()->Null(m_pointer.GetPointer());
+    m_context_stack.top()->Null(&m_error_logger);
   } else {
     OLA_INFO << "In null context, skipping null";
   }
 }
 
 void SchemaParser::OpenArray() {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
   if (!m_root_context.get()) {
-    m_error << "Invalid array for first element";
+    m_error_logger.Error() << "Invalid array for first element";
     return;
   }
 
-  m_pointer.OpenArray();
+  m_error_logger.OpenArray();
 
   if (m_context_stack.top()) {
-    m_context_stack.top()->OpenArray(m_pointer.GetPointer());
+    m_context_stack.top()->OpenArray(&m_error_logger);
   } else {
     OLA_INFO << "In null context, skipping OpenArray";
   }
 }
 
 void SchemaParser::CloseArray() {
-  if (!m_error.str().empty() || !m_root_context.get()) {
+  if (m_error_logger.HasError() || !m_root_context.get()) {
     return;
   }
 
-  m_pointer.CloseArray();
+  m_error_logger.CloseArray();
   if (!m_context_stack.top()) {
-    m_context_stack.top()->CloseArray(m_pointer.GetPointer());
+    m_context_stack.top()->CloseArray(&m_error_logger);
   } else {
     OLA_INFO << "In null context, skipping CloseArray";
   }
 }
 
 void SchemaParser::OpenObject() {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
-  m_pointer.OpenObject();
+  m_error_logger.OpenObject();
 
   if (!m_root_context.get()) {
     m_schema_defs.reset(new SchemaDefinitions());
@@ -177,8 +173,8 @@ void SchemaParser::OpenObject() {
   } else {
     if (m_context_stack.top()) {
       m_context_stack.push(
-          m_context_stack.top()->OpenObject(m_pointer.GetPointer()));
-      OLA_INFO << "Opened " << m_pointer.GetPointer() <<  " ("
+          m_context_stack.top()->OpenObject(&m_error_logger));
+      OLA_INFO << "Opened " << m_error_logger.GetPointer() <<  " ("
           << m_context_stack.top() << ") size is now "
           << m_context_stack.size();
     } else {
@@ -189,46 +185,48 @@ void SchemaParser::OpenObject() {
 }
 
 void SchemaParser::ObjectKey(const std::string &key) {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
-  m_pointer.SetProperty(key);
+  m_error_logger.SetProperty(key);
 
   if (m_context_stack.top()) {
-    OLA_INFO << "Setting key for " << m_pointer.GetPointer();
-    m_context_stack.top()->ObjectKey(m_pointer.GetPointer(), key);
+    OLA_INFO << "Setting key for " << m_error_logger.GetPointer();
+    m_context_stack.top()->ObjectKey(&m_error_logger, key);
   } else {
     OLA_INFO << "In null context, skipping key " << key;
   }
 }
 
 void SchemaParser::CloseObject() {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
-  m_pointer.CloseObject();
+  m_error_logger.CloseObject();
+
+  m_context_stack.pop();
+
+  const string json_pointer = m_error_logger.GetPointer();
 
   OLA_INFO << "CloseObject";
-  if (m_context_stack.size() == 1) {
+  if (m_context_stack.empty()) {
     // We're at the root
-    m_context_stack.pop();
-    m_root_validator.reset(m_root_context->GetValidator());
+    m_root_validator.reset(m_root_context->GetValidator(&m_error_logger));
   } else {
-    m_context_stack.pop();
-    OLA_INFO << "closing context " << m_pointer.GetPointer()
-             << ", size is now " << m_context_stack.size();
+    OLA_INFO << "closing context " << json_pointer << ", size is now "
+        << m_context_stack.size();
     if (m_context_stack.top()) {
-      m_context_stack.top()->CloseObject(m_pointer.GetPointer());
+      m_context_stack.top()->CloseObject(&m_error_logger);
     }
   }
-  OLA_INFO << "Close of " << m_pointer.GetPointer() << " complete, size is "
+  OLA_INFO << "Close of " << json_pointer << " complete, size is "
       << m_context_stack.size();
 }
 
 void SchemaParser::SetError(const string &error) {
-  m_error.str(error);
+  m_error_logger.Error() << error;
 }
 
 bool SchemaParser::IsValidSchema() {
@@ -236,7 +234,7 @@ bool SchemaParser::IsValidSchema() {
 }
 
 std::string SchemaParser::Error() const {
-  return m_error.str();
+  return m_error_logger.ErrorString();
 }
 
 ValidatorInterface* SchemaParser::ClaimRootValidator() {
@@ -249,18 +247,18 @@ SchemaDefinitions* SchemaParser::ClaimSchemaDefs() {
 
 template <typename T>
 void SchemaParser::HandleNumber(T t) {
-  if (!m_error.str().empty()) {
+  if (m_error_logger.HasError()) {
     return;
   }
 
   if (!m_root_context.get()) {
-    m_error << "Invalid number for first element: " << t;
+    m_error_logger.Error() << "Invalid number for first element: " << t;
     return;
   }
 
-  m_pointer.IncrementIndex();
+  m_error_logger.IncrementIndex();
   if (m_context_stack.top()) {
-    m_context_stack.top()->Number(m_pointer.GetPointer(), t);
+    m_context_stack.top()->Number(&m_error_logger, t);
   } else {
     OLA_INFO << "In null context, skipping number " << t;
   }

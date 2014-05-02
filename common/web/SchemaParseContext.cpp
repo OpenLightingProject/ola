@@ -19,8 +19,10 @@
  */
 #include "common/web/SchemaParseContext.h"
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ola/Logging.h"
 
@@ -33,16 +35,18 @@ namespace ola {
 namespace web {
 
 using std::auto_ptr;
+using std::make_pair;
+using std::pair;
 using std::string;
 
 SchemaParseContextInterface* DefinitionsParseContext::OpenObject(
-    const string &path) {
-  OLA_INFO << "Starting a new definition at " << path;
+    ErrorLogger *logger) {
+  OLA_INFO << "Starting a new definition at " << logger->GetPointer();
   m_current_schema.reset(new SchemaParseContext(m_schema_defs));
   return m_current_schema.get();
 }
 
-void DefinitionsParseContext::CloseObject(const string &path) {
+void DefinitionsParseContext::CloseObject(ErrorLogger *logger) {
   if (!(HasKey() && m_current_schema.get())) {
     OLA_WARN << "Bad call to DefinitionsParseContext::CloseObject";
     return;
@@ -50,118 +54,240 @@ void DefinitionsParseContext::CloseObject(const string &path) {
 
   string key = TakeKey();
 
-  ValidatorInterface *schema = m_current_schema->GetValidator();
+  ValidatorInterface *schema = m_current_schema->GetValidator(logger);
   OLA_INFO << "Setting validator for " << key << " to " << schema;
   m_schema_defs->Add(TakeKey(), schema);
   m_current_schema.release();
-  (void) path;
 }
 
 
-ValidatorInterface* SchemaParseContext::GetValidator() {
-  ObjectValidator *validator = new ObjectValidator(ObjectValidator::Options());
+ValidatorInterface* SchemaParseContext::GetValidator(ErrorLogger *logger) {
+  if (!m_type.IsSet()) {
+    logger->Error() << "Missing 'type' property";
+    return NULL;
+  }
 
+  ValidatorInterface *validator = NULL;
+  const string &type = m_type.Value();
+  OLA_INFO << " type is " << type;
+  if (type == "number") {
+    OLA_INFO << "new NumberValidator";
+    validator = new NumberValidator();
+  } else if (type == "string") {
+    validator = new StringValidator(StringValidator::Options());
+  } else if (type == "boolean") {
+    validator = new BoolValidator();
+  } else if (type == "object") {
+    ObjectValidator *object_validator = new ObjectValidator(
+        ObjectValidator::Options());
+    if (m_properties_context.get()) {
+      m_properties_context->AddPropertyValidaators(object_validator, logger);
+    }
+    validator = object_validator;
+  } else {
+    logger->Error() << "Unknown type: " << type;
+    return NULL;
+  }
+
+  if (m_schema.IsSet()) {
+    validator->SetSchema(m_schema.Value());
+    m_schema.Reset();
+  }
+  if (m_id.IsSet()) {
+    validator->SetId(m_id.Value());
+    m_id.Reset();
+  }
   if (m_title.IsSet()) {
     validator->SetTitle(m_title.Value());
     m_title.Reset();
   }
-  OLA_INFO << "returning new ObjectValidator";
+  if (m_description.IsSet()) {
+    validator->SetDescription(m_description.Value());
+    m_description.Reset();
+  }
+
+  OLA_INFO << "returning new Validator";
   return validator;
 }
 
-void SchemaParseContext::String(const string &path, const string &value) {
-  if (!HasKey()) {
-    OLA_WARN << "No key defined for " << value;
-    return;
-  }
-  const string key = TakeKey();
-  OLA_INFO << key << " -> " << value;
-  if (key == "title") {
-    OLA_INFO << "set title to " << value;
-    m_title.Set(value);
+void SchemaParseContext::String(ErrorLogger *logger, const string &value) {
+  if (HasKey()) {
+    const string key = TakeKey();
+    OLA_INFO << key << " -> " << value;
+    if (key == "id") {
+      m_id.Set(value);
+    } else if (key == "$schema") {
+      m_schema.Set(value);
+    } else if (key == "title") {
+      m_title.Set(value);
+    } else if (key == "description") {
+      m_description.Set(value);
+    } else if (key == "type") {
+      if (ValidType(value)) {
+        m_type.Set(value);
+      } else {
+        logger->Error() <<  "Invalid type: " << value;
+      }
+    } else {
+      logger->Error() << "Unknown key in schema: " << key;
+    }
   } else {
-    OLA_WARN << "Unknown key in schema " << key;
+    logger->Error() <<  "Invalid type string";
   }
-
-  (void) path;
 }
 
-void SchemaParseContext::Number(const string &path, uint32_t value) {
-  if (!TypeIsValidForCurrentKey(JSON_NUMBER)) {
-    return;
-  }
-
-  (void) value;
-  (void) path;
+void SchemaParseContext::Number(ErrorLogger *logger, uint32_t value) {
+  logger->Error() << "Invalid type number: "<< value;
 }
 
-void SchemaParseContext::Number(const string &path, int32_t value) {
-  (void) value;
-  (void) path;
+void SchemaParseContext::Number(ErrorLogger *logger, int32_t value) {
+  logger->Error() << "Invalid type number: "<< value;
 }
 
-void SchemaParseContext::Number(const string &path, uint64_t value) {
-  (void) value;
-  (void) path;
+void SchemaParseContext::Number(ErrorLogger *logger, uint64_t value) {
+  logger->Error() << "Invalid type number: "<< value;
 }
 
-void SchemaParseContext::Number(const string &path, int64_t value) {
-  (void) value;
-  (void) path;
+void SchemaParseContext::Number(ErrorLogger *logger, int64_t value) {
+  logger->Error() << "Invalid type number: "<< value;
 }
 
-void SchemaParseContext::Number(const string &path, long double value) {
-  (void) value;
-  (void) path;
+void SchemaParseContext::Number(ErrorLogger *logger, long double value) {
+  logger->Error() << "Invalid type number: "<< value;
 }
 
-void SchemaParseContext::Bool(const string &path, bool value) {
-  (void) value;
-  (void) path;
+void SchemaParseContext::Bool(ErrorLogger *logger, bool value) {
+  logger->Error() << "Invalid type bool: " << value;
 }
 
-void SchemaParseContext::OpenArray(const string &path) {
-  (void) path;
+void SchemaParseContext::OpenArray(ErrorLogger *logger) {
+  logger->Error() << "Invalid type array";
 }
 
-void SchemaParseContext::CloseArray(const string &path) {
-  (void) path;
+void SchemaParseContext::CloseArray(ErrorLogger *logger) {
+  (void) logger;
 }
 
 SchemaParseContextInterface* SchemaParseContext::OpenObject(
-    const string &path) {
-  if (!TypeIsValidForCurrentKey(JSON_OBJECT)) {
-    return NULL;
+    ErrorLogger *logger) {
+  if (HasKey()) {
+    const string key = Key();
+    if (key == "definitions") {
+      if (m_definitions_context.get()) {
+        logger->Error() << "Duplicate key 'definitions'";
+        return NULL;
+      }
+      m_definitions_context.reset(new DefinitionsParseContext(m_schema_defs));
+      return m_definitions_context.get();
+    } else if (key == "properties") {
+      if (m_properties_context.get()) {
+        logger->Error() << "Duplicate key 'properties'";
+        return NULL;
+      }
+      m_properties_context.reset(new PropertiesParseContext(m_schema_defs));
+      return m_properties_context.get();
+    } else {
+      logger->Error() << "Unknown key in schema: " << key;
+    }
+  } else {
+    logger->Error() << "Invalid type object";
   }
-
-  string key = TakeKey();
-  if (key == "definitions") {
-    return new DefinitionsParseContext(m_schema_defs);
-  }
-  OLA_INFO << "unknown open schema obj";
   return NULL;
-  (void) path;
 }
 
-void SchemaParseContext::CloseObject(const string &path) {
-  OLA_INFO << "SchemaParseContext: closing object " << path;
+void SchemaParseContext::CloseObject(ErrorLogger *logger) {
+  (void) logger;
 }
 
-bool SchemaParseContext::TypeIsValidForCurrentKey(JsonType type) {
-  if (!HasKey()) {
-    OLA_WARN << "Missing key before type " << type
-             << ". This is a bug in the parser!";
-    return false;
+
+bool SchemaParseContext::ValidType(const string& type) {
+  return (type == "array" ||
+          type == "boolean" ||
+          type == "integer" ||
+          type == "null" ||
+          type == "number" ||
+          type == "object" ||
+          type == "string");
+}
+
+void PropertiesParseContext::AddPropertyValidaators(
+    ObjectValidator *object_validator,
+    ErrorLogger *logger) {
+  SchemaMap::iterator iter = m_property_contexts.begin();
+  OLA_INFO << m_property_contexts.size();
+  for (; iter != m_property_contexts.end(); ++iter) {
+    ValidatorInterface *validator = iter->second->GetValidator(logger);
+    if (validator) {
+      object_validator->AddValidator(iter->first, validator);
+    }
   }
-
-  string key = Key();
-  if (key == "id" || key == "title") {
-    return type == JSON_STRING;
-  } else if (key == "definitions") {
-    return type == JSON_OBJECT;
-  }
-  OLA_WARN << "Unknown type for key " << key;
-  return false;
 }
+
+void PropertiesParseContext::String(ErrorLogger *logger, const string &value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Number(ErrorLogger *logger, uint32_t value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Number(ErrorLogger *logger, int32_t value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Number(ErrorLogger *logger, uint64_t value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Number(ErrorLogger *logger, int64_t value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Number(ErrorLogger *logger, long double value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Bool(ErrorLogger *logger, bool value) {
+  (void) logger;
+  (void) value;
+}
+
+void PropertiesParseContext::Null(ErrorLogger *logger) {
+  (void) logger;
+}
+
+void PropertiesParseContext::OpenArray(ErrorLogger *logger) {
+  (void) logger;
+}
+
+void PropertiesParseContext::CloseArray(ErrorLogger *logger) {
+  (void) logger;
+}
+
+SchemaParseContextInterface* PropertiesParseContext::OpenObject(
+    ErrorLogger *logger) {
+  const string key = TakeKey();
+  pair<SchemaMap::iterator, bool> r = m_property_contexts.insert(
+      pair<string, SchemaParseContext*>(key, NULL));
+
+  if (r.second) {
+    OLA_INFO << "Started context for property " << key;
+    r.first->second = new SchemaParseContext(m_schema_defs);
+  } else {
+    logger->Error() << "Duplicate key " << key;
+  }
+  return r.first->second;
+}
+
+void PropertiesParseContext::CloseObject(ErrorLogger *logger) {
+  (void) logger;
+}
+
 }  // namespace web
 }  // namespace ola

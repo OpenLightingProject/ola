@@ -40,6 +40,12 @@ using std::vector;
 
 JsonObject* BaseValidator::GetSchema() const {
   JsonObject *schema = new JsonObject();
+  if (!m_schema.empty()) {
+    schema->Add("$schema", m_schema);
+  }
+  if (!m_id.empty()) {
+    schema->Add("id", m_id);
+  }
   if (!m_title.empty()) {
     schema->Add("title", m_title);
   }
@@ -49,6 +55,15 @@ JsonObject* BaseValidator::GetSchema() const {
   ExtendSchema(schema);
   return schema;
 }
+
+void BaseValidator::SetSchema(const string &schema) {
+  m_schema = schema;
+}
+
+void BaseValidator::SetId(const string &id) {
+  m_id = id;
+}
+
 
 void BaseValidator::SetTitle(const string &title) {
   m_title = title;
@@ -536,8 +551,10 @@ ValidatorInterface *SchemaDefinitions::Lookup(const string &schema_name) const {
 }
 
 void SchemaDefinitions::AddToJsonObject(JsonObject *json) const {
+  OLA_INFO << m_validators.size() << " schema defs";
   SchemaMap::const_iterator iter = m_validators.begin();
   for (; iter != m_validators.end(); ++iter) {
+    OLA_INFO << "Schema for " << iter->first << " is " << iter->second;
     JsonObject *schema = iter->second->GetSchema();
     json->AddValue(iter->first, schema);
   }
@@ -575,7 +592,6 @@ JsonSchema* JsonSchema::FromString(const string& schema_string,
   SchemaParser schema_parser;
   bool ok = JsonParser::Parse(schema_string, &schema_parser);
   if (!ok || !schema_parser.IsValidSchema()) {
-    OLA_INFO << "Error " << schema_parser.Error();
     *error = schema_parser.Error();
     return NULL;
   }

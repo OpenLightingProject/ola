@@ -68,11 +68,13 @@ static bool TrimWhitespace(const char **input) {
  * @param str A string object to store the extracted string.
  * @returns true if the string was extracted correctly, false otherwise.
  */
-static bool ParseString(const char **input, string* str) {
+static bool ParseString(const char **input, string* str,
+                        JsonHandlerInterface *handler) {
   while (true) {
     size_t size = strcspn(*input, "\"\\");
     char c = (*input)[size];
     if (c == 0) {
+      handler->SetError("Unterminated string");
       str->clear();
       return false;
     }
@@ -115,6 +117,7 @@ static bool ParseString(const char **input, string* str) {
           break;
         default:
           OLA_WARN << "Invalid escape character: \\" << **input;
+          handler->SetError("Invalid string escape sequence");
           return false;
       }
       str->push_back(append_char);
@@ -247,6 +250,7 @@ static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
  */
 static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
   if (!TrimWhitespace(input)) {
+    handler->SetError("Unterminated array");
     return false;
   }
 
@@ -260,15 +264,18 @@ static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
 
   while (true) {
     if (!TrimWhitespace(input)) {
+      handler->SetError("Unterminated array");
       return false;
     }
 
     bool result = ParseTrimmedInput(input, handler);
     if (!result) {
+      OLA_INFO << "input failed";
       return false;
     }
 
     if (!TrimWhitespace(input)) {
+      handler->SetError("Unterminated array");
       return false;
     }
 
@@ -280,6 +287,7 @@ static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
       case ',':
         break;
       default:
+        handler->SetError("Expected either , or ] after an array element");
         return false;
     }
     (*input)++;  // move past the ,
@@ -291,6 +299,7 @@ static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
  */
 static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
   if (!TrimWhitespace(input)) {
+    handler->SetError("Unterminated object");
     return false;
   }
 
@@ -304,30 +313,36 @@ static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
 
   while (true) {
     if (!TrimWhitespace(input)) {
+      handler->SetError("Unterminated object");
       return false;
     }
 
     if (**input != '"') {
+      handler->SetError("Expected key for object");
+      OLA_INFO << "Expected string";
       return false;
     }
     (*input)++;
 
     string key;
-    if (!ParseString(input, &key)) {
+    if (!ParseString(input, &key, handler)) {
       return false;
     }
     handler->ObjectKey(key);
 
     if (!TrimWhitespace(input)) {
+      handler->SetError("Missing : after key");
       return false;
     }
 
     if (**input != ':') {
+      handler->SetError("Incorrect character after key, should be :");
       return false;
     }
     (*input)++;
 
     if (!TrimWhitespace(input)) {
+      handler->SetError("Unterminated object");
       return false;
     }
 
@@ -337,6 +352,7 @@ static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
     }
 
     if (!TrimWhitespace(input)) {
+      handler->SetError("Unterminated object");
       return false;
     }
 
@@ -348,6 +364,7 @@ static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
       case ',':
         break;
       default:
+        handler->SetError("Expected either , or } after an object value");
         return false;
     }
     (*input)++;  // move past the ,
@@ -363,7 +380,7 @@ static bool ParseTrimmedInput(const char **input,
   if (**input == '"') {
     (*input)++;
     string str;
-    if (ParseString(input, &str)) {
+    if (ParseString(input, &str, handler)) {
       handler->String(str);
       return true;
     }
@@ -389,12 +406,14 @@ static bool ParseTrimmedInput(const char **input,
     (*input)++;
     return ParseObject(input, handler);
   }
+  handler->SetError("Invalid JSON value");
   return false;
 }
 
 
 bool ParseRaw(const char *input, JsonHandlerInterface *handler) {
   if (!TrimWhitespace(&input)) {
+    handler->SetError("No JSON data found");
     return false;
   }
 

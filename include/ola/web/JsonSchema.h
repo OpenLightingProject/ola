@@ -76,6 +76,8 @@ class ValidatorInterface : public JsonValueVisitorInterface {
   // Returns the Schema as a JsonObject.
   virtual JsonObject* GetSchema() const = 0;
 
+  virtual void SetSchema(const std::string &schema) = 0;
+  virtual void SetId(const std::string &id) = 0;
   virtual void SetTitle(const std::string &title) = 0;
   virtual void SetDescription(const std::string &title) = 0;
 };
@@ -140,11 +142,15 @@ class BaseValidator : public ValidatorInterface {
 
   virtual JsonObject* GetSchema() const;
 
+  void SetSchema(const std::string &schema);
+  void SetId(const std::string &id);
   void SetTitle(const std::string &title);
   void SetDescription(const std::string &title);
 
  protected:
   bool m_is_valid;
+  std::string m_schema;
+  std::string m_id;
   std::string m_title;
   std::string m_description;
 

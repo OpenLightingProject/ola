@@ -97,16 +97,13 @@ class SchemaParser : public JsonHandlerInterface {
   SchemaDefinitions* ClaimSchemaDefs();
 
  private:
-  // TODO(simonn): can probably be a string
-  std::ostringstream m_error;
-
   std::auto_ptr<SchemaDefinitions> m_schema_defs;
   std::auto_ptr<SchemaParseContext> m_root_context;
 
   std::auto_ptr<ValidatorInterface> m_root_validator;
 
   std::stack<class SchemaParseContextInterface*> m_context_stack;
-  PointerTracker m_pointer;
+  ErrorLogger m_error_logger;
 
   template <typename T>
   void HandleNumber(T t);

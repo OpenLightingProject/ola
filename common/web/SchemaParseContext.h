@@ -23,14 +23,19 @@
 
 #include <ola/base/Macro.h>
 
+#include <map>
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "ola/web/JsonSchema.h"
+#include "common/web/PointerTracker.h"
 
 namespace ola {
 namespace web {
 
+class DefinitionsParseContext;
+class PropertiesParseContext;
 class SchemaParseContext;
 
 template <typename T>
@@ -54,6 +59,70 @@ class OptionalItem {
 };
 
 /**
+ * @brief Captures errors while parsing the schema.
+ * The ErrorLogger keeps track of where we are in the parse tree so that errors
+ * can have helpful information.
+ */
+class ErrorLogger {
+ public:
+  ErrorLogger() {}
+
+  bool HasError() const {
+    return !m_first_error.str().empty();
+  }
+
+  std::string ErrorString() const {
+    return m_first_error.str();
+  }
+
+  std::ostream& Error() {
+    if (m_first_error.str().empty()) {
+      m_first_error << m_pointer.GetPointer() << ": ";
+      return m_first_error;
+    } else {
+      return m_extra_errors;
+    }
+  }
+
+  void SetProperty(const std::string &property) {
+    m_pointer.SetProperty(property);
+  }
+
+  void OpenObject() {
+    m_pointer.OpenObject();
+  }
+
+  void CloseObject() {
+    m_pointer.CloseObject();
+  }
+
+  void OpenArray() {
+    m_pointer.OpenArray();
+  }
+
+  void CloseArray() {
+    m_pointer.CloseArray();
+  }
+
+  void IncrementIndex() {
+    m_pointer.IncrementIndex();
+  }
+
+  void Reset() {
+    m_pointer.Reset();
+  }
+
+  std::string GetPointer() {
+    return m_pointer.GetPointer();
+  }
+
+ private:
+  std::ostringstream m_first_error;
+  std::ostringstream m_extra_errors;
+  PointerTracker m_pointer;
+};
+
+/**
  * @brief The interface all SchemaParseContext classes inherit from.
  */
 class SchemaParseContextInterface {
@@ -61,19 +130,19 @@ class SchemaParseContextInterface {
   SchemaParseContextInterface() {}
   virtual ~SchemaParseContextInterface() {}
 
-  virtual void String(const std::string &path, const std::string &value) = 0;
-  virtual void Number(const std::string &path, uint32_t value) = 0;
-  virtual void Number(const std::string &path, int32_t value) = 0;
-  virtual void Number(const std::string &path, uint64_t value) = 0;
-  virtual void Number(const std::string &path, int64_t value) = 0;
-  virtual void Number(const std::string &path, long double value) = 0;
-  virtual void Bool(const std::string &path, bool value) = 0;
-  virtual void Null(const std::string &path) = 0;
-  virtual void OpenArray(const std::string &path) = 0;
-  virtual void CloseArray(const std::string &path) = 0;
-  virtual SchemaParseContextInterface* OpenObject(const std::string &path) = 0;
-  virtual void ObjectKey(const std::string &path, const std::string &key) = 0;
-  virtual void CloseObject(const std::string &path) = 0;
+  virtual void String(ErrorLogger *logger, const std::string &value) = 0;
+  virtual void Number(ErrorLogger *logger, uint32_t value) = 0;
+  virtual void Number(ErrorLogger *logger, int32_t value) = 0;
+  virtual void Number(ErrorLogger *logger, uint64_t value) = 0;
+  virtual void Number(ErrorLogger *logger, int64_t value) = 0;
+  virtual void Number(ErrorLogger *logger, long double value) = 0;
+  virtual void Bool(ErrorLogger *logger, bool value) = 0;
+  virtual void Null(ErrorLogger *logger) = 0;
+  virtual void OpenArray(ErrorLogger *logger) = 0;
+  virtual void CloseArray(ErrorLogger *logger) = 0;
+  virtual SchemaParseContextInterface* OpenObject(ErrorLogger *logger) = 0;
+  virtual void ObjectKey(ErrorLogger *logger, const std::string &key) = 0;
+  virtual void CloseObject(ErrorLogger *logger) = 0;
 };
 
 /**
@@ -89,15 +158,15 @@ class BaseParseContext : public SchemaParseContextInterface {
   /**
    * @brief Called when we encouter a property
    */
-  void ObjectKey(const std::string &path, const std::string &property) {
+  void ObjectKey(ErrorLogger *logger, const std::string &property) {
     m_property_set = true;
     m_property = property;
-    (void) path;
+    (void) logger;
   }
 
  protected:
   /**
-   * @brief Check if a 
+   * @brief Check if a
    */
   bool HasKey() const { return m_property_set; }
 
@@ -135,21 +204,21 @@ class DefinitionsParseContext : public BaseParseContext {
   }
 
   // These are all invalid in 'definitions'
-  void String(const std::string &, const std::string &) {}
-  void Number(const std::string &, uint32_t) {}
-  void Number(const std::string &, int32_t) {}
-  void Number(const std::string &, uint64_t) {}
-  void Number(const std::string &, int64_t) {}
-  void Number(const std::string &, long double) {}
-  void Bool(const std::string &, bool b) {
+  void String(ErrorLogger *, const std::string &) {}
+  void Number(ErrorLogger *, uint32_t) {}
+  void Number(ErrorLogger *, int32_t) {}
+  void Number(ErrorLogger *, uint64_t) {}
+  void Number(ErrorLogger *, int64_t) {}
+  void Number(ErrorLogger *, long double) {}
+  void Bool(ErrorLogger *, bool b) {
     (void) b;
   }
-  void Null(const std::string &) {}
-  void OpenArray(const std::string &) {}
-  void CloseArray(const std::string &) {}
+  void Null(ErrorLogger *) {}
+  void OpenArray(ErrorLogger *) {}
+  void CloseArray(ErrorLogger *) {}
 
-  SchemaParseContextInterface* OpenObject(const std::string &path);
-  void CloseObject(const std::string &path);
+  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
+  void CloseObject(ErrorLogger *logger);
 
  private:
   SchemaDefinitions *m_schema_defs;
@@ -173,48 +242,83 @@ class SchemaParseContext : public BaseParseContext {
         m_schema_defs(definitions) {
   }
 
-  virtual ValidatorInterface* GetValidator();
+  ValidatorInterface* GetValidator(ErrorLogger *logger);
 
   // id, title, etc.
-  void String(const std::string &path, const std::string &value);
+  void String(ErrorLogger *logger, const std::string &value);
 
   // minimum etc.
-  void Number(const std::string &path, uint32_t value);
-  void Number(const std::string &path, int32_t value);
-  void Number(const std::string &path, uint64_t value);
-  void Number(const std::string &path, int64_t value);
-  void Number(const std::string &path, long double value);
+  void Number(ErrorLogger *logger, uint32_t value);
+  void Number(ErrorLogger *logger, int32_t value);
+  void Number(ErrorLogger *logger, uint64_t value);
+  void Number(ErrorLogger *logger, int64_t value);
+  void Number(ErrorLogger *logger, long double value);
 
   // exclusiveMin / Max
-  void Bool(const std::string &path, bool value);
+  void Bool(ErrorLogger *logger, bool value);
 
-  void Null(const std::string &) {}  // this shouldn't happen in a schema
+  void Null(ErrorLogger *logger) {
+    (void) logger;
+  }  // this shouldn't happen in a schema
 
   // enums
-  void OpenArray(const std::string &path);
-  void CloseArray(const std::string &path);
+  void OpenArray(ErrorLogger *logger);
+  void CloseArray(ErrorLogger *logger);
 
   // properties, etc.
-  SchemaParseContextInterface* OpenObject(const std::string &path);
-  void CloseObject(const std::string &path);
+  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
+  void CloseObject(ErrorLogger *logger);
 
  private:
-  enum JsonType {
-    JSON_STRING,
-    JSON_NUMBER,
-    JSON_BOOL,
-    JSON_NULL,
-    JSON_ARRAY,
-    JSON_OBJECT
-  };
-
   SchemaDefinitions *m_schema_defs;
+  OptionalItem<std::string> m_id;
+  OptionalItem<std::string> m_schema;
   OptionalItem<std::string> m_title;
   OptionalItem<std::string> m_description;
+  OptionalItem<std::string> m_type;
 
-  bool TypeIsValidForCurrentKey(JsonType type);
+  std::auto_ptr<DefinitionsParseContext> m_definitions_context;
+  std::auto_ptr<PropertiesParseContext> m_properties_context;
+
+  bool ValidType(const std::string& type);
 
   DISALLOW_COPY_AND_ASSIGN(SchemaParseContext);
+};
+
+
+/**
+ * @brief
+ */
+class PropertiesParseContext : public BaseParseContext {
+ public:
+  explicit PropertiesParseContext(SchemaDefinitions *definitions)
+      : BaseParseContext(),
+        m_schema_defs(definitions) {
+  }
+
+  void AddPropertyValidaators(ObjectValidator *object_validator,
+                              ErrorLogger *logger);
+
+  void String(ErrorLogger *logger, const std::string &value);
+  void Number(ErrorLogger *logger, uint32_t value);
+  void Number(ErrorLogger *logger, int32_t value);
+  void Number(ErrorLogger *logger, uint64_t value);
+  void Number(ErrorLogger *logger, int64_t value);
+  void Number(ErrorLogger *logger, long double value);
+  void Bool(ErrorLogger *logger, bool value);
+  void Null(ErrorLogger *logger);
+  void OpenArray(ErrorLogger *logger);
+  void CloseArray(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
+  void CloseObject(ErrorLogger *logger);
+
+ private:
+  typedef std::map<std::string, SchemaParseContext*> SchemaMap;
+
+  SchemaDefinitions *m_schema_defs;
+  SchemaMap m_property_contexts;
+
+  DISALLOW_COPY_AND_ASSIGN(PropertiesParseContext);
 };
 }  // namespace web
 }  // namespace ola

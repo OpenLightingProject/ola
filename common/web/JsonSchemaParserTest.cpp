@@ -100,15 +100,29 @@ void JsonSchemaParserTest::testInvalidSchema() {
 void JsonSchemaParserTest::testDefinitions() {
   string input =
       "{\n"
+      "  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-04\\/schema#\",\n"
       "  \"definitions\": {\n"
-      "    \"foo\": {}\n"
+      "    \"foo\": {\n"
+      "      \"title\": \"bar\",\n"
+      "      \"type\": \"number\"\n"
+      "    }\n"
       "  },\n"
-      "  \"title\": \"Hi\"\n"
+      "  \"type\": \"object\",\n"
+      "  \"description\": \"A sample schema\",\n"
+      "  \"id\": \"http:\\/\\/json-schema.org\\/draft-04\\/schema#\",\n"
+      "  \"title\": \"Hi\",\n"
+      "  \"properties\": {\n"
+      "    \"name\": {\n"
+      "      \"type\": \"boolean\"\n"
+      "    }\n"
+      "  }\n"
       "}";
   string error;
   auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
 
-  OLA_INFO << "Error is " << error;
+  if (!error.empty()) {
+    OLA_INFO << "Schema parse error: " << error;
+  }
   OLA_ASSERT_NOT_NULL(schema.get());
   OLA_ASSERT_TRUE(error.empty());
 
