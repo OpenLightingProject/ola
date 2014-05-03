@@ -45,6 +45,8 @@ std::default_random_engine generator_;
 void InitRandom() {
 #ifdef HAVE_RANDOM
   generator_.seed(time(NULL));
+#elif defined(_WIN32)
+  srand(time(NULL));
 #else
   srandom(time(NULL));
 #endif
@@ -59,6 +61,8 @@ int Random(int lower, int upper) {
 #ifdef HAVE_RANDOM
   std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(generator_);
+#elif defined(_WIN32)
+  return lower + (rand() % (upper - lower + 1));
 #else
   return lower + (random() % (upper - lower + 1));
 #endif
