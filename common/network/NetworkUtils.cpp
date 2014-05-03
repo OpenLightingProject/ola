@@ -108,7 +108,7 @@ bool IsBigEndian() {
   // Windows currently only runs in little-endian mode, but that might change
   // on future devices. Since there is no BYTE_ORDER define, we use this
   // little trick from http://esr.ibiblio.org/?p=5095
-  return (*(uint16_t*)"\0\xff" < 0x100);
+  return (*(uint16_t*)"\0\xff" < 0x100);  // NOLINT(readability/casting)
 #else
   return BYTE_ORDER == BIG_ENDIAN;
 #endif
