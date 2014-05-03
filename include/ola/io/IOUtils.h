@@ -15,7 +15,7 @@
  *
  * IOUtils.h
  * IO Util functions.
- * Copyright (C) 2013 Hakan Lindestaf
+ * Copyright (C) 2013-2014 Hakan Lindestaf
  */
 
 #ifndef INCLUDE_OLA_IO_IOUTILS_H_

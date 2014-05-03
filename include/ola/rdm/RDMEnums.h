@@ -15,7 +15,7 @@
  *
  * RDMEnums.h
  * Provide a generic RDM ENUMS that can use different implementations.
- * Copyright (C) 2010 Simon Newton
+ * Copyright (C) 2010-2014 Simon Newton
  */
 
 /**

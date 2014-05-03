@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # ResponderTestFixture.py
-# Copyright (C) 2010 Simon Newton
+# Copyright (C) 2010-2014 Simon Newton
 #
 # The test classes are broken down as follows:
 #

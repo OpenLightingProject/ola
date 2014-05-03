@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # TestDefinitions.py
-# Copyright (C) 2010 Simon Newton
+# Copyright (C) 2010-2014 Simon Newton
 
 '''This defines all the tests for RDM responders.'''
 

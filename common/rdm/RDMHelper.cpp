@@ -15,7 +15,7 @@
  *
  * RDMHelper.cpp
  * Various misc RDM functions.
- * Copyright (C) 2010 Simon Newton
+ * Copyright (C) 2010-2014 Simon Newton
  *
  * At some point we may want to localize this file.
  */
