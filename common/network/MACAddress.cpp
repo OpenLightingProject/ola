@@ -26,7 +26,10 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
-// TODO(Peter): Do something else, possibly define the type locally
+struct ether_addr {
+  unsigned char octet[ola::network::MACAddress::LENGTH];
+};
+#define ether_addr_octet octet
 #else
 #include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
 #ifdef HAVE_NET_ETHERNET_H
