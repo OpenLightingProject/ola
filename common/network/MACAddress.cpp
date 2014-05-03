@@ -25,7 +25,7 @@
 #endif
 
 #ifdef _WIN32
-#include <winsock2.h>
+#include <Winsock2.h>
 struct ether_addr {
   unsigned char octet[ola::network::MACAddress::LENGTH];
 };

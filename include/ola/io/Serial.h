@@ -22,7 +22,7 @@
 #define INCLUDE_OLA_IO_SERIAL_H_
 
 #include <stdint.h>
-#ifdef WIN32
+#ifdef _WIN32
 // Define types and constants to mimic termios.h
 #define B9600 9600
 #define B19200 19200

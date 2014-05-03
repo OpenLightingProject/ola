@@ -31,7 +31,7 @@
 
 #include <ola/network/IPV4Address.h>
 #include <stdint.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <Winsock2.h>
 #else
 #include <sys/socket.h>
