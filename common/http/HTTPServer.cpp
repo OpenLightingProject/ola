@@ -75,13 +75,13 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
  * Called by MHD_create_post_processor to iterate over the post form data
  * @param request_cls a pointer to a HTTPRequest object
  * @param key the header name
- * @param value the header value
+ * @param data the header value
  */
 int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *filename, const char *content_type,
                 const char *transfer_encoding, const char *data, uint64_t off,
                 size_t size) {
-  // libmicrohttpd has a bug where the zie isn't set correctly.
+  // libmicrohttpd has a bug where the size isn't set correctly.
   HTTPRequest *request = static_cast<HTTPRequest*>(request_cls);
   string value(data);
   request->AddPostParameter(key, value);

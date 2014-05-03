@@ -870,6 +870,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
 /**
  * Convert a uint16_t representing a status message to a human-readable string.
  * @param message_id the status message value
+ * @param data1 the first data value for the message
+ * @param data2 the second data value for the message
  */
 string StatusMessageIdToString(uint16_t message_id,
                                int16_t data1,
@@ -947,6 +949,10 @@ string StatusMessageIdToString(uint16_t message_id,
       break;
     case STS_LOW_FLUID:
       str << "Slot " << data1 << " low fluid";
+      break;
+    default:
+      str << "Unknown, was status message " << message_id << " with data value"
+             " 1 " << data1 << " and data value 2 " << data2;
       break;
   }
   return str.str();
