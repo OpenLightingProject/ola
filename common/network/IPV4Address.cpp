@@ -24,6 +24,9 @@
 
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
+#ifndef in_addr_t
+#define in_addr_t unsigned long
+#endif
 #endif
 
 #ifdef HAVE_ARPA_INET_H
