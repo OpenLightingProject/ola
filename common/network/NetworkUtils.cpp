@@ -299,7 +299,6 @@ string Hostname() {
 
 
 bool NameServers(vector<IPV4Address> *name_servers) {
-
 #if HAVE_DECL_RES_NINIT
   struct __res_state res;
   memset(&res, 0, sizeof(struct __res_state));

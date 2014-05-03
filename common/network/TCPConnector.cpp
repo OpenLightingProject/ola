@@ -157,7 +157,8 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   socklen_t len;
   len = sizeof(error);
 #ifdef _WIN32
-  int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &len);
+  int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, 
+                     reinterpret_cast<char*>(&error), &len);
 #else
   int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, &error, &len);
 #endif
