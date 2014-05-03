@@ -299,7 +299,6 @@ string Hostname() {
 
 
 bool NameServers(vector<IPV4Address> *name_servers) {
-  // TODO(Peter): Do something on Windows
 
 #if HAVE_DECL_RES_NINIT
   struct __res_state res;
@@ -319,6 +318,11 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   }
 
   res_nclose(&res);
+#elif defined(_WIN32)
+  // TODO(Lukas) Implement this for real
+  (void)name_servers;  // Silence compiler warning
+  OLA_WARN << "Nameserver enumeration not supported on Windows yet";
+  return false;
 #else
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
@@ -594,9 +598,13 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
   return GetDefaultRouteWithSysctl(if_index, default_gateway);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   return GetDefaultRouteWithNetlink(if_index, default_gateway);
+#elif defined(_WIN32)
+  // TODO(Lukas) Implement this for real
+  OLA_WARN << "DefaultRoute not supported on Windows yet";
+  return false;
 #else
 #error "DefaultRoute not implemented for this platform, please report this."
-  // TODO(Peter): Do something else on Windows/machines without Netlink
+  // TODO(Peter): Do something else on machines without Netlink
   // No Netlink, can't do anything
   return false;
 #endif
