@@ -18,7 +18,7 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 // Pull in fd_set and related definitions.
 #include <Winsock2.h>
 #endif

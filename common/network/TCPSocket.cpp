@@ -32,7 +32,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <winioctl.h>
 #else

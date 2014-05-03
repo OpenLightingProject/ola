@@ -24,7 +24,7 @@
 #  include <config.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 // TODO(Peter): Do something else, possibly define the type locally
 #else

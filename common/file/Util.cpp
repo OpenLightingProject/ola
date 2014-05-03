@@ -23,7 +23,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
-#ifdef WIN32
+#ifdef _WIN32
 #define VC_EXTRALEAN
 #include <windows.h>
 #endif
@@ -42,7 +42,7 @@ namespace file {
 using std::string;
 using std::vector;
 
-#ifdef WIN32
+#ifdef _WIN32
 const char PATH_SEPARATOR = '\\';
 #else
 const char PATH_SEPARATOR = '/';
@@ -71,7 +71,7 @@ void FindMatchingFiles(const string &directory,
   if (directory.empty() || prefixes.empty())
     return;
 
-#ifdef WIN32
+#ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
   HANDLE h_find;
 

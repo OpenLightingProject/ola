@@ -30,7 +30,7 @@
 #endif
 
 #include <errno.h>
-#ifndef WIN32
+#ifndef _WIN32
 #include <grp.h>
 #include <pwd.h>
 #endif
@@ -51,7 +51,7 @@ using std::string;
  */
 
 bool SupportsUIDs() {
-#ifdef WIN32
+#ifdef _WIN32
   return false;
 #else
   return true;
@@ -59,7 +59,7 @@ bool SupportsUIDs() {
 }
 
 bool GetUID(uid_t* uid) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) uid;
   return false;
 #else
@@ -74,7 +74,7 @@ bool GetUID(uid_t* uid) {
 
 
 bool GetEUID(uid_t* euid) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) euid;
   return false;
 #else
@@ -89,7 +89,7 @@ bool GetEUID(uid_t* euid) {
 
 
 bool GetGID(gid_t* gid) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) gid;
   return false;
 #else
@@ -104,7 +104,7 @@ bool GetGID(gid_t* gid) {
 
 
 bool GetEGID(gid_t* egid) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) egid;
   return false;
 #else
@@ -119,7 +119,7 @@ bool GetEGID(gid_t* egid) {
 
 
 bool SetUID(uid_t new_uid) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) new_uid;
   return false;
 #else
@@ -133,7 +133,7 @@ bool SetUID(uid_t new_uid) {
 
 
 bool SetGID(gid_t new_gid) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) new_gid;
   return false;
 #else
@@ -149,7 +149,7 @@ bool SetGID(gid_t new_gid) {
  * @}
  */
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /** @private */
 template <typename F, typename arg>
@@ -213,11 +213,11 @@ bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
   return true;
 }
 
-#endif  // !WIN32
+#endif  // !_WIN32
 
 
 bool GetPasswdName(const string &name, PasswdEntry *passwd) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) name;
   (void) passwd;
   return false;
@@ -232,7 +232,7 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd) {
 
 
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) uid;
   (void) passwd;
   return false;
@@ -245,7 +245,7 @@ bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
 #endif
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /** @private */
 template <typename F, typename arg>
@@ -308,7 +308,7 @@ bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
 
 
 bool GetGroupName(const string &name, GroupEntry *group_entry) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) name;
   (void) group_entry;
   return false;
@@ -323,7 +323,7 @@ bool GetGroupName(const string &name, GroupEntry *group_entry) {
 
 
 bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
-#ifdef WIN32
+#ifdef _WIN32
   (void) uid;
   (void) group_entry;
   return false;

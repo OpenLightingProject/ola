@@ -191,7 +191,7 @@ bool OlaServer::Init() {
     m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
-#ifndef WIN32
+#ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
 #endif
 

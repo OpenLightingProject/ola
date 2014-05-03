@@ -32,7 +32,7 @@
 #  include <config.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <winioctl.h>
@@ -166,7 +166,7 @@ bool UDPSocket::Close() {
   int fd = m_fd;
   m_fd = ola::io::INVALID_DESCRIPTOR;
   m_bound_to_port = false;
-#ifdef WIN32
+#ifdef _WIN32
   if (closesocket(fd)) {
       WSACleanup();
 #else
@@ -235,7 +235,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   if (iov == NULL)
     return 0;
 
-#ifdef WIN32
+#ifdef _WIN32
   WSABUF* buffers = new WSABUF[io_len];
   for (int buffer = 0; buffer < io_len; ++buffer) {
     buffers[i].len = iov[i].iov_len;

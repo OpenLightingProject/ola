@@ -34,7 +34,7 @@ using std::string;
 using ola::io::ConnectedDescriptor;
 using ola::io::LoopbackDescriptor;
 using ola::io::PipeDescriptor;
-#ifndef WIN32
+#ifndef _WIN32
 using ola::io::UnixSocket;
 #endif
 using ola::io::SelectServer;
@@ -49,7 +49,7 @@ class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLoopbackDescriptor);
   CPPUNIT_TEST(testPipeDescriptorClientClose);
   CPPUNIT_TEST(testPipeDescriptorServerClose);
-#ifndef WIN32
+#ifndef _WIN32
   CPPUNIT_TEST(testUnixSocketClientClose);
   CPPUNIT_TEST(testUnixSocketServerClose);
 #endif
@@ -61,7 +61,7 @@ class DescriptorTest: public CppUnit::TestFixture {
     void testLoopbackDescriptor();
     void testPipeDescriptorClientClose();
     void testPipeDescriptorServerClose();
-#ifndef WIN32
+#ifndef _WIN32
     void testUnixSocketClientClose();
     void testUnixSocketServerClose();
 #endif
@@ -163,7 +163,7 @@ void DescriptorTest::testPipeDescriptorServerClose() {
   SocketServerClose(&socket, socket.OppositeEnd());
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /*
  * Test a unix socket works correctly.
