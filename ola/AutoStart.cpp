@@ -84,6 +84,8 @@ TCPSocket *ConnectToServer(unsigned short port) {
   CloseHandle(process_information.hProcess);
   CloseHandle(process_information.hThread);
 
+  free(cmd_line);
+
   // wait a bit here for the server to come up
   Sleep(1000);
 #else
