@@ -975,6 +975,9 @@ string StatusMessageIdToString(uint16_t message_id,
       str << "FPGA programming error";
       break;
     case STS_PROXY_BROADCAST_DROPPED:
+      // This is technically against the standard, which in 10.3.2.4 says "Each
+      // Data Value shall be a signed integer." but I'm sure it's what was
+      // intended. The same thing is technically true with the slots too.
       str << "Proxy Drop: PID "
           << IntToHexString(reinterpret_cast<uint16_t&>(data1)) << " at TN "
           << data2;
