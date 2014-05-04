@@ -82,7 +82,7 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
   vector<string> files;
 
   vector<string> filesInDirectory;
-  ola::file::FindMatchingFiles(directory, "", &filesInDirectory);
+  ola::file::ListDirectory(directory, &filesInDirectory);
   vector<string>::const_iterator fileInDirectory = filesInDirectory.begin();
   for (; fileInDirectory != filesInDirectory.end(); ++fileInDirectory) {
     if (StringEndsWith(*fileInDirectory, ".proto")) {

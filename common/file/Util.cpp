@@ -118,6 +118,11 @@ void FindMatchingFiles(const string &directory,
 #endif
 }
 
+void ListDirectory(const std::string& directory,
+                   std::vector<std::string> *files) {
+  FindMatchingFiles(directory, "", files);
+}
+
 string FilenameFromPathOrDefault(const string &path,
                                  const string &default_value) {
   string::size_type last_path_sep = string::npos;
