@@ -105,7 +105,9 @@ python/ola/PidStoreLocation.py
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh
 slp/slp_client
+slp/slp_client.exe
 slp/slp_server
+slp/slp_server.exe
 tools/e133/e133_controller
 tools/e133/e133_monitor
 tools/e133/e133_receiver
