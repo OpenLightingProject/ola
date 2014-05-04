@@ -592,7 +592,11 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
   time_t now;
   now = time(NULL);
   struct tm tm_now;
+#ifdef _WIN32
+  tm_now = *localtime(&now);  // NOLINT(runtime/threadsafe_fn)
+#else
   localtime_r(&now, &tm_now);
+#endif
 
   struct clock_s clock;
   clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));

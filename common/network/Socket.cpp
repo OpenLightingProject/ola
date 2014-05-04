@@ -25,17 +25,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/uio.h>
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#ifdef _WIN32
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
 #include <winioctl.h>
+#include <Mswsock.h>
 #else
 #include <sys/ioctl.h>
 #endif
@@ -166,7 +166,7 @@ bool UDPSocket::Close() {
   int fd = m_fd;
   m_fd = ola::io::INVALID_DESCRIPTOR;
   m_bound_to_port = false;
-#ifdef WIN32
+#ifdef _WIN32
   if (closesocket(fd)) {
       WSACleanup();
 #else
@@ -235,11 +235,11 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   if (iov == NULL)
     return 0;
 
-#ifdef WIN32
+#ifdef _WIN32
   WSABUF* buffers = new WSABUF[io_len];
   for (int buffer = 0; buffer < io_len; ++buffer) {
-    buffers[i].len = iov[i].iov_len;
-    buffers[i].buf = iov[i].iov_base;
+    buffers[buffer].len = iov[buffer].iov_len;
+    buffers[buffer].buf = reinterpret_cast<char*>(iov[buffer].iov_base);
   }
 
   sockaddr_in destination;
@@ -249,23 +249,16 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   destination.sin_addr.s_addr = ip.AsInt();
 
   SOCKET_ADDRESS address;
-  address.lpSockaddr = &destination;
+  address.lpSockaddr = reinterpret_cast<SOCKADDR*>(&destination);
   address.iSockaddrLength = sizeof(destination);
-
-  WSAMSG message;
-  message.name = &address;
-  message.namelen = sizeof(address);
-  message.lpBuffers = buffers;
-  message.dwBufferCount = io_len;
-  message.Control.len = 0;
-  message.Control.buf = NULL;
-  message.dwFlags = 0;
 
   ssize_t bytes_sent = 0;
   DWORD platform_bytes_sent = 0;
 
-  if (WSASendMsg(WriteDescriptor(), &message, 0, &platform_bytes_sent,
-                 NULL, NULL) == 0) {
+  // We should be using WSASendMsg here, but it's not available on MinGW
+  if (WSASendTo(WriteDescriptor(), buffers, io_len, &platform_bytes_sent,
+                0, reinterpret_cast<SOCKADDR*>(&address), sizeof(address),
+                NULL, NULL) == 0) {
     bytes_sent = static_cast<ssize_t>(platform_bytes_sent);
   } else {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to addr: "

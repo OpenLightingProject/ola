@@ -25,7 +25,7 @@
 #endif
 
 
-#ifdef WIN32
+#ifdef _WIN32
 typedef uint32_t in_addr_t;
 #else
 #include <netinet/in.h>
@@ -104,7 +104,14 @@ bool IsBigEndian() {
 #ifdef HAVE_ENDIAN_H
   return BYTE_ORDER == __BIG_ENDIAN;
 #else
+#ifdef _WIN32
+  // Windows currently only runs in little-endian mode, but that might change
+  // on future devices. Since there is no BYTE_ORDER define, we use this
+  // little trick from http://esr.ibiblio.org/?p=5095
+  return (*(uint16_t*)"\0\xff" < 0x100);  // NOLINT(readability/casting)
+#else
   return BYTE_ORDER == BIG_ENDIAN;
+#endif
 #endif
 }
 
@@ -292,8 +299,6 @@ string Hostname() {
 
 
 bool NameServers(vector<IPV4Address> *name_servers) {
-  // TODO(Peter): Do something on Windows
-
 #if HAVE_DECL_RES_NINIT
   struct __res_state res;
   memset(&res, 0, sizeof(struct __res_state));
@@ -312,6 +317,11 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   }
 
   res_nclose(&res);
+#elif defined(_WIN32)
+  // TODO(Lukas) Implement this for real
+  (void)name_servers;  // Silence compiler warning
+  OLA_WARN << "Nameserver enumeration not supported on Windows yet";
+  return false;
 #else
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
@@ -587,9 +597,13 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
   return GetDefaultRouteWithSysctl(if_index, default_gateway);
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   return GetDefaultRouteWithNetlink(if_index, default_gateway);
+#elif defined(_WIN32)
+  // TODO(Lukas) Implement this for real
+  OLA_WARN << "DefaultRoute not supported on Windows yet";
+  return false;
 #else
 #error "DefaultRoute not implemented for this platform, please report this."
-  // TODO(Peter): Do something else on Windows/machines without Netlink
+  // TODO(Peter): Do something else on machines without Netlink
   // No Netlink, can't do anything
   return false;
 #endif

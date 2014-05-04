@@ -20,7 +20,7 @@
  * The struct timeval can represent both absolute time and time intervals.
  * We define our own wrapper classes that:
  *   - hide some of the platform differences, like the fact windows doesn't
- *     provide timersub.
+ *     provide timeradd and timersub.
  *   - Reduces bugs by using the compiler to check if the value was supposed
  *     to be an interval or absolute time. For example, passing an absolute
  *     time intstead of an Interval to RegisterTimeout would be bad.
@@ -96,6 +96,12 @@ class BaseTimeVal {
 
  private:
   struct timeval m_tv;
+
+  /**
+   * We don't use timeradd here because windows doesn't define it.
+   */
+  void TimerAdd(const struct timeval &tv1, const struct timeval &tv2,
+                struct timeval *result) const;
 
   /**
    * We don't use timersub here because windows doesn't define it.

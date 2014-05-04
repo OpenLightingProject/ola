@@ -52,6 +52,15 @@ void FindMatchingFiles(const std::string &directory,
                        std::vector<std::string> *files);
 
 /**
+ * Get a list of all files in a directory. Entries in \p files will contain
+ * the full path to the file.
+ * @param[in] directory the directory to list
+ * @param[out] files a pointer to a string vector that will receive file paths
+ */
+void ListDirectory(const std::string& directory,
+                   std::vector<std::string> *files);
+
+/**
  * Convert a path to a filename
  * @param path a full path to a file
  * @param default_value what to return if the path can't be found
