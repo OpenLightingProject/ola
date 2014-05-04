@@ -17,7 +17,7 @@
  * This is the main ola daemon
  * Copyright (C) 2005-2008 Simon Newton
  */
- 
+
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
