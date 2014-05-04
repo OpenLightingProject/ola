@@ -17,6 +17,10 @@
  * This is the main ola daemon
  * Copyright (C) 2005-2008 Simon Newton
  */
+ 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #include <errno.h>
 #include <stdio.h>
@@ -209,7 +213,11 @@ string OlaDaemon::DefaultConfigDir() {
 bool OlaDaemon::InitConfigDir(const string &path) {
   if (chdir(path.c_str())) {
     // try and create it
+#ifdef _WIN32
+    if (mkdir(path.c_str())) {
+#else
     if (mkdir(path.c_str(), 0755)) {
+#endif
       OLA_FATAL << "Couldn't mkdir " << path;
       return false;
     }

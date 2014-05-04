@@ -107,16 +107,18 @@ int main(int argc, char *argv[]) {
   SignalThread signal_thread;
   signal_thread.InstallSignalHandler(SIGINT, NULL);
   signal_thread.InstallSignalHandler(SIGTERM, NULL);
+#ifndef _WIN32
   signal_thread.InstallSignalHandler(SIGHUP, NULL);
   signal_thread.InstallSignalHandler(
       SIGUSR1, ola::NewCallback(&ola::IncrementLogLevel));
+#endif
 
   ola::OlaServer::Options options;
   options.http_enable = FLAGS_http;
   options.http_enable_quit = FLAGS_http_quit;
   options.http_port = FLAGS_http_port;
   options.http_data_dir = FLAGS_http_data_dir.str();
-  options.interface = FLAGS_interface.str();
+  options.network_interface = FLAGS_interface.str();
   options.pid_data_dir = FLAGS_pid_location.str();
 
   std::auto_ptr<OlaDaemon> olad(new OlaDaemon(options, &export_map));
@@ -147,10 +149,12 @@ int main(int argc, char *argv[]) {
     return ola::EXIT_UNAVAILABLE;
   }
 
+#ifndef _WIN32
   // Finally the OlaServer is not-null.
   signal_thread.InstallSignalHandler(
       SIGHUP,
       ola::NewCallback(olad->GetOlaServer(), &ola::OlaServer::ReloadPlugins));
+#endif
 
   olad->Run();
   return ola::EXIT_OK;
