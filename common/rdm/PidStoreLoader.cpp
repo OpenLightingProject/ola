@@ -42,9 +42,9 @@ namespace rdm {
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using std::map;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -96,7 +96,7 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
     if (!StringEndsWith(file_name, ".proto"))
       continue;
 
-    stringstream str;
+    ostringstream str;
     str << directory << ola::file::PATH_SEPARATOR << file_name;
     files.push_back(str.str());
   }

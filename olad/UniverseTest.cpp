@@ -819,7 +819,7 @@ void UniverseTest::ConfirmRDM(int line,
                               rdm_response_code response_code,
                               const RDMResponse *response,
                               const vector<string>&) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   OLA_ASSERT_EQ_MSG(expected_response_code,
                     response_code,

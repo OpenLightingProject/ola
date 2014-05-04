@@ -180,7 +180,7 @@ class UIDSet {
      * @returns a comma separated string with the UIDs from the set.
      */
     std::string ToString() const {
-      std::stringstream str;
+      std::ostringstream str;
       std::set<UID>::const_iterator iter;
       for (iter = m_uids.begin(); iter != m_uids.end(); ++iter) {
         if (iter != m_uids.begin())

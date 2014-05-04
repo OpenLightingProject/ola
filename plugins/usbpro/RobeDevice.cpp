@@ -40,7 +40,7 @@ RobeDevice::RobeDevice(ola::PluginAdaptor *plugin_adaptor,
                        const string &name,
                        RobeWidget *widget)
     : UsbSerialDevice(owner, name, widget) {
-  std::stringstream str;
+  std::ostringstream str;
   str << 1;
   m_device_id = str.str();
 

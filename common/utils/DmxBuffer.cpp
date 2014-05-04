@@ -311,7 +311,7 @@ string DmxBuffer::ToString() const {
   if (!m_data)
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   for (unsigned int i = 0; i < Size(); i++) {
     if (i)
       str << ",";

@@ -35,8 +35,8 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char SandNetDevice::IP_KEY[] = "ip";
@@ -87,7 +87,7 @@ bool SandNetDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << SANDNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
     "]";
   SetName(str.str());

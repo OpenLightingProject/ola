@@ -164,7 +164,7 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
 
   var = export_map->GetStringVar("cmd-line");
 
-  std::stringstream out;
+  std::ostringstream out;
   for (int i = 1; i < argc; i++) {
     out << argv[i] << " ";
   }
@@ -173,7 +173,7 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
   var = export_map->GetStringVar("fd-limit");
 #ifdef WIN32
   {
-    std::stringstream out;
+    std::ostringstream out;
     out << _getmaxstdio();
     var->Set(out.str());
   }
@@ -182,7 +182,7 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     var->Set("undetermined");
   } else {
-    std::stringstream out;
+    std::ostringstream out;
     out << rl.rlim_cur;
     var->Set(out.str());
   }

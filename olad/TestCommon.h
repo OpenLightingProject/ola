@@ -242,7 +242,7 @@ class TestMockPlugin: public ola::Plugin {
       return true;
     }
     std::string Name() const {
-      std::stringstream str;
+      std::ostringstream str;
       str << m_id;
       return str.str();
     }

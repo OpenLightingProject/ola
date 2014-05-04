@@ -47,7 +47,7 @@ OpenDmxDevice::OpenDmxDevice(AbstractPlugin *owner,
                              unsigned int device_id)
     : Device(owner, name),
       m_path(path) {
-  std::stringstream str;
+  std::ostringstream str;
   str << device_id;
   m_device_id = str.str();
 }

@@ -47,8 +47,8 @@ DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
 
-using std::string;
 using std::ostringstream;
+using std::string;
 
 /**
  * @cond HIDDEN_SYMBOLS

@@ -117,7 +117,7 @@ string MACAddress::ToString() const {
    * ether_ntoa_r doesn't exist on Mac, so can't use it; ether_ntoa isn't
    * thread safe
    */
-  std::stringstream str;
+  std::ostringstream str;
   for (unsigned int i = 0 ; i < MACAddress::LENGTH; i++) {
     if (i != 0)
       str << ":";

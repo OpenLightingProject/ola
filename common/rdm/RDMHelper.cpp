@@ -29,9 +29,8 @@
 namespace ola {
 namespace rdm {
 
-
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -107,7 +106,7 @@ string DataTypeToString(uint8_t type) {
     case DS_SIGNED_DWORD:
       return "int32";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(type);
       return str.str();
   }
@@ -129,7 +128,7 @@ string LampModeToString(uint8_t lamp_mode) {
     case LAMP_ON_MODE_ON_AFTER_CAL:
       return "On after calibration";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(lamp_mode);
       return str.str();
   }
@@ -155,7 +154,7 @@ string LampStateToString(uint8_t lamp_state) {
     case LAMP_ERROR:
       return "Error";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(lamp_state);
       return str.str();
   }
@@ -195,7 +194,7 @@ string NackReasonToString(uint16_t reason) {
     case NR_ENDPOINT_NUMBER_INVALID:
       return "Invalid endpoint";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << reason;
       return str.str();
   }
@@ -217,7 +216,7 @@ string PowerStateToString(uint8_t power_state) {
     case POWER_STATE_NORMAL:
       return "Normal";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(power_state);
       return str.str();
   }
@@ -296,7 +295,7 @@ string PrefixToString(uint8_t prefix) {
     case PREFIX_YOTTA:
       return "Yotta";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(prefix);
       return str.str();
   }
@@ -433,7 +432,7 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_OTHER:
       return "Other";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(category);
       return str.str();
   }
@@ -607,7 +606,7 @@ string ProductDetailToString(uint16_t detail) {
     case PRODUCT_DETAIL_OTHER:
       return "Other Device";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << detail;
       return str.str();
   }
@@ -625,7 +624,7 @@ string ResetDeviceToString(uint8_t reset_device) {
     case RESET_COLD:
       return "Cold";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(reset_device);
       return str.str();
   }
@@ -724,7 +723,7 @@ string SensorTypeToString(uint8_t type) {
     case SENSOR_OTHER:
       return "Other";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(type);
       return str.str();
   }
@@ -827,12 +826,12 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
       case SD_UNDEFINED:
         return "Primary, undefined";
       default:
-        stringstream str;
+        ostringstream str;
         str << "Primary, unknown, was " << slot_label;
         return str.str();
     }
   } else {
-    stringstream str;
+    ostringstream str;
     str << "Secondary, ";
     switch (slot_type) {
       case ST_SEC_FINE:
@@ -876,7 +875,7 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
 string StatusMessageIdToString(uint16_t message_id,
                                int16_t data1,
                                int16_t data2) {
-  stringstream str;
+  ostringstream str;
   switch (message_id) {
     case STS_CAL_FAIL:
       str << "Slot " << data1 << " failed calibration";
@@ -1034,7 +1033,7 @@ string StatusTypeToString(uint8_t status_type) {
     case STATUS_ERROR_CLEARED:
       return "Error cleared";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(status_type);
       return str.str();
   }
@@ -1107,7 +1106,7 @@ string UnitToString(uint8_t unit) {
     case UNITS_BYTE:
       return "bytes";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(unit);
       return str.str();
   }

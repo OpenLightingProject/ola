@@ -38,7 +38,6 @@ namespace web {
 
 using std::auto_ptr;
 using std::string;
-using std::stringstream;
 
 static bool ParseTrimmedInput(const char **input,
                               JsonHandlerInterface *handler);

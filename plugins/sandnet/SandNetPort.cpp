@@ -51,7 +51,7 @@ bool SandNetPortHelper::PreSetUniverse(Universe *old_universe,
 
 
 string SandNetPortHelper::Description(const Universe *universe) const {
-  std::stringstream str;
+  std::ostringstream str;
   if (universe) {
     str << "Sandnet group " << static_cast<int>(SandnetGroup(universe)) <<
       ", universe " << 1 + SandnetUniverse(universe);

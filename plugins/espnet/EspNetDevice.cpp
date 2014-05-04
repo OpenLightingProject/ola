@@ -37,7 +37,7 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-using std::stringstream;
+using std::ostringstream;
 
 const char EspNetDevice::ESPNET_DEVICE_NAME[] = "ESP Net";
 const char EspNetDevice::IP_KEY[] = "ip";
@@ -70,7 +70,7 @@ bool EspNetDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << ESPNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
     "]";
   SetName(str.str());

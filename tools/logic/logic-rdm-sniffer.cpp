@@ -62,7 +62,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::io::SelectServer;
 using ola::messaging::Descriptor;

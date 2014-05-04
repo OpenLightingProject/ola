@@ -34,7 +34,7 @@ namespace espnet {
 using std::string;
 
 string EspNetPortHelper::Description(Universe *universe) const {
-  std::stringstream str;
+  std::ostringstream str;
   if (universe)
     str << "EspNet universe " << (unsigned int) EspNetUniverseId(universe);
   return str.str();

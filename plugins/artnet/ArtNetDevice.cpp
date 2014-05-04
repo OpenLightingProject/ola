@@ -59,8 +59,8 @@ using ola::network::IPV4Address;
 using ola::plugin::artnet::Reply;
 using ola::plugin::artnet::Request;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
@@ -142,7 +142,7 @@ bool ArtNetDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << K_DEVICE_NAME << " [" << interface.ip_address << "]";
   SetName(str.str());
 

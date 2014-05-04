@@ -213,7 +213,7 @@ void SelectServerTest::testTimeout() {
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
   // This seems to go as low as 7
-  std::stringstream str;
+  std::ostringstream str;
   str << "Timeout counter was " << m_timeout_counter;
   OLA_ASSERT_TRUE_MSG(m_timeout_counter >= 5 && m_timeout_counter <= 9,
                       str.str());

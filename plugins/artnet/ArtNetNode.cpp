@@ -1030,7 +1030,7 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
           m_long_name.data(),
           ARTNET_LONG_NAME_LENGTH);
 
-  std::stringstream str;
+  std::ostringstream str;
   str << "#0001 [" << m_unsolicited_replies << "] OLA";
   strncpy(packet.data.reply.node_report, str.str().data(),
           ARTNET_REPORT_LENGTH);

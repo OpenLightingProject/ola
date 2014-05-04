@@ -57,7 +57,7 @@ class PluginManagerTest: public CppUnit::TestFixture {
  private:
     void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
                             size_t active_plugins, unsigned int line) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "Line " << line;
       vector<AbstractPlugin*> plugins;
       manager->Plugins(&plugins);

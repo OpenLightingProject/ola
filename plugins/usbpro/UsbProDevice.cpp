@@ -40,8 +40,8 @@ namespace usbpro {
 using ola::plugin::usbpro::Reply;
 using ola::plugin::usbpro::Request;
 using ola::rpc::RpcController;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 
 /*
  * Create a new device
@@ -59,7 +59,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
     : UsbSerialDevice(owner, name, widget),
       m_pro_widget(widget),
       m_serial(SerialToString(serial)) {
-  stringstream str;
+  ostringstream str;
   str << "Serial #: " << m_serial << ", firmware "
       << (firmware_version >> 8) << "." << (firmware_version & 0xff);
 
@@ -301,7 +301,7 @@ void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
 
 
 string UsbProDevice::SerialToString(uint32_t serial) {
-  std::stringstream str;
+  ostringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
   for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {

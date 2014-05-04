@@ -134,7 +134,7 @@ int64_t BaseTimeVal::AsInt() const {
 }
 
 string BaseTimeVal::ToString() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6)
       << m_tv.tv_usec;
   return str.str();

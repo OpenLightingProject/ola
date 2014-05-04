@@ -48,8 +48,8 @@ using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
 using std::auto_ptr;
 using std::map;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -126,7 +126,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
                          uint8_t priority) {
   (void) priority;
   m_buffer = buffer;
-  stringstream str;
+  ostringstream str;
   string data = buffer.Get();
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";

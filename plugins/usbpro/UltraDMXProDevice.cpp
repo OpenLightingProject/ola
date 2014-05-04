@@ -59,7 +59,7 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
     m_ultra_widget(widget),
     m_serial(),
     m_got_parameters(false) {
-  std::stringstream str;
+  std::ostringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
   for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
