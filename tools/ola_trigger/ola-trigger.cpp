@@ -21,7 +21,9 @@
 #include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
+#ifndef _WIN32
 #include <sys/wait.h>
+#endif
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
@@ -158,6 +160,7 @@ void DisplayHelpAndExit(char *argv[]) {
 /*
  * Catch SIGCHLD.
  */
+ #ifndef _WIN32
 static void CatchSIGCHLD(int signo) {
   pid_t pid;
   do {
@@ -165,6 +168,7 @@ static void CatchSIGCHLD(int signo) {
   } while (pid > 0);
   (void) signo;
 }
+#endif
 
 
 /*
@@ -183,6 +187,17 @@ static void CatchSIGINT(int signo) {
  * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
+#ifdef WIN32
+  // There's no SIGCHILD on Windows
+  if (signal(SIGINT, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
+    OLA_WARN << "Failed to install signal SIGINT";
+    return false;
+  }
+  if (signal(SIGTERM, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
+    OLA_WARN << "Failed to install signal SIGTERM";
+    return false;
+  }
+#else
   struct sigaction act, oact;
 
   act.sa_handler = CatchSIGCHLD;
@@ -203,6 +218,7 @@ bool InstallSignals() {
     OLA_WARN << "Failed to install signal SIGTERM";
     return false;
   }
+#endif
   return true;
 }
 
