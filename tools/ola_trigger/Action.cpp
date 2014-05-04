@@ -91,8 +91,8 @@ void CommandAction::Execute(Context *context, uint8_t) {
 
   memset(&startup_info, 0, sizeof(startup_info));
   startup_info.cb = sizeof(startup_info);
-  memset(&process_information, 0, sizeof(process_information));  
-  
+  memset(&process_information, 0, sizeof(process_information));
+
   LPTSTR cmd_line = _strdup(command_line_builder.str().c_str());
 
   if (!CreateProcessA(NULL,
@@ -106,8 +106,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
                      &startup_info,
                      &process_information)) {
     OLA_WARN << "Could not launch " << args[0] << ":" << GetLastError();
-  }
-  else {
+  } else {
     // Don't leak the handles
     CloseHandle(process_information.hProcess);
     CloseHandle(process_information.hThread);

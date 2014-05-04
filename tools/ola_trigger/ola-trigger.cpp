@@ -160,7 +160,7 @@ void DisplayHelpAndExit(char *argv[]) {
 /*
  * Catch SIGCHLD.
  */
- #ifndef _WIN32
+#ifndef _WIN32
 static void CatchSIGCHLD(int signo) {
   pid_t pid;
   do {
