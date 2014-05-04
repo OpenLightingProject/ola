@@ -95,6 +95,14 @@ string IntToString(unsigned int i) {
   return str.str();
 }
 
+string IntToHexString(unsigned int i, unsigned int width) {
+  stringstream str;
+  // In C++, you only get the 0x non-zero values, so we have to explicitly add
+  // it for all values
+  str << "0x" << std::setw(width) << std::hex << std::setfill('0') << i;
+  return str.str();
+}
+
 bool StringToBool(const string &value, bool *output) {
   string lc_value(value);
   ToLower(&lc_value);
