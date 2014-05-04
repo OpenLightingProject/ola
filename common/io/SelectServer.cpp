@@ -18,7 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/select.h>

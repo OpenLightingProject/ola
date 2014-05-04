@@ -86,7 +86,7 @@ bool BaseTimeVal::operator<=(const BaseTimeVal &other) const {
 
 BaseTimeVal& BaseTimeVal::operator+=(const BaseTimeVal& other) {
   if (this != &other) {
-    timeradd(&m_tv, &other.m_tv, &m_tv);
+    TimerAdd(m_tv, other.m_tv, &m_tv);
   }
   return *this;
 }
@@ -138,6 +138,16 @@ string BaseTimeVal::ToString() const {
   str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6)
       << m_tv.tv_usec;
   return str.str();
+}
+
+void BaseTimeVal::TimerAdd(const struct timeval &tv1, const struct timeval &tv2,
+                           struct timeval *result) const {
+  result->tv_sec = tv1.tv_sec + tv2.tv_sec;
+  result->tv_usec = tv1.tv_usec + tv2.tv_usec;
+  if (result->tv_usec >= USEC_IN_SECONDS) {
+      result->tv_sec++;
+      result->tv_usec -= USEC_IN_SECONDS;
+  }
 }
 
 void BaseTimeVal::TimerSub(const struct timeval &tv1, const struct timeval &tv2,

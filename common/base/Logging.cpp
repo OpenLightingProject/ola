@@ -29,7 +29,7 @@
  */
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <syslog.h>
@@ -190,7 +190,7 @@ SyslogDestination::SyslogDestination()
 }
 
 bool SyslogDestination::Init() {
-#ifdef WIN32
+#ifdef _WIN32
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
 #endif
   if (!m_eventlog) {
@@ -202,7 +202,7 @@ bool SyslogDestination::Init() {
 
 
 void SyslogDestination::Write(log_level level, const string &log_line) {
-#ifdef WIN32
+#ifdef _WIN32
   WORD pri;
   const char* strings[1];
   strings[0] = log_line.data();

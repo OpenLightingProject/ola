@@ -32,6 +32,25 @@
 namespace ola {
 namespace thread {
 
+#ifdef _WIN32
+// Windows doesn't support sigwait and related functions, so we need to use
+// this workaround. Keep the definition of g_signal_map in sync with
+// SignalThread::SignalMap.
+static std::map<int, SignalThread::SignalHandler*>* g_signal_map = NULL;
+static void Win32SignalHandler(int signo) {
+  OLA_INFO << "Received signal: " << signo;
+  if (!g_signal_map) {
+    OLA_WARN << "Signal handler called without signal map";
+    return;
+  }
+
+  SignalThread::SignalHandler *handler = STLFindOrNull(*g_signal_map, signo);
+  if (handler) {
+    handler->Run();
+  }
+}
+#endif
+
 SignalThread::~SignalThread() {
   ola::STLDeleteValues(&m_signal_handlers);
 }
@@ -55,7 +74,20 @@ void* SignalThread::Run() {
   sigset_t signals;
   int signo;
 
+#ifdef _WIN32
+  if (g_signal_map) {
+    OLA_WARN << "Windows signal map was already set, it will be overwritten.";
+  }
+  g_signal_map = &m_signal_handlers;
+
+  SignalMap::const_iterator iter = m_signal_handlers.begin();
+  for (; iter != m_signal_handlers.end(); ++iter) {
+    signal(iter->first, Win32SignalHandler);
+  }
+#endif
+
   while (true) {
+#ifndef _WIN32
     sigemptyset(&signals);
     AddSignals(&signals);
     // Don't try to use sigpending here. It won't work on Mac.
@@ -69,6 +101,7 @@ void* SignalThread::Run() {
     if (handler) {
       handler->Run();
     }
+#endif
   }
   return NULL;
 }
@@ -77,6 +110,7 @@ void* SignalThread::Run() {
  * Add the signals we're interested in to the sigset.
  */
 bool SignalThread::AddSignals(sigset_t *signals) {
+#ifndef _WIN32
   SignalMap::const_iterator iter = m_signal_handlers.begin();
   for (; iter != m_signal_handlers.end(); ++iter) {
     if (sigaddset(signals, iter->first)) {
@@ -85,6 +119,7 @@ bool SignalThread::AddSignals(sigset_t *signals) {
       return false;
     }
   }
+#endif
   return true;
 }
 
@@ -92,6 +127,9 @@ bool SignalThread::AddSignals(sigset_t *signals) {
  * Block the signal
  */
 bool SignalThread::BlockSignal(int signal) {
+#ifdef _WIN32
+  ::signal(signal, SIG_IGN);
+#else
   sigset_t signals;
   if (sigemptyset(&signals)) {
     OLA_WARN << "Failed to init signal set: " << strerror(errno);
@@ -108,6 +146,7 @@ bool SignalThread::BlockSignal(int signal) {
     OLA_WARN << "Failed to block signals: " << strerror(errno);
     return false;
   }
+#endif
   return true;
 }
 }  // namespace thread
