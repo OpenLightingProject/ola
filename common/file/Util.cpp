@@ -15,7 +15,7 @@
  *
  * Util.cpp
  * File related helper functions.
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2013-2014 Simon Newton
  */
 
 #include <ola/Logging.h>
@@ -48,10 +48,6 @@ const char PATH_SEPARATOR = '\\';
 const char PATH_SEPARATOR = '/';
 #endif
 
-/**
- * Find all files in a directory that match the given prefix.
- * @returns a vector with the absolute path of the matching files.
- */
 void FindMatchingFiles(const string &directory,
                        const string &prefix,
                        vector<string> *files) {
@@ -60,11 +56,6 @@ void FindMatchingFiles(const string &directory,
   FindMatchingFiles(directory, prefixes, files);
 }
 
-
-/**
- * Find all files in a directory that match any of the prefixes.
- * @returns a vector with the absolute path of the matching files.
- */
 void FindMatchingFiles(const string &directory,
                        const vector<string> &prefixes,
                        vector<string> *files) {

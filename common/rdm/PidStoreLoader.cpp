@@ -13,9 +13,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * PidStore.cpp
- * The PidStore and Pid classes.
- * Copyright (C) 2011 Simon Newton
+ * PidStoreLoader.cpp
+ * The PidStoreLoader and helper code.
+ * Copyright (C) 2011-2014 Simon Newton
  */
 
 #include <dirent.h>

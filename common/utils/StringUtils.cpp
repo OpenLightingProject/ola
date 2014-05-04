@@ -34,8 +34,8 @@
 namespace ola {
 
 using std::endl;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 void StringSplit(const string &input,
@@ -84,14 +84,22 @@ bool StringEndsWith(const string &s, const string &ending) {
 }
 
 string IntToString(int i) {
-  stringstream str;
+  ostringstream str;
   str << i;
   return str.str();
 }
 
 string IntToString(unsigned int i) {
-  stringstream str;
+  ostringstream str;
   str << i;
+  return str.str();
+}
+
+string IntToHexString(unsigned int i, unsigned int width) {
+  ostringstream str;
+  // In C++, you only get the 0x on non-zero values, so we have to explicitly
+  // add it for all values
+  str << "0x" << std::setw(width) << std::hex << std::setfill('0') << i;
   return str.str();
 }
 
@@ -239,7 +247,7 @@ string EscapeString(const string &original) {
 }
 
 string EncodeString(const string &original) {
-  stringstream encoded;
+  ostringstream encoded;
   for (string::const_iterator iter = original.begin();
        iter != original.end();
        ++iter) {
@@ -402,7 +410,7 @@ void FormatData(std::ostream *out,
                 unsigned int length,
                 unsigned int indent,
                 unsigned int byte_per_line) {
-  stringstream raw, ascii;
+  ostringstream raw, ascii;
   raw << std::setw(2) << std::hex;
   for (unsigned int i = 0; i != length; i++) {
     raw << std::setfill('0') << std::setw(2) <<

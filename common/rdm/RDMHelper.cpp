@@ -15,7 +15,7 @@
  *
  * RDMHelper.cpp
  * Various misc RDM functions.
- * Copyright (C) 2010 Simon Newton
+ * Copyright (C) 2010-2014 Simon Newton
  *
  * At some point we may want to localize this file.
  */
@@ -870,6 +870,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
 /**
  * Convert a uint16_t representing a status message to a human-readable string.
  * @param message_id the status message value
+ * @param data1 the first data value for the message
+ * @param data2 the second data value for the message
  */
 string StatusMessageIdToString(uint16_t message_id,
                                int16_t data1,
@@ -885,11 +887,23 @@ string StatusMessageIdToString(uint16_t message_id,
     case STS_SENS_ALWAYS_ON:
       str << "Sensor " << data1 << " always on";
       break;
+    case STS_FEEDBACK_ERROR:
+      str << "Slot " << data1 << " feedback error";
+      break;
+    case STS_INDEX_ERROR:
+      str << "Slot " << data1 << " index circuit error";
+      break;
     case STS_LAMP_DOUSED:
       str << "Lamp doused";
       break;
     case STS_LAMP_STRIKE:
       str<< "Lamp failed to strike";
+      break;
+    case STS_LAMP_ACCESS_OPEN:
+      str << "Lamp access open";
+      break;
+    case STS_LAMP_ALWAYS_ON:
+      str << "Lamp on without command";
       break;
     case STS_OVERTEMP:
       str << "Sensor " << data1 << " over temp at " << data2 << " degrees C";
@@ -939,6 +953,9 @@ string StatusMessageIdToString(uint16_t message_id,
     case STS_DIM_PANIC:
       str << "Dimmer panic mode";
       break;
+    case STS_LOAD_FAILURE:
+      str << "Lamp or cable failure";
+      break;
     case STS_READY:
       str << "Slot " << data1 << " ready";
       break;
@@ -947,6 +964,47 @@ string StatusMessageIdToString(uint16_t message_id,
       break;
     case STS_LOW_FLUID:
       str << "Slot " << data1 << " low fluid";
+      break;
+    case STS_EEPROM_ERROR:
+      str << "EEPROM error";
+      break;
+    case STS_RAM_ERROR:
+      str << "RAM error";
+      break;
+    case STS_FPGA_ERROR:
+      str << "FPGA programming error";
+      break;
+    case STS_PROXY_BROADCAST_DROPPED:
+      // This is technically against the standard, which in 10.3.2.4 says "Each
+      // Data Value shall be a signed integer." but I'm sure it's what was
+      // intended. The same thing is technically true with the slots too.
+      str << "Proxy Drop: PID "
+          << IntToHexString(reinterpret_cast<uint16_t&>(data1)) << " at TN "
+          << data2;
+      break;
+    case STS_ASC_RXOK:
+      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+          << " received OK";
+      break;
+    case STS_ASC_DROPPED:
+      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+          << " now dropped";
+      break;
+    case STS_DMXNSCNONE:
+      str << "DMX NSC never received";
+      break;
+    case STS_DMXNSCLOSS:
+      str << "DMX NSC received, now dropped";
+      break;
+    case STS_DMXNSCERROR:
+      str << "DMX NSC timing or packet error";
+      break;
+    case STS_DMXNSC_OK:
+      str << "DMX NSC received OK";
+      break;
+    default:
+      str << "Unknown, was status message " << message_id << " with data value"
+             " 1 " << data1 << " and data value 2 " << data2;
       break;
   }
   return str.str();

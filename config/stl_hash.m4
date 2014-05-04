@@ -1,4 +1,5 @@
 # Copied from the protobuf package, http://code.google.com/p/protobuf/
+# HAVE_UNORDERED_MAP added to match docs
 #
 # We check two things: where the include file is for
 # unordered_map/hash_map (we prefer the first form), and what

@@ -15,7 +15,7 @@
  *
  * Util.h
  * File related helper functions.
- * Copyright (C) 2013 Simon Newton
+ * Copyright (C) 2013-2014 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_FILE_UTIL_H_
@@ -29,10 +29,24 @@ namespace file {
 
 extern const char PATH_SEPARATOR;
 
+/**
+ * Find all files in a directory that match the given prefix.
+ * @param[in] directory the directory to look in
+ * @param[in] prefix the prefix to match on
+ * @param[out] files a pointer to a vector with the absolute path of the
+ * matching files.
+ */
 void FindMatchingFiles(const std::string &directory,
                        const std::string &prefix,
                        std::vector<std::string> *files);
 
+/**
+ * Find all files in a directory that match any of the prefixes.
+ * @param[in] directory the directory to look in
+ * @param[in] prefixes the prefixes to match on
+ * @param[out] files a pointer to a vector with the absolute path of the
+ * matching files.
+ */
 void FindMatchingFiles(const std::string &directory,
                        const std::vector<std::string> &prefixes,
                        std::vector<std::string> *files);

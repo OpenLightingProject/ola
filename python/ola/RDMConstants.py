@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # RDMConstants.py
-# Copyright (C) 2014 Simon Newton
+# Copyright (C) 2010-2014 Simon Newton
 
 """Constants defined in E1.20 (RDM)."""
 
