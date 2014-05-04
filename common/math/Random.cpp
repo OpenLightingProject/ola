@@ -62,10 +62,10 @@ int Random(int lower, int upper) {
   std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(generator_);
 #elif defined(_WIN32)
-  return lower +
-         (rand() % (upper - lower + 1));  // NOLINT(runtime/threadsafe_fn)
+  return (lower +
+          (rand() % (upper - lower + 1)));  // NOLINT(runtime/threadsafe_fn)
 #else
-  return lower + (random() % (upper - lower + 1));
+  return (lower + (random() % (upper - lower + 1)));
 #endif
 }
 }  // namespace math

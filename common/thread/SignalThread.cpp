@@ -110,8 +110,7 @@ void* SignalThread::Run() {
  * Add the signals we're interested in to the sigset.
  */
 bool SignalThread::AddSignals(sigset_t *signals) {
-#ifdef _WIN32
-#else
+#ifndef _WIN32
   SignalMap::const_iterator iter = m_signal_handlers.begin();
   for (; iter != m_signal_handlers.end(); ++iter) {
     if (sigaddset(signals, iter->first)) {
