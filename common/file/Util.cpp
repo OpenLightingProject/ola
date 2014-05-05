@@ -65,8 +65,15 @@ void FindMatchingFiles(const string &directory,
 #ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
   HANDLE h_find;
+  string mutable_directory = directory;
 
-  h_find = FindFirstFileA(directory.data(), &find_file_data);
+  // Strip trailing path separators, otherwise FindFirstFile fails
+  while ((*mutable_directory.rbegin() == '\\') ||
+      (*mutable_directory.rbegin() == '/')) {
+    mutable_directory.erase(mutable_directory.size() - 1);
+  }
+
+  h_find = FindFirstFileA(mutable_directory.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
     OLA_WARN << "Find first file failed: " << GetLastError();
     return;
@@ -77,7 +84,7 @@ void FindMatchingFiles(const string &directory,
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
       if (!strncmp(find_file_data.cFileName, iter->data(), iter->size())) {
         std::ostringstream str;
-        str << directory << PATH_SEPARATOR << find_file_data.cFileName;
+        str << mutable_directory << PATH_SEPARATOR << find_file_data.cFileName;
         files->push_back(str.str());
       }
     }
