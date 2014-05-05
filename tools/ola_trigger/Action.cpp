@@ -30,6 +30,7 @@
 #include <tchar.h>
 #endif
 
+#include <ola/stl/STLUtils.h>
 #include "tools/ola_trigger/Action.h"
 #include "tools/ola_trigger/VariableInterpolator.h"
 
@@ -79,8 +80,13 @@ void CommandAction::Execute(Context *context, uint8_t) {
 #ifdef _WIN32
   std::stringstream command_line_builder;
   char** arg = args;
-  // Escape argv[0]
-  command_line_builder << "\"" << m_command << "\"";
+  // Escape argv[0] if needed
+  if ((m_command.find(" ") != string::npos) &&
+      (m_command.find("\"") != 0)) {
+      command_line_builder << "\"" << m_command << "\" ";
+  } else {
+    command_line_builder << m_command << " ";
+  }
   ++arg;
   while (*arg) {
     command_line_builder << " " << *arg++;
