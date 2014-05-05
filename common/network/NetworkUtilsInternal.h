@@ -22,7 +22,7 @@
 #define COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_WINSOCK2_H
