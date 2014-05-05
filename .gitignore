@@ -49,6 +49,7 @@ config/missing
 config/py-compile
 config/test-driver
 *Tester
+*Tester.exe
 data/rdm/PidDataTest.sh
 debian/files
 debian/*.debhelper.log

@@ -184,25 +184,25 @@ bool MockUDPSocket::EnableBroadcast() {
 }
 
 
-bool MockUDPSocket::SetMulticastInterface(const IPV4Address &interface) {
-  OLA_ASSERT_EQ(m_interface, interface);
+bool MockUDPSocket::SetMulticastInterface(const IPV4Address &iface) {
+  OLA_ASSERT_EQ(m_interface, iface);
   return true;
 }
 
 
-bool MockUDPSocket::JoinMulticast(const IPV4Address &interface,
+bool MockUDPSocket::JoinMulticast(const IPV4Address &iface,
                                   const IPV4Address &group,
                                   bool loop) {
-  OLA_ASSERT_EQ(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, iface);
   (void) group;
   (void) loop;
   return true;
 }
 
 
-bool MockUDPSocket::LeaveMulticast(const IPV4Address &interface,
+bool MockUDPSocket::LeaveMulticast(const IPV4Address &iface,
                                    const IPV4Address &group) {
-  OLA_ASSERT_EQ(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, iface);
   (void) group;
   return true;
 }
@@ -293,8 +293,8 @@ bool MockUDPSocket::CheckNetworkParamsMatch(bool init_called,
 }
 
 
-void MockUDPSocket::SetInterface(const IPV4Address &interface) {
-  m_interface = interface;
+void MockUDPSocket::SetInterface(const IPV4Address &iface) {
+  m_interface = iface;
 }
 
 
