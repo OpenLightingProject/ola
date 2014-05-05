@@ -73,7 +73,9 @@ void FindMatchingFiles(const string &directory,
     mutable_directory.erase(mutable_directory.size() - 1);
   }
 
-  h_find = FindFirstFileA(mutable_directory.data(), &find_file_data);
+  string search_pattern = mutable_directory + PATH_SEPARATOR + "*";
+
+  h_find = FindFirstFileA(search_pattern.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
     OLA_WARN << "Find first file failed: " << GetLastError();
     return;
