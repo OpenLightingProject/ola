@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxSocket.h
  * Interface for the dmx4linux socket class
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXSOCKET_H_

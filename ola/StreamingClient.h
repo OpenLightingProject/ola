@@ -15,7 +15,7 @@
  *
  * OlaDevice.h
  * Interface to the OLA Client Device class
- * Copyright (C) 2005-2006 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLA_STREAMINGCLIENT_H_

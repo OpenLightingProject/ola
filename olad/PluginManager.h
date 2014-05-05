@@ -15,7 +15,7 @@
  *
  * PluginManager.h
  * Interface to the PluginManager class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_PLUGINMANAGER_H_

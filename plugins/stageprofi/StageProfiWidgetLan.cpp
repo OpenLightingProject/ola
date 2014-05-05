@@ -15,7 +15,7 @@
  *
  * StageProfiWidgetLan.cpp
  * StageProfi Lan Widget
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  *
  * The StageProfi LAN Widget.
  */

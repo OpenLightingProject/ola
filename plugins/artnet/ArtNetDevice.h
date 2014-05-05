@@ -15,7 +15,7 @@
  *
  * ArtNetDevice.h
  * Interface for the ArtNet device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETDEVICE_H_

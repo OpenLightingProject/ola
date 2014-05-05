@@ -16,7 +16,7 @@
  * OlaClientWrapper.h
  * This provides a helpful wrapper for the OlaClient & OlaCallbackClient
  * classes.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * The OlaClientWrapper classes takes care of setting up the socket, select
  * server and client for you.

@@ -15,7 +15,7 @@
  *
  * ArtNetPlugin.h
  * Interface for the ArtNet plugin class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETPLUGIN_H_

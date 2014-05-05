@@ -15,7 +15,7 @@
  *
  * DummyPortTest.cpp
  * Test class for the dummy responders
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

@@ -16,7 +16,7 @@
  * Logging.cpp
  * The logging functions. See include/ola/Logging.h for details on how to use
  * these.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -48,8 +48,8 @@ DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
 
-using std::string;
 using std::ostringstream;
+using std::string;
 
 /**
  * @cond HIDDEN_SYMBOLS

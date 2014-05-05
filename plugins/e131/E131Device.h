@@ -15,7 +15,7 @@
  *
  * E131Device.h
  * Interface for the E1.31 device
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131DEVICE_H_

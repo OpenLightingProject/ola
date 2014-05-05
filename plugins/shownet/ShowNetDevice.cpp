@@ -15,7 +15,7 @@
  *
  * ShowNetDevice.cpp
  * ShowNet device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sstream>
@@ -34,7 +34,7 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-using std::stringstream;
+using std::ostringstream;
 
 const char ShowNetDevice::SHOWNET_DEVICE_NAME[] = "ShowNet";
 const char ShowNetDevice::IP_KEY[] = "ip";
@@ -66,7 +66,7 @@ bool ShowNetDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << SHOWNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
     "]";
   SetName(str.str());

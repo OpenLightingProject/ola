@@ -15,7 +15,7 @@
  *
  * OpenDmxPlugin.h
  * Interface for the opendmx plugin class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_OPENDMX_OPENDMXPLUGIN_H_

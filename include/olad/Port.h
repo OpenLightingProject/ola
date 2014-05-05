@@ -15,7 +15,7 @@
  *
  * Port.h
  * Header file for the Port classes
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PORT_H_

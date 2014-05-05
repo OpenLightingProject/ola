@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxPlugin.h
  * Interface for the dmx4linux plugin class
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXPLUGIN_H_

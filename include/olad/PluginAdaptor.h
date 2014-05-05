@@ -15,7 +15,7 @@
  *
  * PluginAdaptor.h
  * The provides operations on a ola_device.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_

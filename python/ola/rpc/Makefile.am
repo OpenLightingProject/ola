@@ -6,6 +6,7 @@ rpcpythondir = $(pkgpythondir)/rpc
 if BUILD_PYTHON_LIBS
 nodist_rpcpython_PYTHON = Rpc_pb2.py
 rpcpython_PYTHON = SimpleRpcController.py StreamRpcChannel.py __init__.py
+BUILT_SOURCES = Rpc_pb2.py
 endif
 
 Rpc_pb2.py: ${top_srcdir}/common/rpc/Rpc.proto

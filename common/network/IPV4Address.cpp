@@ -15,7 +15,7 @@
  *
  * IPV4Address.cpp
  * A IPV4 address
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 #if HAVE_CONFIG_H
@@ -39,6 +39,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
+#include <limits>
 #include <string>
 
 #include "common/network/NetworkUtilsInternal.h"
@@ -106,7 +107,7 @@ bool IPV4Address::ToCIDRMask(IPV4Address address, uint8_t *mask) {
   uint32_t netmask = NetworkToHost(address.AsInt());
   uint8_t bits = 0;
   bool seen_one = false;
-  for (uint8_t i = 0; i < 32; i++) {
+  for (uint8_t i = 0; i < std::numeric_limits<uint32_t>::digits; i++) {
     if (netmask & 1) {
       bits++;
       seen_one = true;

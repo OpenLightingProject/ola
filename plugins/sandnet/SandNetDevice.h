@@ -15,7 +15,7 @@
  *
  * SandNetDevice.h
  * Interface for the sandnet device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SANDNET_SANDNETDEVICE_H_

@@ -15,7 +15,7 @@
  *
  * Descriptor.cpp
  * Implementation of the Descriptor classes
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>

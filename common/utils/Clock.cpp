@@ -15,7 +15,7 @@
  *
  * Clock.h
  * Provides the TimeInterval and TimeStamp classes.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * The struct timeval can represent both absolute time and time intervals.
  * We define our own wrapper classes that:
@@ -134,7 +134,7 @@ int64_t BaseTimeVal::AsInt() const {
 }
 
 string BaseTimeVal::ToString() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6)
       << m_tv.tv_usec;
   return str.str();

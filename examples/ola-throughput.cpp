@@ -15,7 +15,7 @@
  *
  * ola-throughput.cpp
  * Send a bunch of frames quickly to load test the server.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>

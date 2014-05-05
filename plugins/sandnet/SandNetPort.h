@@ -16,7 +16,7 @@
  *
  * SandNetPort.h
  * The SandNet plugin for ola
- * Copyright (C) 2005-2006  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SANDNET_SANDNETPORT_H_

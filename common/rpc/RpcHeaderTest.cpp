@@ -15,7 +15,7 @@
  *
  * RpcHeaderTest.cpp
  * Test fixture for the RpcHeader class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdint.h>

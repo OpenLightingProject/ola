@@ -89,7 +89,7 @@ bool RDMCommand::operator==(const RDMCommand &other) const {
 
 
 std::string RDMCommand::ToString() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << m_source << " -> " << m_destination << ", Trans # " <<
     static_cast<int>(m_transaction_number) << ", Port ID " <<
     static_cast<int>(m_port_id) << ", Msg Cnt " <<

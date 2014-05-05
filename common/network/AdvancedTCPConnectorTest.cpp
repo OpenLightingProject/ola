@@ -322,7 +322,7 @@ void AdvancedTCPConnectorTest::ConfirmState(
     const IPV4SocketAddress &endpoint,
     AdvancedTCPConnector::ConnectionState expected_state,
     unsigned int expected_attempts) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
 
   AdvancedTCPConnector::ConnectionState state;

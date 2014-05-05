@@ -39,7 +39,6 @@ using std::set;
 using std::string;
 using std::stringstream;
 
-
 class RegistrationFileParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RegistrationFileParserTest);
   CPPUNIT_TEST(testFromStream);
@@ -63,6 +62,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RegistrationFileParserTest);
  * Parse a stream.
  */
 void RegistrationFileParserTest::testFromStream() {
+  // This is a stringstream not a ostringstream as the other end needs an
+  // istream
   stringstream str;
   str << "oNe  \tservice:foo://localhost    300" << endl;
   str << "tWO  \tservice:foo://192.168.1.1  600" << endl;

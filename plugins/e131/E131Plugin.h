@@ -15,7 +15,7 @@
  *
  * E131Plugin.h
  * Interface for the E1.131 plugin class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131PLUGIN_H_

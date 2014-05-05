@@ -15,7 +15,7 @@
  *
  * PortConstants.h
  * Header file for the Port Constants.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PORTCONSTANTS_H_

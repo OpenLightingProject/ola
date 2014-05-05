@@ -15,7 +15,7 @@
  *
  * EspNetPlugin.h
  * Interface for the espnet plugin class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ESPNET_ESPNETPLUGIN_H_

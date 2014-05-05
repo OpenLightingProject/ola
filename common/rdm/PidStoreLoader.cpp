@@ -13,12 +13,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * PidStore.cpp
- * The PidStore and Pid classes.
+ * PidStoreLoader.cpp
+ * The PidStoreLoader and helper code.
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <dirent.h>
 #include <errno.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
@@ -42,9 +41,9 @@ namespace rdm {
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using std::map;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 

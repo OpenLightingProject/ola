@@ -15,7 +15,7 @@
  *
  * stageprofidevice.h
  * Interface for the stageprofi device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_

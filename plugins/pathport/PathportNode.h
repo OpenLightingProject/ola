@@ -15,7 +15,7 @@
  *
  * PathportNode.h
  * Header file for the PathportNode class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_PATHPORT_PATHPORTNODE_H_

@@ -15,7 +15,7 @@
  *
  * ArtNetNodeImpl.h
  * Header file for the ArtNetNodeImpl class
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETNODE_H_

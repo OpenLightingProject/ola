@@ -15,7 +15,7 @@
  *
  * OladHTTPServer.cpp
  * Ola HTTP class
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sys/time.h>
@@ -54,8 +54,8 @@ using ola::web::JsonArray;
 using ola::web::JsonObject;
 using std::cout;
 using std::endl;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char OladHTTPServer::HELP_PARAMETER[] = "help";
@@ -855,7 +855,7 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
                                   const client::DMXMetadata &,
                                   const DmxBuffer &buffer) {
   // rather than adding 512 JsonValue we cheat and use raw here
-  stringstream str;
+  ostringstream str;
   str << "[" << buffer.ToString() << "]";
   JsonObject json;
   json.AddRaw("dmx", str.str());
@@ -886,13 +886,13 @@ void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
 
 
 /**
- * Add the json representation of this port to the stringstream
+ * Add the json representation of this port to the ostringstream
  */
 void OladHTTPServer::PortToJson(JsonObject *json,
                                const OlaDevice &device,
                                const OlaPort &port,
                                bool is_output) {
-  stringstream str;
+  ostringstream str;
   str << device.Alias() << "-" << (is_output ? "O" : "I") << "-" << port.Id();
 
   json->Add("device", device.Name());

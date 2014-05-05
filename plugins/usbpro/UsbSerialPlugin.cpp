@@ -15,7 +15,7 @@
  *
  * UsbSerialPlugin.cpp
  * The UsbPro plugin for ola
- * Copyright (C) 2006-2010 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <stdlib.h>

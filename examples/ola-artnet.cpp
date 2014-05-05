@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  ola-artnet.cpp
- *  Configure an ArtNet device
- *  Copyright (C) 2005-2009 Simon Newton
+ * ola-artnet.cpp
+ * Configure an ArtNet device
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>

@@ -15,7 +15,7 @@
  *
  * NetworkUtils.cpp
  * Abstract various network functions.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include "ola/network/NetworkUtils.h"

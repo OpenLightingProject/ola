@@ -15,7 +15,7 @@
  *
  * DMPPDU.cpp
  * The DMPPDU
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include "ola/Logging.h"

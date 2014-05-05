@@ -15,7 +15,7 @@
  *
  * OlaDaemon.cpp
  * This is the main ola daemon
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H

@@ -15,7 +15,7 @@
  *
  * ExportMap.cpp
  * Exported Variables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>
@@ -30,8 +30,8 @@
 namespace ola {
 
 using std::map;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -43,7 +43,7 @@ using std::vector;
  */
 template<typename Type>
 const string MapVariable<Type>::Value() const {
-  stringstream value;
+  ostringstream value;
   value << "map:" << m_label;
   typename map<string, Type>::const_iterator iter;
   for (iter = m_variables.begin(); iter != m_variables.end(); ++iter)
@@ -57,7 +57,7 @@ const string MapVariable<Type>::Value() const {
  */
 template<>
 const string MapVariable<string>::Value() const {
-  stringstream value;
+  ostringstream value;
   value << "map:" << m_label;
   map<string, string>::const_iterator iter;
   for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {

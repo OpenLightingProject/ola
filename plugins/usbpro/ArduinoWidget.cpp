@@ -34,8 +34,8 @@ namespace plugin {
 namespace usbpro {
 
 using ola::rdm::RDMCommandSerializer;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
 
@@ -169,7 +169,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
     return;
   }
 
-  stringstream str;
+  ostringstream str;
   for (unsigned int i = 0; i < length; ++i) {
     str << std::hex << static_cast<int>(data[i]) << " ";
   }

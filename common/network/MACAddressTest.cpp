@@ -70,7 +70,7 @@ void MACAddressTest::testMACAddress() {
 
   // test stringification
   OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), address1.ToString());
-  std::stringstream str;
+  std::ostringstream str;
   str << address1;
   OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), str.str());
 

@@ -15,7 +15,7 @@
  *
  * SandNetNode.cpp
  * A SandNet node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>

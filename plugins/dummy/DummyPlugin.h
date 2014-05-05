@@ -15,7 +15,7 @@
  *
  * DummyPlugin.h
  * Interface for the dummyplugin class
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_DUMMY_DUMMYPLUGIN_H_
