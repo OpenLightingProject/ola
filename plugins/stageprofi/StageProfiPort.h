@@ -15,7 +15,7 @@
  *
  * StageProfiPort.h
  * The StageProfi plugin for ola
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_

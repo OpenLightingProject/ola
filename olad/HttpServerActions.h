@@ -15,7 +15,7 @@
  *
  * HttpServerActions.h
  * The list of actions the Ola Server performs.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_HTTPSERVERACTIONS_H_

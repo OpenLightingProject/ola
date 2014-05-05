@@ -15,7 +15,7 @@
  *
  * PathportPackets.h
  * Datagram definitions for libpathport
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_PATHPORT_PATHPORTPACKETS_H_

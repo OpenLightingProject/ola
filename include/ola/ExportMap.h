@@ -15,7 +15,7 @@
  *
  * ExportMap.h
  * Interface the ExportMap and ExportedVariables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -159,7 +159,7 @@ class IntegerVariable: public BaseVariable {
   void Reset() { m_value = 0; }
   int Get() const { return m_value; }
   const std::string Value() const {
-    std::stringstream out;
+    std::ostringstream out;
     out << m_value;
     return out.str();
   }
@@ -184,7 +184,7 @@ class CounterVariable: public BaseVariable {
   void Reset() { m_value = 0; }
   unsigned int Get() const { return m_value; }
   const std::string Value() const {
-    std::stringstream out;
+    std::ostringstream out;
     out << m_value;
     return out.str();
   }

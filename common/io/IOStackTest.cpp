@@ -96,7 +96,7 @@ void IOStackTest::testBasicWrite() {
   stack.Write(data3, sizeof(data3));
   OLA_ASSERT_EQ(5u, stack.Size());
 
-  std::stringstream str;
+  std::ostringstream str;
   stack.Dump(&str);
   OLA_ASSERT_EQ(
       string("03 04 02 00 01           .....\n"),

@@ -15,7 +15,7 @@
  *
  * StageProfiWidgetLan.h
  * Interface for the StageProfi LAN device
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGETLAN_H_

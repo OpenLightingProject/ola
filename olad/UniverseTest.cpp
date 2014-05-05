@@ -15,7 +15,7 @@
  *
  * UniverseTest.cpp
  * Test fixture for the Universe and UniverseStore classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -819,7 +819,7 @@ void UniverseTest::ConfirmRDM(int line,
                               rdm_response_code response_code,
                               const RDMResponse *response,
                               const vector<string>&) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   OLA_ASSERT_EQ_MSG(expected_response_code,
                     response_code,

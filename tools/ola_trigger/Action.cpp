@@ -58,7 +58,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
   char **args = BuildArgList(context);
 
   if (ola::LogLevel() == ola::OLA_LOG_INFO) {
-    std::stringstream str;
+    std::ostringstream str;
     char **ptr = args;
     str << "Executing: " << m_command << " : [";
     ptr++;  // skip over argv[0]
@@ -139,7 +139,7 @@ char *CommandAction::StringToDynamicChar(const string &str) {
  * Return the interval as a string.
  */
 string ValueInterval::AsString() const {
-  std::stringstream str;
+  std::ostringstream str;
   if (m_lower == m_upper) {
     str << static_cast<int>(m_lower);
   } else {
@@ -417,7 +417,7 @@ string Slot::IntervalsAsString(
     const ActionVector::const_iterator &start,
     const ActionVector::const_iterator &end) const {
   ActionVector::const_iterator iter = start;
-  std::stringstream str;
+  std::ostringstream str;
   for (; iter != end; ++iter) {
     if (iter != start)
       str << ", ";

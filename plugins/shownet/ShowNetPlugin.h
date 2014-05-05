@@ -15,7 +15,7 @@
  *
  * ShowNetPlugin.h
  * Interface for the ShowNet plugin class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SHOWNET_SHOWNETPLUGIN_H_

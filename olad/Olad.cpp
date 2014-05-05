@@ -16,7 +16,7 @@
  * Olad.cpp
  * Main file for olad, parses the options, forks if required and runs the
  * daemon.
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  */
 

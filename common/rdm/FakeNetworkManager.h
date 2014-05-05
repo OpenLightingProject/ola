@@ -15,7 +15,7 @@
  *
  * FakeNetworkManager.h
  * Talks to the machine's network systems to get/set data.
- * Copyright (C) 2013-2014 Peter Newman
+ * Copyright (C) 2013 Peter Newman
  */
 
 #ifndef COMMON_RDM_FAKENETWORKMANAGER_H_

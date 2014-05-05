@@ -125,7 +125,7 @@ bool EuroliteProOutputPort::Start() {
   OLA_INFO << "Bus_number: " <<  bus_number << ", Device_address: " <<
     device_address;
 
-  std::stringstream str;
+  std::ostringstream str;
   str << bus_number << "-" << device_address;
   m_serial = str.str();
 

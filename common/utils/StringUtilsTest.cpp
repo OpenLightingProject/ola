@@ -15,7 +15,7 @@
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdint.h>
@@ -738,7 +738,7 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
 void StringUtilsTest::testFormatData() {
   uint8_t data[] = {0, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd',
                     1, 2};
-  std::stringstream str;
+  std::ostringstream str;
   FormatData(&str, data, sizeof(data));
   OLA_ASSERT_EQ(
       string("00 48 65 6c 6c 6f 20 57  .Hello W\n"

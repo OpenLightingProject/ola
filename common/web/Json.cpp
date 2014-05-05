@@ -28,8 +28,8 @@ namespace ola {
 namespace web {
 
 using std::ostream;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 
 void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
@@ -148,7 +148,7 @@ void JsonWriter::Write(ostream *output, const JsonValue &obj) {
 }
 
 string JsonWriter::AsString(const JsonValue &obj) {
-  stringstream str;
+  ostringstream str;
   JsonWriter writer(&str);
   obj.Accept(&writer);
   return str.str();

@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # ModelCollector.py
-# Copyright (C) 2011-2014 Simon Newton
+# Copyright (C) 2011 Simon Newton
 
 '''Quick script to collect information about responders.'''
 

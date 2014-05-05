@@ -15,7 +15,7 @@
  *
  * RpcChannel.h
  * The RPC Channel
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_RPC_RPCCHANNEL_H_

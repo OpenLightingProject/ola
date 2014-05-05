@@ -15,7 +15,7 @@
  *
  * DescriptorTest.cpp
  * Test fixture for the Descriptor classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

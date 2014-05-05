@@ -15,7 +15,7 @@
  *
  * E131Device.cpp
  * An E1.31 device
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  *
  * Ids 0-3 : Input ports (recv dmx)
  * Ids 4-7 : Output ports (send dmx)
@@ -45,8 +45,8 @@ namespace e131 {
 const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
 
 using ola::rpc::RpcController;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 /*
@@ -85,7 +85,7 @@ bool E131Device::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << DEVICE_NAME << " [" << m_node->GetInterface().ip_address << "]";
   SetName(str.str());
 

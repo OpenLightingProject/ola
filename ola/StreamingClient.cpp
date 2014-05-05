@@ -15,7 +15,7 @@
  *
  * StreamingClient.cpp
  * Implementation of Streaming Client
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <ola/AutoStart.h>

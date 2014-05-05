@@ -15,7 +15,7 @@
  *
  * SelectServer.h
  * The select server interface
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_IO_SELECTSERVER_H_

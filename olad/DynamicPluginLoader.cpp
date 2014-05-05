@@ -15,7 +15,7 @@
  *
  * DynamicPluginLoader.cpp
  * This class is responsible for loading and unloading the plugins
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H

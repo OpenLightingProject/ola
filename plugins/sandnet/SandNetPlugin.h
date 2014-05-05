@@ -15,7 +15,7 @@
  *
  * SandNetPlugin.h
  * Interface for the sandnet plugin class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SANDNET_SANDNETPLUGIN_H_

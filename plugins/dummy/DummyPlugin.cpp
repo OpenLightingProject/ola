@@ -15,7 +15,7 @@
  *
  * DummyPlugin.cpp
  * The Dummy plugin for ola, contains a single dummy device
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdlib.h>

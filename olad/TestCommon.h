@@ -15,7 +15,7 @@
  *
  * UniverseTest.cpp
  * Test fixture for the Universe and UniverseStore classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_TESTCOMMON_H_
@@ -242,7 +242,7 @@ class TestMockPlugin: public ola::Plugin {
       return true;
     }
     std::string Name() const {
-      std::stringstream str;
+      std::ostringstream str;
       str << m_id;
       return str.str();
     }

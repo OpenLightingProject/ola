@@ -15,7 +15,7 @@
  *
  * DMPHeader.h
  * The DMP Header
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_DMPHEADER_H_

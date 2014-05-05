@@ -15,7 +15,7 @@
  *
  * ActionQueue.h
  * Interface for the ActionQueue class.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * An ActionQueue allows Actions to be queued up and the executed
  * asynchronously. Perform(on_done) is called on each action in turn and an

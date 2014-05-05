@@ -15,7 +15,7 @@
  *
  * OpenDmxThread.h
  * Thread for the Open DMX device
- * Copyright (C) 2005-2007  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>

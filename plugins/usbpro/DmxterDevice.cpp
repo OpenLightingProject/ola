@@ -46,7 +46,7 @@ DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
                            uint16_t device_id,
                            uint32_t serial):
     UsbSerialDevice(owner, name, widget) {
-  std::stringstream str;
+  std::ostringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 

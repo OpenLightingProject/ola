@@ -15,7 +15,7 @@
  *
  * PluginLoader.h
  * Interface for the PluginLoader classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_PLUGINLOADER_H_

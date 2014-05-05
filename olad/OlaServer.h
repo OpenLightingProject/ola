@@ -15,7 +15,7 @@
  *
  * OlaServer.h
  * Interface for the ola server class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_OLASERVER_H_

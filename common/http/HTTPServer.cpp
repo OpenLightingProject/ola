@@ -15,7 +15,7 @@
  *
  * HTTPServer.cpp
  * The base HTTP Server class.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdio.h>

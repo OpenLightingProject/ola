@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxDevice.h
  * Interface for the dmx4linux device
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXDEVICE_H_

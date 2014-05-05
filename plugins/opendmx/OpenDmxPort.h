@@ -15,7 +15,7 @@
  *
  * OpenDmxPort.h
  * The Open DMX plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_OPENDMX_OPENDMXPORT_H_

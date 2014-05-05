@@ -15,7 +15,7 @@
  *
  * RpcHeader.h
  * The header for the RPC messages.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_RPC_RPCHEADER_H_

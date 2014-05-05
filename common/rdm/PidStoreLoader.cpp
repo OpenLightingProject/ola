@@ -15,10 +15,9 @@
  *
  * PidStoreLoader.cpp
  * The PidStoreLoader and helper code.
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
-#include <dirent.h>
 #include <errno.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
@@ -42,9 +41,9 @@ namespace rdm {
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using std::map;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 

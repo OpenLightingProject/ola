@@ -15,7 +15,7 @@
  *
  * Util.h
  * File related helper functions.
- * Copyright (C) 2013-2014 Simon Newton
+ * Copyright (C) 2013 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_FILE_UTIL_H_

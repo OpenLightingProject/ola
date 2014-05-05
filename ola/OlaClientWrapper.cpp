@@ -15,7 +15,7 @@
  *
  * OlaClientWrapper.cpp
  * Implementation of the OLA Client
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <ola/OlaClientWrapper.h>

@@ -15,7 +15,7 @@
  *
  * StageProfiPlugin.cpp
  * The StageProfi plugin for ola
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <stdlib.h>

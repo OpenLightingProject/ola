@@ -39,7 +39,7 @@ class MockAction: public Action {
     }
 
     void CheckForValue(int32_t line, uint8_t expected_value) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "Line " << line;
       CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
                                    static_cast<size_t>(1),
@@ -67,7 +67,7 @@ class BadAction: public Action {
     BadAction() : Action() {}
 
     void Execute(Context*, uint8_t slot_value) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "Incorrect action called for " << static_cast<int>(slot_value);
       CPPUNIT_FAIL(str.str());
     }
