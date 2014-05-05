@@ -78,7 +78,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
   }
 
 #ifdef _WIN32
-  std::stringstream command_line_builder;
+  std::ostringstream command_line_builder;
   char** arg = args;
   // Escape argv[0] if needed
   if ((m_command.find(" ") != string::npos) &&
