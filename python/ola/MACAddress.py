@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # MACAddress.py
-# Copyright (C) 2013-2014 Peter Newman
+# Copyright (C) 2013 Peter Newman
 
 """The MACAddress class."""
 

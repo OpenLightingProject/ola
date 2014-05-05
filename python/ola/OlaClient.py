@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # OlaClient.py
-# Copyright (C) 2005-2014 Simon Newton
+# Copyright (C) 2005 Simon Newton
 
 """The client used to communicate with the Ola Server."""
 

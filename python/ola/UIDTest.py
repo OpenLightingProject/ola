@@ -14,7 +14,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # UIDTest.py
-# Copyright (C) 2005-2009 Simon Newton
+# Copyright (C) 2005 Simon Newton
 
 """Test cases for the UID class."""
 
