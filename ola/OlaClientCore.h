@@ -15,7 +15,7 @@
  *
  * OlaClientCore.h
  * The OLA Client Core class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLA_OLACLIENTCORE_H_

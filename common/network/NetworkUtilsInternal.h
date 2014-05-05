@@ -15,7 +15,7 @@
  *
  * NetworkUtilsInternal.h
  * Abstract various network functions.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_NETWORK_NETWORKUTILSINTERNAL_H_

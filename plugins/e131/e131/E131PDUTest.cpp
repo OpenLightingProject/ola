@@ -15,7 +15,7 @@
  *
  * E131PDUTest.cpp
  * Test fixture for the E131PDU class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

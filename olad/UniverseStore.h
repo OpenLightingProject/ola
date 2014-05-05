@@ -15,7 +15,7 @@
  *
  * UniverseStore.h
  * The Universe Store class - this manages the universes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_UNIVERSESTORE_H_

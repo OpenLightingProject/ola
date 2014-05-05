@@ -15,7 +15,7 @@
  *
  * UsbProDevice.cpp
  * An Enttec Usb Pro device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  *
  * The device creates two ports, one in and one out, but you can only use one
  * at a time.

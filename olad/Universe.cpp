@@ -15,7 +15,7 @@
  *
  * Universe.cpp
  * Represents a universe of DMX data.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * Each universe has the following:
  *   A human readable name

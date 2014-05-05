@@ -16,7 +16,7 @@
  * UniverseStore.cpp
  * The universe store class. This maintains the set of all active universes and
  * saves the settings.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <iostream>

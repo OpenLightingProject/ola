@@ -15,7 +15,7 @@
  *
  * RunLengthEncoderTest.cpp
  * Test fixture for the RunLengthEncoder class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

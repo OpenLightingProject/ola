@@ -15,7 +15,7 @@
  *
  * UID.h
  * Representation of an RDM UID
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**

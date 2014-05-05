@@ -16,7 +16,7 @@
  * Logging.cpp
  * The logging functions. See include/ola/Logging.h for details on how to use
  * these.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**

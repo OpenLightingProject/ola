@@ -15,7 +15,7 @@
  *
  * PidStoreLoader.cpp
  * The PidStoreLoader and helper code.
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 #include <errno.h>

@@ -15,7 +15,7 @@
  *
  * Clock.h
  * Provides the TimeInterval and TimeStamp classes.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * The struct timeval can represent both absolute time and time intervals.
  * We define our own wrapper classes that:

@@ -16,7 +16,7 @@
  *
  * DummyPort.cpp
  * The Dummy Port for ola
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <iostream>

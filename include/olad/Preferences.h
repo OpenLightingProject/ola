@@ -16,7 +16,7 @@
  * preferences.h
  * Interface for the Preferences class - this allows storing user preferences /
  * settings.
- * Copyright (C) 2005-2006  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PREFERENCES_H_

@@ -15,7 +15,7 @@
  *
  * Preferences.cpp
  * This class stores preferences in files
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #include <dirent.h>
 #include <errno.h>

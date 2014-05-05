@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxPort.h
  * The Dmx4Linux plugin for ola
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_

@@ -15,7 +15,7 @@
  *
  * UsbDmxPlugin.cpp
  * The UsbDmx plugin for ola
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <errno.h>

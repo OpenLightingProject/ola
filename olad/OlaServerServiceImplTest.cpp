@@ -15,7 +15,7 @@
  *
  * OlaServerServiceImplTest.cpp
  * Test fixture for the OlaServerServiceImpl class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * How this file is organized:
  *  We test each rpc method in OlaServerServiceImpl, for each method, we have a

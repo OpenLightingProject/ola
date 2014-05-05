@@ -15,7 +15,7 @@
  *
  * UsbSerialPlugin.h
  * Interface for the usbpro plugin class
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_USBPRO_USBSERIALPLUGIN_H_

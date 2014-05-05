@@ -15,7 +15,7 @@
  *
  * E131Device.cpp
  * An E1.31 device
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  *
  * Ids 0-3 : Input ports (recv dmx)
  * Ids 4-7 : Output ports (send dmx)

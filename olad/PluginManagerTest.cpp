@@ -15,7 +15,7 @@
  *
  * PluginManagerTest.cpp
  * Test fixture for the PluginManager classes
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

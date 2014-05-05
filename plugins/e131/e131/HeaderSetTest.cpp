@@ -15,7 +15,7 @@
  *
  * HeaderSetTest.cpp
  * Test fixture for the HeaderSet class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

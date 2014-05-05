@@ -15,7 +15,7 @@
  *
  * Interface.cpp
  * Represents network interface.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifdef HAVE_SYS_TYPES_H

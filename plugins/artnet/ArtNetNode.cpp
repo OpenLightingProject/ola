@@ -15,7 +15,7 @@
  *
  * ArtNetNode.cpp
  * An ArtNet node
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>

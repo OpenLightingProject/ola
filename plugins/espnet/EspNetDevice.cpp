@@ -15,7 +15,7 @@
  *
  * EspNetDevice.cpp
  * Esp-Net device
- * Copyright (C) 2005-2006  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  *
  */

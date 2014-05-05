@@ -15,7 +15,7 @@
  *
  * RootHeader.h
  * Interface for the RootHeader class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_ROOTHEADER_H_

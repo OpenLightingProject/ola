@@ -15,7 +15,7 @@
  *
  * Util.cpp
  * File related helper functions.
- * Copyright (C) 2013-2014 Simon Newton
+ * Copyright (C) 2013 Simon Newton
  */
 
 #include <ola/Logging.h>

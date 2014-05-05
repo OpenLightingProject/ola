@@ -15,7 +15,7 @@
  *
  * RunLengthEncoder.cpp
  * The Run Length Encoder
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <ola/BaseTypes.h>

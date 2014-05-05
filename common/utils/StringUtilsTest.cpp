@@ -15,7 +15,7 @@
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdint.h>

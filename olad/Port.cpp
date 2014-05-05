@@ -15,7 +15,7 @@
  *
  * Port.cpp
  * Base implementation of the Port class.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * Unfortunately this file contains a lot of code duplication.
  */

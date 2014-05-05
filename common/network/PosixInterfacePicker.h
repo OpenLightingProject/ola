@@ -15,7 +15,7 @@
  *
  * PosixInterfacePicker.h
  * Choose an interface to listen on
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #ifndef COMMON_NETWORK_POSIXINTERFACEPICKER_H_
 #define COMMON_NETWORK_POSIXINTERFACEPICKER_H_

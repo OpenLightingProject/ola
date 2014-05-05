@@ -15,7 +15,7 @@
  *
  * E131Port.cpp
  * The E1.31 plugin for ola
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <string>

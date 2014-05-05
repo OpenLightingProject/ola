@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxPlugin.cpp
  * The Dmx4Linux plugin for ola
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <errno.h>

@@ -17,7 +17,7 @@
  * This class does the heavy lifting for loading the PidStore from a protobuf.
  * It's separate so that PidStore.h doesn't have to include the Pids.pb.h
  * header.
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 #ifndef COMMON_RDM_PIDSTORELOADER_H_

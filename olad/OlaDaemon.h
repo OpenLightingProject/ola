@@ -15,7 +15,7 @@
  *
  * OlaDaemon.h
  * Interface for the OLA Daemon class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_OLADAEMON_H_

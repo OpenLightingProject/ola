@@ -15,7 +15,7 @@
  *
  * StageprofiWidget.cpp
  * This is the base widget class
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends

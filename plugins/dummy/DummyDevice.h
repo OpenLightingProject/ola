@@ -15,7 +15,7 @@
  *
  * DummyDevice.h
  * Interface for the dummy device
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_DUMMY_DUMMYDEVICE_H_

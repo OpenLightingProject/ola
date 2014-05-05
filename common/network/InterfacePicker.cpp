@@ -15,7 +15,7 @@
  *
  * InterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>

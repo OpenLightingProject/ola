@@ -15,7 +15,7 @@
  *
  * ExportMap.cpp
  * Exported Variables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>

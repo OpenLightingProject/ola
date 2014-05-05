@@ -15,7 +15,7 @@
  *
  * PDU.h
  * Interface for the PDU and PDUBlock classes
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_PDU_H_

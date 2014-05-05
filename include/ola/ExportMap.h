@@ -15,7 +15,7 @@
  *
  * ExportMap.h
  * Interface the ExportMap and ExportedVariables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**

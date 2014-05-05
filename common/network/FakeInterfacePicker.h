@@ -15,7 +15,7 @@
  *
  * FakeInterfacePicker.h
  * A fake interface picker
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #ifndef COMMON_NETWORK_FAKEINTERFACEPICKER_H_
 #define COMMON_NETWORK_FAKEINTERFACEPICKER_H_

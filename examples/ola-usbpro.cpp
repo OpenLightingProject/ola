@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  ola-usbpro.cpp
- *  Configure Enttec USB Pro Devices managed by OLA
- *  Copyright (C) 2005-2009 Simon Newton
+ * ola-usbpro.cpp
+ * Configure Enttec USB Pro Devices managed by OLA
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>

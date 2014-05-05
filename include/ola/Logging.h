@@ -15,7 +15,7 @@
  *
  * Logging.h
  * Header file for the logging
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 /**
  * @defgroup logging Logging

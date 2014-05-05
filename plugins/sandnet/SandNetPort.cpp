@@ -16,7 +16,7 @@
  *
  * SandNetPort.cpp
  * The SandNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>

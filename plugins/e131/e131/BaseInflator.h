@@ -15,7 +15,7 @@
  *
  * BaseInflator.h
  * Provides the base class for inflating PDU blocks.
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  *
  * The BaseInflator takes care of most of the heavy lifting when inflating PDU
  * blocks. To create a specific Inflator, subclass BaseInflator and implement

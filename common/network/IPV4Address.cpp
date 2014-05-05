@@ -15,7 +15,7 @@
  *
  * IPV4Address.cpp
  * A IPV4 address
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 #if HAVE_CONFIG_H

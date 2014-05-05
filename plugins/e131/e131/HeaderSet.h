@@ -17,7 +17,7 @@
  * Interface for the HeaderSet class
  * HeaderSet is passed down the parsing stack and contains a collection of PDU
  * headers
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_HEADERSET_H_

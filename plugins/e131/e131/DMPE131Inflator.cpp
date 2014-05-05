@@ -15,7 +15,7 @@
  *
  * DMPE131Inflator.cpp
  * The Inflator for the DMP PDUs
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <sys/time.h>

@@ -15,7 +15,7 @@
  *
  * ArtNetPackets.h
  * Datagram definitions for ArtNet
- * Copyright (C) 2004-2010 Simon Newton
+ * Copyright (C) 2004 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETPACKETS_H_

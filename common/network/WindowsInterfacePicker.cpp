@@ -15,7 +15,7 @@
  *
  * WindowsInterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 typedef int socklen_t;

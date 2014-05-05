@@ -15,7 +15,7 @@
  *
  * RDMAPITest.cpp
  * Test fixture for the RDM API class
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

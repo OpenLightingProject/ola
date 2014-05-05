@@ -15,7 +15,7 @@
  *
  * ShowNetNodeTest.cpp
  * Test fixture for the ShowNetNode class
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

@@ -15,7 +15,7 @@
  *
  * PDU.cpp
  * The base PDU class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include "ola/Logging.h"
