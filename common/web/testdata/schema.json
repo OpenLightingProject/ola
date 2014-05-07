@@ -1,0 +1,25 @@
+{
+  "$schema": "http:\\\\json-schema.org\\draft-04\\schema#",
+  "definitions": {
+    "foo": {
+      "title": "bar",
+      "type": "number"
+    },
+    "schemaArray": {
+      "items": {
+        "$ref": "#"
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "description": "A sample schema",
+  "id": "http:\\\\json-schema.org\\draft-04\\schema#",
+  "properties": {
+    "name": {
+      "type": "boolean"
+    }
+  },
+  "title": "Hi",
+  "type": "object"
+}

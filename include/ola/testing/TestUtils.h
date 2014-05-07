@@ -123,6 +123,12 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
     CPPUNIT_NS::Message("Expression: " #value " == NULL"), \
     CPPUNIT_SOURCELINE())
 
+#define OLA_ASSERT_NOT_EMPTY(container) \
+  CPPUNIT_NS::Asserter::failIf( \
+    container.empty(), \
+    CPPUNIT_NS::Message("Expression: " #container " is empty"), \
+    CPPUNIT_SOURCELINE())
+
 #define OLA_FAIL(reason)  \
   CPPUNIT_FAIL(reason)
 }  // namespace testing

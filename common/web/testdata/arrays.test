@@ -1,0 +1,179 @@
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": null
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": true
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": false
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": "foo"
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": 1
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": -1
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": [null]
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": [false]
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": ["foo"]
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": [1]
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": [-1]
+}
+=== NEGATIVE ===
+{
+  "type": "array",
+  "items": [[]]
+}
+=== POSITIVE ===
+// Tests with 'items' missing and 'additionalItems' taking various values
+{
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": true,
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": false,
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": {},
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": {
+    "type": "number"
+  },
+  "type": "array"
+}
+// Tests with 'items' present as an object
+=== POSITIVE ===
+{
+  "items": {},
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": true,
+  "items": {},
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": false,
+  "items": {},
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": {
+    "type": "string"
+  },
+  "items": {
+    "type": "number"
+  },
+  "type": "array"
+}
+// Tests with 'items' as an array
+=== POSITIVE ===
+{
+  "items": [],
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "items": [{}, {}, {}],
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": false,
+  "items": [],
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": false,
+  "items": [{}, {}],
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": true,
+  "items": [],
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "additionalItems": {},
+  "items": [{}, {}, {}],
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "items": {
+    "$ref": "#"
+  },
+  "type": "array"
+}
+=== POSITIVE ===
+{
+  "description": "List of names",
+  "items": {},
+  "maxItems": 1,
+  "minItems": 5,
+  "title": "names",
+  "type": "array"
+}
+=== POSITIVE ===
+// Nested Arrays
+{
+  "items": {
+    "items": [{
+      "type": "boolean"
+    }],
+    "type": "array"
+  },
+  "maxItems": 1,
+  "minItems": 5,
+  "type": "array"
+}

@@ -34,10 +34,13 @@
 namespace ola {
 namespace web {
 
+using std::auto_ptr;
 using std::set;
 using std::string;
 using std::vector;
 
+// BaseValidator
+// -----------------------------------------------------------------------------
 JsonObject* BaseValidator::GetSchema() const {
   JsonObject *schema = new JsonObject();
   if (!m_schema.empty()) {
@@ -51,6 +54,35 @@ JsonObject* BaseValidator::GetSchema() const {
   }
   if (!m_description.empty()) {
     schema->Add("description", m_description);
+  }
+  string type;
+  switch (m_type) {
+    case ARRAY_TYPE:
+      type = "array";
+      break;
+    case BOOLEAN_TYPE:
+      type = "boolean";
+      break;
+    case INTEGER_TYPE:
+      type = "integer";
+      break;
+    case NULL_TYPE:
+      type = "null";
+      break;
+    case NUMBER_TYPE:
+      type = "number";
+      break;
+    case OBJECT_TYPE:
+      type = "object";
+      break;
+    case STRING_TYPE:
+      type = "string";
+      break;
+    default:
+      {}
+  }
+  if (!type.empty()) {
+    schema->Add("type", type);
   }
   ExtendSchema(schema);
   return schema;
@@ -73,6 +105,8 @@ void BaseValidator::SetDescription(const string &description) {
   m_description = description;
 }
 
+// ReferenceValidator
+// -----------------------------------------------------------------------------
 ReferenceValidator::ReferenceValidator(const SchemaDefinitions *definitions,
                                        const string &schema)
     : m_definitions(definitions),
@@ -134,6 +168,11 @@ JsonObject* ReferenceValidator::GetSchema() const {
   return schema;
 }
 
+void ReferenceValidator::SetSchema(const std::string&) {}
+void ReferenceValidator::SetId(const std::string &) {}
+void ReferenceValidator::SetTitle(const std::string &) {}
+void ReferenceValidator::SetDescription(const std::string &) {}
+
 template <typename T>
 void ReferenceValidator::Validate(const T &value) {
   if (!m_validator) {
@@ -145,6 +184,8 @@ void ReferenceValidator::Validate(const T &value) {
   }
 }
 
+// StringValidator
+// -----------------------------------------------------------------------------
 void StringValidator::Visit(const JsonStringValue &str) {
   const std::string& value = str.Value();
   size_t str_size = value.size();
@@ -175,39 +216,43 @@ void StringValidator::ExtendSchema(JsonObject *schema) const {
   // TODO(simon): Add format here?
 }
 
+// MultipleOfConstraint
+// -----------------------------------------------------------------------------
 bool MultipleOfConstraint::IsValid(long double d) {
   return (fmod(d, m_multiple_of) == 0);
 }
 
-NumberValidator::~NumberValidator() {
+// IntegerValidator
+// -----------------------------------------------------------------------------
+IntegerValidator::~IntegerValidator() {
   STLDeleteElements(&m_constraints);
 }
 
-void NumberValidator::AddConstraint(NumberConstraint *constraint) {
+void IntegerValidator::AddConstraint(NumberConstraint *constraint) {
   m_constraints.push_back(constraint);
 }
 
-void NumberValidator::Visit(const JsonUIntValue &value) {
+void IntegerValidator::Visit(const JsonUIntValue &value) {
   CheckValue(value.Value());
 }
 
-void NumberValidator::Visit(const JsonIntValue &value) {
+void IntegerValidator::Visit(const JsonIntValue &value) {
   CheckValue(value.Value());
 }
 
-void NumberValidator::Visit(const JsonUInt64Value &value) {
+void IntegerValidator::Visit(const JsonUInt64Value &value) {
   CheckValue(value.Value());
 }
 
-void NumberValidator::Visit(const JsonInt64Value &value) {
+void IntegerValidator::Visit(const JsonInt64Value &value) {
   CheckValue(value.Value());
 }
 
-void NumberValidator::Visit(const JsonDoubleValue &value) {
-  CheckValue(value.Value());
+void IntegerValidator::Visit(const JsonDoubleValue &value) {
+  BaseValidator::Visit(value);
 }
 
-void NumberValidator::ExtendSchema(JsonObject *schema) const {
+void IntegerValidator::ExtendSchema(JsonObject *schema) const {
   vector<NumberConstraint*>::const_iterator iter = m_constraints.begin();
   for (; iter != m_constraints.end(); ++iter) {
     (*iter)->ExtendSchema(schema);
@@ -215,7 +260,7 @@ void NumberValidator::ExtendSchema(JsonObject *schema) const {
 }
 
 template <typename T>
-void NumberValidator::CheckValue(T t) {
+void IntegerValidator::CheckValue(T t) {
   vector<NumberConstraint*>::const_iterator iter = m_constraints.begin();
   for (; iter != m_constraints.end(); ++iter) {
     if (!(*iter)->IsValid(t)) {
@@ -226,8 +271,14 @@ void NumberValidator::CheckValue(T t) {
   m_is_valid = true;
 }
 
+void NumberValidator::Visit(const JsonDoubleValue &value) {
+  CheckValue(value.Value());
+}
+
+// ObjectValidator
+// -----------------------------------------------------------------------------
 ObjectValidator::ObjectValidator(const Options &options)
-    : BaseValidator(),
+    : BaseValidator(OBJECT_TYPE),
       m_options(options) {
 }
 
@@ -315,24 +366,18 @@ void ObjectValidator::ExtendSchema(JsonObject *schema) const {
   }
 }
 
-ArrayValidator::ArrayValidator(ValidatorInterface *validator,
+// ArrayValidator
+// -----------------------------------------------------------------------------
+ArrayValidator::ArrayValidator(Items *items, AdditionalItems *additional_items,
                                const Options &options)
-  : m_default_validator(validator),
-    m_options(options) {
+  : BaseValidator(ARRAY_TYPE),
+    m_items(items),
+    m_additional_items(additional_items),
+    m_options(options),
+    m_wildcard_validator(new WildcardValidator()) {
 }
 
-ArrayValidator::ArrayValidator(ValidatorList *validators,
-                               ValidatorInterface *schema,
-                               const Options &options)
-    : m_validators(*validators),
-      m_default_validator(schema),
-      m_options(options) {
-  validators->clear();
-}
-
-ArrayValidator::~ArrayValidator() {
-  STLDeleteElements(&m_validators);
-}
+ArrayValidator::~ArrayValidator() {}
 
 // items: array or schema (object)
 // additionalItems : schema (object) or bool
@@ -354,23 +399,106 @@ void ArrayValidator::Visit(const JsonArray &array) {
 
   // TODO(simon): implement unique_items here.
 
-  ArrayElementValidator element_validator(
-      m_validators, m_default_validator.get());
+  auto_ptr<ArrayElementValidator> element_validator(
+      ConstructElementValidator());
 
   for (unsigned int i = 0; i < array.Size(); i++) {
-    OLA_INFO << "Checking element at " << i;
-    array.ElementAt(i)->Accept(&element_validator);
-    if (!element_validator.IsValid()) {
+    array.ElementAt(i)->Accept(element_validator.get());
+    if (!element_validator->IsValid()) {
       break;
     }
   }
-  m_is_valid = element_validator.IsValid();
+  m_is_valid = element_validator->IsValid();
 }
 
+void ArrayValidator::ExtendSchema(JsonObject *schema) const {
+  if (m_options.min_items > 0) {
+    schema->Add("minItems", m_options.min_items);
+  }
+
+  if (m_options.max_items >= 0) {
+    schema->Add("maxItems", m_options.max_items);
+  }
+
+  if (m_options.unique_items) {
+    schema->Add("uniqueItems", m_options.unique_items);
+  }
+
+  if (m_items.get()) {
+    // items exists
+    if (m_items->Validator()) {
+      // items is an object
+      JsonObject *child_schema = m_items->Validator()->GetSchema();
+      schema->AddValue("items", child_schema);
+    } else {
+      // items is an array
+      const ValidatorList &validators = m_items->Validators();
+      JsonArray *items = schema->AddArray("items");
+      ValidatorList::const_iterator iter = validators.begin();
+      for (; iter != validators.end(); iter++) {
+        JsonObject *child_schema = (*iter)->GetSchema();
+        items->Append(child_schema);
+      }
+    }
+  }
+
+  if (m_additional_items.get()) {
+    // additionalItems exists
+    if (m_additional_items->Validator()) {
+      // additionalItems is an object
+      JsonObject *child_schema = m_additional_items->Validator()->GetSchema();
+      schema->AddValue("additionalItems", child_schema);
+    } else {
+      // additionalItems is a bool
+      schema->Add("additionalItems", m_additional_items->AllowAdditional());
+    }
+  }
+}
+
+// TODO(simon): do this once at construction, rather than on every visit?
+ArrayValidator::ArrayElementValidator*
+    ArrayValidator::ConstructElementValidator() const {
+  if (m_items.get()) {
+    if (m_items->Validator()) {
+      // 8.2.3.1, items is an object.
+      ValidatorList empty_validators;
+      return new ArrayElementValidator(empty_validators, m_items->Validator());
+    } else {
+      // 8.2.3.3, items is an array.
+      const ValidatorList &validators = m_items->Validators();
+      ValidatorInterface *default_validator = NULL;
+
+      // Check to see if additionalItems it defined.
+      if (m_additional_items.get()) {
+        if (m_additional_items->Validator()) {
+          // additionalItems is an object
+          default_validator = m_additional_items->Validator();
+        } else if (m_additional_items->AllowAdditional()) {
+          // additionalItems is a bool, and true
+          default_validator = m_wildcard_validator.get();
+        }
+      } else {
+        // additionalItems not provided, so it defaults to the empty schema
+        // (wildcard).
+        default_validator = m_wildcard_validator.get();
+      }
+      return new ArrayElementValidator(validators, default_validator);
+    }
+  } else {
+    // no items, therefore it defaults to the empty (wildcard) schema.
+    ValidatorList empty_validators;
+    return new ArrayElementValidator(
+        empty_validators, m_wildcard_validator.get());
+  }
+}
+
+// ArrayValidator::ArrayElementValidator
+// -----------------------------------------------------------------------------
 ArrayValidator::ArrayElementValidator::ArrayElementValidator(
     const ValidatorList &validators,
     ValidatorInterface *default_validator)
-    : m_item_validators(validators.begin(), validators.end()),
+    : BaseValidator(NONE_TYPE),
+      m_item_validators(validators.begin(), validators.end()),
       m_default_validator(default_validator) {
 }
 
@@ -439,35 +567,12 @@ void ArrayValidator::ArrayElementValidator::ValidateItem(const T &item) {
   m_is_valid = validator->IsValid();
 }
 
-void ArrayValidator::ExtendSchema(JsonObject *schema) const {
-  if (m_options.min_items > 0) {
-    schema->Add("minItems", m_options.min_items);
-  }
-
-  if (m_options.max_items >= 0) {
-    schema->Add("maxItems", m_options.max_items);
-  }
-
-  if (m_options.unique_items) {
-    schema->Add("uniqueItems", m_options.unique_items);
-  }
-
-  if (!m_validators.empty()) {
-    JsonArray *items = schema->AddArray("items");
-    ValidatorList::const_iterator iter = m_validators.begin();
-    for (; iter != m_validators.end(); iter++) {
-      JsonObject *child_schema = (*iter)->GetSchema();
-      items->Append(child_schema);
-    }
-  } else if (m_default_validator.get()) {
-    JsonObject *child_schema = m_default_validator->GetSchema();
-    schema->Add("items", child_schema);
-  }
-}
-
+// ConjunctionValidator
+// -----------------------------------------------------------------------------
 ConjunctionValidator::ConjunctionValidator(const string &keyword,
                                            ValidatorList *validators)
-    : m_keyword(keyword),
+    : BaseValidator(NONE_TYPE),
+      m_keyword(keyword),
       m_validators(*validators) {
   validators->clear();
 }
@@ -485,6 +590,8 @@ void ConjunctionValidator::ExtendSchema(JsonObject *schema) const {
   }
 }
 
+// AllOfValidator
+// -----------------------------------------------------------------------------
 void AllOfValidator::Validate(const JsonValue &value) {
   ValidatorList::iterator iter = m_validators.begin();
   for (; iter != m_validators.end(); ++iter) {
@@ -497,6 +604,8 @@ void AllOfValidator::Validate(const JsonValue &value) {
   m_is_valid = true;
 }
 
+// AnyOfValidator
+// -----------------------------------------------------------------------------
 void AnyOfValidator::Validate(const JsonValue &value) {
   ValidatorList::iterator iter = m_validators.begin();
   for (; iter != m_validators.end(); ++iter) {
@@ -509,6 +618,8 @@ void AnyOfValidator::Validate(const JsonValue &value) {
   m_is_valid = false;
 }
 
+// OneOfValidator
+// -----------------------------------------------------------------------------
 void OneOfValidator::Validate(const JsonValue &value) {
   bool matched = false;
   ValidatorList::iterator iter = m_validators.begin();
@@ -526,7 +637,8 @@ void OneOfValidator::Validate(const JsonValue &value) {
   m_is_valid = matched;
 }
 
-
+// NotValidator
+// -----------------------------------------------------------------------------
 void NotValidator::Validate(const JsonValue &value) {
   value.Accept(m_validator.get());
   m_is_valid = !m_validator->IsValid();
@@ -537,6 +649,8 @@ void NotValidator::ExtendSchema(JsonObject *schema) const {
   schema->AddValue("not", child_schema);
 }
 
+// SchemaDefinitions
+// -----------------------------------------------------------------------------
 SchemaDefinitions::~SchemaDefinitions() {
   STLDeleteValues(&m_validators);
 }
@@ -560,6 +674,8 @@ void SchemaDefinitions::AddToJsonObject(JsonObject *json) const {
   }
 }
 
+// JsonSchema
+// -----------------------------------------------------------------------------
 JsonSchema::JsonSchema(const std::string &schema_url,
                        ValidatorInterface *root_validator,
                        SchemaDefinitions *schema_defs)
@@ -579,7 +695,7 @@ bool JsonSchema::IsValid(const JsonValue &value) {
 
 const JsonObject* JsonSchema::AsJson() const {
   JsonObject *json =  m_root_validator->GetSchema();
-  if (json) {
+  if (json && m_schema_defs->HasDefinitions()) {
     JsonObject *definitions = json->AddObject("definitions");
     m_schema_defs->AddToJsonObject(definitions);
   }

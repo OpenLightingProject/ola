@@ -1,5 +1,8 @@
 include $(top_srcdir)/common.mk
 
+dist_noinst_DATA = testdata/arrays.test \
+                   testdata/schema.json
+
 # LIBRARIES
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
@@ -42,6 +45,7 @@ JsonSchemaParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 JsonSchemaParserTester_LDADD = $(COMMON_TESTING_LIBS) \
                                ./libolaweb.la \
                                ../base/libolabase.la \
+                               ../file/libolafile.la \
                                ../utils/libolautils.la
 
 PointerTrackerTester_SOURCES = PointerTrackerTest.cpp

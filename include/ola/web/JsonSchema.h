@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_WEB_JSONSCHEMA_H_
 
 #include <ola/base/Macro.h>
+#include <ola/stl/STLUtils.h>
 #include <ola/web/Json.h>
 #include <deque>
 #include <map>
@@ -87,11 +88,24 @@ class ValidatorInterface : public JsonValueVisitorInterface {
  * All Visit methods return false.
  */
 class BaseValidator : public ValidatorInterface {
- public:
-  BaseValidator()
-      : m_is_valid(true) {
+ protected:
+  enum JsonType {
+    ARRAY_TYPE,
+    BOOLEAN_TYPE,
+    INTEGER_TYPE,
+    NULL_TYPE,
+    NUMBER_TYPE,
+    OBJECT_TYPE,
+    STRING_TYPE,
+    NONE_TYPE,
+  };
+
+  explicit BaseValidator(JsonType type)
+      : m_is_valid(true),
+        m_type(type) {
   }
 
+ public:
   virtual ~BaseValidator() {}
 
   virtual bool IsValid() const { return m_is_valid; }
@@ -149,6 +163,7 @@ class BaseValidator : public ValidatorInterface {
 
  protected:
   bool m_is_valid;
+  JsonType m_type;
   std::string m_schema;
   std::string m_id;
   std::string m_title;
@@ -166,7 +181,7 @@ class BaseValidator : public ValidatorInterface {
  */
 class WildcardValidator : public BaseValidator {
  public:
-  WildcardValidator() : BaseValidator() {}
+  WildcardValidator() : BaseValidator(NONE_TYPE) {}
 
   bool IsValid() const { return true; }
 };
@@ -200,6 +215,11 @@ class ReferenceValidator : public ValidatorInterface {
 
   JsonObject* GetSchema() const;
 
+  void SetSchema(const std::string &schema);
+  void SetId(const std::string &id);
+  void SetTitle(const std::string &title);
+  void SetDescription(const std::string &title);
+
  private:
   const SchemaDefinitions *m_definitions;
   const std::string m_schema;
@@ -228,7 +248,7 @@ class StringValidator : public BaseValidator {
   };
 
   explicit StringValidator(const Options &options)
-      : BaseValidator(),
+      : BaseValidator(STRING_TYPE),
         m_options(options) {
   }
 
@@ -247,7 +267,7 @@ class StringValidator : public BaseValidator {
  */
 class BoolValidator : public BaseValidator {
  public:
-  BoolValidator() : BaseValidator() {}
+  BoolValidator() : BaseValidator(BOOLEAN_TYPE) {}
 
   void Visit(const JsonBoolValue&) { m_is_valid = true; }
 
@@ -260,7 +280,7 @@ class BoolValidator : public BaseValidator {
  */
 class NullValidator : public BaseValidator {
  public:
-  NullValidator() : BaseValidator() {}
+  NullValidator() : BaseValidator(NULL_TYPE) {}
 
   void Visit(const JsonNullValue&) { m_is_valid = true; }
 
@@ -442,12 +462,12 @@ class MinimumConstraint : public NumberConstraint {
 };
 
 /**
- * @brief The validator for Json numbers.
+ * @brief The validator for Json integers.
  */
-class NumberValidator : public BaseValidator {
+class IntegerValidator : public BaseValidator {
  public:
-  NumberValidator() : BaseValidator() {}
-  ~NumberValidator();
+  IntegerValidator() : BaseValidator(INTEGER_TYPE) {}
+  virtual ~IntegerValidator();
 
   /**
    * @brief Add a constraint to this validator.
@@ -459,16 +479,35 @@ class NumberValidator : public BaseValidator {
   void Visit(const JsonIntValue&);
   void Visit(const JsonUInt64Value&);
   void Visit(const JsonInt64Value&);
-  void Visit(const JsonDoubleValue&);
+  virtual void Visit(const JsonDoubleValue&);
+
+ protected:
+  explicit IntegerValidator(JsonType type) : BaseValidator(type) {}
+
+  template <typename T>
+  void CheckValue(T t);
 
  private:
   std::vector<NumberConstraint*> m_constraints;
 
   void ExtendSchema(JsonObject *schema) const;
 
-  template <typename T>
-  void CheckValue(T t);
+  DISALLOW_COPY_AND_ASSIGN(IntegerValidator);
+};
 
+
+/**
+ * @brief The validator for Json numbers.
+ *
+ * This is an IntegerValidator that is extended to allow doubles.
+ */
+class NumberValidator : public IntegerValidator {
+ public:
+  NumberValidator() : IntegerValidator(NUMBER_TYPE) {}
+
+  void Visit(const JsonDoubleValue&);
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(NumberValidator);
 };
 
@@ -519,10 +558,65 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
  */
 class ArrayValidator : public BaseValidator {
  public:
+   /**
+    * The items parameter. This can be either a validator or a list of
+    * validators.
+    */
+  class Items {
+   public:
+    explicit Items(ValidatorInterface *validator)
+      : m_validator(validator) {
+    }
+
+    explicit Items(ValidatorList *validators)
+      : m_validator(NULL),
+        m_validator_list(*validators) {
+    }
+
+    ~Items() {
+      STLDeleteElements(&m_validator_list);
+    }
+
+    ValidatorInterface* Validator() const { return m_validator.get(); }
+    const ValidatorList& Validators() const { return m_validator_list; }
+
+   private:
+    std::auto_ptr<ValidatorInterface> m_validator;
+    ValidatorList m_validator_list;
+
+    DISALLOW_COPY_AND_ASSIGN(Items);
+  };
+
+  /**
+   * The additionalItems parameter. This can be either a bool or a validator.
+   */
+  class AdditionalItems {
+   public:
+    explicit AdditionalItems(bool allow_additional)
+        : m_allowed(allow_additional),
+          m_validator(NULL) {
+    }
+
+    explicit AdditionalItems(ValidatorInterface *validator)
+        : m_allowed(true),
+          m_validator(validator) {
+    }
+
+    ValidatorInterface* Validator() const { return m_validator.get(); }
+    bool AllowAdditional() const { return m_allowed; }
+
+   private:
+    bool m_allowed;
+    std::auto_ptr<ValidatorInterface> m_validator;
+
+    DISALLOW_COPY_AND_ASSIGN(AdditionalItems);
+  };
+
   struct Options {
     Options()
       : max_items(-1),
-        min_items(0) {
+        min_items(0),
+        unique_items(false) {
     }
 
     int max_items;
@@ -532,22 +626,11 @@ class ArrayValidator : public BaseValidator {
 
   /**
    * @brief Validate all elements of the array against the given schema.
-   * @param validator The schema to validate elements against, ownership is
-   * transferred.
-   * @param options Extra contstraints on the Array.
+   * @param items  , ownership is transferred.
+   * @param additional_items , ownership is transferred.
+   * @param options Extra constraints on the Array.
    */
-  ArrayValidator(ValidatorInterface *validator, const Options &options);
-
-  /**
-   * @brief Validate the first N items against the schemas in the
-   * ValidatorList, and the remainder against schema.
-   * @param validators the list of schemas to validate the first N items
-   *   against. Ownership of the validators in the list is transferred.
-   * @param schema the schema used to validate any additional items. If null,
-   *   additional items are forbidden. Ownership is transferred.
-   * @param options Extra contstraints on the Array.
-   */
-  ArrayValidator(ValidatorList *validators, ValidatorInterface *schema,
+  ArrayValidator(Items *items, AdditionalItems *additional_items,
                  const Options &options);
 
   ~ArrayValidator();
@@ -557,9 +640,12 @@ class ArrayValidator : public BaseValidator {
  private:
   typedef std::deque<ValidatorInterface*> ValidatorQueue;
 
-  ValidatorList m_validators;
-  const std::auto_ptr<ValidatorInterface> m_default_validator;
+  const std::auto_ptr<Items> m_items;
+  const std::auto_ptr<AdditionalItems> m_additional_items;
   const Options m_options;
+
+  // This is used if items is missing, or if additionalItems is true.
+  std::auto_ptr<WildcardValidator> m_wildcard_validator;
 
   class ArrayElementValidator : public BaseValidator {
    public:
@@ -589,6 +675,7 @@ class ArrayValidator : public BaseValidator {
   };
 
   void ExtendSchema(JsonObject *schema) const;
+  ArrayElementValidator* ConstructElementValidator() const;
 
   DISALLOW_COPY_AND_ASSIGN(ArrayValidator);
 };
@@ -733,7 +820,7 @@ class OneOfValidator : public ConjunctionValidator {
 class NotValidator : public BaseValidator {
  public:
   explicit NotValidator(ValidatorInterface *validator)
-      : BaseValidator(),
+      : BaseValidator(NONE_TYPE),
         m_validator(validator) {
   }
 
@@ -800,6 +887,8 @@ class SchemaDefinitions {
   ValidatorInterface *Lookup(const std::string &schema_name) const;
 
   void AddToJsonObject(JsonObject *json) const;
+
+  bool HasDefinitions() const { return !m_validators.empty(); }
 
  private:
   typedef std::map<std::string, ValidatorInterface*> SchemaMap;

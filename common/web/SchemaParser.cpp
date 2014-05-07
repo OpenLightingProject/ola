@@ -61,7 +61,7 @@ void SchemaParser::String(const string &value) {
   m_error_logger.IncrementIndex();
 
   OLA_INFO << "Setting string for " << m_error_logger.GetPointer()
-     << " size is " << m_context_stack.size();
+     << " stack size is " << m_context_stack.size();
   if (m_context_stack.top()) {
     m_context_stack.top()->String(&m_error_logger, value);
   } else {
@@ -140,9 +140,14 @@ void SchemaParser::OpenArray() {
   m_error_logger.OpenArray();
 
   if (m_context_stack.top()) {
-    m_context_stack.top()->OpenArray(&m_error_logger);
+    m_context_stack.push(
+        m_context_stack.top()->OpenArray(&m_error_logger));
+    OLA_INFO << "Opened " << m_error_logger.GetPointer() << " ("
+        << m_context_stack.top() << ") size is now "
+        << m_context_stack.size();
   } else {
     OLA_INFO << "In null context, skipping OpenArray";
+    m_context_stack.push(NULL);
   }
 }
 
@@ -152,7 +157,9 @@ void SchemaParser::CloseArray() {
   }
 
   m_error_logger.CloseArray();
-  if (!m_context_stack.top()) {
+  m_context_stack.pop();
+
+  if (m_context_stack.top()) {
     m_context_stack.top()->CloseArray(&m_error_logger);
   } else {
     OLA_INFO << "In null context, skipping CloseArray";
@@ -215,13 +222,13 @@ void SchemaParser::CloseObject() {
     // We're at the root
     m_root_validator.reset(m_root_context->GetValidator(&m_error_logger));
   } else {
-    OLA_INFO << "closing context " << json_pointer << ", size is now "
+    OLA_INFO << "closing context " << json_pointer << ", stack size is now "
         << m_context_stack.size();
     if (m_context_stack.top()) {
       m_context_stack.top()->CloseObject(&m_error_logger);
     }
   }
-  OLA_INFO << "Close of " << json_pointer << " complete, size is "
+  OLA_INFO << "Close of " << json_pointer << " complete, stack size is "
       << m_context_stack.size();
 }
 

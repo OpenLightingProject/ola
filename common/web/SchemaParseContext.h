@@ -27,6 +27,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "ola/web/JsonSchema.h"
 #include "common/web/PointerTracker.h"
@@ -34,6 +35,7 @@
 namespace ola {
 namespace web {
 
+class ArrayItemsParseContext;
 class DefinitionsParseContext;
 class PropertiesParseContext;
 class SchemaParseContext;
@@ -138,7 +140,7 @@ class SchemaParseContextInterface {
   virtual void Number(ErrorLogger *logger, long double value) = 0;
   virtual void Bool(ErrorLogger *logger, bool value) = 0;
   virtual void Null(ErrorLogger *logger) = 0;
-  virtual void OpenArray(ErrorLogger *logger) = 0;
+  virtual SchemaParseContextInterface* OpenArray(ErrorLogger *logger) = 0;
   virtual void CloseArray(ErrorLogger *logger) = 0;
   virtual SchemaParseContextInterface* OpenObject(ErrorLogger *logger) = 0;
   virtual void ObjectKey(ErrorLogger *logger, const std::string &key) = 0;
@@ -210,12 +212,17 @@ class DefinitionsParseContext : public BaseParseContext {
   void Number(ErrorLogger *, uint64_t) {}
   void Number(ErrorLogger *, int64_t) {}
   void Number(ErrorLogger *, long double) {}
-  void Bool(ErrorLogger *, bool b) {
-    (void) b;
+  void Bool(ErrorLogger *, bool) {}
+  void Null(ErrorLogger *logger) { (void) logger; }
+
+  SchemaParseContextInterface* OpenArray(ErrorLogger *logger) {
+    return NULL;
+    (void) logger;
   }
-  void Null(ErrorLogger *) {}
-  void OpenArray(ErrorLogger *) {}
-  void CloseArray(ErrorLogger *) {}
+
+  void CloseArray(ErrorLogger *logger) {
+    (void) logger;
+  }
 
   SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
   void CloseObject(ErrorLogger *logger);
@@ -241,7 +248,15 @@ class SchemaParseContext : public BaseParseContext {
       : BaseParseContext(),
         m_schema_defs(definitions) {
   }
+  ~SchemaParseContext();
 
+  /**
+   * @brief Return the ValidatorInterface for this context.
+   *
+   * Ownership of the ValidatorInterface is transferred to the caller.
+   * @returns A new ValidatorInterface or NULL if it was not possible to
+   * construct a validator.
+   */
   ValidatorInterface* GetValidator(ErrorLogger *logger);
 
   // id, title, etc.
@@ -256,13 +271,10 @@ class SchemaParseContext : public BaseParseContext {
 
   // exclusiveMin / Max
   void Bool(ErrorLogger *logger, bool value);
-
-  void Null(ErrorLogger *logger) {
-    (void) logger;
-  }  // this shouldn't happen in a schema
+  void Null(ErrorLogger *logger);
 
   // enums
-  void OpenArray(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
   void CloseArray(ErrorLogger *logger);
 
   // properties, etc.
@@ -271,16 +283,61 @@ class SchemaParseContext : public BaseParseContext {
 
  private:
   SchemaDefinitions *m_schema_defs;
+
+  // Members are arranged according to the order in which they appear in the
+  // draft standard.
+
+  // Common keywords
   OptionalItem<std::string> m_id;
   OptionalItem<std::string> m_schema;
-  OptionalItem<std::string> m_title;
-  OptionalItem<std::string> m_description;
+
+  // 5.1 Number / integer keywords
+  OptionalItem<bool> m_exclusive_maximum;
+  OptionalItem<bool> m_exclusive_minimum;
+
+  // 5.2 String keywords
+  // TODO(simon): Implement pattern support?
+  OptionalItem<std::string> m_pattern;
+  OptionalItem<uint64_t> m_max_length;
+  OptionalItem<uint64_t> m_min_length;
+
+  // 5.3 Array keywords
+  // 'additionalItems' can be either a bool or a schema
+  OptionalItem<bool> m_additional_items;
+  std::auto_ptr<SchemaParseContext> m_additional_items_context;
+
+  // 'items' can be either a json schema, or an array of json schema.
+  std::auto_ptr<SchemaParseContext> m_items_single_context;
+  std::auto_ptr<ArrayItemsParseContext> m_items_context_array;
+
+  OptionalItem<uint64_t> m_max_items;
+  OptionalItem<uint64_t> m_min_items;
+  OptionalItem<bool> m_unique_items;
+
+  // 5.4 Object keywords
+
+
+  // 5.5 Keywords for multiple instance types
   OptionalItem<std::string> m_type;
+
+  // 6. Metadata keywords
+  OptionalItem<std::string> m_description;
+  OptionalItem<std::string> m_title;
+
+  OptionalItem<std::string> m_ref_schema;
+
+  // TODO(simon): Implement format support?
+  OptionalItem<std::string> m_format;
 
   std::auto_ptr<DefinitionsParseContext> m_definitions_context;
   std::auto_ptr<PropertiesParseContext> m_properties_context;
+  // vector<NumberConstraint> m_number_constraints;
 
+  template <typename T>
+  void ProcessInt(ErrorLogger *logger, T t);
   bool ValidType(const std::string& type);
+  ValidatorInterface* BuildArrayValidator(ErrorLogger *logger);
+  ValidatorInterface* BuildObjectValidator(ErrorLogger *logger);
 
   DISALLOW_COPY_AND_ASSIGN(SchemaParseContext);
 };
@@ -307,7 +364,7 @@ class PropertiesParseContext : public BaseParseContext {
   void Number(ErrorLogger *logger, long double value);
   void Bool(ErrorLogger *logger, bool value);
   void Null(ErrorLogger *logger);
-  void OpenArray(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
   void CloseArray(ErrorLogger *logger);
   SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
   void CloseObject(ErrorLogger *logger);
@@ -319,6 +376,55 @@ class PropertiesParseContext : public BaseParseContext {
   SchemaMap m_property_contexts;
 
   DISALLOW_COPY_AND_ASSIGN(PropertiesParseContext);
+};
+
+
+/**
+ * @brief
+ */
+class ArrayItemsParseContext : public BaseParseContext {
+ public:
+  explicit ArrayItemsParseContext(SchemaDefinitions *definitions)
+      : BaseParseContext(),
+        m_schema_defs(definitions) {
+  }
+
+  ~ArrayItemsParseContext();
+
+  /**
+   * @brief Populate a vector with validators for the elements in 'items'
+   * @param[out] validators A vector fill with new validators. Ownership of the
+   * validators is transferred to the caller.
+   */
+  void AddValidators(ErrorLogger *logger,
+                     std::vector<ValidatorInterface*> *validators);
+
+  void String(ErrorLogger *logger, const std::string &value);
+  void Number(ErrorLogger *logger, uint32_t value);
+  void Number(ErrorLogger *logger, int32_t value);
+  void Number(ErrorLogger *logger, uint64_t value);
+  void Number(ErrorLogger *logger, int64_t value);
+  void Number(ErrorLogger *logger, long double value);
+  void Bool(ErrorLogger *logger, bool value);
+  void Null(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
+  void CloseArray(ErrorLogger *logger) {
+    (void) logger;
+  }
+  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
+  void CloseObject(ErrorLogger *logger) {
+    (void) logger;
+  }
+
+ private:
+  typedef std::vector<SchemaParseContext*> ItemSchemas;
+
+  SchemaDefinitions *m_schema_defs;
+  ItemSchemas m_item_schemas;
+
+  void ReportErrorForType(ErrorLogger *logger, const std::string& type);
+
+  DISALLOW_COPY_AND_ASSIGN(ArrayItemsParseContext);
 };
 }  // namespace web
 }  // namespace ola
