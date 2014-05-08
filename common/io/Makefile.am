@@ -29,6 +29,9 @@ check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../libolacommon.la
+if USING_WIN32
+COMMON_TEST_LDADD += -lWs2_32
+endif
 
 IOQueueTester_SOURCES = IOQueueTest.cpp
 IOQueueTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
