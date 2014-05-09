@@ -31,6 +31,10 @@ ola_trigger_LDADD = ../../common/libolacommon.la \
                     ./libolatrigger.la \
                     $(LEXLIB)
 
+if USING_WIN32
+ola_trigger_LDADD += -lWs2_32
+endif
+
 lex.yy.cpp: Makefile config.lex
 	$(LEX) -olex.yy.cpp $(srcdir)/config.lex
 

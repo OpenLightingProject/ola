@@ -22,11 +22,12 @@
 #define COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_WINSOCK2_H
-#include <winsock2.h>
+#define VC_EXTRALEAN
+#include <Winsock2.h>
 #endif
 
 #ifdef HAVE_ARPA_INET_H
