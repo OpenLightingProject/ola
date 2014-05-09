@@ -212,23 +212,23 @@ void JsonParserTest::testParseNumber() {
 
   value.reset(BasicJsonParser::Parse("1E4", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("10000"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("1e4"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("5e-4", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("0.0005"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("5e-4"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("912E-2", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("9.12"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("912e-2"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("-23e4", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("-230000"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("-23e4"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("-912E-2", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("-9.12"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("-912e-2"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("14e0", &error));
   OLA_ASSERT_NOT_NULL(value.get());
@@ -237,35 +237,35 @@ void JsonParserTest::testParseNumber() {
   // exponents with decimals
   value.reset(BasicJsonParser::Parse("-3.1e2", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("-310"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("-3.1e2"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("3.14E3", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("3140"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("3.14e3"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("3.14e-1", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("0.314"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("3.14e-1"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("-2.718e-1", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("-0.2718"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("-2.718e-1"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse(" -0.2718E+2 ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("-27.18"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("-0.2718e2"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("-0.2718e-1 ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("-0.02718"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("-0.2718e-1"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("0.2718e+1", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("2.718"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("0.2718e1"), JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("0.2718e-2  ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("0.002718"), JsonWriter::AsString(*value.get()));
+  OLA_ASSERT_EQ(string("0.2718e-2"), JsonWriter::AsString(*value.get()));
 
   // Invalid inputs
   value.reset(BasicJsonParser::Parse("-", &error));
@@ -536,7 +536,13 @@ void JsonParserTest::testStressTests() {
   value.reset(BasicJsonParser::Parse(
         "{ \"v\" : 1.7976931348623157E308}", &error));
   OLA_ASSERT_NOT_NULL(value.get());
-  OLA_ASSERT_EQ(string("{\n  \"v\": 1.79769e+308\n}"),
+  OLA_ASSERT_EQ(string("{\n  \"v\": 1.7976931348623157e308\n}"),
+                JsonWriter::AsString(*value.get()));
+
+  value.reset(BasicJsonParser::Parse(
+        "{ \"v\" : 1.79E08}", &error));
+  OLA_ASSERT_NOT_NULL(value.get());
+  OLA_ASSERT_EQ(string("{\n  \"v\": 1.79e8\n}"),
                 JsonWriter::AsString(*value.get()));
 
   value.reset(BasicJsonParser::Parse("{'X' : 's }", &error));
