@@ -22,6 +22,12 @@
 #include <unistd.h>
 #include <string>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Windows.h>
+#endif
+
 #include "ola/Clock.h"
 #include "ola/testing/TestUtils.h"
 
@@ -145,7 +151,11 @@ void ClockTest::testClock() {
   Clock clock;
   TimeStamp first;
   clock.CurrentTime(&first);
+#ifdef _WIN32
+  Sleep(1000);
+#else
   sleep(1);
+#endif
 
   TimeStamp second;
   clock.CurrentTime(&second);
