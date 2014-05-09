@@ -202,9 +202,35 @@ class JsonInt64Value: public JsonValue {
 
 /**
  * @brief A double value.
+ *
+ * Double Values represent numbers which are not simple integers. A double
+ * value takes the form: <full>.<fractional>e<exponent>. e.g 23.00456e-3.
  */
 class JsonDoubleValue: public JsonValue {
  public:
+  /**
+   * @struct DoubleRepresentation
+   * @brief Represents a JSON double value broken down as separate components.
+   *
+   * For the value 23.00456e-3:
+   *   full: 23
+   *   leading_fractional_zeros: 2
+   *   fractional: 456
+   *   exponent: -3
+   */
+  struct DoubleRepresentation {
+    /** The sign of the double, true is negative, false is postive */
+    bool is_negative;
+    /** The number to the left of the decimal point */
+    uint64_t full;
+    /** The number of leading 0s in the fractional part of the double */
+    uint32_t leading_fractional_zeros;
+    /** The fractional part of the double, without the leading 0s */
+    uint64_t fractional;
+    /** The exponent, or 0 if there isn't one. */
+    int32_t exponent;
+  };
+
   /**
    * @brief Create a new JsonDoubleValue
    * @param value the double to use.
@@ -213,25 +239,13 @@ class JsonDoubleValue: public JsonValue {
 
   /**
    * @brief Create a new JsonDoubleValue from separate components.
-   * e.g. 23.00456e-3:
-   *   full: 23
-   *   leading_fractional_zeros: 2
-   *   fractional: 456
-   *   exponent: -3
-   * @param is_negative
-   * @param full
-   * @param leading_fractional_zeros
-   * @param fractional
-   * @param exponent
    */
-  JsonDoubleValue(bool is_negative, uint64_t full,
-                  int32_t leading_fractional_zeros,
-                  uint64_t fractional, int32_t exponent);
+  explicit JsonDoubleValue(const DoubleRepresentation &rep);
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   /**
-   * @brief Return the value as a string.
+   * @brief Return the double value as a string.
    */
   const std::string& ToString() const {
     return m_as_string;
@@ -245,13 +259,24 @@ class JsonDoubleValue: public JsonValue {
     return m_value;
   }
 
+  /**
+   * @brief Convert a DoubleRepresentation to a double value.
+   * @param rep the DoubleRepresentation
+   * @param[out] The value stored as a double.
+   * @returns false if the DoubleRepresentation can't fit in a double.
+   */
+  static bool AsDouble(const DoubleRepresentation &rep, double *out);
+
+  /**
+   * @brief Convert the DoubleRepresentation to a string.
+   * @param rep the DoubleRepresentation
+   * @returns The string representation of the DoubleRepresentation.
+   */
+  static std::string AsString(const DoubleRepresentation &rep);
+
  private:
   double m_value;
   std::string m_as_string;
-
-  void BuildDouble(bool is_negative, uint64_t full,
-                   int32_t leading_fractional_zeros,
-                   uint64_t fractional, int32_t exponent);
 
   DISALLOW_COPY_AND_ASSIGN(JsonDoubleValue);
 };

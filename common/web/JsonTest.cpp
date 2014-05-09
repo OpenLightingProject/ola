@@ -28,6 +28,7 @@
 
 using ola::web::JsonArray;
 using ola::web::JsonBoolValue;
+using ola::web::JsonDoubleValue;
 using ola::web::JsonIntValue;
 using ola::web::JsonNullValue;
 using ola::web::JsonObject;
@@ -41,6 +42,7 @@ using std::string;
 class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonTest);
   CPPUNIT_TEST(testString);
+  CPPUNIT_TEST(testIntegerValues);
   CPPUNIT_TEST(testNumberValues);
   CPPUNIT_TEST(testRaw);
   CPPUNIT_TEST(testBool);
@@ -53,6 +55,7 @@ class JsonTest: public CppUnit::TestFixture {
 
  public:
     void testString();
+    void testIntegerValues();
     void testNumberValues();
     void testRaw();
     void testBool();
@@ -63,9 +66,7 @@ class JsonTest: public CppUnit::TestFixture {
     void testComplexObject();
 };
 
-
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonTest);
-
 
 /*
  * Test a string.
@@ -83,9 +84,9 @@ void JsonTest::testString() {
 
 
 /*
- * Test numbers.
+ * Test ints.
  */
-void JsonTest::testNumberValues() {
+void JsonTest::testIntegerValues() {
   JsonUIntValue uint_value(10);
   string expected = "10";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(uint_value));
@@ -95,6 +96,43 @@ void JsonTest::testNumberValues() {
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(int_value));
 }
 
+/*
+ * Test numbers (doubles).
+ */
+void JsonTest::testNumberValues() {
+  // For JsonDoubleValue constructed with a double, the string representation
+  // depends on the platform. For example 1.23-e2 could be any of 1.23-e2,
+  // 0.00123 or 1.23e-002.
+  // So we skip this test.
+  JsonDoubleValue d1(12.234);
+  OLA_ASSERT_EQ(12.234, d1.Value());
+
+  JsonDoubleValue d2(-1.23e-12);
+  OLA_ASSERT_EQ(-1.23e-12, d2.Value());
+
+  // For JsonDoubleValue created using DoubleRepresentation, the string will be
+  // well defined, but the Value() may differ. Just do our best here.
+  JsonDoubleValue::DoubleRepresentation rep1 = {
+    false, 12, 1, 345, 0
+  };
+  JsonDoubleValue d3(rep1);
+  OLA_ASSERT_EQ(string("12.0345"), JsonWriter::AsString(d3));
+  OLA_ASSERT_EQ(12.0345, d3.Value());
+
+  JsonDoubleValue::DoubleRepresentation rep2 = {
+    true, 345, 3, 789, 2
+  };
+  JsonDoubleValue d4(rep2);
+  OLA_ASSERT_EQ(string("-345.000789e2"), JsonWriter::AsString(d4));
+  OLA_ASSERT_DOUBLE_EQ(-345.000789e2, d4.Value(), 0.001);
+
+  JsonDoubleValue::DoubleRepresentation rep3 = {
+    true, 345, 3, 0, -2
+  };
+  JsonDoubleValue d5(rep3);
+  OLA_ASSERT_EQ(string("-345e-2"), JsonWriter::AsString(d5));
+  OLA_ASSERT_EQ(-3.45, d5.Value());
+}
 
 /*
  * Test raw.
@@ -111,7 +149,6 @@ void JsonTest::testRaw() {
   expected = "\x7f";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(value2));
 }
-
 
 /*
  * Test bools.

@@ -215,8 +215,13 @@ static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
 
   // Now we have all the components, run the correct callback.
   if (has_fractional || has_exponent) {
-    handler->Number(is_negative, full, leading_fractional_zeros, fractional,
-                    signed_exponent);
+    JsonDoubleValue::DoubleRepresentation double_rep;
+    double_rep.is_negative = is_negative;
+    double_rep.full = full;
+    double_rep.leading_fractional_zeros = leading_fractional_zeros;
+    double_rep.fractional = fractional;
+    double_rep.exponent = signed_exponent;
+    handler->Number(double_rep);
     return true;
   }
 
