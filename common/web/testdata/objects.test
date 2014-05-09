@@ -1,0 +1,70 @@
+=== NEGATIVE ===
+{
+  "maxProperties": false,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "maxProperties": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "maxProperties": "foo",
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "maxProperties": null,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "minProperties": true,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "minProperties": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "minProperties": "foo",
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "minProperties": null,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": [1],
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "maxProperties": 3,
+  "minProperties": 1,
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "required": [],
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": ["foo", "foo"],
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "required": ["foo"],
+  "type": "object"
+}

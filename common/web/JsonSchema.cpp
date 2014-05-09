@@ -348,7 +348,7 @@ void ObjectValidator::ExtendSchema(JsonObject *schema) const {
     schema->Add("maxProperties", m_options.max_properties);
   }
 
-  if (!m_options.required_properties.empty()) {
+  if (m_options.has_required_properties) {
     JsonArray *required_properties = schema->AddArray("required");
     set<string>::const_iterator iter = m_options.required_properties.begin();
     for (; iter != m_options.required_properties.end(); ++iter) {

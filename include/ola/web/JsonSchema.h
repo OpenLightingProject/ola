@@ -519,11 +519,19 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
   struct Options {
     Options()
       : max_properties(-1),
-        min_properties(0) {
+        min_properties(0),
+        has_required_properties(false) {
+    }
+
+    void SetRequiredProperties(
+        const std::set<std::string> &required_properties_arg) {
+      required_properties = required_properties_arg;
+      has_required_properties = true;
     }
 
     int max_properties;
     unsigned int min_properties;
+    bool has_required_properties;
     std::set<std::string> required_properties;
   };
 

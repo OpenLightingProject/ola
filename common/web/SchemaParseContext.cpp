@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,6 +39,7 @@ namespace web {
 using std::auto_ptr;
 using std::make_pair;
 using std::pair;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -265,6 +267,9 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
   if (key == "items") {
     m_items_context_array.reset(new ArrayItemsParseContext(m_schema_defs));
     return m_items_context_array.get();
+  } else if (key == "required") {
+    m_required_items.reset(new RequiredPropertiesParseContext());
+    return m_required_items.get();
   } else {
     logger->Error() << "Unknown key in schema: " << key;
     return NULL;
@@ -330,6 +335,19 @@ void SchemaParseContext::ProcessInt(ErrorLogger *logger, T value) {
     m_max_length.Set(value);
   } else if (key == "minLength") {
     m_min_length.Set(value);
+  } else if (key == "maxProperties") {
+    if (value < 0) {
+      logger->Error() << "maxProperties must be >= 0";
+    } else {
+      m_max_properties.Set(value);
+    }
+  } else if (key == "minProperties") {
+    m_min_properties.Set(value);
+    if (value < 0) {
+      logger->Error() << "minProperties must be >= 0";
+    } else {
+      m_min_properties.Set(value);
+    }
   } else {
     logger->Error() << "Unknown key in schema: " << key;
   }
@@ -394,8 +412,23 @@ ValidatorInterface* SchemaParseContext::BuildArrayValidator(
 
 ValidatorInterface* SchemaParseContext::BuildObjectValidator(
     ErrorLogger* logger) {
-  ObjectValidator *object_validator = new ObjectValidator(
-      ObjectValidator::Options());
+  ObjectValidator::Options options;
+  if (m_max_properties.IsSet()) {
+    options.max_properties = m_max_properties.Value();
+  }
+
+  if (m_min_properties.IsSet()) {
+    options.min_properties = m_min_properties.Value();
+  }
+
+  if (m_required_items.get()) {
+    set<string> required_properties;
+    m_required_items->GetRequiredStrings(&required_properties);
+    options.SetRequiredProperties(required_properties);
+  }
+
+  ObjectValidator *object_validator = new ObjectValidator(options);
+
   if (m_properties_context.get()) {
     m_properties_context->AddPropertyValidaators(object_validator, logger);
   }
@@ -551,5 +584,72 @@ void ArrayItemsParseContext::ReportErrorForType(ErrorLogger *logger,
   logger->Error() << "Invalid type '" << type
       << "' in 'items', elements must be a valid JSON schema";
 }
+
+// RequiredPropertiesParseContext
+// Used for parsing an array of strings within 'required'
+void RequiredPropertiesParseContext::GetRequiredStrings(
+    RequiredItems *required_items) {
+  *required_items = m_required_items;
+}
+
+void RequiredPropertiesParseContext::String(ErrorLogger *logger,
+                                            const std::string &value) {
+  if (!m_required_items.insert(value).second) {
+    logger->Error() << "The property " << value << " appeared more than once";
+  }
+}
+
+void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+                                            uint32_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+                                            int32_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+                                            uint64_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+                                            int64_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+                                            long double value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void RequiredPropertiesParseContext::Bool(ErrorLogger *logger,
+                                          bool value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void RequiredPropertiesParseContext::Null(ErrorLogger *logger) {
+  ReportErrorForType(logger, "null");
+}
+
+SchemaParseContextInterface* RequiredPropertiesParseContext::OpenArray(
+    ErrorLogger *logger) {
+  ReportErrorForType(logger, "array");
+  return NULL;
+}
+
+SchemaParseContextInterface* RequiredPropertiesParseContext::OpenObject(
+    ErrorLogger *logger) {
+  ReportErrorForType(logger, "object");
+  return NULL;
+}
+
+void RequiredPropertiesParseContext::ReportErrorForType(ErrorLogger *logger,
+                                                        const string& type) {
+  logger->Error() << "Invalid type '" << type
+      << "' in 'required', elements must be strings";
+}
+
 }  // namespace web
 }  // namespace ola

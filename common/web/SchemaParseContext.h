@@ -26,6 +26,7 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,7 @@ class ArrayItemsParseContext;
 class DefinitionsParseContext;
 class PropertiesParseContext;
 class SchemaParseContext;
+class RequiredPropertiesParseContext;
 
 template <typename T>
 class OptionalItem {
@@ -315,7 +317,9 @@ class SchemaParseContext : public BaseParseContext {
   OptionalItem<bool> m_unique_items;
 
   // 5.4 Object keywords
-
+  OptionalItem<uint64_t> m_max_properties;
+  OptionalItem<uint64_t> m_min_properties;
+  std::auto_ptr<RequiredPropertiesParseContext> m_required_items;
 
   // 5.5 Keywords for multiple instance types
   OptionalItem<std::string> m_type;
@@ -425,6 +429,45 @@ class ArrayItemsParseContext : public BaseParseContext {
   void ReportErrorForType(ErrorLogger *logger, const std::string& type);
 
   DISALLOW_COPY_AND_ASSIGN(ArrayItemsParseContext);
+};
+
+
+/**
+ * @brief
+ */
+class RequiredPropertiesParseContext : public BaseParseContext {
+ public:
+  typedef std::set<std::string> RequiredItems;
+
+  RequiredPropertiesParseContext()
+      : BaseParseContext() {
+  }
+
+  void GetRequiredStrings(RequiredItems *required_items);
+
+  void String(ErrorLogger *logger, const std::string &value);
+  void Number(ErrorLogger *logger, uint32_t value);
+  void Number(ErrorLogger *logger, int32_t value);
+  void Number(ErrorLogger *logger, uint64_t value);
+  void Number(ErrorLogger *logger, int64_t value);
+  void Number(ErrorLogger *logger, long double value);
+  void Bool(ErrorLogger *logger, bool value);
+  void Null(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
+  void CloseArray(ErrorLogger *logger) {
+    (void) logger;
+  }
+  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
+  void CloseObject(ErrorLogger *logger) {
+    (void) logger;
+  }
+
+ private:
+  RequiredItems m_required_items;
+
+  void ReportErrorForType(ErrorLogger *logger, const std::string& type);
+
+  DISALLOW_COPY_AND_ASSIGN(RequiredPropertiesParseContext);
 };
 }  // namespace web
 }  // namespace ola

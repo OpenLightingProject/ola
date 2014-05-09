@@ -1,6 +1,7 @@
 include $(top_srcdir)/common.mk
 
 dist_noinst_DATA = testdata/arrays.test \
+                   testdata/objects.json \
                    testdata/schema.json
 
 # LIBRARIES

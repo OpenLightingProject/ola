@@ -44,6 +44,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInvalidSchema);
   CPPUNIT_TEST(testInvalidTypes);
   CPPUNIT_TEST(testArrays);
+  CPPUNIT_TEST(testObjects);
   CPPUNIT_TEST(testDefinitions);
   CPPUNIT_TEST_SUITE_END();
 
@@ -53,6 +54,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   void testInvalidSchema();
   void testInvalidTypes();
   void testArrays();
+  void testObjects();
   void testDefinitions();
 
  private:
@@ -74,6 +76,8 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   void ParseSchemaAndConvertToJson(const string &input,
                                    const string &expected);
   void VerifyFailure(const string &input);
+
+  void RunTestsInFile(const string &test_file);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaParserTest);
@@ -123,6 +127,7 @@ void JsonSchemaParserTest::FinalizeNegativeCase(
     NegativeTests *negative_tests) {
   if (!test->empty()) {
     negative_tests->push_back(*test);
+    test->clear();
   }
 }
 
@@ -143,7 +148,7 @@ void JsonSchemaParserTest::ReadTestCases(const string& filename,
   file_path.append(filename);
 
   std::ifstream in(file_path.data(), std::ios::in);
-  OLA_ASSERT_TRUE(in.is_open());
+  OLA_ASSERT_TRUE_MSG(in.is_open(), file_path);
 
   enum Mode {
     NEGATIVE_INPUT,
@@ -171,23 +176,19 @@ void JsonSchemaParserTest::ReadTestCases(const string& filename,
       FinalizeNegativeCase(&negative_test, negative_tests);
       mode = NEGATIVE_INPUT;
     } else if (mode == POSITIVE_INPUT) {
-      test_case.expected.append(line);
-      test_case.expected.push_back('\n');
-    } else if (mode == POSITIVE_EXPECTED) {
       test_case.input.append(line);
       test_case.input.push_back('\n');
+    } else if (mode == POSITIVE_EXPECTED) {
+      test_case.expected.append(line);
+      test_case.expected.push_back('\n');
     } else if (mode == NEGATIVE_INPUT) {
       negative_test.append(line);
       negative_test.push_back('\n');
     }
   }
 
-  if (!test_case.input.empty()) {
-    if (test_case.expected.empty()) {
-      test_case.expected = test_case.input;
-    }
-    positive_tests->push_back(test_case);
-  }
+  FinalizePositiveCase(&test_case, positive_tests);
+  FinalizeNegativeCase(&negative_test, negative_tests);
   in.close();
 }
 
@@ -199,8 +200,8 @@ void JsonSchemaParserTest::ParseSchemaAndConvertToJson(const string &input,
                                                        const string &expected) {
   string error;
   auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NOT_NULL(schema.get());
   OLA_ASSERT_EQ(string(""), error);
+  OLA_ASSERT_NOT_NULL(schema.get());
 
   auto_ptr<const JsonObject> schema_json(schema->AsJson());
   string actual = ola::web::JsonWriter::AsString(*schema_json);
@@ -219,6 +220,28 @@ void JsonSchemaParserTest::VerifyFailure(const string &input) {
     ostringstream str;
     str << "Expected schema to fail parsing:\n" << input;
     OLA_FAIL(str.str());
+  }
+}
+
+void JsonSchemaParserTest::RunTestsInFile(const string &test_file) {
+  PositiveTests positive_tests;
+  NegativeTests negative_tests;
+  ReadTestCases(test_file, &positive_tests, &negative_tests);
+  OLA_INFO << "Read " << positive_tests.size() << " positive tests, "
+           << negative_tests.size() << " negative tests from " << test_file;
+
+  PositiveTests::const_iterator iter = positive_tests.begin();
+  for (; iter != positive_tests.end(); ++iter) {
+    /*
+    OLA_INFO << "Input: " << iter->input;
+    OLA_INFO << "Expected: " << iter->expected;
+    */
+    ParseSchemaAndConvertToJson(iter->input, iter->expected);
+  }
+
+  NegativeTests::const_iterator neg_iter = negative_tests.begin();
+  for (; neg_iter != negative_tests.end(); ++neg_iter) {
+    VerifyFailure(*neg_iter);
   }
 }
 
@@ -307,21 +330,14 @@ void JsonSchemaParserTest::testArrays() {
   // Test the various combinations of 'items' & 'additionalItems'
   // items can be either a schema (object) or an array
   // additionalItems can be either a bool or a schema.
-  PositiveTests positive_tests;
-  NegativeTests negative_tests;
-  ReadTestCases("arrays.test", &positive_tests, &negative_tests);
+  RunTestsInFile("arrays.test");
+}
 
-  PositiveTests::const_iterator iter = positive_tests.begin();
-  for (; iter != positive_tests.end(); ++iter) {
-    OLA_INFO << "Input: " << iter->input;
-    OLA_INFO << "Expected: " << iter->expected;
-    ParseSchemaAndConvertToJson(iter->input, iter->expected);
-  }
-
-  NegativeTests::const_iterator neg_iter = negative_tests.begin();
-  for (; neg_iter != negative_tests.end(); ++neg_iter) {
-    VerifyFailure(*neg_iter);
-  }
+/**
+ * Verify objects parse correctly.
+ */
+void JsonSchemaParserTest::testObjects() {
+  RunTestsInFile("objects.test");
 }
 
 void JsonSchemaParserTest::testDefinitions() {
