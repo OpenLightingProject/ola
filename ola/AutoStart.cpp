@@ -21,8 +21,15 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#define VC_EXTRALEAN
+#include <Windows.h>
+#include <tchar.h>
+#else
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
+
 #include <ola/AutoStart.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
@@ -44,6 +51,44 @@ TCPSocket *ConnectToServer(unsigned short port) {
     return socket;
 
   OLA_INFO << "Attempting to start olad";
+
+#ifdef _WIN32
+  // On Windows, olad is not (yet) available as a service, so we just launch
+  // it as a normal process
+  STARTUPINFO startup_info;
+  PROCESS_INFORMATION process_information;
+
+  memset(&startup_info, 0, sizeof(startup_info));
+  startup_info.cb = sizeof(startup_info);
+  memset(&process_information, 0, sizeof(process_information));
+
+  // On unicode systems, cmd_line may be modified by CreateProcess, so we need
+  // to create a copy
+  TCHAR* cmd_line = _tcsdup(TEXT("olad --syslog"));
+
+  if (!CreateProcess(NULL,
+                     cmd_line,
+                     NULL,
+                     NULL,
+                     FALSE,
+                     CREATE_NEW_CONSOLE,
+                     NULL,
+                     NULL,
+                     &startup_info,
+                     &process_information)) {
+    OLA_WARN << "Could not launch olad" << GetLastError();
+    _exit(1);
+  }
+
+  // Don't leak the handles
+  CloseHandle(process_information.hProcess);
+  CloseHandle(process_information.hThread);
+
+  free(cmd_line);
+
+  // wait a bit here for the server to come up. Sleep time is in milliseconds.
+  Sleep(1000);
+#else
   pid_t pid = fork();
   if (pid < 0) {
     OLA_WARN << "Could not fork: " << strerror(errno);
@@ -70,6 +115,8 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
   // wait a bit here for the server to come up
   sleep(1);
+#endif
+
   return TCPSocket::Connect(server_address);
 }
 }  // namespace client

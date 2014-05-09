@@ -30,7 +30,8 @@
 #include <stdio.h>
 
 #ifdef _WIN32
-#include <windows.h>
+#define VC_EXTRALEAN
+#include <Windows.h>
 #else
 #include <syslog.h>
 #endif

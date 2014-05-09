@@ -22,7 +22,7 @@
 #define TOOLS_E133_DEVICEMANAGERIMPL_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <ola/BaseTypes.h>

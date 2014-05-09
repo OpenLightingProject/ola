@@ -69,6 +69,10 @@ if USE_FTDI
 olad_LDADD += -lftdi -lusb
 endif
 
+if USING_WIN32
+olad_LDADD += -lWs2_32 -lIphlpapi
+endif
+
 # TESTS
 ##################################################
 if BUILD_TESTS
