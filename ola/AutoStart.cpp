@@ -86,7 +86,7 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
   free(cmd_line);
 
-  // wait a bit here for the server to come up
+  // wait a bit here for the server to come up. Sleep time is in milliseconds.
   Sleep(1000);
 #else
   pid_t pid = fork();
