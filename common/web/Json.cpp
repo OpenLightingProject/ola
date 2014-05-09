@@ -75,54 +75,52 @@ JsonDoubleValue::JsonDoubleValue(double value)
   m_as_string = str.str();
 }
 
-JsonDoubleValue::JsonDoubleValue(bool is_negative, uint64_t full,
-                                 int32_t leading_fractional_zeros,
-                                 uint64_t fractional, int32_t exponent) {
-  BuildDouble(is_negative, full, leading_fractional_zeros, fractional,
-      exponent);
+JsonDoubleValue::JsonDoubleValue(const DoubleRepresentation &rep) {
+  AsDouble(rep, &m_value);
+  m_as_string = AsString(rep);
 }
 
-void JsonDoubleValue::BuildDouble(bool is_negative, uint64_t full,
-                                  int32_t leading_fractional_zeros,
-                                  uint64_t fractional, int32_t exponent) {
-  // Populate the double member first
-  double d = fractional;
-  while (d > 0) {
-    d /= 10;
+bool JsonDoubleValue::AsDouble(const DoubleRepresentation &rep, double *out) {
+  // TODO(simon): Check the limits here.
+  double d = rep.fractional;
+  while (d > 1.0) {
+    d /= 10.0;
   }
-  for (int i = 0; i < leading_fractional_zeros; i++) {
+  for (unsigned int i = 0; i < rep.leading_fractional_zeros; i++) {
     d /= 10;
   }
 
-  d += full;
-  d *= pow(10, exponent);
-  if (is_negative && d != 0.0) {
+  d += rep.full;
+  d *= pow(10, rep.exponent);
+  if (rep.is_negative && d != 0.0) {
     d *= -1;
   }
-  m_value = d;
+  *out = d;
+  return true;
+}
 
+string JsonDoubleValue::AsString(const DoubleRepresentation &rep) {
   // Populate the string member
-  if (full == 0 && fractional == 0) {
-    m_as_string = "0";
-    return;
+  if (rep.full == 0 && rep.fractional == 0) {
+    return "0";
   }
 
   ostringstream output;
-  if (is_negative) {
+  if (rep.is_negative) {
     output << "-";
   }
-  output << full;
-  if (fractional) {
+  output << rep.full;
+  if (rep.fractional) {
     output << ".";
-    if (leading_fractional_zeros) {
-      output << string(leading_fractional_zeros, '0');
+    if (rep.leading_fractional_zeros) {
+      output << string(rep.leading_fractional_zeros, '0');
     }
-    output << fractional;
+    output << rep.fractional;
   }
-  if (exponent) {
-    output << "e" << exponent;
+  if (rep.exponent) {
+    output << "e" << rep.exponent;
   }
-  m_as_string = output.str();
+  return output.str();
 }
 
 JsonObject::~JsonObject() {

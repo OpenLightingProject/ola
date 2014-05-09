@@ -92,6 +92,7 @@ java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/
 olad/olad
+olad/olad.exe
 olad/ola-output.conf
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
@@ -104,7 +105,9 @@ python/ola/PidStoreLocation.py
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh
 slp/slp_client
+slp/slp_client.exe
 slp/slp_server
+slp/slp_server.exe
 tools/e133/e133_controller
 tools/e133/e133_monitor
 tools/e133/e133_receiver
@@ -116,6 +119,7 @@ tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
 tools/ola_trigger/ola_trigger
+tools/ola_trigger/ola_trigger.exe
 tools/logic/logic_rdm_sniffer
 tools/rdm/DataLocation.py
 tools/rdmpro/rdmpro_sniffer

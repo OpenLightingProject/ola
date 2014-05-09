@@ -22,7 +22,7 @@
 #define TOOLS_OLA_TRIGGER_CONTEXT_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <stdint.h>

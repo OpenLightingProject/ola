@@ -22,7 +22,7 @@
 #define OLAD_OLASERVER_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <map>
@@ -60,7 +60,7 @@ class OlaServer {
     bool http_enable_quit;  // enable /quit
     unsigned int http_port;  // port to run the http server on
     std::string http_data_dir;  // directory that contains the static content
-    std::string interface;
+    std::string network_interface;
     std::string pid_data_dir;  // directory with the pid definitions.
   };
 
@@ -124,7 +124,7 @@ class OlaServer {
   ola::rdm::UID m_default_uid;
 
 #ifdef HAVE_LIBMICROHTTPD
-  bool StartHttpServer(const ola::network::Interface &interface);
+  bool StartHttpServer(const ola::network::Interface &iface);
 #endif
   void StopPlugins();
   void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
