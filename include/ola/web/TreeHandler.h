@@ -63,7 +63,8 @@ class TreeHandler : public JsonHandlerInterface {
   void Number(int32_t value);
   void Number(uint64_t value);
   void Number(int64_t value);
-  void Number(long double value);
+  void Number(bool is_negative, uint64_t full, int32_t leading_zeros,
+              uint64_t fractional, int32_t exponent);
   void Bool(bool value);
   void Null();
   void OpenArray();

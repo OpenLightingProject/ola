@@ -82,8 +82,11 @@ void TreeHandler::Number(int64_t value) {
   AddValue(new JsonInt64Value(value));
 }
 
-void TreeHandler::Number(long double value) {
-  AddValue(new JsonDoubleValue(value));
+void TreeHandler::Number(bool is_negative, uint64_t full,
+                         int32_t leading_zeros, uint64_t fractional,
+                         int32_t exponent) {
+  AddValue(new JsonDoubleValue(is_negative, full, leading_zeros, fractional,
+                               exponent));
 }
 
 void TreeHandler::Bool(bool value) {
