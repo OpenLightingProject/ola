@@ -16,7 +16,7 @@
  *
  * common.h
  * Constants for the esp plugin
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ESPNET_ESPNETPLUGINCOMMON_H_

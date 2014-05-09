@@ -24,9 +24,12 @@
 #  include <config.h>
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-// TODO(Peter): Do something else, possibly define the type locally
+#ifdef _WIN32
+#include <Winsock2.h>
+struct ether_addr {
+  unsigned char octet[ola::network::MACAddress::LENGTH];
+};
+#define ether_addr_octet octet
 #else
 #include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
 #ifdef HAVE_NET_ETHERNET_H
@@ -117,7 +120,7 @@ string MACAddress::ToString() const {
    * ether_ntoa_r doesn't exist on Mac, so can't use it; ether_ntoa isn't
    * thread safe
    */
-  std::stringstream str;
+  std::ostringstream str;
   for (unsigned int i = 0 ; i < MACAddress::LENGTH; i++) {
     if (i != 0)
       str << ":";

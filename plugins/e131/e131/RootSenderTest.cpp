@@ -15,7 +15,7 @@
  *
  * RootSenderTest.cpp
  * Test fixture for the RootSender class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

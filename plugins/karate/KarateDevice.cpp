@@ -15,7 +15,7 @@
  *
  * KarateDevice.cpp
  * The KarateLight device
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string>
@@ -43,7 +43,7 @@ KarateDevice::KarateDevice(AbstractPlugin *owner,
                            unsigned int device_id)
     : Device(owner, name),
       m_path(path) {
-  std::stringstream str;
+  std::ostringstream str;
   str << device_id;
   m_device_id = str.str();
 }

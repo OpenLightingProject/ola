@@ -15,7 +15,7 @@
  *
  * Plugin.h
  * Header file for plugin class - plugins inherit from this.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PLUGIN_H_

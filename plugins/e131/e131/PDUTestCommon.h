@@ -15,7 +15,7 @@
  *
  * PDUTestCommon.cpp
  * Provides a simple PDU class for testing
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_PDUTESTCOMMON_H_

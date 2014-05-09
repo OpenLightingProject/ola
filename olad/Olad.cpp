@@ -16,7 +16,7 @@
  * Olad.cpp
  * Main file for olad, parses the options, forks if required and runs the
  * daemon.
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  */
 
@@ -48,7 +48,7 @@ using std::endl;
 
 DEFINE_bool(http, true, "Disable the HTTP server.");
 DEFINE_bool(http_quit, true, "Disable the HTTP /quit handler.");
-#ifndef WIN32
+#ifndef _WIN32
 DEFINE_s_bool(daemon, f, false, "Fork and run in the background.");
 #endif
 DEFINE_s_string(http_data_dir, d, "", "The path to the static www content.");
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   }
   #endif
 
-#ifndef WIN32
+#ifndef _WIN32
   if (FLAGS_daemon)
     ola::Daemonise();
 #endif

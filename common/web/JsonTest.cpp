@@ -37,7 +37,6 @@ using ola::web::JsonUIntValue;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::string;
-using std::stringstream;
 
 class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonTest);

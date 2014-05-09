@@ -19,6 +19,7 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <math.h>
 #include <string>
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
@@ -28,8 +29,8 @@ namespace ola {
 namespace web {
 
 using std::ostream;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 
 void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
@@ -65,6 +66,63 @@ void JsonUInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
 
 void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
+}
+
+JsonDoubleValue::JsonDoubleValue(double value)
+    : m_value(value) {
+  ostringstream str;
+  str << value;
+  m_as_string = str.str();
+}
+
+JsonDoubleValue::JsonDoubleValue(bool is_negative, uint64_t full,
+                                 int32_t leading_fractional_zeros,
+                                 uint64_t fractional, int32_t exponent) {
+  BuildDouble(is_negative, full, leading_fractional_zeros, fractional,
+      exponent);
+}
+
+void JsonDoubleValue::BuildDouble(bool is_negative, uint64_t full,
+                                  int32_t leading_fractional_zeros,
+                                  uint64_t fractional, int32_t exponent) {
+  // Populate the double member first
+  double d = fractional;
+  while (d > 0) {
+    d /= 10;
+  }
+  for (int i = 0; i < leading_fractional_zeros; i++) {
+    d /= 10;
+  }
+
+  d += full;
+  d *= pow(10, exponent);
+  if (is_negative && d != 0.0) {
+    d *= -1;
+  }
+  m_value = d;
+
+  // Populate the string member
+  if (full == 0 && fractional == 0) {
+    m_as_string = "0";
+    return;
+  }
+
+  ostringstream output;
+  if (is_negative) {
+    output << "-";
+  }
+  output << full;
+  if (fractional) {
+    output << ".";
+    if (leading_fractional_zeros) {
+      output << string(leading_fractional_zeros, '0');
+    }
+    output << fractional;
+  }
+  if (exponent) {
+    output << "e" << exponent;
+  }
+  m_as_string = output.str();
 }
 
 JsonObject::~JsonObject() {
@@ -152,7 +210,7 @@ void JsonWriter::Write(ostream *output, const JsonValue &obj) {
 }
 
 string JsonWriter::AsString(const JsonValue &obj) {
-  stringstream str;
+  ostringstream str;
   JsonWriter writer(&str);
   obj.Accept(&writer);
   return str.str();
@@ -238,7 +296,7 @@ void JsonWriter::Visit(const JsonInt64Value &value) {
 }
 
 void JsonWriter::Visit(const JsonDoubleValue &value) {
-  *m_output << value.Value();
+  *m_output << value.ToString();
 }
 
 void JsonWriter::VisitProperty(const std::string &property,

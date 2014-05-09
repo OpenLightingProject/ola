@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxPort.cpp
  * The DMX 4 Linux plugin
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <string.h>

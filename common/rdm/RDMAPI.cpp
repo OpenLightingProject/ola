@@ -2671,7 +2671,7 @@ void RDMAPI::_HandleLabelResponse(
     const string &data) {
   ResponseStatus response_status = status;
   if (status.WasAcked() && data.size() > LABEL_SIZE) {
-    std::stringstream str;
+    std::ostringstream str;
     str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
     response_status.error = str.str();
   }
@@ -3041,7 +3041,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
                                             label_size);
       ShortenString(&description.description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3101,12 +3101,12 @@ void RDMAPI::_HandleGetProductDetailIdList(
   if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size > MAX_DETAIL_IDS * sizeof(uint16_t)) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be <= " << (MAX_DETAIL_IDS * sizeof(uint16_t)) <<
         ", was " << data_size;
       response_status.error = str.str();
     } else if (data_size % 2) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
       response_status.error = str.str();
     } else {
@@ -3136,7 +3136,7 @@ void RDMAPI::_HandleGetLanguageCapabilities(
   if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size % 2) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
       response_status.error = str.str();
     } else {
@@ -3258,7 +3258,7 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
       description = std::string(raw_description.description, data_size - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3361,7 +3361,7 @@ void RDMAPI::_HandleGetSlotDescription(
                                 data.size() - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3451,7 +3451,7 @@ void RDMAPI::_HandleGetSensorDefinition(
                                        data_size - min);
       ShortenString(&sensor.description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3548,7 +3548,7 @@ void RDMAPI::_HandleSelfTestDescription(
                                 data.size() - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3584,7 +3584,7 @@ void RDMAPI::_HandlePlaybackMode(
       mode = NetworkToHost(raw_config.mode);
       level = raw_config.level;
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data.size() << " needs to be more than " << sizeof(raw_config);
       response_status.error = str.str();
     }

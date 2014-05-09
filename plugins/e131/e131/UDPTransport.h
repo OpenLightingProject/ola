@@ -15,7 +15,7 @@
  *
  * UDPTransport.h
  * Interface for the UDPTransport class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_UDPTRANSPORT_H_

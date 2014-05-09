@@ -15,7 +15,7 @@
  *
  * StageProfiDevice.cpp
  * StageProfi device
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <stdlib.h>

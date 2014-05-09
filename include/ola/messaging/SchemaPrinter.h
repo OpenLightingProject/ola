@@ -64,7 +64,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
 
  private:
     bool m_include_intervals, m_include_labels;
-    std::stringstream m_str;
+    std::ostringstream m_str;
     unsigned int m_indent, m_indent_size;
 
     void AppendHeading(const std::string &name, const std::string &type);

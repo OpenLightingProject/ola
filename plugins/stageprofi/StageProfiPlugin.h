@@ -15,7 +15,7 @@
  *
  * StageProfiPlugin.h
  * Interface for the stageprofi plugin class
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_

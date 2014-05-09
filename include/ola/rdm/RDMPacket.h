@@ -15,7 +15,7 @@
  *
  * RDMPacket.h
  * Structures and constants used with RDM Packets.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**

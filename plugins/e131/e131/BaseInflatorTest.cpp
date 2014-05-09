@@ -15,7 +15,7 @@
  *
  * BaseInflatorTest.cpp
  * Test fixture for the BaseInflator class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>

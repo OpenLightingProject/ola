@@ -15,7 +15,7 @@
  *
  * OlaServer.cpp
  * OlaServer is the main OLA Server class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H
@@ -191,7 +191,7 @@ bool OlaServer::Init() {
     m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
-#ifndef WIN32
+#ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
 #endif
 

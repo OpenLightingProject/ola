@@ -15,7 +15,7 @@
  *
  * BaseInflator.cpp
  * The BaseInflator, other Inflators inherit from this one.
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <algorithm>

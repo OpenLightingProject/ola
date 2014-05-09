@@ -19,6 +19,13 @@
 
 #include <errno.h>
 
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#ifndef ETIMEDOUT
+#define ETIMEDOUT WSAETIMEDOUT
+#endif
+#endif
+
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/TCPConnector.h"
@@ -72,7 +79,11 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
+#ifdef _WIN32
+    if (WSAGetLastError() != WSAEINPROGRESS) {
+#else
     if (errno != EINPROGRESS) {
+#endif
       int error = errno;
       OLA_WARN << "connect to " << endpoint << " failed, " << strerror(error);
       close(sd);
@@ -145,7 +156,12 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   int error = 0;
   socklen_t len;
   len = sizeof(error);
+#ifdef _WIN32
+  int r = getsockopt(sd, SOL_SOCKET, SO_ERROR,
+                     reinterpret_cast<char*>(&error), &len);
+#else
   int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, &error, &len);
+#endif
   if (r < 0)
     error = errno;
 

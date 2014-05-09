@@ -16,7 +16,7 @@
  *
  * SandNetPort.cpp
  * The SandNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sstream>
@@ -36,7 +36,7 @@ string PathportPortHelper::Description(const Universe *universe) const {
   if (!universe)
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   str << "Pathport xDMX " << DMX_UNIVERSE_SIZE * universe->UniverseId() <<
     " - " << DMX_UNIVERSE_SIZE * (1 + universe->UniverseId()) - 1;
   return str.str();

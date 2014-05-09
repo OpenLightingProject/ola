@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxDevice.cpp
  * Dmx4Linux device
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  *
  */
 #include <string>

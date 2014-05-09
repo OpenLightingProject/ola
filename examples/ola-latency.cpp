@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  ola-latency.cpp
- *  Call FetchDmx and track the latency for each call.
- *  Copyright (C) 2005-2010 Simon Newton
+ * ola-latency.cpp
+ * Call FetchDmx and track the latency for each call.
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdlib.h>

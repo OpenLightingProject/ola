@@ -15,7 +15,7 @@
  *
  * OlaClientCore.cpp
  * Implementation of OlaClientCore
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdio.h>

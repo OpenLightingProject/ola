@@ -15,7 +15,7 @@
  *
  * Descriptor.cpp
  * Implementation of the Descriptor classes
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -29,7 +29,7 @@
 #  include <config.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <winioctl.h>
 #else
@@ -58,7 +58,7 @@ STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
  * @return true if successfull, false otherwise.
  */
 bool CreatePipe(int fd_pair[2]) {
-#ifdef WIN32
+#ifdef _WIN32
   HANDLE read_handle = NULL;
   HANDLE write_handle = NULL;
 
@@ -117,7 +117,7 @@ bool ConnectedDescriptor::SetNonBlocking(int fd) {
   if (fd == INVALID_DESCRIPTOR)
     return false;
 
-#ifdef WIN32
+#ifdef _WIN32
   u_long mode = 1;
   bool success = ioctlsocket(fd, FIONBIO, &mode) != SOCKET_ERROR;
 #else
@@ -166,7 +166,7 @@ int ConnectedDescriptor::DataRemaining() const {
   if (!ValidReadDescriptor())
     return 0;
 
-#ifdef WIN32
+#ifdef _WIN32
   u_long unread;
   bool failed = ioctlsocket(ReadDescriptor(), FIONREAD, &unread) < 0;
 #else
@@ -223,7 +223,7 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
 
   ssize_t bytes_sent = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
   /* There is no scatter/gather functionality for generic descriptors on
    * Windows, so this is implemented as a write loop. Derived classes should
    * re-implement Send() using scatter/gather I/O where available.
@@ -444,7 +444,7 @@ bool PipeDescriptor::CloseClient() {
  * Create a new unix socket
  */
 bool UnixSocket::Init() {
-#ifdef WIN32
+#ifdef _WIN32
   return false;
 #else
   int pair[2];
@@ -492,7 +492,7 @@ bool UnixSocket::Close() {
  * Close the write portion of this UnixSocket
  */
 bool UnixSocket::CloseClient() {
-#ifndef WIN32
+#ifndef _WIN32
   if (m_fd != INVALID_DESCRIPTOR)
     shutdown(m_fd, SHUT_WR);
 #endif
@@ -509,7 +509,7 @@ bool DeviceDescriptor::Close() {
   if (m_fd == INVALID_DESCRIPTOR)
     return true;
 
-#ifdef WIN32
+#ifdef _WIN32
   int ret = closesocket(m_fd);
   WSACleanup();
 #else

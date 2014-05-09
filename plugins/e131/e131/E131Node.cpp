@@ -15,7 +15,7 @@
  *
  * E131Node.cpp
  * A E1.31 node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -341,7 +341,7 @@ bool E131Node::RemoveHandler(unsigned int universe) {
  */
 E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   tx_universe settings;
-  std::stringstream str;
+  std::ostringstream str;
   str << "Universe " << universe;
   settings.source = str.str();
   settings.sequence = 0;

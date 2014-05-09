@@ -15,7 +15,7 @@
  *
  * ShowNetPort.cpp
  * The ShowNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #include <sstream>
 #include <string>
@@ -33,7 +33,7 @@ namespace shownet {
 using std::string;
 
 string ShowNetInputPort::Description() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << "ShowNet " << PortId() * DMX_UNIVERSE_SIZE + 1 << "-" <<
     (PortId() + 1) * DMX_UNIVERSE_SIZE;
   return str.str();
@@ -75,7 +75,7 @@ void ShowNetInputPort::PostSetUniverse(Universe *old_universe,
 
 
 string ShowNetOutputPort::Description() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << "ShowNet " << PortId() * DMX_UNIVERSE_SIZE + 1 << "-" <<
     (PortId() + 1) * DMX_UNIVERSE_SIZE;
   return str.str();

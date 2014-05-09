@@ -15,7 +15,7 @@
  *
  * EspNetDevice.h
  * Interface for the EspNet device
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ESPNET_ESPNETDEVICE_H_

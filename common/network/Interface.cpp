@@ -15,7 +15,7 @@
  *
  * Interface.cpp
  * Represents network interface.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifdef HAVE_SYS_TYPES_H
@@ -38,7 +38,7 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"

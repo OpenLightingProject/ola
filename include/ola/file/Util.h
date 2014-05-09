@@ -29,13 +29,36 @@ namespace file {
 
 extern const char PATH_SEPARATOR;
 
+/**
+ * Find all files in a directory that match the given prefix.
+ * @param[in] directory the directory to look in
+ * @param[in] prefix the prefix to match on
+ * @param[out] files a pointer to a vector with the absolute path of the
+ * matching files.
+ */
 void FindMatchingFiles(const std::string &directory,
                        const std::string &prefix,
                        std::vector<std::string> *files);
 
+/**
+ * Find all files in a directory that match any of the prefixes.
+ * @param[in] directory the directory to look in
+ * @param[in] prefixes the prefixes to match on
+ * @param[out] files a pointer to a vector with the absolute path of the
+ * matching files.
+ */
 void FindMatchingFiles(const std::string &directory,
                        const std::vector<std::string> &prefixes,
                        std::vector<std::string> *files);
+
+/**
+ * Get a list of all files in a directory. Entries in \p files will contain
+ * the full path to the file.
+ * @param[in] directory the directory to list
+ * @param[out] files a pointer to a string vector that will receive file paths
+ */
+void ListDirectory(const std::string& directory,
+                   std::vector<std::string> *files);
 
 /**
  * Convert a path to a filename

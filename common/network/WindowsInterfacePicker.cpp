@@ -15,7 +15,7 @@
  *
  * WindowsInterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 typedef int socklen_t;
@@ -25,7 +25,7 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <vector>
 
-#include "common/network/IPV4Address.h"
+#include "ola/network/IPV4Address.h"
 #include "common/network/WindowsInterfacePicker.h"
 #include "ola/Logging.h"
 
@@ -50,7 +50,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
                            // part of the InterfacePicker interface..
 
   while (1) {
-    pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(new uin8_t[ulOutBufLen]);
+    pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(new uint8_t[ulOutBufLen]);
     if (!pAdapterInfo) {
       OLA_WARN << "Error allocating memory needed for GetAdaptersinfo";
       return interfaces;
@@ -84,12 +84,14 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
       if (net) {
         Interface iface;
         iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
-        memcpy(iface.hw_address, pAdapter->Address, MAC_LENGTH);
+        uint8_t macaddr[MACAddress::LENGTH];
+        memcpy(macaddr, pAdapter->Address, MACAddress::LENGTH);
+        iface.hw_address = MACAddress(macaddr);
         iface.ip_address = IPV4Address(net);
 
         mask = inet_addr(ipAddress->IpMask.String);
         iface.subnet_mask = IPV4Address(mask);
-        iface.bcast_address = IPV4Address((iface.ip_address.s_addr & mask) |
+        iface.bcast_address = IPV4Address((iface.ip_address.AsInt() & mask) |
                                           (0xFFFFFFFF ^ mask));
 
         interfaces.push_back(iface);

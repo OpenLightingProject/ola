@@ -43,7 +43,7 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
                            uint16_t firmware_version)
     : UsbSerialDevice(owner, name, widget),
       m_tri_widget(widget) {
-  std::stringstream str;
+  std::ostringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 

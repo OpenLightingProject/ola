@@ -40,9 +40,9 @@ namespace spi {
 
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
@@ -157,7 +157,7 @@ bool SPIDevice::StartHook() {
 void SPIDevice::PrePortStop() {
   SPIPorts::iterator iter = m_spi_ports.begin();
   for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
-    stringstream str;
+    ostringstream str;
     str << static_cast<int>((*iter)->GetPersonality());
     m_preferences->SetValue(PersonalityKey(i), str.str());
     str.str("");

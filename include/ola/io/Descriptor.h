@@ -15,7 +15,7 @@
  *
  * Descriptor.h
  * The Descriptor classes
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * This defines all the different types of file descriptors that can be used by
  * the SelectServer. At the top level, the ReadFileDescriptor /

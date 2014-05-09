@@ -88,7 +88,7 @@ string ArtNetInputPort::Description() const {
   if (!GetUniverse())
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   str << "ArtNet Universe " <<
     static_cast<int>(m_node->NetAddress()) << ":" <<
     static_cast<int>(m_node->SubnetAddress()) << ":" <<
@@ -195,7 +195,7 @@ string ArtNetOutputPort::Description() const {
   if (!GetUniverse())
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   str << "ArtNet Universe " <<
     static_cast<int>(m_node->NetAddress()) << ":" <<
     static_cast<int>(m_node->SubnetAddress()) << ":" <<

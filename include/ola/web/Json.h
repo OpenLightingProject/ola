@@ -210,16 +210,49 @@ class JsonDoubleValue: public JsonValue {
    * @brief Create a new JsonDoubleValue
    * @param value the double to use.
    */
-  explicit JsonDoubleValue(long double value)
-      : m_value(value) {
-  }
+  explicit JsonDoubleValue(double value);
+
+  /**
+   * @brief Create a new JsonDoubleValue from separate components.
+   * e.g. 23.00456e-3:
+   *   full: 23
+   *   leading_fractional_zeros: 2
+   *   fractional: 456
+   *   exponent: -3
+   * @param is_negative
+   * @param full
+   * @param leading_fractional_zeros
+   * @param fractional
+   * @param exponent
+   */
+  JsonDoubleValue(bool is_negative, uint64_t full,
+                  int32_t leading_fractional_zeros,
+                  uint64_t fractional, int32_t exponent);
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
-  long double Value() const { return m_value; }
+  /**
+   * @brief Return the value as a string.
+   */
+  const std::string& ToString() const {
+    return m_as_string;
+  }
+
+  /**
+   * @brief Returns the value as a double. This may be incorrect if the value
+   * exceeds the storage space of the double.
+   */
+  double Value() const {
+    return m_value;
+  }
 
  private:
-  const long double m_value;
+  double m_value;
+  std::string m_as_string;
+
+  void BuildDouble(bool is_negative, uint64_t full,
+                   int32_t leading_fractional_zeros,
+                   uint64_t fractional, int32_t exponent);
 
   DISALLOW_COPY_AND_ASSIGN(JsonDoubleValue);
 };

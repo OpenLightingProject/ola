@@ -15,7 +15,7 @@
  *
  * InterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -26,7 +26,7 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"
@@ -140,7 +140,7 @@ bool InterfacePicker::ChooseInterface(
  * Create the appropriate picker
  */
 InterfacePicker *InterfacePicker::NewPicker() {
-#ifdef WIN32
+#ifdef _WIN32
   return new WindowsInterfacePicker();
 #else
   return new PosixInterfacePicker();

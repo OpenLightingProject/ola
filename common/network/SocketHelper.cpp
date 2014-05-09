@@ -21,6 +21,10 @@
 #include <errno.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#endif
+
 #include <ola/Logging.h>
 #include <ola/network/SocketAddress.h>
 

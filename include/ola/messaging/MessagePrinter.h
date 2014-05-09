@@ -53,14 +53,14 @@ class MessagePrinter: public MessageVisitor {
     virtual void PostVisit(const GroupMessageField*) {}
 
  protected:
-    std::stringstream& Stream() { return m_str; }
+    std::ostringstream& Stream() { return m_str; }
     virtual void PostStringHook() {}
     virtual std::string TransformLabel(const std::string &label) {
       return label;
     }
 
  private:
-    std::stringstream m_str;
+    std::ostringstream m_str;
 };
 
 

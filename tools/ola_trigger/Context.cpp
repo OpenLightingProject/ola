@@ -23,8 +23,8 @@
 
 #include "tools/ola_trigger/Context.h"
 
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char Context::SLOT_VALUE_VARIABLE[] = "slot_value";
@@ -68,7 +68,7 @@ void Context::Update(const string &name, const string &value) {
  * Set the slot value variable
  */
 void Context::SetSlotValue(uint8_t value) {
-  stringstream str;
+  ostringstream str;
   str << static_cast<int>(value);
   m_variables[SLOT_VALUE_VARIABLE] = str.str();
 }
@@ -78,7 +78,7 @@ void Context::SetSlotValue(uint8_t value) {
  * Set the slot offset variable
  */
 void Context::SetSlotOffset(uint16_t offset) {
-  stringstream str;
+  ostringstream str;
   str << static_cast<int>(offset);
   m_variables[SLOT_OFFSET_VARIABLE] = str.str();
 }
@@ -97,7 +97,7 @@ string Context::AsString() const {
 
   sort(keys.begin(), keys.end());
 
-  std::stringstream str;
+  ostringstream str;
   vector<string>::const_iterator iter = keys.begin();
   for (; iter != keys.end(); ++iter) {
     if (iter != keys.begin())
