@@ -80,7 +80,7 @@ string TypeFromValue<int64_t>(const int64_t&) {
 }
 
 template <>
-string TypeFromValue<long double>(const long double&) {
+string TypeFromValue<double>(const double&) {
   return "number";
 }
 
@@ -227,7 +227,7 @@ void SchemaParseContext::Number(ErrorLogger *logger, int64_t value) {
   ProcessInt(logger, value);
 }
 
-void SchemaParseContext::Number(ErrorLogger *logger, long double value) {
+void SchemaParseContext::Number(ErrorLogger *logger, double value) {
   logger->Error() << "Invalid type number: "<< value;
 }
 
@@ -474,7 +474,7 @@ void PropertiesParseContext::Number(ErrorLogger *logger, int64_t value) {
   (void) value;
 }
 
-void PropertiesParseContext::Number(ErrorLogger *logger, long double value) {
+void PropertiesParseContext::Number(ErrorLogger *logger, double value) {
   (void) logger;
   (void) value;
 }
@@ -554,7 +554,7 @@ void ArrayItemsParseContext::Number(ErrorLogger *logger, int64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Number(ErrorLogger *logger, long double value) {
+void ArrayItemsParseContext::Number(ErrorLogger *logger, double value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
@@ -619,8 +619,7 @@ void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
-                                            long double value) {
+void RequiredPropertiesParseContext::Number(ErrorLogger *logger, double value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 

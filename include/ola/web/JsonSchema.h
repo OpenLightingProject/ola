@@ -300,7 +300,7 @@ class NumberConstraint {
   virtual bool IsValid(unsigned int i) = 0;
   virtual bool IsValid(uint64_t i) = 0;
   virtual bool IsValid(int64_t i) = 0;
-  virtual bool IsValid(long double d) = 0;
+  virtual bool IsValid(double d) = 0;
 
   virtual void ExtendSchema(JsonObject *schema) const = 0;
 };
@@ -329,7 +329,7 @@ class MultipleOfConstraint : public NumberConstraint {
     return (i % m_multiple_of == 0);
   }
 
-  bool IsValid(long double d);
+  bool IsValid(double d);
 
   void ExtendSchema(JsonObject *schema) const {
     schema->Add("multipleOf", m_multiple_of);
@@ -364,7 +364,7 @@ class MaximumConstraint : public NumberConstraint {
         m_is_exclusive(is_exclusive) {
   }
 
-  MaximumConstraint(long double limit, bool is_exclusive)
+  MaximumConstraint(double limit, bool is_exclusive)
       : m_limit(limit),
         m_is_exclusive(is_exclusive) {
   }
@@ -384,7 +384,7 @@ class MaximumConstraint : public NumberConstraint {
     return m_is_exclusive ? i < m_limit : i <= m_limit;
   }
 
-  bool IsValid(long double d) {
+  bool IsValid(double d) {
     return m_is_exclusive ? d < m_limit : d <= m_limit;
   }
 
@@ -396,7 +396,7 @@ class MaximumConstraint : public NumberConstraint {
   }
 
  private:
-  long double m_limit;
+  double m_limit;
   bool m_is_exclusive;
 };
 
@@ -425,7 +425,7 @@ class MinimumConstraint : public NumberConstraint {
         m_is_exclusive(is_exclusive) {
   }
 
-  MinimumConstraint(long double limit, bool is_exclusive)
+  MinimumConstraint(double limit, bool is_exclusive)
       : m_limit(limit),
         m_is_exclusive(is_exclusive) {
   }
@@ -445,7 +445,7 @@ class MinimumConstraint : public NumberConstraint {
     return m_is_exclusive ? i > m_limit : i >= m_limit;
   }
 
-  bool IsValid(long double d) {
+  bool IsValid(double d) {
     return m_is_exclusive ? d > m_limit : d >= m_limit;
   }
 
@@ -457,7 +457,7 @@ class MinimumConstraint : public NumberConstraint {
   }
 
  private:
-  long double m_limit;
+  double m_limit;
   bool m_is_exclusive;
 };
 

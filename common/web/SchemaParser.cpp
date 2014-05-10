@@ -85,8 +85,10 @@ void SchemaParser::Number(int64_t value) {
   return HandleNumber(value);
 }
 
-void SchemaParser::Number(long double value) {
-  return HandleNumber(value);
+void SchemaParser::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
+  double d;
+  JsonDoubleValue::AsDouble(rep, &d);
+  return HandleNumber(d);
 }
 
 void SchemaParser::Bool(bool value) {

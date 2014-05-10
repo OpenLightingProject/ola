@@ -218,7 +218,7 @@ void StringValidator::ExtendSchema(JsonObject *schema) const {
 
 // MultipleOfConstraint
 // -----------------------------------------------------------------------------
-bool MultipleOfConstraint::IsValid(long double d) {
+bool MultipleOfConstraint::IsValid(double d) {
   return (fmod(d, m_multiple_of) == 0);
 }
 

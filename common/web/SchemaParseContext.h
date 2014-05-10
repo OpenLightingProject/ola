@@ -139,7 +139,7 @@ class SchemaParseContextInterface {
   virtual void Number(ErrorLogger *logger, int32_t value) = 0;
   virtual void Number(ErrorLogger *logger, uint64_t value) = 0;
   virtual void Number(ErrorLogger *logger, int64_t value) = 0;
-  virtual void Number(ErrorLogger *logger, long double value) = 0;
+  virtual void Number(ErrorLogger *logger, double value) = 0;
   virtual void Bool(ErrorLogger *logger, bool value) = 0;
   virtual void Null(ErrorLogger *logger) = 0;
   virtual SchemaParseContextInterface* OpenArray(ErrorLogger *logger) = 0;
@@ -213,7 +213,7 @@ class DefinitionsParseContext : public BaseParseContext {
   void Number(ErrorLogger *, int32_t) {}
   void Number(ErrorLogger *, uint64_t) {}
   void Number(ErrorLogger *, int64_t) {}
-  void Number(ErrorLogger *, long double) {}
+  void Number(ErrorLogger *, double) {}
   void Bool(ErrorLogger *, bool) {}
   void Null(ErrorLogger *logger) { (void) logger; }
 
@@ -269,7 +269,7 @@ class SchemaParseContext : public BaseParseContext {
   void Number(ErrorLogger *logger, int32_t value);
   void Number(ErrorLogger *logger, uint64_t value);
   void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, long double value);
+  void Number(ErrorLogger *logger, double value);
 
   // exclusiveMin / Max
   void Bool(ErrorLogger *logger, bool value);
@@ -365,7 +365,7 @@ class PropertiesParseContext : public BaseParseContext {
   void Number(ErrorLogger *logger, int32_t value);
   void Number(ErrorLogger *logger, uint64_t value);
   void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, long double value);
+  void Number(ErrorLogger *logger, double value);
   void Bool(ErrorLogger *logger, bool value);
   void Null(ErrorLogger *logger);
   SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
@@ -408,7 +408,7 @@ class ArrayItemsParseContext : public BaseParseContext {
   void Number(ErrorLogger *logger, int32_t value);
   void Number(ErrorLogger *logger, uint64_t value);
   void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, long double value);
+  void Number(ErrorLogger *logger, double value);
   void Bool(ErrorLogger *logger, bool value);
   void Null(ErrorLogger *logger);
   SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
@@ -450,7 +450,7 @@ class RequiredPropertiesParseContext : public BaseParseContext {
   void Number(ErrorLogger *logger, int32_t value);
   void Number(ErrorLogger *logger, uint64_t value);
   void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, long double value);
+  void Number(ErrorLogger *logger, double value);
   void Bool(ErrorLogger *logger, bool value);
   void Null(ErrorLogger *logger);
   SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
