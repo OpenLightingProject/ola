@@ -1,0 +1,51 @@
+=== POSITIVE ===
+{
+  "type": "string"
+}
+// Test maxLength
+=== POSITIVE ===
+{
+  "maxLength": 0,
+  "type": "string"
+}
+=== POSITIVE ===
+{
+  "maxLength": 1,
+  "type": "string"
+}
+=== POSITIVE ===
+{
+  "maxLength": 32,
+  "type": "string"
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "maxLength": -1
+}
+// Test minLength
+=== POSITIVE ===
+{
+  "minLength": 0,
+  "type": "string"
+}
+--------
+// minLength defaults to 0, so we remove it
+{
+  "type": "string"
+}
+=== POSITIVE ===
+{
+  "minLength": 1,
+  "type": "string"
+}
+=== POSITIVE ===
+{
+  "minLength": 32,
+  "type": "string"
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "minLength": -1
+}

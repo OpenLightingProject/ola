@@ -32,6 +32,7 @@
 #include <ola/base/Macro.h>
 #include <ola/stl/STLUtils.h>
 #include <ola/web/Json.h>
+#include <ola/web/JsonTypes.h>
 #include <deque>
 #include <map>
 #include <memory>
@@ -89,17 +90,6 @@ class ValidatorInterface : public JsonValueVisitorInterface {
  */
 class BaseValidator : public ValidatorInterface {
  protected:
-  enum JsonType {
-    ARRAY_TYPE,
-    BOOLEAN_TYPE,
-    INTEGER_TYPE,
-    NULL_TYPE,
-    NUMBER_TYPE,
-    OBJECT_TYPE,
-    STRING_TYPE,
-    NONE_TYPE,
-  };
-
   explicit BaseValidator(JsonType type)
       : m_is_valid(true),
         m_type(type) {
@@ -181,7 +171,7 @@ class BaseValidator : public ValidatorInterface {
  */
 class WildcardValidator : public BaseValidator {
  public:
-  WildcardValidator() : BaseValidator(NONE_TYPE) {}
+  WildcardValidator() : BaseValidator(JSON_UNDEFINED) {}
 
   bool IsValid() const { return true; }
 };
@@ -248,7 +238,7 @@ class StringValidator : public BaseValidator {
   };
 
   explicit StringValidator(const Options &options)
-      : BaseValidator(STRING_TYPE),
+      : BaseValidator(JSON_STRING),
         m_options(options) {
   }
 
@@ -267,7 +257,7 @@ class StringValidator : public BaseValidator {
  */
 class BoolValidator : public BaseValidator {
  public:
-  BoolValidator() : BaseValidator(BOOLEAN_TYPE) {}
+  BoolValidator() : BaseValidator(JSON_BOOLEAN) {}
 
   void Visit(const JsonBoolValue&) { m_is_valid = true; }
 
@@ -280,7 +270,7 @@ class BoolValidator : public BaseValidator {
  */
 class NullValidator : public BaseValidator {
  public:
-  NullValidator() : BaseValidator(NULL_TYPE) {}
+  NullValidator() : BaseValidator(JSON_NULL) {}
 
   void Visit(const JsonNullValue&) { m_is_valid = true; }
 
@@ -466,7 +456,7 @@ class MinimumConstraint : public NumberConstraint {
  */
 class IntegerValidator : public BaseValidator {
  public:
-  IntegerValidator() : BaseValidator(INTEGER_TYPE) {}
+  IntegerValidator() : BaseValidator(JSON_INTEGER) {}
   virtual ~IntegerValidator();
 
   /**
@@ -503,7 +493,7 @@ class IntegerValidator : public BaseValidator {
  */
 class NumberValidator : public IntegerValidator {
  public:
-  NumberValidator() : IntegerValidator(NUMBER_TYPE) {}
+  NumberValidator() : IntegerValidator(JSON_NUMBER) {}
 
   void Visit(const JsonDoubleValue&);
 
@@ -828,7 +818,7 @@ class OneOfValidator : public ConjunctionValidator {
 class NotValidator : public BaseValidator {
  public:
   explicit NotValidator(ValidatorInterface *validator)
-      : BaseValidator(NONE_TYPE),
+      : BaseValidator(JSON_UNDEFINED),
         m_validator(validator) {
   }
 

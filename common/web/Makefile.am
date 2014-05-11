@@ -1,13 +1,16 @@
 include $(top_srcdir)/common.mk
 
 dist_noinst_DATA = testdata/arrays.test \
+                   testdata/integers.test \
+                   testdata/misc.test \
                    testdata/objects.test \
-                   testdata/schema.json
+                   testdata/schema.json \
+                   testdata/strings.test
 
 # LIBRARIES
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
-libolaweb_la_SOURCES = Json.cpp JsonParser.cpp JsonSchema.cpp \
+libolaweb_la_SOURCES = Json.cpp JsonTypes.cpp JsonParser.cpp JsonSchema.cpp \
                        JsonSections.cpp PointerTracker.h PointerTracker.cpp \
                        SchemaParser.h SchemaParser.cpp SchemaParseContext.h \
                        SchemaParseContext.cpp TreeHandler.cpp

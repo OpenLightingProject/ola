@@ -42,6 +42,58 @@ class PropertiesParseContext;
 class SchemaParseContext;
 class RequiredPropertiesParseContext;
 
+/**
+ * @brief The list of valid JSon Schema keywords.
+ */
+enum SchemaKeyword {
+  SCHEMA_UNKNOWN,  /**< Keywords we don't understand */
+  SCHEMA_ID,
+  SCHEMA_SCHEMA,
+  SCHEMA_REF,
+  SCHEMA_TITLE,
+  SCHEMA_DESCRIPTION,
+  SCHEMA_DEFAULT,
+  SCHEMA_FORMAT,
+  SCHEMA_MULTIPLEOF,
+  SCHEMA_MAXIMUM,
+  SCHEMA_EXCLUSIVE_MAXIMUM,
+  SCHEMA_MINIMUM,
+  SCHEMA_EXCLUSIVE_MINIMUM,
+  SCHEMA_MAX_LENGTH,
+  SCHEMA_MIN_LENGTH,
+  SCHEMA_PATTERN,
+  SCHEMA_ADDITIONAL_ITEMS,
+  SCHEMA_ITEMS,
+  SCHEMA_MAX_ITEMS,
+  SCHEMA_MIN_ITEMS,
+  SCHEMA_UNIQUE_ITEMS,
+  SCHEMA_MAX_PROPERTIES,
+  SCHEMA_MIN_PROPERTIES,
+  SCHEMA_REQUIRED,
+  SCHEMA_ADDITIONAL_PROPERTIES,
+  SCHEMA_DEFINITIONS,
+  SCHEMA_PROPERTIES,
+  SCHEMA_PATTERN_PROPERTIES,
+  SCHEMA_DEPENDENCIES,
+  SCHEMA_ENUM,
+  SCHEMA_TYPE,
+  SCHEMA_ALL_OF,
+  SCHEMA_ANY_OF,
+  SCHEMA_ONE_OF,
+  SCHEMA_NOT,
+};
+
+/**
+ * Return the string used by the SchemaKeyword.
+ */
+std::string KeywordToString(SchemaKeyword keyword);
+
+/**
+ * @brief Map a string to a SchemaKeyword.
+ * @returns the SchemaKeyword corresponding to the string, or SCHEMA_UNDEFINED.
+ */
+SchemaKeyword LookupKeyword(const std::string& keyword);
+
 template <typename T>
 class OptionalItem {
  public:
@@ -150,21 +202,17 @@ class SchemaParseContextInterface {
 };
 
 /**
- * @brief A SchemaParseContext that keeps track of the last property seen.
+ * @brief A SchemaParseContext that keeps track of the last keyword seen.
  */
 class BaseParseContext : public SchemaParseContextInterface {
  public:
-  BaseParseContext()
-      : SchemaParseContextInterface(),
-        m_property_set(false) {
-  }
+  BaseParseContext() : SchemaParseContextInterface() {}
 
   /**
    * @brief Called when we encouter a property
    */
-  void ObjectKey(ErrorLogger *logger, const std::string &property) {
-    m_property_set = true;
-    m_property = property;
+  void ObjectKey(ErrorLogger *logger, const std::string &keyword) {
+    m_keyword.Set(keyword);
     (void) logger;
   }
 
@@ -172,24 +220,24 @@ class BaseParseContext : public SchemaParseContextInterface {
   /**
    * @brief Check if a
    */
-  bool HasKey() const { return m_property_set; }
+  bool HasKeyword() const { return m_keyword.IsSet(); }
 
   /**
    *
    */
-  std::string TakeKey() {
-    m_property_set = false;
-    return m_property;
+  std::string TakeKeyword() {
+    std::string keyword = m_keyword.Value();
+    m_keyword.Reset();
+    return keyword;
   }
 
   /**
    *
    */
-  std::string Key() const { return m_property; }
+  const std::string& Keyword() const { return m_keyword.Value(); }
 
  private:
-  bool m_property_set;
-  std::string m_property;
+  OptionalItem<std::string> m_keyword;
 };
 
 /**
@@ -239,7 +287,7 @@ class DefinitionsParseContext : public BaseParseContext {
 /**
  * @brief
  */
-class SchemaParseContext : public BaseParseContext {
+class SchemaParseContext : public SchemaParseContextInterface {
  public:
   /**
    * @brief Create a new SchemaParseContext
@@ -247,8 +295,8 @@ class SchemaParseContext : public BaseParseContext {
    *   transferred.
    */
   explicit SchemaParseContext(SchemaDefinitions *definitions)
-      : BaseParseContext(),
-        m_schema_defs(definitions) {
+      : m_schema_defs(definitions),
+        m_type(JSON_UNDEFINED) {
   }
   ~SchemaParseContext();
 
@@ -260,6 +308,8 @@ class SchemaParseContext : public BaseParseContext {
    * construct a validator.
    */
   ValidatorInterface* GetValidator(ErrorLogger *logger);
+
+  void ObjectKey(ErrorLogger *logger, const std::string &keyword);
 
   // id, title, etc.
   void String(ErrorLogger *logger, const std::string &value);
@@ -285,6 +335,8 @@ class SchemaParseContext : public BaseParseContext {
 
  private:
   SchemaDefinitions *m_schema_defs;
+  // Set to the last keyword reported to ObjectKey()
+  SchemaKeyword m_keyword;
 
   // Members are arranged according to the order in which they appear in the
   // draft standard.
@@ -322,7 +374,7 @@ class SchemaParseContext : public BaseParseContext {
   std::auto_ptr<RequiredPropertiesParseContext> m_required_items;
 
   // 5.5 Keywords for multiple instance types
-  OptionalItem<std::string> m_type;
+  JsonType m_type;
 
   // 6. Metadata keywords
   OptionalItem<std::string> m_description;
@@ -337,11 +389,24 @@ class SchemaParseContext : public BaseParseContext {
   std::auto_ptr<PropertiesParseContext> m_properties_context;
   // vector<NumberConstraint> m_number_constraints;
 
+  void ProcessPositiveInt(ErrorLogger *logger, uint64_t value);
+
   template <typename T>
   void ProcessInt(ErrorLogger *logger, T t);
-  bool ValidType(const std::string& type);
   ValidatorInterface* BuildArrayValidator(ErrorLogger *logger);
   ValidatorInterface* BuildObjectValidator(ErrorLogger *logger);
+  ValidatorInterface* BuildStringValidator(ErrorLogger *logger);
+
+  static bool ValidTypeForKeyword(ErrorLogger *logger, SchemaKeyword keyword,
+                                  JsonType type);
+  // Verify that type == expected_type. If it doesn't report an error to the
+  // logger.
+  static bool CheckTypeAndLog(ErrorLogger *logger, SchemaKeyword keyword,
+                              JsonType type, JsonType expected_type);
+  // Same as above but the type can be either expected_type1 or expected_type2
+  static bool CheckTypeAndLog(ErrorLogger *logger, SchemaKeyword keyword,
+                              JsonType type, JsonType expected_type1,
+                              JsonType expected_type2);
 
   DISALLOW_COPY_AND_ASSIGN(SchemaParseContext);
 };
@@ -384,7 +449,7 @@ class PropertiesParseContext : public BaseParseContext {
 
 
 /**
- * @brief
+ * @brief Parse the array of objects in an 'items' property.
  */
 class ArrayItemsParseContext : public BaseParseContext {
  public:
@@ -426,24 +491,25 @@ class ArrayItemsParseContext : public BaseParseContext {
   SchemaDefinitions *m_schema_defs;
   ItemSchemas m_item_schemas;
 
-  void ReportErrorForType(ErrorLogger *logger, const std::string& type);
+  void ReportErrorForType(ErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(ArrayItemsParseContext);
 };
 
 
 /**
- * @brief
+ * @brief Parse an array of strings for the 'required' property.
  */
 class RequiredPropertiesParseContext : public BaseParseContext {
  public:
   typedef std::set<std::string> RequiredItems;
 
-  RequiredPropertiesParseContext()
-      : BaseParseContext() {
-  }
+  RequiredPropertiesParseContext() : BaseParseContext() {}
 
-  void GetRequiredStrings(RequiredItems *required_items);
+  /**
+   * @brief Return the strings in the 'required' array
+   */
+  void GetRequiredItems(RequiredItems *required_items);
 
   void String(ErrorLogger *logger, const std::string &value);
   void Number(ErrorLogger *logger, uint32_t value);
@@ -465,7 +531,7 @@ class RequiredPropertiesParseContext : public BaseParseContext {
  private:
   RequiredItems m_required_items;
 
-  void ReportErrorForType(ErrorLogger *logger, const std::string& type);
+  void ReportErrorForType(ErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(RequiredPropertiesParseContext);
 };

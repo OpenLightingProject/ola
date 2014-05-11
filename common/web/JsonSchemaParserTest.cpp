@@ -43,8 +43,11 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEmptySchema);
   CPPUNIT_TEST(testInvalidSchema);
   CPPUNIT_TEST(testInvalidTypes);
+  CPPUNIT_TEST(testIntegers);
+  CPPUNIT_TEST(testStrings);
   CPPUNIT_TEST(testArrays);
   CPPUNIT_TEST(testObjects);
+  CPPUNIT_TEST(testMisc);
   CPPUNIT_TEST(testDefinitions);
   CPPUNIT_TEST_SUITE_END();
 
@@ -53,8 +56,11 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   void testEmptySchema();
   void testInvalidSchema();
   void testInvalidTypes();
+  void testIntegers();
+  void testStrings();
   void testArrays();
   void testObjects();
+  void testMisc();
   void testDefinitions();
 
  private:
@@ -324,6 +330,20 @@ void JsonSchemaParserTest::testInvalidTypes() {
 }
 
 /**
+ * Verify integers parse correctly.
+ */
+void JsonSchemaParserTest::testIntegers() {
+  RunTestsInFile("integers.test");
+}
+
+/**
+ * Verify strings parse correctly.
+ */
+void JsonSchemaParserTest::testStrings() {
+  RunTestsInFile("strings.test");
+}
+
+/**
  * Verify arrays parse correctly.
  */
 void JsonSchemaParserTest::testArrays() {
@@ -338,6 +358,13 @@ void JsonSchemaParserTest::testArrays() {
  */
 void JsonSchemaParserTest::testObjects() {
   RunTestsInFile("objects.test");
+}
+
+/**
+ * Various other test cases.
+ */
+void JsonSchemaParserTest::testMisc() {
+  RunTestsInFile("misc.test");
 }
 
 void JsonSchemaParserTest::testDefinitions() {

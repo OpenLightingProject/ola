@@ -30,6 +30,7 @@
 #include "ola/stl/STLUtils.h"
 #include "ola/web/JsonParser.h"
 #include "ola/web/JsonSchema.h"
+#include "ola/web/JsonTypes.h"
 
 namespace ola {
 namespace web {
@@ -55,32 +56,7 @@ JsonObject* BaseValidator::GetSchema() const {
   if (!m_description.empty()) {
     schema->Add("description", m_description);
   }
-  string type;
-  switch (m_type) {
-    case ARRAY_TYPE:
-      type = "array";
-      break;
-    case BOOLEAN_TYPE:
-      type = "boolean";
-      break;
-    case INTEGER_TYPE:
-      type = "integer";
-      break;
-    case NULL_TYPE:
-      type = "null";
-      break;
-    case NUMBER_TYPE:
-      type = "number";
-      break;
-    case OBJECT_TYPE:
-      type = "object";
-      break;
-    case STRING_TYPE:
-      type = "string";
-      break;
-    default:
-      {}
-  }
+  const string type = JsonTypeToString(m_type);
   if (!type.empty()) {
     schema->Add("type", type);
   }
@@ -278,7 +254,7 @@ void NumberValidator::Visit(const JsonDoubleValue &value) {
 // ObjectValidator
 // -----------------------------------------------------------------------------
 ObjectValidator::ObjectValidator(const Options &options)
-    : BaseValidator(OBJECT_TYPE),
+    : BaseValidator(JSON_OBJECT),
       m_options(options) {
 }
 
@@ -370,7 +346,7 @@ void ObjectValidator::ExtendSchema(JsonObject *schema) const {
 // -----------------------------------------------------------------------------
 ArrayValidator::ArrayValidator(Items *items, AdditionalItems *additional_items,
                                const Options &options)
-  : BaseValidator(ARRAY_TYPE),
+  : BaseValidator(JSON_ARRAY),
     m_items(items),
     m_additional_items(additional_items),
     m_options(options),
@@ -497,7 +473,7 @@ ArrayValidator::ArrayElementValidator*
 ArrayValidator::ArrayElementValidator::ArrayElementValidator(
     const ValidatorList &validators,
     ValidatorInterface *default_validator)
-    : BaseValidator(NONE_TYPE),
+    : BaseValidator(JSON_UNDEFINED),
       m_item_validators(validators.begin(), validators.end()),
       m_default_validator(default_validator) {
 }
@@ -571,7 +547,7 @@ void ArrayValidator::ArrayElementValidator::ValidateItem(const T &item) {
 // -----------------------------------------------------------------------------
 ConjunctionValidator::ConjunctionValidator(const string &keyword,
                                            ValidatorList *validators)
-    : BaseValidator(NONE_TYPE),
+    : BaseValidator(JSON_UNDEFINED),
       m_keyword(keyword),
       m_validators(*validators) {
   validators->clear();
