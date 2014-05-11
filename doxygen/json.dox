@@ -33,7 +33,6 @@
    if (JsonParser::Parse(json_string, &handler)) {
      std::auto_ptr<JsonValue> root = handler.ClaimRoot();
    } else {
-     // parsing failed.
      cerr << handler.GetError() << endl;
    }
    ~~~~~~~~~~~~~~~~~~~~~
