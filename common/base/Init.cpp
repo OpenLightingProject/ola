@@ -41,6 +41,9 @@
 #include <stdlib.h>
 #ifdef _WIN32
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Winsock2.h>
 #else
 #include <sys/resource.h>
 #endif
@@ -84,7 +87,6 @@ static void _SIGSEGV_Handler(int signal) {
   (void) signal;
 }
 
-
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
@@ -92,7 +94,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 
   if (export_map)
     InitExportMap(argc, argv, export_map);
-  return true;
+  return NetworkInit();
 }
 
 
@@ -118,9 +120,30 @@ bool AppInit(int *argc,
   InitLoggingFromFlags();
   if (!InstallSEGVHandler())
     return false;
-  return true;
+  return NetworkInit();
 }
 
+#ifdef _WIN32
+static void NetworkShutdown() {
+  WSACleanup();
+}
+#endif
+
+bool NetworkInit() {
+#ifdef _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  if (result != 0) {
+    OLA_WARN << "WinSock initialization failed with " << result;
+    return false;
+  } else {
+    atexit(NetworkShutdown);
+    return true;
+  }
+#else
+  return true;
+#endif
+}
 
 bool InstallSignal(int signal, void(*fp)(int signo)) {
 #ifdef _WIN32
