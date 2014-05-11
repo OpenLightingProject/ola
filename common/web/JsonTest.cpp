@@ -321,6 +321,56 @@ void JsonTest::testEquality() {
   OLA_ASSERT(int64_2 == uint64_1);
   OLA_ASSERT(int64_3 == uint64_2);
 
+
+  // Test Array equality.
+  JsonArray array1;
+  array1.Append(true);
+  array1.Append(1);
+  array1.Append("foo");
+
+  JsonArray array2;
+  array2.Append(true);
+  array2.Append(1);
+  array2.Append("foo");
+  array2.Append(-1);
+
+  JsonArray array3;
+  array3.Append(true);
+  array3.Append(1);
+  array3.Append("bar");
+
+  all_values.push_back(&array1);
+  all_values.push_back(&array2);
+  all_values.push_back(&array3);
+
+  OLA_ASSERT_FALSE(array1 == array2);
+  OLA_ASSERT_FALSE(array1 == array3);
+
+  // Object equality
+  JsonObject object1;
+  object1.Add("age", 10);
+  object1.Add("name", "simon");
+  object1.Add("male", true);
+
+  JsonObject object2;
+  object1.Add("age", 10);
+  object1.Add("name", "simon");
+  object1.Add("male", true);
+  object1.Add("nationality", "Australia");
+
+  JsonObject object3;
+  object3.Add("age", 10);
+  object3.Add("name", "james");
+  object3.Add("male", true);
+
+  all_values.push_back(&object1);
+  all_values.push_back(&object2);
+  all_values.push_back(&object3);
+
+  OLA_ASSERT_FALSE(object1 == object2);
+  OLA_ASSERT_FALSE(object1 == object3);
+
+  // verify identity equality
   for (unsigned int i = 0; i < all_values.size(); ++i) {
     OLA_ASSERT(*(all_values[i]) == *(all_values[i]));
   }
