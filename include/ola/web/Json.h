@@ -20,28 +20,10 @@
  */
 
 /**
- * @defgroup json JSON
- * @brief A JSON formatter.
- *
- * @examplepara
- * ~~~~~~~~~~~~~~~~~~~~~
- * #include <ola/web/Json.h>
- *
- * JsonObject obj;
- * obj.Add("name", "simon");
- * obj.Add("age", 10);
- * obj.Add("male", true);
- * JsonArray *friends = obj.AddArray("friends");
- * friends->Add("Peter");
- * friends->Add("Bob");
- * friends->Add("Jane");
- * const string output = JsonWriter::AsString(json);
- * ~~~~~~~~~~~~~~~~~~~~~
- *
  * @addtogroup json
  * @{
  * @file Json.h
- * @brief Header file for the JSON formatter.
+ * @brief Basic data types used to represent elements in a JSON document.
  * @}
  */
 
@@ -101,16 +83,70 @@ class JsonValue {
     return !(*this == other);
   }
 
+  /**
+   * @brief Check if this JsonValue equals a JsonStringValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonStringValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonUIntValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonUIntValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonIntValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonIntValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonUInt64Value.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonUInt64Value &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonInt64Value.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonInt64Value &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonBoolValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonBoolValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonNullValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonNullValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonDoubleValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonDoubleValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonRawValue.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonRawValue &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonObject.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonObject &) const { return false; }
+
+  /**
+   * @brief Check if this JsonValue equals a JsonArray.
+   * @returns true if the two values are equal, false otherwise.
+   */
   virtual bool Equals(const JsonArray &) const { return false; }
 
   /**
@@ -119,17 +155,6 @@ class JsonValue {
    */
   virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
 };
-
-// operator<<
-std::ostream& operator<<(std::ostream &os, const JsonStringValue &value);
-std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value);
-std::ostream& operator<<(std::ostream &os, const JsonIntValue &value);
-std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value);
-std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value);
-std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value);
-std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value);
-std::ostream& operator<<(std::ostream &os, const JsonNullValue &value);
-std::ostream& operator<<(std::ostream &os, const JsonRawValue &value);
 
 /**
  * @brief A string value.
@@ -150,6 +175,9 @@ class JsonStringValue: public JsonValue {
     return m_value == other.m_value;
   }
 
+  /**
+   * @brief Return the string value.
+   */
   const std::string& Value() const { return m_value; }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
@@ -189,6 +217,9 @@ class JsonUIntValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Return the uint32_t value.
+   */
   unsigned int Value() const { return m_value; }
 
  private:
@@ -225,6 +256,9 @@ class JsonIntValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Return the int32_t value.
+   */
   int Value() const { return m_value; }
 
  private:
@@ -261,6 +295,9 @@ class JsonUInt64Value: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Return the uint64_t value.
+   */
   uint64_t Value() const { return m_value; }
 
  private:
@@ -297,6 +334,9 @@ class JsonInt64Value: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Return the int64_t value.
+   */
   int64_t Value() const { return m_value; }
 
  private:
@@ -309,8 +349,10 @@ class JsonInt64Value: public JsonValue {
 /**
  * @brief A double value.
  *
- * Double Values represent numbers which are not simple integers. A double
- * value takes the form: <full>.<fractional>e<exponent>. e.g 23.00456e-3.
+ * Double Values represent numbers which are not simple integers. They can have
+ * a fractional and/or exponent. A double
+ * value takes the form: [full].[fractional]e<sup>[exponent]</sup>.
+ * e.g 23.00456e<sup>-3</sup>.
  */
 class JsonDoubleValue: public JsonValue {
  public:
@@ -318,7 +360,7 @@ class JsonDoubleValue: public JsonValue {
    * @struct DoubleRepresentation
    * @brief Represents a JSON double value broken down as separate components.
    *
-   * For the value 23.00456e-3:
+   * For the value 23.00456e<sup>-3</sup>:
    *   full: 23
    *   leading_fractional_zeros: 2
    *   fractional: 456
@@ -368,8 +410,9 @@ class JsonDoubleValue: public JsonValue {
   }
 
   /**
-   * @brief Returns the value as a double. This may be incorrect if the value
-   * exceeds the storage space of the double.
+   * @brief Returns the value as a double.
+   *
+   * This may be incorrect if the value exceeds the storage space of the double.
    */
   double Value() const {
     return m_value;
@@ -421,6 +464,9 @@ class JsonBoolValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Return the bool value.
+   */
   bool Value() const { return m_value; }
 
  private:
@@ -458,7 +504,7 @@ class JsonNullValue: public JsonValue {
  */
 class JsonRawValue: public JsonValue {
  public:
-  /*
+  /**
    * @brief Create a new JsonRawValue
    * @param value the raw data to insert.
    */
@@ -476,6 +522,9 @@ class JsonRawValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Return the raw value  as a string.
+   */
   const std::string& Value() const { return m_value; }
 
  private:
@@ -579,8 +628,17 @@ class JsonObject: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Check if there are properties within the object
+   * @returns true if the object is empty, false if there are properties.
+   */
   bool IsEmpty() const { return m_members.empty(); }
 
+  /**
+   * @brief Visit each of the properties in this object.
+   *
+   * For each property : value, the visitor is called.
+   */
   void VisitProperties(JsonValueVisitorInterface *visitor) const;
 
  private:
@@ -693,9 +751,26 @@ class JsonArray: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  /**
+   * @brief Check if there are elements within the array.
+   * @returns true if the array is empty, false if there are elements.
+   */
+  bool IsEmpty() const { return m_values.empty(); }
+
+  /**
+   * @brief Return the number of elements in the array.
+   */
   unsigned int Size() const { return m_values.size(); }
+
+  /**
+   * @brief Return the element at index i.
+   * @returns The JsonValue at i, of NULL if the index is out of range.
+   */
   const JsonValue *ElementAt(unsigned int i) const;
 
+  /**
+   * @brief Return true if this array contains nested arrays or objects.
+   */
   bool IsComplexType() const { return m_complex_type; }
 
  private:
@@ -710,6 +785,10 @@ class JsonArray: public JsonValue {
 
 /**
  * @brief The interface for the JsonValueVisitor class.
+ *
+ * An implementation of a JsonValueVisitorInterface can be passed to the
+ * Visit() method of a JsonValue. This provides traversal of a json tree in a
+ * type safe manner.
  */
 class JsonValueVisitorInterface {
  public:
@@ -730,57 +809,19 @@ class JsonValueVisitorInterface {
   virtual void VisitProperty(const std::string &property,
                              const JsonValue &value) = 0;
 };
-
-
-/**
- * @brief A class that writes a JsonValue to an output stream.
- */
-class JsonWriter : public JsonValueVisitorInterface {
- public:
-  explicit JsonWriter(std::ostream *output)
-      : m_output(output),
-        m_indent(0),
-        m_separator("") {
-  }
-
-  /**
-   * @brief Write the string representation of the JsonValue to a ostream.
-   * @param output the ostream to write to
-   * @param value the JsonValue to serialize.
-   */
-  static void Write(std::ostream *output, const JsonValue &value);
-
-  /**
-   * @brief Get the string representation of the JsonValue.
-   * @param value the JsonValue to serialize.
-   */
-  static std::string AsString(const JsonValue &value);
-
-  void Visit(const JsonStringValue &value);
-  void Visit(const JsonBoolValue &value);
-  void Visit(const JsonNullValue &value);
-  void Visit(const JsonRawValue &value);
-  void Visit(const JsonObject &value);
-  void Visit(const JsonArray &value);
-  void Visit(const JsonUIntValue &value);
-  void Visit(const JsonUInt64Value &value);
-  void Visit(const JsonIntValue &value);
-  void Visit(const JsonInt64Value &value);
-  void Visit(const JsonDoubleValue &value);
-
-  void VisitProperty(const std::string &property, const JsonValue &value);
-
- private:
-  std::ostream *m_output;
-  unsigned int m_indent;
-  std::string m_separator;
-
-  /**
-   * @brief the default indent level
-   */
-  static const unsigned int DEFAULT_INDENT = 2;
-};
 /**@}*/
+
+// operator<<
+std::ostream& operator<<(std::ostream &os, const JsonStringValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonIntValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value);
+std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value);
+std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonNullValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonRawValue &value);
+
 }  // namespace web
 }  // namespace ola
 #endif  // INCLUDE_OLA_WEB_JSON_H_

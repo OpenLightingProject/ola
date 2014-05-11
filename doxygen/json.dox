@@ -1,0 +1,40 @@
+/**
+ * @defgroup json JSON
+ * @brief Classes for creating web services with on JSON.
+ *
+ * The ola::web namespace provides classes for reading & writing JSON.
+ *
+ * @par Writing Example
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
+   #include <ola/web/Json.h>
+   #include <ola/web/JsonWriter.h>
+
+   JsonObject obj;
+   obj.Add("name", "simon");
+   obj.Add("age", 10);
+   obj.Add("male", true);
+   JsonArray *friends = obj.AddArray("friends");
+   friends->Add("Peter");
+   friends->Add("Bob");
+   friends->Add("Jane");
+
+   const string output = JsonWriter::AsString(json);
+   ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * @par Parsing Example
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
+   #include <ola/web/Json.h>
+   #include <ola/web/JsonParser.h>
+   #include <ola/web/TreeHandler.h>
+
+   TreeHandler handler;
+   if (JsonParser::Parse(json_string, &handler)) {
+     std::auto_ptr<JsonValue> root = handler.ClaimRoot();
+   } else {
+     // parsing failed.
+     cerr << handler.GetError() << endl;
+   }
+   ~~~~~~~~~~~~~~~~~~~~~
+ */

@@ -3,7 +3,8 @@ include $(top_srcdir)/common.mk
 # LIBRARIES
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
-libolaweb_la_SOURCES = Json.cpp JsonParser.cpp JsonSections.cpp TreeHandler.cpp
+libolaweb_la_SOURCES = Json.cpp JsonParser.cpp JsonSections.cpp \
+                       JsonWriter.cpp TreeHandler.cpp
 
 # TESTS
 ################################################
