@@ -227,17 +227,12 @@ ValidatorInterface* SchemaParseContext::GetValidator(ErrorLogger *logger) {
     return new ReferenceValidator(m_schema_defs, m_ref_schema.Value());
   }
 
-  if (m_type == JSON_UNDEFINED) {
-    OLA_INFO << logger->GetPointer();
-    OLA_INFO << "no type";
-    logger->Error() << "Missing 'type' property";
-    // TODO(simonn): this probably needs to be fixed.
-    return new WildcardValidator();
-  }
-
   ValidatorInterface *validator = NULL;
   OLA_INFO << " type is " << JsonTypeToString(m_type);
   switch (m_type) {
+    case JSON_UNDEFINED:
+      validator = new WildcardValidator();
+      break;
     case JSON_ARRAY:
       validator = BuildArrayValidator(logger);
       break;
@@ -269,6 +264,7 @@ ValidatorInterface* SchemaParseContext::GetValidator(ErrorLogger *logger) {
     m_schema.Reset();
   }
   if (m_id.IsSet()) {
+    OLA_INFO << "set id to " << m_id.Value();
     validator->SetId(m_id.Value());
     m_id.Reset();
   }

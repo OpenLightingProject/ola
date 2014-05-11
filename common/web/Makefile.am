@@ -1,6 +1,7 @@
 include $(top_srcdir)/common.mk
 
 dist_noinst_DATA = testdata/arrays.test \
+                   testdata/basic-keywords.test \
                    testdata/integers.test \
                    testdata/misc.test \
                    testdata/objects.test \

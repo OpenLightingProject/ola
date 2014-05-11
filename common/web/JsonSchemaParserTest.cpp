@@ -41,6 +41,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonSchemaParserTest);
   CPPUNIT_TEST(testPrimitiveTypes);
   CPPUNIT_TEST(testEmptySchema);
+  CPPUNIT_TEST(testBasicKeywords);
   CPPUNIT_TEST(testInvalidSchema);
   CPPUNIT_TEST(testInvalidTypes);
   CPPUNIT_TEST(testIntegers);
@@ -54,6 +55,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
  public:
   void testPrimitiveTypes();
   void testEmptySchema();
+  void testBasicKeywords();
   void testInvalidSchema();
   void testInvalidTypes();
   void testIntegers();
@@ -292,6 +294,14 @@ void JsonSchemaParserTest::testEmptySchema() {
   auto_ptr<const JsonObject> value(schema->AsJson());
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("{}"), ola::web::JsonWriter::AsString(*value));
+}
+
+/**
+ * Verify basic keywords like 'id', '$schema', 'title' & 'description' work
+ * correctly.
+ */
+void JsonSchemaParserTest::testBasicKeywords() {
+  RunTestsInFile("basic-keywords.test");
 }
 
 void JsonSchemaParserTest::testInvalidSchema() {
