@@ -30,7 +30,7 @@
 #define INCLUDE_OLA_WEB_TREEHANDLER_H_
 
 #include <ola/base/Macro.h>
-#include <ola/web/JsonHandler.h>
+#include <ola/web/JsonParser.h>
 #include <memory>
 #include <stack>
 #include <string>
@@ -48,7 +48,8 @@ class JsonValue;
  */
 
 /**
- * @brief A JsonHandlerInterface implementation that builds a parse tree.
+ * @brief A JsonHandlerInterface implementation that builds a tree of
+ * JsonValues.
  */
 class TreeHandler : public JsonHandlerInterface {
  public:
@@ -75,7 +76,7 @@ class TreeHandler : public JsonHandlerInterface {
   void SetError(const std::string &error);
 
   /**
-   * @brief Check if parsing was sucessfull.
+   * @brief Check if parsing was successful.
    */
   std::string GetError() const;
 

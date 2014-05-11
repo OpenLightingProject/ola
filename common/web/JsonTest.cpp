@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "ola/web/Json.h"
+#include "ola/web/JsonWriter.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::web::JsonArray;

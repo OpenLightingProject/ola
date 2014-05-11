@@ -27,6 +27,7 @@
 #include "ola/web/JsonSections.h"
 #include "ola/Logging.h"
 #include "ola/web/Json.h"
+#include "ola/web/JsonWriter.h"
 #include "ola/StringUtils.h"
 
 
