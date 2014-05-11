@@ -68,6 +68,18 @@ namespace web {
 class JsonValueVisitorInterface;
 class JsonObjectPropertyVisitor;
 
+class JsonStringValue;
+class JsonUIntValue;
+class JsonIntValue;
+class JsonUInt64Value;
+class JsonInt64Value;
+class JsonBoolValue;
+class JsonNullValue;
+class JsonDoubleValue;
+class JsonRawValue;
+class JsonObject;
+class JsonArray;
+
 /**
  * @brief The base class for JSON values.
  */
@@ -76,12 +88,49 @@ class JsonValue {
   virtual ~JsonValue() {}
 
   /**
+   * @brief Equality operator.
+   *
+   * This implements equality as defined in section 3.6 of the JSON Schema Core
+   * document.
+   */
+  virtual bool operator==(const JsonValue &other) const = 0;
+
+  /**
+   * @brief Not-equals operator.
+   */
+  virtual bool operator!=(const JsonValue &other) const {
+    return !(*this == other);
+  }
+
+  virtual bool Equals(const JsonStringValue &) const { return false; }
+  virtual bool Equals(const JsonUIntValue &) const { return false; }
+  virtual bool Equals(const JsonIntValue &) const { return false; }
+  virtual bool Equals(const JsonUInt64Value &) const { return false; }
+  virtual bool Equals(const JsonInt64Value &) const { return false; }
+  virtual bool Equals(const JsonBoolValue &) const { return false; }
+  virtual bool Equals(const JsonNullValue &) const { return false; }
+  virtual bool Equals(const JsonDoubleValue &) const { return false; }
+  virtual bool Equals(const JsonRawValue &) const { return false; }
+  virtual bool Equals(const JsonObject &) const { return false; }
+  virtual bool Equals(const JsonArray &) const { return false; }
+
+  /**
    * @brief The Accept method for the visitor pattern.
    * This can be used to traverse the Json Tree in a type-safe manner.
    */
   virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
 };
 
+// operator<<
+std::ostream& operator<<(std::ostream &os, const JsonStringValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonIntValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value);
+std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value);
+std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonNullValue &value);
+std::ostream& operator<<(std::ostream &os, const JsonRawValue &value);
 
 /**
  * @brief A string value.
@@ -92,8 +141,14 @@ class JsonStringValue: public JsonValue {
    * @brief Create a new JsonStringValue
    * @param value the string to use.
    */
-  explicit JsonStringValue(const std::string &value)
-      : m_value(value) {
+  explicit JsonStringValue(const std::string &value) : m_value(value) {}
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonStringValue &other) const {
+    return m_value == other.m_value;
   }
 
   const std::string& Value() const { return m_value; }
@@ -120,6 +175,19 @@ class JsonUIntValue: public JsonValue {
       : m_value(value) {
   }
 
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonUIntValue &other) const {
+    return m_value == other.m_value;
+  }
+
+  // We want to be able to test equality across the different Integer classes.
+  bool Equals(const JsonIntValue &other) const;
+  bool Equals(const JsonUInt64Value &other) const;
+  bool Equals(const JsonInt64Value &other) const;
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   unsigned int Value() const { return m_value; }
@@ -144,6 +212,18 @@ class JsonIntValue: public JsonValue {
       : m_value(value) {
   }
 
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonIntValue &other) const {
+    return m_value == other.m_value;
+  }
+
+  bool Equals(const JsonUIntValue &other) const;
+  bool Equals(const JsonUInt64Value &other) const;
+  bool Equals(const JsonInt64Value &other) const;
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   int Value() const { return m_value; }
@@ -153,6 +233,7 @@ class JsonIntValue: public JsonValue {
 
   DISALLOW_COPY_AND_ASSIGN(JsonIntValue);
 };
+
 
 /**
  * @brief An unsigned int 64 value.
@@ -166,6 +247,18 @@ class JsonUInt64Value: public JsonValue {
   explicit JsonUInt64Value(uint64_t value)
       : m_value(value) {
   }
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonUInt64Value &other) const {
+    return m_value == other.m_value;
+  }
+
+  bool Equals(const JsonUIntValue &other) const;
+  bool Equals(const JsonIntValue &other) const;
+  bool Equals(const JsonInt64Value &other) const;
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
@@ -191,6 +284,18 @@ class JsonInt64Value: public JsonValue {
       : m_value(value) {
   }
 
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonInt64Value &other) const {
+    return m_value == other.m_value;
+  }
+
+  bool Equals(const JsonUIntValue &other) const;
+  bool Equals(const JsonIntValue &other) const;
+  bool Equals(const JsonUInt64Value &other) const;
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   int64_t Value() const { return m_value; }
@@ -200,6 +305,7 @@ class JsonInt64Value: public JsonValue {
 
   DISALLOW_COPY_AND_ASSIGN(JsonInt64Value);
 };
+
 
 /**
  * @brief A double value.
@@ -242,6 +348,16 @@ class JsonDoubleValue: public JsonValue {
    * @brief Create a new JsonDoubleValue from separate components.
    */
   explicit JsonDoubleValue(const DoubleRepresentation &rep);
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonDoubleValue &other) const {
+    // This is sketchy. The standard says "have the same mathematical value"
+    // TODO(simon): This about this some more.
+    return m_value == other.m_value;
+  }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
@@ -296,6 +412,14 @@ class JsonBoolValue: public JsonValue {
       : m_value(value) {
   }
 
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonBoolValue &other) const {
+    return m_value == other.m_value;
+  }
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   bool Value() const { return m_value; }
@@ -312,12 +436,18 @@ class JsonBoolValue: public JsonValue {
  */
 class JsonNullValue: public JsonValue {
  public:
-    /**
-     * @brief Create a new JsonNullValue
-     */
-    explicit JsonNullValue() {}
+  /**
+   * @brief Create a new JsonNullValue
+   */
+  explicit JsonNullValue() {}
 
-    void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) const;
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonNullValue &) const { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(JsonNullValue);
@@ -335,6 +465,14 @@ class JsonRawValue: public JsonValue {
    */
   explicit JsonRawValue(const std::string &value)
     : m_value(value) {
+  }
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonRawValue &other) const {
+    return m_value == other.m_value;
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
@@ -364,6 +502,12 @@ class JsonObject: public JsonValue {
    */
   JsonObject() {}
   ~JsonObject();
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonObject &other) const;
 
   /**
    * @brief Add a key to string mapping.
@@ -465,6 +609,12 @@ class JsonArray: public JsonValue {
  public:
   JsonArray() : m_complex_type(false) {}
   ~JsonArray();
+
+  bool operator==(const JsonValue &other) const {
+    return other.Equals(*this);
+  }
+
+  bool Equals(const JsonArray &other) const;
 
   /**
    * @brief Append a string value to the array

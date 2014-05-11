@@ -21,23 +21,26 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include "ola/web/Json.h"
 #include "ola/testing/TestUtils.h"
-
 
 using ola::web::JsonArray;
 using ola::web::JsonBoolValue;
 using ola::web::JsonDoubleValue;
 using ola::web::JsonIntValue;
+using ola::web::JsonInt64Value;
 using ola::web::JsonNullValue;
 using ola::web::JsonObject;
 using ola::web::JsonRawValue;
 using ola::web::JsonStringValue;
 using ola::web::JsonUIntValue;
+using ola::web::JsonUInt64Value;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::string;
+using std::vector;
 
 class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonTest);
@@ -51,6 +54,7 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEmptyObject);
   CPPUNIT_TEST(testSimpleObject);
   CPPUNIT_TEST(testComplexObject);
+  CPPUNIT_TEST(testEquality);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -64,6 +68,7 @@ class JsonTest: public CppUnit::TestFixture {
     void testEmptyObject();
     void testSimpleObject();
     void testComplexObject();
+    void testEquality();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonTest);
@@ -240,4 +245,133 @@ void JsonTest::testComplexObject() {
       "  \"name\": \"simon\"\n"
       "}");
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
+}
+
+/*
+ * Test a complex object.
+ */
+void JsonTest::testEquality() {
+  JsonStringValue string1("foo");
+  JsonStringValue string2("foo");
+  JsonStringValue string3("bar");
+  JsonBoolValue bool1(true);
+  JsonBoolValue bool2(false);
+  JsonNullValue null1;
+  JsonDoubleValue double1(1.0);
+  JsonDoubleValue double2(1.0);
+  JsonDoubleValue double3(2.1);
+
+  JsonUIntValue uint1(10);
+  JsonUIntValue uint2(99);
+
+  JsonIntValue int1(10);
+  JsonIntValue int2(99);
+  JsonIntValue int3(-99);
+
+  JsonInt64Value int64_1(-99);
+  JsonInt64Value int64_2(10);
+  JsonInt64Value int64_3(99);
+
+  JsonInt64Value uint64_1(10);
+  JsonInt64Value uint64_2(99);
+
+  vector<JsonValue*> all_values;
+  all_values.push_back(&string1);
+  all_values.push_back(&string2);
+  all_values.push_back(&string3);
+  all_values.push_back(&bool1);
+  all_values.push_back(&bool2);
+  all_values.push_back(&null1);
+  all_values.push_back(&double1);
+  all_values.push_back(&double2);
+  all_values.push_back(&double3);
+  all_values.push_back(&uint1);
+  all_values.push_back(&uint2);
+  all_values.push_back(&int1);
+  all_values.push_back(&int2);
+  all_values.push_back(&int3);
+  all_values.push_back(&int64_1);
+  all_values.push_back(&int64_2);
+  all_values.push_back(&int64_3);
+  all_values.push_back(&uint64_1);
+  all_values.push_back(&uint64_2);
+
+  OLA_ASSERT_EQ(string1, string2);
+  OLA_ASSERT_NE(string1, string3);
+
+  OLA_ASSERT_NE(bool1, bool2);
+
+  OLA_ASSERT_EQ(double1, double2);
+  OLA_ASSERT_NE(double1, double3);
+
+  OLA_ASSERT_NE(uint1, uint2);
+
+  OLA_ASSERT_NE(uint1, uint2);
+
+  // Test the tricky cases:
+  OLA_ASSERT(int1 == uint1);
+  OLA_ASSERT(int2 == uint2);
+  OLA_ASSERT(uint1 == int64_2);
+  OLA_ASSERT(uint2 == int64_3);
+  OLA_ASSERT(int3 == int64_1);
+  OLA_ASSERT(uint1 == uint64_1);
+  OLA_ASSERT(uint2 == uint64_2);
+  OLA_ASSERT(int1 == uint64_1);
+  OLA_ASSERT(int2 == uint64_2);
+  OLA_ASSERT(int64_2 == uint64_1);
+  OLA_ASSERT(int64_3 == uint64_2);
+
+
+  // Test Array equality.
+  JsonArray array1;
+  array1.Append(true);
+  array1.Append(1);
+  array1.Append("foo");
+
+  JsonArray array2;
+  array2.Append(true);
+  array2.Append(1);
+  array2.Append("foo");
+  array2.Append(-1);
+
+  JsonArray array3;
+  array3.Append(true);
+  array3.Append(1);
+  array3.Append("bar");
+
+  all_values.push_back(&array1);
+  all_values.push_back(&array2);
+  all_values.push_back(&array3);
+
+  OLA_ASSERT_FALSE(array1 == array2);
+  OLA_ASSERT_FALSE(array1 == array3);
+
+  // Object equality
+  JsonObject object1;
+  object1.Add("age", 10);
+  object1.Add("name", "simon");
+  object1.Add("male", true);
+
+  JsonObject object2;
+  object1.Add("age", 10);
+  object1.Add("name", "simon");
+  object1.Add("male", true);
+  object1.Add("nationality", "Australia");
+
+  JsonObject object3;
+  object3.Add("age", 10);
+  object3.Add("name", "james");
+  object3.Add("male", true);
+
+  all_values.push_back(&object1);
+  all_values.push_back(&object2);
+  all_values.push_back(&object3);
+
+  OLA_ASSERT_FALSE(object1 == object2);
+  OLA_ASSERT_FALSE(object1 == object3);
+
+  // verify identity equality
+  for (unsigned int i = 0; i < all_values.size(); ++i) {
+    OLA_ASSERT(*(all_values[i]) == *(all_values[i]));
+  }
 }
