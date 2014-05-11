@@ -37,7 +37,9 @@ namespace ola {
 namespace web {
 
 /**
- * @brief The type of JSON data element
+ * @brief The type of JSON data element.
+ *
+ * This comes from section 3.5 of the JSON Schema core document.
  */
 enum JsonType {
   JSON_ARRAY,
