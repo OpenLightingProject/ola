@@ -48,7 +48,7 @@ class UartWidget {
      * Construct a new UartWidget instance for one widget.
      * @param path The device file path of the serial port
      */
-    UartWidget(const std::string &path, int device_id);
+    UartWidget(const std::string &path);
 
     /** Destructor */
     virtual ~UartWidget();
@@ -56,8 +56,6 @@ class UartWidget {
     /** Get the widget's device name */
     std::string Name() const { return m_path; }
     std::string Description() const { return m_path; }
-
-    int Number() const { return m_device_id; }
 
     /** Open the widget */
     bool Open();
@@ -86,7 +84,6 @@ class UartWidget {
  private:
     std::string m_path;
 
-    int m_device_id;   // a number to tell different ports apart (in the future)
 	 /**
 	  * variable to hold the Unix file descriptor used to open and manipulate
 	  * the port. Set to -2 when port is not open.

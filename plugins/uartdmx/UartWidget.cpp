@@ -53,9 +53,8 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-UartWidget::UartWidget(const string& path, int device_id)
-    : m_path(path),
-      m_device_id(device_id) {
+UartWidget::UartWidget(const string& path)
+    : m_path(path) {
   m_filed = NOT_OPEN;
 }
 

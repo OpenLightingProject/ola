@@ -37,19 +37,13 @@ namespace uartdmx {
 class UartDmxDevice : public Device {
  public:
   UartDmxDevice(AbstractPlugin *owner,
+                class Preferences *preferences,
                 const std::string &name,
-                const std::string &path,
-                unsigned int device_id,
-                unsigned int breakt,
-                unsigned int malft);
+                const std::string &path);
   ~UartDmxDevice();
 
   std::string DeviceId() const {
-    return static_cast<std::ostringstream*>
-    (&(std::ostringstream() << m_widget->Number()))->str();
-  }
-  std::string Description() const {
-     return m_path + ", " + DeviceId();
+      return m_path;
   }
   UartWidget* GetWidget() { return m_widget.get(); }
 
@@ -57,10 +51,20 @@ class UartDmxDevice : public Device {
   bool StartHook();
 
  private:
+  // Per device options
+  std::string DeviceBreakKey() const;
+  std::string DeviceMalfKey() const;
+  void SetDefaults();
+  static const unsigned int DEFAULT_MALF;
+  static const char K_MALF[];
+  static const unsigned int DEFAULT_BREAK;
+  static const char K_BREAK[];
+
+
   std::auto_ptr<UartWidget> m_widget;
+  class Preferences *m_preferences;
   std::string m_name;
   std::string m_path;
-  unsigned int m_device_id;
   unsigned int m_breakt;
   unsigned int m_malft;
 };

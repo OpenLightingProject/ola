@@ -61,13 +61,10 @@ class UartDmxPlugin : public Plugin {
   unsigned int GetBreak();
   unsigned int GetMalf();
 
-  static const unsigned int DEFAULT_MALF;
-  static const char K_MALF[];
-  static const unsigned int DEFAULT_BREAK;
-  static const char K_BREAK[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
   static const char K_DEVICE[];
+  static const char DEFAULT_DEVICE[];
 };
 }  // namespace uartdmx
 }  // namespace plugin

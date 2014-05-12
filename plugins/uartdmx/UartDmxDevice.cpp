@@ -22,6 +22,7 @@
 #include <string>
 #include <memory>
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "plugins/uartdmx/UartDmxDevice.h"
 #include "plugins/uartdmx/UartDmxPort.h"
 
@@ -31,20 +32,30 @@ namespace uartdmx {
 
 using std::string;
 
+const char UartDmxDevice::K_MALF[] = "-malf";
+const char UartDmxDevice::K_BREAK[] = "-break";
+const unsigned int UartDmxDevice::DEFAULT_BREAK = 100;
+const unsigned int UartDmxDevice::DEFAULT_MALF = 100;
+
+
 UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
+                             class Preferences *preferences,
                              const std::string &name,
-                             const std::string &path,
-                             unsigned int device_id,
-                             unsigned int breakt,
-                             unsigned int malft)
+                             const std::string &path)
     : Device(owner, name),
+      m_preferences(preferences),
       m_name(name),
-      m_path(path),
-      m_device_id(device_id),
-      m_breakt(breakt),
-      m_malft(malft) {
-  m_widget.reset(
-      new UartWidget(path, device_id));
+      m_path(path) {
+  // set up some per-device default configuration if not already set
+  SetDefaults();
+  // now read per-device configuration
+  // Break time in microseconds
+  if (!StringToInt(m_preferences->GetValue(DeviceBreakKey()), &m_breakt))
+    m_breakt = DEFAULT_BREAK;
+  // Mark After Last Frame in microseconds
+  if (!StringToInt(m_preferences->GetValue(DeviceMalfKey()), &m_malft))
+    m_malft = DEFAULT_MALF;
+  m_widget.reset(new UartWidget(path));
 }
 
 UartDmxDevice::~UartDmxDevice() {
@@ -54,12 +65,37 @@ UartDmxDevice::~UartDmxDevice() {
 
 bool UartDmxDevice::StartHook() {
   AddPort(new UartDmxOutputPort(this,
-                                m_widget.get(),
-                                m_device_id,
+                                0,
+								m_widget.get(),
                                 m_breakt,
                                 m_malft));
   return true;
 }
+
+string UartDmxDevice::DeviceMalfKey() const {
+  return m_path + K_MALF;
+}
+string UartDmxDevice::DeviceBreakKey() const {
+  return m_path + K_BREAK;
+}
+
+/**
+ * Set the default preferences for this one Device
+ */
+void UartDmxDevice::SetDefaults() {
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(DeviceBreakKey(),
+                                     UIntValidator(88, 1000000),
+                                     DEFAULT_BREAK);
+  save |= m_preferences->SetDefaultValue(DeviceMalfKey(),
+                                     UIntValidator(8, 1000000),
+                                     DEFAULT_MALF);
+  if (save)
+    m_preferences->Save();
+}
+
+
 }  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

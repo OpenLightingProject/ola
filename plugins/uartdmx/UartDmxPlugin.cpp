@@ -40,45 +40,46 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-const unsigned int UartDmxPlugin::DEFAULT_BREAK = 100;
-const char UartDmxPlugin::K_BREAK[] = "break";
-const unsigned int UartDmxPlugin::DEFAULT_MALF = 100;
-const char UartDmxPlugin::K_MALF[] = "malf";
+
 const char UartDmxPlugin::PLUGIN_NAME[] = "UART native DMX";
 const char UartDmxPlugin::PLUGIN_PREFIX[] = "uartdmx";
 const char UartDmxPlugin::K_DEVICE[] = "device";
-
+const char UartDmxPlugin::DEFAULT_DEVICE[] = "/dev/ttyACM0";
 
 /**
- * Start the plug-in, using only the configured device (we cannot sensibly scan for
- * UARTs!) Stolen from the opendmx plugin
+ * Start the plug-in, using only the configured device(s) (we cannot sensibly
+ * scan for UARTs!) Stolen from the opendmx plugin
  */
 bool UartDmxPlugin::StartHook() {
   vector<string> devices = m_preferences->GetMultipleValue(K_DEVICE);
-  vector<string>::const_iterator iter = devices.begin();
+  vector<string>::const_iterator iter;	// iterate over devices
 
   // start counting device ids from 0
-  unsigned int device_id = 0;
 
-  for (; iter != devices.end(); ++iter) {
-    // first check if it's there
+  for (iter = devices.begin(); iter != devices.end(); ++iter) {
+    // first check if device configured
+	if (iter->empty()) {
+      OLA_DEBUG << "No path configured for device, please set one in "
+          "ola-uartdmx.conf";
+      continue;
+    }
+	// now check if it's there
+	OLA_DEBUG << "Trying to open device " << *iter;
     int fd;
     if (ola::io::Open(*iter, O_WRONLY, &fd)) {
       // can open device, so shut the temporary file descriptor
       close(fd);
       UartDmxDevice *device = new UartDmxDevice(
           this,
+		  m_preferences,
           PLUGIN_NAME,
-          *iter,
-          device_id++,
-          GetBreak(),
-          GetMalf());
+          *iter);
       // got a device, now lets see if we can configure it before we announce
       // it to the world
       if (device->GetWidget()->SetupOutput() == false) {
         // that failed, but other devices may succeed
         OLA_WARN << "Unable to setup device for output, device ignored "
-                 << device->Description();
+                 << device->DeviceId();
         delete device;
         continue;
       }
@@ -86,8 +87,9 @@ bool UartDmxPlugin::StartHook() {
       if (device->Start()) {
         m_devices.push_back(device);
         m_plugin_adaptor->RegisterDevice(device);
+        OLA_DEBUG << "Started UartDmxDevice " << *iter;
       } else {
-        OLA_WARN << "Failed to start UartDevice for " << *iter;
+        OLA_WARN << "Failed to start UartDmxDevice for " << *iter;
         delete device;
       }
     } else {
@@ -130,11 +132,14 @@ string UartDmxPlugin::Description() const {
 "enabled = true\n"
 "Enable this plugin (DISABLED by default).\n"
 "device = /dev/ttyACM0\n"
-"The device to use for DMX output (optional).\n"
-"break = 100\n"
-"The DMX break time in microseconds (optional).\n"
-"malf = 100\n"
-"The Mark After Last Frame time in microseconds (optional).\n"
+"The device to use for DMX output (optional). Multiple devices are supported "
+"if the hardware exists. Using USB-serial adapters is not supported (try "
+"ftdidmx)\n"
+"--- Per Device Settings (using above device name without /dev/) ---\n"
+"<device>-break = 100\n"
+"The DMX break time in microseconds for this device (optional).\n"
+"<device>-malf = 100\n"
+"The Mark After Last Frame time in microseconds for this device (optional).\n"
 "\n";
 }
 
@@ -146,47 +151,19 @@ bool UartDmxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(K_BREAK,
-                                     UIntValidator(88, 1000000),
-                                     DEFAULT_BREAK))
-    m_preferences->Save();
-  if (m_preferences->SetDefaultValue(K_MALF,
-                                     UIntValidator(8, 1000000),
-                                     DEFAULT_MALF))
+  // only insert default device name, no others at this stage
+  bool save = false;
 
+  save |= m_preferences->SetDefaultValue(K_DEVICE, StringValidator(),
+				                                           DEFAULT_DEVICE);
+  if (save)
     m_preferences->Save();
 
-  if (m_preferences->GetValue(K_BREAK).empty())
+  // Just check key exists, as we've set it to ""
+  if (!m_preferences->HasKey(K_DEVICE))
     return false;
-  if (m_preferences->GetValue(K_MALF).empty())
-    return false;
-
   return true;
 }
-
-
-/**
- * Return the break time (in microseconds) as specified in the config file.
- */
-int unsigned UartDmxPlugin::GetBreak() {
-  unsigned int breakt;
-
-  if (!StringToInt(m_preferences->GetValue(K_BREAK), &breakt))
-    breakt = DEFAULT_BREAK;
-  return breakt;
-}
-
-/**
- * Return the malf time (in microseconds) as specified in the config file.
- */
-int unsigned UartDmxPlugin::GetMalf() {
-  unsigned int malft;
-
-  if (!StringToInt(m_preferences->GetValue(K_MALF), &malft))
-    malft = DEFAULT_MALF;
-  return malft;
-}
-
 
 }  // namespace uartdmx
 }  // namespace plugin

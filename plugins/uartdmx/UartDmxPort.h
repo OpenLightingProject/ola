@@ -38,13 +38,13 @@ namespace uartdmx {
 class UartDmxOutputPort : public ola::BasicOutputPort {
  public:
     UartDmxOutputPort(UartDmxDevice *parent,
-                      UartWidget *device,
                       unsigned int id,
+                      UartWidget *widget,
                       unsigned int breakt,
                       unsigned int malft)
         : BasicOutputPort(parent, id),
-          m_device(device),
-          m_thread(device, breakt, malft) {
+          m_widget(widget),
+          m_thread(widget, breakt, malft) {
       m_thread.Start();
     }
     ~UartDmxOutputPort() { m_thread.Stop(); }
@@ -53,10 +53,10 @@ class UartDmxOutputPort : public ola::BasicOutputPort {
       return m_thread.WriteDMX(buffer);
     }
 
-    std::string Description() const { return m_device->Description(); }
+    std::string Description() const { return m_widget->Description(); }
 
  private:
-    UartWidget *m_device;
+    UartWidget *m_widget;
     UartDmxThread m_thread;
 };
 }  // namespace uartdmx
