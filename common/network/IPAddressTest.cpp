@@ -15,7 +15,7 @@
  *
  * IPAddressTest.cpp
  * Test fixture for the IPV4Address class
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -84,7 +84,7 @@ void IPAddressTest::testIPV4Address() {
 
   // test stringification
   OLA_ASSERT_EQ(string("192.168.1.1"), address1.ToString());
-  std::stringstream str;
+  std::ostringstream str;
   str << address1;
   OLA_ASSERT_EQ(string("192.168.1.1"), str.str());
 

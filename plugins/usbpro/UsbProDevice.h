@@ -15,7 +15,7 @@
  *
  * UsbProDevice.h
  * A Enttec USB Pro device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_USBPRO_USBPRODEVICE_H_

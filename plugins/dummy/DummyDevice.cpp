@@ -15,7 +15,7 @@
  *
  * DummyDevice.cpp
  * A dummy device
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdlib.h>

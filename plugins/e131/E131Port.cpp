@@ -15,7 +15,7 @@
  *
  * E131Port.cpp
  * The E1.31 plugin for ola
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <string>
@@ -45,7 +45,7 @@ bool E131PortHelper::PreSetUniverse(Universe *old_universe,
 
 
 string E131PortHelper::Description(Universe *universe) const {
-  std::stringstream str;
+  std::ostringstream str;
   if (universe)
     str << "E1.31 Universe " << universe->UniverseId();
   return str.str();
@@ -77,7 +77,7 @@ void E131OutputPort::PostSetUniverse(Universe *old_universe,
                                      Universe *new_universe) {
   if (new_universe) {
     if (m_prepend_hostname) {
-      std::stringstream str;
+      std::ostringstream str;
       str << ola::network::Hostname() << "-" << new_universe->Name();
       m_node->SetSourceName(new_universe->UniverseId(), str.str());
     } else {

@@ -44,7 +44,7 @@ void ASSERT_DATA_EQUALS(unsigned int line,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   const string message = str.str();
   CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expected_length, actual_length);

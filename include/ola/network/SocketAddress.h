@@ -31,7 +31,12 @@
 
 #include <ola/network/IPV4Address.h>
 #include <stdint.h>
+#ifdef _WIN32
+#define VC_EXTRALEAN
+#include <Winsock2.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <sstream>
 #include <string>
 

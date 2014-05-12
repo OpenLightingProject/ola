@@ -15,7 +15,7 @@
  *
  * SandNetNode.h
  * Header file for the SandNetNode class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SANDNET_SANDNETNODE_H_

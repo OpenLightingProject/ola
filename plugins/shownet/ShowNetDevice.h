@@ -15,7 +15,7 @@
  *
  * ShowNetDevice.h
  * Interface for the ShowNet device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SHOWNET_SHOWNETDEVICE_H_

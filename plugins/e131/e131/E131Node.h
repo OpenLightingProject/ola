@@ -16,7 +16,7 @@
  * E131Node.h
  * Header file for the E131Node class, this is the interface between OLA and
  * the E1.31 library.
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_E131NODE_H_

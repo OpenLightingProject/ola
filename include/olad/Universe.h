@@ -15,7 +15,7 @@
  *
  * Universe.h
  * Header file for the Universe class, see Universe.cpp for details.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_UNIVERSE_H_

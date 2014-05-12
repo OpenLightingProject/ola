@@ -15,7 +15,7 @@
  *
  * ShowNetPackets.h
  * Datagram definitions for the ShowNet protocol.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SHOWNET_SHOWNETPACKETS_H_

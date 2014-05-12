@@ -15,7 +15,7 @@
  *
  * Device.cpp
  * Base implementation of the device class.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #include <stdlib.h>
 
@@ -169,7 +169,7 @@ string Device::UniqueId() const {
       return "";
     }
 
-    std::stringstream str;
+    std::ostringstream str;
     str << Owner()->Id() << "-" << DeviceId();
     m_unique_id = str.str();
   }

@@ -74,7 +74,7 @@ bool TimeCode::IsValid() const {
 }
 
 string TimeCode::AsString() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << setw(2) << setfill('0') << static_cast<int>(m_hours) << ":"
     << setw(2) << setfill('0') << static_cast<int>(m_minutes) << ":"
     << setw(2) << setfill('0') << static_cast<int>(m_seconds) << ":"

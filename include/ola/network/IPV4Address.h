@@ -15,7 +15,7 @@
  *
  * IPV4Address.h
  * Represents a IPv4 Address
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 /**

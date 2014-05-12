@@ -24,6 +24,13 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#define VC_EXTRALEAN
+#include <Windows.h>
+#include <tchar.h>
+#endif
+
+#include <ola/stl/STLUtils.h>
 #include "tools/ola_trigger/Action.h"
 #include "tools/ola_trigger/VariableInterpolator.h"
 
@@ -54,11 +61,10 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
  * Execute the command
  */
 void CommandAction::Execute(Context *context, uint8_t) {
-  pid_t pid;
   char **args = BuildArgList(context);
 
   if (ola::LogLevel() == ola::OLA_LOG_INFO) {
-    std::stringstream str;
+    std::ostringstream str;
     char **ptr = args;
     str << "Executing: " << m_command << " : [";
     ptr++;  // skip over argv[0]
@@ -71,6 +77,50 @@ void CommandAction::Execute(Context *context, uint8_t) {
     OLA_INFO << str.str();
   }
 
+#ifdef _WIN32
+  std::ostringstream command_line_builder;
+  char** arg = args;
+  // Escape argv[0] if needed
+  if ((m_command.find(" ") != string::npos) &&
+      (m_command.find("\"") != 0)) {
+      command_line_builder << "\"" << m_command << "\" ";
+  } else {
+    command_line_builder << m_command << " ";
+  }
+  ++arg;
+  while (*arg) {
+    command_line_builder << " " << *arg++;
+  }
+
+  STARTUPINFO startup_info;
+  PROCESS_INFORMATION process_information;
+
+  memset(&startup_info, 0, sizeof(startup_info));
+  startup_info.cb = sizeof(startup_info);
+  memset(&process_information, 0, sizeof(process_information));
+
+  LPTSTR cmd_line = _strdup(command_line_builder.str().c_str());
+
+  if (!CreateProcessA(NULL,
+                     cmd_line,
+                     NULL,
+                     NULL,
+                     FALSE,
+                     CREATE_NEW_CONSOLE,
+                     NULL,
+                     NULL,
+                     &startup_info,
+                     &process_information)) {
+    OLA_WARN << "Could not launch " << args[0] << ":" << GetLastError();
+  } else {
+    // Don't leak the handles
+    CloseHandle(process_information.hProcess);
+    CloseHandle(process_information.hThread);
+  }
+
+  free(cmd_line);
+#else
+  pid_t pid;
   if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork to exec " << m_command;
     return;
@@ -82,6 +132,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
   }
 
   execvp(m_command.c_str(), args);
+#endif
 }
 
 
@@ -139,7 +190,7 @@ char *CommandAction::StringToDynamicChar(const string &str) {
  * Return the interval as a string.
  */
 string ValueInterval::AsString() const {
-  std::stringstream str;
+  std::ostringstream str;
   if (m_lower == m_upper) {
     str << static_cast<int>(m_lower);
   } else {
@@ -417,7 +468,7 @@ string Slot::IntervalsAsString(
     const ActionVector::const_iterator &start,
     const ActionVector::const_iterator &end) const {
   ActionVector::const_iterator iter = start;
-  std::stringstream str;
+  std::ostringstream str;
   for (; iter != end; ++iter) {
     if (iter != start)
       str << ", ";

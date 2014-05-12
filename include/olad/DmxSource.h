@@ -16,7 +16,7 @@
  * DmxSource.h
  * Interface for the DmxSource class.
  * A DmxSource contains a DmxSource as well as a priority & timestamp.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_DMXSOURCE_H_

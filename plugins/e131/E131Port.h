@@ -15,7 +15,7 @@
  *
  * E131Port.h
  * The E1.31 port for OLA
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131PORT_H_

@@ -317,7 +317,7 @@ void IOQueueTest::testDump() {
   queue.Write(data1, sizeof(data1));
   OLA_ASSERT_EQ(9u, queue.Size());
 
-  std::stringstream str;
+  std::ostringstream str;
   queue.Dump(&str);
   OLA_ASSERT_EQ(
       string("00 01 02 03 04 05 06 07  ........\n"

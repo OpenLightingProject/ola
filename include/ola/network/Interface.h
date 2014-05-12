@@ -15,7 +15,7 @@
  *
  * Interface.h
  * Represents a network interface.
- * Copyright (C) 2010-2014 Simon Newton
+ * Copyright (C) 2010 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_

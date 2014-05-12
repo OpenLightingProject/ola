@@ -31,8 +31,8 @@ namespace http {
 
 using ola::ExportMap;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char OlaHTTPServer::K_DATA_DIR_VAR[] = "http_data_dir";
@@ -75,7 +75,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
   ola::TimeStamp now;
   m_clock.CurrentTime(&now);
   ola::TimeInterval diff = now - m_start_time;
-  stringstream str;
+  ostringstream str;
   str << diff.InMilliSeconds();
   m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
 
@@ -84,7 +84,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
 
   vector<BaseVariable*>::iterator iter;
   for (iter = variables.begin(); iter != variables.end(); ++iter) {
-    stringstream out;
+    ostringstream out;
     out << (*iter)->Name() << ": " << (*iter)->Value() << "\n";
     response->Append(out.str());
   }

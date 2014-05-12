@@ -15,7 +15,7 @@
  *
  * DeviceManager.h
  * Interface to the DeviceManager class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * The DeviceManager assigns an unsigned int as an alias to each device which
  * remains consistent throughout the lifetime of the DeviceManager. These are

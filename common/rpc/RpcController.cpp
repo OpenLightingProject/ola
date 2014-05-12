@@ -15,7 +15,7 @@
  *
  * RpcController.cpp
  * The  RPC Controller
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string>

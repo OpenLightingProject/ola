@@ -15,7 +15,7 @@
  *
  * E131Inflator.cpp
  * The Inflator for the E1.31 PDUs
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <string>

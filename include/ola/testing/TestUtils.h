@@ -93,6 +93,9 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 #define OLA_ASSERT_NE(expected, output)  \
   CPPUNIT_ASSERT((expected) != (output))
 
+#define OLA_ASSERT_DOUBLE_EQ(expected, output, delta)  \
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(expected, output, delta)
+
 #define OLA_ASSERT_LT(expected, output)  \
   CPPUNIT_ASSERT((expected) < (output))
 

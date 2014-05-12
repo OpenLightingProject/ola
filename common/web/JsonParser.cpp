@@ -38,7 +38,6 @@ namespace web {
 
 using std::auto_ptr;
 using std::string;
-using std::stringstream;
 
 static bool ParseTrimmedInput(const char **input,
                               JsonHandlerInterface *handler);
@@ -125,17 +124,23 @@ static bool ParseString(const char **input, string* str) {
 }
 
 bool ExtractDigits(const char **input, uint64_t *i,
-                   unsigned int *places = NULL) {
+                   unsigned int *leading_zeros = NULL) {
   *i = 0;
-  unsigned int decimal_places = 0;
+  bool at_start = true;
+  unsigned int zeros = 0;
   while (isdigit(**input)) {
+    if (at_start && **input == '0') {
+      zeros++;
+    } else if (at_start) {
+      at_start = false;
+    }
+
     *i *= 10;
     *i += **input - '0';
-    decimal_places++;
     (*input)++;
   }
-  if (places) {
-    *places = decimal_places;
+  if (leading_zeros) {
+    *leading_zeros = zeros;
   }
   return true;
 }
@@ -144,7 +149,19 @@ bool ExtractDigits(const char **input, uint64_t *i,
  * Parse a JsonNumber
  */
 static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
-  bool is_decimal = false;
+  // The number is in the form <full>.<fractional>e<exponent>
+  // full and exponent are signed but we track the sign separate from the
+  // value.
+  // Only full is required.
+  uint64_t full = 0;
+  uint64_t fractional = 0;
+  int64_t signed_exponent = 0;
+
+  uint32_t leading_fractional_zeros = 0;
+
+  bool has_fractional = false;
+  bool has_exponent = false;
+
   bool is_negative = (**input == '-');
   if (is_negative) {
     (*input)++;
@@ -153,37 +170,25 @@ static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
     }
   }
 
-  long double d = 0.0;
-
-  // Extract the int component
-  uint64_t i = 0;
-
   if (**input == '0') {
     (*input)++;
   } else if (isdigit(**input)) {
-    ExtractDigits(input, &i);
+    ExtractDigits(input, &full);
   } else {
     return false;
   }
 
   if (**input == '.') {
-    // Handle decimal places
     (*input)++;
-    uint64_t decimal;
-    unsigned int decimal_places;
-    ExtractDigits(input, &decimal, &decimal_places);
-    d = i + static_cast<double>(decimal) / pow(10, decimal_places);
-    if (is_negative) {
-      d *= -1;
-    }
-    is_decimal = true;
+    ExtractDigits(input, &fractional, &leading_fractional_zeros);
+    has_fractional = true;
   }
 
   if (**input == 'e' || **input == 'E') {
+    bool negative_exponent = false;
     // Handle the exponent
     (*input)++;
 
-    bool negative_exponent = false;
     switch (**input) {
       case '-':
         negative_exponent = true;
@@ -198,45 +203,40 @@ static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
       return false;
     }
 
-    uint64_t unsigned_exponent;
+    uint64_t exponent;
     if (isdigit(**input)) {
-      ExtractDigits(input, &unsigned_exponent);
+      ExtractDigits(input, &exponent);
     } else {
       return false;
     }
-    int64_t exponent = (negative_exponent ? -1 : 1) * unsigned_exponent;
-
-    if (is_decimal) {
-      d *= pow(10, exponent);
-    } else if (exponent >= 0) {
-      i *= pow(10, exponent);
-    } else {
-      // If the exponent is negative, we need to switch to a decimal
-      d = i * pow(10, exponent);
-      if (is_negative) {
-        d *= -1;
-      }
-      is_decimal = true;
-    }
+    signed_exponent = (negative_exponent ? -1 : 1) * exponent;
+    has_exponent = true;
   }
 
-  if (is_decimal) {
-    if (fabs(d) == 0.0) {
-      d = 0.0;
-    }
-    handler->Number(d);
-  } else if (is_negative) {
-    int64_t value = -1 * i;
+  // Now we have all the components, run the correct callback.
+  if (has_fractional || has_exponent) {
+    JsonDoubleValue::DoubleRepresentation double_rep;
+    double_rep.is_negative = is_negative;
+    double_rep.full = full;
+    double_rep.leading_fractional_zeros = leading_fractional_zeros;
+    double_rep.fractional = fractional;
+    double_rep.exponent = signed_exponent;
+    handler->Number(double_rep);
+    return true;
+  }
+
+  if (is_negative) {
+    int64_t value = -1 * full;
     if (value < INT32_MIN || value > INT32_MAX) {
       handler->Number(value);
     } else {
       handler->Number(static_cast<int32_t>(value));
     }
   } else {
-    if (i > UINT32_MAX) {
-      handler->Number(i);
+    if (full > UINT32_MAX) {
+      handler->Number(full);
     } else {
-      handler->Number(static_cast<uint32_t>(i));
+      handler->Number(static_cast<uint32_t>(full));
     }
   }
   return true;

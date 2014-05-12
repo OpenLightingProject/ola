@@ -15,7 +15,7 @@
  *
  * Port.cpp
  * Base implementation of the Port class.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * Unfortunately this file contains a lot of code duplication.
  */
@@ -66,7 +66,7 @@ bool BasicInputPort::SetUniverse(Universe *new_universe) {
 
 string BasicInputPort::UniqueId() const {
   if (m_port_string.empty()) {
-    std::stringstream str;
+    std::ostringstream str;
     if (m_device)
       str << m_device->UniqueId() << "-I-" << m_port_id;
     m_port_string = str.str();
@@ -173,7 +173,7 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
 
 string BasicOutputPort::UniqueId() const {
   if (m_port_string.empty()) {
-    std::stringstream str;
+    std::ostringstream str;
     if (m_device)
       str << m_device->UniqueId() << "-O-" << m_port_id;
     m_port_string = str.str();

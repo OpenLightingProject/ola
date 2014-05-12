@@ -15,7 +15,7 @@
  *
  * E131PDU.cpp
  * The E131PDU
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 

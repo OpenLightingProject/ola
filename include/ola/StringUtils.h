@@ -15,7 +15,7 @@
  *
  * StringUtils..h
  * Random String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -27,11 +27,15 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace ola {
+
+/** @brief the width of a hex character in bits */
+enum { HEX_BIT_WIDTH = 4 };
 
 /**
  * @brief Split a string into pieces.
@@ -79,6 +83,46 @@ std::string IntToString(int i);
  * @return The string representation of the unsigned int
  */
 std::string IntToString(unsigned int i);
+
+/**
+ * Convert an unsigned int to a hex string.
+ * @param i the unsigned int to convert
+ * @param width the width to zero pad to
+ * @return The hex string representation of the unsigned int
+ * @note We don't currently support signed ints due to a lack of requirement
+ * for it and issues with negative handling and hex in C++
+ */
+std::string IntToHexString(unsigned int i, unsigned int width);
+
+/**
+ * Convert a uint8_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint8_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint8_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
+ * Convert a uint16_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint16_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint16_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
+ * Convert a uint32_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint32_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint32_t>::digits /
+                            HEX_BIT_WIDTH));
+}
 
 /**
  * @brief Escape a string with \\ .

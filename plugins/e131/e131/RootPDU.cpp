@@ -15,7 +15,7 @@
  *
  * RootPDU.cpp
  * The RootPDU class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include "ola/Logging.h"

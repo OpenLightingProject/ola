@@ -15,7 +15,7 @@
  *
  * PathportDevice.cpp
  * Pathport device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sstream>
@@ -35,7 +35,7 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
-using std::stringstream;
+using std::ostringstream;
 using std::vector;
 
 const char PathportDevice::K_DEFAULT_NODE_NAME[] = "ola-Pathport";
@@ -90,7 +90,7 @@ bool PathportDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << PATHPORT_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
     "]";
   SetName(str.str());

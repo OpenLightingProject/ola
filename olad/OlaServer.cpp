@@ -15,11 +15,11 @@
  *
  * OlaServer.cpp
  * OlaServer is the main OLA Server class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <errno.h>
@@ -191,7 +191,7 @@ bool OlaServer::Init() {
     m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
-#ifndef WIN32
+#ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
 #endif
 
@@ -200,7 +200,7 @@ bool OlaServer::Init() {
   {
     auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&iface, m_options.interface)) {
+    if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
     } else {
       // default to using the ip as a id

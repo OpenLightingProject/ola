@@ -15,7 +15,7 @@
  *
  * NetworkManagerInterface.h
  * The glue between the ResponderHelper and the OLA network code.
- * Copyright (C) 2013-2014 Peter Newman
+ * Copyright (C) 2013 Peter Newman
  */
 
 /**

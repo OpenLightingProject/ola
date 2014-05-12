@@ -16,7 +16,7 @@
  * PluginAdaptor.cpp
  * Provides a wrapper for the DeviceManager and SelectServer objects so that
  * the plugins can register devices and file handles for events
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string>

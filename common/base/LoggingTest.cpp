@@ -15,7 +15,7 @@
  *
  * LoggingTest.cpp
  * Test fixture for the Logging framework
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

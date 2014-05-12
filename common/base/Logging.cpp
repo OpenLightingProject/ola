@@ -16,7 +16,7 @@
  * Logging.cpp
  * The logging functions. See include/ola/Logging.h for details on how to use
  * these.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -29,8 +29,9 @@
  */
 #include <stdio.h>
 
-#ifdef WIN32
-#include <windows.h>
+#ifdef _WIN32
+#define VC_EXTRALEAN
+#include <Windows.h>
 #else
 #include <syslog.h>
 #endif
@@ -47,8 +48,8 @@ DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
 
-using std::string;
 using std::ostringstream;
+using std::string;
 
 /**
  * @cond HIDDEN_SYMBOLS
@@ -190,7 +191,7 @@ SyslogDestination::SyslogDestination()
 }
 
 bool SyslogDestination::Init() {
-#ifdef WIN32
+#ifdef _WIN32
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
 #endif
   if (!m_eventlog) {
@@ -202,7 +203,7 @@ bool SyslogDestination::Init() {
 
 
 void SyslogDestination::Write(log_level level, const string &log_line) {
-#ifdef WIN32
+#ifdef _WIN32
   WORD pri;
   const char* strings[1];
   strings[0] = log_line.data();

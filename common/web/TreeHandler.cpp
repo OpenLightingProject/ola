@@ -82,8 +82,8 @@ void TreeHandler::Number(int64_t value) {
   AddValue(new JsonInt64Value(value));
 }
 
-void TreeHandler::Number(long double value) {
-  AddValue(new JsonDoubleValue(value));
+void TreeHandler::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
+  AddValue(new JsonDoubleValue(rep));
 }
 
 void TreeHandler::Bool(bool value) {

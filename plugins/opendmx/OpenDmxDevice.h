@@ -16,7 +16,7 @@
  *
  * OpenDmxDevice.h
  * Interface for the Open DMX device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_OPENDMX_OPENDMXDEVICE_H_

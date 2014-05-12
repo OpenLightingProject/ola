@@ -15,7 +15,7 @@
  *
  * PluginManager.cpp
  * This class is responsible for loading and unloading the plugins
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <set>

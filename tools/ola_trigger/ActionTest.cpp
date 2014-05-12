@@ -89,7 +89,7 @@ void MockCommandAction::Execute(Context *context, uint8_t) {
  * Check what we got matches what we expected
  */
 void MockCommandAction::CheckArgs(int32_t line, const char* args[]) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "From ActionTest.cpp:" << line;
   const char **ptr = args;
   vector<string>::const_iterator iter = m_interpolated_args.begin();

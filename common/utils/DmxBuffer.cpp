@@ -15,7 +15,7 @@
  *
  * DmxBuffer.cpp
  * The DmxBuffer class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * This implements a DmxBuffer which uses copy-on-write and delayed init.
  *
@@ -238,8 +238,8 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   }
 
   if (channel > m_length) {
-    OLA_WARN << "attempting to set channel " << channel << "when length is " <<
-      m_length;
+    OLA_WARN << "attempting to set channel " << channel << " when length is "
+             << m_length;
     return;
   }
 
@@ -311,7 +311,7 @@ string DmxBuffer::ToString() const {
   if (!m_data)
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   for (unsigned int i = 0; i < Size(); i++) {
     if (i)
       str << ",";

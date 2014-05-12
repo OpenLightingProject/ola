@@ -15,7 +15,7 @@
  *
  * EspNetPackets.h
  * Datagram definitions for EspNet
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ESPNET_ESPNETPACKETS_H_

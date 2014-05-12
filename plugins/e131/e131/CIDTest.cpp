@@ -15,7 +15,7 @@
  *
  * CIDTest.cpp
  * Test fixture for the CID class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>

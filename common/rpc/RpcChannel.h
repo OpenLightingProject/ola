@@ -15,14 +15,14 @@
  *
  * RpcChannel.h
  * The RPC Channel
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_RPC_RPCCHANNEL_H_
 #define COMMON_RPC_RPCCHANNEL_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <stdint.h>

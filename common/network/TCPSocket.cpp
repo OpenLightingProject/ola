@@ -15,25 +15,27 @@
  *
  * Socket.cpp
  * Implementation of the Socket classes
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <errno.h>
 #include <fcntl.h>
 /* FreeBSD needs types.h before tcp.h */
 #include <sys/types.h>
+#ifndef _WIN32
 #include <netinet/tcp.h>
+#endif
 #include <stdio.h>
 #include <string.h>
-#include <sys/uio.h>
 #include <unistd.h>
 
-#ifdef WIN32
-#include <winsock2.h>
+#ifdef _WIN32
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>

@@ -15,7 +15,7 @@
  *
  * DynamicPluginLoader.h
  * Interface for the DynamicPluginLoader class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_DYNAMICPLUGINLOADER_H_

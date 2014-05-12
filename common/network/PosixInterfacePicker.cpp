@@ -15,11 +15,11 @@
  *
  * PosixInterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_GETIFADDRS

@@ -15,10 +15,10 @@
  *
  * SelectServer.cpp
  * Implementation of the SelectServer class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/select.h>

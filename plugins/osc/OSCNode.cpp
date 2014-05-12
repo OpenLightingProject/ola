@@ -593,7 +593,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
 
     vector<SlotMessage>::const_iterator message_iter = messages.begin();
     for (; message_iter != messages.end(); ++message_iter) {
-      std::stringstream path;
+      std::ostringstream path;
       path << (*target_iter)->osc_address << "/" << message_iter->slot + 1;
 
       int ret = lo_send_message_from((*target_iter)->liblo_address,

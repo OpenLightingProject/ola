@@ -247,7 +247,7 @@ void TCPTransportTest::testSinglePDUBlock() {
  * Send empty PDU block.
  */
 void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
 
   IOStack packet;
@@ -260,7 +260,7 @@ void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
  * Send a PDU
  */
 void TCPTransportTest::SendPDU(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   IOStack packet;
   MockPDU::PrependPDU(&packet, 4, 8);
@@ -273,7 +273,7 @@ void TCPTransportTest::SendPDU(unsigned int line) {
  * Send a block of PDUs
  */
 void TCPTransportTest::SendPDUBlock(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   IOStack packet;
   MockPDU::PrependPDU(&packet, 1, 2);

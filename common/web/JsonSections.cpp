@@ -27,6 +27,7 @@
 #include "ola/web/JsonSections.h"
 #include "ola/Logging.h"
 #include "ola/web/Json.h"
+#include "ola/web/JsonWriter.h"
 #include "ola/StringUtils.h"
 
 
@@ -36,7 +37,6 @@ namespace web {
 using std::endl;
 using std::pair;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::EscapeString;
 

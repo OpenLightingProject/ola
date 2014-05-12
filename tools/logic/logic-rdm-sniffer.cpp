@@ -19,7 +19,7 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_SALEAEDEVICEAPI_H
@@ -62,7 +62,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::io::SelectServer;
 using ola::messaging::Descriptor;

@@ -15,7 +15,7 @@
  *
  * Socket.h
  * The Socket interfaces
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  *  - UDPSocket, allows sending and receiving UDP datagrams
  *  - TCPSocket, this represents a TCP connection to a remote endpoint

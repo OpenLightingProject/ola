@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ola/web/Json.h"
+#include "ola/web/JsonWriter.h"
 #include "ola/web/JsonSections.h"
 #include "ola/testing/TestUtils.h"
 

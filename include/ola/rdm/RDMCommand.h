@@ -15,7 +15,7 @@
  *
  * RDMCommand.h
  * All the classes that represent RDM commands.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 

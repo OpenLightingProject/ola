@@ -15,7 +15,7 @@
  *
  * KaratePlugin.h
  * Interface for the karate plugin class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_KARATE_KARATEPLUGIN_H_
