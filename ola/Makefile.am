@@ -37,3 +37,6 @@ OlaClientTester_LDADD = $(COMMON_TESTING_LIBS) \
                         ../common/libolacommon.la \
                         ../olad/libolaserver.la \
                         ./libola.la
+if USING_WIN32
+OlaClientTester_LDADD += -lWs2_32 -lIphlpapi
+endif
