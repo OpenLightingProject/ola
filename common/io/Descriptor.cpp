@@ -587,7 +587,7 @@ bool UnixSocket::Close() {
 #ifdef _WIN32
   return true;
 #else
-  if (m_fd != INVALID_DESCRIPTOR)
+  if (m_handle != INVALID_DESCRIPTOR)
     close(m_handle);
 
   m_handle = INVALID_DESCRIPTOR;
@@ -601,7 +601,7 @@ bool UnixSocket::Close() {
  */
 bool UnixSocket::CloseClient() {
 #ifndef _WIN32
-  if (m_fd != INVALID_DESCRIPTOR)
+  if (m_handle != INVALID_DESCRIPTOR)
     shutdown(m_handle, SHUT_WR);
 #endif
 

@@ -23,13 +23,14 @@
 #include <string.h>
 #include <errno.h>
 
-#include <algorithm>
-#include <queue>
-#include <string>
-
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <Winsock2.h>
+
+
+#include <algorithm>
+#include <queue>
+#include <string>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
@@ -67,7 +68,8 @@ bool WindowsPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
   return false;
 }
 
-bool WindowsPoller::RemoveReadDescriptor(class ConnectedDescriptor *descriptor) {
+bool WindowsPoller::RemoveReadDescriptor(
+    class ConnectedDescriptor *descriptor) {
   return false;
 }
 
