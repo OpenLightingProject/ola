@@ -18,10 +18,6 @@
  * Copyright (C) 2014 Lukas Erlinghagen
  */
 
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#include <Winsock2.h>
-
 #include "common/io/WindowsPoller.h"
 
 #include <string.h>
@@ -30,6 +26,10 @@
 #include <algorithm>
 #include <queue>
 #include <string>
+
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Winsock2.h>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"

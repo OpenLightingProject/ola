@@ -59,7 +59,7 @@ namespace io {
 enum DescriptorType {
   GENERIC_DESCRIPTOR = 0,  // Catch-all type without special handling
   SOCKET_DESCRIPTOR,  // WinSock socket
-  HANDLE_DESCRIPTOR // Windows device handle
+  HANDLE_DESCRIPTOR  // Windows device handle
 };
 
 // Consider this to be an opaque type.
@@ -70,7 +70,7 @@ struct DescriptorHandle {
   } m_handle;
   DescriptorType m_type;
   void* m_event_handle;
-  
+
   DescriptorHandle() {
     m_handle.m_fd = -1;
     m_type = GENERIC_DESCRIPTOR;

@@ -142,7 +142,7 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
 
   OLA_DEBUG << "Binding to " << endpoint;
 #ifdef _WIN32
-  if (bind(m_handle.m_handle.m_fd, &server_address, sizeof(server_address)) 
+  if (bind(m_handle.m_handle.m_fd, &server_address, sizeof(server_address))
       == -1) {
 #else
   if (bind(m_handle, &server_address, sizeof(server_address)) == -1) {
@@ -350,7 +350,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
 #ifdef _WIN32
-  bool ok = ReceiveFrom(m_handle.m_handle.m_fd, buffer, data_read, 
+  bool ok = ReceiveFrom(m_handle.m_handle.m_fd, buffer, data_read,
                         &src_sockaddr, &src_size);
 #else
   bool ok = ReceiveFrom(m_handle, buffer, data_read, &src_sockaddr, &src_size);
@@ -377,7 +377,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
 #ifdef _WIN32
-  bool ok = ReceiveFrom(m_handle.m_handle.m_fd, buffer, data_read, 
+  bool ok = ReceiveFrom(m_handle.m_handle.m_fd, buffer, data_read,
                         &src_sockaddr, &src_size);
 #else
   bool ok = ReceiveFrom(m_handle, buffer, data_read, &src_sockaddr, &src_size);
@@ -470,7 +470,7 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
 
   if (!multicast_loop) {
 #ifdef _WIN32
-    ok = setsockopt(m_handle.m_handle.m_fd, IPPROTO_IP, IP_MULTICAST_LOOP, 
+    ok = setsockopt(m_handle.m_handle.m_fd, IPPROTO_IP, IP_MULTICAST_LOOP,
                     &loop, sizeof(loop));
 #else
     ok = setsockopt(m_handle, IPPROTO_IP, IP_MULTICAST_LOOP, &loop,
