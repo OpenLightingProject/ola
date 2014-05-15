@@ -65,10 +65,7 @@ class UartWidget {
 
     /** Check if the widget is open */
     bool IsOpen() const;
-#if 0
-    /** Set 250kbps baud rate */
-    bool SetBaudRate();
-#endif
+
     /** Toggle communications line BREAK condition on/off */
     bool SetBreak(bool on);
 

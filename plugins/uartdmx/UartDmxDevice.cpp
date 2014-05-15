@@ -66,7 +66,7 @@ UartDmxDevice::~UartDmxDevice() {
 bool UartDmxDevice::StartHook() {
   AddPort(new UartDmxOutputPort(this,
                                 0,
-								m_widget.get(),
+                                m_widget.get(),
                                 m_breakt,
                                 m_malft));
   return true;

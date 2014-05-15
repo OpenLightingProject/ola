@@ -52,26 +52,26 @@ const char UartDmxPlugin::DEFAULT_DEVICE[] = "/dev/ttyACM0";
  */
 bool UartDmxPlugin::StartHook() {
   vector<string> devices = m_preferences->GetMultipleValue(K_DEVICE);
-  vector<string>::const_iterator iter;	// iterate over devices
+  vector<string>::const_iterator iter;  // iterate over devices
 
   // start counting device ids from 0
 
   for (iter = devices.begin(); iter != devices.end(); ++iter) {
     // first check if device configured
-	if (iter->empty()) {
+    if (iter->empty()) {
       OLA_DEBUG << "No path configured for device, please set one in "
           "ola-uartdmx.conf";
       continue;
     }
-	// now check if it's there
-	OLA_DEBUG << "Trying to open device " << *iter;
+    // now check if it's there
+    OLA_DEBUG << "Trying to open device " << *iter;
     int fd;
     if (ola::io::Open(*iter, O_WRONLY, &fd)) {
       // can open device, so shut the temporary file descriptor
       close(fd);
       UartDmxDevice *device = new UartDmxDevice(
           this,
-		  m_preferences,
+          m_preferences,
           PLUGIN_NAME,
           *iter);
       // got a device, now lets see if we can configure it before we announce
@@ -155,7 +155,7 @@ bool UartDmxPlugin::SetDefaultPreferences() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(K_DEVICE, StringValidator(),
-				                                           DEFAULT_DEVICE);
+                                         DEFAULT_DEVICE);
   if (save)
     m_preferences->Save();
 
