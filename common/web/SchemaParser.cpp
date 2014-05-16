@@ -33,7 +33,9 @@ using std::auto_ptr;
 using std::string;
 
 SchemaParser::SchemaParser()
-    : JsonHandlerInterface() {
+    : JsonHandlerInterface(),
+      m_pointer_tracker(&m_pointer),
+      m_error_logger(&m_pointer) {
 }
 
 SchemaParser::~SchemaParser() {}
@@ -58,10 +60,10 @@ void SchemaParser::String(const string &value) {
     return;
   }
 
-  m_error_logger.IncrementIndex();
+  m_pointer_tracker.IncrementIndex();
 
-  OLA_INFO << "Setting string for " << m_error_logger.GetPointer()
-     << " stack size is " << m_context_stack.size();
+  OLA_INFO << "Setting string for " << m_pointer.ToString()
+           << " stack size is " << m_context_stack.size();
   if (m_context_stack.top()) {
     m_context_stack.top()->String(&m_error_logger, value);
   } else {
@@ -101,7 +103,7 @@ void SchemaParser::Bool(bool value) {
     return;
   }
 
-  m_error_logger.IncrementIndex();
+  m_pointer_tracker.IncrementIndex();
 
   if (m_context_stack.top()) {
     m_context_stack.top()->Bool(&m_error_logger, value);
@@ -120,7 +122,7 @@ void SchemaParser::Null() {
     return;
   }
 
-  m_error_logger.IncrementIndex();
+  m_pointer_tracker.IncrementIndex();
 
   if (m_context_stack.top()) {
     m_context_stack.top()->Null(&m_error_logger);
@@ -139,12 +141,12 @@ void SchemaParser::OpenArray() {
     return;
   }
 
-  m_error_logger.OpenArray();
+  m_pointer_tracker.OpenArray();
 
   if (m_context_stack.top()) {
     m_context_stack.push(
         m_context_stack.top()->OpenArray(&m_error_logger));
-    OLA_INFO << "Opened " << m_error_logger.GetPointer() << " ("
+    OLA_INFO << "Opened " << m_pointer.ToString() << " ("
         << m_context_stack.top() << ") size is now "
         << m_context_stack.size();
   } else {
@@ -158,7 +160,7 @@ void SchemaParser::CloseArray() {
     return;
   }
 
-  m_error_logger.CloseArray();
+  m_pointer_tracker.CloseArray();
   m_context_stack.pop();
 
   if (m_context_stack.top()) {
@@ -173,7 +175,7 @@ void SchemaParser::OpenObject() {
     return;
   }
 
-  m_error_logger.OpenObject();
+  m_pointer_tracker.OpenObject();
 
   if (!m_root_context.get()) {
     m_schema_defs.reset(new SchemaDefinitions());
@@ -183,7 +185,7 @@ void SchemaParser::OpenObject() {
     if (m_context_stack.top()) {
       m_context_stack.push(
           m_context_stack.top()->OpenObject(&m_error_logger));
-      OLA_INFO << "Opened " << m_error_logger.GetPointer() <<  " ("
+      OLA_INFO << "Opened " << m_pointer.ToString() <<  " ("
           << m_context_stack.top() << ") size is now "
           << m_context_stack.size();
     } else {
@@ -198,10 +200,10 @@ void SchemaParser::ObjectKey(const std::string &key) {
     return;
   }
 
-  m_error_logger.SetProperty(key);
+  m_pointer_tracker.SetProperty(key);
 
   if (m_context_stack.top()) {
-    OLA_INFO << "Setting key for " << m_error_logger.GetPointer();
+    OLA_INFO << "Setting key for " << m_pointer.ToString();
     m_context_stack.top()->ObjectKey(&m_error_logger, key);
   } else {
     OLA_INFO << "In null context, skipping key " << key;
@@ -213,24 +215,22 @@ void SchemaParser::CloseObject() {
     return;
   }
 
-  m_error_logger.CloseObject();
+  m_pointer_tracker.CloseObject();
 
   m_context_stack.pop();
-
-  const string json_pointer = m_error_logger.GetPointer();
 
   OLA_INFO << "CloseObject";
   if (m_context_stack.empty()) {
     // We're at the root
     m_root_validator.reset(m_root_context->GetValidator(&m_error_logger));
   } else {
-    OLA_INFO << "closing context " << json_pointer << ", stack size is now "
-        << m_context_stack.size();
+    OLA_INFO << "closing context " << m_pointer.ToString()
+        << ", stack size is now " << m_context_stack.size();
     if (m_context_stack.top()) {
       m_context_stack.top()->CloseObject(&m_error_logger);
     }
   }
-  OLA_INFO << "Close of " << json_pointer << " complete, stack size is "
+  OLA_INFO << "Close of " << m_pointer.ToString() << " complete, stack size is "
       << m_context_stack.size();
 }
 
@@ -265,7 +265,7 @@ void SchemaParser::HandleNumber(T t) {
     return;
   }
 
-  m_error_logger.IncrementIndex();
+  m_pointer_tracker.IncrementIndex();
   if (m_context_stack.top()) {
     m_context_stack.top()->Number(&m_error_logger, t);
   } else {

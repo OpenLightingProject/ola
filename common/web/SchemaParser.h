@@ -28,9 +28,11 @@
 #include <stack>
 #include <string>
 
+#include "common/web/PointerTracker.h"
 #include "common/web/SchemaParseContext.h"
 #include "ola/base/Macro.h"
 #include "ola/web/JsonParser.h"
+#include "ola/web/JsonPointer.h"
 #include "ola/web/JsonSchema.h"
 
 namespace ola {
@@ -102,6 +104,8 @@ class SchemaParser : public JsonHandlerInterface {
   std::auto_ptr<ValidatorInterface> m_root_validator;
 
   std::stack<class SchemaParseContextInterface*> m_context_stack;
+  JsonPointer m_pointer;
+  PointerTracker m_pointer_tracker;
   ErrorLogger m_error_logger;
 
   template <typename T>

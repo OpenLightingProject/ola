@@ -116,16 +116,10 @@ class OptionalItem {
 
 /**
  * @brief Captures errors while parsing the schema.
- * The ErrorLogger keeps track of where we are in the parse tree so that errors
- * can have helpful information.
  */
-
-
-// TODO(simonn): this should just take a pointer to a JsonPointer and then we
-// can get rid of all the methods.
 class ErrorLogger {
  public:
-  ErrorLogger() {}
+  explicit ErrorLogger(JsonPointer *pointer) : m_pointer(pointer) {}
 
   bool HasError() const {
     return !m_first_error.str().empty();
@@ -137,49 +131,22 @@ class ErrorLogger {
 
   std::ostream& Error() {
     if (m_first_error.str().empty()) {
-      m_first_error << m_pointer.GetPointer() << ": ";
+      m_first_error << m_pointer->ToString() << ": ";
       return m_first_error;
     } else {
       return m_extra_errors;
     }
   }
 
-  void SetProperty(const std::string &property) {
-    m_pointer.SetProperty(property);
-  }
-
-  void OpenObject() {
-    m_pointer.OpenObject();
-  }
-
-  void CloseObject() {
-    m_pointer.CloseObject();
-  }
-
-  void OpenArray() {
-    m_pointer.OpenArray();
-  }
-
-  void CloseArray() {
-    m_pointer.CloseArray();
-  }
-
-  void IncrementIndex() {
-    m_pointer.IncrementIndex();
-  }
-
   void Reset() {
-    m_pointer.Reset();
-  }
-
-  std::string GetPointer() {
-    return m_pointer.GetPointer();
+    m_first_error.str("");
+    m_extra_errors.str("");
   }
 
  private:
   std::ostringstream m_first_error;
   std::ostringstream m_extra_errors;
-  PointerTracker m_pointer;
+  JsonPointer *m_pointer;
 };
 
 /**

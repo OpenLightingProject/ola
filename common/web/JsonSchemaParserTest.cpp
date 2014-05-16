@@ -29,6 +29,7 @@
 #include "ola/file/Util.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/web/JsonSchema.h"
+#include "ola/web/JsonWriter.h"
 
 using ola::web::JsonObject;
 using ola::web::JsonSchema;

@@ -197,9 +197,9 @@ SchemaKeyword LookupKeyword(const string& keyword) {
 // Used for parsing an object with key : json schema pairs, within 'definitions'
 SchemaParseContextInterface* DefinitionsParseContext::OpenObject(
     ErrorLogger *logger) {
-  OLA_INFO << "Starting a new definition at " << logger->GetPointer();
   m_current_schema.reset(new SchemaParseContext(m_schema_defs));
   return m_current_schema.get();
+  (void) logger;
 }
 
 void DefinitionsParseContext::CloseObject(ErrorLogger *logger) {
