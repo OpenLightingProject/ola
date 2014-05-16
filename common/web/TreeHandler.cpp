@@ -180,7 +180,7 @@ const JsonValue *TreeHandler::ClaimRoot() {
   return m_root.release();
 }
 
-void TreeHandler::AddValue(const JsonValue *value) {
+void TreeHandler::AddValue(JsonValue *value) {
   if (!m_container_stack.empty() && m_container_stack.top() == ARRAY) {
     if (m_array_stack.empty()) {
       OLA_WARN << "Missing JsonArray, parsing is broken!";
