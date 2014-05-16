@@ -48,7 +48,7 @@ class UartWidget {
      * Construct a new UartWidget instance for one widget.
      * @param path The device file path of the serial port
      */
-    UartWidget(const std::string &path);
+    explicit UartWidget(const std::string &path);
 
     /** Destructor */
     virtual ~UartWidget();
