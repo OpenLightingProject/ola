@@ -32,6 +32,7 @@
 
 #include <ola/StringUtils.h>
 #include <ola/base/Macro.h>
+#include <ola/web/JsonPointer.h>
 #include <stdint.h>
 #include <map>
 #include <ostream>
@@ -70,6 +71,11 @@ class JsonValue {
   virtual ~JsonValue() {}
 
   /**
+   * @brief Locate the JsonValue referred to by the JSON Pointer.
+   */
+  virtual JsonValue* LookupElement(const JsonPointer &pointer);
+
+  /**
    * @brief Equality operator.
    *
    * This implements equality as defined in section 3.6 of the JSON Schema Core
@@ -83,6 +89,24 @@ class JsonValue {
   virtual bool operator!=(const JsonValue &other) const {
     return !(*this == other);
   }
+
+  /**
+   * @brief The Accept method for the visitor pattern.
+   * This can be used to traverse the Json Tree in a type-safe manner.
+   */
+  virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
+
+  /**
+   * @privatesection
+   */
+
+  /**
+   * @brief Lookup the Value referred to by the Iterator.
+   *
+   * This is used by recursively by JsonValue classes. You should call
+   * LookupElement() instead.
+   */
+  virtual JsonValue* LookupElementWithIter(JsonPointer::Iterator *iterator) = 0;
 
   /**
    * @brief Check if this JsonValue equals a JsonStringValue.
@@ -151,16 +175,26 @@ class JsonValue {
   virtual bool Equals(const JsonArray &) const { return false; }
 
   /**
-   * @brief The Accept method for the visitor pattern.
-   * This can be used to traverse the Json Tree in a type-safe manner.
+   * @endsection
    */
-  virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
+};
+
+
+/**
+ * @brief A base class used to describe values which are leafs of a JSON tree.
+ *
+ * Leaf values are those which don't contain other values. All values except
+ * JsonObject and JsonArray are leaf values.
+ */
+class JsonLeafValue : public JsonValue {
+ public:
+  JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
 };
 
 /**
  * @brief A string value.
  */
-class JsonStringValue: public JsonValue {
+class JsonStringValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonStringValue
@@ -193,7 +227,7 @@ class JsonStringValue: public JsonValue {
 /**
  * @brief An unsigned int value.
  */
-class JsonUIntValue: public JsonValue {
+class JsonUIntValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonUIntValue
@@ -233,7 +267,7 @@ class JsonUIntValue: public JsonValue {
 /**
  * @brief A signed int value.
  */
-class JsonIntValue: public JsonValue {
+class JsonIntValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonIntValue
@@ -272,7 +306,7 @@ class JsonIntValue: public JsonValue {
 /**
  * @brief An unsigned int 64 value.
  */
-class JsonUInt64Value: public JsonValue {
+class JsonUInt64Value: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonUInt64Value
@@ -311,7 +345,7 @@ class JsonUInt64Value: public JsonValue {
 /**
  * @brief A signed int 64 value.
  */
-class JsonInt64Value: public JsonValue {
+class JsonInt64Value: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonInt64Value
@@ -355,7 +389,7 @@ class JsonInt64Value: public JsonValue {
  * value takes the form: [full].[fractional]e<sup>[exponent]</sup>.
  * e.g 23.00456e<sup>-3</sup>.
  */
-class JsonDoubleValue: public JsonValue {
+class JsonDoubleValue: public JsonLeafValue {
  public:
   /**
    * @struct DoubleRepresentation
@@ -445,7 +479,7 @@ class JsonDoubleValue: public JsonValue {
 /**
  * @brief A Bool value
  */
-class JsonBoolValue: public JsonValue {
+class JsonBoolValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonBoolValue
@@ -480,7 +514,7 @@ class JsonBoolValue: public JsonValue {
 /**
  * @brief The null value
  */
-class JsonNullValue: public JsonValue {
+class JsonNullValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonNullValue
@@ -503,7 +537,7 @@ class JsonNullValue: public JsonValue {
 /**
  * @brief A raw value, useful if you want to cheat.
  */
-class JsonRawValue: public JsonValue {
+class JsonRawValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonRawValue
@@ -551,6 +585,8 @@ class JsonObject: public JsonValue {
    */
   JsonObject() {}
   ~JsonObject();
+
+  JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
@@ -625,7 +661,7 @@ class JsonObject: public JsonValue {
    * @param key the key to add
    * @param value the JsonValue object, ownership is transferred.
    */
-  void AddValue(const std::string &key, const JsonValue *value);
+  void AddValue(const std::string &key, JsonValue *value);
 
   /**
    * @brief Set the given key to a raw value.
@@ -642,21 +678,17 @@ class JsonObject: public JsonValue {
    */
   bool IsEmpty() const { return m_members.empty(); }
 
-<<<<<<< HEAD
-  void VisitProperties(JsonObjectPropertyVisitor *visitor) const;
-
   unsigned int Size() const { return m_members.size(); }
-=======
+
   /**
    * @brief Visit each of the properties in this object.
    *
    * For each property : value, the visitor is called.
    */
-  void VisitProperties(JsonValueVisitorInterface *visitor) const;
->>>>>>> 356280ffb488f10e5123f98afa3cb9544e3ad4ea
+  void VisitProperties(JsonObjectPropertyVisitor *visitor) const;
 
  private:
-  typedef std::map<std::string, const JsonValue*> MemberMap;
+  typedef std::map<std::string, JsonValue*> MemberMap;
   MemberMap m_members;
 
   DISALLOW_COPY_AND_ASSIGN(JsonObject);
@@ -671,6 +703,8 @@ class JsonArray: public JsonValue {
  public:
   JsonArray() : m_complex_type(false) {}
   ~JsonArray();
+
+  JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
@@ -728,7 +762,7 @@ class JsonArray: public JsonValue {
   /**
    * @brief Append a JsonValue. Takes ownership of the pointer.
    */
-  void Append(const JsonValue *value) {
+  void Append(JsonValue *value) {
     m_values.push_back(value);
   }
 
@@ -754,6 +788,14 @@ class JsonArray: public JsonValue {
     m_values.push_back(array);
     m_complex_type = true;
     return array;
+  }
+
+  /**
+   * @brief Append a JsonValue to the array.
+   * @param value the JsonValue to append, ownership is transferred.
+   */
+  void AppendValue(JsonValue *value) {
+    m_values.push_back(value);
   }
 
   /**
@@ -788,7 +830,7 @@ class JsonArray: public JsonValue {
   bool IsComplexType() const { return m_complex_type; }
 
  private:
-  typedef std::vector<const JsonValue*> ValuesVector;
+  typedef std::vector<JsonValue*> ValuesVector;
   ValuesVector m_values;
 
   // true if this array contains a nested object or array
@@ -842,58 +884,7 @@ std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonNullValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonRawValue &value);
 
-<<<<<<< HEAD
-/**
- * @brief A class that writes a JsonValue to an output stream.
- */
-class JsonWriter : public JsonValueVisitorInterface, JsonObjectPropertyVisitor {
- public:
-  explicit JsonWriter(std::ostream *output)
-      : m_output(output),
-        m_indent(0),
-        m_separator("") {
-  }
-
-  /**
-   * @brief Write the string representation of the JsonValue to a ostream.
-   * @param output the ostream to write to
-   * @param value the JsonValue to serialize.
-   */
-  static void Write(std::ostream *output, const JsonValue &value);
-
-  /**
-   * @brief Get the string representation of the JsonValue.
-   * @param value the JsonValue to serialize.
-   */
-  static std::string AsString(const JsonValue &value);
-
-  void Visit(const JsonStringValue &value);
-  void Visit(const JsonBoolValue &value);
-  void Visit(const JsonNullValue &value);
-  void Visit(const JsonRawValue &value);
-  void Visit(const JsonObject &value);
-  void Visit(const JsonArray &value);
-  void Visit(const JsonUIntValue &value);
-  void Visit(const JsonUInt64Value &value);
-  void Visit(const JsonIntValue &value);
-  void Visit(const JsonInt64Value &value);
-  void Visit(const JsonDoubleValue &value);
-
-  void VisitProperty(const std::string &property, const JsonValue &value);
-
- private:
-  std::ostream *m_output;
-  unsigned int m_indent;
-  std::string m_separator;
-
-  /**
-   * @brief the default indent level
-   */
-  static const unsigned int DEFAULT_INDENT = 2;
-};
 /**@}*/
-=======
->>>>>>> 356280ffb488f10e5123f98afa3cb9544e3ad4ea
 }  // namespace web
 }  // namespace ola
 #endif  // INCLUDE_OLA_WEB_JSON_H_

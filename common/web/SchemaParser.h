@@ -28,10 +28,9 @@
 #include <stack>
 #include <string>
 
-#include "common/web/PointerTracker.h"
 #include "common/web/SchemaParseContext.h"
 #include "ola/base/Macro.h"
-#include "ola/web/JsonHandler.h"
+#include "ola/web/JsonParser.h"
 #include "ola/web/JsonSchema.h"
 
 namespace ola {

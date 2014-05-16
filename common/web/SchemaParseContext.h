@@ -119,6 +119,10 @@ class OptionalItem {
  * The ErrorLogger keeps track of where we are in the parse tree so that errors
  * can have helpful information.
  */
+
+
+// TODO(simonn): this should just take a pointer to a JsonPointer and then we
+// can get rid of all the methods.
 class ErrorLogger {
  public:
   ErrorLogger() {}

@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * PointerTracker.h
- * Maintains a Json pointer from a series of parse events.
+ * Maintains a JsonPointer from a series of parse events.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -22,6 +22,7 @@
 #define COMMON_WEB_POINTERTRACKER_H_
 
 #include <ola/base/Macro.h>
+#include <ola/web/JsonPointer.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -55,27 +56,28 @@ namespace web {
  *
  * When parsing this example, the order of method invocation should be:
  * @code
-     PointerTracker pointer();
+     JsonPointer pointer;
+     PointerTracker tracker(&pointer);
 
-     pointer.OpenObject()
-     pointer.SetProperty("foo");
-     pointer.OpenObject();
-     pointer.SetProperty("bar");
-     pointer.SetProperty("baz");
-     pointer.CloseObject();
-     pointer.SetProperty("bat");
-     pointer.OpenArray();
-     pointer.IncrementIndex();
-     pointer.IncrementIndex();
-     pointer.IncrementIndex();
-     pointer.CloseArray();
-     pointer.CloseObject();
+     tracker.OpenObject()
+     tracker.SetProperty("foo");
+     tracker.OpenObject();
+     tracker.SetProperty("bar");
+     tracker.SetProperty("baz");
+     tracker.CloseObject();
+     tracker.SetProperty("bat");
+     tracker.OpenArray();
+     tracker.IncrementIndex();
+     tracker.IncrementIndex();
+     tracker.IncrementIndex();
+     tracker.CloseArray();
+     tracker.CloseObject();
    @endcode
  */
 class PointerTracker {
  public:
-  PointerTracker()
-     : m_cached_path("") {
+  explicit PointerTracker(JsonPointer *pointer)
+     : m_pointer(pointer) {
   }
 
   /**
@@ -114,18 +116,6 @@ class PointerTracker {
    */
   void IncrementIndex();
 
-  /**
-   * @brief Get the current Json pointer
-   * @returns the current Json pointer or the empty string if the pointer isn't
-   * valid.
-   */
-  const std::string GetPointer() const;
-
-  /**
-   * @brief Reset this pointer tracker.
-   */
-  void Reset();
-
  private:
   enum TokenType {
     TOKEN_OBJECT,
@@ -135,18 +125,15 @@ class PointerTracker {
   struct Token {
    public:
     TokenType type;
-    std::string property;
     int index;
+    bool property_set;
 
-    explicit Token(TokenType type) : type(type), index(-1) {}
+    explicit Token(TokenType type)
+      : type(type), index(-1), property_set(false) {}
   };
 
+  JsonPointer *m_pointer;
   std::vector<Token> m_tokens;
-  std::string m_cached_path;
-  std::ostringstream m_str;
-
-  void UpdatePath();
-  std::string EscapeString(const std::string &input);
 
   DISALLOW_COPY_AND_ASSIGN(PointerTracker);
 };

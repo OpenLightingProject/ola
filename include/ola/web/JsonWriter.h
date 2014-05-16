@@ -44,7 +44,7 @@ namespace web {
  */
 
 /**
- * @brief A class that writes a JsonValue to an output stream.
+ * @brief A class to serialize a JSONValue to text.
  */
 class JsonWriter : public JsonValueVisitorInterface {
  public:
@@ -61,6 +61,9 @@ class JsonWriter : public JsonValueVisitorInterface {
    */
   static std::string AsString(const JsonValue &value);
 
+  /**
+   * @privatesection
+   */
   void Visit(const JsonStringValue &value);
   void Visit(const JsonBoolValue &value);
   void Visit(const JsonNullValue &value);
@@ -74,6 +77,10 @@ class JsonWriter : public JsonValueVisitorInterface {
   void Visit(const JsonDoubleValue &value);
 
   void VisitProperty(const std::string &property, const JsonValue &value);
+
+  /**
+   * @endsection
+   */
 
  private:
   std::ostream *m_output;
