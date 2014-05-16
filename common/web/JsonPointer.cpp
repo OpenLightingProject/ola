@@ -52,6 +52,16 @@ JsonPointer::JsonPointer(const std::string &path)
   }
 }
 
+void JsonPointer::Push(const string &token) {
+  m_tokens.push_back(token);
+}
+
+void JsonPointer::Pop() {
+  if (!m_tokens.empty()) {
+    m_tokens.pop_back();
+  }
+}
+
 string JsonPointer::ToString() const {
   string path;
   if (!m_tokens.empty()) {

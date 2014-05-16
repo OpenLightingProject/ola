@@ -4,12 +4,13 @@ include $(top_srcdir)/common.mk
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
 libolaweb_la_SOURCES = Json.cpp JsonParser.cpp JsonPointer.cpp \
-                       JsonSections.cpp JsonWriter.cpp TreeHandler.cpp
+                       JsonSections.cpp JsonWriter.cpp PointerTracker.cpp \
+                       PointerTracker.h TreeHandler.cpp
 
 # TESTS
 ################################################
 if BUILD_TESTS
-TESTS = JsonParserTester JsonPointerTester WebTester
+TESTS = JsonParserTester JsonPointerTester PointerTrackerTester WebTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -33,3 +34,10 @@ JsonPointerTester_LDADD = $(COMMON_TESTING_LIBS) \
                          ./libolaweb.la \
                          ../base/libolabase.la \
                          ../utils/libolautils.la
+
+PointerTrackerTester_SOURCES = PointerTrackerTest.cpp
+PointerTrackerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+PointerTrackerTester_LDADD = $(COMMON_TESTING_LIBS) \
+                             ./libolaweb.la \
+                             ../base/libolabase.la \
+                             ../utils/libolautils.la

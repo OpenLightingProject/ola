@@ -171,6 +171,17 @@ class JsonPointer {
   }
 
   /**
+   * @brief Append a token to the pointer path.
+   * @param token The un-escaped token to add to this JsonPointer.
+   */
+  void Push(const std::string &token);
+
+  /**
+   * @brief Pop the last token from the pointer.
+   */
+  void Pop();
+
+  /**
    * @brief Returns the string representation of the pointer
    */
   std::string ToString() const;
@@ -181,7 +192,6 @@ class JsonPointer {
   bool m_is_valid;
   Tokens m_tokens;
 
-  void UpdatePath();
   static std::string EscapeString(const std::string &input);
   static std::string UnEscapeString(const std::string &input);
 

@@ -18,10 +18,11 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "common/web/PointerTracker.h"
-
 #include <string>
 #include <vector>
+
+#include "ola/StringUtils.h"
+#include "common/web/PointerTracker.h"
 
 namespace ola {
 namespace web {
@@ -30,13 +31,7 @@ using std::string;
 using std::vector;
 
 void PointerTracker::OpenObject() {
-  if (!m_tokens.empty()) {
-    Token &token = m_tokens.back();
-    if (token.type == TOKEN_ARRAY) {
-      token.index++;
-      UpdatePath();
-    }
-  }
+  IncrementIndex();
 
   Token token(TOKEN_OBJECT);
   m_tokens.push_back(token);
@@ -51,9 +46,12 @@ void PointerTracker::SetProperty(const string &property) {
   if (token.type != TOKEN_OBJECT) {
     return;
   }
-  string escaped_property = EscapeString(property);
-  token.property = escaped_property;
-  UpdatePath();
+  if (token.property_set) {
+    m_pointer->Pop();
+  } else {
+    token.property_set = true;
+  }
+  m_pointer->Push(property);
 }
 
 void PointerTracker::CloseObject() {
@@ -63,18 +61,13 @@ void PointerTracker::CloseObject() {
 
   if (m_tokens.back().type == TOKEN_OBJECT) {
     m_tokens.pop_back();
-    UpdatePath();
+    m_pointer->Pop();
   }
 }
 
 void PointerTracker::OpenArray() {
-  if (!m_tokens.empty()) {
-    Token &token = m_tokens.back();
-    if (token.type == TOKEN_ARRAY) {
-      token.index++;
-      UpdatePath();
-    }
-  }
+  IncrementIndex();
+
   Token token(TOKEN_ARRAY);
   m_tokens.push_back(token);
 }
@@ -85,8 +78,10 @@ void PointerTracker::CloseArray() {
   }
 
   if (m_tokens.back().type == TOKEN_ARRAY) {
+    if (m_tokens.back().index >= 0) {
+      m_pointer->Pop();
+    }
     m_tokens.pop_back();
-    UpdatePath();
   }
 }
 
@@ -99,51 +94,11 @@ void PointerTracker::IncrementIndex() {
   if (token.type != TOKEN_ARRAY) {
     return;
   }
+  if (token.index >= 0) {
+    m_pointer->Pop();
+  }
   token.index++;
-  UpdatePath();
-}
-
-const string PointerTracker::GetPointer() const {
-  return m_cached_path;
-}
-
-void PointerTracker::UpdatePath() {
-  if (m_tokens.empty()) {
-    m_cached_path = "";
-  } else {
-    m_str.str("");
-    vector<Token>::const_iterator iter = m_tokens.begin();
-    for (; iter != m_tokens.end(); ++iter) {
-      m_str << "/";
-      if (iter->type == TOKEN_OBJECT) {
-        m_str << iter->property;
-      } else if (iter->type == TOKEN_ARRAY) {
-        m_str << iter->index;
-      }
-    }
-    m_cached_path = m_str.str();
-  }
-}
-
-string PointerTracker::EscapeString(const string &input) {
-  string escaped_property;
-  escaped_property.reserve(input.size());
-  for (string::const_iterator iter = input.begin(); iter != input.end();
-       ++iter) {
-    switch (*iter) {
-      case '~':
-        escaped_property.push_back(*iter);
-        escaped_property.push_back('0');
-        break;
-      case '/':
-        escaped_property.push_back('~');
-        escaped_property.push_back('1');
-        break;
-      default:
-        escaped_property.push_back(*iter);
-    }
-  }
-  return escaped_property;
+  m_pointer->Push(IntToString(token.index));
 }
 }  // namespace web
 }  // namespace ola
