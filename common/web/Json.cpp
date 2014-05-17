@@ -318,6 +318,15 @@ void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
 
+JsonValue* JsonObject::Clone() const {
+  JsonObject *object = new JsonObject();
+  MemberMap::const_iterator iter = m_members.begin();
+  for (; iter != m_members.end(); ++iter) {
+    object->AddValue(iter->first, iter->second->Clone());
+  }
+  return object;
+}
+
 void JsonObject::VisitProperties(JsonValueVisitorInterface *visitor) const {
   MemberMap::const_iterator iter = m_members.begin();
   for (; iter != m_members.end(); ++iter) {
@@ -361,7 +370,7 @@ bool JsonArray::Equals(const JsonArray &other) const {
   ValuesVector::const_iterator other_iter = other.m_values.begin();
   for (; our_iter != m_values.end() && other_iter != other.m_values.end();
        our_iter++, other_iter++) {
-    if (*our_iter != *other_iter) {
+    if (**our_iter != **other_iter) {
       return false;
     }
   }
@@ -370,6 +379,15 @@ bool JsonArray::Equals(const JsonArray &other) const {
 
 void JsonArray::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
+}
+
+JsonValue* JsonArray::Clone() const {
+  JsonArray *array = new JsonArray();
+  ValuesVector::const_iterator iter = m_values.begin();
+  for (; iter != m_values.end(); iter++) {
+    array->AppendValue((*iter)->Clone());
+  }
+  return array;
 }
 
 const JsonValue *JsonArray::ElementAt(unsigned int i) const {

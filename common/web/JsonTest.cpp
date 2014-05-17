@@ -59,6 +59,7 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST(testEquality);
   CPPUNIT_TEST(testLookups);
+  CPPUNIT_TEST(testClone);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -74,6 +75,7 @@ class JsonTest: public CppUnit::TestFixture {
     void testComplexObject();
     void testEquality();
     void testLookups();
+    void testClone();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonTest);
@@ -444,4 +446,46 @@ void JsonTest::testLookups() {
   JsonPointer first_pet("/pets/0");
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string2),
                 object.LookupElement(first_pet));
+}
+
+/*
+ * Test that clone() works.
+ */
+void JsonTest::testClone() {
+  JsonStringValue string1("foo");
+  JsonBoolValue bool1(true);
+  JsonNullValue null1;
+  JsonDoubleValue double1(1.0);
+  JsonUIntValue uint1(10);
+  JsonIntValue int1(10);
+  JsonInt64Value int64_1(-99);
+  JsonInt64Value uint64_1(10);
+
+  JsonObject object;
+  object.Add("age", 10);
+  object.Add("name", "simon");
+  object.Add("male", true);
+  object.Add("", "foo");
+
+  JsonArray array;
+  array.Append(true);
+  array.Append(1);
+  array.Append("bar");
+
+  vector<JsonValue*> all_values;
+  all_values.push_back(&string1);
+  all_values.push_back(&bool1);
+  all_values.push_back(&null1);
+  all_values.push_back(&double1);
+  all_values.push_back(&uint1);
+  all_values.push_back(&int1);
+  all_values.push_back(&int64_1);
+  all_values.push_back(&uint64_1);
+  all_values.push_back(&object);
+  all_values.push_back(&array);
+
+  for (unsigned int i = 0; i < all_values.size(); ++i) {
+    std::auto_ptr<JsonValue> value(all_values[i]->Clone());
+    OLA_ASSERT(*(value.get()) == *(all_values[i]));
+  }
 }

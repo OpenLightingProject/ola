@@ -96,6 +96,11 @@ class JsonValue {
   virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
 
   /**
+   * @brief Make a copy of this JsonValue.
+   */
+  virtual JsonValue* Clone() const = 0;
+
+  /**
    * @privatesection
    */
 
@@ -216,6 +221,10 @@ class JsonStringValue: public JsonLeafValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonStringValue(m_value);
+  }
+
  private:
   const std::string m_value;
 
@@ -250,6 +259,10 @@ class JsonUIntValue: public JsonLeafValue {
   bool Equals(const JsonInt64Value &other) const;
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const {
+    return new JsonUIntValue(m_value);
+  }
 
   /**
    * @brief Return the uint32_t value.
@@ -290,6 +303,10 @@ class JsonIntValue: public JsonLeafValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonIntValue(m_value);
+  }
+
   /**
    * @brief Return the int32_t value.
    */
@@ -329,6 +346,10 @@ class JsonUInt64Value: public JsonLeafValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonUInt64Value(m_value);
+  }
+
   /**
    * @brief Return the uint64_t value.
    */
@@ -367,6 +388,10 @@ class JsonInt64Value: public JsonLeafValue {
   bool Equals(const JsonUInt64Value &other) const;
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const {
+    return new JsonInt64Value(m_value);
+  }
 
   /**
    * @brief Return the int64_t value.
@@ -467,6 +492,11 @@ class JsonDoubleValue: public JsonLeafValue {
    */
   static std::string AsString(const DoubleRepresentation &rep);
 
+  JsonValue* Clone() const {
+    // This loses precision, maybe we should fix it?
+    return new JsonDoubleValue(m_value);
+  }
+
  private:
   double m_value;
   std::string m_as_string;
@@ -498,6 +528,10 @@ class JsonBoolValue: public JsonLeafValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonBoolValue(m_value);
+  }
+
   /**
    * @brief Return the bool value.
    */
@@ -521,6 +555,10 @@ class JsonNullValue: public JsonLeafValue {
   explicit JsonNullValue() {}
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const {
+    return new JsonNullValue();
+  }
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
@@ -555,6 +593,10 @@ class JsonRawValue: public JsonLeafValue {
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const {
+    return new JsonRawValue(m_value);
+  }
 
   /**
    * @brief Return the raw value  as a string.
@@ -663,6 +705,8 @@ class JsonObject: public JsonValue {
   void AddRaw(const std::string &key, const std::string &value);
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const;
 
   /**
    * @brief Check if there are properties within the object
@@ -796,6 +840,8 @@ class JsonArray: public JsonValue {
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const;
 
   /**
    * @brief Check if there are elements within the array.
