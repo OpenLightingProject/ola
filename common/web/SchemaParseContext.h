@@ -312,8 +312,9 @@ class PropertiesParseContext : public BaseParseContext {
       : BaseParseContext(),
         m_schema_defs(definitions) {
   }
+  ~PropertiesParseContext();
 
-  void AddPropertyValidaators(ObjectValidator *object_validator,
+  void AddPropertyValidators(ObjectValidator *object_validator,
                               SchemaErrorLogger *logger);
 
   void String(SchemaErrorLogger *logger, const std::string &value);

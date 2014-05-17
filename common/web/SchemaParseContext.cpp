@@ -458,7 +458,7 @@ ValidatorInterface* SchemaParseContext::BuildObjectValidator(
   ObjectValidator *object_validator = new ObjectValidator(options);
 
   if (m_properties_context.get()) {
-    m_properties_context->AddPropertyValidaators(object_validator, logger);
+    m_properties_context->AddPropertyValidators(object_validator, logger);
   }
   return object_validator;
 }
@@ -591,7 +591,7 @@ bool SchemaParseContext::CheckTypeAndLog(
 
 // PropertiesParseContext
 // Used for parsing an object with key : json schema pairs, within 'properties'
-void PropertiesParseContext::AddPropertyValidaators(
+void PropertiesParseContext::AddPropertyValidators(
     ObjectValidator *object_validator,
     SchemaErrorLogger *logger) {
   SchemaMap::iterator iter = m_property_contexts.begin();
@@ -601,6 +601,10 @@ void PropertiesParseContext::AddPropertyValidaators(
       object_validator->AddValidator(iter->first, validator);
     }
   }
+}
+
+PropertiesParseContext::~PropertiesParseContext() {
+  STLDeleteValues(&m_property_contexts);
 }
 
 void PropertiesParseContext::String(SchemaErrorLogger *logger,
