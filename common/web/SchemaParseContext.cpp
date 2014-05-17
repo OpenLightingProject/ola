@@ -19,6 +19,7 @@
  */
 #include "common/web/SchemaParseContext.h"
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -35,6 +36,27 @@
 
 namespace ola {
 namespace web {
+
+namespace {
+
+/*
+ * A cool hack to determine if a type is positive.
+ * We do this to avoid:
+ *   comparison of unsigned expression >= 0 is always true
+ * warnings. See http://gcc.gnu.org/ml/gcc-help/2010-08/msg00286.html
+ */
+template<typename T, bool sign>
+struct positive {
+  bool operator()(const T &x) { return x >= 0; }
+};
+
+template<typename T>
+struct positive<T, false>{
+  bool operator()(const T &) {
+    return true;
+  }
+};
+}  // namespace
 
 using std::auto_ptr;
 using std::make_pair;
@@ -469,7 +491,7 @@ void SchemaParseContext::ProcessInt(SchemaErrorLogger *logger, T value) {
     return;
   }
 
-  if (value >= 0) {
+  if (positive<T, std::numeric_limits<T>::is_signed>()(value)) {
     ProcessPositiveInt(logger, static_cast<uint64_t>(value));
     return;
   }
