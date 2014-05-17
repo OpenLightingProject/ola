@@ -23,22 +23,21 @@
 #include <string>
 
 #include "ola/web/Json.h"
+#include "ola/web/JsonLexer.h"
 #include "ola/web/JsonParser.h"
 #include "ola/web/JsonWriter.h"
-#include "ola/web/TreeHandler.h"
 #include "ola/testing/TestUtils.h"
-
 
 using ola::web::JsonArray;
 using ola::web::JsonBoolValue;
 using ola::web::JsonIntValue;
+using ola::web::JsonLexer;
 using ola::web::JsonNullValue;
 using ola::web::JsonObject;
 using ola::web::JsonStringValue;
 using ola::web::JsonUIntValue;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
-using ola::web::JsonParser;
 using std::auto_ptr;
 using std::string;
 
@@ -66,19 +65,19 @@ class JsonParserTest: public CppUnit::TestFixture {
 };
 
 /**
- * This class wraps up JsonParser and TreeHandler to build an in-memory
+ * This class wraps up JsonLexer and JsonParser to build an in-memory
  * representation of the parse tree.
  */
 class BasicJsonParser {
  public:
   static const JsonValue* Parse(const std::string &input, string *error) {
-    ola::web::TreeHandler tree_handler;
-    bool ok = JsonParser::Parse(input, &tree_handler);
+    ola::web::JsonParser parser;
+    bool ok = JsonLexer::Parse(input, &parser);
     if (!ok) {
-      *error = tree_handler.GetError();
+      *error = parser.GetError();
       return NULL;
     }
-    return tree_handler.ClaimRoot();
+    return parser.ClaimRoot();
   }
 };
 

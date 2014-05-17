@@ -31,7 +31,7 @@ namespace web {
 using std::string;
 
 SchemaParser::SchemaParser()
-    : JsonHandlerInterface(),
+    : JsonParserInterface(),
       m_pointer_tracker(&m_pointer),
       m_error_logger(&m_pointer) {
 }

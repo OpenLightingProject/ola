@@ -28,7 +28,7 @@
 #include "ola/Logging.h"
 #include "common/web/SchemaParser.h"
 #include "ola/stl/STLUtils.h"
-#include "ola/web/JsonParser.h"
+#include "ola/web/JsonLexer.h"
 #include "ola/web/JsonSchema.h"
 #include "ola/web/JsonTypes.h"
 
@@ -696,7 +696,7 @@ JsonSchema* JsonSchema::FromString(const string& schema_string,
                                    string *error) {
   *error = "";
   SchemaParser schema_parser;
-  bool ok = JsonParser::Parse(schema_string, &schema_parser);
+  bool ok = JsonLexer::Parse(schema_string, &schema_parser);
   if (!ok || !schema_parser.IsValidSchema()) {
     *error = schema_parser.Error();
     return NULL;

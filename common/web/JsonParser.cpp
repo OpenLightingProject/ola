@@ -15,428 +15,196 @@
  *
  * JsonParser.cpp
  * A Json Parser.
- * See http://www.json.org/
  * Copyright (C) 2014 Simon Newton
  */
-
-#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
-
 #include "ola/web/JsonParser.h"
 
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
 
 namespace ola {
 namespace web {
 
-using std::auto_ptr;
 using std::string;
 
-static bool ParseTrimmedInput(const char **input,
-                              JsonHandlerInterface *handler);
+void JsonParser::Begin() {
+  m_error = "";
+  m_root.reset();
+  m_key = "";
 
-/**
- * @brief Trim leading whitespace from a string.
- * @param input A pointer to a pointer with the data. This is updated to point
- * to the first non-whitespace character.
- * @returns true if more data remains, false if the string is now empty.
- * @note This is static within JsonParser.cpp because we should be using
- * strings rather than char[]s. The only reason this doesn't use a string is
- * because I think we'll need a wchar on Windows.
- */
-static bool TrimWhitespace(const char **input) {
-  while (**input != 0 &&
-         (**input == ' ' || **input == '\t' || **input == '\r' ||
-          **input == '\n')) {
-    (*input)++;
-  }
-  return **input != 0;
+  STLEmptyStack(&m_container_stack);
+  STLEmptyStack(&m_array_stack);
+  STLEmptyStack(&m_object_stack);
 }
 
-/**
- * @brief Extract a string token from the input.
- * @param input A pointer to a pointer with the data. This should point to the
- * first character after the quote (") character.
- * @param str A string object to store the extracted string.
- * @returns true if the string was extracted correctly, false otherwise.
- */
-static bool ParseString(const char **input, string* str,
-                        JsonHandlerInterface *handler) {
-  while (true) {
-    size_t size = strcspn(*input, "\"\\");
-    char c = (*input)[size];
-    if (c == 0) {
-      handler->SetError("Unterminated string");
-      str->clear();
-      return false;
-    }
-
-    str->append(*input, size);
-    *input += size + 1;
-
-    if (c == '"') {
-      return true;
-    }
-
-    if (c == '\\') {
-      // escape character
-      char append_char = 0;
-
-      switch (**input) {
-        case '"':
-        case '\\':
-        case '/':
-          append_char = **input;
-          break;
-        case 'b':
-          append_char = '\b';
-          break;
-        case 'f':
-          append_char = '\f';
-          break;
-        case 'n':
-          append_char = '\n';
-          break;
-        case 'r':
-          append_char = '\r';
-          break;
-        case 't':
-          append_char = '\t';
-          break;
-        case 'u':
-          // TODO(simonn): handle unicode
-          OLA_INFO << "unicode character found";
-          break;
-        default:
-          OLA_WARN << "Invalid escape character: \\" << **input;
-          handler->SetError("Invalid string escape sequence");
-          return false;
-      }
-      str->push_back(append_char);
-      (*input)++;
-    }
+void JsonParser::End() {
+  if (!m_container_stack.empty()) {
+    OLA_WARN << "Json container stack is not empty";
   }
-  return true;
+  STLEmptyStack(&m_container_stack);
+
+  if (!m_array_stack.empty()) {
+    OLA_WARN << "JsonArray stack is not empty";
+  }
+  STLEmptyStack(&m_array_stack);
+
+  if (!m_object_stack.empty()) {
+    OLA_WARN << "JsonObject stack is not empty";
+  }
+  STLEmptyStack(&m_object_stack);
 }
 
-bool ExtractDigits(const char **input, uint64_t *i,
-                   unsigned int *leading_zeros = NULL) {
-  *i = 0;
-  bool at_start = true;
-  unsigned int zeros = 0;
-  while (isdigit(**input)) {
-    if (at_start && **input == '0') {
-      zeros++;
-    } else if (at_start) {
-      at_start = false;
-    }
-
-    *i *= 10;
-    *i += **input - '0';
-    (*input)++;
-  }
-  if (leading_zeros) {
-    *leading_zeros = zeros;
-  }
-  return true;
+void JsonParser::String(const string &value) {
+  AddValue(new JsonStringValue(value));
 }
 
-/**
- * Parse a JsonNumber
- */
-static bool ParseNumber(const char **input, JsonHandlerInterface *handler) {
-  // The number is in the form <full>.<fractional>e<exponent>
-  // full and exponent are signed but we track the sign separate from the
-  // value.
-  // Only full is required.
-  uint64_t full = 0;
-  uint64_t fractional = 0;
-  int64_t signed_exponent = 0;
+void JsonParser::Number(uint32_t value) {
+  AddValue(new JsonUIntValue(value));
+}
 
-  uint32_t leading_fractional_zeros = 0;
+void JsonParser::Number(int32_t value) {
+  AddValue(new JsonIntValue(value));
+}
 
-  bool has_fractional = false;
-  bool has_exponent = false;
+void JsonParser::Number(uint64_t value) {
+  AddValue(new JsonUInt64Value(value));
+}
 
-  bool is_negative = (**input == '-');
-  if (is_negative) {
-    (*input)++;
-    if (**input == 0) {
-      return false;
-    }
-  }
+void JsonParser::Number(int64_t value) {
+  AddValue(new JsonInt64Value(value));
+}
 
-  if (**input == '0') {
-    (*input)++;
-  } else if (isdigit(**input)) {
-    ExtractDigits(input, &full);
+void JsonParser::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
+  AddValue(new JsonDoubleValue(rep));
+}
+
+void JsonParser::Number(double value) {
+  AddValue(new JsonDoubleValue(value));
+}
+
+void JsonParser::Bool(bool value) {
+  AddValue(new JsonBoolValue(value));
+}
+
+void JsonParser::Null() {
+  AddValue(new JsonNullValue());
+}
+
+void JsonParser::OpenArray() {
+  if (m_container_stack.empty()) {
+    m_array_stack.push(new JsonArray());
+    m_root.reset(m_array_stack.top());
+  } else if (m_container_stack.top() == ARRAY && !m_array_stack.empty()) {
+    m_array_stack.push(m_array_stack.top()->AppendArray());
+  } else if (m_container_stack.top() == OBJECT && !m_object_stack.empty()) {
+    m_array_stack.push(m_object_stack.top()->AddArray(m_key));
+    m_key = "";
   } else {
-    return false;
+    OLA_WARN << "Can't find where to start array";
+    m_error = "Internal error";
+  }
+  m_container_stack.push(ARRAY);
+}
+
+void JsonParser::CloseArray() {
+  if (m_container_stack.empty() || m_container_stack.top() != ARRAY ||
+      m_array_stack.empty()) {
+    OLA_WARN << "Mismatched CloseArray()";
+    m_error = "Internal error";
+    return;
   }
 
-  if (**input == '.') {
-    (*input)++;
-    ExtractDigits(input, &fractional, &leading_fractional_zeros);
-    has_fractional = true;
-  }
+  m_container_stack.pop();
+  m_array_stack.pop();
+}
 
-  if (**input == 'e' || **input == 'E') {
-    bool negative_exponent = false;
-    // Handle the exponent
-    (*input)++;
-
-    switch (**input) {
-      case '-':
-        negative_exponent = true;
-      case '+':
-        (*input)++;
-        break;
-      default:
-        {};
-    }
-
-    if (**input == 0) {
-      return false;
-    }
-
-    uint64_t exponent;
-    if (isdigit(**input)) {
-      ExtractDigits(input, &exponent);
-    } else {
-      return false;
-    }
-    signed_exponent = (negative_exponent ? -1 : 1) * exponent;
-    has_exponent = true;
-  }
-
-  // Now we have all the components, run the correct callback.
-  if (has_fractional || has_exponent) {
-    JsonDoubleValue::DoubleRepresentation double_rep;
-    double_rep.is_negative = is_negative;
-    double_rep.full = full;
-    double_rep.leading_fractional_zeros = leading_fractional_zeros;
-    double_rep.fractional = fractional;
-    double_rep.exponent = signed_exponent;
-    handler->Number(double_rep);
-    return true;
-  }
-
-  if (is_negative) {
-    int64_t value = -1 * full;
-    if (value < INT32_MIN || value > INT32_MAX) {
-      handler->Number(value);
-    } else {
-      handler->Number(static_cast<int32_t>(value));
-    }
+void JsonParser::OpenObject() {
+  if (m_container_stack.empty()) {
+    m_object_stack.push(new JsonObject());
+    m_root.reset(m_object_stack.top());
+  } else if (m_container_stack.top() == ARRAY && !m_array_stack.empty()) {
+    m_object_stack.push(m_array_stack.top()->AppendObject());
+  } else if (m_container_stack.top() == OBJECT && !m_object_stack.empty()) {
+    m_object_stack.push(m_object_stack.top()->AddObject(m_key));
+    m_key = "";
   } else {
-    if (full > UINT32_MAX) {
-      handler->Number(full);
+    OLA_WARN << "Can't find where to start object";
+    m_error = "Internal error";
+  }
+  m_container_stack.push(OBJECT);
+}
+
+void JsonParser::ObjectKey(const std::string &key) {
+  if (!m_key.empty()) {
+    OLA_WARN << "Json Key should be empty, was " << key;
+  }
+  m_key = key;
+}
+
+void JsonParser::CloseObject() {
+  if (m_container_stack.empty() || m_container_stack.top() != OBJECT ||
+      m_object_stack.empty()) {
+    OLA_WARN << "Mismatched CloseObject()";
+    m_error = "Internal error";
+    return;
+  }
+
+  m_container_stack.pop();
+  m_object_stack.pop();
+}
+
+void JsonParser::SetError(const string &error) {
+  m_error = error;
+}
+
+string JsonParser::GetError() const {
+  return m_error;
+}
+
+const JsonValue *JsonParser::GetRoot() const {
+  return m_root.get();
+}
+
+const JsonValue *JsonParser::ClaimRoot() {
+  if (m_error.empty()) {
+    return m_root.release();
+  } else {
+    return NULL;
+  }
+}
+
+void JsonParser::AddValue(JsonValue *value) {
+  if (!m_container_stack.empty() && m_container_stack.top() == ARRAY) {
+    if (m_array_stack.empty()) {
+      OLA_WARN << "Missing JsonArray, parsing is broken!";
+      m_error = "Internal error";
+      delete value;
     } else {
-      handler->Number(static_cast<uint32_t>(full));
+      m_array_stack.top()->Append(value);
     }
+  } else if (!m_container_stack.empty() && m_container_stack.top() == OBJECT) {
+    if (m_object_stack.empty()) {
+      OLA_WARN << "Missing JsonObject, parsing is broken!";
+      m_error = "Internal error";
+      delete value;
+    } else {
+      m_object_stack.top()->AddValue(m_key, value);
+      m_key = "";
+    }
+  } else if (!m_root.get()) {
+    m_root.reset(value);
+    return;
+  } else {
+    OLA_WARN << "Parse stack broken";
+    m_error = "Internal error";
+    delete value;
   }
-  return true;
-}
-
-/**
- * Starts from the first character after the  '['.
- */
-static bool ParseArray(const char **input, JsonHandlerInterface *handler) {
-  if (!TrimWhitespace(input)) {
-    handler->SetError("Unterminated array");
-    return false;
-  }
-
-  handler->OpenArray();
-
-  if (**input == ']') {
-    (*input)++;
-    handler->CloseArray();
-    return true;
-  }
-
-  while (true) {
-    if (!TrimWhitespace(input)) {
-      handler->SetError("Unterminated array");
-      return false;
-    }
-
-    bool result = ParseTrimmedInput(input, handler);
-    if (!result) {
-      OLA_INFO << "input failed";
-      return false;
-    }
-
-    if (!TrimWhitespace(input)) {
-      handler->SetError("Unterminated array");
-      return false;
-    }
-
-    switch (**input) {
-      case ']':
-        (*input)++;  // move past the ]
-        handler->CloseArray();
-        return true;
-      case ',':
-        break;
-      default:
-        handler->SetError("Expected either , or ] after an array element");
-        return false;
-    }
-    (*input)++;  // move past the ,
-  }
-}
-
-/**
- * Starts from the first character after the  '{'.
- */
-static bool ParseObject(const char **input, JsonHandlerInterface *handler) {
-  if (!TrimWhitespace(input)) {
-    handler->SetError("Unterminated object");
-    return false;
-  }
-
-  handler->OpenObject();
-
-  if (**input == '}') {
-    (*input)++;
-    handler->CloseObject();
-    return true;
-  }
-
-  while (true) {
-    if (!TrimWhitespace(input)) {
-      handler->SetError("Unterminated object");
-      return false;
-    }
-
-    if (**input != '"') {
-      handler->SetError("Expected key for object");
-      OLA_INFO << "Expected string";
-      return false;
-    }
-    (*input)++;
-
-    string key;
-    if (!ParseString(input, &key, handler)) {
-      return false;
-    }
-    handler->ObjectKey(key);
-
-    if (!TrimWhitespace(input)) {
-      handler->SetError("Missing : after key");
-      return false;
-    }
-
-    if (**input != ':') {
-      handler->SetError("Incorrect character after key, should be :");
-      return false;
-    }
-    (*input)++;
-
-    if (!TrimWhitespace(input)) {
-      handler->SetError("Unterminated object");
-      return false;
-    }
-
-    bool result = ParseTrimmedInput(input, handler);
-    if (!result) {
-      return false;
-    }
-
-    if (!TrimWhitespace(input)) {
-      handler->SetError("Unterminated object");
-      return false;
-    }
-
-    switch (**input) {
-      case '}':
-        (*input)++;  // move past the }
-        handler->CloseObject();
-        return true;
-      case ',':
-        break;
-      default:
-        handler->SetError("Expected either , or } after an object value");
-        return false;
-    }
-    (*input)++;  // move past the ,
-  }
-}
-
-static bool ParseTrimmedInput(const char **input,
-                             JsonHandlerInterface *handler) {
-  static const char TRUE_STR[] = "true";
-  static const char FALSE_STR[] = "false";
-  static const char NULL_STR[] = "null";
-
-  if (**input == '"') {
-    (*input)++;
-    string str;
-    if (ParseString(input, &str, handler)) {
-      handler->String(str);
-      return true;
-    }
-    return false;
-  } else if (strncmp(*input, TRUE_STR, sizeof(TRUE_STR) - 1) == 0) {
-    *input += sizeof(TRUE_STR) - 1;
-    handler->Bool(true);
-    return true;
-  } else if (strncmp(*input, FALSE_STR, sizeof(FALSE_STR) - 1) == 0) {
-    *input += sizeof(FALSE_STR) - 1;
-    handler->Bool(false);
-    return true;
-  } else if (strncmp(*input, NULL_STR, sizeof(NULL_STR) - 1) == 0) {
-    *input += sizeof(NULL_STR) - 1;
-    handler->Null();
-    return true;
-  } else if (**input == '-' || isdigit(**input)) {
-    return ParseNumber(input, handler);
-  } else if (**input == '[') {
-    (*input)++;
-    return ParseArray(input, handler);
-  } else if (**input == '{') {
-    (*input)++;
-    return ParseObject(input, handler);
-  }
-  handler->SetError("Invalid JSON value");
-  return false;
-}
-
-
-bool ParseRaw(const char *input, JsonHandlerInterface *handler) {
-  if (!TrimWhitespace(&input)) {
-    handler->SetError("No JSON data found");
-    return false;
-  }
-
-  handler->Begin();
-  bool result = ParseTrimmedInput(&input, handler);
-  if (!result) {
-    return false;
-  }
-  handler->End();
-  return !TrimWhitespace(&input);
-}
-
-bool JsonParser::Parse(const std::string &input,
-                       JsonHandlerInterface *handler) {
-  // TODO(simon): Do we need to convert to unicode here? I think this may be
-  // an issue on Windows. Consider mbstowcs.
-  // Copying the input sucks though, so we should use input.c_str() if we can.
-  char* input_data = new char[input.size() + 1];
-  strncpy(input_data, input.c_str(), input.size() + 1);
-
-  bool result = ParseRaw(input_data, handler);
-  delete[] input_data;
-  return result;
 }
 }  // namespace web
 }  // namespace ola

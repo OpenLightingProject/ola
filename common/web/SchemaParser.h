@@ -30,7 +30,7 @@
 #include "common/web/SchemaErrorLogger.h"
 #include "common/web/SchemaParseContext.h"
 #include "ola/base/Macro.h"
-#include "ola/web/JsonParser.h"
+#include "ola/web/JsonLexer.h"
 #include "ola/web/JsonPointer.h"
 
 namespace ola {
@@ -40,13 +40,13 @@ namespace web {
  * @brief Build the tree of validators and a SchemaDefinitions object from a
  * JSON Schema.
  *
- * The SchemaParser is an implementation of JsonHandlerInterface. As the
- * JsonParser encounters a new token, it calls the appropriate method on the
+ * The SchemaParser is an implementation of JsonParserInterface. As the
+ * JsonLexer encounters each token, it calls the appropriate method on the
  * SchemaParser. The SchemaParser maintains a stack of contexts, each of which
  * corresponds to a different part of the JSON schema. As objects / arrays are
  * opened / closed, new contexts are added / removed from the context stack.
  */
-class SchemaParser : public JsonHandlerInterface {
+class SchemaParser : public JsonParserInterface {
  public:
   /**
    * @brief Create a new SchemaParser.
@@ -58,7 +58,7 @@ class SchemaParser : public JsonHandlerInterface {
    */
   ~SchemaParser();
 
-  // Methods from JsonHandlerInterface
+  // Methods from JsonParserInterface
   void Begin();
   void End();
   void String(const std::string &value);

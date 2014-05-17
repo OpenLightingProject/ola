@@ -11,13 +11,13 @@ dist_noinst_DATA = testdata/arrays.test \
 # LIBRARIES
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
-libolaweb_la_SOURCES = Json.cpp JsonTypes.cpp JsonParser.cpp JsonPointer.cpp \
-                       JsonSchema.cpp JsonSections.cpp JsonWriter.cpp \
-                       PointerTracker.h PointerTracker.cpp SchemaKeywords.cpp \
-                       SchemaKeywords.h SchemaErrorLogger.cpp \
-                       SchemaErrorLogger.h SchemaParser.h SchemaParser.cpp \
-                       SchemaParseContext.h SchemaParseContext.cpp \
-                       TreeHandler.cpp
+libolaweb_la_SOURCES = Json.cpp JsonLexer.cpp JsonParser.cpp JsonPointer.cpp \
+                       JsonSchema.cpp JsonSections.cpp JsonTypes.cpp \
+                       JsonWriter.cpp PointerTracker.cpp PointerTracker.h \
+                       SchemaErrorLogger.cpp SchemaErrorLogger.h \
+                       SchemaKeywords.cpp SchemaKeywords.h \
+                       SchemaParseContext.cpp SchemaParseContext.h \
+                       SchemaParser.cpp SchemaParser.h
 
 # TESTS
 ################################################

@@ -33,7 +33,7 @@
 #include "common/web/SchemaErrorLogger.h"
 #include "common/web/SchemaKeywords.h"
 #include "ola/web/JsonSchema.h"
-#include "ola/web/TreeHandler.h"
+#include "ola/web/JsonParser.h"
 
 namespace ola {
 namespace web {
@@ -431,7 +431,7 @@ class RequiredPropertiesParseContext : public BaseParseContext {
  * @brief Parse a default value.
  *
  * Default values can be full fledged JSON documents. This context simply
- * passes the events through to a TreeHandler to build the JsonValue.
+ * passes the events through to a JsonParser to build the JsonValue.
  */
 class DefaultValueParseContext : public SchemaParseContextInterface {
  public:
@@ -454,7 +454,7 @@ class DefaultValueParseContext : public SchemaParseContextInterface {
   void CloseObject(SchemaErrorLogger *logger);
 
  private:
-  TreeHandler m_parser;
+  JsonParser m_parser;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultValueParseContext);
 };
