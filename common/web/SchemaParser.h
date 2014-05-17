@@ -22,9 +22,7 @@
 #define COMMON_WEB_SCHEMAPARSER_H_
 
 
-#include <map>
 #include <memory>
-#include <sstream>
 #include <stack>
 #include <string>
 
@@ -34,14 +32,19 @@
 #include "ola/base/Macro.h"
 #include "ola/web/JsonParser.h"
 #include "ola/web/JsonPointer.h"
-#include "ola/web/JsonSchema.h"
 
 namespace ola {
 namespace web {
 
 /**
- * @brief This called receives events from a JsonParser and constructs a
- * validator and SchemaDefinitions.
+ * @brief Build the tree of validators and a SchemaDefinitions object from a
+ * JSON Schema.
+ *
+ * The SchemaParser is an implementation of JsonHandlerInterface. As the
+ * JsonParser encounters a new token, it calls the appropriate method on the
+ * SchemaParser. The SchemaParser maintains a stack of contexts, each of which
+ * corresponds to a different part of the JSON schema. As objects / arrays are
+ * opened / closed, new contexts are added / removed from the context stack.
  */
 class SchemaParser : public JsonHandlerInterface {
  public:

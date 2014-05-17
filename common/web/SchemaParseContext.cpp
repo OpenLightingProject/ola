@@ -492,8 +492,8 @@ ValidatorInterface* SchemaParseContext::BuildArrayValidator(
     options.unique_items = m_unique_items.Value();
   }
 
-  std::auto_ptr<ArrayValidator::Items> items;
-  std::auto_ptr<ArrayValidator::AdditionalItems> additional_items;
+  auto_ptr<ArrayValidator::Items> items;
+  auto_ptr<ArrayValidator::AdditionalItems> additional_items;
 
   // items
   if (m_items_single_context.get() && m_items_context_array.get()) {
@@ -774,7 +774,7 @@ void ArrayItemsParseContext::AddValidators(
 }
 
 void ArrayItemsParseContext::String(SchemaErrorLogger *logger,
-                                    const std::string &value) {
+                                    const string &value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
@@ -833,7 +833,7 @@ void RequiredPropertiesParseContext::GetRequiredItems(
 }
 
 void RequiredPropertiesParseContext::String(SchemaErrorLogger *logger,
-                                            const std::string &value) {
+                                            const string &value) {
   if (!m_required_items.insert(value).second) {
     logger->Error() << value << " appeared more than once in 'required'";
   }

@@ -19,7 +19,6 @@
  */
 #include "common/web/SchemaParser.h"
 
-#include <memory>
 #include <string>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -29,7 +28,6 @@
 namespace ola {
 namespace web {
 
-using std::auto_ptr;
 using std::string;
 
 SchemaParser::SchemaParser()
@@ -195,7 +193,7 @@ void SchemaParser::OpenObject() {
   }
 }
 
-void SchemaParser::ObjectKey(const std::string &key) {
+void SchemaParser::ObjectKey(const string &key) {
   if (m_error_logger.HasError()) {
     return;
   }
@@ -242,7 +240,7 @@ bool SchemaParser::IsValidSchema() {
   return m_root_validator.get() != NULL;
 }
 
-std::string SchemaParser::Error() const {
+string SchemaParser::Error() const {
   return m_error_logger.ErrorString();
 }
 
