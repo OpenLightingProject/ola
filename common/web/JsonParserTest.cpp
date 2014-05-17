@@ -416,6 +416,10 @@ void JsonParserTest::testObject() {
 
   value.reset(BasicJsonParser::Parse("{'key': 1}", &error));
   OLA_ASSERT_NULL(value.get());
+
+  value.reset(BasicJsonParser::Parse(
+        "{\"default\": {\"pets\": [1, 2, {null}]}}}", &error));
+  OLA_ASSERT_NULL(value.get());
 }
 
 void JsonParserTest::testInvalidInput() {

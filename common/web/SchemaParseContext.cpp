@@ -83,7 +83,6 @@ void DefinitionsParseContext::CloseObject(SchemaErrorLogger *logger) {
   string key = TakeKeyword();
 
   ValidatorInterface *schema = m_current_schema->GetValidator(logger);
-  OLA_INFO << "Setting validator for " << key << " to " << schema;
   m_schema_defs->Add(TakeKeyword(), schema);
   m_current_schema.release();
 }
@@ -101,7 +100,6 @@ ValidatorInterface* SchemaParseContext::GetValidator(
   }
 
   ValidatorInterface *validator = NULL;
-  OLA_INFO << " type is " << JsonTypeToString(m_type);
   switch (m_type) {
     case JSON_UNDEFINED:
       validator = new WildcardValidator();
@@ -137,7 +135,6 @@ ValidatorInterface* SchemaParseContext::GetValidator(
     m_schema.Reset();
   }
   if (m_id.IsSet()) {
-    OLA_INFO << "set id to " << m_id.Value();
     validator->SetId(m_id.Value());
     m_id.Reset();
   }
@@ -149,8 +146,10 @@ ValidatorInterface* SchemaParseContext::GetValidator(
     validator->SetDescription(m_description.Value());
     m_description.Reset();
   }
+  if (m_default_value.get()) {
+    validator->SetDefaultValue(m_default_value.release());
+  }
 
-  OLA_INFO << "returning new Validator";
   return validator;
 }
 
@@ -167,7 +166,6 @@ void SchemaParseContext::String(SchemaErrorLogger *logger,
     return;
   }
 
-  OLA_INFO << KeywordToString(m_keyword) << " is string " << value;
   switch (m_keyword) {
     case SCHEMA_REF:
       m_ref_schema.Set(value);
@@ -177,6 +175,9 @@ void SchemaParseContext::String(SchemaErrorLogger *logger,
       break;
     case SCHEMA_DESCRIPTION:
       m_description.Set(value);
+      break;
+    case SCHEMA_DEFAULT:
+      m_default_value.reset(new JsonStringValue(value));
       break;
     case SCHEMA_FORMAT:
       m_format.Set(value);
@@ -217,6 +218,14 @@ void SchemaParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
 
 void SchemaParseContext::Number(SchemaErrorLogger *logger, double value) {
   ValidTypeForKeyword(logger, m_keyword, TypeFromValue(value));
+
+  switch (m_keyword) {
+    case SCHEMA_DEFAULT:
+      m_default_value.reset(new JsonDoubleValue(value));
+      break;
+    default:
+      {}
+  }
 }
 
 void SchemaParseContext::Bool(SchemaErrorLogger *logger, bool value) {
@@ -226,6 +235,9 @@ void SchemaParseContext::Bool(SchemaErrorLogger *logger, bool value) {
   }
 
   switch (m_keyword) {
+    case SCHEMA_DEFAULT:
+      m_default_value.reset(new JsonBoolValue(value));
+      break;
     case SCHEMA_EXCLUSIVE_MAXIMUM:
       m_exclusive_maximum.Set(value);
       break;
@@ -245,6 +257,14 @@ void SchemaParseContext::Bool(SchemaErrorLogger *logger, bool value) {
 
 void SchemaParseContext::Null(SchemaErrorLogger *logger) {
   ValidTypeForKeyword(logger, m_keyword, JSON_NULL);
+
+  switch (m_keyword) {
+    case SCHEMA_DEFAULT:
+      m_default_value.reset(new JsonNullValue());
+      break;
+    default:
+      {}
+  }
 }
 
 SchemaParseContextInterface* SchemaParseContext::OpenArray(
@@ -254,6 +274,10 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
   }
 
   switch (m_keyword) {
+    case SCHEMA_DEFAULT:
+      m_default_value_context.reset(new DefaultValueParseContext());
+      m_default_value_context->OpenArray(logger);
+      return m_default_value_context.get();
     case SCHEMA_ITEMS:
       m_items_context_array.reset(new ArrayItemsParseContext(m_schema_defs));
       return m_items_context_array.get();
@@ -267,7 +291,11 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
 }
 
 void SchemaParseContext::CloseArray(SchemaErrorLogger *logger) {
-  (void) logger;
+  if (m_default_value_context.get()) {
+    m_default_value_context->CloseArray(logger);
+    m_default_value.reset(m_default_value_context->ClaimValue(logger));
+    m_default_value_context.reset();
+  }
 }
 
 SchemaParseContextInterface* SchemaParseContext::OpenObject(
@@ -276,8 +304,11 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
     return NULL;
   }
 
-  OLA_INFO << KeywordToString(m_keyword) << " , type is object";
   switch (m_keyword) {
+    case SCHEMA_DEFAULT:
+      m_default_value_context.reset(new DefaultValueParseContext());
+      m_default_value_context->OpenObject(logger);
+      return m_default_value_context.get();
     case SCHEMA_DEFINITIONS:
       if (m_definitions_context.get()) {
         logger->Error() << "Duplicate key 'definitions'";
@@ -305,7 +336,11 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
 }
 
 void SchemaParseContext::CloseObject(SchemaErrorLogger *logger) {
-  (void) logger;
+  if (m_default_value_context.get()) {
+    m_default_value_context->CloseObject(logger);
+    m_default_value.reset(m_default_value_context->ClaimValue(logger));
+    m_default_value_context.reset();
+  }
 }
 
 void SchemaParseContext::ProcessPositiveInt(SchemaErrorLogger *logger,
@@ -339,6 +374,14 @@ template <typename T>
 void SchemaParseContext::ProcessInt(SchemaErrorLogger *logger, T value) {
   if (!ValidTypeForKeyword(logger, m_keyword, TypeFromValue(value))) {
     return;
+  }
+
+  switch (m_keyword) {
+    case SCHEMA_DEFAULT:
+      m_default_value.reset(JsonValue::NewValue(value));
+      return;
+    default:
+      {}
   }
 
   if (positive<T, std::numeric_limits<T>::is_signed>()(value)) {
@@ -375,7 +418,6 @@ ValidatorInterface* SchemaParseContext::BuildArrayValidator(
     // 8.2.3.1
     items.reset(new ArrayValidator::Items(
           m_items_single_context->GetValidator(logger)));
-    OLA_INFO << items->Validator();
   } else if (m_items_context_array.get()) {
     // 8.2.3.2
     vector<ValidatorInterface*> item_validators;
@@ -618,7 +660,6 @@ SchemaParseContextInterface* PropertiesParseContext::OpenObject(
       pair<string, SchemaParseContext*>(key, NULL));
 
   if (r.second) {
-    OLA_INFO << "Started context for property " << key;
     r.first->second = new SchemaParseContext(m_schema_defs);
   } else {
     logger->Error() << "Duplicate key " << key;
@@ -762,6 +803,88 @@ void RequiredPropertiesParseContext::ReportErrorForType(
     JsonType type) {
   logger->Error() << "Invalid type '" << JsonTypeToString(type)
                   << "' in 'required', elements must be strings";
+}
+
+// DefaultValueParseContext
+// Used for parsing a default value.
+DefaultValueParseContext::DefaultValueParseContext()
+    : SchemaParseContextInterface() {
+  m_parser.Begin();
+}
+
+const JsonValue* DefaultValueParseContext::ClaimValue(
+    SchemaErrorLogger *logger) {
+  m_parser.End();
+  const JsonValue *value = m_parser.ClaimRoot();
+  if (!value) {
+    logger->Error() << " is invalid: " << m_parser.GetError();
+  }
+  return value;
+}
+
+void DefaultValueParseContext::String(SchemaErrorLogger *,
+                                      const string &value) {
+  m_parser.String(value);
+}
+
+void DefaultValueParseContext::Number(SchemaErrorLogger *,
+                                      uint32_t value) {
+  m_parser.Number(value);
+}
+
+void DefaultValueParseContext::Number(SchemaErrorLogger *,
+                                      int32_t value) {
+  m_parser.Number(value);
+}
+
+void DefaultValueParseContext::Number(SchemaErrorLogger *,
+                                      uint64_t value) {
+  m_parser.Number(value);
+}
+
+void DefaultValueParseContext::Number(SchemaErrorLogger *,
+                                      int64_t value) {
+  m_parser.Number(value);
+}
+
+void DefaultValueParseContext::Number(SchemaErrorLogger *, double value) {
+  m_parser.Number(value);
+}
+
+void DefaultValueParseContext::Bool(SchemaErrorLogger *, bool value) {
+  m_parser.Bool(value);
+}
+
+void DefaultValueParseContext::Null(SchemaErrorLogger *logger) {
+  m_parser.Null();
+  (void) logger;
+}
+
+SchemaParseContextInterface* DefaultValueParseContext::OpenArray(
+    SchemaErrorLogger *) {
+  m_parser.OpenArray();
+  return this;
+}
+
+void DefaultValueParseContext::CloseArray(SchemaErrorLogger *logger) {
+  m_parser.CloseArray();
+  (void) logger;
+}
+
+SchemaParseContextInterface* DefaultValueParseContext::OpenObject(
+    SchemaErrorLogger *) {
+  m_parser.OpenObject();
+  return this;
+}
+
+void DefaultValueParseContext::ObjectKey(SchemaErrorLogger *,
+                                         const string &key) {
+  m_parser.ObjectKey(key);
+}
+
+void DefaultValueParseContext::CloseObject(SchemaErrorLogger *logger) {
+  m_parser.CloseObject();
+  (void) logger;
 }
 }  // namespace web
 }  // namespace ola

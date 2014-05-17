@@ -33,18 +33,14 @@ namespace web {
 
 using std::string;
 
-TreeHandler::~TreeHandler() {
-  STLEmptyStackAndDelete(&m_array_stack);
-  STLEmptyStackAndDelete(&m_object_stack);
-}
-
 void TreeHandler::Begin() {
   m_error = "";
   m_root.reset();
   m_key = "";
+
   STLEmptyStack(&m_container_stack);
-  STLEmptyStackAndDelete(&m_array_stack);
-  STLEmptyStackAndDelete(&m_object_stack);
+  STLEmptyStack(&m_array_stack);
+  STLEmptyStack(&m_object_stack);
 }
 
 void TreeHandler::End() {
@@ -52,14 +48,16 @@ void TreeHandler::End() {
     OLA_WARN << "Json container stack is not empty";
   }
   STLEmptyStack(&m_container_stack);
+
   if (!m_array_stack.empty()) {
     OLA_WARN << "JsonArray stack is not empty";
   }
-  STLEmptyStackAndDelete(&m_array_stack);
+  STLEmptyStack(&m_array_stack);
+
   if (!m_object_stack.empty()) {
     OLA_WARN << "JsonObject stack is not empty";
   }
-  STLEmptyStackAndDelete(&m_object_stack);
+  STLEmptyStack(&m_object_stack);
 }
 
 void TreeHandler::String(const string &value) {
@@ -86,6 +84,10 @@ void TreeHandler::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
   AddValue(new JsonDoubleValue(rep));
 }
 
+void TreeHandler::Number(double value) {
+  AddValue(new JsonDoubleValue(value));
+}
+
 void TreeHandler::Bool(bool value) {
   AddValue(new JsonBoolValue(value));
 }
@@ -97,6 +99,7 @@ void TreeHandler::Null() {
 void TreeHandler::OpenArray() {
   if (m_container_stack.empty()) {
     m_array_stack.push(new JsonArray());
+    m_root.reset(m_array_stack.top());
   } else if (m_container_stack.top() == ARRAY && !m_array_stack.empty()) {
     m_array_stack.push(m_array_stack.top()->AppendArray());
   } else if (m_container_stack.top() == OBJECT && !m_object_stack.empty()) {
@@ -118,16 +121,13 @@ void TreeHandler::CloseArray() {
   }
 
   m_container_stack.pop();
-  const JsonArray *array = m_array_stack.top();
   m_array_stack.pop();
-  if (m_container_stack.empty() && !m_root.get()) {
-    m_root.reset(array);
-  }
 }
 
 void TreeHandler::OpenObject() {
   if (m_container_stack.empty()) {
     m_object_stack.push(new JsonObject());
+    m_root.reset(m_object_stack.top());
   } else if (m_container_stack.top() == ARRAY && !m_array_stack.empty()) {
     m_object_stack.push(m_array_stack.top()->AppendObject());
   } else if (m_container_stack.top() == OBJECT && !m_object_stack.empty()) {
@@ -156,16 +156,11 @@ void TreeHandler::CloseObject() {
   }
 
   m_container_stack.pop();
-  const JsonObject *object = m_object_stack.top();
   m_object_stack.pop();
-  if (m_container_stack.empty() && !m_root.get()) {
-    m_root.reset(object);
-  }
 }
 
 void TreeHandler::SetError(const string &error) {
   m_error = error;
-  m_root.reset();
 }
 
 string TreeHandler::GetError() const {
@@ -177,7 +172,11 @@ const JsonValue *TreeHandler::GetRoot() const {
 }
 
 const JsonValue *TreeHandler::ClaimRoot() {
-  return m_root.release();
+  if (m_error.empty()) {
+    return m_root.release();
+  } else {
+    return NULL;
+  }
 }
 
 void TreeHandler::AddValue(JsonValue *value) {

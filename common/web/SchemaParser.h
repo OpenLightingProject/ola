@@ -67,6 +67,7 @@ class SchemaParser : public JsonHandlerInterface {
   void Number(uint64_t value);
   void Number(int64_t value);
   void Number(const JsonDoubleValue::DoubleRepresentation &rep);
+  void Number(double value);
   void Bool(bool value);
   void Null();
   void OpenArray();

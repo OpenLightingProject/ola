@@ -54,7 +54,6 @@ class JsonValue;
 class TreeHandler : public JsonHandlerInterface {
  public:
   TreeHandler() : JsonHandlerInterface() {}
-  ~TreeHandler();
 
   void Begin();
   void End();
@@ -65,6 +64,7 @@ class TreeHandler : public JsonHandlerInterface {
   void Number(uint64_t value);
   void Number(int64_t value);
   void Number(const JsonDoubleValue::DoubleRepresentation &rep);
+  void Number(double value);
   void Bool(bool value);
   void Null();
   void OpenArray();
@@ -105,6 +105,8 @@ class TreeHandler : public JsonHandlerInterface {
   std::auto_ptr<const JsonValue> m_root;
   std::string m_key;
   std::stack<ContainerType> m_container_stack;
+
+  // The stacks below don't own the objects they point to.
   std::stack<JsonArray*> m_array_stack;
   std::stack<JsonObject*> m_object_stack;
 

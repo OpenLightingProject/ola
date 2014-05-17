@@ -60,8 +60,6 @@ void SchemaParser::String(const string &value) {
 
   m_pointer_tracker.IncrementIndex();
 
-  OLA_INFO << "Setting string for " << m_pointer.ToString()
-           << " stack size is " << m_context_stack.size();
   if (m_context_stack.top()) {
     m_context_stack.top()->String(&m_error_logger, value);
   } else {
@@ -89,6 +87,10 @@ void SchemaParser::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
   double d;
   JsonDoubleValue::AsDouble(rep, &d);
   return HandleNumber(d);
+}
+
+void SchemaParser::Number(double value) {
+  return HandleNumber(value);
 }
 
 void SchemaParser::Bool(bool value) {
@@ -144,9 +146,6 @@ void SchemaParser::OpenArray() {
   if (m_context_stack.top()) {
     m_context_stack.push(
         m_context_stack.top()->OpenArray(&m_error_logger));
-    OLA_INFO << "Opened " << m_pointer.ToString() << " ("
-        << m_context_stack.top() << ") size is now "
-        << m_context_stack.size();
   } else {
     OLA_INFO << "In null context, skipping OpenArray";
     m_context_stack.push(NULL);
@@ -183,9 +182,6 @@ void SchemaParser::OpenObject() {
     if (m_context_stack.top()) {
       m_context_stack.push(
           m_context_stack.top()->OpenObject(&m_error_logger));
-      OLA_INFO << "Opened " << m_pointer.ToString() <<  " ("
-          << m_context_stack.top() << ") size is now "
-          << m_context_stack.size();
     } else {
       OLA_INFO << "In null context, skipping OpenObject";
       m_context_stack.push(NULL);
@@ -201,7 +197,6 @@ void SchemaParser::ObjectKey(const string &key) {
   m_pointer_tracker.SetProperty(key);
 
   if (m_context_stack.top()) {
-    OLA_INFO << "Setting key for " << m_pointer.ToString();
     m_context_stack.top()->ObjectKey(&m_error_logger, key);
   } else {
     OLA_INFO << "In null context, skipping key " << key;
@@ -217,19 +212,14 @@ void SchemaParser::CloseObject() {
 
   m_context_stack.pop();
 
-  OLA_INFO << "CloseObject";
   if (m_context_stack.empty()) {
     // We're at the root
     m_root_validator.reset(m_root_context->GetValidator(&m_error_logger));
   } else {
-    OLA_INFO << "closing context " << m_pointer.ToString()
-        << ", stack size is now " << m_context_stack.size();
     if (m_context_stack.top()) {
       m_context_stack.top()->CloseObject(&m_error_logger);
     }
   }
-  OLA_INFO << "Close of " << m_pointer.ToString() << " complete, stack size is "
-      << m_context_stack.size();
 }
 
 void SchemaParser::SetError(const string &error) {

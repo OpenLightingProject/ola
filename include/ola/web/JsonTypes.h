@@ -42,14 +42,14 @@ namespace web {
  * This comes from section 3.5 of the JSON Schema core document.
  */
 enum JsonType {
-  JSON_ARRAY,
-  JSON_BOOLEAN,
-  JSON_INTEGER,
-  JSON_NULL,
-  JSON_NUMBER,
-  JSON_OBJECT,
-  JSON_STRING,
-  JSON_UNDEFINED,
+  JSON_ARRAY,  /**< An Array */
+  JSON_BOOLEAN, /**< A boolean */
+  JSON_INTEGER, /**< An integer */
+  JSON_NULL, /**< A null value */
+  JSON_NUMBER, /**< A number */
+  JSON_OBJECT, /**< An object */
+  JSON_STRING, /**< A string */
+  JSON_UNDEFINED, /**< A unknown type */
 };
 
 /**

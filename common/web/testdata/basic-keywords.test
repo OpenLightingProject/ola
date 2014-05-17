@@ -177,3 +177,72 @@
 {
   "description": {}
 }
+// Positive 'default' tests
+=== POSITIVE ===
+{
+  "default": "foo"
+}
+=== POSITIVE ===
+{
+  "default": true
+}
+=== POSITIVE ===
+{
+  "default": null
+}
+=== POSITIVE ===
+{
+  "default": 1
+}
+=== POSITIVE ===
+{
+  "default": -1
+}
+=== POSITIVE ===
+{
+  "default": 1.2
+}
+=== POSITIVE ===
+{
+  "default": []
+}
+=== POSITIVE ===
+{
+  "default": [1, 2, 3, null]
+}
+=== POSITIVE ===
+{
+  "default": {}
+}
+=== POSITIVE ===
+{
+  "default": {
+    "name": null
+  }
+}
+=== POSITIVE ===
+{
+  "default": {
+    "pets": [1, 2, {}]
+  }
+}
+=== NEGATIVE ===
+{
+  "default": foo
+}
+=== NEGATIVE ===
+{
+  "default": [bar]
+}
+=== NEGATIVE ===
+{
+  "default": {
+    "foo":
+  }
+}
+=== NEGATIVE ===
+{
+  "default": {
+    "pets": [1, 2, {null}]
+  }
+}

@@ -55,33 +55,63 @@ class SchemaDefinitions;
  */
 class ValidatorInterface : public JsonValueVisitorInterface {
  public:
+  /**
+   * @brief a list of Validators.
+   */
   typedef std::vector<ValidatorInterface*> ValidatorList;
 
   virtual ~ValidatorInterface() {}
 
+  /**
+   * @brief Check if the value was valid according to this validator.
+   */
   virtual bool IsValid() const = 0;
 
   // Do we need a "GetError" here?
 
-  virtual void Visit(const JsonStringValue&) = 0;
-  virtual void Visit(const JsonBoolValue&) = 0;
-  virtual void Visit(const JsonNullValue&) = 0;
-  virtual void Visit(const JsonRawValue&) = 0;
-  virtual void Visit(const JsonObject&) = 0;
-  virtual void Visit(const JsonArray&) = 0;
-  virtual void Visit(const JsonUIntValue&) = 0;
-  virtual void Visit(const JsonUInt64Value&) = 0;
-  virtual void Visit(const JsonIntValue&) = 0;
-  virtual void Visit(const JsonInt64Value&) = 0;
-  virtual void Visit(const JsonDoubleValue&) = 0;
-
-  // Returns the Schema as a JsonObject.
+  /**
+   * @brief Returns the Schema as a JsonObject.
+   * @returns A new JsonObject that represents the schema. Ownership of the
+   *   JsonObject is transferred to the caller.
+   */
   virtual JsonObject* GetSchema() const = 0;
 
+  /**
+   * @brief Set the $schema property for this validator.
+   */
   virtual void SetSchema(const std::string &schema) = 0;
+
+  /**
+   * @brief Set the id property for this validator.
+   */
   virtual void SetId(const std::string &id) = 0;
+
+  /**
+   * @brief Set the title property for this validator.
+   */
   virtual void SetTitle(const std::string &title) = 0;
+
+  /**
+   * @brief Set the description property for this validator.
+   */
   virtual void SetDescription(const std::string &title) = 0;
+
+  /**
+   * @brief Set the default value for this validator.
+   * @param value The JsonValue to use as the default. Ownership is
+   *   transferred.
+   */
+  virtual void SetDefaultValue(const JsonValue *value) = 0;
+
+  /**
+   * @brief Return the default value for this validator.
+   * @returns A JsonValue, or NULL if no default value was specified. Ownership
+   *   is not transferred.
+   *
+   * The value is only valid until the next call to SetDefaultValue or for the
+   * lifetime of the validator.
+   */
+  virtual const JsonValue *GetDefaultValue() const = 0;
 };
 
 /**
@@ -150,6 +180,9 @@ class BaseValidator : public ValidatorInterface {
   void SetId(const std::string &id);
   void SetTitle(const std::string &title);
   void SetDescription(const std::string &title);
+  void SetDefaultValue(const JsonValue *value);
+
+  const JsonValue *GetDefaultValue() const;
 
  protected:
   bool m_is_valid;
@@ -158,6 +191,7 @@ class BaseValidator : public ValidatorInterface {
   std::string m_id;
   std::string m_title;
   std::string m_description;
+  std::auto_ptr<const JsonValue> m_default_value;
 
   // Child classes can hook in here to extend the schema.
   virtual void ExtendSchema(JsonObject *schema) const {
@@ -209,6 +243,8 @@ class ReferenceValidator : public ValidatorInterface {
   void SetId(const std::string &id);
   void SetTitle(const std::string &title);
   void SetDescription(const std::string &title);
+  void SetDefaultValue(const JsonValue *value);
+  const JsonValue *GetDefaultValue() const;
 
  private:
   const SchemaDefinitions *m_definitions;

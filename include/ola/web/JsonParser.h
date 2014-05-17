@@ -122,6 +122,11 @@ class JsonHandlerInterface {
   virtual void Number(const JsonDoubleValue::DoubleRepresentation &rep) = 0;
 
   /**
+   * @brief Called when a double value is encounted.
+   */
+  virtual void Number(double d) = 0;
+
+  /**
    * @brief Called when a bool is encounted.
    */
   virtual void Bool(bool value) = 0;

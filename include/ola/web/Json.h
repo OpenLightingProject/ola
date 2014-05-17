@@ -182,6 +182,12 @@ class JsonValue {
   /**
    * @endsection
    */
+
+  /**
+   * @brief Given a variable, create a new JsonValue of the appropriate type.
+   */
+  template <typename T>
+  static JsonValue* NewValue(const T &value);
 };
 
 
@@ -929,6 +935,42 @@ std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonNullValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonRawValue &value);
+
+// JsonValue::NewValue implementations.
+template <>
+inline JsonValue* JsonValue::NewValue<std::string>(const std::string &value) {
+  return new JsonStringValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<uint32_t>(const uint32_t &value) {
+  return new JsonUIntValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<int32_t>(const int32_t &value) {
+  return new JsonIntValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<uint64_t>(const uint64_t &value) {
+  return new JsonUInt64Value(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<int64_t>(const int64_t &value) {
+  return new JsonInt64Value(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<double>(const double &value) {
+  return new JsonDoubleValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<bool>(const bool &value) {
+  return new JsonBoolValue(value);
+}
 
 /**@}*/
 }  // namespace web

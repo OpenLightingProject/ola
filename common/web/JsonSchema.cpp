@@ -60,6 +60,10 @@ JsonObject* BaseValidator::GetSchema() const {
   if (!type.empty()) {
     schema->Add("type", type);
   }
+
+  if (m_default_value.get()) {
+    schema->AddValue("default", m_default_value.get()->Clone());
+  }
   ExtendSchema(schema);
   return schema;
 }
@@ -79,6 +83,14 @@ void BaseValidator::SetTitle(const string &title) {
 
 void BaseValidator::SetDescription(const string &description) {
   m_description = description;
+}
+
+void BaseValidator::SetDefaultValue(const JsonValue *value) {
+  m_default_value.reset(value);
+}
+
+const JsonValue *BaseValidator::GetDefaultValue() const {
+  return m_default_value.get();
 }
 
 // ReferenceValidator
@@ -148,6 +160,8 @@ void ReferenceValidator::SetSchema(const std::string&) {}
 void ReferenceValidator::SetId(const std::string &) {}
 void ReferenceValidator::SetTitle(const std::string &) {}
 void ReferenceValidator::SetDescription(const std::string &) {}
+void ReferenceValidator::SetDefaultValue(const JsonValue *) {}
+const JsonValue *ReferenceValidator::GetDefaultValue() const { return NULL; }
 
 template <typename T>
 void ReferenceValidator::Validate(const T &value) {

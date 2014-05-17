@@ -33,15 +33,17 @@
 #include "common/web/SchemaErrorLogger.h"
 #include "common/web/SchemaKeywords.h"
 #include "ola/web/JsonSchema.h"
+#include "ola/web/TreeHandler.h"
 
 namespace ola {
 namespace web {
 
 class ArrayItemsParseContext;
+class DefaultValueParseContext;
 class DefinitionsParseContext;
 class PropertiesParseContext;
-class SchemaParseContext;
 class RequiredPropertiesParseContext;
+class SchemaParseContext;
 
 template <typename T>
 class OptionalItem {
@@ -265,6 +267,8 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 6. Metadata keywords
   OptionalItem<std::string> m_description;
   OptionalItem<std::string> m_title;
+  std::auto_ptr<const JsonValue> m_default_value;
+  std::auto_ptr<DefaultValueParseContext> m_default_value_context;
 
   OptionalItem<std::string> m_ref_schema;
 
@@ -421,6 +425,38 @@ class RequiredPropertiesParseContext : public BaseParseContext {
   void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(RequiredPropertiesParseContext);
+};
+
+/**
+ * @brief Parse a default value.
+ *
+ * Default values can be full fledged JSON documents. This context simply
+ * passes the events through to a TreeHandler to build the JsonValue.
+ */
+class DefaultValueParseContext : public SchemaParseContextInterface {
+ public:
+  DefaultValueParseContext();
+
+  const JsonValue* ClaimValue(SchemaErrorLogger *logger);
+
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void ObjectKey(SchemaErrorLogger *logger, const std::string &key);
+  void CloseObject(SchemaErrorLogger *logger);
+
+ private:
+  TreeHandler m_parser;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultValueParseContext);
 };
 }  // namespace web
 }  // namespace ola
