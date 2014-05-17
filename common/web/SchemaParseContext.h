@@ -32,6 +32,7 @@
 
 #include "ola/web/JsonSchema.h"
 #include "common/web/PointerTracker.h"
+#include "common/web/SchemaErrorLogger.h"
 
 namespace ola {
 namespace web {
@@ -115,41 +116,6 @@ class OptionalItem {
 };
 
 /**
- * @brief Captures errors while parsing the schema.
- */
-class ErrorLogger {
- public:
-  explicit ErrorLogger(JsonPointer *pointer) : m_pointer(pointer) {}
-
-  bool HasError() const {
-    return !m_first_error.str().empty();
-  }
-
-  std::string ErrorString() const {
-    return m_first_error.str();
-  }
-
-  std::ostream& Error() {
-    if (m_first_error.str().empty()) {
-      m_first_error << m_pointer->ToString() << ": ";
-      return m_first_error;
-    } else {
-      return m_extra_errors;
-    }
-  }
-
-  void Reset() {
-    m_first_error.str("");
-    m_extra_errors.str("");
-  }
-
- private:
-  std::ostringstream m_first_error;
-  std::ostringstream m_extra_errors;
-  JsonPointer *m_pointer;
-};
-
-/**
  * @brief The interface all SchemaParseContext classes inherit from.
  */
 class SchemaParseContextInterface {
@@ -157,19 +123,20 @@ class SchemaParseContextInterface {
   SchemaParseContextInterface() {}
   virtual ~SchemaParseContextInterface() {}
 
-  virtual void String(ErrorLogger *logger, const std::string &value) = 0;
-  virtual void Number(ErrorLogger *logger, uint32_t value) = 0;
-  virtual void Number(ErrorLogger *logger, int32_t value) = 0;
-  virtual void Number(ErrorLogger *logger, uint64_t value) = 0;
-  virtual void Number(ErrorLogger *logger, int64_t value) = 0;
-  virtual void Number(ErrorLogger *logger, double value) = 0;
-  virtual void Bool(ErrorLogger *logger, bool value) = 0;
-  virtual void Null(ErrorLogger *logger) = 0;
-  virtual SchemaParseContextInterface* OpenArray(ErrorLogger *logger) = 0;
-  virtual void CloseArray(ErrorLogger *logger) = 0;
-  virtual SchemaParseContextInterface* OpenObject(ErrorLogger *logger) = 0;
-  virtual void ObjectKey(ErrorLogger *logger, const std::string &key) = 0;
-  virtual void CloseObject(ErrorLogger *logger) = 0;
+  virtual void String(SchemaErrorLogger *logger, const std::string &value) = 0;
+  virtual void Number(SchemaErrorLogger *logger, uint32_t value) = 0;
+  virtual void Number(SchemaErrorLogger *logger, int32_t value) = 0;
+  virtual void Number(SchemaErrorLogger *logger, uint64_t value) = 0;
+  virtual void Number(SchemaErrorLogger *logger, int64_t value) = 0;
+  virtual void Number(SchemaErrorLogger *logger, double value) = 0;
+  virtual void Bool(SchemaErrorLogger *logger, bool value) = 0;
+  virtual void Null(SchemaErrorLogger *logger) = 0;
+  virtual SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger) = 0;
+  virtual void CloseArray(SchemaErrorLogger *logger) = 0;
+  virtual SchemaParseContextInterface* OpenObject(
+      SchemaErrorLogger *logger) = 0;
+  virtual void ObjectKey(SchemaErrorLogger *logger, const std::string &key) = 0;
+  virtual void CloseObject(SchemaErrorLogger *logger) = 0;
 };
 
 /**
@@ -182,7 +149,7 @@ class BaseParseContext : public SchemaParseContextInterface {
   /**
    * @brief Called when we encouter a property
    */
-  void ObjectKey(ErrorLogger *logger, const std::string &keyword) {
+  void ObjectKey(SchemaErrorLogger *logger, const std::string &keyword) {
     m_keyword.Set(keyword);
     (void) logger;
   }
@@ -227,26 +194,26 @@ class DefinitionsParseContext : public BaseParseContext {
   }
 
   // These are all invalid in 'definitions'
-  void String(ErrorLogger *, const std::string &) {}
-  void Number(ErrorLogger *, uint32_t) {}
-  void Number(ErrorLogger *, int32_t) {}
-  void Number(ErrorLogger *, uint64_t) {}
-  void Number(ErrorLogger *, int64_t) {}
-  void Number(ErrorLogger *, double) {}
-  void Bool(ErrorLogger *, bool) {}
-  void Null(ErrorLogger *logger) { (void) logger; }
+  void String(SchemaErrorLogger *, const std::string &) {}
+  void Number(SchemaErrorLogger *, uint32_t) {}
+  void Number(SchemaErrorLogger *, int32_t) {}
+  void Number(SchemaErrorLogger *, uint64_t) {}
+  void Number(SchemaErrorLogger *, int64_t) {}
+  void Number(SchemaErrorLogger *, double) {}
+  void Bool(SchemaErrorLogger *, bool) {}
+  void Null(SchemaErrorLogger *logger) { (void) logger; }
 
-  SchemaParseContextInterface* OpenArray(ErrorLogger *logger) {
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger) {
     return NULL;
     (void) logger;
   }
 
-  void CloseArray(ErrorLogger *logger) {
+  void CloseArray(SchemaErrorLogger *logger) {
     (void) logger;
   }
 
-  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
-  void CloseObject(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger);
 
  private:
   SchemaDefinitions *m_schema_defs;
@@ -278,31 +245,31 @@ class SchemaParseContext : public SchemaParseContextInterface {
    * @returns A new ValidatorInterface or NULL if it was not possible to
    * construct a validator.
    */
-  ValidatorInterface* GetValidator(ErrorLogger *logger);
+  ValidatorInterface* GetValidator(SchemaErrorLogger *logger);
 
-  void ObjectKey(ErrorLogger *logger, const std::string &keyword);
+  void ObjectKey(SchemaErrorLogger *logger, const std::string &keyword);
 
   // id, title, etc.
-  void String(ErrorLogger *logger, const std::string &value);
+  void String(SchemaErrorLogger *logger, const std::string &value);
 
   // minimum etc.
-  void Number(ErrorLogger *logger, uint32_t value);
-  void Number(ErrorLogger *logger, int32_t value);
-  void Number(ErrorLogger *logger, uint64_t value);
-  void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, double value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
 
   // exclusiveMin / Max
-  void Bool(ErrorLogger *logger, bool value);
-  void Null(ErrorLogger *logger);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
 
   // enums
-  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
-  void CloseArray(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger);
 
   // properties, etc.
-  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
-  void CloseObject(ErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger);
 
  private:
   SchemaDefinitions *m_schema_defs;
@@ -360,22 +327,23 @@ class SchemaParseContext : public SchemaParseContextInterface {
   std::auto_ptr<PropertiesParseContext> m_properties_context;
   // vector<NumberConstraint> m_number_constraints;
 
-  void ProcessPositiveInt(ErrorLogger *logger, uint64_t value);
+  void ProcessPositiveInt(SchemaErrorLogger *logger, uint64_t value);
 
   template <typename T>
-  void ProcessInt(ErrorLogger *logger, T t);
-  ValidatorInterface* BuildArrayValidator(ErrorLogger *logger);
-  ValidatorInterface* BuildObjectValidator(ErrorLogger *logger);
-  ValidatorInterface* BuildStringValidator(ErrorLogger *logger);
+  void ProcessInt(SchemaErrorLogger *logger, T t);
+  ValidatorInterface* BuildArrayValidator(SchemaErrorLogger *logger);
+  ValidatorInterface* BuildObjectValidator(SchemaErrorLogger *logger);
+  ValidatorInterface* BuildStringValidator(SchemaErrorLogger *logger);
 
-  static bool ValidTypeForKeyword(ErrorLogger *logger, SchemaKeyword keyword,
+  static bool ValidTypeForKeyword(SchemaErrorLogger *logger,
+                                  SchemaKeyword keyword,
                                   JsonType type);
   // Verify that type == expected_type. If it doesn't report an error to the
   // logger.
-  static bool CheckTypeAndLog(ErrorLogger *logger, SchemaKeyword keyword,
+  static bool CheckTypeAndLog(SchemaErrorLogger *logger, SchemaKeyword keyword,
                               JsonType type, JsonType expected_type);
   // Same as above but the type can be either expected_type1 or expected_type2
-  static bool CheckTypeAndLog(ErrorLogger *logger, SchemaKeyword keyword,
+  static bool CheckTypeAndLog(SchemaErrorLogger *logger, SchemaKeyword keyword,
                               JsonType type, JsonType expected_type1,
                               JsonType expected_type2);
 
@@ -394,20 +362,20 @@ class PropertiesParseContext : public BaseParseContext {
   }
 
   void AddPropertyValidaators(ObjectValidator *object_validator,
-                              ErrorLogger *logger);
+                              SchemaErrorLogger *logger);
 
-  void String(ErrorLogger *logger, const std::string &value);
-  void Number(ErrorLogger *logger, uint32_t value);
-  void Number(ErrorLogger *logger, int32_t value);
-  void Number(ErrorLogger *logger, uint64_t value);
-  void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, double value);
-  void Bool(ErrorLogger *logger, bool value);
-  void Null(ErrorLogger *logger);
-  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
-  void CloseArray(ErrorLogger *logger);
-  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
-  void CloseObject(ErrorLogger *logger);
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger);
 
  private:
   typedef std::map<std::string, SchemaParseContext*> SchemaMap;
@@ -436,23 +404,23 @@ class ArrayItemsParseContext : public BaseParseContext {
    * @param[out] validators A vector fill with new validators. Ownership of the
    * validators is transferred to the caller.
    */
-  void AddValidators(ErrorLogger *logger,
+  void AddValidators(SchemaErrorLogger *logger,
                      std::vector<ValidatorInterface*> *validators);
 
-  void String(ErrorLogger *logger, const std::string &value);
-  void Number(ErrorLogger *logger, uint32_t value);
-  void Number(ErrorLogger *logger, int32_t value);
-  void Number(ErrorLogger *logger, uint64_t value);
-  void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, double value);
-  void Bool(ErrorLogger *logger, bool value);
-  void Null(ErrorLogger *logger);
-  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
-  void CloseArray(ErrorLogger *logger) {
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger) {
     (void) logger;
   }
-  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
-  void CloseObject(ErrorLogger *logger) {
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger) {
     (void) logger;
   }
 
@@ -462,7 +430,7 @@ class ArrayItemsParseContext : public BaseParseContext {
   SchemaDefinitions *m_schema_defs;
   ItemSchemas m_item_schemas;
 
-  void ReportErrorForType(ErrorLogger *logger, JsonType type);
+  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(ArrayItemsParseContext);
 };
@@ -482,27 +450,27 @@ class RequiredPropertiesParseContext : public BaseParseContext {
    */
   void GetRequiredItems(RequiredItems *required_items);
 
-  void String(ErrorLogger *logger, const std::string &value);
-  void Number(ErrorLogger *logger, uint32_t value);
-  void Number(ErrorLogger *logger, int32_t value);
-  void Number(ErrorLogger *logger, uint64_t value);
-  void Number(ErrorLogger *logger, int64_t value);
-  void Number(ErrorLogger *logger, double value);
-  void Bool(ErrorLogger *logger, bool value);
-  void Null(ErrorLogger *logger);
-  SchemaParseContextInterface* OpenArray(ErrorLogger *logger);
-  void CloseArray(ErrorLogger *logger) {
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger) {
     (void) logger;
   }
-  SchemaParseContextInterface* OpenObject(ErrorLogger *logger);
-  void CloseObject(ErrorLogger *logger) {
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger) {
     (void) logger;
   }
 
  private:
   RequiredItems m_required_items;
 
-  void ReportErrorForType(ErrorLogger *logger, JsonType type);
+  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(RequiredPropertiesParseContext);
 };

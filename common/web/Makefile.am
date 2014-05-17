@@ -13,8 +13,9 @@ dist_noinst_DATA = testdata/arrays.test \
 noinst_LTLIBRARIES = libolaweb.la
 libolaweb_la_SOURCES = Json.cpp JsonTypes.cpp JsonParser.cpp JsonPointer.cpp \
                        JsonSchema.cpp JsonSections.cpp JsonWriter.cpp \
-                       PointerTracker.h PointerTracker.cpp SchemaParser.h \
-                       SchemaParser.cpp SchemaParseContext.h \
+                       PointerTracker.h PointerTracker.cpp \
+                       SchemaErrorLogger.cpp SchemaErrorLogger.h \
+                       SchemaParser.h SchemaParser.cpp SchemaParseContext.h \
                        SchemaParseContext.cpp TreeHandler.cpp
 
 # TESTS

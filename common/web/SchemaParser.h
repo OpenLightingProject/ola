@@ -29,6 +29,7 @@
 #include <string>
 
 #include "common/web/PointerTracker.h"
+#include "common/web/SchemaErrorLogger.h"
 #include "common/web/SchemaParseContext.h"
 #include "ola/base/Macro.h"
 #include "ola/web/JsonParser.h"
@@ -106,7 +107,7 @@ class SchemaParser : public JsonHandlerInterface {
   std::stack<class SchemaParseContextInterface*> m_context_stack;
   JsonPointer m_pointer;
   PointerTracker m_pointer_tracker;
-  ErrorLogger m_error_logger;
+  SchemaErrorLogger m_error_logger;
 
   template <typename T>
   void HandleNumber(T t);

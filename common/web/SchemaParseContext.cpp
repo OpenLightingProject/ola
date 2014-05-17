@@ -196,13 +196,13 @@ SchemaKeyword LookupKeyword(const string& keyword) {
 // DefinitionsParseContext
 // Used for parsing an object with key : json schema pairs, within 'definitions'
 SchemaParseContextInterface* DefinitionsParseContext::OpenObject(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   m_current_schema.reset(new SchemaParseContext(m_schema_defs));
   return m_current_schema.get();
   (void) logger;
 }
 
-void DefinitionsParseContext::CloseObject(ErrorLogger *logger) {
+void DefinitionsParseContext::CloseObject(SchemaErrorLogger *logger) {
   if (!(HasKeyword() && m_current_schema.get())) {
     OLA_WARN << "Bad call to DefinitionsParseContext::CloseObject";
     return;
@@ -222,7 +222,8 @@ SchemaParseContext::~SchemaParseContext() {
   // STLDeleteElements(&m_number_constraints);
 }
 
-ValidatorInterface* SchemaParseContext::GetValidator(ErrorLogger *logger) {
+ValidatorInterface* SchemaParseContext::GetValidator(
+    SchemaErrorLogger *logger) {
   if (m_ref_schema.IsSet()) {
     return new ReferenceValidator(m_schema_defs, m_ref_schema.Value());
   }
@@ -282,13 +283,14 @@ ValidatorInterface* SchemaParseContext::GetValidator(ErrorLogger *logger) {
 }
 
 
-void SchemaParseContext::ObjectKey(ErrorLogger *logger,
+void SchemaParseContext::ObjectKey(SchemaErrorLogger *logger,
                                    const string &keyword) {
   m_keyword = LookupKeyword(keyword);
   (void) logger;
 }
 
-void SchemaParseContext::String(ErrorLogger *logger, const string &value) {
+void SchemaParseContext::String(SchemaErrorLogger *logger,
+                                const string &value) {
   if (!ValidTypeForKeyword(logger, m_keyword, TypeFromValue(value))) {
     return;
   }
@@ -325,27 +327,27 @@ void SchemaParseContext::String(ErrorLogger *logger, const string &value) {
   }
 }
 
-void SchemaParseContext::Number(ErrorLogger *logger, uint32_t value) {
+void SchemaParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
   ProcessInt(logger, value);
 }
 
-void SchemaParseContext::Number(ErrorLogger *logger, int32_t value) {
+void SchemaParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
   ProcessInt(logger, value);
 }
 
-void SchemaParseContext::Number(ErrorLogger *logger, uint64_t value) {
+void SchemaParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
   ProcessInt(logger, value);
 }
 
-void SchemaParseContext::Number(ErrorLogger *logger, int64_t value) {
+void SchemaParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
   ProcessInt(logger, value);
 }
 
-void SchemaParseContext::Number(ErrorLogger *logger, double value) {
+void SchemaParseContext::Number(SchemaErrorLogger *logger, double value) {
   ValidTypeForKeyword(logger, m_keyword, TypeFromValue(value));
 }
 
-void SchemaParseContext::Bool(ErrorLogger *logger, bool value) {
+void SchemaParseContext::Bool(SchemaErrorLogger *logger, bool value) {
   if (!ValidTypeForKeyword(logger, m_keyword, TypeFromValue(value))) {
     OLA_INFO << "type was not valid";
     return;
@@ -369,12 +371,12 @@ void SchemaParseContext::Bool(ErrorLogger *logger, bool value) {
   }
 }
 
-void SchemaParseContext::Null(ErrorLogger *logger) {
+void SchemaParseContext::Null(SchemaErrorLogger *logger) {
   ValidTypeForKeyword(logger, m_keyword, JSON_NULL);
 }
 
 SchemaParseContextInterface* SchemaParseContext::OpenArray(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   if (!ValidTypeForKeyword(logger, m_keyword, JSON_ARRAY)) {
     return NULL;
   }
@@ -392,12 +394,12 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
   return NULL;
 }
 
-void SchemaParseContext::CloseArray(ErrorLogger *logger) {
+void SchemaParseContext::CloseArray(SchemaErrorLogger *logger) {
   (void) logger;
 }
 
 SchemaParseContextInterface* SchemaParseContext::OpenObject(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   if (!ValidTypeForKeyword(logger, m_keyword, JSON_OBJECT)) {
     return NULL;
   }
@@ -430,11 +432,11 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
   return NULL;
 }
 
-void SchemaParseContext::CloseObject(ErrorLogger *logger) {
+void SchemaParseContext::CloseObject(SchemaErrorLogger *logger) {
   (void) logger;
 }
 
-void SchemaParseContext::ProcessPositiveInt(ErrorLogger *logger,
+void SchemaParseContext::ProcessPositiveInt(SchemaErrorLogger *logger,
                                             uint64_t value) {
   switch (m_keyword) {
     case SCHEMA_MIN_ITEMS:
@@ -462,7 +464,7 @@ void SchemaParseContext::ProcessPositiveInt(ErrorLogger *logger,
 }
 
 template <typename T>
-void SchemaParseContext::ProcessInt(ErrorLogger *logger, T value) {
+void SchemaParseContext::ProcessInt(SchemaErrorLogger *logger, T value) {
   if (!ValidTypeForKeyword(logger, m_keyword, TypeFromValue(value))) {
     return;
   }
@@ -476,7 +478,7 @@ void SchemaParseContext::ProcessInt(ErrorLogger *logger, T value) {
 }
 
 ValidatorInterface* SchemaParseContext::BuildArrayValidator(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   ArrayValidator::Options options;
   if (m_min_items.IsSet()) {
     options.min_items = m_min_items.Value();
@@ -523,7 +525,7 @@ ValidatorInterface* SchemaParseContext::BuildArrayValidator(
 }
 
 ValidatorInterface* SchemaParseContext::BuildObjectValidator(
-    ErrorLogger* logger) {
+    SchemaErrorLogger* logger) {
   ObjectValidator::Options options;
   if (m_max_properties.IsSet()) {
     options.max_properties = m_max_properties.Value();
@@ -548,7 +550,7 @@ ValidatorInterface* SchemaParseContext::BuildObjectValidator(
 }
 
 ValidatorInterface* SchemaParseContext::BuildStringValidator(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   StringValidator::Options options;
 
   if (m_max_length.IsSet()) {
@@ -568,7 +570,7 @@ ValidatorInterface* SchemaParseContext::BuildStringValidator(
  * If the type isn't valid, an error is logged.
  * @returns false if the type isn't valid or if the keyword is SCHEMA_UNKNOWN.
  */
-bool SchemaParseContext::ValidTypeForKeyword(ErrorLogger *logger,
+bool SchemaParseContext::ValidTypeForKeyword(SchemaErrorLogger *logger,
                                              SchemaKeyword keyword,
                                              JsonType type) {
   switch (keyword) {
@@ -646,7 +648,7 @@ bool SchemaParseContext::ValidTypeForKeyword(ErrorLogger *logger,
 }
 
 bool SchemaParseContext::CheckTypeAndLog(
-    ErrorLogger *logger, SchemaKeyword keyword,
+    SchemaErrorLogger *logger, SchemaKeyword keyword,
     JsonType type, JsonType expected_type) {
   if (type == expected_type) {
     return true;
@@ -659,7 +661,7 @@ bool SchemaParseContext::CheckTypeAndLog(
 }
 
 bool SchemaParseContext::CheckTypeAndLog(
-    ErrorLogger *logger, SchemaKeyword keyword,
+    SchemaErrorLogger *logger, SchemaKeyword keyword,
     JsonType type, JsonType expected_type1, JsonType expected_type2) {
   if (type == expected_type1 || type == expected_type2) {
     return true;
@@ -677,7 +679,7 @@ bool SchemaParseContext::CheckTypeAndLog(
 // Used for parsing an object with key : json schema pairs, within 'properties'
 void PropertiesParseContext::AddPropertyValidaators(
     ObjectValidator *object_validator,
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   SchemaMap::iterator iter = m_property_contexts.begin();
   for (; iter != m_property_contexts.end(); ++iter) {
     ValidatorInterface *validator = iter->second->GetValidator(logger);
@@ -687,57 +689,58 @@ void PropertiesParseContext::AddPropertyValidaators(
   }
 }
 
-void PropertiesParseContext::String(ErrorLogger *logger, const string &value) {
+void PropertiesParseContext::String(SchemaErrorLogger *logger,
+                                    const string &value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Number(ErrorLogger *logger, uint32_t value) {
+void PropertiesParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Number(ErrorLogger *logger, int32_t value) {
+void PropertiesParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Number(ErrorLogger *logger, uint64_t value) {
+void PropertiesParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Number(ErrorLogger *logger, int64_t value) {
+void PropertiesParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Number(ErrorLogger *logger, double value) {
+void PropertiesParseContext::Number(SchemaErrorLogger *logger, double value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Bool(ErrorLogger *logger, bool value) {
+void PropertiesParseContext::Bool(SchemaErrorLogger *logger, bool value) {
   (void) logger;
   (void) value;
 }
 
-void PropertiesParseContext::Null(ErrorLogger *logger) {
+void PropertiesParseContext::Null(SchemaErrorLogger *logger) {
   (void) logger;
 }
 
 SchemaParseContextInterface* PropertiesParseContext::OpenArray(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   (void) logger;
   return NULL;
 }
 
-void PropertiesParseContext::CloseArray(ErrorLogger *logger) {
+void PropertiesParseContext::CloseArray(SchemaErrorLogger *logger) {
   (void) logger;
 }
 
 SchemaParseContextInterface* PropertiesParseContext::OpenObject(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   const string key = TakeKeyword();
   pair<SchemaMap::iterator, bool> r = m_property_contexts.insert(
       pair<string, SchemaParseContext*>(key, NULL));
@@ -751,7 +754,7 @@ SchemaParseContextInterface* PropertiesParseContext::OpenObject(
   return r.first->second;
 }
 
-void PropertiesParseContext::CloseObject(ErrorLogger *logger) {
+void PropertiesParseContext::CloseObject(SchemaErrorLogger *logger) {
   (void) logger;
 }
 
@@ -762,7 +765,7 @@ ArrayItemsParseContext::~ArrayItemsParseContext() {
 }
 
 void ArrayItemsParseContext::AddValidators(
-    ErrorLogger *logger,
+    SchemaErrorLogger *logger,
     vector<ValidatorInterface*> *validators) {
   ItemSchemas::iterator iter = m_item_schemas.begin();
   for (; iter != m_item_schemas.end(); ++iter) {
@@ -770,53 +773,53 @@ void ArrayItemsParseContext::AddValidators(
   }
 }
 
-void ArrayItemsParseContext::String(ErrorLogger *logger,
+void ArrayItemsParseContext::String(SchemaErrorLogger *logger,
                                     const std::string &value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Number(ErrorLogger *logger, uint32_t value) {
+void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Number(ErrorLogger *logger, int32_t value) {
+void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Number(ErrorLogger *logger, uint64_t value) {
+void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Number(ErrorLogger *logger, int64_t value) {
+void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Number(ErrorLogger *logger, double value) {
+void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, double value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Bool(ErrorLogger *logger, bool value) {
+void ArrayItemsParseContext::Bool(SchemaErrorLogger *logger, bool value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void ArrayItemsParseContext::Null(ErrorLogger *logger) {
+void ArrayItemsParseContext::Null(SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_NULL);
 }
 
 SchemaParseContextInterface* ArrayItemsParseContext::OpenArray(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_ARRAY);
   return NULL;
 }
 
 SchemaParseContextInterface* ArrayItemsParseContext::OpenObject(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   m_item_schemas.push_back(new SchemaParseContext(m_schema_defs));
   return m_item_schemas.back();
   (void) logger;
 }
 
-void ArrayItemsParseContext::ReportErrorForType(ErrorLogger *logger,
+void ArrayItemsParseContext::ReportErrorForType(SchemaErrorLogger *logger,
                                                 JsonType type) {
   logger->Error() << "Invalid type '" << JsonTypeToString(type)
       << "' in 'items', elements must be a valid JSON schema";
@@ -829,59 +832,62 @@ void RequiredPropertiesParseContext::GetRequiredItems(
   *required_items = m_required_items;
 }
 
-void RequiredPropertiesParseContext::String(ErrorLogger *logger,
+void RequiredPropertiesParseContext::String(SchemaErrorLogger *logger,
                                             const std::string &value) {
   if (!m_required_items.insert(value).second) {
     logger->Error() << value << " appeared more than once in 'required'";
   }
 }
 
-void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
                                             uint32_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
                                             int32_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
                                             uint64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(ErrorLogger *logger,
+void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
                                             int64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(ErrorLogger *logger, double value) {
+void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
+                                            double value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Bool(ErrorLogger *logger, bool value) {
+void RequiredPropertiesParseContext::Bool(SchemaErrorLogger *logger,
+                                          bool value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Null(ErrorLogger *logger) {
+void RequiredPropertiesParseContext::Null(SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_NULL);
 }
 
 SchemaParseContextInterface* RequiredPropertiesParseContext::OpenArray(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_ARRAY);
   return NULL;
 }
 
 SchemaParseContextInterface* RequiredPropertiesParseContext::OpenObject(
-    ErrorLogger *logger) {
+    SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_OBJECT);
   return NULL;
 }
 
-void RequiredPropertiesParseContext::ReportErrorForType(ErrorLogger *logger,
-                                                        JsonType type) {
+void RequiredPropertiesParseContext::ReportErrorForType(
+    SchemaErrorLogger *logger,
+    JsonType type) {
   logger->Error() << "Invalid type '" << JsonTypeToString(type)
                   << "' in 'required', elements must be strings";
 }
