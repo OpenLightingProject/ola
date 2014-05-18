@@ -89,50 +89,162 @@ void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
 // Integer equality functions
 namespace {
 
-using std::numeric_limits;
-
+/*
+ * This isn't pretty but it works. The original version used
+ * numeric_limits::is_signed, numeric_limits::digits & numeric_limits::is_exact
+ * to reduce the amount of code. However I couldn't get it to work without
+ * signed vs unsigned warnings in gcc.
+ */
 template <typename T1, typename T2>
-int CompareNumbers(T1 a, T2 b) {
-  if (numeric_limits<T1>::is_signed == numeric_limits<T2>::is_signed &&
-      numeric_limits<T1>::digits == numeric_limits<T2>::digits &&
-      numeric_limits<T1>::is_exact == numeric_limits<T2>::is_exact) {
-    // The types are the same
-    return (a < b) ? -1 : (a > b);
-  } else if (!numeric_limits<T1>::is_exact) {
-    // LHS is a double.
-    return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
-  } else if (!numeric_limits<T2>::is_exact) {
-    // RHS is a double.
-    return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
-  } else if (numeric_limits<T1>::is_signed == numeric_limits<T2>::is_signed &&
-             numeric_limits<T1>::digits > numeric_limits<T2>::digits) {
-    // Signs match, and the LHS has more bits
-    return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
-  } else if (numeric_limits<T1>::is_signed == numeric_limits<T2>::is_signed &&
-             numeric_limits<T1>::digits < numeric_limits<T2>::digits) {
-    // Signs match, and the RHS has more bits
-    return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
-  } else if (numeric_limits<T1>::is_signed) {
-    // T1 is signed, T2 is not
-    if (a < 0) {
-      return -1;
-    }
-    if (numeric_limits<T1>::digits > numeric_limits<T2>::digits) {
-      return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
-    } else {
-      return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
-    }
-  } else {
-    // T2 is signed, T1 is not
-    if (b < 0) {
-      return 1;
-    }
-    if (numeric_limits<T1>::digits > numeric_limits<T2>::digits) {
-      return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
-    } else {
-      return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
-    }
+int CompareNumbers(T1 a, T2 b);
+
+template <>
+int CompareNumbers(uint32_t a, uint32_t b) {
+  return (a < b) ? -1 : (a > b);
+}
+
+template <>
+int CompareNumbers(uint32_t a, int32_t b) {
+  if (b < 0) {
+    return 1;
   }
+  return (a < static_cast<uint32_t>(b)) ? -1 : (a > static_cast<uint32_t>(b));
+}
+
+template <>
+int CompareNumbers(uint32_t a, uint64_t b) {
+  return (static_cast<uint64_t>(a) < b) ? -1 : (static_cast<uint64_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(uint32_t a, int64_t b) {
+  if (b < 0) {
+    return 1;
+  }
+  return (static_cast<int64_t>(a) < b) ? -1 : (static_cast<int64_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(uint32_t a, double b) {
+  return (static_cast<double>(a) < b) ? -1 : (static_cast<double>(a) > b);
+}
+
+template <>
+int CompareNumbers(int32_t a, uint32_t b) {
+  if (a < 0) {
+    return -1;
+  }
+  return (static_cast<uint32_t>(a) < b) ? -1 : (static_cast<uint32_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(int32_t a, int32_t b) {
+  return (a < b) ? -1 : (a > b);
+}
+
+template <>
+int CompareNumbers(int32_t a, uint64_t b) {
+  if (a < 0) {
+    return -1;
+  }
+  return (static_cast<uint64_t>(a) < b) ? -1 : (static_cast<uint64_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(int32_t a, int64_t b) {
+  return (static_cast<int64_t>(a) < b) ? -1 : (static_cast<int64_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(int32_t a, double b) {
+  return (static_cast<double>(a) < b) ? -1 : (static_cast<double>(a) > b);
+}
+
+template <>
+int CompareNumbers(uint64_t a, uint32_t b) {
+  return (a < static_cast<uint64_t>(b)) ? -1 : (a > static_cast<uint64_t>(b));
+}
+
+template <>
+int CompareNumbers(uint64_t a, int32_t b) {
+  if (b < 0) {
+    return 1;
+  }
+  return (a < static_cast<uint64_t>(b)) ? -1 : (a > static_cast<uint64_t>(b));
+}
+
+template <>
+int CompareNumbers(uint64_t a, uint64_t b) {
+  return (a < b) ? -1 : (a > b);
+}
+
+template <>
+int CompareNumbers(uint64_t a, int64_t b) {
+  if (b < 0) {
+    return 1;
+  }
+  return (a < static_cast<uint64_t>(b)) ? -1 : (a > static_cast<uint64_t>(b));
+}
+
+template <>
+int CompareNumbers(uint64_t a, double b) {
+  return (static_cast<double>(a) < b) ? -1 : (static_cast<double>(a) > b);
+}
+
+template <>
+int CompareNumbers(int64_t a, uint32_t b) {
+  if (a < 0) {
+    return -1;
+  }
+  return (a < static_cast<int64_t>(b)) ? -1 : (a > static_cast<int64_t>(b));
+}
+
+template <>
+int CompareNumbers(int64_t a, int32_t b) {
+  return (static_cast<int64_t>(a) < b) ? -1 : (static_cast<int64_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(int64_t a, uint64_t b) {
+  if (a < 0) {
+    return -1;
+  }
+  return (static_cast<uint64_t>(a) < b) ? -1 : (static_cast<uint64_t>(a) > b);
+}
+
+template <>
+int CompareNumbers(int64_t a, int64_t b) {
+  return (a < b) ? -1 : (a > b);
+}
+
+template <>
+int CompareNumbers(int64_t a, double b) {
+  return (static_cast<double>(a) < b) ? -1 : (static_cast<double>(a) > b);
+}
+
+template <>
+int CompareNumbers(double a, uint32_t b) {
+  return (a < static_cast<double>(b)) ? -1 : (a > static_cast<double>(b));
+}
+
+template <>
+int CompareNumbers(double a, int32_t b) {
+  return (a < static_cast<double>(b)) ? -1 : (a > static_cast<double>(b));
+}
+
+template <>
+int CompareNumbers(double a, uint64_t b) {
+  return (a < static_cast<double>(b)) ? -1 : (a > static_cast<double>(b));
+}
+
+template <>
+int CompareNumbers(double a, int64_t b) {
+  return (a < static_cast<double>(b)) ? -1 : (a > static_cast<double>(b));
+}
+
+template <>
+int CompareNumbers(double a, double b) {
+  return (a < b) ? -1 : (a > b);
 }
 }  // namespace
 
