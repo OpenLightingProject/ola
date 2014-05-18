@@ -84,7 +84,7 @@ void DefinitionsParseContext::CloseObject(SchemaErrorLogger *logger) {
 
   ValidatorInterface *schema = m_current_schema->GetValidator(logger);
   m_schema_defs->Add(TakeKeyword(), schema);
-  m_current_schema.release();
+  m_current_schema.reset();
 }
 
 // SchemaParseContext
