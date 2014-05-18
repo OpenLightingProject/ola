@@ -58,6 +58,7 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSimpleObject);
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST(testEquality);
+  CPPUNIT_TEST(testIntInequality);
   CPPUNIT_TEST(testLookups);
   CPPUNIT_TEST(testClone);
   CPPUNIT_TEST_SUITE_END();
@@ -74,6 +75,7 @@ class JsonTest: public CppUnit::TestFixture {
     void testSimpleObject();
     void testComplexObject();
     void testEquality();
+    void testIntInequality();
     void testLookups();
     void testClone();
 };
@@ -255,7 +257,7 @@ void JsonTest::testComplexObject() {
 }
 
 /*
- * Test a complex object.
+ * Test for equality.
  */
 void JsonTest::testEquality() {
   JsonStringValue string1("foo");
@@ -279,8 +281,8 @@ void JsonTest::testEquality() {
   JsonInt64Value int64_2(10);
   JsonInt64Value int64_3(99);
 
-  JsonInt64Value uint64_1(10);
-  JsonInt64Value uint64_2(99);
+  JsonUInt64Value uint64_1(10);
+  JsonUInt64Value uint64_2(99);
 
   vector<JsonValue*> all_values;
   all_values.push_back(&string1);
@@ -383,6 +385,78 @@ void JsonTest::testEquality() {
 }
 
 /*
+ * Test for integer / number inequality.
+ */
+void JsonTest::testIntInequality() {
+  JsonDoubleValue double1(1.0);
+  JsonDoubleValue double2(1.0);
+  JsonDoubleValue double3(11.1);
+  JsonUIntValue uint1(10);
+  JsonUIntValue uint2(99);
+  JsonIntValue int1(10);
+  JsonIntValue int2(99);
+  JsonIntValue int3(-99);
+  JsonInt64Value int64_1(-99);
+  JsonInt64Value int64_2(10);
+  JsonInt64Value int64_3(99);
+  JsonUInt64Value uint64_1(10);
+  JsonUInt64Value uint64_2(99);
+
+  OLA_ASSERT_LT(double1, double3);
+  OLA_ASSERT_LTE(double1, double2);
+  OLA_ASSERT_LTE(double1, double3);
+  OLA_ASSERT_GT(double3, double1);
+  OLA_ASSERT_GTE(double3, double1);
+  OLA_ASSERT_GTE(double2, double1);
+  OLA_ASSERT_LT(double1, uint1);
+  OLA_ASSERT_LT(double1, int1);
+  OLA_ASSERT_LT(double1, int64_2);
+  OLA_ASSERT_LT(double1, uint64_1);
+  OLA_ASSERT_LT(uint1, double3);
+  OLA_ASSERT_LT(int1, double3);
+  OLA_ASSERT_LT(int64_1, double3);
+  OLA_ASSERT_LT(int64_2, double3);
+  OLA_ASSERT_LT(uint64_1, double3);
+
+
+  OLA_ASSERT_LT(uint1, uint2);
+  OLA_ASSERT_LTE(uint1, uint1);
+  OLA_ASSERT_LT(int1, int2);
+  OLA_ASSERT_LTE(int1, int1);
+  OLA_ASSERT_LT(int3, int1);
+  OLA_ASSERT_LT(uint64_1, uint64_2);
+  OLA_ASSERT_LTE(uint64_1, uint64_1);
+  OLA_ASSERT_LT(int64_1, int64_2);
+  OLA_ASSERT_LTE(int64_1, int64_1);
+  OLA_ASSERT_LT(int64_2, int64_3);
+  OLA_ASSERT_LT(uint64_1, uint2);
+  OLA_ASSERT_LTE(uint64_1, uint1);
+  OLA_ASSERT_LT(int64_1, int1);
+  OLA_ASSERT_LTE(int64_1, int3);
+  OLA_ASSERT_LT(uint1, uint64_2);
+  OLA_ASSERT_LTE(uint1, uint64_1);
+  OLA_ASSERT_LT(int3, int64_2);
+  OLA_ASSERT_LTE(int3, int64_1);
+
+  OLA_ASSERT_LT(int3, uint1);
+  OLA_ASSERT_LTE(int1, uint1);
+  OLA_ASSERT_LT(int64_1, uint1);
+  OLA_ASSERT_LTE(int64_2, uint1);
+  OLA_ASSERT_LT(uint1, int2);
+  OLA_ASSERT_LTE(uint1, int1);
+  OLA_ASSERT_LT(uint64_1, int2);
+  OLA_ASSERT_LTE(uint64_1, int1);
+  OLA_ASSERT_LT(int3, uint64_1);
+  OLA_ASSERT_LTE(int1, uint64_1);
+  OLA_ASSERT_LT(int64_1, uint64_1);
+  OLA_ASSERT_LTE(int64_2, uint64_1);
+  OLA_ASSERT_LT(uint1, int64_3);
+  OLA_ASSERT_LTE(uint1, int64_2);
+  OLA_ASSERT_LT(uint64_1, int64_3);
+  OLA_ASSERT_LTE(uint64_1, int64_2);
+}
+
+/*
  * Test looking up a value with a pointer.
  */
 void JsonTest::testLookups() {
@@ -459,7 +533,7 @@ void JsonTest::testClone() {
   JsonUIntValue uint1(10);
   JsonIntValue int1(10);
   JsonInt64Value int64_1(-99);
-  JsonInt64Value uint64_1(10);
+  JsonUInt64Value uint64_1(10);
 
   JsonObject object;
   object.Add("age", 10);

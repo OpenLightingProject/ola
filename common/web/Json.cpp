@@ -21,6 +21,7 @@
 
 #include <math.h>
 #include <string>
+#include <limits>
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
@@ -88,91 +89,202 @@ void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
 // Integer equality functions
 namespace {
 
-bool Compare(int32_t a, uint32_t b) {
-  if (a < 0) {
-    return false;
+using std::numeric_limits;
+
+template <typename T1, typename T2>
+int CompareNumbers(T1 a, T2 b) {
+  if (numeric_limits<T1>::is_signed == numeric_limits<T2>::is_signed &&
+      numeric_limits<T1>::digits == numeric_limits<T2>::digits &&
+      numeric_limits<T1>::is_exact == numeric_limits<T2>::is_exact) {
+    // The types are the same
+    return (a < b) ? -1 : (a > b);
+  } else if (!numeric_limits<T1>::is_exact) {
+    // LHS is a double.
+    return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
+  } else if (!numeric_limits<T2>::is_exact) {
+    // RHS is a double.
+    return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
+  } else if (numeric_limits<T1>::is_signed == numeric_limits<T2>::is_signed &&
+             numeric_limits<T1>::digits > numeric_limits<T2>::digits) {
+    // Signs match, and the LHS has more bits
+    return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
+  } else if (numeric_limits<T1>::is_signed == numeric_limits<T2>::is_signed &&
+             numeric_limits<T1>::digits < numeric_limits<T2>::digits) {
+    // Signs match, and the RHS has more bits
+    return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
+  } else if (numeric_limits<T1>::is_signed) {
+    // T1 is signed, T2 is not
+    if (a < 0) {
+      return -1;
+    }
+    if (numeric_limits<T1>::digits > numeric_limits<T2>::digits) {
+      return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
+    } else {
+      return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
+    }
+  } else {
+    // T2 is signed, T1 is not
+    if (b < 0) {
+      return 1;
+    }
+    if (numeric_limits<T1>::digits > numeric_limits<T2>::digits) {
+      return (a < static_cast<T1>(b)) ? -1 : (a > static_cast<T1>(b));
+    } else {
+      return (static_cast<T2>(a) < b) ? -1 : (static_cast<T2>(a) > b);
+    }
   }
-  return static_cast<uint32_t>(a) == b;
-}
-
-bool Compare(int32_t a, int64_t b) {
-  return static_cast<int64_t>(a) == b;
-}
-
-bool Compare(int32_t a, uint64_t b) {
-  if (a < 0) {
-    return false;
-  }
-  return static_cast<uint64_t>(a) == b;
-}
-
-bool Compare(uint32_t a, int64_t b) {
-  if (b < 0) {
-    return false;
-  }
-  return static_cast<int64_t>(a) == b;
-}
-
-bool Compare(uint32_t a, uint64_t b) {
-  return static_cast<uint64_t>(a) == b;
-}
-
-bool Compare(int64_t a, uint64_t b) {
-  if (a < 0) {
-    return false;
-  }
-  return static_cast<uint64_t>(a) == b;
 }
 }  // namespace
 
 
-// Integer equality functions
+// Number equality functions
 bool JsonUIntValue::Equals(const JsonIntValue &other) const {
-  return Compare(other.Value(), m_value);
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonUIntValue::Equals(const JsonUInt64Value &other) const {
-  return Compare(m_value, other.Value());
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonUIntValue::Equals(const JsonInt64Value &other) const {
-  return Compare(m_value, other.Value());
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonIntValue::Equals(const JsonUIntValue &other) const {
-  return Compare(m_value, other.Value());
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonIntValue::Equals(const JsonUInt64Value &other) const {
-  return Compare(m_value, other.Value());
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonIntValue::Equals(const JsonInt64Value &other) const {
-  return Compare(m_value, other.Value());
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonUInt64Value::Equals(const JsonUIntValue &other) const {
-  return Compare(other.Value(), m_value);
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonUInt64Value::Equals(const JsonIntValue &other) const {
-  return Compare(other.Value(), m_value);
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonUInt64Value::Equals(const JsonInt64Value &other) const {
-  return Compare(other.Value(), m_value);
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonInt64Value::Equals(const JsonUIntValue &other) const {
-  return Compare(other.Value(), m_value);
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonInt64Value::Equals(const JsonIntValue &other) const {
-  return Compare(other.Value(), m_value);
+  return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 bool JsonInt64Value::Equals(const JsonUInt64Value &other) const {
-  return Compare(m_value, other.Value());
+  return CompareNumbers(m_value, other.Value()) == 0;
+}
+
+// Number inequality functions
+int JsonUIntValue::Compare(const JsonUIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUIntValue::Compare(const JsonIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUIntValue::Compare(const JsonUInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUIntValue::Compare(const JsonInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUIntValue::Compare(const JsonDoubleValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonIntValue::Compare(const JsonUIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonIntValue::Compare(const JsonIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonIntValue::Compare(const JsonUInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonIntValue::Compare(const JsonInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonIntValue::Compare(const JsonDoubleValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUInt64Value::Compare(const JsonUIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUInt64Value::Compare(const JsonIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUInt64Value::Compare(const JsonUInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUInt64Value::Compare(const JsonInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonUInt64Value::Compare(const JsonDoubleValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonInt64Value::Compare(const JsonUIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonInt64Value::Compare(const JsonIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonInt64Value::Compare(const JsonUInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonInt64Value::Compare(const JsonInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonInt64Value::Compare(const JsonDoubleValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonDoubleValue::Compare(const JsonUIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonDoubleValue::Compare(const JsonIntValue &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonDoubleValue::Compare(const JsonUInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonDoubleValue::Compare(const JsonInt64Value &other) const {
+  return CompareNumbers(m_value, other.Value());
+}
+
+int JsonDoubleValue::Compare(const JsonDoubleValue &other) const {
+  return CompareNumbers(m_value, other.Value());
 }
 
 JsonDoubleValue::JsonDoubleValue(double value)
