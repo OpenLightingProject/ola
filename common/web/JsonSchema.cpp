@@ -208,9 +208,11 @@ void StringValidator::ExtendSchema(JsonObject *schema) const {
 
 // MultipleOfConstraint
 // -----------------------------------------------------------------------------
+/*
 bool MultipleOfConstraint::IsValid(double d) {
   return (fmod(d, m_multiple_of) == 0);
 }
+*/
 
 // IntegerValidator
 // -----------------------------------------------------------------------------
@@ -223,19 +225,19 @@ void IntegerValidator::AddConstraint(NumberConstraint *constraint) {
 }
 
 void IntegerValidator::Visit(const JsonUIntValue &value) {
-  CheckValue(value.Value());
+  CheckValue(value);
 }
 
 void IntegerValidator::Visit(const JsonIntValue &value) {
-  CheckValue(value.Value());
+  CheckValue(value);
 }
 
 void IntegerValidator::Visit(const JsonUInt64Value &value) {
-  CheckValue(value.Value());
+  CheckValue(value);
 }
 
 void IntegerValidator::Visit(const JsonInt64Value &value) {
-  CheckValue(value.Value());
+  CheckValue(value);
 }
 
 void IntegerValidator::Visit(const JsonDoubleValue &value) {
@@ -249,11 +251,10 @@ void IntegerValidator::ExtendSchema(JsonObject *schema) const {
   }
 }
 
-template <typename T>
-void IntegerValidator::CheckValue(T t) {
+void IntegerValidator::CheckValue(const JsonNumberValue &value) {
   vector<NumberConstraint*>::const_iterator iter = m_constraints.begin();
   for (; iter != m_constraints.end(); ++iter) {
-    if (!(*iter)->IsValid(t)) {
+    if (!(*iter)->IsValid(value)) {
       m_is_valid = false;
       return;
     }
@@ -262,7 +263,7 @@ void IntegerValidator::CheckValue(T t) {
 }
 
 void NumberValidator::Visit(const JsonDoubleValue &value) {
-  CheckValue(value.Value());
+  CheckValue(value);
 }
 
 // ObjectValidator

@@ -65,6 +65,7 @@ class OptionalItem {
   T m_value;
 };
 
+
 /**
  * @brief The interface all SchemaParseContext classes inherit from.
  */
@@ -236,6 +237,9 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.1 Number / integer keywords
   OptionalItem<bool> m_exclusive_maximum;
   OptionalItem<bool> m_exclusive_minimum;
+  std::auto_ptr<JsonNumberValue> m_maximum;
+  std::auto_ptr<JsonNumberValue> m_minimum;
+  std::auto_ptr<JsonNumberValue> m_multiple_of;
 
   // 5.2 String keywords
   // TODO(simon): Implement pattern support?
@@ -283,6 +287,9 @@ class SchemaParseContext : public SchemaParseContextInterface {
 
   template <typename T>
   void ProcessInt(SchemaErrorLogger *logger, T t);
+
+  void AddNumberConstraints(IntegerValidator *validator);
+
   ValidatorInterface* BuildArrayValidator(SchemaErrorLogger *logger);
   ValidatorInterface* BuildObjectValidator(SchemaErrorLogger *logger);
   ValidatorInterface* BuildStringValidator(SchemaErrorLogger *logger);

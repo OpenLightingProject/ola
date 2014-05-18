@@ -265,6 +265,11 @@ class JsonStringValue: public JsonLeafValue {
 class JsonNumberValue : public JsonLeafValue {
  public:
   /**
+   * @brief Checks if the remainder if non-0;
+   */
+  virtual bool MultipleOf(const JsonNumberValue &other) const = 0;
+
+  /**
    * @brief Less than operator.
    */
   virtual bool operator<(const JsonNumberValue &other) const = 0;
@@ -298,6 +303,12 @@ class JsonNumberValue : public JsonLeafValue {
   virtual int Compare(const JsonUInt64Value &value) const = 0;
   virtual int Compare(const JsonInt64Value &value) const = 0;
   virtual int Compare(const JsonDoubleValue &value) const = 0;
+
+  virtual bool FactorOf(const JsonUIntValue &value) const = 0;
+  virtual bool FactorOf(const JsonIntValue &value) const = 0;
+  virtual bool FactorOf(const JsonUInt64Value &value) const = 0;
+  virtual bool FactorOf(const JsonInt64Value &value) const = 0;
+  virtual bool FactorOf(const JsonDoubleValue &value) const = 0;
   /**
    * @endsection
    */
@@ -318,6 +329,10 @@ class JsonUIntValue: public JsonNumberValue {
 
   bool operator<(const JsonNumberValue &other) const {
     return other.Compare(*this) == 1;
+  }
+
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
@@ -345,6 +360,12 @@ class JsonUIntValue: public JsonNumberValue {
   int Compare(const JsonUInt64Value &value) const;
   int Compare(const JsonInt64Value &value) const;
   int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
    * @endsection
    */
@@ -373,6 +394,10 @@ class JsonIntValue: public JsonNumberValue {
     return other.Compare(*this) == 1;
   }
 
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
+  }
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   JsonValue* Clone() const { return new JsonIntValue(m_value); }
@@ -398,6 +423,12 @@ class JsonIntValue: public JsonNumberValue {
   int Compare(const JsonUInt64Value &value) const;
   int Compare(const JsonInt64Value &value) const;
   int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
    * @endsection
    */
@@ -427,6 +458,10 @@ class JsonUInt64Value: public JsonNumberValue {
     return other.Compare(*this) == 1;
   }
 
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
+  }
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   JsonValue* Clone() const { return new JsonUInt64Value(m_value); }
@@ -452,6 +487,12 @@ class JsonUInt64Value: public JsonNumberValue {
   int Compare(const JsonUInt64Value &value) const;
   int Compare(const JsonInt64Value &value) const;
   int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
    * @endsection
    */
@@ -481,6 +522,10 @@ class JsonInt64Value: public JsonNumberValue {
     return other.Compare(*this) == 1;
   }
 
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
+  }
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   JsonValue* Clone() const { return new JsonInt64Value(m_value); }
@@ -506,6 +551,12 @@ class JsonInt64Value: public JsonNumberValue {
   int Compare(const JsonUInt64Value &value) const;
   int Compare(const JsonInt64Value &value) const;
   int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
    * @endsection
    */
@@ -568,6 +619,10 @@ class JsonDoubleValue: public JsonNumberValue {
     return other.Compare(*this) == 1;
   }
 
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
+  }
+
   void Accept(JsonValueVisitorInterface *visitor) const;
 
   /**
@@ -616,6 +671,12 @@ class JsonDoubleValue: public JsonNumberValue {
   int Compare(const JsonUInt64Value &value) const;
   int Compare(const JsonInt64Value &value) const;
   int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
    * @endsection
    */

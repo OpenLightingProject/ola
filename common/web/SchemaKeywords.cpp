@@ -125,7 +125,7 @@ SchemaKeyword LookupKeyword(const string& keyword) {
   } else if (keyword == "exclusiveMaximum") {
     return SCHEMA_EXCLUSIVE_MAXIMUM;
   } else if (keyword == "minimum") {
-    return SCHEMA_MAXIMUM;
+    return SCHEMA_MINIMUM;
   } else if (keyword == "exclusiveMinimum") {
     return SCHEMA_EXCLUSIVE_MINIMUM;
   } else if (keyword == "maxLength") {

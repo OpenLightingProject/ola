@@ -399,6 +399,107 @@ int JsonDoubleValue::Compare(const JsonDoubleValue &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
+bool JsonUIntValue::FactorOf(const JsonUIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUIntValue::FactorOf(const JsonIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUIntValue::FactorOf(const JsonUInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUIntValue::FactorOf(const JsonInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUIntValue::FactorOf(const JsonDoubleValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonIntValue::FactorOf(const JsonUIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonIntValue::FactorOf(const JsonIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonIntValue::FactorOf(const JsonUInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonIntValue::FactorOf(const JsonInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonIntValue::FactorOf(const JsonDoubleValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonUInt64Value::FactorOf(const JsonUIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUInt64Value::FactorOf(const JsonIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUInt64Value::FactorOf(const JsonUInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUInt64Value::FactorOf(const JsonInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonUInt64Value::FactorOf(const JsonDoubleValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonInt64Value::FactorOf(const JsonUIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonInt64Value::FactorOf(const JsonIntValue &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonInt64Value::FactorOf(const JsonUInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonInt64Value::FactorOf(const JsonInt64Value &value) const {
+  return value.Value() % m_value == 0;
+}
+
+bool JsonInt64Value::FactorOf(const JsonDoubleValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonDoubleValue::FactorOf(const JsonUIntValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonDoubleValue::FactorOf(const JsonIntValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonDoubleValue::FactorOf(const JsonUInt64Value &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonDoubleValue::FactorOf(const JsonInt64Value &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+bool JsonDoubleValue::FactorOf(const JsonDoubleValue &value) const {
+  return fmod(value.Value(), m_value) == 0;
+}
+
+
 JsonDoubleValue::JsonDoubleValue(double value)
     : m_value(value) {
   ostringstream str;

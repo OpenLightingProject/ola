@@ -315,18 +315,14 @@ class NullValidator : public BaseValidator {
 };
 
 /**
- * @brief The base class for contraints that can be applies to the Json number
+ * @brief The base class for constraints that can be applies to the Json number
  * type.
  */
 class NumberConstraint {
  public:
   virtual ~NumberConstraint() {}
 
-  virtual bool IsValid(int i) = 0;
-  virtual bool IsValid(unsigned int i) = 0;
-  virtual bool IsValid(uint64_t i) = 0;
-  virtual bool IsValid(int64_t i) = 0;
-  virtual bool IsValid(double d) = 0;
+  virtual bool IsValid(const JsonNumberValue &value) = 0;
 
   virtual void ExtendSchema(JsonObject *schema) const = 0;
 };
@@ -336,33 +332,20 @@ class NumberConstraint {
  */
 class MultipleOfConstraint : public NumberConstraint {
  public:
-  explicit MultipleOfConstraint(int multiple_of)
-      : m_multiple_of(multiple_of) {
+  explicit MultipleOfConstraint(const JsonNumberValue *value)
+      : m_multiple_of(value) {
   }
 
-  bool IsValid(int i) {
-    return (i % m_multiple_of == 0);
+  bool IsValid(const JsonNumberValue &value) {
+    return value.MultipleOf(*m_multiple_of);
   }
-
-  bool IsValid(unsigned int i) {
-    return (i % m_multiple_of == 0);
-  }
-
-  bool IsValid(uint64_t i) {
-    return (i % m_multiple_of == 0);
-  }
-  bool IsValid(int64_t i) {
-    return (i % m_multiple_of == 0);
-  }
-
-  bool IsValid(double d);
 
   void ExtendSchema(JsonObject *schema) const {
-    schema->Add("multipleOf", m_multiple_of);
+    schema->AddValue("multipleOf", m_multiple_of->Clone());
   }
 
  private:
-  int m_multiple_of;
+  std::auto_ptr<const JsonNumberValue> m_multiple_of;
 };
 
 /**
@@ -370,60 +353,41 @@ class MultipleOfConstraint : public NumberConstraint {
  */
 class MaximumConstraint : public NumberConstraint {
  public:
-  MaximumConstraint(int limit, bool is_exclusive)
+  /**
+   * @brief Create a new MaximumConstraint.
+   * @param limit the maximum, ownership is transferred.
+   * @param is_exclusive true is the limit is exclusive, false if not.
+   */
+  MaximumConstraint(const JsonNumberValue *limit, bool is_exclusive)
       : m_limit(limit),
+        m_has_exclusive(true),
         m_is_exclusive(is_exclusive) {
   }
 
-  MaximumConstraint(unsigned int limit, bool is_exclusive)
+  /**
+   * @brief Create a new MaximumConstraint.
+   * @param limit the maximum, ownership is transferred.
+   */
+  explicit MaximumConstraint(const JsonNumberValue *limit)
       : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
+        m_has_exclusive(false) {
   }
 
-  MaximumConstraint(uint64_t limit, bool is_exclusive)
-      : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
-  }
-
-  MaximumConstraint(int64_t limit, bool is_exclusive)
-      : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
-  }
-
-  MaximumConstraint(double limit, bool is_exclusive)
-      : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
-  }
-
-  bool IsValid(int i) {
-    return m_is_exclusive ? i < m_limit : i <= m_limit;
-  }
-
-  bool IsValid(unsigned int i) {
-    return m_is_exclusive ? i < m_limit : i <= m_limit;
-  }
-
-  bool IsValid(uint64_t i) {
-    return m_is_exclusive ? i < m_limit : i <= m_limit;
-  }
-  bool IsValid(int64_t i) {
-    return m_is_exclusive ? i < m_limit : i <= m_limit;
-  }
-
-  bool IsValid(double d) {
-    return m_is_exclusive ? d < m_limit : d <= m_limit;
+  bool IsValid(const JsonNumberValue &value) {
+    return (m_has_exclusive && m_is_exclusive) ? value < *m_limit
+        : value <= *m_limit;
   }
 
   void ExtendSchema(JsonObject *schema) const {
-    schema->Add("maximum", m_limit);
-    if (m_is_exclusive) {
-      schema->Add("exclusiveMaximum", true);
+    schema->AddValue("maximum", m_limit->Clone());
+    if (m_has_exclusive) {
+      schema->Add("exclusiveMaximum", m_is_exclusive);
     }
   }
 
  private:
-  double m_limit;
-  bool m_is_exclusive;
+  std::auto_ptr<const JsonNumberValue> m_limit;
+  bool m_has_exclusive, m_is_exclusive;
 };
 
 /**
@@ -431,60 +395,41 @@ class MaximumConstraint : public NumberConstraint {
  */
 class MinimumConstraint : public NumberConstraint {
  public:
-  MinimumConstraint(int limit, bool is_exclusive)
+  /**
+   * @brief Create a new MaximumConstraint.
+   * @param limit the minimum, ownership is transferred.
+   * @param is_exclusive true is the limit is exclusive, false if not.
+   */
+  MinimumConstraint(const JsonNumberValue *limit, bool is_exclusive)
       : m_limit(limit),
+        m_has_exclusive(true),
         m_is_exclusive(is_exclusive) {
   }
 
-  MinimumConstraint(unsigned int limit, bool is_exclusive)
+  /**
+   * @brief Create a new MaximumConstraint.
+   * @param limit the minimum, ownership is transferred.
+   */
+  explicit MinimumConstraint(const JsonNumberValue *limit)
       : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
+        m_has_exclusive(false) {
   }
 
-  MinimumConstraint(uint64_t limit, bool is_exclusive)
-      : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
-  }
-
-  MinimumConstraint(int64_t limit, bool is_exclusive)
-      : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
-  }
-
-  MinimumConstraint(double limit, bool is_exclusive)
-      : m_limit(limit),
-        m_is_exclusive(is_exclusive) {
-  }
-
-  bool IsValid(int i) {
-    return m_is_exclusive ? i > m_limit : i >= m_limit;
-  }
-
-  bool IsValid(unsigned int i) {
-    return m_is_exclusive ? i > m_limit : i >= m_limit;
-  }
-
-  bool IsValid(uint64_t i) {
-    return m_is_exclusive ? i > m_limit : i >= m_limit;
-  }
-  bool IsValid(int64_t i) {
-    return m_is_exclusive ? i > m_limit : i >= m_limit;
-  }
-
-  bool IsValid(double d) {
-    return m_is_exclusive ? d > m_limit : d >= m_limit;
+  bool IsValid(const JsonNumberValue &value) {
+    return (m_has_exclusive && m_is_exclusive) ? value > *m_limit
+        : value >= *m_limit;
   }
 
   void ExtendSchema(JsonObject *schema) const {
-    schema->Add("minimum", m_limit);
-    if (m_is_exclusive) {
-      schema->Add("exclusiveMinimum", true);
+    schema->AddValue("minimum", m_limit->Clone());
+    if (m_has_exclusive) {
+      schema->Add("exclusiveMinimum", m_is_exclusive);
     }
   }
 
  private:
-  double m_limit;
-  bool m_is_exclusive;
+  std::auto_ptr<const JsonNumberValue> m_limit;
+  bool m_has_exclusive, m_is_exclusive;
 };
 
 /**
@@ -510,8 +455,7 @@ class IntegerValidator : public BaseValidator {
  protected:
   explicit IntegerValidator(JsonType type) : BaseValidator(type) {}
 
-  template <typename T>
-  void CheckValue(T t);
+  void CheckValue(const JsonNumberValue &value);
 
  private:
   std::vector<NumberConstraint*> m_constraints;

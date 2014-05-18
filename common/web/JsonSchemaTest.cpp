@@ -43,7 +43,6 @@ using ola::web::JsonStringValue;
 using ola::web::JsonUIntValue;
 using ola::web::MaximumConstraint;
 using ola::web::MinimumConstraint;
-using ola::web::MultipleOfConstraint;
 using ola::web::NotValidator;
 using ola::web::NumberValidator;
 using ola::web::ObjectValidator;
@@ -109,7 +108,8 @@ void JsonSchemaTest::testParseBool() {
   NumberValidator number_validator;
   */
   NumberValidator *number_validator = new NumberValidator();
-  number_validator->AddConstraint(new MaximumConstraint(7, true));
+  number_validator->AddConstraint(new MaximumConstraint(
+        JsonValue::NewNumberValue(7), true));
   number_validator->SetTitle("Age");
   number_validator->SetDescription("Age of the Human");
 

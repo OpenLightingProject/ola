@@ -59,6 +59,7 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST(testEquality);
   CPPUNIT_TEST(testIntInequality);
+  CPPUNIT_TEST(testMultipleOf);
   CPPUNIT_TEST(testLookups);
   CPPUNIT_TEST(testClone);
   CPPUNIT_TEST_SUITE_END();
@@ -76,6 +77,7 @@ class JsonTest: public CppUnit::TestFixture {
     void testComplexObject();
     void testEquality();
     void testIntInequality();
+    void testMultipleOf();
     void testLookups();
     void testClone();
 };
@@ -425,7 +427,6 @@ void JsonTest::testIntInequality() {
   OLA_ASSERT_LT(int64_2, double3);
   OLA_ASSERT_LT(uint64_1, double3);
 
-
   OLA_ASSERT_LT(uint1, uint2);
   OLA_ASSERT_LTE(uint1, uint1);
   OLA_ASSERT_LT(int1, int2);
@@ -461,6 +462,87 @@ void JsonTest::testIntInequality() {
   OLA_ASSERT_LTE(uint1, int64_2);
   OLA_ASSERT_LT(uint64_1, int64_3);
   OLA_ASSERT_LTE(uint64_1, int64_2);
+}
+
+/*
+ * Test for mulitpleOf
+ */
+void JsonTest::testMultipleOf() {
+  JsonDoubleValue double1(10.0);
+  JsonDoubleValue double2(5);
+  JsonDoubleValue double3(11.0);
+  JsonUIntValue uint1(10);
+  JsonUIntValue uint2(5);
+  JsonUIntValue uint3(11);
+  JsonIntValue int1(10);
+  JsonIntValue int2(5);
+  JsonIntValue int3(11);
+  JsonInt64Value int64_1(10);
+  JsonInt64Value int64_2(5);
+  JsonInt64Value int64_3(11);
+  JsonUInt64Value uint64_1(10);
+  JsonUInt64Value uint64_2(5);
+  JsonUInt64Value uint64_3(11);
+
+  OLA_ASSERT(double1.MultipleOf(double2));
+  OLA_ASSERT(double1.MultipleOf(uint2));
+  OLA_ASSERT(double1.MultipleOf(int2));
+  OLA_ASSERT(double1.MultipleOf(uint64_2));
+  OLA_ASSERT(double1.MultipleOf(int64_2));
+
+  OLA_ASSERT(uint1.MultipleOf(double2));
+  OLA_ASSERT(uint1.MultipleOf(uint2));
+  OLA_ASSERT(uint1.MultipleOf(int2));
+  OLA_ASSERT(uint1.MultipleOf(uint64_2));
+  OLA_ASSERT(uint1.MultipleOf(int64_2));
+
+  OLA_ASSERT(int1.MultipleOf(double2));
+  OLA_ASSERT(int1.MultipleOf(uint2));
+  OLA_ASSERT(int1.MultipleOf(int2));
+  OLA_ASSERT(int1.MultipleOf(uint64_2));
+  OLA_ASSERT(int1.MultipleOf(int64_2));
+
+  OLA_ASSERT(int64_1.MultipleOf(double2));
+  OLA_ASSERT(int64_1.MultipleOf(uint2));
+  OLA_ASSERT(int64_1.MultipleOf(int2));
+  OLA_ASSERT(int64_1.MultipleOf(uint64_2));
+  OLA_ASSERT(int64_1.MultipleOf(int64_2));
+
+  OLA_ASSERT(uint64_1.MultipleOf(double2));
+  OLA_ASSERT(uint64_1.MultipleOf(uint2));
+  OLA_ASSERT(uint64_1.MultipleOf(int2));
+  OLA_ASSERT(uint64_1.MultipleOf(uint64_2));
+  OLA_ASSERT(uint64_1.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(double3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(uint3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(int3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(int64_2));
 }
 
 /*

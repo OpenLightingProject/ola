@@ -100,6 +100,7 @@ ValidatorInterface* SchemaParseContext::GetValidator(
   }
 
   ValidatorInterface *validator = NULL;
+  IntegerValidator *int_validator = NULL;
   switch (m_type) {
     case JSON_UNDEFINED:
       validator = new WildcardValidator();
@@ -111,13 +112,17 @@ ValidatorInterface* SchemaParseContext::GetValidator(
       validator = new BoolValidator();
       break;
     case JSON_INTEGER:
-      validator = new IntegerValidator();
+      int_validator = new IntegerValidator();
+      AddNumberConstraints(int_validator);
+      validator = int_validator;
       break;
     case JSON_NULL:
       validator = new NullValidator();
       break;
     case JSON_NUMBER:
-      validator = new NumberValidator();
+      int_validator = new NumberValidator();
+      AddNumberConstraints(int_validator);
+      validator = int_validator;
       break;
     case JSON_OBJECT:
       validator = BuildObjectValidator(logger);
@@ -223,6 +228,19 @@ void SchemaParseContext::Number(SchemaErrorLogger *logger, double value) {
     case SCHEMA_DEFAULT:
       m_default_value.reset(new JsonDoubleValue(value));
       break;
+    case SCHEMA_MAXIMUM:
+      m_maximum.reset(JsonValue::NewNumberValue(value));
+      break;
+    case SCHEMA_MINIMUM:
+      m_minimum.reset(JsonValue::NewNumberValue(value));
+      break;
+    case SCHEMA_MULTIPLEOF:
+      if (value <= 0) {
+        logger->Error() << KeywordToString(m_keyword) << " can't be negative";
+      } else {
+        m_multiple_of.reset(JsonValue::NewNumberValue(value));
+      }
+      return;
     default:
       {}
   }
@@ -346,6 +364,9 @@ void SchemaParseContext::CloseObject(SchemaErrorLogger *logger) {
 void SchemaParseContext::ProcessPositiveInt(SchemaErrorLogger *logger,
                                             uint64_t value) {
   switch (m_keyword) {
+    case SCHEMA_MULTIPLEOF:
+      m_multiple_of.reset(JsonValue::NewNumberValue(value));
+      return;
     case SCHEMA_MIN_ITEMS:
       m_min_items.Set(value);
       break;
@@ -380,6 +401,12 @@ void SchemaParseContext::ProcessInt(SchemaErrorLogger *logger, T value) {
     case SCHEMA_DEFAULT:
       m_default_value.reset(JsonValue::NewValue(value));
       return;
+    case SCHEMA_MAXIMUM:
+      m_maximum.reset(JsonValue::NewNumberValue(value));
+      return;
+    case SCHEMA_MINIMUM:
+      m_minimum.reset(JsonValue::NewNumberValue(value));
+      return;
     default:
       {}
   }
@@ -390,6 +417,30 @@ void SchemaParseContext::ProcessInt(SchemaErrorLogger *logger, T value) {
   }
 
   logger->Error() << KeywordToString(m_keyword) << " can't be negative";
+}
+
+void SchemaParseContext::AddNumberConstraints(IntegerValidator *validator) {
+  if (m_maximum.get()) {
+    if (m_exclusive_maximum.IsSet()) {
+      validator->AddConstraint(new MaximumConstraint(
+            m_maximum.release(), m_exclusive_maximum.Value()));
+    } else {
+      validator->AddConstraint(new MaximumConstraint(m_maximum.release()));
+    }
+  }
+
+  if (m_minimum.get()) {
+    if (m_exclusive_minimum.IsSet()) {
+      validator->AddConstraint(new MinimumConstraint(
+            m_minimum.release(), m_exclusive_minimum.Value()));
+    } else {
+      validator->AddConstraint(new MinimumConstraint(m_minimum.release()));
+    }
+  }
+
+  if (m_multiple_of.get()) {
+    validator->AddConstraint(new MultipleOfConstraint(m_multiple_of.release()));
+  }
 }
 
 ValidatorInterface* SchemaParseContext::BuildArrayValidator(
