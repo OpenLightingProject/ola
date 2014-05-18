@@ -146,6 +146,13 @@ void JsonTest::testNumberValues() {
   JsonDoubleValue d5(rep3);
   OLA_ASSERT_EQ(string("-345e-2"), JsonWriter::AsString(d5));
   OLA_ASSERT_EQ(-3.45, d5.Value());
+
+  JsonDoubleValue::DoubleRepresentation rep4 = {
+    false, 2, 0, 1, 0
+  };
+  JsonDoubleValue d6(rep4);
+  OLA_ASSERT_EQ(string("2.1"), JsonWriter::AsString(d6));
+  OLA_ASSERT_EQ(2.1, d6.Value());
 }
 
 /*

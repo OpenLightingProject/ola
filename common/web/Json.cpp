@@ -414,7 +414,7 @@ JsonDoubleValue::JsonDoubleValue(const DoubleRepresentation &rep) {
 bool JsonDoubleValue::AsDouble(const DoubleRepresentation &rep, double *out) {
   // TODO(simon): Check the limits here.
   double d = rep.fractional;
-  while (d > 1.0) {
+  while (d >= 1.0) {
     d /= 10.0;
   }
   for (unsigned int i = 0; i < rep.leading_fractional_zeros; i++) {
