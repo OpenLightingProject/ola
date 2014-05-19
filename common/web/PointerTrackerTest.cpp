@@ -25,8 +25,10 @@
 
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
+#include "ola/web/JsonPointer.h"
 #include "common/web/PointerTracker.h"
 
+using ola::web::JsonPointer;
 using ola::web::PointerTracker;
 using std::string;
 
@@ -56,117 +58,120 @@ void PointerTrackerTest::testPointer() {
    *   "cat": [[0, 1], [], false],
    *  }
    */
-  PointerTracker pointer;
+  JsonPointer pointer;
+  PointerTracker tracker(&pointer);
 
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.OpenObject();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.SetProperty("foo");
-  OLA_ASSERT_EQ(string("/foo"), pointer.GetPointer());
-  pointer.OpenArray();
-  OLA_ASSERT_EQ(string("/foo"), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/foo/0"), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/foo/1"), pointer.GetPointer());
-  pointer.OpenObject();
-  OLA_ASSERT_EQ(string("/foo/2"), pointer.GetPointer());
-  pointer.SetProperty("bar");
-  OLA_ASSERT_EQ(string("/foo/2/bar"), pointer.GetPointer());
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.SetProperty("foo");
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/foo/0"), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/foo/1"), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/foo/2"), pointer.ToString());
+  tracker.SetProperty("bar");
+  OLA_ASSERT_EQ(string("/foo/2/bar"), pointer.ToString());
   // No effect, but makes the implementation in the JsonHandler simpler.
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/foo/2/bar"), pointer.GetPointer());
-  pointer.CloseObject();
-  OLA_ASSERT_EQ(string("/foo/2"), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/foo/3"), pointer.GetPointer());
-  pointer.CloseArray();
-  OLA_ASSERT_EQ(string("/foo"), pointer.GetPointer());
-  pointer.SetProperty("baz");
-  OLA_ASSERT_EQ(string("/baz"), pointer.GetPointer());
-  pointer.OpenObject();
-  OLA_ASSERT_EQ(string("/baz"), pointer.GetPointer());
-  pointer.SetProperty("bat");
-  OLA_ASSERT_EQ(string("/baz/bat"), pointer.GetPointer());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/foo/2/bar"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/foo/2"), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/foo/3"), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.SetProperty("baz");
+  OLA_ASSERT_EQ(string("/baz"), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/baz"), pointer.ToString());
+  tracker.SetProperty("bat");
+  OLA_ASSERT_EQ(string("/baz/bat"), pointer.ToString());
   // No effect, but makes the implementation in the JsonHandler simpler.
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/baz/bat"), pointer.GetPointer());
-  pointer.CloseObject();
-  OLA_ASSERT_EQ(string("/baz"), pointer.GetPointer());
-  pointer.SetProperty("cat");
-  OLA_ASSERT_EQ(string("/cat"), pointer.GetPointer());
-  pointer.OpenArray();
-  OLA_ASSERT_EQ(string("/cat"), pointer.GetPointer());
-  pointer.OpenArray();
-  OLA_ASSERT_EQ(string("/cat/0"), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/cat/0/0"), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/cat/0/1"), pointer.GetPointer());
-  pointer.CloseArray();
-  OLA_ASSERT_EQ(string("/cat/0"), pointer.GetPointer());
-  pointer.OpenArray();
-  OLA_ASSERT_EQ(string("/cat/1"), pointer.GetPointer());
-  pointer.CloseArray();
-  OLA_ASSERT_EQ(string("/cat/1"), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/cat/2"), pointer.GetPointer());
-  pointer.CloseArray();
-  OLA_ASSERT_EQ(string("/cat"), pointer.GetPointer());
-  pointer.CloseObject();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/baz/bat"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/baz"), pointer.ToString());
+  tracker.SetProperty("cat");
+  OLA_ASSERT_EQ(string("/cat"), pointer.ToString());
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string("/cat"), pointer.ToString());
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string("/cat/0"), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/cat/0/0"), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/cat/0/1"), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string("/cat/0"), pointer.ToString());
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string("/cat/1"), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string("/cat/1"), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/cat/2"), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string("/cat"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
 }
 
 void PointerTrackerTest::testErrorConditions() {
-  PointerTracker pointer;
+  JsonPointer pointer;
+  PointerTracker tracker(&pointer);
 
   // Close without Opens
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.CloseObject();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.CloseArray();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
 
   // Mismatched open / close types.
-  pointer.OpenObject();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.SetProperty("foo");
-  OLA_ASSERT_EQ(string("/foo"), pointer.GetPointer());
-  pointer.CloseArray();
-  OLA_ASSERT_EQ(string("/foo"), pointer.GetPointer());
-  pointer.CloseObject();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.SetProperty("foo");
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
 
   // SetProperty while in an array
-  pointer.OpenArray();
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.SetProperty("foo");
-  OLA_ASSERT_EQ(string(""), pointer.GetPointer());
-  pointer.IncrementIndex();
-  OLA_ASSERT_EQ(string("/0"), pointer.GetPointer());
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.SetProperty("foo");
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.IncrementIndex();
+  OLA_ASSERT_EQ(string("/0"), pointer.ToString());
 }
 
 void PointerTrackerTest::testEscaping() {
-  PointerTracker pointer;
+  JsonPointer pointer;
+  PointerTracker tracker(&pointer);
 
-  pointer.OpenObject();
+  tracker.OpenObject();
   // Examples from RFC 6901
-  pointer.SetProperty("");
-  OLA_ASSERT_EQ(string("/"), pointer.GetPointer());
-  pointer.SetProperty("a/b");
-  OLA_ASSERT_EQ(string("/a~1b"), pointer.GetPointer());
-  pointer.SetProperty("c%d");
-  OLA_ASSERT_EQ(string("/c%d"), pointer.GetPointer());
-  pointer.SetProperty("e^f");
-  OLA_ASSERT_EQ(string("/e^f"), pointer.GetPointer());
-  pointer.SetProperty("g|h");
-  OLA_ASSERT_EQ(string("/g|h"), pointer.GetPointer());
-  pointer.SetProperty("i\\\\j");
-  OLA_ASSERT_EQ(string("/i\\\\j"), pointer.GetPointer());
-  pointer.SetProperty("k\"l");
-  OLA_ASSERT_EQ(string("/k\"l"), pointer.GetPointer());
-  pointer.SetProperty(" ");
-  OLA_ASSERT_EQ(string("/ "), pointer.GetPointer());
-  pointer.SetProperty("m~n");
-  OLA_ASSERT_EQ(string("/m~0n"), pointer.GetPointer());
+  tracker.SetProperty("");
+  OLA_ASSERT_EQ(string("/"), pointer.ToString());
+  tracker.SetProperty("a/b");
+  OLA_ASSERT_EQ(string("/a~1b"), pointer.ToString());
+  tracker.SetProperty("c%d");
+  OLA_ASSERT_EQ(string("/c%d"), pointer.ToString());
+  tracker.SetProperty("e^f");
+  OLA_ASSERT_EQ(string("/e^f"), pointer.ToString());
+  tracker.SetProperty("g|h");
+  OLA_ASSERT_EQ(string("/g|h"), pointer.ToString());
+  tracker.SetProperty("i\\\\j");
+  OLA_ASSERT_EQ(string("/i\\\\j"), pointer.ToString());
+  tracker.SetProperty("k\"l");
+  OLA_ASSERT_EQ(string("/k\"l"), pointer.ToString());
+  tracker.SetProperty(" ");
+  OLA_ASSERT_EQ(string("/ "), pointer.ToString());
+  tracker.SetProperty("m~n");
+  OLA_ASSERT_EQ(string("/m~0n"), pointer.ToString());
 }

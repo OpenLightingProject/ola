@@ -108,7 +108,7 @@ class TreeHandler : public JsonHandlerInterface {
   std::stack<JsonArray*> m_array_stack;
   std::stack<JsonObject*> m_object_stack;
 
-  void AddValue(const JsonValue *value);
+  void AddValue(JsonValue *value);
   DISALLOW_COPY_AND_ASSIGN(TreeHandler);
 };
 /**@}*/

@@ -32,41 +32,18 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
-// operator<<
-std::ostream& operator<<(std::ostream &os, const JsonStringValue &value) {
-  return os << value.Value();
+JsonValue* JsonValue::LookupElement(const JsonPointer &pointer) {
+  JsonPointer::Iterator iter = pointer.begin();
+  return LookupElementWithIter(&iter);
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value) {
-  return os << value.Value();
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonIntValue &value) {
-  return os << value.Value();
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value) {
-  return os << value.Value();
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value) {
-  return os << value.Value();
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value) {
-  return os << value.Value();
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value) {
-  return os << value.Value();
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonNullValue &) {
-  return os << "null";
-}
-
-std::ostream& operator<<(std::ostream &os, const JsonRawValue &value) {
-  return os << value.Value();
+JsonValue* JsonLeafValue::LookupElementWithIter(
+    JsonPointer::Iterator *iterator) {
+  if (!iterator->IsValid() || !iterator->AtEnd()) {
+    return NULL;
+  }
+  (*iterator)++;  // increment to move past the end.
+  return this;
 }
 
 
@@ -257,6 +234,25 @@ JsonObject::~JsonObject() {
   STLDeleteValues(&m_members);
 }
 
+JsonValue* JsonObject::LookupElementWithIter(JsonPointer::Iterator *iterator) {
+  if (!iterator->IsValid()) {
+    return NULL;
+  }
+
+  if (iterator->AtEnd()) {
+    return this;
+  }
+
+  const string token = **iterator;
+  (*iterator)++;
+  JsonValue *value = STLFindOrNull(m_members, token);
+  if (value) {
+    return value->LookupElementWithIter(iterator);
+  } else {
+    return NULL;
+  }
+}
+
 bool JsonObject::Equals(const JsonObject &other) const {
   if (m_members.size() != other.m_members.size()) {
     return false;
@@ -314,12 +310,21 @@ JsonArray* JsonObject::AddArray(const string &key) {
   return array;
 }
 
-void JsonObject::AddValue(const string &key, const JsonValue *value) {
+void JsonObject::AddValue(const string &key, JsonValue *value) {
   STLReplaceAndDelete(&m_members, key, value);
 }
 
 void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
+}
+
+JsonValue* JsonObject::Clone() const {
+  JsonObject *object = new JsonObject();
+  MemberMap::const_iterator iter = m_members.begin();
+  for (; iter != m_members.end(); ++iter) {
+    object->AddValue(iter->first, iter->second->Clone());
+  }
+  return object;
 }
 
 void JsonObject::VisitProperties(JsonValueVisitorInterface *visitor) const {
@@ -333,6 +338,29 @@ JsonArray::~JsonArray() {
   STLDeleteElements(&m_values);
 }
 
+JsonValue* JsonArray::LookupElementWithIter(JsonPointer::Iterator *iterator) {
+  if (!iterator->IsValid()) {
+    return NULL;
+  }
+
+  if (iterator->AtEnd()) {
+    return this;
+  }
+
+  unsigned int index;
+  if (!StringToInt(**iterator, &index, true)) {
+    (*iterator)++;
+    return NULL;
+  }
+  (*iterator)++;
+
+  if (index < m_values.size()) {
+    return m_values[index]->LookupElementWithIter(iterator);
+  } else {
+    return NULL;
+  }
+}
+
 bool JsonArray::Equals(const JsonArray &other) const {
   if (m_values.size() != other.m_values.size()) {
     return false;
@@ -342,7 +370,7 @@ bool JsonArray::Equals(const JsonArray &other) const {
   ValuesVector::const_iterator other_iter = other.m_values.begin();
   for (; our_iter != m_values.end() && other_iter != other.m_values.end();
        our_iter++, other_iter++) {
-    if (*our_iter != *other_iter) {
+    if (**our_iter != **other_iter) {
       return false;
     }
   }
@@ -353,6 +381,15 @@ void JsonArray::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
 
+JsonValue* JsonArray::Clone() const {
+  JsonArray *array = new JsonArray();
+  ValuesVector::const_iterator iter = m_values.begin();
+  for (; iter != m_values.end(); iter++) {
+    array->AppendValue((*iter)->Clone());
+  }
+  return array;
+}
+
 const JsonValue *JsonArray::ElementAt(unsigned int i) const {
   if (i < m_values.size()) {
     return m_values[i];
@@ -360,5 +397,43 @@ const JsonValue *JsonArray::ElementAt(unsigned int i) const {
     return NULL;
   }
 }
+
+// operator<<
+std::ostream& operator<<(std::ostream &os, const JsonStringValue &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonIntValue &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value) {
+  return os << value.Value();
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonNullValue &) {
+  return os << "null";
+}
+
+std::ostream& operator<<(std::ostream &os, const JsonRawValue &value) {
+  return os << value.Value();
+}
+
 }  // namespace web
 }  // namespace ola

@@ -23,21 +23,23 @@
 #include <sstream>
 #include <vector>
 
-#include "ola/web/Json.h"
-#include "ola/web/JsonWriter.h"
 #include "ola/testing/TestUtils.h"
+#include "ola/web/Json.h"
+#include "ola/web/JsonPointer.h"
+#include "ola/web/JsonWriter.h"
 
 using ola::web::JsonArray;
 using ola::web::JsonBoolValue;
 using ola::web::JsonDoubleValue;
-using ola::web::JsonIntValue;
 using ola::web::JsonInt64Value;
+using ola::web::JsonIntValue;
 using ola::web::JsonNullValue;
 using ola::web::JsonObject;
+using ola::web::JsonPointer;
 using ola::web::JsonRawValue;
 using ola::web::JsonStringValue;
-using ola::web::JsonUIntValue;
 using ola::web::JsonUInt64Value;
+using ola::web::JsonUIntValue;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::string;
@@ -56,6 +58,8 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSimpleObject);
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST(testEquality);
+  CPPUNIT_TEST(testLookups);
+  CPPUNIT_TEST(testClone);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -70,6 +74,8 @@ class JsonTest: public CppUnit::TestFixture {
     void testSimpleObject();
     void testComplexObject();
     void testEquality();
+    void testLookups();
+    void testClone();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonTest);
@@ -322,7 +328,6 @@ void JsonTest::testEquality() {
   OLA_ASSERT(int64_2 == uint64_1);
   OLA_ASSERT(int64_3 == uint64_2);
 
-
   // Test Array equality.
   JsonArray array1;
   array1.Append(true);
@@ -374,5 +379,113 @@ void JsonTest::testEquality() {
   // verify identity equality
   for (unsigned int i = 0; i < all_values.size(); ++i) {
     OLA_ASSERT(*(all_values[i]) == *(all_values[i]));
+  }
+}
+
+/*
+ * Test looking up a value with a pointer.
+ */
+void JsonTest::testLookups() {
+  JsonPointer empty_pointer;
+  JsonPointer invalid_pointer("/invalid/path");
+  JsonPointer name_pointer("/name");
+
+  JsonStringValue string1("foo");
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(&string1),
+                string1.LookupElement(empty_pointer));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+                string1.LookupElement(invalid_pointer));
+
+  // Now try an object
+  JsonStringValue *name_value = new JsonStringValue("simon");
+  JsonObject object;
+  object.Add("age", 10);
+  object.AddValue("name", name_value);
+  object.Add("male", true);
+  object.Add("", "foo");
+
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(&object),
+                object.LookupElement(empty_pointer));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(name_value),
+                object.LookupElement(name_pointer));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+                object.LookupElement(invalid_pointer));
+
+  // Now try an array
+  JsonArray *array = new JsonArray();
+  JsonStringValue *string2 = new JsonStringValue("cat");
+  JsonStringValue *string3 = new JsonStringValue("dog");
+  JsonStringValue *string4 = new JsonStringValue("mouse");
+  array->AppendValue(string2);
+  array->AppendValue(string3);
+  array->AppendValue(string4);
+
+  JsonPointer first("/0");
+  JsonPointer middle("/1");
+  JsonPointer last("/2");
+  JsonPointer one_past_last("/-");
+  JsonPointer invalid("/a");
+
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(array),
+                array->LookupElement(empty_pointer));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+                array->LookupElement(invalid_pointer));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string2),
+                array->LookupElement(first));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string3),
+                array->LookupElement(middle));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string4),
+                array->LookupElement(last));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+                array->LookupElement(one_past_last));
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+                array->LookupElement(invalid));
+
+  // now a nested case
+  object.AddValue("pets", array);
+  JsonPointer first_pet("/pets/0");
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string2),
+                object.LookupElement(first_pet));
+}
+
+/*
+ * Test that clone() works.
+ */
+void JsonTest::testClone() {
+  JsonStringValue string1("foo");
+  JsonBoolValue bool1(true);
+  JsonNullValue null1;
+  JsonDoubleValue double1(1.0);
+  JsonUIntValue uint1(10);
+  JsonIntValue int1(10);
+  JsonInt64Value int64_1(-99);
+  JsonInt64Value uint64_1(10);
+
+  JsonObject object;
+  object.Add("age", 10);
+  object.Add("name", "simon");
+  object.Add("male", true);
+  object.Add("", "foo");
+
+  JsonArray array;
+  array.Append(true);
+  array.Append(1);
+  array.Append("bar");
+
+  vector<JsonValue*> all_values;
+  all_values.push_back(&string1);
+  all_values.push_back(&bool1);
+  all_values.push_back(&null1);
+  all_values.push_back(&double1);
+  all_values.push_back(&uint1);
+  all_values.push_back(&int1);
+  all_values.push_back(&int64_1);
+  all_values.push_back(&uint64_1);
+  all_values.push_back(&object);
+  all_values.push_back(&array);
+
+  for (unsigned int i = 0; i < all_values.size(); ++i) {
+    std::auto_ptr<JsonValue> value(all_values[i]->Clone());
+    OLA_ASSERT(*(value.get()) == *(all_values[i]));
   }
 }

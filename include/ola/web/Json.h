@@ -32,6 +32,7 @@
 
 #include <ola/StringUtils.h>
 #include <ola/base/Macro.h>
+#include <ola/web/JsonPointer.h>
 #include <stdint.h>
 #include <map>
 #include <ostream>
@@ -69,6 +70,11 @@ class JsonValue {
   virtual ~JsonValue() {}
 
   /**
+   * @brief Locate the JsonValue referred to by the JSON Pointer.
+   */
+  virtual JsonValue* LookupElement(const JsonPointer &pointer);
+
+  /**
    * @brief Equality operator.
    *
    * This implements equality as defined in section 3.6 of the JSON Schema Core
@@ -82,6 +88,29 @@ class JsonValue {
   virtual bool operator!=(const JsonValue &other) const {
     return !(*this == other);
   }
+
+  /**
+   * @brief The Accept method for the visitor pattern.
+   * This can be used to traverse the Json Tree in a type-safe manner.
+   */
+  virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
+
+  /**
+   * @brief Make a copy of this JsonValue.
+   */
+  virtual JsonValue* Clone() const = 0;
+
+  /**
+   * @privatesection
+   */
+
+  /**
+   * @brief Lookup the Value referred to by the Iterator.
+   *
+   * This is used by recursively by JsonValue classes. You should call
+   * LookupElement() instead.
+   */
+  virtual JsonValue* LookupElementWithIter(JsonPointer::Iterator *iterator) = 0;
 
   /**
    * @brief Check if this JsonValue equals a JsonStringValue.
@@ -150,16 +179,26 @@ class JsonValue {
   virtual bool Equals(const JsonArray &) const { return false; }
 
   /**
-   * @brief The Accept method for the visitor pattern.
-   * This can be used to traverse the Json Tree in a type-safe manner.
+   * @endsection
    */
-  virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
+};
+
+
+/**
+ * @brief A base class used to describe values which are leafs of a JSON tree.
+ *
+ * Leaf values are those which don't contain other values. All values except
+ * JsonObject and JsonArray are leaf values.
+ */
+class JsonLeafValue : public JsonValue {
+ public:
+  JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
 };
 
 /**
  * @brief A string value.
  */
-class JsonStringValue: public JsonValue {
+class JsonStringValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonStringValue
@@ -182,6 +221,10 @@ class JsonStringValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonStringValue(m_value);
+  }
+
  private:
   const std::string m_value;
 
@@ -192,7 +235,7 @@ class JsonStringValue: public JsonValue {
 /**
  * @brief An unsigned int value.
  */
-class JsonUIntValue: public JsonValue {
+class JsonUIntValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonUIntValue
@@ -217,6 +260,10 @@ class JsonUIntValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonUIntValue(m_value);
+  }
+
   /**
    * @brief Return the uint32_t value.
    */
@@ -232,7 +279,7 @@ class JsonUIntValue: public JsonValue {
 /**
  * @brief A signed int value.
  */
-class JsonIntValue: public JsonValue {
+class JsonIntValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonIntValue
@@ -256,6 +303,10 @@ class JsonIntValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonIntValue(m_value);
+  }
+
   /**
    * @brief Return the int32_t value.
    */
@@ -271,7 +322,7 @@ class JsonIntValue: public JsonValue {
 /**
  * @brief An unsigned int 64 value.
  */
-class JsonUInt64Value: public JsonValue {
+class JsonUInt64Value: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonUInt64Value
@@ -295,6 +346,10 @@ class JsonUInt64Value: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonUInt64Value(m_value);
+  }
+
   /**
    * @brief Return the uint64_t value.
    */
@@ -310,7 +365,7 @@ class JsonUInt64Value: public JsonValue {
 /**
  * @brief A signed int 64 value.
  */
-class JsonInt64Value: public JsonValue {
+class JsonInt64Value: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonInt64Value
@@ -334,6 +389,10 @@ class JsonInt64Value: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonInt64Value(m_value);
+  }
+
   /**
    * @brief Return the int64_t value.
    */
@@ -354,7 +413,7 @@ class JsonInt64Value: public JsonValue {
  * value takes the form: [full].[fractional]e<sup>[exponent]</sup>.
  * e.g 23.00456e<sup>-3</sup>.
  */
-class JsonDoubleValue: public JsonValue {
+class JsonDoubleValue: public JsonLeafValue {
  public:
   /**
    * @struct DoubleRepresentation
@@ -433,6 +492,11 @@ class JsonDoubleValue: public JsonValue {
    */
   static std::string AsString(const DoubleRepresentation &rep);
 
+  JsonValue* Clone() const {
+    // This loses precision, maybe we should fix it?
+    return new JsonDoubleValue(m_value);
+  }
+
  private:
   double m_value;
   std::string m_as_string;
@@ -444,7 +508,7 @@ class JsonDoubleValue: public JsonValue {
 /**
  * @brief A Bool value
  */
-class JsonBoolValue: public JsonValue {
+class JsonBoolValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonBoolValue
@@ -464,6 +528,10 @@ class JsonBoolValue: public JsonValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
+  JsonValue* Clone() const {
+    return new JsonBoolValue(m_value);
+  }
+
   /**
    * @brief Return the bool value.
    */
@@ -479,7 +547,7 @@ class JsonBoolValue: public JsonValue {
 /**
  * @brief The null value
  */
-class JsonNullValue: public JsonValue {
+class JsonNullValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonNullValue
@@ -487,6 +555,10 @@ class JsonNullValue: public JsonValue {
   explicit JsonNullValue() {}
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const {
+    return new JsonNullValue();
+  }
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
@@ -502,7 +574,7 @@ class JsonNullValue: public JsonValue {
 /**
  * @brief A raw value, useful if you want to cheat.
  */
-class JsonRawValue: public JsonValue {
+class JsonRawValue: public JsonLeafValue {
  public:
   /**
    * @brief Create a new JsonRawValue
@@ -521,6 +593,10 @@ class JsonRawValue: public JsonValue {
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const {
+    return new JsonRawValue(m_value);
+  }
 
   /**
    * @brief Return the raw value  as a string.
@@ -550,6 +626,8 @@ class JsonObject: public JsonValue {
    */
   JsonObject() {}
   ~JsonObject();
+
+  JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
@@ -617,7 +695,7 @@ class JsonObject: public JsonValue {
    * @param key the key to add
    * @param value the JsonValue object, ownership is transferred.
    */
-  void AddValue(const std::string &key, const JsonValue *value);
+  void AddValue(const std::string &key, JsonValue *value);
 
   /**
    * @brief Set the given key to a raw value.
@@ -627,6 +705,8 @@ class JsonObject: public JsonValue {
   void AddRaw(const std::string &key, const std::string &value);
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const;
 
   /**
    * @brief Check if there are properties within the object
@@ -642,7 +722,7 @@ class JsonObject: public JsonValue {
   void VisitProperties(JsonValueVisitorInterface *visitor) const;
 
  private:
-  typedef std::map<std::string, const JsonValue*> MemberMap;
+  typedef std::map<std::string, JsonValue*> MemberMap;
   MemberMap m_members;
 
   DISALLOW_COPY_AND_ASSIGN(JsonObject);
@@ -657,6 +737,8 @@ class JsonArray: public JsonValue {
  public:
   JsonArray() : m_complex_type(false) {}
   ~JsonArray();
+
+  JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
@@ -714,7 +796,7 @@ class JsonArray: public JsonValue {
   /**
    * @brief Append a JsonValue. Takes ownership of the pointer.
    */
-  void Append(const JsonValue *value) {
+  void Append(JsonValue *value) {
     m_values.push_back(value);
   }
 
@@ -743,6 +825,14 @@ class JsonArray: public JsonValue {
   }
 
   /**
+   * @brief Append a JsonValue to the array.
+   * @param value the JsonValue to append, ownership is transferred.
+   */
+  void AppendValue(JsonValue *value) {
+    m_values.push_back(value);
+  }
+
+  /**
    * @brief Append a raw value to the array
    */
   void AppendRaw(const std::string &value) {
@@ -750,6 +840,8 @@ class JsonArray: public JsonValue {
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const;
 
   /**
    * @brief Check if there are elements within the array.
@@ -774,7 +866,7 @@ class JsonArray: public JsonValue {
   bool IsComplexType() const { return m_complex_type; }
 
  private:
-  typedef std::vector<const JsonValue*> ValuesVector;
+  typedef std::vector<JsonValue*> ValuesVector;
   ValuesVector m_values;
 
   // true if this array contains a nested object or array
