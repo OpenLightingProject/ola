@@ -163,7 +163,7 @@ bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
   GenericSocketAddress addr =
     ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
 #else
-  GenericSocketAddress addr = ola::network::GetLocalAddress(m_fd);
+  GenericSocketAddress addr = ola::network::GetLocalAddress(m_handle);
 #endif
   if (!addr.IsValid()) {
     return false;
