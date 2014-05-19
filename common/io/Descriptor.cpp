@@ -50,6 +50,7 @@ namespace io {
 #ifndef WIN32
 // Check binary compatibility between IOVec and iovec
 STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
+#else
 STATIC_ASSERT(sizeof(HANDLE) == sizeof(int));
 
 // DescriptorHandle
