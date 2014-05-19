@@ -21,7 +21,32 @@
 === NEGATIVE ===
 {
   "type": "string",
+  "maxLength": null
+}
+=== NEGATIVE ===
+{
+  "type": "string",
   "maxLength": -1
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "maxLength": 1.2
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "maxLength": "foo"
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "maxLength": []
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "maxLength": {}
 }
 // Test minLength
 === POSITIVE ===
@@ -47,5 +72,30 @@
 === NEGATIVE ===
 {
   "type": "string",
+  "minLength": null
+}
+=== NEGATIVE ===
+{
+  "type": "string",
   "minLength": -1
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "minLength": 1.2
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "minLength": "foo"
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "minLength": []
+}
+=== NEGATIVE ===
+{
+  "type": "string",
+  "minLength": {}
 }
