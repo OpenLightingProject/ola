@@ -276,7 +276,7 @@ void TCPAcceptingSocket::PerformRead() {
     return;
 
 #ifdef _WIN32
-  int sd = accept(m_handle.m_handle.m_fd, (struct sockaddr*) &cli_address, 
+  int sd = accept(m_handle.m_handle.m_fd, (struct sockaddr*) &cli_address,
                   &length);
 #else
   int sd = accept(m_handle, (struct sockaddr*) &cli_address, &length);

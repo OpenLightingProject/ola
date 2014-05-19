@@ -47,12 +47,13 @@
 namespace ola {
 namespace io {
 
-#ifndef WIN32
+#ifndef _WIN32
 // Check binary compatibility between IOVec and iovec
 STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
-#else
-STATIC_ASSERT(sizeof(HANDLE) == sizeof(int));
+#endif
 
+
+#ifdef _WIN32
 // DescriptorHandle
 // ------------------------------------------------
 bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs) {
@@ -95,7 +96,7 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
     OLA_WARN << "CreatePipe() failed, " << GetLastError();
     return false;
   }
-  
+
   if (!SetStdHandle(STD_INPUT_HANDLE, read_handle)) {
     OLA_WARN << "SetStdHandle() failed, " << GetLastError();
     return false;
@@ -104,7 +105,7 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
     OLA_WARN << "SetStdHandle() failed, " << GetLastError();
     return false;
   }
-  
+
   handle_pair[0].m_handle.m_handle = read_handle;
   handle_pair[0].m_type = HANDLE_DESCRIPTOR;
   handle_pair[0].m_event_handle = 0;
@@ -224,12 +225,12 @@ int ConnectedDescriptor::DataRemaining() const {
   if (!ValidReadDescriptor())
     return 0;
 
-  int unread;
+  int unread = 0;
 #ifdef _WIN32
   bool failed = false;
   if (ReadDescriptor().m_type == SOCKET_DESCRIPTOR) {
     u_long win_unread;
-    failed = (ioctlsocket(ReadDescriptor().m_handle.m_fd, FIONREAD, 
+    failed = (ioctlsocket(ReadDescriptor().m_handle.m_fd, FIONREAD,
               &win_unread) < 0);
     unread = win_unread;
   } else {
@@ -357,7 +358,7 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
 
   while (data_read < size) {
 #ifdef _WIN32
-    if ((ret = read(ReadDescriptor().m_handle.m_fd, data, size - data_read)) 
+    if ((ret = read(ReadDescriptor().m_handle.m_fd, data, size - data_read))
         < 0) {
 #else
     if ((ret = read(ReadDescriptor(), data, size - data_read)) < 0) {
@@ -586,7 +587,7 @@ bool UnixSocket::Close() {
 #ifdef _WIN32
   return true;
 #else
-  if (m_fd != INVALID_DESCRIPTOR)
+  if (m_handle != INVALID_DESCRIPTOR)
     close(m_handle);
 
   m_handle = INVALID_DESCRIPTOR;
@@ -600,7 +601,7 @@ bool UnixSocket::Close() {
  */
 bool UnixSocket::CloseClient() {
 #ifndef _WIN32
-  if (m_fd != INVALID_DESCRIPTOR)
+  if (m_handle != INVALID_DESCRIPTOR)
     shutdown(m_handle, SHUT_WR);
 #endif
 
