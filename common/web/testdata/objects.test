@@ -38,11 +38,6 @@
   "minProperties": null,
   "type": "object"
 }
-=== NEGATIVE ===
-{
-  "required": [1],
-  "type": "object"
-}
 === POSITIVE ===
 {
   "type": "object"
@@ -53,18 +48,60 @@
   "minProperties": 1,
   "type": "object"
 }
+// Required tests
 === POSITIVE ===
 {
   "required": [],
   "type": "object"
 }
-=== NEGATIVE ===
-{
-  "required": ["foo", "foo"],
-  "type": "object"
-}
 === POSITIVE ===
 {
   "required": ["foo"],
+  "type": "object"
+}
+// Negative required tests
+=== NEGATIVE ===
+{
+  "required": null,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": true,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": "foo",
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": 1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": 1.2,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": {},
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": [1],
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "required": ["foo", "foo"],
   "type": "object"
 }

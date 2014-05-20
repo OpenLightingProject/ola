@@ -24,7 +24,7 @@
       "type": "array"
     },
     "simpleTypes": {
-        "enum": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
+      "enum": ["array", "boolean", "integer", "null", "number", "object", "string"]
     },
     "stringArray": {
       "items": {
@@ -144,11 +144,11 @@
       "format": "regex"
     },
     "patternProperties": {
-      "type": "object",
+      "default": {},
       "additionalProperties": {
         "$ref": "#"
       },
-      "default": {}
+      "type": "object"
     },
     "properties": {
       "additionalProperties": { "$ref": "#" },
