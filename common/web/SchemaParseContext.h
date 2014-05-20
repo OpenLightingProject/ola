@@ -41,9 +41,10 @@ namespace web {
 class ArrayItemsParseContext;
 class DefaultValueParseContext;
 class DefinitionsParseContext;
+class DependencyParseContext;
 class PropertiesParseContext;
-class RequiredPropertiesParseContext;
 class SchemaParseContext;
+class StringArrayContext;
 
 template <typename T>
 class OptionalItem {
@@ -254,7 +255,8 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.4 Object keywords
   OptionalItem<uint64_t> m_max_properties;
   OptionalItem<uint64_t> m_min_properties;
-  std::auto_ptr<RequiredPropertiesParseContext> m_required_items;
+  std::auto_ptr<StringArrayContext> m_required_items;
+  std::auto_ptr<DependencyParseContext> m_dependency_context;
 
   // 5.5 Keywords for multiple instance types
   JsonType m_type;
@@ -389,18 +391,20 @@ class ArrayItemsParseContext : public BaseParseContext {
 
 
 /**
- * @brief Parse an array of strings for the 'required' property.
+ * @brief Parse an array of strings.
+ *
+ * This is used for required and the property dependency list.
  */
-class RequiredPropertiesParseContext : public BaseParseContext {
+class StringArrayContext : public BaseParseContext {
  public:
-  typedef std::set<std::string> RequiredItems;
+  typedef std::set<std::string> StringSet;
 
-  RequiredPropertiesParseContext() : BaseParseContext() {}
+  StringArrayContext() : BaseParseContext() {}
 
   /**
-   * @brief Return the strings in the 'required' array
+   * @brief Return the strings in the string array
    */
-  void GetRequiredItems(RequiredItems *required_items);
+  void GetStringSet(StringSet *stringd);
 
   void String(SchemaErrorLogger *logger, const std::string &value);
   void Number(SchemaErrorLogger *logger, uint32_t value);
@@ -420,11 +424,11 @@ class RequiredPropertiesParseContext : public BaseParseContext {
   }
 
  private:
-  RequiredItems m_required_items;
+  StringSet m_items;
 
   void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
-  DISALLOW_COPY_AND_ASSIGN(RequiredPropertiesParseContext);
+  DISALLOW_COPY_AND_ASSIGN(StringArrayContext);
 };
 
 /**
@@ -495,6 +499,51 @@ class EnumParseContext : public SchemaParseContextInterface {
                                const JsonValue *value);
 
   DISALLOW_COPY_AND_ASSIGN(EnumParseContext);
+};
+
+
+/**
+ * @brief Parse an object containing dependencies.
+ *
+ * Values in a dependency object can be either arrays of strings, or schema.
+ */
+class DependencyParseContext : public BaseParseContext {
+ public:
+  explicit DependencyParseContext(SchemaDefinitions *definitions)
+    : m_schema_defs(definitions) {}
+  ~DependencyParseContext();
+
+  void AddDependenciesToValidator(ObjectValidator *validator);
+
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger);
+
+ private:
+  typedef std::set<std::string> StringSet;
+  typedef std::map<std::string, ValidatorInterface*> SchemaDependencies;
+  typedef std::map<std::string, StringSet> PropertyDependencies;
+
+  SchemaDefinitions *m_schema_defs;
+
+  std::auto_ptr<StringArrayContext> m_property_context;
+  std::auto_ptr<SchemaParseContext> m_schema_context;
+
+  PropertyDependencies m_property_dependencies;
+  SchemaDependencies m_schema_dependencies;
+
+  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
+
+  DISALLOW_COPY_AND_ASSIGN(DependencyParseContext);
 };
 }  // namespace web
 }  // namespace ola

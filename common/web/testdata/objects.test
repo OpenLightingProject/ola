@@ -149,3 +149,82 @@
   "required": ["foo", "foo"],
   "type": "object"
 }
+// dependency tesets
+// First up is property dependencies.
+=== POSITIVE ===
+{
+  "dependencies": {
+    "foo": ["bar"]
+  },
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "dependencies": {
+    "foo": ["bar", "baz"]
+  },
+  "type": "object"
+}
+// Now test schema dependencies.
+=== POSITIVE ===
+{
+  "dependencies": {
+    "foo": {}
+  },
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "dependencies": {
+    "foo": {
+      "maxProperties": 2,
+      "type": "object"
+    }
+  },
+  "type": "object"
+}
+// Negative dependencies tests
+=== NEGATIVE ===
+{
+  "dependencies": 1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": 1.2,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": null
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": false,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": [],
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": {
+    "foo": []
+  },
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "dependencies": {
+    "foo": ["bar", "bar"]
+  },
+  "type": "object"
+}

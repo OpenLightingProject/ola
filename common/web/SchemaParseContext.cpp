@@ -304,7 +304,7 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
       m_items_context_array.reset(new ArrayItemsParseContext(m_schema_defs));
       return m_items_context_array.get();
     case SCHEMA_REQUIRED:
-      m_required_items.reset(new RequiredPropertiesParseContext());
+      m_required_items.reset(new StringArrayContext());
       return m_required_items.get();
     case SCHEMA_ENUM:
       m_enum_context.reset(new EnumParseContext());
@@ -360,6 +360,9 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
     case SCHEMA_ADDITIONAL_ITEMS:
       m_additional_items_context.reset(new SchemaParseContext(m_schema_defs));
       return m_additional_items_context.get();
+    case SCHEMA_DEPENDENCIES:
+      m_dependency_context.reset(new DependencyParseContext(m_schema_defs));
+      return m_dependency_context.get();
     default:
       {}
   }
@@ -515,7 +518,7 @@ BaseValidator* SchemaParseContext::BuildObjectValidator(
 
   if (m_required_items.get()) {
     set<string> required_properties;
-    m_required_items->GetRequiredItems(&required_properties);
+    m_required_items->GetStringSet(&required_properties);
     options.SetRequiredProperties(required_properties);
   }
 
@@ -523,6 +526,10 @@ BaseValidator* SchemaParseContext::BuildObjectValidator(
 
   if (m_properties_context.get()) {
     m_properties_context->AddPropertyValidators(object_validator, logger);
+  }
+
+  if (m_dependency_context.get()) {
+    m_dependency_context->AddDependenciesToValidator(object_validator);
   }
   return object_validator;
 }
@@ -806,67 +813,66 @@ void ArrayItemsParseContext::ReportErrorForType(SchemaErrorLogger *logger,
       << "' in 'items', elements must be a valid JSON schema";
 }
 
-// RequiredPropertiesParseContext
-// Used for parsing an array of strings within 'required'
-void RequiredPropertiesParseContext::GetRequiredItems(
-    RequiredItems *required_items) {
-  *required_items = m_required_items;
+// StringArrayContext
+// Used for parsing an array of strings.
+void StringArrayContext::GetStringSet(StringSet *items) {
+  *items = m_items;
 }
 
-void RequiredPropertiesParseContext::String(SchemaErrorLogger *logger,
+void StringArrayContext::String(SchemaErrorLogger *logger,
                                             const string &value) {
-  if (!m_required_items.insert(value).second) {
-    logger->Error() << value << " appeared more than once in 'required'";
+  if (!m_items.insert(value).second) {
+    logger->Error() << value << " appeared more than once in the array";
   }
 }
 
-void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
+void StringArrayContext::Number(SchemaErrorLogger *logger,
                                             uint32_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
+void StringArrayContext::Number(SchemaErrorLogger *logger,
                                             int32_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
+void StringArrayContext::Number(SchemaErrorLogger *logger,
                                             uint64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
+void StringArrayContext::Number(SchemaErrorLogger *logger,
                                             int64_t value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Number(SchemaErrorLogger *logger,
+void StringArrayContext::Number(SchemaErrorLogger *logger,
                                             double value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Bool(SchemaErrorLogger *logger,
+void StringArrayContext::Bool(SchemaErrorLogger *logger,
                                           bool value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
-void RequiredPropertiesParseContext::Null(SchemaErrorLogger *logger) {
+void StringArrayContext::Null(SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_NULL);
 }
 
-SchemaParseContextInterface* RequiredPropertiesParseContext::OpenArray(
+SchemaParseContextInterface* StringArrayContext::OpenArray(
     SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_ARRAY);
   return NULL;
 }
 
-SchemaParseContextInterface* RequiredPropertiesParseContext::OpenObject(
+SchemaParseContextInterface* StringArrayContext::OpenObject(
     SchemaErrorLogger *logger) {
   ReportErrorForType(logger, JSON_OBJECT);
   return NULL;
 }
 
-void RequiredPropertiesParseContext::ReportErrorForType(
+void StringArrayContext::ReportErrorForType(
     SchemaErrorLogger *logger,
     JsonType type) {
   logger->Error() << "Invalid type '" << JsonTypeToString(type)
@@ -1034,6 +1040,101 @@ void EnumParseContext::CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
     }
   }
   m_enums.push_back(value);
+}
+
+// EnumParseContext
+// Used for parsing a list of enums.
+DependencyParseContext::~DependencyParseContext() {
+  STLDeleteValues(&m_schema_dependencies);
+}
+
+void DependencyParseContext::AddDependenciesToValidator(
+    ObjectValidator *validator) {
+
+  PropertyDependencies::const_iterator prop_iter =
+    m_property_dependencies.begin();
+  for (; prop_iter != m_property_dependencies.end(); ++prop_iter) {
+    validator->AddPropertyDependency(prop_iter->first, prop_iter->second);
+  }
+
+  // Check Schema Dependencies
+  SchemaDependencies::const_iterator schema_iter =
+    m_schema_dependencies.begin();
+  for (; schema_iter != m_schema_dependencies.end(); ++schema_iter) {
+    validator->AddSchemaDependency(schema_iter->first, schema_iter->second);
+  }
+  m_schema_dependencies.clear();
+}
+
+void DependencyParseContext::String(SchemaErrorLogger *logger,
+                                    const string &value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Number(SchemaErrorLogger *logger, double value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Bool(SchemaErrorLogger *logger, bool value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void DependencyParseContext::Null(SchemaErrorLogger *logger) {
+  ReportErrorForType(logger, JSON_NULL);
+}
+
+SchemaParseContextInterface* DependencyParseContext::OpenArray(
+    SchemaErrorLogger *logger) {
+  m_property_context.reset(new StringArrayContext());
+  return m_property_context.get();
+  (void) logger;
+}
+
+void DependencyParseContext::CloseArray(SchemaErrorLogger *logger) {
+  StringSet &properties = m_property_dependencies[Keyword()];
+  m_property_context->GetStringSet(&properties);
+
+  if (properties.empty()) {
+    logger->Error()
+      << " property dependency lists must contain at least one item";
+  }
+  m_property_context.reset();
+}
+
+SchemaParseContextInterface* DependencyParseContext::OpenObject(
+    SchemaErrorLogger *logger) {
+  m_schema_context.reset(new SchemaParseContext(m_schema_defs));
+  return m_schema_context.get();
+  (void) logger;
+}
+
+void DependencyParseContext::CloseObject(SchemaErrorLogger *logger) {
+  STLReplaceAndDelete(&m_schema_dependencies, Keyword(),
+                      m_schema_context->GetValidator(logger));
+  m_schema_context.reset();
+}
+
+void DependencyParseContext::ReportErrorForType(
+    SchemaErrorLogger *logger,
+    JsonType type) {
+  logger->Error() << "Invalid type '" << JsonTypeToString(type)
+                  << "' in 'required', elements must be strings";
 }
 }  // namespace web
 }  // namespace ola

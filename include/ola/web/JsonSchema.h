@@ -548,16 +548,46 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
    */
   void AddValidator(const std::string &property, ValidatorInterface *validator);
 
+  /**
+   * @brief Add a schema dependency.
+   * @param property the property name
+   * @param validator the validator to check the object against.
+   *
+   * As per Section 5.4.5.2.1, if the named property is present in the object,
+   * the object itself will be validated against the supplied schema.
+   */
+  void AddSchemaDependency(const std::string &property,
+                           ValidatorInterface *validator);
+
+  /**
+   * @brief Add a property dependency.
+   * @param property the property name
+   * @param properties the names of the properties that must exist in the
+   *   object if the named property is present.
+   *
+   * As per Section 5.4.5.2.2, if the named property is present in the object,
+   * the object must also contain all of the properties in the set.
+   */
+  void AddPropertyDependency(const std::string &property,
+                             const std::set<std::string> &properties);
+
   void Visit(const JsonObject &obj);
 
   void VisitProperty(const std::string &property, const JsonValue &value);
 
  private:
+  typedef std::set<std::string> StringSet;
   typedef std::map<std::string, ValidatorInterface*> PropertyValidators;
+  typedef std::map<std::string, ValidatorInterface*> SchemaDependencies;
+  typedef std::map<std::string, StringSet> PropertyDependencies;
+
   const Options m_options;
 
-  std::map<std::string, ValidatorInterface*> m_property_validators;
-  std::set<std::string> m_seen_properties;
+  PropertyValidators m_property_validators;
+  PropertyDependencies m_property_dependencies;
+  SchemaDependencies m_schema_dependencies;
+
+  StringSet m_seen_properties;
 
   void ExtendSchema(JsonObject *schema) const;
 

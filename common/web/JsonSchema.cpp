@@ -302,6 +302,16 @@ void ObjectValidator::AddValidator(const std::string &property,
   STLReplaceAndDelete(&m_property_validators, property, validator);
 }
 
+void ObjectValidator::AddSchemaDependency(const string &property,
+                                          ValidatorInterface *validator) {
+  STLReplaceAndDelete(&m_schema_dependencies, property, validator);
+}
+
+void ObjectValidator::AddPropertyDependency(const string &property,
+                                            const StringSet &properties) {
+  m_property_dependencies[property] = properties;
+}
+
 void ObjectValidator::Visit(const JsonObject &obj) {
   m_is_valid = true;
 
@@ -319,7 +329,7 @@ void ObjectValidator::Visit(const JsonObject &obj) {
   m_seen_properties.clear();
   obj.VisitProperties(this);
 
-  set<string> missing_properties;
+  StringSet missing_properties;
   std::set_difference(m_options.required_properties.begin(),
                       m_options.required_properties.end(),
                       m_seen_properties.begin(),
@@ -331,11 +341,42 @@ void ObjectValidator::Visit(const JsonObject &obj) {
              << " required properties";
     m_is_valid = false;
   }
+
+  // Check PropertyDependencies
+  PropertyDependencies::const_iterator prop_iter =
+    m_property_dependencies.begin();
+  for (; prop_iter != m_property_dependencies.end() && m_is_valid;
+       ++prop_iter) {
+    if (!STLContains(m_seen_properties, prop_iter->first)) {
+      continue;
+    }
+
+    StringSet::const_iterator iter = prop_iter->second.begin();
+    for (; iter != prop_iter->second.end(); ++iter) {
+      if (!STLContains(m_seen_properties, *iter)) {
+        m_is_valid = false;
+        break;
+      }
+    }
+  }
+
+  // Check Schema Dependencies
+  SchemaDependencies::const_iterator schema_iter =
+    m_schema_dependencies.begin();
+  for (; schema_iter != m_schema_dependencies.end() && m_is_valid;
+       ++schema_iter) {
+    if (STLContains(m_seen_properties, schema_iter->first)) {
+      obj.Accept(schema_iter->second);
+      if (!schema_iter->second->IsValid()) {
+        m_is_valid = false;
+        break;
+      }
+    }
+  }
 }
 
 void ObjectValidator::VisitProperty(const std::string &property,
                                     const JsonValue &value) {
-  OLA_INFO << "Looking for property " << property;
   m_seen_properties.insert(property);
 
   ValidatorInterface *validator = STLFindOrNull(
@@ -361,7 +402,7 @@ void ObjectValidator::ExtendSchema(JsonObject *schema) const {
 
   if (m_options.has_required_properties) {
     JsonArray *required_properties = schema->AddArray("required");
-    set<string>::const_iterator iter = m_options.required_properties.begin();
+    StringSet::const_iterator iter = m_options.required_properties.begin();
     for (; iter != m_options.required_properties.end(); ++iter) {
       required_properties->Append(*iter);
     }
@@ -373,6 +414,26 @@ void ObjectValidator::ExtendSchema(JsonObject *schema) const {
     for (; iter != m_property_validators.end(); iter++) {
       JsonObject *child_schema = iter->second->GetSchema();
       properties->AddValue(iter->first, child_schema);
+    }
+  }
+
+  if (!(m_property_dependencies.empty() && m_schema_dependencies.empty())) {
+    JsonObject *dependencies = schema->AddObject("dependencies");
+    PropertyDependencies::const_iterator prop_iter =
+      m_property_dependencies.begin();
+    for (; prop_iter != m_property_dependencies.end(); ++prop_iter) {
+      JsonArray *properties = dependencies->AddArray(prop_iter->first);
+      StringSet::const_iterator iter = prop_iter->second.begin();
+      for (; iter != prop_iter->second.end(); ++iter) {
+        properties->Append(*iter);
+      }
+    }
+
+    SchemaDependencies::const_iterator schema_iter =
+      m_schema_dependencies.begin();
+    for (; schema_iter != m_schema_dependencies.end(); ++schema_iter) {
+      dependencies->AddValue(schema_iter->first,
+          schema_iter->second->GetSchema());
     }
   }
 }
@@ -676,10 +737,8 @@ ValidatorInterface *SchemaDefinitions::Lookup(const string &schema_name) const {
 }
 
 void SchemaDefinitions::AddToJsonObject(JsonObject *json) const {
-  OLA_INFO << m_validators.size() << " schema defs";
   SchemaMap::const_iterator iter = m_validators.begin();
   for (; iter != m_validators.end(); ++iter) {
-    OLA_INFO << "Schema for " << iter->first << " is " << iter->second;
     JsonObject *schema = iter->second->GetSchema();
     json->AddValue(iter->first, schema);
   }
