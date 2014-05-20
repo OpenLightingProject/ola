@@ -200,3 +200,71 @@
   "multipleOf": "foo",
   "type": "integer"
 }
+// Enums
+=== POSITIVE ===
+{
+  "enum": [1, 2, 4],
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "enum": [true, false],
+  "type": "boolean"
+}
+=== POSITIVE ===
+{
+  "enum": ["cat", "dog", "rat"],
+  "type": "string"
+}
+=== NEGATIVE ===
+{
+  "enum": null,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": "foo",
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": 1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": -1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": 1.2,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": false,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": {},
+  "type": "integer"
+}
+=== NEGATIVE ===
+// enum must have at least one item
+{
+  "enum": [],
+  "type": "integer"
+}
+// duplicates aren't allowed
+=== NEGATIVE ===
+{
+  "enum": [1, 1, 0],
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": ["cat", "cat"],
+  "type": "string"
+}

@@ -42,6 +42,10 @@ using std::vector;
 
 // BaseValidator
 // -----------------------------------------------------------------------------
+BaseValidator::~BaseValidator() {
+  STLDeleteElements(&m_enums);
+}
+
 JsonObject* BaseValidator::GetSchema() const {
   JsonObject *schema = new JsonObject();
   if (!m_schema.empty()) {
@@ -64,6 +68,14 @@ JsonObject* BaseValidator::GetSchema() const {
   if (m_default_value.get()) {
     schema->AddValue("default", m_default_value.get()->Clone());
   }
+
+  if (!m_enums.empty()) {
+    JsonArray *enum_array = schema->AddArray("enum");
+    vector<const JsonValue*>::const_iterator iter = m_enums.begin();
+    for (; iter != m_enums.end(); ++iter) {
+      enum_array->AppendValue((*iter)->Clone());
+    }
+  }
   ExtendSchema(schema);
   return schema;
 }
@@ -75,7 +87,6 @@ void BaseValidator::SetSchema(const string &schema) {
 void BaseValidator::SetId(const string &id) {
   m_id = id;
 }
-
 
 void BaseValidator::SetTitle(const string &title) {
   m_title = title;
@@ -91,6 +102,23 @@ void BaseValidator::SetDefaultValue(const JsonValue *value) {
 
 const JsonValue *BaseValidator::GetDefaultValue() const {
   return m_default_value.get();
+}
+
+void BaseValidator::AddEnumValue(const JsonValue *value) {
+  m_enums.push_back(value);
+}
+
+bool BaseValidator::CheckEnums(const JsonValue &value) {
+  if (m_enums.empty()) {
+    return true;
+  }
+  vector<const JsonValue*>::const_iterator iter = m_enums.begin();
+  for (; iter != m_enums.end(); ++iter) {
+    if (**iter == value) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // ReferenceValidator
@@ -190,7 +218,7 @@ void StringValidator::Visit(const JsonStringValue &str) {
     return;
   }
 
-  m_is_valid = true;
+  m_is_valid = CheckEnums(str);
 }
 
 void StringValidator::ExtendSchema(JsonObject *schema) const {
@@ -205,14 +233,6 @@ void StringValidator::ExtendSchema(JsonObject *schema) const {
   // TODO(simon): Add pattern here?
   // TODO(simon): Add format here?
 }
-
-// MultipleOfConstraint
-// -----------------------------------------------------------------------------
-/*
-bool MultipleOfConstraint::IsValid(double d) {
-  return (fmod(d, m_multiple_of) == 0);
-}
-*/
 
 // IntegerValidator
 // -----------------------------------------------------------------------------
@@ -259,7 +279,7 @@ void IntegerValidator::CheckValue(const JsonNumberValue &value) {
       return;
     }
   }
-  m_is_valid = true;
+  m_is_valid = CheckEnums(value);
 }
 
 void NumberValidator::Visit(const JsonDoubleValue &value) {

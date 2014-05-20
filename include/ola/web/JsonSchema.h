@@ -126,7 +126,7 @@ class BaseValidator : public ValidatorInterface {
   }
 
  public:
-  virtual ~BaseValidator() {}
+  virtual ~BaseValidator();
 
   virtual bool IsValid() const { return m_is_valid; }
 
@@ -176,13 +176,43 @@ class BaseValidator : public ValidatorInterface {
 
   virtual JsonObject* GetSchema() const;
 
+  /**
+   * @brief Set the schema.
+   */
   void SetSchema(const std::string &schema);
+
+  /**
+   * @brief Set the id.
+   */
   void SetId(const std::string &id);
+
+  /**
+   * @brief Set the title.
+   */
   void SetTitle(const std::string &title);
+
+  /**
+   * @brief Set the description.
+   */
   void SetDescription(const std::string &title);
+
+  /**
+   * @brief Set the default value for this validator.
+   * @param value the default value, ownership is transferred.
+   */
   void SetDefaultValue(const JsonValue *value);
 
+  /**
+   * @brief Return the default value
+   * @returns The default value, or NULL if there isn't one.
+   */
   const JsonValue *GetDefaultValue() const;
+
+  /**
+   * @brief Add a enum value to the list of allowed values.
+   * @param value the JsonValue to add, ownership is transferred.
+   */
+  void AddEnumValue(const JsonValue *value);
 
  protected:
   bool m_is_valid;
@@ -192,6 +222,9 @@ class BaseValidator : public ValidatorInterface {
   std::string m_title;
   std::string m_description;
   std::auto_ptr<const JsonValue> m_default_value;
+  std::vector<const JsonValue*> m_enums;
+
+  bool CheckEnums(const JsonValue &value);
 
   // Child classes can hook in here to extend the schema.
   virtual void ExtendSchema(JsonObject *schema) const {
@@ -295,7 +328,7 @@ class BoolValidator : public BaseValidator {
  public:
   BoolValidator() : BaseValidator(JSON_BOOLEAN) {}
 
-  void Visit(const JsonBoolValue&) { m_is_valid = true; }
+  void Visit(const JsonBoolValue &value) { m_is_valid = CheckEnums(value); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BoolValidator);
@@ -308,7 +341,7 @@ class NullValidator : public BaseValidator {
  public:
   NullValidator() : BaseValidator(JSON_NULL) {}
 
-  void Visit(const JsonNullValue&) { m_is_valid = true; }
+  void Visit(const JsonNullValue &value) { m_is_valid = CheckEnums(value); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullValidator);

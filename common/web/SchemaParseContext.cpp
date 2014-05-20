@@ -99,7 +99,7 @@ ValidatorInterface* SchemaParseContext::GetValidator(
     return new ReferenceValidator(m_schema_defs, m_ref_schema.Value());
   }
 
-  ValidatorInterface *validator = NULL;
+  BaseValidator *validator = NULL;
   IntegerValidator *int_validator = NULL;
   switch (m_type) {
     case JSON_UNDEFINED:
@@ -153,6 +153,10 @@ ValidatorInterface* SchemaParseContext::GetValidator(
   }
   if (m_default_value.get()) {
     validator->SetDefaultValue(m_default_value.release());
+  }
+
+  if (m_enum_context.get()) {
+    m_enum_context->AddEnumsToValidator(validator);
   }
 
   return validator;
@@ -302,6 +306,9 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
     case SCHEMA_REQUIRED:
       m_required_items.reset(new RequiredPropertiesParseContext());
       return m_required_items.get();
+    case SCHEMA_ENUM:
+      m_enum_context.reset(new EnumParseContext());
+      return m_enum_context.get();
     default:
       {}
   }
@@ -313,6 +320,12 @@ void SchemaParseContext::CloseArray(SchemaErrorLogger *logger) {
     m_default_value_context->CloseArray(logger);
     m_default_value.reset(m_default_value_context->ClaimValue(logger));
     m_default_value_context.reset();
+  }
+
+  if (m_keyword == SCHEMA_ENUM) {
+    if (m_enum_context->Empty()) {
+      logger->Error() << "enum must contain at least one value";
+    }
   }
 }
 
@@ -443,7 +456,7 @@ void SchemaParseContext::AddNumberConstraints(IntegerValidator *validator) {
   }
 }
 
-ValidatorInterface* SchemaParseContext::BuildArrayValidator(
+BaseValidator* SchemaParseContext::BuildArrayValidator(
     SchemaErrorLogger *logger) {
   ArrayValidator::Options options;
   if (m_min_items.IsSet()) {
@@ -489,7 +502,7 @@ ValidatorInterface* SchemaParseContext::BuildArrayValidator(
                             options);
 }
 
-ValidatorInterface* SchemaParseContext::BuildObjectValidator(
+BaseValidator* SchemaParseContext::BuildObjectValidator(
     SchemaErrorLogger* logger) {
   ObjectValidator::Options options;
   if (m_max_properties.IsSet()) {
@@ -514,7 +527,7 @@ ValidatorInterface* SchemaParseContext::BuildObjectValidator(
   return object_validator;
 }
 
-ValidatorInterface* SchemaParseContext::BuildStringValidator(
+BaseValidator* SchemaParseContext::BuildStringValidator(
     SchemaErrorLogger *logger) {
   StringValidator::Options options;
 
@@ -940,6 +953,87 @@ void DefaultValueParseContext::ObjectKey(SchemaErrorLogger *,
 void DefaultValueParseContext::CloseObject(SchemaErrorLogger *logger) {
   m_parser.CloseObject();
   (void) logger;
+}
+
+// EnumParseContext
+// Used for parsing a list of enums.
+EnumParseContext::~EnumParseContext() {
+  STLDeleteElements(&m_enums);
+}
+
+void EnumParseContext::AddEnumsToValidator(BaseValidator *validator) {
+  vector<const JsonValue*>::const_iterator iter = m_enums.begin();
+  for (; iter != m_enums.end(); ++iter) {
+    validator->AddEnumValue(*iter);
+  }
+  m_enums.clear();
+}
+
+void EnumParseContext::String(SchemaErrorLogger *logger, const string &value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Number(SchemaErrorLogger *logger, double value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Bool(SchemaErrorLogger *logger, bool value) {
+  CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
+}
+
+void EnumParseContext::Null(SchemaErrorLogger *logger) {
+  CheckForDuplicateAndAdd(logger, new JsonNullValue());
+}
+
+SchemaParseContextInterface* EnumParseContext::OpenArray(
+    SchemaErrorLogger *logger) {
+  m_value_context.reset(new DefaultValueParseContext());
+  return m_value_context.get();
+  (void) logger;
+}
+
+void EnumParseContext::CloseArray(SchemaErrorLogger *logger) {
+  CheckForDuplicateAndAdd(logger, m_value_context->ClaimValue(logger));
+}
+
+SchemaParseContextInterface* EnumParseContext::OpenObject(
+    SchemaErrorLogger *logger) {
+  m_value_context.reset(new DefaultValueParseContext());
+  return m_value_context.get();
+  (void) logger;
+}
+
+void EnumParseContext::CloseObject(SchemaErrorLogger *logger) {
+  CheckForDuplicateAndAdd(logger, m_value_context->ClaimValue(logger));
+}
+
+void EnumParseContext::CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
+                                               const JsonValue *value) {
+  vector<const JsonValue*>::const_iterator iter = m_enums.begin();
+  for (; iter != m_enums.end(); ++iter) {
+    if (**iter == *value) {
+      logger->Error() << "Duplicate entries in enum array: " << value;
+      delete value;
+      return;
+    }
+  }
+  m_enums.push_back(value);
 }
 }  // namespace web
 }  // namespace ola

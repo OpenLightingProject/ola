@@ -200,25 +200,16 @@ class SchemaParseContext : public SchemaParseContextInterface {
 
   void ObjectKey(SchemaErrorLogger *logger, const std::string &keyword);
 
-  // id, title, etc.
   void String(SchemaErrorLogger *logger, const std::string &value);
-
-  // minimum etc.
   void Number(SchemaErrorLogger *logger, uint32_t value);
   void Number(SchemaErrorLogger *logger, int32_t value);
   void Number(SchemaErrorLogger *logger, uint64_t value);
   void Number(SchemaErrorLogger *logger, int64_t value);
   void Number(SchemaErrorLogger *logger, double value);
-
-  // exclusiveMin / Max
   void Bool(SchemaErrorLogger *logger, bool value);
   void Null(SchemaErrorLogger *logger);
-
-  // enums
   SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
   void CloseArray(SchemaErrorLogger *logger);
-
-  // properties, etc.
   SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
   void CloseObject(SchemaErrorLogger *logger);
 
@@ -267,6 +258,7 @@ class SchemaParseContext : public SchemaParseContextInterface {
 
   // 5.5 Keywords for multiple instance types
   JsonType m_type;
+  std::auto_ptr<class EnumParseContext> m_enum_context;
 
   // 6. Metadata keywords
   OptionalItem<std::string> m_description;
@@ -290,9 +282,9 @@ class SchemaParseContext : public SchemaParseContextInterface {
 
   void AddNumberConstraints(IntegerValidator *validator);
 
-  ValidatorInterface* BuildArrayValidator(SchemaErrorLogger *logger);
-  ValidatorInterface* BuildObjectValidator(SchemaErrorLogger *logger);
-  ValidatorInterface* BuildStringValidator(SchemaErrorLogger *logger);
+  BaseValidator* BuildArrayValidator(SchemaErrorLogger *logger);
+  BaseValidator* BuildObjectValidator(SchemaErrorLogger *logger);
+  BaseValidator* BuildStringValidator(SchemaErrorLogger *logger);
 
   static bool ValidTypeForKeyword(SchemaErrorLogger *logger,
                                   SchemaKeyword keyword,
@@ -465,6 +457,44 @@ class DefaultValueParseContext : public SchemaParseContextInterface {
   JsonParser m_parser;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultValueParseContext);
+};
+
+/**
+ * @brief Parse an array of enums.
+ *
+ * Items in the array can be full fledged JSON documents.
+ */
+class EnumParseContext : public SchemaParseContextInterface {
+ public:
+  EnumParseContext() {}
+  ~EnumParseContext();
+
+  void AddEnumsToValidator(BaseValidator *validator);
+
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void ObjectKey(SchemaErrorLogger*, const std::string &) {}
+  void CloseObject(SchemaErrorLogger *logger);
+
+  bool Empty() const { return m_enums.empty(); }
+
+ private:
+  std::vector<const JsonValue*> m_enums;
+  std::auto_ptr<DefaultValueParseContext> m_value_context;
+
+  void CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
+                               const JsonValue *value);
+
+  DISALLOW_COPY_AND_ASSIGN(EnumParseContext);
 };
 }  // namespace web
 }  // namespace ola
