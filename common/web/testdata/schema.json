@@ -35,6 +35,10 @@
       "uniqueItems": true
     }
   },
+  "dependencies": {
+    "exclusiveMaximum": ["maximum"],
+    "exclusiveMinimum": ["minimum"]
+  },
   "description": "Core schema meta-schema",
   "id": "http:\/\/json-schema.org\/draft-04\/schema#",
   "properties": {
@@ -178,10 +182,6 @@
       "default": false,
       "type": "boolean"
     }
-  },
-  "dependencies": {
-    "exclusiveMaximum": [ "maximum" ],
-    "exclusiveMinimum": [ "minimum" ]
   },
   "type": "object"
 }
