@@ -1,3 +1,20 @@
+=== POSITIVE ===
+{
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "maxProperties": 3,
+  "minProperties": 1,
+  "type": "object"
+}
+// Max properties tests
+=== POSITIVE ===
+{
+  "maxProperties": 3,
+  "type": "object"
+}
+// Negative Max properties tests
 === NEGATIVE ===
 {
   "maxProperties": false,
@@ -6,6 +23,11 @@
 === NEGATIVE ===
 {
   "maxProperties": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "maxProperties": 1.2,
   "type": "object"
 }
 === NEGATIVE ===
@@ -20,12 +42,34 @@
 }
 === NEGATIVE ===
 {
-  "minProperties": true,
+  "maxProperties": [],
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "maxProperties": {},
+  "type": "object"
+}
+// Min properties tests
+=== POSITIVE ===
+{
+  "minProperties": 1,
+  "type": "object"
+}
+// Negative Min properties tests
+=== NEGATIVE ===
+{
+  "minProperties": false,
   "type": "object"
 }
 === NEGATIVE ===
 {
   "minProperties": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "minProperties": 1.2,
   "type": "object"
 }
 === NEGATIVE ===
@@ -38,14 +82,14 @@
   "minProperties": null,
   "type": "object"
 }
-=== POSITIVE ===
+=== NEGATIVE ===
 {
+  "minProperties": [],
   "type": "object"
 }
-=== POSITIVE ===
+=== NEGATIVE ===
 {
-  "maxProperties": 3,
-  "minProperties": 1,
+  "minProperties": {},
   "type": "object"
 }
 // Required tests
