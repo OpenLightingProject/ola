@@ -92,26 +92,21 @@ class SchemaParseContextInterface {
 };
 
 /**
- * @brief A SchemaParseContext that keeps track of the last keyword seen.
+ * @brief A SchemaParseContext that keeps track of the last keyword / property
+ * seen.
  */
-class BaseParseContext : public SchemaParseContextInterface {
+class ObjectParseContext : public SchemaParseContextInterface {
  public:
-  BaseParseContext() : SchemaParseContextInterface() {}
+  ObjectParseContext() {}
 
   /**
    * @brief Called when we encouter a property
    */
-  void ObjectKey(SchemaErrorLogger *logger, const std::string &keyword) {
+  void ObjectKey(SchemaErrorLogger*, const std::string &keyword) {
     m_keyword.Set(keyword);
-    (void) logger;
   }
 
  protected:
-  /**
-   * @brief Check if a
-   */
-  bool HasKeyword() const { return m_keyword.IsSet(); }
-
   /**
    *
    */
@@ -131,37 +126,52 @@ class BaseParseContext : public SchemaParseContextInterface {
 };
 
 /**
- * @brief
+ * @brief A SchemaParseContext that reports errors for all types.
+ *
+ * This is intended to be sub-classed for contexts that only accept a subset of
+ * types.
  */
-class DefinitionsParseContext : public BaseParseContext {
+class StrictTypedParseContext : public ObjectParseContext {
+ public:
+  StrictTypedParseContext() {}
+
+  void String(SchemaErrorLogger *logger, const std::string &value);
+  void Number(SchemaErrorLogger *logger, uint32_t value);
+  void Number(SchemaErrorLogger *logger, int32_t value);
+  void Number(SchemaErrorLogger *logger, uint64_t value);
+  void Number(SchemaErrorLogger *logger, int64_t value);
+  void Number(SchemaErrorLogger *logger, double value);
+  void Bool(SchemaErrorLogger *logger, bool value);
+  void Null(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
+  void CloseArray(SchemaErrorLogger *logger);
+  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
+  void CloseObject(SchemaErrorLogger *logger);
+
+ private:
+  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
+
+  DISALLOW_COPY_AND_ASSIGN(StrictTypedParseContext);
+};
+
+/**
+ * @brief The context for schema definitions.
+ *
+ * See section 5.5.7 of the draft. Definitions are a way of describing commonly
+ * used elements of a JSON document.
+ */
+class DefinitionsParseContext : public StrictTypedParseContext {
  public:
   /**
-   * @brief Create a new DefinitionsParseContext
+   * @brief Create a new DefinitionsParseContext.
    * @param definitions, the SchemaDefinitions cache, ownership is not
    *   transferred.
+   *
+   * As each definition is parsed, it's added to the SchemaDefinitions object.
    */
   explicit DefinitionsParseContext(SchemaDefinitions *definitions)
-      : BaseParseContext(),
+      : StrictTypedParseContext(),
         m_schema_defs(definitions) {
-  }
-
-  // These are all invalid in 'definitions'
-  void String(SchemaErrorLogger *, const std::string &) {}
-  void Number(SchemaErrorLogger *, uint32_t) {}
-  void Number(SchemaErrorLogger *, int32_t) {}
-  void Number(SchemaErrorLogger *, uint64_t) {}
-  void Number(SchemaErrorLogger *, int64_t) {}
-  void Number(SchemaErrorLogger *, double) {}
-  void Bool(SchemaErrorLogger *, bool) {}
-  void Null(SchemaErrorLogger *logger) { (void) logger; }
-
-  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger) {
-    return NULL;
-    (void) logger;
-  }
-
-  void CloseArray(SchemaErrorLogger *logger) {
-    (void) logger;
   }
 
   SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
@@ -291,6 +301,7 @@ class SchemaParseContext : public SchemaParseContextInterface {
   static bool ValidTypeForKeyword(SchemaErrorLogger *logger,
                                   SchemaKeyword keyword,
                                   JsonType type);
+
   // Verify that type == expected_type. If it doesn't report an error to the
   // logger.
   static bool CheckTypeAndLog(SchemaErrorLogger *logger, SchemaKeyword keyword,
@@ -307,10 +318,10 @@ class SchemaParseContext : public SchemaParseContextInterface {
 /**
  * @brief
  */
-class PropertiesParseContext : public BaseParseContext {
+class PropertiesParseContext : public StrictTypedParseContext {
  public:
   explicit PropertiesParseContext(SchemaDefinitions *definitions)
-      : BaseParseContext(),
+      : StrictTypedParseContext(),
         m_schema_defs(definitions) {
   }
   ~PropertiesParseContext();
@@ -318,18 +329,7 @@ class PropertiesParseContext : public BaseParseContext {
   void AddPropertyValidators(ObjectValidator *object_validator,
                               SchemaErrorLogger *logger);
 
-  void String(SchemaErrorLogger *logger, const std::string &value);
-  void Number(SchemaErrorLogger *logger, uint32_t value);
-  void Number(SchemaErrorLogger *logger, int32_t value);
-  void Number(SchemaErrorLogger *logger, uint64_t value);
-  void Number(SchemaErrorLogger *logger, int64_t value);
-  void Number(SchemaErrorLogger *logger, double value);
-  void Bool(SchemaErrorLogger *logger, bool value);
-  void Null(SchemaErrorLogger *logger);
-  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
-  void CloseArray(SchemaErrorLogger *logger);
   SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
-  void CloseObject(SchemaErrorLogger *logger);
 
  private:
   typedef std::map<std::string, SchemaParseContext*> SchemaMap;
@@ -344,11 +344,10 @@ class PropertiesParseContext : public BaseParseContext {
 /**
  * @brief Parse the array of objects in an 'items' property.
  */
-class ArrayItemsParseContext : public BaseParseContext {
+class ArrayItemsParseContext : public StrictTypedParseContext {
  public:
   explicit ArrayItemsParseContext(SchemaDefinitions *definitions)
-      : BaseParseContext(),
-        m_schema_defs(definitions) {
+      : m_schema_defs(definitions) {
   }
 
   ~ArrayItemsParseContext();
@@ -361,30 +360,13 @@ class ArrayItemsParseContext : public BaseParseContext {
   void AddValidators(SchemaErrorLogger *logger,
                      std::vector<ValidatorInterface*> *validators);
 
-  void String(SchemaErrorLogger *logger, const std::string &value);
-  void Number(SchemaErrorLogger *logger, uint32_t value);
-  void Number(SchemaErrorLogger *logger, int32_t value);
-  void Number(SchemaErrorLogger *logger, uint64_t value);
-  void Number(SchemaErrorLogger *logger, int64_t value);
-  void Number(SchemaErrorLogger *logger, double value);
-  void Bool(SchemaErrorLogger *logger, bool value);
-  void Null(SchemaErrorLogger *logger);
-  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
-  void CloseArray(SchemaErrorLogger *logger) {
-    (void) logger;
-  }
   SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
-  void CloseObject(SchemaErrorLogger *logger) {
-    (void) logger;
-  }
 
  private:
   typedef std::vector<SchemaParseContext*> ItemSchemas;
 
   SchemaDefinitions *m_schema_defs;
   ItemSchemas m_item_schemas;
-
-  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(ArrayItemsParseContext);
 };
@@ -395,11 +377,11 @@ class ArrayItemsParseContext : public BaseParseContext {
  *
  * This is used for required and the property dependency list.
  */
-class StringArrayContext : public BaseParseContext {
+class StringArrayContext : public StrictTypedParseContext {
  public:
   typedef std::set<std::string> StringSet;
 
-  StringArrayContext() : BaseParseContext() {}
+  StringArrayContext() {}
 
   /**
    * @brief Return the strings in the string array
@@ -407,26 +389,9 @@ class StringArrayContext : public BaseParseContext {
   void GetStringSet(StringSet *stringd);
 
   void String(SchemaErrorLogger *logger, const std::string &value);
-  void Number(SchemaErrorLogger *logger, uint32_t value);
-  void Number(SchemaErrorLogger *logger, int32_t value);
-  void Number(SchemaErrorLogger *logger, uint64_t value);
-  void Number(SchemaErrorLogger *logger, int64_t value);
-  void Number(SchemaErrorLogger *logger, double value);
-  void Bool(SchemaErrorLogger *logger, bool value);
-  void Null(SchemaErrorLogger *logger);
-  SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
-  void CloseArray(SchemaErrorLogger *logger) {
-    (void) logger;
-  }
-  SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
-  void CloseObject(SchemaErrorLogger *logger) {
-    (void) logger;
-  }
 
  private:
   StringSet m_items;
-
-  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(StringArrayContext);
 };
@@ -507,22 +472,14 @@ class EnumParseContext : public SchemaParseContextInterface {
  *
  * Values in a dependency object can be either arrays of strings, or schema.
  */
-class DependencyParseContext : public BaseParseContext {
+class DependencyParseContext : public StrictTypedParseContext {
  public:
   explicit DependencyParseContext(SchemaDefinitions *definitions)
-    : m_schema_defs(definitions) {}
+     : m_schema_defs(definitions) {}
   ~DependencyParseContext();
 
   void AddDependenciesToValidator(ObjectValidator *validator);
 
-  void String(SchemaErrorLogger *logger, const std::string &value);
-  void Number(SchemaErrorLogger *logger, uint32_t value);
-  void Number(SchemaErrorLogger *logger, int32_t value);
-  void Number(SchemaErrorLogger *logger, uint64_t value);
-  void Number(SchemaErrorLogger *logger, int64_t value);
-  void Number(SchemaErrorLogger *logger, double value);
-  void Bool(SchemaErrorLogger *logger, bool value);
-  void Null(SchemaErrorLogger *logger);
   SchemaParseContextInterface* OpenArray(SchemaErrorLogger *logger);
   void CloseArray(SchemaErrorLogger *logger);
   SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
@@ -540,8 +497,6 @@ class DependencyParseContext : public BaseParseContext {
 
   PropertyDependencies m_property_dependencies;
   SchemaDependencies m_schema_dependencies;
-
-  void ReportErrorForType(SchemaErrorLogger *logger, JsonType type);
 
   DISALLOW_COPY_AND_ASSIGN(DependencyParseContext);
 };

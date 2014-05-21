@@ -59,7 +59,6 @@ struct positive<T, false>{
 }  // namespace
 
 using std::auto_ptr;
-using std::make_pair;
 using std::pair;
 using std::set;
 using std::string;
@@ -75,16 +74,75 @@ SchemaParseContextInterface* DefinitionsParseContext::OpenObject(
 }
 
 void DefinitionsParseContext::CloseObject(SchemaErrorLogger *logger) {
-  if (!(HasKeyword() && m_current_schema.get())) {
-    OLA_WARN << "Bad call to DefinitionsParseContext::CloseObject";
-    return;
-  }
-
   string key = TakeKeyword();
 
   ValidatorInterface *schema = m_current_schema->GetValidator(logger);
-  m_schema_defs->Add(TakeKeyword(), schema);
+  m_schema_defs->Add(key, schema);
   m_current_schema.reset();
+}
+
+// StrictTypedParseContext
+// Used as a parent class for many of the other contexts.
+void StrictTypedParseContext::String(SchemaErrorLogger *logger,
+                                    const string &value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Number(SchemaErrorLogger *logger,
+                                     uint32_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Number(SchemaErrorLogger *logger,
+                                     uint64_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Number(SchemaErrorLogger *logger, double value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Bool(SchemaErrorLogger *logger, bool value) {
+  ReportErrorForType(logger, TypeFromValue(value));
+}
+
+void StrictTypedParseContext::Null(SchemaErrorLogger *logger) {
+  ReportErrorForType(logger, JSON_NULL);
+}
+
+SchemaParseContextInterface* StrictTypedParseContext::OpenArray(
+    SchemaErrorLogger *logger) {
+  ReportErrorForType(logger, JSON_ARRAY);
+  return NULL;
+}
+
+void StrictTypedParseContext::CloseArray(SchemaErrorLogger *logger) {
+  (void) logger;
+}
+
+SchemaParseContextInterface* StrictTypedParseContext::OpenObject(
+    SchemaErrorLogger *logger) {
+  ReportErrorForType(logger, JSON_ARRAY);
+  return NULL;
+}
+
+void StrictTypedParseContext::CloseObject(SchemaErrorLogger *logger) {
+  (void) logger;
+}
+
+void StrictTypedParseContext::ReportErrorForType(
+    SchemaErrorLogger *logger,
+    JsonType type) {
+  logger->Error() << "Invalid type '" << JsonTypeToString(type)
+                  << "' in 'required', elements must be strings";
 }
 
 // SchemaParseContext
@@ -678,56 +736,6 @@ PropertiesParseContext::~PropertiesParseContext() {
   STLDeleteValues(&m_property_contexts);
 }
 
-void PropertiesParseContext::String(SchemaErrorLogger *logger,
-                                    const string &value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Number(SchemaErrorLogger *logger, double value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Bool(SchemaErrorLogger *logger, bool value) {
-  (void) logger;
-  (void) value;
-}
-
-void PropertiesParseContext::Null(SchemaErrorLogger *logger) {
-  (void) logger;
-}
-
-SchemaParseContextInterface* PropertiesParseContext::OpenArray(
-    SchemaErrorLogger *logger) {
-  (void) logger;
-  return NULL;
-}
-
-void PropertiesParseContext::CloseArray(SchemaErrorLogger *logger) {
-  (void) logger;
-}
-
 SchemaParseContextInterface* PropertiesParseContext::OpenObject(
     SchemaErrorLogger *logger) {
   const string key = TakeKeyword();
@@ -740,10 +748,6 @@ SchemaParseContextInterface* PropertiesParseContext::OpenObject(
     logger->Error() << "Duplicate key " << key;
   }
   return r.first->second;
-}
-
-void PropertiesParseContext::CloseObject(SchemaErrorLogger *logger) {
-  (void) logger;
 }
 
 // ArrayItemsParseContext
@@ -761,56 +765,11 @@ void ArrayItemsParseContext::AddValidators(
   }
 }
 
-void ArrayItemsParseContext::String(SchemaErrorLogger *logger,
-                                    const string &value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Number(SchemaErrorLogger *logger, double value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Bool(SchemaErrorLogger *logger, bool value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void ArrayItemsParseContext::Null(SchemaErrorLogger *logger) {
-  ReportErrorForType(logger, JSON_NULL);
-}
-
-SchemaParseContextInterface* ArrayItemsParseContext::OpenArray(
-    SchemaErrorLogger *logger) {
-  ReportErrorForType(logger, JSON_ARRAY);
-  return NULL;
-}
-
 SchemaParseContextInterface* ArrayItemsParseContext::OpenObject(
     SchemaErrorLogger *logger) {
   m_item_schemas.push_back(new SchemaParseContext(m_schema_defs));
   return m_item_schemas.back();
   (void) logger;
-}
-
-void ArrayItemsParseContext::ReportErrorForType(SchemaErrorLogger *logger,
-                                                JsonType type) {
-  logger->Error() << "Invalid type '" << JsonTypeToString(type)
-      << "' in 'items', elements must be a valid JSON schema";
 }
 
 // StringArrayContext
@@ -824,59 +783,6 @@ void StringArrayContext::String(SchemaErrorLogger *logger,
   if (!m_items.insert(value).second) {
     logger->Error() << value << " appeared more than once in the array";
   }
-}
-
-void StringArrayContext::Number(SchemaErrorLogger *logger,
-                                            uint32_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void StringArrayContext::Number(SchemaErrorLogger *logger,
-                                            int32_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void StringArrayContext::Number(SchemaErrorLogger *logger,
-                                            uint64_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void StringArrayContext::Number(SchemaErrorLogger *logger,
-                                            int64_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void StringArrayContext::Number(SchemaErrorLogger *logger,
-                                            double value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void StringArrayContext::Bool(SchemaErrorLogger *logger,
-                                          bool value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void StringArrayContext::Null(SchemaErrorLogger *logger) {
-  ReportErrorForType(logger, JSON_NULL);
-}
-
-SchemaParseContextInterface* StringArrayContext::OpenArray(
-    SchemaErrorLogger *logger) {
-  ReportErrorForType(logger, JSON_ARRAY);
-  return NULL;
-}
-
-SchemaParseContextInterface* StringArrayContext::OpenObject(
-    SchemaErrorLogger *logger) {
-  ReportErrorForType(logger, JSON_OBJECT);
-  return NULL;
-}
-
-void StringArrayContext::ReportErrorForType(
-    SchemaErrorLogger *logger,
-    JsonType type) {
-  logger->Error() << "Invalid type '" << JsonTypeToString(type)
-                  << "' in 'required', elements must be strings";
 }
 
 // DefaultValueParseContext
@@ -1066,39 +972,6 @@ void DependencyParseContext::AddDependenciesToValidator(
   m_schema_dependencies.clear();
 }
 
-void DependencyParseContext::String(SchemaErrorLogger *logger,
-                                    const string &value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Number(SchemaErrorLogger *logger, double value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Bool(SchemaErrorLogger *logger, bool value) {
-  ReportErrorForType(logger, TypeFromValue(value));
-}
-
-void DependencyParseContext::Null(SchemaErrorLogger *logger) {
-  ReportErrorForType(logger, JSON_NULL);
-}
-
 SchemaParseContextInterface* DependencyParseContext::OpenArray(
     SchemaErrorLogger *logger) {
   m_property_context.reset(new StringArrayContext());
@@ -1128,13 +1001,6 @@ void DependencyParseContext::CloseObject(SchemaErrorLogger *logger) {
   STLReplaceAndDelete(&m_schema_dependencies, Keyword(),
                       m_schema_context->GetValidator(logger));
   m_schema_context.reset();
-}
-
-void DependencyParseContext::ReportErrorForType(
-    SchemaErrorLogger *logger,
-    JsonType type) {
-  logger->Error() << "Invalid type '" << JsonTypeToString(type)
-                  << "' in 'required', elements must be strings";
 }
 }  // namespace web
 }  // namespace ola

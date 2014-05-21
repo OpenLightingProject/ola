@@ -393,6 +393,6 @@ void JsonSchemaParserTest::testDefinitions() {
   OLA_ASSERT_NOT_NULL(value.get());
   string actual = ola::web::JsonWriter::AsString(*value);
   actual.push_back('\n');
-  // OLA_INFO << actual;
+  OLA_INFO << actual;
   // OLA_ASSERT_EQ(input, actual);
 }
