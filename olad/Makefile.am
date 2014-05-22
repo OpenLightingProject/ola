@@ -66,7 +66,7 @@ olad_LDADD = libolaserver.la \
              ../ola/libola.la
 
 if USE_FTDI
-olad_LDADD += -lftdi -lusb
+olad_LDADD += -lftdi1 -lusb-1.0
 endif
 
 if USING_WIN32

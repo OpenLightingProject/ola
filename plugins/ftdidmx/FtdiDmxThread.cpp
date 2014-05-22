@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <string>
+#include <unistd.h>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
