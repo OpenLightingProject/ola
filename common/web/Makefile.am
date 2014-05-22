@@ -1,10 +1,14 @@
 include $(top_srcdir)/common.mk
 
-dist_noinst_DATA = testdata/arrays.test \
+dist_noinst_DATA = testdata/allof.test \
+                   testdata/anyof.test \
+                   testdata/arrays.test \
                    testdata/basic-keywords.test \
                    testdata/integers.test \
                    testdata/misc.test \
+                   testdata/not.test \
                    testdata/objects.test \
+                   testdata/oneof.test \
                    testdata/schema.json \
                    testdata/strings.test
 

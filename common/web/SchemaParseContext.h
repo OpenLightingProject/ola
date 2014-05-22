@@ -38,13 +38,13 @@
 namespace ola {
 namespace web {
 
-class ArrayItemsParseContext;
-class DefaultValueParseContext;
+class ArrayOfSchemaContext;
+class ArrayOfStringsContext;
 class DefinitionsParseContext;
 class DependencyParseContext;
+class JsonValueContext;
 class PropertiesParseContext;
 class SchemaParseContext;
-class StringArrayContext;
 
 template <typename T>
 class OptionalItem {
@@ -198,7 +198,6 @@ class SchemaParseContext : public SchemaParseContextInterface {
       : m_schema_defs(definitions),
         m_type(JSON_UNDEFINED) {
   }
-  ~SchemaParseContext();
 
   /**
    * @brief Return the ValidatorInterface for this context.
@@ -256,7 +255,7 @@ class SchemaParseContext : public SchemaParseContextInterface {
 
   // 'items' can be either a json schema, or an array of json schema.
   std::auto_ptr<SchemaParseContext> m_items_single_context;
-  std::auto_ptr<ArrayItemsParseContext> m_items_context_array;
+  std::auto_ptr<ArrayOfSchemaContext> m_items_context_array;
 
   OptionalItem<uint64_t> m_max_items;
   OptionalItem<uint64_t> m_min_items;
@@ -265,18 +264,22 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.4 Object keywords
   OptionalItem<uint64_t> m_max_properties;
   OptionalItem<uint64_t> m_min_properties;
-  std::auto_ptr<StringArrayContext> m_required_items;
+  std::auto_ptr<ArrayOfStringsContext> m_required_items;
   std::auto_ptr<DependencyParseContext> m_dependency_context;
 
   // 5.5 Keywords for multiple instance types
   JsonType m_type;
-  std::auto_ptr<class EnumParseContext> m_enum_context;
+  std::auto_ptr<class ArrayOfJsonValuesContext> m_enum_context;
+  std::auto_ptr<class ArrayOfSchemaContext> m_allof_context;
+  std::auto_ptr<class ArrayOfSchemaContext> m_anyof_context;
+  std::auto_ptr<class ArrayOfSchemaContext> m_oneof_context;
+  std::auto_ptr<class SchemaParseContext> m_not_context;
 
   // 6. Metadata keywords
   OptionalItem<std::string> m_description;
   OptionalItem<std::string> m_title;
   std::auto_ptr<const JsonValue> m_default_value;
-  std::auto_ptr<DefaultValueParseContext> m_default_value_context;
+  std::auto_ptr<JsonValueContext> m_default_value_context;
 
   OptionalItem<std::string> m_ref_schema;
 
@@ -344,21 +347,21 @@ class PropertiesParseContext : public StrictTypedParseContext {
 /**
  * @brief Parse the array of objects in an 'items' property.
  */
-class ArrayItemsParseContext : public StrictTypedParseContext {
+class ArrayOfSchemaContext : public StrictTypedParseContext {
  public:
-  explicit ArrayItemsParseContext(SchemaDefinitions *definitions)
+  explicit ArrayOfSchemaContext(SchemaDefinitions *definitions)
       : m_schema_defs(definitions) {
   }
 
-  ~ArrayItemsParseContext();
+  ~ArrayOfSchemaContext();
 
   /**
    * @brief Populate a vector with validators for the elements in 'items'
    * @param[out] validators A vector fill with new validators. Ownership of the
    * validators is transferred to the caller.
    */
-  void AddValidators(SchemaErrorLogger *logger,
-                     std::vector<ValidatorInterface*> *validators);
+  void GetValidators(SchemaErrorLogger *logger,
+                     ValidatorInterface::ValidatorList *validators);
 
   SchemaParseContextInterface* OpenObject(SchemaErrorLogger *logger);
 
@@ -368,20 +371,20 @@ class ArrayItemsParseContext : public StrictTypedParseContext {
   SchemaDefinitions *m_schema_defs;
   ItemSchemas m_item_schemas;
 
-  DISALLOW_COPY_AND_ASSIGN(ArrayItemsParseContext);
+  DISALLOW_COPY_AND_ASSIGN(ArrayOfSchemaContext);
 };
 
 
 /**
- * @brief Parse an array of strings.
+ * @brief The context for an array of strings.
  *
- * This is used for required and the property dependency list.
+ * This is used for the required property and for property dependencies.
  */
-class StringArrayContext : public StrictTypedParseContext {
+class ArrayOfStringsContext : public StrictTypedParseContext {
  public:
   typedef std::set<std::string> StringSet;
 
-  StringArrayContext() {}
+  ArrayOfStringsContext() {}
 
   /**
    * @brief Return the strings in the string array
@@ -393,18 +396,19 @@ class StringArrayContext : public StrictTypedParseContext {
  private:
   StringSet m_items;
 
-  DISALLOW_COPY_AND_ASSIGN(StringArrayContext);
+  DISALLOW_COPY_AND_ASSIGN(ArrayOfStringsContext);
 };
 
 /**
- * @brief Parse a default value.
+ * @brief The context for a default value.
  *
- * Default values can be full fledged JSON documents. This context simply
- * passes the events through to a JsonParser to build the JsonValue.
+ * Default values can be any JSON type. This context simply
+ * passes the events through to a JsonParser in order to construct the
+ * JsonValue.
  */
-class DefaultValueParseContext : public SchemaParseContextInterface {
+class JsonValueContext : public SchemaParseContextInterface {
  public:
-  DefaultValueParseContext();
+  JsonValueContext();
 
   const JsonValue* ClaimValue(SchemaErrorLogger *logger);
 
@@ -425,18 +429,18 @@ class DefaultValueParseContext : public SchemaParseContextInterface {
  private:
   JsonParser m_parser;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultValueParseContext);
+  DISALLOW_COPY_AND_ASSIGN(JsonValueContext);
 };
 
 /**
- * @brief Parse an array of enums.
+ * @brief The context for an array of JsonValues.
  *
- * Items in the array can be full fledged JSON documents.
+ * This is used for the enum property. Items in the array can be any JSON type.
  */
-class EnumParseContext : public SchemaParseContextInterface {
+class ArrayOfJsonValuesContext : public SchemaParseContextInterface {
  public:
-  EnumParseContext() {}
-  ~EnumParseContext();
+  ArrayOfJsonValuesContext() {}
+  ~ArrayOfJsonValuesContext();
 
   void AddEnumsToValidator(BaseValidator *validator);
 
@@ -458,19 +462,21 @@ class EnumParseContext : public SchemaParseContextInterface {
 
  private:
   std::vector<const JsonValue*> m_enums;
-  std::auto_ptr<DefaultValueParseContext> m_value_context;
+  std::auto_ptr<JsonValueContext> m_value_context;
 
   void CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
                                const JsonValue *value);
 
-  DISALLOW_COPY_AND_ASSIGN(EnumParseContext);
+  DISALLOW_COPY_AND_ASSIGN(ArrayOfJsonValuesContext);
 };
 
 
 /**
- * @brief Parse an object containing dependencies.
+ * @brief The context for a dependency object.
  *
- * Values in a dependency object can be either arrays of strings, or schema.
+ * A dependency object contains key : value pairs. The key is the name of a
+ * property that may exist in the instance. The value is either an array of
+ * strings or an object.
  */
 class DependencyParseContext : public StrictTypedParseContext {
  public:
@@ -492,7 +498,7 @@ class DependencyParseContext : public StrictTypedParseContext {
 
   SchemaDefinitions *m_schema_defs;
 
-  std::auto_ptr<StringArrayContext> m_property_context;
+  std::auto_ptr<ArrayOfStringsContext> m_property_context;
   std::auto_ptr<SchemaParseContext> m_schema_context;
 
   PropertyDependencies m_property_dependencies;

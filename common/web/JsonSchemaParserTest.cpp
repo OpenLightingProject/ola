@@ -50,6 +50,10 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testArrays);
   CPPUNIT_TEST(testObjects);
   CPPUNIT_TEST(testMisc);
+  CPPUNIT_TEST(testAllOf);
+  CPPUNIT_TEST(testAnyOf);
+  CPPUNIT_TEST(testOneOf);
+  CPPUNIT_TEST(testNot);
   CPPUNIT_TEST(testDefinitions);
   CPPUNIT_TEST_SUITE_END();
 
@@ -64,6 +68,10 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   void testArrays();
   void testObjects();
   void testMisc();
+  void testAllOf();
+  void testAnyOf();
+  void testOneOf();
+  void testNot();
   void testDefinitions();
 
  private:
@@ -378,6 +386,34 @@ void JsonSchemaParserTest::testMisc() {
   RunTestsInFile("misc.test");
 }
 
+/**
+ * Test allOf
+ */
+void JsonSchemaParserTest::testAllOf() {
+  RunTestsInFile("allOf.test");
+}
+
+/**
+ * Test anyOf
+ */
+void JsonSchemaParserTest::testAnyOf() {
+  RunTestsInFile("anyOf.test");
+}
+
+/**
+ * Test oneOf
+ */
+void JsonSchemaParserTest::testOneOf() {
+  RunTestsInFile("oneOf.test");
+}
+
+/**
+ * Test not
+ */
+void JsonSchemaParserTest::testNot() {
+  RunTestsInFile("not.test");
+}
+
 void JsonSchemaParserTest::testDefinitions() {
   string error;
   const string input = ReadTestFile("schema.json");
@@ -393,6 +429,6 @@ void JsonSchemaParserTest::testDefinitions() {
   OLA_ASSERT_NOT_NULL(value.get());
   string actual = ola::web::JsonWriter::AsString(*value);
   actual.push_back('\n');
-  OLA_INFO << actual;
+  // OLA_INFO << actual;
   // OLA_ASSERT_EQ(input, actual);
 }

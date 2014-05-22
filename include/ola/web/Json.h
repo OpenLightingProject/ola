@@ -995,6 +995,14 @@ class JsonArray: public JsonValue {
   }
 
   /**
+   * @brief Append a JsonValue. Takes ownership of the pointer.
+   */
+  void Append(JsonObject *value) {
+    m_values.push_back(value);
+    m_complex_type |= !value->IsEmpty();
+  }
+
+  /**
    * @brief Append a JsonObject to the array
    * @returns the new JsonObject. Ownership is not transferred and the
    * pointer is valid for the lifetime of this JsonArray.

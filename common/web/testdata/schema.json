@@ -48,15 +48,23 @@
     },
     "additionalItems": {
       "anyOf": [
-        { "type": "boolean" },
-        { "$ref": "#" }
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "#"
+        }
       ],
       "default": {}
     },
     "additionalProperties": {
       "anyOf": [
-        { "type": "boolean" },
-        { "$ref": "#" }
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "#"
+        }
       ],
       "default": {}
     },
@@ -103,8 +111,12 @@
     },
     "items": {
       "anyOf": [
-        { "$ref": "#" },
-        { "$ref": "#\/definitions\/schemaArray" }
+        {
+          "$ref": "#"
+        },
+        {
+          "$ref": "#\/definitions\/schemaArray"
+        }
       ],
       "default": {}
     },
@@ -171,7 +183,9 @@
           "$ref": "#\/definitions\/simpleTypes"
         },
         {
-          "items": { "$ref": "#\/definitions\/simpleTypes" },
+          "items": {
+            "$ref": "#\/definitions\/simpleTypes"
+          },
           "minItems": 1,
           "type": "array",
           "uniqueItems": true

@@ -84,7 +84,7 @@ void DefinitionsParseContext::CloseObject(SchemaErrorLogger *logger) {
 // StrictTypedParseContext
 // Used as a parent class for many of the other contexts.
 void StrictTypedParseContext::String(SchemaErrorLogger *logger,
-                                    const string &value) {
+                                     const string &value) {
   ReportErrorForType(logger, TypeFromValue(value));
 }
 
@@ -147,10 +147,6 @@ void StrictTypedParseContext::ReportErrorForType(
 
 // SchemaParseContext
 // Used for parsing an object that describes a JSON schema.
-SchemaParseContext::~SchemaParseContext() {
-  // STLDeleteElements(&m_number_constraints);
-}
-
 ValidatorInterface* SchemaParseContext::GetValidator(
     SchemaErrorLogger *logger) {
   if (m_ref_schema.IsSet()) {
@@ -161,7 +157,6 @@ ValidatorInterface* SchemaParseContext::GetValidator(
   IntegerValidator *int_validator = NULL;
   switch (m_type) {
     case JSON_UNDEFINED:
-      validator = new WildcardValidator();
       break;
     case JSON_ARRAY:
       validator = BuildArrayValidator(logger);
@@ -189,8 +184,50 @@ ValidatorInterface* SchemaParseContext::GetValidator(
       validator = BuildStringValidator(logger);
       break;
     default:
+      {}
+  }
+
+  if (!validator && m_allof_context.get()) {
+    ValidatorInterface::ValidatorList all_of_validators;
+    m_allof_context->GetValidators(logger, &all_of_validators);
+    if (all_of_validators.empty()) {
+      logger->Error() << "allOf must contain at least one schema";
+      return NULL;
+    }
+    validator = new AllOfValidator(&all_of_validators);
+  }
+
+  if (!validator && m_anyof_context.get()) {
+    ValidatorInterface::ValidatorList any_of_validators;
+    m_anyof_context->GetValidators(logger, &any_of_validators);
+    if (any_of_validators.empty()) {
+      logger->Error() << "anyOf must contain at least one schema";
+      return NULL;
+    }
+    validator = new AnyOfValidator(&any_of_validators);
+  }
+
+  if (!validator && m_oneof_context.get()) {
+    ValidatorInterface::ValidatorList one_of_validators;
+    m_oneof_context->GetValidators(logger, &one_of_validators);
+    if (one_of_validators.empty()) {
+      logger->Error() << "oneOf must contain at least one schema";
+      return NULL;
+    }
+    validator = new OneOfValidator(&one_of_validators);
+  }
+
+  if (!validator && m_not_context.get()) {
+    validator = new NotValidator(m_not_context->GetValidator(logger));
+  }
+
+  if (validator == NULL) {
+    if (m_type == JSON_UNDEFINED) {
+      validator = new WildcardValidator();
+    } else {
       logger->Error() << "Unknown type: " << JsonTypeToString(m_type);
       return NULL;
+    }
   }
 
   if (m_schema.IsSet()) {
@@ -355,18 +392,27 @@ SchemaParseContextInterface* SchemaParseContext::OpenArray(
 
   switch (m_keyword) {
     case SCHEMA_DEFAULT:
-      m_default_value_context.reset(new DefaultValueParseContext());
+      m_default_value_context.reset(new JsonValueContext());
       m_default_value_context->OpenArray(logger);
       return m_default_value_context.get();
     case SCHEMA_ITEMS:
-      m_items_context_array.reset(new ArrayItemsParseContext(m_schema_defs));
+      m_items_context_array.reset(new ArrayOfSchemaContext(m_schema_defs));
       return m_items_context_array.get();
     case SCHEMA_REQUIRED:
-      m_required_items.reset(new StringArrayContext());
+      m_required_items.reset(new ArrayOfStringsContext());
       return m_required_items.get();
     case SCHEMA_ENUM:
-      m_enum_context.reset(new EnumParseContext());
+      m_enum_context.reset(new ArrayOfJsonValuesContext());
       return m_enum_context.get();
+    case SCHEMA_ALL_OF:
+      m_allof_context.reset(new ArrayOfSchemaContext(m_schema_defs));
+      return m_allof_context.get();
+    case SCHEMA_ANY_OF:
+      m_anyof_context.reset(new ArrayOfSchemaContext(m_schema_defs));
+      return m_anyof_context.get();
+    case SCHEMA_ONE_OF:
+      m_oneof_context.reset(new ArrayOfSchemaContext(m_schema_defs));
+      return m_oneof_context.get();
     default:
       {}
   }
@@ -395,7 +441,7 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
 
   switch (m_keyword) {
     case SCHEMA_DEFAULT:
-      m_default_value_context.reset(new DefaultValueParseContext());
+      m_default_value_context.reset(new JsonValueContext());
       m_default_value_context->OpenObject(logger);
       return m_default_value_context.get();
     case SCHEMA_DEFINITIONS:
@@ -421,6 +467,9 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
     case SCHEMA_DEPENDENCIES:
       m_dependency_context.reset(new DependencyParseContext(m_schema_defs));
       return m_dependency_context.get();
+    case SCHEMA_NOT:
+      m_not_context.reset(new SchemaParseContext(m_schema_defs));
+      return m_not_context.get();
     default:
       {}
   }
@@ -545,8 +594,8 @@ BaseValidator* SchemaParseContext::BuildArrayValidator(
           m_items_single_context->GetValidator(logger)));
   } else if (m_items_context_array.get()) {
     // 8.2.3.2
-    vector<ValidatorInterface*> item_validators;
-    m_items_context_array->AddValidators(logger, &item_validators);
+    ValidatorInterface::ValidatorList item_validators;
+    m_items_context_array->GetValidators(logger, &item_validators);
     items.reset(new ArrayValidator::Items(&item_validators));
   }
 
@@ -750,50 +799,48 @@ SchemaParseContextInterface* PropertiesParseContext::OpenObject(
   return r.first->second;
 }
 
-// ArrayItemsParseContext
+// ArrayOfSchemaContext
 // Used for parsing an array of JSON schema within 'items'
-ArrayItemsParseContext::~ArrayItemsParseContext() {
+ArrayOfSchemaContext::~ArrayOfSchemaContext() {
   STLDeleteElements(&m_item_schemas);
 }
 
-void ArrayItemsParseContext::AddValidators(
+void ArrayOfSchemaContext::GetValidators(
     SchemaErrorLogger *logger,
-    vector<ValidatorInterface*> *validators) {
+    ValidatorInterface::ValidatorList *validators) {
   ItemSchemas::iterator iter = m_item_schemas.begin();
   for (; iter != m_item_schemas.end(); ++iter) {
     validators->push_back((*iter)->GetValidator(logger));
   }
 }
 
-SchemaParseContextInterface* ArrayItemsParseContext::OpenObject(
+SchemaParseContextInterface* ArrayOfSchemaContext::OpenObject(
     SchemaErrorLogger *logger) {
   m_item_schemas.push_back(new SchemaParseContext(m_schema_defs));
   return m_item_schemas.back();
   (void) logger;
 }
 
-// StringArrayContext
+// ArrayOfStringsContext
 // Used for parsing an array of strings.
-void StringArrayContext::GetStringSet(StringSet *items) {
+void ArrayOfStringsContext::GetStringSet(StringSet *items) {
   *items = m_items;
 }
 
-void StringArrayContext::String(SchemaErrorLogger *logger,
-                                            const string &value) {
+void ArrayOfStringsContext::String(SchemaErrorLogger *logger,
+                                   const string &value) {
   if (!m_items.insert(value).second) {
     logger->Error() << value << " appeared more than once in the array";
   }
 }
 
-// DefaultValueParseContext
+// JsonValueContext
 // Used for parsing a default value.
-DefaultValueParseContext::DefaultValueParseContext()
-    : SchemaParseContextInterface() {
+JsonValueContext::JsonValueContext() : SchemaParseContextInterface() {
   m_parser.Begin();
 }
 
-const JsonValue* DefaultValueParseContext::ClaimValue(
-    SchemaErrorLogger *logger) {
+const JsonValue* JsonValueContext::ClaimValue(SchemaErrorLogger *logger) {
   m_parser.End();
   const JsonValue *value = m_parser.ClaimRoot();
   if (!value) {
@@ -802,78 +849,72 @@ const JsonValue* DefaultValueParseContext::ClaimValue(
   return value;
 }
 
-void DefaultValueParseContext::String(SchemaErrorLogger *,
-                                      const string &value) {
+void JsonValueContext::String(SchemaErrorLogger *, const string &value) {
   m_parser.String(value);
 }
 
-void DefaultValueParseContext::Number(SchemaErrorLogger *,
-                                      uint32_t value) {
+void JsonValueContext::Number(SchemaErrorLogger *, uint32_t value) {
   m_parser.Number(value);
 }
 
-void DefaultValueParseContext::Number(SchemaErrorLogger *,
-                                      int32_t value) {
+void JsonValueContext::Number(SchemaErrorLogger *, int32_t value) {
   m_parser.Number(value);
 }
 
-void DefaultValueParseContext::Number(SchemaErrorLogger *,
-                                      uint64_t value) {
+void JsonValueContext::Number(SchemaErrorLogger *, uint64_t value) {
   m_parser.Number(value);
 }
 
-void DefaultValueParseContext::Number(SchemaErrorLogger *,
-                                      int64_t value) {
+void JsonValueContext::Number(SchemaErrorLogger *, int64_t value) {
   m_parser.Number(value);
 }
 
-void DefaultValueParseContext::Number(SchemaErrorLogger *, double value) {
+void JsonValueContext::Number(SchemaErrorLogger *, double value) {
   m_parser.Number(value);
 }
 
-void DefaultValueParseContext::Bool(SchemaErrorLogger *, bool value) {
+void JsonValueContext::Bool(SchemaErrorLogger *, bool value) {
   m_parser.Bool(value);
 }
 
-void DefaultValueParseContext::Null(SchemaErrorLogger *logger) {
+void JsonValueContext::Null(SchemaErrorLogger *logger) {
   m_parser.Null();
   (void) logger;
 }
 
-SchemaParseContextInterface* DefaultValueParseContext::OpenArray(
+SchemaParseContextInterface* JsonValueContext::OpenArray(
     SchemaErrorLogger *) {
   m_parser.OpenArray();
   return this;
 }
 
-void DefaultValueParseContext::CloseArray(SchemaErrorLogger *logger) {
+void JsonValueContext::CloseArray(SchemaErrorLogger *logger) {
   m_parser.CloseArray();
   (void) logger;
 }
 
-SchemaParseContextInterface* DefaultValueParseContext::OpenObject(
+SchemaParseContextInterface* JsonValueContext::OpenObject(
     SchemaErrorLogger *) {
   m_parser.OpenObject();
   return this;
 }
 
-void DefaultValueParseContext::ObjectKey(SchemaErrorLogger *,
-                                         const string &key) {
+void JsonValueContext::ObjectKey(SchemaErrorLogger *, const string &key) {
   m_parser.ObjectKey(key);
 }
 
-void DefaultValueParseContext::CloseObject(SchemaErrorLogger *logger) {
+void JsonValueContext::CloseObject(SchemaErrorLogger *logger) {
   m_parser.CloseObject();
   (void) logger;
 }
 
-// EnumParseContext
+// ArrayOfJsonValuesContext
 // Used for parsing a list of enums.
-EnumParseContext::~EnumParseContext() {
+ArrayOfJsonValuesContext::~ArrayOfJsonValuesContext() {
   STLDeleteElements(&m_enums);
 }
 
-void EnumParseContext::AddEnumsToValidator(BaseValidator *validator) {
+void ArrayOfJsonValuesContext::AddEnumsToValidator(BaseValidator *validator) {
   vector<const JsonValue*>::const_iterator iter = m_enums.begin();
   for (; iter != m_enums.end(); ++iter) {
     validator->AddEnumValue(*iter);
@@ -881,62 +922,69 @@ void EnumParseContext::AddEnumsToValidator(BaseValidator *validator) {
   m_enums.clear();
 }
 
-void EnumParseContext::String(SchemaErrorLogger *logger, const string &value) {
+void ArrayOfJsonValuesContext::String(SchemaErrorLogger *logger,
+                                      const string &value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Number(SchemaErrorLogger *logger, uint32_t value) {
+void ArrayOfJsonValuesContext::Number(SchemaErrorLogger *logger,
+                                     uint32_t value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Number(SchemaErrorLogger *logger, int32_t value) {
+void ArrayOfJsonValuesContext::Number(SchemaErrorLogger *logger,
+                                      int32_t value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Number(SchemaErrorLogger *logger, uint64_t value) {
+void ArrayOfJsonValuesContext::Number(SchemaErrorLogger *logger,
+                                      uint64_t value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Number(SchemaErrorLogger *logger, int64_t value) {
+void ArrayOfJsonValuesContext::Number(SchemaErrorLogger *logger,
+                                      int64_t value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Number(SchemaErrorLogger *logger, double value) {
+void ArrayOfJsonValuesContext::Number(SchemaErrorLogger *logger,
+                                      double value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Bool(SchemaErrorLogger *logger, bool value) {
+void ArrayOfJsonValuesContext::Bool(SchemaErrorLogger *logger, bool value) {
   CheckForDuplicateAndAdd(logger, JsonValue::NewValue(value));
 }
 
-void EnumParseContext::Null(SchemaErrorLogger *logger) {
+void ArrayOfJsonValuesContext::Null(SchemaErrorLogger *logger) {
   CheckForDuplicateAndAdd(logger, new JsonNullValue());
 }
 
-SchemaParseContextInterface* EnumParseContext::OpenArray(
+SchemaParseContextInterface* ArrayOfJsonValuesContext::OpenArray(
     SchemaErrorLogger *logger) {
-  m_value_context.reset(new DefaultValueParseContext());
+  m_value_context.reset(new JsonValueContext());
   return m_value_context.get();
   (void) logger;
 }
 
-void EnumParseContext::CloseArray(SchemaErrorLogger *logger) {
+void ArrayOfJsonValuesContext::CloseArray(SchemaErrorLogger *logger) {
   CheckForDuplicateAndAdd(logger, m_value_context->ClaimValue(logger));
 }
 
-SchemaParseContextInterface* EnumParseContext::OpenObject(
+SchemaParseContextInterface* ArrayOfJsonValuesContext::OpenObject(
     SchemaErrorLogger *logger) {
-  m_value_context.reset(new DefaultValueParseContext());
+  m_value_context.reset(new JsonValueContext());
   return m_value_context.get();
   (void) logger;
 }
 
-void EnumParseContext::CloseObject(SchemaErrorLogger *logger) {
+void ArrayOfJsonValuesContext::CloseObject(SchemaErrorLogger *logger) {
   CheckForDuplicateAndAdd(logger, m_value_context->ClaimValue(logger));
 }
 
-void EnumParseContext::CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
-                                               const JsonValue *value) {
+void ArrayOfJsonValuesContext::CheckForDuplicateAndAdd(
+    SchemaErrorLogger *logger,
+    const JsonValue *value) {
   vector<const JsonValue*>::const_iterator iter = m_enums.begin();
   for (; iter != m_enums.end(); ++iter) {
     if (**iter == *value) {
@@ -948,7 +996,7 @@ void EnumParseContext::CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
   m_enums.push_back(value);
 }
 
-// EnumParseContext
+// ArrayOfJsonValuesContext
 // Used for parsing a list of enums.
 DependencyParseContext::~DependencyParseContext() {
   STLDeleteValues(&m_schema_dependencies);
@@ -974,7 +1022,7 @@ void DependencyParseContext::AddDependenciesToValidator(
 
 SchemaParseContextInterface* DependencyParseContext::OpenArray(
     SchemaErrorLogger *logger) {
-  m_property_context.reset(new StringArrayContext());
+  m_property_context.reset(new ArrayOfStringsContext());
   return m_property_context.get();
   (void) logger;
 }

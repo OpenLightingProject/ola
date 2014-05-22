@@ -160,9 +160,11 @@
 // Nested Arrays
 {
   "items": {
-    "items": [{
-      "type": "boolean"
-    }],
+    "items": [
+      {
+        "type": "boolean"
+      }
+    ],
     "type": "array"
   },
   "maxItems": 1,
