@@ -266,7 +266,21 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
   else
 #endif
 #ifdef _WIN32
-    bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+    if (WriteDescriptor().m_type == HANDLE_DESCRIPTOR) {
+      DWORD bytes_written = 0;
+      if (!WriteFile(WriteDescriptor().m_handle.m_handle,
+                     buffer,
+                     size,
+                     &bytes_written,
+                     NULL)) {
+        OLA_WARN << "WriteFile() failed with " << GetLastError();
+        bytes_sent = -1;
+      } else {
+        bytes_sent = bytes_written;
+      }
+    } else {
+      bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+    }
 #else
     bytes_sent = write(WriteDescriptor(), buffer, size);
 #endif
