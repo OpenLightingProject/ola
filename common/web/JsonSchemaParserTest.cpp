@@ -390,21 +390,21 @@ void JsonSchemaParserTest::testMisc() {
  * Test allOf
  */
 void JsonSchemaParserTest::testAllOf() {
-  RunTestsInFile("allOf.test");
+  RunTestsInFile("allof.test");
 }
 
 /**
  * Test anyOf
  */
 void JsonSchemaParserTest::testAnyOf() {
-  RunTestsInFile("anyOf.test");
+  RunTestsInFile("anyof.test");
 }
 
 /**
  * Test oneOf
  */
 void JsonSchemaParserTest::testOneOf() {
-  RunTestsInFile("oneOf.test");
+  RunTestsInFile("oneof.test");
 }
 
 /**
