@@ -55,6 +55,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testOneOf);
   CPPUNIT_TEST(testNot);
   CPPUNIT_TEST(testDefinitions);
+  CPPUNIT_TEST(testSchema);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -73,6 +74,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   void testOneOf();
   void testNot();
   void testDefinitions();
+  void testSchema();
 
  private:
   struct TestCase {
@@ -414,7 +416,14 @@ void JsonSchemaParserTest::testNot() {
   RunTestsInFile("not.test");
 }
 
+/**
+ * Test definitions.
+ */
 void JsonSchemaParserTest::testDefinitions() {
+  RunTestsInFile("definitions.test");
+}
+
+void JsonSchemaParserTest::testSchema() {
   string error;
   const string input = ReadTestFile("schema.json");
   auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
@@ -429,6 +438,6 @@ void JsonSchemaParserTest::testDefinitions() {
   OLA_ASSERT_NOT_NULL(value.get());
   string actual = ola::web::JsonWriter::AsString(*value);
   actual.push_back('\n');
-  OLA_INFO << actual;
+  // OLA_INFO << actual;
   // OLA_ASSERT_EQ(input, actual);
 }

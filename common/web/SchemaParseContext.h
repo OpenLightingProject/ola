@@ -288,7 +288,6 @@ class SchemaParseContext : public SchemaParseContextInterface {
 
   std::auto_ptr<DefinitionsParseContext> m_definitions_context;
   std::auto_ptr<PropertiesParseContext> m_properties_context;
-  // vector<NumberConstraint> m_number_constraints;
 
   void ProcessPositiveInt(SchemaErrorLogger *logger, uint64_t value);
 

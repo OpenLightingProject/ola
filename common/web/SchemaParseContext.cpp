@@ -445,17 +445,9 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
       m_default_value_context->OpenObject(logger);
       return m_default_value_context.get();
     case SCHEMA_DEFINITIONS:
-      if (m_definitions_context.get()) {
-        logger->Error() << "Duplicate key 'definitions'";
-        return NULL;
-      }
       m_definitions_context.reset(new DefinitionsParseContext(m_schema_defs));
       return m_definitions_context.get();
     case SCHEMA_PROPERTIES:
-      if (m_properties_context.get()) {
-        logger->Error() << "Duplicate key 'properties'";
-        return NULL;
-      }
       m_properties_context.reset(new PropertiesParseContext(m_schema_defs));
       return m_properties_context.get();
     case SCHEMA_ITEMS:

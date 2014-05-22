@@ -4,6 +4,7 @@ dist_noinst_DATA = testdata/allof.test \
                    testdata/anyof.test \
                    testdata/arrays.test \
                    testdata/basic-keywords.test \
+                   testdata/definitions.test \
                    testdata/integers.test \
                    testdata/misc.test \
                    testdata/not.test \
