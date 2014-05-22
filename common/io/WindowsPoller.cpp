@@ -56,30 +56,30 @@ WindowsPoller::~WindowsPoller() {
 }
 
 bool WindowsPoller::AddReadDescriptor(class ReadFileDescriptor *descriptor) {
-  return false;
+  return true;
 }
 
 bool WindowsPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
                                      bool delete_on_close) {
-  return false;
+  return true;
 }
 
 bool WindowsPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
-  return false;
+  return true;
 }
 
 bool WindowsPoller::RemoveReadDescriptor(
     class ConnectedDescriptor *descriptor) {
-  return false;
+  return true;
 }
 
 bool WindowsPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
-  return false;
+  return true;
 }
 
 bool WindowsPoller::RemoveWriteDescriptor(
     class WriteFileDescriptor *descriptor) {
-  return false;
+  return true;
 }
 
 bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
