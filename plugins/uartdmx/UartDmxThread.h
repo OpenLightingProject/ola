@@ -53,6 +53,8 @@ class UartDmxThread : public ola::thread::Thread {
     void CheckTimeGranularity();
 
     static const uint32_t DMX_MAB = 16;
+    // clever saftey macro
+    DISALLOW_COPY_AND_ASSIGN(UartDmxThread);
 };
 }  // namespace uartdmx
 }  // namespace plugin

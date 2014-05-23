@@ -58,6 +58,8 @@ class UartDmxOutputPort : public ola::BasicOutputPort {
  private:
     UartWidget *m_widget;
     UartDmxThread m_thread;
+    // clever saftey macro
+    DISALLOW_COPY_AND_ASSIGN(UartDmxOutputPort);
 };
 }  // namespace uartdmx
 }  // namespace plugin

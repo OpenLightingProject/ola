@@ -32,7 +32,7 @@
 
 #include <string>
 #include <vector>
-
+#include "ola/base/Macro.h"
 #include "ola/DmxBuffer.h"
 
 namespace ola {
@@ -79,7 +79,7 @@ class UartWidget {
     bool SetupOutput();
 
  private:
-    std::string m_path;
+    const std::string m_path;
 
 	 /**
 	  * variable to hold the Unix file descriptor used to open and manipulate
@@ -94,6 +94,8 @@ class UartWidget {
      * Constant value for failed to open file
      */
     static const int FAILED_OPEN = -1;
+    // clever saftey macro
+    DISALLOW_COPY_AND_ASSIGN(UartWidget);
 };
 }  // namespace uartdmx
 }  // namespace plugin

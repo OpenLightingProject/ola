@@ -55,18 +55,20 @@ class UartDmxDevice : public Device {
   std::string DeviceBreakKey() const;
   std::string DeviceMalfKey() const;
   void SetDefaults();
+
+  std::auto_ptr<UartWidget> m_widget;
+  class Preferences *m_preferences;
+  const std::string m_name;
+  const std::string m_path;
+  unsigned int m_breakt;
+  unsigned int m_malft;
+
   static const unsigned int DEFAULT_MALF;
   static const char K_MALF[];
   static const unsigned int DEFAULT_BREAK;
   static const char K_BREAK[];
-
-
-  std::auto_ptr<UartWidget> m_widget;
-  class Preferences *m_preferences;
-  std::string m_name;
-  std::string m_path;
-  unsigned int m_breakt;
-  unsigned int m_malft;
+  // clever saftey macro
+  DISALLOW_COPY_AND_ASSIGN(UartDmxDevice);
 };
 }  // namespace uartdmx
 }  // namespace plugin

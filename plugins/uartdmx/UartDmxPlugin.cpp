@@ -126,6 +126,8 @@ string UartDmxPlugin::Description() const {
 "to produce a direct DMX output stream. The host needs to\n"
 "create the DMX stream itself as there is no external micro\n"
 "This is tested with the on-board UART of the Raspberry Pi.\n"
+"See here for a possible schematic:\n"
+"http://eastertrail.blogspot.co.uk/2014/04/command-and-control-ii.html\n"
 "\n"
 "--- Config file : ola-uartdmx.conf ---\n"
 "\n"

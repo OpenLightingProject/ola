@@ -65,6 +65,8 @@ class UartDmxPlugin : public Plugin {
   static const char PLUGIN_PREFIX[];
   static const char K_DEVICE[];
   static const char DEFAULT_DEVICE[];
+  // clever saftey macro
+  DISALLOW_COPY_AND_ASSIGN(UartDmxPlugin);
 };
 }  // namespace uartdmx
 }  // namespace plugin

@@ -20,11 +20,8 @@
  */
 
 #include <math.h>
-
 #include <unistd.h>
-
 #include <string>
-
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
