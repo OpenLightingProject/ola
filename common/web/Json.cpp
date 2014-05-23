@@ -32,6 +32,22 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
+JsonValue* JsonValue::LookupElement(const JsonPointer &pointer) {
+  JsonPointer::Iterator iter = pointer.begin();
+  return LookupElementWithIter(&iter);
+}
+
+JsonValue* JsonLeafValue::LookupElementWithIter(
+    JsonPointer::Iterator *iterator) {
+  if (!iterator->IsValid() || !iterator->AtEnd()) {
+    return NULL;
+  }
+  (*iterator)++;  // increment to move past the end.
+  return this;
+}
+
+
+// Accepts
 void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
@@ -39,6 +55,7 @@ void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
 void JsonBoolValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
+
 
 void JsonNullValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
@@ -68,6 +85,96 @@ void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
 }
 
+// Integer equality functions
+namespace {
+
+bool Compare(int32_t a, uint32_t b) {
+  if (a < 0) {
+    return false;
+  }
+  return static_cast<uint32_t>(a) == b;
+}
+
+bool Compare(int32_t a, int64_t b) {
+  return static_cast<int64_t>(a) == b;
+}
+
+bool Compare(int32_t a, uint64_t b) {
+  if (a < 0) {
+    return false;
+  }
+  return static_cast<uint64_t>(a) == b;
+}
+
+bool Compare(uint32_t a, int64_t b) {
+  if (b < 0) {
+    return false;
+  }
+  return static_cast<int64_t>(a) == b;
+}
+
+bool Compare(uint32_t a, uint64_t b) {
+  return static_cast<uint64_t>(a) == b;
+}
+
+bool Compare(int64_t a, uint64_t b) {
+  if (a < 0) {
+    return false;
+  }
+  return static_cast<uint64_t>(a) == b;
+}
+}  // namespace
+
+
+// Integer equality functions
+bool JsonUIntValue::Equals(const JsonIntValue &other) const {
+  return Compare(other.Value(), m_value);
+}
+
+bool JsonUIntValue::Equals(const JsonUInt64Value &other) const {
+  return Compare(m_value, other.Value());
+}
+
+bool JsonUIntValue::Equals(const JsonInt64Value &other) const {
+  return Compare(m_value, other.Value());
+}
+
+bool JsonIntValue::Equals(const JsonUIntValue &other) const {
+  return Compare(m_value, other.Value());
+}
+
+bool JsonIntValue::Equals(const JsonUInt64Value &other) const {
+  return Compare(m_value, other.Value());
+}
+
+bool JsonIntValue::Equals(const JsonInt64Value &other) const {
+  return Compare(m_value, other.Value());
+}
+
+bool JsonUInt64Value::Equals(const JsonUIntValue &other) const {
+  return Compare(other.Value(), m_value);
+}
+
+bool JsonUInt64Value::Equals(const JsonIntValue &other) const {
+  return Compare(other.Value(), m_value);
+}
+
+bool JsonUInt64Value::Equals(const JsonInt64Value &other) const {
+  return Compare(other.Value(), m_value);
+}
+
+bool JsonInt64Value::Equals(const JsonUIntValue &other) const {
+  return Compare(other.Value(), m_value);
+}
+
+bool JsonInt64Value::Equals(const JsonIntValue &other) const {
+  return Compare(other.Value(), m_value);
+}
+
+bool JsonInt64Value::Equals(const JsonUInt64Value &other) const {
+  return Compare(m_value, other.Value());
+}
+
 JsonDoubleValue::JsonDoubleValue(double value)
     : m_value(value) {
   ostringstream str;
@@ -75,58 +182,92 @@ JsonDoubleValue::JsonDoubleValue(double value)
   m_as_string = str.str();
 }
 
-JsonDoubleValue::JsonDoubleValue(bool is_negative, uint64_t full,
-                                 int32_t leading_fractional_zeros,
-                                 uint64_t fractional, int32_t exponent) {
-  BuildDouble(is_negative, full, leading_fractional_zeros, fractional,
-      exponent);
+JsonDoubleValue::JsonDoubleValue(const DoubleRepresentation &rep) {
+  AsDouble(rep, &m_value);
+  m_as_string = AsString(rep);
 }
 
-void JsonDoubleValue::BuildDouble(bool is_negative, uint64_t full,
-                                  int32_t leading_fractional_zeros,
-                                  uint64_t fractional, int32_t exponent) {
-  // Populate the double member first
-  double d = fractional;
-  while (d > 0) {
-    d /= 10;
+bool JsonDoubleValue::AsDouble(const DoubleRepresentation &rep, double *out) {
+  // TODO(simon): Check the limits here.
+  double d = rep.fractional;
+  while (d > 1.0) {
+    d /= 10.0;
   }
-  for (int i = 0; i < leading_fractional_zeros; i++) {
+  for (unsigned int i = 0; i < rep.leading_fractional_zeros; i++) {
     d /= 10;
   }
 
-  d += full;
-  d *= pow(10, exponent);
-  if (is_negative && d != 0.0) {
+  d += rep.full;
+  d *= pow(10, rep.exponent);
+  if (rep.is_negative && d != 0.0) {
     d *= -1;
   }
-  m_value = d;
+  *out = d;
+  return true;
+}
 
+string JsonDoubleValue::AsString(const DoubleRepresentation &rep) {
   // Populate the string member
-  if (full == 0 && fractional == 0) {
-    m_as_string = "0";
-    return;
+  if (rep.full == 0 && rep.fractional == 0) {
+    return "0";
   }
 
   ostringstream output;
-  if (is_negative) {
+  if (rep.is_negative) {
     output << "-";
   }
-  output << full;
-  if (fractional) {
+  output << rep.full;
+  if (rep.fractional) {
     output << ".";
-    if (leading_fractional_zeros) {
-      output << string(leading_fractional_zeros, '0');
+    if (rep.leading_fractional_zeros) {
+      output << string(rep.leading_fractional_zeros, '0');
     }
-    output << fractional;
+    output << rep.fractional;
   }
-  if (exponent) {
-    output << "e" << exponent;
+  if (rep.exponent) {
+    output << "e" << rep.exponent;
   }
-  m_as_string = output.str();
+  return output.str();
 }
 
 JsonObject::~JsonObject() {
   STLDeleteValues(&m_members);
+}
+
+JsonValue* JsonObject::LookupElementWithIter(JsonPointer::Iterator *iterator) {
+  if (!iterator->IsValid()) {
+    return NULL;
+  }
+
+  if (iterator->AtEnd()) {
+    return this;
+  }
+
+  const string token = **iterator;
+  (*iterator)++;
+  JsonValue *value = STLFindOrNull(m_members, token);
+  if (value) {
+    return value->LookupElementWithIter(iterator);
+  } else {
+    return NULL;
+  }
+}
+
+bool JsonObject::Equals(const JsonObject &other) const {
+  if (m_members.size() != other.m_members.size()) {
+    return false;
+  }
+
+  MemberMap::const_iterator our_iter = m_members.begin();
+  MemberMap::const_iterator other_iter = other.m_members.begin();
+  for (; our_iter != m_members.end() && other_iter != other.m_members.end();
+       our_iter++, other_iter++) {
+    if (our_iter->first != other_iter->first ||
+        *(our_iter->second) != *(other_iter->second)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void JsonObject::Add(const std::string &key, const std::string &value) {
@@ -169,12 +310,21 @@ JsonArray* JsonObject::AddArray(const string &key) {
   return array;
 }
 
-void JsonObject::AddValue(const string &key, const JsonValue *value) {
+void JsonObject::AddValue(const string &key, JsonValue *value) {
   STLReplaceAndDelete(&m_members, key, value);
 }
 
 void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
+}
+
+JsonValue* JsonObject::Clone() const {
+  JsonObject *object = new JsonObject();
+  MemberMap::const_iterator iter = m_members.begin();
+  for (; iter != m_members.end(); ++iter) {
+    object->AddValue(iter->first, iter->second->Clone());
+  }
+  return object;
 }
 
 void JsonObject::VisitProperties(JsonValueVisitorInterface *visitor) const {
@@ -188,8 +338,56 @@ JsonArray::~JsonArray() {
   STLDeleteElements(&m_values);
 }
 
+JsonValue* JsonArray::LookupElementWithIter(JsonPointer::Iterator *iterator) {
+  if (!iterator->IsValid()) {
+    return NULL;
+  }
+
+  if (iterator->AtEnd()) {
+    return this;
+  }
+
+  unsigned int index;
+  if (!StringToInt(**iterator, &index, true)) {
+    (*iterator)++;
+    return NULL;
+  }
+  (*iterator)++;
+
+  if (index < m_values.size()) {
+    return m_values[index]->LookupElementWithIter(iterator);
+  } else {
+    return NULL;
+  }
+}
+
+bool JsonArray::Equals(const JsonArray &other) const {
+  if (m_values.size() != other.m_values.size()) {
+    return false;
+  }
+
+  ValuesVector::const_iterator our_iter = m_values.begin();
+  ValuesVector::const_iterator other_iter = other.m_values.begin();
+  for (; our_iter != m_values.end() && other_iter != other.m_values.end();
+       our_iter++, other_iter++) {
+    if (**our_iter != **other_iter) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void JsonArray::Accept(JsonValueVisitorInterface *visitor) const {
   visitor->Visit(*this);
+}
+
+JsonValue* JsonArray::Clone() const {
+  JsonArray *array = new JsonArray();
+  ValuesVector::const_iterator iter = m_values.begin();
+  for (; iter != m_values.end(); iter++) {
+    array->AppendValue((*iter)->Clone());
+  }
+  return array;
 }
 
 const JsonValue *JsonArray::ElementAt(unsigned int i) const {
@@ -200,107 +398,42 @@ const JsonValue *JsonArray::ElementAt(unsigned int i) const {
   }
 }
 
-void JsonWriter::Write(ostream *output, const JsonValue &obj) {
-  JsonWriter writer(output);
-  obj.Accept(&writer);
+// operator<<
+std::ostream& operator<<(std::ostream &os, const JsonStringValue &value) {
+  return os << value.Value();
 }
 
-string JsonWriter::AsString(const JsonValue &obj) {
-  ostringstream str;
-  JsonWriter writer(&str);
-  obj.Accept(&writer);
-  return str.str();
+std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonStringValue &value) {
-  *m_output << '"' << EscapeString(EncodeString(value.Value())) << '"';
+std::ostream& operator<<(std::ostream &os, const JsonIntValue &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonBoolValue &value) {
-  *m_output << (value.Value() ? "true" : "false");
+std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonNullValue &) {
-  *m_output << "null";
+std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonRawValue &value) {
-  *m_output << value.Value();
+std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonObject &value) {
-  if (value.IsEmpty()) {
-    *m_output << "{}";
-    return;
-  }
-
-  string old_separator = m_separator;
-  m_separator = "";
-  m_indent += DEFAULT_INDENT;
-  *m_output << "{\n";
-
-  value.VisitProperties(this);
-  m_indent -= DEFAULT_INDENT;
-
-  *m_output << "\n" << string(m_indent, ' ');
-  *m_output << "}";
-  m_separator = old_separator;
+std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonArray &value) {
-  *m_output << "[";
-  string default_separator = ", ";
-
-  if (value.IsComplexType()) {
-    m_indent += DEFAULT_INDENT;
-    *m_output << "\n" << string(m_indent, ' ');
-    default_separator = ",\n";
-    default_separator.append(m_indent, ' ');
-  }
-
-  string separator;
-
-  for (unsigned int i = 0; i < value.Size(); i++) {
-    *m_output << separator;
-    value.ElementAt(i)->Accept(this);
-    separator = default_separator;
-  }
-
-  if (value.IsComplexType()) {
-    *m_output << "\n";
-    m_indent -= DEFAULT_INDENT;
-    *m_output << string(m_indent, ' ');
-  }
-
-  *m_output << "]";
+std::ostream& operator<<(std::ostream &os, const JsonNullValue &) {
+  return os << "null";
 }
 
-void JsonWriter::Visit(const JsonUIntValue &value) {
-  *m_output << value.Value();
+std::ostream& operator<<(std::ostream &os, const JsonRawValue &value) {
+  return os << value.Value();
 }
 
-void JsonWriter::Visit(const JsonUInt64Value &value) {
-  *m_output << value.Value();
-}
-
-void JsonWriter::Visit(const JsonIntValue &value) {
-  *m_output << value.Value();
-}
-
-void JsonWriter::Visit(const JsonInt64Value &value) {
-  *m_output << value.Value();
-}
-
-void JsonWriter::Visit(const JsonDoubleValue &value) {
-  *m_output << value.ToString();
-}
-
-void JsonWriter::VisitProperty(const std::string &property,
-                               const JsonValue &value) {
-  *m_output << m_separator << string(m_indent, ' ') << "\""
-            << EscapeString(property) << "\": ";
-  value.Accept(this);
-  m_separator = ",\n";
-}
 }  // namespace web
 }  // namespace ola

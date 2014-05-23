@@ -24,6 +24,7 @@
 
 #include "ola/web/Json.h"
 #include "ola/web/JsonParser.h"
+#include "ola/web/JsonWriter.h"
 #include "ola/web/TreeHandler.h"
 #include "ola/testing/TestUtils.h"
 

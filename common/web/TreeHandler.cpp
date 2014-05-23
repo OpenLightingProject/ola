@@ -82,11 +82,8 @@ void TreeHandler::Number(int64_t value) {
   AddValue(new JsonInt64Value(value));
 }
 
-void TreeHandler::Number(bool is_negative, uint64_t full,
-                         int32_t leading_zeros, uint64_t fractional,
-                         int32_t exponent) {
-  AddValue(new JsonDoubleValue(is_negative, full, leading_zeros, fractional,
-                               exponent));
+void TreeHandler::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
+  AddValue(new JsonDoubleValue(rep));
 }
 
 void TreeHandler::Bool(bool value) {
@@ -183,7 +180,7 @@ const JsonValue *TreeHandler::ClaimRoot() {
   return m_root.release();
 }
 
-void TreeHandler::AddValue(const JsonValue *value) {
+void TreeHandler::AddValue(JsonValue *value) {
   if (!m_container_stack.empty() && m_container_stack.top() == ARRAY) {
     if (m_array_stack.empty()) {
       OLA_WARN << "Missing JsonArray, parsing is broken!";

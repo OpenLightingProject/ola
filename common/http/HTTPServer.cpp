@@ -24,6 +24,7 @@
 #include <ola/http/HTTPServer.h>
 #include <ola/io/Descriptor.h>
 #include <ola/web/Json.h>
+#include <ola/web/JsonWriter.h>
 
 #include <fstream>
 #include <iostream>
