@@ -108,6 +108,7 @@ bool UartDmxPlugin::StopHook() {
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
+	delete *iter;
   }
   m_devices.clear();
   return true;

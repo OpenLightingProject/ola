@@ -38,7 +38,7 @@ class LinuxHelper {
    * Set the baud rate of the serial port to 250k using the non-standard
    * speed selection mechanism from the Linux kernel.
    */
-  static bool SetDmxBaud(const int fd);
+  static bool SetDmxBaud(int fd);
 };
 }  // namespace uartdmx
 }  // namespace plugin

@@ -25,14 +25,14 @@
 // this provides ioctl() definition without conflicting with asm/termios.h
 #include <stropts.h>
 #include <asm/termios.h>  // use this not standard termios for custom baud rates
-
+#include <ola/Logging.h>
 #include "plugins/uartdmx/UartLinuxHelper.h"
 
 namespace ola {
 namespace plugin {
 namespace uartdmx {
 
-bool LinuxHelper::SetDmxBaud(const int fd) {
+bool LinuxHelper::SetDmxBaud(int fd) {
 struct termios2 tio;  // linux-specific terminal stuff
 const int rate = 250000;
 
@@ -45,18 +45,17 @@ tio.c_ispeed = rate;
 tio.c_ospeed = rate;  // set custom speed directly
 if (ioctl(fd, TCSETS2, &tio) < 0)  // push uart state
   return false;
-#if 0
-if (verbose > 1) {
+
+if (LogLevel() >= OLA_LOG_INFO) {
     // if verbose, read and print
     // get current uart state
-    if (ioctl(fh, TCGETS2, &tio) < 0) {
-         fprintf(stderr, "Error getting altered settings from port\n");
+    if (ioctl(fd, TCGETS2, &tio) < 0) {
+         OLA_DEBUG << "Error getting altered settings from port";
     } else {
-         fprintf(stderr, "Port speeds are %i in and %i out\n",
-           tio.c_ispeed, tio.c_ospeed);
+         OLA_DEBUG << "Port speeds are " << tio.c_ispeed << " in and "
+                   << tio.c_ospeed << " out";
     }
 }
-#endif
 return true;
 }
 
