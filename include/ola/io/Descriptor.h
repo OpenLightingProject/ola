@@ -54,7 +54,39 @@
 namespace ola {
 namespace io {
 
-static const int INVALID_DESCRIPTOR = -1;
+#ifdef _WIN32
+// Internal use only. Semantic type of the descriptor.
+enum DescriptorType {
+  GENERIC_DESCRIPTOR = 0,  // Catch-all type without special handling
+  SOCKET_DESCRIPTOR,  // WinSock socket
+  HANDLE_DESCRIPTOR  // Windows device handle
+};
+
+// Consider this to be an opaque type.
+struct DescriptorHandle {
+  union {
+    int m_fd;
+    void* m_handle;
+  } m_handle;
+  DescriptorType m_type;
+  void* m_event_handle;
+
+  DescriptorHandle() {
+    m_handle.m_fd = -1;
+    m_type = GENERIC_DESCRIPTOR;
+    m_event_handle = 0;
+  }
+};
+
+static DescriptorHandle INVALID_DESCRIPTOR;
+bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
+bool operator==(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
+bool operator<(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
+std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data);
+#else
+typedef int DescriptorHandle;
+static DescriptorHandle INVALID_DESCRIPTOR = -1;
+#endif
 
 /*
  * A FileDescriptor which can be read from.
@@ -64,7 +96,7 @@ class ReadFileDescriptor {
   virtual ~ReadFileDescriptor() {}
 
   // Returns the read descriptor for this socket
-  virtual int ReadDescriptor() const = 0;
+  virtual DescriptorHandle ReadDescriptor() const = 0;
 
   // True if the read descriptor is valid
   bool ValidReadDescriptor() const {
@@ -82,7 +114,7 @@ class ReadFileDescriptor {
 class WriteFileDescriptor {
  public:
   virtual ~WriteFileDescriptor() {}
-  virtual int WriteDescriptor() const = 0;
+  virtual DescriptorHandle WriteDescriptor() const = 0;
 
   // True if the write descriptor is valid
   bool ValidWriteDescriptor() const {
@@ -136,21 +168,19 @@ class BidirectionalFileDescriptor: public ReadFileDescriptor,
 /*
  * An UnmanagedFileDescriptor allows file descriptors from other software to
  * use the SelectServer. This class doesn't define any read/write methods, it
- * simply allows a third-party sd to be registered with a callback.
+ * simply allows a third-party fd to be registered with a callback.
  */
 class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
  public :
-  explicit UnmanagedFileDescriptor(int fd)
-      : BidirectionalFileDescriptor(),
-        m_fd(fd) {}
+  explicit UnmanagedFileDescriptor(int fd);
   ~UnmanagedFileDescriptor() {}
-  int ReadDescriptor() const { return m_fd; }
-  int WriteDescriptor() const { return m_fd; }
+  DescriptorHandle ReadDescriptor() const { return m_handle; }
+  DescriptorHandle WriteDescriptor() const { return m_handle; }
   // Closing is left to something else
   bool Close() { return true; }
 
  private:
-  int m_fd;
+  DescriptorHandle m_handle;
   UnmanagedFileDescriptor(const UnmanagedFileDescriptor &other);
   UnmanagedFileDescriptor& operator=(const UnmanagedFileDescriptor &other);
 };
@@ -217,11 +247,11 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
     return on_close;
   }
 
-  static bool SetNonBlocking(int fd);
+  static bool SetNonBlocking(DescriptorHandle fd);
 
  protected:
   virtual bool IsSocket() const = 0;
-  bool SetNoSigPipe(int fd);
+  bool SetNoSigPipe(DescriptorHandle fd);
 
   ConnectedDescriptor(const ConnectedDescriptor &other);
   ConnectedDescriptor& operator=(const ConnectedDescriptor &other);
@@ -238,13 +268,13 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
 class LoopbackDescriptor: public ConnectedDescriptor {
  public:
   LoopbackDescriptor() {
-    m_fd_pair[0] = INVALID_DESCRIPTOR;
-    m_fd_pair[1] = INVALID_DESCRIPTOR;
+    m_handle_pair[0] = INVALID_DESCRIPTOR;
+    m_handle_pair[1] = INVALID_DESCRIPTOR;
   }
   ~LoopbackDescriptor() { Close(); }
   bool Init();
-  int ReadDescriptor() const { return m_fd_pair[0]; }
-  int WriteDescriptor() const { return m_fd_pair[1]; }
+  DescriptorHandle ReadDescriptor() const { return m_handle_pair[0]; }
+  DescriptorHandle WriteDescriptor() const { return m_handle_pair[1]; }
   bool Close();
   bool CloseClient();
 
@@ -252,7 +282,7 @@ class LoopbackDescriptor: public ConnectedDescriptor {
   bool IsSocket() const { return false; }
 
  private:
-  int m_fd_pair[2];
+  DescriptorHandle m_handle_pair[2];
   LoopbackDescriptor(const LoopbackDescriptor &other);
   LoopbackDescriptor& operator=(const LoopbackDescriptor &other);
 };
@@ -273,8 +303,8 @@ class PipeDescriptor: public ConnectedDescriptor {
 
   bool Init();
   PipeDescriptor *OppositeEnd();
-  int ReadDescriptor() const { return m_in_pair[0]; }
-  int WriteDescriptor() const { return m_out_pair[1]; }
+  DescriptorHandle ReadDescriptor() const { return m_in_pair[0]; }
+  DescriptorHandle WriteDescriptor() const { return m_out_pair[1]; }
   bool Close();
   bool CloseClient();
 
@@ -282,10 +312,12 @@ class PipeDescriptor: public ConnectedDescriptor {
   bool IsSocket() const { return false; }
 
  private:
-  int m_in_pair[2];
-  int m_out_pair[2];
+  DescriptorHandle m_in_pair[2];
+  DescriptorHandle m_out_pair[2];
   PipeDescriptor *m_other_end;
-  PipeDescriptor(int in_pair[2], int out_pair[2], PipeDescriptor *other_end) {
+  PipeDescriptor(DescriptorHandle in_pair[2],
+                 DescriptorHandle out_pair[2],
+                 PipeDescriptor *other_end) {
     m_in_pair[0] = in_pair[0];
     m_in_pair[1] = in_pair[1];
     m_out_pair[0] = out_pair[0];
@@ -303,14 +335,14 @@ class UnixSocket: public ConnectedDescriptor {
  public:
   UnixSocket():
     m_other_end(NULL) {
-    m_fd = INVALID_DESCRIPTOR;
+    m_handle = INVALID_DESCRIPTOR;
   }
   ~UnixSocket() { Close(); }
 
   bool Init();
   UnixSocket *OppositeEnd();
-  int ReadDescriptor() const { return m_fd; }
-  int WriteDescriptor() const { return m_fd; }
+  DescriptorHandle ReadDescriptor() const { return m_handle; }
+  DescriptorHandle WriteDescriptor() const { return m_handle; }
   bool Close();
   bool CloseClient();
 
@@ -318,10 +350,14 @@ class UnixSocket: public ConnectedDescriptor {
   bool IsSocket() const { return true; }
 
  private:
-  int m_fd;
+  DescriptorHandle m_handle;
   UnixSocket *m_other_end;
   UnixSocket(int socket, UnixSocket *other_end) {
-    m_fd = socket;
+#ifdef _WIN32
+    m_handle.m_handle.m_fd = socket;
+#else
+    m_handle = socket;
+#endif
     m_other_end = other_end;
   }
   UnixSocket(const UnixSocket &other);
@@ -333,18 +369,18 @@ class UnixSocket: public ConnectedDescriptor {
  */
 class DeviceDescriptor: public ConnectedDescriptor {
  public:
-  explicit DeviceDescriptor(int fd): m_fd(fd) {}
+  explicit DeviceDescriptor(int fd);
   ~DeviceDescriptor() { Close(); }
 
-  int ReadDescriptor() const { return m_fd; }
-  int WriteDescriptor() const { return m_fd; }
+  DescriptorHandle ReadDescriptor() const { return m_handle; }
+  DescriptorHandle WriteDescriptor() const { return m_handle; }
   bool Close();
 
  protected:
   bool IsSocket() const { return false; }
 
  private:
-  int m_fd;
+  DescriptorHandle m_handle;
   DeviceDescriptor(const DeviceDescriptor &other);
   DeviceDescriptor& operator=(const DeviceDescriptor &other);
 };

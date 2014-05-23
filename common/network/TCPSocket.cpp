@@ -68,20 +68,43 @@ namespace network {
  * Get the remote IPAddress and port for this socket
  */
 GenericSocketAddress TCPSocket::GetPeerAddress() const {
-  return ola::network::GetPeerAddress(m_sd);
+#ifdef _WIN32
+  return ola::network::GetPeerAddress(m_handle.m_handle.m_fd);
+#else
+  return ola::network::GetPeerAddress(m_handle);
+#endif
 }
 
 GenericSocketAddress TCPSocket::GetLocalAddress() const {
-  return ola::network::GetLocalAddress(m_sd);
+#ifdef _WIN32
+  return ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
+#else
+  return ola::network::GetLocalAddress(m_handle);
+#endif
+}
+
+TCPSocket::TCPSocket(int sd) {
+#ifdef _WIN32
+  m_handle.m_handle.m_fd = sd;
+  m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  m_handle.m_event_handle = 0;
+#else
+  m_handle = sd;
+#endif
+  SetNoSigPipe(m_handle);
 }
 
 /*
  * Close this TCPSocket
  */
 bool TCPSocket::Close() {
-  if (m_sd != ola::io::INVALID_DESCRIPTOR) {
-    close(m_sd);
-    m_sd = ola::io::INVALID_DESCRIPTOR;
+  if (m_handle != ola::io::INVALID_DESCRIPTOR) {
+#ifdef _WIN32
+    closesocket(m_handle.m_handle.m_fd);
+#else
+    close(m_handle);
+#endif
+    m_handle = ola::io::INVALID_DESCRIPTOR;
   }
   return true;
 }
@@ -91,11 +114,16 @@ bool TCPSocket::Close() {
  */
 bool TCPSocket::SetNoDelay() {
   int flag = 1;
-  int result = setsockopt(m_sd, IPPROTO_TCP, TCP_NODELAY,
+#ifdef _WIN32
+  int sd = m_handle.m_handle.m_fd;
+#else
+  int sd = m_handle;
+#endif
+  int result = setsockopt(sd, IPPROTO_TCP, TCP_NODELAY,
                           reinterpret_cast<char*>(&flag),
                           sizeof(flag));
   if (result < 0) {
-    OLA_WARN << "Can't set TCP_NODELAY for " << m_sd << ", "
+    OLA_WARN << "Can't set TCP_NODELAY for " << sd << ", "
              << strerror(errno);
     return false;
   }
@@ -141,7 +169,7 @@ TCPSocket* TCPSocket::Connect(const SocketAddress &endpoint) {
  */
 TCPAcceptingSocket::TCPAcceptingSocket(TCPSocketFactoryInterface *factory)
     : ReadFileDescriptor(),
-      m_sd(ola::io::INVALID_DESCRIPTOR),
+      m_handle(ola::io::INVALID_DESCRIPTOR),
       m_factory(factory) {
 }
 
@@ -164,7 +192,7 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
   struct sockaddr server_address;
   int reuse_flag = 1;
 
-  if (m_sd != ola::io::INVALID_DESCRIPTOR)
+  if (m_handle != ola::io::INVALID_DESCRIPTOR)
     return false;
 
   if (!endpoint.ToSockAddr(&server_address, sizeof(server_address)))
@@ -183,13 +211,21 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
                       sizeof(reuse_flag));
   if (ok < 0) {
     OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
+#ifdef _WIN32
+    closesocket(sd);
+#else
     close(sd);
+#endif
     return false;
   }
 
   if (bind(sd, &server_address, sizeof(server_address)) == -1) {
     OLA_WARN << "bind to " << endpoint << " failed, " << strerror(errno);
+#ifdef _WIN32
+    closesocket(sd);
+#else
     close(sd);
+#endif
     return false;
   }
 
@@ -197,7 +233,13 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
     OLA_WARN << "listen on " << endpoint << " failed, " << strerror(errno);
     return false;
   }
-  m_sd = sd;
+#ifdef _WIN32
+  m_handle.m_handle.m_fd = sd;
+  m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  m_handle.m_event_handle = 0;
+#else
+  m_handle = sd;
+#endif
   return true;
 }
 
@@ -208,12 +250,16 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
  */
 bool TCPAcceptingSocket::Close() {
   bool ret = true;
-  if (m_sd != ola::io::INVALID_DESCRIPTOR)
-    if (close(m_sd)) {
+  if (m_handle != ola::io::INVALID_DESCRIPTOR)
+#ifdef _WIN32
+    if (closesocket(m_handle.m_handle.m_fd)) {
+#else
+    if (close(m_handle)) {
+#endif
       OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
-  m_sd = ola::io::INVALID_DESCRIPTOR;
+  m_handle = ola::io::INVALID_DESCRIPTOR;
   return ret;
 }
 
@@ -226,10 +272,15 @@ void TCPAcceptingSocket::PerformRead() {
   struct sockaddr_in cli_address;
   socklen_t length = sizeof(cli_address);
 
-  if (m_sd == ola::io::INVALID_DESCRIPTOR)
+  if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return;
 
-  int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
+#ifdef _WIN32
+  int sd = accept(m_handle.m_handle.m_fd, (struct sockaddr*) &cli_address,
+                  &length);
+#else
+  int sd = accept(m_handle, (struct sockaddr*) &cli_address, &length);
+#endif
   if (sd < 0) {
     OLA_WARN << "accept() failed, " << strerror(errno);
     return;
@@ -239,7 +290,11 @@ void TCPAcceptingSocket::PerformRead() {
     m_factory->NewTCPSocket(sd);
   } else {
     OLA_WARN << "Accepted new TCP Connection but no factory registered";
+#ifdef _WIN32
+    closesocket(sd);
+#else
     close(sd);
+#endif
   }
 }
 
@@ -247,7 +302,11 @@ void TCPAcceptingSocket::PerformRead() {
  * Get the local IPAddress and port for this socket
  */
 GenericSocketAddress TCPAcceptingSocket::GetLocalAddress() const {
-  return ola::network::GetLocalAddress(m_sd);
+#ifdef _WIN32
+  return ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
+#else
+  return ola::network::GetLocalAddress(m_handle);
+#endif
 }
 }  // namespace network
 }  // namespace ola

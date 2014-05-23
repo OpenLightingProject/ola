@@ -23,6 +23,10 @@
 #include <string.h>
 #include <string>
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
+
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
@@ -106,6 +110,12 @@ void DescriptorTest::setUp() {
   m_timeout_closure = ola::NewSingleCallback(this, &DescriptorTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                              m_timeout_closure));
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -114,6 +124,10 @@ void DescriptorTest::setUp() {
  */
 void DescriptorTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 
