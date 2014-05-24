@@ -23,9 +23,8 @@ bin_PROGRAMS = ola_trigger
 ola_trigger_SOURCES = ConfigCommon.h ParserActions.cpp ParserActions.h \
                       ParserGlobals.h config.tab.cpp ola-trigger.cpp \
                       lex.yy.cpp
-# required, otherwise we get build errors from flex
+# required, otherwise we get build errors from the flex output
 ola_trigger_CXXFLAGS = $(WARNING_CXXFLAGS)
-ola_trigger.$(OBJEXT): config.tab.h
 ola_trigger_LDADD = ../../common/libolacommon.la \
                     ../../ola/libola.la \
                     ./libolatrigger.la \
@@ -34,6 +33,8 @@ ola_trigger_LDADD = ../../common/libolacommon.la \
 if USING_WIN32
 ola_trigger_LDADD += -lWs2_32
 endif
+
+BUILT_SOURCES = lex.yy.cpp config.tab.cpp config.tab.h
 
 lex.yy.cpp: Makefile.am config.lex
 	$(LEX) -olex.yy.cpp $(srcdir)/config.lex
