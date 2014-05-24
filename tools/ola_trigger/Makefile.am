@@ -35,10 +35,10 @@ if USING_WIN32
 ola_trigger_LDADD += -lWs2_32
 endif
 
-lex.yy.cpp: Makefile config.lex
+lex.yy.cpp: Makefile.am config.lex
 	$(LEX) -olex.yy.cpp $(srcdir)/config.lex
 
-config.tab.cpp config.tab.h: Makefile config.ypp
+config.tab.cpp config.tab.h: Makefile.am config.ypp
 	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp $(srcdir)/config.ypp
 
 CLEANFILES = lex.yy.cpp config.tab.cpp config.tab.h
