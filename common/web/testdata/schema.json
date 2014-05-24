@@ -76,15 +76,21 @@
     },
     "default": {},
     "definitions": {
-      "additionalProperties": { "$ref": "#" },
+      "additionalProperties": {
+        "$ref": "#"
+      },
       "default": {},
       "type": "object"
     },
     "dependencies": {
       "additionalProperties": {
         "anyOf": [
-          { "$ref": "#" },
-          { "$ref": "#/definitions/stringArray" }
+          {
+            "$ref": "#"
+          },
+          {
+            "$ref": "#\/definitions\/stringArray"
+          }
         ]
       },
       "type": "object"
@@ -160,14 +166,16 @@
       "format": "regex"
     },
     "patternProperties": {
-      "default": {},
       "additionalProperties": {
         "$ref": "#"
       },
+      "default": {},
       "type": "object"
     },
     "properties": {
-      "additionalProperties": { "$ref": "#" },
+      "additionalProperties": {
+        "$ref": "#"
+      },
       "default": {},
       "type": "object"
     },

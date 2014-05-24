@@ -228,6 +228,99 @@
   },
   "type": "object"
 }
+// properties test
+=== POSITIVE ===
+{
+  "properties": {
+    "name": {}
+  },
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "properties": {
+    "age": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
+// Negative properties test
+=== NEGATIVE ===
+{
+  "properties": null,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": "foo",
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": 1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": 1.2,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": [],
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": {
+    "name": null
+  },
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": {
+    "name": "foo"
+  },
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": {
+    "name": 1
+  },
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": {
+    "name": -1
+  },
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": {
+    "name": 1.2
+  },
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "properties": {
+    "name": []
+  },
+  "type": "object"
+}
 // additionalProperties test
 === POSITIVE ===
 {
