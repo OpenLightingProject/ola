@@ -296,7 +296,8 @@ class SchemaParseContext : public SchemaParseContextInterface {
   template <typename T>
   void ProcessInt(SchemaErrorLogger *logger, T t);
 
-  void AddNumberConstraints(IntegerValidator *validator);
+  bool AddNumberConstraints(IntegerValidator *validator,
+                            SchemaErrorLogger *logger);
 
   BaseValidator* BuildArrayValidator(SchemaErrorLogger *logger);
   BaseValidator* BuildObjectValidator(SchemaErrorLogger *logger);

@@ -81,6 +81,12 @@
   "maximum": {},
   "type": "integer"
 }
+// exclusiveMaximum without maximum isn't valid
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": true,
+  "type": "integer"
+}
 // minimum & exclusiveMinimum
 === POSITIVE ===
 {
@@ -152,6 +158,12 @@
 === NEGATIVE ===
 {
   "minimum": {},
+  "type": "integer"
+}
+// exclusiveMinimum without minimum isn't valid
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": true,
   "type": "integer"
 }
 // multipleOf

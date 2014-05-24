@@ -154,7 +154,7 @@ ValidatorInterface* SchemaParseContext::GetValidator(
   }
 
   BaseValidator *validator = NULL;
-  IntegerValidator *int_validator = NULL;
+  auto_ptr<IntegerValidator> int_validator;
   switch (m_type) {
     case JSON_UNDEFINED:
       break;
@@ -165,17 +165,13 @@ ValidatorInterface* SchemaParseContext::GetValidator(
       validator = new BoolValidator();
       break;
     case JSON_INTEGER:
-      int_validator = new IntegerValidator();
-      AddNumberConstraints(int_validator);
-      validator = int_validator;
+      int_validator.reset(new IntegerValidator());
       break;
     case JSON_NULL:
       validator = new NullValidator();
       break;
     case JSON_NUMBER:
-      int_validator = new NumberValidator();
-      AddNumberConstraints(int_validator);
-      validator = int_validator;
+      int_validator.reset(new NumberValidator());
       break;
     case JSON_OBJECT:
       validator = BuildObjectValidator(logger);
@@ -185,6 +181,13 @@ ValidatorInterface* SchemaParseContext::GetValidator(
       break;
     default:
       {}
+  }
+
+  if (int_validator.get()) {
+    if (!AddNumberConstraints(int_validator.get(), logger)) {
+      return NULL;
+    }
+    validator = int_validator.release();
   }
 
   if (!validator && m_allof_context.get()) {
@@ -540,7 +543,13 @@ void SchemaParseContext::ProcessInt(SchemaErrorLogger *logger, T value) {
   logger->Error() << KeywordToString(m_keyword) << " can't be negative";
 }
 
-void SchemaParseContext::AddNumberConstraints(IntegerValidator *validator) {
+bool SchemaParseContext::AddNumberConstraints(IntegerValidator *validator,
+                                              SchemaErrorLogger *logger) {
+  if (m_exclusive_maximum.IsSet() && !m_maximum.get()) {
+    logger->Error() << "exclusiveMaximum requires maximum to be defined";
+    return false;
+  }
+
   if (m_maximum.get()) {
     if (m_exclusive_maximum.IsSet()) {
       validator->AddConstraint(new MaximumConstraint(
@@ -548,6 +557,11 @@ void SchemaParseContext::AddNumberConstraints(IntegerValidator *validator) {
     } else {
       validator->AddConstraint(new MaximumConstraint(m_maximum.release()));
     }
+  }
+
+  if (m_exclusive_minimum.IsSet() && !m_minimum.get()) {
+    logger->Error() << "exclusiveMinimum requires minimum to be defined";
+    return false;
   }
 
   if (m_minimum.get()) {
@@ -562,6 +576,7 @@ void SchemaParseContext::AddNumberConstraints(IntegerValidator *validator) {
   if (m_multiple_of.get()) {
     validator->AddConstraint(new MultipleOfConstraint(m_multiple_of.release()));
   }
+  return true;
 }
 
 BaseValidator* SchemaParseContext::BuildArrayValidator(
