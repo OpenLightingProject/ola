@@ -302,6 +302,10 @@ void ObjectValidator::AddValidator(const std::string &property,
   STLReplaceAndDelete(&m_property_validators, property, validator);
 }
 
+void ObjectValidator::SetAdditionalValidator(ValidatorInterface *validator) {
+  m_additional_property_validator.reset(validator);
+}
+
 void ObjectValidator::AddSchemaDependency(const string &property,
                                           ValidatorInterface *validator) {
   STLReplaceAndDelete(&m_schema_dependencies, property, validator);
@@ -379,16 +383,28 @@ void ObjectValidator::VisitProperty(const std::string &property,
                                     const JsonValue &value) {
   m_seen_properties.insert(property);
 
+  // The algorithm is described in section 8.3.3
   ValidatorInterface *validator = STLFindOrNull(
       m_property_validators, property);
+
+  // patternProperties would be added here if supported
+
   if (!validator) {
-    OLA_WARN << "No such property " << property;
-    m_is_valid &= false;
-    return;
+    // try the additional validator
+    validator = m_additional_property_validator.get();
   }
 
-  value.Accept(validator);
-  m_is_valid &= validator->IsValid();
+  if (validator) {
+    value.Accept(validator);
+    m_is_valid &= validator->IsValid();
+  } else {
+    // No validator found
+    if (m_options.has_allow_additional_properties &&
+        !m_options.allow_additional_properties) {
+      OLA_WARN << "Property " << property << " is forbidden";
+      m_is_valid &= false;
+    }
+  }
 }
 
 void ObjectValidator::ExtendSchema(JsonObject *schema) const {
@@ -415,6 +431,13 @@ void ObjectValidator::ExtendSchema(JsonObject *schema) const {
       JsonObject *child_schema = iter->second->GetSchema();
       properties->AddValue(iter->first, child_schema);
     }
+  }
+
+  if (m_options.has_allow_additional_properties) {
+    schema->Add("additionalProperties", m_options.allow_additional_properties);
+  } else if (m_additional_property_validator.get()) {
+    schema->AddValue("additionalProperties",
+                     m_additional_property_validator->GetSchema());
   }
 
   if (!(m_property_dependencies.empty() && m_schema_dependencies.empty())) {

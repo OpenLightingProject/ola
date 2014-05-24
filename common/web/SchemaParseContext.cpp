@@ -367,6 +367,8 @@ void SchemaParseContext::Bool(SchemaErrorLogger *logger, bool value) {
     case SCHEMA_ADDITIONAL_ITEMS:
       m_additional_items.Set(value);
       break;
+    case SCHEMA_ADDITIONAL_PROPERTIES:
+      m_additional_properties.Set(value);
     default:
       {}
   }
@@ -450,6 +452,10 @@ SchemaParseContextInterface* SchemaParseContext::OpenObject(
     case SCHEMA_PROPERTIES:
       m_properties_context.reset(new PropertiesParseContext(m_schema_defs));
       return m_properties_context.get();
+    case SCHEMA_ADDITIONAL_PROPERTIES:
+      m_additional_properties_context.reset(
+          new SchemaParseContext(m_schema_defs));
+      return m_additional_properties_context.get();
     case SCHEMA_ITEMS:
       m_items_single_context.reset(new SchemaParseContext(m_schema_defs));
       return m_items_single_context.get();
@@ -621,7 +627,16 @@ BaseValidator* SchemaParseContext::BuildObjectValidator(
     options.SetRequiredProperties(required_properties);
   }
 
+  if (m_additional_properties.IsSet()) {
+    options.SetAdditionalProperties(m_additional_properties.Value());
+  }
+
   ObjectValidator *object_validator = new ObjectValidator(options);
+
+  if (m_additional_properties_context.get()) {
+    object_validator->SetAdditionalValidator(
+        m_additional_properties_context->GetValidator(logger));
+  }
 
   if (m_properties_context.get()) {
     m_properties_context->AddPropertyValidators(object_validator, logger);

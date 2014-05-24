@@ -516,6 +516,10 @@ class NumberValidator : public IntegerValidator {
 
 /**
  * @brief The validator for JsonObject.
+ *
+ * @note This does not implement patternProperties. This is done because we
+ * don't want to pull in a regex library just yet. Maybe some point in the
+ * future we can use re2.
  */
 class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
  public:
@@ -523,7 +527,8 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
     Options()
       : max_properties(-1),
         min_properties(0),
-        has_required_properties(false) {
+        has_required_properties(false),
+        has_allow_additional_properties(false) {
     }
 
     void SetRequiredProperties(
@@ -532,10 +537,17 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
       has_required_properties = true;
     }
 
+    void SetAdditionalProperties(bool allow_additional) {
+      has_allow_additional_properties = true;
+      allow_additional_properties = allow_additional;
+    }
+
     int max_properties;
     unsigned int min_properties;
     bool has_required_properties;
     std::set<std::string> required_properties;
+    bool has_allow_additional_properties;
+    bool allow_additional_properties;
   };
 
   explicit ObjectValidator(const Options &options);
@@ -547,6 +559,12 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
    * @param validator the validator, ownership is transferred.
    */
   void AddValidator(const std::string &property, ValidatorInterface *validator);
+
+  /**
+   * @brief Add the validator for additionalProperties.
+   * @param validator the validator, ownership is transferred.
+   */
+  void SetAdditionalValidator(ValidatorInterface *validator);
 
   /**
    * @brief Add a schema dependency.
@@ -584,6 +602,7 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
   const Options m_options;
 
   PropertyValidators m_property_validators;
+  std::auto_ptr<ValidatorInterface> m_additional_property_validator;
   PropertyDependencies m_property_dependencies;
   SchemaDependencies m_schema_dependencies;
 

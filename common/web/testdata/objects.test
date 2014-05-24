@@ -228,3 +228,57 @@
   },
   "type": "object"
 }
+// additionalProperties test
+=== POSITIVE ===
+{
+  "additionalProperties": true,
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "additionalProperties": false,
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "additionalProperties": {},
+  "type": "object"
+}
+=== POSITIVE ===
+{
+  "additionalProperties": {
+    "type": "number"
+  },
+  "type": "object"
+}
+// Negative additionalProperties test
+=== NEGATIVE ===
+{
+  "additionalProperties": null,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "additionalProperties": "foo",
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "additionalProperties": 1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "additionalProperties": -1,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "additionalProperties": 1.2,
+  "type": "object"
+}
+=== NEGATIVE ===
+{
+  "additionalProperties": [],
+  "type": "object"
+}
