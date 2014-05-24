@@ -36,6 +36,15 @@
 #include <unistd.h>
 #include <string>
 
+#ifdef _WIN32
+#ifndef uid_t
+#define uid_t int
+#endif
+#ifndef gid_t
+#define gid_t int
+#endif
+#endif
+
 namespace ola {
 
 /**
