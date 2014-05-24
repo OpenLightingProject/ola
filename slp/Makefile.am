@@ -25,10 +25,10 @@ libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
 
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h SLPService.pb.h SLPService.pb.h
 
-SLP.pb.cc SLP.pb.h: Makefile SLP.proto
+SLP.pb.cc SLP.pb.h: Makefile.am SLP.proto
 	$(PROTOC) --cpp_out ./ --proto_path $(srcdir) $(srcdir)/SLP.proto
 
-SLPService.pb.cpp SLPService.pb.h: Makefile SLP.proto
+SLPService.pb.cpp SLPService.pb.h: Makefile.am SLP.proto
 	$(OLA_PROTOC)  --cppservice_out ./ --proto_path $(srcdir) $(srcdir)/SLP.proto
 
 # libolaslpcore

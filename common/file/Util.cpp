@@ -32,6 +32,7 @@
 #include <config.h>
 #endif
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -47,6 +48,16 @@ const char PATH_SEPARATOR = '\\';
 #else
 const char PATH_SEPARATOR = '/';
 #endif
+
+static string ConvertPathSeparators(const string &path) {
+  string result = path;
+#ifdef _WIN32
+  std::replace(result.begin(), result.end(), '/', PATH_SEPARATOR);
+#else
+  std::replace(result.begin(), result.end(), '\\', PATH_SEPARATOR);
+#endif
+  return result;
+}
 
 void FindMatchingFiles(const string &directory,
                        const string &prefix,
@@ -65,8 +76,16 @@ void FindMatchingFiles(const string &directory,
 #ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
   HANDLE h_find;
+  string mutable_directory = ConvertPathSeparators(directory);
 
-  h_find = FindFirstFileA(directory.data(), &find_file_data);
+  // Strip trailing path separators, otherwise FindFirstFile fails
+  while (*mutable_directory.rbegin() == PATH_SEPARATOR) {
+    mutable_directory.erase(mutable_directory.size() - 1);
+  }
+
+  string search_pattern = mutable_directory + PATH_SEPARATOR + "*";
+
+  h_find = FindFirstFileA(search_pattern.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
     OLA_WARN << "Find first file failed: " << GetLastError();
     return;
@@ -77,7 +96,7 @@ void FindMatchingFiles(const string &directory,
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
       if (!strncmp(find_file_data.cFileName, iter->data(), iter->size())) {
         std::ostringstream str;
-        str << directory << PATH_SEPARATOR << find_file_data.cFileName;
+        str << mutable_directory << PATH_SEPARATOR << find_file_data.cFileName;
         files->push_back(str.str());
       }
     }
@@ -116,11 +135,13 @@ void ListDirectory(const std::string& directory,
 
 string FilenameFromPathOrDefault(const string &path,
                                  const string &default_value) {
+  string mutable_path = ConvertPathSeparators(path);
   string::size_type last_path_sep = string::npos;
-  last_path_sep = path.find_last_of(PATH_SEPARATOR);
+  last_path_sep = mutable_path.find_last_of(PATH_SEPARATOR);
   if (last_path_sep == string::npos)
     return default_value;
-  return path.substr(last_path_sep + 1);  // Don't return the path sep itself
+  // Don't return the path sep itself
+  return mutable_path.substr(last_path_sep + 1);
 }
 
 string FilenameFromPathOrPath(const string &path) {

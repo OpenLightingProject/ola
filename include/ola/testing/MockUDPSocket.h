@@ -89,11 +89,11 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                   ola::network::IPV4Address &source,  // NOLINT
                   uint16_t &port) const;  // NOLINT
     bool EnableBroadcast();
-    bool SetMulticastInterface(const ola::network::IPV4Address &interface);
-    bool JoinMulticast(const ola::network::IPV4Address &interface,
+    bool SetMulticastInterface(const ola::network::IPV4Address &iface);
+    bool JoinMulticast(const ola::network::IPV4Address &iface,
                        const ola::network::IPV4Address &group,
                        bool loop = false);
-    bool LeaveMulticast(const ola::network::IPV4Address &interface,
+    bool LeaveMulticast(const ola::network::IPV4Address &iface,
                         const ola::network::IPV4Address &group);
 
     bool SetTos(uint8_t tos);
@@ -126,7 +126,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                                  uint16_t port,
                                  bool broadcast_set);
 
-    void SetInterface(const ola::network::IPV4Address &interface);
+    void SetInterface(const ola::network::IPV4Address &iface);
 
  private:
     typedef struct {

@@ -62,7 +62,7 @@ if INSTALL_RDM_TESTS
 BUILT_SOURCES = DataLocation.py
 
 # Create DataLocation.py with the directory of the static files.
-DataLocation.py: Makefile
+DataLocation.py: Makefile.am
 	echo "location = '${datadir}/ola/rdm-server'" > DataLocation.py
 
 # RDM Test modules
