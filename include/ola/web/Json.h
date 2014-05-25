@@ -1078,10 +1078,16 @@ class JsonArray: public JsonValue {
 };
 
 
+/**
+ * @brief A class used to visit Json values within a JsonObject
+ */
 class JsonObjectPropertyVisitor {
  public:
   virtual ~JsonObjectPropertyVisitor() {}
 
+  /**
+   * @brief Visit the value at the given property
+   */
   virtual void VisitProperty(const std::string &property,
                              const JsonValue &value) = 0;
 };
@@ -1090,7 +1096,7 @@ class JsonObjectPropertyVisitor {
  * @brief The interface for the JsonValueVisitor class.
  *
  * An implementation of a JsonValueVisitorInterface can be passed to the
- * Visit() method of a JsonValue. This provides traversal of a json tree in a
+ * Visit() method of a JsonValue. This provides traversal of a JSON tree in a
  * type safe manner.
  */
 class JsonValueVisitorInterface {

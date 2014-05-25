@@ -85,7 +85,6 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   typedef vector<TestCase> PositiveTests;
   typedef vector<string> NegativeTests;
 
-  string ReadTestFile(const string &filename);
   void ReadTestCases(const string& filename, PositiveTests *positive_tests,
                      NegativeTests *negative_tests);
 
@@ -100,30 +99,6 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaParserTest);
-
-/**
- * Read the contents of a file in testdata
- */
-string JsonSchemaParserTest::ReadTestFile(const string &filename) {
-  string file_path;
-  file_path.append(TEST_SRC_DIR);
-  file_path.push_back(ola::file::PATH_SEPARATOR);
-  file_path.append("testdata");
-  file_path.push_back(ola::file::PATH_SEPARATOR);
-  file_path.append(filename);
-
-  std::ifstream in(file_path.data(), std::ios::in);
-  OLA_ASSERT_TRUE(in.is_open());
-
-  string contents;
-  in.seekg(0, std::ios::end);
-  contents.resize(in.tellg());
-  in.seekg(0, std::ios::beg);
-  in.read(&contents[0], contents.size());
-  in.close();
-  return contents;
-}
-
 
 void JsonSchemaParserTest::FinalizePositiveCase(
     TestCase *test,
@@ -251,10 +226,6 @@ void JsonSchemaParserTest::RunTestsInFile(const string &test_file) {
 
   PositiveTests::const_iterator iter = positive_tests.begin();
   for (; iter != positive_tests.end(); ++iter) {
-    /*
-    OLA_INFO << "Input: " << iter->input;
-    OLA_INFO << "Expected: " << iter->expected;
-    */
     ParseSchemaAndConvertToJson(iter->input, iter->expected);
   }
 
@@ -424,20 +395,5 @@ void JsonSchemaParserTest::testDefinitions() {
 }
 
 void JsonSchemaParserTest::testSchema() {
-  string error;
-  const string input = ReadTestFile("schema.json");
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
-
-  if (!error.empty()) {
-    OLA_INFO << "Schema parse error: " << error;
-  }
-  OLA_ASSERT_NOT_NULL(schema.get());
-  OLA_ASSERT_TRUE(error.empty());
-
-  auto_ptr<const JsonObject> value(schema->AsJson());
-  OLA_ASSERT_NOT_NULL(value.get());
-  string actual = ola::web::JsonWriter::AsString(*value);
-  actual.push_back('\n');
-  // OLA_INFO << actual;
-  // OLA_ASSERT_EQ(input, actual);
+  RunTestsInFile("schema.json");
 }

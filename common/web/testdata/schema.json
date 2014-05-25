@@ -1,3 +1,4 @@
+=== POSITIVE ===
 {
   "$schema": "http:\/\/json-schema.org\/draft-04\/schema#",
   "default": {},
@@ -43,8 +44,7 @@
   "id": "http:\/\/json-schema.org\/draft-04\/schema#",
   "properties": {
     "$schema": {
-      "type": "string",
-      "format": "uri"
+      "type": "string"
     },
     "additionalItems": {
       "anyOf": [
@@ -112,7 +112,6 @@
       "type": "boolean"
     },
     "id": {
-      "format": "uri",
       "type": "string"
     },
     "items": {
@@ -162,8 +161,7 @@
       "$ref": "#\/definitions\/schemaArray"
     },
     "pattern": {
-      "type": "string",
-      "format": "regex"
+      "type": "string"
     },
     "patternProperties": {
       "additionalProperties": {
