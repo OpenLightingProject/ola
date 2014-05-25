@@ -33,15 +33,16 @@ using ola::web::AllOfValidator;
 using ola::web::AnyOfValidator;
 using ola::web::ArrayValidator;
 using ola::web::BoolValidator;
+using ola::web::ConjunctionValidator;
 using ola::web::IntegerValidator;
-using ola::web::JsonNullValue;
 using ola::web::JsonBoolValue;
-using ola::web::JsonIntValue;
-using ola::web::JsonUIntValue;
-using ola::web::JsonStringValue;
 using ola::web::JsonDoubleValue;
+using ola::web::JsonIntValue;
+using ola::web::JsonNullValue;
 using ola::web::JsonParser;
 using ola::web::JsonStringValue;
+using ola::web::JsonStringValue;
+using ola::web::JsonUIntValue;
 using ola::web::JsonUIntValue;
 using ola::web::JsonValue;
 using ola::web::MaximumConstraint;
@@ -70,6 +71,10 @@ class JsonSchemaTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNumberValidator);
   CPPUNIT_TEST(testObjectValidator);
   CPPUNIT_TEST(testArrayValidator);
+  CPPUNIT_TEST(testAllOfValidator);
+  CPPUNIT_TEST(testAnyOfValidator);
+  CPPUNIT_TEST(testOneOfValidator);
+  CPPUNIT_TEST(testNotValidator);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -83,6 +88,10 @@ class JsonSchemaTest: public CppUnit::TestFixture {
   void testNumberValidator();
   void testObjectValidator();
   void testArrayValidator();
+  void testAllOfValidator();
+  void testAnyOfValidator();
+  void testOneOfValidator();
+  void testNotValidator();
 
  private:
   auto_ptr<JsonBoolValue> m_bool_value;
@@ -412,4 +421,146 @@ void JsonSchemaTest::testArrayValidator() {
   OLA_ASSERT_FALSE(array_validdator.IsValid());
   m_uint_value->Accept(&array_validdator);
   OLA_ASSERT_FALSE(array_validdator.IsValid());
+}
+
+void JsonSchemaTest::testAllOfValidator() {
+  // 1 <= x <= 5
+  IntegerValidator *range1 = new IntegerValidator();
+  range1->AddConstraint(
+      new MinimumConstraint(new JsonIntValue(1), false));
+  range1->AddConstraint(
+      new MaximumConstraint(new JsonIntValue(5), false));
+
+  // 4 <= x <= 8
+  IntegerValidator *range2 = new IntegerValidator();
+  range2->AddConstraint(
+      new MinimumConstraint(new JsonIntValue(4), false));
+  range2->AddConstraint(
+      new MaximumConstraint(new JsonIntValue(8), false));
+
+  ConjunctionValidator::ValidatorList validators;
+  validators.push_back(range1);
+  validators.push_back(range2);
+
+  AllOfValidator all_of_validator(&validators);
+
+  m_string_value->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_long_string_value->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_bool_value->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_empty_array->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_empty_object->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_int_value->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_null_value->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_number_value->Accept(&all_of_validator);
+  OLA_ASSERT_FALSE(all_of_validator.IsValid());
+  m_uint_value->Accept(&all_of_validator);
+  OLA_ASSERT_TRUE(all_of_validator.IsValid());  // 4
+}
+
+void JsonSchemaTest::testAnyOfValidator() {
+  ConjunctionValidator::ValidatorList validators;
+  validators.push_back(new StringValidator((StringValidator::Options())));
+  validators.push_back(new BoolValidator());
+  validators.push_back(new NullValidator());
+
+  AnyOfValidator any_of_validator(&validators);
+
+  m_string_value->Accept(&any_of_validator);
+  OLA_ASSERT_TRUE(any_of_validator.IsValid());
+  m_long_string_value->Accept(&any_of_validator);
+  OLA_ASSERT_TRUE(any_of_validator.IsValid());
+  m_bool_value->Accept(&any_of_validator);
+  OLA_ASSERT_TRUE(any_of_validator.IsValid());
+  m_null_value->Accept(&any_of_validator);
+  OLA_ASSERT_TRUE(any_of_validator.IsValid());
+
+  m_empty_array->Accept(&any_of_validator);
+  OLA_ASSERT_FALSE(any_of_validator.IsValid());
+  m_empty_object->Accept(&any_of_validator);
+  OLA_ASSERT_FALSE(any_of_validator.IsValid());
+  m_int_value->Accept(&any_of_validator);
+  OLA_ASSERT_FALSE(any_of_validator.IsValid());
+  m_number_value->Accept(&any_of_validator);
+  OLA_ASSERT_FALSE(any_of_validator.IsValid());
+  m_uint_value->Accept(&any_of_validator);
+  OLA_ASSERT_FALSE(any_of_validator.IsValid());
+}
+
+void JsonSchemaTest::testOneOfValidator() {
+  // 1 <= x <= 5
+  IntegerValidator *range1 = new IntegerValidator();
+  range1->AddConstraint(
+      new MinimumConstraint(new JsonIntValue(1), false));
+  range1->AddConstraint(
+      new MaximumConstraint(new JsonIntValue(5), false));
+
+  // 4 <= x <= 8
+  IntegerValidator *range2 = new IntegerValidator();
+  range2->AddConstraint(
+      new MinimumConstraint(new JsonIntValue(4), false));
+  range2->AddConstraint(
+      new MaximumConstraint(new JsonIntValue(8), false));
+
+  ConjunctionValidator::ValidatorList validators;
+  validators.push_back(range1);
+  validators.push_back(range2);
+
+  OneOfValidator one_of_validator(&validators);
+
+  m_bool_value->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_empty_array->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_empty_object->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_int_value->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_null_value->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_number_value->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_string_value->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  m_uint_value->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+
+  auto_ptr<JsonIntValue> int_value1(new JsonIntValue(3));
+  auto_ptr<JsonIntValue> int_value2(new JsonIntValue(5));
+  auto_ptr<JsonIntValue> int_value3(new JsonIntValue(6));
+
+  int_value1->Accept(&one_of_validator);
+  OLA_ASSERT_TRUE(one_of_validator.IsValid());
+  int_value2->Accept(&one_of_validator);
+  OLA_ASSERT_FALSE(one_of_validator.IsValid());
+  int_value3->Accept(&one_of_validator);
+  OLA_ASSERT_TRUE(one_of_validator.IsValid());
+}
+
+void JsonSchemaTest::testNotValidator() {
+  NotValidator not_validator(new BoolValidator());
+
+  // Anything but a bool
+  m_bool_value->Accept(&not_validator);
+  OLA_ASSERT_FALSE(not_validator.IsValid());
+  m_empty_array->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
+  m_empty_object->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
+  m_int_value->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
+  m_null_value->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
+  m_number_value->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
+  m_string_value->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
+  m_uint_value->Accept(&not_validator);
+  OLA_ASSERT_TRUE(not_validator.IsValid());
 }
