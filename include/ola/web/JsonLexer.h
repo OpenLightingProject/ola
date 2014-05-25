@@ -51,7 +51,7 @@ namespace web {
  * appropriate method on the JsonParserInterface. It's not quite a pure lexer
  * because it doesn't pass through tokens like ':' but you get the idea.
  *
- * TODO(simon): Look at using flex for this rather than our own parser. Remeber
+ * TODO(simon): Look at using flex for this rather than our own parser. Remember
  * to use the recursive option!
  */
 class JsonLexer {
