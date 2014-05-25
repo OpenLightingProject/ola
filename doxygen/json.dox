@@ -27,14 +27,9 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~
    #include <ola/web/Json.h>
-   #include <ola/web/JsonLexer.h>
    #include <ola/web/JsonParser.h>
 
-   JsonParser parser;
-   if (JsonLexer::Parse(json_string, &parser)) {
-     std::auto_ptr<JsonValue> root = parser.ClaimRoot();
-   } else {
-     cerr << parser.GetError() << endl;
-   }
+   std::string error;
+   JsonValue *value = JsonParser::Parse(json_string, &error);
    ~~~~~~~~~~~~~~~~~~~~~
  */

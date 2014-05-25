@@ -27,6 +27,7 @@
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
+#include "ola/web/JsonLexer.h"
 
 namespace ola {
 namespace web {
@@ -167,11 +168,11 @@ string JsonParser::GetError() const {
   return m_error;
 }
 
-const JsonValue *JsonParser::GetRoot() const {
+JsonValue *JsonParser::GetRoot() {
   return m_root.get();
 }
 
-const JsonValue *JsonParser::ClaimRoot() {
+JsonValue *JsonParser::ClaimRoot() {
   if (m_error.empty()) {
     return m_root.release();
   } else {
@@ -204,6 +205,16 @@ void JsonParser::AddValue(JsonValue *value) {
     OLA_WARN << "Parse stack broken";
     m_error = "Internal error";
     delete value;
+  }
+}
+
+JsonValue* JsonParser::Parse(const std::string &input, std::string *error) {
+  JsonParser parser;
+  if (JsonLexer::Parse(input, &parser)) {
+    return parser.ClaimRoot();
+  } else {
+    *error = parser.GetError();
+    return NULL;
   }
 }
 }  // namespace web

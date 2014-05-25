@@ -87,13 +87,19 @@ class JsonParser : public JsonParserInterface {
    * @brief Get the root of the parse tree, or NULL if parsing failed.
    * @returns the root JsonValue. Ownership is not transferred.
    */
-  const JsonValue *GetRoot() const;
+  JsonValue *GetRoot();
 
   /**
    * @brief Get the root of the parse tree, or NULL if parsing failed.
    * @returns the root JsonValue. Ownership is transferred to the caller.
    */
-  const JsonValue *ClaimRoot();
+  JsonValue *ClaimRoot();
+
+  /**
+   * @brief Parse text and return a JsonValue representation
+   */
+  static JsonValue* Parse(const std::string &input,
+                          std::string *error);
 
  private:
   // The container type identifies the type of container (object or array)
@@ -105,7 +111,7 @@ class JsonParser : public JsonParserInterface {
   };
 
   std::string m_error;
-  std::auto_ptr<const JsonValue> m_root;
+  std::auto_ptr<JsonValue> m_root;
   std::string m_key;
   std::stack<ContainerType> m_container_stack;
 

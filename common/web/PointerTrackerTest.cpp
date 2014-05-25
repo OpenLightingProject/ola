@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/web/JsonPointer.h"
 #include "common/web/PointerTracker.h"
