@@ -295,6 +295,7 @@ ObjectValidator::ObjectValidator(const Options &options)
 
 ObjectValidator::~ObjectValidator() {
   STLDeleteValues(&m_property_validators);
+  STLDeleteValues(&m_schema_dependencies);
 }
 
 void ObjectValidator::AddValidator(const std::string &property,
