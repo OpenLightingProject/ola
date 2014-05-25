@@ -43,8 +43,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPrimitiveTypes);
   CPPUNIT_TEST(testEmptySchema);
   CPPUNIT_TEST(testBasicKeywords);
-  CPPUNIT_TEST(testInvalidSchema);
-  CPPUNIT_TEST(testInvalidTypes);
+  CPPUNIT_TEST(testTypes);
   CPPUNIT_TEST(testIntegers);
   CPPUNIT_TEST(testStrings);
   CPPUNIT_TEST(testArrays);
@@ -62,8 +61,7 @@ class JsonSchemaParserTest: public CppUnit::TestFixture {
   void testPrimitiveTypes();
   void testEmptySchema();
   void testBasicKeywords();
-  void testInvalidSchema();
-  void testInvalidTypes();
+  void testTypes();
   void testIntegers();
   void testStrings();
   void testArrays();
@@ -286,39 +284,8 @@ void JsonSchemaParserTest::testBasicKeywords() {
   RunTestsInFile("basic-keywords.test");
 }
 
-void JsonSchemaParserTest::testInvalidSchema() {
-  string error;
-  string input = "{\"type\": \"array\", \"items\": null}";
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NOT_EMPTY(error);
-}
-
-void JsonSchemaParserTest::testInvalidTypes() {
-  string error;
-  string input = "{\"type\": \"foo\"}";
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NULL(schema.get());
-  OLA_ASSERT_NOT_EMPTY(error);
-
-  input = "{\"type\": null}";
-  schema.reset(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NULL(schema.get());
-  OLA_ASSERT_NOT_EMPTY(error);
-
-  input = "{\"type\": true}";
-  schema.reset(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NULL(schema.get());
-  OLA_ASSERT_NOT_EMPTY(error);
-
-  input = "{\"type\": 1}";
-  schema.reset(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NULL(schema.get());
-  OLA_ASSERT_NOT_EMPTY(error);
-
-  input = "{\"type\": {}}";
-  schema.reset(JsonSchema::FromString(input, &error));
-  OLA_ASSERT_NULL(schema.get());
-  OLA_ASSERT_NOT_EMPTY(error);
+void JsonSchemaParserTest::testTypes() {
+  RunTestsInFile("type.test");
 }
 
 /**

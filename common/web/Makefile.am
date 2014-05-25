@@ -11,7 +11,8 @@ dist_noinst_DATA = testdata/allof.test \
                    testdata/objects.test \
                    testdata/oneof.test \
                    testdata/schema.json \
-                   testdata/strings.test
+                   testdata/strings.test \
+                   testdata/type.test
 
 # LIBRARIES
 ################################################
