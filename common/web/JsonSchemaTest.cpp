@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -53,10 +54,13 @@ using ola::web::NullValidator;
 using ola::web::NumberValidator;
 using ola::web::ObjectValidator;
 using ola::web::OneOfValidator;
+using ola::web::ReferenceValidator;
+using ola::web::SchemaDefinitions;
 using ola::web::StringValidator;
 using ola::web::WildcardValidator;
 
 using std::auto_ptr;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -75,6 +79,7 @@ class JsonSchemaTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testAnyOfValidator);
   CPPUNIT_TEST(testOneOfValidator);
   CPPUNIT_TEST(testNotValidator);
+  CPPUNIT_TEST(testEnums);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -92,6 +97,7 @@ class JsonSchemaTest: public CppUnit::TestFixture {
   void testAnyOfValidator();
   void testOneOfValidator();
   void testNotValidator();
+  void testEnums();
 
  private:
   auto_ptr<JsonBoolValue> m_bool_value;
@@ -142,6 +148,29 @@ void JsonSchemaTest::testWildcardValidator() {
 }
 
 void JsonSchemaTest::testReferenceValidator() {
+  const string key = "#/definitions/testing";
+  SchemaDefinitions definitions;
+  definitions.Add(key, new IntegerValidator());
+
+  ReferenceValidator validator(&definitions, key);
+
+  m_int_value->Accept(&validator);
+  OLA_ASSERT_TRUE(validator.IsValid());
+  m_uint_value->Accept(&validator);
+  OLA_ASSERT_TRUE(validator.IsValid());
+
+  m_bool_value->Accept(&validator);
+  OLA_ASSERT_FALSE(validator.IsValid());
+  m_empty_array->Accept(&validator);
+  OLA_ASSERT_FALSE(validator.IsValid());
+  m_empty_object->Accept(&validator);
+  OLA_ASSERT_FALSE(validator.IsValid());
+  m_null_value->Accept(&validator);
+  OLA_ASSERT_FALSE(validator.IsValid());
+  m_number_value->Accept(&validator);
+  OLA_ASSERT_FALSE(validator.IsValid());
+  m_string_value->Accept(&validator);
+  OLA_ASSERT_FALSE(validator.IsValid());
 }
 
 void JsonSchemaTest::testStringValidator() {
@@ -399,28 +428,248 @@ void JsonSchemaTest::testObjectValidator() {
   OLA_ASSERT_FALSE(object_validator.IsValid());
   m_uint_value->Accept(&object_validator);
   OLA_ASSERT_FALSE(object_validator.IsValid());
+
+  string error;
+  auto_ptr<JsonValue> object1(JsonParser::Parse("{\"a\": 1}", &error));
+  auto_ptr<JsonValue> object2(
+      JsonParser::Parse("{\"a\": 1, \"b\": 2}", &error));
+  auto_ptr<JsonValue> object3(
+      JsonParser::Parse("{\"a\": 1, \"b\": 2, \"c\": 3}", &error));
+  auto_ptr<JsonValue> object4(
+      JsonParser::Parse("{\"a\": 1, \"b\": true, \"c\": 3}", &error));
+  auto_ptr<JsonValue> object5(
+      JsonParser::Parse("{\"a\": 1, \"b\": 2, \"c\": false}", &error));
+
+  // test maxProperties
+  ObjectValidator::Options max_properties_options;
+  max_properties_options.max_properties = 1;
+
+  ObjectValidator max_properties_validator(max_properties_options);
+
+  m_empty_object->Accept(&max_properties_validator);
+  OLA_ASSERT_TRUE(max_properties_validator.IsValid());
+  object1->Accept(&max_properties_validator);
+  OLA_ASSERT_TRUE(max_properties_validator.IsValid());
+  object2->Accept(&max_properties_validator);
+  OLA_ASSERT_FALSE(max_properties_validator.IsValid());
+
+  // test minProperties
+  ObjectValidator::Options min_properties_options;
+  min_properties_options.min_properties = 2;
+
+  ObjectValidator min_properties_validator(min_properties_options);
+
+  m_empty_object->Accept(&min_properties_validator);
+  OLA_ASSERT_FALSE(min_properties_validator.IsValid());
+  object1->Accept(&min_properties_validator);
+  OLA_ASSERT_FALSE(min_properties_validator.IsValid());
+  object2->Accept(&min_properties_validator);
+  OLA_ASSERT_TRUE(min_properties_validator.IsValid());
+  object3->Accept(&min_properties_validator);
+  OLA_ASSERT_TRUE(min_properties_validator.IsValid());
+
+  // test required
+  set<string> required_properties;
+  required_properties.insert("c");
+  ObjectValidator::Options required_properties_options;
+  required_properties_options.SetRequiredProperties(required_properties);
+
+  ObjectValidator required_properties_validator(required_properties_options);
+
+  m_empty_object->Accept(&required_properties_validator);
+  OLA_ASSERT_FALSE(required_properties_validator.IsValid());
+  object1->Accept(&required_properties_validator);
+  OLA_ASSERT_FALSE(required_properties_validator.IsValid());
+  object2->Accept(&required_properties_validator);
+  OLA_ASSERT_FALSE(required_properties_validator.IsValid());
+  object3->Accept(&required_properties_validator);
+  OLA_ASSERT_TRUE(required_properties_validator.IsValid());
+
+  // test dependencies
+  // property dependencies first
+  set<string> dependencies;
+  // If we have b, then c is required
+  dependencies.insert("c");
+
+  ObjectValidator dependency_validator((ObjectValidator::Options()));
+  dependency_validator.AddPropertyDependency("b", dependencies);
+
+  m_empty_object->Accept(&dependency_validator);
+  OLA_ASSERT_TRUE(dependency_validator.IsValid());
+  object1->Accept(&dependency_validator);
+  OLA_ASSERT_TRUE(dependency_validator.IsValid());
+  object2->Accept(&dependency_validator);
+  OLA_ASSERT_FALSE(dependency_validator.IsValid());
+  object3->Accept(&dependency_validator);
+  OLA_ASSERT_TRUE(dependency_validator.IsValid());
+
+  // schema dependency
+  // If c is present, b must be a bool
+  ObjectValidator *sub_validator =
+      new ObjectValidator((ObjectValidator::Options()));
+  sub_validator->AddValidator("b", new BoolValidator());
+
+  ObjectValidator schema_dependency_validator((ObjectValidator::Options()));
+  schema_dependency_validator.AddSchemaDependency("c", sub_validator);
+
+  m_empty_object->Accept(&schema_dependency_validator);
+  OLA_ASSERT_TRUE(schema_dependency_validator.IsValid());
+  object1->Accept(&schema_dependency_validator);
+  OLA_ASSERT_TRUE(schema_dependency_validator.IsValid());
+  object2->Accept(&schema_dependency_validator);
+  OLA_ASSERT_TRUE(schema_dependency_validator.IsValid());
+  object3->Accept(&schema_dependency_validator);
+  OLA_ASSERT_FALSE(schema_dependency_validator.IsValid());
+  object4->Accept(&schema_dependency_validator);
+  OLA_ASSERT_TRUE(schema_dependency_validator.IsValid());
+
+  // test properties
+  // check b is a int
+  ObjectValidator property_validator((ObjectValidator::Options()));
+  property_validator.AddValidator("b", new IntegerValidator());
+
+  m_empty_object->Accept(&property_validator);
+  OLA_ASSERT_TRUE(property_validator.IsValid());
+  object1->Accept(&property_validator);
+  OLA_ASSERT_TRUE(property_validator.IsValid());
+  object2->Accept(&property_validator);
+  OLA_ASSERT_TRUE(property_validator.IsValid());
+  object3->Accept(&property_validator);
+  OLA_ASSERT_TRUE(property_validator.IsValid());
+  object4->Accept(&property_validator);
+  OLA_ASSERT_FALSE(property_validator.IsValid());
+
+  // Now check a is also an int, and prevent any other properties
+  ObjectValidator::Options no_additional_properties_options;
+  no_additional_properties_options.SetAdditionalProperties(false);
+
+  ObjectValidator property_validator2(no_additional_properties_options);
+  property_validator2.AddValidator("b", new IntegerValidator());
+  property_validator2.AddValidator("a", new IntegerValidator());
+
+  m_empty_object->Accept(&property_validator2);
+  OLA_ASSERT_TRUE(property_validator2.IsValid());
+  object1->Accept(&property_validator2);
+  OLA_ASSERT_TRUE(property_validator2.IsValid());
+  object2->Accept(&property_validator2);
+  OLA_ASSERT_TRUE(property_validator2.IsValid());
+  object3->Accept(&property_validator2);
+  OLA_ASSERT_FALSE(property_validator2.IsValid());
+  object4->Accept(&property_validator2);
+  OLA_ASSERT_FALSE(property_validator2.IsValid());
+
+  ObjectValidator::Options allow_additional_properties_options;
+  allow_additional_properties_options.SetAdditionalProperties(true);
+
+  ObjectValidator property_validator3(allow_additional_properties_options);
+  property_validator3.AddValidator("b", new IntegerValidator());
+  property_validator3.AddValidator("a", new IntegerValidator());
+
+  m_empty_object->Accept(&property_validator3);
+  OLA_ASSERT_TRUE(property_validator3.IsValid());
+  object1->Accept(&property_validator3);
+  OLA_ASSERT_TRUE(property_validator3.IsValid());
+  object2->Accept(&property_validator3);
+  OLA_ASSERT_TRUE(property_validator3.IsValid());
+  object3->Accept(&property_validator3);
+  OLA_ASSERT_TRUE(property_validator3.IsValid());
+  object4->Accept(&property_validator3);
+  OLA_ASSERT_FALSE(property_validator3.IsValid());
+
+  // try an additionalProperty validator
+  ObjectValidator property_validator4((ObjectValidator::Options()));
+  property_validator4.AddValidator("a", new IntegerValidator());
+  property_validator4.AddValidator("b", new IntegerValidator());
+  property_validator4.SetAdditionalValidator(new IntegerValidator());
+
+  m_empty_object->Accept(&property_validator4);
+  OLA_ASSERT_TRUE(property_validator4.IsValid());
+  object1->Accept(&property_validator4);
+  OLA_ASSERT_TRUE(property_validator4.IsValid());
+  object2->Accept(&property_validator4);
+  OLA_ASSERT_TRUE(property_validator4.IsValid());
+  object3->Accept(&property_validator4);
+  OLA_ASSERT_TRUE(property_validator4.IsValid());
+  object4->Accept(&property_validator4);
+  OLA_ASSERT_FALSE(property_validator4.IsValid());
+  object5->Accept(&property_validator4);
+  OLA_ASSERT_FALSE(property_validator4.IsValid());
 }
 
 void JsonSchemaTest::testArrayValidator() {
-  ArrayValidator array_validdator(NULL, NULL, ArrayValidator::Options());
+  ArrayValidator array_validator(NULL, NULL, ArrayValidator::Options());
 
-  m_empty_array->Accept(&array_validdator);
-  OLA_ASSERT_TRUE(array_validdator.IsValid());
+  m_empty_array->Accept(&array_validator);
+  OLA_ASSERT_TRUE(array_validator.IsValid());
 
-  m_bool_value->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
-  m_empty_object->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
-  m_int_value->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
-  m_number_value->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
-  m_number_value->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
-  m_string_value->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
-  m_uint_value->Accept(&array_validdator);
-  OLA_ASSERT_FALSE(array_validdator.IsValid());
+  m_bool_value->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+  m_empty_object->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+  m_int_value->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+  m_number_value->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+  m_number_value->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+  m_string_value->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+  m_uint_value->Accept(&array_validator);
+  OLA_ASSERT_FALSE(array_validator.IsValid());
+
+  string error;
+  auto_ptr<JsonValue> small_array(JsonParser::Parse("[1]", &error));
+  auto_ptr<JsonValue> medium_array(JsonParser::Parse("[1, 2]", &error));
+  auto_ptr<JsonValue> large_array(JsonParser::Parse("[1, 2, 3]", &error));
+  auto_ptr<JsonValue> duplicate_items_array(
+      JsonParser::Parse("[1, 2, 1]", &error));
+
+  // test maxItems
+  ArrayValidator::Options max_options;
+  max_options.max_items = 2;
+
+  ArrayValidator max_items_validator(NULL, NULL, max_options);
+
+  m_empty_array->Accept(&max_items_validator);
+  OLA_ASSERT_TRUE(max_items_validator.IsValid());
+  small_array->Accept(&max_items_validator);
+  OLA_ASSERT_TRUE(max_items_validator.IsValid());
+  medium_array->Accept(&max_items_validator);
+  OLA_ASSERT_TRUE(max_items_validator.IsValid());
+  large_array->Accept(&max_items_validator);
+  OLA_ASSERT_FALSE(max_items_validator.IsValid());
+
+  // test minItems
+  ArrayValidator::Options min_options;
+  min_options.min_items = 2;
+
+  ArrayValidator min_items_validator(NULL, NULL, min_options);
+
+  m_empty_array->Accept(&min_items_validator);
+  OLA_ASSERT_FALSE(min_items_validator.IsValid());
+  small_array->Accept(&min_items_validator);
+  OLA_ASSERT_FALSE(min_items_validator.IsValid());
+  medium_array->Accept(&min_items_validator);
+  OLA_ASSERT_TRUE(min_items_validator.IsValid());
+  large_array->Accept(&min_items_validator);
+  OLA_ASSERT_TRUE(min_items_validator.IsValid());
+
+  // test uniqueItems
+  ArrayValidator::Options unique_items_options;
+  unique_items_options.unique_items = true;
+
+  ArrayValidator unique_items_validator(NULL, NULL, unique_items_options);
+
+  m_empty_array->Accept(&unique_items_validator);
+  OLA_ASSERT_TRUE(unique_items_validator.IsValid());
+  small_array->Accept(&unique_items_validator);
+  OLA_ASSERT_TRUE(unique_items_validator.IsValid());
+  medium_array->Accept(&unique_items_validator);
+  OLA_ASSERT_TRUE(unique_items_validator.IsValid());
+  large_array->Accept(&unique_items_validator);
+  OLA_ASSERT_TRUE(unique_items_validator.IsValid());
+  duplicate_items_array->Accept(&unique_items_validator);
+  OLA_ASSERT_FALSE(unique_items_validator.IsValid());
 }
 
 void JsonSchemaTest::testAllOfValidator() {
@@ -563,4 +812,46 @@ void JsonSchemaTest::testNotValidator() {
   OLA_ASSERT_TRUE(not_validator.IsValid());
   m_uint_value->Accept(&not_validator);
   OLA_ASSERT_TRUE(not_validator.IsValid());
+}
+
+void JsonSchemaTest::testEnums() {
+  StringValidator string_validator((StringValidator::Options()));
+  string_validator.AddEnumValue(new JsonStringValue("foo"));
+  string_validator.AddEnumValue(new JsonStringValue("bar"));
+
+  JsonStringValue bar_value("bar");
+  JsonStringValue baz_value("baz");
+
+  m_string_value->Accept(&string_validator);
+  OLA_ASSERT_TRUE(string_validator.IsValid());
+  m_long_string_value->Accept(&string_validator);
+  OLA_ASSERT_FALSE(string_validator.IsValid());
+  bar_value.Accept(&string_validator);
+  OLA_ASSERT_TRUE(string_validator.IsValid());
+  baz_value.Accept(&string_validator);
+  OLA_ASSERT_FALSE(string_validator.IsValid());
+
+  IntegerValidator integer_validator;
+  integer_validator.AddEnumValue(new JsonIntValue(1));
+  integer_validator.AddEnumValue(new JsonIntValue(2));
+  integer_validator.AddEnumValue(new JsonIntValue(4));
+
+  JsonIntValue int_value1(2);
+  JsonIntValue int_value2(3);
+  JsonIntValue uint_value1(2);
+  JsonIntValue uint_value2(3);
+
+  m_int_value->Accept(&integer_validator);
+  OLA_ASSERT_FALSE(integer_validator.IsValid());
+  m_uint_value->Accept(&integer_validator);
+  OLA_ASSERT_TRUE(integer_validator.IsValid());
+
+  int_value1.Accept(&integer_validator);
+  OLA_ASSERT_TRUE(integer_validator.IsValid());
+  int_value2.Accept(&integer_validator);
+  OLA_ASSERT_FALSE(integer_validator.IsValid());
+  uint_value1.Accept(&integer_validator);
+  OLA_ASSERT_TRUE(integer_validator.IsValid());
+  uint_value2.Accept(&integer_validator);
+  OLA_ASSERT_FALSE(integer_validator.IsValid());
 }

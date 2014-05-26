@@ -569,7 +569,8 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
   /**
    * @brief Add a schema dependency.
    * @param property the property name
-   * @param validator the validator to check the object against.
+   * @param validator the validator to check the object against. Ownership is
+   *   transferred.
    *
    * As per Section 5.4.5.2.1, if the named property is present in the object,
    * the object itself will be validated against the supplied schema.

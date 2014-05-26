@@ -342,8 +342,6 @@ void ObjectValidator::Visit(const JsonObject &obj) {
                       std::inserter(missing_properties,
                                     missing_properties.end()));
   if (!missing_properties.empty()) {
-    OLA_INFO << "Missing " << missing_properties.size()
-             << " required properties";
     m_is_valid = false;
   }
 
@@ -402,7 +400,6 @@ void ObjectValidator::VisitProperty(const std::string &property,
     // No validator found
     if (m_options.has_allow_additional_properties &&
         !m_options.allow_additional_properties) {
-      OLA_WARN << "Property " << property << " is forbidden";
       m_is_valid &= false;
     }
   }
@@ -493,7 +490,6 @@ void ArrayValidator::Visit(const JsonArray &array) {
     return;
   }
 
-  // TODO(simon): implement unique_items here.
 
   auto_ptr<ArrayElementValidator> element_validator(
       ConstructElementValidator());
@@ -505,6 +501,20 @@ void ArrayValidator::Visit(const JsonArray &array) {
     }
   }
   m_is_valid = element_validator->IsValid();
+  if (!m_is_valid) {
+    return;
+  }
+
+  if (m_options.unique_items) {
+    for (unsigned int i = 0; i < array.Size(); i++) {
+      for (unsigned int j = 0; j < i; j++) {
+        if (*(array.ElementAt(i)) == *(array.ElementAt(j))) {
+          m_is_valid = false;
+          return;
+        }
+      }
+    }
+  }
 }
 
 void ArrayValidator::ExtendSchema(JsonObject *schema) const {
