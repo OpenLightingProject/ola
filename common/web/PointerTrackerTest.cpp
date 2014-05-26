@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/web/JsonPointer.h"
 #include "common/web/PointerTracker.h"
@@ -49,6 +48,68 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PointerTrackerTest);
 
 
 void PointerTrackerTest::testPointer() {
+  JsonPointer pointer;
+  PointerTracker tracker(&pointer);
+
+  // Basic tests first
+  // {}
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.CloseObject();
+
+  // []
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+
+  // [ {}, {} ]
+  tracker.OpenArray();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/0"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/0"), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/1"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/1"), pointer.ToString());
+  tracker.CloseArray();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+
+  // {"foo": {}}
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.SetProperty("foo");
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.CloseObject();
+
+  // {"foo": {"bar": {} } }
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+  tracker.SetProperty("foo");
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.SetProperty("bar");
+  OLA_ASSERT_EQ(string("/foo/bar"), pointer.ToString());
+  tracker.OpenObject();
+  OLA_ASSERT_EQ(string("/foo/bar"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/foo/bar"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string("/foo"), pointer.ToString());
+  tracker.CloseObject();
+  OLA_ASSERT_EQ(string(""), pointer.ToString());
+
+
   /*
    * The call sequence is based on the following JSON data:
    *
@@ -58,8 +119,6 @@ void PointerTrackerTest::testPointer() {
    *   "cat": [[0, 1], [], false],
    *  }
    */
-  JsonPointer pointer;
-  PointerTracker tracker(&pointer);
 
   OLA_ASSERT_EQ(string(""), pointer.ToString());
   tracker.OpenObject();

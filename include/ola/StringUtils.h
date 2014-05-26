@@ -127,7 +127,7 @@ inline std::string IntToHexString(uint32_t i) {
 /**
  * @brief Escape a string with \\ .
  *
- * The string is modified in place.
+ * The string is modified in place according to the grammar from json.org
  * The following characters are escaped:
  *  - \\
  *  - "

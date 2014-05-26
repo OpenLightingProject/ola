@@ -59,9 +59,12 @@ void PointerTracker::CloseObject() {
     return;
   }
 
-  if (m_tokens.back().type == TOKEN_OBJECT) {
+  Token &token = m_tokens.back();
+  if (token.type == TOKEN_OBJECT) {
+    if (token.property_set) {
+      m_pointer->Pop();
+    }
     m_tokens.pop_back();
-    m_pointer->Pop();
   }
 }
 

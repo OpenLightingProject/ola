@@ -49,18 +49,20 @@ namespace web {
  */
 
 class JsonValueVisitorInterface;
+class JsonObjectPropertyVisitor;
 
-class JsonStringValue;
-class JsonUIntValue;
-class JsonIntValue;
-class JsonUInt64Value;
-class JsonInt64Value;
-class JsonBoolValue;
-class JsonNullValue;
-class JsonDoubleValue;
-class JsonRawValue;
-class JsonObject;
 class JsonArray;
+class JsonBoolValue;
+class JsonDoubleValue;
+class JsonInt64Value;
+class JsonIntValue;
+class JsonNullValue;
+class JsonNumberValue;
+class JsonObject;
+class JsonRawValue;
+class JsonStringValue;
+class JsonUInt64Value;
+class JsonUIntValue;
 
 /**
  * @brief The base class for JSON values.
@@ -91,6 +93,7 @@ class JsonValue {
 
   /**
    * @brief The Accept method for the visitor pattern.
+   *
    * This can be used to traverse the Json Tree in a type-safe manner.
    */
   virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
@@ -181,6 +184,19 @@ class JsonValue {
   /**
    * @endsection
    */
+
+  /**
+   * @brief Given a variable, create a new JsonValue of the appropriate type.
+   */
+  template <typename T>
+  static JsonValue* NewValue(const T &value);
+
+  /**
+   * @brief Given a variable, create a new JsonNumberValue of the appropriate
+   * type.
+   */
+  template <typename T>
+  static JsonNumberValue* NewNumberValue(const T &value);
 };
 
 
@@ -192,7 +208,13 @@ class JsonValue {
  */
 class JsonLeafValue : public JsonValue {
  public:
+  /**
+   * @privatesection
+   */
   JsonValue* LookupElementWithIter(JsonPointer::Iterator *iter);
+  /**
+   * @endsection
+   */
 };
 
 /**
@@ -206,13 +228,7 @@ class JsonStringValue: public JsonLeafValue {
    */
   explicit JsonStringValue(const std::string &value) : m_value(value) {}
 
-  bool operator==(const JsonValue &other) const {
-    return other.Equals(*this);
-  }
-
-  bool Equals(const JsonStringValue &other) const {
-    return m_value == other.m_value;
-  }
+  bool operator==(const JsonValue &other) const { return other.Equals(*this); }
 
   /**
    * @brief Return the string value.
@@ -221,9 +237,17 @@ class JsonStringValue: public JsonLeafValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
-  JsonValue* Clone() const {
-    return new JsonStringValue(m_value);
+  JsonValue* Clone() const { return new JsonStringValue(m_value); }
+
+  /**
+   * @privatesection
+   */
+  bool Equals(const JsonStringValue &other) const {
+    return m_value == other.m_value;
   }
+  /**
+   * @endsection
+   */
 
  private:
   const std::string m_value;
@@ -233,41 +257,118 @@ class JsonStringValue: public JsonLeafValue {
 
 
 /**
- * @brief An unsigned int value.
+ * @brief JsonNumberValue is the base class for various integer / number
+ * classes.
+ *
+ * This allows inequality comparisons between values that represent numbers.
  */
-class JsonUIntValue: public JsonLeafValue {
+class JsonNumberValue : public JsonLeafValue {
+ public:
+  /**
+   * @brief Checks if the remainder if non-0;
+   */
+  virtual bool MultipleOf(const JsonNumberValue &other) const = 0;
+
+  /**
+   * @brief Less than operator.
+   */
+  virtual bool operator<(const JsonNumberValue &other) const = 0;
+
+  /**
+   * @brief Less than or equals operator.
+   */
+  bool operator<=(const JsonNumberValue &other) const {
+    return *this == other || *this < other;
+  }
+
+  /**
+   * @brief Greater than operator.
+   */
+  bool operator>(const JsonNumberValue &other) const {
+    return !(*this <= other);
+  }
+
+  /**
+   * @brief Greater than or equals operator.
+   */
+  bool operator>=(const JsonNumberValue &other) const {
+    return !(*this < other);
+  }
+
+  /**
+   * @privatesection
+   */
+  virtual int Compare(const JsonUIntValue &value) const = 0;
+  virtual int Compare(const JsonIntValue &value) const = 0;
+  virtual int Compare(const JsonUInt64Value &value) const = 0;
+  virtual int Compare(const JsonInt64Value &value) const = 0;
+  virtual int Compare(const JsonDoubleValue &value) const = 0;
+
+  virtual bool FactorOf(const JsonUIntValue &value) const = 0;
+  virtual bool FactorOf(const JsonIntValue &value) const = 0;
+  virtual bool FactorOf(const JsonUInt64Value &value) const = 0;
+  virtual bool FactorOf(const JsonInt64Value &value) const = 0;
+  virtual bool FactorOf(const JsonDoubleValue &value) const = 0;
+  /**
+   * @endsection
+   */
+};
+
+/**
+ * @brief An unsigned 32bit int value.
+ */
+class JsonUIntValue: public JsonNumberValue {
  public:
   /**
    * @brief Create a new JsonUIntValue
    * @param value the unsigned int to use.
    */
-  explicit JsonUIntValue(unsigned int value)
-      : m_value(value) {
+  explicit JsonUIntValue(unsigned int value) : m_value(value) {}
+
+  bool operator==(const JsonValue &other) const { return other.Equals(*this); }
+
+  bool operator<(const JsonNumberValue &other) const {
+    return other.Compare(*this) == 1;
   }
 
-  bool operator==(const JsonValue &other) const {
-    return other.Equals(*this);
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
   }
-
-  bool Equals(const JsonUIntValue &other) const {
-    return m_value == other.m_value;
-  }
-
-  // We want to be able to test equality across the different Integer classes.
-  bool Equals(const JsonIntValue &other) const;
-  bool Equals(const JsonUInt64Value &other) const;
-  bool Equals(const JsonInt64Value &other) const;
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
-  JsonValue* Clone() const {
-    return new JsonUIntValue(m_value);
-  }
+  JsonValue* Clone() const { return new JsonUIntValue(m_value); }
 
   /**
    * @brief Return the uint32_t value.
    */
   unsigned int Value() const { return m_value; }
+
+  /**
+   * @privatesection
+   */
+  bool Equals(const JsonUIntValue &other) const {
+    return m_value == other.m_value;
+  }
+
+  bool Equals(const JsonIntValue &other) const;
+  bool Equals(const JsonUInt64Value &other) const;
+  bool Equals(const JsonInt64Value &other) const;
+
+  int Compare(const JsonUIntValue &value) const;
+  int Compare(const JsonIntValue &value) const;
+  int Compare(const JsonUInt64Value &value) const;
+  int Compare(const JsonInt64Value &value) const;
+  int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
+  /**
+   * @endsection
+   */
 
  private:
   const unsigned int m_value;
@@ -277,22 +378,38 @@ class JsonUIntValue: public JsonLeafValue {
 
 
 /**
- * @brief A signed int value.
+ * @brief A signed 32bit int value.
  */
-class JsonIntValue: public JsonLeafValue {
+class JsonIntValue: public JsonNumberValue {
  public:
   /**
    * @brief Create a new JsonIntValue
    * @param value the int to use.
    */
-  explicit JsonIntValue(int value)
-      : m_value(value) {
+  explicit JsonIntValue(int value) : m_value(value) {}
+
+  bool operator==(const JsonValue &other) const { return other.Equals(*this); }
+
+  bool operator<(const JsonNumberValue &other) const {
+    return other.Compare(*this) == 1;
   }
 
-  bool operator==(const JsonValue &other) const {
-    return other.Equals(*this);
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
   }
 
+  void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const { return new JsonIntValue(m_value); }
+
+  /**
+   * @brief Return the int32_t value.
+   */
+  int Value() const { return m_value; }
+
+  /**
+   * @privatesection
+   */
   bool Equals(const JsonIntValue &other) const {
     return m_value == other.m_value;
   }
@@ -301,17 +418,20 @@ class JsonIntValue: public JsonLeafValue {
   bool Equals(const JsonUInt64Value &other) const;
   bool Equals(const JsonInt64Value &other) const;
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  int Compare(const JsonUIntValue &value) const;
+  int Compare(const JsonIntValue &value) const;
+  int Compare(const JsonUInt64Value &value) const;
+  int Compare(const JsonInt64Value &value) const;
+  int Compare(const JsonDoubleValue &value) const;
 
-  JsonValue* Clone() const {
-    return new JsonIntValue(m_value);
-  }
-
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
-   * @brief Return the int32_t value.
+   * @endsection
    */
-  int Value() const { return m_value; }
-
  private:
   const int m_value;
 
@@ -320,22 +440,40 @@ class JsonIntValue: public JsonLeafValue {
 
 
 /**
- * @brief An unsigned int 64 value.
+ * @brief An unsigned 64bit int value.
  */
-class JsonUInt64Value: public JsonLeafValue {
+class JsonUInt64Value: public JsonNumberValue {
  public:
   /**
    * @brief Create a new JsonUInt64Value
    * @param value the unsigned int 64 to use.
    */
-  explicit JsonUInt64Value(uint64_t value)
-      : m_value(value) {
-  }
+  explicit JsonUInt64Value(uint64_t value) : m_value(value) {}
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
   }
 
+  bool operator<(const JsonNumberValue &other) const {
+    return other.Compare(*this) == 1;
+  }
+
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
+  }
+
+  void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const { return new JsonUInt64Value(m_value); }
+
+  /**
+   * @brief Return the uint64_t value.
+   */
+  uint64_t Value() const { return m_value; }
+
+  /**
+   * @privatesection
+   */
   bool Equals(const JsonUInt64Value &other) const {
     return m_value == other.m_value;
   }
@@ -344,17 +482,20 @@ class JsonUInt64Value: public JsonLeafValue {
   bool Equals(const JsonIntValue &other) const;
   bool Equals(const JsonInt64Value &other) const;
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  int Compare(const JsonUIntValue &value) const;
+  int Compare(const JsonIntValue &value) const;
+  int Compare(const JsonUInt64Value &value) const;
+  int Compare(const JsonInt64Value &value) const;
+  int Compare(const JsonDoubleValue &value) const;
 
-  JsonValue* Clone() const {
-    return new JsonUInt64Value(m_value);
-  }
-
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
-   * @brief Return the uint64_t value.
+   * @endsection
    */
-  uint64_t Value() const { return m_value; }
-
  private:
   const uint64_t m_value;
 
@@ -363,22 +504,40 @@ class JsonUInt64Value: public JsonLeafValue {
 
 
 /**
- * @brief A signed int 64 value.
+ * @brief A signed 64bit int value.
  */
-class JsonInt64Value: public JsonLeafValue {
+class JsonInt64Value: public JsonNumberValue {
  public:
   /**
    * @brief Create a new JsonInt64Value
    * @param value the int 64 to use.
    */
-  explicit JsonInt64Value(int64_t value)
-      : m_value(value) {
-  }
+  explicit JsonInt64Value(int64_t value) : m_value(value) {}
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
   }
 
+  bool operator<(const JsonNumberValue &other) const {
+    return other.Compare(*this) == 1;
+  }
+
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
+  }
+
+  void Accept(JsonValueVisitorInterface *visitor) const;
+
+  JsonValue* Clone() const { return new JsonInt64Value(m_value); }
+
+  /**
+   * @brief Return the int64_t value.
+   */
+  int64_t Value() const { return m_value; }
+
+  /**
+   * @privatesection
+   */
   bool Equals(const JsonInt64Value &other) const {
     return m_value == other.m_value;
   }
@@ -387,17 +546,20 @@ class JsonInt64Value: public JsonLeafValue {
   bool Equals(const JsonIntValue &other) const;
   bool Equals(const JsonUInt64Value &other) const;
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  int Compare(const JsonUIntValue &value) const;
+  int Compare(const JsonIntValue &value) const;
+  int Compare(const JsonUInt64Value &value) const;
+  int Compare(const JsonInt64Value &value) const;
+  int Compare(const JsonDoubleValue &value) const;
 
-  JsonValue* Clone() const {
-    return new JsonInt64Value(m_value);
-  }
-
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
   /**
-   * @brief Return the int64_t value.
+   * @endsection
    */
-  int64_t Value() const { return m_value; }
-
  private:
   const int64_t m_value;
 
@@ -413,7 +575,7 @@ class JsonInt64Value: public JsonLeafValue {
  * value takes the form: [full].[fractional]e<sup>[exponent]</sup>.
  * e.g 23.00456e<sup>-3</sup>.
  */
-class JsonDoubleValue: public JsonLeafValue {
+class JsonDoubleValue: public JsonNumberValue {
  public:
   /**
    * @struct DoubleRepresentation
@@ -453,10 +615,12 @@ class JsonDoubleValue: public JsonLeafValue {
     return other.Equals(*this);
   }
 
-  bool Equals(const JsonDoubleValue &other) const {
-    // This is sketchy. The standard says "have the same mathematical value"
-    // TODO(simon): This about this some more.
-    return m_value == other.m_value;
+  bool operator<(const JsonNumberValue &other) const {
+    return other.Compare(*this) == 1;
+  }
+
+  bool MultipleOf(const JsonNumberValue &other) const {
+    return other.FactorOf(*this);
   }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
@@ -464,18 +628,14 @@ class JsonDoubleValue: public JsonLeafValue {
   /**
    * @brief Return the double value as a string.
    */
-  const std::string& ToString() const {
-    return m_as_string;
-  }
+  const std::string& ToString() const { return m_as_string; }
 
   /**
    * @brief Returns the value as a double.
    *
    * This may be incorrect if the value exceeds the storage space of the double.
    */
-  double Value() const {
-    return m_value;
-  }
+  double Value() const { return m_value; }
 
   /**
    * @brief Convert a DoubleRepresentation to a double value.
@@ -497,6 +657,29 @@ class JsonDoubleValue: public JsonLeafValue {
     return new JsonDoubleValue(m_value);
   }
 
+  /**
+   * @privatesection
+   */
+  bool Equals(const JsonDoubleValue &other) const {
+    // This is sketchy. The standard says "have the same mathematical value"
+    // TODO(simon): Think about this some more.
+    return m_value == other.m_value;
+  }
+
+  int Compare(const JsonUIntValue &value) const;
+  int Compare(const JsonIntValue &value) const;
+  int Compare(const JsonUInt64Value &value) const;
+  int Compare(const JsonInt64Value &value) const;
+  int Compare(const JsonDoubleValue &value) const;
+
+  bool FactorOf(const JsonUIntValue &value) const;
+  bool FactorOf(const JsonIntValue &value) const;
+  bool FactorOf(const JsonUInt64Value &value) const;
+  bool FactorOf(const JsonInt64Value &value) const;
+  bool FactorOf(const JsonDoubleValue &value) const;
+  /**
+   * @endsection
+   */
  private:
   double m_value;
   std::string m_as_string;
@@ -514,29 +697,30 @@ class JsonBoolValue: public JsonLeafValue {
    * @brief Create a new JsonBoolValue
    * @param value the bool to use.
    */
-  explicit JsonBoolValue(bool value)
-      : m_value(value) {
-  }
+  explicit JsonBoolValue(bool value) : m_value(value) {}
 
   bool operator==(const JsonValue &other) const {
     return other.Equals(*this);
   }
 
-  bool Equals(const JsonBoolValue &other) const {
-    return m_value == other.m_value;
-  }
-
   void Accept(JsonValueVisitorInterface *visitor) const;
 
-  JsonValue* Clone() const {
-    return new JsonBoolValue(m_value);
-  }
+  JsonValue* Clone() const { return new JsonBoolValue(m_value); }
 
   /**
    * @brief Return the bool value.
    */
   bool Value() const { return m_value; }
 
+  /**
+   * @privatesection
+   */
+  bool Equals(const JsonBoolValue &other) const {
+    return m_value == other.m_value;
+  }
+  /**
+   * @endsection
+   */
  private:
   const bool m_value;
 
@@ -556,16 +740,17 @@ class JsonNullValue: public JsonLeafValue {
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
-  JsonValue* Clone() const {
-    return new JsonNullValue();
-  }
+  JsonValue* Clone() const { return new JsonNullValue(); }
 
-  bool operator==(const JsonValue &other) const {
-    return other.Equals(*this);
-  }
+  bool operator==(const JsonValue &other) const { return other.Equals(*this); }
 
+  /**
+   * @privatesection
+   */
   bool Equals(const JsonNullValue &) const { return true; }
-
+  /**
+   * @endsection
+   */
  private:
   DISALLOW_COPY_AND_ASSIGN(JsonNullValue);
 };
@@ -580,28 +765,28 @@ class JsonRawValue: public JsonLeafValue {
    * @brief Create a new JsonRawValue
    * @param value the raw data to insert.
    */
-  explicit JsonRawValue(const std::string &value)
-    : m_value(value) {
-  }
+  explicit JsonRawValue(const std::string &value) : m_value(value) {}
 
-  bool operator==(const JsonValue &other) const {
-    return other.Equals(*this);
-  }
-
-  bool Equals(const JsonRawValue &other) const {
-    return m_value == other.m_value;
-  }
+  bool operator==(const JsonValue &other) const { return other.Equals(*this); }
 
   void Accept(JsonValueVisitorInterface *visitor) const;
 
-  JsonValue* Clone() const {
-    return new JsonRawValue(m_value);
-  }
+  JsonValue* Clone() const { return new JsonRawValue(m_value); }
 
   /**
    * @brief Return the raw value  as a string.
    */
   const std::string& Value() const { return m_value; }
+
+  /**
+   * @privatesection
+   */
+  bool Equals(const JsonRawValue &other) const {
+    return m_value == other.m_value;
+  }
+  /**
+   * @endsection
+   */
 
  private:
   const std::string m_value;
@@ -664,6 +849,13 @@ class JsonObject: public JsonValue {
   void Add(const std::string &key, int i);
 
   /**
+   * @brief Set the given key to a double value.
+   * @param key the key to set.
+   * @param d the value to add
+   */
+  void Add(const std::string &key, double d);
+
+  /**
    * @brief Set the given key to a bool value.
    * @param key the key to set.
    * @param value the value to add
@@ -714,12 +906,14 @@ class JsonObject: public JsonValue {
    */
   bool IsEmpty() const { return m_members.empty(); }
 
+  unsigned int Size() const { return m_members.size(); }
+
   /**
    * @brief Visit each of the properties in this object.
    *
    * For each property : value, the visitor is called.
    */
-  void VisitProperties(JsonValueVisitorInterface *visitor) const;
+  void VisitProperties(JsonObjectPropertyVisitor *visitor) const;
 
  private:
   typedef std::map<std::string, JsonValue*> MemberMap;
@@ -801,6 +995,14 @@ class JsonArray: public JsonValue {
   }
 
   /**
+   * @brief Append a JsonValue. Takes ownership of the pointer.
+   */
+  void Append(JsonObject *value) {
+    m_values.push_back(value);
+    m_complex_type |= !value->IsEmpty();
+  }
+
+  /**
    * @brief Append a JsonObject to the array
    * @returns the new JsonObject. Ownership is not transferred and the
    * pointer is valid for the lifetime of this JsonArray.
@@ -875,11 +1077,26 @@ class JsonArray: public JsonValue {
   DISALLOW_COPY_AND_ASSIGN(JsonArray);
 };
 
+
+/**
+ * @brief A class used to visit Json values within a JsonObject
+ */
+class JsonObjectPropertyVisitor {
+ public:
+  virtual ~JsonObjectPropertyVisitor() {}
+
+  /**
+   * @brief Visit the value at the given property
+   */
+  virtual void VisitProperty(const std::string &property,
+                             const JsonValue &value) = 0;
+};
+
 /**
  * @brief The interface for the JsonValueVisitor class.
  *
  * An implementation of a JsonValueVisitorInterface can be passed to the
- * Visit() method of a JsonValue. This provides traversal of a json tree in a
+ * Visit() method of a JsonValue. This provides traversal of a JSON tree in a
  * type safe manner.
  */
 class JsonValueVisitorInterface {
@@ -897,9 +1114,6 @@ class JsonValueVisitorInterface {
   virtual void Visit(const JsonIntValue &value) = 0;
   virtual void Visit(const JsonInt64Value &value) = 0;
   virtual void Visit(const JsonDoubleValue &value) = 0;
-
-  virtual void VisitProperty(const std::string &property,
-                             const JsonValue &value) = 0;
 };
 /**@}*/
 
@@ -914,6 +1128,73 @@ std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonNullValue &value);
 std::ostream& operator<<(std::ostream &os, const JsonRawValue &value);
 
+// JsonValue::NewNumberValue implementations.
+template <>
+inline JsonNumberValue* JsonValue::NewNumberValue<uint32_t>(
+    const uint32_t &value) {
+  return new JsonUIntValue(value);
+}
+
+template <>
+inline JsonNumberValue* JsonValue::NewNumberValue<int32_t>(
+    const int32_t &value) {
+  return new JsonIntValue(value);
+}
+
+template <>
+inline JsonNumberValue* JsonValue::NewNumberValue<uint64_t>(
+    const uint64_t &value) {
+  return new JsonUInt64Value(value);
+}
+
+template <>
+inline JsonNumberValue* JsonValue::NewNumberValue<int64_t>(
+    const int64_t &value) {
+  return new JsonInt64Value(value);
+}
+
+template <>
+inline JsonNumberValue* JsonValue::NewNumberValue<double>(
+    const double &value) {
+  return new JsonDoubleValue(value);
+}
+
+// JsonValue::NewValue implementations.
+template <>
+inline JsonValue* JsonValue::NewValue<std::string>(const std::string &value) {
+  return new JsonStringValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<uint32_t>(const uint32_t &value) {
+  return NewNumberValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<int32_t>(const int32_t &value) {
+  return NewNumberValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<uint64_t>(const uint64_t &value) {
+  return NewNumberValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<int64_t>(const int64_t &value) {
+  return NewNumberValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<double>(const double &value) {
+  return NewNumberValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<bool>(const bool &value) {
+  return new JsonBoolValue(value);
+}
+/**@}*/
 }  // namespace web
 }  // namespace ola
 #endif  // INCLUDE_OLA_WEB_JSON_H_
