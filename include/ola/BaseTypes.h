@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 enum {
-  DMX_UNIVERSE_SIZE = 512
+  DMX_UNIVERSE_SIZE = ola::DMX_UNIVERSE_SIZE,
 };
 
 /**

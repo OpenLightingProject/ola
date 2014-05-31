@@ -214,7 +214,7 @@ class DmxBuffer {
      * @brief Get a range of values starting from a particular slot.
      * @param slot is the dmx slot to start from
      * @param data is a pointer to where you want to store the gathered data
-     * @param length is the length of the data you wish to retrieve
+     * @param[in,out] length is the length of the data you wish to retrieve
      */
     void GetRange(unsigned int slot, uint8_t *data,
                   unsigned int *length) const;
