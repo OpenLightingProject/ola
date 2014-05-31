@@ -8,6 +8,8 @@ libolausbdmx_la_SOURCES = AnymaDevice.cpp AnymaDevice.h AnymaOutputPort.cpp \
                           AnymaOutputPort.h EuroliteProDevice.cpp \
                           EuroliteProDevice.h EuroliteProOutputPort.cpp \
                           EuroliteProOutputPort.h FirmwareLoader.h \
+                          ImgDevice.cpp ImgDevice.h \
+                          ImgOutputPort.cpp ImgOutputPort.h \
                           SunliteDevice.cpp SunliteDevice.h SunliteFirmware.h \
                           SunliteFirmwareLoader.cpp SunliteFirmwareLoader.h \
                           SunliteOutputPort.cpp SunliteOutputPort.h \

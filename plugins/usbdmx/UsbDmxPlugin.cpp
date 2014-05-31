@@ -37,6 +37,7 @@
 #include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
+#include "plugins/usbdmx/ImgDevice.h"
 #include "plugins/usbdmx/SunliteDevice.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
 #include "plugins/usbdmx/UsbDevice.h"
@@ -198,6 +199,10 @@ void UsbDmxPlugin::FindDevices() {
         device_descriptor.idProduct == 0xfa63) {
       OLA_INFO << "Found a EUROLITE device";
        device = new EuroliteProDevice(this, usb_device);
+    } else if (device_descriptor.idVendor == 0x04d8 &&
+        device_descriptor.idProduct == 0xff86) {
+      OLA_INFO << "Found an Img device";
+       device = new ImgDevice(this, usb_device);
     }
 
     if (device) {
@@ -246,7 +251,7 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n"
+"Anyma uDMX, img Stage line DMX-1USB, Sunlite USBDMX2 & Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"
