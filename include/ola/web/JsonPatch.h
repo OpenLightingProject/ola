@@ -157,9 +157,9 @@ class JsonPatchRemoveOp : public JsonPatchOp {
 class JsonPatchReplaceOp : public JsonPatchOp {
  public:
   /**
-   * @brief Replace the JsonValue to the specified path.
+   * @brief Replace the JsonValue at the specified path.
    * @param path The path to replace the value at.
-   * @param value the value to replace with, ownership is transferred.
+   * @param value The value to replace with, ownership is transferred.
    */
   JsonPatchReplaceOp(const JsonPointer &path, const JsonValue *value)
       : m_pointer(path),
