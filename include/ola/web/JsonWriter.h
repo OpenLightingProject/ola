@@ -46,7 +46,8 @@ namespace web {
 /**
  * @brief A class to serialize a JSONValue to text.
  */
-class JsonWriter : public JsonValueVisitorInterface, JsonObjectPropertyVisitor {
+class JsonWriter : public JsonValueConstVisitorInterface,
+                          JsonObjectPropertyVisitor {
  public:
   /**
    * @brief Write the string representation of the JsonValue to a ostream.

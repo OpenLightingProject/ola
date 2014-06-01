@@ -33,6 +33,54 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
+namespace {
+
+class ObjectCastVisitor : public JsonValueVisitorInterface {
+ public:
+  ObjectCastVisitor() : m_obj(NULL) {}
+
+  void Visit(JsonStringValue *value) { (void) value; }
+  void Visit(JsonBoolValue *value) { (void) value; }
+  void Visit(JsonNullValue *value) { (void) value; }
+  void Visit(JsonRawValue *value) { (void) value; }
+  void Visit(JsonObject *value) { m_obj = value; }
+  void Visit(JsonArray *value) { (void) value; }
+  void Visit(JsonUIntValue *value) { (void) value; }
+  void Visit(JsonUInt64Value *value) { (void) value; }
+  void Visit(JsonIntValue *value) { (void) value; }
+  void Visit(JsonInt64Value *value) { (void) value; }
+  void Visit(JsonDoubleValue *value) { (void) value; }
+
+  JsonObject *Object() { return m_obj; }
+
+ private:
+  JsonObject *m_obj;
+};
+
+class ArrayCastVisitor : public JsonValueVisitorInterface {
+ public:
+  ArrayCastVisitor() : m_array(NULL) {}
+
+  void Visit(JsonStringValue *value) { (void) value; }
+  void Visit(JsonBoolValue *value) { (void) value; }
+  void Visit(JsonNullValue *value) { (void) value; }
+  void Visit(JsonRawValue *value) { (void) value; }
+  void Visit(JsonObject *value) { (void) value; }
+  void Visit(JsonArray *value) { m_array = value; }
+  void Visit(JsonUIntValue *value) { (void) value; }
+  void Visit(JsonUInt64Value *value) { (void) value; }
+  void Visit(JsonIntValue *value) { (void) value; }
+  void Visit(JsonInt64Value *value) { (void) value; }
+  void Visit(JsonDoubleValue *value) { (void) value; }
+
+  JsonArray *Array() { return m_array; }
+
+ private:
+  JsonArray *m_array;
+};
+
+}  // namespace
+
 JsonValue* JsonValue::LookupElement(const JsonPointer &pointer) {
   JsonPointer::Iterator iter = pointer.begin();
   return LookupElementWithIter(&iter);
@@ -47,44 +95,6 @@ JsonValue* JsonLeafValue::LookupElementWithIter(
   return this;
 }
 
-
-// Accepts
-void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonBoolValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-
-void JsonNullValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonRawValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonIntValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonUIntValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonUInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
 
 // Integer equality functions
 namespace {
@@ -627,6 +637,22 @@ void JsonObject::AddRaw(const std::string &key, const std::string &value) {
   STLReplaceAndDelete(&m_members, key, new JsonRawValue(value));
 }
 
+bool JsonObject::Remove(const std::string &key) {
+  return STLRemoveAndDelete(&m_members, key);
+}
+
+bool JsonObject::ReplaceValue(const std::string &key, JsonValue *value) {
+  MemberMap::iterator iter = m_members.find(key);
+  if (iter == m_members.end()) {
+    delete value;
+    return false;
+  } else {
+    delete iter->second;
+    iter->second = value;
+    return true;
+  }
+}
+
 JsonObject* JsonObject::AddObject(const string &key) {
   JsonObject *obj = new JsonObject();
   STLReplaceAndDelete(&m_members, key, obj);
@@ -641,10 +667,6 @@ JsonArray* JsonObject::AddArray(const string &key) {
 
 void JsonObject::AddValue(const string &key, JsonValue *value) {
   STLReplaceAndDelete(&m_members, key, value);
-}
-
-void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
 }
 
 JsonValue* JsonObject::Clone() const {
@@ -706,8 +728,37 @@ bool JsonArray::Equals(const JsonArray &other) const {
   return true;
 }
 
-void JsonArray::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
+bool JsonArray::RemoveElementAt(uint32_t index) {
+  if (index < m_values.size()) {
+    ValuesVector::iterator iter = m_values.begin() + index;
+    delete *iter;
+    m_values.erase(iter);
+    return true;
+  }
+  return false;
+}
+
+bool JsonArray::ReplaceElementAt(uint32_t index, JsonValue *value) {
+  if (index < m_values.size()) {
+    ValuesVector::iterator iter = m_values.begin() + index;
+    delete *iter;
+    *iter = value;
+    return true;
+  }
+  // Ownership is transferred, so it's up to us to delete it.
+  delete value;
+  return false;
+}
+
+bool JsonArray::InsertElementAt(uint32_t index, JsonValue *value) {
+  if (index < m_values.size()) {
+    ValuesVector::iterator iter = m_values.begin() + index;
+    m_values.insert(iter, value);
+    return true;
+  }
+  // Ownership is transferred, so it's up to us to delete it.
+  delete value;
+  return false;
 }
 
 JsonValue* JsonArray::Clone() const {
@@ -725,6 +776,27 @@ const JsonValue *JsonArray::ElementAt(unsigned int i) const {
   } else {
     return NULL;
   }
+}
+
+JsonObject* ObjectCast(JsonValue *value) {
+  // Benchmarks for 100M operations
+  // dynamic_cast<> : 1.8s
+  // Type() method & static_cast<>: 0.39s
+  // typeip(value) == ..  & static_cast<> : 0.34s
+  // &typeif(value) == .. &static_cast<>: 0.30s
+  // Visitor pattern : 2.18s
+  //
+  // The visitor pattern is more costly since it requires 2 vtable lookups.
+  // If performance becomes an issue we should consider static_cast<> here.
+  ObjectCastVisitor visitor;
+  value->Accept(&visitor);
+  return visitor.Object();
+}
+
+JsonArray* ArrayCast(JsonValue *value) {
+  ArrayCastVisitor visitor;
+  value->Accept(&visitor);
+  return visitor.Array();
 }
 
 // operator<<

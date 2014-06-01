@@ -53,7 +53,7 @@ class SchemaDefinitions;
 /**
  * @brief The interface Json Schema Validators.
  */
-class ValidatorInterface : public JsonValueVisitorInterface {
+class ValidatorInterface : public JsonValueConstVisitorInterface {
  public:
   /**
    * @brief a list of Validators.

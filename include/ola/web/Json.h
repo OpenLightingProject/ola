@@ -48,8 +48,9 @@ namespace web {
  * @{
  */
 
-class JsonValueVisitorInterface;
 class JsonObjectPropertyVisitor;
+class JsonValueConstVisitorInterface;
+class JsonValueVisitorInterface;
 
 class JsonArray;
 class JsonBoolValue;
@@ -63,6 +64,54 @@ class JsonRawValue;
 class JsonStringValue;
 class JsonUInt64Value;
 class JsonUIntValue;
+
+/**
+ * @brief The interface for the JsonValueVisitor class.
+ *
+ * An implementation of a JsonValueVisitorInterface can be passed to the
+ * Accept() method of a JsonValue. This provides traversal of a JSON tree in a
+ * type safe manner.
+ */
+class JsonValueVisitorInterface {
+ public:
+  virtual ~JsonValueVisitorInterface() {}
+
+  virtual void Visit(JsonStringValue *value) = 0;
+  virtual void Visit(JsonBoolValue *value) = 0;
+  virtual void Visit(JsonNullValue *value) = 0;
+  virtual void Visit(JsonRawValue *value) = 0;
+  virtual void Visit(JsonObject *value) = 0;
+  virtual void Visit(JsonArray *value) = 0;
+  virtual void Visit(JsonUIntValue *value) = 0;
+  virtual void Visit(JsonUInt64Value *value) = 0;
+  virtual void Visit(JsonIntValue *value) = 0;
+  virtual void Visit(JsonInt64Value *value) = 0;
+  virtual void Visit(JsonDoubleValue *value) = 0;
+};
+
+/**
+ * @brief The const interface for the JsonValueVisitor class.
+ *
+ * An implementation of a JsonValueConstVisitorInterface can be passed to the
+ * Accept() method of a JsonValue. This provides traversal of a JSON tree in a
+ * type safe manner.
+ */
+class JsonValueConstVisitorInterface {
+ public:
+  virtual ~JsonValueConstVisitorInterface() {}
+
+  virtual void Visit(const JsonStringValue &value) = 0;
+  virtual void Visit(const JsonBoolValue &value) = 0;
+  virtual void Visit(const JsonNullValue &value) = 0;
+  virtual void Visit(const JsonRawValue &value) = 0;
+  virtual void Visit(const JsonObject &value) = 0;
+  virtual void Visit(const JsonArray &value) = 0;
+  virtual void Visit(const JsonUIntValue &value) = 0;
+  virtual void Visit(const JsonUInt64Value &value) = 0;
+  virtual void Visit(const JsonIntValue &value) = 0;
+  virtual void Visit(const JsonInt64Value &value) = 0;
+  virtual void Visit(const JsonDoubleValue &value) = 0;
+};
 
 /**
  * @brief The base class for JSON values.
@@ -96,7 +145,14 @@ class JsonValue {
    *
    * This can be used to traverse the Json Tree in a type-safe manner.
    */
-  virtual void Accept(JsonValueVisitorInterface *visitor) const = 0;
+  virtual void Accept(JsonValueVisitorInterface *visitor) = 0;
+
+  /**
+   * @brief The Accept (const) method for the visitor pattern.
+   *
+   * This can be used to traverse the Json Tree in a type-safe manner.
+   */
+  virtual void Accept(JsonValueConstVisitorInterface *visitor) const = 0;
 
   /**
    * @brief Make a copy of this JsonValue.
@@ -235,7 +291,10 @@ class JsonStringValue: public JsonLeafValue {
    */
   const std::string& Value() const { return m_value; }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonStringValue(m_value); }
 
@@ -335,7 +394,10 @@ class JsonUIntValue: public JsonNumberValue {
     return other.FactorOf(*this);
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonUIntValue(m_value); }
 
@@ -398,7 +460,10 @@ class JsonIntValue: public JsonNumberValue {
     return other.FactorOf(*this);
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonIntValue(m_value); }
 
@@ -462,7 +527,10 @@ class JsonUInt64Value: public JsonNumberValue {
     return other.FactorOf(*this);
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonUInt64Value(m_value); }
 
@@ -526,7 +594,10 @@ class JsonInt64Value: public JsonNumberValue {
     return other.FactorOf(*this);
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonInt64Value(m_value); }
 
@@ -623,7 +694,10 @@ class JsonDoubleValue: public JsonNumberValue {
     return other.FactorOf(*this);
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   /**
    * @brief Return the double value as a string.
@@ -703,7 +777,10 @@ class JsonBoolValue: public JsonLeafValue {
     return other.Equals(*this);
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonBoolValue(m_value); }
 
@@ -738,7 +815,10 @@ class JsonNullValue: public JsonLeafValue {
    */
   explicit JsonNullValue() {}
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonNullValue(); }
 
@@ -769,7 +849,10 @@ class JsonRawValue: public JsonLeafValue {
 
   bool operator==(const JsonValue &other) const { return other.Equals(*this); }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const { return new JsonRawValue(m_value); }
 
@@ -896,7 +979,27 @@ class JsonObject: public JsonValue {
    */
   void AddRaw(const std::string &key, const std::string &value);
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  /**
+   * @brief Remove the JsonValue with the specified key.
+   * @param key the key to remove
+   * @returns true if the key existed and was removed, false otherwise.
+   */
+  bool Remove(const std::string &key);
+
+  /**
+   * @brief Replace the key with the supplied JsonValue.
+   * @param key the key to add.
+   * @param value the JsonValue object, ownership is transferred.
+   * @returns true if the key was replaced, false otherwise.
+   *
+   * If the key was not replaced, the value is deleted.
+   */
+  bool ReplaceValue(const std::string &key, JsonValue *value);
+
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const;
 
@@ -1041,7 +1144,35 @@ class JsonArray: public JsonValue {
     m_values.push_back(new JsonRawValue(value));
   }
 
-  void Accept(JsonValueVisitorInterface *visitor) const;
+  /**
+   * @brief Remove the JsonValue at the specified index.
+   * @param index the index of the value to remove
+   * @returns true if the index is within the current array, false otherwise.
+   */
+  bool RemoveElementAt(uint32_t index);
+
+  /**
+   * @brief Replace the JsonValue at the specified index.
+   * @param index the index of the value to replace.
+   * @param value the new JsonValue. Ownership is transferred.
+   * @returns true if the index is within the current array, false otherwise.
+   */
+  bool ReplaceElementAt(uint32_t index, JsonValue *value);
+
+  /**
+   * @brief Inserts the JsonValue at the specified index.
+   * @param index the index to insert at.
+   * @param value the new JsonValue. Ownership is transferred.
+   * @returns true if the index is within the current array, false otherwise.
+   *
+   * Any elements at or above the index are shifted one to the right.
+   */
+  bool InsertElementAt(uint32_t index, JsonValue *value);
+
+  void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
+  void Accept(JsonValueConstVisitorInterface *visitor) const {
+    visitor->Visit(*this);
+  }
 
   JsonValue* Clone() const;
 
@@ -1093,28 +1224,21 @@ class JsonObjectPropertyVisitor {
 };
 
 /**
- * @brief The interface for the JsonValueVisitor class.
+ * @brief Downcast a JsonValue to a JsonObject
  *
- * An implementation of a JsonValueVisitorInterface can be passed to the
- * Visit() method of a JsonValue. This provides traversal of a JSON tree in a
- * type safe manner.
+ * This should be used rather than dynamic_cast<JsonObject> since it doesn't
+ * rely on RTTI.
  */
-class JsonValueVisitorInterface {
- public:
-  virtual ~JsonValueVisitorInterface() {}
+JsonObject* ObjectCast(JsonValue *value);
 
-  virtual void Visit(const JsonStringValue &value) = 0;
-  virtual void Visit(const JsonBoolValue &value) = 0;
-  virtual void Visit(const JsonNullValue &value) = 0;
-  virtual void Visit(const JsonRawValue &value) = 0;
-  virtual void Visit(const JsonObject &value) = 0;
-  virtual void Visit(const JsonArray &value) = 0;
-  virtual void Visit(const JsonUIntValue &value) = 0;
-  virtual void Visit(const JsonUInt64Value &value) = 0;
-  virtual void Visit(const JsonIntValue &value) = 0;
-  virtual void Visit(const JsonInt64Value &value) = 0;
-  virtual void Visit(const JsonDoubleValue &value) = 0;
-};
+/**
+ * @brief Downcast a JsonValue to a JsonArray.
+ *
+ * This should be used rather than dynamic_cast<JsonArray> since it doesn't
+ * rely on RTTI.
+ */
+JsonArray* ArrayCast(JsonValue *value);
+
 /**@}*/
 
 // operator<<
