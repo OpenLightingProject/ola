@@ -37,8 +37,8 @@ namespace usbdmx {
 class UsbDmxPlugin: public ola::Plugin {
  public:
   explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor)
-    : Plugin(plugin_adaptor),
-      m_anyma_devices_missing_serial_numbers(false) {
+      : Plugin(plugin_adaptor),
+        m_anyma_devices_missing_serial_numbers(false) {
   }
 
   std::string Name() const { return PLUGIN_NAME; }

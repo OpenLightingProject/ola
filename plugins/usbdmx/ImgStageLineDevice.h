@@ -36,7 +36,7 @@ class ImgStageLineDevice: public UsbDevice {
  public:
   ImgStageLineDevice(ola::AbstractPlugin *owner,
                      libusb_device *usb_device)
-    : UsbDevice(owner, "ImgStageLine USB Device", usb_device) {
+      : UsbDevice(owner, "ImgStageLine USB Device", usb_device) {
   }
 
   std::string DeviceId() const { return "dmx-1usb"; }

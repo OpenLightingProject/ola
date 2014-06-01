@@ -36,7 +36,7 @@ class VellemanDevice: public UsbDevice {
  public:
   VellemanDevice(ola::AbstractPlugin *owner,
                  libusb_device *usb_device)
-    : UsbDevice(owner, "Velleman USB Device", usb_device) {
+      : UsbDevice(owner, "Velleman USB Device", usb_device) {
   }
 
   std::string DeviceId() const { return "velleman"; }

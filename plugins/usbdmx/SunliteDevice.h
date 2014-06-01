@@ -36,7 +36,7 @@ class SunliteDevice: public UsbDevice {
  public:
   SunliteDevice(ola::AbstractPlugin *owner,
                 libusb_device *usb_device)
-    : UsbDevice(owner, "Sunlite USB Device", usb_device) {
+      : UsbDevice(owner, "Sunlite USB Device", usb_device) {
   }
 
   std::string DeviceId() const { return "usbdmx2"; }
