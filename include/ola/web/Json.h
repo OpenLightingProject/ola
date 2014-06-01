@@ -1283,6 +1283,13 @@ inline JsonNumberValue* JsonValue::NewNumberValue<double>(
   return new JsonDoubleValue(value);
 }
 
+template <>
+inline JsonNumberValue* JsonValue::NewNumberValue<
+    JsonDoubleValue::DoubleRepresentation>(
+    const JsonDoubleValue::DoubleRepresentation &value) {
+  return new JsonDoubleValue(value);
+}
+
 // JsonValue::NewValue implementations.
 template <>
 inline JsonValue* JsonValue::NewValue<std::string>(const std::string &value) {
@@ -1311,6 +1318,12 @@ inline JsonValue* JsonValue::NewValue<int64_t>(const int64_t &value) {
 
 template <>
 inline JsonValue* JsonValue::NewValue<double>(const double &value) {
+  return NewNumberValue(value);
+}
+
+template <>
+inline JsonValue* JsonValue::NewValue<JsonDoubleValue::DoubleRepresentation>(
+    const JsonDoubleValue::DoubleRepresentation &value) {
   return NewNumberValue(value);
 }
 

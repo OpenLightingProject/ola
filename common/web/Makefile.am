@@ -18,17 +18,19 @@ dist_noinst_DATA = testdata/allof.test \
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
 libolaweb_la_SOURCES = Json.cpp JsonLexer.cpp JsonParser.cpp JsonPatch.cpp \
-                       JsonPointer.cpp JsonSchema.cpp JsonSections.cpp \
-                       JsonTypes.cpp JsonWriter.cpp PointerTracker.cpp \
-                       PointerTracker.h SchemaErrorLogger.cpp \
-                       SchemaErrorLogger.h SchemaKeywords.cpp SchemaKeywords.h \
+                       JsonPatchParser.cpp JsonPointer.cpp JsonSchema.cpp \
+                       JsonSections.cpp JsonTypes.cpp JsonWriter.cpp \
+                       OptionalItem.h PointerTracker.cpp PointerTracker.h \
+                       SchemaErrorLogger.cpp SchemaErrorLogger.h \
+                       SchemaKeywords.cpp SchemaKeywords.h \
                        SchemaParseContext.cpp SchemaParseContext.h \
                        SchemaParser.cpp SchemaParser.h
 
 # TESTS
 ################################################
 if BUILD_TESTS
-TESTS = JsonParserTester JsonPatchTester JsonPointerTester JsonSchemaTester \
+TESTS = JsonParserTester JsonPatchTester JsonPatchParserTester \
+        JsonPointerTester JsonSchemaTester \
         JsonSchemaParserTester PointerTrackerTester WebTester
 endif
 check_PROGRAMS = $(TESTS)
@@ -67,6 +69,13 @@ JsonPatchTester_LDADD = $(COMMON_TESTING_LIBS) \
                         ./libolaweb.la \
                         ../base/libolabase.la \
                         ../utils/libolautils.la
+
+JsonPatchParserTester_SOURCES = JsonPatchParserTest.cpp
+JsonPatchParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+JsonPatchParserTester_LDADD = $(COMMON_TESTING_LIBS) \
+                              ./libolaweb.la \
+                              ../base/libolabase.la \
+                              ../utils/libolautils.la
 
 JsonSchemaParserTester_SOURCES = JsonSchemaParserTest.cpp
 JsonSchemaParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

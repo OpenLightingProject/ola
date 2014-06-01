@@ -32,6 +32,7 @@
 #include "common/web/PointerTracker.h"
 #include "common/web/SchemaErrorLogger.h"
 #include "common/web/SchemaKeywords.h"
+#include "common/web/OptionalItem.h"
 #include "ola/web/JsonSchema.h"
 #include "ola/web/JsonParser.h"
 
@@ -45,27 +46,6 @@ class DependencyParseContext;
 class JsonValueContext;
 class PropertiesParseContext;
 class SchemaParseContext;
-
-template <typename T>
-class OptionalItem {
- public:
-  OptionalItem() : m_is_set(false) {}
-
-  void Reset() { m_is_set = false; }
-
-  void Set(const T &value) {
-    m_is_set = true;
-    m_value = value;
-  }
-
-  bool IsSet() const { return m_is_set; }
-  const T& Value() const { return m_value; }
-
- private:
-  bool m_is_set;
-  T m_value;
-};
-
 
 /**
  * @brief The interface all SchemaParseContext classes inherit from.

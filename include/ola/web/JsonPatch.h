@@ -264,6 +264,8 @@ class JsonPatchSet {
    */
   bool Apply(JsonValue **value) const;
 
+  bool Empty() const { return m_patch_ops.empty(); }
+
  private:
   typedef std::vector<JsonPatchOp*> PatchOps;
 
