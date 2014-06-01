@@ -149,7 +149,7 @@ bool ImgOutputPort::SendDMX(const DmxBuffer &buffer) {
 
   for (unsigned int i = 0;
        i < DMX_MAX_TRANSMIT_CHANNELS;
-       (i + CHANNELS_PER_PACKET)) {
+       i = i + CHANNELS_PER_PACKET) {
     // zero everything
     memset(m_packet, 0, IMG_PACKET_SIZE);
 
