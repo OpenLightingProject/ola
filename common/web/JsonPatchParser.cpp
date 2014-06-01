@@ -44,9 +44,15 @@ const char JsonPatchParser::kMissingValue[] =
   "Missing or invalid value";
 const char JsonPatchParser::kMissingFrom[] =
   "Missing from specifier";
+const char JsonPatchParser::kAddOp[] = "add";
+const char JsonPatchParser::kCopyOp[] = "copy";
 const char JsonPatchParser::kFromKey[] = "from";
+const char JsonPatchParser::kMoveOp[] = "move";
 const char JsonPatchParser::kOpKey[] = "op";
 const char JsonPatchParser::kPathKey[] = "path";
+const char JsonPatchParser::kRemoveOp[] = "remove";
+const char JsonPatchParser::kReplaceOp[] = "replace";
+const char JsonPatchParser::kTestOp[] = "test";
 const char JsonPatchParser::kValueKey[] = "value";
 
 void JsonPatchParser::Begin() {
@@ -284,23 +290,23 @@ void JsonPatchParser::HandlePatch() {
     return;
   }
 
-  if (m_op == "add") {
+  if (m_op == kAddOp) {
     if (!m_value.get()) {
       SetError(kMissingValue);
       return;
     }
     m_patch_set->AddOp(
         new JsonPatchAddOp(JsonPointer(m_path.Value()), m_value.release()));
-  } else if (m_op == "remove") {
+  } else if (m_op == kRemoveOp) {
     m_patch_set->AddOp(new JsonPatchRemoveOp(JsonPointer(m_path.Value())));
-  } else if (m_op == "replace") {
+  } else if (m_op == kReplaceOp) {
     if (!m_value.get()) {
       SetError(kMissingValue);
       return;
     }
     m_patch_set->AddOp(
         new JsonPatchReplaceOp(JsonPointer(m_path.Value()), m_value.release()));
-  } else if (m_op == "move") {
+  } else if (m_op == kMoveOp) {
     if (!m_from.IsSet()) {
       SetError(kMissingFrom);
       return;
@@ -308,7 +314,7 @@ void JsonPatchParser::HandlePatch() {
     m_patch_set->AddOp(
         new JsonPatchMoveOp(JsonPointer(m_from.Value()),
                             JsonPointer(m_path.Value())));
-  } else if (m_op == "copy") {
+  } else if (m_op == kCopyOp) {
     if (!m_from.IsSet()) {
       SetError(kMissingFrom);
       return;
@@ -316,7 +322,7 @@ void JsonPatchParser::HandlePatch() {
     m_patch_set->AddOp(
         new JsonPatchCopyOp(JsonPointer(m_from.Value()),
                             JsonPointer(m_path.Value())));
-  } else if (m_op == "test") {
+  } else if (m_op == kTestOp) {
     if (!m_value.get()) {
       SetError(kMissingValue);
       return;

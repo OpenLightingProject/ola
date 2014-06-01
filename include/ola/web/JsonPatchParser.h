@@ -133,6 +133,12 @@ class JsonPatchParser : public JsonParserInterface {
   static const char kPatchListError[];
   static const char kPathKey[];
   static const char kValueKey[];
+  static const char kAddOp[];
+  static const char kRemoveOp[];
+  static const char kReplaceOp[];
+  static const char kMoveOp[];
+  static const char kCopyOp[];
+  static const char kTestOp[];
 
   DISALLOW_COPY_AND_ASSIGN(JsonPatchParser);
 };
