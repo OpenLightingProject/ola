@@ -31,12 +31,14 @@ class JsonPointerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testConstructionFrom);
   CPPUNIT_TEST(testEscaping);
   CPPUNIT_TEST(testIteration);
+  CPPUNIT_TEST(testPrefix);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testConstructionFrom();
     void testEscaping();
     void testIteration();
+    void testPrefix();
 };
 
 
@@ -152,4 +154,30 @@ void JsonPointerTest::testIteration() {
   OLA_ASSERT_EQ(string(""), *iter);
   iter++;
   OLA_ASSERT_FALSE(iter.IsValid());
+}
+
+void JsonPointerTest::testPrefix() {
+  JsonPointer invalid_pointer("foo");
+  JsonPointer pointer1("/foo");
+  JsonPointer pointer2("/foo/bar");
+  JsonPointer pointer3("/baz");
+  JsonPointer pointer4("");
+
+  OLA_ASSERT_FALSE(invalid_pointer.IsPrefixOf(invalid_pointer));
+  OLA_ASSERT_FALSE(invalid_pointer.IsPrefixOf(pointer1));
+  OLA_ASSERT_FALSE(invalid_pointer.IsPrefixOf(pointer2));
+  OLA_ASSERT_FALSE(invalid_pointer.IsPrefixOf(pointer3));
+
+  OLA_ASSERT_TRUE(pointer1.IsPrefixOf(pointer2));
+  OLA_ASSERT_TRUE(pointer4.IsPrefixOf(pointer1));
+  OLA_ASSERT_TRUE(pointer4.IsPrefixOf(pointer3));
+
+  OLA_ASSERT_FALSE(pointer1.IsPrefixOf(pointer1));
+  OLA_ASSERT_FALSE(pointer1.IsPrefixOf(pointer3));
+  OLA_ASSERT_FALSE(pointer1.IsPrefixOf(pointer4));
+  OLA_ASSERT_FALSE(pointer2.IsPrefixOf(pointer1));
+  OLA_ASSERT_FALSE(pointer2.IsPrefixOf(pointer2));
+  OLA_ASSERT_FALSE(pointer2.IsPrefixOf(pointer3));
+  OLA_ASSERT_FALSE(pointer2.IsPrefixOf(pointer4));
+  OLA_ASSERT_FALSE(pointer3.IsPrefixOf(pointer4));
 }
