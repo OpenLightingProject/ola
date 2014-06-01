@@ -13,11 +13,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ImgOutputPort.cpp
- * Thread for the img Stage line DMX-1USB Output Port
+ * ImgStageLineOutputPort.cpp
+ * Thread for the img Stage Line DMX-1USB Output Port
  * Copyright (C) 2014 Peter Newman
  *
- * See the comments in ImgOutputPort.h
+ * See the comments in ImgStageLineOutputPort.h
  */
 
 #include <string.h>
@@ -25,8 +25,8 @@
 #include <algorithm>
 
 #include "ola/Logging.h"
-#include "plugins/usbdmx/ImgOutputPort.h"
-#include "plugins/usbdmx/ImgDevice.h"
+#include "plugins/usbdmx/ImgStageLineOutputPort.h"
+#include "plugins/usbdmx/ImgStageLineDevice.h"
 
 
 namespace ola {
@@ -35,11 +35,11 @@ namespace usbdmx {
 
 
 /*
- * Create a new ImgOutputPort object
+ * Create a new ImgStageLineOutputPort object
  */
-ImgOutputPort::ImgOutputPort(ImgDevice *parent,
-                             unsigned int id,
-                             libusb_device *usb_device)
+ImgStageLineOutputPort::ImgStageLineOutputPort(ImgStageLineDevice *parent,
+                                               unsigned int id,
+                                               libusb_device *usb_device)
     : BasicOutputPort(parent, id),
       m_term(false),
       m_new_data(false),
@@ -51,7 +51,7 @@ ImgOutputPort::ImgOutputPort(ImgDevice *parent,
 /*
  * Cleanup
  */
-ImgOutputPort::~ImgOutputPort() {
+ImgStageLineOutputPort::~ImgStageLineOutputPort() {
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
@@ -63,7 +63,7 @@ ImgOutputPort::~ImgOutputPort() {
 /*
  * Start this thread
  */
-bool ImgOutputPort::Start() {
+bool ImgStageLineOutputPort::Start() {
   libusb_device_handle *usb_handle;
 
   if (libusb_open(m_usb_device, &usb_handle)) {
@@ -92,7 +92,7 @@ bool ImgOutputPort::Start() {
 /*
  * Run this thread
  */
-void *ImgOutputPort::Run() {
+void *ImgStageLineOutputPort::Run() {
   DmxBuffer buffer;
   bool new_data;
 
@@ -132,7 +132,8 @@ void *ImgOutputPort::Run() {
 /*
  * Store the data in the shared buffer
  */
-bool ImgOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+bool ImgStageLineOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                      uint8_t priority) {
   ola::thread::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
   m_new_data = true;
@@ -144,14 +145,14 @@ bool ImgOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
 /*
  * Send DMX to the widget
  */
-bool ImgOutputPort::SendDMX(const DmxBuffer &buffer) {
+bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
   bool success = false;
 
   for (unsigned int i = 0;
        i < DMX_MAX_TRANSMIT_CHANNELS;
        i = i + CHANNELS_PER_PACKET) {
     // zero everything
-    memset(m_packet, 0, IMG_PACKET_SIZE);
+    memset(m_packet, 0, IMGSTAGELINE_PACKET_SIZE);
 
     if (i == 0) {
       m_packet[0] = CHANNEL_HEADER_LOW;
@@ -176,10 +177,10 @@ bool ImgOutputPort::SendDMX(const DmxBuffer &buffer) {
         m_usb_handle,
         ENDPOINT,
         (unsigned char*) m_packet,
-        IMG_PACKET_SIZE,
+        IMGSTAGELINE_PACKET_SIZE,
         &transferred,
         TIMEOUT);
-    if (transferred != IMG_PACKET_SIZE) {
+    if (transferred != IMGSTAGELINE_PACKET_SIZE) {
       // not sure if this is fatal or not
       OLA_WARN << "img driver failed to transfer all data";
     }

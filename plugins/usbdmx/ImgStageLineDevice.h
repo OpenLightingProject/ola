@@ -13,36 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ImgDevice.cpp
- * The img Stage line DMX-1USB device
+ * ImgStageLineDevice.h
+ * Interface for the ImgStageLine device
  * Copyright (C) 2014 Peter Newman
  */
 
-#include <string.h>
-#include <sys/time.h>
+#ifndef PLUGINS_USBDMX_IMGSTAGELINEDEVICE_H_
+#define PLUGINS_USBDMX_IMGSTAGELINEDEVICE_H_
 
-#include "ola/Logging.h"
-#include "plugins/usbdmx/ImgDevice.h"
-#include "plugins/usbdmx/ImgOutputPort.h"
+#include <libusb.h>
+#include <string>
+#include "plugins/usbdmx/UsbDevice.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 /*
- * Start this device.
+ * An ImgStageLine device
  */
-bool ImgDevice::StartHook() {
-  ImgOutputPort *output_port = new ImgOutputPort(this,
-                                                 0,
-                                                 m_usb_device);
-  if (!output_port->Start()) {
-    delete output_port;
-    return false;
-  }
-  AddPort(output_port);
-  return true;
-}
+class ImgStageLineDevice: public UsbDevice {
+ public:
+    ImgStageLineDevice(ola::AbstractPlugin *owner,
+                       libusb_device *usb_device):
+        UsbDevice(owner, "ImgStageLine USB Device", usb_device) {
+    }
+
+    std::string DeviceId() const { return "dmx-1usb"; }
+
+ protected:
+    bool StartHook();
+};
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
+#endif  // PLUGINS_USBDMX_IMGSTAGELINEDEVICE_H_

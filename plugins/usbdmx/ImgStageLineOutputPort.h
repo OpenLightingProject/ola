@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ImgOutputPort.h
- * The output port for an img Stage line DMX-1USB device.
+ * ImgStageLineOutputPort.h
+ * The output port for an img Stage Line DMX-1USB device.
  * Copyright (C) 2014 Peter Newman
  *
  * It takes around 11ms to complete the transfer to the device so we use a
@@ -22,8 +22,8 @@
  * buffer & release is 1-2 uS.
  */
 
-#ifndef PLUGINS_USBDMX_IMGOUTPUTPORT_H_
-#define PLUGINS_USBDMX_IMGOUTPUTPORT_H_
+#ifndef PLUGINS_USBDMX_IMGSTAGELINEOUTPUTPORT_H_
+#define PLUGINS_USBDMX_IMGSTAGELINEOUTPUTPORT_H_
 
 #include <libusb.h>
 #include <pthread.h>
@@ -36,14 +36,14 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class ImgDevice;
+class ImgStageLineDevice;
 
-class ImgOutputPort: public BasicOutputPort, ola::thread::Thread {
+class ImgStageLineOutputPort: public BasicOutputPort, ola::thread::Thread {
  public:
-    ImgOutputPort(ImgDevice *parent,
-                  unsigned int id,
-                  libusb_device *usb_device);
-    ~ImgOutputPort();
+    ImgStageLineOutputPort(ImgStageLineDevice *parent,
+                           unsigned int id,
+                           libusb_device *usb_device);
+    ~ImgStageLineOutputPort();
 
     bool Start();
     void *Run();
@@ -58,13 +58,13 @@ class ImgOutputPort: public BasicOutputPort, ola::thread::Thread {
     static const uint8_t ENDPOINT = 1;
     static const unsigned int TIMEOUT = 50;  // 50ms is ok
 
-    enum {IMG_PACKET_SIZE = CHANNELS_PER_PACKET + 1};
+    enum {IMGSTAGELINE_PACKET_SIZE = CHANNELS_PER_PACKET + 1};
     // This interface can only transmit 510 channels
     enum { DMX_MAX_TRANSMIT_CHANNELS = 510 };
 
     bool m_term;
     bool m_new_data;
-    uint8_t m_packet[IMG_PACKET_SIZE];
+    uint8_t m_packet[IMGSTAGELINE_PACKET_SIZE];
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
@@ -76,4 +76,4 @@ class ImgOutputPort: public BasicOutputPort, ola::thread::Thread {
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_IMGOUTPUTPORT_H_
+#endif  // PLUGINS_USBDMX_IMGSTAGELINEOUTPUTPORT_H_
