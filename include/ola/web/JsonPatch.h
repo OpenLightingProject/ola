@@ -249,6 +249,7 @@ class JsonPatchTestOp : public JsonPatchOp {
 class JsonPatchSet {
  public:
   JsonPatchSet() {}
+  ~JsonPatchSet();
 
   /**
    * @brief Add a patch operation to the set

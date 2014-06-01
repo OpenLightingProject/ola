@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
 #include "ola/web/JsonPointer.h"
 
@@ -325,6 +326,10 @@ bool JsonPatchTestOp::Apply(JsonValue **value) const {
     return false;
   }
   return *target == *m_value.get();
+}
+
+JsonPatchSet::~JsonPatchSet() {
+  STLDeleteElements(&m_patch_ops);
 }
 
 void JsonPatchSet::AddOp(JsonPatchOp *op) {
