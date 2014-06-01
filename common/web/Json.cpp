@@ -745,6 +745,8 @@ bool JsonArray::ReplaceElementAt(uint32_t index, JsonValue *value) {
     *iter = value;
     return true;
   }
+  // Ownership is transferred, so it's up to us to delete it.
+  delete value;
   return false;
 }
 
@@ -754,6 +756,8 @@ bool JsonArray::InsertElementAt(uint32_t index, JsonValue *value) {
     m_values.insert(iter, value);
     return true;
   }
+  // Ownership is transferred, so it's up to us to delete it.
+  delete value;
   return false;
 }
 
