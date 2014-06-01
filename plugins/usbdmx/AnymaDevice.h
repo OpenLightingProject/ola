@@ -35,21 +35,21 @@ namespace usbdmx {
  */
 class AnymaDevice: public UsbDevice {
  public:
-    AnymaDevice(ola::AbstractPlugin *owner,
-                libusb_device *usb_device,
-                libusb_device_handle *usb_handle,
-                const std::string &serial);
+  AnymaDevice(ola::AbstractPlugin *owner,
+              libusb_device *usb_device,
+              libusb_device_handle *usb_handle,
+              const std::string &serial);
 
-    std::string DeviceId() const;
+  std::string DeviceId() const;
 
-    static const char EXPECTED_MANUFACTURER[];
-    static const char EXPECTED_PRODUCT[];
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
 
  protected:
-    bool StartHook();
+  bool StartHook();
 
  private:
-    AnymaOutputPort *m_output_port;
+  AnymaOutputPort *m_output_port;
 };
 }  // namespace usbdmx
 }  // namespace plugin

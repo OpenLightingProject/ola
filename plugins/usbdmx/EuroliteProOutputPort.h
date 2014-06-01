@@ -32,48 +32,47 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-
 class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
  public:
-    EuroliteProOutputPort(class EuroliteProDevice *parent,
-                          unsigned int id,
-                          libusb_device *usb_device);
-    ~EuroliteProOutputPort();
-    std::string SerialNumber() const { return m_serial; }
+  EuroliteProOutputPort(class EuroliteProDevice *parent,
+                        unsigned int id,
+                        libusb_device *usb_device);
+  ~EuroliteProOutputPort();
+  std::string SerialNumber() const { return m_serial; }
 
-    bool Start();
-    void *Run();
+  bool Start();
+  void *Run();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    std::string Description() const { return ""; }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const { return ""; }
 
  private:
-    static const unsigned int URB_TIMEOUT_MS = 500;
-    static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
-    static const unsigned char ENDPOINT = 0x02;
-    static const char EXPECTED_MANUFACTURER[];
-    static const char EXPECTED_PRODUCT[];
-    static const uint8_t DMX_LABEL = 6;
+  static const unsigned int URB_TIMEOUT_MS = 500;
+  static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
+  static const unsigned char ENDPOINT = 0x02;
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
+  static const uint8_t DMX_LABEL = 6;
 
-    bool m_term;
-    int m_interface_number;
-    std::string m_serial;
+  bool m_term;
+  int m_interface_number;
+  std::string m_serial;
 
-    libusb_device *m_usb_device;
-    libusb_device_handle *m_usb_handle;
-    DmxBuffer m_buffer;
-    ola::thread::Mutex m_data_mutex;
-    ola::thread::Mutex m_term_mutex;
+  libusb_device *m_usb_device;
+  libusb_device_handle *m_usb_handle;
+  DmxBuffer m_buffer;
+  ola::thread::Mutex m_data_mutex;
+  ola::thread::Mutex m_term_mutex;
 
-    bool SendDMX(const DmxBuffer &buffer_old);
+  bool SendDMX(const DmxBuffer &buffer_old);
 
-    bool GetDescriptorString(libusb_device_handle *usb_handle,
-                             uint8_t desc_index,
-                             std::string *data);
-    bool LocateInterface();
+  bool GetDescriptorString(libusb_device_handle *usb_handle,
+                           uint8_t desc_index,
+                           std::string *data);
+  bool LocateInterface();
 
-    // 513 + header + code + size(2) + footer
-    enum { FRAME_SIZE = 518 };
+  // 513 + header + code + size(2) + footer
+  enum { FRAME_SIZE = 518 };
 };
 }  // namespace usbdmx
 }  // namespace plugin

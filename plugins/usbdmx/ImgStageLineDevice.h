@@ -34,15 +34,15 @@ namespace usbdmx {
  */
 class ImgStageLineDevice: public UsbDevice {
  public:
-    ImgStageLineDevice(ola::AbstractPlugin *owner,
-                       libusb_device *usb_device):
-        UsbDevice(owner, "ImgStageLine USB Device", usb_device) {
-    }
+  ImgStageLineDevice(ola::AbstractPlugin *owner,
+                     libusb_device *usb_device)
+    : UsbDevice(owner, "ImgStageLine USB Device", usb_device) {
+  }
 
-    std::string DeviceId() const { return "dmx-1usb"; }
+  std::string DeviceId() const { return "dmx-1usb"; }
 
  protected:
-    bool StartHook();
+  bool StartHook();
 };
 }  // namespace usbdmx
 }  // namespace plugin

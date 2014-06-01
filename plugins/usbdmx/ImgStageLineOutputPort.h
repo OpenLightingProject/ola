@@ -40,38 +40,39 @@ class ImgStageLineDevice;
 
 class ImgStageLineOutputPort: public BasicOutputPort, ola::thread::Thread {
  public:
-    ImgStageLineOutputPort(ImgStageLineDevice *parent,
-                           unsigned int id,
-                           libusb_device *usb_device);
-    ~ImgStageLineOutputPort();
+  ImgStageLineOutputPort(ImgStageLineDevice *parent,
+                         unsigned int id,
+                         libusb_device *usb_device);
+  ~ImgStageLineOutputPort();
 
-    bool Start();
-    void *Run();
+  bool Start();
+  void *Run();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    std::string Description() const { return ""; }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const { return ""; }
 
  private:
-    static const unsigned int CHANNELS_PER_PACKET = 255;
-    static const uint8_t CHANNEL_HEADER_LOW = 0x7f;
-    static const uint8_t CHANNEL_HEADER_HIGH = 0xff;
-    static const uint8_t ENDPOINT = 1;
-    static const unsigned int TIMEOUT = 50;  // 50ms is ok
+  static const unsigned int CHANNELS_PER_PACKET = 255;
+  static const uint8_t CHANNEL_HEADER_LOW = 0x7f;
+  static const uint8_t CHANNEL_HEADER_HIGH = 0xff;
+  static const uint8_t ENDPOINT = 1;
+  static const unsigned int TIMEOUT = 50;  // 50ms is ok
 
-    enum {IMGSTAGELINE_PACKET_SIZE = CHANNELS_PER_PACKET + 1};
-    // This interface can only transmit 510 channels
-    enum { DMX_MAX_TRANSMIT_CHANNELS = 510 };
+  enum {IMGSTAGELINE_PACKET_SIZE = CHANNELS_PER_PACKET + 1};
 
-    bool m_term;
-    bool m_new_data;
-    uint8_t m_packet[IMGSTAGELINE_PACKET_SIZE];
-    libusb_device *m_usb_device;
-    libusb_device_handle *m_usb_handle;
-    DmxBuffer m_buffer;
-    ola::thread::Mutex m_data_mutex;
-    ola::thread::Mutex m_term_mutex;
+  // This interface can only transmit 510 channels
+  enum { DMX_MAX_TRANSMIT_CHANNELS = 510 };
 
-    bool SendDMX(const DmxBuffer &buffer);
+  bool m_term;
+  bool m_new_data;
+  uint8_t m_packet[IMGSTAGELINE_PACKET_SIZE];
+  libusb_device *m_usb_device;
+  libusb_device_handle *m_usb_handle;
+  DmxBuffer m_buffer;
+  ola::thread::Mutex m_data_mutex;
+  ola::thread::Mutex m_term_mutex;
+
+  bool SendDMX(const DmxBuffer &buffer);
 };
 }  // namespace usbdmx
 }  // namespace plugin
