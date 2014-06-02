@@ -29,14 +29,14 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::web::JsonArray;
-using ola::web::JsonBoolValue;
-using ola::web::JsonIntValue;
+using ola::web::JsonBool;
+using ola::web::JsonInt;
 using ola::web::JsonLexer;
-using ola::web::JsonNullValue;
+using ola::web::JsonNull;
 using ola::web::JsonObject;
 using ola::web::JsonParser;
-using ola::web::JsonStringValue;
-using ola::web::JsonUIntValue;
+using ola::web::JsonString;
+using ola::web::JsonUInt;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::auto_ptr;

@@ -65,17 +65,17 @@ class JsonWriter : public JsonValueConstVisitorInterface,
   /**
    * @privatesection
    */
-  void Visit(const JsonStringValue &value);
-  void Visit(const JsonBoolValue &value);
-  void Visit(const JsonNullValue &value);
+  void Visit(const JsonString &value);
+  void Visit(const JsonBool &value);
+  void Visit(const JsonNull &value);
   void Visit(const JsonRawValue &value);
   void Visit(const JsonObject &value);
   void Visit(const JsonArray &value);
-  void Visit(const JsonUIntValue &value);
-  void Visit(const JsonUInt64Value &value);
-  void Visit(const JsonIntValue &value);
-  void Visit(const JsonInt64Value &value);
-  void Visit(const JsonDoubleValue &value);
+  void Visit(const JsonUInt &value);
+  void Visit(const JsonUInt64 &value);
+  void Visit(const JsonInt &value);
+  void Visit(const JsonInt64 &value);
+  void Visit(const JsonDouble &value);
 
   void VisitProperty(const std::string &property, const JsonValue &value);
 

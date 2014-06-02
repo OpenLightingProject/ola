@@ -218,9 +218,9 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.1 Number / integer keywords
   OptionalItem<bool> m_exclusive_maximum;
   OptionalItem<bool> m_exclusive_minimum;
-  std::auto_ptr<JsonNumberValue> m_maximum;
-  std::auto_ptr<JsonNumberValue> m_minimum;
-  std::auto_ptr<JsonNumberValue> m_multiple_of;
+  std::auto_ptr<JsonNumber> m_maximum;
+  std::auto_ptr<JsonNumber> m_minimum;
+  std::auto_ptr<JsonNumber> m_multiple_of;
 
   // 5.2 String keywords
   // TODO(simon): Implement pattern support?

@@ -30,9 +30,9 @@
 #include "ola/Logging.h"
 
 using ola::web::JsonArray;
-using ola::web::JsonBoolValue;
-using ola::web::JsonIntValue;
-using ola::web::JsonNullValue;
+using ola::web::JsonBool;
+using ola::web::JsonInt;
+using ola::web::JsonNull;
 using ola::web::JsonObject;
 using ola::web::JsonParser;
 using ola::web::JsonPatchAddOp;
@@ -43,7 +43,7 @@ using ola::web::JsonPatchReplaceOp;
 using ola::web::JsonPatchSet;
 using ola::web::JsonPatchTestOp;
 using ola::web::JsonPointer;
-using ola::web::JsonStringValue;
+using ola::web::JsonString;
 using ola::web::JsonText;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
@@ -114,7 +114,7 @@ void JsonPatchTest::testAddOp() {
 
   {
     JsonPatchSet patch;
-    patch.AddOp(new JsonPatchAddOp(JsonPointer("/foo"), new JsonNullValue()));
+    patch.AddOp(new JsonPatchAddOp(JsonPointer("/foo"), new JsonNull()));
     OLA_ASSERT_FALSE(text.Apply(patch));
   }
 
@@ -128,7 +128,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/name"), new JsonStringValue("simon")));
+          JsonPointer("/name"), new JsonString("simon")));
     OLA_ASSERT_TRUE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"simon\"}", text.Value());
   }
@@ -137,7 +137,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/name"), new JsonStringValue("james")));
+          JsonPointer("/name"), new JsonString("james")));
     OLA_ASSERT_TRUE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"james\"}", text.Value());
   }
@@ -154,7 +154,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/numbers/-"), new JsonIntValue(1)));
+          JsonPointer("/numbers/-"), new JsonInt(1)));
     OLA_ASSERT_TRUE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"james\", \"numbers\": [1]}", text.Value());
   }
@@ -163,7 +163,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/numbers/0"), new JsonIntValue(2)));
+          JsonPointer("/numbers/0"), new JsonInt(2)));
     OLA_ASSERT_TRUE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"james\", \"numbers\": [2, 1]}",
                      text.Value());
@@ -173,7 +173,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/numbers/2"), new JsonIntValue(3)));
+          JsonPointer("/numbers/2"), new JsonInt(3)));
     OLA_ASSERT_FALSE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"james\", \"numbers\": [2, 1]}",
                      text.Value());
@@ -183,7 +183,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/numbers/bar"), new JsonIntValue(3)));
+          JsonPointer("/numbers/bar"), new JsonInt(3)));
     OLA_ASSERT_FALSE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"james\", \"numbers\": [2, 1]}",
                      text.Value());
@@ -203,7 +203,7 @@ void JsonPatchTest::testAddOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchAddOp(
-          JsonPointer("/name/middle"), new JsonNullValue()));
+          JsonPointer("/name/middle"), new JsonNull()));
     OLA_ASSERT_FALSE(text.Apply(patch));
     CheckValuesMatch("{\"name\": \"james\", \"numbers\": [2, 1]}",
                      text.Value());
@@ -366,7 +366,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("foo"),
-                new JsonStringValue("test")));
+                new JsonString("test")));
     OLA_ASSERT_FALSE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -379,7 +379,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/foo"),
-                new JsonStringValue("test")));
+                new JsonString("test")));
     OLA_ASSERT_TRUE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -392,7 +392,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/array/1"),
-                new JsonIntValue(4)));
+                new JsonInt(4)));
     OLA_ASSERT_TRUE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -405,7 +405,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/array/-"),
-                new JsonIntValue(5)));
+                new JsonInt(5)));
     OLA_ASSERT_TRUE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -418,7 +418,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/array/foo"),
-                new JsonIntValue(5)));
+                new JsonInt(5)));
     OLA_ASSERT_FALSE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -431,7 +431,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/array/3"),
-                new JsonIntValue(5)));
+                new JsonInt(5)));
     OLA_ASSERT_FALSE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -444,7 +444,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/missing/3"),
-                new JsonIntValue(5)));
+                new JsonInt(5)));
     OLA_ASSERT_FALSE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -457,7 +457,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/object/bat"),
-                new JsonIntValue(4)));
+                new JsonInt(4)));
     OLA_ASSERT_TRUE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -470,7 +470,7 @@ void JsonPatchTest::testReplaceOp() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(JsonPointer("/object/barrrr"),
-                new JsonIntValue(4)));
+                new JsonInt(4)));
     OLA_ASSERT_FALSE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -872,45 +872,45 @@ void JsonPatchTest::testTestOp() {
   JsonPointer pointer4("/bat");
 
   JsonPatchSet patch1;
-  patch1.AddOp(new JsonPatchTestOp(pointer1, new JsonNullValue()));
+  patch1.AddOp(new JsonPatchTestOp(pointer1, new JsonNull()));
   OLA_ASSERT_FALSE(text.Apply(patch1));
 
   JsonPatchSet patch2;
-  patch2.AddOp(new JsonPatchTestOp(pointer2, new JsonBoolValue(true)));
+  patch2.AddOp(new JsonPatchTestOp(pointer2, new JsonBool(true)));
   OLA_ASSERT_FALSE(text.Apply(patch2));
 
   JsonPatchSet patch3;
-  patch3.AddOp(new JsonPatchTestOp(pointer3, new JsonBoolValue(true)));
+  patch3.AddOp(new JsonPatchTestOp(pointer3, new JsonBool(true)));
   OLA_ASSERT_TRUE(text.Apply(patch3));
 
   JsonPatchSet patch4;
-  patch4.AddOp(new JsonPatchTestOp(pointer4, new JsonBoolValue(true)));
+  patch4.AddOp(new JsonPatchTestOp(pointer4, new JsonBool(true)));
   OLA_ASSERT_FALSE(text.Apply(patch4));
 
   JsonPatchSet patch5;
-  patch5.AddOp(new JsonPatchTestOp(pointer3, new JsonBoolValue(false)));
+  patch5.AddOp(new JsonPatchTestOp(pointer3, new JsonBool(false)));
   OLA_ASSERT_FALSE(text.Apply(patch5));
 
   // Now try a multi-element patch
   JsonPatchSet patch6;
-  patch6.AddOp(new JsonPatchTestOp(pointer3, new JsonBoolValue(true)));
-  patch6.AddOp(new JsonPatchTestOp(pointer4, new JsonBoolValue(false)));
+  patch6.AddOp(new JsonPatchTestOp(pointer3, new JsonBool(true)));
+  patch6.AddOp(new JsonPatchTestOp(pointer4, new JsonBool(false)));
   OLA_ASSERT_TRUE(text.Apply(patch6));
 
   JsonPatchSet patch7;
-  patch7.AddOp(new JsonPatchTestOp(pointer3, new JsonBoolValue(true)));
-  patch7.AddOp(new JsonPatchTestOp(pointer4, new JsonBoolValue(true)));
+  patch7.AddOp(new JsonPatchTestOp(pointer3, new JsonBool(true)));
+  patch7.AddOp(new JsonPatchTestOp(pointer4, new JsonBool(true)));
   OLA_ASSERT_FALSE(text.Apply(patch7));
 
   JsonPatchSet patch8;
-  patch8.AddOp(new JsonPatchTestOp(pointer3, new JsonNullValue()));
-  patch8.AddOp(new JsonPatchTestOp(pointer4, new JsonBoolValue(false)));
+  patch8.AddOp(new JsonPatchTestOp(pointer3, new JsonNull()));
+  patch8.AddOp(new JsonPatchTestOp(pointer4, new JsonBool(false)));
   OLA_ASSERT_FALSE(text.Apply(patch8));
 
   // Finally check an invalid pointer
   JsonPointer invalid_pointer("foo");
   JsonPatchSet patch9;
-  patch9.AddOp(new JsonPatchTestOp(invalid_pointer, new JsonNullValue()));
+  patch9.AddOp(new JsonPatchTestOp(invalid_pointer, new JsonNull()));
   OLA_ASSERT_FALSE(text.Apply(patch9));
 
   // Check no changes were made
@@ -925,9 +925,9 @@ void JsonPatchTest::testAtomicUpdates() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchReplaceOp(
-          JsonPointer("/foo"), new JsonIntValue(42)));
+          JsonPointer("/foo"), new JsonInt(42)));
     patch.AddOp(new JsonPatchTestOp(
-          JsonPointer("/foo"), new JsonStringValue("C")));
+          JsonPointer("/foo"), new JsonString("C")));
     OLA_ASSERT_FALSE(text.Apply(patch));
 
     CheckValuesMatch(
@@ -940,9 +940,9 @@ void JsonPatchTest::testAtomicUpdates() {
   {
     JsonPatchSet patch;
     patch.AddOp(new JsonPatchTestOp(
-          JsonPointer("/foo"), new JsonStringValue("bar")));
+          JsonPointer("/foo"), new JsonString("bar")));
     patch.AddOp(new JsonPatchReplaceOp(
-          JsonPointer("/baz"), new JsonBoolValue(true)));
+          JsonPointer("/baz"), new JsonBool(true)));
     OLA_ASSERT_TRUE(text.Apply(patch));
 
     CheckValuesMatch(

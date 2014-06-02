@@ -116,9 +116,9 @@ class JsonParserInterface {
    * MinGW struggles with long doubles
    * http://mingw.5.n7.nabble.com/Strange-behaviour-of-gcc-4-8-1-with-long-double-td32949.html
    * To avoid this, and to keep as many significant bits as possible we keep
-   * the components of a double separate. See JsonDoubleValue for details.
+   * the components of a double separate. See JsonDouble for details.
    */
-  virtual void Number(const JsonDoubleValue::DoubleRepresentation &rep) = 0;
+  virtual void Number(const JsonDouble::DoubleRepresentation &rep) = 0;
 
   /**
    * @brief Called when a double value is encounted.
