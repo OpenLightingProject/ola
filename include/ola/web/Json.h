@@ -714,7 +714,7 @@ class JsonDouble: public JsonNumber {
   /**
    * @brief Convert a DoubleRepresentation to a double value.
    * @param rep the DoubleRepresentation
-   * @param[out] The value stored as a double.
+   * @param[out] out The value stored as a double.
    * @returns false if the DoubleRepresentation can't fit in a double.
    */
   static bool AsDouble(const DoubleRepresentation &rep, double *out);

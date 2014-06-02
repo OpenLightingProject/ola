@@ -687,7 +687,7 @@ class ArrayValidator : public BaseValidator {
 
   /**
    * @brief Validate all elements of the array against the given schema.
-   * @param items  , ownership is transferred.
+   * @param items The items in the array, ownership is transferred.
    * @param additional_items , ownership is transferred.
    * @param options Extra constraints on the Array.
    */

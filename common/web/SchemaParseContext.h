@@ -144,7 +144,7 @@ class DefinitionsParseContext : public StrictTypedParseContext {
  public:
   /**
    * @brief Create a new DefinitionsParseContext.
-   * @param definitions, the SchemaDefinitions cache, ownership is not
+   * @param definitions the SchemaDefinitions cache, ownership is not
    *   transferred.
    *
    * As each definition is parsed, it's added to the SchemaDefinitions object.
@@ -171,7 +171,7 @@ class SchemaParseContext : public SchemaParseContextInterface {
  public:
   /**
    * @brief Create a new SchemaParseContext
-   * @param definitions, the SchemaDefinitions cache, ownership is not
+   * @param definitions the SchemaDefinitions cache, ownership is not
    *   transferred.
    */
   explicit SchemaParseContext(SchemaDefinitions *definitions)
@@ -339,6 +339,7 @@ class ArrayOfSchemaContext : public StrictTypedParseContext {
 
   /**
    * @brief Populate a vector with validators for the elements in 'items'
+   * @param logger The logger to use.
    * @param[out] validators A vector fill with new validators. Ownership of the
    * validators is transferred to the caller.
    */
