@@ -184,22 +184,6 @@ bool AddOp(const JsonPointer &target, JsonValue **root,
 
 }  // namespace
 
-bool JsonText::Apply(const JsonPatchSet &patch) {
-  JsonValue *new_value = NULL;
-  if (m_value.get()) {
-    new_value = m_value->Clone();
-  }
-
-  // now apply the patch
-  bool ok = patch.Apply(&new_value);
-  if (ok) {
-    m_value.reset(new_value);
-  } else {
-    delete new_value;
-  }
-  return ok;
-}
-
 bool JsonPatchAddOp::Apply(JsonValue **value) const {
   return AddOp(m_pointer, value, m_value.get());
 }
