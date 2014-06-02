@@ -17,14 +17,14 @@ dist_noinst_DATA = testdata/allof.test \
 # LIBRARIES
 ################################################
 noinst_LTLIBRARIES = libolaweb.la
-libolaweb_la_SOURCES = Json.cpp JsonLexer.cpp JsonParser.cpp JsonPatch.cpp \
-                       JsonPatchParser.cpp JsonPointer.cpp JsonSchema.cpp \
-                       JsonSections.cpp JsonTypes.cpp JsonWriter.cpp \
-                       OptionalItem.h PointerTracker.cpp PointerTracker.h \
-                       SchemaErrorLogger.cpp SchemaErrorLogger.h \
-                       SchemaKeywords.cpp SchemaKeywords.h \
-                       SchemaParseContext.cpp SchemaParseContext.h \
-                       SchemaParser.cpp SchemaParser.h
+libolaweb_la_SOURCES = Json.cpp JsonData.cpp JsonLexer.cpp JsonParser.cpp \
+                       JsonPatch.cpp JsonPatchParser.cpp JsonPointer.cpp \
+                       JsonSchema.cpp JsonSections.cpp JsonTypes.cpp \
+                       JsonWriter.cpp OptionalItem.h PointerTracker.cpp \
+                       PointerTracker.h SchemaErrorLogger.cpp \
+                       SchemaErrorLogger.h SchemaKeywords.cpp \
+                       SchemaKeywords.h SchemaParseContext.cpp \
+                       SchemaParseContext.h SchemaParser.cpp SchemaParser.h
 
 # TESTS
 ################################################
