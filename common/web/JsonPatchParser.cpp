@@ -101,7 +101,7 @@ void JsonPatchParser::Number(int64_t value) {
   HandleNumber(value);
 }
 
-void JsonPatchParser::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
+void JsonPatchParser::Number(const JsonDouble::DoubleRepresentation &rep) {
   HandleNumber(rep);
 }
 
@@ -119,7 +119,7 @@ void JsonPatchParser::Bool(bool value) {
       return;
     case PATCH:
       if (m_key == kValueKey) {
-        m_value.reset(new JsonBoolValue(value));
+        m_value.reset(new JsonBool(value));
       }
     case VALUE:
       m_parser.Bool(value);
@@ -138,7 +138,7 @@ void JsonPatchParser::Null() {
       return;
     case PATCH:
       if (m_key == kValueKey) {
-        m_value.reset(new JsonNullValue());
+        m_value.reset(new JsonNull());
       }
     case VALUE:
       m_parser.Null();
@@ -280,7 +280,7 @@ void JsonPatchParser::HandlePatchString(const std::string &value) {
   } else if (m_key == kPathKey) {
     m_path.Set(value);
   } else if (m_key == kValueKey) {
-    m_value.reset(new JsonStringValue(value));
+    m_value.reset(new JsonString(value));
   }
 }
 

@@ -64,7 +64,7 @@ class JsonPatchParser : public JsonParserInterface {
   void Number(int32_t value);
   void Number(uint64_t value);
   void Number(int64_t value);
-  void Number(const JsonDoubleValue::DoubleRepresentation &rep);
+  void Number(const JsonDouble::DoubleRepresentation &rep);
   void Number(double value);
   void Bool(bool value);
   void Null();

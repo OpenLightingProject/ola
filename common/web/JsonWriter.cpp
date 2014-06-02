@@ -42,15 +42,15 @@ string JsonWriter::AsString(const JsonValue &obj) {
   return str.str();
 }
 
-void JsonWriter::Visit(const JsonStringValue &value) {
+void JsonWriter::Visit(const JsonString &value) {
   *m_output << '"' << EscapeString(EncodeString(value.Value())) << '"';
 }
 
-void JsonWriter::Visit(const JsonBoolValue &value) {
+void JsonWriter::Visit(const JsonBool &value) {
   *m_output << (value.Value() ? "true" : "false");
 }
 
-void JsonWriter::Visit(const JsonNullValue &) {
+void JsonWriter::Visit(const JsonNull &) {
   *m_output << "null";
 }
 
@@ -105,23 +105,23 @@ void JsonWriter::Visit(const JsonArray &value) {
   *m_output << "]";
 }
 
-void JsonWriter::Visit(const JsonUIntValue &value) {
+void JsonWriter::Visit(const JsonUInt &value) {
   *m_output << value.Value();
 }
 
-void JsonWriter::Visit(const JsonUInt64Value &value) {
+void JsonWriter::Visit(const JsonUInt64 &value) {
   *m_output << value.Value();
 }
 
-void JsonWriter::Visit(const JsonIntValue &value) {
+void JsonWriter::Visit(const JsonInt &value) {
   *m_output << value.Value();
 }
 
-void JsonWriter::Visit(const JsonInt64Value &value) {
+void JsonWriter::Visit(const JsonInt64 &value) {
   *m_output << value.Value();
 }
 
-void JsonWriter::Visit(const JsonDoubleValue &value) {
+void JsonWriter::Visit(const JsonDouble &value) {
   *m_output << value.ToString();
 }
 

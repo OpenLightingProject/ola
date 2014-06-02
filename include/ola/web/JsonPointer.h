@@ -210,7 +210,7 @@ class JsonPointer {
 
   void operator=(const JsonPointer&);
 };
-/**@}*/
 }  // namespace web
 }  // namespace ola
+/**@}*/
 #endif  // INCLUDE_OLA_WEB_JSONPOINTER_H_

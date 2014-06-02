@@ -134,15 +134,15 @@ bool ReferenceValidator::IsValid() const {
   return m_validator ? m_validator->IsValid() : false;
 }
 
-void ReferenceValidator::Visit(const JsonStringValue &value) {
+void ReferenceValidator::Visit(const JsonString &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonBoolValue &value) {
+void ReferenceValidator::Visit(const JsonBool &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonNullValue &value) {
+void ReferenceValidator::Visit(const JsonNull &value) {
   Validate(value);
 }
 
@@ -158,23 +158,23 @@ void ReferenceValidator::Visit(const JsonArray &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonUIntValue &value) {
+void ReferenceValidator::Visit(const JsonUInt &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonUInt64Value &value) {
+void ReferenceValidator::Visit(const JsonUInt64 &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonIntValue &value) {
+void ReferenceValidator::Visit(const JsonInt &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonInt64Value &value) {
+void ReferenceValidator::Visit(const JsonInt64 &value) {
   Validate(value);
 }
 
-void ReferenceValidator::Visit(const JsonDoubleValue &value) {
+void ReferenceValidator::Visit(const JsonDouble &value) {
   Validate(value);
 }
 
@@ -204,7 +204,7 @@ void ReferenceValidator::Validate(const T &value) {
 
 // StringValidator
 // -----------------------------------------------------------------------------
-void StringValidator::Visit(const JsonStringValue &str) {
+void StringValidator::Visit(const JsonString &str) {
   const std::string& value = str.Value();
   size_t str_size = value.size();
   if (str_size < m_options.min_length) {
@@ -244,23 +244,23 @@ void IntegerValidator::AddConstraint(NumberConstraint *constraint) {
   m_constraints.push_back(constraint);
 }
 
-void IntegerValidator::Visit(const JsonUIntValue &value) {
+void IntegerValidator::Visit(const JsonUInt &value) {
   CheckValue(value);
 }
 
-void IntegerValidator::Visit(const JsonIntValue &value) {
+void IntegerValidator::Visit(const JsonInt &value) {
   CheckValue(value);
 }
 
-void IntegerValidator::Visit(const JsonUInt64Value &value) {
+void IntegerValidator::Visit(const JsonUInt64 &value) {
   CheckValue(value);
 }
 
-void IntegerValidator::Visit(const JsonInt64Value &value) {
+void IntegerValidator::Visit(const JsonInt64 &value) {
   CheckValue(value);
 }
 
-void IntegerValidator::Visit(const JsonDoubleValue &value) {
+void IntegerValidator::Visit(const JsonDouble &value) {
   BaseValidator::Visit(value);
 }
 
@@ -271,7 +271,7 @@ void IntegerValidator::ExtendSchema(JsonObject *schema) const {
   }
 }
 
-void IntegerValidator::CheckValue(const JsonNumberValue &value) {
+void IntegerValidator::CheckValue(const JsonNumber &value) {
   vector<NumberConstraint*>::const_iterator iter = m_constraints.begin();
   for (; iter != m_constraints.end(); ++iter) {
     if (!(*iter)->IsValid(value)) {
@@ -282,7 +282,7 @@ void IntegerValidator::CheckValue(const JsonNumberValue &value) {
   m_is_valid = CheckEnums(value);
 }
 
-void NumberValidator::Visit(const JsonDoubleValue &value) {
+void NumberValidator::Visit(const JsonDouble &value) {
   CheckValue(value);
 }
 
@@ -609,15 +609,15 @@ ArrayValidator::ArrayElementValidator::ArrayElementValidator(
 }
 
 void ArrayValidator::ArrayElementValidator::Visit(
-    const JsonStringValue &value) {
+    const JsonString &value) {
   ValidateItem(value);
 }
 
-void ArrayValidator::ArrayElementValidator::Visit(const JsonBoolValue &value) {
+void ArrayValidator::ArrayElementValidator::Visit(const JsonBool &value) {
   ValidateItem(value);
 }
 
-void ArrayValidator::ArrayElementValidator::Visit(const JsonNullValue &value) {
+void ArrayValidator::ArrayElementValidator::Visit(const JsonNull &value) {
   ValidateItem(value);
 }
 
@@ -633,25 +633,25 @@ void ArrayValidator::ArrayElementValidator::Visit(const JsonArray &value) {
   ValidateItem(value);
 }
 
-void ArrayValidator::ArrayElementValidator::Visit(const JsonUIntValue &value) {
+void ArrayValidator::ArrayElementValidator::Visit(const JsonUInt &value) {
   ValidateItem(value);
 }
 
 void ArrayValidator::ArrayElementValidator::Visit(
-    const JsonUInt64Value &value) {
+    const JsonUInt64 &value) {
   ValidateItem(value);
 }
 
-void ArrayValidator::ArrayElementValidator::Visit(const JsonIntValue &value) {
+void ArrayValidator::ArrayElementValidator::Visit(const JsonInt &value) {
   ValidateItem(value);
 }
 
-void ArrayValidator::ArrayElementValidator::Visit(const JsonInt64Value &value) {
+void ArrayValidator::ArrayElementValidator::Visit(const JsonInt64 &value) {
   ValidateItem(value);
 }
 
 void ArrayValidator::ArrayElementValidator::Visit(
-    const JsonDoubleValue &value) {
+    const JsonDouble &value) {
   ValidateItem(value);
 }
 

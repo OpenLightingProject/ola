@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * JsonParserTest.cpp
+ * ParserTest.cpp
  * Unittest for the Json Parser.
  * Copyright (C) 2014 Simon Newton
  */
@@ -29,14 +29,14 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::web::JsonArray;
-using ola::web::JsonBoolValue;
-using ola::web::JsonIntValue;
+using ola::web::JsonBool;
+using ola::web::JsonInt;
 using ola::web::JsonLexer;
-using ola::web::JsonNullValue;
+using ola::web::JsonNull;
 using ola::web::JsonObject;
 using ola::web::JsonParser;
-using ola::web::JsonStringValue;
-using ola::web::JsonUIntValue;
+using ola::web::JsonString;
+using ola::web::JsonUInt;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::auto_ptr;
