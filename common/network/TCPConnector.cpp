@@ -239,10 +239,10 @@ void TCPConnector::TimeoutEvent(PendingTCPConnection *connection) {
 
 
 TCPConnector::PendingTCPConnection::PendingTCPConnection(
-                                      TCPConnector *connector,
-                                      const IPV4Address &ip,
-                                      int fd,
-                                      TCPConnectCallback *callback)
+    TCPConnector *connector,
+    const IPV4Address &ip,
+    int fd,
+    TCPConnectCallback *callback)
         : WriteFileDescriptor(),
           ip_address(ip),
           callback(callback),

@@ -54,6 +54,12 @@
 namespace ola {
 namespace io {
 
+// The following section of code defines the various types and helper functions
+// needed for the Descriptor infrastructure.
+// On *nix, there's the "everything is a file" philosophy, so we can just use
+// ints as handles.
+// On Windows, the situation is more complicated, so we need to treat sockets,
+// files, devices, pipes, etc. in special ways.
 #ifdef _WIN32
 // Internal use only. Semantic type of the descriptor.
 enum DescriptorType {
@@ -64,11 +70,14 @@ enum DescriptorType {
 
 // Consider this to be an opaque type.
 struct DescriptorHandle {
+  // The actual OS handle
   union {
     int m_fd;
     void* m_handle;
   } m_handle;
+  // Type of this descriptor's handle
   DescriptorType m_type;
+  // Handler to an event for async I/O
   void* m_event_handle;
 
   DescriptorHandle() {

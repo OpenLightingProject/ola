@@ -250,7 +250,7 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
  */
 bool TCPAcceptingSocket::Close() {
   bool ret = true;
-  if (m_handle != ola::io::INVALID_DESCRIPTOR)
+  if (m_handle != ola::io::INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     if (closesocket(m_handle.m_handle.m_fd)) {
 #else
@@ -259,6 +259,7 @@ bool TCPAcceptingSocket::Close() {
       OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
+  }
   m_handle = ola::io::INVALID_DESCRIPTOR;
   return ret;
 }

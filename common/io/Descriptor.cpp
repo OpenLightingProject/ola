@@ -235,6 +235,7 @@ int ConnectedDescriptor::DataRemaining() const {
     unread = win_unread;
   } else {
     OLA_WARN << "Unsupported: DataRemaining() called on non-socket descriptor";
+    failed = true;
   }
 #else
   bool failed = ioctl(ReadDescriptor(), FIONREAD, &unread) < 0;
@@ -427,19 +428,21 @@ bool LoopbackDescriptor::Init() {
  * @return true if close succeeded, false otherwise
  */
 bool LoopbackDescriptor::Close() {
-  if (m_handle_pair[0] != INVALID_DESCRIPTOR)
+  if (m_handle_pair[0] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     CloseHandle(m_handle_pair[0].m_handle.m_handle);
 #else
     close(m_handle_pair[0]);
 #endif
+  }
 
-  if (m_handle_pair[1] != INVALID_DESCRIPTOR)
+  if (m_handle_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     CloseHandle(m_handle_pair[1].m_handle.m_handle);
 #else
     close(m_handle_pair[1]);
 #endif
+  }
 
   m_handle_pair[0] = INVALID_DESCRIPTOR;
   m_handle_pair[1] = INVALID_DESCRIPTOR;
@@ -452,12 +455,13 @@ bool LoopbackDescriptor::Close() {
  * @return true if close succeeded, false otherwise
  */
 bool LoopbackDescriptor::CloseClient() {
-  if (m_handle_pair[1] != INVALID_DESCRIPTOR)
+  if (m_handle_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     CloseHandle(m_handle_pair[1].m_handle.m_handle);
 #else
     close(m_handle_pair[1]);
 #endif
+  }
 
   m_handle_pair[1] = INVALID_DESCRIPTOR;
   return true;
@@ -519,19 +523,21 @@ PipeDescriptor *PipeDescriptor::OppositeEnd() {
  * Close this PipeDescriptor
  */
 bool PipeDescriptor::Close() {
-  if (m_in_pair[0] != INVALID_DESCRIPTOR)
+  if (m_in_pair[0] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     CloseHandle(m_in_pair[0].m_handle.m_handle);
 #else
     close(m_in_pair[0]);
 #endif
+  }
 
-  if (m_out_pair[1] != INVALID_DESCRIPTOR)
+  if (m_out_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     CloseHandle(m_out_pair[1].m_handle.m_handle);
 #else
     close(m_out_pair[1]);
 #endif
+  }
 
   m_in_pair[0] = INVALID_DESCRIPTOR;
   m_out_pair[1] = INVALID_DESCRIPTOR;
@@ -543,12 +549,13 @@ bool PipeDescriptor::Close() {
  * Close the write portion of this PipeDescriptor
  */
 bool PipeDescriptor::CloseClient() {
-  if (m_out_pair[1] != INVALID_DESCRIPTOR)
+  if (m_out_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     CloseHandle(m_out_pair[1].m_handle.m_handle);
 #else
     close(m_out_pair[1]);
 #endif
+  }
 
   m_out_pair[1] = INVALID_DESCRIPTOR;
   return true;
@@ -566,7 +573,7 @@ bool UnixSocket::Init() {
   return false;
 #else
   int pair[2];
-  if (m_handle != INVALID_DESCRIPTOR || m_other_end)
+  if ((m_handle != INVALID_DESCRIPTOR) || m_other_end)
     return false;
 
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair)) {
@@ -601,8 +608,9 @@ bool UnixSocket::Close() {
 #ifdef _WIN32
   return true;
 #else
-  if (m_handle != INVALID_DESCRIPTOR)
+  if (m_handle != INVALID_DESCRIPTOR) {
     close(m_handle);
+  }
 
   m_handle = INVALID_DESCRIPTOR;
   return true;

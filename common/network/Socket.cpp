@@ -160,10 +160,9 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
  */
 bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
 #ifdef _WIN32
-  GenericSocketAddress addr =
-    ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
+  GenericSocketAddress addr = GetLocalAddress(m_handle.m_handle.m_fd);
 #else
-  GenericSocketAddress addr = ola::network::GetLocalAddress(m_handle);
+  GenericSocketAddress addr = GetLocalAddress(m_handle);
 #endif
   if (!addr.IsValid()) {
     return false;
@@ -477,7 +476,7 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                     sizeof(loop));
 #endif
     if (ok < 0) {
-      OLA_WARN << "Failed to disable looping for " << m_handle<< ":" <<
+      OLA_WARN << "Failed to disable looping for " << m_handle << ":" <<
         strerror(errno);
       return false;
     }

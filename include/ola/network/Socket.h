@@ -106,9 +106,10 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
  */
 class UDPSocket: public UDPSocketInterface {
  public:
-  UDPSocket(): UDPSocketInterface(),
-               m_handle(ola::io::INVALID_DESCRIPTOR),
-               m_bound_to_port(false) {}
+  UDPSocket()
+      : UDPSocketInterface(),
+        m_handle(ola::io::INVALID_DESCRIPTOR),
+        m_bound_to_port(false) {}
   ~UDPSocket() { Close(); }
   bool Init();
   bool Bind(const IPV4SocketAddress &endpoint);
