@@ -13,31 +13,41 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# ola_artnet_params.py
-# Copyright (C) 2005 Simon Newton
+# ola_send_flashing_dmx.py
+# Copyright (C) 2014 Sean Sill
 
-"""Fetch some ArtNet parameters."""
+"""Send some DMX data including the first one flashing."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
+import array
+from array import *
 from ola.ClientWrapper import ClientWrapper
-from ola import ArtnetConfigMessages_pb2
 
-def ArtNetConfigureReply(state, response):
-  reply = ArtnetConfigMessages_pb2.Reply()
-  reply.ParseFromString(response)
-  print 'Short Name: %s' % reply.options.short_name
-  print 'Long Name: %s' % reply.options.long_name
-  print 'Subnet: %d' % reply.options.subnet
-  wrapper.Stop()
+UPDATE_INTERVAL = 500 # In ms
+DMX_DATA_SIZE = 100
 
+universe = 1
+data = array ('B', [])
+for i in range(0, DMX_DATA_SIZE):
+  data.append(255)
 
-#Set this appropriately
-device_alias = 1
 wrapper = ClientWrapper()
 client = wrapper.Client()
-artnet_request = ArtnetConfigMessages_pb2.Request()
-artnet_request.type = artnet_request.ARTNET_OPTIONS_REQUEST
-client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
-                       ArtNetConfigureReply)
+
+def NewDmx():
+  """
+  This function gets called periodically based on UPDATE_INTERVAL
+  """
+  if (data[0] == 0):
+    data[0] = 255
+  else:
+    data[0] = 0
+  # Send the DMX data
+  client.SendDmx(universe, data)
+  # For more information on AddEvent
+  # https://github.com/OpenLightingProject/ola/blob/master/python/ola/ClientWrapper.py#L282
+  wrapper.AddEvent(UPDATE_INTERVAL, NewDmx) # Add our event here again so it gets called again
+
+# Call it initially
+wrapper.AddEvent(UPDATE_INTERVAL, NewDmx)
+# Start the wrapper
 wrapper.Run()
