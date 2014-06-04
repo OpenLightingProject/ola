@@ -43,14 +43,12 @@ namespace network {
  */
 class TCPSocket: public ola::io::ConnectedDescriptor {
  public:
-  explicit TCPSocket(int sd) : m_sd(sd) {
-    SetNoSigPipe(sd);
-  }
+  explicit TCPSocket(int sd);
 
   ~TCPSocket() { Close(); }
 
-  int ReadDescriptor() const { return m_sd; }
-  int WriteDescriptor() const { return m_sd; }
+  ola::io::DescriptorHandle ReadDescriptor() const { return m_handle; }
+  ola::io::DescriptorHandle WriteDescriptor() const { return m_handle; }
   bool Close();
 
   GenericSocketAddress GetLocalAddress() const;
@@ -64,7 +62,7 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
   bool IsSocket() const { return true; }
 
  private:
-  int m_sd;
+  ola::io::DescriptorHandle m_handle;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocket);
 };
@@ -78,7 +76,7 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
   explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
   ~TCPAcceptingSocket();
   bool Listen(const SocketAddress &endpoint, int backlog = 10);
-  int ReadDescriptor() const { return m_sd; }
+  ola::io::DescriptorHandle ReadDescriptor() const { return m_handle; }
   bool Close();
   void PerformRead();
 
@@ -89,7 +87,7 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
   GenericSocketAddress GetLocalAddress() const;
 
  private:
-  int m_sd;
+  ola::io::DescriptorHandle m_handle;
   class TCPSocketFactoryInterface *m_factory;
 
   DISALLOW_COPY_AND_ASSIGN(TCPAcceptingSocket);

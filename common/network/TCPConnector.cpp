@@ -74,7 +74,15 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
     return 0;
   }
 
-  ola::io::ConnectedDescriptor::SetNonBlocking(sd);
+#ifdef _WIN32
+  ola::io::DescriptorHandle descriptor;
+  descriptor.m_handle.m_fd = sd;
+  descriptor.m_type = ola::io::SOCKET_DESCRIPTOR;
+  descriptor.m_event_handle = 0;
+#else
+  ola::io::DescriptorHandle descriptor = sd;
+#endif
+  ola::io::ConnectedDescriptor::SetNonBlocking(descriptor);
 
   int r = connect(sd, &server_address, sizeof(server_address));
 
@@ -152,7 +160,11 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   m_ss->RemoveWriteDescriptor(connection);
 
   // fetch the error code
+#ifdef _WIN32
+  int sd = connection->WriteDescriptor().m_handle.m_fd;
+#else
   int sd = connection->WriteDescriptor();
+#endif
   int error = 0;
   socklen_t len;
   len = sizeof(error);
@@ -171,7 +183,11 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     connection->Close();
     connection->callback->Run(-1, error);
   } else {
+#ifdef _WIN32
+    connection->callback->Run(connection->WriteDescriptor().m_handle.m_fd, 0);
+#else
     connection->callback->Run(connection->WriteDescriptor(), 0);
+#endif
   }
 
   ConnectionSet::iterator iter = m_connections.find(connection);
@@ -222,11 +238,35 @@ void TCPConnector::TimeoutEvent(PendingTCPConnection *connection) {
 }
 
 
+TCPConnector::PendingTCPConnection::PendingTCPConnection(
+    TCPConnector *connector,
+    const IPV4Address &ip,
+    int fd,
+    TCPConnectCallback *callback)
+        : WriteFileDescriptor(),
+          ip_address(ip),
+          callback(callback),
+          timeout_id(ola::thread::INVALID_TIMEOUT),
+          m_connector(connector) {
+#ifdef _WIN32
+  m_handle.m_handle.m_fd = fd;
+  m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  m_handle.m_event_handle = 0;
+#else
+  m_handle = fd;
+#endif
+}
+
+
 /**
  * Close this connection
  */
 void TCPConnector::PendingTCPConnection::Close() {
-  close(m_fd);
+#ifdef _WIN32
+  close(m_handle.m_handle.m_fd);
+#else
+  close(m_handle);
+#endif
 }
 
 

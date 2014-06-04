@@ -62,16 +62,9 @@ class TCPConnector {
     PendingTCPConnection(TCPConnector *connector,
                          const IPV4Address &ip,
                          int fd,
-                         TCPConnectCallback *callback)
-        : WriteFileDescriptor(),
-          ip_address(ip),
-          callback(callback),
-          timeout_id(ola::thread::INVALID_TIMEOUT),
-          m_connector(connector),
-          m_fd(fd) {
-    }
+                         TCPConnectCallback *callback);
 
-    int WriteDescriptor() const { return m_fd; }
+    ola::io::DescriptorHandle WriteDescriptor() const { return m_handle; }
 
     void PerformWrite();
     void Close();
@@ -82,7 +75,7 @@ class TCPConnector {
 
    private:
     TCPConnector *m_connector;
-    int m_fd;
+    ola::io::DescriptorHandle m_handle;
   };
 
   typedef std::set<PendingTCPConnection*> ConnectionSet;

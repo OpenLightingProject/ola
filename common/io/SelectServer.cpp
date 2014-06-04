@@ -33,7 +33,11 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include "common/io/WindowsPoller.h"
+#else
 #include "common/io/SelectPoller.h"
+#endif
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
@@ -77,7 +81,11 @@ SelectServer::SelectServer(ExportMap *export_map,
   }
 
   m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
+#ifdef _WIN32
+  m_poller.reset(new WindowsPoller(export_map, m_clock));
+#else
   m_poller.reset(new SelectPoller(export_map, m_clock));
+#endif
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())

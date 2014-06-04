@@ -26,6 +26,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#ifdef _WIN32
+#include <Winsock2.h>
+#ifndef in_addr_t
+#define in_addr_t uint32_t
+#endif
+#endif
 #include "common/network/NetworkUtilsInternal.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
