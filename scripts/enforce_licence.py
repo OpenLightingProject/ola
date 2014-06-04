@@ -43,9 +43,9 @@ def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
 
-  Walk the directory tree from the current directory, and make sure all .cpp
-  and .h files have the appropriate Licence. The licence is determined from the
-  LICENCE file in each branch of the directory tree.
+  Walk the directory tree from the current directory, and make sure all .cpp,
+  .h and .py files have the appropriate Licence. The licence is determined from
+  the LICENCE file in each branch of the directory tree.
 
     --diff               Print the diffs.
     --fix                Fix the files.
@@ -184,6 +184,10 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   first_line = None
   if lang == PYTHON:
     first_line = f.readline()
+    if not first_line.startswith('#!') and not first_line.startswith('# !'):
+      # First line isn't a shebang, ignore it.
+      f.seek(0, os.SEEK_SET)
+      first_line = None
   header = f.read(header_size)
   f.close()
   if header == licence:
