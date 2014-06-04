@@ -118,6 +118,11 @@ def ReplaceHeader(file_name, new_header, lang):
       break
     line = f.readline()
 
+  if breaks < 3:
+    print "Couldn't find header for %s so couldn't fix it" % file_name
+    f.close()
+    return
+
   remainder = f.read()
   f.close()
 
@@ -195,7 +200,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
 
   if fix:
     print 'Fixing %s' % file_name
-    if lang == PYTHON:
+    if lang == PYTHON and first_line is not None:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
     return 1
