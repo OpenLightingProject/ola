@@ -32,6 +32,11 @@ JsonPointer::JsonPointer()
     : m_is_valid(true) {
 }
 
+JsonPointer::JsonPointer(const JsonPointer &other)
+    : m_is_valid(other.m_is_valid),
+      m_tokens(other.m_tokens) {
+}
+
 JsonPointer::JsonPointer(const std::string &path)
     : m_is_valid(true) {
   if (path.empty()) {
@@ -50,6 +55,10 @@ JsonPointer::JsonPointer(const std::string &path)
   for (; iter != escaped_tokens.end(); ++iter) {
     m_tokens.push_back(UnEscapeString(*iter));
   }
+}
+
+bool JsonPointer::operator==(const JsonPointer &other) const {
+  return m_tokens == other.m_tokens;
 }
 
 void JsonPointer::Push(const string &token) {
@@ -75,6 +84,23 @@ string JsonPointer::ToString() const {
     }
   }
   return path;
+}
+
+bool JsonPointer::IsPrefixOf(const JsonPointer &other) const {
+  if (!(IsValid() && other.IsValid())) {
+    return false;
+  }
+
+  Tokens::const_iterator our_iter = m_tokens.begin();
+  Tokens::const_iterator other_iter = other.m_tokens.begin();
+
+  for (; our_iter != m_tokens.end() && other_iter != other.m_tokens.end();
+       our_iter++, other_iter++) {
+    if (*our_iter != *other_iter) {
+      return false;
+    }
+  }
+  return other_iter != other.m_tokens.end();
 }
 
 string JsonPointer::EscapeString(const string &input) {

@@ -104,6 +104,15 @@ bool AppInit(int *argc,
              const std::string &description);
 
 /**
+ * @brief Perform platform-specific initialization of the networking subsystem.
+ *
+ * This method is called by ServerInit() and AppInit(), so you only need to
+ * call this yourself if you're not using those.
+ * @return true on success and false otherwise
+ */
+bool NetworkInit();
+
+/**
  * @brief Install a signal handler.
  * @param signal the signal number to catch
  * @param fp is a function pointer to the handler

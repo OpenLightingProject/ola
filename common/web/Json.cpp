@@ -33,6 +33,54 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
+namespace {
+
+class ObjectCastVisitor : public JsonValueVisitorInterface {
+ public:
+  ObjectCastVisitor() : m_obj(NULL) {}
+
+  void Visit(JsonString *value) { (void) value; }
+  void Visit(JsonBool *value) { (void) value; }
+  void Visit(JsonNull *value) { (void) value; }
+  void Visit(JsonRawValue *value) { (void) value; }
+  void Visit(JsonObject *value) { m_obj = value; }
+  void Visit(JsonArray *value) { (void) value; }
+  void Visit(JsonUInt *value) { (void) value; }
+  void Visit(JsonUInt64 *value) { (void) value; }
+  void Visit(JsonInt *value) { (void) value; }
+  void Visit(JsonInt64 *value) { (void) value; }
+  void Visit(JsonDouble *value) { (void) value; }
+
+  JsonObject *Object() { return m_obj; }
+
+ private:
+  JsonObject *m_obj;
+};
+
+class ArrayCastVisitor : public JsonValueVisitorInterface {
+ public:
+  ArrayCastVisitor() : m_array(NULL) {}
+
+  void Visit(JsonString *value) { (void) value; }
+  void Visit(JsonBool *value) { (void) value; }
+  void Visit(JsonNull *value) { (void) value; }
+  void Visit(JsonRawValue *value) { (void) value; }
+  void Visit(JsonObject *value) { (void) value; }
+  void Visit(JsonArray *value) { m_array = value; }
+  void Visit(JsonUInt *value) { (void) value; }
+  void Visit(JsonUInt64 *value) { (void) value; }
+  void Visit(JsonInt *value) { (void) value; }
+  void Visit(JsonInt64 *value) { (void) value; }
+  void Visit(JsonDouble *value) { (void) value; }
+
+  JsonArray *Array() { return m_array; }
+
+ private:
+  JsonArray *m_array;
+};
+
+}  // namespace
+
 JsonValue* JsonValue::LookupElement(const JsonPointer &pointer) {
   JsonPointer::Iterator iter = pointer.begin();
   return LookupElementWithIter(&iter);
@@ -47,44 +95,6 @@ JsonValue* JsonLeafValue::LookupElementWithIter(
   return this;
 }
 
-
-// Accepts
-void JsonStringValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonBoolValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-
-void JsonNullValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonRawValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonIntValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonUIntValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonUInt64Value::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
-
-void JsonDoubleValue::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
-}
 
 // Integer equality functions
 namespace {
@@ -250,269 +260,269 @@ int CompareNumbers(double a, double b) {
 
 
 // Number equality functions
-bool JsonUIntValue::Equals(const JsonIntValue &other) const {
+bool JsonUInt::Equals(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonUIntValue::Equals(const JsonUInt64Value &other) const {
+bool JsonUInt::Equals(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonUIntValue::Equals(const JsonInt64Value &other) const {
+bool JsonUInt::Equals(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonIntValue::Equals(const JsonUIntValue &other) const {
+bool JsonInt::Equals(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonIntValue::Equals(const JsonUInt64Value &other) const {
+bool JsonInt::Equals(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonIntValue::Equals(const JsonInt64Value &other) const {
+bool JsonInt::Equals(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonUInt64Value::Equals(const JsonUIntValue &other) const {
+bool JsonUInt64::Equals(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonUInt64Value::Equals(const JsonIntValue &other) const {
+bool JsonUInt64::Equals(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonUInt64Value::Equals(const JsonInt64Value &other) const {
+bool JsonUInt64::Equals(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonInt64Value::Equals(const JsonUIntValue &other) const {
+bool JsonInt64::Equals(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonInt64Value::Equals(const JsonIntValue &other) const {
+bool JsonInt64::Equals(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
-bool JsonInt64Value::Equals(const JsonUInt64Value &other) const {
+bool JsonInt64::Equals(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value()) == 0;
 }
 
 // Number inequality functions
-int JsonUIntValue::Compare(const JsonUIntValue &other) const {
+int JsonUInt::Compare(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUIntValue::Compare(const JsonIntValue &other) const {
+int JsonUInt::Compare(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUIntValue::Compare(const JsonUInt64Value &other) const {
+int JsonUInt::Compare(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUIntValue::Compare(const JsonInt64Value &other) const {
+int JsonUInt::Compare(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUIntValue::Compare(const JsonDoubleValue &other) const {
+int JsonUInt::Compare(const JsonDouble &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonIntValue::Compare(const JsonUIntValue &other) const {
+int JsonInt::Compare(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonIntValue::Compare(const JsonIntValue &other) const {
+int JsonInt::Compare(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonIntValue::Compare(const JsonUInt64Value &other) const {
+int JsonInt::Compare(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonIntValue::Compare(const JsonInt64Value &other) const {
+int JsonInt::Compare(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonIntValue::Compare(const JsonDoubleValue &other) const {
+int JsonInt::Compare(const JsonDouble &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUInt64Value::Compare(const JsonUIntValue &other) const {
+int JsonUInt64::Compare(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUInt64Value::Compare(const JsonIntValue &other) const {
+int JsonUInt64::Compare(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUInt64Value::Compare(const JsonUInt64Value &other) const {
+int JsonUInt64::Compare(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUInt64Value::Compare(const JsonInt64Value &other) const {
+int JsonUInt64::Compare(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonUInt64Value::Compare(const JsonDoubleValue &other) const {
+int JsonUInt64::Compare(const JsonDouble &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonInt64Value::Compare(const JsonUIntValue &other) const {
+int JsonInt64::Compare(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonInt64Value::Compare(const JsonIntValue &other) const {
+int JsonInt64::Compare(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonInt64Value::Compare(const JsonUInt64Value &other) const {
+int JsonInt64::Compare(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonInt64Value::Compare(const JsonInt64Value &other) const {
+int JsonInt64::Compare(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonInt64Value::Compare(const JsonDoubleValue &other) const {
+int JsonInt64::Compare(const JsonDouble &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonDoubleValue::Compare(const JsonUIntValue &other) const {
+int JsonDouble::Compare(const JsonUInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonDoubleValue::Compare(const JsonIntValue &other) const {
+int JsonDouble::Compare(const JsonInt &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonDoubleValue::Compare(const JsonUInt64Value &other) const {
+int JsonDouble::Compare(const JsonUInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonDoubleValue::Compare(const JsonInt64Value &other) const {
+int JsonDouble::Compare(const JsonInt64 &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-int JsonDoubleValue::Compare(const JsonDoubleValue &other) const {
+int JsonDouble::Compare(const JsonDouble &other) const {
   return CompareNumbers(m_value, other.Value());
 }
 
-bool JsonUIntValue::FactorOf(const JsonUIntValue &value) const {
+bool JsonUInt::FactorOf(const JsonUInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUIntValue::FactorOf(const JsonIntValue &value) const {
+bool JsonUInt::FactorOf(const JsonInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUIntValue::FactorOf(const JsonUInt64Value &value) const {
+bool JsonUInt::FactorOf(const JsonUInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUIntValue::FactorOf(const JsonInt64Value &value) const {
+bool JsonUInt::FactorOf(const JsonInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUIntValue::FactorOf(const JsonDoubleValue &value) const {
+bool JsonUInt::FactorOf(const JsonDouble &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonIntValue::FactorOf(const JsonUIntValue &value) const {
+bool JsonInt::FactorOf(const JsonUInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonIntValue::FactorOf(const JsonIntValue &value) const {
+bool JsonInt::FactorOf(const JsonInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonIntValue::FactorOf(const JsonUInt64Value &value) const {
+bool JsonInt::FactorOf(const JsonUInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonIntValue::FactorOf(const JsonInt64Value &value) const {
+bool JsonInt::FactorOf(const JsonInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonIntValue::FactorOf(const JsonDoubleValue &value) const {
+bool JsonInt::FactorOf(const JsonDouble &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonUInt64Value::FactorOf(const JsonUIntValue &value) const {
+bool JsonUInt64::FactorOf(const JsonUInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUInt64Value::FactorOf(const JsonIntValue &value) const {
+bool JsonUInt64::FactorOf(const JsonInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUInt64Value::FactorOf(const JsonUInt64Value &value) const {
+bool JsonUInt64::FactorOf(const JsonUInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUInt64Value::FactorOf(const JsonInt64Value &value) const {
+bool JsonUInt64::FactorOf(const JsonInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonUInt64Value::FactorOf(const JsonDoubleValue &value) const {
+bool JsonUInt64::FactorOf(const JsonDouble &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonInt64Value::FactorOf(const JsonUIntValue &value) const {
+bool JsonInt64::FactorOf(const JsonUInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonInt64Value::FactorOf(const JsonIntValue &value) const {
+bool JsonInt64::FactorOf(const JsonInt &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonInt64Value::FactorOf(const JsonUInt64Value &value) const {
+bool JsonInt64::FactorOf(const JsonUInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonInt64Value::FactorOf(const JsonInt64Value &value) const {
+bool JsonInt64::FactorOf(const JsonInt64 &value) const {
   return value.Value() % m_value == 0;
 }
 
-bool JsonInt64Value::FactorOf(const JsonDoubleValue &value) const {
+bool JsonInt64::FactorOf(const JsonDouble &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonDoubleValue::FactorOf(const JsonUIntValue &value) const {
+bool JsonDouble::FactorOf(const JsonUInt &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonDoubleValue::FactorOf(const JsonIntValue &value) const {
+bool JsonDouble::FactorOf(const JsonInt &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonDoubleValue::FactorOf(const JsonUInt64Value &value) const {
+bool JsonDouble::FactorOf(const JsonUInt64 &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonDoubleValue::FactorOf(const JsonInt64Value &value) const {
+bool JsonDouble::FactorOf(const JsonInt64 &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
-bool JsonDoubleValue::FactorOf(const JsonDoubleValue &value) const {
+bool JsonDouble::FactorOf(const JsonDouble &value) const {
   return fmod(value.Value(), m_value) == 0;
 }
 
 
-JsonDoubleValue::JsonDoubleValue(double value)
+JsonDouble::JsonDouble(double value)
     : m_value(value) {
   ostringstream str;
   str << value;
   m_as_string = str.str();
 }
 
-JsonDoubleValue::JsonDoubleValue(const DoubleRepresentation &rep) {
+JsonDouble::JsonDouble(const DoubleRepresentation &rep) {
   AsDouble(rep, &m_value);
   m_as_string = AsString(rep);
 }
 
-bool JsonDoubleValue::AsDouble(const DoubleRepresentation &rep, double *out) {
+bool JsonDouble::AsDouble(const DoubleRepresentation &rep, double *out) {
   // TODO(simon): Check the limits here.
   double d = rep.fractional;
   while (d >= 1.0) {
@@ -531,7 +541,7 @@ bool JsonDoubleValue::AsDouble(const DoubleRepresentation &rep, double *out) {
   return true;
 }
 
-string JsonDoubleValue::AsString(const DoubleRepresentation &rep) {
+string JsonDouble::AsString(const DoubleRepresentation &rep) {
   // Populate the string member
   if (rep.full == 0 && rep.fractional == 0) {
     return "0";
@@ -596,7 +606,7 @@ bool JsonObject::Equals(const JsonObject &other) const {
 }
 
 void JsonObject::Add(const std::string &key, const std::string &value) {
-  STLReplaceAndDelete(&m_members, key, new JsonStringValue(value));
+  STLReplaceAndDelete(&m_members, key, new JsonString(value));
 }
 
 void JsonObject::Add(const std::string &key, const char *value) {
@@ -604,27 +614,43 @@ void JsonObject::Add(const std::string &key, const char *value) {
 }
 
 void JsonObject::Add(const std::string &key, unsigned int i) {
-  STLReplaceAndDelete(&m_members, key, new JsonUIntValue(i));
+  STLReplaceAndDelete(&m_members, key, new JsonUInt(i));
 }
 
 void JsonObject::Add(const std::string &key, int i) {
-  STLReplaceAndDelete(&m_members, key, new JsonIntValue(i));
+  STLReplaceAndDelete(&m_members, key, new JsonInt(i));
 }
 
 void JsonObject::Add(const std::string &key, double d) {
-  STLReplaceAndDelete(&m_members, key, new JsonDoubleValue(d));
+  STLReplaceAndDelete(&m_members, key, new JsonDouble(d));
 }
 
 void JsonObject::Add(const std::string &key, bool value) {
-  STLReplaceAndDelete(&m_members, key, new JsonBoolValue(value));
+  STLReplaceAndDelete(&m_members, key, new JsonBool(value));
 }
 
 void JsonObject::Add(const std::string &key) {
-  STLReplaceAndDelete(&m_members, key, new JsonNullValue());
+  STLReplaceAndDelete(&m_members, key, new JsonNull());
 }
 
 void JsonObject::AddRaw(const std::string &key, const std::string &value) {
   STLReplaceAndDelete(&m_members, key, new JsonRawValue(value));
+}
+
+bool JsonObject::Remove(const std::string &key) {
+  return STLRemoveAndDelete(&m_members, key);
+}
+
+bool JsonObject::ReplaceValue(const std::string &key, JsonValue *value) {
+  MemberMap::iterator iter = m_members.find(key);
+  if (iter == m_members.end()) {
+    delete value;
+    return false;
+  } else {
+    delete iter->second;
+    iter->second = value;
+    return true;
+  }
 }
 
 JsonObject* JsonObject::AddObject(const string &key) {
@@ -641,10 +667,6 @@ JsonArray* JsonObject::AddArray(const string &key) {
 
 void JsonObject::AddValue(const string &key, JsonValue *value) {
   STLReplaceAndDelete(&m_members, key, value);
-}
-
-void JsonObject::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
 }
 
 JsonValue* JsonObject::Clone() const {
@@ -706,8 +728,37 @@ bool JsonArray::Equals(const JsonArray &other) const {
   return true;
 }
 
-void JsonArray::Accept(JsonValueVisitorInterface *visitor) const {
-  visitor->Visit(*this);
+bool JsonArray::RemoveElementAt(uint32_t index) {
+  if (index < m_values.size()) {
+    ValuesVector::iterator iter = m_values.begin() + index;
+    delete *iter;
+    m_values.erase(iter);
+    return true;
+  }
+  return false;
+}
+
+bool JsonArray::ReplaceElementAt(uint32_t index, JsonValue *value) {
+  if (index < m_values.size()) {
+    ValuesVector::iterator iter = m_values.begin() + index;
+    delete *iter;
+    *iter = value;
+    return true;
+  }
+  // Ownership is transferred, so it's up to us to delete it.
+  delete value;
+  return false;
+}
+
+bool JsonArray::InsertElementAt(uint32_t index, JsonValue *value) {
+  if (index < m_values.size()) {
+    ValuesVector::iterator iter = m_values.begin() + index;
+    m_values.insert(iter, value);
+    return true;
+  }
+  // Ownership is transferred, so it's up to us to delete it.
+  delete value;
+  return false;
 }
 
 JsonValue* JsonArray::Clone() const {
@@ -727,36 +778,57 @@ const JsonValue *JsonArray::ElementAt(unsigned int i) const {
   }
 }
 
+JsonObject* ObjectCast(JsonValue *value) {
+  // Benchmarks for 100M operations
+  // dynamic_cast<> : 1.8s
+  // Type() method & static_cast<>: 0.39s
+  // typeip(value) == ..  & static_cast<> : 0.34s
+  // &typeif(value) == .. &static_cast<>: 0.30s
+  // Visitor pattern : 2.18s
+  //
+  // The visitor pattern is more costly since it requires 2 vtable lookups.
+  // If performance becomes an issue we should consider static_cast<> here.
+  ObjectCastVisitor visitor;
+  value->Accept(&visitor);
+  return visitor.Object();
+}
+
+JsonArray* ArrayCast(JsonValue *value) {
+  ArrayCastVisitor visitor;
+  value->Accept(&visitor);
+  return visitor.Array();
+}
+
 // operator<<
-std::ostream& operator<<(std::ostream &os, const JsonStringValue &value) {
+std::ostream& operator<<(std::ostream &os, const JsonString &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonUIntValue &value) {
+std::ostream& operator<<(std::ostream &os, const JsonUInt &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonIntValue &value) {
+std::ostream& operator<<(std::ostream &os, const JsonInt &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonUInt64Value &value) {
+std::ostream& operator<<(std::ostream &os, const JsonUInt64 &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonInt64Value &value) {
+std::ostream& operator<<(std::ostream &os, const JsonInt64 &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonDoubleValue &value) {
+std::ostream& operator<<(std::ostream &os, const JsonDouble &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonBoolValue &value) {
+std::ostream& operator<<(std::ostream &os, const JsonBool &value) {
   return os << value.Value();
 }
 
-std::ostream& operator<<(std::ostream &os, const JsonNullValue &) {
+std::ostream& operator<<(std::ostream &os, const JsonNull &) {
   return os << "null";
 }
 

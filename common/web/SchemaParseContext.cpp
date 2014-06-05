@@ -284,7 +284,7 @@ void SchemaParseContext::String(SchemaErrorLogger *logger,
       m_description.Set(value);
       break;
     case SCHEMA_DEFAULT:
-      m_default_value.reset(new JsonStringValue(value));
+      m_default_value.reset(new JsonString(value));
       break;
     case SCHEMA_FORMAT:
       m_format.Set(value);
@@ -328,7 +328,7 @@ void SchemaParseContext::Number(SchemaErrorLogger *logger, double value) {
 
   switch (m_keyword) {
     case SCHEMA_DEFAULT:
-      m_default_value.reset(new JsonDoubleValue(value));
+      m_default_value.reset(new JsonDouble(value));
       break;
     case SCHEMA_MAXIMUM:
       m_maximum.reset(JsonValue::NewNumberValue(value));
@@ -356,7 +356,7 @@ void SchemaParseContext::Bool(SchemaErrorLogger *logger, bool value) {
 
   switch (m_keyword) {
     case SCHEMA_DEFAULT:
-      m_default_value.reset(new JsonBoolValue(value));
+      m_default_value.reset(new JsonBool(value));
       break;
     case SCHEMA_EXCLUSIVE_MAXIMUM:
       m_exclusive_maximum.Set(value);
@@ -382,7 +382,7 @@ void SchemaParseContext::Null(SchemaErrorLogger *logger) {
 
   switch (m_keyword) {
     case SCHEMA_DEFAULT:
-      m_default_value.reset(new JsonNullValue());
+      m_default_value.reset(new JsonNull());
       break;
     default:
       {}
@@ -979,7 +979,7 @@ void ArrayOfJsonValuesContext::Bool(SchemaErrorLogger *logger, bool value) {
 }
 
 void ArrayOfJsonValuesContext::Null(SchemaErrorLogger *logger) {
-  CheckForDuplicateAndAdd(logger, new JsonNullValue());
+  CheckForDuplicateAndAdd(logger, new JsonNull());
 }
 
 SchemaParseContextInterface* ArrayOfJsonValuesContext::OpenArray(

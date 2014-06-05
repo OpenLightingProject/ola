@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * JsonSchemaTest.cpp
+ * SchemaTest.cpp
  * Unittest for the Json Schema.
  * Copyright (C) 2014 Simon Newton
  */
@@ -36,15 +36,15 @@ using ola::web::ArrayValidator;
 using ola::web::BoolValidator;
 using ola::web::ConjunctionValidator;
 using ola::web::IntegerValidator;
-using ola::web::JsonBoolValue;
-using ola::web::JsonDoubleValue;
-using ola::web::JsonIntValue;
-using ola::web::JsonNullValue;
+using ola::web::JsonBool;
+using ola::web::JsonDouble;
+using ola::web::JsonInt;
+using ola::web::JsonNull;
 using ola::web::JsonParser;
-using ola::web::JsonStringValue;
-using ola::web::JsonStringValue;
-using ola::web::JsonUIntValue;
-using ola::web::JsonUIntValue;
+using ola::web::JsonString;
+using ola::web::JsonString;
+using ola::web::JsonUInt;
+using ola::web::JsonUInt;
 using ola::web::JsonValue;
 using ola::web::MaximumConstraint;
 using ola::web::MinimumConstraint;
@@ -100,30 +100,30 @@ class JsonSchemaTest: public CppUnit::TestFixture {
   void testEnums();
 
  private:
-  auto_ptr<JsonBoolValue> m_bool_value;
+  auto_ptr<JsonBool> m_bool_value;
   auto_ptr<JsonValue> m_empty_array;
   auto_ptr<JsonValue> m_empty_object;
-  auto_ptr<JsonIntValue> m_int_value;
-  auto_ptr<JsonStringValue> m_long_string_value;
-  auto_ptr<JsonNullValue> m_null_value;
-  auto_ptr<JsonDoubleValue> m_number_value;
-  auto_ptr<JsonStringValue> m_string_value;
-  auto_ptr<JsonUIntValue> m_uint_value;
+  auto_ptr<JsonInt> m_int_value;
+  auto_ptr<JsonString> m_long_string_value;
+  auto_ptr<JsonNull> m_null_value;
+  auto_ptr<JsonDouble> m_number_value;
+  auto_ptr<JsonString> m_string_value;
+  auto_ptr<JsonUInt> m_uint_value;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaTest);
 
 void JsonSchemaTest::setUp() {
   string error;
-  m_bool_value.reset(new JsonBoolValue(true));
+  m_bool_value.reset(new JsonBool(true));
   m_empty_array.reset(JsonParser::Parse("[]", &error));
   m_empty_object.reset(JsonParser::Parse("{}", &error));
-  m_int_value.reset(new JsonIntValue(-12));
-  m_long_string_value.reset(new JsonStringValue("This is a longer string"));
-  m_null_value.reset(new JsonNullValue());
-  m_number_value.reset(new JsonDoubleValue(1.2));
-  m_string_value.reset(new JsonStringValue("foo"));
-  m_uint_value.reset(new JsonUIntValue(4));
+  m_int_value.reset(new JsonInt(-12));
+  m_long_string_value.reset(new JsonString("This is a longer string"));
+  m_null_value.reset(new JsonNull());
+  m_number_value.reset(new JsonDouble(1.2));
+  m_string_value.reset(new JsonString("foo"));
+  m_uint_value.reset(new JsonUInt(4));
 }
 
 void JsonSchemaTest::testWildcardValidator() {
@@ -288,14 +288,14 @@ void JsonSchemaTest::testIntegerValidator() {
   // Maximum
   IntegerValidator max_int_validator, exclusive_max_int_validator;
   max_int_validator.AddConstraint(new MaximumConstraint(
-      new JsonIntValue(4), false));
+      new JsonInt(4), false));
   exclusive_max_int_validator.AddConstraint(new MaximumConstraint(
-      new JsonIntValue(4), true));
+      new JsonInt(4), true));
 
-  auto_ptr<JsonIntValue> int_value1(new JsonIntValue(3));
-  auto_ptr<JsonIntValue> int_value2(new JsonIntValue(-11));
-  auto_ptr<JsonIntValue> int_value3(new JsonIntValue(-13));
-  auto_ptr<JsonIntValue> uint_value1(new JsonIntValue(5));
+  auto_ptr<JsonInt> int_value1(new JsonInt(3));
+  auto_ptr<JsonInt> int_value2(new JsonInt(-11));
+  auto_ptr<JsonInt> int_value3(new JsonInt(-13));
+  auto_ptr<JsonInt> uint_value1(new JsonInt(5));
 
   // closed maximum
   int_value1->Accept(&max_int_validator);
@@ -330,9 +330,9 @@ void JsonSchemaTest::testIntegerValidator() {
   // Minimum
   IntegerValidator min_int_validator, exclusive_min_int_validator;
   min_int_validator.AddConstraint(new MinimumConstraint(
-      new JsonIntValue(-12), false));
+      new JsonInt(-12), false));
   exclusive_min_int_validator.AddConstraint(new MinimumConstraint(
-      new JsonIntValue(-12), true));
+      new JsonInt(-12), true));
 
   // closed minimum
   int_value1->Accept(&min_int_validator);
@@ -361,7 +361,7 @@ void JsonSchemaTest::testIntegerValidator() {
   // MultipleOf
   IntegerValidator multiple_of_validator;
   multiple_of_validator.AddConstraint(
-      new MultipleOfConstraint(new JsonIntValue(2)));
+      new MultipleOfConstraint(new JsonInt(2)));
 
   int_value1->Accept(&multiple_of_validator);
   OLA_ASSERT_FALSE(multiple_of_validator.IsValid());
@@ -374,9 +374,9 @@ void JsonSchemaTest::testIntegerValidator() {
   m_uint_value->Accept(&multiple_of_validator);
   OLA_ASSERT_TRUE(multiple_of_validator.IsValid());
 
-  auto_ptr<JsonIntValue> int_value4(new JsonIntValue(4));
-  auto_ptr<JsonIntValue> int_value5(new JsonIntValue(8));
-  auto_ptr<JsonIntValue> int_value6(new JsonIntValue(-4));
+  auto_ptr<JsonInt> int_value4(new JsonInt(4));
+  auto_ptr<JsonInt> int_value5(new JsonInt(8));
+  auto_ptr<JsonInt> int_value6(new JsonInt(-4));
 
   int_value4->Accept(&multiple_of_validator);
   OLA_ASSERT_TRUE(multiple_of_validator.IsValid());
@@ -676,16 +676,16 @@ void JsonSchemaTest::testAllOfValidator() {
   // 1 <= x <= 5
   IntegerValidator *range1 = new IntegerValidator();
   range1->AddConstraint(
-      new MinimumConstraint(new JsonIntValue(1), false));
+      new MinimumConstraint(new JsonInt(1), false));
   range1->AddConstraint(
-      new MaximumConstraint(new JsonIntValue(5), false));
+      new MaximumConstraint(new JsonInt(5), false));
 
   // 4 <= x <= 8
   IntegerValidator *range2 = new IntegerValidator();
   range2->AddConstraint(
-      new MinimumConstraint(new JsonIntValue(4), false));
+      new MinimumConstraint(new JsonInt(4), false));
   range2->AddConstraint(
-      new MaximumConstraint(new JsonIntValue(8), false));
+      new MaximumConstraint(new JsonInt(8), false));
 
   ConjunctionValidator::ValidatorList validators;
   validators.push_back(range1);
@@ -746,16 +746,16 @@ void JsonSchemaTest::testOneOfValidator() {
   // 1 <= x <= 5
   IntegerValidator *range1 = new IntegerValidator();
   range1->AddConstraint(
-      new MinimumConstraint(new JsonIntValue(1), false));
+      new MinimumConstraint(new JsonInt(1), false));
   range1->AddConstraint(
-      new MaximumConstraint(new JsonIntValue(5), false));
+      new MaximumConstraint(new JsonInt(5), false));
 
   // 4 <= x <= 8
   IntegerValidator *range2 = new IntegerValidator();
   range2->AddConstraint(
-      new MinimumConstraint(new JsonIntValue(4), false));
+      new MinimumConstraint(new JsonInt(4), false));
   range2->AddConstraint(
-      new MaximumConstraint(new JsonIntValue(8), false));
+      new MaximumConstraint(new JsonInt(8), false));
 
   ConjunctionValidator::ValidatorList validators;
   validators.push_back(range1);
@@ -780,9 +780,9 @@ void JsonSchemaTest::testOneOfValidator() {
   m_uint_value->Accept(&one_of_validator);
   OLA_ASSERT_FALSE(one_of_validator.IsValid());
 
-  auto_ptr<JsonIntValue> int_value1(new JsonIntValue(3));
-  auto_ptr<JsonIntValue> int_value2(new JsonIntValue(5));
-  auto_ptr<JsonIntValue> int_value3(new JsonIntValue(6));
+  auto_ptr<JsonInt> int_value1(new JsonInt(3));
+  auto_ptr<JsonInt> int_value2(new JsonInt(5));
+  auto_ptr<JsonInt> int_value3(new JsonInt(6));
 
   int_value1->Accept(&one_of_validator);
   OLA_ASSERT_TRUE(one_of_validator.IsValid());
@@ -816,11 +816,11 @@ void JsonSchemaTest::testNotValidator() {
 
 void JsonSchemaTest::testEnums() {
   StringValidator string_validator((StringValidator::Options()));
-  string_validator.AddEnumValue(new JsonStringValue("foo"));
-  string_validator.AddEnumValue(new JsonStringValue("bar"));
+  string_validator.AddEnumValue(new JsonString("foo"));
+  string_validator.AddEnumValue(new JsonString("bar"));
 
-  JsonStringValue bar_value("bar");
-  JsonStringValue baz_value("baz");
+  JsonString bar_value("bar");
+  JsonString baz_value("baz");
 
   m_string_value->Accept(&string_validator);
   OLA_ASSERT_TRUE(string_validator.IsValid());
@@ -832,14 +832,14 @@ void JsonSchemaTest::testEnums() {
   OLA_ASSERT_FALSE(string_validator.IsValid());
 
   IntegerValidator integer_validator;
-  integer_validator.AddEnumValue(new JsonIntValue(1));
-  integer_validator.AddEnumValue(new JsonIntValue(2));
-  integer_validator.AddEnumValue(new JsonIntValue(4));
+  integer_validator.AddEnumValue(new JsonInt(1));
+  integer_validator.AddEnumValue(new JsonInt(2));
+  integer_validator.AddEnumValue(new JsonInt(4));
 
-  JsonIntValue int_value1(2);
-  JsonIntValue int_value2(3);
-  JsonIntValue uint_value1(2);
-  JsonIntValue uint_value2(3);
+  JsonInt int_value1(2);
+  JsonInt int_value2(3);
+  JsonInt uint_value1(2);
+  JsonInt uint_value2(3);
 
   m_int_value->Accept(&integer_validator);
   OLA_ASSERT_FALSE(integer_validator.IsValid());

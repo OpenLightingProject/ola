@@ -62,8 +62,8 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
   virtual bool GetSocketAddress(IPV4SocketAddress *address) const = 0;
 
   virtual bool Close() = 0;
-  virtual int ReadDescriptor() const = 0;
-  virtual int WriteDescriptor() const = 0;
+  virtual ola::io::DescriptorHandle ReadDescriptor() const = 0;
+  virtual ola::io::DescriptorHandle WriteDescriptor() const = 0;
 
   virtual ssize_t SendTo(const uint8_t *buffer,
                          unsigned int size,
@@ -106,9 +106,10 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
  */
 class UDPSocket: public UDPSocketInterface {
  public:
-  UDPSocket(): UDPSocketInterface(),
-               m_fd(ola::io::INVALID_DESCRIPTOR),
-               m_bound_to_port(false) {}
+  UDPSocket()
+      : UDPSocketInterface(),
+        m_handle(ola::io::INVALID_DESCRIPTOR),
+        m_bound_to_port(false) {}
   ~UDPSocket() { Close(); }
   bool Init();
   bool Bind(const IPV4SocketAddress &endpoint);
@@ -116,8 +117,8 @@ class UDPSocket: public UDPSocketInterface {
   bool GetSocketAddress(IPV4SocketAddress *address) const;
 
   bool Close();
-  int ReadDescriptor() const { return m_fd; }
-  int WriteDescriptor() const { return m_fd; }
+  ola::io::DescriptorHandle ReadDescriptor() const { return m_handle; }
+  ola::io::DescriptorHandle WriteDescriptor() const { return m_handle; }
   ssize_t SendTo(const uint8_t *buffer,
                  unsigned int size,
                  const IPV4Address &ip,
@@ -155,7 +156,7 @@ class UDPSocket: public UDPSocketInterface {
   bool SetTos(uint8_t tos);
 
  private:
-  int m_fd;
+  ola::io::DescriptorHandle m_handle;
   bool m_bound_to_port;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocket);

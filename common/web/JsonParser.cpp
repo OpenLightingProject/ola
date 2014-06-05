@@ -62,39 +62,39 @@ void JsonParser::End() {
 }
 
 void JsonParser::String(const string &value) {
-  AddValue(new JsonStringValue(value));
+  AddValue(new JsonString(value));
 }
 
 void JsonParser::Number(uint32_t value) {
-  AddValue(new JsonUIntValue(value));
+  AddValue(new JsonUInt(value));
 }
 
 void JsonParser::Number(int32_t value) {
-  AddValue(new JsonIntValue(value));
+  AddValue(new JsonInt(value));
 }
 
 void JsonParser::Number(uint64_t value) {
-  AddValue(new JsonUInt64Value(value));
+  AddValue(new JsonUInt64(value));
 }
 
 void JsonParser::Number(int64_t value) {
-  AddValue(new JsonInt64Value(value));
+  AddValue(new JsonInt64(value));
 }
 
-void JsonParser::Number(const JsonDoubleValue::DoubleRepresentation &rep) {
-  AddValue(new JsonDoubleValue(rep));
+void JsonParser::Number(const JsonDouble::DoubleRepresentation &rep) {
+  AddValue(new JsonDouble(rep));
 }
 
 void JsonParser::Number(double value) {
-  AddValue(new JsonDoubleValue(value));
+  AddValue(new JsonDouble(value));
 }
 
 void JsonParser::Bool(bool value) {
-  AddValue(new JsonBoolValue(value));
+  AddValue(new JsonBool(value));
 }
 
 void JsonParser::Null() {
-  AddValue(new JsonNullValue());
+  AddValue(new JsonNull());
 }
 
 void JsonParser::OpenArray() {

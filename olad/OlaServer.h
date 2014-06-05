@@ -82,7 +82,7 @@ class OlaServer {
   void StopServer() { m_ss->Terminate(); }
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
   void NewTCPConnection(ola::network::TCPSocket *socket);
-  void ChannelClosed(int read_descriptor);
+  void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
   bool RunHousekeeping();
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
@@ -93,7 +93,7 @@ class OlaServer {
     class OlaClientService *client_service;
   };
 
-  typedef std::map<int, ClientEntry> ClientMap;
+  typedef std::map<ola::io::DescriptorHandle, ClientEntry> ClientMap;
 
   class OlaClientServiceFactory *m_service_factory;
   std::vector<class PluginLoader*> m_plugin_loaders;

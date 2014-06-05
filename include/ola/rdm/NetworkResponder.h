@@ -58,10 +58,11 @@ class NetworkResponder: public RDMControllerInterface {
   class RDMOps : public ResponderOps<NetworkResponder> {
    public:
     static RDMOps *Instance() {
-      if (!instance)
+      if (!instance) {
         instance = new RDMOps();
-        return instance;
       }
+      return instance;
+    }
 
    private:
     RDMOps() : ResponderOps<NetworkResponder>(PARAM_HANDLERS) {}

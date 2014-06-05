@@ -53,7 +53,7 @@ class SchemaDefinitions;
 /**
  * @brief The interface Json Schema Validators.
  */
-class ValidatorInterface : public JsonValueVisitorInterface {
+class ValidatorInterface : public JsonValueConstVisitorInterface {
  public:
   /**
    * @brief a list of Validators.
@@ -130,15 +130,15 @@ class BaseValidator : public ValidatorInterface {
 
   virtual bool IsValid() const { return m_is_valid; }
 
-  virtual void Visit(const JsonStringValue&) {
+  virtual void Visit(const JsonString&) {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonBoolValue&) {
+  virtual void Visit(const JsonBool&) {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonNullValue&) {
+  virtual void Visit(const JsonNull&) {
     m_is_valid = false;
   }
 
@@ -154,23 +154,23 @@ class BaseValidator : public ValidatorInterface {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonUIntValue&) {
+  virtual void Visit(const JsonUInt&) {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonUInt64Value&) {
+  virtual void Visit(const JsonUInt64&) {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonIntValue&) {
+  virtual void Visit(const JsonInt&) {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonInt64Value&) {
+  virtual void Visit(const JsonInt64&) {
     m_is_valid = false;
   }
 
-  virtual void Visit(const JsonDoubleValue&) {
+  virtual void Visit(const JsonDouble&) {
     m_is_valid = false;
   }
 
@@ -258,17 +258,17 @@ class ReferenceValidator : public ValidatorInterface {
 
   bool IsValid() const;
 
-  void Visit(const JsonStringValue &value);
-  void Visit(const JsonBoolValue &value);
-  void Visit(const JsonNullValue &value);
+  void Visit(const JsonString &value);
+  void Visit(const JsonBool &value);
+  void Visit(const JsonNull &value);
   void Visit(const JsonRawValue &value);
   void Visit(const JsonObject &value);
   void Visit(const JsonArray &value);
-  void Visit(const JsonUIntValue &value);
-  void Visit(const JsonUInt64Value &value);
-  void Visit(const JsonIntValue &value);
-  void Visit(const JsonInt64Value &value);
-  void Visit(const JsonDoubleValue &value);
+  void Visit(const JsonUInt &value);
+  void Visit(const JsonUInt64 &value);
+  void Visit(const JsonInt &value);
+  void Visit(const JsonInt64 &value);
+  void Visit(const JsonDouble &value);
 
   JsonObject* GetSchema() const;
 
@@ -289,7 +289,7 @@ class ReferenceValidator : public ValidatorInterface {
 };
 
 /**
- * @brief The validator for JsonStringValue.
+ * @brief The validator for JsonString.
  */
 class StringValidator : public BaseValidator {
  public:
@@ -311,7 +311,7 @@ class StringValidator : public BaseValidator {
         m_options(options) {
   }
 
-  void Visit(const JsonStringValue &str);
+  void Visit(const JsonString &str);
 
  private:
   const Options m_options;
@@ -322,26 +322,26 @@ class StringValidator : public BaseValidator {
 };
 
 /**
- * @brief The validator for JsonBoolValue.
+ * @brief The validator for JsonBool.
  */
 class BoolValidator : public BaseValidator {
  public:
   BoolValidator() : BaseValidator(JSON_BOOLEAN) {}
 
-  void Visit(const JsonBoolValue &value) { m_is_valid = CheckEnums(value); }
+  void Visit(const JsonBool &value) { m_is_valid = CheckEnums(value); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BoolValidator);
 };
 
 /**
- * @brief The validator for JsonNullValue.
+ * @brief The validator for JsonNull.
  */
 class NullValidator : public BaseValidator {
  public:
   NullValidator() : BaseValidator(JSON_NULL) {}
 
-  void Visit(const JsonNullValue &value) { m_is_valid = CheckEnums(value); }
+  void Visit(const JsonNull &value) { m_is_valid = CheckEnums(value); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullValidator);
@@ -355,7 +355,7 @@ class NumberConstraint {
  public:
   virtual ~NumberConstraint() {}
 
-  virtual bool IsValid(const JsonNumberValue &value) = 0;
+  virtual bool IsValid(const JsonNumber &value) = 0;
 
   virtual void ExtendSchema(JsonObject *schema) const = 0;
 };
@@ -365,11 +365,11 @@ class NumberConstraint {
  */
 class MultipleOfConstraint : public NumberConstraint {
  public:
-  explicit MultipleOfConstraint(const JsonNumberValue *value)
+  explicit MultipleOfConstraint(const JsonNumber *value)
       : m_multiple_of(value) {
   }
 
-  bool IsValid(const JsonNumberValue &value) {
+  bool IsValid(const JsonNumber &value) {
     return value.MultipleOf(*m_multiple_of);
   }
 
@@ -378,7 +378,7 @@ class MultipleOfConstraint : public NumberConstraint {
   }
 
  private:
-  std::auto_ptr<const JsonNumberValue> m_multiple_of;
+  std::auto_ptr<const JsonNumber> m_multiple_of;
 };
 
 /**
@@ -391,7 +391,7 @@ class MaximumConstraint : public NumberConstraint {
    * @param limit the maximum, ownership is transferred.
    * @param is_exclusive true is the limit is exclusive, false if not.
    */
-  MaximumConstraint(const JsonNumberValue *limit, bool is_exclusive)
+  MaximumConstraint(const JsonNumber *limit, bool is_exclusive)
       : m_limit(limit),
         m_has_exclusive(true),
         m_is_exclusive(is_exclusive) {
@@ -401,12 +401,12 @@ class MaximumConstraint : public NumberConstraint {
    * @brief Create a new MaximumConstraint.
    * @param limit the maximum, ownership is transferred.
    */
-  explicit MaximumConstraint(const JsonNumberValue *limit)
+  explicit MaximumConstraint(const JsonNumber *limit)
       : m_limit(limit),
         m_has_exclusive(false) {
   }
 
-  bool IsValid(const JsonNumberValue &value) {
+  bool IsValid(const JsonNumber &value) {
     return (m_has_exclusive && m_is_exclusive) ? value < *m_limit
         : value <= *m_limit;
   }
@@ -419,7 +419,7 @@ class MaximumConstraint : public NumberConstraint {
   }
 
  private:
-  std::auto_ptr<const JsonNumberValue> m_limit;
+  std::auto_ptr<const JsonNumber> m_limit;
   bool m_has_exclusive, m_is_exclusive;
 };
 
@@ -433,7 +433,7 @@ class MinimumConstraint : public NumberConstraint {
    * @param limit the minimum, ownership is transferred.
    * @param is_exclusive true is the limit is exclusive, false if not.
    */
-  MinimumConstraint(const JsonNumberValue *limit, bool is_exclusive)
+  MinimumConstraint(const JsonNumber *limit, bool is_exclusive)
       : m_limit(limit),
         m_has_exclusive(true),
         m_is_exclusive(is_exclusive) {
@@ -443,12 +443,12 @@ class MinimumConstraint : public NumberConstraint {
    * @brief Create a new MaximumConstraint.
    * @param limit the minimum, ownership is transferred.
    */
-  explicit MinimumConstraint(const JsonNumberValue *limit)
+  explicit MinimumConstraint(const JsonNumber *limit)
       : m_limit(limit),
         m_has_exclusive(false) {
   }
 
-  bool IsValid(const JsonNumberValue &value) {
+  bool IsValid(const JsonNumber &value) {
     return (m_has_exclusive && m_is_exclusive) ? value > *m_limit
         : value >= *m_limit;
   }
@@ -461,7 +461,7 @@ class MinimumConstraint : public NumberConstraint {
   }
 
  private:
-  std::auto_ptr<const JsonNumberValue> m_limit;
+  std::auto_ptr<const JsonNumber> m_limit;
   bool m_has_exclusive, m_is_exclusive;
 };
 
@@ -479,16 +479,16 @@ class IntegerValidator : public BaseValidator {
    */
   void AddConstraint(NumberConstraint *constraint);
 
-  void Visit(const JsonUIntValue&);
-  void Visit(const JsonIntValue&);
-  void Visit(const JsonUInt64Value&);
-  void Visit(const JsonInt64Value&);
-  virtual void Visit(const JsonDoubleValue&);
+  void Visit(const JsonUInt&);
+  void Visit(const JsonInt&);
+  void Visit(const JsonUInt64&);
+  void Visit(const JsonInt64&);
+  virtual void Visit(const JsonDouble&);
 
  protected:
   explicit IntegerValidator(JsonType type) : BaseValidator(type) {}
 
-  void CheckValue(const JsonNumberValue &value);
+  void CheckValue(const JsonNumber &value);
 
  private:
   std::vector<NumberConstraint*> m_constraints;
@@ -508,7 +508,7 @@ class NumberValidator : public IntegerValidator {
  public:
   NumberValidator() : IntegerValidator(JSON_NUMBER) {}
 
-  void Visit(const JsonDoubleValue&);
+  void Visit(const JsonDouble&);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NumberValidator);
@@ -687,8 +687,9 @@ class ArrayValidator : public BaseValidator {
 
   /**
    * @brief Validate all elements of the array against the given schema.
-   * @param items  , ownership is transferred.
-   * @param additional_items , ownership is transferred.
+   * @param items The items in the array, ownership is transferred.
+   * @param additional_items Any additional (optional) items. ownership is
+   *   transferred.
    * @param options Extra constraints on the Array.
    */
   ArrayValidator(Items *items, AdditionalItems *additional_items,
@@ -713,17 +714,17 @@ class ArrayValidator : public BaseValidator {
     ArrayElementValidator(const ValidatorList &validators,
                           ValidatorInterface *default_validator);
 
-    void Visit(const JsonStringValue&);
-    void Visit(const JsonBoolValue&);
-    void Visit(const JsonNullValue&);
+    void Visit(const JsonString&);
+    void Visit(const JsonBool&);
+    void Visit(const JsonNull&);
     void Visit(const JsonRawValue&);
     void Visit(const JsonObject&);
     void Visit(const JsonArray &array);
-    void Visit(const JsonUIntValue&);
-    void Visit(const JsonUInt64Value&);
-    void Visit(const JsonIntValue&);
-    void Visit(const JsonInt64Value&);
-    void Visit(const JsonDoubleValue&);
+    void Visit(const JsonUInt&);
+    void Visit(const JsonUInt64&);
+    void Visit(const JsonInt&);
+    void Visit(const JsonInt64&);
+    void Visit(const JsonDouble&);
 
    private:
     ValidatorQueue m_item_validators;
@@ -757,15 +758,15 @@ class ConjunctionValidator : public BaseValidator {
   ConjunctionValidator(const std::string &keyword, ValidatorList *validators);
   virtual ~ConjunctionValidator();
 
-  void Visit(const JsonStringValue &value) {
+  void Visit(const JsonString &value) {
     Validate(value);
   }
 
-  void Visit(const JsonBoolValue &value) {
+  void Visit(const JsonBool &value) {
     Validate(value);
   }
 
-  void Visit(const JsonNullValue &value) {
+  void Visit(const JsonNull &value) {
     Validate(value);
   }
 
@@ -781,23 +782,23 @@ class ConjunctionValidator : public BaseValidator {
     Validate(value);
   }
 
-  void Visit(const JsonUIntValue &value) {
+  void Visit(const JsonUInt &value) {
     Validate(value);
   }
 
-  void Visit(const JsonUInt64Value &value) {
+  void Visit(const JsonUInt64 &value) {
     Validate(value);
   }
 
-  void Visit(const JsonIntValue &value) {
+  void Visit(const JsonInt &value) {
     Validate(value);
   }
 
-  void Visit(const JsonInt64Value &value) {
+  void Visit(const JsonInt64 &value) {
     Validate(value);
   }
 
-  void Visit(const JsonDoubleValue &value) {
+  void Visit(const JsonDouble &value) {
     Validate(value);
   }
 
@@ -885,15 +886,15 @@ class NotValidator : public BaseValidator {
         m_validator(validator) {
   }
 
-  void Visit(const JsonStringValue &value) {
+  void Visit(const JsonString &value) {
     Validate(value);
   }
 
-  void Visit(const JsonBoolValue &value) {
+  void Visit(const JsonBool &value) {
     Validate(value);
   }
 
-  void Visit(const JsonNullValue &value) {
+  void Visit(const JsonNull &value) {
     Validate(value);
   }
 
@@ -909,23 +910,23 @@ class NotValidator : public BaseValidator {
     Validate(value);
   }
 
-  void Visit(const JsonUIntValue &value) {
+  void Visit(const JsonUInt &value) {
     Validate(value);
   }
 
-  void Visit(const JsonUInt64Value &value) {
+  void Visit(const JsonUInt64 &value) {
     Validate(value);
   }
 
-  void Visit(const JsonIntValue &value) {
+  void Visit(const JsonInt &value) {
     Validate(value);
   }
 
-  void Visit(const JsonInt64Value &value) {
+  void Visit(const JsonInt64 &value) {
     Validate(value);
   }
 
-  void Visit(const JsonDoubleValue &value) {
+  void Visit(const JsonDouble &value) {
     Validate(value);
   }
 
