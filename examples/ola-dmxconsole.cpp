@@ -361,7 +361,7 @@ void crossfade(unsigned int new_cue) {
   /* try to find the last channel value > 0, so we don't have to
      crossfade large blocks of 0s */
   for (i = DMX_UNIVERSE_SIZE - 1; i >= 0; max = i, i--)
-    if (dmxold[i]||dmxnew[i])
+    if (dmxold[i] || dmxnew[i])
       break;
 
   {

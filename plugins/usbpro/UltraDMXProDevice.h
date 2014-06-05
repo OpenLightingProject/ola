@@ -139,13 +139,12 @@ class UltraDMXProOutputPort: public BasicOutputPort {
         m_primary(primary) {}
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-    if (m_bucket.GetToken(*m_wake_time))
-      if (m_primary)
-        return m_widget->SendDMX(buffer);
-      else
-        return m_widget->SendSecondaryDMX(buffer);
-    else
+    if (m_bucket.GetToken(*m_wake_time)) {
+      return m_primary ? m_widget->SendDMX(buffer)
+          : m_widget->SendSecondaryDMX(buffer);
+    } else {
       OLA_INFO << "Port rated limited, dropping frame";
+    }
     return true;
     (void) priority;
   }

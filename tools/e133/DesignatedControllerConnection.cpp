@@ -217,14 +217,16 @@ void DesignatedControllerConnection::NewTCPConnection(
   m_message_queue = new MessageQueue(m_tcp_socket, m_ss,
                                      m_message_builder->pool());
 
-  if (m_health_checked_connection)
+  if (m_health_checked_connection) {
     OLA_WARN << "Already have a E133HealthCheckedConnection";
-    m_health_checked_connection = new E133HealthCheckedConnection(
-      m_message_builder,
-      m_message_queue,
-      ola::NewSingleCallback(
-        this, &DesignatedControllerConnection::TCPConnectionUnhealthy),
-      m_ss);
+  }
+
+  m_health_checked_connection = new E133HealthCheckedConnection(
+    m_message_builder,
+    m_message_queue,
+    ola::NewSingleCallback(
+      this, &DesignatedControllerConnection::TCPConnectionUnhealthy),
+    m_ss);
 
   // this sends a heartbeat message to indicate this is the live connection
   if (!m_health_checked_connection->Setup()) {
@@ -251,10 +253,11 @@ void DesignatedControllerConnection::NewTCPConnection(
   }
   m_unsent_messages = !sent_all;
 
-  if (m_incoming_tcp_transport)
+  if (m_incoming_tcp_transport) {
     OLA_WARN << "Already have an IncomingTCPTransport";
-    m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
-        &m_root_inflator, m_tcp_socket);
+  }
+  m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
+      &m_root_inflator, m_tcp_socket);
 
   m_tcp_stats->connection_events++;
   m_tcp_stats->ip_address = v4_address.Host();

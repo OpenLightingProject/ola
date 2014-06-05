@@ -261,34 +261,43 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
     return 0;
 
   ssize_t bytes_sent;
-#if HAVE_DECL_MSG_NOSIGNAL
-  if (IsSocket())
-    bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
-  else
-#endif
+
 #ifdef _WIN32
-    if (WriteDescriptor().m_type == HANDLE_DESCRIPTOR) {
-      DWORD bytes_written = 0;
-      if (!WriteFile(WriteDescriptor().m_handle.m_handle,
-                     buffer,
-                     size,
-                     &bytes_written,
-                     NULL)) {
-        OLA_WARN << "WriteFile() failed with " << GetLastError();
-        bytes_sent = -1;
-      } else {
-        bytes_sent = bytes_written;
-      }
+  if (WriteDescriptor().m_type == HANDLE_DESCRIPTOR) {
+    DWORD bytes_written = 0;
+    if (!WriteFile(WriteDescriptor().m_handle.m_handle,
+                   buffer,
+                   size,
+                   &bytes_written,
+                   NULL)) {
+      OLA_WARN << "WriteFile() failed with " << GetLastError();
+      bytes_sent = -1;
     } else {
-      bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+      bytes_sent = bytes_written;
     }
+  } else {
+    bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+  }
+
 #else
+  // BSD Sockets
+
+#if HAVE_DECL_MSG_NOSIGNAL
+  if (IsSocket()) {
+    bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
+  } else {
+#endif
     bytes_sent = write(WriteDescriptor(), buffer, size);
+#if HAVE_DECL_MSG_NOSIGNAL
+  }
 #endif
 
-  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
+#endif
+
+  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
+  }
   return bytes_sent;
 }
 
