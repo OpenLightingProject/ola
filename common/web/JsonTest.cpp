@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonTest.cpp
  * Unittest for Json classses.
@@ -29,17 +29,17 @@
 #include "ola/web/JsonWriter.h"
 
 using ola::web::JsonArray;
-using ola::web::JsonBoolValue;
-using ola::web::JsonDoubleValue;
-using ola::web::JsonInt64Value;
-using ola::web::JsonIntValue;
-using ola::web::JsonNullValue;
+using ola::web::JsonBool;
+using ola::web::JsonDouble;
+using ola::web::JsonInt64;
+using ola::web::JsonInt;
+using ola::web::JsonNull;
 using ola::web::JsonObject;
 using ola::web::JsonPointer;
 using ola::web::JsonRawValue;
-using ola::web::JsonStringValue;
-using ola::web::JsonUInt64Value;
-using ola::web::JsonUIntValue;
+using ola::web::JsonString;
+using ola::web::JsonUInt64;
+using ola::web::JsonUInt;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::string;
@@ -58,6 +58,8 @@ class JsonTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSimpleObject);
   CPPUNIT_TEST(testComplexObject);
   CPPUNIT_TEST(testEquality);
+  CPPUNIT_TEST(testIntInequality);
+  CPPUNIT_TEST(testMultipleOf);
   CPPUNIT_TEST(testLookups);
   CPPUNIT_TEST(testClone);
   CPPUNIT_TEST_SUITE_END();
@@ -74,6 +76,8 @@ class JsonTest: public CppUnit::TestFixture {
     void testSimpleObject();
     void testComplexObject();
     void testEquality();
+    void testIntInequality();
+    void testMultipleOf();
     void testLookups();
     void testClone();
 };
@@ -84,12 +88,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(JsonTest);
  * Test a string.
  */
 void JsonTest::testString() {
-  JsonStringValue value("foo");
+  JsonString value("foo");
   string expected = "\"foo\"";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(value));
 
   // test escaping
-  JsonStringValue value2("foo\"bar\"");
+  JsonString value2("foo\"bar\"");
   expected = "\"foo\\\"bar\\\"\"";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(value2));
 }
@@ -99,11 +103,11 @@ void JsonTest::testString() {
  * Test ints.
  */
 void JsonTest::testIntegerValues() {
-  JsonUIntValue uint_value(10);
+  JsonUInt uint_value(10);
   string expected = "10";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(uint_value));
 
-  JsonIntValue int_value(-10);
+  JsonInt int_value(-10);
   expected = "-10";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(int_value));
 }
@@ -112,38 +116,45 @@ void JsonTest::testIntegerValues() {
  * Test numbers (doubles).
  */
 void JsonTest::testNumberValues() {
-  // For JsonDoubleValue constructed with a double, the string representation
+  // For JsonDouble constructed with a double, the string representation
   // depends on the platform. For example 1.23-e2 could be any of 1.23-e2,
   // 0.00123 or 1.23e-002.
   // So we skip this test.
-  JsonDoubleValue d1(12.234);
+  JsonDouble d1(12.234);
   OLA_ASSERT_EQ(12.234, d1.Value());
 
-  JsonDoubleValue d2(-1.23e-12);
+  JsonDouble d2(-1.23e-12);
   OLA_ASSERT_EQ(-1.23e-12, d2.Value());
 
-  // For JsonDoubleValue created using DoubleRepresentation, the string will be
+  // For JsonDouble created using DoubleRepresentation, the string will be
   // well defined, but the Value() may differ. Just do our best here.
-  JsonDoubleValue::DoubleRepresentation rep1 = {
+  JsonDouble::DoubleRepresentation rep1 = {
     false, 12, 1, 345, 0
   };
-  JsonDoubleValue d3(rep1);
+  JsonDouble d3(rep1);
   OLA_ASSERT_EQ(string("12.0345"), JsonWriter::AsString(d3));
   OLA_ASSERT_EQ(12.0345, d3.Value());
 
-  JsonDoubleValue::DoubleRepresentation rep2 = {
+  JsonDouble::DoubleRepresentation rep2 = {
     true, 345, 3, 789, 2
   };
-  JsonDoubleValue d4(rep2);
+  JsonDouble d4(rep2);
   OLA_ASSERT_EQ(string("-345.000789e2"), JsonWriter::AsString(d4));
   OLA_ASSERT_DOUBLE_EQ(-345.000789e2, d4.Value(), 0.001);
 
-  JsonDoubleValue::DoubleRepresentation rep3 = {
+  JsonDouble::DoubleRepresentation rep3 = {
     true, 345, 3, 0, -2
   };
-  JsonDoubleValue d5(rep3);
+  JsonDouble d5(rep3);
   OLA_ASSERT_EQ(string("-345e-2"), JsonWriter::AsString(d5));
   OLA_ASSERT_EQ(-3.45, d5.Value());
+
+  JsonDouble::DoubleRepresentation rep4 = {
+    false, 2, 0, 1, 0
+  };
+  JsonDouble d6(rep4);
+  OLA_ASSERT_EQ(string("2.1"), JsonWriter::AsString(d6));
+  OLA_ASSERT_EQ(2.1, d6.Value());
 }
 
 /*
@@ -166,11 +177,11 @@ void JsonTest::testRaw() {
  * Test bools.
  */
 void JsonTest::testBool() {
-  JsonBoolValue true_value(true);
+  JsonBool true_value(true);
   string expected = "true";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(true_value));
 
-  JsonBoolValue false_value(false);
+  JsonBool false_value(false);
   expected = "false";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(false_value));
 }
@@ -180,7 +191,7 @@ void JsonTest::testBool() {
  * Test a null.
  */
 void JsonTest::testNull() {
-  JsonNullValue value;
+  JsonNull value;
   string expected = "null";
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(value));
 }
@@ -255,32 +266,32 @@ void JsonTest::testComplexObject() {
 }
 
 /*
- * Test a complex object.
+ * Test for equality.
  */
 void JsonTest::testEquality() {
-  JsonStringValue string1("foo");
-  JsonStringValue string2("foo");
-  JsonStringValue string3("bar");
-  JsonBoolValue bool1(true);
-  JsonBoolValue bool2(false);
-  JsonNullValue null1;
-  JsonDoubleValue double1(1.0);
-  JsonDoubleValue double2(1.0);
-  JsonDoubleValue double3(2.1);
+  JsonString string1("foo");
+  JsonString string2("foo");
+  JsonString string3("bar");
+  JsonBool bool1(true);
+  JsonBool bool2(false);
+  JsonNull null1;
+  JsonDouble double1(1.0);
+  JsonDouble double2(1.0);
+  JsonDouble double3(2.1);
 
-  JsonUIntValue uint1(10);
-  JsonUIntValue uint2(99);
+  JsonUInt uint1(10);
+  JsonUInt uint2(99);
 
-  JsonIntValue int1(10);
-  JsonIntValue int2(99);
-  JsonIntValue int3(-99);
+  JsonInt int1(10);
+  JsonInt int2(99);
+  JsonInt int3(-99);
 
-  JsonInt64Value int64_1(-99);
-  JsonInt64Value int64_2(10);
-  JsonInt64Value int64_3(99);
+  JsonInt64 int64_1(-99);
+  JsonInt64 int64_2(10);
+  JsonInt64 int64_3(99);
 
-  JsonInt64Value uint64_1(10);
-  JsonInt64Value uint64_2(99);
+  JsonUInt64 uint64_1(10);
+  JsonUInt64 uint64_2(99);
 
   vector<JsonValue*> all_values;
   all_values.push_back(&string1);
@@ -383,6 +394,158 @@ void JsonTest::testEquality() {
 }
 
 /*
+ * Test for integer / number inequality.
+ */
+void JsonTest::testIntInequality() {
+  JsonDouble double1(1.0);
+  JsonDouble double2(1.0);
+  JsonDouble double3(11.1);
+  JsonUInt uint1(10);
+  JsonUInt uint2(99);
+  JsonInt int1(10);
+  JsonInt int2(99);
+  JsonInt int3(-99);
+  JsonInt64 int64_1(-99);
+  JsonInt64 int64_2(10);
+  JsonInt64 int64_3(99);
+  JsonUInt64 uint64_1(10);
+  JsonUInt64 uint64_2(99);
+
+  OLA_ASSERT_LT(double1, double3);
+  OLA_ASSERT_LTE(double1, double2);
+  OLA_ASSERT_LTE(double1, double3);
+  OLA_ASSERT_GT(double3, double1);
+  OLA_ASSERT_GTE(double3, double1);
+  OLA_ASSERT_GTE(double2, double1);
+  OLA_ASSERT_LT(double1, uint1);
+  OLA_ASSERT_LT(double1, int1);
+  OLA_ASSERT_LT(double1, int64_2);
+  OLA_ASSERT_LT(double1, uint64_1);
+  OLA_ASSERT_LT(uint1, double3);
+  OLA_ASSERT_LT(int1, double3);
+  OLA_ASSERT_LT(int64_1, double3);
+  OLA_ASSERT_LT(int64_2, double3);
+  OLA_ASSERT_LT(uint64_1, double3);
+
+  OLA_ASSERT_LT(uint1, uint2);
+  OLA_ASSERT_LTE(uint1, uint1);
+  OLA_ASSERT_LT(int1, int2);
+  OLA_ASSERT_LTE(int1, int1);
+  OLA_ASSERT_LT(int3, int1);
+  OLA_ASSERT_LT(uint64_1, uint64_2);
+  OLA_ASSERT_LTE(uint64_1, uint64_1);
+  OLA_ASSERT_LT(int64_1, int64_2);
+  OLA_ASSERT_LTE(int64_1, int64_1);
+  OLA_ASSERT_LT(int64_2, int64_3);
+  OLA_ASSERT_LT(uint64_1, uint2);
+  OLA_ASSERT_LTE(uint64_1, uint1);
+  OLA_ASSERT_LT(int64_1, int1);
+  OLA_ASSERT_LTE(int64_1, int3);
+  OLA_ASSERT_LT(uint1, uint64_2);
+  OLA_ASSERT_LTE(uint1, uint64_1);
+  OLA_ASSERT_LT(int3, int64_2);
+  OLA_ASSERT_LTE(int3, int64_1);
+
+  OLA_ASSERT_LT(int3, uint1);
+  OLA_ASSERT_LTE(int1, uint1);
+  OLA_ASSERT_LT(int64_1, uint1);
+  OLA_ASSERT_LTE(int64_2, uint1);
+  OLA_ASSERT_LT(uint1, int2);
+  OLA_ASSERT_LTE(uint1, int1);
+  OLA_ASSERT_LT(uint64_1, int2);
+  OLA_ASSERT_LTE(uint64_1, int1);
+  OLA_ASSERT_LT(int3, uint64_1);
+  OLA_ASSERT_LTE(int1, uint64_1);
+  OLA_ASSERT_LT(int64_1, uint64_1);
+  OLA_ASSERT_LTE(int64_2, uint64_1);
+  OLA_ASSERT_LT(uint1, int64_3);
+  OLA_ASSERT_LTE(uint1, int64_2);
+  OLA_ASSERT_LT(uint64_1, int64_3);
+  OLA_ASSERT_LTE(uint64_1, int64_2);
+}
+
+/*
+ * Test for mulitpleOf
+ */
+void JsonTest::testMultipleOf() {
+  JsonDouble double1(10.0);
+  JsonDouble double2(5);
+  JsonDouble double3(11.0);
+  JsonUInt uint1(10);
+  JsonUInt uint2(5);
+  JsonUInt uint3(11);
+  JsonInt int1(10);
+  JsonInt int2(5);
+  JsonInt int3(11);
+  JsonInt64 int64_1(10);
+  JsonInt64 int64_2(5);
+  JsonInt64 int64_3(11);
+  JsonUInt64 uint64_1(10);
+  JsonUInt64 uint64_2(5);
+  JsonUInt64 uint64_3(11);
+
+  OLA_ASSERT(double1.MultipleOf(double2));
+  OLA_ASSERT(double1.MultipleOf(uint2));
+  OLA_ASSERT(double1.MultipleOf(int2));
+  OLA_ASSERT(double1.MultipleOf(uint64_2));
+  OLA_ASSERT(double1.MultipleOf(int64_2));
+
+  OLA_ASSERT(uint1.MultipleOf(double2));
+  OLA_ASSERT(uint1.MultipleOf(uint2));
+  OLA_ASSERT(uint1.MultipleOf(int2));
+  OLA_ASSERT(uint1.MultipleOf(uint64_2));
+  OLA_ASSERT(uint1.MultipleOf(int64_2));
+
+  OLA_ASSERT(int1.MultipleOf(double2));
+  OLA_ASSERT(int1.MultipleOf(uint2));
+  OLA_ASSERT(int1.MultipleOf(int2));
+  OLA_ASSERT(int1.MultipleOf(uint64_2));
+  OLA_ASSERT(int1.MultipleOf(int64_2));
+
+  OLA_ASSERT(int64_1.MultipleOf(double2));
+  OLA_ASSERT(int64_1.MultipleOf(uint2));
+  OLA_ASSERT(int64_1.MultipleOf(int2));
+  OLA_ASSERT(int64_1.MultipleOf(uint64_2));
+  OLA_ASSERT(int64_1.MultipleOf(int64_2));
+
+  OLA_ASSERT(uint64_1.MultipleOf(double2));
+  OLA_ASSERT(uint64_1.MultipleOf(uint2));
+  OLA_ASSERT(uint64_1.MultipleOf(int2));
+  OLA_ASSERT(uint64_1.MultipleOf(uint64_2));
+  OLA_ASSERT(uint64_1.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(double3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(double3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(uint3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(uint3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(int3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(int3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(int64_3.MultipleOf(int64_2));
+
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(double2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(uint2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(int2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(uint64_2));
+  OLA_ASSERT_FALSE(uint64_3.MultipleOf(int64_2));
+}
+
+/*
  * Test looking up a value with a pointer.
  */
 void JsonTest::testLookups() {
@@ -390,14 +553,14 @@ void JsonTest::testLookups() {
   JsonPointer invalid_pointer("/invalid/path");
   JsonPointer name_pointer("/name");
 
-  JsonStringValue string1("foo");
+  JsonString string1("foo");
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(&string1),
                 string1.LookupElement(empty_pointer));
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
                 string1.LookupElement(invalid_pointer));
 
   // Now try an object
-  JsonStringValue *name_value = new JsonStringValue("simon");
+  JsonString *name_value = new JsonString("simon");
   JsonObject object;
   object.Add("age", 10);
   object.AddValue("name", name_value);
@@ -413,9 +576,9 @@ void JsonTest::testLookups() {
 
   // Now try an array
   JsonArray *array = new JsonArray();
-  JsonStringValue *string2 = new JsonStringValue("cat");
-  JsonStringValue *string3 = new JsonStringValue("dog");
-  JsonStringValue *string4 = new JsonStringValue("mouse");
+  JsonString *string2 = new JsonString("cat");
+  JsonString *string3 = new JsonString("dog");
+  JsonString *string4 = new JsonString("mouse");
   array->AppendValue(string2);
   array->AppendValue(string3);
   array->AppendValue(string4);
@@ -452,14 +615,14 @@ void JsonTest::testLookups() {
  * Test that clone() works.
  */
 void JsonTest::testClone() {
-  JsonStringValue string1("foo");
-  JsonBoolValue bool1(true);
-  JsonNullValue null1;
-  JsonDoubleValue double1(1.0);
-  JsonUIntValue uint1(10);
-  JsonIntValue int1(10);
-  JsonInt64Value int64_1(-99);
-  JsonInt64Value uint64_1(10);
+  JsonString string1("foo");
+  JsonBool bool1(true);
+  JsonNull null1;
+  JsonDouble double1(1.0);
+  JsonUInt uint1(10);
+  JsonInt int1(10);
+  JsonInt64 int64_1(-99);
+  JsonUInt64 uint64_1(10);
 
   JsonObject object;
   object.Add("age", 10);

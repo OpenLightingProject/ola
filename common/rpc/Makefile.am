@@ -40,3 +40,6 @@ RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                   $(libprotobuf_LIBS) \
                   ../libolacommon.la
+if USING_WIN32
+RpcTester_LDADD += -lWs2_32
+endif

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Socket.cpp
  * Implementation of the Socket classes
@@ -160,10 +160,9 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
  */
 bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
 #ifdef _WIN32
-  GenericSocketAddress addr =
-    ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
+  GenericSocketAddress addr = GetLocalAddress(m_handle.m_handle.m_fd);
 #else
-  GenericSocketAddress addr = ola::network::GetLocalAddress(m_handle);
+  GenericSocketAddress addr = GetLocalAddress(m_handle);
 #endif
   if (!addr.IsValid()) {
     return false;
@@ -477,7 +476,7 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                     sizeof(loop));
 #endif
     if (ok < 0) {
-      OLA_WARN << "Failed to disable looping for " << m_handle<< ":" <<
+      OLA_WARN << "Failed to disable looping for " << m_handle << ":" <<
         strerror(errno);
       return false;
     }

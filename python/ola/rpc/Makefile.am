@@ -19,7 +19,7 @@ TESTS = SimpleRpcControllerTest.sh
 endif
 dist_check_SCRIPTS = SimpleRpcControllerTest.py
 
-SimpleRpcControllerTest.sh: Makefile
+SimpleRpcControllerTest.sh: Makefile.am
 	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > SimpleRpcControllerTest.sh
 	chmod +x SimpleRpcControllerTest.sh
 

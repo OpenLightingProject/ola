@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Socket.cpp
  * Implementation of the Socket classes
@@ -250,7 +250,7 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
  */
 bool TCPAcceptingSocket::Close() {
   bool ret = true;
-  if (m_handle != ola::io::INVALID_DESCRIPTOR)
+  if (m_handle != ola::io::INVALID_DESCRIPTOR) {
 #ifdef _WIN32
     if (closesocket(m_handle.m_handle.m_fd)) {
 #else
@@ -259,6 +259,7 @@ bool TCPAcceptingSocket::Close() {
       OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
+  }
   m_handle = ola::io::INVALID_DESCRIPTOR;
   return ret;
 }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Descriptor.h
  * The Descriptor classes
@@ -54,31 +54,47 @@
 namespace ola {
 namespace io {
 
+// The following section of code defines the various types and helper functions
+// needed for the Descriptor infrastructure.
+// On *nix, there's the "everything is a file" philosophy, so we can just use
+// ints as handles.
+// On Windows, the situation is more complicated, so we need to treat sockets,
+// files, devices, pipes, etc. in special ways.
 #ifdef _WIN32
 // Internal use only. Semantic type of the descriptor.
 enum DescriptorType {
   GENERIC_DESCRIPTOR = 0,  // Catch-all type without special handling
   SOCKET_DESCRIPTOR,  // WinSock socket
-  HANDLE_DESCRIPTOR  // Windows device handle
+  PIPE_DESCRIPTOR  // Named Pipe handle
 };
 
 // Consider this to be an opaque type.
 struct DescriptorHandle {
+  // The actual OS handle
   union {
     int m_fd;
     void* m_handle;
   } m_handle;
+  // Type of this descriptor's handle
   DescriptorType m_type;
+  // Handler to an event for async I/O
   void* m_event_handle;
+  // Pointer to read result of an async I/O call
+  uint8_t* m_read_data;
+  // Pointer to size of read result data
+  uint32_t* m_read_data_size;
 
   DescriptorHandle() {
     m_handle.m_fd = -1;
     m_type = GENERIC_DESCRIPTOR;
     m_event_handle = 0;
+    m_read_data = NULL;
+    m_read_data_size = NULL;
   }
 };
 
 static DescriptorHandle INVALID_DESCRIPTOR;
+static const size_t READ_DATA_BUFFER_SIZE = 1024;
 bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
 bool operator==(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
 bool operator<(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
@@ -270,6 +286,10 @@ class LoopbackDescriptor: public ConnectedDescriptor {
   LoopbackDescriptor() {
     m_handle_pair[0] = INVALID_DESCRIPTOR;
     m_handle_pair[1] = INVALID_DESCRIPTOR;
+#ifdef _WIN32
+    memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
+    m_read_data_size = 0;
+#endif
   }
   ~LoopbackDescriptor() { Close(); }
   bool Init();
@@ -285,6 +305,10 @@ class LoopbackDescriptor: public ConnectedDescriptor {
   DescriptorHandle m_handle_pair[2];
   LoopbackDescriptor(const LoopbackDescriptor &other);
   LoopbackDescriptor& operator=(const LoopbackDescriptor &other);
+#ifdef _WIN32
+  uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
+  uint32_t m_read_data_size;
+#endif
 };
 
 
@@ -298,6 +322,10 @@ class PipeDescriptor: public ConnectedDescriptor {
     m_other_end(NULL) {
     m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
     m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
+#ifdef _WIN32
+    memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
+    m_read_data_size = 0;
+#endif
   }
   ~PipeDescriptor() { Close(); }
 
@@ -323,9 +351,17 @@ class PipeDescriptor: public ConnectedDescriptor {
     m_out_pair[0] = out_pair[0];
     m_out_pair[1] = out_pair[1];
     m_other_end = other_end;
+#ifdef _WIN32
+    m_in_pair[0].m_read_data = m_read_data;
+    m_in_pair[0].m_read_data_size = &m_read_data_size;
+#endif
   }
   PipeDescriptor(const PipeDescriptor &other);
   PipeDescriptor& operator=(const PipeDescriptor &other);
+#ifdef _WIN32
+  uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
+  uint32_t m_read_data_size;
+#endif
 };
 
 /*

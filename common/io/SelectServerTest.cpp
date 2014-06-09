@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServerTest.cpp
  * Test fixture for the Socket classes
@@ -20,6 +20,10 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
+
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
 
 #include "common/io/PollerInterface.h"
 #include "ola/Callback.h"
@@ -119,12 +123,22 @@ void SelectServerTest::setUp() {
   m_ss = new SelectServer(m_map);
   m_timeout_counter = 0;
   m_loop_counter = 0;
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
 void SelectServerTest::tearDown() {
   delete m_ss;
   delete m_map;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 
