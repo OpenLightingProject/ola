@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonPointer.h
  * An implementation of RFC 6901.
@@ -124,6 +124,7 @@ class JsonPointer {
   };
 
   JsonPointer();
+  JsonPointer(const JsonPointer &other);
 
   /**
    * @brief Construct a new JsonPointer from a string representing the path.
@@ -133,12 +134,17 @@ class JsonPointer {
   explicit JsonPointer(const std::string &path);
 
   /**
+   * @brief Equality operator
+   */
+  bool operator==(const JsonPointer &other) const;
+
+  /**
    * @brief Returns true if this pointer is valid.
    *
    * Invalid pointers are ones that don't start with a /.
    * If the pointer is invalid, the result of all other methods is undefined.
    */
-  bool IsValid() { return m_is_valid; }
+  bool IsValid() const { return m_is_valid; }
 
   /**
    * @brief Return an iterator pointing to the first token in the JsonPointer.
@@ -186,6 +192,13 @@ class JsonPointer {
    */
   std::string ToString() const;
 
+  /**
+   * @brief Check if this pointer is a prefix of another
+   * @param other the JsonPointer to compare to.
+   * @returns true if this object is a prefix of the parameter.
+   */
+  bool IsPrefixOf(const JsonPointer &other) const;
+
  private:
   typedef std::vector<std::string> Tokens;
 
@@ -195,9 +208,9 @@ class JsonPointer {
   static std::string EscapeString(const std::string &input);
   static std::string UnEscapeString(const std::string &input);
 
-  DISALLOW_COPY_AND_ASSIGN(JsonPointer);
+  void operator=(const JsonPointer&);
 };
-/**@}*/
 }  // namespace web
 }  // namespace ola
+/**@}*/
 #endif  // INCLUDE_OLA_WEB_JSONPOINTER_H_

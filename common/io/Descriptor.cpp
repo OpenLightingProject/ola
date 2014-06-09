@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Descriptor.cpp
  * Implementation of the Descriptor classes
@@ -38,6 +38,7 @@
 #include <sys/uio.h>
 #endif
 
+#include <algorithm>
 #include <string>
 
 #include "ola/Logging.h"
@@ -88,7 +89,8 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
 
   static unsigned int pipe_name_counter = 0;
   char pipe_name_buffer[MAX_PATH];
-  sprintf(pipe_name_buffer,
+  snprintf(pipe_name_buffer,
+      MAX_PATH,
       "\\\\.\\Pipe\\OpenLightingArchitecture.%08x.%08x",
       GetCurrentProcessId(),
       pipe_name_counter++);
@@ -111,7 +113,7 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
     OLA_WARN << "Could not create read end of pipe: %d" << GetLastError();
     return false;
   }
-  
+
   write_handle = CreateFileA(pipe_name_buffer,
       GENERIC_WRITE,
       0,
@@ -278,11 +280,6 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
     return 0;
 
   ssize_t bytes_sent;
-#if HAVE_DECL_MSG_NOSIGNAL
-  if (IsSocket())
-    bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
-  else
-#endif
 #ifdef _WIN32
     if (WriteDescriptor().m_type == PIPE_DESCRIPTOR) {
       DWORD bytes_written = 0;
@@ -300,13 +297,27 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
       OLA_WARN << "Send() called on unsupported descriptor type";
       return 0;
     }
+  } else {
+    bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+  }
 #else
+  // BSD Sockets
+#if HAVE_DECL_MSG_NOSIGNAL
+  if (IsSocket()) {
+    bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
+  } else {
+#endif
     bytes_sent = write(WriteDescriptor(), buffer, size);
+#if HAVE_DECL_MSG_NOSIGNAL
+  }
 #endif
 
-  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
+#endif
+
+  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
+  }
   return bytes_sent;
 }
 

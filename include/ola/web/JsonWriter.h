@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonWriter.h
  * Serialize JSON data.
@@ -46,7 +46,8 @@ namespace web {
 /**
  * @brief A class to serialize a JSONValue to text.
  */
-class JsonWriter : public JsonValueVisitorInterface {
+class JsonWriter : public JsonValueConstVisitorInterface,
+                          JsonObjectPropertyVisitor {
  public:
   /**
    * @brief Write the string representation of the JsonValue to a ostream.
@@ -64,17 +65,17 @@ class JsonWriter : public JsonValueVisitorInterface {
   /**
    * @privatesection
    */
-  void Visit(const JsonStringValue &value);
-  void Visit(const JsonBoolValue &value);
-  void Visit(const JsonNullValue &value);
+  void Visit(const JsonString &value);
+  void Visit(const JsonBool &value);
+  void Visit(const JsonNull &value);
   void Visit(const JsonRawValue &value);
   void Visit(const JsonObject &value);
   void Visit(const JsonArray &value);
-  void Visit(const JsonUIntValue &value);
-  void Visit(const JsonUInt64Value &value);
-  void Visit(const JsonIntValue &value);
-  void Visit(const JsonInt64Value &value);
-  void Visit(const JsonDoubleValue &value);
+  void Visit(const JsonUInt &value);
+  void Visit(const JsonUInt64 &value);
+  void Visit(const JsonInt &value);
+  void Visit(const JsonInt64 &value);
+  void Visit(const JsonDouble &value);
 
   void VisitProperty(const std::string &property, const JsonValue &value);
 

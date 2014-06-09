@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtils..h
  * Random String functions.
@@ -127,7 +127,7 @@ inline std::string IntToHexString(uint32_t i) {
 /**
  * @brief Escape a string with \\ .
  *
- * The string is modified in place.
+ * The string is modified in place according to the grammar from json.org
  * The following characters are escaped:
  *  - \\
  *  - "

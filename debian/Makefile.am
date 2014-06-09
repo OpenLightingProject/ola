@@ -4,9 +4,7 @@ EXTRA_DIST = changelog \
              control \
              copyright \
              dirs \
-             Makefile \
              Makefile.am \
-             Makefile.in \
              ola-dev.dirs \
              ola-dev.install \
              ola-python.dirs \

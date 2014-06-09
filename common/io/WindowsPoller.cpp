@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * WindowsPoller.cpp
  * A Poller for the Windows platform
@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <queue>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
@@ -101,7 +103,7 @@ bool WindowsPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
 
   // We make use of the fact that connected_descriptor_t_lt operates on the
   // descriptor handle value alone.
-  connected_pipe_descriptor_t registered_descriptor = 
+  connected_pipe_descriptor_t registered_descriptor =
     {descriptor, delete_on_close};
 
   bool result = STLInsertIfNotPresent(&m_connected_pipe_read_descriptors,
@@ -153,14 +155,14 @@ bool WindowsPoller::RemoveReadDescriptor(
 }
 
 bool WindowsPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
-  // TODO Implement this method
+  // TODO(lukase) Implement this method
   OLA_WARN << "AddWriteDescriptor(WriteFileDescriptor*) not implemented";
   return false;
 }
 
 bool WindowsPoller::RemoveWriteDescriptor(
     class WriteFileDescriptor *descriptor) {
-  // TODO Implement this method
+  // TODO(lukase) Implement this method
   OLA_WARN << "RemoveWriteDescriptor(WriteFileDescriptor*) not implemented";
   return false;
 }
@@ -191,7 +193,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   // Prepare for polling
 
   // Check that we don't have too many descriptors
-  if ((m_socket_read_descriptors.size() + 
+  if ((m_socket_read_descriptors.size() +
        m_connected_pipe_read_descriptors.size()) > MAXIMUM_WAIT_OBJECTS) {
     OLA_WARN << "Too many descriptors";
     return false;
@@ -274,7 +276,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       // Cancel IO
       {
         std::vector<HANDLE>::iterator io = io_handles.begin();
-        for(; io != io_handles.end(); ++io) {
+        for (; io != io_handles.end(); ++io) {
           CancelIo(*io);
         }
       }
@@ -287,8 +289,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       break;
     default:
       m_clock->CurrentTime(&m_wake_up_time);
-      do
-      {
+      do {
         DWORD index = wait_result - WAIT_OBJECT_0;
         if (index < connected_descriptors.size()) {
           ConnectedDescriptor* descriptor = connected_descriptors[index];
@@ -297,7 +298,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           io_handles.erase(io_handles.begin() + index);
           connected_descriptors.erase(connected_descriptors.begin() + index);
         } else {
-          // TODO
+          // TODO(lukase)
           OLA_WARN << "Unkown index";
         }
         // Check for other signalled events
@@ -310,7 +311,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       // Cancel IO
       {
         std::vector<HANDLE>::iterator io = io_handles.begin();
-        for(; io != io_handles.end(); ++io) {
+        for (; io != io_handles.end(); ++io) {
           CancelIo(*io);
         }
       }
