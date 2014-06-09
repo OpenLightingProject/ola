@@ -29,6 +29,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <map>
 #include <set>
 
 #include "common/io/PollerInterface.h"

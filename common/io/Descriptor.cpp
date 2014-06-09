@@ -281,24 +281,21 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
 
   ssize_t bytes_sent;
 #ifdef _WIN32
-    if (WriteDescriptor().m_type == PIPE_DESCRIPTOR) {
-      DWORD bytes_written = 0;
-      if (!WriteFile(WriteDescriptor().m_handle.m_handle,
-                     buffer,
-                     size,
-                     &bytes_written,
-                     NULL)) {
-        OLA_WARN << "WriteFile() failed with " << GetLastError();
-        bytes_sent = -1;
-      } else {
-        bytes_sent = bytes_written;
-      }
+  if (WriteDescriptor().m_type == PIPE_DESCRIPTOR) {
+    DWORD bytes_written = 0;
+    if (!WriteFile(WriteDescriptor().m_handle.m_handle,
+                   buffer,
+                   size,
+                   &bytes_written,
+                   NULL)) {
+      OLA_WARN << "WriteFile() failed with " << GetLastError();
+      bytes_sent = -1;
     } else {
-      OLA_WARN << "Send() called on unsupported descriptor type";
-      return 0;
+      bytes_sent = bytes_written;
     }
   } else {
-    bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+    OLA_WARN << "Send() called on unsupported descriptor type";
+    return 0;
   }
 #else
   // BSD Sockets
@@ -344,7 +341,7 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
    */
   int bytes_written = 0;
   for (int io = 0; io < iocnt; ++io) {
-    bytes_written = Send(reinterpret_cast<const uint8_t*>(iov[io].iov_base), 
+    bytes_written = Send(reinterpret_cast<const uint8_t*>(iov[io].iov_base),
                          iov[io].iov_len);
     if (bytes_written == 0) {
       OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
@@ -411,17 +408,17 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
         memcpy(buffer, ReadDescriptor().m_read_data, size_to_copy);
         data_read = size_to_copy;
         if (read_data_size > size) {
-          memmove(buffer, &(buffer[size_to_copy]), 
+          memmove(buffer, &(buffer[size_to_copy]),
               read_data_size - size_to_copy);
           *ReadDescriptor().m_read_data_size -= size_to_copy;
         } else {
           *ReadDescriptor().m_read_data_size = 0;
         }
-        // TODO what if there is data remanining that hasn't been read yet?
+        // TODO(lukase) what if there is unread data remanining?
       }
       return 0;
     } else {
-      OLA_WARN << "Descriptor type not implemented for reading: " 
+      OLA_WARN << "Descriptor type not implemented for reading: "
                << ReadDescriptor().m_type;
       return -1;
     }
@@ -704,6 +701,7 @@ DeviceDescriptor::DeviceDescriptor(int fd) {
   m_handle = fd;
 #endif
 }
+
 bool DeviceDescriptor::Close() {
   if (m_handle == INVALID_DESCRIPTOR)
     return true;

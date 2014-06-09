@@ -253,7 +253,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   }
 
   // Call select() on sockets
-  // TODO
+  // TODO(lukase)
 
   // If there are closed descriptors, set the timeout to something
   // very small (1ms). This ensures we at least make a pass through the
@@ -331,7 +331,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
 
   // Cancel IO
   std::vector<HANDLE>::iterator io = io_handles.begin();
-  for(; io != io_handles.end(); ++io) {
+  for (; io != io_handles.end(); ++io) {
     CancelIo(*io);
   }
   io_handles.clear();
