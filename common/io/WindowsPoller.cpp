@@ -53,38 +53,315 @@ WindowsPoller::WindowsPoller(ExportMap *export_map, Clock* clock)
 }
 
 WindowsPoller::~WindowsPoller() {
+  ConnectedPipeDescriptorSet::iterator iter =
+    m_connected_pipe_read_descriptors.begin();
+  for (; iter != m_connected_pipe_read_descriptors.end(); ++iter) {
+    if (iter->delete_on_close) {
+      delete iter->descriptor;
+    }
+  }
+  m_socket_read_descriptors.clear();
+  m_connected_pipe_read_descriptors.clear();
+
+  OverlappedHandleMap::iterator overlapped_it = m_overlapped_handle_map.begin();
+  for (; overlapped_it != m_overlapped_handle_map.end(); ++overlapped_it) {
+    CloseHandle(overlapped_it->second.m_overlapped.hEvent);
+  }
 }
 
 bool WindowsPoller::AddReadDescriptor(class ReadFileDescriptor *descriptor) {
-  return true;
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
+    return false;
+  }
+
+  ola::io::DescriptorHandle handle = descriptor->ReadDescriptor();
+
+  if (handle.m_type != ola::io::SOCKET_DESCRIPTOR) {
+    OLA_WARN << "Handle type " << handle.m_type << "not supported";
+    return false;
+  }
+
+  return STLInsertIfNotPresent(&m_socket_read_descriptors, descriptor);
 }
 
 bool WindowsPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
                                      bool delete_on_close) {
-  return true;
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
+    return false;
+  }
+
+  ola::io::DescriptorHandle handle = descriptor->ReadDescriptor();
+
+  if (handle.m_type != ola::io::PIPE_DESCRIPTOR) {
+    OLA_WARN << "Handle type " << handle.m_type << "not supported";
+    return false;
+  }
+
+  // We make use of the fact that connected_descriptor_t_lt operates on the
+  // descriptor handle value alone.
+  connected_pipe_descriptor_t registered_descriptor = 
+    {descriptor, delete_on_close};
+
+  bool result = STLInsertIfNotPresent(&m_connected_pipe_read_descriptors,
+                                      registered_descriptor);
+
+  if (result) {
+    overlapped_handle_context_t context;
+    memset(&context, 0, sizeof(context));
+    context.m_overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    m_overlapped_handle_map.insert(
+        std::pair<void*, overlapped_handle_context_t>(descriptor, context));
+  }
+
+  return result;
 }
 
 bool WindowsPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
-  return true;
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor";
+    return false;
+  }
+
+  ola::io::DescriptorHandle handle = descriptor->ReadDescriptor();
+
+  if (handle.m_type != ola::io::SOCKET_DESCRIPTOR) {
+    OLA_WARN << "Handle type " << handle.m_type << "not supported";
+    return false;
+  }
+
+  return STLRemove(&m_socket_read_descriptors, descriptor);
 }
 
 bool WindowsPoller::RemoveReadDescriptor(
     class ConnectedDescriptor *descriptor) {
-  return true;
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor";
+    return false;
+  }
+
+  OverlappedHandleMap::iterator iter = m_overlapped_handle_map.find(descriptor);
+  if (iter != m_overlapped_handle_map.end()) {
+    CloseHandle(iter->second.m_overlapped.hEvent);
+    m_overlapped_handle_map.erase(iter);
+  }
+
+  // Comparison is based on descriptor only, so the second value is redundant.
+  connected_pipe_descriptor_t registered_descriptor = {descriptor, false};
+  return STLRemove(&m_connected_pipe_read_descriptors, registered_descriptor);
 }
 
 bool WindowsPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
-  return true;
+  // TODO Implement this method
+  OLA_WARN << "AddWriteDescriptor(WriteFileDescriptor*) not implemented";
+  return false;
 }
 
 bool WindowsPoller::RemoveWriteDescriptor(
     class WriteFileDescriptor *descriptor) {
-  return true;
+  // TODO Implement this method
+  OLA_WARN << "RemoveWriteDescriptor(WriteFileDescriptor*) not implemented";
+  return false;
 }
 
 bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                         const TimeInterval &poll_interval) {
-  return false;
+  TimeStamp now;
+  TimeInterval sleep_interval = poll_interval;
+
+  m_clock->CurrentTime(&now);
+
+  // Adjust sleep time for timeouts
+  TimeInterval next_event_in = timeout_manager->ExecuteTimeouts(&now);
+  if (!next_event_in.IsZero()) {
+    sleep_interval = std::min(next_event_in, sleep_interval);
+  }
+
+  // take care of stats accounting
+  if (m_wake_up_time.IsSet()) {
+    TimeInterval loop_time = now - m_wake_up_time;
+    OLA_DEBUG << "ss process time was " << loop_time.ToString();
+    if (m_loop_time)
+      (*m_loop_time) += loop_time.AsInt();
+    if (m_loop_iterations)
+      (*m_loop_iterations)++;
+  }
+
+  // Prepare for polling
+
+  // Check that we don't have too many descriptors
+  if ((m_socket_read_descriptors.size() + 
+       m_connected_pipe_read_descriptors.size()) > MAXIMUM_WAIT_OBJECTS) {
+    OLA_WARN << "Too many descriptors";
+    return false;
+  }
+
+  std::vector<HANDLE> handles;
+  std::vector<HANDLE> io_handles;
+  std::vector<ConnectedDescriptor*> connected_descriptors;
+
+  std::queue<ReadFileDescriptor*> read_ready_queue;
+  std::queue<connected_pipe_descriptor_t> closed_queue;
+  bool closed_descriptors = false;
+
+  // Launch read calls
+  ConnectedPipeDescriptorSet::iterator chd_iter =
+      m_connected_pipe_read_descriptors.begin();
+  for (; chd_iter != m_connected_pipe_read_descriptors.end(); ++chd_iter) {
+    OverlappedHandleMap::iterator overlapped =
+        m_overlapped_handle_map.find(chd_iter->descriptor);
+    if (overlapped == m_overlapped_handle_map.end()) {
+      OLA_WARN << "No overlapped entry for descriptor " << chd_iter->descriptor;
+      continue;
+    }
+
+    // Check if this descriptor should be closed
+    if (!chd_iter->descriptor->ValidReadDescriptor()) {
+      closed_descriptors = true;
+      closed_queue.push(*chd_iter);
+      continue;
+    }
+
+    DescriptorHandle handle = chd_iter->descriptor->ReadDescriptor();
+
+    // Async read call to be used with WaitForMultipleObjects
+    if (!ReadFile(handle.m_handle.m_handle,
+                  handle.m_read_data,
+                  sizeof(handle.m_read_data),
+                  reinterpret_cast<DWORD*>(handle.m_read_data_size),
+                  &(overlapped->second.m_overlapped))) {
+      int last_error = GetLastError();
+      if (last_error != ERROR_IO_PENDING) {
+        // Detect closed pipe descriptor
+        if (last_error == ERROR_BROKEN_PIPE) {
+          closed_queue.push(*chd_iter);
+          closed_descriptors = true;
+        } else {
+          OLA_WARN << "ReadFile failed with " << GetLastError() << " for "
+                   << handle.m_handle.m_handle;
+        }
+        continue;
+      }
+    }
+
+    handles.push_back(overlapped->second.m_overlapped.hEvent);
+    io_handles.push_back(handle.m_handle.m_handle);
+    connected_descriptors.push_back(chd_iter->descriptor);
+  }
+
+  // Call select() on sockets
+  // TODO
+
+  // If there are closed descriptors, set the timeout to something
+  // very small (1ms). This ensures we at least make a pass through the
+  // descriptors.
+  if (closed_descriptors) {
+    sleep_interval = std::min(sleep_interval, TimeInterval(0, 1000));
+  }
+
+  // Wait on all events
+  DWORD wait_result = WaitForMultipleObjects(handles.size(),
+                                             handles.data(),
+                                             FALSE,
+                                             sleep_interval.InMilliSeconds());
+  bool return_result = true;
+
+  switch (wait_result) {
+    case WAIT_TIMEOUT:
+      // timeout
+      m_clock->CurrentTime(&m_wake_up_time);
+      // Cancel IO
+      {
+        std::vector<HANDLE>::iterator io = io_handles.begin();
+        for(; io != io_handles.end(); ++io) {
+          CancelIo(*io);
+        }
+      }
+      io_handles.clear();
+      timeout_manager->ExecuteTimeouts(&m_wake_up_time);
+      break;
+    case WAIT_FAILED:
+      OLA_WARN << "WaitForMultipleObjects() failed with " << GetLastError();
+      return_result = false;
+      break;
+    default:
+      m_clock->CurrentTime(&m_wake_up_time);
+      do
+      {
+        DWORD index = wait_result - WAIT_OBJECT_0;
+        if (index < connected_descriptors.size()) {
+          ConnectedDescriptor* descriptor = connected_descriptors[index];
+          read_ready_queue.push(descriptor);
+          handles.erase(handles.begin() + index);
+          io_handles.erase(io_handles.begin() + index);
+          connected_descriptors.erase(connected_descriptors.begin() + index);
+        } else {
+          // TODO
+          OLA_WARN << "Unkown index";
+        }
+        // Check for other signalled events
+        wait_result = WaitForMultipleObjects(handles.size(),
+                                             handles.data(),
+                                             FALSE,
+                                             0);
+      } while ((wait_result != WAIT_TIMEOUT) && (wait_result != WAIT_FAILED));
+
+      // Cancel IO
+      {
+        std::vector<HANDLE>::iterator io = io_handles.begin();
+        for(; io != io_handles.end(); ++io) {
+          CancelIo(*io);
+        }
+      }
+      io_handles.clear();
+
+      // deal with anything that needs an action
+      while (!read_ready_queue.empty()) {
+        ReadFileDescriptor *descriptor = read_ready_queue.front();
+        descriptor->PerformRead();
+        read_ready_queue.pop();
+      }
+
+      m_clock->CurrentTime(&m_wake_up_time);
+      timeout_manager->ExecuteTimeouts(&m_wake_up_time);
+      break;
+  }
+
+  // Cancel IO
+  std::vector<HANDLE>::iterator io = io_handles.begin();
+  for(; io != io_handles.end(); ++io) {
+    CancelIo(*io);
+  }
+  io_handles.clear();
+
+  // Close descriptors
+  chd_iter = m_connected_pipe_read_descriptors.begin();
+  while (chd_iter != m_connected_pipe_read_descriptors.end()) {
+    ConnectedPipeDescriptorSet::iterator this_iter = chd_iter;
+    ++chd_iter;
+    if (!this_iter->descriptor->ValidReadDescriptor()) {
+      closed_queue.push(*this_iter);
+      m_connected_pipe_read_descriptors.erase(this_iter);
+    }
+  }
+
+  while (!closed_queue.empty()) {
+    const connected_pipe_descriptor_t &connected_descriptor =
+        closed_queue.front();
+    ConnectedDescriptor::OnCloseCallback *on_close =
+      connected_descriptor.descriptor->TransferOnClose();
+    if (on_close)
+      on_close->Run();
+    if (connected_descriptor.delete_on_close)
+      delete connected_descriptor.descriptor;
+    if (m_export_map) {
+      (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+    }
+    closed_queue.pop();
+  }
+
+  return return_result;
 }
 }  // namespace io
 }  // namespace ola
