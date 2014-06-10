@@ -28,6 +28,7 @@ libolaweb_la_SOURCES = Json.cpp JsonData.cpp JsonLexer.cpp JsonParser.cpp \
 
 # TESTS
 ################################################
+# Patch test names are abbreviated to prevent Windows' UAC from blocking them.
 if BUILD_TESTS
 TESTS = JsonTester ParserTester PatParserTester PatTester PointerTester \
         PointerTrackerTester SchemaParserTester SchemaTester SectionsTester
