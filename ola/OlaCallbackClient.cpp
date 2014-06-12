@@ -467,7 +467,9 @@ void OlaCallbackClient::HandleDiscovery(
 void OlaCallbackClient::HandleSetCallback(
     ola::SingleUseCallback1<void, const string&> *callback,
     const Result &result) {
-  callback->Run(result.Error());
+  if (callback) {
+    callback->Run(result.Error());
+  }
 }
 
 void OlaCallbackClient::HandleRepeatableSetCallback(
