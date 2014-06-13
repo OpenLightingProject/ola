@@ -256,7 +256,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
 
   while (list != NULL) {
-    struct usb_device *dev = list->dev;
+    struct libusb_device *dev = list->dev;
     list = list->next;
     i++;
 
