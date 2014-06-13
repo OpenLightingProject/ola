@@ -60,6 +60,10 @@ void OlaClient::SetDMXCallback(RepeatableDMXCallback *callback) {
   m_core->SetDMXCallback(callback);
 }
 
+void OlaClient::ReloadPlugins(SetCallback *callback) {
+  m_core->ReloadPlugins(callback);
+}
+
 void OlaClient::FetchPluginList(PluginListCallback *callback) {
   m_core->FetchPluginList(callback);
 }

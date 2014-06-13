@@ -387,6 +387,19 @@ void OlaServerServiceImpl::GetPlugins(
   }
 }
 
+void OlaServerServiceImpl::ReloadPlugins(
+    RpcController*,
+    const ::ola::proto::PluginReloadRequest*,
+    ola::proto::Ack*,
+    ola::rpc::RpcService::CompletionCallback* done) {
+  ClosureRunner runner(done);
+  if (m_reload_plugins_callback.get()) {
+    m_reload_plugins_callback->Run();
+  } else {
+    OLA_WARN << "No plugin reload callback provided!";
+  }
+}
+
 
 /*
  * Return the description for a plugin.

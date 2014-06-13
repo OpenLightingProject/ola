@@ -114,6 +114,23 @@ void OlaClientCore::SetDMXCallback(RepeatableDMXCallback *callback) {
   m_dmx_callback.reset(callback);
 }
 
+void OlaClientCore::ReloadPlugins(SetCallback *callback) {
+  ola::proto::PluginReloadRequest request;
+  RpcController *controller = new RpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->ReloadPlugins(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
+}
+
 void OlaClientCore::FetchPluginList(PluginListCallback *callback) {
   RpcController *controller = new RpcController();
   ola::proto::PluginListRequest request;
