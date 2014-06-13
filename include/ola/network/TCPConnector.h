@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TCPConnector.h.h
  * Copyright (C) 2012 Simon Newton
@@ -62,16 +62,9 @@ class TCPConnector {
     PendingTCPConnection(TCPConnector *connector,
                          const IPV4Address &ip,
                          int fd,
-                         TCPConnectCallback *callback)
-        : WriteFileDescriptor(),
-          ip_address(ip),
-          callback(callback),
-          timeout_id(ola::thread::INVALID_TIMEOUT),
-          m_connector(connector),
-          m_fd(fd) {
-    }
+                         TCPConnectCallback *callback);
 
-    int WriteDescriptor() const { return m_fd; }
+    ola::io::DescriptorHandle WriteDescriptor() const { return m_handle; }
 
     void PerformWrite();
     void Close();
@@ -82,7 +75,7 @@ class TCPConnector {
 
    private:
     TCPConnector *m_connector;
-    int m_fd;
+    ola::io::DescriptorHandle m_handle;
   };
 
   typedef std::set<PendingTCPConnection*> ConnectionSet;

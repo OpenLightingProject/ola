@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MockUDPSocket.cpp
  * This implements the UDPSocketInterface in a way that we can use it for
@@ -47,7 +47,7 @@ using ola::network::IPV4SocketAddress;
 MockUDPSocket::MockUDPSocket()
     : ola::network::UDPSocketInterface(),
       m_init_called(false),
-      m_dummy_sd(ola::io::INVALID_DESCRIPTOR),
+      m_dummy_handle(ola::io::INVALID_DESCRIPTOR),
       m_bound_to_port(false),
       m_broadcast_set(false),
       m_port(0),
@@ -56,9 +56,14 @@ MockUDPSocket::MockUDPSocket()
 
 
 bool MockUDPSocket::Init() {
-  if (m_dummy_sd == ola::io::INVALID_DESCRIPTOR) {
-    m_dummy_sd = socket(PF_INET, SOCK_DGRAM, 0);
-    if (m_dummy_sd < 0) {
+  if (m_dummy_handle == ola::io::INVALID_DESCRIPTOR) {
+#ifdef _WIN32
+    m_dummy_handle.m_handle.m_fd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (m_dummy_handle.m_handle.m_fd < 0) {
+#else
+    m_dummy_handle = socket(PF_INET, SOCK_DGRAM, 0);
+    if (m_dummy_handle < 0) {
+#endif
       OLA_WARN << "Could not create socket " << strerror(errno);
       return false;
     }
@@ -83,8 +88,12 @@ bool MockUDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
 
 bool MockUDPSocket::Close() {
   m_bound_to_port = false;
-  if (m_dummy_sd != ola::io::INVALID_DESCRIPTOR) {
-    close(m_dummy_sd);
+  if (m_dummy_handle != ola::io::INVALID_DESCRIPTOR) {
+#ifdef _WIN32
+    closesocket(m_dummy_handle.m_handle.m_fd);
+#else
+    close(m_dummy_handle);
+#endif
   }
   return true;
 }

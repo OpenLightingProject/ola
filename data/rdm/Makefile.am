@@ -21,7 +21,7 @@ endif
 endif
 
 
-PidDataTest.sh: Makefile
+PidDataTest.sh: Makefile.am
 	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir} $(PYTHON) ${srcdir}/PidDataTest.py; exit \$$?" > PidDataTest.sh
 	chmod +x PidDataTest.sh
 

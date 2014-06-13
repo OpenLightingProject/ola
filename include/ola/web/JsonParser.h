@@ -11,11 +11,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonParser.h
- * A class for Parsing Json data.
- * See http://www.json.org/
+ * A JsonParserInterface implementation that builds a parse tree.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -23,21 +22,25 @@
  * @addtogroup json
  * @{
  * @file JsonParser.h
- * @brief The class used to parse JSON data.
- *
- * The implementation does it's best to conform to
- * http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+ * @brief A JsonParserInterface implementation that builds a parse tree.
  * @}
  */
 
 #ifndef INCLUDE_OLA_WEB_JSONPARSER_H_
 #define INCLUDE_OLA_WEB_JSONPARSER_H_
 
-#include <ola/web/Json.h>
+#include <ola/base/Macro.h>
+#include <ola/web/JsonLexer.h>
+#include <memory>
+#include <stack>
 #include <string>
 
 namespace ola {
 namespace web {
+
+class JsonArray;
+class JsonObject;
+class JsonValue;
 
 /**
  * @addtogroup json
@@ -45,127 +48,80 @@ namespace web {
  */
 
 /**
- * @brief Parse a string containing Json data.
+ * @brief A JsonParserInterface implementation that builds a tree of
+ * JsonValues.
  *
- * The JsonParser is actually the lexer stage. As it encounters each token in
- * the document, it calls the appropriate method on the JsonHandlerInterface.
- * It's not quite a pure lexer because it doesn't pass through tokens like ':',
- * but you get the idea.
+ * This is the most common implementation of the JsonParserInterface but it's
+ * also the least efficient since it loads the entire document into memory.
  */
-class JsonParser {
+class JsonParser : public JsonParserInterface {
  public:
+  JsonParser() : JsonParserInterface() {}
+
+  void Begin();
+  void End();
+
+  void String(const std::string &value);
+  void Number(uint32_t value);
+  void Number(int32_t value);
+  void Number(uint64_t value);
+  void Number(int64_t value);
+  void Number(const JsonDouble::DoubleRepresentation &rep);
+  void Number(double value);
+  void Bool(bool value);
+  void Null();
+  void OpenArray();
+  void CloseArray();
+  void OpenObject();
+  void ObjectKey(const std::string &key);
+  void CloseObject();
+
+  void SetError(const std::string &error);
+
   /**
-   * @brief Parse a string containing JSON data.
-   * @param input the input string
-   * @param handler the JsonHandlerInterface to pass tokens to.
-   * @return true if parsing was successfull, false otherwise.
+   * @brief Check if parsing was successful.
    */
-  static bool Parse(const std::string &input,
-                    class JsonHandlerInterface *handler);
+  std::string GetError() const;
+
+  /**
+   * @brief Get the root of the parse tree, or NULL if parsing failed.
+   * @returns the root JsonValue. Ownership is not transferred.
+   */
+  JsonValue *GetRoot();
+
+  /**
+   * @brief Get the root of the parse tree, or NULL if parsing failed.
+   * @returns the root JsonValue. Ownership is transferred to the caller.
+   */
+  JsonValue *ClaimRoot();
+
+  /**
+   * @brief Parse text and return a JsonValue representation
+   */
+  static JsonValue* Parse(const std::string &input,
+                          std::string *error);
+
+ private:
+  // The container type identifies the type of container (object or array)
+  // we're currently operating in. As we descend the parse tree we push types
+  // onto m_container_stack so we can back track up the tree later.
+  enum ContainerType {
+    ARRAY,
+    OBJECT,
+  };
+
+  std::string m_error;
+  std::auto_ptr<JsonValue> m_root;
+  std::string m_key;
+  std::stack<ContainerType> m_container_stack;
+
+  // The stacks below don't own the objects they point to.
+  std::stack<JsonArray*> m_array_stack;
+  std::stack<JsonObject*> m_object_stack;
+
+  void AddValue(JsonValue *value);
+  DISALLOW_COPY_AND_ASSIGN(JsonParser);
 };
-
-/**
- * @brief The interface used to handle tokens during JSON parsing.
- *
- * As the JsonParser traverses the input string, it calls the methods below.
- */
-class JsonHandlerInterface {
- public:
-  JsonHandlerInterface() {}
-  virtual ~JsonHandlerInterface() {}
-
-  /**
-   * @brief Called when parsing begins.
-   */
-  virtual void Begin() = 0;
-
-  /**
-   * @brief Called when parsing completes.
-   */
-  virtual void End() = 0;
-
-  /**
-   * @brief Called when a string is encounted.
-   *
-   * This is not called for object keys, see ObjectKey() below.
-   */
-  virtual void String(const std::string &value) = 0;
-
-  /**
-   * @brief Called when a uint32_t is encounted.
-   */
-  virtual void Number(uint32_t value) = 0;
-
-  /**
-   * @brief Called when a int32_t is encounted.
-   */
-  virtual void Number(int32_t value) = 0;
-
-  /**
-   * @brief Called when a uint64_t is encounted.
-   */
-  virtual void Number(uint64_t value) = 0;
-
-  /**
-   * @brief Called when a int64_t is encounted.
-   */
-  virtual void Number(int64_t value) = 0;
-
-  /**
-   * @brief Called when a double value is encounted.
-   *
-   * MinGW struggles with long doubles
-   * http://mingw.5.n7.nabble.com/Strange-behaviour-of-gcc-4-8-1-with-long-double-td32949.html
-   * To avoid this, and to keep as many significant bits as possible we keep
-   * the components of a double separate. See JsonDoubleValue for details.
-   */
-  virtual void Number(const JsonDoubleValue::DoubleRepresentation &rep) = 0;
-
-  /**
-   * @brief Called when a bool is encounted.
-   */
-  virtual void Bool(bool value) = 0;
-
-  /**
-   * @brief Called when a null token is encounted.
-   */
-  virtual void Null() = 0;
-
-  /**
-   * @brief Called when an array starts.
-   */
-  virtual void OpenArray() = 0;
-
-  /**
-   * @brief Called when an array completes.
-   */
-  virtual void CloseArray() = 0;
-
-  /**
-   * @brief Called when an object starts.
-   */
-  virtual void OpenObject() = 0;
-
-  /**
-   * @brief Called when a new key is encounted.
-   *
-   * This may be called multiple times for the same object. The standard
-   * doesn't specify how to handle duplicate keys, so I generally use the last
-   * one.
-   */
-  virtual void ObjectKey(const std::string &key) = 0;
-
-  /**
-   * @brief Called when an object completes.
-   */
-  virtual void CloseObject() = 0;
-
-  /**
-   * @brief Can be called at any time to indicate an error with the input data.
-   */
-  virtual void SetError(const std::string &error) = 0;
-};
-
 /**@}*/
 }  // namespace web
 }  // namespace ola

@@ -1,10 +1,14 @@
 /**
  * @defgroup json JSON
- * @brief Classes for creating web services with on JSON.
+ * @brief JSON based APIs.
  *
- * The ola::web namespace provides classes for reading & writing JSON.
+ * The ola::web namespace provides:
+ *   - Classes for parsing and serializing JSON (RFC 7159)
+ *   - Implementation of JSON pointers (RFC 6901)
+ *   - Classes for applying JSON Patch documents (RFC 6902)
+ *   - A JSON Schema validator (http://www.json-schema.org).
  *
- * @par Writing Example
+ * @par Serialization Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~
    #include <ola/web/Json.h>
@@ -27,13 +31,8 @@
  * ~~~~~~~~~~~~~~~~~~~~~
    #include <ola/web/Json.h>
    #include <ola/web/JsonParser.h>
-   #include <ola/web/TreeHandler.h>
 
-   TreeHandler handler;
-   if (JsonParser::Parse(json_string, &handler)) {
-     std::auto_ptr<JsonValue> root = handler.ClaimRoot();
-   } else {
-     cerr << handler.GetError() << endl;
-   }
+   std::string error;
+   JsonValue *value = JsonParser::Parse(json_string, &error);
    ~~~~~~~~~~~~~~~~~~~~~
  */

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServerServiceImplTest.cpp
  * Test fixture for the OlaServerServiceImpl class
@@ -223,14 +223,8 @@ class GenericAckCheck: public parent {
  */
 void OlaServerServiceImplTest::testGetDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL,
+                            NULL, m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
@@ -290,14 +284,8 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
  */
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL,
+                            NULL, m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   // Register for a universe that doesn't exist
@@ -381,14 +369,8 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   ola::TimeStamp time1;
   ola::Client client(NULL);
   ola::Client client2(NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            &time1,
-                            m_uid);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL,
+                            &time1, m_uid, NULL);
   OlaClientService service1(&client, &impl);
   OlaClientService service2(&client2, &impl);
 
@@ -463,14 +445,8 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
  */
 void OlaServerServiceImplTest::testSetUniverseName() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, NULL,
+                            m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   unsigned int universe_id = 0;
@@ -535,14 +511,8 @@ void OlaServerServiceImplTest::CallSetUniverseName(
  */
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, NULL,
+                            m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   unsigned int universe_id = 0;

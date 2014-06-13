@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServer.cpp
  * OlaServer is the main OLA Server class
@@ -239,7 +239,8 @@ bool OlaServer::Init() {
       m_port_manager.get(),
       m_broker.get(),
       m_ss->WakeUpTime(),
-      m_default_uid));
+      m_default_uid,
+      NewCallback(this, &OlaServer::ReloadPluginsInternal)));
 
   // The plugin load procedure can take a while so we run it in the main loop.
   m_ss->Execute(
@@ -321,7 +322,7 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void OlaServer::ChannelClosed(int read_descriptor) {
+void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor) {
   ClientEntry client_entry;
   bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
                                   &client_entry);

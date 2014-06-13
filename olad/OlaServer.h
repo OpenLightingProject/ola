@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServer.h
  * Interface for the ola server class
@@ -82,7 +82,7 @@ class OlaServer {
   void StopServer() { m_ss->Terminate(); }
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
   void NewTCPConnection(ola::network::TCPSocket *socket);
-  void ChannelClosed(int read_descriptor);
+  void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
   bool RunHousekeeping();
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
@@ -93,7 +93,7 @@ class OlaServer {
     class OlaClientService *client_service;
   };
 
-  typedef std::map<int, ClientEntry> ClientMap;
+  typedef std::map<ola::io::DescriptorHandle, ClientEntry> ClientMap;
 
   class OlaClientServiceFactory *m_service_factory;
   std::vector<class PluginLoader*> m_plugin_loaders;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Init.h
  * A grab bag of functions useful for programs.
@@ -102,6 +102,15 @@ bool AppInit(int *argc,
              char *argv[],
              const std::string &first_line,
              const std::string &description);
+
+/**
+ * @brief Perform platform-specific initialization of the networking subsystem.
+ *
+ * This method is called by ServerInit() and AppInit(), so you only need to
+ * call this yourself if you're not using those.
+ * @return true on success and false otherwise
+ */
+bool NetworkInit();
 
 /**
  * @brief Install a signal handler.

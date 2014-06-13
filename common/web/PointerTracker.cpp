@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PointerTracker.cpp
  * Maintains a Json pointer from a series of parse events.
@@ -59,9 +59,12 @@ void PointerTracker::CloseObject() {
     return;
   }
 
-  if (m_tokens.back().type == TOKEN_OBJECT) {
+  Token &token = m_tokens.back();
+  if (token.type == TOKEN_OBJECT) {
+    if (token.property_set) {
+      m_pointer->Pop();
+    }
     m_tokens.pop_back();
-    m_pointer->Pop();
   }
 }
 

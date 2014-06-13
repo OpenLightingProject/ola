@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaClient.h
  * This is the main client API to OLA.
@@ -71,6 +71,12 @@ class OlaClient {
    * @param callback the callback to run upon receiving new DMX data.
    */
   void SetDMXCallback(RepeatableDMXCallback *callback);
+
+  /**
+   * @brief Trigger a plugin reload.
+   * @param callback the SetCallback to invoke upon completion.
+   */
+  void ReloadPlugins(SetCallback *callback);
 
   /**
    * @brief Fetch the list of plugins loaded.
