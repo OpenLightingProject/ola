@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# ola_simple_fade.py-
+# ola_simple_fade.py
 # Copyright (C) 2014 Sean Sill
 #
 #
@@ -24,8 +24,8 @@ __author__ = 'Sean Sill'
 This script fades DMX_DATA_SIZE channels from 0 to 255. It serves as an example
 of how to use AddEvent to schedule dmx data updates from python
 
-To view data, use the Web browser on universe script or patch an output device
-to universe specified in the script
+To view data, use the web interface or patch an output device
+to same universe
 """
 
 from array import *
@@ -41,9 +41,11 @@ UNIVERSE = 1
 class SimpleFadeController(object):
   def __init__(self, universe, update_interval, client_wrapper,
                dmx_data_size=DMX_UNIVERSE_SIZE):
+    if dmx_data_size > DMX_UNIVERSE_SIZE:
+      dmx_data_size = DMX_UNIVERSE_SIZE
     self._universe = universe
     self._update_interval = update_interval
-    self._data = array ('B', [0] * dmx_data_size)
+    self._data = array ('B', [DMX_MIN_SLOT_VALUE] * dmx_data_size)
     self._wrapper = client_wrapper
     self._client = client_wrapper.Client()
     self._wrapper.AddEvent(self._update_interval, lambda: self.UpdateDmx())
