@@ -11,12 +11,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_simple_fade.py
 # Copyright (C) 2014 Sean Sill
-#
-#
 
 __author__ = 'Sean Sill'
 
@@ -24,8 +22,8 @@ __author__ = 'Sean Sill'
 This script fades DMX_DATA_SIZE channels from 0 to 255. It serves as an example
 of how to use AddEvent to schedule dmx data updates from python
 
-To view data, use the web interface or patch an output device
-to same universe
+To view data, use the web interface or patch an output device to the same
+universe
 """
 
 from array import *
