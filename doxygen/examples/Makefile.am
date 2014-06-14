@@ -5,7 +5,8 @@ LDADD = ../../common/libolacommon.la \
         ../../ola/libola.la
 
 if BUILD_EXAMPLES
-noinst_PROGRAMS =  callback_client_transmit flags receiver streaming_client
+noinst_PROGRAMS =  callback_client_transmit flags receiver streaming_client \
+                   streaming_client_plugin
 endif
 
 callback_client_transmit_SOURCES = callback_client_transmit.cpp
