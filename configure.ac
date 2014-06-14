@@ -28,7 +28,7 @@ AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
+AC_CHECK_HEADERS([assert.h dlfcn.h endian.h errno.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
@@ -249,6 +249,10 @@ AS_IF([test -z "$PKG_CONFIG"],
 
 # Libraries.
 #####################################################
+
+# dlopen
+AC_SEARCH_LIBS([dlopen], [dl], [have_dlopen="yes"])
+AM_CONDITIONAL([HAVE_DLOPEN], [test "x$have_dlopen" = xyes])
 
 # dmx4linux
 have_dmx4linux="no"
