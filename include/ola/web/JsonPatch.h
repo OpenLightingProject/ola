@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonPatch.h
  * Implementation of RFC 6902.
@@ -45,50 +45,6 @@ namespace web {
  */
 
 class JsonPatchSet;
-
-/**
- * @brief Represents a JSON text as defined in section 2 of RFC7158.
- *
- * JsonText encapsulates a JsonValue and permits patch operations to be
- * applied.
- *
- * Clients should use this rather than JsonValues when using JSON patch
- * operations. This is because some patch ops may delete the entire value, so
- * you shouldn't really be passing JsonValue* around.
- */
-class JsonText {
- public:
-  /**
-   * @brief Construct a new JsonText.
-   * @param value The JsonValue to use, ownership is transferred.
-   */
-  explicit JsonText(const JsonValue *value) : m_value(value) {}
-
-  /**
-   * @brief Return the JsonValue for this text.
-   *
-   * The pointer is valid until the next patch operation or call to SetValue()
-   */
-  const JsonValue* Value() const { return m_value.get(); }
-
-  /**
-   * @brief Set the value for this JsonText.
-   * @param value the new JsonValue. Ownership is transferred.
-   */
-  void SetValue(JsonValue *value) {
-    m_value.reset(value);
-  }
-
-  /**
-   * @brief Apply a set of JSON patches to the value.
-   * @param patch The set of JsonPatch operations to apply.
-   * @returns True if the patch set was successfully applied, false otherwise.
-   */
-  bool Apply(const JsonPatchSet &patch);
-
- private:
-  std::auto_ptr<const JsonValue> m_value;
-};
 
 /**
  * @brief A class to serialize a JSONValue to text.
@@ -260,7 +216,7 @@ class JsonPatchSet {
   /**
    * @brief Apply this patch set to a value.
    *
-   * Don't call this directly, instead use JsonText::Apply().
+   * Don't call this directly, instead use JsonData::Apply().
    */
   bool Apply(JsonValue **value) const;
 

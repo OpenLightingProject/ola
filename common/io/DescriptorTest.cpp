@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DescriptorTest.cpp
  * Test fixture for the Descriptor classes
@@ -22,6 +22,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <string>
+
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -106,6 +110,12 @@ void DescriptorTest::setUp() {
   m_timeout_closure = ola::NewSingleCallback(this, &DescriptorTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                              m_timeout_closure));
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -114,6 +124,10 @@ void DescriptorTest::setUp() {
  */
 void DescriptorTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 

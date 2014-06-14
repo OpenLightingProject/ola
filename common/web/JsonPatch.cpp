@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonPatch.cpp
  * Implementation of RFC 6902.
@@ -183,22 +183,6 @@ bool AddOp(const JsonPointer &target, JsonValue **root,
 }
 
 }  // namespace
-
-bool JsonText::Apply(const JsonPatchSet &patch) {
-  JsonValue *new_value = NULL;
-  if (m_value.get()) {
-    new_value = m_value->Clone();
-  }
-
-  // now apply the patch
-  bool ok = patch.Apply(&new_value);
-  if (ok) {
-    m_value.reset(new_value);
-  } else {
-    delete new_value;
-  }
-  return ok;
-}
 
 bool JsonPatchAddOp::Apply(JsonValue **value) const {
   return AddOp(m_pointer, value, m_value.get());

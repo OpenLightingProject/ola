@@ -14,6 +14,7 @@ pkginclude_HEADERS = AutoStart.h OlaClientWrapper.h $(DEPRECATED)
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = AutoStart.cpp \
                     ClientRDMAPIShim.cpp \
+                    Module.cpp \
                     OlaCallbackClient.cpp \
                     OlaClient.cpp \
                     OlaClientCore.h \
@@ -37,3 +38,6 @@ OlaClientTester_LDADD = $(COMMON_TESTING_LIBS) \
                         ../common/libolacommon.la \
                         ../olad/libolaserver.la \
                         ./libola.la
+if USING_WIN32
+OlaClientTester_LDADD += -lWs2_32 -lIphlpapi
+endif

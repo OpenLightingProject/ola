@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PatchTest.cpp
  * Unittest for the Json Patch.
@@ -22,6 +22,7 @@
 
 #include "ola/testing/TestUtils.h"
 #include "ola/web/Json.h"
+#include "ola/web/JsonData.h"
 #include "ola/web/JsonPatch.h"
 #include "ola/web/JsonParser.h"
 #include "ola/web/JsonWriter.h"
@@ -44,7 +45,7 @@ using ola::web::JsonPatchSet;
 using ola::web::JsonPatchTestOp;
 using ola::web::JsonPointer;
 using ola::web::JsonString;
-using ola::web::JsonText;
+using ola::web::JsonData;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::auto_ptr;
@@ -72,7 +73,7 @@ class JsonPatchTest: public CppUnit::TestFixture {
 
  private:
   void CheckValuesMatch(const std::string &, const JsonValue *actual);
-  void BuildSampleText(JsonText *text);
+  void BuildSampleText(JsonData *text);
 };
 
 void JsonPatchTest::CheckValuesMatch(const std::string &input,
@@ -89,7 +90,7 @@ void JsonPatchTest::CheckValuesMatch(const std::string &input,
   }
 }
 
-void JsonPatchTest::BuildSampleText(JsonText *text) {
+void JsonPatchTest::BuildSampleText(JsonData *text) {
   auto_ptr<JsonObject> object(new JsonObject());
   object->Add("foo", "bar");
   object->Add("baz", false);
@@ -110,7 +111,7 @@ void JsonPatchTest::BuildSampleText(JsonText *text) {
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonPatchTest);
 
 void JsonPatchTest::testAddOp() {
-  JsonText text(NULL);
+  JsonData text(NULL);
 
   {
     JsonPatchSet patch;
@@ -228,7 +229,7 @@ void JsonPatchTest::testAddOp() {
 }
 
 void JsonPatchTest::testRemoveOp() {
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   CheckValuesMatch(
@@ -359,7 +360,7 @@ void JsonPatchTest::testRemoveOp() {
 }
 
 void JsonPatchTest::testReplaceOp() {
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   // Invalid pointer
@@ -533,7 +534,7 @@ void JsonPatchTest::testReplaceOp() {
 }
 
 void JsonPatchTest::testMoveOp() {
-  JsonText text(NULL);
+  JsonData text(NULL);
 
   // Move a null value
   {
@@ -657,7 +658,7 @@ void JsonPatchTest::testMoveOp() {
 }
 
 void JsonPatchTest::testCopyOp() {
-  JsonText text(NULL);
+  JsonData text(NULL);
 
   // Copy a null value
   {
@@ -864,7 +865,7 @@ void JsonPatchTest::testTestOp() {
   object->Add("bat", false);
 
   auto_ptr<JsonValue> original_object(object->Clone());
-  JsonText text(object.release());
+  JsonData text(object.release());
 
   JsonPointer pointer1("");
   JsonPointer pointer2("/foo");
@@ -918,7 +919,7 @@ void JsonPatchTest::testTestOp() {
 }
 
 void JsonPatchTest::testAtomicUpdates() {
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   // Test a patch which will never pass. This is from section 5 of the RFC.

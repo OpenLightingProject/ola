@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PatchParserTest.cpp
  * Unittest for the JSON Patch Parser.
@@ -22,6 +22,7 @@
 
 #include "ola/testing/TestUtils.h"
 #include "ola/web/Json.h"
+#include "ola/web/JsonData.h"
 #include "ola/web/JsonParser.h"
 #include "ola/web/JsonPatch.h"
 #include "ola/web/JsonPatchParser.h"
@@ -41,7 +42,7 @@ using ola::web::JsonPatchRemoveOp;
 using ola::web::JsonPatchReplaceOp;
 using ola::web::JsonPatchSet;
 using ola::web::JsonPatchTestOp;
-using ola::web::JsonText;
+using ola::web::JsonData;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 using std::auto_ptr;
@@ -69,7 +70,7 @@ class JsonPatchParserTest: public CppUnit::TestFixture {
 
  private:
     void CheckValuesMatch(const std::string &input, const JsonValue *actual);
-    void BuildSampleText(JsonText *text);
+    void BuildSampleText(JsonData *text);
     void CheckInvalid(const string &input);
     void CheckValid(const string &input, JsonPatchSet *patch_set);
 };
@@ -88,7 +89,7 @@ void JsonPatchParserTest::CheckValuesMatch(const std::string &input,
   }
 }
 
-void JsonPatchParserTest::BuildSampleText(JsonText *text) {
+void JsonPatchParserTest::BuildSampleText(JsonData *text) {
   auto_ptr<JsonObject> object(new JsonObject());
   object->Add("foo", "bar");
   object->Add("baz", false);
@@ -163,7 +164,7 @@ void JsonPatchParserTest::testAdd() {
     CheckValid(
         "[{\"op\": \"add\", \"path\": \"/foo\", \"value\": {}}]", &patch_set);
 
-    JsonText text(new JsonObject());
+    JsonData text(new JsonObject());
     OLA_ASSERT_TRUE(text.Apply(patch_set));
     CheckValuesMatch(
         "{\"foo\": {}}", text.Value());
@@ -176,7 +177,7 @@ void JsonPatchParserTest::testAdd() {
         "[{\"op\": \"add\", \"path\": \"/foo\", "
         "\"value\": [{\"foo\": [[]]}] }]", &patch_set);
 
-    JsonText text(new JsonObject());
+    JsonData text(new JsonObject());
     OLA_ASSERT_TRUE(text.Apply(patch_set));
     CheckValuesMatch(
         "{\"foo\": [{\"foo\": [[]]}] }", text.Value());
@@ -194,7 +195,7 @@ void JsonPatchParserTest::testRemove() {
   CheckInvalid("[{\"op\": \"remove\", \"path\": []}]");
   CheckInvalid("[{\"op\": \"remove\"}]");
 
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   // Valid patches
@@ -235,7 +236,7 @@ void JsonPatchParserTest::testReplace() {
   // Missing value
   CheckInvalid("[{\"op\": \"replace\", \"path\": \"/foo\"}]");
 
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   {
@@ -322,7 +323,7 @@ void JsonPatchParserTest::testMove() {
   CheckInvalid("[{\"op\": \"move\", \"path\": \"/foo\", \"from\": []}]");
   CheckInvalid("[{\"op\": \"move\", \"path\": \"/foo\", \"from\": {}}]");
 
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   {
@@ -383,7 +384,7 @@ void JsonPatchParserTest::testCopy() {
   CheckInvalid("[{\"op\": \"copy\", \"path\": \"/foo\", \"from\": []}]");
   CheckInvalid("[{\"op\": \"copy\", \"path\": \"/foo\", \"from\": {}}]");
 
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   {
@@ -440,7 +441,7 @@ void JsonPatchParserTest::testTest() {
   // Missing value
   CheckInvalid("[{\"op\": \"test\", \"path\": \"/foo\"}]");
 
-  JsonText text(NULL);
+  JsonData text(NULL);
   BuildSampleText(&text);
 
   {

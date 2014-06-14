@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServer.cpp
  * Implementation of the SelectServer class
@@ -33,7 +33,11 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include "common/io/WindowsPoller.h"
+#else
 #include "common/io/SelectPoller.h"
+#endif
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
@@ -77,7 +81,11 @@ SelectServer::SelectServer(ExportMap *export_map,
   }
 
   m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
+#ifdef _WIN32
+  m_poller.reset(new WindowsPoller(export_map, m_clock));
+#else
   m_poller.reset(new SelectPoller(export_map, m_clock));
+#endif
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())

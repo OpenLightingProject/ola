@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonSchema.h
  * A Json Schema, see json-schema.org
@@ -688,7 +688,8 @@ class ArrayValidator : public BaseValidator {
   /**
    * @brief Validate all elements of the array against the given schema.
    * @param items The items in the array, ownership is transferred.
-   * @param additional_items , ownership is transferred.
+   * @param additional_items Any additional (optional) items. ownership is
+   *   transferred.
    * @param options Extra constraints on the Array.
    */
   ArrayValidator(Items *items, AdditionalItems *additional_items,

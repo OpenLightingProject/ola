@@ -9,13 +9,18 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       IOUtils.cpp \
                       PollerInterface.cpp \
                       PollerInterface.h \
-                      SelectPoller.cpp \
-                      SelectPoller.h \
                       SelectServer.cpp \
                       Serial.cpp \
                       StdinHandler.cpp \
                       TimeoutManager.cpp \
                       TimeoutManager.h
+if USING_WIN32
+libolaio_la_SOURCES += WindowsPoller.cpp \
+                       WindowsPoller.h
+else
+libolaio_la_SOURCES += SelectPoller.cpp \
+                       SelectPoller.h
+endif
 
 # TESTS
 ##################################################
