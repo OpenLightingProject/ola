@@ -156,6 +156,9 @@ message Ack {}
 // request the list of available plugins
 message PluginListRequest {}
 
+// Trigger a plugin reload.
+message PluginReloadRequest {}
+
 message PluginInfo {
   required int32 plugin_id = 1;
   required string name = 2;
@@ -365,6 +368,7 @@ message TimeCode {
 // RPCs handled by the OLA Server
 service OlaServerService {
   rpc GetPlugins (PluginListRequest) returns (PluginListReply);
+  rpc ReloadPlugins (PluginReloadRequest) returns (Ack);
   rpc GetPluginDescription (PluginDescriptionRequest) returns
     (PluginDescriptionReply);
   rpc GetPluginState (PluginStateRequest) returns (PluginStateReply);

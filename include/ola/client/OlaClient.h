@@ -73,6 +73,12 @@ class OlaClient {
   void SetDMXCallback(RepeatableDMXCallback *callback);
 
   /**
+   * @brief Trigger a plugin reload.
+   * @param callback the SetCallback to invoke upon completion.
+   */
+  void ReloadPlugins(SetCallback *callback);
+
+  /**
    * @brief Fetch the list of plugins loaded.
    * @param callback the PluginListCallback to be invoked upon completion.
    */

@@ -421,7 +421,7 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
-                                HTTPResponse *response) {
+                                 HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response,
         "POST u=[universe], d=[DMX data (a comma separated list of values)]");
@@ -450,7 +450,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
-                               HTTPResponse *response) {
+                                HTTPResponse *response) {
   if (m_enable_quit) {
     response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
@@ -474,16 +474,11 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
+int OladHTTPServer::ReloadPlugins(const HTTPRequest*,
                                   HTTPResponse *response) {
-  m_ola_server->ReloadPlugins();
-  response->SetNoCache();
-  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
-  response->Append("ok");
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  m_client.ReloadPlugins(
+      NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
+  return MHD_YES;
 }
 
 

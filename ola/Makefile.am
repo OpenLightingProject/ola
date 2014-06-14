@@ -14,6 +14,7 @@ pkginclude_HEADERS = AutoStart.h OlaClientWrapper.h $(DEPRECATED)
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = AutoStart.cpp \
                     ClientRDMAPIShim.cpp \
+                    Module.cpp \
                     OlaCallbackClient.cpp \
                     OlaClient.cpp \
                     OlaClientCore.h \
