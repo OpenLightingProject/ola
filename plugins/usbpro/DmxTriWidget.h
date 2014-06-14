@@ -112,7 +112,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
-    void SendDiscoveryStart();
+    void SendDiscoveryAuto();
     void SendDiscoveryStat();
     void FetchNextUID();
     bool IsDUBRequest(const ola::rdm::RDMRequest *request);
