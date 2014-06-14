@@ -21,7 +21,7 @@ BUILT_SOURCES = $(output_files)
 
 nodist_pkgpython_PYTHON = $(output_files)
 pkgpython_PYTHON = ClientWrapper.py DMXConstants.py DUBDecoder.py \
-                   MACAddress.py\OlaClient.py RDMAPI.py RDMConstants.py \
+                   MACAddress.py OlaClient.py RDMAPI.py RDMConstants.py \
                    PidStore.py UID.py __init__.py
 endif
 
