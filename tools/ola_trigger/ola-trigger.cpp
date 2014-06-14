@@ -240,14 +240,6 @@ void NewDmx(unsigned int our_universe,
 
 
 /**
- * The RegisterComplete Handler, this is called when registration finishes.
- */
-void RegisterComplete(const string &error) {
-  OLA_INFO << "Register complete";
-  (void) error;
-}
-
-/**
  * Delete all the slot actions in the vector.
  */
 void FreeSlot(SlotList *slots) {
@@ -327,7 +319,6 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_DATAERR);
   }
 
-  OLA_INFO << "Parsing file";
   yyparse();
 
   // if we got to this stage the config is ok, setup the client
@@ -351,9 +342,7 @@ int main(int argc, char *argv[]) {
     ola::OlaCallbackClient *client = wrapper.GetClient();
     client->SetDmxCallback(
         ola::NewCallback(&NewDmx, opts.universe, &trigger));
-    client->RegisterUniverse(opts.universe,
-                             ola::REGISTER,
-                             ola::NewSingleCallback(&RegisterComplete));
+    client->RegisterUniverse(opts.universe, ola::REGISTER, NULL);
 
     // start the client
     wrapper.GetSelectServer()->Run();
