@@ -21,7 +21,8 @@ BUILT_SOURCES = $(output_files)
 
 nodist_pkgpython_PYTHON = $(output_files)
 pkgpython_PYTHON = ClientWrapper.py DUBDecoder.py MACAddress.py OlaClient.py \
-                   RDMAPI.py RDMConstants.py PidStore.py UID.py __init__.py
+                   RDMAPI.py RDMConstants.py PidStore.py UID.py __init__.py \
+                   DMXConstants.py
 endif
 
 ArtnetConfigMessages_pb2.py: $(artnet_proto)
