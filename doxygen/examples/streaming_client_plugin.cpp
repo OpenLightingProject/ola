@@ -50,16 +50,16 @@ int main() {
   }
 
   ola_new_streaming_client_t *new_client_ptr =
-    LoadSymbol<ola_new_streaming_client_t*>(module, OLA_NEW_STREAMING_CLIENT);
+      LoadSymbol<ola_new_streaming_client_t*>(module, OLA_NEW_STREAMING_CLIENT);
   ola_delete_streaming_client_t *delete_client_ptr =
-    LoadSymbol<ola_delete_streaming_client_t*>(
-        module, OLA_DELETE_STREAMING_CLIENT);
+      LoadSymbol<ola_delete_streaming_client_t*>(
+         module, OLA_DELETE_STREAMING_CLIENT);
   ola_new_dmxbuffer_t *new_buffer_ptr =
-    LoadSymbol<ola_new_dmxbuffer_t*>(module, OLA_NEW_DMXBUFFER);
+      LoadSymbol<ola_new_dmxbuffer_t*>(module, OLA_NEW_DMXBUFFER);
   ola_delete_dmxbuffer_t *delete_buffer_ptr =
-    LoadSymbol<ola_delete_dmxbuffer_t*>(module, OLA_DELETE_DMXBUFFER);
+      LoadSymbol<ola_delete_dmxbuffer_t*>(module, OLA_DELETE_DMXBUFFER);
   ola_set_dmxbuffer_t *set_buffer_ptr =
-    LoadSymbol<ola_set_dmxbuffer_t*>(module, OLA_SET_DMXBUFFER);
+      LoadSymbol<ola_set_dmxbuffer_t*>(module, OLA_SET_DMXBUFFER);
 
   if (!(new_client_ptr && delete_client_ptr && new_buffer_ptr &&
         delete_buffer_ptr && set_buffer_ptr)) {
