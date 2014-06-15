@@ -54,8 +54,8 @@ using std::string;
 using std::vector;
 
 UartWidget::UartWidget(const string& path)
-    : m_path(path) {
-  m_filed = NOT_OPEN;
+    : m_path(path),
+      m_fd(NOT_OPEN) {
 }
 
 UartWidget::~UartWidget() {
@@ -66,8 +66,8 @@ UartWidget::~UartWidget() {
 
 bool UartWidget::Open() {
   OLA_DEBUG << "Opening serial port " << Name();
-  if (!ola::io::Open(m_path, O_WRONLY, &m_filed)) {
-    m_filed = FAILED_OPEN;
+  if (!ola::io::Open(m_path, O_WRONLY, &m_fd)) {
+    m_fd = FAILED_OPEN;
     OLA_WARN << Name() << " failed to open";
     return false;
   } else {
@@ -77,22 +77,22 @@ bool UartWidget::Open() {
 }
 
 bool UartWidget::Close() {
-  if (close(m_filed) > 0) {
+  if (!IsOpen()) {
+    return true;
+  }
+
+  if (close(m_fd) > 0) {
     OLA_WARN << Name() << " error closing";
-    m_filed = NOT_OPEN;
+    m_fd = NOT_OPEN;
     return false;
   } else {
-    m_filed = NOT_OPEN;
+    m_fd = NOT_OPEN;
     return true;
   }
 }
 
 bool UartWidget::IsOpen() const {
-  if (m_filed > 0) {
-    return true;
-  } else {
-    return false;
-  }
+  return m_fd >= 0;
 }
 
 bool UartWidget::SetBreak(bool on) {
@@ -105,7 +105,7 @@ bool UartWidget::SetBreak(bool on) {
   else
     request = TIOCCBRK;
 
-  if (ioctl(m_filed, request, NULL) < 0) {
+  if (ioctl(m_fd, request, NULL) < 0) {
     OLA_WARN << Name() << " ioctl() failed";
     return false;
   } else {
@@ -120,7 +120,7 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
 
   data.Get(buffer + 1, &length);
 
-  if (write(m_filed, buffer, length + 1) <= 0) {
+  if (write(m_fd, buffer, length + 1) <= 0) {
     // TODO(richardash1981): handle errors better as per the test code,
     // especially if we alter the scheduling!
     OLA_WARN << Name() << " Short or failed write!";
@@ -131,7 +131,7 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
 }
 
 bool UartWidget::Read(unsigned char *buff, int size) {
-  int readb = read(m_filed, buff, size);
+  int readb = read(m_fd, buff, size);
   if (readb <= 0) {
     OLA_WARN << Name() << " read error";
     return false;
@@ -154,7 +154,7 @@ bool UartWidget::SetupOutput() {
   }
   /* do the port settings */
 
-  if (tcgetattr(m_filed, &my_tios) < 0) {  // get current settings
+  if (tcgetattr(m_fd, &my_tios) < 0) {  // get current settings
     OLA_WARN << "Failed to get POSIX port settings";
     return false;
   }
@@ -167,13 +167,13 @@ bool UartWidget::SetupOutput() {
   my_tios.c_cflag |= CSTOPB;    // 2 stop bit for DMX
   my_tios.c_cflag &= ~CRTSCTS;  // no CTS/RTS flow control
 
-  if (tcsetattr(m_filed, TCSANOW, &my_tios) < 0) {  // apply settings
+  if (tcsetattr(m_fd, TCSANOW, &my_tios) < 0) {  // apply settings
     OLA_WARN << "Failed to get POSIX port settings";
     return false;
   }
 
-  /* Do the platform-specific initialisation of the Uart to 250kbaud */
-  if (!LinuxHelper::SetDmxBaud(m_filed)) {
+  /* Do the platform-specific initialisation of the UART to 250kbaud */
+  if (!LinuxHelper::SetDmxBaud(m_fd)) {
     OLA_WARN << "Failed to set baud rate to 250k";
     return false;
   }

@@ -64,11 +64,7 @@ UartDmxDevice::~UartDmxDevice() {
 }
 
 bool UartDmxDevice::StartHook() {
-  AddPort(new UartDmxOutputPort(this,
-                                0,
-                                m_widget.get(),
-                                m_breakt,
-                                m_malft));
+  AddPort(new UartDmxOutputPort(this, 0, m_widget.get(), m_breakt, m_malft));
   return true;
 }
 
@@ -86,16 +82,14 @@ void UartDmxDevice::SetDefaults() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DeviceBreakKey(),
-                                     UIntValidator(88, 1000000),
-                                     DEFAULT_BREAK);
+                                         UIntValidator(88, 1000000),
+                                         DEFAULT_BREAK);
   save |= m_preferences->SetDefaultValue(DeviceMalfKey(),
-                                     UIntValidator(8, 1000000),
-                                     DEFAULT_MALF);
+                                         UIntValidator(8, 1000000),
+                                         DEFAULT_MALF);
   if (save)
     m_preferences->Save();
 }
-
-
 }  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

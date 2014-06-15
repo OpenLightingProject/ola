@@ -17,7 +17,7 @@
  * The DMX through a UART plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  * Copyright (C) 2014 Richard Ash
-		 */
+ */
 
 #ifndef PLUGINS_UARTDMX_UARTDMXTHREAD_H_
 #define PLUGINS_UARTDMX_UARTDMXTHREAD_H_
@@ -31,30 +31,30 @@ namespace uartdmx {
 
 class UartDmxThread : public ola::thread::Thread {
  public:
-    UartDmxThread(UartWidget *widget, unsigned int breakt, unsigned int malft);
-    ~UartDmxThread();
+  UartDmxThread(UartWidget *widget, unsigned int breakt, unsigned int malft);
+  ~UartDmxThread();
 
-    bool Stop();
-    void *Run();
-    bool WriteDMX(const DmxBuffer &buffer);
+  bool Stop();
+  void *Run();
+  bool WriteDMX(const DmxBuffer &buffer);
 
  private:
-    enum TimerGranularity { UNKNOWN, GOOD, BAD };
+  enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
-    TimerGranularity m_granularity;
-    UartWidget *m_widget;
-    bool m_term;
-    int unsigned m_breakt;
-    int unsigned m_malft;
-    DmxBuffer m_buffer;
-    ola::thread::Mutex m_term_mutex;
-    ola::thread::Mutex m_buffer_mutex;
+  TimerGranularity m_granularity;
+  UartWidget *m_widget;
+  bool m_term;
+  int unsigned m_breakt;
+  int unsigned m_malft;
+  DmxBuffer m_buffer;
+  ola::thread::Mutex m_term_mutex;
+  ola::thread::Mutex m_buffer_mutex;
 
-    void CheckTimeGranularity();
+  void CheckTimeGranularity();
 
-    static const uint32_t DMX_MAB = 16;
-    // clever saftey macro
-    DISALLOW_COPY_AND_ASSIGN(UartDmxThread);
+  static const uint32_t DMX_MAB = 16;
+
+  DISALLOW_COPY_AND_ASSIGN(UartDmxThread);
 };
 }  // namespace uartdmx
 }  // namespace plugin

@@ -42,9 +42,7 @@ class UartDmxDevice : public Device {
                 const std::string &path);
   ~UartDmxDevice();
 
-  std::string DeviceId() const {
-      return m_path;
-  }
+  std::string DeviceId() const { return m_path; }
   UartWidget* GetWidget() { return m_widget.get(); }
 
  protected:
@@ -67,7 +65,7 @@ class UartDmxDevice : public Device {
   static const char K_MALF[];
   static const unsigned int DEFAULT_BREAK;
   static const char K_BREAK[];
-  // clever saftey macro
+
   DISALLOW_COPY_AND_ASSIGN(UartDmxDevice);
 };
 }  // namespace uartdmx

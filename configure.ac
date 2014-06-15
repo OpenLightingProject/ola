@@ -765,8 +765,8 @@ AC_CONFIG_FILES([Makefile
                  plugins/shownet/Makefile
                  plugins/spi/Makefile
                  plugins/stageprofi/Makefile
-                 plugins/usbdmx/Makefile
                  plugins/uartdmx/Makefile
+                 plugins/usbdmx/Makefile
                  plugins/usbpro/Makefile
                  plugins/usbpro/messages/Makefile
                  protoc/Makefile

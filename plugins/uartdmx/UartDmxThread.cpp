@@ -62,11 +62,9 @@ bool UartDmxThread::Stop() {
  * Copy a DMXBuffer to the output thread
  */
 bool UartDmxThread::WriteDMX(const DmxBuffer &buffer) {
-  {
-    ola::thread::MutexLocker locker(&m_buffer_mutex);
-    m_buffer.Set(buffer);
-    return true;
-  }
+  ola::thread::MutexLocker locker(&m_buffer_mutex);
+  m_buffer.Set(buffer);
+  return true;
 }
 
 
@@ -135,8 +133,8 @@ void UartDmxThread::CheckTimeGranularity() {
 
   TimeInterval interval = ts2 - ts1;
   m_granularity = interval.InMilliSeconds() > threshold ? BAD : GOOD;
-  OLA_INFO << "Granularity for Uart thread is " <<
-    (m_granularity == GOOD ? "GOOD" : "BAD");
+  OLA_INFO << "Granularity for UART thread is "
+      << (m_granularity == GOOD ? "GOOD" : "BAD");
 }
 }  // namespace uartdmx
 }  // namespace plugin

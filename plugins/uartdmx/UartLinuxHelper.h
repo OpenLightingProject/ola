@@ -26,10 +26,11 @@ namespace ola {
 namespace plugin {
 namespace uartdmx {
 
-/** @brief A static class containing platform-specific helper code
- * for Linux
+/**
+ * @brief A static class containing platform-specific helper code
+ * for Linux.
  *
- * This code can't live in the UartWidget() class because it's 
+ * This code can't live in the UartWidget() class because it's
  * platform specfic-includes clash with the POSIX ones there
  */
 class LinuxHelper {
