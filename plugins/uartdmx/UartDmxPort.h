@@ -37,29 +37,29 @@ namespace uartdmx {
 
 class UartDmxOutputPort : public ola::BasicOutputPort {
  public:
-    UartDmxOutputPort(UartDmxDevice *parent,
-                      unsigned int id,
-                      UartWidget *widget,
-                      unsigned int breakt,
-                      unsigned int malft)
-        : BasicOutputPort(parent, id),
-          m_widget(widget),
-          m_thread(widget, breakt, malft) {
-      m_thread.Start();
-    }
-    ~UartDmxOutputPort() { m_thread.Stop(); }
+  UartDmxOutputPort(UartDmxDevice *parent,
+                    unsigned int id,
+                    UartWidget *widget,
+                    unsigned int breakt,
+                    unsigned int malft)
+      : BasicOutputPort(parent, id),
+        m_widget(widget),
+        m_thread(widget, breakt, malft) {
+    m_thread.Start();
+  }
+  ~UartDmxOutputPort() { m_thread.Stop(); }
 
-    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
-      return m_thread.WriteDMX(buffer);
-    }
+  bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
+    return m_thread.WriteDMX(buffer);
+  }
 
-    std::string Description() const { return m_widget->Description(); }
+  std::string Description() const { return m_widget->Description(); }
 
  private:
-    UartWidget *m_widget;
-    UartDmxThread m_thread;
-    // clever saftey macro
-    DISALLOW_COPY_AND_ASSIGN(UartDmxOutputPort);
+  UartWidget *m_widget;
+  UartDmxThread m_thread;
+
+  DISALLOW_COPY_AND_ASSIGN(UartDmxOutputPort);
 };
 }  // namespace uartdmx
 }  // namespace plugin

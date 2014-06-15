@@ -22,8 +22,9 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "ola/StringUtils.h"
 #include "ola/io/IOUtils.h"
@@ -40,15 +41,14 @@ namespace uartdmx {
 using std::string;
 using std::vector;
 
-
 const char UartDmxPlugin::PLUGIN_NAME[] = "UART native DMX";
 const char UartDmxPlugin::PLUGIN_PREFIX[] = "uartdmx";
 const char UartDmxPlugin::K_DEVICE[] = "device";
 const char UartDmxPlugin::DEFAULT_DEVICE[] = "/dev/ttyACM0";
 
-/**
+/*
  * Start the plug-in, using only the configured device(s) (we cannot sensibly
- * scan for UARTs!) Stolen from the opendmx plugin
+ * scan for UARTs!). Stolen from the opendmx plugin.
  */
 bool UartDmxPlugin::StartHook() {
   vector<string> devices = m_preferences->GetMultipleValue(K_DEVICE);
@@ -63,42 +63,38 @@ bool UartDmxPlugin::StartHook() {
           "ola-uartdmx.conf";
       continue;
     }
-    // now check if it's there
-    OLA_DEBUG << "Trying to open device " << *iter;
+
+    OLA_DEBUG << "Trying to open UART device " << *iter;
     int fd;
-    if (ola::io::Open(*iter, O_WRONLY, &fd)) {
-      // can open device, so shut the temporary file descriptor
-      close(fd);
-      UartDmxDevice *device = new UartDmxDevice(
-          this,
-          m_preferences,
-          PLUGIN_NAME,
-          *iter);
-      // got a device, now lets see if we can configure it before we announce
-      // it to the world
-      if (device->GetWidget()->SetupOutput() == false) {
-        // that failed, but other devices may succeed
-        OLA_WARN << "Unable to setup device for output, device ignored "
-                 << device->DeviceId();
-        delete device;
-        continue;
-      }
-      // OK, device is good to go
-      if (device->Start()) {
-        m_devices.push_back(device);
-        m_plugin_adaptor->RegisterDevice(device);
-        OLA_DEBUG << "Started UartDmxDevice " << *iter;
-      } else {
-        OLA_WARN << "Failed to start UartDmxDevice for " << *iter;
-        delete device;
-      }
-    } else {
+    if (!ola::io::Open(*iter, O_WRONLY, &fd)) {
       OLA_WARN << "Could not open " << *iter << " " << strerror(errno);
+      continue;
     }
+
+    // can open device, so shut the temporary file descriptor
+    close(fd);
+    std::auto_ptr<UartDmxDevice> device(new UartDmxDevice(
+        this, m_preferences, PLUGIN_NAME, *iter));
+
+    // got a device, now lets see if we can configure it before we announce
+    // it to the world
+    if (!device->GetWidget()->SetupOutput()) {
+      OLA_WARN << "Unable to setup device for output, device ignored "
+               << device->DeviceId();
+      continue;
+    }
+    // OK, device is good to go
+    if (!device->Start()) {
+      OLA_WARN << "Failed to start UartDmxDevice for " << *iter;
+      continue;
+    }
+
+    OLA_DEBUG << "Started UartDmxDevice " << *iter;
+    m_plugin_adaptor->RegisterDevice(device.get());
+    m_devices.push_back(device.release());
   }
   return true;
 }
-
 
 /**
  * Stop all the devices.
@@ -108,7 +104,7 @@ bool UartDmxPlugin::StopHook() {
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
-	delete *iter;
+    delete *iter;
   }
   m_devices.clear();
   return true;
@@ -125,7 +121,7 @@ string UartDmxPlugin::Description() const {
 "\n"
 "This plugin drives a supported POSIX UART (plus extensions)\n"
 "to produce a direct DMX output stream. The host needs to\n"
-"create the DMX stream itself as there is no external micro\n"
+"create the DMX stream itself as there is no external microcontroller.\n"
 "This is tested with the on-board UART of the Raspberry Pi.\n"
 "See here for a possible schematic:\n"
 "http://eastertrail.blogspot.co.uk/2014/04/command-and-control-ii.html\n"
@@ -136,8 +132,8 @@ string UartDmxPlugin::Description() const {
 "Enable this plugin (DISABLED by default).\n"
 "device = /dev/ttyACM0\n"
 "The device to use for DMX output (optional). Multiple devices are supported "
-"if the hardware exists. Using USB-serial adapters is not supported (try "
-"ftdidmx)\n"
+"if the hardware exists. Using USB-serial adapters is not supported (try the "
+"ftdidmx plugin instead).\n"
 "--- Per Device Settings (using above device name without /dev/) ---\n"
 "<device>-break = 100\n"
 "The DMX break time in microseconds for this device (optional).\n"
@@ -155,10 +151,8 @@ bool UartDmxPlugin::SetDefaultPreferences() {
     return false;
 
   // only insert default device name, no others at this stage
-  bool save = false;
-
-  save |= m_preferences->SetDefaultValue(K_DEVICE, StringValidator(),
-                                         DEFAULT_DEVICE);
+  bool save = m_preferences->SetDefaultValue(K_DEVICE, StringValidator(),
+                                             DEFAULT_DEVICE);
   if (save)
     m_preferences->Save();
 
@@ -167,7 +161,6 @@ bool UartDmxPlugin::SetDefaultPreferences() {
     return false;
   return true;
 }
-
 }  // namespace uartdmx
 }  // namespace plugin
 }  // namespace ola

@@ -79,23 +79,25 @@ class UartWidget {
     bool SetupOutput();
 
  private:
-    const std::string m_path;
+  const std::string m_path;
 
-	 /**
-	  * variable to hold the Unix file descriptor used to open and manipulate
-	  * the port. Set to -2 when port is not open.
-	  */
-    int m_filed;
-    /**
-     * Constant value for file is not open
-     */
-    static const int NOT_OPEN = -2;
-    /**
-     * Constant value for failed to open file
-     */
-    static const int FAILED_OPEN = -1;
-    // clever saftey macro
-    DISALLOW_COPY_AND_ASSIGN(UartWidget);
+  /**
+   * variable to hold the Unix file descriptor used to open and manipulate
+   * the port. Set to -2 when port is not open.
+   */
+  int m_fd;
+
+  /**
+   * Constant value for file is not open
+   */
+  static const int NOT_OPEN = -2;
+
+  /**
+   * Constant value for failed to open file
+   */
+  static const int FAILED_OPEN = -1;
+
+  DISALLOW_COPY_AND_ASSIGN(UartWidget);
 };
 }  // namespace uartdmx
 }  // namespace plugin
