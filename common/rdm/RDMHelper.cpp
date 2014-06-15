@@ -823,6 +823,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, fan control";
       case SD_HEATER_CONTROL:
         return "Primary, heater control";
+      case SD_FOUNTAIN_CONTROL:
+        return "Primary, fountain water pump control";
       case SD_UNDEFINED:
         return "Primary, undefined";
       default:
