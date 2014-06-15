@@ -1,6 +1,7 @@
 X/Y/2014 ola-0.9.1
  Features:
  * Pretty print IPV4 addresses within the Python RDM code.
+ * Added support for the img Stage Line DMX-1USB - #398
 
  API:
  * Change GetIdentifyMode to GetIdentifyDevice in the RDM API to clarify it's
