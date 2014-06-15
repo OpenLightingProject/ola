@@ -204,9 +204,9 @@ void UsbDmxPlugin::FindDevices() {
       OLA_INFO << "Found an img Stage Line device";
       device = new ImgStageLineDevice(this, usb_device);
     } else {
-      OLA_INFO << "Found an unknown device, skipping. VID: "
-               << device_descriptor.idVendor ", PID: "
-               << device_descriptor.idProduct;
+      OLA_DEBUG << "Found an unknown device, skipping. VID: "
+                << device_descriptor.idVendor ", PID: "
+                << device_descriptor.idProduct;
     }
 
     if (device) {
