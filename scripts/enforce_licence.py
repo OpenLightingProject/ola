@@ -25,18 +25,23 @@ import re
 import sys
 import textwrap
 
-CPP, PYTHON = xrange(2)
+CPP, JS, PYTHON = xrange(3)
 
 IGNORED_FILES = [
   'examples/ola-dmxconsole.cpp',
   'examples/ola-dmxmonitor.cpp',
   'include/ola/gen_callbacks.py',
+  'olad/www/mobile.js',
+  'olad/www/ola.js',
   'python/ola/PidStoreLocation.py',
   'python/ola/Version.py',
   'tools/ola_trigger/config.tab.cpp',
   'tools/ola_trigger/config.tab.h',
   'tools/ola_trigger/lex.yy.cpp',
   'tools/rdm/DataLocation.py',
+  'tools/rdm/static/jquery-1.7.2.min.js',
+  'tools/rdm/static/jquery-ui-1.8.21.custom.min.js',
+  'tools/rdm/static/ui.multiselect.js',
 ]
 
 def Usage(arg0):
@@ -44,8 +49,8 @@ def Usage(arg0):
   Usage: %s
 
   Walk the directory tree from the current directory, and make sure all .cpp,
-  .h and .py files have the appropriate Licence. The licence is determined from
-  the LICENCE file in each branch of the directory tree.
+  .h, .js and .py files have the appropriate Licence. The licence is determined
+  from the LICENCE file in each branch of the directory tree.
 
     --diff               Print the diffs.
     --fix                Fix the files.
@@ -97,6 +102,19 @@ def TransformLicence(licence):
   output.append(' *')
   return '\n'.join(output)
 
+def TransformCppToJsLicence(licence):
+  """Change a C++ licence to JS style"""
+  lines = licence.split('\n')
+  output = []
+  output.append('/**')
+  for l in lines[1:]:
+    l = l[2:].strip()
+    if l:
+      output.append(' * %s' % l)
+    else:
+      output.append(' *')
+  return '\n'.join(output)
+
 def TransformCppToPythonLicence(licence):
   """Change a C++ licence to Python style"""
   lines = licence.split('\n')
@@ -110,7 +128,7 @@ def ReplaceHeader(file_name, new_header, lang):
   breaks = 0
   line = f.readline()
   while line != '':
-    if lang == CPP and re.match(r'^ \*\s*\n$', line):
+    if (lang == CPP or lang == JS) and re.match(r'^ \*\s*\n$', line):
       breaks += 1
     if lang == PYTHON and re.match(r'^#\s*\n$', line):
       breaks += 1
@@ -169,6 +187,10 @@ def CheckLicenceForDir(dir_name, licence, diff, fix):
       if '.pb.' in file_name:
         continue
       errors += CheckLicenceForFile(file_name, licence, CPP, diff, fix)
+
+  for file_name in glob.glob(os.path.join(dir_name, '*.js')):
+    js_licence = TransformCppToJsLicence(licence)
+    errors += CheckLicenceForFile(file_name, js_licence, JS, diff, fix)
 
   for file_name in glob.glob(os.path.join(dir_name, '*.py')):
     # skip the generated protobuf code
