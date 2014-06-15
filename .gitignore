@@ -67,6 +67,7 @@ doxygen/examples/callback_client_transmit
 doxygen/examples/flags
 doxygen/examples/receiver
 doxygen/examples/streaming_client
+doxygen/examples/streaming_client_plugin
 examples/ola_artnet
 examples/ola_dev_info
 examples/ola_dmxconsole
