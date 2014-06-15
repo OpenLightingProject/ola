@@ -57,7 +57,7 @@ ImgStageLineOutputPort::~ImgStageLineOutputPort() {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
   }
-  OLA_DEBUG << "In total sent " << m_packet_count << " packets";
+  OLA_INFO << "In total sent " << m_packet_count << " packets";
   Join();
 }
 
@@ -151,7 +151,7 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
   bool success = false;
 
   m_packet_count++;
-  OLA_DEBUG << "About to send packet " << m_packet_count;
+  OLA_INFO << "About to send packet " << m_packet_count;
 
   for (unsigned int i = 0;
        i < DMX_MAX_TRANSMIT_CHANNELS;
@@ -167,7 +167,7 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
       OLA_FATAL << "Unknown channel value " << i << ", couldn't find channel "
                    "header value";
     }
-    OLA_DEBUG << "Sending sub packet " << i << " with header value "
+    OLA_INFO << "Sending sub packet " << i << " with header value "
               << m_packet[0];
 
     // Copy the data if there is some, otherwise we'll just send a packet of
