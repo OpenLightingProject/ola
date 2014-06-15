@@ -44,7 +44,8 @@ ImgStageLineOutputPort::ImgStageLineOutputPort(ImgStageLineDevice *parent,
       m_term(false),
       m_new_data(false),
       m_usb_device(usb_device),
-      m_usb_handle(NULL) {
+      m_usb_handle(NULL),
+      m_packet_count(0) {
 }
 
 
@@ -56,6 +57,7 @@ ImgStageLineOutputPort::~ImgStageLineOutputPort() {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
   }
+  OLA_DEBUG << "In total sent " << m_packet_count << " packets";
   Join();
 }
 
@@ -148,6 +150,9 @@ bool ImgStageLineOutputPort::WriteDMX(const DmxBuffer &buffer,
 bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
   bool success = false;
 
+  m_packet_count++;
+  OLA_DEBUG << "About to send packet " << m_packet_count;
+
   for (unsigned int i = 0;
        i < DMX_MAX_TRANSMIT_CHANNELS;
        i = i + CHANNELS_PER_PACKET) {
@@ -162,6 +167,8 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
       OLA_FATAL << "Unknown channel value " << i << ", couldn't find channel "
                    "header value";
     }
+    OLA_DEBUG << "Sending sub packet " << i << " with header value "
+              << m_packet[0];
 
     // Copy the data if there is some, otherwise we'll just send a packet of
     // zeros for the channel values
@@ -182,8 +189,8 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
         TIMEOUT);
     if (transferred != IMGSTAGELINE_PACKET_SIZE) {
       // not sure if this is fatal or not
-      OLA_WARN << "img driver failed to transfer all data; transferred "
-               << transferred " bytes, expected to send "
+      OLA_WARN << "img driver failed to transfer all data, transferred "
+               << transferred << " bytes, expected to send "
                << IMGSTAGELINE_PACKET_SIZE;
     }
     success = (r == 0);

@@ -71,6 +71,7 @@ class ImgStageLineOutputPort: public BasicOutputPort, ola::thread::Thread {
   DmxBuffer m_buffer;
   ola::thread::Mutex m_data_mutex;
   ola::thread::Mutex m_term_mutex;
+  int m_packet_count;
 
   bool SendDMX(const DmxBuffer &buffer);
 };
