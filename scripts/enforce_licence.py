@@ -110,7 +110,7 @@ def TransformCppToJsLicence(licence):
   for l in lines[1:]:
     l = l[2:].strip()
     if l:
-      output.append(' *  %s' % l)
+      output.append(' * %s' % l)
     else:
       output.append(' *')
   return '\n'.join(output)
