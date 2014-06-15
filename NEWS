@@ -1,6 +1,7 @@
 X/Y/2014 ola-0.9.1
  Features:
  * Pretty print IPV4 addresses within the Python RDM code.
+ * Add some additional slot definitions.
 
  API:
  * Change GetIdentifyMode to GetIdentifyDevice in the RDM API to clarify it's
@@ -8,12 +9,20 @@ X/Y/2014 ola-0.9.1
 
  RDM Tests:
  * Added the inter-test delay option to the Web UI too.
+ * Show transaction numbers in the responder tests to aid debugging
+ * Don't warn about unknown slot definitions if they are manufacturer ones
 
  Bugs:
  * Fix the recent code changes to work with FreeBSD, NetBSD and OpenBSD
  * Fix sensor numbering from 0 on web UI so it matches CLI
  * Fix the minimum and maximum level supported RDM tests
  * Add a GetPersonalityWithData RDM test
+ * Stop the Python client segfaulting if the universe doesn't exist
+ * Ensure the RDM Model Collector works if the fixture doesn't have personality
+   descriptions
+ * Only try and fetch supported params for manufacturer PIDs in the model
+   collector
+ * Fix an issue with strings in hash maps on OS X 10.5 
 
  Internal:
 
