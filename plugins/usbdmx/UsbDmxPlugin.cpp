@@ -200,7 +200,7 @@ void UsbDmxPlugin::FindDevices() {
       device = new EuroliteProDevice(this, usb_device);
     } else {
       OLA_DEBUG << "Found an unknown device, skipping. VID: "
-                << device_descriptor.idVendor ", PID: "
+                << device_descriptor.idVendor << ", PID: "
                 << device_descriptor.idProduct;
     }
 
