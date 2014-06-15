@@ -182,7 +182,9 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
         TIMEOUT);
     if (transferred != IMGSTAGELINE_PACKET_SIZE) {
       // not sure if this is fatal or not
-      OLA_WARN << "img driver failed to transfer all data";
+      OLA_WARN << "img driver failed to transfer all data; transferred "
+               << transferred " bytes, expected to send "
+               << IMGSTAGELINE_PACKET_SIZE;
     }
     success = (r == 0);
     if (!success) {
