@@ -21,19 +21,31 @@
 
 #include "ola/io/ExtendedSerial.h"
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef HAVE_STROPTS_H
 // this provides ioctl() definition without conflicting with asm/termios.h
 #include <stropts.h>
+#endif
+
+#ifdef HAVE_ASM_TERMIOS_H
 // use this not standard termios for custom baud rates
 #include <asm/termios.h>
+#endif
+
 #include <ola/Logging.h>
 
 namespace ola {
 namespace io {
 
 bool LinuxHelper::SetDmxBaud(int fd) {
+#if defined(HAVE_STROPTS_H) && defined(AVE_ASM_TERMIOS_H)
   static const int rate = 250000;
 
   struct termios2 tio;  // linux-specific terminal stuff
@@ -59,6 +71,10 @@ bool LinuxHelper::SetDmxBaud(int fd) {
     }
   }
   return true;
+#else
+  return false;
+  (void) fd;
+#endif
 }
 }  // namespace io
 }  // namespace ola
