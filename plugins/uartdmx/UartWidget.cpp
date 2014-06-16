@@ -40,11 +40,11 @@
 #include <algorithm>
 #include <vector>
 
-#include "ola/Logging.h"
 #include "ola/BaseTypes.h"
+#include "ola/io/ExtendedSerial.h"
 #include "ola/io/IOUtils.h"
+#include "ola/Logging.h"
 #include "plugins/uartdmx/UartWidget.h"
-#include "plugins/uartdmx/UartLinuxHelper.h"
 
 namespace ola {
 namespace plugin {
@@ -173,7 +173,7 @@ bool UartWidget::SetupOutput() {
   }
 
   /* Do the platform-specific initialisation of the UART to 250kbaud */
-  if (!LinuxHelper::SetDmxBaud(m_fd)) {
+  if (!ola::io::LinuxHelper::SetDmxBaud(m_fd)) {
     OLA_WARN << "Failed to set baud rate to 250k";
     return false;
   }

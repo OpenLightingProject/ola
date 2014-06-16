@@ -13,38 +13,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * Serial.cpp
- * Serial I/O Helper methods.
- * Copyright (C) 2014 Peter Newman
+ * ExtendedSerial.h
+ * The DMX through a UART plugin for ola
+ * Copyright (C) 2011 Rui Barreiros
+ * Copyright (C) 2014 Richard Ash
  */
 
-#include "ola/io/Serial.h"
+#ifndef INCLUDE_OLA_IO_EXTENDEDSERIAL_H_
+#define INCLUDE_OLA_IO_EXTENDEDSERIAL_H_
 
 namespace ola {
 namespace io {
 
-bool UIntToSpeedT(uint32_t value, speed_t *output) {
-  switch (value) {
-    case BAUD_RATE_9600:
-      *output = B9600;
-      return true;
-    case BAUD_RATE_19200:
-      *output = B19200;
-      return true;
-    case BAUD_RATE_38400:
-      *output = B38400;
-      return true;
-    case BAUD_RATE_57600:
-      *output = B57600;
-      return true;
-    case BAUD_RATE_115200:
-      *output = B115200;
-      return true;
-    case BAUD_RATE_230400:
-      *output = B230400;
-      return true;
-  }
-  return false;
-}
+/**
+ * @brief A static class containing platform-specific helper code
+ * for Linux.
+ *
+ * This code can't live in the UartWidget() class because it's
+ * platform specfic-includes clash with the POSIX ones there
+ */
+class LinuxHelper {
+ public:
+  /**
+   * Set the baud rate of the serial port to 250k using the non-standard
+   * speed selection mechanism from the Linux kernel.
+   */
+  static bool SetDmxBaud(int fd);
+};
 }  // namespace io
 }  // namespace ola
+#endif  // INCLUDE_OLA_IO_EXTENDEDSERIAL_H_
