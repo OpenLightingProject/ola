@@ -1,12 +1,13 @@
 pkgincludedir = $(includedir)/ola/io/
 pkginclude_HEADERS = BigEndianStream.h \
                      Descriptor.h \
+                     ExtendedSerial.h \
+                     InputBuffer.h \
+                     InputStream.h \
                      IOQueue.h \
                      IOStack.h \
                      IOUtils.h \
                      IOVecInterface.h \
-                     InputBuffer.h \
-                     InputStream.h \
                      MemoryBlock.h \
                      MemoryBlockPool.h \
                      MemoryBuffer.h \
