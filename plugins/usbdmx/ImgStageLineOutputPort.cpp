@@ -73,6 +73,30 @@ bool ImgStageLineOutputPort::Start() {
     return false;
   }
 
+  int ret_code;
+  int config_value;
+  ret_code = libusb_get_configuration(usb_handle, &config_value);
+  if (ret_code) {
+    OLA_WARN << "img Stage Line get config failed, with libusb error code " <<
+      ret_code;
+  } else {
+    OLA_INFO << "img Stage Line original config is " << config_value;
+  }
+
+  ret_code = libusb_set_configuration(usb_handle, 1);
+  if (ret_code) {
+    OLA_WARN << "img Stage Line set config failed, with libusb error code " <<
+      ret_code;
+  }
+
+  ret_code = libusb_get_configuration(usb_handle, &config_value);
+  if (ret_code) {
+    OLA_WARN << "img Stage Line get config failed, with libusb error code " <<
+      ret_code;
+  } else {
+    OLA_INFO << "img Stage Line new config is " << config_value;
+  }
+
   if (libusb_claim_interface(usb_handle, 0)) {
     OLA_WARN << "Failed to claim img USB device";
     libusb_close(usb_handle);
@@ -168,7 +192,7 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
                    "header value";
     }
     OLA_INFO << "Sending sub packet " << i << " with header value "
-              << m_packet[0];
+              << static_cast<int>(m_packet[0]);
 
     // Copy the data if there is some, otherwise we'll just send a packet of
     // zeros for the channel values
