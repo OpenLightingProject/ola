@@ -88,8 +88,7 @@ struct DescriptorHandle {
       : m_type(GENERIC_DESCRIPTOR),
       m_event_handle(0),
       m_read_data(NULL),
-      m_read_data_size(NULL)
-    {
+      m_read_data_size(NULL) {
     m_handle.m_fd = -1;
   }
 };
