@@ -38,6 +38,7 @@
 #include <sys/uio.h>
 #endif
 
+#include <algorithm>
 #include <string>
 
 #include "ola/Logging.h"
@@ -86,31 +87,56 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
   HANDLE read_handle = NULL;
   HANDLE write_handle = NULL;
 
+  static unsigned int pipe_name_counter = 0;
+
+  std::ostringstream pipe_name;
+  pipe_name << "\\\\.\\Pipe\\OpenLightingArchitecture.";
+  pipe_name.setf(std::ios::hex, std::ios::basefield);
+  pipe_name.setf(std::ios::showbase);
+  pipe_name.width(8);
+  pipe_name << GetCurrentProcessId() << ".";
+  pipe_name.width(8);
+  pipe_name << pipe_name_counter++;
+
   SECURITY_ATTRIBUTES security_attributes;
   // Set the bInheritHandle flag so pipe handles are inherited.
   security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
   security_attributes.bInheritHandle = TRUE;
   security_attributes.lpSecurityDescriptor = NULL;
 
-  if (!CreatePipe(&read_handle, &write_handle, &security_attributes, 0)) {
-    OLA_WARN << "CreatePipe() failed, " << GetLastError();
+  read_handle = CreateNamedPipeA(
+      pipe_name.str().c_str(),
+      PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
+      PIPE_TYPE_BYTE | PIPE_WAIT,
+      1,
+      4096,
+      4096,
+      0,
+      &security_attributes);
+  if (read_handle == INVALID_HANDLE_VALUE) {
+    OLA_WARN << "Could not create read end of pipe: %d" << GetLastError();
     return false;
   }
 
-  if (!SetStdHandle(STD_INPUT_HANDLE, read_handle)) {
-    OLA_WARN << "SetStdHandle() failed, " << GetLastError();
-    return false;
-  }
-  if (!SetStdHandle(STD_OUTPUT_HANDLE, write_handle)) {
-    OLA_WARN << "SetStdHandle() failed, " << GetLastError();
+  write_handle = CreateFileA(
+      pipe_name.str().c_str(),
+      GENERIC_WRITE,
+      0,
+      &security_attributes,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+      NULL);
+  if (write_handle == INVALID_HANDLE_VALUE) {
+    OLA_WARN << "Could not create write end of pipe: %d" << GetLastError();
+    CloseHandle(read_handle);
     return false;
   }
 
   handle_pair[0].m_handle.m_handle = read_handle;
-  handle_pair[0].m_type = HANDLE_DESCRIPTOR;
+  handle_pair[0].m_type = PIPE_DESCRIPTOR;
   handle_pair[0].m_event_handle = 0;
   handle_pair[1].m_handle.m_handle = write_handle;
-  handle_pair[1].m_type = HANDLE_DESCRIPTOR;
+  handle_pair[1].m_type = PIPE_DESCRIPTOR;
   handle_pair[1].m_event_handle = 0;
 #else
   if (pipe(handle_pair) < 0) {
@@ -162,7 +188,7 @@ UnmanagedFileDescriptor::UnmanagedFileDescriptor(int fd)
 // ------------------------------------------------
 
 /*
- * Turn on non-blocking reads.
+ * Turn on non-blocking reads. On Windows, this is only supported for sockets.
  * @param fd the descriptor to enable non-blocking on
  * @return true if it worked, false otherwise
  */
@@ -175,9 +201,6 @@ bool ConnectedDescriptor::SetNonBlocking(DescriptorHandle fd) {
   if (fd.m_type == SOCKET_DESCRIPTOR) {
     u_long mode = 1;
     success = (ioctlsocket(fd.m_handle.m_fd, FIONBIO, &mode) != SOCKET_ERROR);
-  } else {
-    OLA_WARN << "Unsupported: Tried to set non-socket descriptor to "
-                "non-blocking mode.";
   }
 #else
   int val = fcntl(fd, F_GETFL, 0);
@@ -228,13 +251,11 @@ int ConnectedDescriptor::DataRemaining() const {
   int unread = 0;
 #ifdef _WIN32
   bool failed = false;
-  if (ReadDescriptor().m_type == SOCKET_DESCRIPTOR) {
-    u_long win_unread;
-    failed = (ioctlsocket(ReadDescriptor().m_handle.m_fd, FIONREAD,
-              &win_unread) < 0);
-    unread = win_unread;
+  if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
+    return ReadDescriptor().m_read_data_size ?
+        *ReadDescriptor().m_read_data_size : 0;
   } else {
-    OLA_WARN << "Unsupported: DataRemaining() called on non-socket descriptor";
+    OLA_WARN << "DataRemaining() called on unsupported descriptor type";
     failed = true;
   }
 #else
@@ -261,9 +282,8 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
     return 0;
 
   ssize_t bytes_sent;
-
 #ifdef _WIN32
-  if (WriteDescriptor().m_type == HANDLE_DESCRIPTOR) {
+  if (WriteDescriptor().m_type == PIPE_DESCRIPTOR) {
     DWORD bytes_written = 0;
     if (!WriteFile(WriteDescriptor().m_handle.m_handle,
                    buffer,
@@ -276,12 +296,11 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
       bytes_sent = bytes_written;
     }
   } else {
-    bytes_sent = write(WriteDescriptor().m_handle.m_fd, buffer, size);
+    OLA_WARN << "Send() called on unsupported descriptor type";
+    return 0;
   }
-
 #else
   // BSD Sockets
-
 #if HAVE_DECL_MSG_NOSIGNAL
   if (IsSocket()) {
     bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
@@ -324,11 +343,12 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
    */
   int bytes_written = 0;
   for (int io = 0; io < iocnt; ++io) {
-    bytes_written = write(WriteDescriptor().m_handle.m_fd, iov[io].iov_base,
-                          iov[io].iov_len);
-    if (bytes_written == -1) {
+    bytes_written = Send(reinterpret_cast<const uint8_t*>(iov[io].iov_base),
+                         iov[io].iov_len);
+    if (bytes_written == 0) {
       OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
         strerror(errno);
+      bytes_sent = -1;
       break;
     }
     bytes_sent += bytes_written;
@@ -382,11 +402,31 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
 
   while (data_read < size) {
 #ifdef _WIN32
-    if ((ret = read(ReadDescriptor().m_handle.m_fd, data, size - data_read))
-        < 0) {
+    if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
+      // Check if data was read by the async ReadFile() call
+      DWORD read_data_size = *ReadDescriptor().m_read_data_size;
+      if (read_data_size > 0) {
+        DWORD size_to_copy = std::min(static_cast<DWORD>(size), read_data_size);
+        memcpy(buffer, ReadDescriptor().m_read_data, size_to_copy);
+        data_read = size_to_copy;
+        if (read_data_size > size) {
+          memmove(buffer, &(buffer[size_to_copy]),
+              read_data_size - size_to_copy);
+          *ReadDescriptor().m_read_data_size -= size_to_copy;
+        } else {
+          *ReadDescriptor().m_read_data_size = 0;
+        }
+        // TODO(lukase) what if there is unread data remanining?
+      }
+      return 0;
+    } else {
+      OLA_WARN << "Descriptor type not implemented for reading: "
+               << ReadDescriptor().m_type;
+      return -1;
+    }
+  }
 #else
     if ((ret = read(ReadDescriptor(), data, size - data_read)) < 0) {
-#endif
       if (errno == EAGAIN)
         return 0;
       if (errno != EINTR) {
@@ -399,6 +439,7 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
     data_read += ret;
     data += data_read;
   }
+#endif
   return 0;
 }
 
@@ -425,6 +466,10 @@ bool LoopbackDescriptor::Init() {
 
   if (!CreatePipe(m_handle_pair))
     return false;
+#ifdef _WIN32
+  m_handle_pair[0].m_read_data = m_read_data;
+  m_handle_pair[0].m_read_data_size = &m_read_data_size;
+#endif
 
   SetReadNonBlocking();
   SetNoSigPipe(WriteDescriptor());
@@ -489,8 +534,14 @@ bool PipeDescriptor::Init() {
       m_out_pair[1] != INVALID_DESCRIPTOR)
     return false;
 
-  if (!CreatePipe(m_in_pair))
+  if (!CreatePipe(m_in_pair)) {
     return false;
+  }
+
+#ifdef _WIN32
+  m_in_pair[0].m_read_data = m_read_data;
+  m_in_pair[0].m_read_data_size = &m_read_data_size;
+#endif
 
   if (!CreatePipe(m_out_pair)) {
 #ifdef _WIN32
@@ -652,6 +703,7 @@ DeviceDescriptor::DeviceDescriptor(int fd) {
   m_handle = fd;
 #endif
 }
+
 bool DeviceDescriptor::Close() {
   if (m_handle == INVALID_DESCRIPTOR)
     return true;

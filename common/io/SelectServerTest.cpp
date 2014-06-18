@@ -21,6 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
+
 #include "common/io/PollerInterface.h"
 #include "ola/Callback.h"
 #include "ola/Clock.h"
@@ -119,12 +123,22 @@ void SelectServerTest::setUp() {
   m_ss = new SelectServer(m_map);
   m_timeout_counter = 0;
   m_loop_counter = 0;
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
 void SelectServerTest::tearDown() {
   delete m_ss;
   delete m_map;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 
