@@ -101,6 +101,8 @@ class WindowsPoller : public PollerInterface {
   ConnectedPipeDescriptorSet m_connected_pipe_read_descriptors;
   OverlappedHandleMap m_overlapped_handle_map;
 
+  void UpdateDescriptorData();
+
   DISALLOW_COPY_AND_ASSIGN(WindowsPoller);
 };
 }  // namespace io

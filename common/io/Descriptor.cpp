@@ -410,13 +410,11 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
         memcpy(buffer, ReadDescriptor().m_read_data, size_to_copy);
         data_read = size_to_copy;
         if (read_data_size > size) {
-          memmove(buffer, &(buffer[size_to_copy]),
+          memmove(ReadDescriptor().m_read_data,
+              &(ReadDescriptor().m_read_data[size_to_copy]),
               read_data_size - size_to_copy);
-          *ReadDescriptor().m_read_data_size -= size_to_copy;
-        } else {
-          *ReadDescriptor().m_read_data_size = 0;
         }
-        // TODO(lukase) what if there is unread data remanining?
+        *ReadDescriptor().m_read_data_size -= size_to_copy;
       }
       return 0;
     } else {
@@ -469,6 +467,7 @@ bool LoopbackDescriptor::Init() {
 #ifdef _WIN32
   m_handle_pair[0].m_read_data = m_read_data;
   m_handle_pair[0].m_read_data_size = &m_read_data_size;
+  m_handle_pair[0].m_read_call_size = &m_read_call_size;
 #endif
 
   SetReadNonBlocking();
@@ -541,6 +540,7 @@ bool PipeDescriptor::Init() {
 #ifdef _WIN32
   m_in_pair[0].m_read_data = m_read_data;
   m_in_pair[0].m_read_data_size = &m_read_data_size;
+  m_in_pair[0].m_read_call_size = &m_read_call_size;
 #endif
 
   if (!CreatePipe(m_out_pair)) {

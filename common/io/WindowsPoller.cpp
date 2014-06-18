@@ -205,7 +205,11 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   std::queue<connected_pipe_descriptor_t> closed_queue;
   bool closed_descriptors = false;
 
+  // Make sure all descriptors are in a valid and up-to-date state
+  UpdateDescriptorData();
+
   // Launch read calls
+  bool data_pending = false;
   ConnectedPipeDescriptorSet::iterator chd_iter =
       m_connected_pipe_read_descriptors.begin();
   for (; chd_iter != m_connected_pipe_read_descriptors.end(); ++chd_iter) {
@@ -224,12 +228,23 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     }
 
     DescriptorHandle handle = chd_iter->descriptor->ReadDescriptor();
+    
+    if (*(handle.m_read_data_size) > 0) {
+      data_pending = true;
+    }
 
     // Async read call to be used with WaitForMultipleObjects
+    DWORD bytes_already_in_buffer = *handle.m_read_data_size;
+    void* read_buffer = &(handle.m_read_data[bytes_already_in_buffer]);
+    DWORD bytes_to_read = READ_DATA_BUFFER_SIZE - bytes_already_in_buffer;
+    // If you remove the following, empty OLA_WARN output, the call to
+    // ReadFile will fail.
+    // TODO(lukase) investigate why removing this leads to error 998 below
+    OLA_WARN << "";
     if (!ReadFile(handle.m_handle.m_handle,
-                  handle.m_read_data,
-                  sizeof(handle.m_read_data),
-                  reinterpret_cast<DWORD*>(handle.m_read_data_size),
+                  read_buffer,
+                  bytes_to_read,
+                  reinterpret_cast<DWORD*>(handle.m_read_call_size),
                   &(overlapped->second.m_overlapped))) {
       int last_error = GetLastError();
       if (last_error != ERROR_IO_PENDING) {
@@ -238,7 +253,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           closed_queue.push(*chd_iter);
           closed_descriptors = true;
         } else {
-          OLA_WARN << "ReadFile failed with " << GetLastError() << " for "
+          OLA_WARN << "ReadFile failed with " << last_error << " for "
                    << handle.m_handle.m_handle;
         }
         continue;
@@ -253,10 +268,10 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   // Call select() on sockets
   // TODO(lukase)
 
-  // If there are closed descriptors, set the timeout to something
-  // very small (1ms). This ensures we at least make a pass through the
-  // descriptors.
-  if (closed_descriptors) {
+  // If there are closed descriptors or descriptors with pending data, set the
+  // timeout to something very small (1ms). This ensures we at least make a pass
+  // through the descriptors.
+  if (closed_descriptors || data_pending) {
     sleep_interval = std::min(sleep_interval, TimeInterval(0, 1000));
   }
 
@@ -269,8 +284,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
 
   switch (wait_result) {
     case WAIT_TIMEOUT:
-      // timeout
-      m_clock->CurrentTime(&m_wake_up_time);
       // Cancel IO
       {
         std::vector<HANDLE>::iterator io = io_handles.begin();
@@ -279,9 +292,19 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
         }
       }
       io_handles.clear();
+      // timeout
+      m_clock->CurrentTime(&m_wake_up_time);
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
       break;
     case WAIT_FAILED:
+    // Cancel IO
+      {
+        std::vector<HANDLE>::iterator io = io_handles.begin();
+        for (; io != io_handles.end(); ++io) {
+          CancelIo(*io);
+        }
+      }
+      io_handles.clear();
       OLA_WARN << "WaitForMultipleObjects() failed with " << GetLastError();
       return_result = false;
       break;
@@ -315,24 +338,29 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       }
       io_handles.clear();
 
-      // deal with anything that needs an action
-      while (!read_ready_queue.empty()) {
-        ReadFileDescriptor *descriptor = read_ready_queue.front();
-        descriptor->PerformRead();
-        read_ready_queue.pop();
-      }
-
       m_clock->CurrentTime(&m_wake_up_time);
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
       break;
   }
-
-  // Cancel IO
-  std::vector<HANDLE>::iterator io = io_handles.begin();
-  for (; io != io_handles.end(); ++io) {
-    CancelIo(*io);
+  
+  UpdateDescriptorData();
+  
+  // Add all descriptors with pending data to the queue
+  std::vector<ConnectedDescriptor*>::iterator pending_iter =
+      connected_descriptors.begin();
+  for (; pending_iter != connected_descriptors.end(); ++pending_iter) {
+    DescriptorHandle descriptor = (*pending_iter)->ReadDescriptor();
+    if (*(descriptor.m_read_data_size) > 0) {
+      read_ready_queue.push(*pending_iter);
+    }
   }
-  io_handles.clear();
+  
+  // deal with anything that needs an action
+  while (!read_ready_queue.empty()) {
+    ReadFileDescriptor *descriptor = read_ready_queue.front();
+    descriptor->PerformRead();
+    read_ready_queue.pop();
+  }
 
   // Close descriptors
   chd_iter = m_connected_pipe_read_descriptors.begin();
@@ -362,5 +390,19 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
 
   return return_result;
 }
+
+void WindowsPoller::UpdateDescriptorData()
+{
+  ConnectedPipeDescriptorSet::iterator iter =
+      m_connected_pipe_read_descriptors.begin();
+  for(; iter != m_connected_pipe_read_descriptors.end(); ++iter) {
+    DescriptorHandle descriptor = iter->descriptor->ReadDescriptor();
+    if (*(descriptor.m_read_call_size) > 0) {
+      *(descriptor.m_read_data_size) += *(descriptor.m_read_call_size);
+      *(descriptor.m_read_call_size) = 0;
+    }
+  }
+}
+
 }  // namespace io
 }  // namespace ola

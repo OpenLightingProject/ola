@@ -83,6 +83,8 @@ struct DescriptorHandle {
   uint8_t* m_read_data;
   // Pointer to size of read result data
   uint32_t* m_read_data_size;
+  // Pointer to bytes read by last read call
+  uint32_t* m_read_call_size;
 
   DescriptorHandle()
       : m_type(GENERIC_DESCRIPTOR),
@@ -90,6 +92,7 @@ struct DescriptorHandle {
       m_read_data(NULL),
       m_read_data_size(NULL) {
     m_handle.m_fd = -1;
+    m_read_call_size = NULL;
   }
 };
 
@@ -289,6 +292,7 @@ class LoopbackDescriptor: public ConnectedDescriptor {
 #ifdef _WIN32
     memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
     m_read_data_size = 0;
+    m_read_call_size = 0;
 #endif
   }
   ~LoopbackDescriptor() { Close(); }
@@ -308,6 +312,7 @@ class LoopbackDescriptor: public ConnectedDescriptor {
 #ifdef _WIN32
   uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
   uint32_t m_read_data_size;
+  uint32_t m_read_call_size;
 #endif
 };
 
@@ -325,6 +330,7 @@ class PipeDescriptor: public ConnectedDescriptor {
 #ifdef _WIN32
     memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
     m_read_data_size = 0;
+    m_read_call_size = 0;
 #endif
   }
   ~PipeDescriptor() { Close(); }
@@ -354,6 +360,7 @@ class PipeDescriptor: public ConnectedDescriptor {
 #ifdef _WIN32
     m_in_pair[0].m_read_data = m_read_data;
     m_in_pair[0].m_read_data_size = &m_read_data_size;
+    m_in_pair[0].m_read_call_size = &m_read_call_size;
 #endif
   }
   PipeDescriptor(const PipeDescriptor &other);
@@ -361,6 +368,7 @@ class PipeDescriptor: public ConnectedDescriptor {
 #ifdef _WIN32
   uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
   uint32_t m_read_data_size;
+  uint32_t m_read_call_size;
 #endif
 };
 
