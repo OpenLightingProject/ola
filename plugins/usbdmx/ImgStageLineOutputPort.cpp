@@ -219,6 +219,7 @@ bool ImgStageLineOutputPort::SendDMX(const DmxBuffer &buffer) {
     }
     success = (r == 0);
     if (!success) {
+      OLA_FATAL << "Failed with error " << r;
       return success;
     }
   }
