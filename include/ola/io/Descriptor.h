@@ -84,12 +84,13 @@ struct DescriptorHandle {
   // Pointer to size of read result data
   uint32_t* m_read_data_size;
 
-  DescriptorHandle() {
+  DescriptorHandle()
+      : m_type(GENERIC_DESCRIPTOR),
+      m_event_handle(0),
+      m_read_data(NULL),
+      m_read_data_size(NULL)
+    {
     m_handle.m_fd = -1;
-    m_type = GENERIC_DESCRIPTOR;
-    m_event_handle = 0;
-    m_read_data = NULL;
-    m_read_data_size = NULL;
   }
 };
 

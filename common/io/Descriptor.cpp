@@ -88,12 +88,15 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
   HANDLE write_handle = NULL;
 
   static unsigned int pipe_name_counter = 0;
-  char pipe_name_buffer[MAX_PATH];
-  snprintf(pipe_name_buffer,
-      MAX_PATH,
-      "\\\\.\\Pipe\\OpenLightingArchitecture.%08x.%08x",
-      GetCurrentProcessId(),
-      pipe_name_counter++);
+
+  std::ostringstream pipe_name;
+  pipe_name << "\\\\.\\Pipe\\OpenLightingArchitecture.";
+  pipe_name.setf(std::ios::hex, std::ios::basefield);
+  pipe_name.setf(std::ios::showbase);
+  pipe_name.width(8);
+  pipe_name << GetCurrentProcessId() << ".";
+  pipe_name.width(8);
+  pipe_name << pipe_name_counter++;
 
   SECURITY_ATTRIBUTES security_attributes;
   // Set the bInheritHandle flag so pipe handles are inherited.
@@ -101,7 +104,8 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
   security_attributes.bInheritHandle = TRUE;
   security_attributes.lpSecurityDescriptor = NULL;
 
-  read_handle = CreateNamedPipeA(pipe_name_buffer,
+  read_handle = CreateNamedPipeA(
+      pipe_name.str().c_str(),
       PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
       PIPE_TYPE_BYTE | PIPE_WAIT,
       1,
@@ -114,7 +118,8 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
     return false;
   }
 
-  write_handle = CreateFileA(pipe_name_buffer,
+  write_handle = CreateFileA(
+      pipe_name.str().c_str(),
       GENERIC_WRITE,
       0,
       &security_attributes,
@@ -247,11 +252,8 @@ int ConnectedDescriptor::DataRemaining() const {
 #ifdef _WIN32
   bool failed = false;
   if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
-    if (ReadDescriptor().m_read_data_size) {
-      return *ReadDescriptor().m_read_data_size;
-    } else {
-      return 0;
-    }
+    return ReadDescriptor().m_read_data_size ?
+        *ReadDescriptor().m_read_data_size : 0;
   } else {
     OLA_WARN << "DataRemaining() called on unsupported descriptor type";
     failed = true;

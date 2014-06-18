@@ -30,7 +30,7 @@ libolaweb_la_SOURCES = Json.cpp JsonData.cpp JsonLexer.cpp JsonParser.cpp \
 ################################################
 # Patch test names are abbreviated to prevent Windows' UAC from blocking them.
 if BUILD_TESTS
-TESTS = JsonTester ParserTester PatParserTester PatTester PointerTester \
+TESTS = JsonTester ParserTester PtchParserTester PtchTester PointerTester \
         PointerTrackerTester SchemaParserTester SchemaTester SectionsTester
 endif
 check_PROGRAMS = $(TESTS)
@@ -48,13 +48,13 @@ ParserTester_SOURCES = ParserTest.cpp
 ParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ParserTester_LDADD = $(COMMON_TEST_LDADD)
 
-PatParserTester_SOURCES = PatchParserTest.cpp
-PatParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-PatParserTester_LDADD = $(COMMON_TEST_LDADD)
+PtchParserTester_SOURCES = PatchParserTest.cpp
+PtchParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+PtchParserTester_LDADD = $(COMMON_TEST_LDADD)
 
-PatTester_SOURCES = PatchTest.cpp
-PatTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-PatTester_LDADD = $(COMMON_TEST_LDADD)
+PtchTester_SOURCES = PatchTest.cpp
+PtchTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+PtchTester_LDADD = $(COMMON_TEST_LDADD)
 
 PointerTester_SOURCES = PointerTest.cpp
 PointerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

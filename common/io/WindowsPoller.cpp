@@ -56,7 +56,7 @@ WindowsPoller::WindowsPoller(ExportMap *export_map, Clock* clock)
 
 WindowsPoller::~WindowsPoller() {
   ConnectedPipeDescriptorSet::iterator iter =
-    m_connected_pipe_read_descriptors.begin();
+      m_connected_pipe_read_descriptors.begin();
   for (; iter != m_connected_pipe_read_descriptors.end(); ++iter) {
     if (iter->delete_on_close) {
       delete iter->descriptor;
@@ -71,7 +71,7 @@ WindowsPoller::~WindowsPoller() {
   }
 }
 
-bool WindowsPoller::AddReadDescriptor(class ReadFileDescriptor *descriptor) {
+bool WindowsPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor()) {
     OLA_WARN << "AddReadDescriptor called with invalid descriptor";
     return false;
@@ -87,8 +87,8 @@ bool WindowsPoller::AddReadDescriptor(class ReadFileDescriptor *descriptor) {
   return STLInsertIfNotPresent(&m_socket_read_descriptors, descriptor);
 }
 
-bool WindowsPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
-                                     bool delete_on_close) {
+bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
+                                      bool delete_on_close) {
   if (!descriptor->ValidReadDescriptor()) {
     OLA_WARN << "AddReadDescriptor called with invalid descriptor";
     return false;
@@ -104,7 +104,7 @@ bool WindowsPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
   // We make use of the fact that connected_descriptor_t_lt operates on the
   // descriptor handle value alone.
   connected_pipe_descriptor_t registered_descriptor =
-    {descriptor, delete_on_close};
+      {descriptor, delete_on_close};
 
   bool result = STLInsertIfNotPresent(&m_connected_pipe_read_descriptors,
                                       registered_descriptor);
@@ -120,7 +120,7 @@ bool WindowsPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
   return result;
 }
 
-bool WindowsPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
+bool WindowsPoller::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor()) {
     OLA_WARN << "Removing an invalid file descriptor";
     return false;
@@ -136,8 +136,7 @@ bool WindowsPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
   return STLRemove(&m_socket_read_descriptors, descriptor);
 }
 
-bool WindowsPoller::RemoveReadDescriptor(
-    class ConnectedDescriptor *descriptor) {
+bool WindowsPoller::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor()) {
     OLA_WARN << "Removing an invalid file descriptor";
     return false;
@@ -154,14 +153,13 @@ bool WindowsPoller::RemoveReadDescriptor(
   return STLRemove(&m_connected_pipe_read_descriptors, registered_descriptor);
 }
 
-bool WindowsPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
+bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
   // TODO(lukase) Implement this method
   OLA_WARN << "AddWriteDescriptor(WriteFileDescriptor*) not implemented";
   return false;
 }
 
-bool WindowsPoller::RemoveWriteDescriptor(
-    class WriteFileDescriptor *descriptor) {
+bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
   // TODO(lukase) Implement this method
   OLA_WARN << "RemoveWriteDescriptor(WriteFileDescriptor*) not implemented";
   return false;
@@ -351,7 +349,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     const connected_pipe_descriptor_t &connected_descriptor =
         closed_queue.front();
     ConnectedDescriptor::OnCloseCallback *on_close =
-      connected_descriptor.descriptor->TransferOnClose();
+        connected_descriptor.descriptor->TransferOnClose();
     if (on_close)
       on_close->Run();
     if (connected_descriptor.delete_on_close)

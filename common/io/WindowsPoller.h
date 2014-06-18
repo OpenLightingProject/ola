@@ -86,8 +86,8 @@ class WindowsPoller : public PollerInterface {
   } overlapped_handle_context_t;
 
   typedef std::set<connected_pipe_descriptor_t,
-                   connected_pipe_descriptor_t_lt>
-          ConnectedPipeDescriptorSet;
+      connected_pipe_descriptor_t_lt>
+      ConnectedPipeDescriptorSet;
   typedef std::set<ReadFileDescriptor*> SocketDescriptorSet;
   typedef std::map<void*, overlapped_handle_context_t> OverlappedHandleMap;
 
