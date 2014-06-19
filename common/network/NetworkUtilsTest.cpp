@@ -20,6 +20,10 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -48,10 +52,16 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToFromLittleEndian);
   CPPUNIT_TEST(testNameProcessing);
   CPPUNIT_TEST(testNameServers);
+#ifndef _WIN32
+  // Windows has no single default route, so this test only makes sense on non-
+  // Windows systems
   CPPUNIT_TEST(testDefaultRoute);
+#endif
   CPPUNIT_TEST_SUITE_END();
 
  public:
+    void setUp();
+    void tearDown();
     void testToFromNetwork();
     void testToFromLittleEndian();
     void testNameProcessing();
@@ -61,6 +71,27 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
 
+/*
+ * Setup networking subsystem
+ */
+void NetworkUtilsTest::setUp() {
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
+}
+
+
+/*
+ * Cleanup the networking subsystem
+ */
+void NetworkUtilsTest::tearDown() {
+#ifdef _WIN32
+  WSACleanup();
+#endif
+}
 
 /*
  * Check that we can convert to/from network byte order
