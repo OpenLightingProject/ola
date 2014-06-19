@@ -46,8 +46,10 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
   IP_ADDR_STRING *ipAddress;
   ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
   uint32_t net, mask;
-  (void)include_loopback;  // We don't currently use this but its a required
-                           // part of the InterfacePicker interface..
+
+  if (include_loopback) {
+    OLA_WARN << "Loopback requested. This might not exist on Windows";
+  }
 
   while (1) {
     pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(new uint8_t[ulOutBufLen]);
@@ -84,6 +86,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
       if (net) {
         Interface iface;
         iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
+        iface.index = pAdapter->Index;
         uint8_t macaddr[MACAddress::LENGTH];
         memcpy(macaddr, pAdapter->Address, MACAddress::LENGTH);
         iface.hw_address = MACAddress(macaddr);
