@@ -228,7 +228,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     }
 
     DescriptorHandle handle = chd_iter->descriptor->ReadDescriptor();
-    
+
     if (*(handle.m_read_data_size) > 0) {
       data_pending = true;
     }
@@ -342,9 +342,9 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
       break;
   }
-  
+
   UpdateDescriptorData();
-  
+
   // Add all descriptors with pending data to the queue
   std::vector<ConnectedDescriptor*>::iterator pending_iter =
       connected_descriptors.begin();
@@ -354,7 +354,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       read_ready_queue.push(*pending_iter);
     }
   }
-  
+
   // deal with anything that needs an action
   while (!read_ready_queue.empty()) {
     ReadFileDescriptor *descriptor = read_ready_queue.front();
@@ -391,11 +391,10 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   return return_result;
 }
 
-void WindowsPoller::UpdateDescriptorData()
-{
+void WindowsPoller::UpdateDescriptorData() {
   ConnectedPipeDescriptorSet::iterator iter =
       m_connected_pipe_read_descriptors.begin();
-  for(; iter != m_connected_pipe_read_descriptors.end(); ++iter) {
+  for (; iter != m_connected_pipe_read_descriptors.end(); ++iter) {
     DescriptorHandle descriptor = iter->descriptor->ReadDescriptor();
     if (*(descriptor.m_read_call_size) > 0) {
       *(descriptor.m_read_data_size) += *(descriptor.m_read_call_size);
