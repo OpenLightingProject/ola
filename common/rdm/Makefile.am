@@ -48,7 +48,7 @@ check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) ../libolacommon.la
 if USING_WIN32
-COMMON_TEST_LDADD += -lWs2_32
+COMMON_TEST_LDADD += -lWs2_32 -lIphlpapi
 endif
 
 DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp

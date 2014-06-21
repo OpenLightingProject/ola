@@ -22,6 +22,6 @@ DescriptorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DescriptorTester_LDADD = $(COMMON_TESTING_LIBS) \
                          ../libolacommon.la
 if USING_WIN32
-DescriptorTester_LDADD += -lWs2_32
+DescriptorTester_LDADD += -lWs2_32 -lIphlpapi
 endif
 

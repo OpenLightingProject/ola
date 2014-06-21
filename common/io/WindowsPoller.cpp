@@ -345,6 +345,9 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           // ReadFile will fail.
           // TODO(lukase) investigate why removing this leads to error 998 below
           OLA_WARN << "";
+          OLA_WARN << (void*)handle.m_handle.m_handle;
+          OLA_WARN << read_buffer;
+          OLA_WARN << bytes_to_read;
           if (!ReadFile(handle.m_handle.m_handle,
                         read_buffer,
                         bytes_to_read,
