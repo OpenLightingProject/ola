@@ -31,7 +31,7 @@ ola_trigger_LDADD = ../../common/libolacommon.la \
                     $(LEXLIB)
 
 if USING_WIN32
-ola_trigger_LDADD += -lWs2_32
+ola_trigger_LDADD += -lWs2_32 -lIphlpapi
 endif
 
 BUILT_SOURCES = lex.yy.cpp config.tab.cpp config.tab.h

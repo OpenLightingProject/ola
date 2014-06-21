@@ -78,8 +78,8 @@ slp_client_LDADD = ../common/libolacommon.la \
                    libolaslpcore.la
 
 if USING_WIN32
-slp_server_LDADD += -lWs2_32
-slp_client_LDADD += -lWs2_32
+slp_server_LDADD += -lWs2_32 -lIphlpapi
+slp_client_LDADD += -lWs2_32 -lIphlpapi
 endif
 
 # TESTS

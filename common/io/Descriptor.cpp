@@ -254,6 +254,10 @@ int ConnectedDescriptor::DataRemaining() const {
   if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
     return ReadDescriptor().m_read_data_size ?
         *ReadDescriptor().m_read_data_size : 0;
+  } else if (ReadDescriptor().m_type == SOCKET_DESCRIPTOR) {
+    u_long unrd;
+    failed = ioctlsocket(ReadDescriptor().m_handle.m_fd, FIONREAD, &unrd) < 0;
+    unread = unrd;
   } else {
     OLA_WARN << "DataRemaining() called on unsupported descriptor type";
     failed = true;
@@ -295,6 +299,9 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
     } else {
       bytes_sent = bytes_written;
     }
+  } else if (WriteDescriptor().m_type == SOCKET_DESCRIPTOR) {
+     bytes_sent = send(WriteDescriptor().m_handle.m_fd,
+        reinterpret_cast<const char*>(buffer), size, 0);
   } else {
     OLA_WARN << "Send() called on unsupported descriptor type";
     return 0;
@@ -417,6 +424,21 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
         *ReadDescriptor().m_read_data_size -= size_to_copy;
       }
       return 0;
+    } else if (ReadDescriptor().m_type == SOCKET_DESCRIPTOR) {
+      ret = recv(ReadDescriptor().m_handle.m_fd, reinterpret_cast<char*>(data),
+          size - data_read, 0);
+      if (ret < 0) {
+        if (WSAGetLastError() == WSAEWOULDBLOCK)
+          return 0;
+        if (WSAGetLastError() != WSAEINTR) {
+          OLA_WARN << "read failed, " << WSAGetLastError();
+          return -1;
+        }
+      } else if (ret == 0) {
+        return 0;
+      }
+      data_read += ret;
+      data += data_read;
     } else {
       OLA_WARN << "Descriptor type not implemented for reading: "
                << ReadDescriptor().m_type;

@@ -258,36 +258,13 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
     return 0;
 
 #ifdef _WIN32
-  WSABUF* buffers = new WSABUF[io_len];
-  for (int buffer = 0; buffer < io_len; ++buffer) {
-    buffers[buffer].len = iov[buffer].iov_len;
-    buffers[buffer].buf = reinterpret_cast<char*>(iov[buffer].iov_base);
-  }
-
-  sockaddr_in destination;
-  memset(&destination, 0, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-  destination.sin_addr.s_addr = ip.AsInt();
-
-  SOCKET_ADDRESS address;
-  address.lpSockaddr = reinterpret_cast<SOCKADDR*>(&destination);
-  address.iSockaddrLength = sizeof(destination);
-
   ssize_t bytes_sent = 0;
-  DWORD platform_bytes_sent = 0;
-
-  // We should be using WSASendMsg here, but it's not available on MinGW
-  if (WSASendTo(WriteDescriptor().m_handle.m_fd, buffers, io_len,
-                &platform_bytes_sent, 0, reinterpret_cast<SOCKADDR*>(&address),
-                sizeof(address), NULL, NULL) == 0) {
-    bytes_sent = static_cast<ssize_t>(platform_bytes_sent);
-  } else {
-    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to addr: "
-             << ip << " : " <<  WSAGetLastError();
+  
+  for (int buffer = 0; buffer < io_len; ++buffer) {
+    bytes_sent += SendTo(reinterpret_cast<uint8_t*>(iov[buffer].iov_base),
+        iov[buffer].iov_len, ip, port);
   }
 
-  delete [] buffers;
 #else
   struct sockaddr_in destination;
   memset(&destination, 0, sizeof(destination));

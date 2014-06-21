@@ -71,11 +71,11 @@ class WindowsPoller : public PollerInterface {
   typedef struct {
     ConnectedDescriptor *descriptor;
     bool delete_on_close;
-  } connected_pipe_descriptor_t;
+  } connected_descriptor_t;
 
-  struct connected_pipe_descriptor_t_lt {
-    bool operator()(const connected_pipe_descriptor_t &c1,
-                    const connected_pipe_descriptor_t &c2) const {
+  struct connected_descriptor_t_lt {
+    bool operator()(const connected_descriptor_t &c1,
+                    const connected_descriptor_t &c2) const {
       return c1.descriptor->ReadDescriptor().m_handle.m_handle <
           c2.descriptor->ReadDescriptor().m_handle.m_handle;
     }
@@ -85,11 +85,11 @@ class WindowsPoller : public PollerInterface {
     OVERLAPPED m_overlapped;
   } overlapped_handle_context_t;
 
-  typedef std::set<connected_pipe_descriptor_t,
-      connected_pipe_descriptor_t_lt>
-      ConnectedPipeDescriptorSet;
+  typedef std::set<connected_descriptor_t, connected_descriptor_t_lt>
+      ConnectedDescriptorSet;
   typedef std::set<ReadFileDescriptor*> SocketDescriptorSet;
   typedef std::map<void*, overlapped_handle_context_t> OverlappedHandleMap;
+  typedef std::map<ReadFileDescriptor*, HANDLE> HandleMap;
 
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
@@ -98,8 +98,9 @@ class WindowsPoller : public PollerInterface {
   TimeStamp m_wake_up_time;
 
   SocketDescriptorSet m_socket_read_descriptors;
-  ConnectedPipeDescriptorSet m_connected_pipe_read_descriptors;
+  ConnectedDescriptorSet m_connected_read_descriptors;
   OverlappedHandleMap m_overlapped_handle_map;
+  HandleMap m_socket_handles;
 
   void UpdateDescriptorData();
 

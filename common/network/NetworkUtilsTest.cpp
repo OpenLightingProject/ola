@@ -75,7 +75,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
  * Setup networking subsystem
  */
 void NetworkUtilsTest::setUp() {
-
 #if _WIN32
   WSADATA wsa_data;
   int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
