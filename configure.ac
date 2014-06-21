@@ -76,6 +76,7 @@ AC_CXX_STL_HASH
 # epoll
 AX_HAVE_EPOLL(
   [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)

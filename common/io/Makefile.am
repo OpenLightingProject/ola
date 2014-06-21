@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = PollerInterface.h SelectPoller.h TimeoutManager.h
+EXTRA_DIST = EPoller.h PollerInterface.h SelectPoller.h TimeoutManager.h
 
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
@@ -12,6 +12,10 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       SelectServer.cpp \
                       StdinHandler.cpp \
                       TimeoutManager.cpp
+
+if HAVE_EPOLL
+libolaio_la_SOURCES += EPoller.cpp
+endif
 
 if BUILD_TESTS
 TESTS = DescriptorTester IOQueueTester \

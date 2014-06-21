@@ -18,10 +18,16 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include "ola/io/SelectServer.h"
+
 #ifdef WIN32
 #include <winsock2.h>
 #else
 #include <sys/select.h>
+#endif
+
+#if HAVE_CONFIG_H
+#include <config.h>
 #endif
 
 #include <string.h>
@@ -33,12 +39,15 @@
 #include <string>
 #include <vector>
 
+#include "common/io/EPoller.h"
 #include "common/io/SelectPoller.h"
-#include "ola/Logging.h"
+#include "ola/base/Flags.h"
 #include "ola/io/Descriptor.h"
-#include "ola/io/SelectServer.h"
+#include "ola/Logging.h"
 #include "ola/network/Socket.h"
 #include "ola/stl/STLUtils.h"
+
+DEFINE_bool(use_epoll, true, "Use epoll() when available");
 
 namespace ola {
 namespace io {
@@ -77,7 +86,15 @@ SelectServer::SelectServer(ExportMap *export_map,
   }
 
   m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
+#ifdef HAVE_EPOLL
+  if (FLAGS_use_epoll) {
+    m_poller.reset(new EPoller(export_map, m_clock));
+  } else {
+    m_poller.reset(new SelectPoller(export_map, m_clock));
+  }
+#else
   m_poller.reset(new SelectPoller(export_map, m_clock));
+#endif
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())

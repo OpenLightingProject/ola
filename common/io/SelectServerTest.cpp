@@ -32,11 +32,15 @@
 
 using ola::ExportMap;
 using ola::IntegerVariable;
-using ola::TimeStamp;
+using ola::io::ConnectedDescriptor;
 using ola::io::LoopbackDescriptor;
 using ola::io::PollerInterface;
 using ola::io::SelectServer;
+using ola::io::UnixSocket;
 using ola::network::UDPSocket;
+using ola::NewSingleCallback;
+using ola::TimeStamp;
+using std::auto_ptr;
 
 /*
  * For some of the tests we need precise control over the timing.
@@ -57,7 +61,13 @@ class CustomMockClock: public ola::Clock {
 
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
+  CPPUNIT_TEST(testAddInvalidDescriptor);
+  CPPUNIT_TEST(testDoubleAddAndRemove);
   CPPUNIT_TEST(testAddRemoveReadDescriptor);
+  CPPUNIT_TEST(testRemoteEndClose);
+  CPPUNIT_TEST(testRemoteEndCloseWithDelete);
+  CPPUNIT_TEST(testReadWriteInteraction);
+  CPPUNIT_TEST(testShutdownWithActiveDescriptors);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST(testOffByOneTimeout);
   CPPUNIT_TEST(testLoopCallbacks);
@@ -66,7 +76,13 @@ class SelectServerTest: public CppUnit::TestFixture {
  public:
     void setUp();
     void tearDown();
+    void testAddInvalidDescriptor();
+    void testDoubleAddAndRemove();
     void testAddRemoveReadDescriptor();
+    void testRemoteEndClose();
+    void testRemoteEndCloseWithDelete();
+    void testReadWriteInteraction();
+    void testShutdownWithActiveDescriptors();
     void testTimeout();
     void testOffByOneTimeout();
     void testLoopCallbacks();
@@ -75,7 +91,7 @@ class SelectServerTest: public CppUnit::TestFixture {
       OLA_FAIL("Fatal Timeout");
     }
 
-    void TerminateTimeout() {
+    void Terminate() {
       if (m_ss) { m_ss->Terminate(); }
     }
 
@@ -100,12 +116,20 @@ class SelectServerTest: public CppUnit::TestFixture {
       return true;
     }
 
+    void RemoveFromSelectServer(ConnectedDescriptor *descriptor) {
+      m_ss->RemoveReadDescriptor(descriptor);
+      m_ss->Terminate();
+    }
+
     void IncrementLoopCounter() { m_loop_counter++; }
 
  private:
     unsigned int m_timeout_counter;
     unsigned int m_loop_counter;
-    ExportMap *m_map;
+    ExportMap m_map;
+    IntegerVariable *connected_read_descriptor_count;
+    IntegerVariable *read_descriptor_count;
+    IntegerVariable *write_descriptor_count;
     SelectServer *m_ss;
 };
 
@@ -114,9 +138,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SelectServerTest);
 
 
 void SelectServerTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_map = new ExportMap();
-  m_ss = new SelectServer(m_map);
+  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
+  connected_read_descriptor_count = m_map.GetIntegerVar(
+      PollerInterface::K_CONNECTED_DESCRIPTORS_VAR);
+  read_descriptor_count = m_map.GetIntegerVar(
+      PollerInterface::K_READ_DESCRIPTOR_VAR);
+  write_descriptor_count = m_map.GetIntegerVar(
+      PollerInterface::K_WRITE_DESCRIPTOR_VAR);
+  m_ss = new SelectServer(&m_map);
   m_timeout_counter = 0;
   m_loop_counter = 0;
 }
@@ -124,7 +153,63 @@ void SelectServerTest::setUp() {
 
 void SelectServerTest::tearDown() {
   delete m_ss;
-  delete m_map;
+}
+
+
+/**
+ * Confirm we can't add invalid descriptors to the SelectServer
+ */
+void SelectServerTest::testAddInvalidDescriptor() {
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());  // internal socket
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+
+  // Adding and removing a uninitialized socket should fail
+  LoopbackDescriptor bad_socket;
+  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
+  OLA_ASSERT_FALSE(m_ss->AddWriteDescriptor(&bad_socket));
+  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&bad_socket));
+  OLA_ASSERT_FALSE(m_ss->RemoveWriteDescriptor(&bad_socket));
+
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());  // internal socket
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+}
+
+/**
+ * Confirm we can't add the same descriptor twice.
+ */
+void SelectServerTest::testDoubleAddAndRemove() {
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());  // internal socket
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+
+  LoopbackDescriptor loopback_socket;
+  loopback_socket.Init();
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, write_descriptor_count->Get());
+
+  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, write_descriptor_count->Get());
+
+  OLA_ASSERT_TRUE(m_ss->RemoveWriteDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+
+  // Trying to remove a second time should fail
+  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&loopback_socket));
+  OLA_ASSERT_FALSE(m_ss->RemoveWriteDescriptor(&loopback_socket));
 }
 
 
@@ -133,63 +218,134 @@ void SelectServerTest::tearDown() {
  * export map is updated.
  */
 void SelectServerTest::testAddRemoveReadDescriptor() {
-  LoopbackDescriptor bad_socket;
-  IntegerVariable *connected_socket_count =
-    m_map->GetIntegerVar(PollerInterface::K_CONNECTED_DESCRIPTORS_VAR);
-  IntegerVariable *socket_count =
-    m_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR);
-  OLA_ASSERT_EQ(1, connected_socket_count->Get());  // internal socket
-  OLA_ASSERT_EQ(0, socket_count->Get());
-  // adding and removin a non-connected socket should fail
-  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
-  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&bad_socket));
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
   LoopbackDescriptor loopback_socket;
   loopback_socket.Init();
-  OLA_ASSERT_EQ(1, connected_socket_count->Get());
-  OLA_ASSERT_EQ(0, socket_count->Get());
+
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
-  // Adding a second time should fail
-  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&loopback_socket));
-  OLA_ASSERT_EQ(2, connected_socket_count->Get());
-  OLA_ASSERT_EQ(0, socket_count->Get());
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
   // Add a udp socket
   UDPSocket udp_socket;
   OLA_ASSERT_TRUE(udp_socket.Init());
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&udp_socket));
-  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&udp_socket));
-  OLA_ASSERT_EQ(2, connected_socket_count->Get());
-  OLA_ASSERT_EQ(1, socket_count->Get());
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
   // Check remove works
   OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&loopback_socket));
-  OLA_ASSERT_EQ(1, connected_socket_count->Get());
-  OLA_ASSERT_EQ(1, socket_count->Get());
-  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&udp_socket));
-  OLA_ASSERT_EQ(1, connected_socket_count->Get());
-  OLA_ASSERT_EQ(0, socket_count->Get());
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
-  // Remove again should fail
-  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&loopback_socket));
+  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&udp_socket));
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 }
 
+/**
+ * Confirm we correctly detect the remote end closing the connection.
+ */
+void SelectServerTest::testRemoteEndClose() {
+  LoopbackDescriptor loopback_socket;
+  loopback_socket.Init();
+  loopback_socket.SetOnClose(NewSingleCallback(
+        this, &SelectServerTest::RemoveFromSelectServer,
+        reinterpret_cast<ConnectedDescriptor*>(&loopback_socket)));
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+
+  // now the Write end closes
+  loopback_socket.CloseClient();
+
+  m_ss->Run();
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
+/**
+ * Confirm we correctly detect the remote end closing the connection.
+ * This uses the delete_on_close option.
+ */
+void SelectServerTest::testRemoteEndCloseWithDelete() {
+  // Ownership is transferred to the SelectServer.
+  LoopbackDescriptor *loopback_socket = new LoopbackDescriptor();
+  loopback_socket->Init();
+  loopback_socket->SetOnClose(NewSingleCallback(
+        this, &SelectServerTest::Terminate));
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback_socket, true));
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+
+  // Now the Write end closes
+  loopback_socket->CloseClient();
+
+  m_ss->Run();
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
+/**
+ * Test the interaction between read and write descriptor.
+ */
+void SelectServerTest::testReadWriteInteraction() {
+  UnixSocket socket;
+  socket.Init();
+  socket.SetOnClose(NewSingleCallback(this, &SelectServerTest::Terminate));
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&socket));
+  OLA_ASSERT_TRUE(m_ss->RemoveWriteDescriptor(&socket));
+
+  // now the Write end closes
+  auto_ptr<UnixSocket> other_end(socket.OppositeEnd());
+  other_end->CloseClient();
+
+  m_ss->RegisterSingleTimeout(
+      100, ola::NewSingleCallback(this, &SelectServerTest::FatalTimeout));
+  m_ss->Run();
+  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&socket));
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
+/**
+ * Confirm we don't leak memory when the SelectServer is destroyed without all
+ * the descriptors being removed.
+ */
+void SelectServerTest::testShutdownWithActiveDescriptors() {
+  LoopbackDescriptor loopback_socket;
+  loopback_socket.Init();
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback_socket));
+}
 
 /*
  * Timeout tests
  */
 void SelectServerTest::testTimeout() {
-  // check a single timeout
+  // Check a single timeout
   m_ss->RegisterSingleTimeout(
       10,
       ola::NewSingleCallback(this, &SelectServerTest::SingleIncrementTimeout));
   m_ss->RegisterSingleTimeout(
       20,
-      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::Terminate));
   m_ss->Run();
   OLA_ASSERT_EQ(1u, m_timeout_counter);
 
-  // now check a timeout that adds another timeout
+  // Now check a timeout that adds another timeout
   m_timeout_counter = 0;
 
   m_ss->RegisterSingleTimeout(
@@ -197,11 +353,11 @@ void SelectServerTest::testTimeout() {
       ola::NewSingleCallback(this, &SelectServerTest::ReentrantTimeout, m_ss));
   m_ss->RegisterSingleTimeout(
       20,
-      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::Terminate));
   m_ss->Run();
   OLA_ASSERT_EQ(2u, m_timeout_counter);
 
-  // check repeating timeouts
+  // Check repeating timeouts
   // Some systems (VMs in particular) can't do 10ms resolution so we go for
   // larger numbers here.
   m_timeout_counter = 0;
@@ -210,7 +366,7 @@ void SelectServerTest::testTimeout() {
       ola::NewCallback(this, &SelectServerTest::IncrementTimeout));
   m_ss->RegisterSingleTimeout(
       980,
-      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::Terminate));
   m_ss->Run();
   // This seems to go as low as 7
   std::stringstream str;
@@ -218,26 +374,26 @@ void SelectServerTest::testTimeout() {
   OLA_ASSERT_TRUE_MSG(m_timeout_counter >= 5 && m_timeout_counter <= 9,
                       str.str());
 
-  // check timeouts are removed correctly
+  // Confirm timeouts are removed correctly
   ola::thread::timeout_id timeout1 = m_ss->RegisterSingleTimeout(
       10,
       ola::NewSingleCallback(this, &SelectServerTest::FatalTimeout));
   m_ss->RegisterSingleTimeout(
       20,
-      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::Terminate));
   m_ss->RemoveTimeout(timeout1);
   m_ss->Run();
 }
 
 /*
- * Test that timeouts aren't skipped
+ * Test that timeouts aren't skipped.
  */
 void SelectServerTest::testOffByOneTimeout() {
   TimeStamp now;
   ola::Clock actual_clock;
   actual_clock.CurrentTime(&now);
 
-  CustomMockClock clock(&now);;
+  CustomMockClock clock(&now);
   SelectServer ss(NULL, &clock);
 
   ss.RegisterSingleTimeout(
@@ -251,15 +407,15 @@ void SelectServerTest::testOffByOneTimeout() {
 
 
 /*
- * Check that the loop closures are called
+ * Check that the loop closures are called.
  */
 void SelectServerTest::testLoopCallbacks() {
   m_ss->SetDefaultInterval(ola::TimeInterval(0, 100000));  // poll every 100ms
-  m_ss->RunInLoop(ola::NewCallback(this,
-                                   &SelectServerTest::IncrementLoopCounter));
+  m_ss->RunInLoop(
+      ola::NewCallback(this, &SelectServerTest::IncrementLoopCounter));
   m_ss->RegisterSingleTimeout(
       500,
-      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::Terminate));
   m_ss->Run();
   // we should have at least 5 calls to IncrementLoopCounter
   OLA_ASSERT_TRUE(m_loop_counter >= 5);
