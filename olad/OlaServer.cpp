@@ -239,7 +239,8 @@ bool OlaServer::Init() {
       m_port_manager.get(),
       m_broker.get(),
       m_ss->WakeUpTime(),
-      m_default_uid));
+      m_default_uid,
+      NewCallback(this, &OlaServer::ReloadPluginsInternal)));
 
   // The plugin load procedure can take a while so we run it in the main loop.
   m_ss->Execute(

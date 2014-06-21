@@ -4,6 +4,7 @@ include $(top_srcdir)/common.mk
 ##################################################
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
+                      ExtendedSerial.cpp \
                       IOQueue.cpp \
                       IOStack.cpp \
                       IOUtils.cpp \

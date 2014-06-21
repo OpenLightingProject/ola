@@ -37,25 +37,11 @@ TCPConnector::TCPConnector(ola::io::SelectServerInterface *ss)
     : m_ss(ss) {
 }
 
-
-/**
- * Clean up
- */
 TCPConnector::~TCPConnector() {
   CancelAll();
 }
 
 
-/**
- * Perform a non-blocking connect.
- * on_connect may be called immediately if the address is local.
- * on_failure will be called immediately if an error occurs
- * @param endpoint the IPV4SocketAddress to connect to
- * @param timeout the time to wait before declaring the connection a failure
- * @param callback the callback to run when the connection completes or fails
- * @returns the ID for this connection, or 0 if the callback has already
- * run.
- */
 TCPConnector::TCPConnectionID TCPConnector::Connect(
     const IPV4SocketAddress &endpoint,
     const ola::TimeInterval &timeout,
@@ -120,12 +106,6 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   return connection;
 }
 
-
-/**
- * Cancel a pending TCP connection
- * @param id the TCPConnectionID
- * @return true if this connection was cancelled, false if the id wasn't valid.
- */
 bool TCPConnector::Cancel(TCPConnectionID id) {
   PendingTCPConnection *connection =
     const_cast<PendingTCPConnection*>(
@@ -139,10 +119,6 @@ bool TCPConnector::Cancel(TCPConnectionID id) {
   return true;
 }
 
-
-/**
- * Abort all pending TCP connections
- */
 void TCPConnector::CancelAll() {
   ConnectionSet::iterator iter = m_connections.begin();
   for (; iter != m_connections.end(); ++iter)
@@ -150,9 +126,8 @@ void TCPConnector::CancelAll() {
   m_connections.clear();
 }
 
-
-/**
- * Called when the socket becomes writeable
+/*
+ * Called when a socket becomes writeable.
  */
 void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   // cancel timeout
@@ -202,15 +177,12 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
                            connection));
 }
 
-
 /**
  * Delete this pending connection
  */
 void TCPConnector::FreePendingConnection(PendingTCPConnection *connection) {
   delete connection;
 }
-
-
 
 void TCPConnector::Timeout(const ConnectionSet::iterator &iter) {
   PendingTCPConnection *connection = *iter;

@@ -28,8 +28,8 @@ AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
-                  linux/if_packet.h math.h net/ethernet.h \
+AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h errno.h execinfo.h \
+                  linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
 AC_CHECK_HEADERS([random])
@@ -249,6 +249,10 @@ AS_IF([test -z "$PKG_CONFIG"],
 
 # Libraries.
 #####################################################
+
+# dlopen
+AC_SEARCH_LIBS([dlopen], [dl], [have_dlopen="yes"])
+AM_CONDITIONAL([HAVE_DLOPEN], [test "x$have_dlopen" = xyes])
 
 # dmx4linux
 have_dmx4linux="no"
@@ -495,6 +499,17 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
 
+# UART direct plugin
+AC_ARG_ENABLE(
+  [uart],
+  [AS_HELP_STRING([--disable-uart],
+                  [Avoid using native uart support])])
+
+AC_CHECK_HEADERS([asm/termios.h], [have_asm_termios="yes"], [have_asm_termios="no"])
+AS_IF([test "x$have_asm_termios" = xyes],
+      [AC_DEFINE([USE_UART], [1], [define if asm/termios.h is available and direct UART support should be enabled])])
+
+
 # OSC Support.
 # look for liblo if the user asked us to
 AC_ARG_ENABLE(
@@ -619,6 +634,7 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_asm_termios])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 
@@ -749,6 +765,7 @@ AC_CONFIG_FILES([Makefile
                  plugins/shownet/Makefile
                  plugins/spi/Makefile
                  plugins/stageprofi/Makefile
+                 plugins/uartdmx/Makefile
                  plugins/usbdmx/Makefile
                  plugins/usbpro/Makefile
                  plugins/usbpro/messages/Makefile
