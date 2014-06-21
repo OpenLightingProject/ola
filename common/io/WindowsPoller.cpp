@@ -74,6 +74,11 @@ WindowsPoller::~WindowsPoller() {
   for (; handle_it != m_socket_handles.end(); ++handle_it) {
     CloseHandle(handle_it->second);
   }
+  
+  WriteHandleMap::iterator write_handle_it = m_socket_write_handles.begin();
+  for (; write_handle_it != m_socket_write_handles.end(); ++write_handle_it) {
+    CloseHandle(write_handle_it->second);
+  }
 }
 
 bool WindowsPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
@@ -203,15 +208,47 @@ bool WindowsPoller::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
 }
 
 bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
-  // TODO(lukase) Implement this method
-  OLA_WARN << "AddWriteDescriptor(WriteFileDescriptor*) not implemented";
-  return false;
+  if (!descriptor->ValidWriteDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
+    return false;
+  }
+
+  ola::io::DescriptorHandle handle = descriptor->WriteDescriptor();
+
+  if (handle.m_type != ola::io::SOCKET_DESCRIPTOR) {
+    OLA_WARN << "Handle type " << handle.m_type << "not supported";
+    return false;
+  }
+
+  bool result = STLInsertIfNotPresent(&m_socket_write_descriptors, descriptor);
+
+  if (result) {
+    m_socket_write_handles.insert(
+        std::pair<WriteFileDescriptor*, HANDLE>(descriptor, WSACreateEvent()));
+  }
+
+  return result;
 }
 
 bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
-  // TODO(lukase) Implement this method
-  OLA_WARN << "RemoveWriteDescriptor(WriteFileDescriptor*) not implemented";
-  return false;
+  if (!descriptor->ValidWriteDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor";
+    return false;
+  }
+
+  ola::io::DescriptorHandle handle = descriptor->WriteDescriptor();
+
+  if (handle.m_type != ola::io::SOCKET_DESCRIPTOR) {
+    OLA_WARN << "Handle type " << handle.m_type << "not supported";
+    return false;
+  }
+  
+  WriteHandleMap::iterator iter = m_socket_write_handles.find(descriptor);
+  if (iter != m_socket_write_handles.end()) {
+    CloseHandle(iter->second);
+  }
+
+  return STLRemove(&m_socket_write_descriptors, descriptor);
 }
 
 bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
@@ -248,11 +285,12 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
 
   std::vector<HANDLE> handles;
   std::vector<HANDLE> io_handles;
-  std::vector<HANDLE> event_handles;
   std::vector<ConnectedDescriptor*> connected_descriptors;
   std::vector<ReadFileDescriptor*> socket_descriptors;
+  std::vector<WriteFileDescriptor*> socket_write_descriptors;
 
   std::queue<ReadFileDescriptor*> read_ready_queue;
+  std::queue<WriteFileDescriptor*> write_ready_queue;
   std::queue<connected_descriptor_t> closed_queue;
   bool closed_descriptors = false;
 
@@ -337,6 +375,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   }
 
   // Collect and call select() on sockets
+  // First, all sockets registered for reading
   {
     SocketDescriptorSet::iterator iter = m_socket_read_descriptors.begin();
     for (; iter != m_socket_read_descriptors.end(); ++iter) {
@@ -353,6 +392,28 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
         continue;
       }
       long events = FD_READ | FD_ACCEPT | FD_CLOSE;
+      if (WSAEventSelect(handle.m_handle.m_fd, event->second, events) != 0) {
+        OLA_WARN << "WSAEventSelect failed with " << WSAGetLastError() <<
+            " for socket " << handle.m_handle.m_fd;
+        continue;
+      }
+      
+      handles.push_back(event->second);
+    }
+  }
+  // Now, all sockets registered for writing
+  {
+    SocketWriteDescriptorSet::iterator iter = m_socket_write_descriptors.begin();
+    for (; iter != m_socket_write_descriptors.end(); ++iter) {
+      socket_write_descriptors.push_back (*iter);      
+      DescriptorHandle handle = (*iter)->WriteDescriptor();
+      WriteHandleMap::iterator event = m_socket_write_handles.find(*iter);
+      if (event == m_socket_write_handles.end()) {
+        OLA_WARN << "No write event found for socket " << handle.m_handle.m_fd;
+        continue;
+      }
+      
+      long events = FD_WRITE | FD_CONNECT | FD_CLOSE;
       if (WSAEventSelect(handle.m_handle.m_fd, event->second, events) != 0) {
         OLA_WARN << "WSAEventSelect failed with " << WSAGetLastError() <<
             " for socket " << handle.m_handle.m_fd;
@@ -446,6 +507,31 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           }
           handles.erase(handles.begin() + index);
           socket_descriptors.erase(socket_descriptors.begin() + socket_index);
+        } else if (index < connected_descriptors.size() +
+                           socket_descriptors.size() +
+                           socket_write_descriptors.size()) {
+          DWORD socket_index = index - connected_descriptors.size() -
+              socket_descriptors.size();
+          WriteFileDescriptor* descriptor =
+              socket_write_descriptors[socket_index];
+          WSANETWORKEVENTS events;
+          WSAEnumNetworkEvents(descriptor->WriteDescriptor().m_handle.m_fd, handles[index], &events);
+          if ((events.lNetworkEvents & FD_WRITE) ||
+              (events.lNetworkEvents & FD_CONNECT)) {
+                write_ready_queue.push(descriptor);
+          } else if (events.lNetworkEvents & FD_CLOSE) {
+            SocketWriteDescriptorSet::iterator socket_iter = m_socket_write_descriptors.find(descriptor);
+            if (socket_iter != m_socket_write_descriptors.end()) {
+              m_socket_write_descriptors.erase(socket_iter);
+              WriteHandleMap::iterator iter = m_socket_write_handles.find(descriptor);
+              if (iter != m_socket_write_handles.end()) {
+                CloseHandle(iter->second);
+                m_socket_write_handles.erase(iter);
+              }
+            }
+          }
+          handles.erase(handles.begin() + index);
+          socket_write_descriptors.erase(socket_write_descriptors.begin() + socket_index);
         } else {
           // TODO(lukase)
           OLA_WARN << "Unkown index";
@@ -488,6 +574,12 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     ReadFileDescriptor *descriptor = read_ready_queue.front();
     descriptor->PerformRead();
     read_ready_queue.pop();
+  }
+  
+  while (!write_ready_queue.empty()) {
+    WriteFileDescriptor *descriptor = write_ready_queue.front();
+    descriptor->PerformWrite();
+    write_ready_queue.pop();
   }
 
   // Close descriptors

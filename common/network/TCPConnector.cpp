@@ -88,7 +88,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
 
   if (r) {
 #ifdef _WIN32
-    if (WSAGetLastError() != WSAEINPROGRESS) {
+    if (WSAGetLastError() != WSAEWOULDBLOCK) {
 #else
     if (errno != EINPROGRESS) {
 #endif

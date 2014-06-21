@@ -281,7 +281,11 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
     m_ss->Terminate();
   } else {
     OLA_ASSERT_TRUE(fd >= 0);
+#ifdef _WIN32
+    closesocket(fd);
+#else
     close(fd);
+#endif
   }
 }
 
