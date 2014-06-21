@@ -118,7 +118,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SelectServerTest);
 
 
 void SelectServerTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_map = new ExportMap();
   m_ss = new SelectServer(m_map);
   m_timeout_counter = 0;

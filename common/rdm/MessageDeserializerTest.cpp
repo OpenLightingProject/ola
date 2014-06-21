@@ -76,10 +76,6 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
     void testWithNestedFixedGroups();
     void testWithNestedVariableGroups();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-
  private:
     MessageDeserializer m_deserializer;
     GenericMessagePrinter m_printer;

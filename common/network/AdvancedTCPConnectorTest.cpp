@@ -117,7 +117,6 @@ void AdvancedTCPConnectorTest::setUp() {
   m_tcp_socket_factory.reset(new ola::network::TCPSocketFactory(
       ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect)));
   m_connected_socket = NULL;
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
   m_ss = new SelectServer(NULL, &m_clock);
   m_timeout_id = m_ss->RegisterSingleTimeout(

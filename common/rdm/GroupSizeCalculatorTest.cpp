@@ -62,10 +62,6 @@ class GroupSizeCalculatorTest: public CppUnit::TestFixture {
     void testMultipleVariableSizedGroups();
     void testNestedVariableSizedGroups();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-
  private:
     ola::rdm::GroupSizeCalculator m_calculator;
     ola::rdm::StaticGroupTokenCalculator m_static_calculator;

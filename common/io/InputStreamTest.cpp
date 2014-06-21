@@ -31,24 +31,16 @@ using ola::io::MemoryBuffer;
 
 class InputStreamTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(InputStreamTest);
-    CPPUNIT_TEST(testRead);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(InputStreamTest);
+  CPPUNIT_TEST(testRead);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void tearDown() {}
-    void testRead();
+  void testRead();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InputStreamTest);
-
-
-void InputStreamTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
-
 
 /*
  * Confirm that reading works.

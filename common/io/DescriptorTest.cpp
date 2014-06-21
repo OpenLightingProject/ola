@@ -105,7 +105,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DescriptorTest);
  * Setup the select server
  */
 void DescriptorTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &DescriptorTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,

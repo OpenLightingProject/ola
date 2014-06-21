@@ -72,10 +72,6 @@ class MessageSerializerTest: public CppUnit::TestFixture {
     void testWithGroups();
     void testWithNestedGroups();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-
  private:
     const Message *BuildMessage(const Descriptor &descriptor,
                                 const vector<string> &inputs);

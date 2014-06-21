@@ -50,9 +50,6 @@ class CredentialsTest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
     void testGetUIDs();
     void testGetGIDs();
     void testSetUID();

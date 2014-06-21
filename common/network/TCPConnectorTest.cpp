@@ -107,8 +107,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TCPConnectorTest);
  * Setup the select server
  */
 void TCPConnectorTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &TCPConnectorTest::Timeout);
   m_sucessfull_calls = 0;

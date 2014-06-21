@@ -263,7 +263,6 @@ void MockRDMController::Verify() {
 
 
 void QueueingRDMControllerTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_discovery_complete_count = 0;
 }
 
