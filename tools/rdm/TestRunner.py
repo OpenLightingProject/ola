@@ -330,7 +330,7 @@ class TestRunner(object):
 
       #Use inter_test_delay on all but the last test
       if test != tests[-1]:
-        time.sleep(self._inter_test_delay / 1000)
+        time.sleep(self._inter_test_delay / 1000.0)
       
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
       tests_completed += 1
