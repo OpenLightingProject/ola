@@ -127,6 +127,7 @@ class AdvancedTCPConnector {
     ola::thread::timeout_id retry_timeout;
     TCPConnector::TCPConnectionID connection_id;
     BackOffPolicy *policy;
+    bool reconnect;
   } ConnectionInfo;
 
   typedef std::pair<IPV4Address, uint16_t> IPPortPair;
@@ -138,8 +139,6 @@ class AdvancedTCPConnector {
   const ola::TimeInterval m_connection_timeout;
   ConnectionMap m_connections;
 
-  void TakeAction(const IPPortPair &key, ConnectionInfo *info,
-                  int fd, int error);
   void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
   void RetryTimeout(IPPortPair key);
   void ConnectionResult(IPPortPair key, int fd, int error);

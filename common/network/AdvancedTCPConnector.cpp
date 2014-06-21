@@ -64,6 +64,7 @@ void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
   state->retry_timeout = ola::thread::INVALID_TIMEOUT;
   state->connection_id = 0;
   state->policy = backoff_policy;
+  state->reconnect = true;
 
   m_connections[key] = state;
 
@@ -135,24 +136,6 @@ void AdvancedTCPConnector::Resume(const IPV4SocketAddress &endpoint) {
 }
 
 /**
- * @brief Decide what to do when a connection fails, completes or times out.
- */
-void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
-                                      ConnectionInfo *info,
-                                      int fd,
-                                      int) {
-  if (fd != -1) {
-    // ok
-    info->state = CONNECTED;
-    m_socket_factory->NewTCPSocket(fd);
-  } else {
-    // error
-    info->failed_attempts++;
-    ScheduleRetry(key, info);
-  }
-}
-
-/**
  * Schedule the re-try attempt for this connection
  */
 void AdvancedTCPConnector::ScheduleRetry(const IPPortPair &key,
@@ -184,9 +167,7 @@ void AdvancedTCPConnector::RetryTimeout(IPPortPair key) {
 /**
  * Called by the TCPConnector when a connection is ready or it times out.
  */
-void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
-                                            int fd,
-                                            int error) {
+void AdvancedTCPConnector::ConnectionResult(IPPortPair key, int fd, int) {
   if (fd != -1) {
     OLA_INFO << "TCP Connection established to " << key.first << ":" <<
       key.second;
@@ -198,9 +179,20 @@ void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
       key.second << ", leaking sockets";
     return;
   }
+  ConnectionInfo *info = iter->second;
 
-  iter->second->connection_id = 0;
-  TakeAction(iter->first, iter->second, fd, error);
+  info->connection_id = 0;
+  if (fd != -1) {
+    // ok
+    info->state = CONNECTED;
+    m_socket_factory->NewTCPSocket(fd);
+  } else {
+    // error
+    info->failed_attempts++;
+    if (info->reconnect) {
+      ScheduleRetry(key, info);
+    }
+  }
 }
 
 
@@ -224,6 +216,7 @@ void AdvancedTCPConnector::AttemptConnection(const IPPortPair &key,
  */
 void AdvancedTCPConnector::AbortConnection(ConnectionInfo *state) {
   if (state->connection_id) {
+    state->reconnect = false;
     if (!m_connector.Cancel(state->connection_id))
       OLA_WARN << "Failed to cancel connection " << state->connection_id;
   }
