@@ -48,10 +48,6 @@ class IOStackTest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-
     void testBasicWrite();
     void testBlockOverflow();
     void testIOVec();

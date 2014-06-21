@@ -42,10 +42,6 @@ class TokenBucketTest: public CppUnit::TestFixture {
  public:
     void testTokenBucket();
     void testTokenBucketTwo();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
 };
 
 

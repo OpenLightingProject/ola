@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -336,6 +335,7 @@ SLOT_DEFINITIONS = {
   'SD_POWER_CONTROL': 0x0505,
   'SD_FAN_CONTROL': 0x0506,
   'SD_HEATER_CONTROL': 0x0507,
+  'SD_FOUNTAIN_CONTROL': 0x0508,
   'SD_UNDEFINED': 0xFFFF,
 }
 

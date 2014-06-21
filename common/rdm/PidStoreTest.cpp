@@ -64,24 +64,17 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testPidDescriptor();
-    void testPidStore();
-    void testPidStoreLoad();
-    void testPidStoreFileLoad();
-    void testPidStoreDirectoryLoad();
-    void testPidStoreLoadMissingFile();
-    void testPidStoreLoadDuplicateManufacturer();
-    void testPidStoreLoadDuplicateValue();
-    void testPidStoreLoadDuplicateName();
-    void testPidStoreLoadInvalidEstaPid();
-    void testInconsistentData();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-    void tearDown() {}
-
- private:
+  void testPidDescriptor();
+  void testPidStore();
+  void testPidStoreLoad();
+  void testPidStoreFileLoad();
+  void testPidStoreDirectoryLoad();
+  void testPidStoreLoadMissingFile();
+  void testPidStoreLoadDuplicateManufacturer();
+  void testPidStoreLoadDuplicateValue();
+  void testPidStoreLoadDuplicateName();
+  void testPidStoreLoadInvalidEstaPid();
+  void testInconsistentData();
 };
 
 

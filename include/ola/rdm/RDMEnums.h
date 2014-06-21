@@ -533,6 +533,7 @@ typedef enum {
   SD_POWER_CONTROL = 0x0505,
   SD_FAN_CONTROL = 0x0506,
   SD_HEATER_CONTROL = 0x0507,
+  SD_FOUNTAIN_CONTROL = 0x0508,
   SD_UNDEFINED = 0xFFFF,
 } rdm_slot_definition;
 

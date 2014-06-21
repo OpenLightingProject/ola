@@ -3,5 +3,5 @@ SUBDIRS = artnet dummy espnet ftdidmx karate kinet milinst opendmx osc \
 
 if !USING_WIN32
 # usbpro before e131 due to test dependencies
-SUBDIRS += usbpro dmx4linux e131
+SUBDIRS += usbpro dmx4linux e131 uartdmx
 endif

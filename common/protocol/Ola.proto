@@ -40,8 +40,7 @@ enum MergeMode {
 }
 
 /**
- * Please discuss on open-lighting@googlegroups.com before claiming a Plugin
- * ID.
+ * Please see the note below about getting a new Plugin ID.
  */
 enum PluginIds {
   OLA_PLUGIN_ALL = 0;
@@ -64,12 +63,14 @@ enum PluginIds {
   OLA_PLUGIN_KARATE = 17;
   OLA_PLUGIN_MILINST = 18;
   OLA_PLUGIN_RENARD = 19;
+  OLA_PLUGIN_UARTDMX = 20;
 
   /*
-   * To obtain a new plugin ID open a ticket at
+   * To obtain a new plugin ID, open a ticket at
    * https://github.com/OpenLightingProject/ola/issues/new
    * Plugin IDs are usually assigned just prior to merging the code into the
-   * mainline. For development of plugins please use OLA_PLUGIN_EXPERIMENTAL.
+   * mainline. For development of plugins please use the value of 
+   * OLA_PLUGIN_EXPERIMENTAL in a plugin ID you define above.
    */
   OLA_PLUGIN_EXPERIMENTAL = 10000;
 }
