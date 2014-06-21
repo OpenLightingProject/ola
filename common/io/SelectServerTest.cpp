@@ -148,8 +148,7 @@ void SelectServerTest::setUp() {
   write_descriptor_count = m_map.GetIntegerVar(
       PollerInterface::K_WRITE_DESCRIPTOR_VAR);
 
-  m_map = new ExportMap();
-  m_ss = new SelectServer(m_map);
+  m_ss = new SelectServer(&m_map);
   m_timeout_counter = 0;
   m_loop_counter = 0;
 
@@ -162,7 +161,6 @@ void SelectServerTest::setUp() {
 
 void SelectServerTest::tearDown() {
   delete m_ss;
-  delete m_map;
 
 #ifdef _WIN32
   WSACleanup();

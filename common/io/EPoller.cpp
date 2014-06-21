@@ -154,6 +154,7 @@ bool EPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
     return false;
   }
 
+  OLA_INFO << "checking for fd " << descriptor->WriteDescriptor();
   pair<EPollDescriptor*, bool> result = LookupOrCreateDescriptor(
       descriptor->WriteDescriptor());
 
@@ -163,6 +164,8 @@ bool EPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
     return false;
   }
 
+  OLA_INFO << "marking " << descriptor->WriteDescriptor()  << " for EPOLLOUT ("
+    << EPOLLOUT << ")";
   result.first->events |= EPOLLOUT;
   result.first->write_descriptor = descriptor;
 
@@ -244,26 +247,28 @@ void EPoller::CheckDescriptor(struct epoll_event *event,
   OLA_INFO << "Events for " << descriptor << " are "
            << std::hex << event->events;
   if (event->events & (EPOLLHUP | EPOLLRDHUP)) {
-    ConnectedDescriptor *connected_descriptor =
-      descriptor->connected_descriptor;
-
-    if (!connected_descriptor) {
-      OLA_FATAL << "HUP event for " << descriptor
-                << " but no connected_descriptor found!";
-    } else {
-      OLA_INFO << connected_descriptor
+    if (descriptor->write_descriptor) {
+      OLA_INFO << "doing write for " << descriptor;
+      descriptor->write_descriptor->PerformWrite();
+    } else if (descriptor->connected_descriptor) {
+      OLA_INFO << descriptor->connected_descriptor
                << " has been closed, delete_connected_on_close is "
                << descriptor->delete_connected_on_close;
       ConnectedDescriptor::OnCloseCallback *on_close =
-          connected_descriptor->TransferOnClose();
+          descriptor->connected_descriptor->TransferOnClose();
       if (on_close)
         on_close->Run();
       if (descriptor->delete_connected_on_close) {
-        if (RemoveReadDescriptor(connected_descriptor) && m_export_map) {
+        if (RemoveReadDescriptor(descriptor->connected_descriptor) &&
+            m_export_map) {
           (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
         }
-        delete connected_descriptor;
+        delete descriptor->connected_descriptor;
+        descriptor->connected_descriptor = NULL;
       }
+    } else {
+      OLA_FATAL << "HUP event for " << descriptor
+                << " but no write or connected descriptor found!";
     }
     event->events = 0;
   }
@@ -305,7 +310,7 @@ bool EPoller::AddEvent(int fd, EPollDescriptor *descriptor) {
   event.events = descriptor->events;
   event.data.ptr = descriptor;
 
-  OLA_INFO << "EPOLL_CTL_ADD " << fd;
+  OLA_INFO << "EPOLL_CTL_ADD " << fd << "descriptor: " << descriptor;
   int r = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &event);
   if (r) {
     OLA_WARN << "EPOLL_CTL_ADD " << fd << " failed: " << strerror(errno);
