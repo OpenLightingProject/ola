@@ -29,6 +29,7 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/TCPConnector.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace network {
@@ -39,6 +40,7 @@ TCPConnector::TCPConnector(ola::io::SelectServerInterface *ss)
 
 TCPConnector::~TCPConnector() {
   CancelAll();
+  CleanUpOrphans();
 }
 
 
@@ -171,10 +173,8 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
 
   // we're already within the PendingTCPConnection's call stack here
   // schedule the deletion to run later
-  m_ss->Execute(
-    ola::NewSingleCallback(this,
-                           &TCPConnector::FreePendingConnection,
-                           connection));
+  m_orphaned_connections.push_back(connection);
+  m_ss->Execute(ola::NewSingleCallback(this, &TCPConnector::CleanUpOrphans));
 }
 
 /**
@@ -247,6 +247,10 @@ void TCPConnector::PendingTCPConnection::Close() {
  */
 void TCPConnector::PendingTCPConnection::PerformWrite() {
   m_connector->SocketWritable(this);
+}
+
+void TCPConnector::CleanUpOrphans() {
+  STLDeleteElements(&m_orphaned_connections);
 }
 }  // namespace network
 }  // namespace ola

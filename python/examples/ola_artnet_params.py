@@ -16,7 +16,7 @@
 # ola_artnet_params.py
 # Copyright (C) 2005 Simon Newton
 
-"""Send some DMX data."""
+"""Fetch some ArtNet parameters."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
