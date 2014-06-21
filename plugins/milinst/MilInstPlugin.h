@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstPlugin.h
  * Interface for the Milford Instruments plugin class
@@ -55,8 +55,6 @@ class MilInstPlugin: public Plugin {
   std::vector<MilInstDevice*> m_devices;  // list of our devices
 
   static const char MILINST_DEVICE_PATH[];
-  static const char MILINST_BASE_DEVICE_NAME[];
-  static const char MILINST_1463_DEVICE_NAME[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
   static const char DEVICE_KEY[];

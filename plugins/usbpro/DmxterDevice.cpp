@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxterDevice.h
  * A Goddard Design Dmxter.
@@ -46,7 +46,7 @@ DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
                            uint16_t device_id,
                            uint32_t serial):
     UsbSerialDevice(owner, name, widget) {
-  std::stringstream str;
+  std::ostringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 

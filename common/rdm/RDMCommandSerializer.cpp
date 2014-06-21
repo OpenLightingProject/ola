@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMCommandSerializer.h
  * Write RDMCommands to a memory buffer.
@@ -61,7 +61,7 @@ bool RDMCommandSerializer::Pack(const RDMCommand &command,
 /**
  * Pack this RDMRequest into a memory buffer, using the supplied parameters to
  *   override what's in the request.
- * @param command the RDMRequest to pack
+ * @param request the RDMRequest to pack
  * @param buffer a pointer to the memory location to use
  * @param size the size of the memory location. Update with the number of bytes
  *   written.

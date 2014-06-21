@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtnetPort.h
  * The ArtNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETPORT_H_
@@ -45,7 +45,7 @@ class ArtNetInputPort: public BasicInputPort {
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
   void RespondWithTod();
 
-  string Description() const;
+  std::string Description() const;
 
  private:
   DmxBuffer m_buffer;
@@ -71,7 +71,7 @@ class ArtNetOutputPort: public BasicOutputPort {
 
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
-  string Description() const;
+  std::string Description() const;
 
   // only the first output port supports timecode, otherwise we send it
   // multiple times.

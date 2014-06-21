@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * rdm-sniffer.cpp
  * RDM Sniffer software for the ENTTEC RDM Pro.
@@ -26,6 +26,7 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
@@ -50,7 +51,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::io::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
@@ -125,7 +125,7 @@ class RDMSniffer {
       options->summarize_rdm_frames = true;
       options->unpack_param_data = true;
       options->display_non_rdm_asc_frames = true;
-      options->pid_location = PID_DATA_DIR;
+      options->pid_location = "";
       options->write_file = "";
       options->timestamp = false;
     }
@@ -439,11 +439,8 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options] <usb-device-path>",
-      "Sniff traffic from a ENTTEC RDM Pro device.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options] <usb-device-path>",
+               "Sniff traffic from a ENTTEC RDM Pro device.");
 
   if (!FLAGS_savefile.str().empty() && !FLAGS_readfile.str().empty()) {
     ola::DisplayUsage();

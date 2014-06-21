@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetPort.h
  * The KiNet plugin for ola
@@ -31,12 +31,10 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using ola::network::IPV4Address;
-
 class KiNetOutputPort: public BasicOutputPort {
  public:
     KiNetOutputPort(KiNetDevice *device,
-                    const IPV4Address &target,
+                    const ola::network::IPV4Address &target,
                     KiNetNode *node,
                     unsigned int port_id)
         : BasicOutputPort(device, port_id),
@@ -49,13 +47,13 @@ class KiNetOutputPort: public BasicOutputPort {
       (void) priority;
     }
 
-    string Description() const {
+    std::string Description() const {
       return "Power Supply: " + m_target.ToString();
     }
 
  private:
     KiNetNode *m_node;
-    const IPV4Address m_target;
+    const ola::network::IPV4Address m_target;
 };
 }  // namespace kinet
 }  // namespace plugin

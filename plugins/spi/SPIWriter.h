@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIWriter.h
  * This writes data to a SPI device.
@@ -30,8 +30,6 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-using std::string;
-
 /**
  * The interface for the SPI Writer
  */
@@ -39,7 +37,7 @@ class SPIWriterInterface {
  public:
     virtual ~SPIWriterInterface() {}
 
-    virtual string DevicePath() const = 0;
+    virtual std::string DevicePath() const = 0;
     virtual bool Init() = 0;
     virtual bool WriteSPIData(const uint8_t *data, unsigned int length) = 0;
 };
@@ -59,11 +57,11 @@ class SPIWriter : public SPIWriterInterface {
       Options() : spi_speed(1000000), cs_enable_high(false) {}
     };
 
-    SPIWriter(const string &spi_device, const Options &options,
+    SPIWriter(const std::string &spi_device, const Options &options,
               ExportMap *export_map);
     ~SPIWriter();
 
-    string DevicePath() const { return m_device_path; }
+    std::string DevicePath() const { return m_device_path; }
 
     /**
      * Init the SPIWriter
@@ -74,7 +72,7 @@ class SPIWriter : public SPIWriterInterface {
     bool WriteSPIData(const uint8_t *data, unsigned int length);
 
  private:
-    const string m_device_path;
+    const std::string m_device_path;
     const uint32_t m_spi_speed;
     const bool m_cs_enable_high;
     int m_fd;

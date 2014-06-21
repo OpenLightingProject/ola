@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # RDMConstants.py
 # Copyright (C) 2010 Simon Newton
@@ -21,8 +20,13 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-RDM_MANUFACTURER_PID_MIN = 0x8000;
+RDM_ZERO_FOOTPRINT_DMX_ADDRESS = 0xFFFF
+
+RDM_MANUFACTURER_PID_MIN = 0x8000
 RDM_MANUFACTURER_PID_MAX = 0xFFDF
+
+RDM_MANUFACTURER_SD_MIN = 0x8000
+RDM_MANUFACTURER_SD_MAX = 0xFFDF
 
 def _ReverseDict(input):
   output = {}
@@ -328,6 +332,10 @@ SLOT_DEFINITIONS = {
   'SD_FIXTURE_CONTROL': 0x0502,
   'SD_FIXTURE_SPEED': 0x0503,
   'SD_MACRO': 0x0504,
+  'SD_POWER_CONTROL': 0x0505,
+  'SD_FAN_CONTROL': 0x0506,
+  'SD_HEATER_CONTROL': 0x0507,
+  'SD_FOUNTAIN_CONTROL': 0x0508,
   'SD_UNDEFINED': 0xFFFF,
 }
 

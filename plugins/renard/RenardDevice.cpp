@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RenardDevice.cpp
  * Renard device
@@ -34,6 +34,8 @@ namespace renard {
 
 using ola::AbstractPlugin;
 using ola::io::ConnectedDescriptor;
+using std::set;
+using std::string;
 
 const char RenardDevice::RENARD_DEVICE_NAME[] = "Renard Device";
 // The default Renard firmware has 0x80 as start address. It would be
@@ -43,11 +45,7 @@ const uint8_t RenardDevice::RENARD_START_ADDRESS = 0x80;
 const uint8_t RenardDevice::RENARD_AVAILABLE_ADDRESSES = 127;
 const uint8_t RenardDevice::DEFAULT_DMX_OFFSET = 0;
 const uint8_t RenardDevice::DEFAULT_NUM_CHANNELS = 64;
-const uint32_t RenardDevice::DEFAULT_BAUDRATE = 57600;
-const char RenardDevice::BAUDRATE_19200[] = "19200";
-const char RenardDevice::BAUDRATE_38400[] = "38400";
-const char RenardDevice::BAUDRATE_57600[] = "57600";
-const char RenardDevice::BAUDRATE_115200[] = "115200";
+const uint32_t RenardDevice::DEFAULT_BAUDRATE = ola::io::BAUD_RATE_57600;
 
 /*
  * Create a new device
@@ -84,7 +82,7 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
 
   OLA_DEBUG << "DMX offset set to " << static_cast<int>(dmxOffset);
   OLA_DEBUG << "Channels set to " << static_cast<int>(channels);
-  OLA_DEBUG << "Baudrate set to " << static_cast<int>(baudrate);
+  OLA_DEBUG << "Baudrate set to " << static_cast<uint32_t>(baudrate);
 }
 
 
@@ -142,27 +140,27 @@ string RenardDevice::DeviceDmxOffsetKey() const {
 }
 
 void RenardDevice::SetDefaults() {
-  set<string> valid_baudrates;
-  valid_baudrates.insert(BAUDRATE_19200);
-  valid_baudrates.insert(BAUDRATE_38400);
-  valid_baudrates.insert(BAUDRATE_57600);
-  valid_baudrates.insert(BAUDRATE_115200);
+  set<unsigned int> valid_baudrates;
+  valid_baudrates.insert(ola::io::BAUD_RATE_19200);
+  valid_baudrates.insert(ola::io::BAUD_RATE_38400);
+  valid_baudrates.insert(ola::io::BAUD_RATE_57600);
+  valid_baudrates.insert(ola::io::BAUD_RATE_115200);
 
   // Set device options
   m_preferences->SetDefaultValue(DeviceBaudrateKey(),
-                                 SetValidator(valid_baudrates),
-                                 BAUDRATE_57600);
+                                 SetValidator<unsigned int>(valid_baudrates),
+                                 DEFAULT_BAUDRATE);
   // Renard supports more than 512 channels, but in our application
   // we're tied to a single DMX universe so we'll limit it to 512 channels.
   m_preferences->SetDefaultValue(
       DeviceChannelsKey(),
-      UIntValidator(RenardWidget:: RENARD_CHANNELS_IN_BANK, DMX_UNIVERSE_SIZE),
-      IntToString(DEFAULT_NUM_CHANNELS));
+      UIntValidator(RenardWidget::RENARD_CHANNELS_IN_BANK, DMX_UNIVERSE_SIZE),
+      DEFAULT_NUM_CHANNELS);
   m_preferences->SetDefaultValue(
       DeviceDmxOffsetKey(),
       UIntValidator(
           0, DMX_UNIVERSE_SIZE - RenardWidget::RENARD_CHANNELS_IN_BANK),
-      IntToString(DEFAULT_DMX_OFFSET));
+      DEFAULT_DMX_OFFSET);
 }
 
 /*

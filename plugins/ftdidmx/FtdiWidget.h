@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * This class is based on QLCFTDI class from
  *
@@ -47,14 +47,14 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-using std::string;
-
 /**
  * This class holds information about an attached ftdi chip
  */
 class FtdiWidgetInfo {
  public:
-    FtdiWidgetInfo(const string &name, const string &serial, int unsigned id)
+    FtdiWidgetInfo(const std::string &name,
+                   const std::string &serial,
+                   int unsigned id)
       : m_name(name),
         m_serial(serial),
         m_id(id) {
@@ -68,11 +68,11 @@ class FtdiWidgetInfo {
 
     virtual ~FtdiWidgetInfo() {}
 
-    string Name() const { return m_name; }
-    string Serial() const { return m_serial; }
+    std::string Name() const { return m_name; }
+    std::string Serial() const { return m_serial; }
     int unsigned Id() const { return m_id; }
 
-    string Description() const {
+    std::string Description() const {
       return m_name + " with serial number : " + m_serial + " ";
     }
 
@@ -86,8 +86,8 @@ class FtdiWidgetInfo {
     }
 
  private:
-    string m_name;
-    string m_serial;
+    std::string m_name;
+    std::string m_serial;
     int unsigned m_id;
 };
 
@@ -106,21 +106,23 @@ class FtdiWidget {
      * @param name The widget's USB name (description)
      * @param id The ID of the device (used only when FTD2XX is the backend)
      */
-    FtdiWidget(const string &serial, const string &name, uint32_t id = 0);
+    FtdiWidget(const std::string &serial,
+               const std::string &name,
+               uint32_t id = 0);
 
     /** Destructor */
     virtual ~FtdiWidget();
 
     /** Get the widget's USB serial number */
-    string Serial() const { return m_serial; }
+    std::string Serial() const { return m_serial; }
 
     /** Get the widget's USB name */
-    string Name() const { return m_name; }
+    std::string Name() const { return m_name; }
 
     /** Get the widget's FTD2XX ID number */
     uint32_t Id() const { return m_id; }
 
-    string Description() const {
+    std::string Description() const {
       return m_name + " with serial number : " + m_serial +" ";
     }
 
@@ -170,8 +172,8 @@ class FtdiWidget {
     static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
  private:
-    string m_serial;
-    string m_name;
+    std::string m_serial;
+    std::string m_name;
     uint32_t m_id;
 
 #ifdef FTD2XX

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOStack.h
  * A non-contigous memory buffer that operates as a stack (LIFO).
@@ -25,7 +25,6 @@
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
-#include <sys/uio.h>
 #include <deque>
 #include <iostream>
 #include <queue>
@@ -61,7 +60,7 @@ class IOStack: public IOVecInterface,
     unsigned int Read(std::string *output, unsigned int length);
 
     // From IOVecInterface
-    const struct iovec *AsIOVec(int *io_count) const;
+    const struct IOVec *AsIOVec(int *io_count) const;
     void Pop(unsigned int n);
 
     // 0-copy append to an IOQueue

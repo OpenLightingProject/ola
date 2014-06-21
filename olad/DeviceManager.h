@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DeviceManager.h
  * Interface to the DeviceManager class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * The DeviceManager assigns an unsigned int as an alias to each device which
  * remains consistent throughout the lifetime of the DeviceManager. These are
@@ -41,10 +41,6 @@
 
 namespace ola {
 
-using std::map;
-using std::string;
-
-
 // pair a device with it's alias
 typedef struct {
   unsigned int alias;
@@ -60,12 +56,12 @@ class DeviceManager {
     ~DeviceManager();
 
     bool RegisterDevice(AbstractDevice *device);
-    bool UnregisterDevice(const string &device_id);
+    bool UnregisterDevice(const std::string &device_id);
     bool UnregisterDevice(const AbstractDevice *device);
     unsigned int DeviceCount() const;
-    vector<device_alias_pair> Devices() const;
+    std::vector<device_alias_pair> Devices() const;
     AbstractDevice *GetDevice(unsigned int alias) const;
-    device_alias_pair GetDevice(const string &unique_id) const;
+    device_alias_pair GetDevice(const std::string &unique_id) const;
     void UnregisterAllDevices();
 
     void SendTimeCode(const ola::timecode::TimeCode &timecode);
@@ -77,8 +73,10 @@ class DeviceManager {
  private:
     Preferences *m_port_preferences;
     class PortManager *m_port_manager;
-    map<string, device_alias_pair> m_devices;  // map device_ids to devices
-    map<unsigned int, AbstractDevice*> m_alias_map;  // map alias to devices
+    // map device_ids to devices
+    std::map<std::string, device_alias_pair> m_devices;
+    // map alias to devices
+    std::map<unsigned int, AbstractDevice*> m_alias_map;
     unsigned int m_next_device_alias;
     std::set<class OutputPort*> m_timecode_ports;
 
@@ -86,13 +84,13 @@ class DeviceManager {
     void RestoreDevicePortSettings(AbstractDevice *device);
 
     template <class PortClass>
-    void SavePortPatchings(const vector<PortClass*> &ports) const;
+    void SavePortPatchings(const std::vector<PortClass*> &ports) const;
 
     void SavePortPriority(const Port &port) const;
     void RestorePortPriority(Port *port) const;
 
     template <class PortClass>
-    void RestorePortSettings(const vector<PortClass*> &ports) const;
+    void RestorePortSettings(const std::vector<PortClass*> &ports) const;
 
     static const char PORT_PREFERENCES[];
     static const unsigned int FIRST_DEVICE_ALIAS = 1;

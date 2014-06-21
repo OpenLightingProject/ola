@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RobeWidget.cpp
  * Read and Write to a Robe USB Widget.
@@ -202,7 +202,7 @@ void RobeWidgetImpl::SetDmxCallback(Callback0<void> *callback) {
 /**
  * Mute a responder
  * @param target the UID to mute
- * @param MuteDeviceCallback the callback to run once the mute request
+ * @param mute_complete the callback to run once the mute request
  * completes.
  */
 void RobeWidgetImpl::MuteDevice(const UID &target,
@@ -219,7 +219,7 @@ void RobeWidgetImpl::MuteDevice(const UID &target,
 
 /**
  * Unmute all responders
- * @param UnMuteDeviceCallback the callback to run once the unmute request
+ * @param unmute_complete the callback to run once the unmute request
  * completes.
  */
 void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {

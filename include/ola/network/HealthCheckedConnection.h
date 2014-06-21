@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * HealthCheckedConnection.h
  * Copyright (C) 2012 Simon Newton
@@ -44,8 +44,8 @@
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/base/Macro.h>
 #include <ola/thread/SchedulerInterface.h>
-
 
 namespace ola {
 namespace network {
@@ -110,6 +110,8 @@ class HealthCheckedConnection {
 
     bool SendNextHeartbeat();
     void UpdateReceiveTimer();
+
+    DISALLOW_COPY_AND_ASSIGN(HealthCheckedConnection);
 };
 }  // namespace network
 }  // namespace ola

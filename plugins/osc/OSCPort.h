@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCPort.h
  * The OSCInputPort and OSCOutputPort classes.
@@ -42,7 +42,7 @@ class OSCInputPort: public BasicInputPort {
  public:
     /**
      * Create an OSCInputPort.
-     * @param device the parent device
+     * @param parent the parent device
      * @param port_id the id for this port
      * @param plugin_adaptor a PluginAdaptor object, used by the base class.
      * @param node the OSCNode object to use
@@ -73,7 +73,7 @@ class OSCInputPort: public BasicInputPort {
  private:
     OSCNode *m_node;
     DmxBuffer m_buffer;
-    const string m_address;
+    const std::string m_address;
     std::string m_actual_address;
 
     /**
@@ -93,7 +93,6 @@ class OSCOutputPort: public BasicOutputPort {
      * @param device the parent device
      * @param port_id the id for this port
      * @param node the OSCNode object to use
-     * @param description the string description for this port.
      */
     OSCOutputPort(OSCDevice *device,
                   unsigned int port_id,
@@ -124,7 +123,7 @@ class OSCOutputPort: public BasicOutputPort {
 
  private:
     OSCNode *m_node;
-    const vector<OSCTarget> m_template_targets;
+    const std::vector<OSCTarget> m_template_targets;
     std::vector<OSCTarget> m_registered_targets;
     std::string m_description;
     OSCNode::DataFormat m_data_format;

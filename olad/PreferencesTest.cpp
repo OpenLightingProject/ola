@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PreferencesTest.cpp
  * Test fixture for the Preferences classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 #include "ola/testing/TestUtils.h"
 
@@ -31,6 +32,7 @@
 using ola::BoolValidator;
 using ola::FileBackedPreferences;
 using ola::FileBackedPreferencesFactory;
+using ola::IntToString;
 using ola::IntValidator;
 using ola::UIntValidator;
 using ola::MemoryPreferencesFactory;
@@ -78,11 +80,21 @@ void PreferencesTest::testValidators() {
   std::set<string> values;
   values.insert("one");
   values.insert("two");
-  SetValidator set_validator(values);
+  SetValidator<string> set_validator(values);
   OLA_ASSERT(set_validator.IsValid("one"));
   OLA_ASSERT(set_validator.IsValid("two"));
   OLA_ASSERT_FALSE(set_validator.IsValid("zero"));
   OLA_ASSERT_FALSE(set_validator.IsValid("three"));
+
+  std::set<unsigned int> values2;
+  values2.insert(1);
+  values2.insert(3);
+  SetValidator<unsigned int> set_validator2(values2);
+  OLA_ASSERT(set_validator2.IsValid("1"));
+  OLA_ASSERT(set_validator2.IsValid("3"));
+  OLA_ASSERT_FALSE(set_validator2.IsValid("0"));
+  OLA_ASSERT_FALSE(set_validator2.IsValid("2"));
+  OLA_ASSERT_FALSE(set_validator2.IsValid("4"));
 
   // a string validator that allows empty strings
   StringValidator string_validator2(true);
@@ -130,10 +142,15 @@ void PreferencesTest::testGetSetRemove() {
   Preferences *preferences = factory.NewPreference("dummy");
 
   string key1 = "foo";
+  string key2 = "bat";
   string value1 = "bar";
   string value2 = "baz";
+  unsigned int value3 = 1;
+  unsigned int value4 = 2;
+  int value5 = 3;
+  int value6 = 4;
 
-  // test get/set/has single values
+  // test get/set/has single values string
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
   preferences->SetValue(key1, value1);
   OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
@@ -145,9 +162,33 @@ void PreferencesTest::testGetSetRemove() {
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
   OLA_ASSERT_FALSE(preferences->HasKey(key1));
 
-  // test get/set multiple value
-  string key2 = "bat";
-  vector<string> values = preferences->GetMultipleValue(key2);
+  // test get/set/has single values uint
+  OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
+  preferences->SetValue(key1, value3);
+  OLA_ASSERT_EQ(IntToString(value3), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->SetValue(key1, value4);
+  OLA_ASSERT_EQ(IntToString(value4), preferences->GetValue(key1));
+
+  preferences->RemoveValue(key1);
+  OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->HasKey(key1));
+
+  // test get/set/has single values int
+  OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
+  preferences->SetValue(key1, value5);
+  OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->SetValue(key1, value6);
+  OLA_ASSERT_EQ(IntToString(value6), preferences->GetValue(key1));
+
+  preferences->RemoveValue(key1);
+  OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->HasKey(key1));
+
+  vector<string> values;
+  // test get/set multiple value string
+  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 0, values.size());
   preferences->SetMultipleValue(key2, value1);
   values = preferences->GetMultipleValue(key2);
@@ -159,14 +200,66 @@ void PreferencesTest::testGetSetRemove() {
   OLA_ASSERT_EQ((size_t) 2, values.size());
   OLA_ASSERT_EQ(value1, values.at(0));
   OLA_ASSERT_EQ(value2, values.at(1));
+  preferences->RemoveValue(key2);
 
-  // test SetDefaultValue
+  // test get/set multiple value uint
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 0, values.size());
+  preferences->SetMultipleValue(key2, value3);
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT(preferences->HasKey(key2));
+  OLA_ASSERT_EQ((size_t) 1, values.size());
+  OLA_ASSERT_EQ(IntToString(value3), values.at(0));
+  preferences->SetMultipleValue(key2, value4);
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 2, values.size());
+  OLA_ASSERT_EQ(IntToString(value3), values.at(0));
+  OLA_ASSERT_EQ(IntToString(value4), values.at(1));
+  preferences->RemoveValue(key2);
+
+  // test get/set multiple value int
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 0, values.size());
+  preferences->SetMultipleValue(key2, value5);
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT(preferences->HasKey(key2));
+  OLA_ASSERT_EQ((size_t) 1, values.size());
+  OLA_ASSERT_EQ(IntToString(value5), values.at(0));
+  preferences->SetMultipleValue(key2, value6);
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 2, values.size());
+  OLA_ASSERT_EQ(IntToString(value5), values.at(0));
+  OLA_ASSERT_EQ(IntToString(value6), values.at(1));
+  preferences->RemoveValue(key2);
+
+  // test SetDefaultValue String
   OLA_ASSERT(preferences->SetDefaultValue(key1, StringValidator(), value1));
   OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
   OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, StringValidator(),
-                                               value2));
+                                                value2));
   OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
   OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
+
+  // test SetDefaultValue uint
+  UIntValidator uint_validator(0, 3);
+  OLA_ASSERT(preferences->SetDefaultValue(key1, uint_validator, value3));
+  OLA_ASSERT_EQ(IntToString(value3), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, uint_validator,
+                                                value4));
+  OLA_ASSERT_EQ(IntToString(value3), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
+
+  // test SetDefaultValue int
+  IntValidator int_validator(0, 5);
+  OLA_ASSERT(preferences->SetDefaultValue(key1, int_validator, value5));
+  OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, int_validator,
+                                                value6));
+  OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
 }
 
 
@@ -211,7 +304,7 @@ void PreferencesTest::testLoad() {
       "", "dummy", NULL);
   preferences->Clear();
   preferences->SetValue("foo", "bad");
-  preferences->LoadFromFile("./testdata/test_preferences.conf");
+  preferences->LoadFromFile(TEST_SRC_DIR "/testdata/test_preferences.conf");
 
   OLA_ASSERT_EQ(string("bar"), preferences->GetValue("foo"));
   OLA_ASSERT(preferences->HasKey("foo"));
@@ -231,18 +324,21 @@ void PreferencesTest::testSave() {
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
   FileBackedPreferences *preferences = new FileBackedPreferences(
-      "./testdata", "output", &saver_thread);
+      ".", "output", &saver_thread);
   preferences->Clear();
 
-  string data_path = "./testdata/ola-output.conf";
+  string data_path = "./ola-output.conf";
   unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";
+  string key3 = "/dev/ttyUSB0";
   string value1 = "bar";
   string value2 = "baz";
+  string value3 = "boo";
   string multi_key = "multi";
   preferences->SetValue(key1, value1);
   preferences->SetValue(key2, value2);
+  preferences->SetValue(key3, value3);
   preferences->SetMultipleValue(multi_key, "1");
   preferences->SetMultipleValue(multi_key, "2");
   preferences->SetMultipleValue(multi_key, "3");

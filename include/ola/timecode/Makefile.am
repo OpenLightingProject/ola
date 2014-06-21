@@ -1,14 +1,12 @@
-SOURCES = TimeCode.h
-BUILT_SOURCES = TimeCodeEnums.h
-
-pkginclude_HEADERS = $(SOURCES) $(BUILT_SOURCES)
 pkgincludedir = $(includedir)/ola/timecode/
 
+pkginclude_HEADERS = TimeCode.h
+nodist_pkginclude_HEADERS = TimeCodeEnums.h
 
-EXTRA_DIST = $(SOURCES) make_timecode.sh
+dist_noinst_SCRIPTS = make_timecode.sh
 
-TimeCodeEnums.h:
-	sh ./make_timecode.sh
+TimeCodeEnums.h: Makefile.am make_timecode.sh \
+                 $(top_srcdir)/common/protocol/Ola.proto
+	sh $(srcdir)/make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto
 
-clean-local:
-	rm -f TimeCodeEnums.h
+CLEANFILES = TimeCodeEnums.h

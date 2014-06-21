@@ -11,13 +11,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
+#include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <iostream>
 #include <string>
@@ -35,7 +36,9 @@ using ola::EncodeString;
 using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
+using ola::IntToHexString;
 using ola::PrefixedHexStringToInt;
+using ola::ReplaceAll;
 using ola::ShortenString;
 using ola::StringEndsWith;
 using ola::StringJoin;
@@ -55,6 +58,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testShorten);
   CPPUNIT_TEST(testEndsWith);
   CPPUNIT_TEST(testIntToString);
+  CPPUNIT_TEST(testIntToHexString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testEncodeString);
   CPPUNIT_TEST(testStringToBool);
@@ -72,6 +76,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCustomCapitalizeLabel);
   CPPUNIT_TEST(testFormatData);
   CPPUNIT_TEST(testStringJoin);
+  CPPUNIT_TEST(testReplaceAll);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -80,6 +85,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testShorten();
     void testEndsWith();
     void testIntToString();
+    void testIntToHexString();
     void testEscape();
     void testEncodeString();
     void testStringToBool();
@@ -97,6 +103,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testCustomCapitalizeLabel();
     void testFormatData();
     void testStringJoin();
+    void testReplaceAll();
 };
 
 
@@ -227,6 +234,23 @@ void StringUtilsTest::testIntToString() {
 }
 
 
+/*
+ * test the IntToHexString function.
+ */
+void StringUtilsTest::testIntToHexString() {
+  OLA_ASSERT_EQ(string("0x00"), IntToHexString((uint8_t)0));
+
+  OLA_ASSERT_EQ(string("0x01"), IntToHexString((uint8_t)1));
+  OLA_ASSERT_EQ(string("0x42"), IntToHexString((uint8_t)0x42));
+  OLA_ASSERT_EQ(string("0x0001"), IntToHexString((uint16_t)0x0001));
+  OLA_ASSERT_EQ(string("0xabcd"), IntToHexString((uint16_t)0xABCD));
+  OLA_ASSERT_EQ(string("0xdeadbeef"), IntToHexString((uint32_t)0xDEADBEEF));
+
+  unsigned int i = 0x42;
+  OLA_ASSERT_EQ(string("0x00000042"), IntToHexString(i));
+}
+
+
 /**
  * Test escaping.
  */
@@ -264,6 +288,7 @@ void StringUtilsTest::testEscape() {
       result);
 }
 
+
 /**
  * Test encoding string
  */
@@ -284,6 +309,7 @@ void StringUtilsTest::testEncodeString() {
   s1 = string("newline" "\x00" "test", 12);
   OLA_ASSERT_EQ(string("newline\\x00test"), EncodeString(s1));
 }
+
 
 void StringUtilsTest::testStringToBool() {
   bool value;
@@ -312,6 +338,7 @@ void StringUtilsTest::testStringToBool() {
   OLA_ASSERT_TRUE(StringToBool("0", &value));
   OLA_ASSERT_EQ(value, false);
 }
+
 
 void StringUtilsTest::testStringToUInt() {
   unsigned int value;
@@ -702,16 +729,16 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   CustomCapitalizeLabel(&label8);
   OLA_ASSERT_EQ(string("Device RDM UID"), label8);
 
-  string label9 = "dns_via_dhcp";
+  string label9 = "dns_via_ipv4_dhcp";
   CustomCapitalizeLabel(&label9);
-  OLA_ASSERT_EQ(string("DNS Via DHCP"), label9);
+  OLA_ASSERT_EQ(string("DNS Via IPV4 DHCP"), label9);
 }
 
 
 void StringUtilsTest::testFormatData() {
   uint8_t data[] = {0, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd',
                     1, 2};
-  std::stringstream str;
+  std::ostringstream str;
   FormatData(&str, data, sizeof(data));
   OLA_ASSERT_EQ(
       string("00 48 65 6c 6c 6f 20 57  .Hello W\n"
@@ -738,6 +765,7 @@ void StringUtilsTest::testFormatData() {
       str.str());
 }
 
+
 void StringUtilsTest::testStringJoin() {
   vector<int> ints;
   ints.push_back(1);
@@ -750,4 +778,33 @@ void StringUtilsTest::testStringJoin() {
   strings.push_back("two");
   strings.push_back("three");
   OLA_ASSERT_EQ(string("one,two,three"), StringJoin(",", strings));
+}
+
+
+void StringUtilsTest::testReplaceAll() {
+  string input = "";
+  ReplaceAll(&input, "", "");
+  OLA_ASSERT_EQ(string(""), input);
+
+  input = "abc";
+  ReplaceAll(&input, "", "");
+  OLA_ASSERT_EQ(string("abc"), input);
+  ReplaceAll(&input, "", "def");
+  OLA_ASSERT_EQ(string("abc"), input);
+
+  input = "abc";
+  ReplaceAll(&input, "b", "d");
+  OLA_ASSERT_EQ(string("adc"), input);
+
+  input = "aaa";
+  ReplaceAll(&input, "a", "b");
+  OLA_ASSERT_EQ(string("bbb"), input);
+
+  input = "abcdef";
+  ReplaceAll(&input, "cd", "cds");
+  OLA_ASSERT_EQ(string("abcdsef"), input);
+
+  input = "abcdefabcdef";
+  ReplaceAll(&input, "cd", "gh");
+  OLA_ASSERT_EQ(string("abghefabghef"), input);
 }

@@ -11,18 +11,17 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *
  * SandNetPort.cpp
  * The SandNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>
 #include <sstream>
 #include <string>
-#include <vector>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "olad/Universe.h"
@@ -35,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
+using std::string;
 
 /*
  * We override the set universe method to update the universe -> port hash
@@ -51,7 +51,7 @@ bool SandNetPortHelper::PreSetUniverse(Universe *old_universe,
 
 
 string SandNetPortHelper::Description(const Universe *universe) const {
-  std::stringstream str;
+  std::ostringstream str;
   if (universe) {
     str << "Sandnet group " << static_cast<int>(SandnetGroup(universe)) <<
       ", universe " << 1 + SandnetUniverse(universe);

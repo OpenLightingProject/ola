@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EspNetNode.cpp
  * A EspNet node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -34,7 +34,6 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-using std::string;
 using std::map;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -50,7 +49,7 @@ const char EspNetNode::NODE_NAME[] = "OLA Node";
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-EspNetNode::EspNetNode(const string &ip_address)
+EspNetNode::EspNetNode(const std::string &ip_address)
     : m_running(false),
       m_options(DEFAULT_OPTIONS),
       m_tos(DEFAULT_TOS),

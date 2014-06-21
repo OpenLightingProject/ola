@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ShowRecorder.h
  *  A simple show playback system.
@@ -28,9 +28,6 @@
 
 #include "examples/ShowSaver.h"
 
-using std::string;
-
-
 #ifndef EXAMPLES_SHOWRECORDER_H_
 #define EXAMPLES_SHOWRECORDER_H_
 
@@ -39,7 +36,7 @@ using std::string;
  */
 class ShowRecorder {
  public:
-    ShowRecorder(const string &filename,
+    ShowRecorder(const std::string &filename,
                  const std::vector<unsigned int> &universes);
     ~ShowRecorder();
 
@@ -58,7 +55,7 @@ class ShowRecorder {
 
     void NewFrame(unsigned int universe,
                   const ola::DmxBuffer &data,
-                  const string &error);
-    void RegisterComplete(const string &error);
+                  const std::string &error);
+    void RegisterComplete(const std::string &error);
 };
 #endif  // EXAMPLES_SHOWRECORDER_H_

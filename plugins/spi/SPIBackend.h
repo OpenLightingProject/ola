@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIBackend.h
  * The backend for SPI output. These are the classes which write the data to
@@ -34,9 +34,6 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-using std::string;
-using std::vector;
-
 /**
  * The interface for all SPI Backends.
  */
@@ -50,7 +47,7 @@ class SPIBackendInterface {
                               unsigned int latch_bytes) = 0;
     virtual void Commit(uint8_t output) = 0;
 
-    virtual string DevicePath() const = 0;
+    virtual std::string DevicePath() const = 0;
 
     virtual bool Init() = 0;
 
@@ -69,7 +66,7 @@ class HardwareBackend : public ola::thread::Thread,
     struct Options {
       // Which GPIO bits to use to select the output. The number of outputs
       // will be 2 ** gpio_pins.size();
-      vector<uint8_t> gpio_pins;
+      std::vector<uint8_t> gpio_pins;
     };
 
     HardwareBackend(const Options &options,
@@ -88,46 +85,46 @@ class HardwareBackend : public ola::thread::Thread,
                       unsigned int latch_bytes);
     void Commit(uint8_t output);
 
-    string DevicePath() const { return m_spi_writer->DevicePath(); }
+    std::string DevicePath() const { return m_spi_writer->DevicePath(); }
 
  protected:
     void* Run();
 
  private:
     class OutputData {
-      public:
-        OutputData()
-            : m_data(NULL),
-              m_write_pending(false),
-              m_size(0),
-              m_actual_size(0),
-              m_latch_bytes(0) {
-        }
+     public:
+      OutputData()
+          : m_data(NULL),
+            m_write_pending(false),
+            m_size(0),
+            m_actual_size(0),
+            m_latch_bytes(0) {
+      }
 
-        ~OutputData() { delete[] m_data; }
+      ~OutputData() { delete[] m_data; }
 
-        uint8_t *Resize(unsigned int length);
-        void SetLatchBytes(unsigned int latch_bytes);
-        void SetPending();
-        bool IsPending() const { return m_write_pending; }
-        void ResetPending() { m_write_pending = false; }
-        const uint8_t *GetData() const { return m_data; }
-        unsigned int Size() const { return m_size; }
+      uint8_t *Resize(unsigned int length);
+      void SetLatchBytes(unsigned int latch_bytes);
+      void SetPending();
+      bool IsPending() const { return m_write_pending; }
+      void ResetPending() { m_write_pending = false; }
+      const uint8_t *GetData() const { return m_data; }
+      unsigned int Size() const { return m_size; }
 
-        OutputData& operator=(const OutputData &other);
+      OutputData& operator=(const OutputData &other);
 
-      private:
-        uint8_t *m_data;
-        bool m_write_pending;
-        unsigned int m_size;
-        unsigned int m_actual_size;
-        unsigned int m_latch_bytes;
+     private:
+      uint8_t *m_data;
+      bool m_write_pending;
+      unsigned int m_size;
+      unsigned int m_actual_size;
+      unsigned int m_latch_bytes;
 
-        OutputData(const OutputData&);
+      OutputData(const OutputData&);
     };
 
-    typedef vector<int> GPIOFds;
-    typedef vector<OutputData*> Outputs;
+    typedef std::vector<int> GPIOFds;
+    typedef std::vector<OutputData*> Outputs;
 
     SPIWriterInterface *m_spi_writer;
     UIntMap *m_drop_map;
@@ -140,8 +137,8 @@ class HardwareBackend : public ola::thread::Thread,
 
     // GPIO members
     GPIOFds m_gpio_fds;
-    const vector<uint8_t> m_gpio_pins;
-    vector<bool> m_gpio_pin_state;
+    const std::vector<uint8_t> m_gpio_pins;
+    std::vector<bool> m_gpio_pin_state;
 
     void SetupOutputs(Outputs *outputs);
     void WriteOutput(uint8_t output_id, OutputData *output);
@@ -188,7 +185,7 @@ class SoftwareBackend : public SPIBackendInterface,
                       unsigned int latch_bytes);
     void Commit(uint8_t output);
 
-    string DevicePath() const { return m_spi_writer->DevicePath(); }
+    std::string DevicePath() const { return m_spi_writer->DevicePath(); }
 
  protected:
     void* Run();
@@ -202,11 +199,10 @@ class SoftwareBackend : public SPIBackendInterface,
     bool m_exit;
 
     const int16_t m_sync_output;
-    vector<unsigned int> m_output_sizes;
-    vector<unsigned int> m_latch_bytes;
+    std::vector<unsigned int> m_output_sizes;
+    std::vector<unsigned int> m_latch_bytes;
     uint8_t *m_output;
     unsigned int m_length;
-    unsigned int m_buffer_size;
 };
 
 
@@ -230,7 +226,7 @@ class FakeSPIBackend : public SPIBackendInterface {
     void Commit(uint8_t output);
     const uint8_t *GetData(uint8_t output, unsigned int *length);
 
-    string DevicePath() const { return "/dev/test"; }
+    std::string DevicePath() const { return "/dev/test"; }
 
     bool Init() { return true; }
 
@@ -238,16 +234,16 @@ class FakeSPIBackend : public SPIBackendInterface {
 
  private:
     class Output {
-      public:
-        Output() : data(NULL), length(0), writes(0) {}
-        ~Output() { delete[] data; }
+     public:
+      Output() : data(NULL), length(0), writes(0) {}
+      ~Output() { delete[] data; }
 
-        uint8_t *data;
-        unsigned int length;
-        unsigned int writes;
+      uint8_t *data;
+      unsigned int length;
+      unsigned int writes;
     };
 
-    typedef vector<Output*> Outputs;
+    typedef std::vector<Output*> Outputs;
     Outputs m_outputs;
 };
 }  // namespace spi

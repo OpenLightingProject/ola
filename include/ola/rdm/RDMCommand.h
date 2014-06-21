@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMCommand.h
  * All the classes that represent RDM commands.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 
@@ -127,12 +127,17 @@ class RDMCommand {
      * @returns A string containing the source and destination UIDS, transaction
      * number, port ID, Message count, Sub Device, Cmd Class, Param ID, Data,
      * and a raw string of the parameter data.
-     * @param out ostream to output to
-     * @param command is the RDMCommand to print
      */
     std::string ToString() const;
 
-    friend ostream& operator<< (ostream &out, const RDMCommand &command) {
+    /**
+     * @brief Output an RDMCommand object to an ostream.
+     * @param out ostream to output to
+     * @param command is the RDMCommand to print
+     * @sa ToString()
+     */
+    friend std::ostream& operator<< (std::ostream &out,
+                                     const RDMCommand &command) {
       return out << command.ToString();
     }
 
@@ -179,7 +184,7 @@ class RDMCommand {
 
     /**
      * @brief Used to print the data in an RDM Command to a CommandPrinter
-     * @param print CommandPrinter wish will use the information
+     * @param printer CommandPrinter which will use the information
      * @param summarize enable a one line summary
      * @param unpack_param_data if the summary isn't enabled, this controls if
      * we unpack and display parameter data
@@ -303,7 +308,7 @@ class RDMRequest: public RDMCommand {
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
                                        unsigned int length);
-    static RDMRequest* InflateFromData(const string &data);
+    static RDMRequest* InflateFromData(const std::string &data);
 
  private:
     RDMCommandClass m_command_class;
@@ -437,10 +442,10 @@ class RDMResponse: public RDMCommand {
                                         rdm_response_code *response_code,
                                         const RDMRequest *request,
                                         uint8_t transaction_number);
-    static RDMResponse* InflateFromData(const string &data,
+    static RDMResponse* InflateFromData(const std::string &data,
                                         rdm_response_code *response_code,
                                         const RDMRequest *request = NULL);
-    static RDMResponse* InflateFromData(const string &data,
+    static RDMResponse* InflateFromData(const std::string &data,
                                         rdm_response_code *response_code,
                                         const RDMRequest *request,
                                         uint8_t transaction_number);
@@ -555,7 +560,7 @@ class RDMDiscoveryRequest: public RDMRequest {
 
     static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
                                                 unsigned int length);
-    static RDMDiscoveryRequest* InflateFromData(const string &data);
+    static RDMDiscoveryRequest* InflateFromData(const std::string &data);
 };
 
 
@@ -623,7 +628,7 @@ class RDMDiscoveryResponse: public RDMResponse {
 
     static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,
                                                  unsigned int length);
-    static RDMDiscoveryResponse* InflateFromData(const string &data);
+    static RDMDiscoveryResponse* InflateFromData(const std::string &data);
 };
 /** @} */
 }  // namespace rdm

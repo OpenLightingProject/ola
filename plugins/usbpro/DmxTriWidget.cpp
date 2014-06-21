@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxTriWidget.h
  * The Jese DMX TRI device.
@@ -328,7 +328,7 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
 /*
  * Send a DiscoAuto message to begin the discovery process.
  */
-void DmxTriWidgetImpl::SendDiscoveryStart() {
+void DmxTriWidgetImpl::SendDiscoveryAuto() {
   m_discovery_state = NO_DISCOVERY_ACTION;
   uint8_t command_id = DISCOVER_AUTO_COMMAND_ID;
   if (!SendCommandToTRI(EXTENDED_COMMAND_LABEL, &command_id,
@@ -347,7 +347,7 @@ void DmxTriWidgetImpl::SendDiscoveryStart() {
 
 
 /*
- * Send a DiscoAuto message to begin the discovery process.
+ * Send a RemoteUID message to fetch UID in TRI register.
  */
 void DmxTriWidgetImpl::FetchNextUID() {
   m_discovery_state = NO_DISCOVERY_ACTION;
@@ -371,7 +371,7 @@ bool DmxTriWidgetImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
 
 
 /*
- * Send a DiscoStat message to begin the discovery process.
+ * Send a DiscoStat message to get status of the discovery process.
  */
 void DmxTriWidgetImpl::SendDiscoveryStat() {
   m_discovery_state = NO_DISCOVERY_ACTION;
@@ -888,7 +888,7 @@ void DmxTriWidgetImpl::MaybeSendNextRequest() {
       // there is an RDM command to send
       SendQueuedRDMCommand();
     } else if (m_discovery_state == DISCOVER_AUTO_REQUIRED) {
-      SendDiscoveryStart();
+      SendDiscoveryAuto();
     } else if (m_discovery_state == DISCOVER_STATUS_REQUIRED) {
       SendDiscoveryStat();
     } else if (m_discovery_state == FETCH_UID_REQUIRED) {

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ShowNetPort.h
  * The ShowNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SHOWNET_SHOWNETPORT_H_
@@ -30,8 +30,6 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-using ola::DmxBuffer;
-
 class ShowNetInputPort: public BasicInputPort {
  public:
   ShowNetInputPort(ShowNetDevice *parent,
@@ -42,8 +40,8 @@ class ShowNetInputPort: public BasicInputPort {
     m_node(node) {}
   ~ShowNetInputPort() {}
 
-  string Description() const;
-  const DmxBuffer &ReadDMX() const { return m_buffer; }
+  std::string Description() const;
+  const ola::DmxBuffer &ReadDMX() const { return m_buffer; }
   bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
@@ -63,8 +61,8 @@ class ShowNetOutputPort: public BasicOutputPort {
   ~ShowNetOutputPort() {}
 
   bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
-  string Description() const;
-  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const;
+  bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority);
 
  private:
   ShowNetNode *m_node;

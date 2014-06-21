@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_rdm_get.py
 # Copyright (C) 2010 Simon Newton
@@ -60,7 +60,7 @@ def ParseOptions():
                     help='Also log to the file named FILE.uid.timestamp.')
   parser.add_option('--list-tests', action='store_true',
                     help='Display a list of all tests')
-  parser.add_option('-p', '--pid-store', metavar='FILE',
+  parser.add_option('-p', '--pid-location', metavar='DIR',
                     help='The location of the PID definitions.')
   parser.add_option('-s', '--skip-check', action='store_true',
                     help='Skip the check for multiple devices.')
@@ -77,6 +77,9 @@ def ParseOptions():
   parser.add_option('-u', '--universe', default=0,
                     type='int',
                     help='The universe number to use, default is universe 0.')
+  parser.add_option('--inter-test-delay', default=0,
+                    type='int',
+                    help='The delay in ms to wait between tests, defaults to 0.')
 
   options, args = parser.parse_args()
 
@@ -201,7 +204,7 @@ def main():
 
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
-  pid_store = PidStore.GetStore(options.pid_store,
+  pid_store = PidStore.GetStore(options.pid_location,
                                 ('pids.proto','draft_pids.proto'))
   wrapper = ClientWrapper()
 
@@ -250,12 +253,14 @@ def main():
     test_filter = set(options.tests.split(','))
 
   logging.info(
-      'Starting tests, universe %d, UID %s, broadcast write delay %dms' %
-      (options.universe, options.uid, options.broadcast_write_delay))
+      'Starting tests, universe %d, UID %s, broadcast write delay %dms, '
+      'inter-test delay %dms' % (options.universe, options.uid,
+      options.broadcast_write_delay, options.inter_test_delay))
 
   runner = TestRunner.TestRunner(options.universe,
                                  options.uid,
                                  options.broadcast_write_delay,
+                                 options.inter_test_delay,
                                  pid_store,
                                  wrapper,
                                  options.timestamp)

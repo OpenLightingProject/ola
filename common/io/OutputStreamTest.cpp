@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OutputStream.cpp
  * Test fixture for the OutputStream class.
@@ -39,22 +39,19 @@ using std::string;
 
 class OutputStreamTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(OutputStreamTest);
-    CPPUNIT_TEST(testBasicWrite);
-    CPPUNIT_TEST(testWritePrimatives);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(OutputStreamTest);
+  CPPUNIT_TEST(testBasicWrite);
+  CPPUNIT_TEST(testWritePrimatives);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-    void testBasicWrite();
-    void testWritePrimatives();
+  void testBasicWrite();
+  void testWritePrimatives();
 
  private:
-    IOQueue m_buffer;
+  IOQueue m_buffer;
 
-    unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
+  unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 

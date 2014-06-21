@@ -7,11 +7,19 @@ include aminclude.am
 SUBDIRS = include data protoc common ola plugins slp olad python tools \
           examples debian java man doxygen
 
+# We want to build the python code when running distcheck.
+AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
+
+# pkg-config files.
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc libolaserver.pc
 
+# As suggested by libtoolize
 ACLOCAL         = aclocal -I $(auxdir)
 ACLOCAL_AMFLAGS = -I config
+
+# dvi is run from make distcheck. Do nothing.
+dvi:
 
 EXTRA_DIST = \
   config/ac_prog_java_cc.m4 \
@@ -22,7 +30,9 @@ EXTRA_DIST = \
   config/maven.m4 \
   config/ola.m4 \
   config/pkg.m4 \
+  config/resolv.m4 \
   config/stl_hash.m4 \
+  CONTRIBUTING \
   GPL \
   LGPL \
   LICENCE \
@@ -31,6 +41,7 @@ EXTRA_DIST = \
   README.rpm ola.spec \
   javascript/README \
   javascript/ola/base_frame.js \
+  javascript/ola/common/dmx_constants.js \
   javascript/ola/common/dmx_monitor.js \
   javascript/ola/common/keypad_controller.js \
   javascript/ola/common/keypad_parser.js \
@@ -70,4 +81,5 @@ EXTRA_DIST = \
   javascript/ola/universe_item.js \
   mac_build.sh \
   tests/recvdmx.py \
-  tests/regression.py
+  tests/regression.py \
+  version.sh

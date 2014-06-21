@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EspNetDevice.cpp
  * Esp-Net device
- * Copyright (C) 2005-2006  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  *
  */
@@ -36,6 +36,8 @@
 namespace ola {
 namespace plugin {
 namespace espnet {
+
+using std::ostringstream;
 
 const char EspNetDevice::ESPNET_DEVICE_NAME[] = "ESP Net";
 const char EspNetDevice::IP_KEY[] = "ip";
@@ -68,7 +70,7 @@ bool EspNetDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << ESPNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
     "]";
   SetName(str.str());

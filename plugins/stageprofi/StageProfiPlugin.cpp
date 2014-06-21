@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiPlugin.cpp
  * The StageProfi plugin for ola
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <stdlib.h>
@@ -33,7 +33,9 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+using ola::io::ConnectedDescriptor;
 using std::string;
+using std::vector;
 
 const char StageProfiPlugin::STAGEPROFI_DEVICE_PATH[] = "/dev/ttyUSB0";
 const char StageProfiPlugin::STAGEPROFI_DEVICE_NAME[] = "StageProfi Device";

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KarateThread.h
  * Thread for the karate device
- * Copyright (C) 2005-2007  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -42,9 +42,9 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
-using std::string;
 using ola::thread::Mutex;
 using ola::thread::MutexLocker;
+using std::string;
 
 /*
  * Create a new KarateThread object

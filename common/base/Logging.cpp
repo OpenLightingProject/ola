@@ -11,12 +11,12 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Logging.cpp
  * The logging functions. See include/ola/Logging.h for details on how to use
  * these.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -29,8 +29,9 @@
  */
 #include <stdio.h>
 
-#ifdef WIN32
-#include <windows.h>
+#ifdef _WIN32
+#define VC_EXTRALEAN
+#include <Windows.h>
 #else
 #include <syslog.h>
 #endif
@@ -47,8 +48,8 @@ DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
 
-using std::string;
 using std::ostringstream;
+using std::string;
 
 /**
  * @cond HIDDEN_SYMBOLS
@@ -184,20 +185,25 @@ void StdErrorLogDestination::Write(log_level level, const string &log_line) {
 }
 
 
+SyslogDestination::SyslogDestination()
+    : LogDestination(),
+      m_eventlog(NULL) {
+}
+
 bool SyslogDestination::Init() {
-#ifdef WIN32
+#ifdef _WIN32
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
+#endif
   if (!m_eventlog) {
     printf("Failed to initialize event logging\n");
     return false;
   }
-#endif
   return true;
 }
 
 
 void SyslogDestination::Write(log_level level, const string &log_line) {
-#ifdef WIN32
+#ifdef _WIN32
   WORD pri;
   const char* strings[1];
   strings[0] = log_line.data();
@@ -218,7 +224,7 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
     default:
       pri = EVENTLOG_INFORMATION_TYPE;
   }
-  ReportEventA(m_eventlog,
+  ReportEventA(reinterpret_cast<HANDLE>(m_eventlog),
                pri,
                (WORD) NULL,
                (DWORD) NULL,

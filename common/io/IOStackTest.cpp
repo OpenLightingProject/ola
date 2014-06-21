@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOStackTest.cpp
  * Test fixture for the IOStack class.
@@ -31,6 +31,7 @@
 
 using ola::io::IOStack;
 using ola::io::IOQueue;
+using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
@@ -47,10 +48,6 @@ class IOStackTest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-
     void testBasicWrite();
     void testBlockOverflow();
     void testIOVec();
@@ -58,7 +55,7 @@ class IOStackTest: public CppUnit::TestFixture {
     void testBlockReuse();
 
  private:
-    unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
+    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 
@@ -66,9 +63,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IOStackTest);
 
 
 /**
- * Sum up the length of data in a iovec
+ * Sum up the length of data in a IOVec
  */
-unsigned int IOStackTest::SumLengthOfIOVec(const struct iovec *iov,
+unsigned int IOStackTest::SumLengthOfIOVec(const struct IOVec *iov,
                                             int iocnt) {
   unsigned int sum = 0;
   for (int i = 0; i < iocnt; iov++, i++)
@@ -95,7 +92,7 @@ void IOStackTest::testBasicWrite() {
   stack.Write(data3, sizeof(data3));
   OLA_ASSERT_EQ(5u, stack.Size());
 
-  std::stringstream str;
+  std::ostringstream str;
   stack.Dump(&str);
   OLA_ASSERT_EQ(
       string("03 04 02 00 01           .....\n"),
@@ -143,7 +140,7 @@ void IOStackTest::testBlockOverflow() {
 
 
 /**
- * Test getting / setting iovecs work.
+ * Test getting / setting IOVec work.
  */
 void IOStackTest::testIOVec() {
   MemoryBlockPool pool(4);
@@ -157,7 +154,7 @@ void IOStackTest::testIOVec() {
   OLA_ASSERT_FALSE(stack.Empty());
 
   int iocnt;
-  const struct iovec *vector = stack.AsIOVec(&iocnt);
+  const struct IOVec *vector = stack.AsIOVec(&iocnt);
   OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
   OLA_ASSERT_EQ(3, iocnt);
   stack.FreeIOVec(vector);

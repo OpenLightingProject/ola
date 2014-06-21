@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Logging.h
  * Header file for the logging
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 /**
  * @defgroup logging Logging
@@ -43,10 +43,6 @@
 
 #ifndef INCLUDE_OLA_LOGGING_H_
 #define INCLUDE_OLA_LOGGING_H_
-
-#ifdef WIN32
-#include <windows.h>  // for HANDLE
-#endif
 
 #include <ostream>
 #include <string>
@@ -94,8 +90,6 @@
 
 namespace ola {
 
-using std::string;
-
 /**
  * @brief The OLA log levels.
  * This controls the verbosity of logging. Each level also includes those below
@@ -131,17 +125,17 @@ typedef enum {
  */
 class LogDestination {
  public:
-    /**
-     * @brief Destructor
-     */
-    virtual ~LogDestination() {}
+  /**
+   * @brief Destructor
+   */
+  virtual ~LogDestination() {}
 
-    /**
-     * @brief An abstract function for writing to your log destination
-     * @note You must over load this if you want to create a new log
-     * destination
-     */
-    virtual void Write(log_level level, const string &log_line) = 0;
+  /**
+   * @brief An abstract function for writing to your log destination
+   * @note You must over load this if you want to create a new log
+   * destination
+   */
+  virtual void Write(log_level level, const std::string &log_line) = 0;
 };
 
 /**
@@ -149,10 +143,10 @@ class LogDestination {
  */
 class StdErrorLogDestination: public LogDestination {
  public:
-    /**
-     * @brief Writes a messages out to stderr.
-     */
-    void Write(log_level level, const string &log_line);
+  /**
+   * @brief Writes a messages out to stderr.
+   */
+  void Write(log_level level, const std::string &log_line);
 };
 
 /**
@@ -160,20 +154,22 @@ class StdErrorLogDestination: public LogDestination {
  */
 class SyslogDestination: public LogDestination {
  public:
-    /**
-     * @brief Initialize the SyslogDestination
-     */
-    bool Init();
+  SyslogDestination();
 
-    /**
-     * @brief Write a line to the system logger.
-     * @note This is syslog on *nix or the event log on windows.
-     */
-    void Write(log_level level, const string &log_line);
+  /**
+   * @brief Initialize the SyslogDestination
+   */
+  bool Init();
+
+  /**
+   * @brief Write a line to the system logger.
+   * @note This is syslog on *nix or the event log on windows.
+   */
+  void Write(log_level level, const std::string &log_line);
+
  private:
-#ifdef WIN32
-    HANDLE m_eventlog;
-#endif
+  typedef void* WindowsLogHandle;
+  WindowsLogHandle m_eventlog;
 };
 
 /**@}*/
@@ -185,15 +181,15 @@ class SyslogDestination: public LogDestination {
  */
 class LogLine {
  public:
-    LogLine(const char *file, int line, log_level level);
-    ~LogLine();
-    void Write();
+  LogLine(const char *file, int line, log_level level);
+  ~LogLine();
+  void Write();
 
-    std::ostream &stream() { return m_stream; }
+  std::ostream &stream() { return m_stream; }
  private:
-    log_level m_level;
-    std::ostringstream m_stream;
-    unsigned int m_prefix_length;
+  log_level m_level;
+  std::ostringstream m_stream;
+  unsigned int m_prefix_length;
 };
 /**@endcond*/
 

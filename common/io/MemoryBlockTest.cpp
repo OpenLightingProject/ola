@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MemoryBlockTest.cpp
  * Test fixture for the IOQueue class.
@@ -32,22 +32,17 @@ using ola::testing::ASSERT_DATA_EQUALS;
 
 class MemoryBlockTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(MemoryBlockTest);
-    CPPUNIT_TEST(testAppend);
-    CPPUNIT_TEST(testPrepend);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(MemoryBlockTest);
+  CPPUNIT_TEST(testAppend);
+  CPPUNIT_TEST(testPrepend);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void testAppend();
-    void testPrepend();
+  void testAppend();
+  void testPrepend();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MemoryBlockTest);
-
-void MemoryBlockTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
 
 
 /*

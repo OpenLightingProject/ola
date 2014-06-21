@@ -11,17 +11,21 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DescriptorTest.cpp
  * Test fixture for the Descriptor classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <stdint.h>
 #include <string.h>
 #include <string>
+
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -34,7 +38,9 @@ using std::string;
 using ola::io::ConnectedDescriptor;
 using ola::io::LoopbackDescriptor;
 using ola::io::PipeDescriptor;
+#ifndef _WIN32
 using ola::io::UnixSocket;
+#endif
 using ola::io::SelectServer;
 
 static const unsigned char test_cstring[] = "Foo";
@@ -47,8 +53,10 @@ class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLoopbackDescriptor);
   CPPUNIT_TEST(testPipeDescriptorClientClose);
   CPPUNIT_TEST(testPipeDescriptorServerClose);
+#ifndef _WIN32
   CPPUNIT_TEST(testUnixSocketClientClose);
   CPPUNIT_TEST(testUnixSocketServerClose);
+#endif
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -57,8 +65,10 @@ class DescriptorTest: public CppUnit::TestFixture {
     void testLoopbackDescriptor();
     void testPipeDescriptorClientClose();
     void testPipeDescriptorServerClose();
+#ifndef _WIN32
     void testUnixSocketClientClose();
     void testUnixSocketServerClose();
+#endif
 
     // timing out indicates something went wrong
     void Timeout() {
@@ -95,11 +105,16 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DescriptorTest);
  * Setup the select server
  */
 void DescriptorTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &DescriptorTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                              m_timeout_closure));
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -108,6 +123,10 @@ void DescriptorTest::setUp() {
  */
 void DescriptorTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 
@@ -157,6 +176,7 @@ void DescriptorTest::testPipeDescriptorServerClose() {
   SocketServerClose(&socket, socket.OppositeEnd());
 }
 
+#ifndef _WIN32
 
 /*
  * Test a unix socket works correctly.
@@ -183,6 +203,7 @@ void DescriptorTest::testUnixSocketServerClose() {
   SocketServerClose(&socket, socket.OppositeEnd());
 }
 
+#endif
 
 /*
  * Receive some data and close the socket

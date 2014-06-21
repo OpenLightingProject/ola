@@ -1,0 +1,282 @@
+=== POSITIVE ===
+{
+  "type": "integer"
+}
+// maximum & exclusiveMaximum
+=== POSITIVE ===
+{
+  "maximum": 10,
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "exclusiveMaximum": true,
+  "maximum": -10,
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "exclusiveMaximum": false,
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": 1,
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": null,
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": 1.2,
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": "foo",
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": [],
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": {},
+  "maximum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "maximum": null,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "maximum": false,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "maximum": "foo",
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "maximum": [],
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "maximum": {},
+  "type": "integer"
+}
+// exclusiveMaximum without maximum isn't valid
+=== NEGATIVE ===
+{
+  "exclusiveMaximum": true,
+  "type": "integer"
+}
+// minimum & exclusiveMinimum
+=== POSITIVE ===
+{
+  "minimum": 10,
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "exclusiveMinimum": true,
+  "minimum": -10,
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "exclusiveMinimum": false,
+  "minimum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": null,
+  "minimum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": 1,
+  "minimum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": [],
+  "minimum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": {},
+  "minimum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": "foo",
+  "minimum": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "minimum": null,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "minimum": false,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "minimum": "foo",
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "minimum": [],
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "minimum": {},
+  "type": "integer"
+}
+// exclusiveMinimum without minimum isn't valid
+=== NEGATIVE ===
+{
+  "exclusiveMinimum": true,
+  "type": "integer"
+}
+// multipleOf
+=== POSITIVE ===
+{
+  "multipleOf": 10,
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "multipleOf": 2.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": -1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": -1.1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": null,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": false,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": [],
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": {},
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "multipleOf": "foo",
+  "type": "integer"
+}
+// Enums
+=== POSITIVE ===
+{
+  "enum": [1, 2, 4],
+  "type": "integer"
+}
+=== POSITIVE ===
+{
+  "enum": [true, false],
+  "type": "boolean"
+}
+=== POSITIVE ===
+{
+  "enum": ["cat", "dog", "rat"],
+  "type": "string"
+}
+=== NEGATIVE ===
+{
+  "enum": null,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": "foo",
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": 1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": -1,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": 1.2,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": false,
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": {},
+  "type": "integer"
+}
+=== NEGATIVE ===
+// enum must have at least one item
+{
+  "enum": [],
+  "type": "integer"
+}
+// duplicates aren't allowed
+=== NEGATIVE ===
+{
+  "enum": [1, 1, 0],
+  "type": "integer"
+}
+=== NEGATIVE ===
+{
+  "enum": ["cat", "cat"],
+  "type": "string"
+}

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UltraDMXProDevice.cpp
  * A DMX King Ultra DMX Pro Device
@@ -38,6 +38,7 @@ namespace usbpro {
 using ola::plugin::usbpro::Request;
 using ola::plugin::usbpro::Reply;
 using ola::rpc::RpcController;
+using std::string;
 
 /*
  * Create a new device
@@ -58,7 +59,7 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
     m_ultra_widget(widget),
     m_serial(),
     m_got_parameters(false) {
-  std::stringstream str;
+  std::ostringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
   for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {

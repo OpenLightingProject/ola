@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PollerInterface.h
  * A poller provides the select loop.
@@ -68,14 +68,14 @@ class PollerInterface {
   virtual bool RemoveReadDescriptor(ReadFileDescriptor *descriptor) = 0;
 
   /**
-   * Unregister a ConnectedDescriptor for read events.
+   * @brief Unregister a ConnectedDescriptor for read events.
    * @param descriptor the ConnectedDescriptor to unregister.
    * @returns true if unregistered successfully, false otherwise.
    */
   virtual bool RemoveReadDescriptor(ConnectedDescriptor *descriptor) = 0;
 
   /**
-   * @briefRegister a WriteFileDescriptor to receive ready-to-write events.
+   * @brief Register a WriteFileDescriptor to receive ready-to-write events.
    * @param descriptor the WriteFileDescriptor to register. The PerformWrite()
    * method will be called when the descriptor is ready for writing.
    * @returns true if the descriptor was registered, false otherwise.

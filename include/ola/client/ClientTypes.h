@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ClientTypes.h
  * Types used as return values from the OLA Client.
@@ -42,7 +42,7 @@ namespace client {
  */
 class OlaPlugin {
  public:
-  OlaPlugin(unsigned int id, const string &name, bool active)
+  OlaPlugin(unsigned int id, const std::string &name, bool active)
       : m_id(id),
         m_name(name),
         m_active(active) {}
@@ -56,7 +56,7 @@ class OlaPlugin {
   /**
    * @brief The name of the plugin.
    */
-  const string& Name() const { return m_name; }
+  const std::string& Name() const { return m_name; }
 
   /**
    * @brief Indicates if the plugin is active or not
@@ -70,7 +70,7 @@ class OlaPlugin {
 
  private:
   unsigned int m_id;  // id of this plugin
-  string m_name;  // plugin name
+  std::string m_name;  // plugin name
   bool m_active;
 };
 
@@ -82,7 +82,7 @@ struct PluginState {
   /**
    * @brief The name of the plugin.
    */
-  string name;
+  std::string name;
   /**
    * @brief true if the plugin is enabled.
    */
@@ -94,7 +94,7 @@ struct PluginState {
   /**
    * @brief The source of preferences for this plugin.
    */
-  string preferences_source;
+  std::string preferences_source;
   /**
    * @brief A list on plugins which conflict with this one.
    */
@@ -109,7 +109,7 @@ class OlaPort {
   OlaPort(unsigned int port_id,
           unsigned int universe,
           bool active,
-          const string &description,
+          const std::string &description,
           port_priority_capability capability,
           port_priority_mode mode,
           uint8_t priority,
@@ -136,7 +136,7 @@ class OlaPort {
   /**
    * @brief The description of this port
    */
-  const string& Description() const { return m_description; }
+  const std::string& Description() const { return m_description; }
 
   port_priority_capability PriorityCapability() const {
     return m_priority_capability;
@@ -157,7 +157,7 @@ class OlaPort {
   unsigned int m_id;  // id of this port
   unsigned int m_universe;  // universe
   bool m_active;  // active
-  string m_description;
+  std::string m_description;
   port_priority_capability m_priority_capability;
   port_priority_mode m_priority_mode;
   uint8_t m_priority;
@@ -172,7 +172,7 @@ class OlaInputPort: public OlaPort {
   OlaInputPort(unsigned int port_id,
                unsigned int universe,
                bool active,
-               const string &description,
+               const std::string &description,
                port_priority_capability capability,
                port_priority_mode mode,
                uint8_t priority,
@@ -190,7 +190,7 @@ class OlaOutputPort: public OlaPort {
   OlaOutputPort(unsigned int port_id,
                 unsigned int universe,
                 bool active,
-                const string &description,
+                const std::string &description,
                 port_priority_capability capability,
                 port_priority_mode mode,
                 uint8_t priority,
@@ -206,9 +206,9 @@ class OlaOutputPort: public OlaPort {
  */
 class OlaDevice {
  public:
-  OlaDevice(const string &id,
+  OlaDevice(const std::string &id,
             unsigned int alias,
-            const string &name,
+            const std::string &name,
             int plugin_id,
             const std::vector<OlaInputPort> &input_ports,
             const std::vector<OlaOutputPort> &output_ports):
@@ -220,9 +220,9 @@ class OlaDevice {
     m_output_ports(output_ports) {}
   ~OlaDevice() {}
 
-  string Id() const { return m_id; }
+  std::string Id() const { return m_id; }
   unsigned int Alias() const { return m_alias; }
-  const string& Name() const { return m_name; }
+  const std::string& Name() const { return m_name; }
   int PluginId() const { return m_plugin_id; }
 
   const std::vector<OlaInputPort> &InputPorts() const {
@@ -237,9 +237,9 @@ class OlaDevice {
   }
 
  private:
-  string m_id;            // device id
+  std::string m_id;            // device id
   unsigned int m_alias;   // device alias
-  string m_name;  // device name
+  std::string m_name;  // device name
   int m_plugin_id;     // parent plugin id
   std::vector<OlaInputPort> m_input_ports;
   std::vector<OlaOutputPort> m_output_ports;
@@ -258,7 +258,7 @@ class OlaUniverse {
 
   OlaUniverse(unsigned int id,
               merge_mode m,
-              const string &name,
+              const std::string &name,
               unsigned int input_port_count,
               unsigned int output_port_count,
               unsigned int rdm_device_count):
@@ -272,7 +272,7 @@ class OlaUniverse {
 
   unsigned int Id() const { return m_id;}
   merge_mode MergeMode() const { return m_merge_mode; }
-  const string& Name() const { return m_name;}
+  const std::string& Name() const { return m_name;}
   unsigned int InputPortCount() const { return m_input_port_count; }
   unsigned int OutputPortCount() const { return m_output_port_count; }
   unsigned int RDMDeviceCount() const { return m_rdm_device_count; }
@@ -280,7 +280,7 @@ class OlaUniverse {
  private:
   unsigned int m_id;
   merge_mode m_merge_mode;
-  string m_name;
+  std::string m_name;
   unsigned int m_input_port_count;
   unsigned int m_output_port_count;
   unsigned int m_rdm_device_count;

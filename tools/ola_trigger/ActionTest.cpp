@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ActionTest.cpp
  * Test fixture for the Action classes
@@ -89,7 +89,7 @@ void MockCommandAction::Execute(Context *context, uint8_t) {
  * Check what we got matches what we expected
  */
 void MockCommandAction::CheckArgs(int32_t line, const char* args[]) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "From ActionTest.cpp:" << line;
   const char **ptr = args;
   vector<string>::const_iterator iter = m_interpolated_args.begin();

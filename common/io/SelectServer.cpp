@@ -11,16 +11,16 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServer.cpp
  * Implementation of the SelectServer class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include "ola/io/SelectServer.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/select.h>
@@ -39,9 +39,15 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include "common/io/WindowsPoller.h"
+#else
+#include "ola/base/Flags.h"
 #include "common/io/EPoller.h"
 #include "common/io/SelectPoller.h"
-#include "ola/base/Flags.h"
+#endif
+
+#include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/Logging.h"
 #include "ola/network/Socket.h"
@@ -86,6 +92,9 @@ SelectServer::SelectServer(ExportMap *export_map,
   }
 
   m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
+#ifdef _WIN32
+  m_poller.reset(new WindowsPoller(export_map, m_clock));
+#else
 #ifdef HAVE_EPOLL
   if (FLAGS_use_epoll) {
     m_poller.reset(new EPoller(export_map, m_clock));
@@ -94,6 +103,7 @@ SelectServer::SelectServer(ExportMap *export_map,
   }
 #else
   m_poller.reset(new SelectPoller(export_map, m_clock));
+#endif
 #endif
 
   // TODO(simon): this should really be in an Init() method.

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtils..h
  * Random String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -27,11 +27,15 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace ola {
+
+/** @brief the width of a hex character in bits */
+enum { HEX_BIT_WIDTH = 4 };
 
 /**
  * @brief Split a string into pieces.
@@ -43,7 +47,7 @@ namespace ola {
  * @param delimiters the delimiiter to use for splitting. Defaults to ' '
  */
 void StringSplit(const std::string &input,
-                 std::vector<std::string> &tokens,
+                 std::vector<std::string> &tokens,  // NOLINT
                  const std::string &delimiters=" ");
 
 /**
@@ -81,9 +85,49 @@ std::string IntToString(int i);
 std::string IntToString(unsigned int i);
 
 /**
+ * Convert an unsigned int to a hex string.
+ * @param i the unsigned int to convert
+ * @param width the width to zero pad to
+ * @return The hex string representation of the unsigned int
+ * @note We don't currently support signed ints due to a lack of requirement
+ * for it and issues with negative handling and hex in C++
+ */
+std::string IntToHexString(unsigned int i, unsigned int width);
+
+/**
+ * Convert a uint8_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint8_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint8_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
+ * Convert a uint16_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint16_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint16_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
+ * Convert a uint32_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint32_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint32_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
  * @brief Escape a string with \\ .
  *
- * The string is modified in place.
+ * The string is modified in place according to the grammar from json.org
  * The following characters are escaped:
  *  - \\
  *  - "
@@ -104,6 +148,16 @@ void Escape(std::string *original);
  * @sa Escape()
  */
 std::string EscapeString(const std::string &original);
+
+/**
+ * @brief Replace all instances of the find string with the replace string.
+ * @param original the string to operate on.
+ * @param find the string to find
+ * @param replace what to replace it with
+ */
+void ReplaceAll(std::string *original,
+                const std::string &find,
+                const std::string &replace);
 
 /**
  * @brief Encode any unprintable characters in a string as hex, returning a
@@ -328,7 +382,8 @@ bool PrefixedHexStringToInt(const std::string &input, int_type *output) {
 
 /**
  * @brief Join a vector of a type.
- * @param T can be any type for which the << operator is defined
+ * @param delim the delimiter to use between items in the vector
+ * @param input T can be any type for which the << operator is defined
  */
 template<typename T>
 std::string StringJoin(const std::string &delim, const T &input) {

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2010 Simon Newton
  */
@@ -34,7 +34,7 @@ DEFINE_string(name, "simon", "Specify the name");
 DEFINE_s_int8(baz, b, 0, "Sets the value of baz");
 
 int main(int argc, char* argv[]) {
-  ola::SetHelpString("<options>", "Description of binary");
+  ola::SetHelpString("[options]", "Description of binary");
   ola::ParseFlags(&argc, argv);
 
   cout << "--foo is " << FLAGS_foo << endl;

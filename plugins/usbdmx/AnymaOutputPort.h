@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AnymaOutputPort.h
  * The output port for a Anyma device.
@@ -42,22 +42,22 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
     AnymaOutputPort(AnymaDevice *parent,
                     unsigned int id,
                     libusb_device_handle *usb_handle,
-                    const string &serial);
+                    const std::string &serial);
     ~AnymaOutputPort();
-    string SerialNumber() const { return m_serial; }
+    std::string SerialNumber() const { return m_serial; }
 
     bool Start();
     void *Run();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+    std::string Description() const { return ""; }
 
  private:
     static const unsigned int URB_TIMEOUT_MS = 500;
     static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
 
     bool m_term;
-    string m_serial;
+    std::string m_serial;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_data_mutex;
@@ -66,7 +66,7 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool SendDMX(const DmxBuffer &buffer_old);
     bool GetDescriptorString(libusb_device_handle *usb_handle,
                              uint8_t desc_index,
-                             string *data);
+                             std::string *data);
 };
 }  // namespace usbdmx
 }  // namespace plugin

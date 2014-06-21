@@ -11,17 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortManager.h
  * Provides a unified interface for controlling port patchings & priorities.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_PORTMANAGER_H_
 #define OLAD_PORTMANAGER_H_
 
-#include <string>
 #include <vector>
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
@@ -71,7 +70,7 @@ class PortManager {
                                      unsigned int universe_id) const;
 
     template<class PortClass>
-    bool CheckForPortMatchingUniverse(const vector<PortClass*> &ports,
+    bool CheckForPortMatchingUniverse(const std::vector<PortClass*> &ports,
                                       unsigned int universe_id) const;
 
     UniverseStore * const m_universe_store;

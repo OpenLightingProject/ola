@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * CallbackTypes.h
  * Copyright (C) 2013 Simon Newton
@@ -51,7 +51,7 @@ typedef SingleUseCallback2<void, const Result&, const std::vector<OlaPlugin>&>
  * @param result the Result of the API call.
  * @param description the plugin description.
  */
-typedef SingleUseCallback2<void, const Result&, const string&>
+typedef SingleUseCallback2<void, const Result&, const std::string&>
     PluginDescriptionCallback;
 
 /**
@@ -111,7 +111,7 @@ typedef SingleUseCallback2<void, const Result&, const OlaUniverse&>
  * @param result the Result of the API call.
  * @param response the raw data returned by the device.
  */
-typedef SingleUseCallback2<void, const Result&, const string&>
+typedef SingleUseCallback2<void, const Result&, const std::string&>
     ConfigureDeviceCallback;
 
 /**

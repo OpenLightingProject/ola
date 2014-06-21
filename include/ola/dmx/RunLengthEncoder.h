@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RunLengthEncoder.h
  * Header file for the RunLengthEncoder class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -51,14 +51,14 @@ class RunLengthEncoder {
    */
   bool Encode(const DmxBuffer &src,
               uint8_t *data,
-              unsigned int &size);
+              unsigned int *size);
 
   /**
    * Decode an DMX frame and place the output in a DmxBuffer
    * @param[in] start_channel the first channel for the RLE'ed data
    * @param[in] data the encoded frame.
    * @param[in] length the length of the encoded frame.
-   * @param[out] The DmxBuffer to store the frame in
+   * @param[out] output the DmxBuffer to store the frame in
    * @returns true if decoding was successful, false otherwise.
    */
   bool Decode(unsigned int start_channel,

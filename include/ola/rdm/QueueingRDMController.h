@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * QueueingRDMController.h
  * A RDM Controller that sends a single message at a time.
@@ -37,9 +37,6 @@
 
 namespace ola {
 namespace rdm {
-
-using std::pair;
-using std::vector;
 
 /*
  * A RDM controller that only sends a single request at a time. This also
@@ -70,7 +67,7 @@ class QueueingRDMController: public RDMControllerInterface {
     bool m_active;  // true if the controller is active
     RDMCallback *m_callback;
     const ola::rdm::RDMResponse *m_response;
-    vector<std::string> m_packets;
+    std::vector<std::string> m_packets;
 
     virtual void TakeNextAction();
     virtual bool CheckForBlockingCondition();
@@ -79,7 +76,7 @@ class QueueingRDMController: public RDMControllerInterface {
 
     void HandleRDMResponse(rdm_response_code status,
                            const ola::rdm::RDMResponse *response,
-                           const vector<std::string> &packets);
+                           const std::vector<std::string> &packets);
 };
 
 
@@ -102,8 +99,8 @@ class DiscoverableQueueingRDMController: public QueueingRDMController {
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
 
  private:
-    typedef vector<RDMDiscoveryCallback*> DiscoveryCallbacks;
-    typedef vector<pair<bool, RDMDiscoveryCallback*> >
+    typedef std::vector<RDMDiscoveryCallback*> DiscoveryCallbacks;
+    typedef std::vector<std::pair<bool, RDMDiscoveryCallback*> >
         PendingDiscoveryCallbacks;
 
     DiscoverableRDMControllerInterface *m_discoverable_controller;

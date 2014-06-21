@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RunLengthEncoder.cpp
  * The Run Length Encoder
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -26,10 +26,10 @@ namespace dmx {
 
 bool RunLengthEncoder::Encode(const DmxBuffer &src,
                               uint8_t *data,
-                              unsigned int &data_size) {
+                              unsigned int *data_size) {
   unsigned int src_size = src.Size();
-  unsigned int dst_size = data_size;
-  unsigned int &dst_index = data_size;
+  unsigned int dst_size = *data_size;
+  unsigned int &dst_index = *data_size;
   dst_index = 0;
 
   unsigned int i;

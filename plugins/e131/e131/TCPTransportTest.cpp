@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * TCPTransportTest.cpp
  * Test fixture for the TCPTransport class
@@ -36,10 +36,12 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::IOStack;
 using ola::network::IPV4SocketAddress;
 using std::auto_ptr;
+using std::string;
 
 class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TCPTransportTest);
@@ -77,7 +79,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     CID m_cid;
     auto_ptr<Callback0<void> > m_rx_callback;
     auto_ptr<MockInflator> m_inflator;
-    auto_ptr<IncommingStreamTransport> m_transport;
+    auto_ptr<IncomingStreamTransport> m_transport;
 
     void SendEmptyPDUBLock(unsigned int line);
     void SendPDU(unsigned int line);
@@ -103,7 +105,7 @@ void TCPTransportTest::setUp() {
 
   // transport to test
   m_transport.reset(
-      new IncommingStreamTransport(m_inflator.get(), &m_loopback, m_localhost));
+      new IncomingStreamTransport(m_inflator.get(), &m_loopback, m_localhost));
 
   // SelectServer
   m_ss.reset(new ola::io::SelectServer());
@@ -245,7 +247,7 @@ void TCPTransportTest::testSinglePDUBlock() {
  * Send empty PDU block.
  */
 void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
 
   IOStack packet;
@@ -258,7 +260,7 @@ void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
  * Send a PDU
  */
 void TCPTransportTest::SendPDU(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   IOStack packet;
   MockPDU::PrependPDU(&packet, 4, 8);
@@ -271,7 +273,7 @@ void TCPTransportTest::SendPDU(unsigned int line) {
  * Send a block of PDUs
  */
 void TCPTransportTest::SendPDUBlock(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   IOStack packet;
   MockPDU::PrependPDU(&packet, 1, 2);

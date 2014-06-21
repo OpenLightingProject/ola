@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetPlugin.cpp
  * The KiNet plugin for ola
@@ -25,20 +25,25 @@
 #include "ola/network/IPV4Address.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/kinet/KiNetPlugin.h"
 #include "plugins/kinet/KiNetDevice.h"
+#include "plugins/kinet/KiNetPlugin.h"
 
 
 namespace ola {
 namespace plugin {
 namespace kinet {
 
-using std::vector;
 using ola::network::IPV4Address;
+using std::string;
+using std::vector;
 
 const char KiNetPlugin::POWER_SUPPLY_KEY[] = "power_supply";
 const char KiNetPlugin::PLUGIN_NAME[] = "KiNET";
 const char KiNetPlugin::PLUGIN_PREFIX[] = "kinet";
+
+KiNetPlugin::KiNetPlugin(PluginAdaptor *plugin_adaptor)
+    : Plugin(plugin_adaptor) {
+}
 
 KiNetPlugin::~KiNetPlugin() {}
 
@@ -52,6 +57,9 @@ bool KiNetPlugin::StartHook() {
   vector<IPV4Address> power_supplies;
 
   for (; iter != power_supplies_strings.end(); ++iter) {
+    if (iter->empty()) {
+      continue;
+    }
     IPV4Address target;
     if (IPV4Address::FromString(*iter, &target)) {
       power_supplies.push_back(target);

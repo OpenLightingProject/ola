@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RunLengthEncoderTest.cpp
  * Test fixture for the RunLengthEncoder class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -85,7 +85,7 @@ void RunLengthEncoderTest::checkEncode(const DmxBuffer &buffer,
                                        unsigned int expected_length) {
   memset(m_dst, 0, DMX_UNIVERSE_SIZE);
   OLA_ASSERT_EQ(is_complete,
-                m_encoder.Encode(buffer, m_dst, dst_size));
+                m_encoder.Encode(buffer, m_dst, &dst_size));
   OLA_ASSERT_EQ(expected_length, dst_size);
   OLA_ASSERT_EQ(0, memcmp(expected_data, m_dst, dst_size));
 }
@@ -146,7 +146,7 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
 
   unsigned int dst_size = DMX_UNIVERSE_SIZE;
   memset(m_dst, 0, dst_size);
-  OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, dst_size));
+  OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, &dst_size));
 
   OLA_ASSERT_TRUE(m_encoder.Decode(0, m_dst, dst_size, &dst));
   OLA_ASSERT_TRUE(src == dst);

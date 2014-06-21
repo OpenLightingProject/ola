@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MACAddressTest.cpp
  * Test fixture for the MACAddress class
@@ -28,7 +28,6 @@
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
-
 
 using ola::network::MACAddress;
 using std::auto_ptr;
@@ -54,25 +53,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MACAddressTest);
 void MACAddressTest::testMACAddress() {
   uint8_t hw_address[ola::network::MACAddress::LENGTH] = {
     0x01, 0x23, 0x45, 0x67, 0x89, 0xab};
-  ether_addr ether_addr1;
-  memcpy(ether_addr1.ether_addr_octet, hw_address, MACAddress::LENGTH);
   MACAddress address1;
   OLA_ASSERT_TRUE(MACAddress::FromString(string("01:23:45:67:89:ab"),
                                          &address1));
-  OLA_ASSERT_EQ(
-      0,
-      memcmp(address1.Address().ether_addr_octet,
-             reinterpret_cast<uint8_t*>(&ether_addr1.ether_addr_octet),
-             MACAddress::LENGTH));
 
   // Test Get()
   uint8_t addr[MACAddress::LENGTH];
   address1.Get(addr);
-  OLA_ASSERT_EQ(
-      0,
-      memcmp(addr,
-             reinterpret_cast<uint8_t*>(&ether_addr1),
-             MACAddress::LENGTH));
+  OLA_ASSERT_EQ(0, memcmp(addr, hw_address, MACAddress::LENGTH));
 
   // test copy and assignment
   MACAddress address2(address1);
@@ -82,7 +70,7 @@ void MACAddressTest::testMACAddress() {
 
   // test stringification
   OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), address1.ToString());
-  std::stringstream str;
+  std::ostringstream str;
   str << address1;
   OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), str.str());
 

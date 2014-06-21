@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServerServiceImpl.cpp
  * Implementation of the OlaServerService interface. This is the class that
@@ -20,7 +20,6 @@
  */
 
 #include <algorithm>
-#include <set>
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
@@ -70,10 +69,11 @@ using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseNameRequest;
 using ola::proto::UniverseRequest;
 using ola::rdm::RDMResponse;
+using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rpc::RpcController;
-using std::set;
-
+using std::string;
+using std::vector;
 
 typedef CallbackRunner<ola::rpc::RpcService::CompletionCallback> ClosureRunner;
 
@@ -384,6 +384,19 @@ void OlaServerServiceImpl::GetPlugins(
   for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
     PluginInfo *plugin_info = response->add_plugin();
     AddPlugin(*iter, plugin_info);
+  }
+}
+
+void OlaServerServiceImpl::ReloadPlugins(
+    RpcController*,
+    const ::ola::proto::PluginReloadRequest*,
+    ola::proto::Ack*,
+    ola::rpc::RpcService::CompletionCallback* done) {
+  ClosureRunner runner(done);
+  if (m_reload_plugins_callback.get()) {
+    m_reload_plugins_callback->Run();
+  } else {
+    OLA_WARN << "No plugin reload callback provided!";
   }
 }
 

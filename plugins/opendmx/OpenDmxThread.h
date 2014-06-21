@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OpenDmxThread.h
- * Thread for the open dmx device
- * Copyright (C) 2005-2009 Simon Newton
+ * Thread for the Open DMX device
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_OPENDMX_OPENDMXTHREAD_H_
@@ -31,7 +31,7 @@ namespace opendmx {
 
 class OpenDmxThread: public ola::thread::Thread {
  public:
-    explicit OpenDmxThread(const string &path);
+    explicit OpenDmxThread(const std::string &path);
     ~OpenDmxThread() {}
 
     bool Stop();
@@ -40,7 +40,7 @@ class OpenDmxThread: public ola::thread::Thread {
 
  private:
     int m_fd;
-    string m_path;
+    std::string m_path;
     DmxBuffer m_buffer;
     bool m_term;
     ola::thread::Mutex m_mutex;

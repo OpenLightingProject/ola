@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DMPPDUTest.cpp
  * Test fixture for the DMPPDU class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -37,6 +37,7 @@ namespace e131 {
 
 using ola::acn::DMP_GET_PROPERTY_VECTOR;
 using ola::acn::DMP_SET_PROPERTY_VECTOR;
+using std::vector;
 
 class MockDMPInflator: public DMPInflator {
  public:
@@ -104,7 +105,7 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
       vector == DMP_SET_PROPERTY_VECTOR) {
     unsigned int length = pdu_len;
     const BaseDMPAddress *addr = DecodeAddress(header.Size(), header.Type(),
-                                               data, length);
+                                               data, &length);
     OLA_ASSERT(addr);
     OLA_ASSERT_EQ(expected_start, addr->Start());
     OLA_ASSERT_EQ(expected_increment, addr->Increment());

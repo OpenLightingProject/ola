@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMAPIImplInterface.h
  * The interface for an RDM API Implementation
@@ -39,9 +39,6 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-
-
 /*
  * Represents the state of a response and/or any error codes.
  *
@@ -53,7 +50,7 @@ using std::string;
  */
 class ResponseStatus {
  public:
-    string error;  // Non empty if the RPC failed
+    std::string error;  // Non empty if the RPC failed
     rdm_response_code response_code;
     uint8_t response_type;  // The RDM response type
     uint8_t message_count;  // Number of queued messages
@@ -90,13 +87,13 @@ class RDMAPIImplInterface {
     // args are the response type the param data
     typedef ola::SingleUseCallback2<void,
                                     const ResponseStatus&,
-                                    const string&> rdm_callback;
+                                    const std::string&> rdm_callback;
 
     // args are response type, pid & param data
     typedef ola::SingleUseCallback3<void,
                                     const ResponseStatus&,
                                     uint16_t,
-                                    const string&> rdm_pid_callback;
+                                    const std::string&> rdm_pid_callback;
 
     // get command
     virtual bool RDMGet(rdm_callback *callback,

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OpenLightingEnums.h
  * Provide OLA's RDM Manufacturer PIDs & Model IDs.
@@ -68,6 +68,8 @@ typedef enum {
   OLA_SENSOR_ONLY_MODEL = 7,
   // A E1.37 Dimmer
   OLA_E137_DIMMER_MODEL = 8,
+  // A E1.37-2 responder
+  OLA_E137_2_MODEL = 9,
 } ola_rdm_model_id;
 
 extern const char OLA_MANUFACTURER_LABEL[];

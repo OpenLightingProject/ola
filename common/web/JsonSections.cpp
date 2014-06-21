@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonSections.cpp
  * This builds the json string for the web UI.
@@ -27,6 +27,7 @@
 #include "ola/web/JsonSections.h"
 #include "ola/Logging.h"
 #include "ola/web/Json.h"
+#include "ola/web/JsonWriter.h"
 #include "ola/StringUtils.h"
 
 
@@ -36,7 +37,6 @@ namespace web {
 using std::endl;
 using std::pair;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::EscapeString;
 
@@ -63,13 +63,13 @@ void UIntItem::SetExtraProperties(JsonObject *item) const {
 }
 
 
-void SelectItem::AddItem(const string &label, const string &value) {
+void SelectItem::AddItem(const std::string &label, const std::string &value) {
   pair<string, string> p(label, value);
   m_values.push_back(p);
 }
 
 
-void SelectItem::AddItem(const string &label, unsigned int value) {
+void SelectItem::AddItem(const std::string &label, unsigned int value) {
   AddItem(label, IntToString(value));
 }
 

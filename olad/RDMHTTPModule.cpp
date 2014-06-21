@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RDMHTTPModule.cpp
  * This module acts as the http -> olad gateway for RDM commands.
@@ -49,6 +49,9 @@ namespace ola {
 using ola::OladHTTPServer;
 using ola::client::OlaUniverse;
 using ola::client::Result;
+using ola::http::HTTPRequest;
+using ola::http::HTTPResponse;
+using ola::http::HTTPServer;
 using ola::rdm::UID;
 using ola::thread::MutexLocker;
 using ola::web::BoolItem;
@@ -61,10 +64,11 @@ using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
 using std::endl;
+using std::map;
+using std::ostringstream;
 using std::pair;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -83,7 +87,7 @@ const char RDMHTTPModule::DISPLAY_INVERT_FIELD[] = "invert";
 const char RDMHTTPModule::GENERIC_BOOL_FIELD[] = "bool";
 const char RDMHTTPModule::GENERIC_STRING_FIELD[] = "string";
 const char RDMHTTPModule::GENERIC_UINT_FIELD[] = "int";
-const char RDMHTTPModule::IDENTIFY_FIELD[] = "identify";
+const char RDMHTTPModule::IDENTIFY_DEVICE_FIELD[] = "identify_device";
 const char RDMHTTPModule::LABEL_FIELD[] = "label";
 const char RDMHTTPModule::LANGUAGE_FIELD[] = "language";
 const char RDMHTTPModule::RECORD_SENSOR_FIELD[] = "record";
@@ -100,7 +104,7 @@ const char RDMHTTPModule::DISPLAY_INVERT_SECTION[] = "display_invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION[] = "dmx_address";
 const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION[] = "factory_defaults";
-const char RDMHTTPModule::IDENTIFY_SECTION[] = "identify";
+const char RDMHTTPModule::IDENTIFY_DEVICE_SECTION[] = "identify_device";
 const char RDMHTTPModule::LAMP_HOURS_SECTION[] = "lamp_hours";
 const char RDMHTTPModule::LAMP_MODE_SECTION[] = "lamp_mode";
 const char RDMHTTPModule::LAMP_STATE_SECTION[] = "lamp_state";
@@ -130,7 +134,7 @@ const char RDMHTTPModule::DISPLAY_INVERT_SECTION_NAME[] = "Display Invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION_NAME[] = "Display Level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION_NAME[] = "DMX Start Address";
 const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION_NAME[] = "Factory Defaults";
-const char RDMHTTPModule::IDENTIFY_SECTION_NAME[] = "Identify Mode";
+const char RDMHTTPModule::IDENTIFY_DEVICE_SECTION_NAME[] = "Identify Device";
 const char RDMHTTPModule::LAMP_HOURS_SECTION_NAME[] = "Lamp Hours";
 const char RDMHTTPModule::LAMP_MODE_SECTION_NAME[] = "Lamp On Mode";
 const char RDMHTTPModule::LAMP_STATE_SECTION_NAME[] = "Lamp State";
@@ -166,7 +170,7 @@ RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
       NewCallback(this, &RDMHTTPModule::JsonUIDInfo));
   m_server->RegisterHandler(
       "/json/rdm/uid_identify",
-      NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyMode));
+      NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyDevice));
   m_server->RegisterHandler(
       "/json/rdm/uid_personalities",
       NewCallback(this, &RDMHTTPModule::JsonUIDPersonalities));
@@ -300,8 +304,8 @@ int RDMHTTPModule::JsonUIDInfo(const HTTPRequest *request,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHTTPModule::JsonUIDIdentifyMode(const HTTPRequest *request,
-                                       HTTPResponse *response) {
+int RDMHTTPModule::JsonUIDIdentifyDevice(const HTTPRequest *request,
+                                         HTTPResponse *response) {
   if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   unsigned int universe_id;
@@ -313,12 +317,12 @@ int RDMHTTPModule::JsonUIDIdentifyMode(const HTTPRequest *request,
     return OladHTTPServer::ServeHelpRedirect(response);
 
   string error;
-  bool ok = m_rdm_api.GetIdentifyMode(
+  bool ok = m_rdm_api.GetIdentifyDevice(
       universe_id,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHTTPModule::UIDIdentifyHandler,
+                        &RDMHTTPModule::UIDIdentifyDeviceHandler,
                         response),
       &error);
   delete uid;
@@ -501,8 +505,8 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetPanTiltSwap(response, universe_id, *uid);
   } else if (section_id == CLOCK_SECTION) {
     error = GetClock(response, universe_id, *uid);
-  } else if (section_id == IDENTIFY_SECTION) {
-    error = GetIdentifyMode(response, universe_id, *uid);
+  } else if (section_id == IDENTIFY_DEVICE_SECTION) {
+    error = GetIdentifyDevice(response, universe_id, *uid);
   } else if (section_id == POWER_STATE_SECTION) {
     error = GetPowerState(response, universe_id, *uid);
   } else if (section_id == RESET_DEVICE_SECTION) {
@@ -580,8 +584,8 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetPanTiltSwap(request, response, universe_id, *uid);
   } else if (section_id == CLOCK_SECTION) {
     error = SyncClock(response, universe_id, *uid);
-  } else if (section_id == IDENTIFY_SECTION) {
-    error = SetIdentifyMode(request, response, universe_id, *uid);
+  } else if (section_id == IDENTIFY_DEVICE_SECTION) {
+    error = SetIdentifyDevice(request, response, universe_id, *uid);
   } else if (section_id == POWER_STATE_SECTION) {
     error = SetPowerState(request, response, universe_id, *uid);
   } else if (section_id == RESET_DEVICE_SECTION) {
@@ -682,6 +686,7 @@ void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
     json_uid->Add("device_id", iter->DeviceId());
     json_uid->Add("device", device);
     json_uid->Add("manufacturer", manufacturer);
+    json_uid->Add("uid", iter->ToString());
   }
 
   response->SetNoCache();
@@ -861,9 +866,9 @@ void RDMHTTPModule::UIDInfoHandler(HTTPResponse *response,
 
 
 /**
- * Handle the identify mode response and build the json.
+ * Handle the identify device response and build the json.
  */
-void RDMHTTPModule::UIDIdentifyHandler(HTTPResponse *response,
+void RDMHTTPModule::UIDIdentifyDeviceHandler(HTTPResponse *response,
                                        const ola::rdm::ResponseStatus &status,
                                        bool value) {
   if (CheckForRDMError(response, status))
@@ -871,7 +876,7 @@ void RDMHTTPModule::UIDIdentifyHandler(HTTPResponse *response,
 
   JsonObject json;
   json.Add("error", "");
-  json.Add("identify_mode", value);
+  json.Add("identify_device", value);
 
   response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
@@ -981,7 +986,7 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
       hint.push_back('m');  // m is for device model
   AddSection(&sections, DEVICE_INFO_SECTION, DEVICE_INFO_SECTION_NAME, hint);
 
-  AddSection(&sections, IDENTIFY_SECTION, IDENTIFY_SECTION_NAME);
+  AddSection(&sections, IDENTIFY_DEVICE_SECTION, IDENTIFY_DEVICE_SECTION_NAME);
 
   bool dmx_address_added = false;
   bool include_software_version = false;
@@ -1087,9 +1092,9 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
       // sensors count from 1
       for (unsigned int i = 0; i < device.sensor_count; ++i) {
-        stringstream heading, hint;
+        ostringstream heading, hint;
         hint << i;
-        heading << "Sensor " << std::setfill(' ') << std::setw(3) << (i + 1);
+        heading << "Sensor " << std::setfill(' ') << std::setw(3) << i;
         AddSection(&sections, SENSOR_SECTION, heading.str(), hint.str());
       }
     }
@@ -1217,7 +1222,7 @@ void RDMHTTPModule::ProxiedDevicesHandler(
         string manufacturer = uid_iter->second.manufacturer;
 
         if (!(device.empty() && manufacturer.empty())) {
-          stringstream str;
+          ostringstream str;
           str << uid_iter->second.manufacturer;
           if ((!device.empty()) && (!manufacturer.empty()))
             str << ", ";
@@ -1340,7 +1345,7 @@ void RDMHTTPModule::GetDeviceInfoHandler(
   if (CheckForRDMError(response, status))
     return;
 
-  stringstream stream;
+  ostringstream stream;
   stream << static_cast<int>(device.protocol_version_high) << "."
     << static_cast<int>(device.protocol_version_low);
   section.AddItem(new StringItem("Protocol Version", stream.str()));
@@ -1414,7 +1419,7 @@ void RDMHTTPModule::GetProductIdsHandler(
     return;
 
   bool first = true;
-  stringstream product_ids;
+  ostringstream product_ids;
   JsonSection section;
   vector<uint16_t>::const_iterator iter = ids.begin();
   for (; iter != ids.end(); ++iter) {
@@ -1762,7 +1767,7 @@ void RDMHTTPModule::GetBootSoftwareVersionHandler(
     string label,
     const ola::rdm::ResponseStatus &status,
     uint32_t version) {
-  stringstream str;
+  ostringstream str;
   str << label;
   if (CheckForRDMSuccess(status)) {
     if (!label.empty())
@@ -1912,7 +1917,7 @@ void RDMHTTPModule::SendSectionPersonalityResponse(HTTPResponse *response,
   for (unsigned int i = 1; i <= info->total; i++) {
     if (i <= info->personalities.size() &&
         info->personalities[i - 1].first != INVALID_PERSONALITY) {
-      stringstream str;
+      ostringstream str;
       str << info->personalities[i - 1].second << " (" <<
         info->personalities[i - 1].first << ")";
       item->AddItem(str.str(), i);
@@ -2111,7 +2116,7 @@ void RDMHTTPModule::SensorValueHandler(
   }
 
   JsonSection section;
-  stringstream str;
+  ostringstream str;
 
   if (definition)
     section.AddItem(new StringItem("Description", definition->description));
@@ -2847,7 +2852,7 @@ void RDMHTTPModule::ClockHandler(HTTPResponse *response,
     return;
 
   JsonSection section;
-  stringstream str;
+  ostringstream str;
   str << std::setfill('0') << std::setw(2) << static_cast<int>(clock.hour) <<
     ":" << std::setw(2) << static_cast<int>(clock.minute) << ":" <<
     std::setw(2) << static_cast<int>(clock.second) << " " <<
@@ -2893,32 +2898,32 @@ string RDMHTTPModule::SyncClock(HTTPResponse *response,
 
 
 /**
- * Handle the request for the identify mode section.
+ * Handle the request for the identify device section.
  */
-string RDMHTTPModule::GetIdentifyMode(HTTPResponse *response,
+string RDMHTTPModule::GetIdentifyDevice(HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string error;
-  m_rdm_api.GetIdentifyMode(
+  m_rdm_api.GetIdentifyDevice(
       universe_id,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
                         &RDMHTTPModule::GenericBoolHandler,
                         response,
-                        string("Identify Mode")),
+                        string("Identify Device")),
       &error);
   return error;
 }
 
 
 /*
- * Set the idenify mode
+ * Set identify device
  */
-string RDMHTTPModule::SetIdentifyMode(const HTTPRequest *request,
-                                      HTTPResponse *response,
-                                      unsigned int universe_id,
-                                      const UID &uid) {
+string RDMHTTPModule::SetIdentifyDevice(const HTTPRequest *request,
+                                        HTTPResponse *response,
+                                        unsigned int universe_id,
+                                        const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
   string error;
   m_rdm_api.IdentifyDevice(
@@ -3240,7 +3245,7 @@ bool RDMHTTPModule::CheckForRDMSuccess(
 bool RDMHTTPModule::CheckForRDMSuccessWithError(
     const ola::rdm::ResponseStatus &status,
     string *error) {
-  stringstream str;
+  ostringstream str;
   if (!status.error.empty()) {
     str << "RDM command error: " << status.error;
     if (error)

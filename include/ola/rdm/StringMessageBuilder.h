@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringMessageBuilder.h
  * Builds a Message object from a list of strings & a Descriptor.
@@ -44,9 +44,6 @@ namespace messaging {
 
 namespace rdm {
 
-using std::string;
-using std::vector;
-
 /**
  * This visitor builds a message based on a vector of strings from a
  * Descriptor.
@@ -59,9 +56,9 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     // we handle decending into groups ourself
     bool Descend() const { return false; }
     const ola::messaging::Message *GetMessage(
-        const vector<string> &inputs,
-        const class ola::messaging::Descriptor*);
-    const string GetError() const { return m_error_string; }
+        const std::vector<std::string> &inputs,
+        const class ola::messaging::Descriptor *descriptor);
+    const std::string GetError() const { return m_error_string; }
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
     void Visit(const ola::messaging::IPV4FieldDescriptor*);
@@ -78,19 +75,20 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
  private:
-    vector<string> m_inputs;
-    std::stack<vector<const ola::messaging::MessageFieldInterface*> > m_groups;
+    std::vector<std::string> m_inputs;
+    std::stack<
+        std::vector<const ola::messaging::MessageFieldInterface*> > m_groups;
     unsigned int m_offset, m_input_size, m_group_instance_count;
     bool m_error;
-    string m_error_string;
+    std::string m_error_string;
 
     bool StopParsing() const;
-    void SetError(const string &error);
+    void SetError(const std::string &error);
 
     template<typename type>
     void VisitInt(const ola::messaging::IntegerFieldDescriptor<type> *);
 
-    void InitVars(const vector<string> &inputs);
+    void InitVars(const std::vector<std::string> &inputs);
     void CleanUpVector();
 };
 }  // namespace rdm

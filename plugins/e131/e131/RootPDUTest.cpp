@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RootPDUTest.cpp
  * Test fixture for the RootPDU class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -39,6 +39,7 @@ using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::NetworkToHost;
+using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 
 class RootPDUTest: public CppUnit::TestFixture {

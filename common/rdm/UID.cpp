@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * UID.cpp
  * The UID class.
@@ -26,8 +26,8 @@
 namespace ola {
 namespace rdm {
 
-UID* UID::FromString(const string &uid) {
-  std::vector<string> tokens;
+UID* UID::FromString(const std::string &uid) {
+  std::vector<std::string> tokens;
   ola::StringSplit(uid, tokens, ":");
 
   if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8)

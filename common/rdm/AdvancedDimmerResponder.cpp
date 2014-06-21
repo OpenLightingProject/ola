@@ -11,14 +11,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AdvancedDimmerResponder.cpp
  * Copyright (C) 2013 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <algorithm>
@@ -245,8 +245,7 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
 };
 
 /**
- * Create a new dimmer root device. Ownership of the DimmerSubDevices is not
- * transferred.
+ * Create a new dimmer device.
  */
 AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
     : m_uid(uid),

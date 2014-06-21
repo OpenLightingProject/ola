@@ -1,20 +1,23 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-EXTRA_DIST = OSCAddressTemplate.h OSCDevice.h OSCNode.h OSCPlugin.h OSCPort.h \
-             OSCTarget.h
+# LIBRARIES
+##################################################
+if USE_OSC
+# This is a library which isn't coupled to olad
+noinst_LTLIBRARIES = libolaoscnode.la
+libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCAddressTemplate.h \
+                           OSCNode.cpp OSCNode.h OSCTarget.h
+libolaoscnode_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
+libolaoscnode_la_LIBADD = $(liblo_LIBS)
 
-if HAVE_LIBLO
-  noinst_LTLIBRARIES = libolaoscnode.la
-  libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCNode.cpp
-  libolaoscnode_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
-  libolaoscnode_la_LIBADD = $(liblo_LIBS)
+plugin_LTLIBRARIES = libolaosc.la
+libolaosc_la_SOURCES = OSCDevice.cpp OSCDevice.h OSCPlugin.cpp OSCPlugin.h \
+                       OSCPort.cpp OSCPort.h
+libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
+libolaosc_la_LIBADD = libolaoscnode.la
 
-  lib_LTLIBRARIES = libolaosc.la
-  libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp OSCPort.cpp
-  libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
-  libolaosc_la_LIBADD = libolaoscnode.la
-
+# TESTS
+##################################################
 if BUILD_TESTS
 TESTS = OSCTester
 endif

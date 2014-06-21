@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIOutput.h
  * An RDM-controllable SPI device. Takes up to one universe of DMX.
@@ -23,7 +23,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
@@ -35,10 +34,6 @@
 namespace ola {
 namespace plugin {
 namespace spi {
-
-using ola::rdm::UID;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
 
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
@@ -52,7 +47,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     }
   };
 
-  SPIOutput(const UID &uid,
+  SPIOutput(const ola::rdm::UID &uid,
             class SPIBackendInterface *backend,
             const Options &options);
   ~SPIOutput();
@@ -63,7 +58,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   bool SetStartAddress(uint16_t start_address);
   unsigned int PixelCount() const { return m_pixel_count; }
 
-  string Description() const;
+  std::string Description() const;
   bool WriteDMX(const DmxBuffer &buffer);
 
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -91,8 +86,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
   class SPIBackendInterface *m_backend;
   const uint8_t m_output_number;
-  string m_spi_device_name;
-  const UID m_uid;
+  std::string m_spi_device_name;
+  const ola::rdm::UID m_uid;
   const unsigned int m_pixel_count;
   uint16_t m_start_address;  // starts from 1
   bool m_identify_mode;
@@ -112,23 +107,40 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void WriteSPIData(const uint8_t *data, unsigned int length);
 
   // RDM methods
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetProductDetailList(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-  const RDMResponse *GetDmxPersonality(const RDMRequest *request);
-  const RDMResponse *SetDmxPersonality(const RDMRequest *request);
-  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *GetSensorDefinition(const RDMRequest *request);
-  const RDMResponse *GetSensorValue(const RDMRequest *request);
-  const RDMResponse *SetSensorValue(const RDMRequest *request);
-  const RDMResponse *RecordSensor(const RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDeviceInfo(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetProductDetailList(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDeviceModelDescription(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetManufacturerLabel(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDeviceLabel(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetSoftwareVersionLabel(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDmxPersonality(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *SetDmxPersonality(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetPersonalityDescription(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDmxStartAddress(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *SetDmxStartAddress(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetIdentify(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *SetIdentify(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetSensorDefinition(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetSensorValue(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *SetSensorValue(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *RecordSensor(
+      const ola::rdm::RDMRequest *request);
 
 
   // Helpers

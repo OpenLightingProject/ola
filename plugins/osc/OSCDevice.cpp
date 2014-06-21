@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCDevice.cpp
  * The OSC Device.
@@ -30,6 +30,7 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
+using std::string;
 using std::vector;
 
 const char OSCDevice::DEVICE_NAME[] = "OSC Device";
@@ -41,8 +42,7 @@ const char OSCDevice::DEVICE_NAME[] = "OSC Device";
  * @param udp_port the UDP port to listen on
  * @param addresses a list of strings to use as OSC addresses for the input
  *   ports.
- * @param targets a vector-of-vectors of OSCTargets to use for the output
- *   ports.
+ * @param port_configs config to use for the ports
  */
 OSCDevice::OSCDevice(AbstractPlugin *owner,
                      PluginAdaptor *plugin_adaptor,

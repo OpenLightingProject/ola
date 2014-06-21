@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIPort.h
  * An OLA SPI Port. This simply wraps the SPIOutput.
@@ -22,7 +22,6 @@
 #define PLUGINS_SPI_SPIPORT_H_
 
 #include <string>
-#include <vector>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "plugins/spi/SPIDevice.h"
@@ -35,7 +34,7 @@ namespace spi {
 class SPIOutputPort: public BasicOutputPort {
  public:
     SPIOutputPort(SPIDevice *parent, class SPIBackendInterface *backend,
-                  const UID &uid, const SPIOutput::Options &options);
+                  const ola::rdm::UID &uid, const SPIOutput::Options &options);
     ~SPIOutputPort() {}
 
     uint8_t GetPersonality() const;
@@ -44,11 +43,11 @@ class SPIOutputPort: public BasicOutputPort {
     bool SetStartAddress(uint16_t start_address);
     unsigned int PixelCount() const;
 
-    string Description() const;
+    std::string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    void RunFullDiscovery(RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 

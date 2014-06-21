@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131TestFramework.h
  * Allows testing of a remote E1.31 implementation.
@@ -35,17 +35,7 @@
 #include "ola/math/Random.h"
 #include "plugins/e131/e131/E131Node.h"
 
-using ola::acn::CID;
-using ola::DmxBuffer;
-using ola::io::SelectServer;
-using ola::plugin::e131::CID;
-using ola::plugin::e131::E131Node;
-using std::cout;
-using std::endl;
-using std::string;
-
 static const unsigned int UNIVERSE_ID = 1;
-
 
 /*
  * NodeAction, this reflects an action to be performed on a node.
@@ -53,10 +43,10 @@ static const unsigned int UNIVERSE_ID = 1;
 class NodeAction {
  public:
     virtual ~NodeAction() {}
-    void SetNode(E131Node *node) { m_node = node; }
+    void SetNode(ola::plugin::e131::E131Node *node) { m_node = node; }
     virtual void Tick() {}
  protected:
-    E131Node *m_node;
+    ola::plugin::e131::E131Node *m_node;
 };
 
 
@@ -66,11 +56,11 @@ class NodeAction {
  */
 class TestState {
  public:
-    TestState(const string &name,
+    TestState(const std::string &name,
               NodeAction *action1,
               NodeAction *action2,
-              const string &expected,
-              const DmxBuffer &expected_result):
+              const std::string &expected,
+              const ola::DmxBuffer &expected_result):
         m_passed(true),
         m_expected_result(expected_result),
         m_name(name),
@@ -83,7 +73,8 @@ class TestState {
       delete m_action2;
     }
 
-    void SetNodes(E131Node *node1, E131Node *node2) {
+    void SetNodes(ola::plugin::e131::E131Node *node1,
+                  ola::plugin::e131::E131Node *node2) {
       m_action1->SetNode(node1);
       m_action2->SetNode(node2);
     }
@@ -93,14 +84,14 @@ class TestState {
       m_action2->Tick();
     }
 
-    virtual bool Verify(const DmxBuffer &data) {
+    virtual bool Verify(const ola::DmxBuffer &data) {
       if (!(data == m_expected_result))
         return m_passed = false;
       return true;
     }
 
-    string StateName() const { return m_name; }
-    string ExpectedResults() const { return m_expected; }
+    std::string StateName() const { return m_name; }
+    std::string ExpectedResults() const { return m_expected; }
 
     bool Passed() const {
       return m_passed;
@@ -108,10 +99,10 @@ class TestState {
 
  protected:
     bool m_passed;
-    DmxBuffer m_expected_result;
+    ola::DmxBuffer m_expected_result;
 
  private:
-    string m_name, m_expected;
+    std::string m_name, m_expected;
     NodeAction *m_action1, *m_action2;
 };
 
@@ -122,18 +113,18 @@ class TestState {
  */
 class RelaxedTestState: public TestState {
  public:
-    RelaxedTestState(const string &name,
+    RelaxedTestState(const std::string &name,
                      NodeAction *action1,
                      NodeAction *action2,
-                     const string &expected,
-                     const DmxBuffer &expected_first_result,
-                     const DmxBuffer &expected_result):
+                     const std::string &expected,
+                     const ola::DmxBuffer &expected_first_result,
+                     const ola::DmxBuffer &expected_result):
       TestState(name, action1, action2, expected, expected_result),
       m_first(true),
       m_expected_first_result(expected_first_result) {
     }
 
-    bool Verify(const DmxBuffer &buffer) {
+    bool Verify(const ola::DmxBuffer &buffer) {
       if (m_first) {
         m_first = false;
         if (!(m_expected_first_result == buffer))
@@ -148,7 +139,7 @@ class RelaxedTestState: public TestState {
 
  private:
     bool m_first;
-    DmxBuffer m_expected_first_result;
+    ola::DmxBuffer m_expected_first_result;
 };
 
 
@@ -158,18 +149,18 @@ class RelaxedTestState: public TestState {
  */
 class OrderedTestState: public TestState {
  public:
-    OrderedTestState(const string &name,
+    OrderedTestState(const std::string &name,
                      NodeAction *action1,
                      NodeAction *action2,
-                     const string &expected,
-                     const DmxBuffer &expected_first_result,
-                     const DmxBuffer &expected_result):
+                     const std::string &expected,
+                     const ola::DmxBuffer &expected_first_result,
+                     const ola::DmxBuffer &expected_result):
       TestState(name, action1, action2, expected, expected_result),
       m_found_second(false),
       m_expected_first_result(expected_first_result) {
     }
 
-    bool Verify(const DmxBuffer &buffer) {
+    bool Verify(const ola::DmxBuffer &buffer) {
       if (m_found_second) {
         if (!(m_expected_result == buffer))
           return m_passed = false;
@@ -187,7 +178,7 @@ class OrderedTestState: public TestState {
 
  private:
     bool m_found_second;
-    DmxBuffer m_expected_first_result;
+    ola::DmxBuffer m_expected_first_result;
 };
 
 
@@ -206,7 +197,7 @@ class NodeInactive: public NodeAction {
  */
 class NodeSimpleSend: public NodeAction {
  public:
-    NodeSimpleSend(uint8_t priority, const string &data = ""):
+    NodeSimpleSend(uint8_t priority, const std::string &data = ""):
         m_priority(priority) {
       if (data.empty())
         m_buffer.SetRangeToValue(0, m_priority, DMX_UNIVERSE_SIZE);
@@ -218,7 +209,7 @@ class NodeSimpleSend: public NodeAction {
     }
 
  private:
-    DmxBuffer m_buffer;
+    ola::DmxBuffer m_buffer;
     uint8_t m_priority;
 };
 
@@ -252,7 +243,7 @@ class NodeTerminateWithData: public NodeAction {
     }
     void Tick() {
       if (!m_sent) {
-        DmxBuffer output;
+        ola::DmxBuffer output;
         output.SetRangeToValue(0, m_data, DMX_UNIVERSE_SIZE);
         m_node->StreamTerminated(UNIVERSE_ID, output);
       }
@@ -283,12 +274,12 @@ class NodeVarySequenceNumber: public NodeAction {
       int random = ola::math::Random(0, static_cast<int>(m_chance) - 1);
       if (!m_counter || random) {
         // start off with good data
-        DmxBuffer output;
+        ola::DmxBuffer output;
         output.SetRangeToValue(0, m_good, DMX_UNIVERSE_SIZE);
         m_node->SendDMX(UNIVERSE_ID, output);
       } else {
         // fake an old packet, 1 to 18 packets behind.
-        DmxBuffer output;
+        ola::DmxBuffer output;
         output.SetRangeToValue(0, m_bad, DMX_UNIVERSE_SIZE);
         int offset = ola::math::Random(1, 18);
         m_node->SendDMXWithSequenceOffset(UNIVERSE_ID, output,
@@ -336,12 +327,12 @@ class StateManager {
     bool m_interactive;
     unsigned int m_count, m_ticker;
     termios m_old_tc;
-    CID m_cid1, m_cid2;
-    E131Node *m_local_node, *m_node1, *m_node2;
-    SelectServer *m_ss;
+    ola::acn::CID m_cid1, m_cid2;
+    ola::plugin::e131::E131Node *m_local_node, *m_node1, *m_node2;
+    ola::io::SelectServer *m_ss;
     std::vector<TestState*> m_states;
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
-    DmxBuffer m_recv_buffer;
+    ola::DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
 
     void EnterState(TestState *state);

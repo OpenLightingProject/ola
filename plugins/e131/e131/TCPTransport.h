@@ -11,21 +11,21 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * TCPTransport.h
  * Copyright (C) 2012 Simon Newton
  *
- * This defines the OutgoingStreamTransport and IncommingStreamTransport for
+ * This defines the OutgoingStreamTransport and IncomingStreamTransport for
  * sending and receiving PDUs over stream connections.
  *
  * When receiving, the BaseInflator is passed a header containing the source IP
  * & port (since many higher layer protocols require this). When using the
- * IncommingStreamTransport you need to provide a fake ip:port pair.
+ * IncomingStreamTransport you need to provide a fake ip:port pair.
  *
  * It's unlikely you want to use IncomingTCPTransport directly, since all
  * real world connections are TCP (rather than pipes etc.). The
- * IncommingStreamTransport is separate because it assists in testing.
+ * IncomingStreamTransport is separate because it assists in testing.
  */
 
 #ifndef PLUGINS_E131_E131_TCPTRANSPORT_H_
@@ -48,12 +48,12 @@ namespace e131 {
  * Read ACN messages from a stream. Generally you want to use the
  * IncomingTCPTransport directly. This class is used for testing.
  */
-class IncommingStreamTransport {
+class IncomingStreamTransport {
  public:
-    IncommingStreamTransport(class BaseInflator *inflator,
-                             ola::io::ConnectedDescriptor *descriptor,
-                             const ola::network::IPV4SocketAddress &source);
-    ~IncommingStreamTransport();
+    IncomingStreamTransport(class BaseInflator *inflator,
+                            ola::io::ConnectedDescriptor *descriptor,
+                            const ola::network::IPV4SocketAddress &source);
+    ~IncomingStreamTransport();
 
     bool Receive();
 
@@ -137,7 +137,7 @@ class IncomingTCPTransport {
     bool Receive() { return m_transport->Receive(); }
 
  private:
-    std::auto_ptr<IncommingStreamTransport> m_transport;
+    std::auto_ptr<IncomingStreamTransport> m_transport;
 };
 }  // namespace e131
 }  // namespace plugin

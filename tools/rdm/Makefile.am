@@ -13,6 +13,7 @@ module_files = DMXSender.py \
                TestState.py \
                __init__.py
 
+# These files are installed to the directory from DataLocation.py
 testserver_static_files = \
     static/MIT-LICENSE.txt \
     static/common.css \
@@ -24,6 +25,8 @@ testserver_static_files = \
     static/ui.multiselect.css \
     static/ui.multiselect.js
 
+# These files are installed to the images directory under the directory from
+# DataLocation.py
 testserver_image_files = \
     static/images/discovery.png \
     static/images/external.png \
@@ -52,21 +55,22 @@ launcher_files = \
 
 EXTRA_DIST = $(launcher_files)
 
+CLEANFILES = DataLocation.py *.pyc
+
 if INSTALL_RDM_TESTS
 
 BUILT_SOURCES = DataLocation.py
-datalocationdir = $(pkgpythondir)/testing/rdm
-nodist_datalocation_PYTHON = DataLocation.py
 
-# This is a hack, but I can't find any other way to do it
-DataLocation.py:
+# Create DataLocation.py with the directory of the static files.
+DataLocation.py: Makefile.am
 	echo "location = '${datadir}/ola/rdm-server'" > DataLocation.py
 
 # RDM Test modules
 rdmtestsdir = $(pkgpythondir)/testing/rdm
 rdmtests_PYTHON = $(module_files)
+nodist_rdmtests_PYTHON = DataLocation.py
 
-# hack to put the __init__ file in place
+# Hack to put the top level __init__.py file in place
 rdminitdir = $(pkgpythondir)/testing
 rdminit_PYTHON = __init__.py
 
@@ -82,9 +86,5 @@ dist_testserver_static_DATA = $(testserver_static_files)
 
 testserver_imagesdir = $(datadir)/ola/rdm-server/images
 dist_testserver_images_DATA = $(testserver_image_files)
-
-clean-local:
-	rm -f DataLocation.py
-
 
 endif

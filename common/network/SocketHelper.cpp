@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketHelper.cpp
  * Various functions to operate on sockets.
@@ -20,6 +20,10 @@
 
 #include <errno.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#endif
 
 #include <ola/Logging.h>
 #include <ola/network/SocketAddress.h>

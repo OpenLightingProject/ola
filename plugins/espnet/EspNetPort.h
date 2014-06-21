@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EspNetPort.h
  * The ESPNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ESPNET_ESPNETPORT_H_
@@ -32,7 +32,7 @@ namespace espnet {
 
 class EspNetPortHelper {
  public:
-    string Description(Universe *universe) const;
+    std::string Description(Universe *universe) const;
     uint8_t EspNetUniverseId(Universe *universe) const;
 };
 
@@ -47,7 +47,9 @@ class EspNetInputPort: public BasicInputPort {
           m_node(node) {}
     ~EspNetInputPort() {}
 
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
@@ -66,7 +68,9 @@ class EspNetOutputPort: public BasicOutputPort {
           m_node(node) {}
     ~EspNetOutputPort() {}
 
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
  private:

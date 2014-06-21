@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MockUDPsocket.h
  * Header file for the Mock UDP Socket class
@@ -33,11 +33,6 @@
 
 namespace ola {
 namespace testing {
-
-using ola::io::IOQueue;
-using ola::io::IOVecInterface;
-using ola::network::IPV4Address;
-using ola::network::IPV4SocketAddress;
 
 /*
  * The MockUDPSocket allows one to stub out a UDP Socket for testing. The
@@ -64,42 +59,42 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     // These are the socket methods
     bool Init();
     bool Bind(const ola::network::IPV4SocketAddress &endpoint);
-    bool GetSocketAddress(IPV4SocketAddress *address) const;
+    bool GetSocketAddress(ola::network::IPV4SocketAddress *address) const;
     bool Close();
-    int ReadDescriptor() const { return m_dummy_sd; }
-    int WriteDescriptor() const { return m_dummy_sd; }
+    ola::io::DescriptorHandle ReadDescriptor() const { return m_dummy_handle; }
+    ola::io::DescriptorHandle WriteDescriptor() const { return m_dummy_handle; }
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
-                   const IPV4SocketAddress &dest) const {
+                   const ola::network::IPV4SocketAddress &dest) const {
       return SendTo(buffer, size, dest.Host(), dest.Port());
     }
-    ssize_t SendTo(IOVecInterface *data,
+    ssize_t SendTo(ola::io::IOVecInterface *data,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
-    ssize_t SendTo(IOVecInterface *data,
-                   const IPV4SocketAddress &dest) const {
+    ssize_t SendTo(ola::io::IOVecInterface *data,
+                   const ola::network::IPV4SocketAddress &dest) const {
       return SendTo(data, dest.Host(), dest.Port());
     }
 
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  ola::network::IPV4Address &source) const;
+                  ola::network::IPV4Address &source) const;  // NOLINT
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  ola::network::IPV4Address &source,
-                  uint16_t &port) const;
+                  ola::network::IPV4Address &source,  // NOLINT
+                  uint16_t &port) const;  // NOLINT
     bool EnableBroadcast();
-    bool SetMulticastInterface(const IPV4Address &interface);
-    bool JoinMulticast(const IPV4Address &interface,
-                       const IPV4Address &group,
+    bool SetMulticastInterface(const ola::network::IPV4Address &iface);
+    bool JoinMulticast(const ola::network::IPV4Address &iface,
+                       const ola::network::IPV4Address &group,
                        bool loop = false);
-    bool LeaveMulticast(const IPV4Address &interface,
-                        const IPV4Address &group);
+    bool LeaveMulticast(const ola::network::IPV4Address &iface,
+                        const ola::network::IPV4Address &group);
 
     bool SetTos(uint8_t tos);
 
@@ -108,19 +103,21 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     // these are methods used for verification
     void AddExpectedData(const uint8_t *data,
                          unsigned int size,
-                         const IPV4Address &ip,
+                         const ola::network::IPV4Address &ip,
                          uint16_t port);
-    void AddExpectedData(IOQueue *queue, const IPV4SocketAddress &dest);
+    void AddExpectedData(ola::io::IOQueue *queue,
+                         const ola::network::IPV4SocketAddress &dest);
 
     // this can be fetched by calling PerformRead() on the socket
     void InjectData(const uint8_t *data,
                     unsigned int size,
-                    const IPV4Address &ip,
+                    const ola::network::IPV4Address &ip,
                     uint16_t port);
     void InjectData(const uint8_t *data,
                     unsigned int size,
-                    const IPV4SocketAddress &source);
-    void InjectData(IOQueue *ioqueue, const IPV4SocketAddress &source);
+                    const ola::network::IPV4SocketAddress &source);
+    void InjectData(ola::io::IOQueue *ioqueue,
+                    const ola::network::IPV4SocketAddress &source);
 
     void Verify();
 
@@ -129,13 +126,13 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                                  uint16_t port,
                                  bool broadcast_set);
 
-    void SetInterface(const IPV4Address &interface);
+    void SetInterface(const ola::network::IPV4Address &iface);
 
  private:
     typedef struct {
       const uint8_t *data;
       unsigned int size;
-      IPV4Address address;
+      ola::network::IPV4Address address;
       uint16_t port;
       bool free_data;
     } expected_call;
@@ -145,17 +142,18 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     bool m_init_called;
     // We need a sd so that calls to select continue to work. This isn't used
     // for anything else.
-    int m_dummy_sd;
+    ola::io::DescriptorHandle m_dummy_handle;
     bool m_bound_to_port;
     bool m_broadcast_set;
     uint16_t m_port;
     uint8_t m_tos;
     mutable std::queue<expected_call> m_expected_calls;
     mutable std::queue<received_data> m_received_data;
-    IPV4Address m_interface;
+    ola::network::IPV4Address m_interface;
     bool m_discard_mode;
 
-    uint8_t* IOQueueToBuffer(IOQueue *ioqueue, unsigned int *size) const;
+    uint8_t* IOQueueToBuffer(ola::io::IOQueue *ioqueue,
+                             unsigned int *size) const;
 
     DISALLOW_COPY_AND_ASSIGN(MockUDPSocket);
 };

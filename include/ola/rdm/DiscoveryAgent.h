@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DiscoveryAgent.h
  * Implements the RDM Discovery algorithm.
@@ -21,7 +21,7 @@
 /**
  * @addtogroup rdm_controller
  * @{
- * @file DiscoveryAgent.h
+ * @file include/ola/rdm/DiscoveryAgent.h
  * @brief Implements the RDM Discovery algorithm
  * @}
  */
@@ -39,9 +39,6 @@
 
 namespace ola {
 namespace rdm {
-
-
-using std::queue;
 
 /**
  * This is the interface for classes which want to act as a discovery

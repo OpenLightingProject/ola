@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Header.h
  * The E1.31 Header
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_E131HEADER_H_
@@ -28,15 +28,13 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using std::string;
-
 /*
  * Header for the E131 layer
  */
 class E131Header {
  public:
     E131Header() {}
-    E131Header(const string &source,
+    E131Header(const std::string &source,
                uint8_t priority,
                uint8_t sequence,
                uint16_t universe,
@@ -53,7 +51,7 @@ class E131Header {
     }
     ~E131Header() {}
 
-    const string Source() const { return m_source; }
+    const std::string Source() const { return m_source; }
     uint8_t Priority() const { return m_priority; }
     uint8_t Sequence() const { return m_sequence; }
     uint16_t Universe() const { return m_universe; }
@@ -88,7 +86,7 @@ class E131Header {
     static const uint8_t STREAM_TERMINATED_MASK = 0x40;
 
  private:
-    string m_source;
+    std::string m_source;
     uint8_t m_priority;
     uint8_t m_sequence;
     uint16_t m_universe;
@@ -100,7 +98,7 @@ class E131Header {
 
 class E131Rev2Header: public E131Header {
  public:
-    E131Rev2Header(const string &source,
+    E131Rev2Header(const std::string &source,
                    uint8_t priority,
                    uint8_t sequence,
                    uint16_t universe,

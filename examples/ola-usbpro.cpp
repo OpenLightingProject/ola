@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-dev-info.cpp
- *  Displays the available devices and ports
- *  Copyright (C) 2005-2009 Simon Newton
+ * ola-usbpro.cpp
+ * Configure Enttec USB Pro Devices managed by OLA
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -234,13 +234,14 @@ void InitOptions(options *opts) {
  */
 int ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
-      {"brk",     required_argument,  0, 'k'},
-      {"dev",     required_argument,  0, 'd'},
-      {"help",    no_argument,        0, 'h'},
-      {"mab",     required_argument,  0, 'm'},
-      {"port",    required_argument,  0, 'p'},
-      {"rate",    required_argument,  0, 'r'},
-      {"serial",  no_argument,  0, 's'},
+      {"brk",         required_argument,  0, 'k'},
+      {"dev",         required_argument,  0, 'd'},
+      {"help",        no_argument,        0, 'h'},
+      {"get-params",  no_argument,        0, 'g'},
+      {"mab",         required_argument,  0, 'm'},
+      {"port",        required_argument,  0, 'p'},
+      {"rate",        required_argument,  0, 'r'},
+      {"serial",      no_argument,  0, 's'},
       {0, 0, 0, 0}
     };
 
@@ -248,7 +249,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ab:d:hm:p:r:s", long_options, &option_index);
+    c = getopt_long(argc, argv, "ab:d:ghm:p:r:s", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -263,6 +264,9 @@ int ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'd':
         opts->device_id = atoi(optarg);
+        break;
+      case 'g':
+        opts->mode = MODE_PARAM;
         break;
       case 'h':
         opts->help = true;
@@ -292,11 +296,13 @@ int ParseOptions(int argc, char *argv[], options *opts) {
  */
 void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
-    " -d <dev_id> [--serial | -b <brk> -m <mab> -r <rate>]\n\n"
+    " -d <dev_id> [--serial | -p <port> --g | -p <port> -b <brk> -m "
+    "<mab> -r <rate>]\n\n"
     "Configure Enttec USB Pro Devices managed by OLA.\n\n"
     "  -a, --assignments   Get the port assignments.\n" <<
     "  -b, --brk <brk>     Set the break time (9 - 127)\n"
     "  -d, --dev <device>  The device to configure\n"
+    "  -g, --get-params    Get the current parameters.\n"
     "  -h, --help          Display this help message and exit.\n"
     "  -m, --mab <mab>     Set the make after-break-time (1 - 127)\n"
     "  -p, --port <port>   The port to configure\n"

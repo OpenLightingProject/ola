@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArduinoRGBDevice.h
  * The Arduino RGB Mixer device.
@@ -34,6 +34,7 @@ namespace plugin {
 namespace usbpro {
 
 using ola::rdm::RDMCommandSerializer;
+using std::ostringstream;
 using std::string;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
@@ -168,7 +169,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
     return;
   }
 
-  stringstream str;
+  ostringstream str;
   for (unsigned int i = 0; i < length; ++i) {
     str << std::hex << static_cast<int>(data[i]) << " ";
   }

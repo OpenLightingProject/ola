@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PluginAdaptor.h
  * The provides operations on a ola_device.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
@@ -30,8 +30,6 @@
 #include <string>
 
 namespace ola {
-
-using ola::thread::timeout_id;
 
 class PluginAdaptor: public ola::io::SelectServerInterface {
  public:
@@ -50,15 +48,18 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
     bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
-    timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                        Callback0<bool> *closure);
-    timeout_id RegisterRepeatingTimeout(const TimeInterval &interval,
-                                        Callback0<bool> *closure);
-    timeout_id RegisterSingleTimeout(unsigned int ms,
-                                     SingleUseCallback0<void> *closure);
-    timeout_id RegisterSingleTimeout(const TimeInterval &interval,
-                                     SingleUseCallback0<void> *closure);
-    void RemoveTimeout(timeout_id id);
+    ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
+                                                     Callback0<bool> *closure);
+    ola::thread::timeout_id RegisterRepeatingTimeout(
+        const TimeInterval &interval,
+        Callback0<bool> *closure);
+    ola::thread::timeout_id RegisterSingleTimeout(
+        unsigned int ms,
+        SingleUseCallback0<void> *closure);
+    ola::thread::timeout_id RegisterSingleTimeout(
+        const TimeInterval &interval,
+        SingleUseCallback0<void> *closure);
+    void RemoveTimeout(ola::thread::timeout_id id);
 
     void Execute(ola::BaseCallback0<void> *closure);
 

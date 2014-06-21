@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Node.cpp
  * A E1.31 node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -38,7 +38,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using std::map;
 using std::string;
-
+using std::vector;
 
 /*
  * Create a new E1.31 node
@@ -49,8 +49,8 @@ using std::string;
  * @param dscp_value the DSCP value to tag outgoing packets with
  * @param port the UDP port to bind to, defaults to ACN_PORT
  */
-E131Node::E131Node(const string &ip_address,
-                   const CID &cid,
+E131Node::E131Node(const std::string &ip_address,
+                   const ola::acn::CID &cid,
                    bool use_rev2,
                    bool ignore_preview,
                    uint8_t dscp_value,
@@ -341,7 +341,7 @@ bool E131Node::RemoveHandler(unsigned int universe) {
  */
 E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   tx_universe settings;
-  std::stringstream str;
+  std::ostringstream str;
   str << "Universe " << universe;
   settings.source = str.str();
   settings.sequence = 0;

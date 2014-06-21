@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PDU.h
  * Interface for the PDU and PDUBlock classes
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_PDU_H_
@@ -29,10 +29,6 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
-
-
-using ola::io::OutputStream;
-
 
 /*
  * The Base PDU class
@@ -71,9 +67,9 @@ class PDU {
     /**
      * Write the PDU to an OutputStream
      */
-    virtual void Write(OutputStream *stream) const;
-    virtual void PackHeader(OutputStream *stream) const = 0;
-    virtual void PackData(OutputStream *stream) const = 0;
+    virtual void Write(ola::io::OutputStream *stream) const;
+    virtual void PackHeader(ola::io::OutputStream *stream) const = 0;
+    virtual void PackData(ola::io::OutputStream *stream) const = 0;
 
     static void PrependFlagsAndLength(
         ola::io::OutputBufferInterface *output,
@@ -132,7 +128,7 @@ class PDUBlock {
     /**
      * Write this PDU block to an OutputStream
      */
-    void Write(OutputStream *stream) const;
+    void Write(ola::io::OutputStream *stream) const;
 
  private:
     std::vector<const C*> m_pdus;
@@ -168,7 +164,7 @@ bool PDUBlock<C>::Pack(uint8_t *data, unsigned int *length) const {
  * @return true on success, false on failure
  */
 template <class C>
-void PDUBlock<C>::Write(OutputStream *stream) const {
+void PDUBlock<C>::Write(ola::io::OutputStream *stream) const {
   typename std::vector<const C*>::const_iterator iter;
   for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
     // TODO(simon): optimize repeated headers & vectors here

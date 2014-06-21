@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServer.h
  * The select server interface
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_IO_SELECTSERVER_H_
@@ -33,16 +33,10 @@
 #include <queue>
 #include <set>
 
-#include "common/io/PollerInterface.h"
-#include "common/io/TimeoutManager.h"
-
 class SelectServerTest;
 
 namespace ola {
 namespace io {
-
-using ola::thread::timeout_id;
-
 
 /**
  * This is the core of the event driven system. The SelectServer is responsible
@@ -76,16 +70,20 @@ class SelectServer: public SelectServerInterface {
   bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
   bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
 
-  timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                      ola::Callback0<bool> *closure);
-  timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
-                                      ola::Callback0<bool> *closure);
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      unsigned int ms,
+      ola::Callback0<bool> *closure);
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      const ola::TimeInterval &interval,
+      ola::Callback0<bool> *closure);
 
-  timeout_id RegisterSingleTimeout(unsigned int ms,
-                                   ola::SingleUseCallback0<void> *closure);
-  timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
-                                   ola::SingleUseCallback0<void> *closure);
-  void RemoveTimeout(timeout_id id);
+  ola::thread::timeout_id RegisterSingleTimeout(
+      unsigned int ms,
+      ola::SingleUseCallback0<void> *closure);
+  ola::thread::timeout_id RegisterSingleTimeout(
+      const ola::TimeInterval &interval,
+      ola::SingleUseCallback0<void> *closure);
+  void RemoveTimeout(ola::thread::timeout_id id);
 
   void RunInLoop(ola::Callback0<void> *closure);
 
@@ -97,8 +95,8 @@ class SelectServer: public SelectServerInterface {
   ExportMap *m_export_map;
   bool m_terminate, m_is_running;
   TimeInterval m_poll_interval;
-  std::auto_ptr<TimeoutManager> m_timeout_manager;
-  std::auto_ptr<PollerInterface> m_poller;
+  std::auto_ptr<class TimeoutManager> m_timeout_manager;
+  std::auto_ptr<class PollerInterface> m_poller;
 
   Clock *m_clock;
   bool m_free_clock;

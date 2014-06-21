@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetNode.h
  * Header file for the KiNetNode class.
@@ -34,8 +34,6 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using ola::network::IPV4Address;
-
 class KiNetNode {
  public:
     KiNetNode(ola::io::SelectServerInterface *ss,
@@ -46,7 +44,8 @@ class KiNetNode {
     bool Stop();
 
     // The following apply to Input Ports (those which send data)
-    bool SendDMX(const IPV4Address &target, const ola::DmxBuffer &buffer);
+    bool SendDMX(const ola::network::IPV4Address &target,
+                 const ola::DmxBuffer &buffer);
 
  private:
     bool m_running;

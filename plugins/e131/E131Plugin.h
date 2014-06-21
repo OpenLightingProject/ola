@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Plugin.h
  * Interface for the E1.131 plugin class
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131PLUGIN_H_
@@ -36,10 +36,10 @@ class E131Plugin: public ola::Plugin {
       m_device(NULL) {}
     ~E131Plugin() {}
 
-    string Name() const { return PLUGIN_NAME; }
+    std::string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_E131; }
-    string Description() const;
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string Description() const;
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     bool StartHook();

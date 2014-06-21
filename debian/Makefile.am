@@ -1,12 +1,10 @@
-# debian build files
+# Debian build files
 EXTRA_DIST = changelog \
              compat \
              control \
              copyright \
              dirs \
-             Makefile \
              Makefile.am \
-             Makefile.in \
              ola-dev.dirs \
              ola-dev.install \
              ola-python.dirs \

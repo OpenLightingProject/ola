@@ -11,15 +11,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DynamicPluginLoader.cpp
  * This class is responsible for loading and unloading the plugins
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <vector>
@@ -93,6 +93,10 @@
 
 #ifdef HAVE_LIBFTDI
 #include "plugins/ftdidmx/FtdiDmxPlugin.h"
+#endif
+
+#ifdef USE_UART
+#include "plugins/uartdmx/UartDmxPlugin.h"
 #endif
 
 #ifdef HAVE_DMX4LINUX
@@ -214,6 +218,10 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef HAVE_LIBFTDI
   m_plugins.push_back(
       new ola::plugin::ftdidmx::FtdiDmxPlugin(m_plugin_adaptor));
+#endif
+#ifdef USE_UART
+  m_plugins.push_back(
+      new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
 #endif
 }
 }  // namespace ola

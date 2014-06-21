@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * WindowsInterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 typedef int socklen_t;
@@ -25,7 +25,7 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <vector>
 
-#include "common/network/IPV4Address.h"
+#include "ola/network/IPV4Address.h"
 #include "common/network/WindowsInterfacePicker.h"
 #include "ola/Logging.h"
 
@@ -37,7 +37,8 @@ using std::vector;
 /*
  * Return a vector of interfaces on the system.
  */
-vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
+vector<Interface> WindowsInterfacePicker::GetInterfaces(
+    bool include_loopback) const {
   vector<Interface> interfaces;
 
   PIP_ADAPTER_INFO pAdapter = NULL;
@@ -45,9 +46,11 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
   IP_ADDR_STRING *ipAddress;
   ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
   uint32_t net, mask;
+  (void)include_loopback;  // We don't currently use this but its a required
+                           // part of the InterfacePicker interface..
 
   while (1) {
-    pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));
+    pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(new uint8_t[ulOutBufLen]);
     if (!pAdapterInfo) {
       OLA_WARN << "Error allocating memory needed for GetAdaptersinfo";
       return interfaces;
@@ -59,7 +62,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
     if (status == NO_ERROR)
       break;
 
-    free(pAdapterInfo);
+    delete[] pAdapterInfo;
     if (status != ERROR_BUFFER_OVERFLOW) {
       OLA_WARN << "GetAdaptersInfo failed with error: " <<
         static_cast<int>(status);
@@ -81,19 +84,21 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
       if (net) {
         Interface iface;
         iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
-        memcpy(iface.hw_address, pAdapter->Address, MAC_LENGTH);
+        uint8_t macaddr[MACAddress::LENGTH];
+        memcpy(macaddr, pAdapter->Address, MACAddress::LENGTH);
+        iface.hw_address = MACAddress(macaddr);
         iface.ip_address = IPV4Address(net);
 
         mask = inet_addr(ipAddress->IpMask.String);
         iface.subnet_mask = IPV4Address(mask);
-        iface.bcast_address = IPV4Address((iface.ip_address.s_addr & mask) |
+        iface.bcast_address = IPV4Address((iface.ip_address.AsInt() & mask) |
                                           (0xFFFFFFFF ^ mask));
 
         interfaces.push_back(iface);
       }
     }
   }
-  free(pAdapterInfo);
+  delete[] pAdapterInfo;
   return interfaces;
 }
 }  // namespace network

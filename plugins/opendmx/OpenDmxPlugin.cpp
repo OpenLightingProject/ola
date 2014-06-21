@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OpenDmxPlugin.cpp
  * The Open DMX plugin for ola
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -38,6 +38,7 @@ namespace plugin {
 namespace opendmx {
 
 using ola::PluginAdaptor;
+using std::string;
 using std::vector;
 
 const char OpenDmxPlugin::OPENDMX_DEVICE_PATH[] = "/dev/dmx0";
@@ -114,7 +115,7 @@ string OpenDmxPlugin::Description() const {
 "--- Config file : ola-opendmx.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
-"The path to the open dmx usb device. Multiple entries are supported.\n"
+"The path to the Open DMX USB device. Multiple entries are supported.\n"
 "\n";
 }
 

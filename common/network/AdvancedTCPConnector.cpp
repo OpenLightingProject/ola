@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AdvancedTCPConnector.cpp
  * Copyright (C) 2012 Simon Newton
@@ -29,14 +29,6 @@ namespace network {
 
 using std::pair;
 
-
-/**
- * Create a new AdvancedTCPConnector
- * @param ss the SelectServerInterface to use for scheduling
- * @param socket_factory the factory to use for creating new sockets
- * @param connection_timeout the timeout for TCP connects
- * @param max_backoff the maximum time to wait between connects.
- */
 AdvancedTCPConnector::AdvancedTCPConnector(
     ola::io::SelectServerInterface *ss,
     TCPSocketFactoryInterface *socket_factory,
@@ -47,10 +39,6 @@ AdvancedTCPConnector::AdvancedTCPConnector(
       m_connection_timeout(connection_timeout) {
 }
 
-
-/**
- * Cancel all outstanding connections.
- */
 AdvancedTCPConnector::~AdvancedTCPConnector() {
   ConnectionMap::iterator iter = m_connections.begin();
   for (; iter != m_connections.end(); ++iter) {
@@ -61,15 +49,6 @@ AdvancedTCPConnector::~AdvancedTCPConnector() {
 }
 
 
-/**
- * Add a remote host. This will trigger the connection process to start.
- * If the ip:port already exists this won't do anything.
- * When the connection is successfull the on_connect callback will be run, and
- * ownership of the TCPSocket object is transferred.
- * @param endpoint the IPV4SocketAddress to connect to.
- * @param backoff_policy the BackOffPolicy to use for this connection.
- * @param paused true if we don't want to immediately connect to this peer.
- */
 void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
                                        BackOffPolicy *backoff_policy,
                                        bool paused) {
@@ -92,12 +71,6 @@ void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
     AttemptConnection(key, state);
 }
 
-
-/**
- * Remove a ip:port from the connection manager. This won't close the
- * connection.
- * @param endpoint the IPV4SocketAddress to remove.
- */
 void AdvancedTCPConnector::RemoveEndpoint(const IPV4SocketAddress &endpoint) {
   IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
@@ -109,12 +82,6 @@ void AdvancedTCPConnector::RemoveEndpoint(const IPV4SocketAddress &endpoint) {
   m_connections.erase(iter);
 }
 
-
-/**
- * Get the state & number of failed_attempts for an endpoint
- * @param endpoint the IPV4SocketAddress to get the state of.
- * @returns true if this endpoint was found, false otherwise.
- */
 bool AdvancedTCPConnector::GetEndpointState(
     const IPV4SocketAddress &endpoint,
     ConnectionState *connected,
@@ -129,12 +96,6 @@ bool AdvancedTCPConnector::GetEndpointState(
   return true;
 }
 
-
-/**
- * Mark a host as disconnected.
- * @param endpoint the IPV4SocketAddress to mark as disconnected.
- * @param pause if true, don't immediately try to reconnect.
- */
 void AdvancedTCPConnector::Disconnect(const IPV4SocketAddress &endpoint,
                                       bool pause) {
   IPPortPair key(endpoint.Host(), endpoint.Port());
@@ -161,10 +122,6 @@ void AdvancedTCPConnector::Disconnect(const IPV4SocketAddress &endpoint,
   }
 }
 
-
-/**
- * Resume trying to connect to a ip:port pair.
- */
 void AdvancedTCPConnector::Resume(const IPV4SocketAddress &endpoint) {
   IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
@@ -177,9 +134,8 @@ void AdvancedTCPConnector::Resume(const IPV4SocketAddress &endpoint) {
   }
 }
 
-
 /**
- * Decide what to do when a connection fails, completes or times out.
+ * @brief Decide what to do when a connection fails, completes or times out.
  */
 void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
                                       ConnectionInfo *info,
@@ -195,7 +151,6 @@ void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
     ScheduleRetry(key, info);
   }
 }
-
 
 /**
  * Schedule the re-try attempt for this connection

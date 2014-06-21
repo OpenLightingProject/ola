@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetNode.cpp
  * An ArtNet node
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -52,9 +52,17 @@ using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMCallback;
+using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::UID;
+using ola::rdm::UIDSet;
 using std::auto_ptr;
+using std::map;
 using std::pair;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -1022,7 +1030,7 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
           m_long_name.data(),
           ARTNET_LONG_NAME_LENGTH);
 
-  std::stringstream str;
+  std::ostringstream str;
   str << "#0001 [" << m_unsolicited_replies << "] OLA";
   strncpy(packet.data.reply.node_report, str.str().data(),
           ARTNET_REPORT_LENGTH);
@@ -1737,7 +1745,7 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
 
 
 /*
- * Check the version number of a incomming packet
+ * Check the version number of a incoming packet
  */
 bool ArtNetNodeImpl::CheckPacketVersion(const IPV4Address &source_address,
                                         const string &packet_type,

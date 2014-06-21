@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FtdiDmxPlugin.h
  * The FTDI usb chipset DMX plugin for ola
@@ -42,8 +42,8 @@ class FtdiDmxPlugin : public Plugin {
   }
 
   ola_plugin_id Id() const { return OLA_PLUGIN_FTDIDMX; }
-  string Name() const { return PLUGIN_NAME; }
-  string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
   // This plugin is disabled unless explicitly enabled by a user.
   bool DefaultMode() const { return false; }
 
@@ -52,10 +52,10 @@ class FtdiDmxPlugin : public Plugin {
     conflict_set->insert(ola::OLA_PLUGIN_OPENDMX);
   }
 
-  string Description() const;
+  std::string Description() const;
 
  private:
-  typedef vector<FtdiDmxDevice*> FtdiDeviceVector;
+  typedef std::vector<FtdiDmxDevice*> FtdiDeviceVector;
   FtdiDeviceVector m_devices;
 
   void AddDevice(FtdiDmxDevice *device);

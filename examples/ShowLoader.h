@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ShowLoader.h
  *  A simple show playback system.
@@ -23,8 +23,6 @@
 #include <string>
 #include <fstream>
 
-using std::string;
-
 #ifndef EXAMPLES_SHOWLOADER_H_
 #define EXAMPLES_SHOWLOADER_H_
 
@@ -33,7 +31,7 @@ using std::string;
  */
 class ShowLoader {
  public:
-    explicit ShowLoader(const string &filename);
+    explicit ShowLoader(const std::string &filename);
     ~ShowLoader();
 
     typedef enum {
@@ -49,12 +47,12 @@ class ShowLoader {
     State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
 
  private:
-    const string m_filename;
+    const std::string m_filename;
     std::ifstream m_show_file;
     unsigned int m_line;
 
     static const char OLA_SHOW_HEADER[];
 
-    void ReadLine(string *line);
+    void ReadLine(std::string *line);
 };
 #endif  // EXAMPLES_SHOWLOADER_H_

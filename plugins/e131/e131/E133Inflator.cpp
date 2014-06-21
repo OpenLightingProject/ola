@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Inflator.cpp
  * The Inflator for the E1.33 PDUs
@@ -40,7 +40,7 @@ using ola::network::NetworkToHost;
 bool E133Inflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
-                                unsigned int &bytes_used) {
+                                unsigned int *bytes_used) {
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E133Header::e133_pdu_header)) {
@@ -54,15 +54,15 @@ bool E133Inflator::DecodeHeader(HeaderSet *headers,
       m_last_header = header;
       m_last_header_valid = true;
       headers->SetE133Header(header);
-      bytes_used = sizeof(E133Header::e133_pdu_header);
+      *bytes_used = sizeof(E133Header::e133_pdu_header);
       return true;
     }
-    bytes_used = 0;
+    *bytes_used = 0;
     return false;
   }
 
   // use the last header if it exists
-  bytes_used = 0;
+  *bytes_used = 0;
   if (!m_last_header_valid) {
     OLA_WARN << "Missing E1.33 Header data";
     return false;

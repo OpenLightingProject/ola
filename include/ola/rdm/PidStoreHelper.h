@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PidStoreHelper.h
  * Provides helper methods for loading / accessing the pid store, and dealing
@@ -23,7 +23,7 @@
  * @addtogroup rdm_pids
  * @{
  * @file PidStoreHelper.h
- * @brief Provices helper methods for loading / accessing the pid store, and
+ * @brief Provides helper methods for loading / accessing the pid store, and
  * dealing with pids.
  * @}
  */
@@ -47,28 +47,24 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
-using std::vector;
-
-
 class PidStoreHelper {
  public:
-    explicit PidStoreHelper(const string &pid_location,
+    explicit PidStoreHelper(const std::string &pid_location,
                             unsigned int initial_indent = 0);
     ~PidStoreHelper();
 
     bool Init();
 
-    const ola::rdm::PidDescriptor *GetDescriptor(
-        const string &pid_name,
+    const PidDescriptor *GetDescriptor(
+        const std::string &pid_name,
         uint16_t manufacturer_id) const;
-    const ola::rdm::PidDescriptor *GetDescriptor(
+    const PidDescriptor *GetDescriptor(
         uint16_t param_id,
         uint16_t manufacturer_id) const;
 
     const ola::messaging::Message *BuildMessage(
         const ola::messaging::Descriptor *descriptor,
-        const vector<string> &inputs);
+        const std::vector<std::string> &inputs);
 
     const uint8_t *SerializeMessage(const ola::messaging::Message *message,
                                     unsigned int *data_length);
@@ -78,30 +74,31 @@ class PidStoreHelper {
         const uint8_t *data,
         unsigned int data_length);
 
-    const string MessageToString(const ola::messaging::Message *message);
+    const std::string MessageToString(const ola::messaging::Message *message);
 
-    const string PrettyPrintMessage(
+    const std::string PrettyPrintMessage(
         uint16_t manufacturer_id,
         bool is_set,
         uint16_t pid,
         const ola::messaging::Message *message);
 
-    const string SchemaAsString(const ola::messaging::Descriptor *descriptor);
+    const std::string SchemaAsString(
+        const ola::messaging::Descriptor *descriptor);
 
     void SupportedPids(uint16_t manufacturer_id,
-                       vector<string> *pid_names) const;
+                       std::vector<std::string> *pid_names) const;
 
     void SupportedPids(
         uint16_t manufacturer_id,
-        vector<const ola::rdm::PidDescriptor*> *descriptors) const;
+        std::vector<const PidDescriptor*> *descriptors) const;
 
  private:
-    const string m_pid_location;
-    const ola::rdm::RootPidStore *m_root_store;
-    ola::rdm::StringMessageBuilder m_string_builder;
-    ola::rdm::MessageSerializer m_serializer;
-    ola::rdm::MessageDeserializer m_deserializer;
-    ola::rdm::RDMMessagePrinter m_message_printer;
+    const std::string m_pid_location;
+    const RootPidStore *m_root_store;
+    StringMessageBuilder m_string_builder;
+    MessageSerializer m_serializer;
+    MessageDeserializer m_deserializer;
+    RDMMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
 };
 }  // namespace rdm

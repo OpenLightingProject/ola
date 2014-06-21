@@ -41,6 +41,7 @@ namespace io {
 /**
  * @class EPoller
  * @brief An implementation of PollerInterface that uses epoll().
+ *
  * epoll() is more efficient than select() but only newer Linux systems support
  * it.
  */
@@ -87,7 +88,7 @@ class EPoller : public PollerInterface {
     bool delete_connected_on_close;
   };
 
-  typedef map<int, EPollDescriptor*> DescriptorMap;
+  typedef std::map<int, EPollDescriptor*> DescriptorMap;
 
   DescriptorMap m_descriptor_map;
   ExportMap *m_export_map;

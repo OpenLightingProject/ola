@@ -1,13 +1,12 @@
 include $(top_srcdir)/common.mk
 
-libdir = $(plugindir)
-
-EXTRA_DIST = SandNetPlugin.h SandNetDevice.h SandNetPort.h SandNetNode.h \
-             SandNetCommon.h SandNetPackets.h
-
+# LIBRARIES
+##################################################
 if USE_SANDNET
-lib_LTLIBRARIES = libolasandnet.la
-libolasandnet_la_SOURCES = SandNetPlugin.cpp SandNetDevice.cpp \
-                           SandNetPort.cpp SandNetNode.cpp
+plugin_LTLIBRARIES = libolasandnet.la
+libolasandnet_la_SOURCES = SandNetCommon.h SandNetDevice.cpp SandNetDevice.h \
+                           SandNetNode.cpp SandNetNode.h SandNetPackets.h \
+                           SandNetPlugin.cpp SandNetPlugin.h SandNetPort.cpp \
+                           SandNetPort.h
 libolasandnet_la_LIBADD = ../../common/libolacommon.la
 endif

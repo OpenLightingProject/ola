@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ola-recorder.cpp
  *  A simple tool to record & playback shows.
@@ -46,7 +46,7 @@ using ola::DmxBuffer;
 
 ShowPlayer::ShowPlayer(const string &filename)
     : m_loader(filename),
-      m_infinte_loop(false),
+      m_infinite_loop(false),
       m_iteration_remaining(0),
       m_loop_delay(0) {
 }
@@ -68,7 +68,7 @@ int ShowPlayer::Init() {
 int ShowPlayer::Playback(unsigned int iterations,
                          unsigned int duration,
                          unsigned int delay) {
-  m_infinte_loop = iterations == 0 || duration != 0;
+  m_infinite_loop = iterations == 0 || duration != 0;
   m_iteration_remaining = iterations;
   m_loop_delay = delay;
   SendNextFrame();
@@ -139,7 +139,7 @@ ShowLoader::State ShowPlayer::RegisterNextTimeout() {
  */
 void ShowPlayer::HandleEndOfFile() {
   m_iteration_remaining--;
-  if (m_infinte_loop || m_iteration_remaining > 0) {
+  if (m_infinite_loop || m_iteration_remaining > 0) {
     m_loader.Reset();
     m_client.GetSelectServer()->RegisterSingleTimeout(
         m_loop_delay,

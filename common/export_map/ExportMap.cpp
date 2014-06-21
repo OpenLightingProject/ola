@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ExportMap.cpp
  * Exported Variables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>
@@ -29,8 +29,10 @@
 
 namespace ola {
 
+using std::map;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
+using std::vector;
 
 
 /*
@@ -41,7 +43,7 @@ using std::stringstream;
  */
 template<typename Type>
 const string MapVariable<Type>::Value() const {
-  stringstream value;
+  ostringstream value;
   value << "map:" << m_label;
   typename map<string, Type>::const_iterator iter;
   for (iter = m_variables.begin(); iter != m_variables.end(); ++iter)
@@ -55,7 +57,7 @@ const string MapVariable<Type>::Value() const {
  */
 template<>
 const string MapVariable<string>::Value() const {
-  stringstream value;
+  ostringstream value;
   value << "map:" << m_label;
   map<string, string>::const_iterator iter;
   for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {

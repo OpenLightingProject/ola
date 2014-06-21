@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e133-receiver.cpp
  * Copyright (C) 2011 Simon Newton
@@ -21,7 +21,7 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <signal.h>
@@ -105,11 +105,7 @@ void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options]",
-      "Run a very simple E1.33 Responder.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 Responder.");
 
   auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
   if (!uid.get()) {

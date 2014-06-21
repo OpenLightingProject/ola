@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * WidgetDetectorThread.cpp
  * A thread that periodically looks for usb pro devices, and runs the callback
@@ -45,8 +45,10 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-
 using ola::io::ConnectedDescriptor;
+using std::string;
+using std::vector;
+
 
 /**
  * Constructor
@@ -306,12 +308,14 @@ void WidgetDetectorThread::UsbProWidgetReady(
   EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
       information->esta_id, information->serial);
   options.dual_ports = information->dual_port;
-  // 2.4 is the first version that properly supports RDM.
-  options.enable_rdm = information->firmware_version >= 0x0204;
-  if (!options.enable_rdm) {
-    OLA_WARN << "USB Pro Firmware >= 2.4 is required for RDM support, this "
-             << "widget is running " << (information->firmware_version >> 8)
-             << "." << (information->firmware_version & 0xff);
+  if (information->has_firmware_version) {
+    // 2.4 is the first version that properly supports RDM.
+    options.enable_rdm = information->firmware_version >= 0x0204;
+    if (!options.enable_rdm) {
+      OLA_WARN << "USB Pro Firmware >= 2.4 is required for RDM support, this "
+               << "widget is running " << (information->firmware_version >> 8)
+               << "." << (information->firmware_version & 0xff);
+    }
   }
   DispatchWidget(new EnttecUsbProWidget(descriptor, options), information);
 }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Action.cpp
  * Copyright (C) 2011 Simon Newton
@@ -28,10 +28,6 @@
 #include <vector>
 
 #include "tools/ola_trigger/Context.h"
-
-using std::string;
-using std::vector;
-
 
 /*
  * An Action is a behavior that is run when a particular DMX value is received
@@ -66,7 +62,8 @@ class Action {
  */
 class VariableAssignmentAction: public Action {
  public:
-  VariableAssignmentAction(const string &variable, const string &value)
+  VariableAssignmentAction(const std::string &variable,
+                           const std::string &value)
       : Action(),
         m_variable(variable),
         m_value(value) {
@@ -75,8 +72,8 @@ class VariableAssignmentAction: public Action {
   void Execute(Context *context, uint8_t slot_value);
 
  private:
-  const string m_variable;
-  const string m_value;
+  const std::string m_variable;
+  const std::string m_value;
 };
 
 
@@ -85,8 +82,8 @@ class VariableAssignmentAction: public Action {
  */
 class CommandAction: public Action {
  public:
-    CommandAction(const string &command,
-                  const vector<string> &arguments)
+    CommandAction(const std::string &command,
+                  const std::vector<std::string> &arguments)
         : m_command(command),
           m_arguments(arguments) {
     }
@@ -95,12 +92,12 @@ class CommandAction: public Action {
     virtual void Execute(Context *context, uint8_t slot_value);
 
  protected:
-    const string m_command;
-    vector<string> m_arguments;
+    const std::string m_command;
+    std::vector<std::string> m_arguments;
 
     char **BuildArgList(const Context *context);
     void FreeArgList(char **args);
-    char *StringToDynamicChar(const string &str);
+    char *StringToDynamicChar(const std::string &str);
 };
 
 
@@ -131,7 +128,7 @@ class ValueInterval {
     return m_lower < other.m_lower;
   }
 
-  string AsString() const;
+  std::string AsString() const;
   friend std::ostream& operator<<(std::ostream &out, const ValueInterval&);
 
  private:
@@ -163,7 +160,7 @@ class Slot {
   bool SetDefaultFallingAction(Action *action);
   void TakeAction(Context *context, uint8_t value);
 
-  string IntervalsAsString() const;
+  std::string IntervalsAsString() const;
 
   bool operator<(const Slot &other) const {
     return m_slot_offset < other.m_slot_offset;
@@ -231,7 +228,7 @@ class Slot {
     Action *falling_action;
   };
 
-  typedef vector<ActionInterval> ActionVector;
+  typedef std::vector<ActionInterval> ActionVector;
   ActionVector m_actions;
 
   bool ValueWithinIntervals(uint8_t value,
@@ -240,8 +237,8 @@ class Slot {
   bool IntervalsIntersect(const ValueInterval *a1,
                           const ValueInterval *a2);
   Action *LocateMatchingAction(uint8_t value, bool rising);
-  string IntervalsAsString(const ActionVector::const_iterator &start,
-                           const ActionVector::const_iterator &end) const;
+  std::string IntervalsAsString(const ActionVector::const_iterator &start,
+                                const ActionVector::const_iterator &end) const;
   bool SetDefaultAction(Action **action_to_set, Action *new_action);
 };
 #endif  // TOOLS_OLA_TRIGGER_ACTION_H_

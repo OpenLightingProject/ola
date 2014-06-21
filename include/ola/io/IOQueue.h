@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOQueue.h
  * A non-contigous memory buffer that operates as a queue (FIFO).
@@ -25,7 +25,6 @@
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
-#include <sys/uio.h>
 #include <deque>
 #include <iostream>
 #include <queue>
@@ -62,7 +61,7 @@ class IOQueue: public InputBufferInterface,
     unsigned int Peek(uint8_t *data, unsigned int length) const;
 
     // From IOVecInterface
-    const struct iovec *AsIOVec(int *io_count) const;
+    const struct IOVec *AsIOVec(int *io_count) const;
     void Pop(unsigned int n);
 
     // Append a MemoryBlock to this IOQueue. Ownership of the block is taken.

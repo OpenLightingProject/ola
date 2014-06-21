@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbSerialDevice.h
  * Interface for the usb devices
@@ -36,7 +36,7 @@ namespace usbpro {
 class UsbSerialDevice: public ola::Device {
  public:
     UsbSerialDevice(ola::AbstractPlugin *owner,
-                    const string &name,
+                    const std::string &name,
                     SerialWidgetInterface *widget):
       Device(owner, name),
       m_widget(widget) {}

@@ -1,17 +1,17 @@
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderSensor.h
  * Manages a sensor for a RDM responder.
@@ -29,17 +29,15 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERSENSOR_H_
 #define INCLUDE_OLA_RDM_RESPONDERSENSOR_H_
 
+#include <ola/rdm/RDMEnums.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "ola/rdm/RDMEnums.h"
-
 namespace ola {
 namespace rdm {
-
-using std::string;
 
 /**
  * @brief Holds information about a single sensor.
@@ -78,7 +76,7 @@ class Sensor {
   Sensor(ola::rdm::rdm_sensor_type type,
          ola::rdm::rdm_pid_unit unit,
          ola::rdm::rdm_pid_prefix prefix,
-         const string &description,
+         const std::string &description,
          const SensorOptions &options)
       : m_type(type),
         m_unit(unit),
@@ -101,7 +99,7 @@ class Sensor {
   int16_t RangeMax() const { return m_range_max; }
   int16_t NormalMin() const { return m_normal_min; }
   int16_t NormalMax() const { return m_normal_max; }
-  const string& Description() const { return m_description; }
+  const std::string& Description() const { return m_description; }
 
   int16_t Lowest() const {
     if (m_recorded_range_support) {
@@ -178,7 +176,7 @@ class Sensor {
   const ola::rdm::rdm_sensor_type m_type;
   const ola::rdm::rdm_pid_unit m_unit;
   const ola::rdm::rdm_pid_prefix m_prefix;
-  const string m_description;
+  const std::string m_description;
   const bool m_recorded_value_support;
   const bool m_recorded_range_support;
   const int16_t m_range_min;

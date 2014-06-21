@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SandNetNode.h
  * Header file for the SandNetNode class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SANDNET_SANDNETNODE_H_
@@ -37,8 +37,6 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
-using ola::network::IPV4Address;
-using ola::network::UDPSocket;
 
 class SandNetNode {
  public:
@@ -50,20 +48,20 @@ class SandNetNode {
       SANDNET_PORT_MODE_MIN
     } sandnet_port_type;
 
-    explicit SandNetNode(const string &preferred_ip);
+    explicit SandNetNode(const std::string &preferred_ip);
     ~SandNetNode();
 
     const ola::network::Interface &GetInterface() const {
       return m_interface;
     }
 
-    void SetName(const string &name) {
+    void SetName(const std::string &name) {
       m_node_name = name;
     }
     bool Start();
     bool Stop();
-    std::vector<UDPSocket*> GetSockets();
-    void SocketReady(UDPSocket *socket);
+    std::vector<ola::network::UDPSocket*> GetSockets();
+    void SocketReady(ola::network::UDPSocket *socket);
 
     bool SetHandler(uint8_t group,
                     uint8_t universe,
@@ -104,17 +102,17 @@ class SandNetNode {
                     bool is_control = false);
 
     bool m_running;
-    string m_node_name;
-    string m_preferred_ip;
+    std::string m_node_name;
+    std::string m_preferred_ip;
 
     sandnet_port m_ports[SANDNET_MAX_PORTS];
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
-    UDPSocket m_control_socket;
-    UDPSocket m_data_socket;
+    ola::network::UDPSocket m_control_socket;
+    ola::network::UDPSocket m_data_socket;
     ola::dmx::RunLengthEncoder m_encoder;
-    IPV4Address m_control_addr;
-    IPV4Address m_data_addr;
+    ola::network::IPV4Address m_control_addr;
+    ola::network::IPV4Address m_data_addr;
 
     static const uint16_t CONTROL_PORT;
     static const uint16_t DATA_PORT;

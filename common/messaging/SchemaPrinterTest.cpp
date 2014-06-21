@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SchemaPrinterTest.cpp
  * Test fixture for the SchemaPrinter class.
@@ -33,6 +33,7 @@ using std::vector;
 
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
@@ -84,6 +85,8 @@ void SchemaPrinterTest::testPrinter() {
       "Count", false, 10);
   IPV4FieldDescriptor *ipv4_descriptor = new IPV4FieldDescriptor(
       "Address");
+  MACFieldDescriptor *mac_descriptor = new MACFieldDescriptor(
+      "MAC Address");
   UIDFieldDescriptor *uid_descriptor = new UIDFieldDescriptor("Device");
 
   // try a simple print first
@@ -92,6 +95,7 @@ void SchemaPrinterTest::testPrinter() {
   fields.push_back(string_descriptor);
   fields.push_back(uint8_descriptor);
   fields.push_back(ipv4_descriptor);
+  fields.push_back(mac_descriptor);
   fields.push_back(uid_descriptor);
 
   Descriptor test_descriptor("Test Descriptor", fields);
@@ -100,7 +104,7 @@ void SchemaPrinterTest::testPrinter() {
 
   string expected = (
       "On/Off: bool\nName: string [0, 32]\nCount: uint8\n"
-      "Address: IPv4\nDevice: UID\n");
+      "Address: IPv4 address\nMAC Address: MAC\nDevice: UID\n");
   OLA_ASSERT_EQ(expected, printer.AsString());
 }
 

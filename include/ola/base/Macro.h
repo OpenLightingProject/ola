@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Macro.h
  */
@@ -44,5 +44,38 @@
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
+
+/*
+ * This code was adapted from:
+ * http://blogs.msdn.com/b/abhinaba/archive/
+ *   2008/10/27/c-c-compile-time-asserts.aspx
+ */
+
+#ifdef __cplusplus
+
+#define JOIN(X, Y) JOIN2(X, Y)
+#define JOIN2(X, Y) X##Y
+
+namespace internal {
+  template <bool> struct STATIC_ASSERT_FAILURE;
+  template <> struct STATIC_ASSERT_FAILURE<true> { enum { value = 1 }; };
+
+  template<int x> struct static_assert_test{};
+}
+
+#define STATIC_ASSERT(x) \
+  typedef ::internal::static_assert_test<\
+    sizeof(::internal::STATIC_ASSERT_FAILURE< static_cast<bool>( x ) >)>\
+      JOIN(_static_assert_typedef, __LINE__)
+
+#else  // __cplusplus
+
+#define STATIC_ASSERT(x) extern int __dummy[static_cast<int>x]
+
+#endif  // __cplusplus
+
+/*
+ * End of adapted code.
+ */
 
 #endif  // INCLUDE_OLA_BASE_MACRO_H_

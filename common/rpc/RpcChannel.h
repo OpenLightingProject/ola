@@ -11,18 +11,18 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcChannel.h
  * The RPC Channel
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_RPC_RPCCHANNEL_H_
 #define COMMON_RPC_RPCCHANNEL_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <stdint.h>
@@ -41,9 +41,6 @@
 namespace ola {
 namespace rpc {
 
-using google::protobuf::Message;
-using google::protobuf::MethodDescriptor;
-
 class RpcMessage;
 class RpcService;
 
@@ -57,7 +54,7 @@ class OutstandingRequest {
 
     int id;
     RpcController *controller;
-    Message *response;
+    google::protobuf::Message *response;
 };
 
 /**
@@ -121,10 +118,10 @@ class RpcChannel {
     /**
      * @brief Invoke an RPC method on this channel.
      */
-    void CallMethod(const MethodDescriptor *method,
+    void CallMethod(const google::protobuf::MethodDescriptor *method,
                     RpcController *controller,
-                    const Message *request,
-                    Message *response,
+                    const google::protobuf::Message *request,
+                    google::protobuf::Message *response,
                     SingleUseCallback0<void> *done);
 
     /**
@@ -168,7 +165,7 @@ class RpcChannel {
     // the descriptor to read/write to.
     class ola::io::ConnectedDescriptor *m_descriptor;
     SequenceNumber<uint32_t> m_sequence;
-    uint8_t *m_buffer;  // buffer for incomming msgs
+    uint8_t *m_buffer;  // buffer for incoming msgs
     unsigned int m_buffer_size;  // size of the buffer
     unsigned int m_expected_size;  // the total size of the current msg
     unsigned int m_current_size;  // the amount of data read for the current msg

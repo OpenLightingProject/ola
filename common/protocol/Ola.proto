@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Ola.proto
  * Defines the protocol buffers used to talk to olad
@@ -40,8 +40,7 @@ enum MergeMode {
 }
 
 /**
- * Please discuss on open-lighting@googlegroups.com before claiming a Plugin
- * ID.
+ * Please see the note below about getting a new Plugin ID.
  */
 enum PluginIds {
   OLA_PLUGIN_ALL = 0;
@@ -64,12 +63,14 @@ enum PluginIds {
   OLA_PLUGIN_KARATE = 17;
   OLA_PLUGIN_MILINST = 18;
   OLA_PLUGIN_RENARD = 19;
+  OLA_PLUGIN_UARTDMX = 20;
 
   /*
-   * To obtain a new plugin ID open a ticket at
-   * https://code.google.com/p/open-lighting/issues/entry
+   * To obtain a new plugin ID, open a ticket at
+   * https://github.com/OpenLightingProject/ola/issues/new
    * Plugin IDs are usually assigned just prior to merging the code into the
-   * mainline. For development of plugins please use OLA_PLUGIN_EXPERIMENTAL.
+   * mainline. For development of plugins please use the value of 
+   * OLA_PLUGIN_EXPERIMENTAL in a plugin ID you define above.
    */
   OLA_PLUGIN_EXPERIMENTAL = 10000;
 }
@@ -102,7 +103,7 @@ enum RDMResponseCode {
   RDM_DEST_UID_MISMATCH = 10;
   //Incorrect sub start code
   RDM_WRONG_SUB_START_CODE = 11;
-  //RDM response was smaller than the mimimun size
+  //RDM response was smaller than the minimum size
   RDM_PACKET_TOO_SHORT = 12;
   //The length field of packet didn't match length received
   RDM_PACKET_LENGTH_MISMATCH = 13;
@@ -155,6 +156,9 @@ message Ack {}
 
 // request the list of available plugins
 message PluginListRequest {}
+
+// Trigger a plugin reload.
+message PluginReloadRequest {}
 
 message PluginInfo {
   required int32 plugin_id = 1;
@@ -365,6 +369,7 @@ message TimeCode {
 // RPCs handled by the OLA Server
 service OlaServerService {
   rpc GetPlugins (PluginListRequest) returns (PluginListReply);
+  rpc ReloadPlugins (PluginReloadRequest) returns (Ack);
   rpc GetPluginDescription (PluginDescriptionRequest) returns
     (PluginDescriptionReply);
   rpc GetPluginState (PluginStateRequest) returns (PluginStateReply);

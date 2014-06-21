@@ -1,3 +1,4 @@
+*.core
 *.gcda
 *.gcno
 *.la
@@ -13,6 +14,7 @@
 *.tar.gz
 *.trs
 *_pb2.py
+Doxyfile
 INSTALL
 Makefile
 Makefile.in
@@ -32,6 +34,7 @@ stamp-h1
 .AppleDouble/
 .deps
 .libs
+config/compile
 config/config.guess
 config/config.sub
 config/depcomp
@@ -44,7 +47,10 @@ config/ltversion.m4
 config/lt~obsolete.m4
 config/missing
 config/py-compile
+config/test-driver
 *Tester
+*Tester.exe
+data/rdm/PidDataTest.sh
 debian/files
 debian/*.debhelper.log
 debian/*.substvars
@@ -61,6 +67,7 @@ doxygen/examples/callback_client_transmit
 doxygen/examples/flags
 doxygen/examples/receiver
 doxygen/examples/streaming_client
+doxygen/examples/streaming_client_plugin
 examples/ola_artnet
 examples/ola_dev_info
 examples/ola_dmxconsole
@@ -86,19 +93,23 @@ include/ola/timecode/TimeCodeEnums.h
 java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/
-ola/common.h
-ola/stamp-common
-olad/OlaVersion.h
 olad/olad
+olad/olad.exe
+olad/ola-output.conf
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
 protoc/ola_protoc
+protoc/ola_protoc.exe
+python/examples/ola_rdm_set.py
 python/ola/PidStoreLocation.py
 python/ola/Version.py
+python/ola/rpc/SimpleRpcControllerTest.sh
 slp/slp_client
+slp/slp_client.exe
 slp/slp_server
+slp/slp_server.exe
 tools/e133/e133_controller
 tools/e133/e133_monitor
 tools/e133/e133_receiver
@@ -110,6 +121,7 @@ tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
 tools/ola_trigger/ola_trigger
+tools/ola_trigger/ola_trigger.exe
 tools/logic/logic_rdm_sniffer
 tools/rdm/DataLocation.py
 tools/rdmpro/rdmpro_sniffer

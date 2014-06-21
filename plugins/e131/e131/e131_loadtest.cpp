@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e131_loadtest.cpp
  * A simple E1.31 load tester
@@ -25,6 +25,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
+#include "ola/base/Init.h"
 #include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/E131Node.h"
 
@@ -49,9 +50,7 @@ bool SendFrames(E131Node *node, DmxBuffer *buffer,
 }
 
 int main(int argc, char* argv[]) {
-  ola::SetHelpString("", "Run the E1.31 load test.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "", "Run the E1.31 load test.");
 
   if (FLAGS_universes == 0 || FLAGS_fps == 0)
     return -1;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MockUDPSocket.cpp
  * This implements the UDPSocketInterface in a way that we can use it for
@@ -38,13 +38,16 @@ namespace ola {
 namespace testing {
 
 using ola::io::IOQueue;
+using ola::io::IOVec;
+using ola::io::IOVecInterface;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 
 MockUDPSocket::MockUDPSocket()
     : ola::network::UDPSocketInterface(),
       m_init_called(false),
-      m_dummy_sd(ola::io::INVALID_DESCRIPTOR),
+      m_dummy_handle(ola::io::INVALID_DESCRIPTOR),
       m_bound_to_port(false),
       m_broadcast_set(false),
       m_port(0),
@@ -53,9 +56,14 @@ MockUDPSocket::MockUDPSocket()
 
 
 bool MockUDPSocket::Init() {
-  if (m_dummy_sd == ola::io::INVALID_DESCRIPTOR) {
-    m_dummy_sd = socket(PF_INET, SOCK_DGRAM, 0);
-    if (m_dummy_sd < 0) {
+  if (m_dummy_handle == ola::io::INVALID_DESCRIPTOR) {
+#ifdef _WIN32
+    m_dummy_handle.m_handle.m_fd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (m_dummy_handle.m_handle.m_fd < 0) {
+#else
+    m_dummy_handle = socket(PF_INET, SOCK_DGRAM, 0);
+    if (m_dummy_handle < 0) {
+#endif
       OLA_WARN << "Could not create socket " << strerror(errno);
       return false;
     }
@@ -80,8 +88,12 @@ bool MockUDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
 
 bool MockUDPSocket::Close() {
   m_bound_to_port = false;
-  if (m_dummy_sd != ola::io::INVALID_DESCRIPTOR) {
-    close(m_dummy_sd);
+  if (m_dummy_handle != ola::io::INVALID_DESCRIPTOR) {
+#ifdef _WIN32
+    closesocket(m_dummy_handle.m_handle.m_fd);
+#else
+    close(m_dummy_handle);
+#endif
   }
   return true;
 }
@@ -114,7 +126,7 @@ ssize_t MockUDPSocket::SendTo(IOVecInterface *data,
   // This incurs a copy but it's only testing code.
 
   int io_len;
-  const struct iovec *iov = data->AsIOVec(&io_len);
+  const struct IOVec *iov = data->AsIOVec(&io_len);
   if (iov == NULL)
     return 0;
 
@@ -144,9 +156,10 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 }
 
 
-bool MockUDPSocket::RecvFrom(uint8_t *buffer,
-                             ssize_t *data_read,
-                             ola::network::IPV4Address &source) const {
+bool MockUDPSocket::RecvFrom(
+    uint8_t *buffer,
+    ssize_t *data_read,
+    ola::network::IPV4Address &source) const {  // NOLINT
   uint16_t port;
   return RecvFrom(buffer, data_read, source, port);
 }
@@ -154,8 +167,8 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer,
 
 bool MockUDPSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
-                             ola::network::IPV4Address &source,
-                             uint16_t &port) const {
+                             ola::network::IPV4Address &source,  // NOLINT
+                             uint16_t &port) const {  // NOLINT
   OLA_ASSERT_FALSE(m_received_data.empty());
   const received_data &new_data = m_received_data.front();
 
@@ -180,25 +193,25 @@ bool MockUDPSocket::EnableBroadcast() {
 }
 
 
-bool MockUDPSocket::SetMulticastInterface(const IPV4Address &interface) {
-  OLA_ASSERT_EQ(m_interface, interface);
+bool MockUDPSocket::SetMulticastInterface(const IPV4Address &iface) {
+  OLA_ASSERT_EQ(m_interface, iface);
   return true;
 }
 
 
-bool MockUDPSocket::JoinMulticast(const IPV4Address &interface,
+bool MockUDPSocket::JoinMulticast(const IPV4Address &iface,
                                   const IPV4Address &group,
                                   bool loop) {
-  OLA_ASSERT_EQ(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, iface);
   (void) group;
   (void) loop;
   return true;
 }
 
 
-bool MockUDPSocket::LeaveMulticast(const IPV4Address &interface,
+bool MockUDPSocket::LeaveMulticast(const IPV4Address &iface,
                                    const IPV4Address &group) {
-  OLA_ASSERT_EQ(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, iface);
   (void) group;
   return true;
 }
@@ -289,8 +302,8 @@ bool MockUDPSocket::CheckNetworkParamsMatch(bool init_called,
 }
 
 
-void MockUDPSocket::SetInterface(const IPV4Address &interface) {
-  m_interface = interface;
+void MockUDPSocket::SetInterface(const IPV4Address &iface) {
+  m_interface = iface;
 }
 
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ConfigCommon.h
  * Copyright (C) 2011 Simon Newton
@@ -31,16 +31,11 @@
 #ifndef TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_
 #define TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_
 
-#include <string>
 #include <utility>
 #include <vector>
 #include "tools/ola_trigger/Action.h"
 
-using std::string;
-using std::vector;
-using std::pair;
-
-typedef vector<ValueInterval*> IntervalList;
-typedef pair<Action*, Action*> ActionPair;
+typedef std::vector<ValueInterval*> IntervalList;
+typedef std::pair<Action*, Action*> ActionPair;
 
 #endif  // TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_

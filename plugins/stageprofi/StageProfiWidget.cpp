@@ -11,22 +11,27 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageprofiWidget.cpp
  * This is the base widget class
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
+
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+#include <stdint.h>
 
 #include <string.h>
 #include <algorithm>
 #include "ola/Callback.h"
+#include "ola/util/Utils.h"
 #include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+using ola::io::SelectServer;
 
 enum stageprofi_packet_type_e {
   ID_GETDMX =  0xFE,
@@ -64,7 +69,7 @@ int StageProfiWidget::Disconnect() {
  * TODO: fix this
  */
 bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) const {
-  unsigned int index = 0;
+  uint16_t index = 0;
   while (index < buffer.Size()) {
     unsigned int size = std::min((unsigned int) DMX_MSG_LEN,
                                  buffer.Size() - index);
@@ -125,11 +130,11 @@ bool StageProfiWidget::DetectDevice() {
 /*
  * Set a single channel
  */
-int StageProfiWidget::SetChannel(unsigned int chan, uint8_t val) const {
+int StageProfiWidget::SetChannel(uint16_t chan, uint8_t val) const {
   uint8_t msg[3];
 
   msg[0] = chan > DMX_MSG_LEN ? ID_SETHI : ID_SETLO;
-  msg[1] = chan & 0xFF;
+  msg[1] = chan & UINT8_MAX;
   msg[2] = val;
   return m_socket->Send(msg, sizeof(msg));
 }
@@ -141,14 +146,13 @@ int StageProfiWidget::SetChannel(unsigned int chan, uint8_t val) const {
  * @param buf a pointer to the data
  * @param len the length of the data
  */
-int StageProfiWidget::Send255(unsigned int start, const uint8_t *buf,
+int StageProfiWidget::Send255(uint16_t start, const uint8_t *buf,
                               unsigned int length) const {
   uint8_t msg[DMX_MSG_LEN + DMX_HEADER_SIZE];
   unsigned int len = std::min((unsigned int) DMX_MSG_LEN, length);
 
   msg[0] = ID_SETDMX;
-  msg[1] = start & 0xFF;
-  msg[2] = (start>>8) & 0xFF;
+  ola::utils::SplitUInt16(start, &msg[2], &msg[1]);
   msg[3] = len;
   memcpy(msg + DMX_HEADER_SIZE, buf, len);
   return m_socket->Send(msg, len + DMX_HEADER_SIZE);

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DATracker.h
  * Copyright (C) 2012 Simon Newton
@@ -146,19 +146,19 @@ class DATracker {
 
  private:
     class InternalDirectoryAgent : public DirectoryAgent {
-      public:
-        InternalDirectoryAgent(): DirectoryAgent() {}
+     public:
+      InternalDirectoryAgent(): DirectoryAgent() {}
 
-        InternalDirectoryAgent(const ScopeSet &scopes,
-                               const string &url,
-                               const IPV4Address &address,
-                               uint32_t boot_timestamp)
-            : DirectoryAgent(scopes, url, address, boot_timestamp) {
-        }
+      InternalDirectoryAgent(const ScopeSet &scopes,
+                             const string &url,
+                             const IPV4Address &address,
+                             uint32_t boot_timestamp)
+          : DirectoryAgent(scopes, url, address, boot_timestamp) {
+      }
 
-        void SetBootTimestamp(uint32_t boot_timestamp) const {
-          m_boot_time = boot_timestamp;
-        }
+      void SetBootTimestamp(uint32_t boot_timestamp) const {
+        m_boot_time = boot_timestamp;
+      }
     };
 
     typedef map<string, InternalDirectoryAgent> DAMap;  // keyed by url

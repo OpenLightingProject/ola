@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetPlugin.h
  * Interface for the ArtNet plugin class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETPLUGIN_H_
@@ -29,10 +29,6 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-using std::string;
-
 class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
@@ -43,10 +39,10 @@ class ArtNetPlugin : public Plugin {
 
   ~ArtNetPlugin() {}
 
-  string Name() const { return PLUGIN_NAME; }
+  std::string Name() const { return PLUGIN_NAME; }
   ola_plugin_id Id() const { return OLA_PLUGIN_ARTNET; }
-  string Description() const;
-  string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Description() const;
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
   bool StartHook();

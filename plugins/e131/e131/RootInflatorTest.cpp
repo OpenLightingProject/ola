@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RootInflatorTest.cpp
  * Test fixture for the RootInflator class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -30,6 +30,8 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 class RootInflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RootInflatorTest);

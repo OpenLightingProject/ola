@@ -11,14 +11,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortManager.cpp
  * Enables the Patching of Ports
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
-#include <string>
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -26,6 +25,8 @@
 #include "olad/Port.h"
 
 namespace ola {
+
+using std::vector;
 
 /*
  * Patch a port

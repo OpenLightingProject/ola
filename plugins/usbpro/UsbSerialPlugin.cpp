@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbSerialPlugin.cpp
  * The UsbPro plugin for ola
- * Copyright (C) 2006-2010 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <stdlib.h>
@@ -47,6 +47,8 @@ namespace plugin {
 namespace usbpro {
 
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
 const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetPlugin.cpp
  * The KiNET plugin for ola
@@ -30,21 +30,15 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-using std::string;
-
 class KiNetPlugin : public Plugin {
  public:
-    explicit KiNetPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
-
+    explicit KiNetPlugin(PluginAdaptor *plugin_adaptor);
     ~KiNetPlugin();
 
-    string Name() const { return PLUGIN_NAME; }
+    std::string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_KINET; }
-    string Description() const;
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string Description() const;
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     std::auto_ptr<class KiNetDevice> m_device;  // only have one device

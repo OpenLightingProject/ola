@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Universe.h
  * Header file for the Universe class, see Universe.cpp for details.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_UNIVERSE_H_
@@ -38,11 +38,6 @@
 
 namespace ola {
 
-using ola::rdm::RDMDiscoveryCallback;
-using ola::rdm::UID;
-using std::map;
-using std::set;
-
 class Client;
 class InputPort;
 class OutputPort;
@@ -60,7 +55,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     ~Universe();
 
     // Properties for this universe
-    string Name() const { return m_universe_name; }
+    std::string Name() const { return m_universe_name; }
     unsigned int UniverseId() const { return m_universe_id; }
     merge_mode MergeMode() const { return m_merge_mode; }
     bool IsActive() const;
@@ -83,7 +78,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     }
 
     // Used to adjust the properties
-    void SetName(const string &name);
+    void SetName(const std::string &name);
     void SetMergeMode(merge_mode merge_mode);
 
     /**
@@ -106,8 +101,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool ContainsPort(OutputPort *port) const;
     unsigned int InputPortCount() const { return m_input_ports.size(); }
     unsigned int OutputPortCount() const { return m_output_ports.size(); }
-    void InputPorts(vector<InputPort*> *ports);
-    void OutputPorts(vector<OutputPort*> *ports);
+    void InputPorts(std::vector<InputPort*> *ports);
+    void OutputPorts(std::vector<OutputPort*> *ports);
 
     // Source clients are those that provide us with data
     bool AddSourceClient(Client *client);
@@ -132,7 +127,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     // RDM methods
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    void RunRDMDiscovery(RDMDiscoveryCallback *on_complete,
+    void RunRDMDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete,
                          bool full = true);
     void NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids);
     void GetUIDs(ola::rdm::UIDSet *uids) const;
@@ -160,19 +155,19 @@ class Universe: public ola::rdm::RDMControllerInterface {
       unsigned int current_count;
       ola::rdm::rdm_response_code response_code;
       ola::rdm::RDMCallback *callback;
-      vector<string> packets;
+      std::vector<std::string> packets;
     } broadcast_request_tracker;
 
-    typedef map<Client*, bool> SourceClientMap;
+    typedef std::map<Client*, bool> SourceClientMap;
 
-    string m_universe_name;
+    std::string m_universe_name;
     unsigned int m_universe_id;
-    string m_universe_id_str;
+    std::string m_universe_id_str;
     uint8_t m_active_priority;
     enum merge_mode m_merge_mode;  // merge mode
-    vector<InputPort*> m_input_ports;
-    vector<OutputPort*> m_output_ports;
-    set<Client*> m_sink_clients;  // clients that require updates
+    std::vector<InputPort*> m_input_ports;
+    std::vector<OutputPort*> m_output_ports;
+    std::set<Client*> m_sink_clients;  // clients that require updates
     /**
      * Tracks current source clients and whether or not they are stale.
      * true == stale and can be removed, false == active is to be kept
@@ -181,7 +176,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
-    map<UID, OutputPort*> m_output_uids;
+    std::map<ola::rdm::UID, OutputPort*> m_output_uids;
     Clock *m_clock;
     TimeInterval m_rdm_discovery_interval;
     TimeStamp m_last_discovery_time;
@@ -197,28 +192,28 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
-    void HTPMergeSources(const vector<DmxSource> &sources);
+    void HTPMergeSources(const std::vector<DmxSource> &sources);
     bool MergeAll(const InputPort *port, const Client *client);
     void PortDiscoveryComplete(BaseCallback0<void> *on_complete,
                                OutputPort *output_port,
                                const ola::rdm::UIDSet &uids);
-    void DiscoveryComplete(RDMDiscoveryCallback *on_complete);
+    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *on_complete);
 
-    void SafeIncrement(const string &name);
-    void SafeDecrement(const string &name);
+    void SafeIncrement(const std::string &name);
+    void SafeDecrement(const std::string &name);
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,
-                        vector<PortClass*> *ports);
+                        std::vector<PortClass*> *ports);
 
     template<class PortClass>
     bool GenericRemovePort(PortClass *port,
-                          vector<PortClass*> *ports,
-                          map<UID, PortClass*> *uid_map = NULL);
+                          std::vector<PortClass*> *ports,
+                          std::map<ola::rdm::UID, PortClass*> *uid_map = NULL);
 
     template<class PortClass>
     bool GenericContainsPort(PortClass *port,
-                             const vector<PortClass*> &ports) const;
+                             const std::vector<PortClass*> &ports) const;
 
     DISALLOW_COPY_AND_ASSIGN(Universe);
 };

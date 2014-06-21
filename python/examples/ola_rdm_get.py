@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_rdm_get.py
 # Copyright (C) 2010 Simon Newton
@@ -41,11 +41,11 @@ def Usage():
   Use 'ola_rdm_get --list-pids' to get a list of pids.
 
     -d, --sub-device <device> target a particular sub device (default is 0)
-    -h, --help                Display this help message and exit.
-    -i, --interactive         Interactive mode
+    -h, --help                display this help message and exit.
+    -i, --interactive         interactive mode
     -l, --list-pids           display a list of pids
-    --pid_file                The PID data store to use.
-    --uid                     The UID to send to.
+    -p, --pid-location        the directory to read PID definitions from
+    --uid                     the UID to send to
     -u, --universe <universe> Universe number.""")
 
 wrapper = None
@@ -100,21 +100,21 @@ class ResponsePrinter(object):
 
 class InteractiveModeController(cmd.Cmd):
   """Interactive mode!"""
-  def __init__(self, universe, uid, sub_device, pid_file):
+  def __init__(self, universe, uid, sub_device, pid_location):
     """Create a new InteractiveModeController.
 
     Args:
       universe:
       uid:
       sub_device:
-      pid_file:
+      pid_location:
     """
     cmd.Cmd.__init__(self)
     self._universe = universe
     self._uid = uid
     self._sub_device = sub_device
 
-    self.pid_store = PidStore.GetStore(pid_file)
+    self.pid_store = PidStore.GetStore(pid_location)
     self.wrapper = ClientWrapper()
     self.client = self.wrapper.Client()
     self.rdm_api = RDMAPI(self.client, self.pid_store)
@@ -419,9 +419,9 @@ class InteractiveModeController(cmd.Cmd):
 def main():
   readline.set_completer_delims(' \t')
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'd:hilu:',
+    opts, args = getopt.getopt(sys.argv[1:], 'd:hilp:u:',
                                ['sub-device=', 'help', 'interactive',
-                                 'list-pids', 'pid_file=', 'uid=',
+                                 'list-pids', 'pid-location=', 'uid=',
                                  'universe='])
   except getopt.GetoptError, err:
     print str(err)
@@ -432,7 +432,7 @@ def main():
   uid = None
   sub_device = 0
   list_pids = False
-  pid_file = None
+  pid_location = None
   interactive_mode = False
   for o, a in opts:
     if o in ('-d', '--sub-device'):
@@ -446,8 +446,8 @@ def main():
       list_pids = True
     elif o in ('--uid',):
       uid = UID.FromString(a)
-    elif o in ('--pid_file',):
-      pid_file = a
+    elif o in ('-p', '--pid-location',):
+      pid_location = a
     elif o in ('-u', '--universe'):
       universe = int(a)
 
@@ -459,7 +459,10 @@ def main():
     Usage()
     sys.exit()
 
-  controller = InteractiveModeController(universe, uid, sub_device, pid_file)
+  controller = InteractiveModeController(universe,
+                                         uid,
+                                         sub_device,
+                                         pid_location)
   if interactive_mode:
     sys.stdout.write('Available Uids:\n')
     controller.onecmd('uids')

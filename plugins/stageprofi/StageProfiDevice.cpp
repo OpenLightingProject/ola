@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiDevice.cpp
  * StageProfi device
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <stdlib.h>
@@ -37,6 +37,9 @@ namespace plugin {
 namespace stageprofi {
 
 using ola::AbstractPlugin;
+using ola::io::ConnectedDescriptor;
+using std::string;
+
 
 /*
  * Create a new device

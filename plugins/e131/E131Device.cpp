@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Device.cpp
  * An E1.31 device
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  *
  * Ids 0-3 : Input ports (recv dmx)
  * Ids 4-7 : Output ports (send dmx)
@@ -45,13 +45,16 @@ namespace e131 {
 const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
 
 using ola::rpc::RpcController;
+using std::ostringstream;
+using std::string;
+using std::vector;
 
 /*
  * Create a new device
  */
 E131Device::E131Device(Plugin *owner,
                        const ola::acn::CID &cid,
-                       std::string ip_addr,
+                       string ip_addr,
                        PluginAdaptor *plugin_adaptor,
                        const E131DeviceOptions &options)
     : Device(owner, DEVICE_NAME),
@@ -82,7 +85,7 @@ bool E131Device::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << DEVICE_NAME << " [" << m_node->GetInterface().ip_address << "]";
   SetName(str.str());
 

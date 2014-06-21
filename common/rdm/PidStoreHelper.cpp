@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PidStoreHelper.cpp
  * Provides helper methods for loading / accessing the pid store, and dealing
@@ -30,6 +30,7 @@
 namespace ola {
 namespace rdm {
 
+using std::string;
 using std::vector;
 
 /**
@@ -37,7 +38,8 @@ using std::vector;
  */
 PidStoreHelper::PidStoreHelper(const string &pid_location,
                                unsigned int initial_indent)
-    : m_pid_location(pid_location),
+    : m_pid_location(pid_location.empty() ? RootPidStore::DataLocation() :
+                     pid_location),
       m_root_store(NULL),
       m_message_printer(initial_indent) {
 }
@@ -73,7 +75,7 @@ bool PidStoreHelper::Init() {
  * @return a PidDescriptor or NULL if the pid wasn't found.
  */
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
-    const string &pid_name,
+    const std::string &pid_name,
     uint16_t manufacturer_id) const {
   if (!m_root_store)
     return NULL;
@@ -148,6 +150,7 @@ const string PidStoreHelper::MessageToString(
 /**
  * Pretty print a RDM message based on the PID, if we can't find a custom
  * MessagePrinter we default to the GenericMessagePrinter.
+ * @param manufacturer_id the manufacturer ID
  * @param pid the pid value
  * @param message the Message object to print
  * @returns a formatted string representation of the message.
@@ -229,7 +232,7 @@ const string PidStoreHelper::SchemaAsString(
  * Return the list of pids supported including manufacturer pids.
  */
 void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
-                                   vector<string> *pid_names) const {
+                                   std::vector<std::string> *pid_names) const {
   if (!m_root_store)
     return;
 
@@ -257,7 +260,7 @@ void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
  */
 void PidStoreHelper::SupportedPids(
     uint16_t manufacturer_id,
-    vector<const PidDescriptor*> *descriptors) const {
+    std::vector<const PidDescriptor*> *descriptors) const {
   if (!m_root_store)
     return;
 

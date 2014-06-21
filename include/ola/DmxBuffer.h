@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DmxBuffer.h
  * Interface for the DmxBuffer
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -32,8 +32,6 @@
 
 
 namespace ola {
-
-using std::string;
 
 /**
  * @class DmxBuffer ola/DmxBuffer.h
@@ -78,7 +76,7 @@ class DmxBuffer {
      * @deprecated Use DmxBuffer(const uint8_t *data, unsigned int length)
      * instead
      */
-    explicit DmxBuffer(const string &data);
+    explicit DmxBuffer(const std::string &data);
 
     /**
      * @brief Destructor
@@ -134,7 +132,7 @@ class DmxBuffer {
      * @return true if the set was successful and false if it failed
      * @post Size() == data.length()
      */
-    bool Set(const string &data);
+    bool Set(const std::string &data);
 
     /**
      * @brief Sets the data in this buffer to be the same as the other one.
@@ -165,7 +163,7 @@ class DmxBuffer {
      * would set channel 1 through 5 to 0 and channel 6,7 to 255 and channel
      * 8 to 128.
      */
-    bool SetFromString(const string &data);
+    bool SetFromString(const std::string &data);
 
     /**
      * @brief Set a Range of data to a single value. Calling this on an
@@ -216,7 +214,7 @@ class DmxBuffer {
      * @brief Get a range of values starting from a particular slot.
      * @param slot is the dmx slot to start from
      * @param data is a pointer to where you want to store the gathered data
-     * @param length is the length of the data you wish to retrieve
+     * @param[in,out] length is the length of the data you wish to retrieve
      */
     void GetRange(unsigned int slot, uint8_t *data,
                   unsigned int *length) const;
@@ -240,7 +238,7 @@ class DmxBuffer {
      * @brief Get the raw contents of the DmxBuffer as a string.
      * @return a string of raw channel values
      */
-    string Get() const;
+    std::string Get() const;
 
     /**
      * @brief Set the buffer to all zeros.
@@ -264,7 +262,7 @@ class DmxBuffer {
      * "0,0,255,128,100"
      * @endcode
      */
-    string ToString() const;
+    std::string ToString() const;
 
  private:
     bool Init();

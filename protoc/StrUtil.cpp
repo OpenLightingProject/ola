@@ -114,7 +114,7 @@ template <typename ITR>
 static inline
 void SplitStringToIteratorUsing(const string& full,
                                 const char* delim,
-                                ITR& result) {
+                                ITR* result) {
   // Optimize the common case where delim is a single character.
   if (delim[0] != '\0' && delim[1] == '\0') {
     char c = delim[0];
@@ -127,7 +127,7 @@ void SplitStringToIteratorUsing(const string& full,
         const char* start = p;
         while (++p != end && *p != c) {
         }
-        *result++ = string(start, p - start);
+        *(*result)++ = string(start, p - start);
       }
     }
     return;
@@ -138,10 +138,10 @@ void SplitStringToIteratorUsing(const string& full,
   while (begin_index != string::npos) {
     end_index = full.find_first_of(delim, begin_index);
     if (end_index == string::npos) {
-      *result++ = full.substr(begin_index);
+      *(*result)++ = full.substr(begin_index);
       return;
     }
-    *result++ = full.substr(begin_index, (end_index - begin_index));
+    *(*result)++ = full.substr(begin_index, (end_index - begin_index));
     begin_index = full.find_first_not_of(delim, end_index);
   }
 }
@@ -150,7 +150,7 @@ void SplitStringUsing(const string& full,
                       const char* delim,
                       vector<string>* result) {
   std::back_insert_iterator< vector<string> > it(*result);
-  SplitStringToIteratorUsing(full, delim, it);
+  SplitStringToIteratorUsing(full, delim, &it);
 }
 
 // Protocol buffers doesn't ever care about errors, but I don't want to remove
@@ -289,13 +289,6 @@ char *FastHex64ToBuffer(uint64_t value, char* buffer) {
 
 char *FastHex32ToBuffer(uint32_t value, char* buffer) {
   return InternalFastHexToBuffer(value, buffer, 8);
-}
-
-static inline char* PlaceNum(char* p, int num, char prev_sep) {
-  *p-- = '0' + num % 10;
-  *p-- = '0' + num / 10;
-  *p-- = prev_sep;
-  return p;
 }
 
 // ----------------------------------------------------------------------

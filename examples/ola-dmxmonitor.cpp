@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Modified by Simon Newton (nomis52<AT>gmail.com) to use ola
  *
@@ -30,9 +30,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +60,6 @@ using ola::io::SelectServer;
 using std::string;
 
 static const unsigned int DEFAULT_UNIVERSE = 0;
-static const unsigned char CHANNEL_NUDGE_VALUE = 0x10;
 static const unsigned char CHANNEL_DISPLAY_WIDTH = 4;
 static const unsigned char ROWS_PER_CHANNEL_ROW = 2;
 

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-streaming-client.cpp
- *  The streaming client example program.
- *  Copyright (C) 2005-2008 Simon Newton
+ * ola-streaming-client.cpp
+ * The streaming client example program.
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdlib.h>
@@ -24,6 +24,7 @@
 #include <ola/client/StreamingClient.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/dmx/SourcePriorities.h>
 
 #include <iostream>
@@ -62,12 +63,9 @@ bool SendDataFromString(StreamingClient *client,
 }
 
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "--dmx <dmx_data> --universe <universe_id>",
-      "Send DMX512 data to OLA. If DMX512 data isn't provided, it will read "
-      "from STDIN.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "--dmx <dmx_data> --universe <universe_id>",
+               "Send DMX512 data to OLA. If DMX512 data isn't provided, it "
+               "will read from STDIN.");
 
   StreamingClient ola_client;
   if (!ola_client.Setup()) {

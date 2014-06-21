@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # TestMixins.py
 # Copyright (C) 2010 Simon Newton
@@ -40,7 +39,7 @@ MAX_LABEL_SIZE = 32
 MAX_DMX_ADDRESS = 512
 
 def UnsupportedSetNacks(pid):
-  """Repsonders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
+  """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
   return [
     NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
@@ -132,6 +131,20 @@ class GetWithDataMixin(object):
 
   def Test(self):
     self.AddIfGetSupported([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
+        warning='Get %s with data returned an ack' % self.pid.name)
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+class GetMandatoryPIDWithDataMixin(object):
+  """GET a mandatory PID with junk param data."""
+  DATA = 'foo'
+
+  def Test(self):
+    # PID must return something as this PID is required (can't return
+    # unsupported)
+    self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)

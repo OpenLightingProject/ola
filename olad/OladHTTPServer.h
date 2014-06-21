@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OladHTTPServer.h
  * Interface for the OLA HTTP class
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_OLADHTTPSERVER_H_
@@ -35,21 +35,19 @@
 
 namespace ola {
 
-using std::string;
-using ola::http::HTTPServer;
-
 
 /*
  * This is the main OLA HTTP Server
  */
 class OladHTTPServer: public ola::http::OlaHTTPServer {
  public:
-  struct OladHTTPServerOptions: public HTTPServer::HTTPServerOptions {
+  struct OladHTTPServerOptions: public
+      ola::http::HTTPServer::HTTPServerOptions {
    public:
     bool enable_quit;
 
     OladHTTPServerOptions()
-        : HTTPServer::HTTPServerOptions(),
+        : ola::http::HTTPServer::HTTPServerOptions(),
           enable_quit(true) {
     }
   };
@@ -64,77 +62,89 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
   bool Init();
   void SetPidStore(const ola::rdm::RootPidStore *pid_store);
 
-  int JsonServerStats(const HTTPRequest *request, HTTPResponse *response);
-  int JsonUniversePluginList(const HTTPRequest *request,
-                             HTTPResponse *response);
-  int JsonPluginInfo(const HTTPRequest *request, HTTPResponse *response);
-  int JsonUniverseInfo(const HTTPRequest *request, HTTPResponse *response);
-  int JsonAvailablePorts(const HTTPRequest *request, HTTPResponse *response);
-  int CreateNewUniverse(const HTTPRequest *request, HTTPResponse *response);
-  int ModifyUniverse(const HTTPRequest *request, HTTPResponse *response);
+  int JsonServerStats(const ola::http::HTTPRequest *request,
+                      ola::http::HTTPResponse *response);
+  int JsonUniversePluginList(const ola::http::HTTPRequest *request,
+                             ola::http::HTTPResponse *response);
+  int JsonPluginInfo(const ola::http::HTTPRequest *request,
+                     ola::http::HTTPResponse *response);
+  int JsonUniverseInfo(const ola::http::HTTPRequest *request,
+                       ola::http::HTTPResponse *response);
+  int JsonAvailablePorts(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response);
+  int CreateNewUniverse(const ola::http::HTTPRequest *request,
+                        ola::http::HTTPResponse *response);
+  int ModifyUniverse(const ola::http::HTTPRequest *request,
+                     ola::http::HTTPResponse *response);
 
-  int GetDmx(const HTTPRequest *request, HTTPResponse *response);
-  int HandleSetDmx(const HTTPRequest *request, HTTPResponse *response);
-  int DisplayQuit(const HTTPRequest *request, HTTPResponse *response);
-  int ReloadPlugins(const HTTPRequest *request, HTTPResponse *response);
-  int ReloadPidStore(const HTTPRequest *request, HTTPResponse *response);
+  int GetDmx(const ola::http::HTTPRequest *request,
+             ola::http::HTTPResponse *response);
+  int HandleSetDmx(const ola::http::HTTPRequest *request,
+                   ola::http::HTTPResponse *response);
+  int DisplayQuit(const ola::http::HTTPRequest *request,
+                  ola::http::HTTPResponse *response);
+  int ReloadPlugins(const ola::http::HTTPRequest *request,
+                    ola::http::HTTPResponse *response);
+  int ReloadPidStore(const ola::http::HTTPRequest *request,
+                     ola::http::HTTPResponse *response);
 
-  void HandlePluginList(HTTPResponse *response,
+  void HandlePluginList(ola::http::HTTPResponse *response,
                         const client::Result &result,
-                        const vector<client::OlaPlugin> &plugins);
+                        const std::vector<client::OlaPlugin> &plugins);
 
-  void HandleUniverseList(HTTPResponse *response,
+  void HandleUniverseList(ola::http::HTTPResponse *response,
                           ola::web::JsonObject *json,
                           const client::Result &result,
-                          const vector<client::OlaUniverse> &universes);
+                          const std::vector<client::OlaUniverse> &universes);
 
-  void HandlePartialPluginInfo(HTTPResponse *response,
+  void HandlePartialPluginInfo(ola::http::HTTPResponse *response,
                                int plugin_id,
                                const client::Result &result,
-                               const string &description);
-  void HandlePluginInfo(HTTPResponse *response,
-                        string description,
+                               const std::string &description);
+  void HandlePluginInfo(ola::http::HTTPResponse *response,
+                        std::string description,
                         const client::Result &result,
                         const ola::client::PluginState &state);
 
-  void HandleUniverseInfo(HTTPResponse *response,
+  void HandleUniverseInfo(ola::http::HTTPResponse *response,
                           const client::Result &result,
                           const client::OlaUniverse &universe);
 
-  void HandlePortsForUniverse(HTTPResponse *response,
+  void HandlePortsForUniverse(ola::http::HTTPResponse *response,
                               ola::web::JsonObject *json,
                               unsigned int universe_id,
                               const client::Result &result,
-                              const vector<client::OlaDevice> &devices);
+                              const std::vector<client::OlaDevice> &devices);
 
-  void HandleCandidatePorts(HTTPResponse *response,
+  void HandleCandidatePorts(ola::http::HTTPResponse *response,
                             const client::Result &result,
-                            const vector<client::OlaDevice> &devices);
+                            const std::vector<client::OlaDevice> &devices);
 
-  void CreateUniverseComplete(HTTPResponse *response,
+  void CreateUniverseComplete(ola::http::HTTPResponse *response,
                               unsigned int universe_id,
                               bool included_name,
                               class ActionQueue *action_queue);
 
-  void SendCreateUniverseResponse(HTTPResponse *response,
+  void SendCreateUniverseResponse(ola::http::HTTPResponse *response,
                                   unsigned int universe_id,
                                   bool included_name,
                                   class ActionQueue *action_queue);
 
-  void ModifyUniverseComplete(HTTPResponse *response,
+  void ModifyUniverseComplete(ola::http::HTTPResponse *response,
                               class ActionQueue *action_queue);
-  void SendModifyUniverseResponse(HTTPResponse *response,
+  void SendModifyUniverseResponse(ola::http::HTTPResponse *response,
                                   class ActionQueue *action_queue);
 
   /**
    * Serve a help redirect
    * @param response the response to use
    */
-  inline static int ServeHelpRedirect(HTTPResponse *response) {
-    return HTTPServer::ServeRedirect(response, HELP_REDIRECTION);
+  inline static int ServeHelpRedirect(ola::http::HTTPResponse *response) {
+    return ola::http::HTTPServer::ServeRedirect(response, HELP_REDIRECTION);
   }
 
-  static int ServeUsage(HTTPResponse *response, const string &details);
+  static int ServeUsage(ola::http::HTTPResponse *response,
+                        const std::string &details);
 
   static const char HELP_PARAMETER[];
 
@@ -147,12 +157,12 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
   RDMHTTPModule m_rdm_module;
   time_t m_start_time_t;
 
-  void HandleGetDmx(HTTPResponse *response,
+  void HandleGetDmx(ola::http::HTTPResponse *response,
                     const client::Result &result,
                     const client::DMXMetadata &metadata,
                     const DmxBuffer &buffer);
 
-  void HandleBoolResponse(HTTPResponse *response,
+  void HandleBoolResponse(ola::http::HTTPResponse *response,
                           const client::Result &result);
 
   void PortToJson(ola::web::JsonObject *object,
@@ -161,25 +171,27 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
                   bool is_output);
 
   void AddPatchActions(ActionQueue *action_queue,
-                       const string port_id_string,
+                       const std::string port_id_string,
                        unsigned int universe,
                        client::PatchAction port_action);
 
   void AddPriorityActions(ActionQueue *action_queue,
-                          const HTTPRequest *request);
+                          const ola::http::HTTPRequest *request);
 
   typedef struct {
     unsigned int device_alias;
     unsigned int port;
     client::PortDirection direction;
-    string string_id;
+    std::string string_id;
   } port_identifier;
 
-  void DecodePortIds(const string &port_ids, vector<port_identifier> *ports);
+  void DecodePortIds(const std::string &port_ids,
+                     std::vector<port_identifier> *ports);
 
   void RegisterHandler(
-      const string &path,
-      int (OladHTTPServer::*method)(const HTTPRequest*, HTTPResponse*));
+      const std::string &path,
+      int (OladHTTPServer::*method)(const ola::http::HTTPRequest*,
+                                    ola::http::HTTPResponse*));
 
   static const char HELP_REDIRECTION[];
   static const char K_BACKEND_DISCONNECTED_ERROR[];

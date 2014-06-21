@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RegistrationFileParserTest.cpp
  * Test fixture for the SLPStrings functions.
@@ -39,7 +39,6 @@ using std::set;
 using std::string;
 using std::stringstream;
 
-
 class RegistrationFileParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RegistrationFileParserTest);
   CPPUNIT_TEST(testFromStream);
@@ -63,6 +62,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RegistrationFileParserTest);
  * Parse a stream.
  */
 void RegistrationFileParserTest::testFromStream() {
+  // This is a stringstream not a ostringstream as the other end needs an
+  // istream
   stringstream str;
   str << "oNe  \tservice:foo://localhost    300" << endl;
   str << "tWO  \tservice:foo://192.168.1.1  600" << endl;

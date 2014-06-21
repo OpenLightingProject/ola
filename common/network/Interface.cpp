@@ -11,14 +11,26 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Interface.cpp
  * Represents network interface.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>  // Required by FreeBSD
+#endif
+#ifdef HAVE_NET_IF_ARP_H
+#include <net/if_arp.h>
+#endif
+
+#include <stdint.h>
 #include <string.h>
+
 #include <string>
 #include <vector>
 
@@ -26,36 +38,55 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"
 #endif
 
 namespace ola {
+
 namespace network {
 
 using std::string;
 using std::vector;
 
+#ifdef ARPHRD_VOID
+const uint16_t Interface::ARP_VOID_TYPE = ARPHRD_VOID;
+#else
+const uint16_t Interface::ARP_VOID_TYPE = 0xffff;
+#endif
+
+#ifdef ARPHRD_ETHER
+const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
+#else
+const uint16_t Interface::ARP_ETHERNET_TYPE = 1;
+#endif
+
 
 Interface::Interface()
-    : loopback(false) {
+    : loopback(false),
+      index(DEFAULT_INDEX),
+      type(ARP_VOID_TYPE) {
 }
 
 
-Interface::Interface(const string &name,
+Interface::Interface(const std::string &name,
                      const IPV4Address &ip_address,
                      const IPV4Address &broadcast_address,
                      const IPV4Address &subnet_mask,
                      const MACAddress &hw_address,
-                     bool loopback)
+                     bool loopback,
+                     int32_t index,
+                     uint16_t type)
     : name(name),
       ip_address(ip_address),
       bcast_address(broadcast_address),
       subnet_mask(subnet_mask),
       hw_address(hw_address),
-      loopback(loopback) {
+      loopback(loopback),
+      index(index),
+      type(type) {
 }
 
 
@@ -65,7 +96,9 @@ Interface::Interface(const Interface &other)
       bcast_address(other.bcast_address),
       subnet_mask(other.subnet_mask),
       hw_address(other.hw_address),
-      loopback(other.loopback) {
+      loopback(other.loopback),
+      index(other.index),
+      type(other.type) {
 }
 
 
@@ -77,6 +110,8 @@ Interface& Interface::operator=(const Interface &other) {
     subnet_mask = other.subnet_mask;
     hw_address = other.hw_address;
     loopback = other.loopback;
+    index = other.index;
+    type = other.type;
   }
   return *this;
 }
@@ -86,7 +121,9 @@ bool Interface::operator==(const Interface &other) {
   return (name == other.name &&
           ip_address == other.ip_address &&
           subnet_mask == other.subnet_mask &&
-          loopback == other.loopback);
+          loopback == other.loopback &&
+          index == other.index &&
+          type == other.type);
 }
 
 
@@ -104,7 +141,7 @@ InterfaceBuilder::InterfaceBuilder()
 /**
  * Set the address of the interface to build.
  */
-bool InterfaceBuilder::SetAddress(const string &ip_address) {
+bool InterfaceBuilder::SetAddress(const std::string &ip_address) {
   return SetAddress(ip_address, &m_ip_address);
 }
 
@@ -112,7 +149,7 @@ bool InterfaceBuilder::SetAddress(const string &ip_address) {
 /**
  * Set the broadcast address of the interface to build.
  */
-bool InterfaceBuilder::SetBroadcast(const string &broadcast_address) {
+bool InterfaceBuilder::SetBroadcast(const std::string &broadcast_address) {
   return SetAddress(broadcast_address, &m_broadcast_address);
 }
 
@@ -120,7 +157,7 @@ bool InterfaceBuilder::SetBroadcast(const string &broadcast_address) {
 /**
  * Set the subnet mask of the interface to build.
  */
-bool InterfaceBuilder::SetSubnetMask(const string &mask) {
+bool InterfaceBuilder::SetSubnetMask(const std::string &mask) {
   return SetAddress(mask, &m_subnet_mask);
 }
 
@@ -134,6 +171,22 @@ void InterfaceBuilder::SetLoopback(bool loopback) {
 
 
 /**
+ * Set the index.
+ */
+void InterfaceBuilder::SetIndex(int32_t index) {
+  m_index = index;
+}
+
+
+/**
+ * Set the type.
+ */
+void InterfaceBuilder::SetType(uint16_t type) {
+  m_type = type;
+}
+
+
+/**
  * Reset the builder object
  */
 void InterfaceBuilder::Reset() {
@@ -143,6 +196,8 @@ void InterfaceBuilder::Reset() {
   m_subnet_mask = IPV4Address(0);
   m_hw_address = MACAddress();
   m_loopback = false;
+  m_index = Interface::DEFAULT_INDEX;
+  m_type = Interface::ARP_VOID_TYPE;
 }
 
 
@@ -158,14 +213,17 @@ Interface InterfaceBuilder::Construct() {
                    m_broadcast_address,
                    m_subnet_mask,
                    m_hw_address,
-                   m_loopback);
+                   m_loopback,
+                   m_index,
+                   m_type);
 }
 
 
 /**
  * Set a IPV4Address object from a string
  */
-bool InterfaceBuilder::SetAddress(const string &str, IPV4Address *target) {
+bool InterfaceBuilder::SetAddress(const std::string &str,
+                                  IPV4Address *target) {
   IPV4Address tmp_address;
   if (!IPV4Address::FromString(str, &tmp_address))
     return false;

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseInflator.h
  * Provides the base class for inflating PDU blocks.
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  *
  * The BaseInflator takes care of most of the heavy lifting when inflating PDU
  * blocks. To create a specific Inflator, subclass BaseInflator and implement
@@ -105,21 +105,21 @@ class BaseInflator : public InflatorInterface {
     // determine the length of a pdu
     bool DecodeLength(const uint8_t *data,
                       unsigned int data_length,
-                      unsigned int &pdu_length,
-                      unsigned int &bytes_used) const;
+                      unsigned int *pdu_length,
+                      unsigned int *bytes_used) const;
 
     // determine the vector of a pdu
     bool DecodeVector(uint8_t flags,
                       const uint8_t *data,
                       unsigned int length,
-                      uint32_t &vector,
-                      unsigned int &bytes_used);
+                      uint32_t *vector,
+                      unsigned int *bytes_used);
 
     // Decode a header block and adds any PduHeaders to the HeaderSet object
     virtual bool DecodeHeader(HeaderSet *headers,
                               const uint8_t *data,
                               unsigned int len,
-                              unsigned int &bytes_used) = 0;
+                              unsigned int *bytes_used) = 0;
 
     // parse the body of a pdu
     bool InflatePDU(HeaderSet *headers,

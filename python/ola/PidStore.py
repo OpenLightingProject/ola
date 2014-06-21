@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # PidStore.py
 # Copyright (C) 2010 Simon Newton
@@ -25,11 +24,13 @@ import binascii
 import math
 import ola.RDMConstants
 import os
+import socket
 import struct
 import sys
 from google.protobuf import text_format
 from ola import PidStoreLocation
 from ola import Pids_pb2
+from ola.MACAddress import MACAddress
 from ola.UID import UID
 
 
@@ -424,9 +425,66 @@ class IPV4(IntAtom):
   def __init__(self, name, **kwargs):
     super(IPV4, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
+  def Unpack(self, data):
+    try:
+      return socket.inet_ntoa(data)
+    except socket.error, e:
+      raise ArgsValidationError("Can't unpack data: %s" % e)
+
+  def Pack(self, args):
+    #TODO(Peter): This currently allows some rather quirky values as per
+    #inet_aton, we may want to restrict that in future
+    try:
+      value = struct.unpack("!I", socket.inet_aton(args[0]))
+    except socket.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return super(IntAtom, self).Pack(value)
+
+
+class MACAtom(FixedSizeAtom):
+  """A MAC address."""
+  def __init__(self, name, **kwargs):
+    super(MACAtom, self).__init__(name, 'BBBBBB')
+
+  def Unpack(self, data):
+    format_string = self._FormatString()
+    try:
+      values = struct.unpack(format_string, data)
+    except struct.error:
+      raise UnpackException(e)
+    return MACAddress(bytearray([values[0],
+                                 values[1],
+                                 values[2],
+                                 values[3],
+                                 values[4],
+                                 values[5]]))
+
+  def Pack(self, args):
+    mac = None
+    if isinstance(args[0], MACAddress):
+      mac = args[0]
+    else:
+      mac = MACAddress.FromString(args[0])
+
+    if mac is None:
+      raise ArgsValidationError("Invalid MAC Address: %s" % e)
+
+    format_string = self._FormatString()
+    try:
+      data = struct.pack(format_string,
+                         mac.mac_address[0],
+                         mac.mac_address[1],
+                         mac.mac_address[2],
+                         mac.mac_address[3],
+                         mac.mac_address[4],
+                         mac.mac_address[5])
+    except struct.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
+
 
 class UIDAtom(FixedSizeAtom):
-  """A four-byte IPV4 address."""
+  """A UID."""
   def __init__(self, name, **kwargs):
     super(UIDAtom, self).__init__(name, 'HI')
 
@@ -780,7 +838,7 @@ def SubDeviceValidator(args):
   return True
 
 
-def NonBroadcastSubDeviceValiator(args):
+def NonBroadcastSubDeviceValidator(args):
   """Ensure the sub device is in the range 0 - 512."""
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device > MAX_VALID_SUB_DEVICE):
@@ -1049,6 +1107,8 @@ class PidStore(object):
       return UInt32(field_name, **args);
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field_name, **args);
+    elif field.type == Pids_pb2.MAC:
+      return MACAtom(field_name, **args);
     elif field.type == Pids_pb2.UID:
       return UIDAtom(field_name, **args);
     elif field.type == Pids_pb2.GROUP:
@@ -1068,7 +1128,7 @@ class PidStore(object):
     elif range == Pids_pb2.ROOT_OR_ALL_SUBDEVICE:
       return SubDeviceValidator
     elif range == Pids_pb2.ROOT_OR_SUBDEVICE:
-      return NonBroadcastSubDeviceValiator
+      return NonBroadcastSubDeviceValidator
     elif range == Pids_pb2.ONLY_SUBDEVICES:
       return SpecificSubDeviceValidator
 
@@ -1082,6 +1142,7 @@ def GetStore(location = None, only_files = ()):
   Args:
     location: The location to load the store from. If not specified it uses the
     location defined in PidStoreLocation.py
+    only_files: Load a subset of the files in the location.
 
   Returns:
     An instance of PidStore.

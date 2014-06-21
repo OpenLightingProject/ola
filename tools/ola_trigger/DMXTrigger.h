@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DMXTrigger.h
  * Copyright (C) 2011 Simon Newton
@@ -26,9 +26,6 @@
 
 #include "tools/ola_trigger/Action.h"
 
-using ola::DmxBuffer;
-
-
 /*
  * The class which manages the triggering.
  */
@@ -39,7 +36,7 @@ class DMXTrigger {
     DMXTrigger(Context *context, const SlotVector &actions);
     ~DMXTrigger() {}
 
-    void NewDMX(const DmxBuffer &data);
+    void NewDMX(const ola::DmxBuffer &data);
 
  private:
     Context *m_context;

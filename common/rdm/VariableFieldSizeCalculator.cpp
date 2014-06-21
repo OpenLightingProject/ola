@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * VariableFieldSizeCalculator.cpp
  * Copyright (C) 2011 Simon Newton
@@ -26,6 +26,7 @@ namespace ola {
 namespace rdm {
 
 using ola::messaging::FieldDescriptorGroup;
+using ola::messaging::StringFieldDescriptor;
 
 
 /**
@@ -37,8 +38,8 @@ using ola::messaging::FieldDescriptorGroup;
  * This method is *not* re-entrant.
  * @param data_size the size in bytes of the data in this message
  * @param descriptor The descriptor to use to build the Message
- * @param a pointer to a int which is set to the length of the variable field
- * within this mesage.
+ * @param variable_field_size a pointer to a int which is set to the length of
+ * the variable field within this mesage.
  * @returns A enum which indicates if one (or more) variable length fields
  * exist, and if only one exists, what type it is.
  */

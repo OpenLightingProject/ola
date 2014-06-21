@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstWidget.h
  * Interface for the milinst widget
@@ -47,7 +47,15 @@ class MilInstWidget {
   virtual bool Connect() = 0;
   int Disconnect();
   ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
-  string GetPath() { return m_path; }
+  std::string GetPath() { return m_path; }
+  virtual std::string Type() = 0;
+
+  std::string Description() {
+    std::ostringstream str;
+    str << GetPath() << ", " << Type();
+    return str.str();
+  }
+
   virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
   virtual bool DetectDevice() = 0;
 
@@ -56,7 +64,7 @@ class MilInstWidget {
 
   // instance variables
   bool m_enabled;
-  const string m_path;
+  const std::string m_path;
   ola::io::ConnectedDescriptor *m_socket;
 };
 }  // namespace milinst

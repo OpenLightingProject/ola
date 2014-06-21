@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtils.cpp
  * Random String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
@@ -34,12 +34,12 @@
 namespace ola {
 
 using std::endl;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 void StringSplit(const string &input,
-                 vector<string> &tokens,
+                 vector<string> &tokens,  // NOLINT
                  const string &delimiters) {
   string::size_type start_offset = 0;
   string::size_type end_offset = 0;
@@ -84,14 +84,22 @@ bool StringEndsWith(const string &s, const string &ending) {
 }
 
 string IntToString(int i) {
-  stringstream str;
+  ostringstream str;
   str << i;
   return str.str();
 }
 
 string IntToString(unsigned int i) {
-  stringstream str;
+  ostringstream str;
   str << i;
+  return str.str();
+}
+
+string IntToHexString(unsigned int i, unsigned int width) {
+  ostringstream str;
+  // In C++, you only get the 0x on non-zero values, so we have to explicitly
+  // add it for all values
+  str << "0x" << std::setw(width) << std::hex << std::setfill('0') << i;
   return str.str();
 }
 
@@ -131,7 +139,7 @@ bool StringToInt(const string &value, uint16_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
     return false;
-  if (v > 0xffff)
+  if (v > UINT16_MAX)
     return false;
   *output = static_cast<uint16_t>(v);
   return true;
@@ -141,7 +149,7 @@ bool StringToInt(const string &value, uint8_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
     return false;
-  if (v > 0xff)
+  if (v > UINT8_MAX)
     return false;
   *output = static_cast<uint8_t>(v);
   return true;
@@ -239,7 +247,7 @@ string EscapeString(const string &original) {
 }
 
 string EncodeString(const string &original) {
-  stringstream encoded;
+  ostringstream encoded;
   for (string::const_iterator iter = original.begin();
        iter != original.end();
        ++iter) {
@@ -251,6 +259,20 @@ string EncodeString(const string &original) {
     }
   }
   return encoded.str();
+}
+
+void ReplaceAll(string *original, const string &find, const string &replace) {
+  if (original->empty())
+    return;  // No text, so nothing to do
+
+  if (find.empty())
+    return;  // Nothing to find, so nothing to do
+
+  size_t start = 0;
+  while ((start = original->find(find, start)) != string::npos) {
+    original->replace(start, find.length(), replace);
+    start += find.length();  // Move to the end of the replaced section
+  }
 }
 
 bool HexStringToInt(const string &value, uint8_t *output) {
@@ -349,6 +371,7 @@ void CustomCapitalizeLabel(string *s) {
     "dmx",
     "dns",
     "ip",
+    "ipv4",  // Should really be IPv4 probably, but better than nothing
     "led",
     "rdm",
     "uid",
@@ -387,7 +410,7 @@ void FormatData(std::ostream *out,
                 unsigned int length,
                 unsigned int indent,
                 unsigned int byte_per_line) {
-  stringstream raw, ascii;
+  ostringstream raw, ascii;
   raw << std::setw(2) << std::hex;
   for (unsigned int i = 0; i != length; i++) {
     raw << std::setfill('0') << std::setw(2) <<

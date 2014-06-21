@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaDaemon.h
  * Interface for the OLA Daemon class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_OLADAEMON_H_
@@ -37,9 +37,6 @@ namespace rdm {
   class RootPidStore;
 }  // rdm
 
-using ola::io::SelectServer;
-using ola::network::TCPAcceptingSocket;
-using std::auto_ptr;
 
 class OlaDaemon {
  public:
@@ -51,7 +48,7 @@ class OlaDaemon {
     void Run();
 
     ola::network::GenericSocketAddress RPCAddress() const;
-    SelectServer* GetSelectServer() { return &m_ss; }
+    ola::io::SelectServer* GetSelectServer() { return &m_ss; }
     OlaServer *GetOlaServer() const { return m_server.get(); }
 
     static const unsigned int DEFAULT_RPC_PORT = OLA_DEFAULT_PORT;
@@ -59,16 +56,16 @@ class OlaDaemon {
  private:
     const OlaServer::Options m_options;
     class ExportMap *m_export_map;
-    SelectServer m_ss;
-    vector<class PluginLoader*> m_plugin_loaders;
+    ola::io::SelectServer m_ss;
+    std::vector<class PluginLoader*> m_plugin_loaders;
 
-    auto_ptr<class PreferencesFactory> m_preferences_factory;
-    auto_ptr<class OlaClientServiceFactory> m_service_factory;
-    auto_ptr<TCPAcceptingSocket> m_accepting_socket;
-    auto_ptr<OlaServer> m_server;
+    std::auto_ptr<class PreferencesFactory> m_preferences_factory;
+    std::auto_ptr<class OlaClientServiceFactory> m_service_factory;
+    std::auto_ptr<ola::network::TCPAcceptingSocket> m_accepting_socket;
+    std::auto_ptr<OlaServer> m_server;
 
-    string DefaultConfigDir();
-    bool InitConfigDir(const string &path);
+    std::string DefaultConfigDir();
+    bool InitConfigDir(const std::string &path);
 
     static const char K_RPC_PORT_VAR[];
     static const char OLA_CONFIG_DIR[];

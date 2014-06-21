@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseInflatorTest.cpp
  * Test fixture for the BaseInflator class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -62,15 +62,12 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
 
  protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet *headers,
-                     const uint8_t *data,
-                     unsigned int length,
-                     unsigned int &bytes_used) {
-      bytes_used = 0;
+    bool DecodeHeader(HeaderSet*,
+                     const uint8_t*,
+                     unsigned int,
+                     unsigned int *bytes_used) {
+      *bytes_used = 0;
       return true;
-      (void) headers;
-      (void) data;
-      (void) length;
     }
 
     bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
@@ -125,7 +122,7 @@ void BaseInflatorTest::testDecodeLength() {
 
   // with the length data set to 0, any length should fail.
   for (unsigned int i = 0; i <= sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
 
@@ -134,7 +131,7 @@ void BaseInflatorTest::testDecodeLength() {
   // of bytes required to determine the length and so it fails
   data[1] = 1;
   for (unsigned int i = 0; i <= sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
 
@@ -142,19 +139,19 @@ void BaseInflatorTest::testDecodeLength() {
   // more than that should return correctly.
   data[1] = 2;
   for (unsigned int i = 0; i <= 1; i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
   for (unsigned int i = 2; i <= sizeof(data) ; i++) {
-    OLA_ASSERT(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 2, pdu_length);
     OLA_ASSERT_EQ((unsigned int) 2, bytes_used);
   }
 
   // now check that both bytes are used
   data[0] = 1;  // total length of 258
-  OLA_ASSERT(inflator.DecodeLength(data, sizeof(data), pdu_length,
-                                       bytes_used));
+  OLA_ASSERT(inflator.DecodeLength(data, sizeof(data), &pdu_length,
+                                   &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 258, pdu_length);
   OLA_ASSERT_EQ((unsigned int) 2, bytes_used);
 
@@ -164,7 +161,7 @@ void BaseInflatorTest::testDecodeLength() {
   // with the length data set to 0, any length should fail.
   data[1] = 0;
   for (unsigned int i = 0; i <= sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
 
@@ -173,7 +170,7 @@ void BaseInflatorTest::testDecodeLength() {
   // of bytes required to determine the length and so it fails
   data[2] = 1;
   for (unsigned int i = 0; i <= sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
 
@@ -181,11 +178,11 @@ void BaseInflatorTest::testDecodeLength() {
   // anything more than that should return correctly.
   data[2] = 3;
   for (unsigned int i = 0; i <= 2; i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
   for (unsigned int i = 3; i <= sizeof(data) ; i++) {
-    OLA_ASSERT(inflator.DecodeLength(data, i, pdu_length, bytes_used));
+    OLA_ASSERT(inflator.DecodeLength(data, i, &pdu_length, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 3, pdu_length);
     OLA_ASSERT_EQ((unsigned int) 3, bytes_used);
   }
@@ -193,8 +190,8 @@ void BaseInflatorTest::testDecodeLength() {
   // now check that all 3 bytes are used
   data[0] = BaseInflator::LFLAG_MASK + 1;
   data[1] = 0x01;
-  OLA_ASSERT(inflator.DecodeLength(data, sizeof(data), pdu_length,
-                                             bytes_used));
+  OLA_ASSERT(inflator.DecodeLength(data, sizeof(data), &pdu_length,
+                                   &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 65795, pdu_length);
   OLA_ASSERT_EQ((unsigned int) 3, bytes_used);
 }
@@ -210,13 +207,13 @@ void BaseInflatorTest::testDecodeVector() {
   unsigned int bytes_used = 0;
   uint8_t flags = PDU::VFLAG_MASK;
 
-  OLA_ASSERT_FALSE(inflator.DecodeVector(flags, data, 0, vector, bytes_used));
+  OLA_ASSERT_FALSE(inflator.DecodeVector(flags, data, 0, &vector, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, vector);
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   data[0] = 42;
   for (unsigned int i = 1; i < sizeof(data); i++) {
-    OLA_ASSERT(inflator.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT(inflator.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 42, vector);
     OLA_ASSERT_EQ((unsigned int) 1, bytes_used);
   }
@@ -224,7 +221,7 @@ void BaseInflatorTest::testDecodeVector() {
   // now make sure we can reuse the vector
   flags = 0;
   for (unsigned int i = 0; i < sizeof(data); i++) {
-    OLA_ASSERT(inflator.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT(inflator.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 42, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -232,7 +229,8 @@ void BaseInflatorTest::testDecodeVector() {
   // resetting doesn't allow us to reuse the vector
   inflator.ResetPDUFields();
   for (unsigned int i = 0; i < sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(inflator.DecodeVector(flags, data, i, &vector,
+                                           &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -242,7 +240,7 @@ void BaseInflatorTest::testDecodeVector() {
   TestInflator inflator2(0, PDU::TWO_BYTES);
   for (unsigned int i = 0; i < 2; i++) {
     OLA_ASSERT_FALSE(
-        inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+        inflator2.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -250,7 +248,7 @@ void BaseInflatorTest::testDecodeVector() {
   data[0] = 0x80;
   data[1] = 0x21;
   for (unsigned int i = 2; i < sizeof(data); i++) {
-    OLA_ASSERT(inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT(inflator2.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 32801, vector);
     OLA_ASSERT_EQ((unsigned int) 2, bytes_used);
   }
@@ -258,7 +256,7 @@ void BaseInflatorTest::testDecodeVector() {
   // now make sure we can reuse the vector
   flags = 0;
   for (unsigned int i = 0; i < sizeof(data); i++) {
-    OLA_ASSERT(inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT(inflator2.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 32801, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -267,7 +265,7 @@ void BaseInflatorTest::testDecodeVector() {
   inflator2.ResetPDUFields();
   for (unsigned int i = 0; i < sizeof(data); i++) {
     OLA_ASSERT_FALSE(
-        inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+        inflator2.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -277,7 +275,7 @@ void BaseInflatorTest::testDecodeVector() {
   TestInflator inflator4(0, PDU::FOUR_BYTES);
   for (unsigned int i = 0; i < 4; i++) {
     OLA_ASSERT_FALSE(
-        inflator4.DecodeVector(flags, data, i, vector, bytes_used));
+        inflator4.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -287,7 +285,7 @@ void BaseInflatorTest::testDecodeVector() {
   data[2] = 0x32;
   data[3] = 0x45;
   for (unsigned int i = 4; i < 8; i++) {
-    OLA_ASSERT(inflator4.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT(inflator4.DecodeVector(flags, data, i, &vector, &bytes_used));
     OLA_ASSERT_EQ((uint32_t) 18952773, vector);
     OLA_ASSERT_EQ((unsigned int) 4, bytes_used);
   }
@@ -301,7 +299,8 @@ void BaseInflatorTest::testInflatePDU() {
   TestInflator inflator;  // test with a vector size of 2
   HeaderSet header_set;
   uint8_t flags = PDU::VFLAG_MASK;
-  unsigned int data_size = PDU::TWO_BYTES + sizeof(PDU_DATA);
+  unsigned int data_size = static_cast<unsigned int>(PDU::TWO_BYTES +
+      sizeof(PDU_DATA));
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
   data[0] = 0x01;
@@ -322,8 +321,8 @@ void BaseInflatorTest::testInflatePDUBlock() {
   const unsigned int length_size = 2;
 
   // inflate a single pdu block
-  unsigned int data_size = (length_size + PDU::TWO_BYTES +
-    sizeof(PDU_DATA));
+  unsigned int data_size = static_cast<unsigned int>(
+      length_size + PDU::TWO_BYTES + sizeof(PDU_DATA));
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
   data[0] = PDU::VFLAG_MASK;

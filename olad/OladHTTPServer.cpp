@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OladHTTPServer.cpp
  * Ola HTTP class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sys/time.h>
@@ -28,6 +28,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/base/Version.h"
 #include "ola/dmx/SourcePriorities.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/web/Json.h"
@@ -35,7 +36,6 @@
 #include "olad/HttpServerActions.h"
 #include "olad/OladHTTPServer.h"
 #include "olad/OlaServer.h"
-#include "olad/OlaVersion.h"
 
 
 namespace ola {
@@ -46,13 +46,16 @@ using ola::client::OlaOutputPort;
 using ola::client::OlaPlugin;
 using ola::client::OlaPort;
 using ola::client::OlaUniverse;
+using ola::http::HTTPRequest;
+using ola::http::HTTPResponse;
+using ola::http::HTTPServer;
 using ola::io::ConnectedDescriptor;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
 using std::cout;
 using std::endl;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char OladHTTPServer::HELP_PARAMETER[] = "help";
@@ -67,7 +70,7 @@ const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
  * @param export_map the ExportMap to display when /debug is called
  * @param client_socket A ConnectedDescriptor which is used to communicate with
  *   the server.
- * @param
+ * @param interface the network interface to bind to
  */
 OladHTTPServer::OladHTTPServer(ExportMap *export_map,
                                const OladHTTPServerOptions &options,
@@ -180,12 +183,12 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
 
   JsonObject json;
-  json.Add("hostname", ola::network::FullHostname());
+  json.Add("hostname", ola::network::FQDN());
   json.Add("ip", m_interface.ip_address.ToString());
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
   json.Add("hw_address", m_interface.hw_address.ToString());
-  json.Add("version", OLA_VERSION);
+  json.Add("version", ola::base::Version::GetVersion());
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
 
@@ -418,7 +421,7 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
-                                HTTPResponse *response) {
+                                 HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response,
         "POST u=[universe], d=[DMX data (a comma separated list of values)]");
@@ -447,7 +450,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
-                               HTTPResponse *response) {
+                                HTTPResponse *response) {
   if (m_enable_quit) {
     response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
@@ -471,16 +474,11 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
+int OladHTTPServer::ReloadPlugins(const HTTPRequest*,
                                   HTTPResponse *response) {
-  m_ola_server->ReloadPlugins();
-  response->SetNoCache();
-  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
-  response->Append("ok");
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  m_client.ReloadPlugins(
+      NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
+  return MHD_YES;
 }
 
 
@@ -569,6 +567,7 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
 /**
  * Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
+ * @param plugin_id the plugin id.
  * @param description the plugin description.
  */
 void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
@@ -590,6 +589,7 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
  * Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
  * @param description the plugin description.
+ * @param state the state of the plugin.
  */
 void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
                                       string description,
@@ -601,7 +601,8 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
   }
 
   string escaped_description = description;
-  Escape(&escaped_description);  // Escape before passing in so we get \n
+  // Replace \n before passing in so we get \\n out the far end
+  ReplaceAll(&escaped_description, "\n", "\\n");
 
   JsonObject json;
   json.Add("description", escaped_description);
@@ -849,7 +850,7 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
                                   const client::DMXMetadata &,
                                   const DmxBuffer &buffer) {
   // rather than adding 512 JsonValue we cheat and use raw here
-  stringstream str;
+  ostringstream str;
   str << "[" << buffer.ToString() << "]";
   JsonObject json;
   json.AddRaw("dmx", str.str());
@@ -880,13 +881,13 @@ void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
 
 
 /**
- * Add the json representation of this port to the stringstream
+ * Add the json representation of this port to the ostringstream
  */
 void OladHTTPServer::PortToJson(JsonObject *json,
                                const OlaDevice &device,
                                const OlaPort &port,
                                bool is_output) {
-  stringstream str;
+  ostringstream str;
   str << device.Alias() << "-" << (is_output ? "O" : "I") << "-" << port.Id();
 
   json->Add("device", device.Name());

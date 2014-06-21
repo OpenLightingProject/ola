@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIPlugin.cpp
  * The SPI plugin for ola
@@ -38,6 +38,8 @@ namespace spi {
 
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 const char SPIPlugin::DEFAULT_BASE_UID[] = "7a70:00000100";
 const char SPIPlugin::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMAPI.cpp
  * Provides a generic RDM API that can use different implementations.
@@ -193,14 +193,13 @@ bool RDMAPI::ClearCommStatus(
 
 /**
  * Send a queued message request.
- *
  */
 bool RDMAPI::GetQueuedMessage(
         unsigned int universe,
         const UID &uid,
         rdm_status_type status_type,
         QueuedMessageHandler *handler,
-        string *error) {
+        std::string *error) {
   if (!handler) {
     if (error)
       *error = "Callback is null, this is a programming error";
@@ -235,8 +234,8 @@ bool RDMAPI::GetQueuedMessage(
         SingleUseCallback3<void,
                            const ResponseStatus&,
                            uint16_t,
-                           const string&> *callback,
-        string *error) {
+                           const std::string&> *callback,
+        std::string *error) {
   if (CheckCallback(error, callback))
     return false;
   uint8_t type = status_type;
@@ -267,7 +266,7 @@ bool RDMAPI::GetStatusMessage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<StatusMessage>&> *callback,
-  string *error) {
+    std::string *error) {
   if (CheckCallback(error, callback))
     return false;
   if (CheckNotBroadcast(uid, error, callback))
@@ -2176,14 +2175,14 @@ bool RDMAPI::SetClock(
 
 
 /*
- * Check the identify mode for a device
+ * Check the identify state for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
  * @param error a pointer to a string which it set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
-bool RDMAPI::GetIdentifyMode(
+bool RDMAPI::GetIdentifyDevice(
     unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
@@ -2211,7 +2210,7 @@ bool RDMAPI::GetIdentifyMode(
 
 
 /*
- * Change the identify mode for a device
+ * Change the identify state for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param mode the identify mode to set
@@ -2273,13 +2272,13 @@ bool RDMAPI::ResetDevice(
     this,
     &RDMAPI::_HandleEmptyResponse,
     callback);
-  uint8_t option = warm_reset ? 0x01 : 0xff;
+  uint8_t option = warm_reset ? RESET_WARM : RESET_COLD;
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
                    universe,
                    uid,
                    sub_device,
-                   PID_IDENTIFY_DEVICE,
+                   PID_RESET_DEVICE,
                    &option,
                    sizeof(option)),
     error);
@@ -2672,7 +2671,7 @@ void RDMAPI::_HandleLabelResponse(
     const string &data) {
   ResponseStatus response_status = status;
   if (status.WasAcked() && data.size() > LABEL_SIZE) {
-    std::stringstream str;
+    std::ostringstream str;
     str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
     response_status.error = str.str();
   }
@@ -3025,7 +3024,8 @@ void RDMAPI::_HandleGetParameterDescriptor(
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
              std::min(static_cast<unsigned int>(data.size()), max));
-      description.description[LABEL_SIZE] = 0;
+      raw_description.description[LABEL_SIZE] = 0;
+
       description.pid = NetworkToHost(raw_description.pid);
       description.pdl_size = raw_description.pdl_size;
       description.data_type = raw_description.data_type;
@@ -3041,7 +3041,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
                                             label_size);
       ShortenString(&description.description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3101,12 +3101,12 @@ void RDMAPI::_HandleGetProductDetailIdList(
   if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size > MAX_DETAIL_IDS * sizeof(uint16_t)) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be <= " << (MAX_DETAIL_IDS * sizeof(uint16_t)) <<
         ", was " << data_size;
       response_status.error = str.str();
     } else if (data_size % 2) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
       response_status.error = str.str();
     } else {
@@ -3136,7 +3136,7 @@ void RDMAPI::_HandleGetLanguageCapabilities(
   if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size % 2) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
       response_status.error = str.str();
     } else {
@@ -3258,7 +3258,7 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
       description = std::string(raw_description.description, data_size - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3361,7 +3361,7 @@ void RDMAPI::_HandleGetSlotDescription(
                                 data.size() - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3451,7 +3451,7 @@ void RDMAPI::_HandleGetSensorDefinition(
                                        data_size - min);
       ShortenString(&sensor.description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3548,7 +3548,7 @@ void RDMAPI::_HandleSelfTestDescription(
                                 data.size() - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3584,7 +3584,7 @@ void RDMAPI::_HandlePlaybackMode(
       mode = NetworkToHost(raw_config.mode);
       level = raw_config.level;
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data.size() << " needs to be more than " << sizeof(raw_config);
       response_status.error = str.str();
     }

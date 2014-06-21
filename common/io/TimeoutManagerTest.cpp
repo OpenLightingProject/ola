@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TimeoutManagerTest.cpp
  * Test fixture for the TimeoutManager class.
@@ -36,7 +36,7 @@ using ola::NewCallback;
 using ola::TimeInterval;
 using ola::TimeStamp;
 using ola::io::TimeoutManager;
-using ola::io::timeout_id;
+using ola::thread::timeout_id;
 
 class TimeoutManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TimeoutManagerTest);
@@ -47,7 +47,6 @@ class TimeoutManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
     void testSingleTimeouts();
     void testRepeatingTimeouts();
     void testAbortedRepeatingTimeouts();
@@ -80,11 +79,6 @@ class TimeoutManagerTest: public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TimeoutManagerTest);
 
-
-void TimeoutManagerTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
-
 /*
  * Check RegisterSingleTimeout works.
  */
@@ -102,6 +96,7 @@ void TimeoutManagerTest::testSingleTimeouts() {
 
   TimeStamp last_checked_time;
 
+  clock.AdvanceTime(0, 1);  // Small offset to work around timer precision
   clock.CurrentTime(&last_checked_time);
   TimeInterval next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(0u, GetEventCounter(1));
@@ -155,6 +150,7 @@ void TimeoutManagerTest::testRepeatingTimeouts() {
 
   TimeStamp last_checked_time;
 
+  clock.AdvanceTime(0, 1);  // Small offset to work around timer precision
   clock.CurrentTime(&last_checked_time);
   TimeInterval next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(0u, GetEventCounter(1));
@@ -208,6 +204,7 @@ void TimeoutManagerTest::testAbortedRepeatingTimeouts() {
 
   TimeStamp last_checked_time;
 
+  clock.AdvanceTime(0, 1);  // Small offset to work around timer precision
   clock.AdvanceTime(1, 0);
   clock.CurrentTime(&last_checked_time);
   timeout_manager.ExecuteTimeouts(&last_checked_time);

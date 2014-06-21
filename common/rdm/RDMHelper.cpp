@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMHelper.cpp
  * Various misc RDM functions.
@@ -29,9 +29,8 @@
 namespace ola {
 namespace rdm {
 
-
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -107,7 +106,7 @@ string DataTypeToString(uint8_t type) {
     case DS_SIGNED_DWORD:
       return "int32";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(type);
       return str.str();
   }
@@ -129,7 +128,7 @@ string LampModeToString(uint8_t lamp_mode) {
     case LAMP_ON_MODE_ON_AFTER_CAL:
       return "On after calibration";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(lamp_mode);
       return str.str();
   }
@@ -155,7 +154,7 @@ string LampStateToString(uint8_t lamp_state) {
     case LAMP_ERROR:
       return "Error";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(lamp_state);
       return str.str();
   }
@@ -195,7 +194,7 @@ string NackReasonToString(uint16_t reason) {
     case NR_ENDPOINT_NUMBER_INVALID:
       return "Invalid endpoint";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << reason;
       return str.str();
   }
@@ -217,7 +216,7 @@ string PowerStateToString(uint8_t power_state) {
     case POWER_STATE_NORMAL:
       return "Normal";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(power_state);
       return str.str();
   }
@@ -296,7 +295,7 @@ string PrefixToString(uint8_t prefix) {
     case PREFIX_YOTTA:
       return "Yotta";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(prefix);
       return str.str();
   }
@@ -433,7 +432,7 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_OTHER:
       return "Other";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(category);
       return str.str();
   }
@@ -607,7 +606,7 @@ string ProductDetailToString(uint16_t detail) {
     case PRODUCT_DETAIL_OTHER:
       return "Other Device";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << detail;
       return str.str();
   }
@@ -625,7 +624,7 @@ string ResetDeviceToString(uint8_t reset_device) {
     case RESET_COLD:
       return "Cold";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(reset_device);
       return str.str();
   }
@@ -724,7 +723,7 @@ string SensorTypeToString(uint8_t type) {
     case SENSOR_OTHER:
       return "Other";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(type);
       return str.str();
   }
@@ -818,15 +817,23 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, fixture speed";
       case SD_MACRO:
         return "Primary, macro";
+      case SD_POWER_CONTROL:
+        return "Primary, relay or power control";
+      case SD_FAN_CONTROL:
+        return "Primary, fan control";
+      case SD_HEATER_CONTROL:
+        return "Primary, heater control";
+      case SD_FOUNTAIN_CONTROL:
+        return "Primary, fountain water pump control";
       case SD_UNDEFINED:
         return "Primary, undefined";
       default:
-        stringstream str;
+        ostringstream str;
         str << "Primary, unknown, was " << slot_label;
         return str.str();
     }
   } else {
-    stringstream str;
+    ostringstream str;
     str << "Secondary, ";
     switch (slot_type) {
       case ST_SEC_FINE:
@@ -864,11 +871,13 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
 /**
  * Convert a uint16_t representing a status message to a human-readable string.
  * @param message_id the status message value
+ * @param data1 the first data value for the message
+ * @param data2 the second data value for the message
  */
 string StatusMessageIdToString(uint16_t message_id,
                                int16_t data1,
                                int16_t data2) {
-  stringstream str;
+  ostringstream str;
   switch (message_id) {
     case STS_CAL_FAIL:
       str << "Slot " << data1 << " failed calibration";
@@ -879,11 +888,23 @@ string StatusMessageIdToString(uint16_t message_id,
     case STS_SENS_ALWAYS_ON:
       str << "Sensor " << data1 << " always on";
       break;
+    case STS_FEEDBACK_ERROR:
+      str << "Slot " << data1 << " feedback error";
+      break;
+    case STS_INDEX_ERROR:
+      str << "Slot " << data1 << " index circuit error";
+      break;
     case STS_LAMP_DOUSED:
       str << "Lamp doused";
       break;
     case STS_LAMP_STRIKE:
       str<< "Lamp failed to strike";
+      break;
+    case STS_LAMP_ACCESS_OPEN:
+      str << "Lamp access open";
+      break;
+    case STS_LAMP_ALWAYS_ON:
+      str << "Lamp on without command";
       break;
     case STS_OVERTEMP:
       str << "Sensor " << data1 << " over temp at " << data2 << " degrees C";
@@ -933,6 +954,9 @@ string StatusMessageIdToString(uint16_t message_id,
     case STS_DIM_PANIC:
       str << "Dimmer panic mode";
       break;
+    case STS_LOAD_FAILURE:
+      str << "Lamp or cable failure";
+      break;
     case STS_READY:
       str << "Slot " << data1 << " ready";
       break;
@@ -941,6 +965,47 @@ string StatusMessageIdToString(uint16_t message_id,
       break;
     case STS_LOW_FLUID:
       str << "Slot " << data1 << " low fluid";
+      break;
+    case STS_EEPROM_ERROR:
+      str << "EEPROM error";
+      break;
+    case STS_RAM_ERROR:
+      str << "RAM error";
+      break;
+    case STS_FPGA_ERROR:
+      str << "FPGA programming error";
+      break;
+    case STS_PROXY_BROADCAST_DROPPED:
+      // This is technically against the standard, which in 10.3.2.4 says "Each
+      // Data Value shall be a signed integer." but I'm sure it's what was
+      // intended. The same thing is technically true with the slots too.
+      str << "Proxy Drop: PID "
+          << IntToHexString(reinterpret_cast<uint16_t&>(data1)) << " at TN "
+          << data2;
+      break;
+    case STS_ASC_RXOK:
+      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+          << " received OK";
+      break;
+    case STS_ASC_DROPPED:
+      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+          << " now dropped";
+      break;
+    case STS_DMXNSCNONE:
+      str << "DMX NSC never received";
+      break;
+    case STS_DMXNSCLOSS:
+      str << "DMX NSC received, now dropped";
+      break;
+    case STS_DMXNSCERROR:
+      str << "DMX NSC timing or packet error";
+      break;
+    case STS_DMXNSC_OK:
+      str << "DMX NSC received OK";
+      break;
+    default:
+      str << "Unknown, was status message " << message_id << " with data value"
+             " 1 " << data1 << " and data value 2 " << data2;
       break;
   }
   return str.str();
@@ -970,7 +1035,7 @@ string StatusTypeToString(uint8_t status_type) {
     case STATUS_ERROR_CLEARED:
       return "Error cleared";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(status_type);
       return str.str();
   }
@@ -1043,7 +1108,7 @@ string UnitToString(uint8_t unit) {
     case UNITS_BYTE:
       return "bytes";
     default:
-      stringstream str;
+      ostringstream str;
       str << "Unknown, was " << static_cast<int>(unit);
       return str.str();
   }

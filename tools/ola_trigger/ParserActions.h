@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ParserActions.h
  * Copyright (C) 2011 Simon Newton
@@ -25,17 +25,15 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 class Action;
 
-void SetDefaultValue(vector<string> *input);
-Action *CreateAssignmentAction(vector<string> *input);
-Action *CreateCommandAction(const string &command, vector<string> *input);
+void SetDefaultValue(std::vector<std::string> *input);
+Action *CreateAssignmentAction(std::vector<std::string> *input);
+Action *CreateCommandAction(const std::string &command,
+                            std::vector<std::string> *input);
 ValueInterval *CreateInterval(unsigned int lower, unsigned int upper);
 void SetSlotAction(unsigned int slot,
-                   vector<class ValueInterval*> *slot_values,
+                   std::vector<class ValueInterval*> *slot_values,
                    Action *rising_action,
                    Action *falling_action);
 void SetDefaultAction(unsigned int slot,

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  OlaConfigurator.h
- *  Makes configuring devices easy
- *  Copyright (C) 2005-2009 Simon Newton
+ * OlaConfigurator.h
+ * Makes configuring devices easy
+ * Copyright (C) 2005 Simon Newton
  *
  * The Configurator makes it easy to use the device specific ConfigureDevice()
  * rpc. For each device type you want to manage, subclass the Configurator and
@@ -37,9 +37,6 @@
 
 #include <string>
 #include <vector>
-
-using std::string;
-using std::vector;
 
 #ifndef EXAMPLES_OLACONFIGURATOR_H_
 #define EXAMPLES_OLACONFIGURATOR_H_
@@ -70,13 +67,13 @@ class OlaConfigurator {
     bool Setup();
     void Run() { m_ss->Run(); }
     void Terminate() { m_ss->Terminate(); }
-    void HandleDevices(const vector <ola::OlaDevice> &devices,
-                       const string &error);
+    void HandleDevices(const std::vector <ola::OlaDevice> &devices,
+                       const std::string &error);
     bool SendMessage(const google::protobuf::Message &message);
 
     // Subclasses implement this
-    virtual void HandleConfigResponse(const string &reply,
-                                      const string &error) = 0;
+    virtual void HandleConfigResponse(const std::string &reply,
+                                      const std::string &error) = 0;
     virtual void SendConfigRequest() = 0;
 
  protected:

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ClientRDMAPIShim.h
  * An implemention of RDMAPIImplInterface that uses the OlaClient.
@@ -86,7 +86,7 @@ class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
       ola::rdm::rdm_response_code response_code,
       const ola::rdm::RDMResponse *response,
       rdm::ResponseStatus *response_status,
-      string *data);
+      std::string *data);
 
   void GetParamFromReply(const std::string &message_type,
                          const ola::rdm::RDMResponse *reply,

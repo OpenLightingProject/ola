@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StdinHandler.h
  * Enables reading input from stdin one character at a time. Useful if you want
@@ -19,7 +19,9 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#ifndef _WIN32
 #include <termios.h>
+#endif
 #include <stdio.h>
 
 #include <ola/Callback.h>
@@ -30,16 +32,24 @@ namespace io {
 
 StdinHandler::StdinHandler(SelectServerInterface *ss,
                            InputCallback *callback)
+#ifdef _WIN32
+    : m_stdin_descriptor(0),
+#else
     : m_stdin_descriptor(STDIN_FILENO),
+#endif
       m_ss(ss),
       m_callback(callback) {
   m_stdin_descriptor.SetOnData(
     ola::NewCallback(this, &StdinHandler::HandleData));
   // turn off buffering
+#ifdef _WIN32
+  setbuf(stdin, NULL);
+#else
   tcgetattr(STDIN_FILENO, &m_old_tc);
   termios new_tc = m_old_tc;
   new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
+#endif
 
   // Add to the SelectServer
   m_ss->AddReadDescriptor(&m_stdin_descriptor);
@@ -48,7 +58,9 @@ StdinHandler::StdinHandler(SelectServerInterface *ss,
 
 StdinHandler::~StdinHandler() {
   m_ss->RemoveReadDescriptor(&m_stdin_descriptor);
+#ifndef _WIN32
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
+#endif
 }
 
 

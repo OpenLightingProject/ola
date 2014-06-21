@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * logic-rdm-sniffer.cpp
  * RDM Sniffer software for the Saleae Logic Device.
@@ -19,7 +19,7 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_SALEAEDEVICEAPI_H
@@ -29,9 +29,10 @@
 #include <string.h>
 #include <time.h>
 
-#include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
+#include <ola/Logging.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
@@ -61,7 +62,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::io::SelectServer;
 using ola::messaging::Descriptor;
@@ -85,7 +85,7 @@ DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
               "Only display the first N slots of DMX data.");
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
-DEFINE_string(pid_location, PID_DATA_DIR,
+DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 
 void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
@@ -349,10 +349,8 @@ void DisplayReminder(LogicReader *reader) {
  * Main.
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString("[options]",
-                     "Decode DMX/RDM data from a Saleae Logic device");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]",
+               "Decode DMX/RDM data from a Saleae Logic device");
 
   SelectServer ss;
   LogicReader reader(&ss, FLAGS_sample_rate);
@@ -362,7 +360,7 @@ int main(int argc, char *argv[]) {
   DevicesManagerInterface::BeginConnect();
 
   OLA_INFO << "Running...";
-  ss.RegisterSingleTimeout(1000, NewSingleCallback(DisplayReminder, &reader));
+  ss.RegisterSingleTimeout(3000, NewSingleCallback(DisplayReminder, &reader));
   ss.Run();
   reader.Stop();
   return ola::EXIT_OK;

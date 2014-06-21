@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ShowPlayer.h
  * A simple show playback system.
@@ -61,7 +61,7 @@ class ShowPlayer {
  private:
     ola::OlaCallbackClientWrapper m_client;
     ShowLoader m_loader;
-    bool m_infinte_loop;
+    bool m_infinite_loop;
     unsigned int m_iteration_remaining;
     unsigned int m_loop_delay;
 

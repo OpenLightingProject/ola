@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringMessageBuilder.cpp
  * Builds a Message object from a list of strings & a Descriptor.
@@ -39,6 +39,8 @@ namespace rdm {
 using ola::messaging::MessageFieldInterface;
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 
 StringMessageBuilder::StringMessageBuilder()
@@ -78,10 +80,19 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
 
   switch (state) {
     case GroupSizeCalculator::INSUFFICIENT_TOKENS:
+      SetError("Insufficient tokens");
+      return NULL;
     case GroupSizeCalculator::EXTRA_TOKENS:
+      SetError("Extra tokens");
+      return NULL;
     case GroupSizeCalculator::MISMATCHED_TOKENS:
+      SetError("Mismatched tokens");
+      return NULL;
     case GroupSizeCalculator::MULTIPLE_VARIABLE_GROUPS:
+      SetError("Multiple variable groups");
+      return NULL;
     case GroupSizeCalculator::NESTED_VARIABLE_GROUPS:
+      SetError("Nested variable groups");
       return NULL;
     case GroupSizeCalculator::SINGLE_VARIABLE_GROUP:
     case GroupSizeCalculator::NO_VARIABLE_GROUPS:

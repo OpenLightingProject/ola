@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Port.cpp
  * Base implementation of the Port class.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * Unfortunately this file contains a lot of code duplication.
  */
@@ -29,6 +29,8 @@
 #include "olad/PortBroker.h"
 
 namespace ola {
+
+using std::string;
 
 /*
  * Create a new basic input port
@@ -64,7 +66,7 @@ bool BasicInputPort::SetUniverse(Universe *new_universe) {
 
 string BasicInputPort::UniqueId() const {
   if (m_port_string.empty()) {
-    std::stringstream str;
+    std::ostringstream str;
     if (m_device)
       str << m_device->UniqueId() << "-I-" << m_port_id;
     m_port_string = str.str();
@@ -171,7 +173,7 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
 
 string BasicOutputPort::UniqueId() const {
   if (m_port_string.empty()) {
-    std::stringstream str;
+    std::ostringstream str;
     if (m_device)
       str << m_device->UniqueId() << "-O-" << m_port_id;
     m_port_string = str.str();

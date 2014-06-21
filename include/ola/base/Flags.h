@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Flags.h
  * Command line flag (option) handling.
@@ -77,21 +77,24 @@
 
 namespace ola {
 
-using std::string;
-
 /**
  * @brief Set the help string for the program.
  * @param first_line the inital line that is displayed in the help section.
  * This is displayed after argv[0].
  * @param description a multiline description of the program
- *
  */
-void SetHelpString(const string &first_line, const string &description);
+void SetHelpString(const std::string &first_line,
+                   const std::string &description);
 
 /**
- * @brief Print the usage text to stderr.
+ * @brief Print the usage text to stdout.
  */
 void DisplayUsage();
+
+/**
+ * @brief Print the version text to stdout.
+ */
+void DisplayVersion();
 
 /**
  * @brief Parses the command line flags up to the first non-flag value. argv is

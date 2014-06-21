@@ -1,3 +1,7 @@
-SUBDIRS = ola_trigger e133 logic rdm rdmpro usbpro
+SUBDIRS = ola_trigger logic rdm
 
-EXTRA_DIST =  ola_mon/ola_mon.conf ola_mon/ola_mon.py
+if !USING_WIN32
+SUBDIRS += e133 usbpro rdmpro
+endif
+
+dist_noinst_DATA = ola_mon/index.html ola_mon/ola_mon.conf ola_mon/ola_mon.py

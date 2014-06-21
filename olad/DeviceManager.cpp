@@ -11,12 +11,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * devicemanager.cpp
  * Implementation of the device manager, this object tracks what devices are in
  * use.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdio.h>
@@ -34,6 +34,11 @@
 #include "olad/PortManager.h"
 
 namespace ola {
+
+using std::map;
+using std::set;
+using std::string;
+using std::vector;
 
 const unsigned int DeviceManager::MISSING_DEVICE_ALIAS = 0;
 const char DeviceManager::PORT_PREFERENCES[] = "port";
@@ -134,7 +139,7 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
  * @param device_id the id of the device to remove
  * @return true on sucess, false on failure
  */
-bool DeviceManager::UnregisterDevice(const string &device_id) {
+bool DeviceManager::UnregisterDevice(const std::string &device_id) {
   device_alias_pair *pair = STLFind(&m_devices, device_id);
   if (!pair || !pair->device) {
     OLA_WARN << "Device " << device_id << "not found";
@@ -205,7 +210,8 @@ AbstractDevice *DeviceManager::GetDevice(unsigned int alias) const {
  * @return a device_alias_pair, if the device isn't found the alias is set to
  * MISSING_DEVICE_ALIAS and the device pointer is NULL.
  */
-device_alias_pair DeviceManager::GetDevice(const string &unique_id) const {
+device_alias_pair DeviceManager::GetDevice(
+    const std::string &unique_id) const {
   device_alias_pair result;
   map<string, device_alias_pair>::const_iterator iter =
     m_devices.find(unique_id);

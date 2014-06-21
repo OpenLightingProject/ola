@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e133-controller.cpp
  * Copyright (C) 2011 Simon Newton
@@ -27,6 +27,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/ACNVectors.h>
@@ -62,7 +63,7 @@
 DEFINE_s_uint16(endpoint, e, 0, "The endpoint to use");
 DEFINE_s_string(target, t, "", "List of IPs to connect to, overrides SLP");
 DEFINE_string(listen_ip, "", "The IP address to listen on");
-DEFINE_s_string(pid_location, p, PID_DATA_DIR,
+DEFINE_s_string(pid_location, p, "",
                 "The directory to read PID definitiions from");
 DEFINE_s_bool(set, s, false, "Perform a SET (default is GET)");
 DEFINE_bool(list_pids, false, "Display a list of pids");
@@ -474,9 +475,7 @@ void SimpleE133Controller::HandleStatusMessage(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString("[options]", "E1.33 Controller.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "E1.33 Controller.");
 
   PidStoreHelper pid_helper(FLAGS_pid_location.str());
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TCPConnector.cpp
  * Copyright (C) 2012 Simon Newton
@@ -19,9 +19,17 @@
 
 #include <errno.h>
 
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#ifndef ETIMEDOUT
+#define ETIMEDOUT WSAETIMEDOUT
+#endif
+#endif
+
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/TCPConnector.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace network {
@@ -30,25 +38,12 @@ TCPConnector::TCPConnector(ola::io::SelectServerInterface *ss)
     : m_ss(ss) {
 }
 
-
-/**
- * Clean up
- */
 TCPConnector::~TCPConnector() {
   CancelAll();
+  CleanUpOrphans();
 }
 
 
-/**
- * Perform a non-blocking connect.
- * on_connect may be called immediately if the address is local.
- * on_failure will be called immediately if an error occurs
- * @param endpoint the IPV4SocketAddress to connect to
- * @param timeout the time to wait before declaring the connection a failure
- * @param callback the callback to run when the connection completes or fails
- * @returns the ID for this connection, or 0 if the callback has already
- * run.
- */
 TCPConnector::TCPConnectionID TCPConnector::Connect(
     const IPV4SocketAddress &endpoint,
     const ola::TimeInterval &timeout,
@@ -67,12 +62,24 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
     return 0;
   }
 
-  ola::io::ConnectedDescriptor::SetNonBlocking(sd);
+#ifdef _WIN32
+  ola::io::DescriptorHandle descriptor;
+  descriptor.m_handle.m_fd = sd;
+  descriptor.m_type = ola::io::SOCKET_DESCRIPTOR;
+  descriptor.m_event_handle = 0;
+#else
+  ola::io::DescriptorHandle descriptor = sd;
+#endif
+  ola::io::ConnectedDescriptor::SetNonBlocking(descriptor);
 
   int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
+#ifdef _WIN32
+    if (WSAGetLastError() != WSAEINPROGRESS) {
+#else
     if (errno != EINPROGRESS) {
+#endif
       int error = errno;
       OLA_WARN << "connect to " << endpoint << " failed, " << strerror(error);
       close(sd);
@@ -101,12 +108,6 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   return connection;
 }
 
-
-/**
- * Cancel a pending TCP connection
- * @param id the TCPConnectionID
- * @return true if this connection was cancelled, false if the id wasn't valid.
- */
 bool TCPConnector::Cancel(TCPConnectionID id) {
   PendingTCPConnection *connection =
     const_cast<PendingTCPConnection*>(
@@ -120,10 +121,6 @@ bool TCPConnector::Cancel(TCPConnectionID id) {
   return true;
 }
 
-
-/**
- * Abort all pending TCP connections
- */
 void TCPConnector::CancelAll() {
   ConnectionSet::iterator iter = m_connections.begin();
   for (; iter != m_connections.end(); ++iter)
@@ -131,9 +128,8 @@ void TCPConnector::CancelAll() {
   m_connections.clear();
 }
 
-
-/**
- * Called when the socket becomes writeable
+/*
+ * Called when a socket becomes writeable.
  */
 void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   // cancel timeout
@@ -141,11 +137,20 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   m_ss->RemoveWriteDescriptor(connection);
 
   // fetch the error code
+#ifdef _WIN32
+  int sd = connection->WriteDescriptor().m_handle.m_fd;
+#else
   int sd = connection->WriteDescriptor();
+#endif
   int error = 0;
   socklen_t len;
   len = sizeof(error);
+#ifdef _WIN32
+  int r = getsockopt(sd, SOL_SOCKET, SO_ERROR,
+                     reinterpret_cast<char*>(&error), &len);
+#else
   int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, &error, &len);
+#endif
   if (r < 0)
     error = errno;
 
@@ -155,7 +160,11 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     connection->Close();
     connection->callback->Run(-1, error);
   } else {
+#ifdef _WIN32
+    connection->callback->Run(connection->WriteDescriptor().m_handle.m_fd, 0);
+#else
     connection->callback->Run(connection->WriteDescriptor(), 0);
+#endif
   }
 
   ConnectionSet::iterator iter = m_connections.find(connection);
@@ -164,12 +173,9 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
 
   // we're already within the PendingTCPConnection's call stack here
   // schedule the deletion to run later
-  m_ss->Execute(
-    ola::NewSingleCallback(this,
-                           &TCPConnector::FreePendingConnection,
-                           connection));
+  m_orphaned_connections.push_back(connection);
+  m_ss->Execute(ola::NewSingleCallback(this, &TCPConnector::CleanUpOrphans));
 }
-
 
 /**
  * Delete this pending connection
@@ -177,8 +183,6 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
 void TCPConnector::FreePendingConnection(PendingTCPConnection *connection) {
   delete connection;
 }
-
-
 
 void TCPConnector::Timeout(const ConnectionSet::iterator &iter) {
   PendingTCPConnection *connection = *iter;
@@ -206,11 +210,35 @@ void TCPConnector::TimeoutEvent(PendingTCPConnection *connection) {
 }
 
 
+TCPConnector::PendingTCPConnection::PendingTCPConnection(
+    TCPConnector *connector,
+    const IPV4Address &ip,
+    int fd,
+    TCPConnectCallback *callback)
+        : WriteFileDescriptor(),
+          ip_address(ip),
+          callback(callback),
+          timeout_id(ola::thread::INVALID_TIMEOUT),
+          m_connector(connector) {
+#ifdef _WIN32
+  m_handle.m_handle.m_fd = fd;
+  m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  m_handle.m_event_handle = 0;
+#else
+  m_handle = fd;
+#endif
+}
+
+
 /**
  * Close this connection
  */
 void TCPConnector::PendingTCPConnection::Close() {
-  close(m_fd);
+#ifdef _WIN32
+  close(m_handle.m_handle.m_fd);
+#else
+  close(m_handle);
+#endif
 }
 
 
@@ -219,6 +247,10 @@ void TCPConnector::PendingTCPConnection::Close() {
  */
 void TCPConnector::PendingTCPConnection::PerformWrite() {
   m_connector->SocketWritable(this);
+}
+
+void TCPConnector::CleanUpOrphans() {
+  STLDeleteElements(&m_orphaned_connections);
 }
 }  // namespace network
 }  // namespace ola

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCNode.cpp
  * A self contained object for sending and receiving OSC messages.
@@ -39,6 +39,8 @@ using ola::io::SelectServerInterface;
 using std::make_pair;
 using std::max;
 using std::min;
+using std::string;
+using std::vector;
 
 const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
 
@@ -183,7 +185,7 @@ OSCNode::NodeOSCTarget::~NodeOSCTarget() {
  * Create a new OSCNode.
  * @param ss the SelectServer to use
  * @param export_map a pointer to an ExportMap (may be NULL)
- * @para options the OSCNodeOptions
+ * @param options the OSCNodeOptions
  */
 OSCNode::OSCNode(SelectServerInterface *ss,
                  ExportMap *export_map,
@@ -339,6 +341,7 @@ bool OSCNode::RemoveTarget(unsigned int group, const OSCTarget &target) {
 /**
  * Send the DMX data to all targets registered for this group.
  * @param group the group to send the data to
+ * @param data_format the format of data to send
  * @param dmx_data the DmxBuffer to send
  * @returns true if sucesfully sent, false if any error occured.
  */
@@ -373,7 +376,7 @@ bool OSCNode::SendData(unsigned int group, DataFormat data_format,
  * Register a callback to be run when we receive data for an address.
  * De-registration can be performed by passing NULL as a callback. Attempting
  * to register more than once on the same address will return false.
- * @param address the OSC address to register.
+ * @param osc_address the OSC address to register.
  * @param callback the callback to run, ownership is transferred. The callback
  *   can be set to NULL to de-register.
  * @returns false if callback was non-NULL, but the address was already
@@ -406,7 +409,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
 /**
  * Called by OSCDataHandler when there is new data.
  * @param osc_address the OSC address this data arrived on
- * @param data, the DmxBuffer containing the data.
+ * @param data the DmxBuffer containing the data.
  * @param size the number of slots.
  */
 void OSCNode::SetUniverse(const string &osc_address, const uint8_t *data,
@@ -590,7 +593,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
 
     vector<SlotMessage>::const_iterator message_iter = messages.begin();
     for (; message_iter != messages.end(); ++message_iter) {
-      std::stringstream path;
+      std::ostringstream path;
       path << (*target_iter)->osc_address << "/" << message_iter->slot + 1;
 
       int ret = lo_send_message_from((*target_iter)->liblo_address,

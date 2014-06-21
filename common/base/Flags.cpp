@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Flags.cpp
  * Handle command line flags.
@@ -34,6 +34,7 @@
 #include "ola/base/Array.h"
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
+#include "ola/base/Version.h"
 #include "ola/stl/STLUtils.h"
 
 /**
@@ -41,6 +42,7 @@
  * @brief Define the help flag
  */
 DEFINE_s_bool(help, h, false, "Display the help message");
+DEFINE_s_bool(version, v, false, "Display version information");
 DEFINE_bool(gen_manpage, false, "Generate a man page snippet");
 
 namespace ola {
@@ -53,9 +55,11 @@ namespace ola {
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::string;
+using std::vector;
 
 /**
- * @brief the prefix used on inverted bool flags
+ * The prefix used on inverted bool flags
  * @examplepara
  *   @code
  *   DEFINE_s_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
@@ -71,13 +75,19 @@ const char Flag<bool>::NO_PREFIX[] = "no";
 
 void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetFirstLine(first_line);
-  GetRegistry()->SetDecription(description);
+  GetRegistry()->SetDescription(description);
 }
 
 
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
 }
+
+
+void DisplayVersion() {
+  GetRegistry()->DisplayVersion();
+}
+
 
 void GenManPage() {
   GetRegistry()->GenManPage();
@@ -193,6 +203,11 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     exit(EXIT_OK);
   }
 
+  if (FLAGS_version) {
+    DisplayVersion();
+    exit(EXIT_OK);
+  }
+
   if (FLAGS_gen_manpage) {
     GenManPage();
     exit(EXIT_OK);
@@ -213,17 +228,17 @@ void FlagRegistry::SetFirstLine(const string &first_line) {
 }
 
 
-void FlagRegistry::SetDecription(const string &description) {
+void FlagRegistry::SetDescription(const string &description) {
   m_description = description;
 }
 
 /*
- * @brief Print the usage text to stderr
+ * @brief Print the usage text to stdout
  */
 void FlagRegistry::DisplayUsage() {
-  cerr << "Usage: " << m_argv0 << " " << m_first_line << endl << endl;
+  cout << "Usage: " << m_argv0 << " " << m_first_line << endl << endl;
   if (!m_description.empty()) {
-    cerr << m_description << endl << endl;
+    cout << m_description << endl << endl;
   }
 
   // - comes before a-z which means flags without long options appear first. To
@@ -257,20 +272,46 @@ void FlagRegistry::DisplayUsage() {
   PrintFlags(&long_flag_lines);
 }
 
+/*
+ * @brief Print the version text to stdout
+ */
+void FlagRegistry::DisplayVersion() {
+  cout << "OLA " << m_argv0 << " version: " << ola::base::Version::GetVersion()
+       << endl;
+}
+
 void FlagRegistry::GenManPage() {
   char date_str[100];
   time_t curtime;
   curtime = time(NULL);
   struct tm loctime;
+#ifdef _WIN32
+  loctime = *gmtime(&curtime);  // NOLINT(runtime/threadsafe_fn)
+#else
   gmtime_r(&curtime, &loctime);
+#endif
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
-  cout << ".TH " << m_argv0 << " 1 \"" << date_str << "\"" << endl;
+
+  // Not using FilenameFromPathOrPath to avoid further dependancies
+  string exe_name = m_argv0;
+#ifdef _WIN32
+  char directory_separator = '\\';
+#else
+  char directory_separator = '/';
+#endif
+  string::size_type last_path_sep = m_argv0.find_last_of(directory_separator);
+  if (last_path_sep != string::npos) {
+    // Don't return the path sep itself
+    exe_name = m_argv0.substr(last_path_sep + 1);
+  }
+
+  cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
-  cout << m_argv0 << " \\- " << endl;
+  cout << exe_name << " \\- " << endl;
   cout << ".SH SYNOPSIS" << endl;
-  cout << m_argv0 << " " << m_first_line << endl;
+  cout << exe_name << " " << m_first_line << endl;
   cout << ".SH DESCRIPTION" << endl;
-  cout << m_argv0 << endl;
+  cout << exe_name << endl;
   cout << m_description << endl;
   cout << ".SH OPTIONS" << endl;
 
@@ -357,13 +398,13 @@ struct option *FlagRegistry::GetLongOpts(FlagMap *flag_map) {
 
 
 /**
- * @brief Given a vector of flags lines, sort them and print to stderr.
+ * @brief Given a vector of flags lines, sort them and print to stdout.
  */
 void FlagRegistry::PrintFlags(std::vector<string> *lines) {
   std::sort(lines->begin(), lines->end());
   vector<string>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter)
-    cerr << *iter;
+    cout << *iter;
 }
 
 void FlagRegistry::PrintManPageFlags(std::vector<OptionPair> *lines) {

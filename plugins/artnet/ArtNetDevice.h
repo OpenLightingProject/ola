@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetDevice.h
  * Interface for the ArtNet device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETDEVICE_H_
@@ -34,10 +34,6 @@ class Preferences;
 namespace plugin {
 namespace artnet {
 
-using ola::Device;
-using ola::plugin::artnet::Request;
-using std::string;
-
 class ArtNetDevice: public Device {
  public:
   ArtNetDevice(AbstractPlugin *owner,
@@ -45,14 +41,14 @@ class ArtNetDevice: public Device {
                class PluginAdaptor *plugin_adaptor);
 
   // only one ArtNet device
-  string DeviceId() const { return "1"; }
+  std::string DeviceId() const { return "1"; }
 
   void EnterConfigurationMode() { m_node->EnterConfigurationMode(); }
   void ExitConfigurationMode() { m_node->ExitConfigurationMode(); }
 
   void Configure(ola::rpc::RpcController *controller,
-                 const string &request,
-                 string *response,
+                 const std::string &request,
+                 std::string *response,
                  ConfigureCallback *done);
 
   static const char K_ALWAYS_BROADCAST_KEY[];
@@ -79,9 +75,9 @@ class ArtNetDevice: public Device {
   class PluginAdaptor *m_plugin_adaptor;
   ola::thread::timeout_id m_timeout_id;
 
-  void HandleOptions(Request *request, string *response);
+  void HandleOptions(Request *request, std::string *response);
   void HandleNodeList(Request *request,
-                      string *response,
+                      std::string *response,
                       ola::rpc::RpcController *controller);
 };
 }  // namespace artnet

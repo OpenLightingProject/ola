@@ -1,17 +1,17 @@
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderPersonality.h
  * Manages personalities for a RDM responder.
@@ -21,30 +21,28 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 #define INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 
+#include <ola/Logging.h>
 #include <ola/base/Macro.h>
+#include <ola/rdm/ResponderSlotData.h>
+
 #include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "ola/Logging.h"
-#include "ola/rdm/ResponderSlotData.h"
-
 namespace ola {
 namespace rdm {
-
-using std::string;
 
 /**
  * Represents a personality.
  */
 class Personality {
  public:
-    Personality(uint16_t footprint, const string &description);
-    Personality(uint16_t footprint, const string &description,
+    Personality(uint16_t footprint, const std::string &description);
+    Personality(uint16_t footprint, const std::string &description,
                 const SlotDataCollection &slot_data);
 
     uint16_t Footprint() const { return m_footprint; }
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     const SlotDataCollection* GetSlotData() const { return &m_slot_data; }
 
@@ -54,7 +52,7 @@ class Personality {
 
  private:
     uint16_t m_footprint;
-    string m_description;
+    std::string m_description;
     SlotDataCollection m_slot_data;
 };
 
@@ -98,7 +96,7 @@ class PersonalityManager {
     uint8_t ActivePersonalityNumber() const { return m_active_personality; }
     const Personality *ActivePersonality() const;
     uint16_t ActivePersonalityFootprint() const;
-    string ActivePersonalityDescription() const;
+    std::string ActivePersonalityDescription() const;
     const Personality *Lookup(uint8_t personality) const;
 
  private:

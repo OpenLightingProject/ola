@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCDevice.h
  * The OSC Device.
@@ -46,20 +46,21 @@ class OSCDevice: public Device {
       OSCNode::DataFormat data_format;
     };
 
-    typedef vector<PortConfig> PortConfigs;
+    typedef std::vector<PortConfig> PortConfigs;
 
     OSCDevice(AbstractPlugin *owner,
               PluginAdaptor *plugin_adaptor,
               uint16_t udp_port,
-              const vector<std::string> &addresses,
+              const std::vector<std::string> &addresses,
               const PortConfigs &port_configs);
     std::string DeviceId() const { return "1"; }
 
+    bool AllowLooping() const { return true; }
     bool AllowMultiPortPatching() const { return true; }
 
  protected:
     PluginAdaptor *m_plugin_adaptor;
-    const vector<string> m_port_addresses;
+    const std::vector<std::string> m_port_addresses;
     const PortConfigs m_port_configs;
     std::auto_ptr<class OSCNode> m_osc_node;
 
