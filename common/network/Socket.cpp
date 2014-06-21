@@ -259,7 +259,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
 
 #ifdef _WIN32
   ssize_t bytes_sent = 0;
-  
+
   for (int buffer = 0; buffer < io_len; ++buffer) {
     bytes_sent += SendTo(reinterpret_cast<uint8_t*>(iov[buffer].iov_base),
         iov[buffer].iov_len, ip, port);

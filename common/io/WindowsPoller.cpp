@@ -69,12 +69,12 @@ WindowsPoller::~WindowsPoller() {
   for (; overlapped_it != m_overlapped_handle_map.end(); ++overlapped_it) {
     CloseHandle(overlapped_it->second.m_overlapped.hEvent);
   }
-  
+
   HandleMap::iterator handle_it = m_socket_handles.begin();
   for (; handle_it != m_socket_handles.end(); ++handle_it) {
     CloseHandle(handle_it->second);
   }
-  
+
   WriteHandleMap::iterator write_handle_it = m_socket_write_handles.begin();
   for (; write_handle_it != m_socket_write_handles.end(); ++write_handle_it) {
     CloseHandle(write_handle_it->second);
@@ -129,7 +129,7 @@ bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
   if (result) {
     switch (handle.m_type) {
       case ola::io::PIPE_DESCRIPTOR:
-        {    
+        {
           overlapped_handle_context_t context;
           memset(&context, 0, sizeof(context));
           context.m_overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -164,7 +164,7 @@ bool WindowsPoller::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
     OLA_WARN << "Handle type " << handle.m_type << "not supported";
     return false;
   }
-  
+
   HandleMap::iterator iter = m_socket_handles.find(descriptor);
   if (iter != m_socket_handles.end()) {
     CloseHandle(iter->second);
@@ -242,7 +242,7 @@ bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
     OLA_WARN << "Handle type " << handle.m_type << "not supported";
     return false;
   }
-  
+
   WriteHandleMap::iterator iter = m_socket_write_handles.find(descriptor);
   if (iter != m_socket_write_handles.end()) {
     CloseHandle(iter->second);
@@ -303,7 +303,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       m_connected_read_descriptors.begin();
   for (; chd_iter != m_connected_read_descriptors.end(); ++chd_iter) {
     DescriptorHandle handle = chd_iter->descriptor->ReadDescriptor();
-    
+
     // Check if this descriptor should be closed
     if (!chd_iter->descriptor->ValidReadDescriptor()) {
       OLA_WARN << "Closing descriptor " << chd_iter->descriptor;
@@ -311,7 +311,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       closed_queue.push(*chd_iter);
       continue;
     }
-    
+
     switch (handle.m_type) {
       case ola::io::SOCKET_DESCRIPTOR:
         socket_descriptors.push_back(chd_iter->descriptor);
@@ -321,7 +321,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           OverlappedHandleMap::iterator overlapped =
               m_overlapped_handle_map.find(chd_iter->descriptor);
           if (overlapped == m_overlapped_handle_map.end()) {
-            OLA_WARN << "No overlapped entry for descriptor " << 
+            OLA_WARN << "No overlapped entry for descriptor " <<
                 chd_iter->descriptor;
             continue;
           }
@@ -384,7 +384,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     for (; iter != m_socket_read_descriptors.end(); ++iter) {
       socket_descriptors.push_back(*iter);
     }
-    
+
     std::vector<ReadFileDescriptor*>::iterator socket_iter =
         socket_descriptors.begin();
     for (; socket_iter != socket_descriptors.end(); ++socket_iter) {
@@ -394,35 +394,36 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
         OLA_WARN << "No event found for socket " << handle.m_handle.m_fd;
         continue;
       }
-      long events = FD_READ | FD_ACCEPT | FD_CLOSE;
+      int32_t events = FD_READ | FD_ACCEPT | FD_CLOSE;
       if (WSAEventSelect(handle.m_handle.m_fd, event->second, events) != 0) {
         OLA_WARN << "WSAEventSelect failed with " << WSAGetLastError() <<
             " for socket " << handle.m_handle.m_fd;
         continue;
       }
-      
+
       handles.push_back(event->second);
     }
   }
   // Now, all sockets registered for writing
   {
-    SocketWriteDescriptorSet::iterator iter = m_socket_write_descriptors.begin();
+    SocketWriteDescriptorSet::iterator iter =
+        m_socket_write_descriptors.begin();
     for (; iter != m_socket_write_descriptors.end(); ++iter) {
-      socket_write_descriptors.push_back (*iter);      
+      socket_write_descriptors.push_back(*iter);
       DescriptorHandle handle = (*iter)->WriteDescriptor();
       WriteHandleMap::iterator event = m_socket_write_handles.find(*iter);
       if (event == m_socket_write_handles.end()) {
         OLA_WARN << "No write event found for socket " << handle.m_handle.m_fd;
         continue;
       }
-      
-      long events = FD_WRITE | FD_CONNECT | FD_CLOSE;
+
+      int32_t events = FD_WRITE | FD_CONNECT | FD_CLOSE;
       if (WSAEventSelect(handle.m_handle.m_fd, event->second, events) != 0) {
         OLA_WARN << "WSAEventSelect failed with " << WSAGetLastError() <<
             " for socket " << handle.m_handle.m_fd;
         continue;
       }
-      
+
       handles.push_back(event->second);
     }
   }
@@ -477,17 +478,19 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           handles.erase(handles.begin() + index);
           io_handles.erase(io_handles.begin() + index);
           connected_descriptors.erase(connected_descriptors.begin() + index);
-        } else if (index < connected_descriptors.size() + 
+        } else if (index < connected_descriptors.size() +
                            socket_descriptors.size()) {
           DWORD socket_index = index - connected_descriptors.size();
           ReadFileDescriptor* descriptor = socket_descriptors[socket_index];
           WSANETWORKEVENTS events;
-          WSAEnumNetworkEvents(descriptor->ReadDescriptor().m_handle.m_fd, handles[index], &events);
+          WSAEnumNetworkEvents(descriptor->ReadDescriptor().m_handle.m_fd,
+              handles[index], &events);
           if ((events.lNetworkEvents & FD_READ) ||
               (events.lNetworkEvents & FD_ACCEPT)) {
             read_ready_queue.push(descriptor);
           } else if (events.lNetworkEvents & FD_CLOSE) {
-            SocketDescriptorSet::iterator socket_iter = m_socket_read_descriptors.find(descriptor);
+            SocketDescriptorSet::iterator socket_iter =
+                m_socket_read_descriptors.find(descriptor);
             if (socket_iter != m_socket_read_descriptors.end()) {
               // This is a ReadFileDescriptor based socket, just remove it
               m_socket_read_descriptors.erase(socket_iter);
@@ -498,7 +501,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
               }
             } else {
               // It's a ConnectedDescriptor, add it to the close list
-              ConnectedDescriptorSet::iterator iter = m_connected_read_descriptors.begin();
+              ConnectedDescriptorSet::iterator iter =
+                  m_connected_read_descriptors.begin();
               for (; iter != m_connected_read_descriptors.end(); ++iter) {
                 if (iter->descriptor == descriptor) {
                   closed_queue.push(*iter);
@@ -518,15 +522,18 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           WriteFileDescriptor* descriptor =
               socket_write_descriptors[socket_index];
           WSANETWORKEVENTS events;
-          WSAEnumNetworkEvents(descriptor->WriteDescriptor().m_handle.m_fd, handles[index], &events);
+          WSAEnumNetworkEvents(descriptor->WriteDescriptor().m_handle.m_fd,
+              handles[index], &events);
           if ((events.lNetworkEvents & FD_WRITE) ||
               (events.lNetworkEvents & FD_CONNECT)) {
                 write_ready_queue.push(descriptor);
           } else if (events.lNetworkEvents & FD_CLOSE) {
-            SocketWriteDescriptorSet::iterator socket_iter = m_socket_write_descriptors.find(descriptor);
+            SocketWriteDescriptorSet::iterator socket_iter =
+                m_socket_write_descriptors.find(descriptor);
             if (socket_iter != m_socket_write_descriptors.end()) {
               m_socket_write_descriptors.erase(socket_iter);
-              WriteHandleMap::iterator iter = m_socket_write_handles.find(descriptor);
+              WriteHandleMap::iterator iter =
+                  m_socket_write_handles.find(descriptor);
               if (iter != m_socket_write_handles.end()) {
                 CloseHandle(iter->second);
                 m_socket_write_handles.erase(iter);
@@ -534,7 +541,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
             }
           }
           handles.erase(handles.begin() + index);
-          socket_write_descriptors.erase(socket_write_descriptors.begin() + socket_index);
+          socket_write_descriptors.erase(socket_write_descriptors.begin() +
+              socket_index);
         } else {
           // TODO(lukase)
           OLA_WARN << "Unkown index";
@@ -578,7 +586,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     descriptor->PerformRead();
     read_ready_queue.pop();
   }
-  
+
   while (!write_ready_queue.empty()) {
     WriteFileDescriptor *descriptor = write_ready_queue.front();
     descriptor->PerformWrite();
@@ -594,7 +602,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       closed_queue.push(*this_iter);
       m_connected_read_descriptors.erase(this_iter);
     }
-    if ((this_iter->descriptor->ReadDescriptor().m_type == ola::io::SOCKET_DESCRIPTOR) &&
+    if ((this_iter->descriptor->ReadDescriptor().m_type ==
+         ola::io::SOCKET_DESCRIPTOR) &&
         (this_iter->descriptor->IsClosed())) {
       closed_queue.push(*this_iter);
       m_connected_read_descriptors.erase(this_iter);
