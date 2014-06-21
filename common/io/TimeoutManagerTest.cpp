@@ -47,7 +47,6 @@ class TimeoutManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
     void testSingleTimeouts();
     void testRepeatingTimeouts();
     void testAbortedRepeatingTimeouts();
@@ -79,11 +78,6 @@ class TimeoutManagerTest: public CppUnit::TestFixture {
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TimeoutManagerTest);
-
-
-void TimeoutManagerTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
 
 /*
  * Check RegisterSingleTimeout works.

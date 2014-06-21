@@ -76,10 +76,6 @@ class StringBuilderTest: public CppUnit::TestFixture {
     void testIntFailure();
     void testStringFailure();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-
  private:
     ola::messaging::GenericMessagePrinter m_printer;
 

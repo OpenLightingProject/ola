@@ -39,22 +39,19 @@ using std::string;
 
 class OutputStreamTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(OutputStreamTest);
-    CPPUNIT_TEST(testBasicWrite);
-    CPPUNIT_TEST(testWritePrimatives);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(OutputStreamTest);
+  CPPUNIT_TEST(testBasicWrite);
+  CPPUNIT_TEST(testWritePrimatives);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-    void testBasicWrite();
-    void testWritePrimatives();
+  void testBasicWrite();
+  void testWritePrimatives();
 
  private:
-    IOQueue m_buffer;
+  IOQueue m_buffer;
 
-    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
+  unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 

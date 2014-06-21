@@ -42,10 +42,6 @@ class FutureTest: public CppUnit::TestFixture {
     void testSingleThreadedFuture();
     void testSingleThreadedVoidFuture();
     void testMultithreadedFuture();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(FutureTest);

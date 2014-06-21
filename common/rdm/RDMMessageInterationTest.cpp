@@ -59,7 +59,6 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
     void testParameterDescription();
 
     void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
       ola::rdm::PidStoreLoader loader;
       m_store.reset(loader.LoadFromFile(
             TEST_SRC_DIR "/testdata/test_pids.proto"));

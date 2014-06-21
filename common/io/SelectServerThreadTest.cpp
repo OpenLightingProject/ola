@@ -81,27 +81,15 @@ class SelectServerThreadTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void tearDown();
-    void testSameThreadCallback();
-    void testDifferentThreadCallback();
+  void testSameThreadCallback();
+  void testDifferentThreadCallback();
 
  private:
-    SelectServer m_ss;
+  SelectServer m_ss;
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SelectServerThreadTest);
-
-
-void SelectServerThreadTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
-
-
-void SelectServerThreadTest::tearDown() {
-}
-
 
 /**
  * Check that a callback from the SelectServer thread executes.

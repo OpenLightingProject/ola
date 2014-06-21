@@ -29,7 +29,7 @@
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocket.h>
 #include <set>
-
+#include <vector>
 
 namespace ola {
 namespace network {
@@ -126,14 +126,17 @@ class TCPConnector {
   };
 
   typedef std::set<PendingTCPConnection*> ConnectionSet;
+  typedef std::vector<PendingTCPConnection*> ConnectionList;
 
   ola::io::SelectServerInterface *m_ss;
   ConnectionSet m_connections;
+  ConnectionList m_orphaned_connections;
 
   void SocketWritable(PendingTCPConnection *connection);
   void FreePendingConnection(PendingTCPConnection *connection);
   void Timeout(const ConnectionSet::iterator &iter);
   void TimeoutEvent(PendingTCPConnection *connection);
+  void CleanUpOrphans();
 
   DISALLOW_COPY_AND_ASSIGN(TCPConnector);
 };

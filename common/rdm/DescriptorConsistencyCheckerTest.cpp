@@ -47,10 +47,6 @@ class DescriptorConsistencyCheckerTest: public CppUnit::TestFixture {
     void testDuplicateStrings();
     void testGroups();
     void testNestedGroups();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
 };
 
 

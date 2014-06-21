@@ -32,22 +32,17 @@ using ola::testing::ASSERT_DATA_EQUALS;
 
 class MemoryBlockTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(MemoryBlockTest);
-    CPPUNIT_TEST(testAppend);
-    CPPUNIT_TEST(testPrepend);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(MemoryBlockTest);
+  CPPUNIT_TEST(testAppend);
+  CPPUNIT_TEST(testPrepend);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void testAppend();
-    void testPrepend();
+  void testAppend();
+  void testPrepend();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MemoryBlockTest);
-
-void MemoryBlockTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
 
 
 /*

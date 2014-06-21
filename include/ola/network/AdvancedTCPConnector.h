@@ -35,79 +35,117 @@ namespace ola {
 namespace network {
 
 /**
- * Manages the TCP connections to ip:ports.
- * The AdvancedTCPConnector attempts to open connections to ip:ports,
- * backing off exponentially if we can't connect.
+ * @brief Attempts to open a TCP connection until a failure limit is reached.
  *
- * Limitiations:
- *  This class only supports a single connection per ip:port.
- *  This class should work fine for a small number of TCP connections (100 or
- *   so). It'll need to be re-written if we want to support 1000s.
+ * The AdvancedTCPConnector attempts to open connections to a endpoint. If
+ * the connection fails it will retry according to a given BackOffPolicy.
+ *
+ * Limitations:
+ *  - This class only supports a single connection per IP:%Port.
+ *  - This class should work fine for a small number of TCP connections (100 or
+ *    so). It'll need to be re-written if we want to support 1000s.
  */
 class AdvancedTCPConnector {
  public:
-    AdvancedTCPConnector(ola::io::SelectServerInterface *ss,
-                         TCPSocketFactoryInterface *socket_factory,
-                         const ola::TimeInterval &connection_timeout);
-    virtual ~AdvancedTCPConnector();
+  /**
+   * @brief Create a new AdvancedTCPConnector
+   * @param ss the SelectServerInterface to use for scheduling
+   * @param socket_factory the factory to use for creating new sockets
+   * @param connection_timeout the timeout for TCP connects.
+   */
+  AdvancedTCPConnector(ola::io::SelectServerInterface *ss,
+                       TCPSocketFactoryInterface *socket_factory,
+                       const ola::TimeInterval &connection_timeout);
 
-    void AddEndpoint(const IPV4SocketAddress &endpoint,
-                     BackOffPolicy *backoff_policy,
-                     bool paused = false);
-    void RemoveEndpoint(const IPV4SocketAddress &endpoint);
+  ~AdvancedTCPConnector();
 
-    unsigned int EndpointCount() const { return m_connections.size(); }
+  /**
+   * @brief Add an endpoint to manage a connection to.
+   *
+   * If the IP:Port already exists this won't do anything.
+   * When the connection is successfull the on_connect callback will be run, and
+   * ownership of the TCPSocket object is transferred.
 
-    enum ConnectionState {
-      DISCONNECTED,  // socket is disconnected
-      PAUSED,  // disconnected, and we don't want to reconnect right now.
-      CONNECTED,  // socket is connected
-    };
+   * @param endpoint the IPV4SocketAddress to connect to.
+   * @param backoff_policy the BackOffPolicy to use for this connection.
+   * @param paused true if we don't want to immediately connect to this peer.
+   */
+  void AddEndpoint(const IPV4SocketAddress &endpoint,
+                   BackOffPolicy *backoff_policy,
+                   bool paused = false);
 
-    bool GetEndpointState(const IPV4SocketAddress &endpoint,
-                          ConnectionState *connected,
-                          unsigned int *failed_attempts) const;
+  /**
+   * @brief Remove a IP:Port from the connection manager. This won't close the
+   * connection if it's already established.
+   * @param endpoint the IPV4SocketAddress to remove.
+   */
+  void RemoveEndpoint(const IPV4SocketAddress &endpoint);
 
-    void Disconnect(const IPV4SocketAddress &endpoint, bool pause = false);
-    void Resume(const IPV4SocketAddress &endpoint);
+  /**
+   * @brief Return the number of connections tracked by this connector.
+   */
+  unsigned int EndpointCount() const { return m_connections.size(); }
 
- protected:
-    typedef struct {
-      ConnectionState state;
-      unsigned int failed_attempts;
-      ola::thread::timeout_id retry_timeout;
-      TCPConnector::TCPConnectionID connection_id;
-      BackOffPolicy *policy;
-    } ConnectionInfo;
+  /**
+   * @brief The state of a connection.
+   */
+  enum ConnectionState {
+    DISCONNECTED,  /**< The socket is disconnected */
+    PAUSED,  /**< The socket is disconnected, and will not be retried. */
+    CONNECTED,  /**< The socket is connected. */
+  };
 
-    typedef std::pair<IPV4Address, uint16_t> IPPortPair;
+  /**
+   * @brief Get the state & number of failed_attempts for an endpoint
+   * @param endpoint the IPV4SocketAddress to get the state of.
+   * @param[out] connected the connection state for this endpoint.
+   * @param[out] failed_attempts the number of failed connects for this
+   * endpoint.
+   * @returns true if this endpoint was found, false otherwise.
+   */
+  bool GetEndpointState(const IPV4SocketAddress &endpoint,
+                        ConnectionState *connected,
+                        unsigned int *failed_attempts) const;
 
-    TCPSocketFactoryInterface *m_socket_factory;
+  /**
+   * @brief Mark an endpoint as disconnected.
+   * @param endpoint the IPV4SocketAddress to mark as disconnected.
+   * @param pause if true, don't immediately try to reconnect.
+   */
+  void Disconnect(const IPV4SocketAddress &endpoint, bool pause = false);
 
-    /**
-     * Sub classes can override this to tune the behavior
-     */
-    virtual void TakeAction(const IPPortPair &key,
-                            ConnectionInfo *info,
-                            int fd,
-                            int error);
-    void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
+  /**
+   * @brief Resume trying to connect to a ip:port pair.
+   * @param endpoint the IPV4SocketAddress to resume connecting for.
+   */
+  void Resume(const IPV4SocketAddress &endpoint);
 
  private:
-    ola::io::SelectServerInterface *m_ss;
+  typedef struct {
+    ConnectionState state;
+    unsigned int failed_attempts;
+    ola::thread::timeout_id retry_timeout;
+    TCPConnector::TCPConnectionID connection_id;
+    BackOffPolicy *policy;
+    bool reconnect;
+  } ConnectionInfo;
 
-    TCPConnector m_connector;
-    const ola::TimeInterval m_connection_timeout;
+  typedef std::pair<IPV4Address, uint16_t> IPPortPair;
+  typedef std::map<IPPortPair, ConnectionInfo*> ConnectionMap;
 
-    typedef std::map<IPPortPair, ConnectionInfo*> ConnectionMap;
-    ConnectionMap m_connections;
+  TCPSocketFactoryInterface *m_socket_factory;
+  ola::io::SelectServerInterface *m_ss;
+  TCPConnector m_connector;
+  const ola::TimeInterval m_connection_timeout;
+  ConnectionMap m_connections;
 
-    void RetryTimeout(IPPortPair key);
-    void ConnectionResult(IPPortPair key, int fd, int error);
-    void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
-    void AbortConnection(ConnectionInfo *state);
+  void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
+  void RetryTimeout(IPPortPair key);
+  void ConnectionResult(IPPortPair key, int fd, int error);
+  void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
+  void AbortConnection(ConnectionInfo *state);
 
-    DISALLOW_COPY_AND_ASSIGN(AdvancedTCPConnector);
+  DISALLOW_COPY_AND_ASSIGN(AdvancedTCPConnector);
 };
 }  // namespace network
 }  // namespace ola

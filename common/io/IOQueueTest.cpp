@@ -70,7 +70,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IOQueueTest);
 
 
 void IOQueueTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_buffer.reset(new IOQueue());
 }
 

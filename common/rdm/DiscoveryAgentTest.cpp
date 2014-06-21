@@ -68,10 +68,6 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
     void testFlakeyResponder();
     void testProxy();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-
  private:
     bool m_callback_run;
 
