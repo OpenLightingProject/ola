@@ -13,26 +13,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * GenericTester.cpp
- * Run the tests.
- * Copyright (C) 2012 Simon Newton
+ * Env.cpp
+ * Get / Set Environment variables.
  */
 
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include "ola/Logging.h"
-#include "ola/base/Init.h"
+#include <stdlib.h>
+#include <string>
 
-int main(int argc, char* argv[]) {
-  ola::AppInit(&argc, argv, "[options]", "");
+#include "ola/base/Env.h"
 
-  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
-  CppUnit::TextUi::TestRunner runner;
-  runner.addTest(suite);
+namespace ola {
 
-  runner.setOutputter(
-      new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool wasSucessful = runner.run();
-  return wasSucessful ? 0 : 1;
+bool GetEnv(const std::string &var, std::string *value) {
+  char *v = NULL;
+#ifdef HAVE_SECURE_GETENV
+  v = secure_getenv(var.c_str());
+#else
+  v = getenv(var.c_str());
+#endif
+  if (v) {
+    value->assign(v);
+    return true;
+  }
+  return false;
 }
+
+}  // namespace ola

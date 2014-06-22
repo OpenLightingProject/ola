@@ -36,9 +36,8 @@ endif
 check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    ./libolaweb.la \
-                    ../base/libolabase.la \
-                    ../utils/libolautils.la
+                    ../libolacommon.la \
+                    ./libolaweb.la
 
 JsonTester_SOURCES = JsonTest.cpp
 JsonTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
