@@ -147,7 +147,24 @@ EPoller::~EPoller() {
     close(m_epoll_fd);
   }
 
-  STLDeleteValues(&m_descriptor_map);
+  {
+    DescriptorMap::iterator iter = m_descriptor_map.begin();
+    for (; iter != m_descriptor_map.end(); ++iter) {
+      if (iter->second->delete_connected_on_close) {
+        delete iter->second->connected_descriptor;
+      }
+      delete iter->second;
+    }
+  }
+
+
+  OrphanedDescriptors::iterator iter = m_orphaned_descriptors.begin();
+  for (; iter != m_orphaned_descriptors.end(); ++iter) {
+    if ((*iter)->delete_connected_on_close) {
+      delete (*iter)->connected_descriptor;
+    }
+    delete *iter;
+  }
 }
 
 bool EPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
