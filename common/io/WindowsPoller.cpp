@@ -226,9 +226,9 @@ bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
   return STLRemove(&m_socket_write_descriptors, descriptor);
 }
 
-static void CloseOverlappedEvents(std::vector<OVERLAPPED>& overlapped) {
-  std::vector<OVERLAPPED>::iterator iter = overlapped.begin();
-  for (; iter != overlapped.end(); ++iter) {
+static void CloseOverlappedEvents(std::vector<OVERLAPPED>* overlapped) {
+  std::vector<OVERLAPPED>::iterator iter = overlapped->begin();
+  for (; iter != overlapped->end(); ++iter) {
     CloseHandle(iter->hEvent);
   }
 }
@@ -618,7 +618,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     closed_queue.pop();
   }
 
-  CloseOverlappedEvents(overlapped);
+  CloseOverlappedEvents(&overlapped);
 
   return return_result;
 }
