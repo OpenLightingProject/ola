@@ -47,7 +47,6 @@
 #include "common/io/SelectPoller.h"
 #endif
 
-#include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/Logging.h"
 #include "ola/network/Socket.h"
@@ -100,6 +99,9 @@ SelectServer::SelectServer(ExportMap *export_map,
     m_poller.reset(new EPoller(export_map, m_clock));
   } else {
     m_poller.reset(new SelectPoller(export_map, m_clock));
+  }
+  if (m_export_map) {
+    m_export_map->GetBoolVar("using-epoll")->Set(FLAGS_use_epoll);
   }
 #else
   m_poller.reset(new SelectPoller(export_map, m_clock));

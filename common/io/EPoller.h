@@ -28,15 +28,18 @@
 #include <sys/epoll.h>
 
 #include <map>
-#include <string>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "common/io/PollerInterface.h"
 #include "common/io/TimeoutManager.h"
 
 namespace ola {
 namespace io {
+
+class EPollDescriptor;
 
 /**
  * @class EPoller
@@ -71,26 +74,16 @@ class EPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
-  struct EPollDescriptor {
-   public:
-     EPollDescriptor()
-         : events(0),
-           read_descriptor(NULL),
-           write_descriptor(NULL),
-           connected_descriptor(NULL),
-           delete_connected_on_close(false) {
-    }
-
-    uint32_t events;
-    ReadFileDescriptor *read_descriptor;
-    WriteFileDescriptor *write_descriptor;
-    ConnectedDescriptor *connected_descriptor;
-    bool delete_connected_on_close;
-  };
-
   typedef std::map<int, EPollDescriptor*> DescriptorMap;
+  typedef std::vector<EPollDescriptor*> OrphanedDescriptors;
 
   DescriptorMap m_descriptor_map;
+
+  // EPoller is re-enterant. Remove may be called while we hold a pointer to an
+  // EPollDescriptor. To avoid deleting data out from underneath ourselves, we
+  // instead move the removed descriptors to this list and then clean them up
+  // outside the callback loop.
+  OrphanedDescriptors m_orphaned_descriptors;
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
   CounterVariable *m_loop_time;
@@ -100,11 +93,7 @@ class EPoller : public PollerInterface {
 
   std::pair<EPollDescriptor*, bool> LookupOrCreateDescriptor(int fd);
 
-  bool AddEvent(int fd, EPollDescriptor *descriptor);
-  bool UpdateEvent(int fd, EPollDescriptor *descriptor);
-  bool RemoveEvent(int fd);
   bool RemoveDescriptor(int fd, int event);
-
   void CheckDescriptor(struct epoll_event *event, EPollDescriptor *descriptor);
 
   static const int MAX_EVENTS;
