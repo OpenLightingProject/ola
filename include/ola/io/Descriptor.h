@@ -205,7 +205,7 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
   // Closing is left to something else
   bool Close() { return true; }
 
-protected:
+ protected:
   // This is only protected because WIN32-specific subclasses need access.
   DescriptorHandle m_handle;
 

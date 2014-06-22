@@ -39,12 +39,12 @@ namespace http {
 
 #ifdef _WIN32
 class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
-public:
-  UnmanagedSocketDescriptor(int fd) :
+ public:
+  explicit UnmanagedSocketDescriptor(int fd) :
       ola::io::UnmanagedFileDescriptor(fd) {
     m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
   }
-private:
+ private:
   UnmanagedSocketDescriptor(const UnmanagedSocketDescriptor &other);
   UnmanagedSocketDescriptor& operator=(const UnmanagedSocketDescriptor &other);
 };
@@ -521,9 +521,12 @@ void HTTPServer::UpdateSockets() {
   int max_fd = 0;
   FD_ZERO(&r_set);
   FD_ZERO(&w_set);
-
+#ifdef MHD_SOCKET_DEFINED
   if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set,
       reinterpret_cast<MHD_socket*>(&max_fd))) {
+#else
+  if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
+#endif
     OLA_WARN << "Failed to get a list of the file descriptors for MHD";
     return;
   }
@@ -534,14 +537,14 @@ void HTTPServer::UpdateSockets() {
   // FD in a more suitable way
   int i = 0;
   while (iter != m_sockets.end() && i <= max_fd) {
-    if (HandleToFD((*iter)->ReadDescriptor()) < i) {
+    if (ola::io::HandleToFD((*iter)->ReadDescriptor()) < i) {
       // this socket is no longer required so remove it
       OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
       m_select_server.RemoveReadDescriptor(*iter);
       m_select_server.RemoveWriteDescriptor(*iter);
       delete *iter;
       m_sockets.erase(iter++);
-    } else if (HandleToFD((*iter)->ReadDescriptor()) == i) {
+    } else if (ola::io::HandleToFD((*iter)->ReadDescriptor()) == i) {
       // this socket may need to be updated
       if (FD_ISSET(i, &r_set))
         m_select_server.AddReadDescriptor(*iter);
