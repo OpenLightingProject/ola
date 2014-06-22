@@ -24,6 +24,10 @@ noinst_PROGRAMS = artnet_loadtest
 artnet_loadtest_SOURCES = artnet_loadtest.cpp
 artnet_loadtest_LDADD = libolaartnetnode.la
 
+if USING_WIN32
+artnet_loadtest_LDADD += -lWs2_32 -lIphlpapi
+endif
+
 # TESTS
 ##################################################
 if BUILD_TESTS
@@ -35,4 +39,9 @@ ArtNetTester_SOURCES = ArtNetNodeTest.cpp
 ArtNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ArtNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                      libolaartnetnode.la
+
+if USING_WIN32
+ArtNetTester_LDADD += -lWs2_32 -lIphlpapi
+endif
+
 endif

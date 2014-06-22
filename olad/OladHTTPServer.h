@@ -56,7 +56,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
                  const OladHTTPServerOptions &options,
                  ola::io::ConnectedDescriptor *client_socket,
                  class OlaServer *ola_server,
-                 const ola::network::Interface &interface);
+                 const ola::network::Interface &iface);
   virtual ~OladHTTPServer();
 
   bool Init();

@@ -183,12 +183,12 @@ class ArtNetNodeImpl::InputPort {
 
 /*
  * Create a new node
- * @param interface the interface to use.
+ * @param iface the interface to use.
  * @param short_name the short node name
  * @param long_name the long node name
  * @param subnet_address the ArtNet 'subnet' address, 4 bits.
  */
-ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
+ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
                                ola::io::SelectServerInterface *ss,
                                const ArtNetNodeOptions &options,
                                ola::network::UDPSocketInterface *socket)
@@ -203,7 +203,7 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
       m_always_broadcast(options.always_broadcast),
       m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_in_configuration_mode(false),
-      m_interface(interface),
+      m_interface(iface),
       m_socket(socket) {
 
   if (!m_socket.get())
@@ -2021,11 +2021,11 @@ void ArtNetNodeImpl::ReleaseDiscoveryLock(InputPort *port) {
 /**
  * DmxTriWidget Constructor
  */
-ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
+ArtNetNode::ArtNetNode(const ola::network::Interface &iface,
                        ola::io::SelectServerInterface *ss,
                        const ArtNetNodeOptions &options,
                        ola::network::UDPSocketInterface *socket):
-    m_impl(interface, ss, options, socket) {
+    m_impl(iface, ss, options, socket) {
   for (unsigned int i = 0; i < options.input_port_count; i++) {
     ArtNetNodeImplRDMWrapper *wrapper = new ArtNetNodeImplRDMWrapper(&m_impl,
                                                                      i);

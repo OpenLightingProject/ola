@@ -95,6 +95,9 @@ COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../common/libolacommon.la \
                     libolaslpcore.la \
                     libolaslpserver.la
+if USING_WIN32
+COMMON_TEST_LDADD += -lWs2_32 -lIphlpapi
+endif
 
 DATrackerTester_SOURCES = DATrackerTest.cpp
 DATrackerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
