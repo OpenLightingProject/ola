@@ -81,16 +81,13 @@ class WindowsPoller : public PollerInterface {
     }
   };
 
-  typedef struct {
-    OVERLAPPED m_overlapped;
-  } overlapped_handle_context_t;
-
   typedef std::set<connected_descriptor_t, connected_descriptor_t_lt>
       ConnectedDescriptorSet;
+
   typedef std::set<ReadFileDescriptor*> SocketDescriptorSet;
-  typedef std::set<WriteFileDescriptor*> SocketWriteDescriptorSet;
-  typedef std::map<void*, overlapped_handle_context_t> OverlappedHandleMap;
   typedef std::map<ReadFileDescriptor*, HANDLE> HandleMap;
+
+  typedef std::set<WriteFileDescriptor*> SocketWriteDescriptorSet;
   typedef std::map<WriteFileDescriptor*, HANDLE> WriteHandleMap;
 
   ExportMap *m_export_map;
@@ -100,11 +97,12 @@ class WindowsPoller : public PollerInterface {
   TimeStamp m_wake_up_time;
 
   SocketDescriptorSet m_socket_read_descriptors;
-  SocketWriteDescriptorSet m_socket_write_descriptors;
-  ConnectedDescriptorSet m_connected_read_descriptors;
-  OverlappedHandleMap m_overlapped_handle_map;
   HandleMap m_socket_handles;
+
+  SocketWriteDescriptorSet m_socket_write_descriptors;
   WriteHandleMap m_socket_write_handles;
+
+  ConnectedDescriptorSet m_connected_read_descriptors;
 
   void UpdateDescriptorData();
 

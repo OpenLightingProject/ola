@@ -65,11 +65,6 @@ WindowsPoller::~WindowsPoller() {
   m_socket_read_descriptors.clear();
   m_connected_read_descriptors.clear();
 
-  OverlappedHandleMap::iterator overlapped_it = m_overlapped_handle_map.begin();
-  for (; overlapped_it != m_overlapped_handle_map.end(); ++overlapped_it) {
-    CloseHandle(overlapped_it->second.m_overlapped.hEvent);
-  }
-
   HandleMap::iterator handle_it = m_socket_handles.begin();
   for (; handle_it != m_socket_handles.end(); ++handle_it) {
     CloseHandle(handle_it->second);
@@ -128,16 +123,6 @@ bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
 
   if (result) {
     switch (handle.m_type) {
-      case ola::io::PIPE_DESCRIPTOR:
-        {
-          overlapped_handle_context_t context;
-          memset(&context, 0, sizeof(context));
-          context.m_overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-          m_overlapped_handle_map.insert(
-              std::pair<void*, overlapped_handle_context_t>(
-                  descriptor, context));
-        }
-        break;
       case ola::io::SOCKET_DESCRIPTOR:
         {
           m_socket_handles.insert(
@@ -180,16 +165,6 @@ bool WindowsPoller::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
   }
 
   switch (descriptor->ReadDescriptor().m_type) {
-    case ola::io::PIPE_DESCRIPTOR:
-      {
-        OverlappedHandleMap::iterator iter =
-            m_overlapped_handle_map.find(descriptor);
-        if (iter != m_overlapped_handle_map.end()) {
-          CloseHandle(iter->second.m_overlapped.hEvent);
-          m_overlapped_handle_map.erase(iter);
-        }
-      }
-      break;
     case ola::io::SOCKET_DESCRIPTOR:
       {
         HandleMap::iterator iter = m_socket_handles.find(descriptor);
@@ -251,6 +226,13 @@ bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
   return STLRemove(&m_socket_write_descriptors, descriptor);
 }
 
+static void CloseOverlappedEvents(std::vector<OVERLAPPED>& overlapped) {
+  std::vector<OVERLAPPED>::iterator iter = overlapped.begin();
+  for (; iter != overlapped.end(); ++iter) {
+    CloseHandle(iter->hEvent);
+  }
+}
+
 bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                         const TimeInterval &poll_interval) {
   TimeStamp now;
@@ -289,6 +271,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   std::vector<ReadFileDescriptor*> socket_descriptors;
   std::vector<WriteFileDescriptor*> socket_write_descriptors;
 
+  std::vector<OVERLAPPED> overlapped;
+
   std::queue<ReadFileDescriptor*> read_ready_queue;
   std::queue<WriteFileDescriptor*> write_ready_queue;
   std::queue<connected_descriptor_t> closed_queue;
@@ -318,21 +302,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
         break;
       case ola::io::PIPE_DESCRIPTOR:
         {
-          OverlappedHandleMap::iterator overlapped =
-              m_overlapped_handle_map.find(chd_iter->descriptor);
-          if (overlapped == m_overlapped_handle_map.end()) {
-            OLA_WARN << "No overlapped entry for descriptor " <<
-                chd_iter->descriptor;
-            continue;
-          }
-
-          // Check if this descriptor should be closed
-          if (!chd_iter->descriptor->ValidReadDescriptor()) {
-            closed_descriptors = true;
-            closed_queue.push(*chd_iter);
-            continue;
-          }
-
           if (*(handle.m_read_data_size) > 0) {
             data_pending = true;
           }
@@ -341,18 +310,19 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           DWORD bytes_already_in_buffer = *handle.m_read_data_size;
           void* read_buffer = &(handle.m_read_data[bytes_already_in_buffer]);
           DWORD bytes_to_read = READ_DATA_BUFFER_SIZE - bytes_already_in_buffer;
-          // If you remove the following, empty OLA_WARN output, the call to
-          // ReadFile will fail.
-          // TODO(lukase) investigate why removing this leads to error 998 below
-          OLA_WARN << "";
-          OLA_WARN << (void*)handle.m_handle.m_handle;
-          OLA_WARN << read_buffer;
-          OLA_WARN << bytes_to_read;
+
+          OVERLAPPED over;
+          memset(&over, 0, sizeof(over));
+          overlapped.push_back(over);
+          POVERLAPPED pover = &(overlapped[overlapped.size() - 1]);
+
+          pover->hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
           if (!ReadFile(handle.m_handle.m_handle,
                         read_buffer,
                         bytes_to_read,
-                        reinterpret_cast<DWORD*>(handle.m_read_call_size),
-                        &(overlapped->second.m_overlapped))) {
+                        NULL,
+                        pover)) {
             int last_error = GetLastError();
             if (last_error != ERROR_IO_PENDING) {
               // Detect closed pipe descriptor
@@ -367,7 +337,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
             }
           }
 
-          handles.push_back(overlapped->second.m_overlapped.hEvent);
+          handles.push_back(pover->hEvent);
           io_handles.push_back(handle.m_handle.m_handle);
           connected_descriptors.push_back(chd_iter->descriptor);
         }
@@ -473,10 +443,20 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       DWORD index = wait_result - WAIT_OBJECT_0;
       do {
         if (index < connected_descriptors.size()) {
+          CancelIo(io_handles[index]);
+          io_handles.erase(io_handles.begin() + index);
           ConnectedDescriptor* descriptor = connected_descriptors[index];
+          uint32_t* bytes_transferred =
+              descriptor->ReadDescriptor().m_read_call_size;
+              POVERLAPPED pover = &(overlapped[index]);
+          if (!GetOverlappedResult(handles[index], pover,
+              reinterpret_cast<DWORD*>(bytes_transferred), FALSE)) {
+            OLA_WARN << "GetOverlappedResult failed with " << GetLastError();
+          }
           read_ready_queue.push(descriptor);
           handles.erase(handles.begin() + index);
-          io_handles.erase(io_handles.begin() + index);
+          CloseHandle(overlapped[index].hEvent);
+          overlapped.erase(overlapped.begin() + index);
           connected_descriptors.erase(connected_descriptors.begin() + index);
         } else if (index < connected_descriptors.size() +
                            socket_descriptors.size()) {
@@ -618,16 +598,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     if (on_close)
       on_close->Run();
     switch (descriptor->ReadDescriptor().m_type) {
-      case ola::io::PIPE_DESCRIPTOR:
-        {
-          OverlappedHandleMap::iterator iter =
-              m_overlapped_handle_map.find(descriptor);
-          if (iter != m_overlapped_handle_map.end()) {
-            CloseHandle(iter->second.m_overlapped.hEvent);
-            m_overlapped_handle_map.erase(iter);
-          }
-        }
-        break;
       case ola::io::SOCKET_DESCRIPTOR:
         {
           HandleMap::iterator iter = m_socket_handles.find(descriptor);
@@ -647,6 +617,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     }
     closed_queue.pop();
   }
+
+  CloseOverlappedEvents(overlapped);
 
   return return_result;
 }
