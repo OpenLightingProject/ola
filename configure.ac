@@ -115,7 +115,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_aton select socket strerror \
                 getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
-                getgrgid_r])
+                getgrgid_r secure_getenv])
 AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
 
 LT_INIT
