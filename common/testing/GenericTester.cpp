@@ -21,6 +21,8 @@
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
+#include <string>
+
 #include "ola/base/Env.h"
 #include "ola/base/Flags.h"
 #include "ola/base/Init.h"

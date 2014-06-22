@@ -213,7 +213,7 @@ bool WidgetDetectorThread::RunScan() {
 }
 
 /**
- * Start the discovery sequenece for a widget.
+ * Start the discovery sequence for a widget.
  */
 void WidgetDetectorThread::PerformDiscovery(const string &path,
                                             ConnectedDescriptor *descriptor) {
