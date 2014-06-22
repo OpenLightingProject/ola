@@ -43,7 +43,7 @@ using std::pair;
 /*
  * Represents a FD
  */
-struct EPollDescriptor {
+class EPollDescriptor {
  public:
   EPollDescriptor()
       : events(0),
