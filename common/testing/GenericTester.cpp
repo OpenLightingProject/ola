@@ -22,18 +22,17 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
 #include "ola/Logging.h"
+#include "ola/base/Init.h"
 
 int main(int argc, char* argv[]) {
+  ola::AppInit(&argc, argv, "[options]", "");
+
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
   CppUnit::TextUi::TestRunner runner;
   runner.addTest(suite);
-  // Enable logging.
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
   runner.setOutputter(
       new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
   bool wasSucessful = runner.run();
   return wasSucessful ? 0 : 1;
-  (void) argc;
-  (void) argv;
 }

@@ -192,8 +192,6 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
   ~UnmanagedFileDescriptor() {}
   DescriptorHandle ReadDescriptor() const { return m_handle; }
   DescriptorHandle WriteDescriptor() const { return m_handle; }
-  // Closing is left to something else
-  bool Close() { return true; }
 
  private:
   DescriptorHandle m_handle;
