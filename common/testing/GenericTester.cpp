@@ -29,14 +29,18 @@
 using std::string;
 
 DECLARE_bool(use_epoll);
+DECLARE_uint8(log_level);
 
 int main(int argc, char* argv[]) {
-  ola::AppInit(&argc, argv, "[options]", "");
+  // Default to INFO since it's tests.
+  FLAGS_log_level = ola::OLA_LOG_INFO;
 
   string epoll_var;
   if (ola::GetEnv("OLA_USE_EPOLL", &epoll_var) && epoll_var == "true") {
     FLAGS_use_epoll = true;
   }
+
+  ola::AppInit(&argc, argv, "[options]", "");
 
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
   CppUnit::TextUi::TestRunner runner;
