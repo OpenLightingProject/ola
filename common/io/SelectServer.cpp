@@ -207,7 +207,7 @@ bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_READ_DESCRIPTOR_VAR))--;
   }
-  return removed;
+  return true;
 }
 
 bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
@@ -216,7 +216,7 @@ bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_CONNECTED_DESCRIPTORS_VAR))--;
   }
-  return removed;
+  return true;
 }
 
 bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
@@ -232,7 +232,7 @@ bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR))--;
   }
-  return removed;
+  return true;
 }
 
 /*

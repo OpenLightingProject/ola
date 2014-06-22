@@ -179,8 +179,8 @@ void SelectServerTest::testAddInvalidDescriptor() {
   LoopbackDescriptor bad_socket;
   OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
   OLA_ASSERT_FALSE(m_ss->AddWriteDescriptor(&bad_socket));
-  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&bad_socket));
-  OLA_ASSERT_FALSE(m_ss->RemoveWriteDescriptor(&bad_socket));
+  m_ss->RemoveReadDescriptor(&bad_socket);
+  m_ss->RemoveWriteDescriptor(&bad_socket);
 
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());  // internal socket
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
@@ -218,9 +218,9 @@ void SelectServerTest::testDoubleAddAndRemove() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
-  // Trying to remove a second time should fail
-  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&loopback_socket));
-  OLA_ASSERT_FALSE(m_ss->RemoveWriteDescriptor(&loopback_socket));
+  // Trying to remove a second time shouldn't crash
+  m_ss->RemoveReadDescriptor(&loopback_socket);
+  m_ss->RemoveWriteDescriptor(&loopback_socket);
 }
 
 
@@ -236,7 +236,7 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   LoopbackDescriptor bad_socket;
   // adding and removing a non-connected socket should fail
   OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
-  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&bad_socket));
+  m_ss->RemoveReadDescriptor(&bad_socket);
 
   LoopbackDescriptor loopback_socket;
   loopback_socket.Init();
