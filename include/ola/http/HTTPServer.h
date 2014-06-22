@@ -32,8 +32,13 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Winsock2.h>
+#else
 #include <sys/select.h>
 #include <sys/socket.h>
+#endif
 #include <microhttpd.h>
 #include <map>
 #include <set>

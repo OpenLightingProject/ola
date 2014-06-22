@@ -77,6 +77,19 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data) {
 }
 #endif
 
+int HandleToFD(const DescriptorHandle& handle) {
+#ifdef _WIN32
+  switch (handle.m_type) {
+    case SOCKET_DESCRIPTOR:
+      return handle.m_handle.m_fd;
+    default:
+      return -1;
+  }
+#else
+  return handle;
+#endif
+}
+
 /**
  * Helper function to create a annonymous pipe
  * @param fd_pair a 2 element array which is updated with the fds
@@ -177,7 +190,6 @@ UnmanagedFileDescriptor::UnmanagedFileDescriptor(int fd)
   m_handle.m_handle.m_fd = fd;
   m_handle.m_type = GENERIC_DESCRIPTOR;
   m_handle.m_event_handle = 0;
-  OLA_WARN << "UnmanagedFileDescriptor doesn't support events on Windows yet";
 #else
   m_handle = fd;
 #endif

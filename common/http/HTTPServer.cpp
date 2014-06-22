@@ -37,6 +37,19 @@
 namespace ola {
 namespace http {
 
+#ifdef _WIN32
+class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
+public:
+  UnmanagedSocketDescriptor(int fd) :
+      ola::io::UnmanagedFileDescriptor(fd) {
+    m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  }
+private:
+  UnmanagedSocketDescriptor(const UnmanagedSocketDescriptor &other);
+  UnmanagedSocketDescriptor& operator=(const UnmanagedSocketDescriptor &other);
+};
+#endif
+
 using std::ifstream;
 using std::map;
 using std::pair;
@@ -509,7 +522,8 @@ void HTTPServer::UpdateSockets() {
   FD_ZERO(&r_set);
   FD_ZERO(&w_set);
 
-  if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
+  if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set,
+      reinterpret_cast<MHD_socket*>(&max_fd))) {
     OLA_WARN << "Failed to get a list of the file descriptors for MHD";
     return;
   }
@@ -520,14 +534,14 @@ void HTTPServer::UpdateSockets() {
   // FD in a more suitable way
   int i = 0;
   while (iter != m_sockets.end() && i <= max_fd) {
-    if ((*iter)->ReadDescriptor() < i) {
+    if (HandleToFD((*iter)->ReadDescriptor()) < i) {
       // this socket is no longer required so remove it
       OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
       m_select_server.RemoveReadDescriptor(*iter);
       m_select_server.RemoveWriteDescriptor(*iter);
       delete *iter;
       m_sockets.erase(iter++);
-    } else if ((*iter)->ReadDescriptor() == i) {
+    } else if (HandleToFD((*iter)->ReadDescriptor()) == i) {
       // this socket may need to be updated
       if (FD_ISSET(i, &r_set))
         m_select_server.AddReadDescriptor(*iter);
@@ -791,7 +805,11 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
 UnmanagedFileDescriptor *HTTPServer::NewSocket(fd_set *r_set,
                                                fd_set *w_set,
                                                int fd) {
+#ifdef _WIN32
+  UnmanagedSocketDescriptor *socket = new UnmanagedSocketDescriptor(fd);
+#else
   UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
+#endif
   socket->SetOnData(NewCallback(this, &HTTPServer::HandleHTTPIO));
   socket->SetOnWritable(NewCallback(this, &HTTPServer::HandleHTTPIO));
 

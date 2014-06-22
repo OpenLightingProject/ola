@@ -107,6 +107,13 @@ typedef int DescriptorHandle;
 static DescriptorHandle INVALID_DESCRIPTOR = -1;
 #endif
 
+/**
+ * Helper function to convert a DescriptorHandle to a file descriptor.
+ * @param handle The descriptor handle
+ * @return -1 on error, file descriptor otherwise
+ */
+int HandleToFD(const DescriptorHandle& handle);
+
 /*
  * A FileDescriptor which can be read from.
  */
@@ -198,8 +205,11 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
   // Closing is left to something else
   bool Close() { return true; }
 
- private:
+protected:
+  // This is only protected because WIN32-specific subclasses need access.
   DescriptorHandle m_handle;
+
+ private:
   UnmanagedFileDescriptor(const UnmanagedFileDescriptor &other);
   UnmanagedFileDescriptor& operator=(const UnmanagedFileDescriptor &other);
 };
