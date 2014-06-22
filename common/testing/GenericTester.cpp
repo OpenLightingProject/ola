@@ -21,11 +21,22 @@
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include "ola/Logging.h"
+#include "ola/base/Env.h"
+#include "ola/base/Flags.h"
 #include "ola/base/Init.h"
+#include "ola/Logging.h"
+
+using std::string;
+
+DECLARE_bool(use_epoll);
 
 int main(int argc, char* argv[]) {
   ola::AppInit(&argc, argv, "[options]", "");
+
+  string epoll_var;
+  if (ola::GetEnv("OLA_USE_EPOLL", &epoll_var) && epoll_var == "true") {
+    FLAGS_use_epoll = true;
+  }
 
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
   CppUnit::TextUi::TestRunner runner;
