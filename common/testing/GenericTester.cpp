@@ -27,6 +27,7 @@
 #include "ola/base/Flags.h"
 #include "ola/base/Init.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 
 using std::string;
 
@@ -38,7 +39,10 @@ int main(int argc, char* argv[]) {
   FLAGS_log_level = ola::OLA_LOG_INFO;
 
   string epoll_var;
-  if (ola::GetEnv("OLA_USE_EPOLL", &epoll_var) && epoll_var == "true") {
+  bool use_epoll = false;
+  if (ola::GetEnv("OLA_USE_EPOLL", &epoll_var) &&
+      ola::StringToBool(epoll_var, &use_epoll) &&
+      use_epoll) {
     FLAGS_use_epoll = true;
   }
 
