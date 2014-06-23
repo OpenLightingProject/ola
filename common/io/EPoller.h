@@ -75,7 +75,7 @@ class EPoller : public PollerInterface {
 
  private:
   typedef std::map<int, EPollDescriptor*> DescriptorMap;
-  typedef std::vector<EPollDescriptor*> OrphanedDescriptors;
+  typedef std::vector<EPollDescriptor*> DescriptorList;
 
   DescriptorMap m_descriptor_map;
 
@@ -83,7 +83,9 @@ class EPoller : public PollerInterface {
   // EPollDescriptor. To avoid deleting data out from underneath ourselves, we
   // instead move the removed descriptors to this list and then clean them up
   // outside the callback loop.
-  OrphanedDescriptors m_orphaned_descriptors;
+  DescriptorList m_orphaned_descriptors;
+  // A list of pre-allocated descriptors we can use.
+  DescriptorList m_free_descriptors;
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
   CounterVariable *m_loop_time;
@@ -98,6 +100,7 @@ class EPoller : public PollerInterface {
 
   static const int MAX_EVENTS;
   static const int READ_FLAGS;
+  static const unsigned int MAX_FREE_DESCRIPTORS;
 
   DISALLOW_COPY_AND_ASSIGN(EPoller);
 };

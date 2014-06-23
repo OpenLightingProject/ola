@@ -53,6 +53,14 @@ class EPollDescriptor {
         delete_connected_on_close(false) {
   }
 
+  void Reset() {
+    events = 0;
+    read_descriptor = NULL;
+    write_descriptor = NULL;
+    connected_descriptor = NULL;
+    delete_connected_on_close = false;
+  }
+
   uint32_t events;
   ReadFileDescriptor *read_descriptor;
   WriteFileDescriptor *write_descriptor;
@@ -120,10 +128,16 @@ bool RemoveEvent(int epoll_fd, int fd) {
  */
 const int EPoller::MAX_EVENTS = 10;
 
+
 /**
  * @brief the EPOLL flags used for read descriptors.
  */
 const int EPoller::READ_FLAGS = EPOLLIN | EPOLLRDHUP;
+
+/**
+ * @brief The number of pre-allocated EPollDescriptor to have.
+ */
+const unsigned int EPoller::MAX_FREE_DESCRIPTORS = 10;
 
 EPoller::EPoller(ExportMap *export_map, Clock* clock)
     : m_export_map(export_map),
@@ -158,13 +172,15 @@ EPoller::~EPoller() {
   }
 
 
-  OrphanedDescriptors::iterator iter = m_orphaned_descriptors.begin();
+  DescriptorList::iterator iter = m_orphaned_descriptors.begin();
   for (; iter != m_orphaned_descriptors.end(); ++iter) {
     if ((*iter)->delete_connected_on_close) {
       delete (*iter)->connected_descriptor;
     }
     delete *iter;
   }
+
+  STLDeleteElements(&m_free_descriptors);
 }
 
 bool EPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
@@ -319,8 +335,16 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
 
   // Now that we're out of the callback phase, clean up descriptors that were
   // removed.
-  // TODO(simon): Re-use the memory to make adding / removing cheaper.
-  STLDeleteElements(&m_orphaned_descriptors);
+  DescriptorList::iterator iter = m_orphaned_descriptors.begin();
+  for (; iter != m_orphaned_descriptors.end(); ++iter) {
+    if (m_free_descriptors.size() == MAX_FREE_DESCRIPTORS) {
+      delete *iter;
+    } else {
+      (*iter)->Reset();
+      m_free_descriptors.push_back(*iter);
+    }
+  }
+  m_orphaned_descriptors.clear();
 
   m_clock->CurrentTime(&m_wake_up_time);
   timeout_manager->ExecuteTimeouts(&m_wake_up_time);
@@ -384,9 +408,12 @@ std::pair<EPollDescriptor*, bool> EPoller::LookupOrCreateDescriptor(int fd) {
   bool new_descriptor = result.second;
 
   if (new_descriptor) {
-    result.first->second = new EPollDescriptor();
-    OLA_DEBUG << "Created EPollDescriptor " << result.first->second
-              << " for fd " << fd;
+    if (m_free_descriptors.empty()) {
+      result.first->second = new EPollDescriptor();
+    } else {
+      result.first->second = m_free_descriptors.back();
+      m_free_descriptors.pop_back();
+    }
   }
   return std::make_pair(result.first->second, new_descriptor);
 }
