@@ -43,7 +43,11 @@
 #include "common/io/WindowsPoller.h"
 #else
 #include "ola/base/Flags.h"
+
+#ifdef HAVE_EPOLL
 #include "common/io/EPoller.h"
+#endif
+
 #include "common/io/SelectPoller.h"
 #endif
 
