@@ -52,7 +52,9 @@
 #include "ola/network/Socket.h"
 #include "ola/stl/STLUtils.h"
 
+#ifdef HAVE_EPOLL
 DEFINE_bool(use_epoll, false, "Use epoll() when available");
+#endif
 
 namespace ola {
 namespace io {

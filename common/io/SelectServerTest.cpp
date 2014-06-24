@@ -18,12 +18,12 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <cppunit/extensions/HelperMacros.h>
-#include <sstream>
-
 #ifdef _WIN32
 #include <Winsock2.h>
 #endif
+
+#include <cppunit/extensions/HelperMacros.h>
+#include <sstream>
 
 #include "common/io/PollerInterface.h"
 #include "ola/Callback.h"
@@ -167,7 +167,7 @@ void SelectServerTest::tearDown() {
 #endif
 }
 
-/**
+/*
  * Confirm we can't add invalid descriptors to the SelectServer
  */
 void SelectServerTest::testAddInvalidDescriptor() {
@@ -187,7 +187,7 @@ void SelectServerTest::testAddInvalidDescriptor() {
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 }
 
-/**
+/*
  * Confirm we can't add the same descriptor twice.
  */
 void SelectServerTest::testDoubleAddAndRemove() {
@@ -266,15 +266,15 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 }
 
-/**
+/*
  * Confirm we correctly detect the remote end closing the connection.
  */
 void SelectServerTest::testRemoteEndClose() {
   LoopbackDescriptor loopback_socket;
   loopback_socket.Init();
   loopback_socket.SetOnClose(NewSingleCallback(
-        this, &SelectServerTest::RemoveFromSelectServer,
-        reinterpret_cast<ConnectedDescriptor*>(&loopback_socket)));
+      this, &SelectServerTest::RemoveFromSelectServer,
+      reinterpret_cast<ConnectedDescriptor*>(&loopback_socket)));
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
@@ -288,7 +288,7 @@ void SelectServerTest::testRemoteEndClose() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 }
 
-/**
+/*
  * Confirm we correctly detect the remote end closing the connection.
  * This uses the delete_on_close option.
  */
@@ -297,7 +297,7 @@ void SelectServerTest::testRemoteEndCloseWithDelete() {
   LoopbackDescriptor *loopback_socket = new LoopbackDescriptor();
   loopback_socket->Init();
   loopback_socket->SetOnClose(NewSingleCallback(
-        this, &SelectServerTest::Terminate));
+      this, &SelectServerTest::Terminate));
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback_socket, true));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
@@ -311,7 +311,7 @@ void SelectServerTest::testRemoteEndCloseWithDelete() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 }
 
-/**
+/*
  * Test the interaction between read and write descriptor.
  */
 void SelectServerTest::testReadWriteInteraction() {
@@ -335,7 +335,7 @@ void SelectServerTest::testReadWriteInteraction() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 }
 
-/**
+/*
  * Confirm we don't leak memory when the SelectServer is destroyed without all
  * the descriptors being removed.
  */

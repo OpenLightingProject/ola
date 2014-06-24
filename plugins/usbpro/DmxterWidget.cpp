@@ -421,7 +421,7 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
     // This is the same behaviour as if the remote end closed the connection
     // i.e. the device was plugged.
     ola::io::ConnectedDescriptor::OnCloseCallback *on_close =
-      GetDescriptor()->TransferOnClose();
+        GetDescriptor()->TransferOnClose();
     on_close->Run();
   }
 }
@@ -444,8 +444,8 @@ DmxterWidget::DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
                            uint32_t serial,
                            unsigned int queue_size) {
   m_impl = new DmxterWidgetImpl(descriptor, esta_id, serial);
-  m_controller = new ola::rdm::DiscoverableQueueingRDMController(
-      m_impl, queue_size);
+  m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
+                                                                 queue_size);
 }
 
 DmxterWidget::~DmxterWidget() {

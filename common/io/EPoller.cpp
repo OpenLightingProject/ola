@@ -80,7 +80,7 @@ bool AddEvent(int epoll_fd, int fd, EPollDescriptor *descriptor) {
   event.data.ptr = descriptor;
 
   OLA_DEBUG << "EPOLL_CTL_ADD " << fd << ", events " << std::hex
-      << event.events << ", descriptor: " << descriptor;
+            << event.events << ", descriptor: " << descriptor;
   int r = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event);
   if (r) {
     OLA_WARN << "EPOLL_CTL_ADD " << fd << " failed: " << strerror(errno);
@@ -89,7 +89,7 @@ bool AddEvent(int epoll_fd, int fd, EPollDescriptor *descriptor) {
   return true;
 }
 
-/**
+/*
  * Update the fd in the epoll event set
  * descriptor is the user data to associated with the event
  */
@@ -99,7 +99,7 @@ bool UpdateEvent(int epoll_fd, int fd, EPollDescriptor *descriptor) {
   event.data.ptr = descriptor;
 
   OLA_DEBUG << "EPOLL_CTL_MOD " << fd << ", events " << std::hex
-      << event.events << ", descriptor: " << descriptor;
+            << event.events << ", descriptor: " << descriptor;
   int r = epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
   if (r) {
     OLA_WARN << "EPOLL_CTL_MOD " << fd << " failed: " << strerror(errno);
@@ -362,7 +362,6 @@ void EPoller::CheckDescriptor(struct epoll_event *event,
   if (event->events & (EPOLLHUP | EPOLLRDHUP)) {
     if (descriptor->read_descriptor) {
       descriptor->read_descriptor->PerformRead();
-
     } else if (descriptor->write_descriptor) {
       descriptor->write_descriptor->PerformWrite();
     } else if (descriptor->connected_descriptor) {
