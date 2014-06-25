@@ -129,6 +129,11 @@ DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
 
+# Epoll
+AX_HAVE_EPOLL(
+  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
+
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
 old_cppflags=$CPPFLAGS
