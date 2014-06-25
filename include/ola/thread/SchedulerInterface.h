@@ -92,8 +92,8 @@ class SchedulerInterface {
       SingleUseCallback0<void> *callback) = 0;
 
   /**
-   * @brief Cancel a existing timeout
-   * Wparam id the timeout_id returned by a call to RegisterRepeatingTimeout or
+   * @brief Cancel an existing timeout
+   * @param id the timeout_id returned by a call to RegisterRepeatingTimeout or
    *   RegisterSingleTimeout.
    */
   virtual void RemoveTimeout(timeout_id id) = 0;

@@ -57,7 +57,7 @@ class SelectServer: public SelectServerInterface {
   ~SelectServer();
 
   /**
-   * @brief Returns true if the SelectServer is in the Run() method.
+   * @brief Checks if the SelectServer is running.
    * @returns true if the SelectServer is in the Run() method.
    */
   bool IsRunning() const { return !m_terminate; }
