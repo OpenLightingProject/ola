@@ -207,7 +207,7 @@ void AdvancedTCPConnectorTest::testPause() {
   ConfirmState(__LINE__, connector, m_server_address,
                AdvancedTCPConnector::PAUSED, 0);
 
-  m_ss->RunOnce(0, 500000);
+  m_ss->RunOnce(TimeInterval(0, 500000));
 
   // now unpause
   connector.Resume(m_server_address);
@@ -273,7 +273,7 @@ void AdvancedTCPConnectorTest::testBackoff() {
 
   // the timeout is 500ms, so we advance by 490 and set a 200ms timeout
   m_clock.AdvanceTime(0, 490000);
-  m_ss->RunOnce(0, 200000);
+  m_ss->RunOnce(TimeInterval(0, 200000));
 
   // should have one failure at this point
   ConfirmState(__LINE__, connector, target,
@@ -281,17 +281,17 @@ void AdvancedTCPConnectorTest::testBackoff() {
 
   // the next attempt should be in 5 seconds
   m_clock.AdvanceTime(4, 900000);
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
 
   // wait for the timeout
   m_clock.AdvanceTime(0, 490000);
-  m_ss->RunOnce(0, 200000);
+  m_ss->RunOnce(TimeInterval(0, 200000));
 
   ConfirmState(__LINE__, connector, target,
                AdvancedTCPConnector::DISCONNECTED, 2);
 
   // run once more to clean up
-  m_ss->RunOnce(0, 10000);
+  m_ss->RunOnce(TimeInterval(0, 10000));
 
   // clean up
   connector.RemoveEndpoint(target);

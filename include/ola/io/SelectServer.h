@@ -47,19 +47,55 @@ class SelectServer: public SelectServerInterface {
  public :
   enum Direction {READ, WRITE};
 
+  /**
+   * @brief Create a new SelectServer
+   * @param export_map the ExportMap to use for stats
+   * @param clock the Clock to use to keep time
+   */
   SelectServer(ola::ExportMap *export_map = NULL,
                Clock *clock = NULL);
   ~SelectServer();
 
+  /**
+   * @brief Returns true if the SelectServer is in the Run() method.
+   * @returns true if the SelectServer is in the Run() method.
+   */
   bool IsRunning() const { return !m_terminate; }
+
   const TimeStamp *WakeUpTime() const;
 
+  /**
+   * @brief Exit from the Run() loop.
+   */
   void Terminate();
 
-  void SetDefaultInterval(const TimeInterval &poll_interval);
+  /**
+   * @brief Set the duration to block for.
+   * @param block_interval the interval to block for.
+   *
+   * This controls the upper bound on the duration between callbacks added with
+   * RunInLoop().
+   */
+  void SetDefaultInterval(const TimeInterval &block_interval);
+
+  /**
+   * @brief Enter the event loop.
+   *
+   * Run() will return once Terminate() has been called.
+   */
   void Run();
-  void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
-               unsigned int delay_usec = POLL_INTERVAL_USECOND);
+
+  /**
+   * @brief Do a single pass through the event loop. Does not block.
+   */
+  void RunOnce();
+
+  /**
+   * @brief Do a single pass through the event loop.
+   * @param block_interval The maximum time to block if there is no I/O or
+   *   timer events.
+   */
+  void RunOnce(const TimeInterval &block_interval);
 
   bool AddReadDescriptor(ReadFileDescriptor *descriptor);
   bool AddReadDescriptor(ConnectedDescriptor *descriptor,
@@ -85,7 +121,14 @@ class SelectServer: public SelectServerInterface {
       ola::SingleUseCallback0<void> *closure);
   void RemoveTimeout(ola::thread::timeout_id id);
 
-  void RunInLoop(ola::Callback0<void> *closure);
+  /**
+   * @brief Execute a callback on every event loop.
+   * @param callback the Callback to execute.
+   *
+   * Be very cautious about using this, it's almost certainly not what you
+   * want.
+   */
+  void RunInLoop(ola::Callback0<void> *callback);
 
   void Execute(ola::BaseCallback0<void> *closure);
 

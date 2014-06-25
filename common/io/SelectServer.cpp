@@ -179,13 +179,13 @@ void SelectServer::Run() {
   m_is_running = false;
 }
 
-/*
- * Run one iteration of the select server
- */
-void SelectServer::RunOnce(unsigned int delay_sec,
-                           unsigned int delay_usec) {
+void SelectServer::RunOnce() {
+  RunOnce(TimeInterval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND));
+}
+
+void SelectServer::RunOnce(const TimeInterval &block_interval) {
   m_is_running = true;
-  CheckForEvents(TimeInterval(delay_sec, delay_usec));
+  CheckForEvents(block_interval);
   m_is_running = false;
 }
 
