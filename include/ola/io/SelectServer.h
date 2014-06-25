@@ -86,10 +86,16 @@ class SelectServer: public SelectServerInterface {
   void Run();
 
   /**
-   * @brief Do a single pass through the event loop.
+   * @brief Do a single pass through the event loop. Does not block.
    */
-  void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
-               unsigned int delay_usec = POLL_INTERVAL_USECOND);
+  void RunOnce();
+
+  /**
+   * @brief Do a single pass through the event loop.
+   * @param block_interval The maximum time to block if there is no I/O or
+   *   timer events.
+   */
+  void RunOnce(const TimeInterval &block_interval);
 
   bool AddReadDescriptor(ReadFileDescriptor *descriptor);
   bool AddReadDescriptor(ConnectedDescriptor *descriptor,

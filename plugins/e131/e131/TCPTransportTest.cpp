@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 
+#include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/IOStack.h"
@@ -36,6 +37,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::TimeInterval;
 using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::IOStack;
@@ -125,7 +127,7 @@ void TCPTransportTest::setUp() {
 void TCPTransportTest::tearDown() {
   // Close the loopback descriptor and drain the ss
   m_loopback.Close();
-  m_ss->RunOnce(0, 0);
+  m_ss->RunOnce();
 }
 
 
@@ -153,9 +155,9 @@ void TCPTransportTest::Receive() {
 void TCPTransportTest::testSinglePDU() {
   OLA_ASSERT_EQ(0u, m_pdus_received);
   SendPDU(__LINE__);
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(1u, m_pdus_received);
 }
@@ -170,9 +172,9 @@ void TCPTransportTest::testShortPreamble() {
     1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(0u, m_pdus_received);
 }
@@ -190,9 +192,9 @@ void TCPTransportTest::testBadPreamble() {
     1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT_FALSE(m_stream_ok);
   OLA_ASSERT_EQ(0u, m_pdus_received);
 }
@@ -205,9 +207,9 @@ void TCPTransportTest::testZeroLengthPDUBlock() {
   SendEmptyPDUBLock(__LINE__);
   SendPDU(__LINE__);
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(1u, m_pdus_received);
 }
@@ -221,9 +223,9 @@ void TCPTransportTest::testMultiplePDUs() {
   SendPDU(__LINE__);
   SendPDU(__LINE__);
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(3u, m_pdus_received);
 }
@@ -235,9 +237,9 @@ void TCPTransportTest::testMultiplePDUs() {
 void TCPTransportTest::testSinglePDUBlock() {
   SendPDUBlock(__LINE__);
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(3u, m_pdus_received);
 }

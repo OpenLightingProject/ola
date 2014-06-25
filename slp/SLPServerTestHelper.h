@@ -71,11 +71,11 @@ class SLPServerTestHelper {
     void AdvanceTime(int32_t sec) {
       m_clock.AdvanceTime(sec, 0);
       // run any timeouts, and update the WakeUpTime
-      m_ss.RunOnce(0, 0);
+      m_ss.RunOnce();
     }
 
     void RunOnce() {
-      m_ss.RunOnce(0, 0);
+      m_ss.RunOnce();
     }
 
     // Print the time since the server started, this is useful for debugging

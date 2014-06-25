@@ -145,7 +145,7 @@ bool StreamingClient::Send(unsigned int universe, uint8_t priority,
   // connection. We could skip this and rely on the EPIPE delivered by the
   // write() below, but that introduces a race condition in the unittests.
   m_socket_closed = false;
-  m_ss->RunOnce(0, 0);
+  m_ss->RunOnce();
 
   if (m_socket_closed) {
     Stop();
