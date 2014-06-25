@@ -180,7 +180,7 @@ void SelectServer::Run() {
 }
 
 void SelectServer::RunOnce() {
-  RunOnce(TimeInterval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND));
+  RunOnce(TimeInterval(0, 0));
 }
 
 void SelectServer::RunOnce(const TimeInterval &block_interval) {
