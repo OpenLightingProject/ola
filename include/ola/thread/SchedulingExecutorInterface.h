@@ -27,10 +27,13 @@
 namespace ola {
 namespace thread {
 
+/**
+ * @brief Combines the ExecutorInterface and the SchedulerInterface.
+ */
 class SchedulingExecutorInterface: public ExecutorInterface,
                                    public SchedulerInterface {
  public:
-    virtual ~SchedulingExecutorInterface() {}
+  virtual ~SchedulingExecutorInterface() {}
 };
 }  // namespace thread
 }  // namespace ola
