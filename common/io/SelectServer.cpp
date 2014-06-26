@@ -18,10 +18,16 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include "ola/io/SelectServer.h"
+
 #ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <sys/select.h>
+#endif
+
+#if HAVE_CONFIG_H
+#include <config.h>
 #endif
 
 #include <string.h>
@@ -36,13 +42,23 @@
 #ifdef _WIN32
 #include "common/io/WindowsPoller.h"
 #else
+#include "ola/base/Flags.h"
+
+#ifdef HAVE_EPOLL
+#include "common/io/EPoller.h"
+#endif
+
 #include "common/io/SelectPoller.h"
 #endif
-#include "ola/Logging.h"
+
 #include "ola/io/Descriptor.h"
-#include "ola/io/SelectServer.h"
+#include "ola/Logging.h"
 #include "ola/network/Socket.h"
 #include "ola/stl/STLUtils.h"
+
+#ifdef HAVE_EPOLL
+DEFINE_bool(use_epoll, false, "Use epoll() when available");
+#endif
 
 namespace ola {
 namespace io {
@@ -84,7 +100,18 @@ SelectServer::SelectServer(ExportMap *export_map,
 #ifdef _WIN32
   m_poller.reset(new WindowsPoller(export_map, m_clock));
 #else
+#ifdef HAVE_EPOLL
+  if (FLAGS_use_epoll) {
+    m_poller.reset(new EPoller(export_map, m_clock));
+  } else {
+    m_poller.reset(new SelectPoller(export_map, m_clock));
+  }
+  if (m_export_map) {
+    m_export_map->GetBoolVar("using-epoll")->Set(FLAGS_use_epoll);
+  }
+#else
   m_poller.reset(new SelectPoller(export_map, m_clock));
+#endif
 #endif
 
   // TODO(simon): this should really be in an Init() method.
@@ -152,13 +179,13 @@ void SelectServer::Run() {
   m_is_running = false;
 }
 
-/*
- * Run one iteration of the select server
- */
-void SelectServer::RunOnce(unsigned int delay_sec,
-                           unsigned int delay_usec) {
+void SelectServer::RunOnce() {
+  RunOnce(TimeInterval(0, 0));
+}
+
+void SelectServer::RunOnce(const TimeInterval &block_interval) {
   m_is_running = true;
-  CheckForEvents(TimeInterval(delay_sec, delay_usec));
+  CheckForEvents(block_interval);
   m_is_running = false;
 }
 
@@ -186,7 +213,7 @@ bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_READ_DESCRIPTOR_VAR))--;
   }
-  return removed;
+  return true;
 }
 
 bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
@@ -195,7 +222,7 @@ bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_CONNECTED_DESCRIPTORS_VAR))--;
   }
-  return removed;
+  return true;
 }
 
 bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
@@ -211,7 +238,7 @@ bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR))--;
   }
-  return removed;
+  return true;
 }
 
 /*

@@ -415,10 +415,14 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
   if (length || data) {
     OLA_WARN << "Invalid shutdown message, length was " << length;
   } else {
-    OLA_INFO << "Received shutdown message from Dmxter";
-    // this closed descriptor will be detected the the ss, which will then
-    // invoke the on_close callback, removing the device.
-    GetDescriptor()->Close();
+    OLA_INFO << "Received shutdown message from the Dmxter";
+    // Run the on close handler which calls WidgetDetectorThread::FreeWidget.
+    // This removes the descriptor from the SS and closes the FD.
+    // This is the same behaviour as if the remote end closed the connection
+    // i.e. the device was plugged.
+    ola::io::ConnectedDescriptor::OnCloseCallback *on_close =
+        GetDescriptor()->TransferOnClose();
+    on_close->Run();
   }
 }
 
@@ -443,7 +447,6 @@ DmxterWidget::DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
   m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
                                                                  queue_size);
 }
-
 
 DmxterWidget::~DmxterWidget() {
   // delete the controller after the impl because the controller owns the

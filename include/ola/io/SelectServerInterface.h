@@ -29,20 +29,71 @@
 namespace ola {
 namespace io {
 
+/**
+ * @brief The interface for the SelectServer.
+ *
+ * The SelectServerInterface is used to register Descriptors for events.
+ *
+ * SelectServerInterface implementations are required to be reentrant.
+ * Descriptors may be added / removed and timeouts set / canceled from within
+ * callbacks executed by the SelectServer.
+ */
 class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
  public :
   SelectServerInterface() {}
   virtual ~SelectServerInterface() {}
 
+  /**
+   * @brief Register a ReadFileDescriptor for read-events.
+   * @param descriptor the ReadFileDescriptor to add.
+   * @returns true if the descriptor was added, false if the descriptor was
+   *   previously added.
+   *
+   * When the descriptor is ready for reading, PerformRead() will be called.
+   */
   virtual bool AddReadDescriptor(class ReadFileDescriptor *descriptor) = 0;
-  virtual bool AddReadDescriptor(class ConnectedDescriptor *socket,
+
+  /**
+   * @brief Register a ConnectedDescriptor for read-events.
+   * @param descriptor the ConnectedDescriptor to add.
+   * @param delete_on_close if true, ownership of the ConnectedDescriptor is
+   *   transferred to the SelectServer.
+   * @returns true if the descriptor was added, false if the descriptor was
+   *   previously added.
+   *
+   * When the descriptor is ready for reading, PerformRead() will be called.
+   * Prior to PerformRead(), IsClosed() is called. If this returns true, and
+   * delete_on_close was set, the descriptor will be deleted.
+   */
+  virtual bool AddReadDescriptor(class ConnectedDescriptor *descriptor,
                                  bool delete_on_close = false) = 0;
+
+  /**
+   * @brief Remove a RemoveReadDescriptor for read-events.
+   * @param descriptor the descriptor to remove.
+   */
   virtual bool RemoveReadDescriptor(
       class ReadFileDescriptor *descriptor) = 0;
-  virtual bool RemoveReadDescriptor(class ConnectedDescriptor *socket) = 0;
 
+  /**
+   * @brief Remove a ConnectedDescriptor for read-events.
+   * @param descriptor the descriptor to remove.
+   */
+  virtual bool RemoveReadDescriptor(class ConnectedDescriptor *descriptor) = 0;
+
+  /**
+   * @brief Register a WriteFileDescriptor for write-events.
+   * @param descriptor the WriteFileDescriptor to add.
+   *
+   * When the descriptor is writeable, PerformWrite() is called.
+   */
   virtual bool AddWriteDescriptor(
       class WriteFileDescriptor *descriptor) = 0;
+
+  /**
+   * @brief Remove a WriteFileDescriptor for write-events.
+   * @param descriptor the descriptor to remove.
+   */
   virtual bool RemoveWriteDescriptor(
       class WriteFileDescriptor *descriptor) = 0;
 
@@ -62,6 +113,13 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
 
   virtual void RemoveTimeout(ola::thread::timeout_id id) = 0;
 
+  /**
+   * @brief The time when this SelectServer was woken up.
+   * @returns The TimeStamp of when the SelectServer was woken up.
+   *
+   * If running within the same thread as the SelectServer, this is a efficient
+   * way to get the current time.
+   */
   virtual const TimeStamp *WakeUpTime() const = 0;
 };
 }  // namespace io

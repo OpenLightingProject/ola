@@ -93,7 +93,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Stop the thread.
     bool Join(void *ptr);
 
-    // Can be called from any thread.
+    // Used to release a widget. Should be called from the thread running the
+    // SelectServerInterface that was passed to the constructor.
     void FreeWidget(SerialWidgetInterface *widget);
 
     // blocks until the thread is running

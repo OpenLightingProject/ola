@@ -245,9 +245,8 @@ void DescriptorTest::Receive(ConnectedDescriptor *socket) {
 void DescriptorTest::ReceiveAndSend(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
-  socket->Receive(buffer, sizeof(buffer), data_read);
-  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
-                       data_read);
+  OLA_ASSERT_EQ(0, socket->Receive(buffer, sizeof(buffer), data_read));
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)), data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
 }
@@ -279,8 +278,7 @@ void DescriptorTest::SocketClientClose(ConnectedDescriptor *socket,
       ola::NewCallback(this, &DescriptorTest::ReceiveAndSend,
                        static_cast<ConnectedDescriptor*>(socket2)));
   socket2->SetOnClose(
-      ola::NewSingleCallback(this,
-                             &DescriptorTest::TerminateOnClose));
+      ola::NewSingleCallback(this, &DescriptorTest::TerminateOnClose));
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
@@ -298,7 +296,7 @@ void DescriptorTest::SocketClientClose(ConnectedDescriptor *socket,
  * Generic method to test server initiated close
  */
 void DescriptorTest::SocketServerClose(ConnectedDescriptor *socket,
-                                   ConnectedDescriptor *socket2) {
+                                       ConnectedDescriptor *socket2) {
   OLA_ASSERT_TRUE(socket);
   socket->SetOnData(ola::NewCallback(
         this, &DescriptorTest::Receive,

@@ -14,9 +14,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ExecutorInterface.h
- * The executor interface provides a single method:
- *   Execute() which takes a no-argument, void Callback and executes it at some
- *   point the in future. Scheduling details are left to the implementation.
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -28,12 +25,23 @@
 namespace ola {
 namespace thread {
 
+/**
+ * @brief Defer execution of a \ref callbacks "callback".
+ *
+ * The executor interface provides a method to defer execution of a callback.
+ * Often we want to break the call stack, say if we need to run a callback that
+ * modify / delete a non-reentrant object in our call stack.
+ */
 class ExecutorInterface {
  public :
   ExecutorInterface() {}
   virtual ~ExecutorInterface() {}
 
-  virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
+  /**
+   * @brief Execute the supplied callback at some point in the future.
+   * @param callback the callback to run.
+   */
+  virtual void Execute(ola::BaseCallback0<void> *callback) = 0;
 };
 }  // namespace thread
 }  // namespace ola

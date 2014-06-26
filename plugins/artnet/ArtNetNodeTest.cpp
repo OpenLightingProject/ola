@@ -198,7 +198,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void ReceiveFromPeer(const uint8_t *data,
                        unsigned int data_size,
                        const IPV4Address &address) {
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     m_socket->InjectData(data, data_size, address, ARTNET_PORT);
   }
 
@@ -1564,7 +1564,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   {
     SocketVerifier verifer(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1609,7 +1609,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   {
     SocketVerifier verifer(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1675,7 +1675,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   {
     SocketVerifier verifer(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1760,7 +1760,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 
     // advance the clock and run the select server
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -2146,7 +2146,7 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
   }
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
-  ss.RunOnce(0, 0);
+  ss.RunOnce();
   OLA_ASSERT(m_got_rdm_timeout);
 }
 
@@ -2203,7 +2203,7 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
   }
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
-  ss.RunOnce(0, 0);
+  ss.RunOnce();
   OLA_ASSERT(m_got_rdm_timeout);
 }
 
@@ -2260,7 +2260,7 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
   }
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
-  ss.RunOnce(0, 0);
+  ss.RunOnce();
   OLA_ASSERT(m_got_rdm_timeout);
 }
 
