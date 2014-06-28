@@ -38,10 +38,8 @@
 #include <ola/network/SocketAddress.h>
 #include <string>
 
-
 namespace ola {
 namespace network {
-
 
 /**
  * @brief The interface for UDPSockets.
@@ -83,35 +81,150 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
   virtual ola::io::DescriptorHandle ReadDescriptor() const = 0;
   virtual ola::io::DescriptorHandle WriteDescriptor() const = 0;
 
+  /**
+   * @brief Send data on this UDPSocket.
+   * @param buffer the data to send
+   * @param size the length of the data
+   * @param ip the IP to send to
+   * @param port the port to send to in HOST byte order.
+   * @return the number of bytes sent.
+   *
+   * @deprecated Use the IPV4SocketAddress version instead.
+   */
   virtual ssize_t SendTo(const uint8_t *buffer,
                          unsigned int size,
                          const IPV4Address &ip,
                          unsigned short port) const = 0;
+
+  /**
+   * @brief Send data on this UDPSocket.
+   * @param buffer the data to send
+   * @param size the length of the data
+   * @param dest the IP:Port to send the datagram to.
+   * @return the number of bytes sent
+   */
   virtual ssize_t SendTo(const uint8_t *buffer,
                          unsigned int size,
                          const IPV4SocketAddress &dest) const = 0;
+
+  /**
+   * @brief Send data from an IOVecInterface.
+   * @param data the IOVecInterface class to send.
+   * @param ip the IP to send to
+   * @param port the port to send to in HOST byte order.
+   * @return the number of bytes sent.
+   *
+   * @deprecated Use the IPV4SocketAddress version instead.
+   *
+   * This will try to send as much data as possible.
+   * If the data exceeds the MTU the UDP packet will probably get fragmented at
+   * the IP layer (depends on OS really). Try to avoid this.
+   */
   virtual ssize_t SendTo(ola::io::IOVecInterface *data,
                          const IPV4Address &ip,
                          unsigned short port) const = 0;
+
+  /**
+   * @brief Send data from an IOVecInterface.
+   * @param data the IOVecInterface class to send.
+   * @param ip the IP to send to
+   * @param port the port to send to in HOST byte order.
+   * @return the number of bytes sent.
+   *
+   * This will try to send as much data as possible.
+   * If the data exceeds the MTU the UDP packet will probably get fragmented at
+   * the IP layer (depends on OS really). Try to avoid this.
+   */
   virtual ssize_t SendTo(ola::io::IOVecInterface *data,
                          const IPV4SocketAddress &dest) const = 0;
 
+  /**
+   * @brief Receive data
+   * @param buffer the buffer to store the data
+   * @param data_read the size of the buffer, updated with the number of bytes
+   * read
+   * @return true or false
+   */
   virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
+
+  /**
+   * @brief Receive data
+   * @param buffer the buffer to store the data
+   * @param data_read the size of the buffer, updated with the number of bytes
+   * read
+   * @param source the src ip of the packet
+   * @return true or false
+   *
+   * @deprecated Use the IPV4SocketAddress version instead.
+   */
   virtual bool RecvFrom(uint8_t *buffer,
                         ssize_t *data_read,
                         IPV4Address &source) const = 0;  // NOLINT
+
+  /**
+   * @brief Receive data and record the src address & port
+   * @param buffer the buffer to store the data
+   * @param data_read the size of the buffer, updated with the number of bytes
+   * read
+   * @param source the src ip of the packet
+   * @param port the src port of the packet in host byte order
+   * @return true or false
+   *
+   * @deprecated Use the IPV4SocketAddress version instead.
+   */
   virtual bool RecvFrom(uint8_t *buffer,
                         ssize_t *data_read,
                         IPV4Address &source,  // NOLINT
                         uint16_t &port) const = 0;  // NOLINT
 
+  /**
+   * @brief Receive a datagram on the UDP Socket.
+   * @param buffer the buffer to store the data
+   * @param data_read the size of the buffer, updated with the number of bytes
+   * read
+   * @param source the source of the datagram.
+   * @return true or false
+   */
+  virtual bool RecvFrom(uint8_t *buffer,
+                        ssize_t *data_read,
+                        IPV4SocketAddress *source) = 0;
+
+  /**
+   * @brief Enable broadcasting for this socket.
+   * @return true if it worked, false otherwise
+   */
   virtual bool EnableBroadcast() = 0;
+
+  /**
+   * @brief Set the outgoing interface to be used for multicast transmission.
+   * @param iface the address of the interface to use.
+   */
   virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
+
+  /**
+   * @brief Join a multicast group
+   * @param iface the address of the interface to use.
+   * @param group the address of the group to join
+   * @return true if it worked, false otherwise
+   */
   virtual bool JoinMulticast(const IPV4Address &iface,
                              const IPV4Address &group,
                              bool loop = false) = 0;
+
+  /**
+   * @brief Leave a multicast group
+   * @param iface the address of the interface to use.
+   * @param group the address of the group to join
+   * @return true if it worked, false otherwise
+   */
   virtual bool LeaveMulticast(const IPV4Address &iface,
                               const IPV4Address &group) = 0;
+
+  /**
+   * @brief Set the tos field for a socket
+   * @param tos the tos field
+   * @return true if it worked, false otherwise
+   */
   virtual bool SetTos(uint8_t tos) = 0;
 
  private:
@@ -162,6 +275,10 @@ class UDPSocket: public UDPSocketInterface {
                 ssize_t *data_read,
                 IPV4Address &source,  // NOLINT
                 uint16_t &port) const;  // NOLINT
+
+  bool RecvFrom(uint8_t *buffer,
+                ssize_t *data_read,
+                IPV4SocketAddress *source);
 
   bool EnableBroadcast();
   bool SetMulticastInterface(const IPV4Address &iface);
