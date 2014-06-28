@@ -88,7 +88,7 @@ libolae133device_la_LIBADD = \
 
 # PROGRAMS
 ##################################################
-noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
+noinst_PROGRAMS = basic_device e133_controller e133_monitor e133_receiver \
                   slp_locate slp_register slp_sa_test
 
 e133_receiver_SOURCES = e133-receiver.cpp
@@ -119,6 +119,11 @@ e133_controller_LDADD = ../../common/libolacommon.la \
 slp_locate_SOURCES = slp-locate.cpp
 slp_locate_LDADD = ../../common/libolacommon.la \
                    libolae133slp.la
+
+basic_device_SOURCES = basic-device.cpp
+basic_device_LDADD = ../../common/libolacommon.la \
+                     ../../plugins/e131/e131/libolaacn.la \
+                     ./libolae133common.la
 
 slp_register_SOURCES = slp-register.cpp
 slp_register_LDADD = ../../common/libolacommon.la \
