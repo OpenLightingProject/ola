@@ -68,6 +68,7 @@ doxygen/examples/flags
 doxygen/examples/receiver
 doxygen/examples/streaming_client
 doxygen/examples/streaming_client_plugin
+doxygen/examples/udp_server
 examples/ola_artnet
 examples/ola_dev_info
 examples/ola_dmxconsole
