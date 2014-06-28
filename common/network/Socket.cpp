@@ -58,6 +58,8 @@
 namespace ola {
 namespace network {
 
+namespace {
+
 bool ReceiveFrom(int fd, uint8_t *buffer, ssize_t *data_read,
                  struct sockaddr_in *source, socklen_t *src_size) {
   *data_read = recvfrom(
@@ -70,6 +72,7 @@ bool ReceiveFrom(int fd, uint8_t *buffer, ssize_t *data_read,
   return true;
 }
 
+}  // namespace
 
 // UDPSocket
 // ------------------------------------------------
@@ -100,9 +103,6 @@ bool UDPSocket::Init() {
 }
 
 
-/*
- * Bind this socket to an external address:port
- */
 bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
   if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return false;

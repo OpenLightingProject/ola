@@ -43,25 +43,43 @@ namespace ola {
 namespace network {
 
 
-/*
- * The UDPSocketInterface.
- * This is done as an Interface so we can mock it out for testing.
+/**
+ * @brief The interface for UDPSockets.
+ *
+ * This only supports IPv4 sockets. Its an Interface so we can mock it out for
+ * testing.
  */
 class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
  public:
   UDPSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
   ~UDPSocketInterface() {}
+
+  /**
+   * @brief Initialize the socket.
+   * @returns false if initialization failed.
+   */
   virtual bool Init() = 0;
+
+  /**
+   * @brief Bind this socket to an external address:port
+   * @param endpoint the local socket address to bind to.
+   * @returns true if the bind succeeded, false if it failed.
+   */
   virtual bool Bind(const IPV4SocketAddress &endpoint) = 0;
 
-  // Deprecated. Do not use in new code.
-  bool Bind(const IPV4Address &ip, unsigned short port) {
-    return Bind(IPV4SocketAddress(ip, port));
-  }
-
+  /**
+   * @brief Return the local address this socket is bound to.
+   * @param[out] address the local socket address this socket is bound to.
+   * @returns true if the call succeeded, false if it failed.
+   */
   virtual bool GetSocketAddress(IPV4SocketAddress *address) const = 0;
 
+  /**
+   * @brief Close the socket.
+   * @returns true if the call succeeded, false if it failed.
+   */
   virtual bool Close() = 0;
+
   virtual ola::io::DescriptorHandle ReadDescriptor() const = 0;
   virtual ola::io::DescriptorHandle WriteDescriptor() const = 0;
 
