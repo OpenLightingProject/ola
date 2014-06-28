@@ -42,8 +42,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
                          const ola::network::IPV4Address &destination,
                          uint16_t port = ola::acn::ACN_PORT)
         : m_impl(impl),
-          m_destination(destination),
-          m_port(port) {
+          m_destination(destination, port) {
     }
     ~OutgoingUDPTransport() {}
 
@@ -51,8 +50,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
 
  private:
     class OutgoingUDPTransportImpl *m_impl;
-    ola::network::IPV4Address m_destination;
-    uint16_t m_port;
+    ola::network::IPV4SocketAddress m_destination;
 
     OutgoingUDPTransport(const OutgoingUDPTransport&);
     OutgoingUDPTransport& operator=(const OutgoingUDPTransport&);
@@ -80,8 +78,7 @@ class OutgoingUDPTransportImpl {
     }
 
     bool Send(const PDUBlock<PDU> &pdu_block,
-              const ola::network::IPV4Address &destination,
-              uint16_t port);
+              const ola::network::IPV4SocketAddress &destination);
 
  private:
     ola::network::UDPSocket *m_socket;

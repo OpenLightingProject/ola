@@ -256,16 +256,12 @@ class UDPSocket: public UDPSocketInterface {
                  unsigned short port) const;
   ssize_t SendTo(const uint8_t *buffer,
                  unsigned int size,
-                 const IPV4SocketAddress &dest) const {
-    return SendTo(buffer, size, dest.Host(), dest.Port());
-  }
+                 const IPV4SocketAddress &dest) const;
   ssize_t SendTo(ola::io::IOVecInterface *data,
                  const IPV4Address &ip,
                  unsigned short port) const;
   ssize_t SendTo(ola::io::IOVecInterface *data,
-                 const IPV4SocketAddress &dest) const {
-    return SendTo(data, dest.Host(), dest.Port());
-  }
+                 const IPV4SocketAddress &dest) const;
 
   bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
   bool RecvFrom(uint8_t *buffer,

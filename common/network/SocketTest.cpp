@@ -367,15 +367,16 @@ void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
  * Receive some data and check it.
  */
 void SocketTest::UDPReceiveAndTerminate(UDPSocket *socket) {
-  IPV4Address expected_address, src_address;
+  IPV4Address expected_address;
   OLA_ASSERT_TRUE(IPV4Address::FromString("127.0.0.1", &expected_address));
 
-  uint16_t src_port;
+  IPV4SocketAddress source;
+
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src_address, src_port);
+  socket->RecvFrom(buffer, &data_read, &source);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  OLA_ASSERT_TRUE(expected_address == src_address);
+  OLA_ASSERT_EQ(expected_address, source.Host());
   m_ss->Terminate();
 }
 
@@ -386,20 +387,15 @@ void SocketTest::UDPReceiveAndTerminate(UDPSocket *socket) {
 void SocketTest::UDPReceiveAndSend(UDPSocket *socket) {
   IPV4Address expected_address;
   OLA_ASSERT_TRUE(IPV4Address::FromString("127.0.0.1", &expected_address));
+  IPV4SocketAddress source;
 
-  IPV4Address src_address;
-  uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src_address, src_port);
+  socket->RecvFrom(buffer, &data_read, &source);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  OLA_ASSERT_TRUE(expected_address == src_address);
+  OLA_ASSERT_EQ(expected_address, source.Host());
 
-  ssize_t data_sent = socket->SendTo(
-      buffer,
-      data_read,
-      src_address,
-      src_port);
+  ssize_t data_sent = socket->SendTo(buffer, data_read, source);
   OLA_ASSERT_EQ(data_read, data_sent);
 }
 
