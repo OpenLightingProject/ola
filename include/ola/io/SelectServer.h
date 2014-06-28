@@ -39,7 +39,7 @@ namespace ola {
 namespace io {
 
 /**
- * @brief A single threaded I/O event managment system.
+ * @brief A single threaded I/O event management system.
  *
  * SelectServer is the core of the event driven system. It's responsible
  * for invoking Callbacks when certain events occur.
