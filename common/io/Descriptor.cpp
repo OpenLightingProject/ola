@@ -187,11 +187,6 @@ UnmanagedFileDescriptor::UnmanagedFileDescriptor(int fd)
 // ConnectedDescriptor
 // ------------------------------------------------
 
-/*
- * Turn on non-blocking reads. On Windows, this is only supported for sockets.
- * @param fd the descriptor to enable non-blocking on
- * @return true if it worked, false otherwise
- */
 bool ConnectedDescriptor::SetNonBlocking(DescriptorHandle fd) {
   if (fd == INVALID_DESCRIPTOR)
     return false;
@@ -213,10 +208,6 @@ bool ConnectedDescriptor::SetNonBlocking(DescriptorHandle fd) {
   return true;
 }
 
-
-/*
- * Turn off the SIGPIPE for this socket
- */
 bool ConnectedDescriptor::SetNoSigPipe(DescriptorHandle fd) {
   if (!IsSocket())
     return true;
@@ -239,11 +230,6 @@ bool ConnectedDescriptor::SetNoSigPipe(DescriptorHandle fd) {
   return true;
 }
 
-
-/*
- * Find out how much data is left to read
- * @return the amount of unread data for the socket
- */
 int ConnectedDescriptor::DataRemaining() const {
   if (!ValidReadDescriptor())
     return 0;
@@ -269,13 +255,6 @@ int ConnectedDescriptor::DataRemaining() const {
   return unread;
 }
 
-
-/*
- * Write data to this descriptor.
- * @param buffer the data to write
- * @param size the length of the data
- * @return the number of bytes sent
- */
 ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
                                   unsigned int size) {
   if (!ValidWriteDescriptor())
@@ -320,13 +299,6 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
   return bytes_sent;
 }
 
-
-/**
- * Send an IOQueue.
- * This attempts to send as much of the IOQueue data as possible. The IOQueue
- * may be non-empty when this completes if the descriptor buffer is full.
- * @returns the number of bytes sent.
- */
 ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   if (!ValidWriteDescriptor())
     return 0;
@@ -382,15 +354,6 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   return bytes_sent;
 }
 
-
-/*
- * Read data from this descriptor.
- * @param buffer a pointer to the buffer to store new data in
- * @param size the size of the buffer
- * @param data_read a value result argument which returns the amount of data
- * copied into the buffer
- * @returns -1 on error, 0 on success.
- */
 int ConnectedDescriptor::Receive(uint8_t *buffer,
                                  unsigned int size,
                                  unsigned int &data_read) { // NOLINT
@@ -443,11 +406,6 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
   return 0;
 }
 
-
-/*
- * Check if the remote end has closed the connection.
- * @return true if the socket is closed, false otherwise
- */
 bool ConnectedDescriptor::IsClosed() const {
   return DataRemaining() == 0;
 }
@@ -455,10 +413,15 @@ bool ConnectedDescriptor::IsClosed() const {
 // LoopbackDescriptor
 // ------------------------------------------------
 
+LoopbackDescriptor::LoopbackDescriptor() {
+  m_handle_pair[0] = INVALID_DESCRIPTOR;
+  m_handle_pair[1] = INVALID_DESCRIPTOR;
+#ifdef _WIN32
+  memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
+  m_read_data_size = 0;
+#endif
+}
 
-/*
- * Setup this loopback socket
- */
 bool LoopbackDescriptor::Init() {
   if (m_handle_pair[0] != INVALID_DESCRIPTOR ||
       m_handle_pair[1] != INVALID_DESCRIPTOR)
@@ -476,11 +439,6 @@ bool LoopbackDescriptor::Init() {
   return true;
 }
 
-
-/*
- * Close the loopback socket
- * @return true if close succeeded, false otherwise
- */
 bool LoopbackDescriptor::Close() {
   if (m_handle_pair[0] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
@@ -503,11 +461,6 @@ bool LoopbackDescriptor::Close() {
   return true;
 }
 
-
-/*
- * Close the write portion of the loopback socket
- * @return true if close succeeded, false otherwise
- */
 bool LoopbackDescriptor::CloseClient() {
   if (m_handle_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
@@ -521,14 +474,19 @@ bool LoopbackDescriptor::CloseClient() {
   return true;
 }
 
-
-
 // PipeDescriptor
 // ------------------------------------------------
 
-/*
- * Create a new pipe socket
- */
+PipeDescriptor::PipeDescriptor():
+  m_other_end(NULL) {
+  m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
+  m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
+#ifdef _WIN32
+  memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
+  m_read_data_size = 0;
+#endif
+}
+
 bool PipeDescriptor::Init() {
   if (m_in_pair[0] != INVALID_DESCRIPTOR ||
       m_out_pair[1] != INVALID_DESCRIPTOR)
@@ -560,12 +518,6 @@ bool PipeDescriptor::Init() {
   return true;
 }
 
-
-/*
- * Fetch the other end of the pipe socket. The caller now owns the new
- * PipeDescriptor.
- * @returns NULL if the socket wasn't initialized correctly.
- */
 PipeDescriptor *PipeDescriptor::OppositeEnd() {
   if (m_in_pair[0] == INVALID_DESCRIPTOR ||
       m_out_pair[1] == INVALID_DESCRIPTOR)
@@ -578,10 +530,6 @@ PipeDescriptor *PipeDescriptor::OppositeEnd() {
   return m_other_end;
 }
 
-
-/*
- * Close this PipeDescriptor
- */
 bool PipeDescriptor::Close() {
   if (m_in_pair[0] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
@@ -604,10 +552,6 @@ bool PipeDescriptor::Close() {
   return true;
 }
 
-
-/*
- * Close the write portion of this PipeDescriptor
- */
 bool PipeDescriptor::CloseClient() {
   if (m_out_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
@@ -621,13 +565,24 @@ bool PipeDescriptor::CloseClient() {
   return true;
 }
 
+PipeDescriptor::PipeDescriptor(DescriptorHandle in_pair[2],
+                               DescriptorHandle out_pair[2],
+                               PipeDescriptor *other_end) {
+  m_in_pair[0] = in_pair[0];
+  m_in_pair[1] = in_pair[1];
+  m_out_pair[0] = out_pair[0];
+  m_out_pair[1] = out_pair[1];
+  m_other_end = other_end;
+#ifdef _WIN32
+  m_in_pair[0].m_read_data = m_read_data;
+  m_in_pair[0].m_read_data_size = &m_read_data_size;
+#endif
+}
+
 
 // UnixSocket
 // ------------------------------------------------
 
-/*
- * Create a new unix socket
- */
 bool UnixSocket::Init() {
 #ifdef _WIN32
   return false;
@@ -650,16 +605,9 @@ bool UnixSocket::Init() {
 #endif
 }
 
-
-/*
- * Fetch the other end of the unix socket. The caller now owns the new
- * UnixSocket.
- * @returns NULL if the socket wasn't initialized correctly.
- */
 UnixSocket *UnixSocket::OppositeEnd() {
   return m_other_end;
 }
-
 
 /*
  * Close this UnixSocket
@@ -677,10 +625,6 @@ bool UnixSocket::Close() {
 #endif
 }
 
-
-/*
- * Close the write portion of this UnixSocket
- */
 bool UnixSocket::CloseClient() {
 #ifndef _WIN32
   if (m_handle != INVALID_DESCRIPTOR)
@@ -691,6 +635,14 @@ bool UnixSocket::CloseClient() {
   return true;
 }
 
+UnixSocket::UnixSocket(int socket, UnixSocket *other_end) {
+#ifdef _WIN32
+  m_handle.m_handle.m_fd = socket;
+#else
+  m_handle = socket;
+#endif
+  m_other_end = other_end;
+}
 
 // DeviceDescriptor
 // ------------------------------------------------

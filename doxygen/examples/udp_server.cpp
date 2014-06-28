@@ -31,14 +31,12 @@ static const unsigned int PORT = 12345;
 
 // Called when a UDP datagram arrives.
 void ReceiveMessage(UDPSocket *socket) {
-  ola::network::IPV4Address client_ip;
-  uint16_t client_port;
+  ola::network::IPV4SocketAddress client;
 
   uint8_t data[1500];
   ssize_t data_size = arraysize(data);
-  if (socket->RecvFrom(data, &data_size, client_ip, client_port)) {
-    OLA_INFO << "Received " << data_size << " bytes from " << client_ip << ":"
-             << client_port;
+  if (socket->RecvFrom(data, &data_size, &client)) {
+    OLA_INFO << "Received " << data_size << " bytes from " << client;
   } else {
     OLA_WARN << "Recv failure";
   }

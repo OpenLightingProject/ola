@@ -303,15 +303,14 @@ void TestRunner::Run() {
 void TestRunner::ReceiveData() {
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
-  ola::network::IPV4Address source_ip;
-  uint16_t port;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                         &packet_size, source_ip, port))
+                         &packet_size, &source))
     return;
 
-  if (source_ip != m_target.Host()) {
-    OLA_INFO << "Ignoring message from " << source_ip;
+  if (source.Host() != m_target.Host()) {
+    OLA_INFO << "Ignoring message from " << source;
     return;
   }
 

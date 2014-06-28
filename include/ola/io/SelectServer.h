@@ -80,7 +80,7 @@ class SelectServer: public SelectServerInterface {
    * @brief Checks if the SelectServer is running.
    * @returns true if the SelectServer is in the Run() method.
    */
-  bool IsRunning() const { return !m_terminate; }
+  bool IsRunning() const { return m_is_running; }
 
   const TimeStamp *WakeUpTime() const;
 

@@ -391,13 +391,11 @@ uint16_t SLPServer::DeRegisterService(const ServiceEntry &service) {
 void SLPServer::UDPData() {
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
-  ola::network::IPV4Address source_ip;
-  uint16_t port;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_udp_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                              &packet_size, source_ip, port))
+                              &packet_size, &source))
     return;
-  IPV4SocketAddress source(source_ip, port);
 
   OLA_DEBUG << "Got " << packet_size << " UDP bytes from " << source;
   if (m_export_map)
