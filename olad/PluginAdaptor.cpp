@@ -76,18 +76,18 @@ bool PluginAdaptor::AddReadDescriptor(
 /*
  * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveReadDescriptor(
+void PluginAdaptor::RemoveReadDescriptor(
     ola::io::ReadFileDescriptor *descriptor) {
-  return m_ss->RemoveReadDescriptor(descriptor);
+  m_ss->RemoveReadDescriptor(descriptor);
 }
 
 
 /*
  * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveReadDescriptor(
+void PluginAdaptor::RemoveReadDescriptor(
     ola::io::ConnectedDescriptor *descriptor) {
-  return m_ss->RemoveReadDescriptor(descriptor);
+  m_ss->RemoveReadDescriptor(descriptor);
 }
 
 
@@ -103,9 +103,9 @@ bool PluginAdaptor::AddWriteDescriptor(
 /*
  * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveWriteDescriptor(
+void PluginAdaptor::RemoveWriteDescriptor(
     ola::io::WriteFileDescriptor *descriptor) {
-  return m_ss->RemoveWriteDescriptor(descriptor);
+  m_ss->RemoveWriteDescriptor(descriptor);
 }
 
 

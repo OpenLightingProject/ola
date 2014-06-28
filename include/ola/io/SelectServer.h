@@ -122,11 +122,11 @@ class SelectServer: public SelectServerInterface {
   bool AddReadDescriptor(ReadFileDescriptor *descriptor);
   bool AddReadDescriptor(ConnectedDescriptor *descriptor,
                          bool delete_on_close = false);
-  bool RemoveReadDescriptor(ReadFileDescriptor *descriptor);
-  bool RemoveReadDescriptor(ConnectedDescriptor *descriptor);
+  void RemoveReadDescriptor(ReadFileDescriptor *descriptor);
+  void RemoveReadDescriptor(ConnectedDescriptor *descriptor);
 
   bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
-  bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
+  void RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
 
   ola::thread::timeout_id RegisterRepeatingTimeout(
       unsigned int ms,

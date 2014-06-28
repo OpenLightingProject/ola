@@ -186,22 +186,30 @@ bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
   return added;
 }
 
-bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
+void SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor: " << descriptor;
+    return;
+  }
+
   bool removed = m_poller->RemoveReadDescriptor(descriptor);
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_READ_DESCRIPTOR_VAR))--;
   }
-  return true;
 }
 
-bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
+void SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor: " << descriptor;
+    return;
+  }
+
   bool removed = m_poller->RemoveReadDescriptor(descriptor);
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_CONNECTED_DESCRIPTORS_VAR))--;
   }
-  return true;
 }
 
 bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
@@ -212,12 +220,16 @@ bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
   return added;
 }
 
-bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
+void SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
+  if (!descriptor->ValidWriteDescriptor()) {
+    OLA_WARN << "Removing a closed descriptor";
+    return;
+  }
+
   bool removed = m_poller->RemoveWriteDescriptor(descriptor);
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR))--;
   }
-  return true;
 }
 
 timeout_id SelectServer::RegisterRepeatingTimeout(
