@@ -149,12 +149,14 @@ void SelectServer::Run() {
   }
 
   m_is_running = true;
+  OLA_INFO << "set to true";
   m_terminate = false;
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
     if (!CheckForEvents(m_poll_interval))
       break;
   }
+  OLA_INFO << "set to false";
   m_is_running = false;
 }
 
