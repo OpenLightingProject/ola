@@ -283,14 +283,12 @@ class MockSelectServer: public ola::io::SelectServerInterface {
       return true;
     }
 
-    bool RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor) {
+    void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor) {
       (void) descriptor;
-      return true;
     }
 
-    bool RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor) {
+    void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor) {
       (void) descriptor;
-      return true;
     }
 
     bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
@@ -298,9 +296,8 @@ class MockSelectServer: public ola::io::SelectServerInterface {
       return true;
     }
 
-    bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
+    void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
       (void) descriptor;
-      return true;
     }
 
     ola::thread::timeout_id RegisterRepeatingTimeout(

@@ -88,20 +88,10 @@ bool SelectPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
 }
 
 bool SelectPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
-  if (!descriptor->ValidReadDescriptor()) {
-    OLA_WARN << "Removing an invalid file descriptor";
-    return false;
-  }
-
   return STLRemove(&m_read_descriptors, descriptor);
 }
 
 bool SelectPoller::RemoveReadDescriptor(class ConnectedDescriptor *descriptor) {
-  if (!descriptor->ValidReadDescriptor()) {
-    OLA_WARN << "Removing an invalid file descriptor";
-    return false;
-  }
-
   // Comparison is based on descriptor only, so the second value is redundant.
   connected_descriptor_t registered_descriptor = {descriptor, false};
   return STLRemove(&m_connected_read_descriptors, registered_descriptor);
@@ -118,11 +108,6 @@ bool SelectPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
 
 bool SelectPoller::RemoveWriteDescriptor(
     class WriteFileDescriptor *descriptor) {
-  if (!descriptor->ValidWriteDescriptor()) {
-    OLA_WARN << "Removing a closed descriptor";
-    return false;
-  }
-
   return STLRemove(&m_write_descriptors, descriptor);
 }
 

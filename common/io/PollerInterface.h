@@ -64,6 +64,8 @@ class PollerInterface {
    * @brief Unregister a ReadFileDescriptor for read events.
    * @param descriptor the ReadFileDescriptor to unregister.
    * @returns true if unregistered successfully, false otherwise.
+   *
+   * @pre descriptor->ReadFileDescriptor() is valid.
    */
   virtual bool RemoveReadDescriptor(ReadFileDescriptor *descriptor) = 0;
 
@@ -71,6 +73,8 @@ class PollerInterface {
    * @brief Unregister a ConnectedDescriptor for read events.
    * @param descriptor the ConnectedDescriptor to unregister.
    * @returns true if unregistered successfully, false otherwise.
+   *
+   * @pre descriptor->ReadFileDescriptor() is valid.
    */
   virtual bool RemoveReadDescriptor(ConnectedDescriptor *descriptor) = 0;
 
@@ -86,6 +90,8 @@ class PollerInterface {
    * @brief Unregister a WriteFileDescriptor for write events.
    * @param descriptor the WriteFileDescriptor to unregister.
    * @returns true if unregistered successfully, false otherwise.
+   *
+   * @pre descriptor->WriteFileDescriptor() is valid.
    */
   virtual bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor) = 0;
 

@@ -52,9 +52,11 @@ class SchedulerInterface {
    * @brief Execute a callback periodically.
    * @param period the number of milliseconds between each execution of the
    *   callback.
-   * @param callback the callback to run.
+   * @param callback the callback to run. Ownership is transferred.
    * @returns a timeout_id which can be used later to cancel the timeout.
    * @deprecated Use the version that takes a TimeInterval instead.
+   *
+   * Returning false from the callback will cause it to be cancelled.
    */
   virtual timeout_id RegisterRepeatingTimeout(
       unsigned int period,
@@ -63,8 +65,10 @@ class SchedulerInterface {
   /**
    * @brief Execute a callback periodically.
    * @param period the time interval between each execution of the callback.
-   * @param callback the callback to run.
+   * @param callback the callback to run. Ownership is transferred.
    * @returns a timeout_id which can be used later to cancel the timeout.
+   *
+   * Returning false from the callback will cause it to be cancelled.
    */
   virtual timeout_id RegisterRepeatingTimeout(
       const ola::TimeInterval &period,
@@ -73,7 +77,7 @@ class SchedulerInterface {
   /**
    * @brief Execute a callback after a certain time interval.
    * @param delay the number of milliseconds before the callback is executed.
-   * @param callback the callback to run.
+   * @param callback the callback to run. Ownership is transferred.
    * @returns a timeout_id which can be used later to cancel the timeout.
    * @deprecated Use the version that takes a TimeInterval instead.
    */
@@ -84,7 +88,7 @@ class SchedulerInterface {
   /**
    * @brief Execute a callback after a certain time interval.
    * @param delay the time interval to wait before the callback is executed.
-   * @param callback the callback to run.
+   * @param callback the callback to run. Ownership is transferred.
    * @returns a timeout_id which can be used later to cancel the timeout.
    */
   virtual timeout_id RegisterSingleTimeout(

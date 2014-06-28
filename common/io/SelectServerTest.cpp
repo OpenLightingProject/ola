@@ -208,12 +208,12 @@ void SelectServerTest::testDoubleAddAndRemove() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(1, write_descriptor_count->Get());
 
-  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&loopback_socket));
+  m_ss->RemoveReadDescriptor(&loopback_socket);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(1, write_descriptor_count->Get());
 
-  OLA_ASSERT_TRUE(m_ss->RemoveWriteDescriptor(&loopback_socket));
+  m_ss->RemoveWriteDescriptor(&loopback_socket);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
@@ -255,12 +255,12 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
   // Check remove works
-  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&loopback_socket));
+  m_ss->RemoveReadDescriptor(&loopback_socket);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(1, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
-  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&udp_socket));
+  m_ss->RemoveReadDescriptor(&udp_socket);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
@@ -321,7 +321,7 @@ void SelectServerTest::testReadWriteInteraction() {
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
   OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&socket));
-  OLA_ASSERT_TRUE(m_ss->RemoveWriteDescriptor(&socket));
+  m_ss->RemoveWriteDescriptor(&socket);
 
   // now the Write end closes
   auto_ptr<UnixSocket> other_end(socket.OppositeEnd());
@@ -330,7 +330,7 @@ void SelectServerTest::testReadWriteInteraction() {
   m_ss->RegisterSingleTimeout(
       100, ola::NewSingleCallback(this, &SelectServerTest::FatalTimeout));
   m_ss->Run();
-  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&socket));
+  m_ss->RemoveReadDescriptor(&socket);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 }

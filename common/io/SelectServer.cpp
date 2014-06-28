@@ -70,15 +70,7 @@ using std::max;
 
 const TimeStamp SelectServer::empty_time;
 
-
-/*
- * Constructor
- * @param export_map an ExportMap to update
- * @param wake_up_time a TimeStamp which is updated with the current wake up
- * time.
- */
-SelectServer::SelectServer(ExportMap *export_map,
-                           Clock *clock)
+SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
     : m_export_map(export_map),
       m_terminate(false),
       m_is_running(false),
@@ -122,16 +114,13 @@ SelectServer::SelectServer(ExportMap *export_map,
   AddReadDescriptor(&m_incoming_descriptor);
 }
 
-/*
- * Clean up
- */
 SelectServer::~SelectServer() {
   while (!m_incoming_queue.empty()) {
     delete m_incoming_queue.front();
     m_incoming_queue.pop();
   }
 
-  STLDeleteElements(&m_loop_closures);
+  STLDeleteElements(&m_loop_callbacks);
   if (m_free_clock)
     delete m_clock;
 }
@@ -144,25 +133,15 @@ const TimeStamp *SelectServer::WakeUpTime() const {
   }
 }
 
-/**
- * A thread safe terminate
- */
 void SelectServer::Terminate() {
   if (m_is_running)
     Execute(NewSingleCallback(this, &SelectServer::SetTerminate));
 }
 
-
-/*
- * Set the default poll delay time
- */
 void SelectServer::SetDefaultInterval(const TimeInterval &poll_interval) {
   m_poll_interval = poll_interval;
 }
 
-/*
- * Run the select server until Terminate() is called.
- */
 void SelectServer::Run() {
   if (m_is_running) {
     OLA_FATAL << "SelectServer::Run() called recursively";
@@ -207,22 +186,30 @@ bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
   return added;
 }
 
-bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
+void SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor: " << descriptor;
+    return;
+  }
+
   bool removed = m_poller->RemoveReadDescriptor(descriptor);
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_READ_DESCRIPTOR_VAR))--;
   }
-  return true;
 }
 
-bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
+void SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "Removing an invalid file descriptor: " << descriptor;
+    return;
+  }
+
   bool removed = m_poller->RemoveReadDescriptor(descriptor);
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(
         PollerInterface::K_CONNECTED_DESCRIPTORS_VAR))--;
   }
-  return true;
 }
 
 bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
@@ -233,100 +220,58 @@ bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
   return added;
 }
 
-bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
+void SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
+  if (!descriptor->ValidWriteDescriptor()) {
+    OLA_WARN << "Removing a closed descriptor";
+    return;
+  }
+
   bool removed = m_poller->RemoveWriteDescriptor(descriptor);
   if (removed && m_export_map) {
     (*m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR))--;
   }
-  return true;
 }
 
-/*
- * Register a repeating timeout function. Returning 0 from the closure will
- * cancel this timeout.
- * @param seconds the delay between function calls
- * @param closure the closure to call when the event triggers. Ownership is
- * given up to the select server - make sure nothing else uses this closure.
- * @returns the identifier for this timeout, this can be used to remove it
- * later.
- */
 timeout_id SelectServer::RegisterRepeatingTimeout(
     unsigned int ms,
-    ola::Callback0<bool> *closure) {
+    ola::Callback0<bool> *callback) {
   return m_timeout_manager->RegisterRepeatingTimeout(
       TimeInterval(ms / 1000, ms % 1000 * 1000),
-      closure);
+      callback);
 }
 
-/*
- * Register a repeating timeout function. Returning 0 from the closure will
- * cancel this timeout.
- * @param TimeInterval the delay before the closure will be run.
- * @param closure the closure to call when the event triggers. Ownership is
- * given up to the select server - make sure nothing else uses this closure.
- * @returns the identifier for this timeout, this can be used to remove it
- * later.
- */
 timeout_id SelectServer::RegisterRepeatingTimeout(
     const TimeInterval &interval,
-    ola::Callback0<bool> *closure) {
-  return m_timeout_manager->RegisterRepeatingTimeout(interval, closure);
+    ola::Callback0<bool> *callback) {
+  return m_timeout_manager->RegisterRepeatingTimeout(interval, callback);
 }
 
-/*
- * Register a single use timeout function.
- * @param seconds the delay between function calls
- * @param closure the closure to call when the event triggers
- * @returns the identifier for this timeout, this can be used to remove it
- * later.
- */
 timeout_id SelectServer::RegisterSingleTimeout(
     unsigned int ms,
-    ola::SingleUseCallback0<void> *closure) {
+    ola::SingleUseCallback0<void> *callback) {
   return m_timeout_manager->RegisterSingleTimeout(
       TimeInterval(ms / 1000, ms % 1000 * 1000),
-      closure);
+      callback);
 }
 
-/*
- * Register a single use timeout function.
- * @param interval the delay between function calls
- * @param closure the closure to call when the event triggers
- * @returns the identifier for this timeout, this can be used to remove it
- * later.
- */
 timeout_id SelectServer::RegisterSingleTimeout(
     const TimeInterval &interval,
-    ola::SingleUseCallback0<void> *closure) {
-  return m_timeout_manager->RegisterSingleTimeout(interval, closure);
+    ola::SingleUseCallback0<void> *callback) {
+  return m_timeout_manager->RegisterSingleTimeout(interval, callback);
 }
 
-/*
- * Remove a previously registered timeout
- * @param timeout_id the id of the timeout
- */
 void SelectServer::RemoveTimeout(timeout_id id) {
   return m_timeout_manager->CancelTimeout(id);
 }
 
-/*
- * Add a closure to be run every loop iteration. The closure is run after any
- * i/o and timeouts have been handled.
- * Ownership is transferred to the select server.
- */
-void SelectServer::RunInLoop(Callback0<void> *closure) {
-  m_loop_closures.insert(closure);
+void SelectServer::RunInLoop(Callback0<void> *callback) {
+  m_loop_callbacks.insert(callback);
 }
 
-/**
- * Execute this callback in the main select thread. This method can be called
- * from any thread. The callback will never execute immediately, this can be
- * used to perform delayed deletion of objects.
- */
-void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
+void SelectServer::Execute(ola::BaseCallback0<void> *callback) {
   {
     ola::thread::MutexLocker locker(&m_incoming_mutex);
-    m_incoming_queue.push(closure);
+    m_incoming_queue.push(callback);
   }
 
   // kick select(), we do this even if we're in the same thread as select() is
@@ -338,12 +283,13 @@ void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
 }
 
 /*
- * One iteration of the select() loop.
+ * One iteration of the event loop.
  * @return false on error, true on success.
  */
 bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   LoopClosureSet::iterator loop_iter;
-  for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
+  for (loop_iter = m_loop_callbacks.begin();
+       loop_iter != m_loop_callbacks.end();
        ++loop_iter)
     (*loop_iter)->Run();
 

@@ -32,7 +32,8 @@ namespace io {
 /**
  * @brief The interface for the SelectServer.
  *
- * The SelectServerInterface is used to register Descriptors for events.
+ * The SelectServerInterface is used to register Descriptors for events. It's
+ * the core of the event manager system, and should really be called IOManager.
  *
  * SelectServerInterface implementations are required to be reentrant.
  * Descriptors may be added / removed and timeouts set / canceled from within
@@ -71,15 +72,21 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   /**
    * @brief Remove a RemoveReadDescriptor for read-events.
    * @param descriptor the descriptor to remove.
+   *
+   * @warning Descriptors must be removed from the SelectServer before they are
+   * closed. Not doing so will result in hard to debug failures.
    */
-  virtual bool RemoveReadDescriptor(
+  virtual void RemoveReadDescriptor(
       class ReadFileDescriptor *descriptor) = 0;
 
   /**
    * @brief Remove a ConnectedDescriptor for read-events.
    * @param descriptor the descriptor to remove.
+   *
+   * @warning Descriptors must be removed from the SelectServer before they are
+   * closed. Not doing so will result in hard to debug failures.
    */
-  virtual bool RemoveReadDescriptor(class ConnectedDescriptor *descriptor) = 0;
+  virtual void RemoveReadDescriptor(class ConnectedDescriptor *descriptor) = 0;
 
   /**
    * @brief Register a WriteFileDescriptor for write-events.
@@ -93,8 +100,11 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   /**
    * @brief Remove a WriteFileDescriptor for write-events.
    * @param descriptor the descriptor to remove.
+   *
+   * @warning Descriptors must be removed from the SelectServer before they are
+   * closed. Not doing so will result in hard to debug failures.
    */
-  virtual bool RemoveWriteDescriptor(
+  virtual void RemoveWriteDescriptor(
       class WriteFileDescriptor *descriptor) = 0;
 
   virtual ola::thread::timeout_id RegisterRepeatingTimeout(
