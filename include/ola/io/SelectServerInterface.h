@@ -73,7 +73,8 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
    * @brief Remove a RemoveReadDescriptor for read-events.
    * @param descriptor the descriptor to remove.
    *
-   * @warning Descriptors must be
+   * @warning Descriptors must be removed from the SelectServer before they are
+   * closed. Not doing so will result in hard to debug failures.
    */
   virtual bool RemoveReadDescriptor(
       class ReadFileDescriptor *descriptor) = 0;
@@ -81,6 +82,9 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   /**
    * @brief Remove a ConnectedDescriptor for read-events.
    * @param descriptor the descriptor to remove.
+   *
+   * @warning Descriptors must be removed from the SelectServer before they are
+   * closed. Not doing so will result in hard to debug failures.
    */
   virtual bool RemoveReadDescriptor(class ConnectedDescriptor *descriptor) = 0;
 
@@ -96,6 +100,9 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   /**
    * @brief Remove a WriteFileDescriptor for write-events.
    * @param descriptor the descriptor to remove.
+   *
+   * @warning Descriptors must be removed from the SelectServer before they are
+   * closed. Not doing so will result in hard to debug failures.
    */
   virtual bool RemoveWriteDescriptor(
       class WriteFileDescriptor *descriptor) = 0;
