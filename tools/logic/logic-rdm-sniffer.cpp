@@ -349,7 +349,7 @@ void DisplayReminder(LogicReader *reader) {
  * Main.
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(&argc, argv, "[options]",
+  ola::AppInit(&argc, argv, "[ options ]",
                "Decode DMX/RDM data from a Saleae Logic device");
 
   SelectServer ss;
