@@ -5,7 +5,8 @@ LDADD = ../../common/libolacommon.la \
         ../../ola/libola.la
 
 if BUILD_EXAMPLES
-noinst_PROGRAMS =  callback_client_transmit flags receiver streaming_client
+noinst_PROGRAMS =  callback_client_transmit flags receiver streaming_client \
+                   udp_server
 if HAVE_DLOPEN
 noinst_PROGRAMS += streaming_client_plugin
 endif
@@ -16,3 +17,4 @@ flags_SOURCES = flags.cpp
 streaming_client_SOURCES = streaming_client.cpp
 streaming_client_plugin_SOURCES = streaming_client_plugin.cpp
 receiver_SOURCES = receiver.cpp
+udp_server_SOURCES = udp_server.cpp

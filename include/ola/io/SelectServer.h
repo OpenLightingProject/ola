@@ -39,14 +39,28 @@ namespace ola {
 namespace io {
 
 /**
- * This is the core of the event driven system. The SelectServer is responsible
- * for invoking Callbacks when events occur. All methods except Execute() and
- * Terminate() must be called from the thread that Run() was called in.
+ * @brief A single threaded I/O event managment system.
+ *
+ * SelectServer is the core of the event driven system. It's responsible
+ * for invoking Callbacks when certain events occur.
+ *
+ * @examplepara
+ * The following snippet shows how a SelectServer can be used with a listening
+ * UDP socket. The ReceiveMessage function will be called whenever there is
+ * new data on the UDP socket.
+ *
+ * @snippet udp_server.cpp UDP Server
+ *
+ * The SelectServer has a number of different implementations depending on the
+ * platform. On systems with epoll, the flag --use-epoll will use epoll()
+ * rather than select(). The PollerInterface defines the contract between the
+ * SelectServer and the lower level, platform dependant Poller classes.
+ *
+ * All methods except Execute() and Terminate() must be called from the thread
+ * that Run() was called in.
  */
 class SelectServer: public SelectServerInterface {
  public :
-  enum Direction {READ, WRITE};
-
   /**
    * @brief Create a new SelectServer
    * @param export_map the ExportMap to use for stats
@@ -54,6 +68,12 @@ class SelectServer: public SelectServerInterface {
    */
   SelectServer(ola::ExportMap *export_map = NULL,
                Clock *clock = NULL);
+
+  /**
+   * @brief Clean up.
+   *
+   * The SelectServer should be terminated before it's deleted.
+   */
   ~SelectServer();
 
   /**
@@ -66,6 +86,8 @@ class SelectServer: public SelectServerInterface {
 
   /**
    * @brief Exit from the Run() loop.
+   *
+   * Terminate() may be called from any thread.
    */
   void Terminate();
 
@@ -108,29 +130,32 @@ class SelectServer: public SelectServerInterface {
 
   ola::thread::timeout_id RegisterRepeatingTimeout(
       unsigned int ms,
-      ola::Callback0<bool> *closure);
+      ola::Callback0<bool> *callback);
   ola::thread::timeout_id RegisterRepeatingTimeout(
       const ola::TimeInterval &interval,
-      ola::Callback0<bool> *closure);
+      ola::Callback0<bool> *callback);
 
   ola::thread::timeout_id RegisterSingleTimeout(
       unsigned int ms,
-      ola::SingleUseCallback0<void> *closure);
+      ola::SingleUseCallback0<void> *callback);
   ola::thread::timeout_id RegisterSingleTimeout(
       const ola::TimeInterval &interval,
-      ola::SingleUseCallback0<void> *closure);
+      ola::SingleUseCallback0<void> *callback);
   void RemoveTimeout(ola::thread::timeout_id id);
 
   /**
    * @brief Execute a callback on every event loop.
-   * @param callback the Callback to execute.
+   * @param callback the Callback to execute. Ownership is transferrred to the
+   *   SelectServer.
    *
    * Be very cautious about using this, it's almost certainly not what you
    * want.
+   *
+   * There is no way to remove a Callback added with this method.
    */
   void RunInLoop(ola::Callback0<void> *callback);
 
-  void Execute(ola::BaseCallback0<void> *closure);
+  void Execute(ola::BaseCallback0<void> *callback);
 
  private :
   typedef std::set<ola::Callback0<void>*> LoopClosureSet;
@@ -143,7 +168,7 @@ class SelectServer: public SelectServerInterface {
 
   Clock *m_clock;
   bool m_free_clock;
-  LoopClosureSet m_loop_closures;
+  LoopClosureSet m_loop_callbacks;
   std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
   ola::thread::Mutex m_incoming_mutex;
   LoopbackDescriptor m_incoming_descriptor;

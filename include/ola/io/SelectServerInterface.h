@@ -32,7 +32,8 @@ namespace io {
 /**
  * @brief The interface for the SelectServer.
  *
- * The SelectServerInterface is used to register Descriptors for events.
+ * The SelectServerInterface is used to register Descriptors for events. It's
+ * the core of the event manager system, and should really be called IOManager.
  *
  * SelectServerInterface implementations are required to be reentrant.
  * Descriptors may be added / removed and timeouts set / canceled from within
@@ -71,6 +72,8 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   /**
    * @brief Remove a RemoveReadDescriptor for read-events.
    * @param descriptor the descriptor to remove.
+   *
+   * @warning Descriptors must be
    */
   virtual bool RemoveReadDescriptor(
       class ReadFileDescriptor *descriptor) = 0;
