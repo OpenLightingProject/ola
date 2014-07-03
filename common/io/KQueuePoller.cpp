@@ -313,7 +313,6 @@ void KQueuePoller::CheckDescriptor(struct kevent *event) {
     if (descriptor->read_descriptor) {
       descriptor->read_descriptor->PerformRead();
     } else if (descriptor->connected_descriptor) {
-
       if (event->data) {
         descriptor->connected_descriptor->PerformRead();
       } else if (event->flags & EV_EOF) {
