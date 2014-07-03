@@ -13,19 +13,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * EPoller.h
- * A Poller which uses epoll()
- * Copyright (C) 2013 Simon Newton
+ * KQueuePoller.h
+ * A Poller which uses kqueue / kevent
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef COMMON_IO_EPOLLER_H_
-#define COMMON_IO_EPOLLER_H_
+#ifndef COMMON_IO_KQUEUEPOLLER_H_
+#define COMMON_IO_KQUEUEPOLLER_H_
 
 #include <ola/base/Macro.h>
 #include <ola/Clock.h>
 #include <ola/ExportMap.h>
 #include <ola/io/Descriptor.h>
-#include <sys/epoll.h>
+#include <sys/event.h>
 
 #include <map>
 #include <set>
@@ -39,25 +39,25 @@
 namespace ola {
 namespace io {
 
-class EPollDescriptor;
+class KQueueDescriptor;
 
 /**
- * @class EPoller
- * @brief An implementation of PollerInterface that uses epoll().
+ * @class KQueuePoller
+ * @brief An implementation of PollerInterface that uses kevent / kqueue.
  *
- * epoll() is more efficient than select() but only newer Linux systems support
+ * kevent is more efficient than select() but only BSD-style systems support
  * it.
  */
-class EPoller : public PollerInterface {
+class KQueuePoller : public PollerInterface {
  public :
   /**
-   * @brief Create a new EPoller.
+   * @brief Create a new KQueuePoller.
    * @param export_map the ExportMap to use
    * @param clock the Clock to use
    */
-  EPoller(ExportMap *export_map, Clock *clock);
+  KQueuePoller(ExportMap *export_map, Clock *clock);
 
-  ~EPoller();
+  ~KQueuePoller();
 
   bool AddReadDescriptor(class ReadFileDescriptor *descriptor);
   bool AddReadDescriptor(class ConnectedDescriptor *descriptor,
@@ -74,13 +74,15 @@ class EPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
-  typedef std::map<int, EPollDescriptor*> DescriptorMap;
-  typedef std::vector<EPollDescriptor*> DescriptorList;
+  enum { CHANGE_SET_SIZE = 10 };
+
+  typedef std::map<int, KQueueDescriptor*> DescriptorMap;
+  typedef std::vector<KQueueDescriptor*> DescriptorList;
 
   DescriptorMap m_descriptor_map;
 
-  // EPoller is re-enterant. Remove may be called while we hold a pointer to an
-  // EPollDescriptor. To avoid deleting data out from underneath ourselves, we
+  // KQueuePoller is re-enterant. Remove may be called while we hold a pointer to an
+  // KQueueDescriptor. To avoid deleting data out from underneath ourselves, we
   // instead move the removed descriptors to this list and then clean them up
   // outside the callback loop.
   DescriptorList m_orphaned_descriptors;
@@ -89,21 +91,25 @@ class EPoller : public PollerInterface {
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
   CounterVariable *m_loop_time;
-  int m_epoll_fd;
+  int m_kqueue_fd;
+
+  struct kevent m_change_set[CHANGE_SET_SIZE];
+  unsigned int m_next_change_entry;
+
   Clock *m_clock;
   TimeStamp m_wake_up_time;
 
-  std::pair<EPollDescriptor*, bool> LookupOrCreateDescriptor(int fd);
-
-  bool RemoveDescriptor(int fd, int event, bool warn_on_missing);
-  void CheckDescriptor(struct epoll_event *event, EPollDescriptor *descriptor);
+  void CheckDescriptor(struct kevent *event);
+  std::pair<KQueueDescriptor*, bool> LookupOrCreateDescriptor(int fd);
+  bool ApplyChange(int fd, int16_t filter, uint16_t flags,
+                   KQueueDescriptor *descriptor);
+  bool RemoveDescriptor(int fd, int16_t filter);
 
   static const int MAX_EVENTS;
-  static const int READ_FLAGS;
   static const unsigned int MAX_FREE_DESCRIPTORS;
 
-  DISALLOW_COPY_AND_ASSIGN(EPoller);
+  DISALLOW_COPY_AND_ASSIGN(KQueuePoller);
 };
 }  // namespace io
 }  // namespace ola
-#endif  // COMMON_IO_EPOLLER_H_
+#endif  // COMMON_IO_KQUEUEPOLLER_H_

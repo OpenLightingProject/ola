@@ -243,11 +243,11 @@ bool EPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
 }
 
 bool EPoller::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
-  return RemoveDescriptor(descriptor->ReadDescriptor(), READ_FLAGS);
+  return RemoveDescriptor(descriptor->ReadDescriptor(), READ_FLAGS, true);
 }
 
 bool EPoller::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
-  return RemoveDescriptor(descriptor->ReadDescriptor(), READ_FLAGS);
+  return RemoveDescriptor(descriptor->ReadDescriptor(), READ_FLAGS, true);
 }
 
 bool EPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
@@ -281,7 +281,7 @@ bool EPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
 }
 
 bool EPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
-  return RemoveDescriptor(descriptor->WriteDescriptor(), EPOLLOUT);
+  return RemoveDescriptor(descriptor->WriteDescriptor(), EPOLLOUT, true);
 }
 
 bool EPoller::Poll(TimeoutManager *timeout_manager,
@@ -369,8 +369,13 @@ void EPoller::CheckDescriptor(struct epoll_event *event,
           descriptor->connected_descriptor->TransferOnClose();
       if (on_close)
         on_close->Run();
+
+      // At this point the descriptor may be sitting in the orphan list if the
+      // OnClose handler called into RemoveReadDescriptor()
       if (descriptor->delete_connected_on_close) {
-        if (RemoveReadDescriptor(descriptor->connected_descriptor) &&
+        if
+          (RemoveDescriptor(descriptor->connected_descriptor->ReadDescriptor(),
+                            READ_FLAGS, false) &&
             m_export_map) {
           (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
         }
@@ -417,7 +422,7 @@ std::pair<EPollDescriptor*, bool> EPoller::LookupOrCreateDescriptor(int fd) {
   return std::make_pair(result.first->second, new_descriptor);
 }
 
-bool EPoller::RemoveDescriptor(int fd, int event) {
+bool EPoller::RemoveDescriptor(int fd, int event, bool warn_on_missing) {
   if (fd == INVALID_DESCRIPTOR) {
     OLA_WARN << "Attempt to remove an invalid file descriptor";
     return false;
@@ -425,7 +430,9 @@ bool EPoller::RemoveDescriptor(int fd, int event) {
 
   EPollDescriptor *epoll_descriptor = STLFindOrNull(m_descriptor_map, fd);
   if (!epoll_descriptor) {
-    OLA_WARN << "Couldn't find EPollDescriptor for " << fd;
+    if (warn_on_missing) {
+      OLA_WARN << "Couldn't find EPollDescriptor for " << fd;
+    }
     return false;
   }
 
@@ -435,7 +442,7 @@ bool EPoller::RemoveDescriptor(int fd, int event) {
     epoll_descriptor->write_descriptor = NULL;
   } else if (event & EPOLLIN) {
     epoll_descriptor->read_descriptor = NULL;
-    epoll_descriptor->write_descriptor = NULL;
+    epoll_descriptor->connected_descriptor = NULL;
   }
 
   if (epoll_descriptor->events == 0) {

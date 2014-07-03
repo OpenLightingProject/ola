@@ -39,20 +39,29 @@ using std::string;
 DECLARE_bool(use_epoll);
 #endif
 
+#ifdef HAVE_KQUEUE
+DECLARE_bool(use_kqueue);
+#endif
+
 DECLARE_uint8(log_level);
+
+bool GetBoolEnvVar(const string &var_name) {
+  string var;
+  bool result = false;
+  ola::GetEnv(var_name, &var) && ola::StringToBool(var, &result);
+  return result;
+}
 
 int main(int argc, char* argv[]) {
   // Default to INFO since it's tests.
   FLAGS_log_level = ola::OLA_LOG_INFO;
 
 #ifdef HAVE_EPOLL
-  string epoll_var;
-  bool use_epoll = false;
-  if (ola::GetEnv("OLA_USE_EPOLL", &epoll_var) &&
-      ola::StringToBool(epoll_var, &use_epoll) &&
-      use_epoll) {
-    FLAGS_use_epoll = true;
-  }
+  FLAGS_use_epoll = GetBoolEnvVar("OLA_USE_EPOLL");
+#endif
+
+#ifdef HAVE_KQUEUE
+  FLAGS_use_kqueue = GetBoolEnvVar("OLA_USE_KQUEUE");
 #endif
 
   ola::AppInit(&argc, argv, "[options]", "");

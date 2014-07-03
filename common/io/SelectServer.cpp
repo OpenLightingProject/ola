@@ -44,9 +44,6 @@
 #else
 #include "ola/base/Flags.h"
 
-#ifdef HAVE_EPOLL
-#include "common/io/EPoller.h"
-#endif
 
 #include "common/io/SelectPoller.h"
 #endif
@@ -57,7 +54,13 @@
 #include "ola/stl/STLUtils.h"
 
 #ifdef HAVE_EPOLL
-DEFINE_bool(use_epoll, false, "Use epoll() when available");
+#include "common/io/EPoller.h"
+DEFINE_bool(use_epoll, false, "Use epoll() if available");
+#endif
+
+#ifdef HAVE_KQUEUE
+#include "common/io/KQueuePoller.h"
+DEFINE_bool(use_kqueue, false, "Use kqueue() if available");
 #endif
 
 namespace ola {
@@ -91,20 +94,32 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
   m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
 #ifdef _WIN32
   m_poller.reset(new WindowsPoller(export_map, m_clock));
-#else
+#endif
+
 #ifdef HAVE_EPOLL
   if (FLAGS_use_epoll) {
     m_poller.reset(new EPoller(export_map, m_clock));
-  } else {
-    m_poller.reset(new SelectPoller(export_map, m_clock));
   }
   if (m_export_map) {
     m_export_map->GetBoolVar("using-epoll")->Set(FLAGS_use_epoll);
   }
-#else
-  m_poller.reset(new SelectPoller(export_map, m_clock));
 #endif
+
+#ifdef HAVE_KQUEUE
+  bool using_kqueue = false;
+  if (FLAGS_use_kqueue && !m_poller.get()) {
+    m_poller.reset(new KQueuePoller(export_map, m_clock));
+    using_kqueue = true;
+  }
+  if (m_export_map) {
+    m_export_map->GetBoolVar("using-kqueue")->Set(using_kqueue);
+  }
 #endif
+
+  // Default to the SelectPoller
+  if (!m_poller.get()) {
+    m_poller.reset(new SelectPoller(export_map, m_clock));
+  }
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())
@@ -149,14 +164,12 @@ void SelectServer::Run() {
   }
 
   m_is_running = true;
-  OLA_INFO << "set to true";
   m_terminate = false;
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
     if (!CheckForEvents(m_poll_interval))
       break;
   }
-  OLA_INFO << "set to false";
   m_is_running = false;
 }
 

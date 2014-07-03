@@ -70,6 +70,7 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testAddRemoveReadDescriptor);
   CPPUNIT_TEST(testRemoteEndClose);
   CPPUNIT_TEST(testRemoteEndCloseWithDelete);
+  CPPUNIT_TEST(testRemoteEndCloseWithRemoveAndDelete);
   CPPUNIT_TEST(testReadWriteInteraction);
   CPPUNIT_TEST(testShutdownWithActiveDescriptors);
   CPPUNIT_TEST(testTimeout);
@@ -85,6 +86,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void testAddRemoveReadDescriptor();
     void testRemoteEndClose();
     void testRemoteEndCloseWithDelete();
+    void testRemoteEndCloseWithRemoveAndDelete();
     void testReadWriteInteraction();
     void testShutdownWithActiveDescriptors();
     void testTimeout();
@@ -121,8 +123,10 @@ class SelectServerTest: public CppUnit::TestFixture {
     }
 
     void RemoveFromSelectServer(ConnectedDescriptor *descriptor) {
-      m_ss->RemoveReadDescriptor(descriptor);
-      m_ss->Terminate();
+      if (m_ss) {
+        m_ss->RemoveReadDescriptor(descriptor);
+        m_ss->Terminate();
+      }
     }
 
     void IncrementLoopCounter() { m_loop_counter++; }
@@ -310,6 +314,35 @@ void SelectServerTest::testRemoteEndCloseWithDelete() {
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 }
+
+/*
+ * This is a tricky case to test reentrancy. We set an OnClose handler that also
+ * removes the LoopbackDescriptor from the SelectServer. We also set
+ * delete_on_close to true.
+ *
+ * This makes sure that the delete_on_close code handles the descriptor being
+ * removed from within the OnClose handler.
+ */
+void SelectServerTest::testRemoteEndCloseWithRemoveAndDelete() {
+  // Ownership is transferred to the SelectServer.
+  LoopbackDescriptor *loopback_socket = new LoopbackDescriptor();
+  loopback_socket->Init();
+  loopback_socket->SetOnClose(NewSingleCallback(
+      this, &SelectServerTest::RemoveFromSelectServer,
+      reinterpret_cast<ConnectedDescriptor*>(loopback_socket)));
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback_socket, true));
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+
+  // Now the Write end closes
+  loopback_socket->CloseClient();
+
+  m_ss->Run();
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
 
 /*
  * Test the interaction between read and write descriptor.
