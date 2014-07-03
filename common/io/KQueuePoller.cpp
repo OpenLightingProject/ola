@@ -247,9 +247,11 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 
   struct timespec sleep_time;
   sleep_time.tv_sec = sleep_interval.Seconds();
-  sleep_time.tv_nsec = sleep_interval.InMilliSeconds() / 1000;
+  sleep_time.tv_nsec = sleep_interval.MicroSeconds() * 1000;
 
-  OLA_INFO << "Calling kevent with " << m_next_change_entry << " changes";
+  OLA_INFO << "Calling kevent with " << m_next_change_entry
+           << " changes, sleep for " << sleep_interval;
+  OLA_INFO << "sleep is " << sleep_time.tv_sec << "." << sleep_time.tv_nsec;
   int ready = kevent(
       m_kqueue_fd, reinterpret_cast<struct kevent*>(m_change_set),
       m_next_change_entry, events, MAX_EVENTS, &sleep_time);
@@ -313,7 +315,6 @@ void KQueuePoller::CheckDescriptor(struct kevent *event) {
     if (descriptor->read_descriptor) {
       descriptor->read_descriptor->PerformRead();
     } else if (descriptor->connected_descriptor) {
-
       if (event->data) {
         descriptor->connected_descriptor->PerformRead();
       } else if (event->flags & EV_EOF) {

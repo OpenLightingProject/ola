@@ -81,10 +81,10 @@ class KQueuePoller : public PollerInterface {
 
   DescriptorMap m_descriptor_map;
 
-  // KQueuePoller is re-enterant. Remove may be called while we hold a pointer to an
-  // KQueueDescriptor. To avoid deleting data out from underneath ourselves, we
-  // instead move the removed descriptors to this list and then clean them up
-  // outside the callback loop.
+  // KQueuePoller is re-enterant. Remove may be called while we hold a pointer
+  // to an KQueueDescriptor. To avoid deleting data out from underneath
+  // ourselves, we instead move the removed descriptors to this list and then
+  // clean them up outside the callback loop.
   DescriptorList m_orphaned_descriptors;
   // A list of pre-allocated descriptors we can use.
   DescriptorList m_free_descriptors;
