@@ -95,7 +95,7 @@ class EPoller : public PollerInterface {
 
   std::pair<EPollDescriptor*, bool> LookupOrCreateDescriptor(int fd);
 
-  bool RemoveDescriptor(int fd, int event);
+  bool RemoveDescriptor(int fd, int event, bool warn_on_missing);
   void CheckDescriptor(struct epoll_event *event, EPollDescriptor *descriptor);
 
   static const int MAX_EVENTS;
