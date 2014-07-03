@@ -308,7 +308,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 
   m_clock->CurrentTime(&m_wake_up_time);
 
-  //OLA_INFO << "Got " << ready << " events";
+  // OLA_INFO << "Got " << ready << " events";
   for (int i = 0; i < ready; i++) {
     if (events[i].flags & EV_ERROR) {
       OLA_WARN << "Error from kqueue on fd: " << events[i].ident << ": "
