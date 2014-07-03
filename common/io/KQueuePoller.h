@@ -102,7 +102,7 @@ class KQueuePoller : public PollerInterface {
   void CheckDescriptor(struct kevent *event);
   std::pair<KQueueDescriptor*, bool> LookupOrCreateDescriptor(int fd);
   bool ApplyChange(int fd, int16_t filter, uint16_t flags,
-                   KQueueDescriptor *descriptor);
+                   KQueueDescriptor *descriptor, bool apply_immediately);
   bool RemoveDescriptor(int fd, int16_t filter);
 
   static const int MAX_EVENTS;
