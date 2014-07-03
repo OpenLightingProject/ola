@@ -246,7 +246,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
 
   for (int buffer = 0; buffer < io_len; ++buffer) {
     bytes_sent += SendTo(reinterpret_cast<uint8_t*>(iov[buffer].iov_base),
-        iov[buffer].iov_len, ip, port);
+        iov[buffer].iov_len, dest);
   }
 
 #else

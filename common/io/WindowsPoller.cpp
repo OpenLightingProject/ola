@@ -254,9 +254,9 @@ class PollData {
   OVERLAPPED* overlapped;
 };
 
-void CancelIOs(const std::vector<PollData*>& data) {
-  std::vector<PollData*>::iterator iter = data.begin();
-  for (; iter != data.end(); ++iter) {
+void CancelIOs(std::vector<PollData*>* data) {
+  std::vector<PollData*>::iterator iter = data->begin();
+  for (; iter != data->end(); ++iter) {
     PollData* poll_data = *iter;
     if (poll_data->overlapped) {
       CancelIo(poll_data->handle);
@@ -418,7 +418,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                                             FALSE,
                                             ms_to_sleep,
                                             TRUE);
-    CancelIOs(data);
+    CancelIOs(&data);
 
     if (result == WAIT_TIMEOUT) {
       m_clock->CurrentTime(&m_wake_up_time);
@@ -454,7 +454,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     }
   } else {
     Sleep(ms_to_sleep);
-    CancelIOs(data);
+    CancelIOs(&data);
   }
 
   m_clock->CurrentTime(&m_wake_up_time);

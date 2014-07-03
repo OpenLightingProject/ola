@@ -496,10 +496,6 @@ bool ConnectedDescriptor::IsClosed() const {
 LoopbackDescriptor::LoopbackDescriptor() {
   m_handle_pair[0] = INVALID_DESCRIPTOR;
   m_handle_pair[1] = INVALID_DESCRIPTOR;
-#ifdef _WIN32
-  memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
-  m_read_data_size = 0;
-#endif
 }
 
 bool LoopbackDescriptor::Init() {
@@ -557,10 +553,6 @@ PipeDescriptor::PipeDescriptor():
   m_other_end(NULL) {
   m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
   m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
-#ifdef _WIN32
-  memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
-  m_read_data_size = 0;
-#endif
 }
 
 bool PipeDescriptor::Init() {
@@ -644,10 +636,6 @@ PipeDescriptor::PipeDescriptor(DescriptorHandle in_pair[2],
   m_out_pair[0] = out_pair[0];
   m_out_pair[1] = out_pair[1];
   m_other_end = other_end;
-#ifdef _WIN32
-  m_in_pair[0].m_read_data = m_read_data;
-  m_in_pair[0].m_read_data_size = &m_read_data_size;
-#endif
 }
 
 
