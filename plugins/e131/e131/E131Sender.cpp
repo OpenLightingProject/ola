@@ -67,7 +67,7 @@ bool E131Sender::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
 
   OutgoingUDPTransport transport(&m_transport_impl, addr);
 
-  E131PDU pdu(ola::acn::VECTOR_E131_DMP, header, dmp_pdu);
+  E131PDU pdu(ola::acn::VECTOR_E131_DATA, header, dmp_pdu);
   unsigned int vector = ola::acn::VECTOR_ROOT_E131;
   if (header.UsingRev2())
     vector = ola::acn::VECTOR_ROOT_E131_REV2;
