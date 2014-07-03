@@ -48,7 +48,8 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
   uint32_t net, mask;
 
   if (include_loopback) {
-    OLA_WARN << "Loopback requested. This might not exist on Windows";
+    OLA_WARN << "Loopback interface inclusion requested. Loopback might not"
+             << "exist on Windows";
   }
 
   while (1) {

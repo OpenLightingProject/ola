@@ -27,6 +27,7 @@
 
 #ifdef _WIN32
 typedef uint32_t in_addr_t;
+// Iphlpapi.h depends on Winsock2.h
 #define WIN_32_LEAN_AND_MEAN
 #include <Winsock2.h>
 #include <Iphlpapi.h>
@@ -345,8 +346,6 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   }
 
   delete[] fixed_info;
-
-  return (name_servers->size() > 0);
 #else
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too

@@ -30,13 +30,16 @@
 #include <Windows.h>
 
 #include <map>
-#include <set>
+#include <vector>
 
 #include "common/io/PollerInterface.h"
 #include "common/io/TimeoutManager.h"
 
 namespace ola {
 namespace io {
+
+class WindowsPollerDescriptor;
+class PollData;
 
 /**
  * @class WindowsPoller
@@ -68,27 +71,8 @@ class WindowsPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
-  typedef struct {
-    ConnectedDescriptor *descriptor;
-    bool delete_on_close;
-  } connected_descriptor_t;
-
-  struct connected_descriptor_t_lt {
-    bool operator()(const connected_descriptor_t &c1,
-                    const connected_descriptor_t &c2) const {
-      return c1.descriptor->ReadDescriptor().m_handle.m_handle <
-          c2.descriptor->ReadDescriptor().m_handle.m_handle;
-    }
-  };
-
-  typedef std::set<connected_descriptor_t, connected_descriptor_t_lt>
-      ConnectedDescriptorSet;
-
-  typedef std::set<ReadFileDescriptor*> SocketDescriptorSet;
-  typedef std::map<ReadFileDescriptor*, HANDLE> HandleMap;
-
-  typedef std::set<WriteFileDescriptor*> SocketWriteDescriptorSet;
-  typedef std::map<WriteFileDescriptor*, HANDLE> WriteHandleMap;
+  typedef std::map<void*, WindowsPollerDescriptor*> DescriptorMap;
+  typedef std::vector<WindowsPollerDescriptor*> OrphanedDescriptors;
 
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
@@ -96,15 +80,16 @@ class WindowsPoller : public PollerInterface {
   Clock *m_clock;
   TimeStamp m_wake_up_time;
 
-  SocketDescriptorSet m_socket_read_descriptors;
-  HandleMap m_socket_handles;
-
-  SocketWriteDescriptorSet m_socket_write_descriptors;
-  WriteHandleMap m_socket_write_handles;
-
-  ConnectedDescriptorSet m_connected_read_descriptors;
-
-  void UpdateDescriptorData();
+  DescriptorMap m_descriptor_map;
+  OrphanedDescriptors m_orphaned_descriptors;
+  
+  std::pair<WindowsPollerDescriptor*, bool>
+      LookupOrCreateDescriptor(void* handle);
+  bool RemoveDescriptor(void* handle, int flag);
+  
+  void HandleWakeup(PollData* data);
+  void FinalCheckIOs(std::vector<PollData*> data);
+  void CheckDescriptors();
 
   DISALLOW_COPY_AND_ASSIGN(WindowsPoller);
 };

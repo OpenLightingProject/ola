@@ -537,14 +537,14 @@ void HTTPServer::UpdateSockets() {
   // FD in a more suitable way
   int i = 0;
   while (iter != m_sockets.end() && i <= max_fd) {
-    if (ola::io::HandleToFD((*iter)->ReadDescriptor()) < i) {
+    if (ola::io::ToFD((*iter)->ReadDescriptor()) < i) {
       // this socket is no longer required so remove it
       OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
       m_select_server.RemoveReadDescriptor(*iter);
       m_select_server.RemoveWriteDescriptor(*iter);
       delete *iter;
       m_sockets.erase(iter++);
-    } else if (ola::io::HandleToFD((*iter)->ReadDescriptor()) == i) {
+    } else if (ola::io::ToFD((*iter)->ReadDescriptor()) == i) {
       // this socket may need to be updated
       if (FD_ISSET(i, &r_set))
         m_select_server.AddReadDescriptor(*iter);

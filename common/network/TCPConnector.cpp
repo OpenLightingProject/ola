@@ -66,7 +66,6 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   ola::io::DescriptorHandle descriptor;
   descriptor.m_handle.m_fd = sd;
   descriptor.m_type = ola::io::SOCKET_DESCRIPTOR;
-  descriptor.m_event_handle = 0;
 #else
   ola::io::DescriptorHandle descriptor = sd;
 #endif
@@ -223,7 +222,6 @@ TCPConnector::PendingTCPConnection::PendingTCPConnection(
 #ifdef _WIN32
   m_handle.m_handle.m_fd = fd;
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
 #else
   m_handle = fd;
 #endif

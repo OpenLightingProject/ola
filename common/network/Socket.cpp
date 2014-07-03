@@ -92,7 +92,6 @@ bool UDPSocket::Init() {
 #ifdef _WIN32
   m_handle.m_handle.m_fd = sd;
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
 #else
   m_handle = sd;
 #endif

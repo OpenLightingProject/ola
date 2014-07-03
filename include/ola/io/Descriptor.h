@@ -78,26 +78,23 @@ struct DescriptorHandle {
   // Type of this descriptor's handle
   DescriptorType m_type;
   // Handler to an event for async I/O
-  void* m_event_handle;
+  void* m_event;
   // Pointer to read result of an async I/O call
-  uint8_t* m_read_data;
+  uint8_t* m_async_data;
   // Pointer to size of read result data
-  uint32_t* m_read_data_size;
-  // Pointer to bytes read by last read call
-  uint32_t* m_read_call_size;
+  uint32_t* m_async_data_size;
 
-  DescriptorHandle()
-      : m_type(GENERIC_DESCRIPTOR),
-      m_event_handle(0),
-      m_read_data(NULL),
-      m_read_data_size(NULL) {
-    m_handle.m_fd = -1;
-    m_read_call_size = NULL;
-  }
+  DescriptorHandle();
+  ~DescriptorHandle();
+  
+  bool AllocAsyncBuffer();
+  void FreeAsyncBuffer();
 };
 
+void* ToHandle(const DescriptorHandle& handle);
+
 static DescriptorHandle INVALID_DESCRIPTOR;
-static const size_t READ_DATA_BUFFER_SIZE = 1024;
+static const uint32_t ASYNC_DATA_BUFFER_SIZE = 1024;
 bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
 bool operator==(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
 bool operator<(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
@@ -112,7 +109,7 @@ static DescriptorHandle INVALID_DESCRIPTOR = -1;
  * @param handle The descriptor handle
  * @return -1 on error, file descriptor otherwise
  */
-int HandleToFD(const DescriptorHandle& handle);
+int ToFD(const DescriptorHandle& handle);
 
 /*
  * A FileDescriptor which can be read from.
@@ -299,11 +296,6 @@ class LoopbackDescriptor: public ConnectedDescriptor {
   LoopbackDescriptor() {
     m_handle_pair[0] = INVALID_DESCRIPTOR;
     m_handle_pair[1] = INVALID_DESCRIPTOR;
-#ifdef _WIN32
-    memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
-    m_read_data_size = 0;
-    m_read_call_size = 0;
-#endif
   }
   ~LoopbackDescriptor() { Close(); }
   bool Init();
@@ -319,11 +311,6 @@ class LoopbackDescriptor: public ConnectedDescriptor {
   DescriptorHandle m_handle_pair[2];
   LoopbackDescriptor(const LoopbackDescriptor &other);
   LoopbackDescriptor& operator=(const LoopbackDescriptor &other);
-#ifdef _WIN32
-  uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
-  uint32_t m_read_data_size;
-  uint32_t m_read_call_size;
-#endif
 };
 
 
@@ -337,11 +324,6 @@ class PipeDescriptor: public ConnectedDescriptor {
     m_other_end(NULL) {
     m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
     m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
-#ifdef _WIN32
-    memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
-    m_read_data_size = 0;
-    m_read_call_size = 0;
-#endif
   }
   ~PipeDescriptor() { Close(); }
 
@@ -367,19 +349,9 @@ class PipeDescriptor: public ConnectedDescriptor {
     m_out_pair[0] = out_pair[0];
     m_out_pair[1] = out_pair[1];
     m_other_end = other_end;
-#ifdef _WIN32
-    m_in_pair[0].m_read_data = m_read_data;
-    m_in_pair[0].m_read_data_size = &m_read_data_size;
-    m_in_pair[0].m_read_call_size = &m_read_call_size;
-#endif
   }
   PipeDescriptor(const PipeDescriptor &other);
   PipeDescriptor& operator=(const PipeDescriptor &other);
-#ifdef _WIN32
-  uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
-  uint32_t m_read_data_size;
-  uint32_t m_read_call_size;
-#endif
 };
 
 /*
