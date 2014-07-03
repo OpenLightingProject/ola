@@ -101,4 +101,9 @@ UniverseTester_SOURCES = UniverseTest.cpp
 UniverseTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 UniverseTester_LDADD = $(COMMON_TEST_LDADD)
 
+if USING_WIN32
+OlaTester_LDADD += -lWs2_32 -lIphlpapi
+UniverseTester_LDADD += -lWs2_32 -lIphlpapi
+endif
+
 CLEANFILES = ola-output.conf
