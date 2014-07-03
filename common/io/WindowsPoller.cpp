@@ -412,7 +412,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   bool return_value = true;
   
   // Wait for events or timeout
-  OLA_WARN << "Wait";
   if (events.size() > 0) {
     DWORD result = WaitForMultipleObjectsEx(events.size(),
                                             events.data(),
@@ -436,7 +435,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       do {
         DWORD index = result - WAIT_OBJECT_0;
         PollData* poll_data = data[index];
-        OLA_WARN << "Waking up for " << poll_data->handle;
         HandleWakeup(poll_data);
         
         events.erase(events.begin() + index);
@@ -477,7 +475,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     DescriptorHandle handle =
         descriptor->connected_descriptor->ReadDescriptor();
     if (*handle.m_async_data_size > 0) {
-      OLA_WARN << "Pending data for " << ToHandle(handle);
       descriptor->connected_descriptor->PerformRead();
     }
   }
@@ -573,14 +570,7 @@ void WindowsPoller::HandleWakeup(PollData* data) {
             return;
           }
         }
-        
-        OLA_WARN << bytes_transferred << " transferred";
-        OLA_WARN << *handle.m_async_data_size << " already in descriptor";
-    
-        if (data->size != bytes_transferred) {
-          OLA_WARN << "Size mismatch";
-        }
-    
+
         uint32_t to_copy = std::min(static_cast<uint32_t>(bytes_transferred),
             (ASYNC_DATA_BUFFER_SIZE - *handle.m_async_data_size));
         if (to_copy < bytes_transferred) {
@@ -678,10 +668,6 @@ void WindowsPoller::FinalCheckIOs(std::vector<PollData*> data) {
       WindowsPollerDescriptor* descriptor = iter->second;
       DescriptorHandle handle =
         descriptor->connected_descriptor->ReadDescriptor();
-      
-      if (poll_data->size != bytes_transferred) {
-        OLA_WARN << "Size mismatch";
-      }
     
       uint32_t to_copy = std::min(static_cast<uint32_t>(bytes_transferred),
           (ASYNC_DATA_BUFFER_SIZE - *handle.m_async_data_size));
