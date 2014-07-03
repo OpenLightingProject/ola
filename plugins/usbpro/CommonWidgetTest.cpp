@@ -24,7 +24,6 @@
  * Set up the PipeDescriptor and the MockEndpoint
  */
 void CommonWidgetTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_descriptor.Init();
   m_other_end.reset(m_descriptor.OppositeEnd());
   m_endpoint.reset(new MockEndpoint(m_other_end.get()));

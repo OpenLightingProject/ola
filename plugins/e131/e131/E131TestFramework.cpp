@@ -101,11 +101,11 @@ bool StateManager::Init() {
 
 StateManager::~StateManager() {
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-  assert(m_ss->RemoveReadDescriptor(m_node1->GetSocket()));
-  assert(m_ss->RemoveReadDescriptor(m_node2->GetSocket()));
+  m_ss->RemoveReadDescriptor(m_node1->GetSocket());
+  m_ss->RemoveReadDescriptor(m_node2->GetSocket());
 
   if (m_local_node) {
-    assert(m_ss->RemoveReadDescriptor(m_local_node->GetSocket()));
+    m_ss->RemoveReadDescriptor(m_local_node->GetSocket());
     delete m_local_node;
   }
 

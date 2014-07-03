@@ -13,28 +13,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * SchedulingExecutorInterface.h
- * An interface that implements both the Scheduling & Executor methods.
- * Copyright (C) 2011 Simon Newton
+ * Env.h
+ * Get / Set Environment variables.
  */
 
-#ifndef INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_
-#define INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_
+#ifndef INCLUDE_OLA_BASE_ENV_H_
+#define INCLUDE_OLA_BASE_ENV_H_
 
-#include <ola/thread/ExecutorInterface.h>
-#include <ola/thread/SchedulerInterface.h>
+#include <string>
 
 namespace ola {
-namespace thread {
 
 /**
- * @brief Combines the ExecutorInterface and the SchedulerInterface.
+ * @brief Get the value of an environment variable
+ * @param var the name of the variable to get
+ * @param[out] value the of the variable
+ * @returns true if the variable was defined, false otherwise.
+ *
+ * This prefers secure_getenv so it will return false if the environment is
+ * untrusted.
  */
-class SchedulingExecutorInterface: public ExecutorInterface,
-                                   public SchedulerInterface {
- public:
-  virtual ~SchedulingExecutorInterface() {}
-};
-}  // namespace thread
+bool GetEnv(const std::string &var, std::string *value);
+
 }  // namespace ola
-#endif  // INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_
+#endif  // INCLUDE_OLA_BASE_ENV_H_

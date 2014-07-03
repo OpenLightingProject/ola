@@ -5,6 +5,7 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
                       ExtendedSerial.cpp \
+                      EPoller.h \
                       IOQueue.cpp \
                       IOStack.cpp \
                       IOUtils.cpp \
@@ -21,6 +22,10 @@ libolaio_la_SOURCES += WindowsPoller.cpp \
 else
 libolaio_la_SOURCES += SelectPoller.cpp \
                        SelectPoller.h
+endif
+
+if HAVE_EPOLL
+libolaio_la_SOURCES += EPoller.cpp
 endif
 
 # TESTS

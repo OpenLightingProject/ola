@@ -111,8 +111,8 @@ class SandNetNode {
     ola::network::UDPSocket m_control_socket;
     ola::network::UDPSocket m_data_socket;
     ola::dmx::RunLengthEncoder m_encoder;
-    ola::network::IPV4Address m_control_addr;
-    ola::network::IPV4Address m_data_addr;
+    ola::network::IPV4SocketAddress m_control_addr;
+    ola::network::IPV4SocketAddress m_data_addr;
 
     static const uint16_t CONTROL_PORT;
     static const uint16_t DATA_PORT;

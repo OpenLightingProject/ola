@@ -49,7 +49,9 @@ class InterfacePicker {
  public:
   struct Options {
    public:
-    // Include the loopback interface when searching
+    /**
+     * True to include the loopback interface(s) when searching
+     */
     bool include_loopback;
 
     /**

@@ -963,14 +963,14 @@ bool ArtNetNodeImpl::SendTimeCode(const ola::timecode::TimeCode &timecode) {
 void ArtNetNodeImpl::SocketReady() {
   artnet_packet packet;
   ssize_t packet_size = sizeof(packet);
-  ola::network::IPV4Address source;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                           &packet_size,
-                          source))
+                          &source))
     return;
 
-  HandlePacket(source, packet, packet_size);
+  HandlePacket(source.Host(), packet, packet_size);
 }
 
 
@@ -1616,8 +1616,7 @@ bool ArtNetNodeImpl::SendPacket(const artnet_packet &packet,
   unsigned int bytes_sent = m_socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      ip_destination,
-      ARTNET_PORT);
+      IPV4SocketAddress(ip_destination, ARTNET_PORT));
 
   if (bytes_sent != size) {
     OLA_INFO << "Only sent " << bytes_sent << " of " << size;

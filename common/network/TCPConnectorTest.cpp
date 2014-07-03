@@ -265,7 +265,7 @@ void TCPConnectorTest::testEarlyDestruction() {
     if (id != 0) {
       // The callback hasn't run yet.
       OLA_ASSERT_EQ(1u, connector.ConnectionsPending());
-      m_ss->RunOnce();
+      m_ss->RunOnce(TimeInterval(1, 0));
     }
     OLA_ASSERT_EQ(0u, m_sucessfull_calls);
     OLA_ASSERT_EQ(1u, m_failure_calls);

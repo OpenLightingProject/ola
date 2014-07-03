@@ -115,7 +115,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_aton select socket strerror \
                 getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
-                getgrgid_r])
+                getgrgid_r secure_getenv])
 AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
 
 LT_INIT
@@ -128,6 +128,11 @@ DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
+
+# Epoll
+AX_HAVE_EPOLL(
+  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
