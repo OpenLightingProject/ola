@@ -45,10 +45,7 @@ using std::vector;
 class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(InterfacePickerTest);
   CPPUNIT_TEST(testGetInterfaces);
-#ifndef _WIN32
-  // Windows doesn't have a loopback interface by default, so don't run the test
   CPPUNIT_TEST(testGetLoopbackInterfaces);
-#endif
   CPPUNIT_TEST(testChooseInterface);
   CPPUNIT_TEST_SUITE_END();
 
@@ -99,7 +96,9 @@ void InterfacePickerTest::testGetLoopbackInterfaces() {
     if (iter->loopback)
       loopback_count++;
   }
+#ifndef _WIN32
   OLA_ASSERT_GT(loopback_count, 0);
+#endif
 }
 
 

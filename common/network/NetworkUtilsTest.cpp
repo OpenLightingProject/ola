@@ -52,11 +52,7 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToFromLittleEndian);
   CPPUNIT_TEST(testNameProcessing);
   CPPUNIT_TEST(testNameServers);
-#ifndef _WIN32
-  // Windows has no single default route, so this test only makes sense on non-
-  // Windows systems
   CPPUNIT_TEST(testDefaultRoute);
-#endif
   CPPUNIT_TEST_SUITE_END();
 
  public:

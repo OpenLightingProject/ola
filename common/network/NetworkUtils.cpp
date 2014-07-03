@@ -622,9 +622,24 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   return GetDefaultRouteWithNetlink(if_index, default_gateway);
 #elif defined(_WIN32)
-  // Windows has no concept of one single default route.
-  OLA_WARN << "DefaultRoute not supported on Windows";
-  return false;
+  ULONG size = 4096;
+  PMIB_IPFORWARDTABLE forward_table =
+      reinterpret_cast<PMIB_IPFORWARDTABLE>(malloc(size));
+  DWORD result = GetIpForwardTable(forward_table, &size, TRUE);
+  if (result == NO_ERROR) {
+    for (int i = 0; i < forward_table->dwNumEntries; ++i) {
+      if (forward_table->table[i].dwForwardDest == 0) {
+        *default_gateway =
+            IPV4Address(forward_table->table[i].dwForwardNextHop);
+        *if_index = forward_table->table[i].dwForwardIfIndex;
+      }
+    }
+    free(forward_table);
+    return true;
+  } else {
+    OLA_WARN << "GetIpForwardTable failed with " << GetLastError();
+    return false;
+  }
 #else
 #error "DefaultRoute not implemented for this platform, please report this."
   // TODO(Peter): Do something else on machines without Netlink

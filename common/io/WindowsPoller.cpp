@@ -125,6 +125,11 @@ WindowsPoller::~WindowsPoller() {
 }
 
 bool WindowsPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
+    return false;
+  }
+
   pair<WindowsPollerDescriptor*, bool> result = LookupOrCreateDescriptor(
       ToHandle(descriptor->ReadDescriptor()));
   if (result.first->flags & FLAG_READ) {
@@ -142,7 +147,10 @@ bool WindowsPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
 
 bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
                                       bool delete_on_close) {
-
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
+    return false;
+  }
   pair<WindowsPollerDescriptor*, bool> result = LookupOrCreateDescriptor(
       ToHandle(descriptor->ReadDescriptor()));
   if (result.first->flags & FLAG_READ) {
@@ -404,6 +412,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   bool return_value = true;
   
   // Wait for events or timeout
+  OLA_WARN << "Wait";
   if (events.size() > 0) {
     DWORD result = WaitForMultipleObjectsEx(events.size(),
                                             events.data(),
@@ -424,12 +433,26 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       // succeeded.
     } else if ((result >= WAIT_OBJECT_0) && 
               (result < (WAIT_OBJECT_0 + events.size()))) {
+      do {
         DWORD index = result - WAIT_OBJECT_0;
         PollData* poll_data = data[index];
+        OLA_WARN << "Waking up for " << poll_data->handle;
         HandleWakeup(poll_data);
+        
+        events.erase(events.begin() + index);
+        data.erase(data.begin() + index);
+        event_holders.erase(event_holders.begin() + index);
+        
+        result = WaitForMultipleObjectsEx(events.size(),
+                                          events.data(),
+                                          FALSE,
+                                          0,
+                                          TRUE);
+      } while ((result >= WAIT_OBJECT_0) &&
+               (result < (WAIT_OBJECT_0 + events.size())));
     } else {
       OLA_WARN << "Unhandled return value from WaitForMultipleObjectsEx: "
-              << result;
+               << result;
     }
   } else {
     Sleep(ms_to_sleep);
@@ -454,6 +477,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     DescriptorHandle handle =
         descriptor->connected_descriptor->ReadDescriptor();
     if (*handle.m_async_data_size > 0) {
+      OLA_WARN << "Pending data for " << ToHandle(handle);
       descriptor->connected_descriptor->PerformRead();
     }
   }
@@ -526,8 +550,6 @@ void WindowsPoller::HandleWakeup(PollData* data) {
           OLA_WARN << "No overlapped entry for pipe descriptor";
           return;
         }
-        
-        // This is a pipe descriptor
         if (!descriptor->connected_descriptor) {
           OLA_WARN << "Pipe descriptor has no connected descriptor";
           return;
@@ -551,6 +573,9 @@ void WindowsPoller::HandleWakeup(PollData* data) {
             return;
           }
         }
+        
+        OLA_WARN << bytes_transferred << " transferred";
+        OLA_WARN << *handle.m_async_data_size << " already in descriptor";
     
         if (data->size != bytes_transferred) {
           OLA_WARN << "Size mismatch";
@@ -565,7 +590,9 @@ void WindowsPoller::HandleWakeup(PollData* data) {
         memcpy(&(handle.m_async_data[*handle.m_async_data_size]), data->buffer,
             to_copy);
         *handle.m_async_data_size += to_copy;
-        descriptor->connected_descriptor->PerformRead();
+        if (*handle.m_async_data_size > 0) {
+          descriptor->connected_descriptor->PerformRead();
+        }
       }
       break;
     case SOCKET_DESCRIPTOR:

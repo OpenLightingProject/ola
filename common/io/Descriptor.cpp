@@ -354,7 +354,9 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
     }
   } else if (WriteDescriptor().m_type == SOCKET_DESCRIPTOR) {
     bytes_sent = send(ToFD(WriteDescriptor()),
-                      reinterpret_cast<const char*>(buffer), size, 0);
+                      reinterpret_cast<const char*>(buffer),
+                      size,
+                      0);
   } else {
     OLA_WARN << "Send() called on unsupported descriptor type";
     return 0;
