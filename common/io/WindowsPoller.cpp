@@ -217,7 +217,7 @@ class PollData {
       delete[] buffer;
       buffer = NULL;
     }
-    
+
     if (overlapped) {
       delete overlapped;
       overlapped = NULL;
