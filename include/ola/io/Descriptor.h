@@ -86,7 +86,7 @@ struct DescriptorHandle {
 
   DescriptorHandle();
   ~DescriptorHandle();
-  
+
   bool AllocAsyncBuffer();
   void FreeAsyncBuffer();
 };

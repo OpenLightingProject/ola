@@ -84,7 +84,7 @@ bool DescriptorHandle::AllocAsyncBuffer() {
   } catch (std::exception& ex) {
     OLA_WARN << ex.what();
   }
-  
+
   return (m_async_data && m_async_data_size);
 }
 

@@ -53,7 +53,7 @@ static const int FLAG_READ = 1;
 static const int FLAG_WRITE = 2;
 
 class WindowsPollerDescriptor {
-public:
+ public:
   WindowsPollerDescriptor()
       : read_descriptor(NULL),
         write_descriptor(NULL),
@@ -74,7 +74,7 @@ public:
 
 class EventHolder {
  public:
-  EventHolder() 
+  EventHolder()
       : event(CreateEvent(NULL, FALSE, FALSE, NULL)) {
   }
 
@@ -85,7 +85,7 @@ class EventHolder {
   operator HANDLE () {
     return event;
   }
-  
+
  private:
   HANDLE event;
 };
@@ -193,7 +193,7 @@ bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
   result.first->flags |= FLAG_WRITE;
   result.first->write_descriptor = descriptor;
   result.first->type = descriptor->WriteDescriptor().m_type;
-  
+
   return (result.second)? true : false;
 }
 
@@ -211,7 +211,7 @@ class PollData {
       size(0),
       overlapped(NULL) {
   }
-  
+
   ~PollData() {
     if (buffer) {
       delete[] buffer;
@@ -223,30 +223,30 @@ class PollData {
       overlapped = NULL;
     }
   }
-  
+
   bool AllocBuffer(DWORD size) {
     if (buffer) {
       OLA_WARN << "Buffer already allocated";
       return false;
     }
-    
+
     buffer = new char[size];
     this->size = size;
     return true;
   }
-  
+
   bool CreateOverlapped() {
     if (overlapped) {
       OLA_WARN << "Overlapped already allocated";
       return false;
     }
-    
+
     overlapped = new OVERLAPPED;
     memset(overlapped, 0, sizeof(*overlapped));
     overlapped->hEvent = event;
     return true;
   }
-  
+
   HANDLE event;
   HANDLE handle;
   char* buffer;
@@ -254,7 +254,7 @@ class PollData {
   OVERLAPPED* overlapped;
 };
 
-void CancelIOs(std::vector<PollData*>& data) {
+void CancelIOs(const std::vector<PollData*>& data) {
   std::vector<PollData*>::iterator iter = data.begin();
   for (; iter != data.end(); ++iter) {
     PollData* poll_data = *iter;
@@ -286,25 +286,25 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   }
 
   int ms_to_sleep = sleep_interval.InMilliSeconds();
-  
+
   // Prepare events
   std::vector<HANDLE> events;
   std::vector<PollData*> data;
   std::vector<EventHolder*> event_holders;
-  
+
   DescriptorMap::iterator next, iter = m_descriptor_map.begin();
   bool success = true;
-  
+
   while (iter != m_descriptor_map.end()) {
     next = iter;
     ++next;
-    
+
     WindowsPollerDescriptor* descriptor = iter->second;
     PollData* poll_data = NULL;
     DWORD result = 0;
     DescriptorHandle descriptor_handle;
     EventHolder* event_holder;
-    
+
     switch (descriptor->type) {
       case PIPE_DESCRIPTOR:
         if (!descriptor->connected_descriptor) {
@@ -316,7 +316,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
         poll_data = new PollData(*event_holder, ToHandle(descriptor_handle));
         poll_data->AllocBuffer(ASYNC_DATA_BUFFER_SIZE);
         poll_data->CreateOverlapped();
-        
+
         success = ReadFile(poll_data->handle,
                            poll_data->buffer,
                            poll_data->size,
@@ -405,12 +405,12 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
         OLA_WARN << "Descriptor type not implemented: " << descriptor->type;
         break;
     }
-    
+
     iter = next;
   }
-  
+
   bool return_value = true;
-  
+
   // Wait for events or timeout
   if (events.size() > 0) {
     DWORD result = WaitForMultipleObjectsEx(events.size(),
@@ -423,24 +423,24 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     if (result == WAIT_TIMEOUT) {
       m_clock->CurrentTime(&m_wake_up_time);
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
-      // We can't return here since any of the cancelled IO calls still might have
-      // succeeded.
+      // We can't return here since any of the cancelled IO calls still might
+      // have succeeded.
     } else if (result == WAIT_FAILED) {
       OLA_WARN << "WaitForMultipleObjectsEx failed with " << GetLastError();
       return_value = false;
-      // We can't return here since any of the cancelled IO calls still might have
-      // succeeded.
-    } else if ((result >= WAIT_OBJECT_0) && 
+      // We can't return here since any of the cancelled IO calls still might
+      // have succeeded.
+    } else if ((result >= WAIT_OBJECT_0) &&
               (result < (WAIT_OBJECT_0 + events.size()))) {
       do {
         DWORD index = result - WAIT_OBJECT_0;
         PollData* poll_data = data[index];
         HandleWakeup(poll_data);
-        
+
         events.erase(events.begin() + index);
         data.erase(data.begin() + index);
         event_holders.erase(event_holders.begin() + index);
-        
+
         result = WaitForMultipleObjectsEx(events.size(),
                                           events.data(),
                                           FALSE,
@@ -456,12 +456,12 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     Sleep(ms_to_sleep);
     CancelIOs(data);
   }
-  
+
   m_clock->CurrentTime(&m_wake_up_time);
   timeout_manager->ExecuteTimeouts(&m_wake_up_time);
-  
+
   FinalCheckIOs(data);
-  
+
   // Loop through all descriptors again and look for any with pending data
   DescriptorMap::iterator map_iter = m_descriptor_map.begin();
   for (; map_iter != m_descriptor_map.end(); ++map_iter) {
@@ -478,7 +478,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       descriptor->connected_descriptor->PerformRead();
     }
   }
-  
+
   STLDeleteElements(&m_orphaned_descriptors);
   STLDeleteElements(&data);
   STLDeleteElements(&event_holders);
@@ -522,7 +522,7 @@ bool WindowsPoller::RemoveDescriptor(void* handle, int flag) {
   } else if (flag & FLAG_WRITE) {
     descriptor->write_descriptor = NULL;
   }
-  
+
   descriptor->flags &= ~flag;
 
   if (descriptor->flags == 0) {
@@ -539,7 +539,7 @@ void WindowsPoller::HandleWakeup(PollData* data) {
     return;
   }
   WindowsPollerDescriptor* descriptor = iter->second;
-  
+
   switch (descriptor->type) {
     case PIPE_DESCRIPTOR:
       {
@@ -551,15 +551,15 @@ void WindowsPoller::HandleWakeup(PollData* data) {
           OLA_WARN << "Pipe descriptor has no connected descriptor";
           return;
         }
-        
+
         if (!descriptor->connected_descriptor->ValidReadDescriptor()) {
           RemoveDescriptor(descriptor, FLAG_READ);
           return;
         }
-        
+
         DescriptorHandle handle =
         descriptor->connected_descriptor->ReadDescriptor();
-    
+
         DWORD bytes_transferred = 0;
         if (!GetOverlappedResult(data->handle,
                                  data->overlapped,
@@ -576,7 +576,7 @@ void WindowsPoller::HandleWakeup(PollData* data) {
         if (to_copy < bytes_transferred) {
           OLA_WARN << "Pipe descriptor has lost data";
         }
-        
+
         memcpy(&(handle.m_async_data[*handle.m_async_data_size]), data->buffer,
             to_copy);
         *handle.m_async_data_size += to_copy;
@@ -602,7 +602,7 @@ void WindowsPoller::HandleWakeup(PollData* data) {
               OLA_WARN << "No read descriptor for socket with read event";
             }
           }
-          
+
           if (events.lNetworkEvents & (FD_WRITE | FD_CONNECT)) {
             if (descriptor->write_descriptor) {
               descriptor->write_descriptor->PerformWrite();
@@ -610,7 +610,7 @@ void WindowsPoller::HandleWakeup(PollData* data) {
               OLA_WARN << "No write descriptor for socket with write event";
             }
           }
-          
+
           if (events.lNetworkEvents & FD_CLOSE) {
             if (descriptor->connected_descriptor) {
               ConnectedDescriptor::OnCloseCallback *on_close =
@@ -636,7 +636,7 @@ void WindowsPoller::HandleWakeup(PollData* data) {
     default:
       OLA_WARN << "Unhandled descriptor type";
       break;
-  }  
+  }
 }
 
 void WindowsPoller::FinalCheckIOs(std::vector<PollData*> data) {
@@ -647,7 +647,7 @@ void WindowsPoller::FinalCheckIOs(std::vector<PollData*> data) {
       // No overlapped input for this descriptor, skip it
       continue;
     }
-    
+
     DWORD bytes_transferred = 0;
     if (!GetOverlappedResult(poll_data->handle,
                              poll_data->overlapped,
@@ -658,7 +658,7 @@ void WindowsPoller::FinalCheckIOs(std::vector<PollData*> data) {
         return;
       }
     }
-    
+
     if (bytes_transferred > 0) {
       DescriptorMap::iterator iter = m_descriptor_map.find(poll_data->handle);
       if (iter == m_descriptor_map.end()) {
@@ -668,13 +668,13 @@ void WindowsPoller::FinalCheckIOs(std::vector<PollData*> data) {
       WindowsPollerDescriptor* descriptor = iter->second;
       DescriptorHandle handle =
         descriptor->connected_descriptor->ReadDescriptor();
-    
+
       uint32_t to_copy = std::min(static_cast<uint32_t>(bytes_transferred),
           (ASYNC_DATA_BUFFER_SIZE - *handle.m_async_data_size));
       if (to_copy < bytes_transferred) {
         OLA_WARN << "Pipe descriptor has lost data";
       }
-        
+
       memcpy(&(handle.m_async_data[*handle.m_async_data_size]),
           poll_data->buffer, to_copy);
       *handle.m_async_data_size += to_copy;

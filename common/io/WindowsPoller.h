@@ -30,6 +30,7 @@
 #include <Windows.h>
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "common/io/PollerInterface.h"
@@ -82,11 +83,11 @@ class WindowsPoller : public PollerInterface {
 
   DescriptorMap m_descriptor_map;
   OrphanedDescriptors m_orphaned_descriptors;
-  
+
   std::pair<WindowsPollerDescriptor*, bool>
       LookupOrCreateDescriptor(void* handle);
   bool RemoveDescriptor(void* handle, int flag);
-  
+
   void HandleWakeup(PollData* data);
   void FinalCheckIOs(std::vector<PollData*> data);
   void CheckDescriptors();
