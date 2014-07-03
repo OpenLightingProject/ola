@@ -435,7 +435,7 @@ bool EPoller::RemoveDescriptor(int fd, int event) {
     epoll_descriptor->write_descriptor = NULL;
   } else if (event & EPOLLIN) {
     epoll_descriptor->read_descriptor = NULL;
-    epoll_descriptor->write_descriptor = NULL;
+    epoll_descriptor->connected_descriptor = NULL;
   }
 
   if (epoll_descriptor->events == 0) {
