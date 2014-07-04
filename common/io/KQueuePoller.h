@@ -81,10 +81,10 @@ class KQueuePoller : public PollerInterface {
 
   DescriptorMap m_descriptor_map;
 
-  // KQueuePoller is re-enterant. Remove may be called while we hold a pointer to an
-  // KQueueDescriptor. To avoid deleting data out from underneath ourselves, we
-  // instead move the removed descriptors to this list and then clean them up
-  // outside the callback loop.
+  // KQueuePoller is re-enterant. Remove may be called while we hold a pointer
+  // to an KQueueDescriptor. To avoid deleting data out from underneath
+  // ourselves, we instead move the removed descriptors to this list and then
+  // clean them up outside the callback loop.
   DescriptorList m_orphaned_descriptors;
   // A list of pre-allocated descriptors we can use.
   DescriptorList m_free_descriptors;
@@ -102,7 +102,7 @@ class KQueuePoller : public PollerInterface {
   void CheckDescriptor(struct kevent *event);
   std::pair<KQueueDescriptor*, bool> LookupOrCreateDescriptor(int fd);
   bool ApplyChange(int fd, int16_t filter, uint16_t flags,
-                   KQueueDescriptor *descriptor);
+                   KQueueDescriptor *descriptor, bool apply_immediately);
   bool RemoveDescriptor(int fd, int16_t filter);
 
   static const int MAX_EVENTS;
