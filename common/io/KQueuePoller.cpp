@@ -76,36 +76,6 @@ class KQueueDescriptor {
   ConnectedDescriptor *connected_descriptor;
 };
 
-std::string FilterToString(int16_t filter) {
-  if (filter == EVFILT_READ) {
-    return "EVFILT_READ";
-  } else if (filter == EVFILT_WRITE) {
-    return "EVFILT_WRITE";
-  } else {
-    return "unknown";
-  }
-}
-
-std::string FlagsToString(uint16_t flags) {
-  std::ostringstream str;
-
-  if (flags & EV_ADD) {
-    str << "EV_ADD, ";
-  }
-  if (flags & EV_DELETE) {
-    str << "EV_DELETE, ";
-  }
-  if (flags & EV_ERROR) {
-    str << "EV_ERROR, ";
-  }
-  if (flags & EV_EOF) {
-    str << "EV_EOF, ";
-  }
-  str << std::hex << " (" << flags << ")";
-  return str.str();
-}
-
-
 /**
  * @brief The maximum number of events to return in one epoll cycle
  */
@@ -284,11 +254,6 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
   sleep_time.tv_sec = sleep_interval.Seconds();
   sleep_time.tv_nsec = sleep_interval.MicroSeconds() * 1000;
 
-  /*
-  OLA_INFO << "Calling kevent with " << m_next_change_entry
-           << " changes, sleep for " << sleep_interval;
-  OLA_INFO << "sleep is " << sleep_time.tv_sec << "." << sleep_time.tv_nsec;
-  */
   int ready = kevent(
       m_kqueue_fd, reinterpret_cast<struct kevent*>(m_change_set),
       m_next_change_entry, events, MAX_EVENTS, &sleep_time);
@@ -308,7 +273,6 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 
   m_clock->CurrentTime(&m_wake_up_time);
 
-  // OLA_INFO << "Got " << ready << " events";
   for (int i = 0; i < ready; i++) {
     if (events[i].flags & EV_ERROR) {
       OLA_WARN << "Error from kqueue on fd: " << events[i].ident << ": "
@@ -345,14 +309,6 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 void KQueuePoller::CheckDescriptor(struct kevent *event) {
   KQueueDescriptor *descriptor = reinterpret_cast<KQueueDescriptor*>(
       event->udata);
-  /*
-  OLA_INFO << "Event " << event->ident << ", filter "
-           << FilterToString(event->filter)
-           << ", flags " << FlagsToString(event->flags)
-           << ", data is " << event->data
-           << ", Udata was " << event->udata;
-           */
-
   if (event->filter == EVFILT_READ) {
     if (descriptor->read_descriptor) {
       descriptor->read_descriptor->PerformRead();
@@ -424,10 +380,6 @@ std::pair<KQueueDescriptor*, bool> KQueuePoller::LookupOrCreateDescriptor(
 bool KQueuePoller::ApplyChange(int fd, int16_t filter, uint16_t flags,
                                KQueueDescriptor *descriptor,
                                bool apply_immediately) {
-  /*
-  OLA_INFO << "Set " << fd << ", filter " << FilterToString(filter)
-           << ", flags " << FlagsToString(flags) << ", udata " << descriptor;
-           */
   EV_SET(&m_change_set[m_next_change_entry++], fd, filter, flags, 0, 0,
          descriptor);
 
