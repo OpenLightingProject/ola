@@ -116,7 +116,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_aton select socket strerror \
                 getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
                 getgrgid_r secure_getenv])
-AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
 
 LT_INIT
 AC_PROG_LIBTOOL
@@ -133,6 +132,10 @@ AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
 AX_HAVE_EPOLL(
   [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
 AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
+
+# kqueue
+AC_CHECK_FUNCS([kqueue])
+AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
