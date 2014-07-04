@@ -523,7 +523,7 @@ void HTTPServer::UpdateSockets() {
   FD_ZERO(&w_set);
 #ifdef MHD_SOCKET_DEFINED
   if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set,
-      reinterpret_cast<MHD_socket*>(&max_fd))) {
+                               reinterpret_cast<MHD_socket*>(&max_fd))) {
 #else
   if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
 #endif
