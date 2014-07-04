@@ -23,6 +23,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/ExportMap.h>
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
@@ -44,6 +45,8 @@
 
 DEFINE_string(listen_ip, "", "The IP Address to listen on");
 DEFINE_uint16(listen_port, 5569, "The port to listen on");
+DEFINE_uint16(listen_backlog, 100,
+              "The backlog for the listen() call. Often limited to 128");
 DEFINE_uint32(expected_devices, 1,
               "Time how long it takes until this many devices connect.");
 
@@ -111,6 +114,7 @@ class SimpleE133Controller {
   DeviceMap m_device_map;
 
   const IPV4SocketAddress m_listen_address;
+  ola::ExportMap m_export_map;
   ola::io::SelectServer m_ss;
   ola::network::TCPSocketFactory m_tcp_socket_factory;
   ola::network::TCPAcceptingSocket m_listen_socket;
@@ -119,7 +123,7 @@ class SimpleE133Controller {
 
   ola::plugin::e131::RootInflator m_root_inflator;
 
-  bool PrintDeviceCount();
+  bool PrintStats();
 
   void OnTCPConnect(TCPSocket *socket);
   void ReceiveTCPData(IPV4SocketAddress peer,
@@ -135,6 +139,7 @@ class SimpleE133Controller {
 
 SimpleE133Controller::SimpleE133Controller(const Options &options)
     : m_listen_address(options.controller),
+      m_ss(&m_export_map),
       m_tcp_socket_factory(
           NewCallback(this, &SimpleE133Controller::OnTCPConnect)),
       m_listen_socket(&m_tcp_socket_factory),
@@ -149,22 +154,27 @@ bool SimpleE133Controller::Start() {
   ola::Clock clock;
   clock.CurrentTime(&m_start_time);
 
-  if (!m_listen_socket.Listen(m_listen_address, 100)) {
+  if (!m_listen_socket.Listen(m_listen_address, FLAGS_listen_backlog)) {
     return false;
   }
   OLA_INFO << "Listening on " << m_listen_address;
 
   m_ss.AddReadDescriptor(&m_listen_socket);
   m_ss.RegisterRepeatingTimeout(
-      TimeInterval(2, 0),
-      NewCallback(this, &SimpleE133Controller::PrintDeviceCount));
+      TimeInterval(0, 500000),
+      NewCallback(this, &SimpleE133Controller::PrintStats));
   m_ss.Run();
   m_ss.RemoveReadDescriptor(&m_listen_socket);
   return true;
 }
 
-bool SimpleE133Controller::PrintDeviceCount() {
-  OLA_INFO << m_device_map.size() << " devices(s) connected";
+bool SimpleE133Controller::PrintStats() {
+  const TimeStamp *now = m_ss.WakeUpTime();
+  const TimeInterval delay = *now - m_start_time;
+  ola::CounterVariable *ss_iterations = m_export_map.GetCounterVar(
+      "ss-loop-count");
+  OLA_INFO << delay << "," << m_device_map.size() << ","
+      << ss_iterations->Value();
   return true;
 }
 
