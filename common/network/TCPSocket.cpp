@@ -277,8 +277,6 @@ bool TCPAcceptingSocket::Close() {
  * @return a new connected socket
  */
 void TCPAcceptingSocket::PerformRead() {
-  int i = 0;
-
   if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return;
 
@@ -294,7 +292,6 @@ void TCPAcceptingSocket::PerformRead() {
 #endif
     if (sd < 0) {
       if (errno == EWOULDBLOCK) {
-        OLA_INFO << "Accepted " << i << " connections this round";
         return;
       }
 
@@ -312,7 +309,6 @@ void TCPAcceptingSocket::PerformRead() {
       close(sd);
 #endif
     }
-    i++;
   }
 }
 
