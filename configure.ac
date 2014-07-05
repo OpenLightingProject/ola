@@ -650,7 +650,7 @@ PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
 for p in $PLUGINS; do
-  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/libola${p}.la"
+  PLUGIN_LIBS="$PLUGIN_LIBS plugins/${p}/libola${p}.la"
   OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 

@@ -40,6 +40,7 @@ examples_ola_artnet_LDADD = examples/libolaconfig.la \
 endif
 
 examples_ola_dev_info_SOURCES = examples/ola-client.cpp
+examples_ola_dev_info_LDADD = $(EXAMPLE_COMMON_LIBS)
 
 examples_ola_e131_SOURCES = examples/ola-e131.cpp
 examples_ola_e131_LDADD = examples/libolaconfig.la \

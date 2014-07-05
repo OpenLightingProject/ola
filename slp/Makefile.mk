@@ -92,6 +92,7 @@ slp_slp_server_SOURCES = \
     slp/slp-server.cpp
 slp_slp_server_LDADD = common/libolacommon.la \
                        common/http/libolahttp.la \
+                       common/web/libolaweb.la \
                        slp/libolaslpproto.la \
                        slp/libolaslpserver.la
 

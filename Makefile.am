@@ -20,7 +20,7 @@ include common.mk
 AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    ./libolacommon.la
+                    common/libolacommon.la
 
 # Setup pkgconfigdir
 pkgconfigdir = $(libdir)/pkgconfig

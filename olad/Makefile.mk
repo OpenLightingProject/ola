@@ -72,6 +72,7 @@ olad_libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                               common/web/libolaweb.la \
                               ola/libola.la \
                               $(ola_server_additional_libs)
+EXTRA_olad_libolaserver_la_DEPENDENCIES = $(PLUGIN_LIBS)
 
 # PROGRAMS
 ##################################################
