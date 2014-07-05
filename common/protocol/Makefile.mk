@@ -8,10 +8,10 @@ BUILT_SOURCES += \
 
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/protocol/Ola.pb.cc \
     common/protocol/OlaService.pb.cpp
-libolacommon_la_LIBADD += $(libprotobuf_LIBS)
+common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
 
 # required, otherwise we get build errors
 # TODO(simon): fix me

@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += common/dmx/RunLengthEncoder.cpp
+common_libolacommon_la_SOURCES += common/dmx/RunLengthEncoder.cpp
 
 # TESTS
 ##################################################

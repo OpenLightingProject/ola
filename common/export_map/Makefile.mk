@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/export_map/ExportMap.cpp
 
 # TESTS

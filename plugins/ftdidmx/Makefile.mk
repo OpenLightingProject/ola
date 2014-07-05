@@ -18,7 +18,7 @@ endif
 
 # This isn't used yet.
 #if HAVE_LIBFTD2XX
-#  lib_LTLIBRARIES = libolaftdidmx.la
+#  lib_LTLIBRARIES = plugins/ftdidmx/libolaftdidmx.la
 #  libolaftdidmx_la_SOURCES = FtdiDmxDevice.cpp FtdiDmxPlugin.cpp \
 #                             FtdiDmxThread.cpp FtdiWidget-ftd2xx.cpp
 #  libolaftdidmx_la_LIBADD = -lftd2xx \

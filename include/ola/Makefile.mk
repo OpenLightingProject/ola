@@ -34,7 +34,7 @@ pkginclude_HEADERS += \
     include/ola/ExportMap.h \
     include/ola/Logging.h \
     include/ola/MultiCallback.h \
-    include/ola/StringUtils.h \
+    include/ola/StringUtils.h
 nodist_pkginclude_HEADERS += include/ola/plugin_id.h
 
 include/ola/plugin_id.h: Makefile.am include/ola/make_plugin_id.sh common/protocol/Ola.proto

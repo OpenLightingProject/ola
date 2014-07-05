@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += common/file/Util.cpp
+common_libolacommon_la_SOURCES += common/file/Util.cpp
 
 # TESTS
 ##################################################

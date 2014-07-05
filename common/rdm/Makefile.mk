@@ -4,7 +4,7 @@ BUILT_SOURCES += \
 
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/rdm/AckTimerResponder.cpp \
     common/rdm/AdvancedDimmerResponder.cpp \
     common/rdm/CommandPrinter.cpp \
@@ -47,9 +47,9 @@ libolacommon_la_SOURCES += \
     common/rdm/UID.cpp \
     common/rdm/VariableFieldSizeCalculator.cpp \
     common/rdm/VariableFieldSizeCalculator.h
-nodist_libolacommon_la_SOURCES += common/rdm/Pids.pb.cc
-libolacommon_la_CXXFLAGS += -DPID_DATA_DIR=\"${piddatadir}\"
-libolacommon_la_LIBADD += $(libprotobuf_LIBS)
+nodist_common_libolacommon_la_SOURCES += common/rdm/Pids.pb.cc
+common_libolacommon_la_CXXFLAGS += -DPID_DATA_DIR=\"${piddatadir}\"
+common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
 
 EXTRA_DIST += common/rdm/Pids.proto
 

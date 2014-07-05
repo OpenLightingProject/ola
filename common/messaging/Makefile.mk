@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/messaging/Descriptor.cpp \
     common/messaging/Message.cpp \
     common/messaging/MessagePrinter.cpp \

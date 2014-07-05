@@ -1,3 +1,3 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += common/math/Random.cpp
+common_libolacommon_la_SOURCES += common/math/Random.cpp

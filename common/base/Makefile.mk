@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/base/Credentials.cpp \
     common/base/Env.cpp \
     common/base/Flags.cpp \

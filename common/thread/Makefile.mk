@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/thread/ConsumerThread.cpp \
     common/thread/Mutex.cpp \
     common/thread/SignalThread.cpp \

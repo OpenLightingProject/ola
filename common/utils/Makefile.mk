@@ -1,6 +1,6 @@
 # LIBRARIES
 ################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/utils/ActionQueue.cpp \
     common/utils/Clock.cpp \
     common/utils/DmxBuffer.cpp \

@@ -14,8 +14,8 @@ pkginclude_HEADERS += \
 
 # LIBRARIES
 ##################################################
-lib_LTLIBRARIES += libola.la
-libola_la_SOURCES = \
+lib_LTLIBRARIES += ola/libola.la
+ola_libola_la_SOURCES = \
     ola/AutoStart.cpp \
     ola/ClientRDMAPIShim.cpp \
     ola/Module.cpp \
@@ -25,8 +25,8 @@ libola_la_SOURCES = \
     ola/OlaClientCore.cpp \
     ola/OlaClientWrapper.cpp \
     ola/StreamingClient.cpp
-libola_la_LDFLAGS = -version-info 1:1:0
-libola_la_LIBADD = common/libolacommon.la
+ola_libola_la_LDFLAGS = -version-info 1:1:0
+ola_libola_la_LIBADD = common/libolacommon.la
 
 # TESTS
 ##################################################

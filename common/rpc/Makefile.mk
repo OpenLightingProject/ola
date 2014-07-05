@@ -8,7 +8,7 @@ BUILT_SOURCES += \
 
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/rpc/RpcChannel.cpp \
     common/rpc/RpcChannel.h \
     common/rpc/RpcController.cpp \
@@ -16,8 +16,8 @@ libolacommon_la_SOURCES += \
     common/rpc/RpcHeader.h \
     common/rpc/RpcPeer.h \
     common/rpc/RpcService.h
-nodist_libolacommon_la_SOURCES += common/rpc/Rpc.pb.cc
-libolacommon_la_LIBADD += $(libprotobuf_LIBS)
+nodist_common_libolacommon_la_SOURCES += common/rpc/Rpc.pb.cc
+common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
 
 EXTRA_DIST += \
     common/rpc/Rpc.proto \

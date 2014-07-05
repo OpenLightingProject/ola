@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/io/Descriptor.cpp \
     common/io/ExtendedSerial.cpp \
     common/io/EPoller.h \
@@ -16,23 +16,23 @@ libolacommon_la_SOURCES += \
     common/io/TimeoutManager.h
 
 if USING_WIN32
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/io/WindowsPoller.cpp \
     common/io/WindowsPoller.h
 else
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/io/SelectPoller.cpp \
     common/io/SelectPoller.h
 endif
 
 if HAVE_EPOLL
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/io/EPoller.h \
     common/io/EPoller.cpp
 endif
 
 if HAVE_KQUEUE
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/io/KQueuePoller.h \
     common/io/KQueuePoller.cpp
 endif

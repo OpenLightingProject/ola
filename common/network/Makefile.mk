@@ -1,6 +1,6 @@
 # LIBRARIES
 ##################################################
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/network/AdvancedTCPConnector.cpp \
     common/network/FakeInterfacePicker.h \
     common/network/HealthCheckedConnection.cpp \
@@ -17,14 +17,14 @@ libolacommon_la_SOURCES += \
     common/network/TCPConnector.cpp \
     common/network/TCPSocket.cpp
 
-libolacommon_la_LIBADD += $(RESOLV_LIBS)
+common_libolacommon_la_LIBADD += $(RESOLV_LIBS)
 
 if USING_WIN32
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/network/WindowsInterfacePicker.h \
     common/network/WindowsInterfacePicker.cpp
 else
-libolacommon_la_SOURCES += \
+common_libolacommon_la_SOURCES += \
     common/network/PosixInterfacePicker.h \
     common/network/PosixInterfacePicker.cpp
 endif

@@ -1,11 +1,11 @@
-lib_LTLIBRARIES += libolacommon.la
-libolacommon_la_CXXFLAGS = $(COMMON_CXXFLAGS)
-libolacommon_la_LIBADD =
-libolacommon_la_SOURCES =
-nodist_libolacommon_la_SOURCES =
+lib_LTLIBRARIES += common/libolacommon.la
+common_libolacommon_la_CXXFLAGS = $(COMMON_CXXFLAGS)
+common_libolacommon_la_LIBADD =
+common_libolacommon_la_SOURCES =
+nodist_common_libolacommon_la_SOURCES =
 
 if USING_WIN32
-libolacommon_la_LIBADD += -lWs2_32 -lIphlpap
+common_libolacommon_la_LIBADD += -lWs2_32 -lIphlpap
 endif
 
 include common/base/Makefile.mk

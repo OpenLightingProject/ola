@@ -15,8 +15,8 @@ dist_noinst_DATA += \
 
 # LIBRARIES
 ################################################
-noinst_LTLIBRARIES += libolaweb.la
-libolaweb_la_SOURCES = \
+noinst_LTLIBRARIES += common/web/libolaweb.la
+common_web_libolaweb_la_SOURCES = \
     common/web/Json.cpp \
     common/web/JsonData.cpp \
     common/web/JsonLexer.cpp \
