@@ -1,27 +1,100 @@
+# This is a non-recursive Makefile, see
+# https://github.com/OpenLightingProject/ola/issues/397 for links
+#
+# Rather than put everything in a single Makefile we use includes to give it a
+# bit more structure.
 auxdir                  = @ac_aux_dir@
 AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
                           $(auxdir)/mkinstalldirs
-
-include aminclude.am
-
-SUBDIRS = include data protoc common ola plugins slp olad python tools \
-          examples debian java man doxygen
-
-# We want to build the python code when running distcheck.
-AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
-
-# pkg-config files.
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libola.pc libolaserver.pc
 
 # As suggested by libtoolize
 ACLOCAL         = aclocal -I $(auxdir)
 ACLOCAL_AMFLAGS = -I config
 
+include aminclude.am
+
+# TODO(simon): just copy the contents of this in here.
+include common.mk
+
+# We want to build the python code when running distcheck.
+AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
+
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
+                    ./libolacommon.la
+
+# Setup pkgconfigdir
+pkgconfigdir = $(libdir)/pkgconfig
+oladincludedir = $(includedir)/olad
+
+# Define the variables the included files will append to
+
+CLEANFILES =
+BUILT_SOURCES =
+EXTRA_DIST =
+INSTALL_EXEC_HOOKS =
+tests =
+
+bin_PROGRAMS =
+check_PROGRAMS =
+noinst_PROGRAMS =
+
+pkgconfig_DATA =
+noinst_DATA =
+dist_noinst_DATA =
+
+lib_LTLIBRARIES =
+noinst_LTLIBRARIES =
+
+dist_check_SCRIPTS =
+dist_noinst_SCRIPTS =
+
+dist_man_MANS =
+
+pkginclude_HEADERS =
+noinst_HEADERS =
+nodist_pkginclude_HEADERS =
+
+# The includes
+# -----------------------------------------------------------------------------
+
+include common/Makefile.mk
+include data/Makefile.mk
+include debian/Makefile.mk
+include examples/Makefile.mk
+include include/Makefile.mk
+include man/Makefile.mk
+include ola/Makefile.mk
+include olad/Makefile.mk
+include plugins/Makefile.mk
+include protoc/Makefile.mk
+include python/Makefile.mk
+include slp/Makefile.mk
+include tools/Makefile.mk
+
+# -----------------------------------------------------------------------------
+
+# TESTS
+##################################################
+if BUILD_TESTS
+TESTS = $(tests)
+endif
+check_PROGRAMS += $(TESTS)
+
+install-exec-hook: $(INSTALL_EXEC_HOOKS)
+
+# I can't figure out how to safely execute a command (mvn) in a subdirectory,
+# so this is recursive for now.
+SUBDIRS = java
+
+# pkg-config files.
+
+
+pkgconfig_DATA += libola.pc libolaserver.pc
+
 # dvi is run from make distcheck. Do nothing.
 dvi:
 
-EXTRA_DIST = \
+EXTRA_DIST += \
   config/ac_prog_java_cc.m4 \
   config/ac_python_devel.m4 \
   config/ac_saleae.m4 \
