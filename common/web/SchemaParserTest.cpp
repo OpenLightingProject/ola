@@ -135,6 +135,10 @@ void JsonSchemaParserTest::ReadTestCases(const string& filename,
   string file_path;
   file_path.append(TEST_SRC_DIR);
   file_path.push_back(ola::file::PATH_SEPARATOR);
+  file_path.append("common");
+  file_path.push_back(ola::file::PATH_SEPARATOR);
+  file_path.append("web");
+  file_path.push_back(ola::file::PATH_SEPARATOR);
   file_path.append("testdata");
   file_path.push_back(ola::file::PATH_SEPARATOR);
   file_path.append(filename);
