@@ -320,10 +320,10 @@ void KQueuePoller::CheckDescriptor(struct kevent *event) {
         connected_descriptor->PerformRead();
       } else if (event->flags & EV_EOF) {
         // The remote end closed the descriptor.
-        // According to man kevent, closing the descriptor remove it from the
+        // According to man kevent, closing the descriptor removes it from the
         // list of kevents. We don't want to queue up a EV_DELETE for the FD
         // because the FD number may be reused in short order.
-        // So instead we ste connected_close_in_progress which is a signal to
+        // So instead we set connected_close_in_progress which is a signal to
         // RemoveDescriptor not to create an EV_DELETE event if
         // RemoveReadDescriptor() is called.
         descriptor->connected_close_in_progress = true;

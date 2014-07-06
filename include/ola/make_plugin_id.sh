@@ -45,4 +45,4 @@ cat <<EOM
 }  // namespace ola
 #endif  // INCLUDE_OLA_PLUGIN_ID_H_
 EOM
-) > plugin_id.h
+)

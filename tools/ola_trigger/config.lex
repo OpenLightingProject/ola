@@ -1,6 +1,6 @@
 %{
-#include "ConfigCommon.h"
-#include "config.tab.h"
+#include "tools/ola_trigger/ConfigCommon.h"
+#include "tools/ola_trigger/config.tab.h"
 
 #define YY_NO_INPUT
 
