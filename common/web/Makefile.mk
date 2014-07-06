@@ -43,7 +43,7 @@ common_web_libolaweb_la_SOURCES = \
 # TESTS
 ################################################
 # Patch test names are abbreviated to prevent Windows' UAC from blocking them.
-tests += \
+test_programs += \
     common/web/JsonTester \
     common/web/ParserTester \
     common/web/PtchParserTester \

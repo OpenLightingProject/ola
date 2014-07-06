@@ -67,9 +67,6 @@ if USING_WIN32
 COMMON_TESTING_LIBS += $(CPPUNIT_LIBS)
 endif
 
-# TODO(simon): Remove this.
-COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS)
-
 # Setup pkgconfigdir, the path where .pc files are installed.
 pkgconfigdir = $(libdir)/pkgconfig
 oladincludedir = $(includedir)/olad
@@ -113,7 +110,7 @@ INSTALL_EXEC_HOOKS =
 
 # Test programs, these are added to check_PROGRAMS and TESTS if BUILD_TESTS is
 # true.
-tests =
+test_programs =
 
 # Test scripts are run if BUILD_TESTS is true.
 test_scripts =
@@ -138,9 +135,9 @@ include tools/Makefile.mk
 # -----------------------------------------------------------------------------
 
 if BUILD_TESTS
-TESTS = $(tests) $(test_scripts)
+TESTS = $(test_programs) $(test_scripts)
 endif
-check_PROGRAMS += $(tests)
+check_PROGRAMS += $(test_programs)
 
 install-exec-hook: $(INSTALL_EXEC_HOOKS)
 

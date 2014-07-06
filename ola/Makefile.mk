@@ -30,7 +30,7 @@ ola_libola_la_LIBADD = common/libolacommon.la
 
 # TESTS
 ##################################################
-tests += ola/OlaClientTester
+test_programs += ola/OlaClientTester
 
 ola_OlaClientTester_SOURCES = ola/StreamingClientTest.cpp
 ola_OlaClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

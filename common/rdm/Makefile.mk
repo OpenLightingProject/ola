@@ -73,7 +73,7 @@ EXTRA_DIST += \
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     common/rdm/DiscoveryAgentTester \
     common/rdm/PidStoreTester \
     common/rdm/RDMHelperTester \
@@ -82,17 +82,17 @@ tests += \
 
 common_rdm_DiscoveryAgentTester_SOURCES = common/rdm/DiscoveryAgentTest.cpp
 common_rdm_DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_rdm_DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD)
+common_rdm_DiscoveryAgentTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_PidStoreTester_SOURCES = \
     common/rdm/DescriptorConsistencyCheckerTest.cpp \
     common/rdm/PidStoreTest.cpp
 common_rdm_PidStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_rdm_PidStoreTester_LDADD = $(COMMON_TEST_LDADD)
+common_rdm_PidStoreTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMHelperTester_SOURCES = common/rdm/RDMHelperTest.cpp
 common_rdm_RDMHelperTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_rdm_RDMHelperTester_LDADD = $(COMMON_TEST_LDADD)
+common_rdm_RDMHelperTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMMessageTester_SOURCES = \
     common/rdm/GroupSizeCalculatorTest.cpp \
@@ -102,7 +102,7 @@ common_rdm_RDMMessageTester_SOURCES = \
     common/rdm/StringMessageBuilderTest.cpp \
     common/rdm/VariableFieldSizeCalculatorTest.cpp
 common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_rdm_RDMMessageTester_LDADD = $(COMMON_TEST_LDADD)
+common_rdm_RDMMessageTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMTester_SOURCES = \
     common/rdm/RDMAPITest.cpp \
@@ -111,4 +111,4 @@ common_rdm_RDMTester_SOURCES = \
     common/rdm/UIDAllocatorTest.cpp \
     common/rdm/UIDTest.cpp
 common_rdm_RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_rdm_RDMTester_LDADD = $(COMMON_TEST_LDADD)
+common_rdm_RDMTester_LDADD = $(COMMON_TESTING_LIBS)

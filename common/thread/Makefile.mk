@@ -9,7 +9,7 @@ common_libolacommon_la_SOURCES += \
 
 # TESTS
 ##################################################
-tests += common/thread/ThreadTester common/thread/FutureTester
+test_programs += common/thread/ThreadTester common/thread/FutureTester
 
 common_thread_ThreadTester_SOURCES = \
     common/thread/ThreadPoolTest.cpp \

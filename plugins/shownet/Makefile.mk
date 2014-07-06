@@ -16,7 +16,7 @@ plugins_shownet_libolashownet_la_LIBADD = common/libolacommon.la
 
 # TESTS
 ##################################################
-tests += plugins/shownet/ShowNetTester
+test_programs += plugins/shownet/ShowNetTester
 
 plugins_shownet_ShowNetTester_SOURCES = \
     plugins/shownet/ShowNetNode.cpp \

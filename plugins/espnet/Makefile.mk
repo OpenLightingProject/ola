@@ -19,7 +19,7 @@ plugins_espnet_libolaespnet_la_LIBADD = common/libolacommon.la
 
 # TESTS
 ##################################################
-tests += plugins/espnet/EspNetTester
+test_programs += plugins/espnet/EspNetTester
 
 plugins_espnet_EspNetTester_SOURCES = \
     plugins/espnet/RunLengthDecoderTest.cpp \

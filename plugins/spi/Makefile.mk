@@ -24,7 +24,7 @@ plugins_spi_libolaspi_la_LIBADD = common/libolacommon.la \
 
 # TESTS
 ##################################################
-tests += plugins/spi/SPITester
+test_programs += plugins/spi/SPITester
 
 plugins_spi_SPITester_SOURCES = \
     plugins/spi/SPIBackendTest.cpp \

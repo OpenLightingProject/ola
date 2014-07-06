@@ -15,7 +15,7 @@ dist_noinst_SCRIPTS += \
 ################################################
 
 if BUILD_TESTS
-tests += data/rdm/PidDataTester
+test_programs += data/rdm/PidDataTester
 
 if BUILD_PYTHON_LIBS
 test_scripts += data/rdm/PidDataTest.sh
@@ -28,6 +28,6 @@ data/rdm/PidDataTest.sh: data/rdm/Makefile.mk
 
 data_rdm_PidDataTester_SOURCES = data/rdm/PidDataTest.cpp
 data_rdm_PidDataTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) -DDATADIR=\"$(srcdir)/data/rdm\"
-data_rdm_PidDataTester_LDADD = $(COMMON_TEST_LDADD)
+data_rdm_PidDataTester_LDADD = $(COMMON_TESTING_LIBS)
 
 CLEANFILES += data/rdm/PidDataTest.sh

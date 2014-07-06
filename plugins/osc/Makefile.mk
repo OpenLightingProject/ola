@@ -25,7 +25,7 @@ plugins_osc_libolaosc_la_LIBADD = plugins/osc/libolaoscnode.la
 
 # TESTS
 ##################################################
-tests += plugins/osc/OSCTester
+test_programs += plugins/osc/OSCTester
 
 plugins_osc_OSCTester_SOURCES = \
     plugins/osc/OSCAddressTemplateTest.cpp \

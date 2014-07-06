@@ -36,7 +36,7 @@ CLEANFILES += common/rpc/*.pb.{h,cc,cpp}
 
 # TESTS
 ##################################################
-tests += common/rpc/RpcTester
+test_programs += common/rpc/RpcTester
 
 common_rpc_RpcTester_SOURCES = \
     common/rpc/RpcControllerTest.cpp \

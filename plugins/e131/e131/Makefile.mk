@@ -103,7 +103,7 @@ plugins_e131_e131_e131_loadtest_LDADD = plugins/e131/e131/libolae131core.la
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     plugins/e131/e131/E131Tester \
     plugins/e131/e131/E133Tester \
     plugins/e131/e131/TransportTester
@@ -124,7 +124,7 @@ plugins_e131_e131_E131Tester_SOURCES = \
 plugins_e131_e131_E131Tester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 # For some completely messed up reason on mac CPPUNIT_LIBS has to come after
 # the ossp uuid library.
-# CPPUNIT_LIBS contains -ldl which causes the unittests to fail in strange ways
+# CPPUNIT_LIBS contains -ldl which causes the tests to fail in strange ways
 plugins_e131_e131_E131Tester_LDADD = \
     plugins/e131/e131/libolae131core.la \
     $(COMMON_TESTING_LIBS)

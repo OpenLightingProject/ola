@@ -14,7 +14,7 @@ plugins_dummy_liboladummy_la_LIBADD = common/libolacommon.la
 
 # TESTS
 ##################################################
-tests += plugins/dummy/DummyPluginTester
+test_programs += plugins/dummy/DummyPluginTester
 
 plugins_dummy_DummyPluginTester_SOURCES = plugins/dummy/DummyPortTest.cpp
 plugins_dummy_DummyPluginTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

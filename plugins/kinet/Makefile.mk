@@ -18,7 +18,7 @@ plugins_kinet_libolakinet_la_LIBADD = plugins/kinet/libolakinetnode.la
 
 # TESTS
 ##################################################
-tests += plugins/kinet/KiNetTester
+test_programs += plugins/kinet/KiNetTester
 
 plugins_kinet_KiNetTester_SOURCES = plugins/kinet/KiNetNodeTest.cpp
 plugins_kinet_KiNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

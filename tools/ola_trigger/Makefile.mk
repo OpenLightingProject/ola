@@ -58,7 +58,7 @@ CLEANFILES += \
 
 # TESTS
 ##################################################
-tests += tools/ola_trigger/ActionTester
+test_programs += tools/ola_trigger/ActionTester
 
 tools_ola_trigger_ActionTester_SOURCES = \
     tools/ola_trigger/ActionTest.cpp \

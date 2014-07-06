@@ -145,9 +145,9 @@ tools_e133_slp_sa_test_LDADD = common/libolacommon.la \
 
 # TESTS
 ##################################################
-tests += tools/e133/E133SLPTester
+test_programs += tools/e133/E133SLPTester
 
 tools_e133_E133SLPTester_SOURCES = tools/e133/E133URLParserTest.cpp
 tools_e133_E133SLPTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-tools_e133_E133SLPTester_LDADD = $(COMMON_TEST_LDADD) \
+tools_e133_E133SLPTester_LDADD = $(COMMON_TESTING_LIBS) \
                                  tools/e133/libolae133slp.la

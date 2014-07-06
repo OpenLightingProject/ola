@@ -9,7 +9,7 @@ common_libolacommon_la_SOURCES += \
 
 # TESTS
 ################################################
-tests += common/utils/UtilsTester
+test_programs += common/utils/UtilsTester
 
 common_utils_UtilsTester_SOURCES = \
     common/utils/ActionQueueTest.cpp \

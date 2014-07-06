@@ -8,7 +8,7 @@ common_libolacommon_la_SOURCES += \
 
 # TESTS
 ##################################################
-tests += common/messaging/DescriptorTester
+test_programs += common/messaging/DescriptorTester
 
 common_messaging_DescriptorTester_SOURCES = \
     common/messaging/DescriptorTest.cpp \

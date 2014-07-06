@@ -104,7 +104,7 @@ slp_slp_client_LDADD = common/libolacommon.la \
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     slp/DATrackerTester \
     slp/PacketBuilderTester \
     slp/PacketParserTester \

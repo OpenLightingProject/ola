@@ -39,7 +39,7 @@ endif
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     common/io/DescriptorTester \
     common/io/IOQueueTester \
     common/io/IOStackTester \
@@ -50,30 +50,30 @@ tests += \
 
 common_io_IOQueueTester_SOURCES = common/io/IOQueueTest.cpp
 common_io_IOQueueTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_IOQueueTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_IOQueueTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_io_IOStackTester_SOURCES = common/io/IOStackTest.cpp
 common_io_IOStackTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_IOStackTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_IOStackTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_io_DescriptorTester_SOURCES = common/io/DescriptorTest.cpp
 common_io_DescriptorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_DescriptorTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_DescriptorTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_io_MemoryBlockTester_SOURCES = common/io/MemoryBlockTest.cpp
 common_io_MemoryBlockTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_MemoryBlockTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_MemoryBlockTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_io_SelectServerTester_SOURCES = common/io/SelectServerTest.cpp \
                                        common/io/SelectServerThreadTest.cpp
 common_io_SelectServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_SelectServerTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_SelectServerTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_io_TimeoutManagerTester_SOURCES = common/io/TimeoutManagerTest.cpp
 common_io_TimeoutManagerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_TimeoutManagerTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_TimeoutManagerTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_io_StreamTester_SOURCES = common/io/InputStreamTest.cpp \
                                  common/io/OutputStreamTest.cpp
 common_io_StreamTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_io_StreamTester_LDADD = $(COMMON_TEST_LDADD)
+common_io_StreamTester_LDADD = $(COMMON_TESTING_LIBS)

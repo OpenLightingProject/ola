@@ -31,7 +31,7 @@ endif
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     common/network/HealthCheckedConnectionTester \
     common/network/NetworkTester \
     common/network/TCPConnectorTester
@@ -39,7 +39,7 @@ tests += \
 common_network_HealthCheckedConnectionTester_SOURCES = \
     common/network/HealthCheckedConnectionTest.cpp
 common_network_HealthCheckedConnectionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_network_HealthCheckedConnectionTester_LDADD = $(COMMON_TEST_LDADD)
+common_network_HealthCheckedConnectionTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_network_NetworkTester_SOURCES = \
     common/network/IPAddressTest.cpp \
@@ -50,7 +50,7 @@ common_network_NetworkTester_SOURCES = \
     common/network/SocketAddressTest.cpp \
     common/network/SocketTest.cpp
 common_network_NetworkTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_network_NetworkTester_LDADD = $(COMMON_TEST_LDADD)
+common_network_NetworkTester_LDADD = $(COMMON_TESTING_LIBS)
 
 if USING_WIN32
 common_network_NetworkTester_LDFLAGS = -no-undefined -liphlpapi -lnetapi32 \
@@ -61,4 +61,4 @@ common_network_TCPConnectorTester_SOURCES = \
     common/network/AdvancedTCPConnectorTest.cpp \
     common/network/TCPConnectorTest.cpp
 common_network_TCPConnectorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_network_TCPConnectorTester_LDADD = $(COMMON_TEST_LDADD)
+common_network_TCPConnectorTester_LDADD = $(COMMON_TESTING_LIBS)

@@ -60,7 +60,7 @@ plugins_usbpro_libolausbpro_la_LIBADD = \
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     plugins/usbpro/ArduinoWidgetTester \
     plugins/usbpro/BaseRobeWidgetTester \
     plugins/usbpro/BaseUsbProWidgetTester \

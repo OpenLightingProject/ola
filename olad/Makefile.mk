@@ -94,7 +94,7 @@ endif
 
 # TESTS
 ##################################################
-tests += \
+test_programs += \
     olad/DeviceTester \
     olad/OlaTester \
     olad/PortTester \

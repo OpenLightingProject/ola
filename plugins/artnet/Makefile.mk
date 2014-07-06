@@ -33,7 +33,7 @@ plugins_artnet_artnet_loadtest_LDADD = plugins/artnet/libolaartnetnode.la
 
 # TESTS
 ##################################################
-tests += plugins/artnet/ArtNetTester
+test_programs += plugins/artnet/ArtNetTester
 
 plugins_artnet_ArtNetTester_SOURCES = plugins/artnet/ArtNetNodeTest.cpp
 plugins_artnet_ArtNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
