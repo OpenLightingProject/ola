@@ -112,6 +112,9 @@ INSTALL_EXEC_HOOKS =
 # true.
 test_programs =
 
+# Files in built_sources are included in BUILT_SOURCES and CLEANFILES
+built_sources =
+
 # Test scripts are run if BUILD_TESTS is true.
 test_scripts =
 
@@ -134,12 +137,18 @@ include tools/Makefile.mk
 
 # -----------------------------------------------------------------------------
 
+# Now some post-processing
+BUILT_SOURCES += $(built_sources)
+CLEANFILES += $(built_sources)
+
 if BUILD_TESTS
 TESTS = $(test_programs) $(test_scripts)
 endif
 check_PROGRAMS += $(test_programs)
 
 install-exec-hook: $(INSTALL_EXEC_HOOKS)
+
+# -----------------------------------------------------------------------------
 
 # I can't figure out how to safely execute a command (mvn) in a subdirectory,
 # so this is recursive for now.

@@ -1,4 +1,4 @@
-BUILT_SOURCES += \
+built_sources += \
     common/rpc/Rpc.pb.cc \
     common/rpc/Rpc.pb.h \
     common/rpc/TestService.pb.cc \
@@ -31,8 +31,6 @@ common/rpc/TestService.pb.cc common/rpc/TestService.pb.h: common/rpc/TestService
 
 common/rpc/TestServiceService.pb.cpp common/rpc/TestServiceService.pb.h: common/rpc/TestService.proto protoc/ola_protoc
 	$(OLA_PROTOC) --cppservice_out common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/TestService.proto
-
-CLEANFILES += common/rpc/*.pb.{h,cc,cpp}
 
 # TESTS
 ##################################################

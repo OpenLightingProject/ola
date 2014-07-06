@@ -21,7 +21,7 @@ output_files = \
     python/ola/Pids_pb2.py \
     python/ola/PidStoreLocation.py \
     python/ola/Version.py
-BUILT_SOURCES += $(output_files)
+built_sources += $(output_files)
 
 nodist_pkgpython_PYTHON = $(output_files)
 pkgpython_PYTHON = \
@@ -70,11 +70,4 @@ test_scripts += \
     python/ola/UIDTest.py
 endif
 
-CLEANFILES += \
-    python/ola/ArtnetConfigMessages_pb2.* \
-    python/ola/Ola_pb2.* \
-    python/ola/Pids_pb2.* \
-    python/ola/UsbProConfigMessages_pb2.* \
-    python/ola/PidStoreLocation.py \
-    python/ola/Version.py \
-    python/ola/*.pyc
+CLEANFILES += python/ola/*.pyc

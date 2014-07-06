@@ -1,7 +1,7 @@
 EXTRA_DIST += common/protocol/Ola.proto
 
 # The .h files are included elsewhere so we have to put them in BUILT_SOURCES
-BUILT_SOURCES += \
+built_sources += \
     common/protocol/Ola.pb.cc \
     common/protocol/Ola.pb.h \
     common/protocol/OlaService.pb.h \
@@ -23,5 +23,3 @@ common/protocol/Ola.pb.cc common/protocol/Ola.pb.h: common/protocol/Ola.proto
 
 common/protocol/OlaService.pb.cpp common/protocol/OlaService.pb.h: common/protocol/Ola.proto protoc/ola_protoc
 	$(OLA_PROTOC)  --cppservice_out common/protocol --proto_path $(srcdir)/common/protocol $(srcdir)/common/protocol/Ola.proto
-
-CLEANFILES += common/protocol/*.pb.{h,cc,cpp}
