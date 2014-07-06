@@ -21,7 +21,8 @@ test_scripts += python/ola/rpc/SimpleRpcControllerTest.sh
 dist_check_SCRIPTS += python/ola/rpc/SimpleRpcControllerTest.py
 
 python/ola/rpc/SimpleRpcControllerTest.sh: python/ola/rpc/Makefile.mk
-	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/python/ola/rpc/SimpleRpcControllerTest.py; exit \$$?" > python/ola/rpc/SimpleRpcControllerTest.sh
+	mkdir -p python/ola/rpc
+	echo "export PYTHONPATH=${top_builddir}/python:${top_srcdir}/python; $(PYTHON) ${srcdir}/python/ola/rpc/SimpleRpcControllerTest.py; exit \$$?" > python/ola/rpc/SimpleRpcControllerTest.sh
 	chmod +x python/ola/rpc/SimpleRpcControllerTest.sh
 
 CLEANFILES += python/ola/rpc/Rpc_pb2.* \
