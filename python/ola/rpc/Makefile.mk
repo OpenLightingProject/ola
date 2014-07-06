@@ -12,16 +12,17 @@ BUILT_SOURCES += python/ola/rpc/Rpc_pb2.py
 endif
 
 python/ola/rpc/Rpc_pb2.py: common/rpc/Rpc.proto
-	$(PROTOC) --python_out python/ola/rpc/ -I ${top_srcdir}/common/rpc/ ${top_srcdir}/common/rpc/Rpc.proto
+	mkdir -p  python/ola/rpc
+	$(PROTOC) --python_out python/ola/rpc -I ${top_srcdir}/common/rpc/ ${top_srcdir}/common/rpc/Rpc.proto
 
 # TESTS
 ##################################################
-tests += python/ola/rpc/SimpleRpcControllerTest.sh
-dist_check_SCRIPTS = python/ola/rpc/SimpleRpcControllerTest.py
+test_scripts += python/ola/rpc/SimpleRpcControllerTest.sh
+dist_check_SCRIPTS += python/ola/rpc/SimpleRpcControllerTest.py
 
 python/ola/rpc/SimpleRpcControllerTest.sh: python/ola/rpc/Makefile.mk
-	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/SimpleRpcControllerTest.py; exit \$$?" > python/ola/rpc/SimpleRpcControllerTest.sh
-	chmod +x SimpleRpcControllerTest.sh
+	echo "export PYTHONPATH=${top_builddir}/python; $(PYTHON) ${srcdir}/python/ola/rpc/SimpleRpcControllerTest.py; exit \$$?" > python/ola/rpc/SimpleRpcControllerTest.sh
+	chmod +x python/ola/rpc/SimpleRpcControllerTest.sh
 
 CLEANFILES += python/ola/rpc/Rpc_pb2.* \
               python/ola/rpc/SimpleRpcControllerTest.sh \

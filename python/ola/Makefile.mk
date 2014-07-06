@@ -1,6 +1,6 @@
 # OLA Python client
 
-include python/ola/rpc
+include python/ola/rpc/Makefile.mk
 
 # Python modules.
 ##################################################
@@ -25,15 +25,15 @@ BUILT_SOURCES += $(output_files)
 
 nodist_pkgpython_PYTHON = $(output_files)
 pkgpython_PYTHON = \
-    python/ola/ClientWrapper.py
-    python/ola/DMXConstants.py
-    python/ola/DUBDecoder.py
-    python/ola/MACAddress.py
-    python/ola/OlaClient.py
-    python/ola/RDMAPI.py
-    python/ola/RDMConstants.py
-    python/ola/PidStore.py
-    python/ola/UID.py
+    python/ola/ClientWrapper.py \
+    python/ola/DMXConstants.py \
+    python/ola/DUBDecoder.py \
+    python/ola/MACAddress.py \
+    python/ola/OlaClient.py \
+    python/ola/RDMAPI.py \
+    python/ola/RDMConstants.py \
+    python/ola/PidStore.py \
+    python/ola/UID.py \
     python/ola/__init__.py
 endif
 
@@ -57,17 +57,18 @@ python/ola/Version.py: configure.ac
 
 # TESTS
 ##################################################
-TESTS_ENVIRONMENT = PYTHONPATH=${top_srcdir}/python
-TEST_EXTENSIONS = .py
-PY_LOG_COMPILER = $(PYTHON)
-tests += \
-    python/ola/DUBDecoderTest.py \
-    python/ola/MACAddressTest.py \
-    python/ola/UIDTest.py
+
 dist_check_SCRIPTS += \
     python/ola/DUBDecoderTest.py \
     python/ola/MACAddressTest.py \
     python/ola/UIDTest.py
+
+if BUILD_PYTHON_LIBS
+test_scripts += \
+    python/ola/DUBDecoderTest.py \
+    python/ola/MACAddressTest.py \
+    python/ola/UIDTest.py
+endif
 
 CLEANFILES += \
     python/ola/ArtnetConfigMessages_pb2.* \

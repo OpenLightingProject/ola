@@ -50,7 +50,8 @@ nodist_olardminclude_HEADERS = include/ola/rdm/RDMResponseCodes.h
 # automake rules for common/libolacommon.la
 BUILT_SOURCES += include/ola/rdm/RDMResponseCodes.h
 
-include/ola/rdm/RDMResponseCodes.h: include/ola/rdm/Makefile.mk include/ola/rdm/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto
-	sh $(srcdir)/include/ola/rdm/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto > include/ola/rdm/RDMResponseCodes.h
+include/ola/rdm/RDMResponseCodes.h: include/ola/rdm/Makefile.mk include/ola/rdm/make_rdm_codes.sh common/protocol/Ola.proto
+	mkdir -p $(top_builddir)/include/ola/rdm
+	sh $(top_srcdir)/include/ola/rdm/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto > $(top_builddir)/include/ola/rdm/RDMResponseCodes.h
 
 CLEANFILES += include/ola/rdm/RDMResponseCodes.h

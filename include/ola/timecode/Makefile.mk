@@ -9,7 +9,8 @@ dist_noinst_SCRIPTS += include/ola/timecode/make_timecode.sh
 # automake rules for common/libolacommon.la
 BUILT_SOURCES += include/ola/timecode/TimeCodeEnums.h
 
-include/ola/timecode/TimeCodeEnums.h: include/ola/timecode/Makefile.mk include/ola/timecode/make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto
-	sh $(srcdir)/include/ola/timecode/make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto > include/ola/timecode/TimeCodeEnums.h
+include/ola/timecode/TimeCodeEnums.h: include/ola/timecode/Makefile.mk include/ola/timecode/make_timecode.sh common/protocol/Ola.proto
+	mkdir -p $(top_builddir)/include/ola/timecode
+	sh $(top_srcdir)/include/ola/timecode/make_timecode.sh $(top_srcdir)/common/protocol/Ola.proto > $(top_builddir)/include/ola/timecode/TimeCodeEnums.h
 
 CLEANFILES += include/ola/timecode/TimeCodeEnums.h

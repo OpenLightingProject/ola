@@ -42,6 +42,7 @@ nodist_pkginclude_HEADERS += include/ola/plugin_id.h
 BUILT_SOURCES += include/ola/plugin_id.h
 
 include/ola/plugin_id.h: Makefile.am include/ola/make_plugin_id.sh common/protocol/Ola.proto
-	sh $(srcdir)/include/ola/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto > include/ola/plugin_id.h
+	mkdir -p $(top_builddir)/include/ola
+	sh $(top_srcdir)/include/ola/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto > $(top_builddir)/include/ola/plugin_id.h
 
 CLEANFILES += include/ola/plugin_id.h

@@ -69,12 +69,17 @@ endif
 # TODO(simon): Remove this.
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS)
 
-# Variables used by the included Makefile.mk(s)
-# ------------------------------------------------------------------------------
-
 # Setup pkgconfigdir, the path where .pc files are installed.
 pkgconfigdir = $(libdir)/pkgconfig
 oladincludedir = $(includedir)/olad
+
+# Define a custom runner for .py tests
+TESTS_ENVIRONMENT = PYTHONPATH=${top_srcdir}/python
+TEST_EXTENSIONS = .py
+PY_LOG_COMPILER = $(PYTHON)
+
+# Variables used by the included Makefile.mk(s)
+# ------------------------------------------------------------------------------
 
 # Common automake variables.
 CLEANFILES =
