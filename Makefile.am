@@ -49,7 +49,8 @@ endif
 AM_CXXFLAGS = $(COMMON_CXXFLAGS)
 
 COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
-                       -DTEST_SRC_DIR=\"$(srcdir)\"
+                       -DTEST_SRC_DIR=\"$(srcdir)\" \
+                       -DTEST_BUILD_DIR=\"$(builddir)\"
 
 # LIBS variables
 # ------------------------------------------------------------------------------

@@ -322,12 +322,12 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
-  const string data_path = TEST_SRC_DIR "/olad/ola-output.conf";
+  const string data_path = TEST_BUILD_DIR "/olad/ola-output.conf";
 
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
   FileBackedPreferences *preferences = new FileBackedPreferences(
-      TEST_SRC_DIR "/olad", "output", &saver_thread);
+      TEST_BUILD_DIR "/olad", "output", &saver_thread);
   preferences->Clear();
 
   unlink(data_path.c_str());
