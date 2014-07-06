@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_SANDNET
-plugin_LTLIBRARIES += plugins/sandnet/libolasandnet.la
+lib_LTLIBRARIES += plugins/sandnet/libolasandnet.la
 plugins_sandnet_libolasandnet_la_SOURCES = \
     plugins/sandnet/SandNetCommon.h \
     plugins/sandnet/SandNetDevice.cpp \

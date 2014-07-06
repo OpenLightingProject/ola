@@ -1,7 +1,6 @@
 # The UsbPro plugin config messages. This needs to be available to client
 # programs.
 EXTRA_DIST += plugins/usbpro/messages/UsbProConfigMessages.proto
-CLEANFILES += plugins/usbpro/messages/*.pb.{h,cc}
 
 # pkg-config
 ##################################################
@@ -14,7 +13,7 @@ usbproincludedir = $(includedir)/ola/usbpro
 nodist_usbproinclude_HEADERS = \
     plugins/usbpro/messages/UsbProConfigMessages.pb.h
 
-BUILT_SOURCES += plugins/usbpro/messages/UsbProConfigMessages.pb.cc \
+built_sources += plugins/usbpro/messages/UsbProConfigMessages.pb.cc \
                  plugins/usbpro/messages/UsbProConfigMessages.pb.h
 
 nodist_plugins_usbpro_messages_libolausbproconf_la_SOURCES = \

@@ -37,7 +37,7 @@ plugins_usbpro_libolausbprowidget_la_LIBADD = common/libolacommon.la
 
 if USE_USBPRO
 # The OLA USB Pro Plugin
-plugin_LTLIBRARIES += plugins/usbpro/libolausbpro.la
+lib_LTLIBRARIES += plugins/usbpro/libolausbpro.la
 plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/ArduinoRGBDevice.cpp \
     plugins/usbpro/ArduinoRGBDevice.h \

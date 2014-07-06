@@ -1,4 +1,4 @@
-BUILT_SOURCES += \
+built_sources += \
     common/rdm/Pids.pb.cc \
     common/rdm/Pids.pb.h
 
@@ -55,8 +55,6 @@ EXTRA_DIST += common/rdm/Pids.proto
 
 common/rdm/Pids.pb.cc common/rdm/Pids.pb.h: common/rdm/Pids.proto
 	$(PROTOC) --cpp_out common/rdm --proto_path $(srcdir)/common/rdm $(srcdir)/common/rdm/Pids.proto
-
-CLEANFILES += common/rdm/*.pb.{h,cc}
 
 # TESTS_DATA
 ##################################################

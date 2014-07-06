@@ -1,7 +1,6 @@
 # The ArtNet plugin config messages. This needs to be available to client
 # programs.
 EXTRA_DIST += plugins/artnet/messages/ArtnetConfigMessages.proto
-CLEANFILES += plugins/artnet/messages/*.pb.{h,cc}
 
 # pkg-config
 ##################################################
@@ -16,7 +15,7 @@ nodist_artnetinclude_HEADERS = \
     plugins/artnet/messages/ArtnetConfigMessages.pb.h
 
 
-BUILT_SOURCES += plugins/artnet/messages/ArtnetConfigMessages.pb.cc \
+built_sources += plugins/artnet/messages/ArtnetConfigMessages.pb.cc \
                  plugins/artnet/messages/ArtnetConfigMessages.pb.h
 
 nodist_plugins_artnet_messages_libolaartnetconf_la_SOURCES = \

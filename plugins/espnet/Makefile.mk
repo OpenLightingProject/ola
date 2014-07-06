@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_ESPNET
-plugin_LTLIBRARIES += plugins/espnet/libolaespnet.la
+lib_LTLIBRARIES += plugins/espnet/libolaespnet.la
 plugins_espnet_libolaespnet_la_SOURCES = \
     plugins/espnet/EspNetDevice.cpp \
     plugins/espnet/EspNetDevice.h \

@@ -54,11 +54,11 @@ launcher_files = \
 
 EXTRA_DIST += $(launcher_files)
 
-CLEANFILES += tools/rdm/DataLocation.py tools/rdm/*.pyc
+CLEANFILES += tools/rdm/*.pyc
 
 if INSTALL_RDM_TESTS
 
-BUILT_SOURCES += tools/rdm/DataLocation.py
+built_sources += tools/rdm/DataLocation.py
 
 # Create DataLocation.py with the directory of the static files.
 tools/rdm/DataLocation.py: tools/rdm/Makefile.mk
