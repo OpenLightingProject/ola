@@ -17,7 +17,9 @@ python/ola/rpc/Rpc_pb2.py: common/rpc/Rpc.proto
 
 # TESTS
 ##################################################
+if BUILD_PYTHON_LIBS
 test_scripts += python/ola/rpc/SimpleRpcControllerTest.sh
+endif
 dist_check_SCRIPTS += python/ola/rpc/SimpleRpcControllerTest.py
 
 python/ola/rpc/SimpleRpcControllerTest.sh: python/ola/rpc/Makefile.mk
