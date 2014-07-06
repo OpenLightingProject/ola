@@ -304,7 +304,8 @@ void PreferencesTest::testLoad() {
       "", "dummy", NULL);
   preferences->Clear();
   preferences->SetValue("foo", "bad");
-  preferences->LoadFromFile(TEST_SRC_DIR "/testdata/test_preferences.conf");
+  preferences->LoadFromFile(
+      TEST_SRC_DIR "/olad/testdata/test_preferences.conf");
 
   OLA_ASSERT_EQ(string("bar"), preferences->GetValue("foo"));
   OLA_ASSERT(preferences->HasKey("foo"));
@@ -321,13 +322,14 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
+  const string data_path = TEST_BUILD_DIR "/olad/ola-output.conf";
+
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
   FileBackedPreferences *preferences = new FileBackedPreferences(
-      ".", "output", &saver_thread);
+      TEST_BUILD_DIR "/olad", "output", &saver_thread);
   preferences->Clear();
 
-  string data_path = "./ola-output.conf";
   unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";
