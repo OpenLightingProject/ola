@@ -58,9 +58,9 @@ COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
 # COMMON_TESTING_LIBS
 # The set of libraries used in the unittests.
 COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
-                      common/libolacommon.la \
                       common/testing/libolatesting.la \
-                      common/testing/libtestmain.la
+                      common/testing/libtestmain.la \
+                      common/libolacommon.la
 
 # Due to MinGW's handling of library archives, we need to append this.
 if USING_WIN32
