@@ -9,7 +9,7 @@ nodist_common_libolacommon_la_SOURCES =
 # ------------------------------------------
 
 if USING_WIN32
-common_libolacommon_la_LIBADD += -lWs2_32 -lIphlpap
+common_libolacommon_la_LIBADD += -lWs2_32 -lIphlpapi
 endif
 
 include common/base/Makefile.mk
