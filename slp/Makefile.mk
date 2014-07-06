@@ -29,7 +29,7 @@ built_sources += \
 slp/SLP.pb.cc slp/SLP.pb.h: slp/Makefile.mk slp/SLP.proto
 	$(PROTOC) --cpp_out slp/ --proto_path $(srcdir)/slp $(srcdir)/slp/SLP.proto
 
-slp/SLPService.pb.cpp slp/SLPService.pb.h: slp/Makefile.mk slp/SLP.proto protoc/ola_protoc
+slp/SLPService.pb.cpp slp/SLPService.pb.h: slp/Makefile.mk slp/SLP.proto protoc/ola_protoc$(EXEEXT)
 	$(OLA_PROTOC)  --cppservice_out slp/ --proto_path $(srcdir)/slp $(srcdir)/slp/SLP.proto
 
 # libolaslpcore
