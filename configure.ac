@@ -657,12 +657,10 @@ done
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# plugin & html data directories
-plugindir=$libdir/olad
+# html & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
-AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
 

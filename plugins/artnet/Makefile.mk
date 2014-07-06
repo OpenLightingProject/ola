@@ -12,7 +12,7 @@ plugins_artnet_libolaartnetnode_la_SOURCES = \
 plugins_artnet_libolaartnetnode_la_LIBADD = common/libolacommon.la
 
 # The OLA artnet plugin
-plugin_LTLIBRARIES += plugins/artnet/libolaartnet.la
+lib_LTLIBRARIES += plugins/artnet/libolaartnet.la
 plugins_artnet_libolaartnet_la_SOURCES = \
     plugins/artnet/ArtNetPlugin.cpp \
     plugins/artnet/ArtNetPlugin.h \

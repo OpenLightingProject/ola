@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_DMX4LINUX
-plugin_LTLIBRARIES += plugins/dmx4linux/liboladmx4linux.la
+lib_LTLIBRARIES += plugins/dmx4linux/liboladmx4linux.la
 plugins_dmx4linux_liboladmx4linux_la_SOURCES = \
     plugins/dmx4linux/Dmx4LinuxDevice.cpp \
     plugins/dmx4linux/Dmx4LinuxDevice.h \

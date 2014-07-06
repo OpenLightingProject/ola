@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_OPENDMX
-plugin_LTLIBRARIES += plugins/opendmx/libolaopendmx.la
+lib_LTLIBRARIES += plugins/opendmx/libolaopendmx.la
 plugins_opendmx_libolaopendmx_la_SOURCES = \
     plugins/opendmx/OpenDmxDevice.cpp \
     plugins/opendmx/OpenDmxDevice.h \

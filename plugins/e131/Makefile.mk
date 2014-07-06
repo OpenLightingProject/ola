@@ -5,7 +5,7 @@ include plugins/e131/messages/Makefile.mk
 ##################################################
 
 if USE_E131
-plugin_LTLIBRARIES += plugins/e131/libolae131.la
+lib_LTLIBRARIES += plugins/e131/libolae131.la
 plugins_e131_libolae131_la_SOURCES = \
     plugins/e131/E131Device.cpp \
     plugins/e131/E131Device.h \

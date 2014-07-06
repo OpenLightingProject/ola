@@ -7,7 +7,7 @@ plugins_kinet_libolakinetnode_la_SOURCES = plugins/kinet/KiNetNode.cpp \
                                            plugins/kinet/KiNetNode.h
 plugins_kinet_libolakinetnode_la_LIBADD = common/libolacommon.la
 
-plugin_LTLIBRARIES += plugins/kinet/libolakinet.la
+lib_LTLIBRARIES += plugins/kinet/libolakinet.la
 plugins_kinet_libolakinet_la_SOURCES = \
     plugins/kinet/KiNetPlugin.cpp \
     plugins/kinet/KiNetPlugin.h \

@@ -12,7 +12,7 @@ plugins_osc_libolaoscnode_la_SOURCES = \
 plugins_osc_libolaoscnode_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
 plugins_osc_libolaoscnode_la_LIBADD = $(liblo_LIBS)
 
-plugin_LTLIBRARIES += plugins/osc/libolaosc.la
+lib_LTLIBRARIES += plugins/osc/libolaosc.la
 plugins_osc_libolaosc_la_SOURCES = \
     plugins/osc/OSCDevice.cpp \
     plugins/osc/OSCDevice.h \

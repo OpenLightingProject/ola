@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_RENARD
-plugin_LTLIBRARIES += plugins/renard/libolarenard.la
+lib_LTLIBRARIES += plugins/renard/libolarenard.la
 plugins_renard_libolarenard_la_SOURCES = \
     plugins/renard/RenardDevice.cpp \
     plugins/renard/RenardDevice.h \

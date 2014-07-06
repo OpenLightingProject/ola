@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_DUMMY
-plugin_LTLIBRARIES += plugins/dummy/liboladummy.la
+lib_LTLIBRARIES += plugins/dummy/liboladummy.la
 
 plugins_dummy_liboladummy_la_SOURCES = \
     plugins/dummy/DummyDevice.cpp \

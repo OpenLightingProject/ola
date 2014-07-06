@@ -2,7 +2,7 @@
 ##################################################
 if USE_SPI
 # This is a library which isn't coupled to olad
-plugin_LTLIBRARIES += plugins/spi/libolaspicore.la plugins/spi/libolaspi.la
+lib_LTLIBRARIES += plugins/spi/libolaspicore.la plugins/spi/libolaspi.la
 plugins_spi_libolaspicore_la_SOURCES = \
     plugins/spi/SPIBackend.cpp \
     plugins/spi/SPIBackend.h \

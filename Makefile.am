@@ -121,6 +121,8 @@ test_scripts =
 # The includes
 # -----------------------------------------------------------------------------
 
+# Since `make install` relinks the libraries, this should be in the order in
+# which libraries depend on each other. e.g. common, plugins, server.
 include common/Makefile.mk
 include data/Makefile.mk
 include debian/Makefile.mk

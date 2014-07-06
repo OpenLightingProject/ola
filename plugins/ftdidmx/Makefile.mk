@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_FTDI
-plugin_LTLIBRARIES += plugins/ftdidmx/libolaftdidmx.la
+lib_LTLIBRARIES += plugins/ftdidmx/libolaftdidmx.la
 plugins_ftdidmx_libolaftdidmx_la_SOURCES = \
     plugins/ftdidmx/FtdiDmxDevice.cpp \
     plugins/ftdidmx/FtdiDmxDevice.h \

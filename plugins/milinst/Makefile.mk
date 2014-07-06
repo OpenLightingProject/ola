@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_MILINST
-plugin_LTLIBRARIES += plugins/milinst/libolamilinst.la
+lib_LTLIBRARIES += plugins/milinst/libolamilinst.la
 plugins_milinst_libolamilinst_la_SOURCES = \
     plugins/milinst/MilInstDevice.cpp \
     plugins/milinst/MilInstDevice.h \
