@@ -18,11 +18,11 @@ if BUILD_TESTS
 tests += data/rdm/PidDataTester
 
 if BUILD_PYTHON_LIBS
-tests += data/rdm/PidDataTest.sh
+test_scripts += data/rdm/PidDataTest.sh
 endif
 endif
 
-data/rdm/PidDataTest.sh$(EXEEXT): data/rdm/Makefile.mk
+data/rdm/PidDataTest.sh: data/rdm/Makefile.mk
 	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir}/data/rdm $(PYTHON) ${srcdir}/data/rdm/PidDataTest.py; exit \$$?" > data/rdm/PidDataTest.sh
 	chmod +x data/rdm/PidDataTest.sh
 

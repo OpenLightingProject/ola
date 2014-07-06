@@ -9,4 +9,4 @@ tools_logic_logic_rdm_sniffer_SOURCES = \
 tools_logic_logic_rdm_sniffer_LDADD = common/libolacommon.la \
                                       $(libSaleaeDevice_LIBS)
 
-EXTRA_DIST += tools/logs/README.md
+EXTRA_DIST += tools/logic/README.md

@@ -72,13 +72,14 @@ olad_libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                               common/web/libolaweb.la \
                               ola/libola.la \
                               $(ola_server_additional_libs)
+# Simon: I'm not too sure about this but it seems that because PLUGIN_LIBS is
+# determined at configure time, we need to add them here.
 EXTRA_olad_libolaserver_la_DEPENDENCIES = $(PLUGIN_LIBS)
 
 # PROGRAMS
 ##################################################
 bin_PROGRAMS += olad/olad
 olad_olad_SOURCES = olad/Olad.cpp
-olad_olad_CXXFLAGS = $(COMMON_CXXFLAGS)
 
 if SUPPORTS_RDYNAMIC
 olad_olad_LDFLAGS = -rdynamic

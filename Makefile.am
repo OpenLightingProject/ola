@@ -105,8 +105,12 @@ nodist_pkginclude_HEADERS =
 # Append to this to define an install-exec-hook.
 INSTALL_EXEC_HOOKS =
 
+# Test programs, these are added to check_PROGRAMS and TESTS if BUILD_TESTS is
+# true.
 tests =
-extra_tests =
+
+# Test scripts are run if BUILD_TESTS is true.
+test_scripts =
 
 # The includes
 # -----------------------------------------------------------------------------
@@ -128,7 +132,7 @@ include tools/Makefile.mk
 # -----------------------------------------------------------------------------
 
 if BUILD_TESTS
-TESTS = $(tests) $(extra_tests)
+TESTS = $(tests) $(test_scripts)
 endif
 check_PROGRAMS += $(tests)
 

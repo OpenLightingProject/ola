@@ -5,7 +5,6 @@ EXTRA_DIST += \
     debian/control \
     debian/copyright \
     debian/dirs \
-    debian/Makefile.am \
     debian/ola-dev.dirs \
     debian/ola-dev.install \
     debian/ola-python.dirs \
