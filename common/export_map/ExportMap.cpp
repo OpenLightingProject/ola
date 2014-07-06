@@ -34,41 +34,6 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
-
-/*
- * Return the string representation of this map variable.
- * The form is:
- *   var_name  map:label_name key1:value1 key2:value2
- * @return the string representation of the variable.
- */
-template<typename Type>
-const string MapVariable<Type>::Value() const {
-  ostringstream value;
-  value << "map:" << m_label;
-  typename map<string, Type>::const_iterator iter;
-  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter)
-    value << " " << iter->first << ":" << iter->second;
-  return value.str();
-}
-
-
-/*
- * Strings need to be quoted
- */
-template<>
-const string MapVariable<string>::Value() const {
-  ostringstream value;
-  value << "map:" << m_label;
-  map<string, string>::const_iterator iter;
-  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {
-    std::string var = iter->second;
-    Escape(&var);
-    value << " " << iter->first << ":\"" << var << "\"";
-  }
-  return value.str();
-}
-
-
 ExportMap::~ExportMap() {
   STLDeleteValues(&m_bool_variables);
   STLDeleteValues(&m_counter_variables);
