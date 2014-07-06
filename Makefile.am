@@ -128,8 +128,8 @@ include examples/Makefile.mk
 include include/Makefile.mk
 include man/Makefile.mk
 include ola/Makefile.mk
-include olad/Makefile.mk
 include plugins/Makefile.mk
+include olad/Makefile.mk
 include protoc/Makefile.mk
 include python/Makefile.mk
 include slp/Makefile.mk
