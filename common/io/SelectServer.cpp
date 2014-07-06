@@ -94,7 +94,7 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
   m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
 #ifdef _WIN32
   m_poller.reset(new WindowsPoller(export_map, m_clock));
-#endif
+#else
 
 #ifdef HAVE_EPOLL
   if (FLAGS_use_epoll) {
@@ -120,6 +120,7 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
   if (!m_poller.get()) {
     m_poller.reset(new SelectPoller(export_map, m_clock));
   }
+#endif
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())
