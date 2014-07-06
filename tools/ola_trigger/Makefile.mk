@@ -34,7 +34,7 @@ tools_ola_trigger_ola_trigger_SOURCES = \
     tools/ola_trigger/lex.yy.cpp \
     tools/ola_trigger/ola-trigger.cpp
 # required, otherwise we get build errors from the flex output
-tools_ola_trigger_ola_trigger_CXXFLAGS = $(WARNING_CXXFLAGS)
+tools_ola_trigger_ola_trigger_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 tools_ola_trigger_ola_trigger_LDADD = common/libolacommon.la \
                                       ola/libola.la \
                                       tools/ola_trigger/libolatrigger.la \

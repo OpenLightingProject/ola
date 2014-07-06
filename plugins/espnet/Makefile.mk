@@ -26,5 +26,5 @@ plugins_espnet_EspNetTester_SOURCES = \
     plugins/espnet/RunLengthDecoder.cpp
 plugins_espnet_EspNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_espnet_EspNetTester_LDADD = $(COMMON_TESTING_LIBS) \
-                                    /common/libolacommon.la
+                                    common/libolacommon.la
 endif

@@ -1,8 +1,9 @@
 # This is a non-recursive Makefile, see
-# https://github.com/OpenLightingProject/ola/issues/397 for links
+# https://github.com/OpenLightingProject/ola/issues/397 for links to useful
+# documentation.
 #
-# Rather than put everything in a single Makefile we use includes to give it a
-# bit more structure.
+# Rather than defining everything in a single Makefile we include a Makefile.mk
+# from each directory. This gives the build rules a bit more structure.
 auxdir                  = @ac_aux_dir@
 AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
                           $(auxdir)/mkinstalldirs
@@ -13,26 +14,72 @@ ACLOCAL_AMFLAGS = -I config
 
 include aminclude.am
 
-# TODO(simon): just copy the contents of this in here.
-include common.mk
-
-# We want to build the python code when running distcheck.
+# When running distcheck we want to enable the Python modules.
 AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 
-COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    common/libolacommon.la
+# C++ FLAGS variables
+# ------------------------------------------------------------------------------
+# COMMON_CXXFLAGS
+# The common C++ flags. This may include -Werror if fatal-warning was enabled
+# in ./configure. AM_CXXFLAGS defaults to this, and it should be preferred.
+#
+# COMMON_CXXFLAGS_ONLY_WARNINGS
+# The common C++ flags with (non-fatal) warnings enabled. Use this for 3rd
+# party code that does not build correctly with COMMON_CXXFLAGS.
+#
+# COMMON_TESTING_FLAGS
+# The common C++ flags for testing.
+COMMON_CXXFLAGS_ONLY_WARNINGS = \
+    -I$(top_srcdir)/include \
+    -I$(top_builddir)/include \
+    -Wall -Wformat -W -fvisibility-inlines-hidden \
+    $(libprotobuf_CFLAGS)
 
-# Setup pkgconfigdir
+COMMON_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
+
+# The genererated protobuf files don't compile with -Werror on win32 so we
+# disable fatal warnings on WIN32.
+if ! USING_WIN32
+if FATAL_WARNINGS
+  COMMON_CXXFLAGS += -Werror
+endif
+endif
+
+# AM_CXXFLAGS is used when target_CXXFLAGS isn't specified.
+AM_CXXFLAGS = $(COMMON_CXXFLAGS)
+
+COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
+                       -DTEST_SRC_DIR=\"$(srcdir)\"
+
+# LIBS variables
+# ------------------------------------------------------------------------------
+#
+# COMMON_TESTING_LIBS
+# The set of libraries used in the unittests.
+COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
+                      common/libolacommon.la \
+                      common/testing/libolatesting.la \
+                      common/testing/libtestmain.la
+
+# Due to MinGW's handling of library archives, we need to append this.
+if USING_WIN32
+COMMON_TESTING_LIBS += $(CPPUNIT_LIBS)
+endif
+
+# TODO(simon): Remove this.
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS)
+
+# Variables used by the included Makefile.mk(s)
+# ------------------------------------------------------------------------------
+
+# Setup pkgconfigdir, the path where .pc files are installed.
 pkgconfigdir = $(libdir)/pkgconfig
 oladincludedir = $(includedir)/olad
 
-# Define the variables the included files will append to
-
+# Common automake variables.
 CLEANFILES =
 BUILT_SOURCES =
 EXTRA_DIST =
-INSTALL_EXEC_HOOKS =
-tests =
 
 bin_PROGRAMS =
 check_PROGRAMS =
@@ -45,6 +92,7 @@ dist_noinst_DATA =
 lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 
+check_SCRIPTS =
 dist_check_SCRIPTS =
 dist_noinst_SCRIPTS =
 
@@ -53,6 +101,12 @@ dist_man_MANS =
 pkginclude_HEADERS =
 noinst_HEADERS =
 nodist_pkginclude_HEADERS =
+
+# Append to this to define an install-exec-hook.
+INSTALL_EXEC_HOOKS =
+
+tests =
+extra_tests =
 
 # The includes
 # -----------------------------------------------------------------------------
@@ -73,21 +127,16 @@ include tools/Makefile.mk
 
 # -----------------------------------------------------------------------------
 
-# TESTS
-##################################################
 if BUILD_TESTS
-TESTS = $(tests)
+TESTS = $(tests) $(extra_tests)
 endif
-check_PROGRAMS += $(TESTS)
+check_PROGRAMS += $(tests)
 
 install-exec-hook: $(INSTALL_EXEC_HOOKS)
 
 # I can't figure out how to safely execute a command (mvn) in a subdirectory,
 # so this is recursive for now.
 SUBDIRS = java
-
-# pkg-config files.
-
 
 pkgconfig_DATA += libola.pc libolaserver.pc
 

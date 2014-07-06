@@ -18,7 +18,7 @@ lib_LTLIBRARIES += slp/libolaslpcore.la \
 nodist_slp_libolaslpproto_la_SOURCES = slp/SLP.pb.cc slp/SLPService.pb.cpp
 slp_libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
 # Required, otherwise we get build errors
-slp_libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
+slp_libolaslpproto_la_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 
 BUILT_SOURCES += \
     slp/SLP.pb.cc \

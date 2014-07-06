@@ -46,7 +46,11 @@ olardminclude_HEADERS = \
     include/ola/rdm/UIDSet.h
 nodist_olardminclude_HEADERS = include/ola/rdm/RDMResponseCodes.h
 
+# BUILT_SOURCES is our only option here since we can't override the generated
+# automake rules for common/libolacommon.la
+BUILT_SOURCES += include/ola/rdm/RDMResponseCodes.h
+
 include/ola/rdm/RDMResponseCodes.h: include/ola/rdm/Makefile.mk include/ola/rdm/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto
-	sh $(srcdir)/include/ola/rdm/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto
+	sh $(srcdir)/include/ola/rdm/make_rdm_codes.sh $(top_srcdir)/common/protocol/Ola.proto > include/ola/rdm/RDMResponseCodes.h
 
 CLEANFILES += include/ola/rdm/RDMResponseCodes.h

@@ -37,7 +37,11 @@ pkginclude_HEADERS += \
     include/ola/StringUtils.h
 nodist_pkginclude_HEADERS += include/ola/plugin_id.h
 
+# BUILT_SOURCES is our only option here since we can't override the generated
+# automake rules for common/libolacommon.la
+BUILT_SOURCES += include/ola/plugin_id.h
+
 include/ola/plugin_id.h: Makefile.am include/ola/make_plugin_id.sh common/protocol/Ola.proto
-	sh $(srcdir)/include/ola/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto
+	sh $(srcdir)/include/ola/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto > include/ola/plugin_id.h
 
 CLEANFILES += include/ola/plugin_id.h

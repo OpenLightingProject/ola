@@ -1,5 +1,6 @@
 EXTRA_DIST += common/protocol/Ola.proto
 
+# The .h files are included elsewhere so we have to put them in BUILT_SOURCES
 BUILT_SOURCES += \
     common/protocol/Ola.pb.cc \
     common/protocol/Ola.pb.h \
@@ -12,10 +13,10 @@ common_libolacommon_la_SOURCES += \
     common/protocol/Ola.pb.cc \
     common/protocol/OlaService.pb.cpp
 common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
-
 # required, otherwise we get build errors
-# TODO(simon): fix me
-#libolaproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
+# TODO(simonn): this disables warnings for the entire libolacommon. That sucks.
+# Find a better way to do this.
+# common_libolaproto_la_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 
 common/protocol/Ola.pb.cc common/protocol/Ola.pb.h: common/protocol/Ola.proto
 	$(PROTOC) --cpp_out common/protocol --proto_path $(srcdir)/common/protocol $(srcdir)/common/protocol/Ola.proto
