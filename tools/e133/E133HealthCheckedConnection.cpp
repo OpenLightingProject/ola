@@ -52,7 +52,6 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
  * Send a E1.33 heartbeat
  */
 void E133HealthCheckedConnection::SendHeartbeat() {
-  OLA_INFO << "Sending heartbeat";
   IOStack packet(m_message_builder->pool());
   m_message_builder->BuildNullTCPPacket(&packet);
   m_message_queue->SendMessage(&packet);

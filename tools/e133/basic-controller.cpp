@@ -23,6 +23,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/ExportMap.h>
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
@@ -44,11 +45,16 @@
 
 DEFINE_string(listen_ip, "", "The IP Address to listen on");
 DEFINE_uint16(listen_port, 5569, "The port to listen on");
+DEFINE_uint16(listen_backlog, 100,
+              "The backlog for the listen() call. Often limited to 128");
+DEFINE_uint32(expected_devices, 1,
+              "Time how long it takes until this many devices connect.");
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::STLFindOrNull;
 using ola::TimeInterval;
+using ola::TimeStamp;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -104,9 +110,11 @@ class SimpleE133Controller {
  private:
   typedef std::map<IPV4SocketAddress, DeviceState*> DeviceMap;
 
+  TimeStamp m_start_time;
   DeviceMap m_device_map;
 
   const IPV4SocketAddress m_listen_address;
+  ola::ExportMap m_export_map;
   ola::io::SelectServer m_ss;
   ola::network::TCPSocketFactory m_tcp_socket_factory;
   ola::network::TCPAcceptingSocket m_listen_socket;
@@ -114,6 +122,8 @@ class SimpleE133Controller {
   ola::e133::MessageBuilder m_message_builder;
 
   ola::plugin::e131::RootInflator m_root_inflator;
+
+  bool PrintStats();
 
   void OnTCPConnect(TCPSocket *socket);
   void ReceiveTCPData(IPV4SocketAddress peer,
@@ -129,6 +139,7 @@ class SimpleE133Controller {
 
 SimpleE133Controller::SimpleE133Controller(const Options &options)
     : m_listen_address(options.controller),
+      m_ss(&m_export_map),
       m_tcp_socket_factory(
           NewCallback(this, &SimpleE133Controller::OnTCPConnect)),
       m_listen_socket(&m_tcp_socket_factory),
@@ -140,14 +151,30 @@ SimpleE133Controller::SimpleE133Controller(const Options &options)
 SimpleE133Controller::~SimpleE133Controller() {}
 
 bool SimpleE133Controller::Start() {
-  if (!m_listen_socket.Listen(m_listen_address, 100)) {
+  ola::Clock clock;
+  clock.CurrentTime(&m_start_time);
+
+  if (!m_listen_socket.Listen(m_listen_address, FLAGS_listen_backlog)) {
     return false;
   }
   OLA_INFO << "Listening on " << m_listen_address;
 
   m_ss.AddReadDescriptor(&m_listen_socket);
+  m_ss.RegisterRepeatingTimeout(
+      TimeInterval(0, 500000),
+      NewCallback(this, &SimpleE133Controller::PrintStats));
   m_ss.Run();
   m_ss.RemoveReadDescriptor(&m_listen_socket);
+  return true;
+}
+
+bool SimpleE133Controller::PrintStats() {
+  const TimeStamp *now = m_ss.WakeUpTime();
+  const TimeInterval delay = *now - m_start_time;
+  ola::CounterVariable *ss_iterations = m_export_map.GetCounterVar(
+      "ss-loop-count");
+  OLA_INFO << delay << "," << m_device_map.size() << ","
+      << ss_iterations->Value();
   return true;
 }
 
@@ -161,7 +188,7 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
   }
   IPV4SocketAddress peer = generic_peer.V4Addr();
 
-  OLA_INFO << "Received new TCP connection from: " << peer;
+  // OLA_INFO << "Received new TCP connection from: " << peer;
 
   auto_ptr<DeviceState> device_state(new DeviceState());
   device_state->in_transport.reset(
@@ -201,11 +228,18 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
     delete p.first->second;
   }
   p.first->second = device_state.release();
+
+  if (m_device_map.size() == FLAGS_expected_devices) {
+    ola::Clock clock;
+    TimeStamp now;
+    clock.CurrentTime(&now);
+    OLA_INFO << FLAGS_expected_devices << " connected in "
+             << (now - m_start_time);
+  }
 }
 
 void SimpleE133Controller::ReceiveTCPData(IPV4SocketAddress peer,
                                           IncomingTCPTransport *transport) {
-  OLA_INFO << "received data from " << peer;
   if (!transport->Receive()) {
     OLA_WARN << "TCP STREAM IS BAD!!!";
     SocketClosed(peer);
