@@ -338,13 +338,15 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
               descriptor->connected_descriptor->TransferOnClose();
             if (on_close)
               on_close->Run();
-            if (descriptor->delete_connected_on_close) {
-              if (RemoveReadDescriptor(descriptor->connected_descriptor) &&
-                  m_export_map) {
-                (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+            if (descriptor->connected_descriptor) {
+              if (descriptor->delete_connected_on_close) {
+                if (RemoveReadDescriptor(descriptor->connected_descriptor) &&
+                    m_export_map) {
+                  (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+                }
+                delete descriptor->connected_descriptor;
+                descriptor->connected_descriptor = NULL;
               }
-              delete descriptor->connected_descriptor;
-              descriptor->connected_descriptor = NULL;
               delete poll_data;
               delete event_holder;
             }
