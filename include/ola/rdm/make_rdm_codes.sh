@@ -62,4 +62,4 @@ cat <<EOM
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMRESPONSECODES_H_
 EOM
-) > RDMResponseCodes.h
+)

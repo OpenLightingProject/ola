@@ -47,4 +47,4 @@ cat <<EOM
 }  // namespace ola
 #endif  // INCLUDE_OLA_TIMECODE_TIMECODEENUMS_H_
 EOM
-) > TimeCodeEnums.h
+)
