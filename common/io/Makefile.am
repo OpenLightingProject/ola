@@ -25,7 +25,11 @@ libolaio_la_SOURCES += SelectPoller.cpp \
 endif
 
 if HAVE_EPOLL
-libolaio_la_SOURCES += EPoller.cpp
+libolaio_la_SOURCES += EPoller.h EPoller.cpp
+endif
+
+if HAVE_KQUEUE
+libolaio_la_SOURCES += KQueuePoller.h KQueuePoller.cpp
 endif
 
 # TESTS
