@@ -32,6 +32,7 @@
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/TCPSocketFactory.h>
+#include <signal.h>
 
 #include <memory>
 #include <string>

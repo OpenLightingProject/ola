@@ -33,6 +33,7 @@
 #include <ola/io/SelectServer.h>
 #include <ola/network/TCPSocketFactory.h>
 #include <ola/stl/STLUtils.h>
+#include <signal.h>
 
 #include <map>
 #include <memory>
