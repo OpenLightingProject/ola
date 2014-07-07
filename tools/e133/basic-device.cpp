@@ -26,6 +26,7 @@
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/io/SelectServer.h>
@@ -42,6 +43,10 @@
 
 DEFINE_string(controller_ip, "", "The IP Address of the Controller");
 DEFINE_uint16(controller_port, 5569, "The port on the controller");
+DEFINE_uint16(tcp_connect_timeout_ms, 5000,
+              "The time in ms for the TCP connect");
+DEFINE_uint16(tcp_retry_interval_ms, 5000,
+              "The time in ms before retring the TCP connection");
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
@@ -98,24 +103,20 @@ class SimpleE133Device {
   void SocketUnhealthy(IPV4Address ip_address);
   void SocketClosed();
 
-  static const TimeInterval TCP_CONNECT_TIMEOUT;
-  static const TimeInterval INITIAL_TCP_RETRY_DELAY;
-
   DISALLOW_COPY_AND_ASSIGN(SimpleE133Device);
 };
 
-
-// 5 second connect() timeout
-const TimeInterval SimpleE133Device::TCP_CONNECT_TIMEOUT(5, 0);
-// retry TCP connects after 5 seconds
-const TimeInterval SimpleE133Device::INITIAL_TCP_RETRY_DELAY(5, 0);
 
 SimpleE133Device::SimpleE133Device(const Options &options)
     : m_controller(options.controller),
       m_message_builder(ola::acn::CID::Generate(), "E1.33 Device"),
       m_tcp_socket_factory(NewCallback(this, &SimpleE133Device::OnTCPConnect)),
-      m_connector(&m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),
-      m_backoff_policy(INITIAL_TCP_RETRY_DELAY),
+      m_connector(&m_ss, &m_tcp_socket_factory,
+                  TimeInterval(FLAGS_tcp_connect_timeout_ms / 1000,
+                               (FLAGS_tcp_connect_timeout_ms % 1000) * 1000)),
+      m_backoff_policy(TimeInterval(
+            FLAGS_tcp_retry_interval_ms / 1000,
+            (FLAGS_tcp_retry_interval_ms % 1000) * 1000)),
       m_root_inflator(NewCallback(this, &SimpleE133Device::RLPDataReceived)) {
   m_connector.AddEndpoint(options.controller, &m_backoff_policy);
 }
@@ -177,6 +178,17 @@ void SimpleE133Device::SocketClosed() {
   m_connector.Disconnect(m_controller);
 }
 
+SimpleE133Device *device = NULL;
+
+/**
+ * Interupt handler
+ */
+static void InteruptSignal(int unused) {
+  if (device)
+    device->Stop();
+  (void) unused;
+}
+
 int main(int argc, char *argv[]) {
   ola::SetHelpString("[options]", "Simple E1.33 Device.");
   ola::ParseFlags(&argc, argv);
@@ -190,9 +202,12 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_USAGE);
   }
 
-  SimpleE133Device device(
+  device = new SimpleE133Device(
       SimpleE133Device::Options(
           IPV4SocketAddress(controller_ip, FLAGS_controller_port)));
 
-  device.Run();
+  ola::InstallSignal(SIGINT, InteruptSignal);
+  device->Run();
+  delete device;
+  device = NULL;
 }

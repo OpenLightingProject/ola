@@ -27,6 +27,7 @@
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/io/SelectServer.h>
@@ -62,6 +63,8 @@ using ola::network::TCPSocket;
 using ola::plugin::e131::IncomingTCPTransport;
 using std::auto_ptr;
 using std::string;
+
+class SimpleE133Controller *controller = NULL;
 
 /**
  * Holds the state for each device
@@ -280,6 +283,15 @@ void SimpleE133Controller::SocketClosed(IPV4SocketAddress peer) {
   m_ss.RemoveReadDescriptor(device->socket.get());
 }
 
+/**
+ * Interupt handler
+ */
+static void InteruptSignal(int unused) {
+  if (controller)
+    controller->Stop();
+  (void) unused;
+}
+
 int main(int argc, char *argv[]) {
   ola::SetHelpString("[options]", "Simple E1.33 Controller.");
   ola::ParseFlags(&argc, argv);
@@ -293,9 +305,11 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_USAGE);
   }
 
-  SimpleE133Controller controller(
+  ola::InstallSignal(SIGINT, InteruptSignal);
+  controller = new SimpleE133Controller(
       SimpleE133Controller::Options(
           IPV4SocketAddress(controller_ip, FLAGS_listen_port)));
-
-  controller.Start();
+  controller->Start();
+  delete controller;
+  controller = NULL;
 }
