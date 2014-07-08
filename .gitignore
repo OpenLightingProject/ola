@@ -1,4 +1,5 @@
 *.core
+*.dirstamp
 *.gcda
 *.gcno
 *.la
