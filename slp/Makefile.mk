@@ -1,4 +1,4 @@
-CLEANFILES += slp/*.pb.{h,cc,cpp} slp/*.gcno slp/*.gcda
+CLEANFILES += slp/*.gcno slp/*.gcda
 
 EXTRA_DIST += slp/SLP.proto
 noinst_HEADERS += slp/URLListVerifier.h slp/SLPServerTestHelper.h
@@ -20,16 +20,16 @@ slp_libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
 # Required, otherwise we get build errors
 slp_libolaslpproto_la_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 
-BUILT_SOURCES += \
+built_sources += \
     slp/SLP.pb.cc \
     slp/SLP.pb.h \
     slp/SLPService.pb.h \
-    slp/SLPService.pb.h
+    slp/SLPService.pb.cpp
 
 slp/SLP.pb.cc slp/SLP.pb.h: slp/Makefile.mk slp/SLP.proto
 	$(PROTOC) --cpp_out slp/ --proto_path $(srcdir)/slp $(srcdir)/slp/SLP.proto
 
-slp/SLPService.pb.cpp slp/SLPService.pb.h: slp/Makefile.mk slp/SLP.proto protoc/ola_protoc
+slp/SLPService.pb.cpp slp/SLPService.pb.h: slp/Makefile.mk slp/SLP.proto protoc/ola_protoc$(EXEEXT)
 	$(OLA_PROTOC)  --cppservice_out slp/ --proto_path $(srcdir)/slp $(srcdir)/slp/SLP.proto
 
 # libolaslpcore

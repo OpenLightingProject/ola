@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_KARATE
-plugin_LTLIBRARIES += plugins/karate/libolakarate.la
+lib_LTLIBRARIES += plugins/karate/libolakarate.la
 plugins_karate_libolakarate_la_SOURCES = \
     plugins/karate/KaratePlugin.cpp \
     plugins/karate/KarateDevice.cpp \

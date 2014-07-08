@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_UART
-plugin_LTLIBRARIES += plugins/uartdmx/libolauartdmx.la
+lib_LTLIBRARIES += plugins/uartdmx/libolauartdmx.la
 plugins_uartdmx_libolauartdmx_la_SOURCES = \
     plugins/uartdmx/UartDmxDevice.cpp \
     plugins/uartdmx/UartDmxDevice.h \

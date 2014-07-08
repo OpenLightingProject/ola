@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_SHOWNET
-plugin_LTLIBRARIES += plugins/shownet/libolashownet.la
+lib_LTLIBRARIES += plugins/shownet/libolashownet.la
 plugins_shownet_libolashownet_la_SOURCES = \
     plugins/shownet/ShowNetPlugin.cpp \
     plugins/shownet/ShowNetDevice.cpp \

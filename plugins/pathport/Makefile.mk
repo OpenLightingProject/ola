@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_PATHPORT
-plugin_LTLIBRARIES += plugins/pathport/libolapathport.la
+lib_LTLIBRARIES += plugins/pathport/libolapathport.la
 plugins_pathport_libolapathport_la_SOURCES = \
     plugins/pathport/PathportDevice.cpp \
     plugins/pathport/PathportDevice.h \

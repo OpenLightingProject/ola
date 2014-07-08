@@ -40,7 +40,7 @@ tools_ola_trigger_ola_trigger_LDADD = common/libolacommon.la \
                                       tools/ola_trigger/libolatrigger.la \
                                       $(LEXLIB)
 
-BUILT_SOURCES += \
+built_sources += \
     tools/ola_trigger/lex.yy.cpp \
     tools/ola_trigger/config.tab.cpp \
     tools/ola_trigger/config.tab.h
@@ -50,11 +50,6 @@ tools/ola_trigger/lex.yy.cpp: tools/ola_trigger/Makefile.mk tools/ola_trigger/co
 
 tools/ola_trigger/config.tab.cpp tools/ola_trigger/config.tab.h: tools/ola_trigger/Makefile.mk tools/ola_trigger/config.ypp
 	$(BISON) --defines=tools/ola_trigger/config.tab.h --output-file=tools/ola_trigger/config.tab.cpp $(srcdir)/tools/ola_trigger/config.ypp
-
-CLEANFILES += \
-    tools/ola_trigger/lex.yy.cpp \
-    tools/ola_trigger/config.tab.cpp \
-    tools/ola_trigger/config.tab.h
 
 # TESTS
 ##################################################

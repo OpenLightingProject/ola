@@ -58,9 +58,9 @@ COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
 # COMMON_TESTING_LIBS
 # The set of libraries used in the unittests.
 COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
-                      common/libolacommon.la \
                       common/testing/libolatesting.la \
-                      common/testing/libtestmain.la
+                      common/testing/libtestmain.la \
+                      common/libolacommon.la
 
 # Due to MinGW's handling of library archives, we need to append this.
 if USING_WIN32
@@ -112,12 +112,17 @@ INSTALL_EXEC_HOOKS =
 # true.
 test_programs =
 
+# Files in built_sources are included in BUILT_SOURCES and CLEANFILES
+built_sources =
+
 # Test scripts are run if BUILD_TESTS is true.
 test_scripts =
 
 # The includes
 # -----------------------------------------------------------------------------
 
+# Since `make install` relinks the libraries, this should be in the order in
+# which libraries depend on each other. e.g. common, plugins, server.
 include common/Makefile.mk
 include data/Makefile.mk
 include debian/Makefile.mk
@@ -125,8 +130,8 @@ include examples/Makefile.mk
 include include/Makefile.mk
 include man/Makefile.mk
 include ola/Makefile.mk
-include olad/Makefile.mk
 include plugins/Makefile.mk
+include olad/Makefile.mk
 include protoc/Makefile.mk
 include python/Makefile.mk
 include slp/Makefile.mk
@@ -134,12 +139,18 @@ include tools/Makefile.mk
 
 # -----------------------------------------------------------------------------
 
+# Now some post-processing
+BUILT_SOURCES += $(built_sources)
+CLEANFILES += $(built_sources)
+
 if BUILD_TESTS
 TESTS = $(test_programs) $(test_scripts)
 endif
 check_PROGRAMS += $(test_programs)
 
 install-exec-hook: $(INSTALL_EXEC_HOOKS)
+
+# -----------------------------------------------------------------------------
 
 # I can't figure out how to safely execute a command (mvn) in a subdirectory,
 # so this is recursive for now.

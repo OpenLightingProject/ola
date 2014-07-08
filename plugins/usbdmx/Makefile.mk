@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_LIBUSB
-plugin_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
+lib_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
 plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AnymaDevice.cpp \
     plugins/usbdmx/AnymaDevice.h \

@@ -1,7 +1,7 @@
 # LIBRARIES
 ##################################################
 if USE_STAGEPROFI
-plugin_LTLIBRARIES += plugins/stageprofi/libolastageprofi.la
+lib_LTLIBRARIES += plugins/stageprofi/libolastageprofi.la
 plugins_stageprofi_libolastageprofi_la_SOURCES = \
     plugins/stageprofi/StageProfiDevice.cpp \
     plugins/stageprofi/StageProfiDevice.h \
