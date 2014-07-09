@@ -14,8 +14,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServerTest.cpp
- * Test fixture for the Socket classes
+ * Test fixture for the SelectServer.
  * Copyright (C) 2005 Simon Newton
+ *
+ * This tries to test many of the tricky reentrancy cases of a SelectServer.
+ * Because the add / remove descriptor methods can be called from within
+ * callbacks, it's important that the SelectServer remain reentrant. This in
+ * turn means implementations of PollerInterface also need to be reentrant.
  */
 
 #ifdef _WIN32
@@ -23,6 +28,7 @@
 #endif
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <set>
 #include <sstream>
 
 #include "common/io/PollerInterface.h"
@@ -30,40 +36,47 @@
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::ExportMap;
 using ola::IntegerVariable;
+using ola::NewCallback;
+using ola::NewSingleCallback;
+using ola::TimeStamp;
 using ola::io::ConnectedDescriptor;
 using ola::io::LoopbackDescriptor;
 using ola::io::PollerInterface;
 using ola::io::SelectServer;
 using ola::io::UnixSocket;
+using ola::io::WriteFileDescriptor;
 using ola::network::UDPSocket;
-using ola::NewSingleCallback;
-using ola::TimeStamp;
 using std::auto_ptr;
+using std::set;
 
 /*
  * For some of the tests we need precise control over the timing.
+ * So we mock a clock out here.
  */
 class CustomMockClock: public ola::Clock {
  public:
-    explicit CustomMockClock(TimeStamp *timestamp)
-        : m_timestamp(timestamp) {
-    }
+  explicit CustomMockClock(TimeStamp *timestamp)
+      : m_timestamp(timestamp) {
+  }
 
-    void CurrentTime(TimeStamp *timestamp) const {
-      *timestamp = *m_timestamp;
-    }
+  void CurrentTime(TimeStamp *timestamp) const {
+    *timestamp = *m_timestamp;
+  }
 
  private:
-    TimeStamp *m_timestamp;
+  TimeStamp *m_timestamp;
 };
 
 class SelectServerTest: public CppUnit::TestFixture {
+  typedef set<ConnectedDescriptor*> Descriptors;
+
   CPPUNIT_TEST_SUITE(SelectServerTest);
   CPPUNIT_TEST(testAddInvalidDescriptor);
   CPPUNIT_TEST(testDoubleAddAndRemove);
@@ -71,6 +84,10 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRemoteEndClose);
   CPPUNIT_TEST(testRemoteEndCloseWithDelete);
   CPPUNIT_TEST(testRemoteEndCloseWithRemoveAndDelete);
+  CPPUNIT_TEST(testRemoveWriteWhenOtherReadable);
+  CPPUNIT_TEST(testRemoveWriteWhenReadable);
+  CPPUNIT_TEST(testRemoveOthersWhenReadable);
+  CPPUNIT_TEST(testRemoveOthersWhenWriteable);
 #ifndef _WIN32
   CPPUNIT_TEST(testReadWriteInteraction);
 #endif
@@ -81,66 +98,98 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void tearDown();
-    void testAddInvalidDescriptor();
-    void testDoubleAddAndRemove();
-    void testAddRemoveReadDescriptor();
-    void testRemoteEndClose();
-    void testRemoteEndCloseWithDelete();
-    void testRemoteEndCloseWithRemoveAndDelete();
-    void testReadWriteInteraction();
-    void testShutdownWithActiveDescriptors();
-    void testTimeout();
-    void testOffByOneTimeout();
-    void testLoopCallbacks();
+  void setUp();
+  void tearDown();
+  void testAddInvalidDescriptor();
+  void testDoubleAddAndRemove();
+  void testAddRemoveReadDescriptor();
+  void testRemoteEndClose();
+  void testRemoteEndCloseWithDelete();
+  void testRemoteEndCloseWithRemoveAndDelete();
+  void testRemoveWriteWhenOtherReadable();
+  void testRemoveWriteWhenReadable();
+  void testRemoveOthersWhenReadable();
+  void testRemoveOthersWhenWriteable();
+  void testReadWriteInteraction();
+  void testShutdownWithActiveDescriptors();
+  void testTimeout();
+  void testOffByOneTimeout();
+  void testLoopCallbacks();
 
-    void FatalTimeout() {
-      OLA_FAIL("Fatal Timeout");
-    }
+  void FatalTimeout() {
+    OLA_FAIL("Fatal Timeout");
+  }
 
-    void Terminate() {
-      if (m_ss) { m_ss->Terminate(); }
-    }
+  void Terminate() {
+    if (m_ss) { m_ss->Terminate(); }
+  }
 
-    void SingleIncrementTimeout() {
+  void SingleIncrementTimeout() {
+    m_timeout_counter++;
+  }
+
+  void ReentrantTimeout(SelectServer *ss) {
+    ss->RegisterSingleTimeout(
+        0,
+        ola::NewSingleCallback(this,
+                               &SelectServerTest::SingleIncrementTimeout));
+    ss->RegisterSingleTimeout(
+        5,
+        ola::NewSingleCallback(this,
+                               &SelectServerTest::SingleIncrementTimeout));
+  }
+
+  void NullHandler() {}
+
+  bool IncrementTimeout() {
+    if (m_ss && m_ss->IsRunning())
       m_timeout_counter++;
-    }
+    return true;
+  }
 
-    void ReentrantTimeout(SelectServer *ss) {
-      ss->RegisterSingleTimeout(
-          0,
-          ola::NewSingleCallback(this,
-                                 &SelectServerTest::SingleIncrementTimeout));
-      ss->RegisterSingleTimeout(
-          5,
-          ola::NewSingleCallback(this,
-                                 &SelectServerTest::SingleIncrementTimeout));
-    }
+  void ReadDataAndRemove(ConnectedDescriptor *descriptor) {
+    uint8_t data[10];
+    unsigned int size;
+    descriptor->Receive(data, arraysize(data), size);
 
-    bool IncrementTimeout() {
-      if (m_ss && m_ss->IsRunning())
-        m_timeout_counter++;
-      return true;
+    if (m_ss) {
+      m_ss->RemoveReadDescriptor(descriptor);
+      m_ss->RemoveWriteDescriptor(descriptor);
+      m_ss->Terminate();
+      delete descriptor;
     }
+  }
 
-    void RemoveFromSelectServer(ConnectedDescriptor *descriptor) {
-      if (m_ss) {
-        m_ss->RemoveReadDescriptor(descriptor);
-        m_ss->Terminate();
-      }
+  void RemoveAndDeleteDescriptors(Descriptors read_descriptors,
+                                  Descriptors write_descriptors,
+                                  Descriptors delete_descriptors) {
+    Descriptors::iterator iter;
+
+    for (iter = read_descriptors.begin(); iter != read_descriptors.end();
+         ++iter) {
+      m_ss->RemoveReadDescriptor(*iter);
     }
+    for (iter = write_descriptors.begin(); iter != write_descriptors.end();
+         ++iter) {
+      m_ss->RemoveWriteDescriptor(*iter);
+    }
+    for (iter = delete_descriptors.begin(); iter != delete_descriptors.end();
+         ++iter) {
+      delete *iter;
+    }
+    m_ss->Terminate();
+  }
 
-    void IncrementLoopCounter() { m_loop_counter++; }
+  void IncrementLoopCounter() { m_loop_counter++; }
 
  private:
-    unsigned int m_timeout_counter;
-    unsigned int m_loop_counter;
-    ExportMap m_map;
-    IntegerVariable *connected_read_descriptor_count;
-    IntegerVariable *read_descriptor_count;
-    IntegerVariable *write_descriptor_count;
-    SelectServer *m_ss;
+  unsigned int m_timeout_counter;
+  unsigned int m_loop_counter;
+  ExportMap m_map;
+  IntegerVariable *connected_read_descriptor_count;
+  IntegerVariable *read_descriptor_count;
+  IntegerVariable *write_descriptor_count;
+  SelectServer *m_ss;
 };
 
 
@@ -188,7 +237,7 @@ void SelectServerTest::testAddInvalidDescriptor() {
   m_ss->RemoveReadDescriptor(&bad_socket);
   m_ss->RemoveWriteDescriptor(&bad_socket);
 
-  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());  // internal socket
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 }
@@ -201,32 +250,32 @@ void SelectServerTest::testDoubleAddAndRemove() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
-  LoopbackDescriptor loopback_socket;
-  loopback_socket.Init();
+  LoopbackDescriptor loopback;
+  loopback.Init();
 
-  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
-  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback_socket));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(1, write_descriptor_count->Get());
 
-  m_ss->RemoveReadDescriptor(&loopback_socket);
+  m_ss->RemoveReadDescriptor(&loopback);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(1, write_descriptor_count->Get());
 
-  m_ss->RemoveWriteDescriptor(&loopback_socket);
+  m_ss->RemoveWriteDescriptor(&loopback);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
   // Trying to remove a second time shouldn't crash
-  m_ss->RemoveReadDescriptor(&loopback_socket);
-  m_ss->RemoveWriteDescriptor(&loopback_socket);
+  m_ss->RemoveReadDescriptor(&loopback);
+  m_ss->RemoveWriteDescriptor(&loopback);
 }
 
 
@@ -239,15 +288,10 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
-  LoopbackDescriptor bad_socket;
-  // adding and removing a non-connected socket should fail
-  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
-  m_ss->RemoveReadDescriptor(&bad_socket);
+  LoopbackDescriptor loopback;
+  loopback.Init();
 
-  LoopbackDescriptor loopback_socket;
-  loopback_socket.Init();
-
-  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
@@ -261,7 +305,7 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
 
   // Check remove works
-  m_ss->RemoveReadDescriptor(&loopback_socket);
+  m_ss->RemoveReadDescriptor(&loopback);
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(1, read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, write_descriptor_count->Get());
@@ -276,18 +320,22 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
  * Confirm we correctly detect the remote end closing the connection.
  */
 void SelectServerTest::testRemoteEndClose() {
-  LoopbackDescriptor loopback_socket;
-  loopback_socket.Init();
-  loopback_socket.SetOnClose(NewSingleCallback(
-      this, &SelectServerTest::RemoveFromSelectServer,
-      reinterpret_cast<ConnectedDescriptor*>(&loopback_socket)));
+  Descriptors read_set, write_set, delete_set;
+  LoopbackDescriptor loopback;
+  loopback.Init();
 
-  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
+  read_set.insert(&loopback);
+
+  loopback.SetOnClose(NewSingleCallback(
+      this, &SelectServerTest::RemoveAndDeleteDescriptors,
+      read_set, write_set, delete_set));
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 
   // now the Write end closes
-  loopback_socket.CloseClient();
+  loopback.CloseClient();
 
   m_ss->Run();
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
@@ -300,17 +348,17 @@ void SelectServerTest::testRemoteEndClose() {
  */
 void SelectServerTest::testRemoteEndCloseWithDelete() {
   // Ownership is transferred to the SelectServer.
-  LoopbackDescriptor *loopback_socket = new LoopbackDescriptor();
-  loopback_socket->Init();
-  loopback_socket->SetOnClose(NewSingleCallback(
+  LoopbackDescriptor *loopback = new LoopbackDescriptor();
+  loopback->Init();
+  loopback->SetOnClose(NewSingleCallback(
       this, &SelectServerTest::Terminate));
 
-  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback_socket, true));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback, true));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 
   // Now the Write end closes
-  loopback_socket->CloseClient();
+  loopback->CloseClient();
 
   m_ss->Run();
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
@@ -318,33 +366,162 @@ void SelectServerTest::testRemoteEndCloseWithDelete() {
 }
 
 /*
- * This is a tricky case to test reentrancy. We set an OnClose handler that also
- * removes the LoopbackDescriptor from the SelectServer. We also set
- * delete_on_close to true.
- *
- * This makes sure that the delete_on_close code handles the descriptor being
- * removed from within the OnClose handler.
+ * Check the delete_on_close feature handles the case where the descriptor
+ * being closed is removed from the on_close handler.
  */
 void SelectServerTest::testRemoteEndCloseWithRemoveAndDelete() {
-  // Ownership is transferred to the SelectServer.
-  LoopbackDescriptor *loopback_socket = new LoopbackDescriptor();
-  loopback_socket->Init();
-  loopback_socket->SetOnClose(NewSingleCallback(
-      this, &SelectServerTest::RemoveFromSelectServer,
-      reinterpret_cast<ConnectedDescriptor*>(loopback_socket)));
+  Descriptors read_set, write_set, delete_set;
+  LoopbackDescriptor *loopback = new LoopbackDescriptor();
+  loopback->Init();
 
-  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback_socket, true));
+  read_set.insert(loopback);
+  loopback->SetOnClose(NewSingleCallback(
+      this, &SelectServerTest::RemoveAndDeleteDescriptors,
+      read_set, write_set, delete_set));
+
+  // Ownership is transferred.
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback, true));
   OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 
-  // Now the Write end closes
-  loopback_socket->CloseClient();
+  // Close the write end of the descriptor.
+  loopback->CloseClient();
 
   m_ss->Run();
   OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
   OLA_ASSERT_EQ(0, read_descriptor_count->Get());
 }
 
+/*
+ * Check that RemoveWriteDescriptor is reentrant.
+ * We use the Execute() method to close a write descriptor during the same
+ * cycle in which it becomes writeable. See
+ * https://github.com/OpenLightingProject/ola/pull/429 for details.
+ */
+void SelectServerTest::testRemoveWriteWhenOtherReadable() {
+  Descriptors read_set, write_set, delete_set;
+  LoopbackDescriptor *loopback = new LoopbackDescriptor();
+  loopback->Init();
+
+  write_set.insert(loopback);
+  delete_set.insert(loopback);
+
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(loopback));
+  OLA_ASSERT_EQ(1, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+  m_ss->Execute(NewSingleCallback(
+      this, &SelectServerTest::RemoveAndDeleteDescriptors,
+      read_set, write_set, delete_set));
+
+  m_ss->Run();
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
+/*
+ * Check that RemoveWriteDescriptor is reentrant.
+ * Similar to the case above, but this removes & deletes the descriptor from
+ * within the OnRead callback of the same descriptor.
+ */
+void SelectServerTest::testRemoveWriteWhenReadable() {
+  // Ownership is transferred to the SelectServer.
+  LoopbackDescriptor *loopback = new LoopbackDescriptor();;
+  loopback->Init();
+
+  loopback->SetOnData(NewCallback(
+      this, &SelectServerTest::ReadDataAndRemove,
+      static_cast<ConnectedDescriptor*>(loopback)));
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(loopback));
+  OLA_ASSERT_EQ(2, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+
+  // Send some data to make this descriptor readable.
+  uint8_t data[] = {'a'};
+  loopback->Send(data, arraysize(data));
+
+  m_ss->Run();
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
+/*
+ * Check that we don't invalid iterators by removing descriptors during an
+ * on_read callback.
+ */
+void SelectServerTest::testRemoveOthersWhenReadable() {
+  Descriptors read_set, write_set, delete_set;
+  LoopbackDescriptor loopback1, loopback2, loopback3;
+  loopback1.Init();
+  loopback2.Init();
+  loopback3.Init();
+
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback1));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback2));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback3));
+
+  read_set.insert(&loopback1);
+  read_set.insert(&loopback2);
+  read_set.insert(&loopback3);
+
+  loopback2.SetOnClose(NewSingleCallback(
+      this,
+      &SelectServerTest::RemoveAndDeleteDescriptors,
+      read_set, write_set, delete_set));
+
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(4, connected_read_descriptor_count->Get());
+
+  loopback2.CloseClient();
+  m_ss->Run();
+
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
+
+/*
+ * Check that we don't invalid iterators by removing descriptors during an
+ * on_Write callback.
+ */
+void SelectServerTest::testRemoveOthersWhenWriteable() {
+  Descriptors read_set, write_set, delete_set;
+  LoopbackDescriptor loopback1, loopback2, loopback3;
+  loopback1.Init();
+  loopback2.Init();
+  loopback3.Init();
+
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback1));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback2));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback3));
+
+  write_set.insert(&loopback1);
+  write_set.insert(&loopback2);
+  write_set.insert(&loopback3);
+
+  loopback1.SetOnWritable(NewCallback(
+      this, &SelectServerTest::NullHandler));
+  loopback2.SetOnWritable(NewCallback(
+      this,
+      &SelectServerTest::RemoveAndDeleteDescriptors,
+      read_set, write_set, delete_set));
+
+  loopback3.SetOnWritable(NewCallback(
+      this, &SelectServerTest::NullHandler));
+
+  OLA_ASSERT_EQ(3, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+
+  m_ss->Run();
+
+  OLA_ASSERT_EQ(0, write_descriptor_count->Get());
+  OLA_ASSERT_EQ(1, connected_read_descriptor_count->Get());
+  OLA_ASSERT_EQ(0, read_descriptor_count->Get());
+}
 
 /*
  * Test the interaction between read and write descriptor.
@@ -375,11 +552,11 @@ void SelectServerTest::testReadWriteInteraction() {
  * the descriptors being removed.
  */
 void SelectServerTest::testShutdownWithActiveDescriptors() {
-  LoopbackDescriptor loopback_socket;
-  loopback_socket.Init();
+  LoopbackDescriptor loopback;
+  loopback.Init();
 
-  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
-  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback_socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback));
+  OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(&loopback));
 }
 
 /*
@@ -455,7 +632,6 @@ void SelectServerTest::testOffByOneTimeout() {
   ss.m_timeout_manager->ExecuteTimeouts(&now);
   OLA_ASSERT_EQ(m_timeout_counter, 1u);
 }
-
 
 /*
  * Check that the loop closures are called.

@@ -43,9 +43,9 @@ using std::pair;
 /*
  * Represents a FD
  */
-class KQueueDescriptor {
+class KQueueData {
  public:
-  KQueueDescriptor()
+  KQueueData()
       : enable_read(false),
         enable_write(false),
         delete_connected_on_close(false),
@@ -82,7 +82,7 @@ class KQueueDescriptor {
 const int KQueuePoller::MAX_EVENTS = 10;
 
 /**
- * @brief The number of pre-allocated KQueueDescriptor to have.
+ * @brief The number of pre-allocated KQueueData to have.
  */
 const unsigned int KQueuePoller::MAX_FREE_DESCRIPTORS = 10;
 
@@ -140,20 +140,20 @@ bool KQueuePoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
     return false;
   }
 
-  pair<KQueueDescriptor*, bool> result = LookupOrCreateDescriptor(
+  pair<KQueueData*, bool> result = LookupOrCreateDescriptor(
       descriptor->ReadDescriptor());
-  KQueueDescriptor *kqueue_descriptor = result.first;
+  KQueueData *kqueue_data = result.first;
 
-  if (kqueue_descriptor->enable_read) {
+  if (kqueue_data->enable_read) {
     OLA_WARN << "Descriptor " << descriptor->ReadDescriptor()
              << " already in read set";
     return false;
   }
 
-  kqueue_descriptor->enable_read = true;
-  kqueue_descriptor->read_descriptor = descriptor;
+  kqueue_data->enable_read = true;
+  kqueue_data->read_descriptor = descriptor;
   return ApplyChange(descriptor->ReadDescriptor(), EVFILT_READ, EV_ADD,
-                     kqueue_descriptor, false);
+                     kqueue_data, false);
 }
 
 bool KQueuePoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
@@ -167,22 +167,22 @@ bool KQueuePoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
     return false;
   }
 
-  pair<KQueueDescriptor*, bool> result = LookupOrCreateDescriptor(
+  pair<KQueueData*, bool> result = LookupOrCreateDescriptor(
       descriptor->ReadDescriptor());
 
-  KQueueDescriptor *kqueue_descriptor = result.first;
+  KQueueData *kqueue_data = result.first;
 
-  if (kqueue_descriptor->enable_read) {
+  if (kqueue_data->enable_read) {
     OLA_WARN << "Descriptor " << descriptor->ReadDescriptor()
              << " already in read set";
     return false;
   }
 
-  kqueue_descriptor->enable_read = true;
-  kqueue_descriptor->connected_descriptor = descriptor;
-  kqueue_descriptor->delete_connected_on_close = delete_on_close;
+  kqueue_data->enable_read = true;
+  kqueue_data->connected_descriptor = descriptor;
+  kqueue_data->delete_connected_on_close = delete_on_close;
   return ApplyChange(descriptor->ReadDescriptor(), EVFILT_READ, EV_ADD,
-                     kqueue_descriptor, false);
+                     kqueue_data, false);
 }
 
 bool KQueuePoller::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
@@ -203,20 +203,20 @@ bool KQueuePoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
     return false;
   }
 
-  pair<KQueueDescriptor*, bool> result = LookupOrCreateDescriptor(
+  pair<KQueueData*, bool> result = LookupOrCreateDescriptor(
       descriptor->WriteDescriptor());
-  KQueueDescriptor *kqueue_descriptor = result.first;
+  KQueueData *kqueue_data = result.first;
 
-  if (kqueue_descriptor->enable_write) {
+  if (kqueue_data->enable_write) {
     OLA_WARN << "Descriptor " << descriptor->WriteDescriptor()
              << " already in write set";
     return false;
   }
 
-  kqueue_descriptor->enable_write = true;
-  kqueue_descriptor->write_descriptor = descriptor;
+  kqueue_data->enable_write = true;
+  kqueue_data->write_descriptor = descriptor;
   return ApplyChange(descriptor->WriteDescriptor(), EVFILT_WRITE, EV_ADD,
-                     kqueue_descriptor, false);
+                     kqueue_data, false);
 }
 
 bool KQueuePoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
@@ -307,14 +307,14 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
  *  - Excute OnClose if a remote end closed the connection
  */
 void KQueuePoller::CheckDescriptor(struct kevent *event) {
-  KQueueDescriptor *descriptor = reinterpret_cast<KQueueDescriptor*>(
+  KQueueData *kqueue_data = reinterpret_cast<KQueueData*>(
       event->udata);
   if (event->filter == EVFILT_READ) {
-    if (descriptor->read_descriptor) {
-      descriptor->read_descriptor->PerformRead();
-    } else if (descriptor->connected_descriptor) {
+    if (kqueue_data->read_descriptor) {
+      kqueue_data->read_descriptor->PerformRead();
+    } else if (kqueue_data->connected_descriptor) {
       ConnectedDescriptor *connected_descriptor =
-          descriptor->connected_descriptor;
+          kqueue_data->connected_descriptor;
 
       if (event->data) {
         connected_descriptor->PerformRead();
@@ -326,7 +326,7 @@ void KQueuePoller::CheckDescriptor(struct kevent *event) {
         // So instead we set connected_close_in_progress which is a signal to
         // RemoveDescriptor not to create an EV_DELETE event if
         // RemoveReadDescriptor() is called.
-        descriptor->connected_close_in_progress = true;
+        kqueue_data->connected_close_in_progress = true;
 
         ConnectedDescriptor::OnCloseCallback *on_close =
             connected_descriptor->TransferOnClose();
@@ -335,13 +335,13 @@ void KQueuePoller::CheckDescriptor(struct kevent *event) {
 
         // At this point the descriptor may be sitting in the orphan list
         // if the OnClose handler called into RemoveReadDescriptor()
-        if (descriptor->delete_connected_on_close) {
+        if (kqueue_data->delete_connected_on_close) {
           delete connected_descriptor;
 
           // Remove from m_descriptor_map if it's still there
-          descriptor = STLLookupAndRemovePtr(&m_descriptor_map, event->ident);
-          if (descriptor) {
-            m_orphaned_descriptors.push_back(descriptor);
+          kqueue_data = STLLookupAndRemovePtr(&m_descriptor_map, event->ident);
+          if (kqueue_data) {
+            m_orphaned_descriptors.push_back(kqueue_data);
             if (m_export_map) {
               (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
             }
@@ -352,15 +352,15 @@ void KQueuePoller::CheckDescriptor(struct kevent *event) {
   }
 
   if (event->filter == EVFILT_WRITE) {
-    if (descriptor->write_descriptor) {
-      descriptor->write_descriptor->PerformWrite();
-    } else {
-      OLA_FATAL << "EVFILT_WRITE active but write_descriptor is NULL";
+    // kqueue_data->write_descriptor may be null here if this descriptor was
+    // removed between when kevent returned and now.
+    if (kqueue_data->write_descriptor) {
+      kqueue_data->write_descriptor->PerformWrite();
     }
   }
 }
 
-std::pair<KQueueDescriptor*, bool> KQueuePoller::LookupOrCreateDescriptor(
+std::pair<KQueueData*, bool> KQueuePoller::LookupOrCreateDescriptor(
     int fd) {
   pair<DescriptorMap::iterator, bool> result = m_descriptor_map.insert(
       DescriptorMap::value_type(fd, NULL));
@@ -368,7 +368,7 @@ std::pair<KQueueDescriptor*, bool> KQueuePoller::LookupOrCreateDescriptor(
 
   if (new_descriptor) {
     if (m_free_descriptors.empty()) {
-      result.first->second = new KQueueDescriptor();
+      result.first->second = new KQueueData();
     } else {
       result.first->second = m_free_descriptors.back();
       m_free_descriptors.pop_back();
@@ -378,10 +378,10 @@ std::pair<KQueueDescriptor*, bool> KQueuePoller::LookupOrCreateDescriptor(
 }
 
 bool KQueuePoller::ApplyChange(int fd, int16_t filter, uint16_t flags,
-                               KQueueDescriptor *descriptor,
+                               KQueueData *descriptor,
                                bool apply_immediately) {
   EV_SET(&m_change_set[m_next_change_entry++], fd, filter, flags, 0, 0,
-         descriptor);
+         reinterpret_cast<void*>(descriptor));
 
   if (m_next_change_entry == CHANGE_SET_SIZE || apply_immediately) {
     int r = kevent(m_kqueue_fd, m_change_set, m_next_change_entry, NULL, 0,
@@ -400,24 +400,24 @@ bool KQueuePoller::RemoveDescriptor(int fd, int16_t filter) {
     return false;
   }
 
-  KQueueDescriptor *kqueue_descriptor = STLFindOrNull(m_descriptor_map, fd);
-  if (!kqueue_descriptor) {
-    OLA_WARN << "Couldn't find KQueueDescriptor for " << fd;
+  KQueueData *kqueue_data = STLFindOrNull(m_descriptor_map, fd);
+  if (!kqueue_data) {
+    OLA_WARN << "Couldn't find KQueueData for fd " << fd;
     return false;
   }
 
   bool remove_from_kevent = true;
 
   if (filter == EVFILT_READ) {
-    kqueue_descriptor->enable_read = false;
-    kqueue_descriptor->read_descriptor = NULL;
-    if (kqueue_descriptor->connected_descriptor) {
-      remove_from_kevent = !kqueue_descriptor->connected_close_in_progress;
-      kqueue_descriptor->connected_descriptor = NULL;
+    kqueue_data->enable_read = false;
+    kqueue_data->read_descriptor = NULL;
+    if (kqueue_data->connected_descriptor) {
+      remove_from_kevent = !kqueue_data->connected_close_in_progress;
+      kqueue_data->connected_descriptor = NULL;
     }
   } else if (filter == EVFILT_WRITE) {
-    kqueue_descriptor->enable_write = false;
-    kqueue_descriptor->write_descriptor = NULL;
+    kqueue_data->enable_write = false;
+    kqueue_data->write_descriptor = NULL;
   } else {
     OLA_WARN << "Unknown kqueue filter: " << filter;
   }
@@ -426,7 +426,7 @@ bool KQueuePoller::RemoveDescriptor(int fd, int16_t filter) {
     ApplyChange(fd, filter, EV_DELETE, NULL, true);
   }
 
-  if (!kqueue_descriptor->enable_read && !kqueue_descriptor->enable_write) {
+  if (!kqueue_data->enable_read && !kqueue_data->enable_write) {
     m_orphaned_descriptors.push_back(
         STLLookupAndRemovePtr(&m_descriptor_map, fd));
   }
