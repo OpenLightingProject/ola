@@ -57,7 +57,7 @@ namespace io {
  * For example, if Poll() iterates over a set of Descriptors and calls
  * PerformRead() when appropriate, the RemoveReadDescriptor() method can not
  * simply call erase on the set, since doing so would invalidate the
- * iterator held in Poll(). The solutio is to either use a data structure that
+ * iterator held in Poll(). The solution is to either use a data structure that
  * does not invalidate iterators on erase or use a double-lookup and set the
  * pointer to NULL to indicate erasure.
  *
