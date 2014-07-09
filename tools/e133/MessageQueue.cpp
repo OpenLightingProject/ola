@@ -90,8 +90,10 @@ bool MessageQueue::SendMessage(ola::io::IOStack *stack) {
  */
 void MessageQueue::PerformWrite() {
   m_descriptor->Send(&m_output_buffer);
-  if (m_output_buffer.Empty() && m_associated)
+  if (m_output_buffer.Empty() && m_associated) {
     m_ss->RemoveWriteDescriptor(m_descriptor);
+    m_associated = false;
+  }
 }
 
 
