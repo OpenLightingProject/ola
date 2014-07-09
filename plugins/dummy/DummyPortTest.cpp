@@ -249,9 +249,11 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_SLOT_INFO,
     ola::rdm::PID_SLOT_DESCRIPTION,
     ola::rdm::PID_DEFAULT_SLOT_VALUE,
+#ifdef HAVE_GETLOADAVG
     ola::rdm::PID_SENSOR_DEFINITION,
     ola::rdm::PID_SENSOR_VALUE,
     ola::rdm::PID_RECORD_SENSORS,
+#endif
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
     ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
