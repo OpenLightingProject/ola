@@ -21,14 +21,20 @@ examples_libolaconfig_la_SOURCES = \
 ##################################################
 bin_PROGRAMS += \
     examples/ola_dev_info \
-    examples/ola_e131 \
     examples/ola_rdm_discover \
     examples/ola_rdm_get \
     examples/ola_recorder \
     examples/ola_streaming_client \
     examples/ola_timecode \
-    examples/ola_uni_stats \
-    examples/ola_usbpro
+    examples/ola_uni_stats
+
+if USE_E131
+bin_PROGRAMS += examples/ola_e131
+endif
+
+if USE_USBPRO
+bin_PROGRAMS += examples/ola_usbpro
+endif
 
 if USE_ARTNET
 bin_PROGRAMS += examples/ola_artnet
