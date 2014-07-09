@@ -13,4 +13,5 @@ dist_man_MANS += \
     man/ola_uni_info.1 \
     man/ola_usbpro.1 \
     man/olad.1 \
-    man/rdmpro_sniffer.1
+    man/rdmpro_sniffer.1 \
+    man/usbpro_firmware.1
