@@ -11,15 +11,20 @@ noinst_HEADERS += olad/TestCommon.h
 # LIBRARIES
 ##################################################
 ola_server_plugin_interface_sources = \
-    olad/Device.cpp
+    olad/Device.cpp \
+    olad/DeviceManager.cpp \
+    olad/DeviceManager.h \
+    olad/Plugin.cpp \
+    olad/PluginAdaptor.cpp \
+    olad/PortBroker.cpp \
+    olad/PortManager.cpp \
+    olad/PortManager.h
 
 ola_server_sources = \
     olad/Client.cpp \
     olad/Client.h \
     olad/ClientBroker.cpp \
     olad/ClientBroker.h \
-    olad/DeviceManager.cpp \
-    olad/DeviceManager.h \
     olad/DiscoveryAgent.cpp \
     olad/DiscoveryAgent.h \
     olad/DmxSource.cpp \
@@ -29,15 +34,10 @@ ola_server_sources = \
     olad/OlaServerServiceImpl.cpp \
     olad/OlaServerServiceImpl.h \
     olad/OladHTTPServer.h \
-    olad/Plugin.cpp \
-    olad/PluginAdaptor.cpp \
     olad/PluginLoader.h \
     olad/PluginManager.cpp \
     olad/PluginManager.h \
     olad/Port.cpp \
-    olad/PortBroker.cpp \
-    olad/PortManager.cpp \
-    olad/PortManager.h \
     olad/Preferences.cpp \
     olad/RDMHTTPModule.h \
     olad/Universe.cpp \

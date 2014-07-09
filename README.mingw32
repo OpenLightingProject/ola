@@ -8,6 +8,8 @@ To build OLA on Windows with MinGW, you need an up-to-date installation. The Min
 
 You need to select:
 - mingw-developer-toolkit
+- mingw32-base
+- mingw32-pthreads-w32
 - msys-base
 - msys-coreutils
 - msys-wget
@@ -57,8 +59,8 @@ cppunit
 
 libmicrohttpd
 -------------
-- Download and extract the latest libmicrohttpd tarball from http://ftp.gnu.org/gnu/libmicrohttpd/
-- Configure, compile and install it using the MinGW MSYS shell
+- Download and extract the latest w32 libmicrohttpd zip from http://ftp.gnu.org/gnu/libmicrohttpd/
+- Extract to MinGW directory
 
 ============
 Building OLA
