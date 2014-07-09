@@ -249,9 +249,11 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_SLOT_INFO,
     ola::rdm::PID_SLOT_DESCRIPTION,
     ola::rdm::PID_DEFAULT_SLOT_VALUE,
+#ifdef HAVE_GETLOADAVG
     ola::rdm::PID_SENSOR_DEFINITION,
     ola::rdm::PID_SENSOR_VALUE,
     ola::rdm::PID_RECORD_SENSORS,
+#endif
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
     ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
@@ -316,7 +318,11 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
+#ifdef HAVE_GETLOADAVG
   device_descriptor.sensor_count = 3;
+#else
+  device_descriptor.sensor_count = 0;
+#endif
 
   RDMResponse *response = GetResponseFromData(
       request,
