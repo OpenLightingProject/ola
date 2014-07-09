@@ -318,7 +318,11 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
+#ifdef HAVE_GETLOADAVG
   device_descriptor.sensor_count = 3;
+#else
+  device_descriptor.sensor_count = 0;
+#endif
 
   RDMResponse *response = GetResponseFromData(
       request,
