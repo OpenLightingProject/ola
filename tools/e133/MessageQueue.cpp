@@ -49,9 +49,12 @@ MessageQueue::MessageQueue(ola::io::ConnectedDescriptor *descriptor,
 }
 
 /**
- * Cancel the callback.
+ * Remove the descriptor if required.
  */
 MessageQueue::~MessageQueue() {
+  if (m_associated) {
+    m_ss->RemoveWriteDescriptor(m_descriptor);
+  }
   m_descriptor->SetOnWritable(NULL);
 }
 

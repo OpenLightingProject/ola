@@ -51,6 +51,8 @@ DEFINE_uint16(listen_backlog, 100,
               "The backlog for the listen() call. Often limited to 128");
 DEFINE_uint32(expected_devices, 1,
               "Time how long it takes until this many devices connect.");
+DEFINE_bool(stop_after_all_devices, false,
+            "Exit once all devices connect");
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
@@ -239,6 +241,9 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
     clock.CurrentTime(&now);
     OLA_INFO << FLAGS_expected_devices << " connected in "
              << (now - m_start_time);
+    if (FLAGS_stop_after_all_devices) {
+      m_ss.Terminate();
+    }
   }
 }
 
