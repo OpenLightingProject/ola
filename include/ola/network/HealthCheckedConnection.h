@@ -97,6 +97,7 @@ class HealthCheckedConnection {
      */
     void ResumeTimer();
 
+ protected:
     /**
      * This is called when we don't receive a health check within the interval.
      */
@@ -110,6 +111,7 @@ class HealthCheckedConnection {
 
     bool SendNextHeartbeat();
     void UpdateReceiveTimer();
+    void InternalHeartbeatTimeout();
 
     DISALLOW_COPY_AND_ASSIGN(HealthCheckedConnection);
 };

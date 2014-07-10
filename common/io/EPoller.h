@@ -39,7 +39,7 @@
 namespace ola {
 namespace io {
 
-class EPollDescriptor;
+class EPollData;
 
 /**
  * @class EPoller
@@ -74,13 +74,13 @@ class EPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
-  typedef std::map<int, EPollDescriptor*> DescriptorMap;
-  typedef std::vector<EPollDescriptor*> DescriptorList;
+  typedef std::map<int, EPollData*> DescriptorMap;
+  typedef std::vector<EPollData*> DescriptorList;
 
   DescriptorMap m_descriptor_map;
 
   // EPoller is re-enterant. Remove may be called while we hold a pointer to an
-  // EPollDescriptor. To avoid deleting data out from underneath ourselves, we
+  // EPollData. To avoid deleting data out from underneath ourselves, we
   // instead move the removed descriptors to this list and then clean them up
   // outside the callback loop.
   DescriptorList m_orphaned_descriptors;
@@ -93,10 +93,10 @@ class EPoller : public PollerInterface {
   Clock *m_clock;
   TimeStamp m_wake_up_time;
 
-  std::pair<EPollDescriptor*, bool> LookupOrCreateDescriptor(int fd);
+  std::pair<EPollData*, bool> LookupOrCreateDescriptor(int fd);
 
   bool RemoveDescriptor(int fd, int event, bool warn_on_missing);
-  void CheckDescriptor(struct epoll_event *event, EPollDescriptor *descriptor);
+  void CheckDescriptor(struct epoll_event *event, EPollData *descriptor);
 
   static const int MAX_EVENTS;
   static const int READ_FLAGS;
