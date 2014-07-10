@@ -92,6 +92,8 @@ tools_e133_libolae133device_la_LIBADD = \
 # PROGRAMS
 ##################################################
 noinst_PROGRAMS += \
+    tools/e133/basic_controller \
+    tools/e133/basic_device \
     tools/e133/e133_controller \
     tools/e133/e133_monitor \
     tools/e133/e133_receiver \
@@ -142,6 +144,16 @@ tools_e133_slp_sa_test_SOURCES = \
 tools_e133_slp_sa_test_LDADD = common/libolacommon.la \
                                slp/libolaslpserver.la \
                                tools/e133/libolae133slp.la
+
+tools_e133_basic_controller_SOURCES = tools/e133/basic-controller.cpp
+tools_e133_basic_controller_LDADD = common/libolacommon.la \
+                                    plugins/e131/e131/libolaacn.la \
+                                    tools/e133/libolae133common.la
+
+tools_e133_basic_device_SOURCES = tools/e133/basic-device.cpp
+tools_e133_basic_device_LDADD = common/libolacommon.la \
+                                plugins/e131/e131/libolaacn.la \
+                                tools/e133/libolae133common.la
 
 # TESTS
 ##################################################

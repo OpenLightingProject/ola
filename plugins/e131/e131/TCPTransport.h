@@ -38,6 +38,7 @@
 #include "ola/network/TCPSocket.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/Transport.h"
+#include "plugins/e131/e131/TransportHeader.h"
 
 namespace ola {
 namespace plugin {
