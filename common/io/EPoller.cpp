@@ -43,9 +43,9 @@ using std::pair;
 /*
  * Represents a FD
  */
-class EPollDescriptor {
+class EPollData {
  public:
-  EPollDescriptor()
+  EPollData()
       : events(0),
         read_descriptor(NULL),
         write_descriptor(NULL),
@@ -74,7 +74,7 @@ namespace {
  * Add the fd to the epoll_fd.
  * descriptor is the user data to associated with the event
  */
-bool AddEvent(int epoll_fd, int fd, EPollDescriptor *descriptor) {
+bool AddEvent(int epoll_fd, int fd, EPollData *descriptor) {
   epoll_event event;
   event.events = descriptor->events;
   event.data.ptr = descriptor;
@@ -93,7 +93,7 @@ bool AddEvent(int epoll_fd, int fd, EPollDescriptor *descriptor) {
  * Update the fd in the epoll event set
  * descriptor is the user data to associated with the event
  */
-bool UpdateEvent(int epoll_fd, int fd, EPollDescriptor *descriptor) {
+bool UpdateEvent(int epoll_fd, int fd, EPollData *descriptor) {
   epoll_event event;
   event.events = descriptor->events;
   event.data.ptr = descriptor;
@@ -135,7 +135,7 @@ const int EPoller::MAX_EVENTS = 10;
 const int EPoller::READ_FLAGS = EPOLLIN | EPOLLRDHUP;
 
 /**
- * @brief The number of pre-allocated EPollDescriptor to have.
+ * @brief The number of pre-allocated EPollData to have.
  */
 const unsigned int EPoller::MAX_FREE_DESCRIPTORS = 10;
 
@@ -193,7 +193,7 @@ bool EPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
     return false;
   }
 
-  pair<EPollDescriptor*, bool> result = LookupOrCreateDescriptor(
+  pair<EPollData*, bool> result = LookupOrCreateDescriptor(
       descriptor->ReadDescriptor());
   if (result.first->events & READ_FLAGS) {
     OLA_WARN << "Descriptor " << descriptor->ReadDescriptor()
@@ -222,7 +222,7 @@ bool EPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
     return false;
   }
 
-  pair<EPollDescriptor*, bool> result = LookupOrCreateDescriptor(
+  pair<EPollData*, bool> result = LookupOrCreateDescriptor(
       descriptor->ReadDescriptor());
 
   if (result.first->events & READ_FLAGS) {
@@ -260,7 +260,7 @@ bool EPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
     return false;
   }
 
-  pair<EPollDescriptor*, bool> result = LookupOrCreateDescriptor(
+  pair<EPollData*, bool> result = LookupOrCreateDescriptor(
       descriptor->WriteDescriptor());
 
   if (result.first->events & EPOLLOUT) {
@@ -328,7 +328,7 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
   m_clock->CurrentTime(&m_wake_up_time);
 
   for (int i = 0; i < ready; i++) {
-    EPollDescriptor *descriptor = reinterpret_cast<EPollDescriptor*>(
+    EPollData *descriptor = reinterpret_cast<EPollData*>(
         events[i].data.ptr);
     CheckDescriptor(&events[i], descriptor);
   }
@@ -358,62 +358,63 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
  *  - Excute OnClose if a remote end closed the connection
  */
 void EPoller::CheckDescriptor(struct epoll_event *event,
-                              EPollDescriptor *descriptor) {
+                              EPollData *epoll_data) {
   if (event->events & (EPOLLHUP | EPOLLRDHUP)) {
-    if (descriptor->read_descriptor) {
-      descriptor->read_descriptor->PerformRead();
-    } else if (descriptor->write_descriptor) {
-      descriptor->write_descriptor->PerformWrite();
-    } else if (descriptor->connected_descriptor) {
+    if (epoll_data->read_descriptor) {
+      epoll_data->read_descriptor->PerformRead();
+    } else if (epoll_data->write_descriptor) {
+      epoll_data->write_descriptor->PerformWrite();
+    } else if (epoll_data->connected_descriptor) {
       ConnectedDescriptor::OnCloseCallback *on_close =
-          descriptor->connected_descriptor->TransferOnClose();
+          epoll_data->connected_descriptor->TransferOnClose();
       if (on_close)
         on_close->Run();
 
       // At this point the descriptor may be sitting in the orphan list if the
       // OnClose handler called into RemoveReadDescriptor()
-      if (descriptor->delete_connected_on_close) {
-        if
-          (RemoveDescriptor(descriptor->connected_descriptor->ReadDescriptor(),
-                            READ_FLAGS, false) &&
-            m_export_map) {
+      if (epoll_data->delete_connected_on_close &&
+          epoll_data->connected_descriptor) {
+        bool removed = RemoveDescriptor(
+            epoll_data->connected_descriptor->ReadDescriptor(), READ_FLAGS,
+            false);
+        if (removed && m_export_map) {
           (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
         }
-        delete descriptor->connected_descriptor;
-        descriptor->connected_descriptor = NULL;
+        delete epoll_data->connected_descriptor;
+        epoll_data->connected_descriptor = NULL;
       }
     } else {
-      OLA_FATAL << "HUP event for " << descriptor
+      OLA_FATAL << "HUP event for " << epoll_data
                 << " but no write or connected descriptor found!";
     }
     event->events = 0;
   }
 
   if (event->events & EPOLLIN) {
-    if (descriptor->read_descriptor) {
-      descriptor->read_descriptor->PerformRead();
-    } else if (descriptor->connected_descriptor) {
-      descriptor->connected_descriptor->PerformRead();
+    if (epoll_data->read_descriptor) {
+      epoll_data->read_descriptor->PerformRead();
+    } else if (epoll_data->connected_descriptor) {
+      epoll_data->connected_descriptor->PerformRead();
     }
   }
 
   if (event->events & EPOLLOUT) {
-    if (descriptor->write_descriptor) {
-      descriptor->write_descriptor->PerformWrite();
-    } else {
-      OLA_FATAL << "EPOLLOUT active but write_descriptor is NULL";
+    // epoll_data->write_descriptor may be null here if this descriptor was
+    // removed between when kevent returned and now.
+    if (epoll_data->write_descriptor) {
+      epoll_data->write_descriptor->PerformWrite();
     }
   }
 }
 
-std::pair<EPollDescriptor*, bool> EPoller::LookupOrCreateDescriptor(int fd) {
+std::pair<EPollData*, bool> EPoller::LookupOrCreateDescriptor(int fd) {
   pair<DescriptorMap::iterator, bool> result = m_descriptor_map.insert(
       DescriptorMap::value_type(fd, NULL));
   bool new_descriptor = result.second;
 
   if (new_descriptor) {
     if (m_free_descriptors.empty()) {
-      result.first->second = new EPollDescriptor();
+      result.first->second = new EPollData();
     } else {
       result.first->second = m_free_descriptors.back();
       m_free_descriptors.pop_back();
@@ -428,29 +429,29 @@ bool EPoller::RemoveDescriptor(int fd, int event, bool warn_on_missing) {
     return false;
   }
 
-  EPollDescriptor *epoll_descriptor = STLFindOrNull(m_descriptor_map, fd);
-  if (!epoll_descriptor) {
+  EPollData *epoll_data = STLFindOrNull(m_descriptor_map, fd);
+  if (!epoll_data) {
     if (warn_on_missing) {
-      OLA_WARN << "Couldn't find EPollDescriptor for " << fd;
+      OLA_WARN << "Couldn't find EPollData for " << fd;
     }
     return false;
   }
 
-  epoll_descriptor->events &= (~event);
+  epoll_data->events &= (~event);
 
   if (event & EPOLLOUT) {
-    epoll_descriptor->write_descriptor = NULL;
+    epoll_data->write_descriptor = NULL;
   } else if (event & EPOLLIN) {
-    epoll_descriptor->read_descriptor = NULL;
-    epoll_descriptor->connected_descriptor = NULL;
+    epoll_data->read_descriptor = NULL;
+    epoll_data->connected_descriptor = NULL;
   }
 
-  if (epoll_descriptor->events == 0) {
+  if (epoll_data->events == 0) {
     RemoveEvent(m_epoll_fd, fd);
     m_orphaned_descriptors.push_back(
         STLLookupAndRemovePtr(&m_descriptor_map, fd));
   } else {
-    return UpdateEvent(m_epoll_fd, fd, epoll_descriptor);
+    return UpdateEvent(m_epoll_fd, fd, epoll_data);
   }
   return true;
 }
