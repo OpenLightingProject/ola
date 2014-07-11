@@ -66,6 +66,7 @@ typedef enum {
 /**
  * The KiNet header
  */
+PACK(
 struct kinet_header {
   uint32_t magic;
   uint16_t version;
@@ -73,16 +74,18 @@ struct kinet_header {
   uint32_t padding;  // always set to 0, seq #,
                      // most of the time it's 0,
                      // not implemented in most supplies
-} __attribute__((packed));
+});
 
 
 // A KiNet poll message
+PACK(
 struct kinet_poll {
   uint32_t command;  // ??, Seems to always be KINET_DISCOVERY_COMMAND
-} __attribute__((packed));
+});
 
 
 // A KiNet poll reply message
+PACK(
 struct kinet_poll_reply {
   uint32_t src_ip;
   uint8_t hw_address[6];  // mac address
@@ -92,49 +95,54 @@ struct kinet_poll_reply {
   uint8_t node_name[60];
   uint8_t node_label[31];
   uint16_t zero2;
-} __attribute__((packed));
+});
 
 
 // A KiNet Set IP Command.
 // TODO(simon): Check what ip,mac dst this packet is sent to.
+PACK(
 struct kinet_set_ip {
   uint32_t something;  // ef be ad de
   uint8_t hw_address[6];  // The MAC address to match
   uint16_t something2;  // 05 67
   uint32_t new_ip;
-} __attribute__((packed));
+});
 
 
 // A KiNet Set Universe Command
+PACK(
 struct kinet_set_universe {
   uint32_t something;  // ef be ad de
   uint8_t universe;
   uint8_t zero[3];
-} __attribute__((packed));
+});
 
 
 // A KiNet Set Name Command
+PACK(
 struct kinet_set_name {
   uint32_t something;  // ef be ad de
   uint8_t new_name[31];  // Null terminated.
-} __attribute__((packed));
+});
 
 
 // A KiNet Get Address command
+PACK(
 struct kinet_get_address {
   uint32_t serial;
   uint32_t something;  // 41 00 12 00
-} __attribute__((packed));
+});
 
 
 // A KiNet DMX packet
+PACK(
 struct kinet_dmx {
   uint8_t port;  // should be set to 0 for v1
   uint8_t flags;  // set to 0
   uint16_t timerVal;  // set to 0
   uint32_t universe;
   uint8_t paylod[513];  // payload inc start code
-} __attribute__((packed));
+});
 
 
 struct kinet_port_out_flags {
@@ -151,6 +159,7 @@ struct kinet_port_out_sync {
 }
 
 // A KiNet DMX port out packet
+PACK(
 struct kinet_port_out {
   uint32_t universe;
   uint8_t port;        // 1- 16
@@ -159,7 +168,7 @@ struct kinet_port_out {
   uint16_t length;     // little endian
   uint16_t startCode;  // 0x0fff for chomASIC products, 0x0000 otherwise
   uint8_t payload[512];
-} __attribute__((packed));
+});
 
 
 // The full kinet packet

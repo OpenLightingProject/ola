@@ -196,12 +196,13 @@ void EnttecPortImpl::GetParameters(usb_pro_params_callback *callback) {
 bool EnttecPortImpl::SetParameters(uint8_t break_time,
                                    uint8_t mab_time,
                                    uint8_t rate) {
+  PACK(
   struct widget_params_s {
     uint16_t length;
     uint8_t break_time;
     uint8_t mab_time;
     uint8_t rate;
-  } __attribute__((packed));
+  });
 
   widget_params_s widget_parameters = {
     0,

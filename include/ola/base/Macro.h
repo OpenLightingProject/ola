@@ -77,5 +77,29 @@ namespace internal {
 /*
  * End of adapted code.
  */
+ 
+ /*
+  * In order to account for platform differences with regard to packing, we
+  * need to use the following macro while declaring types that need to have a
+  * specific binary layout.
+  * Taken from:
+  * http://stackoverflow.com/questions/1537964/
+  *   visual-c-equivalent-of-gccs-attribute-packed
+  */
+#ifdef _WIN32
+#ifdef _MSC_VER
+#define PACK(__Declaration__) \
+    __pragma(pack(push, 1)) \
+    __Declaration__; \
+    __pragma(pack(pop))
+#else
+#define PACK(__Declaration__) \
+    _Pragma("pack(push, 1)") \
+    __Declaration__; \
+    _Pragma("pack(pop)")
+#endif
+#else
+#define PACK( __Declaration__ ) __Declaration__; __attribute__((__packed__))
+#endif
 
 #endif  // INCLUDE_OLA_BASE_MACRO_H_

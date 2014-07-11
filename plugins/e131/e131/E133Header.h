@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <string>
 
+#include <ola/base/Macro.h>
+
 namespace ola {
 namespace plugin {
 namespace e131 {
@@ -55,12 +57,13 @@ class E133Header {
 
     enum { SOURCE_NAME_LEN = 64 };
 
+    PACK(
     struct e133_pdu_header_s {
       char source[SOURCE_NAME_LEN];
       uint32_t sequence;
       uint16_t endpoint;
       uint8_t reserved;
-    } __attribute__((packed));
+    });
     typedef struct e133_pdu_header_s e133_pdu_header;
 
  private:

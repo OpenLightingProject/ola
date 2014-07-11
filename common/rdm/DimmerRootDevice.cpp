@@ -160,10 +160,12 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  PACK(
   struct block_address_pdl {
     uint16_t total_footprint;
     uint16_t base_address;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(block_address_pdl) == 4);
 
   block_address_pdl pdl;
   pdl.base_address = 0;
