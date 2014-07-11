@@ -337,9 +337,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                              poll_data->overlapped);
           result = GetLastError();
           if (success) {
-            // Call returned immediately, so shorten the wait time
-            // event
-            //ms_to_sleep = std::min(ms_to_sleep, 10);
             data.push_back(poll_data);
             events.push_back(poll_data->event);
             event_holders.push_back(event_holder);
@@ -392,9 +389,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                              poll_data->overlapped);
           result = GetLastError();
           if (success) {
-            // Call returned immediately, so shorten the wait time
-            // event
-            //ms_to_sleep = std::min(ms_to_sleep, 10);
             data.push_back(poll_data);
             events.push_back(poll_data->event);
             event_holders.push_back(event_holder);
