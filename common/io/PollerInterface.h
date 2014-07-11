@@ -31,7 +31,41 @@ namespace io {
 
 /**
  * @class PollerInterface
- * @brief The interface for the Poller classes
+ * @brief The interface for the Poller classes.
+ *
+ * This forms the basis for the low level event management. The SelectServer
+ * will add / remove descriptors as required and then call Poll() with a
+ * timeout. The Poll() method is responsible for checking for timeouts (via the
+ * TimeoutManager) and then blocking until the descriptors are ready or a
+ * timeout event occurs. This blocking is done with select(), poll(),
+ * epoll() or kevent(), depending on the implementation.
+ *
+ * Once the blocking wait returns. any ready descriptors should the appropriate
+ * method called: ola::io::ReadFileDescriptor::PerformRead(),
+ * ola::io::WriteFileDescriptor::PerformWrite() or the callback set in
+ * ola::io::ConnectedDescriptor::SetOnClose(). Once all
+ * descriptors and any new timeouts have been handled, Poll() returns.
+ *
+ * @warning
+ * It's absolutely critical that implementations of PollerInterface be
+ * reentrant. Calling any of the read / write / close actions may in turn add /
+ * remove descriptors, including the descriptor the method was itself called
+ * on. There are tests in SelectServerTest.cpp to exercise some of these cases
+ * but implementors need to be careful.
+ *
+ * @warning
+ * For example, if Poll() iterates over a set of Descriptors and calls
+ * PerformRead() when appropriate, the RemoveReadDescriptor() method can not
+ * simply call erase on the set, since doing so would invalidate the
+ * iterator held in Poll(). The solution is to either use a data structure that
+ * does not invalidate iterators on erase or use a double-lookup and set the
+ * pointer to NULL to indicate erasure.
+ *
+ * @warning
+ * It's also important to realize that after a RemoveReadDescriptor() or
+ * RemoveWriteDescriptor() is called, neither the FD number nor the pointer to
+ * the Destructor can be used again as a unique identifier. This is because
+ * either may be reused immediately following the call to remove.
  */
 class PollerInterface {
  public :
@@ -98,7 +132,7 @@ class PollerInterface {
   virtual const TimeStamp *WakeUpTime() const = 0;
 
   /**
-   * @brief Poll the Descriptors for events.
+   * @brief Poll the Descriptors for events and execute any callbacks.
    * @param timeout_manager the TimeoutManager to use for timer events.
    * @param poll_interval the maximum time to block for.
    * @returns false if any errors occured, true if events were handled.

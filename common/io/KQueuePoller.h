@@ -39,7 +39,7 @@
 namespace ola {
 namespace io {
 
-class KQueueDescriptor;
+class KQueueData;
 
 /**
  * @class KQueuePoller
@@ -76,13 +76,13 @@ class KQueuePoller : public PollerInterface {
  private:
   enum { CHANGE_SET_SIZE = 10 };
 
-  typedef std::map<int, KQueueDescriptor*> DescriptorMap;
-  typedef std::vector<KQueueDescriptor*> DescriptorList;
+  typedef std::map<int, KQueueData*> DescriptorMap;
+  typedef std::vector<KQueueData*> DescriptorList;
 
   DescriptorMap m_descriptor_map;
 
   // KQueuePoller is re-enterant. Remove may be called while we hold a pointer
-  // to an KQueueDescriptor. To avoid deleting data out from underneath
+  // to an KQueueData. To avoid deleting data out from underneath
   // ourselves, we instead move the removed descriptors to this list and then
   // clean them up outside the callback loop.
   DescriptorList m_orphaned_descriptors;
@@ -100,9 +100,9 @@ class KQueuePoller : public PollerInterface {
   TimeStamp m_wake_up_time;
 
   void CheckDescriptor(struct kevent *event);
-  std::pair<KQueueDescriptor*, bool> LookupOrCreateDescriptor(int fd);
+  std::pair<KQueueData*, bool> LookupOrCreateDescriptor(int fd);
   bool ApplyChange(int fd, int16_t filter, uint16_t flags,
-                   KQueueDescriptor *descriptor, bool apply_immediately);
+                   KQueueData *kqueue_data, bool apply_immediately);
   bool RemoveDescriptor(int fd, int16_t filter);
 
   static const int MAX_EVENTS;
