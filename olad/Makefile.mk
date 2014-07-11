@@ -43,7 +43,7 @@ ola_server_sources = \
     olad/Universe.cpp \
     olad/UniverseStore.cpp \
     olad/UniverseStore.h
-ola_server_additional_libs =
+ola_server_additional_libs = olad/libolaserverplugininterface.la
 
 if HAVE_DNSSD
 ola_server_sources += olad/BonjourDiscoveryAgent.h \
