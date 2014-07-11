@@ -43,7 +43,7 @@ ola_server_sources = \
     olad/Universe.cpp \
     olad/UniverseStore.cpp \
     olad/UniverseStore.h
-ola_server_additional_libs = olad/libolaserverplugininterface.la
+ola_server_additional_libs =
 
 if HAVE_DNSSD
 ola_server_sources += olad/BonjourDiscoveryAgent.h \
@@ -113,6 +113,7 @@ test_programs += \
 
 COMMON_OLAD_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
                          olad/libolaserver.la \
+                         olad/libolaserverplugininterface.la \
                          common/libolacommon.la
 
 olad_DeviceTester_SOURCES = olad/DeviceTest.cpp olad/DeviceManagerTest.cpp
