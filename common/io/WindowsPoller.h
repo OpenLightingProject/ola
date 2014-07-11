@@ -86,7 +86,7 @@ class WindowsPoller : public PollerInterface {
 
   std::pair<WindowsPollerDescriptor*, bool>
       LookupOrCreateDescriptor(void* handle);
-  bool RemoveDescriptor(void* handle, int flag);
+  bool RemoveDescriptor(void* handle, int flag, bool warn_on_missing);
 
   void HandleWakeup(PollData* data);
   void FinalCheckIOs(std::vector<PollData*> data);

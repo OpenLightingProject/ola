@@ -168,16 +168,26 @@ bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
 }
 
 bool WindowsPoller::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
-  return RemoveDescriptor(ToHandle(descriptor->ReadDescriptor()), FLAG_READ);
+  return RemoveDescriptor(ToHandle(descriptor->ReadDescriptor()),
+                          FLAG_READ,
+                          true);
 }
 
 bool WindowsPoller::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
-  return RemoveDescriptor(ToHandle(descriptor->ReadDescriptor()), FLAG_READ);
+  return RemoveDescriptor(ToHandle(descriptor->ReadDescriptor()),
+                          FLAG_READ,
+                          true);
 }
 
 bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
   if (!descriptor->ValidWriteDescriptor()) {
     OLA_WARN << "AddWriteDescriptor called with invalid descriptor";
+    return false;
+  }
+
+  if ((descriptor->WriteDescriptor().m_type != SOCKET_DESCRIPTOR) &&
+      (descriptor->WriteDescriptor().m_type != PIPE_DESCRIPTOR)) {
+    OLA_WARN << "Cannot add descriptor " << descriptor << " for writing.";
     return false;
   }
 
@@ -198,18 +208,21 @@ bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
 }
 
 bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
-  return RemoveDescriptor(ToHandle(descriptor->WriteDescriptor()), FLAG_WRITE);
+  return RemoveDescriptor(ToHandle(descriptor->WriteDescriptor()),
+                          FLAG_WRITE,
+                          true);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 class PollData {
  public:
-  PollData(HANDLE event, HANDLE handle)
+  PollData(HANDLE event, HANDLE handle, bool read)
     : event(event),
       handle(handle),
       buffer(NULL),
       size(0),
-      overlapped(NULL) {
+      overlapped(NULL),
+      read(read) {
   }
 
   ~PollData() {
@@ -252,6 +265,7 @@ class PollData {
   char* buffer;
   DWORD size;
   OVERLAPPED* overlapped;
+  bool read;
 };
 
 void CancelIOs(std::vector<PollData*>* data) {
@@ -307,59 +321,101 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
 
     switch (descriptor->type) {
       case PIPE_DESCRIPTOR:
-        if (!descriptor->connected_descriptor) {
-          OLA_WARN << "Invalid connected descriptor";
-          break;
-        }
-        descriptor_handle = descriptor->connected_descriptor->ReadDescriptor();
-        event_holder = new EventHolder();
-        poll_data = new PollData(*event_holder, ToHandle(descriptor_handle));
-        poll_data->AllocBuffer(ASYNC_DATA_BUFFER_SIZE);
-        poll_data->CreateOverlapped();
+        if (descriptor->connected_descriptor) {
+          descriptor_handle =
+              descriptor->connected_descriptor->ReadDescriptor();
+          event_holder = new EventHolder();
+          poll_data = new PollData(*event_holder, ToHandle(descriptor_handle),
+              true);
+          poll_data->AllocBuffer(ASYNC_DATA_BUFFER_SIZE);
+          poll_data->CreateOverlapped();
 
-        success = ReadFile(poll_data->handle,
-                           poll_data->buffer,
-                           poll_data->size,
-                           &(poll_data->size),
-                           poll_data->overlapped);
-        result = GetLastError();
-        if (success) {
-          // Call returned immediately, so shorten the wait time
-          // event
-          ms_to_sleep = std::min(ms_to_sleep, 10);
-          data.push_back(poll_data);
-          events.push_back(poll_data->event);
-          event_holders.push_back(event_holder);
-        } else if (!success && (result != ERROR_IO_PENDING)) {
-          if (result == ERROR_BROKEN_PIPE) {
-            OLA_WARN << "Broken pipe: " << ToHandle(descriptor_handle);
-            // Pipe was closed, so close the descriptor
-            ConnectedDescriptor::OnCloseCallback *on_close =
-              descriptor->connected_descriptor->TransferOnClose();
-            if (on_close)
-              on_close->Run();
-            if (descriptor->connected_descriptor) {
-              if (descriptor->delete_connected_on_close) {
-                if (RemoveReadDescriptor(descriptor->connected_descriptor) &&
-                    m_export_map) {
-                  (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+          success = ReadFile(poll_data->handle,
+                             poll_data->buffer,
+                             poll_data->size,
+                             &(poll_data->size),
+                             poll_data->overlapped);
+          result = GetLastError();
+          if (success) {
+            // Call returned immediately, so shorten the wait time
+            // event
+            //ms_to_sleep = std::min(ms_to_sleep, 10);
+            data.push_back(poll_data);
+            events.push_back(poll_data->event);
+            event_holders.push_back(event_holder);
+          } else if (!success && (result != ERROR_IO_PENDING)) {
+            if (result == ERROR_BROKEN_PIPE) {
+              OLA_WARN << "Broken pipe: " << ToHandle(descriptor_handle);
+              // Pipe was closed, so close the descriptor
+              ConnectedDescriptor::OnCloseCallback *on_close =
+                descriptor->connected_descriptor->TransferOnClose();
+              if (on_close)
+                on_close->Run();
+              if (descriptor->connected_descriptor) {
+                if (descriptor->delete_connected_on_close) {
+                  if (RemoveReadDescriptor(descriptor->connected_descriptor) &&
+                      m_export_map) {
+                    (*m_export_map->GetIntegerVar(
+                        K_CONNECTED_DESCRIPTORS_VAR))--;
+                  }
+                  delete descriptor->connected_descriptor;
+                  descriptor->connected_descriptor = NULL;
                 }
-                delete descriptor->connected_descriptor;
-                descriptor->connected_descriptor = NULL;
+                delete poll_data;
+                delete event_holder;
               }
+            } else {
+              OLA_WARN << "ReadFile failed with " << result << " for "
+                       << ToHandle(descriptor_handle);
               delete poll_data;
               delete event_holder;
             }
           } else {
-            OLA_WARN << "ReadFile failed with " << result << " for "
-                     << ToHandle(descriptor_handle);
-            delete poll_data;
-            delete event_holder;
+            data.push_back(poll_data);
+            events.push_back(poll_data->event);
+            event_holders.push_back(event_holder);
           }
-        } else {
-          data.push_back(poll_data);
-          events.push_back(poll_data->event);
-          event_holders.push_back(event_holder);
+        }
+        if (descriptor->write_descriptor) {
+          descriptor_handle =
+              descriptor->write_descriptor->WriteDescriptor();
+          event_holder = new EventHolder();
+          poll_data = new PollData(*event_holder, ToHandle(descriptor_handle),
+              false);
+          poll_data->AllocBuffer(1);
+          poll_data->CreateOverlapped();
+
+          success = WriteFile(poll_data->handle,
+                             poll_data->buffer,
+                             poll_data->size,
+                             &(poll_data->size),
+                             poll_data->overlapped);
+          result = GetLastError();
+          if (success) {
+            // Call returned immediately, so shorten the wait time
+            // event
+            //ms_to_sleep = std::min(ms_to_sleep, 10);
+            data.push_back(poll_data);
+            events.push_back(poll_data->event);
+            event_holders.push_back(event_holder);
+          } else if (!success && (result != ERROR_IO_PENDING)) {
+            if (result == ERROR_BROKEN_PIPE) {
+              OLA_WARN << "Broken pipe: " << ToHandle(descriptor_handle);
+              // Pipe was closed, so close the descriptor
+              descriptor->write_descriptor = NULL;
+              delete poll_data;
+              delete event_holder;
+            } else {
+              OLA_WARN << "WriteFile failed with " << result << " for "
+                       << ToHandle(descriptor_handle);
+              delete poll_data;
+              delete event_holder;
+            }
+          } else {
+            data.push_back(poll_data);
+            events.push_back(poll_data->event);
+            event_holders.push_back(event_holder);
+          }
         }
         break;
       case SOCKET_DESCRIPTOR:
@@ -372,7 +428,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
             descriptor_handle = descriptor->read_descriptor->ReadDescriptor();
           }
           event_holder = new EventHolder();
-          poll_data = new PollData(*event_holder, ToHandle(descriptor_handle));
+          poll_data = new PollData(*event_holder, ToHandle(descriptor_handle),
+              true);
           if (WSAEventSelect(ToFD(descriptor_handle),
                              *event_holder,
                              FD_READ | FD_CLOSE | FD_ACCEPT) != 0) {
@@ -389,7 +446,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
           // select() for writeable events
           descriptor_handle = descriptor->write_descriptor->WriteDescriptor();
           event_holder = new EventHolder();
-          poll_data = new PollData(*event_holder, ToHandle(descriptor_handle));
+          poll_data = new PollData(*event_holder, ToHandle(descriptor_handle),
+              false);
           if (WSAEventSelect(ToFD(descriptor_handle),
                              *event_holder,
                              FD_WRITE | FD_CLOSE | FD_CONNECT) != 0) {
@@ -506,7 +564,9 @@ std::pair<WindowsPollerDescriptor*, bool>
   return std::make_pair(result.first->second, new_descriptor);
 }
 
-bool WindowsPoller::RemoveDescriptor(void* handle, int flag) {
+bool WindowsPoller::RemoveDescriptor(void* handle,
+                                     int flag,
+                                     bool warn_on_missing) {
   if (handle == reinterpret_cast<void*>(-1)) {
     OLA_WARN << "Attempt to remove an invalid file descriptor";
     return false;
@@ -514,7 +574,9 @@ bool WindowsPoller::RemoveDescriptor(void* handle, int flag) {
 
   WindowsPollerDescriptor *descriptor = STLFindOrNull(m_descriptor_map, handle);
   if (!descriptor) {
-    OLA_WARN << "Couldn't find WindowsPollerDescriptor for " << handle;
+    if (warn_on_missing) {
+      OLA_WARN << "Couldn't find WindowsPollerDescriptor for " << handle;
+    }
     return false;
   }
 
@@ -549,41 +611,48 @@ void WindowsPoller::HandleWakeup(PollData* data) {
           OLA_WARN << "No overlapped entry for pipe descriptor";
           return;
         }
-        if (!descriptor->connected_descriptor) {
-          OLA_WARN << "Pipe descriptor has no connected descriptor";
-          return;
-        }
-
-        if (!descriptor->connected_descriptor->ValidReadDescriptor()) {
-          RemoveDescriptor(descriptor, FLAG_READ);
-          return;
-        }
-
-        DescriptorHandle handle =
-        descriptor->connected_descriptor->ReadDescriptor();
-
-        DWORD bytes_transferred = 0;
-        if (!GetOverlappedResult(data->handle,
-                                 data->overlapped,
-                                 &bytes_transferred,
-                                 TRUE)) {
-          if (GetLastError() != ERROR_OPERATION_ABORTED) {
-            OLA_WARN << "GetOverlappedResult failed with " << GetLastError();
+        if (data->read && descriptor->connected_descriptor) {
+          if (!descriptor->connected_descriptor->ValidReadDescriptor()) {
+            RemoveDescriptor(descriptor, FLAG_READ, false);
             return;
           }
-        }
 
-        uint32_t to_copy = std::min(static_cast<uint32_t>(bytes_transferred),
-            (ASYNC_DATA_BUFFER_SIZE - *handle.m_async_data_size));
-        if (to_copy < bytes_transferred) {
-          OLA_WARN << "Pipe descriptor has lost data";
-        }
+          DescriptorHandle handle =
+              descriptor->connected_descriptor->ReadDescriptor();
 
-        memcpy(&(handle.m_async_data[*handle.m_async_data_size]), data->buffer,
-            to_copy);
-        *handle.m_async_data_size += to_copy;
-        if (*handle.m_async_data_size > 0) {
-          descriptor->connected_descriptor->PerformRead();
+          DWORD bytes_transferred = 0;
+          if (!GetOverlappedResult(data->handle,
+                                   data->overlapped,
+                                   &bytes_transferred,
+                                   TRUE)) {
+            if (GetLastError() != ERROR_OPERATION_ABORTED) {
+              OLA_WARN << "GetOverlappedResult failed with " << GetLastError();
+              return;
+            }
+          }
+
+          uint32_t to_copy = std::min(static_cast<uint32_t>(bytes_transferred),
+              (ASYNC_DATA_BUFFER_SIZE - *handle.m_async_data_size));
+          if (to_copy < bytes_transferred) {
+            OLA_WARN << "Pipe descriptor has lost data";
+          }
+
+          memcpy(&(handle.m_async_data[*handle.m_async_data_size]),
+              data->buffer, to_copy);
+          *handle.m_async_data_size += to_copy;
+          if (*handle.m_async_data_size > 0) {
+            descriptor->connected_descriptor->PerformRead();
+          }
+        } else if (!data->read && descriptor->write_descriptor) {
+          OLA_WARN << "Write wakeup";
+          if (!descriptor->write_descriptor->ValidWriteDescriptor()) {
+            RemoveDescriptor(descriptor, FLAG_WRITE, false);
+            return;
+          }
+
+          descriptor->write_descriptor->PerformWrite();
+        } else {
+          OLA_WARN << "Overlapped wakeup with data mismatch";
         }
       }
       break;
