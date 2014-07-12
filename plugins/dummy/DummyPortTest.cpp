@@ -769,13 +769,15 @@ void DummyPortTest::testSlotInfo() {
       0);  // data length
 
   PACK(
+  struct slot_info_struct {
+    uint16_t offset;
+    uint8_t type;
+    uint16_t label;
+  });
+
+  PACK(
   struct slot_infos_s {
-    PACK(
-    struct {
-      uint16_t offset;
-      uint8_t type;
-      uint16_t label;
-    } slot_info_s[5]);
+    slot_info_struct slot_info_s[5];
   });
 
   slot_infos_s slot_infos = {

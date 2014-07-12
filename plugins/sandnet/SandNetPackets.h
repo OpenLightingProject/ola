@@ -23,7 +23,9 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#ifndef _WIN32
 #include <netinet/in.h>
+#endif
 
 #include <ola/BaseTypes.h>
 #include "ola/network/IPV4Address.h"

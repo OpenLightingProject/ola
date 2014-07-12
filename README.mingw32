@@ -70,7 +70,7 @@ Building OLA
 * git clone https://github.com/OpenLightingProject/ola.git ola
 * cd ola
 * autoreconf -i -f
-* ./configure --disable-libftdi --disable-libusb --disable-osc --disable-root-check --disable-slp --disable-dmx4linux --disable-e131 --disable-espnet --disable-ftdidmx --disable-karate --disable-kinet --disable-milinst --disable-opendmx --disable-osc --disable-pathport --disable-renard --disable-sandnet --disable-shownet --disable-spi --disable-stageprofi --disable-usbpro --disable-usbdmx --disable-uart
+* ./configure --disable-libftdi --disable-libusb --disable-root-check --disable-dmx4linux --disable-e131 --disable-ftdidmx --disable-karate --disable-kinet --disable-milinst --disable-opendmx --disable-renard --disable-spi --disable-stageprofi --disable-usbpro --disable-usbdmx --disable-uart
 * make
 
 !!! TODO: Fix the minimal build described above !!!
