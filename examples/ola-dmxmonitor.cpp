@@ -689,7 +689,7 @@ void DisplayHelpAndExit(char arg[]) {
 int main(int argc, char *argv[]) {
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
-  
+
   if (!ola::NetworkInit()) {
     cerr << "Network initialization failed." << endl;
     exit(1);
