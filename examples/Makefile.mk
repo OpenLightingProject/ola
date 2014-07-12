@@ -101,9 +101,16 @@ examples_ola_throughput_LDADD = $(EXAMPLE_COMMON_LIBS)
 examples_ola_latency_SOURCES = examples/ola-latency.cpp
 examples_ola_latency_LDADD = $(EXAMPLE_COMMON_LIBS)
 
+if USING_WIN32
+# rename this program, otherwise UAC will block it
+OLA_PATCH_NAME = ola_ptch
+else
+OLA_PATCH_NAME = ola_patch
+endif
+
 # Many of the example programs are just symlinks to ola_dev_info
 install-exec-hook-examples:
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_patch
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/$(OLA_PATCH_NAME)
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_info
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_dmx
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_priority

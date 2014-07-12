@@ -23,6 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/rdm/UID.h>
@@ -203,6 +204,10 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed." << endl;
+    exit(1);
+  }
   OlaCallbackClientWrapper ola_client;
   opts.cmd = argv[0];
 

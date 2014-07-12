@@ -24,6 +24,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
 #include <ola/file/Util.h>
 #include <ola/io/SelectServer.h>
 #include <olad/PortConstants.h>
@@ -334,12 +335,22 @@ void InitOptions(options *opts) {
  */
 void SetMode(options *opts) {
   opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
+#ifdef _WIN32
+  // Strip the extension
+  size_t extension = opts->cmd.find(".");
+  if (extension != string::npos) {
+    opts->cmd = opts->cmd.substr(0, extension);
+  }
+#endif
 
   if (opts->cmd == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;
   } else if (opts->cmd == "ola_plugin_state") {
     opts->m = PLUGIN_STATE;
   } else if (opts->cmd == "ola_patch") {
+    opts->m = DEVICE_PATCH;
+  } else if (opts->cmd == "ola_ptch") {
+    // Working around Windows UAC
     opts->m = DEVICE_PATCH;
   } else if (opts->cmd == "ola_uni_info") {
     opts->m = UNIVERSE_INFO;
@@ -880,6 +891,10 @@ void SetPortPriority(OlaCallbackClientWrapper *wrapper, const options &opts) {
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed." << endl;
+    exit(1);
+  }
   OlaCallbackClientWrapper ola_client;
   options opts;
 

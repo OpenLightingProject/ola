@@ -24,6 +24,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/file/Util.h>
 #include <ola/rdm/PidStoreHelper.h>
@@ -479,6 +480,10 @@ void RDMController::HandleAckResponse(uint16_t manufacturer_id,
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed." << endl;
+    exit(1);
+  }
   options opts;
   ParseOptions(argc, argv, &opts);
   RDMController controller(opts.pid_location);

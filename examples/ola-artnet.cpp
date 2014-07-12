@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <ola/base/Init.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/plugin_id.h>
 #include <plugins/artnet/messages/ArtnetConfigMessages.pb.h>
@@ -249,6 +250,10 @@ void DisplayHelpAndExit(const options &opts) {
  * The main function
  */
 int main(int argc, char*argv[]) {
+  if (!ola::NetworkInit()) {
+    cerr << "Network initialization failed." << endl;
+    exit(1);
+  }
   options opts;
   opts.command = argv[0];
   opts.device_id = -1;

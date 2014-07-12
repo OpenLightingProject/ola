@@ -27,6 +27,7 @@ In addition, edit ~/.profile and add
 
 [ -f ~/.bashrc ] && . ~/.bashrc
 
+If you haven't configured your MSYS fstab yet, do that as well.
 
 ==============================
 Additional tools and libraries

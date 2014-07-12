@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <ola/plugin_id.h>
+#include <ola/base/Init.h>
 #include <plugins/e131/messages/E131ConfigMessages.pb.h>
 #include <iostream>
 #include <string>
@@ -198,6 +199,11 @@ void DisplayHelpAndExit(const options &opts) {
  * The main function
  */
 int main(int argc, char*argv[]) {
+  if (!ola::NetworkInit()) {
+    cerr << "Network initialization failed." << endl;
+    exit(1);
+  }
+
   options opts;
   opts.command = argv[0];
   opts.device_id = -1;
