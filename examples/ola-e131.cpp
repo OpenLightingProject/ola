@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <ola/plugin_id.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <plugins/e131/messages/E131ConfigMessages.pb.h>
 #include <iostream>
 #include <string>
@@ -201,7 +202,7 @@ void DisplayHelpAndExit(const options &opts) {
 int main(int argc, char*argv[]) {
   if (!ola::NetworkInit()) {
     cerr << "Network initialization failed." << endl;
-    exit(1);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   options opts;

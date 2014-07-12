@@ -692,7 +692,7 @@ int main(int argc, char *argv[]) {
 
   if (!ola::NetworkInit()) {
     std::cerr << "Network initialization failed." << std::endl;
-    exit(1);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   options opts;

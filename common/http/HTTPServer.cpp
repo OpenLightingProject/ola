@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <ola/Logging.h>
+#include <ola/base/Macro.h>
 #include <ola/file/Util.h>
 #include <ola/http/HTTPServer.h>
 #include <ola/io/Descriptor.h>
@@ -45,8 +46,7 @@ class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
     m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
   }
  private:
-  UnmanagedSocketDescriptor(const UnmanagedSocketDescriptor &other);
-  UnmanagedSocketDescriptor& operator=(const UnmanagedSocketDescriptor &other);
+  DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
 };
 #endif
 

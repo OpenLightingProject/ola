@@ -27,7 +27,7 @@ In addition, edit ~/.profile and add
 
 [ -f ~/.bashrc ] && . ~/.bashrc
 
-If you haven't configured your MSYS fstab yet, do that as well.
+If you haven't configured your MSYS fstab yet, do that as well. See http://www.mingw.org/wiki/Getting_Started for instructions.
 
 ==============================
 Additional tools and libraries
@@ -60,8 +60,13 @@ cppunit
 
 libmicrohttpd
 -------------
-- Download and extract the latest w32 libmicrohttpd zip from http://ftp.gnu.org/gnu/libmicrohttpd/
-- Extract to MinGW directory
+- Download and extract the latest libmicrohttpd tarball from http://ftp.gnu.org/gnu/libmicrohttpd/
+- Configure, compile and install it using the MinGW MSYS shell
+
+liblo (optional)
+----------------
+- Download and extract the latest version of liblo from http://liblo.sourceforge.net/
+- Configure, compile and install it using the MinGW MSYS shell
 
 ============
 Building OLA

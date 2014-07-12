@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   if (!ola::NetworkInit()) {
     OLA_WARN << "Network initialization failed.";
-    exit(1);
+    exit(ola::EXIT_UNAVAILABLE);
   }
   ola::OlaCallbackClientWrapper ola_client;
   options opts;

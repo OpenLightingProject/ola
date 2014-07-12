@@ -25,6 +25,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/file/Util.h>
 #include <ola/io/SelectServer.h>
 #include <olad/PortConstants.h>
@@ -893,7 +894,7 @@ int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   if (!ola::NetworkInit()) {
     OLA_WARN << "Network initialization failed." << endl;
-    exit(1);
+    exit(ola::EXIT_UNAVAILABLE);
   }
   OlaCallbackClientWrapper ola_client;
   options opts;
