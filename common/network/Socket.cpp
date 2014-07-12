@@ -64,9 +64,13 @@ bool ReceiveFrom(int fd, uint8_t *buffer, ssize_t *data_read,
                  struct sockaddr_in *source, socklen_t *src_size) {
   *data_read = recvfrom(
     fd, reinterpret_cast<char*>(buffer), *data_read,
-    0, reinterpret_cast<struct sockaddr*>(source), src_size);
+    0, reinterpret_cast<struct sockaddr*>(source), source ? src_size : NULL);
   if (*data_read < 0) {
+#ifdef _WIN32
+    OLA_WARN << "recvfrom fd: " << fd << " failed: " << WSAGetLastError();
+#else
     OLA_WARN << "recvfrom fd: " << fd << " failed: " << strerror(errno);
+#endif
     return false;
   }
   return true;

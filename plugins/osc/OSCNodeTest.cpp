@@ -24,6 +24,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/base/Init.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
@@ -172,6 +173,7 @@ const char OSCNodeTest::TEST_OSC_ADDRESS[] = "/dmx/universe/10";
 void OSCNodeTest::setUp() {
   // Init logging
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  ola::NetworkInit();
 
   // Setup and register the Timeout.
   m_timeout_id = m_ss.RegisterSingleTimeout(
