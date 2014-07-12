@@ -53,12 +53,11 @@ enum packet_type_e {
   SANDNET_PROG = 0x0600,
   SANDNET_LED = 0x0700,
   SANDNET_COMPRESSED_DMX = 0x0a00,
-}
 #ifdef _WIN32
-;
+};
 #pragma pack(pop)
 #else
-__attribute__((packed));
+} __attribute__((packed));
 #endif
 
 typedef enum packet_type_e packet_type_t;
@@ -74,12 +73,11 @@ enum protocol_id_e {
   SANDNET_SHOWNET = 0x09,
   SANDNET_IPX = 0x0d,
   SANDNET_ACN = 0x0e,
-}
 #ifdef _WIN32
-;
+};
 #pragma pack(pop)
 #else
-__attribute__((packed));
+} __attribute__((packed));
 #endif
 
 typedef enum protocol_id_e protocol_id_t;

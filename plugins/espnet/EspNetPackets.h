@@ -44,12 +44,11 @@ enum espnet_packet_type_e {
   ESPNET_REPLY = 'E' << 24 | 'S' << 16 | 'P' << 8 | 'R',
   ESPNET_DMX = 'E' << 24 | 'S' << 16 | 'D' << 8 | 'D',
   ESPNET_ACK = 'E' << 24 | 'S' << 16 | 'A' << 8 | 'P'
-}
 #ifdef _WIN32
-;
+};
 #pragma pack(pop)
 #else
-__attribute__((packed));
+} __attribute__((packed));
 #endif
 
 typedef enum espnet_packet_type_e espnet_packet_type_t;

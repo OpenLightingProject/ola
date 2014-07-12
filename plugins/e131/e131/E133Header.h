@@ -21,10 +21,10 @@
 #ifndef PLUGINS_E131_E131_E133HEADER_H_
 #define PLUGINS_E131_E131_E133HEADER_H_
 
+#include <ola/base/Macro.h>
+
 #include <stdint.h>
 #include <string>
-
-#include <ola/base/Macro.h>
 
 namespace ola {
 namespace plugin {

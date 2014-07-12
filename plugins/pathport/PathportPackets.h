@@ -46,12 +46,11 @@ enum pathport_packet_type_e {
   PATHPORT_ARP_REQUEST = 0x0301,
   PATHPORT_ARP_REPLY = 0x0302,
   PATHPORT_SET = 0x0400,
-}
 #ifdef _WIN32
-;
+};
 #pragma pack(pop)
 #else
-__attribute__((packed));
+} __attribute__((packed));
 #endif
 
 typedef enum pathport_packet_type_e pathport_packet_type_t;
