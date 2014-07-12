@@ -691,7 +691,7 @@ int main(int argc, char *argv[]) {
   atexit(cleanup);
 
   if (!ola::NetworkInit()) {
-    cerr << "Network initialization failed." << endl;
+    std::cerr << "Network initialization failed." << std::endl;
     exit(1);
   }
 
