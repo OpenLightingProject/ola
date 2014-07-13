@@ -95,6 +95,9 @@ bool UDPSocket::Init() {
 #ifdef _WIN32
   m_handle.m_handle.m_fd = sd;
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(sd, FIONBIO, &mode);
 #else
   m_handle = sd;
 #endif

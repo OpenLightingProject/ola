@@ -18,6 +18,10 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
+
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/ExportMap.h>
@@ -40,6 +44,9 @@ class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
   explicit UnmanagedSocketDescriptor(int fd) :
       ola::io::UnmanagedFileDescriptor(fd) {
     m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+    // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(fd, FIONBIO, &mode);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);

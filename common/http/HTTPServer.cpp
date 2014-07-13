@@ -27,6 +27,10 @@
 #include <ola/web/Json.h>
 #include <ola/web/JsonWriter.h>
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -44,6 +48,9 @@ class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
   explicit UnmanagedSocketDescriptor(int fd) :
       ola::io::UnmanagedFileDescriptor(fd) {
     m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+    // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(fd, FIONBIO, &mode);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
@@ -769,7 +776,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   file_path.push_back(ola::file::PATH_SEPARATOR);
   // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
-  ifstream i_stream(file_path.data());
+  ifstream i_stream(file_path.data(), ifstream::binary);
 
   if (!i_stream.is_open()) {
     OLA_WARN << "Missing file: " << file_path;
