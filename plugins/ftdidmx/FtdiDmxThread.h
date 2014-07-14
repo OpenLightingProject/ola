@@ -16,6 +16,11 @@
  * FtdiDmxThread.h
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and 
+ * additional device ids did change the original structure.
+ * 
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
