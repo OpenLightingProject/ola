@@ -44,9 +44,10 @@
 #endif
 
 #include <string.h>
+#include <libusb-1.0/libusb.h>
+
 #include <string>
 #include <vector>
-#include <libusb-1.0/libusb.h>
 
 #include "ola/DmxBuffer.h"
 
@@ -69,8 +70,7 @@ class FtdiWidgetInfo {
         m_serial(serial),
         m_id(id),
         m_vid(vid),
-        m_pid(pid)
-        {
+        m_pid(pid) {
     }
 
     FtdiWidgetInfo(const FtdiWidgetInfo &info)
@@ -78,7 +78,7 @@ class FtdiWidgetInfo {
         m_serial(info.Serial()),
         m_id(info.Id()),
         m_vid(info.Vid()),
-        m_pid(info.Pid()){
+        m_pid(info.Pid()) {
     }
 
     ~FtdiWidgetInfo() {}
@@ -129,8 +129,7 @@ class FtdiWidget {
                const std::string &name,
                uint32_t id = 0,
                const int vid = 0x0403,
-               const int pid = 0x6001
-              );
+               const int pid = 0x6001);
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -168,7 +167,7 @@ class FtdiWidget {
 };
 
 class FtdiInterface {
-  public:
+ public:
     FtdiInterface(const FtdiWidget * parent,
                   const ftdi_interface interface);
 
@@ -219,11 +218,11 @@ class FtdiInterface {
     /** Setup device for DMX Output **/
     bool SetupOutput();
 
-  private:
+ private:
     const FtdiWidget * m_parent;
     struct ftdi_context m_handle;
     const ftdi_interface m_interface;
-}; // FtdiInterface
+};  // FtdiInterface
 }  // namespace ftdidmx
 }  // namespace plugin
 }  // namespace ola

@@ -24,8 +24,9 @@
  */
 
 #include <math.h>
-#include <string>
 #include <unistd.h>
+
+#include <string>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"

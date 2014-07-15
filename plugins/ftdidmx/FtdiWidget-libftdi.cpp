@@ -34,11 +34,11 @@
 #include <strings.h>
 #include <ftdi.h>
 #include <assert.h>
+#include <libusb-1.0/libusb.h>
 
 #include <string>
 #include <algorithm>
 #include <vector>
-#include <libusb-1.0/libusb.h>
 
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
@@ -73,7 +73,7 @@ FtdiWidget::~FtdiWidget() {
  * Originally I had hoped to use ftdi_context::type however, it only gets set properly after the device has been opened.
  */
 int FtdiWidget::GetInterfaceCount() {
-  if(std::string::npos != m_name.find("Plus4")) {
+  if (std::string::npos != m_name.find("Plus4")) {
     return 4;
   } else  if (std::string::npos != m_name.find("Plus2")) {
     return 2;
@@ -112,10 +112,13 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       continue;
     }
 
-    if(dev->descriptor.idProduct != 0x6001 && dev->descriptor.idProduct != 0x6011) {
-      // Since all FTDI devices are found by ftdi_usb_find_all and I only know that these IDs are supported by this code.
-      // The above comment applies to libftdi 1.x from the source in 0.20 it seems it may actually return all devices in which
-      // case adding a vendorId check would be prudent.
+    if (dev->descriptor.idProduct != 0x6001 && 
+        dev->descriptor.idProduct != 0x6011) {
+      // Since all FTDI devices are found by ftdi_usb_find_all and I only know
+      // that these IDs are supported by this code.
+      // This applies to libftdi 1.x from the source in 0.20 it seems it may 
+      // actually return all devices in which case adding a vendorId check 
+      // would be prudent.
       continue;
     }
     char serial[256];
@@ -147,18 +150,21 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI") ||
         std::string::npos != v.find("KMTRONIC") ||
         std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i, dev->descriptor.idVendor, dev->descriptor.idProduct));
+      widgets->push_back(FtdiWidgetInfo(sname, 
+                                        sserial, 
+                                        i, 
+                                        dev->descriptor.idVendor, 
+                                        dev->descriptor.idProduct));
     } else {
       OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
-
-  }// while (list != NULL)
+  }  // while (list != NULL)
   OLA_DEBUG << "Freeing list";
   ftdi_list_free(&list);
   ftdi_free(ftdi);
 }
 
-FtdiInterface::FtdiInterface(const FtdiWidget * parent, 
+FtdiInterface::FtdiInterface(const FtdiWidget * parent,
                              const ftdi_interface interface)
       : m_parent(parent),
         m_interface(interface) {
@@ -168,7 +174,7 @@ FtdiInterface::FtdiInterface(const FtdiWidget * parent,
 
 
 FtdiInterface::~FtdiInterface() {
-  if(IsOpen()) {
+  if (IsOpen()) {
     Close();
   }
   ftdi_deinit(&m_handle);
@@ -176,7 +182,7 @@ FtdiInterface::~FtdiInterface() {
 
 bool FtdiInterface::SetInterface() {
   OLA_INFO << "Setting interface to: " << m_interface;
-  if(ftdi_set_interface(&m_handle, m_interface) < 0) {
+  if (ftdi_set_interface(&m_handle, m_interface) < 0) {
     OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -195,11 +201,12 @@ bool FtdiInterface::Open() {
       return true;
     }
   } else {
-    OLA_DEBUG << "Opening FTDI device " << m_parent->Name() << ", serial: " 
+    OLA_DEBUG << "Opening FTDI device " << m_parent->Name() << ", serial: "
               << m_parent->Serial() << ", interface: " << m_interface;
 
     if (ftdi_usb_open_desc(&m_handle, m_parent->Vid(), m_parent->Pid(),
-                           m_parent->Name().c_str(), m_parent->Serial().c_str()) < 0) {
+                           m_parent->Name().c_str(),
+                           m_parent->Serial().c_str()) < 0) {
       OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -231,7 +238,7 @@ bool FtdiInterface::Reset() {
 }
 
 bool FtdiInterface::SetLineProperties() {
-    if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)/* || (ftdi_set_interface(&m_handle, 2) < 0)*/) {
+    if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)) {
     OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
