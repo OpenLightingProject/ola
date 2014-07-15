@@ -32,7 +32,7 @@
  */
 
 #include <strings.h>
-#include <libftdi1/ftdi.h>
+#include <ftdi.h>
 #include <assert.h>
 
 #include <string>
@@ -103,7 +103,9 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   ftdi_device_list* current_device = list;
 
   while (current_device != NULL) {
-    struct libusb_device *dev = current_device->dev;
+    //libftdi1 uses libusb_device* we are for now trying to stick with libftdi0
+    //struct libusb_device *dev = current_device->dev;
+    struct usb_device *dev = current_device->dev;
     current_device = current_device->next;
     i++;
 
@@ -111,10 +113,11 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
       continue;
     }
-    struct libusb_device_descriptor device_descriptor;
-    libusb_get_device_descriptor(dev, &device_descriptor);
+    //struct libusb_device_descriptor device_descriptor;
+    //libusb_get_device_descriptor(dev, &device_descriptor);
 
-    if(device_descriptor.idProduct != 0x6001 && device_descriptor.idProduct != 0x6011) {
+    //if(device_descriptor.idProduct != 0x6001 && device_descriptor.idProduct != 0x6011) {
+    if(dev->descriptor.idProduct != 0x6001 && dev->descriptor.idProduct != 0x6011) {
       // Since all FTDI devices are found by ftdi_usb_find_all and I only know that these IDs are supported by this code.
       continue;
     }
@@ -147,7 +150,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI") ||
         std::string::npos != v.find("KMTRONIC") ||
         std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i, device_descriptor.idVendor, device_descriptor.idProduct));
+      //widgets->push_back(FtdiWidgetInfo(sname, sserial, i, device_descriptor.idVendor, device_descriptor.idProduct));
+      widgets->push_back(FtdiWidgetInfo(sname, sserial, i, dev->descriptor.idVendor, dev->descriptor.idProduct));
     } else {
       OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }

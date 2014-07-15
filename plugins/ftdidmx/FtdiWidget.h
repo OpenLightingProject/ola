@@ -40,7 +40,7 @@
 #  endif
 #  include <ftd2xx.h>
 #else
-#  include <libftdi1/ftdi.h>
+#  include <ftdi.h>
 #endif
 
 #include <string.h>
