@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMEnums.h
  * Provide a generic RDM ENUMS that can use different implementations.
@@ -530,6 +530,10 @@ typedef enum {
   SD_FIXTURE_CONTROL = 0x0502,
   SD_FIXTURE_SPEED = 0x0503,
   SD_MACRO = 0x0504,
+  SD_POWER_CONTROL = 0x0505,
+  SD_FAN_CONTROL = 0x0506,
+  SD_HEATER_CONTROL = 0x0507,
+  SD_FOUNTAIN_CONTROL = 0x0508,
   SD_UNDEFINED = 0xFFFF,
 } rdm_slot_definition;
 
@@ -538,8 +542,12 @@ typedef enum {
   STS_CAL_FAIL = 0x0001,
   STS_SENS_NOT_FOUND = 0x0002,
   STS_SENS_ALWAYS_ON = 0x0003,
+  STS_FEEDBACK_ERROR = 0x0004,
+  STS_INDEX_ERROR = 0x0005,
   STS_LAMP_DOUSED = 0x0011,
   STS_LAMP_STRIKE = 0x0012,
+  STS_LAMP_ACCESS_OPEN = 0x0013,
+  STS_LAMP_ALWAYS_ON = 0x0014,
   STS_OVERTEMP = 0x0021,
   STS_UNDERTEMP = 0x0022,
   STS_SENS_OUT_RANGE = 0x0023,
@@ -556,9 +564,20 @@ typedef enum {
   STS_WATTS = 0x0043,
   STS_DIM_FAILURE = 0x0044,
   STS_DIM_PANIC = 0x0045,
+  STS_LOAD_FAILURE = 0x0046,
   STS_READY = 0x0050,
   STS_NOT_READY = 0x0051,
   STS_LOW_FLUID = 0x0052,
+  STS_EEPROM_ERROR = 0x0060,
+  STS_RAM_ERROR = 0x0061,
+  STS_FPGA_ERROR = 0x0062,
+  STS_PROXY_BROADCAST_DROPPED = 0x0070,
+  STS_ASC_RXOK = 0x0071,
+  STS_ASC_DROPPED = 0x0072,
+  STS_DMXNSCNONE = 0x0080,
+  STS_DMXNSCLOSS = 0x0081,
+  STS_DMXNSCERROR = 0x0082,
+  STS_DMXNSC_OK = 0x0083,
 } rdm_status_message_id;
 
 

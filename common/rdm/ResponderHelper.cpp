@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderHelper.cpp
- * Copyright (C) 2013-2014 Simon Newton
+ * Copyright (C) 2013 Simon Newton
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
@@ -592,7 +592,11 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
   time_t now;
   now = time(NULL);
   struct tm tm_now;
+#ifdef _WIN32
+  tm_now = *localtime(&now);  // NOLINT(runtime/threadsafe_fn)
+#else
   localtime_r(&now, &tm_now);
+#endif
 
   struct clock_s clock;
   clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));

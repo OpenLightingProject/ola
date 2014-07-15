@@ -11,14 +11,13 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * PidStore.cpp
- * The PidStore and Pid classes.
+ * PidStoreLoader.cpp
+ * The PidStoreLoader and helper code.
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <dirent.h>
 #include <errno.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
@@ -32,6 +31,7 @@
 #include "common/rdm/Pids.pb.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 
@@ -41,9 +41,9 @@ namespace rdm {
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using std::map;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -78,28 +78,16 @@ const RootPidStore *PidStoreLoader::LoadFromFile(const string &file,
 const RootPidStore *PidStoreLoader::LoadFromDirectory(
     const std::string &directory,
     bool validate) {
-  DIR *dir;
-  struct dirent dir_ent;
-  struct dirent *entry;
-  if ((dir  = opendir(directory.data())) == NULL) {
-    OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
-    return NULL;
-  }
-
   vector<string> files;
-  readdir_r(dir, &dir_ent, &entry);
-  while (entry != NULL) {
-    string file_name(entry->d_name);
-    readdir_r(dir, &dir_ent, &entry);
 
-    if (!StringEndsWith(file_name, ".proto"))
-      continue;
-
-    stringstream str;
-    str << directory << "/" << file_name;
-    files.push_back(str.str());
+  vector<string> filesInDirectory;
+  ola::file::ListDirectory(directory, &filesInDirectory);
+  vector<string>::const_iterator fileInDirectory = filesInDirectory.begin();
+  for (; fileInDirectory != filesInDirectory.end(); ++fileInDirectory) {
+    if (StringEndsWith(*fileInDirectory, ".proto")) {
+      files.push_back(*fileInDirectory);
+    }
   }
-  closedir(dir);
 
   ola::rdm::pid::PidStore pid_store_pb;
   vector<string>::const_iterator iter = files.begin();

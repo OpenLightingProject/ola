@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ExportMap.h
  * Interface the ExportMap and ExportedVariables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -31,6 +31,7 @@
 #define INCLUDE_OLA_EXPORTMAP_H_
 
 #include <ola/base/Macro.h>
+#include <ola/StringUtils.h>
 #include <stdlib.h>
 
 #include <functional>
@@ -159,7 +160,7 @@ class IntegerVariable: public BaseVariable {
   void Reset() { m_value = 0; }
   int Get() const { return m_value; }
   const std::string Value() const {
-    std::stringstream out;
+    std::ostringstream out;
     out << m_value;
     return out.str();
   }
@@ -184,7 +185,7 @@ class CounterVariable: public BaseVariable {
   void Reset() { m_value = 0; }
   unsigned int Get() const { return m_value; }
   const std::string Value() const {
-    std::stringstream out;
+    std::ostringstream out;
     out << m_value;
     return out.str();
   }
@@ -279,6 +280,41 @@ void MapVariable<Type>::Remove(const std::string &key) {
   if (iter != m_variables.end())
     m_variables.erase(iter);
 }
+
+/*
+ * Return the string representation of this map variable.
+ * The form is:
+ *   var_name  map:label_name key1:value1 key2:value2
+ * @return the string representation of the variable.
+ */
+template<typename Type>
+inline const std::string MapVariable<Type>::Value() const {
+  std::ostringstream value;
+  value << "map:" << m_label;
+  typename std::map<std::string, Type>::const_iterator iter;
+  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter)
+    value << " " << iter->first << ":" << iter->second;
+  return value.str();
+}
+
+
+/*
+ * Strings need to be quoted
+ */
+template<>
+inline const std::string MapVariable<std::string>::Value() const {
+  std::ostringstream value;
+  value << "map:" << m_label;
+  std::map<std::string, std::string>::const_iterator iter;
+  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {
+    std::string var = iter->second;
+    Escape(&var);
+    value << " " << iter->first << ":\"" << var << "\"";
+  }
+  return value.str();
+}
+
+
 
 
 /**

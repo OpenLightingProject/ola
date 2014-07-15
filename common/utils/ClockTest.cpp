@@ -11,16 +11,22 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ClockTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <unistd.h>
 #include <string>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Windows.h>
+#endif
 
 #include "ola/Clock.h"
 #include "ola/testing/TestUtils.h"
@@ -145,7 +151,11 @@ void ClockTest::testClock() {
   Clock clock;
   TimeStamp first;
   clock.CurrentTime(&first);
+#ifdef _WIN32
+  Sleep(1000);
+#else
   sleep(1);
+#endif
 
   TimeStamp second;
   clock.CurrentTime(&second);

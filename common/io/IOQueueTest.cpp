@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOQueueTest.cpp
  * Test fixture for the IOQueue class.
@@ -70,7 +70,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IOQueueTest);
 
 
 void IOQueueTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_buffer.reset(new IOQueue());
 }
 
@@ -317,7 +316,7 @@ void IOQueueTest::testDump() {
   queue.Write(data1, sizeof(data1));
   OLA_ASSERT_EQ(9u, queue.Size());
 
-  std::stringstream str;
+  std::ostringstream str;
   queue.Dump(&str);
   OLA_ASSERT_EQ(
       string("00 01 02 03 04 05 06 07  ........\n"

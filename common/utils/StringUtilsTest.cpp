@@ -11,13 +11,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
+#include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <iostream>
 #include <string>
@@ -35,6 +36,7 @@ using ola::EncodeString;
 using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
+using ola::IntToHexString;
 using ola::PrefixedHexStringToInt;
 using ola::ReplaceAll;
 using ola::ShortenString;
@@ -56,6 +58,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testShorten);
   CPPUNIT_TEST(testEndsWith);
   CPPUNIT_TEST(testIntToString);
+  CPPUNIT_TEST(testIntToHexString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testEncodeString);
   CPPUNIT_TEST(testStringToBool);
@@ -82,6 +85,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testShorten();
     void testEndsWith();
     void testIntToString();
+    void testIntToHexString();
     void testEscape();
     void testEncodeString();
     void testStringToBool();
@@ -227,6 +231,23 @@ void StringUtilsTest::testIntToString() {
   OLA_ASSERT_EQ(string("-1234"), IntToString(-1234));
   unsigned int i = 42;
   OLA_ASSERT_EQ(string("42"), IntToString(i));
+}
+
+
+/*
+ * test the IntToHexString function.
+ */
+void StringUtilsTest::testIntToHexString() {
+  OLA_ASSERT_EQ(string("0x00"), IntToHexString((uint8_t)0));
+
+  OLA_ASSERT_EQ(string("0x01"), IntToHexString((uint8_t)1));
+  OLA_ASSERT_EQ(string("0x42"), IntToHexString((uint8_t)0x42));
+  OLA_ASSERT_EQ(string("0x0001"), IntToHexString((uint16_t)0x0001));
+  OLA_ASSERT_EQ(string("0xabcd"), IntToHexString((uint16_t)0xABCD));
+  OLA_ASSERT_EQ(string("0xdeadbeef"), IntToHexString((uint32_t)0xDEADBEEF));
+
+  unsigned int i = 0x42;
+  OLA_ASSERT_EQ(string("0x00000042"), IntToHexString(i));
 }
 
 
@@ -717,7 +738,7 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
 void StringUtilsTest::testFormatData() {
   uint8_t data[] = {0, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd',
                     1, 2};
-  std::stringstream str;
+  std::ostringstream str;
   FormatData(&str, data, sizeof(data));
   OLA_ASSERT_EQ(
       string("00 48 65 6c 6c 6f 20 57  .Hello W\n"

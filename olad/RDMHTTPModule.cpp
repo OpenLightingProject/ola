@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RDMHTTPModule.cpp
  * This module acts as the http -> olad gateway for RDM commands.
@@ -65,10 +65,10 @@ using ola::web::StringItem;
 using ola::web::UIntItem;
 using std::endl;
 using std::map;
+using std::ostringstream;
 using std::pair;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -1092,7 +1092,7 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
       // sensors count from 1
       for (unsigned int i = 0; i < device.sensor_count; ++i) {
-        stringstream heading, hint;
+        ostringstream heading, hint;
         hint << i;
         heading << "Sensor " << std::setfill(' ') << std::setw(3) << i;
         AddSection(&sections, SENSOR_SECTION, heading.str(), hint.str());
@@ -1222,7 +1222,7 @@ void RDMHTTPModule::ProxiedDevicesHandler(
         string manufacturer = uid_iter->second.manufacturer;
 
         if (!(device.empty() && manufacturer.empty())) {
-          stringstream str;
+          ostringstream str;
           str << uid_iter->second.manufacturer;
           if ((!device.empty()) && (!manufacturer.empty()))
             str << ", ";
@@ -1345,7 +1345,7 @@ void RDMHTTPModule::GetDeviceInfoHandler(
   if (CheckForRDMError(response, status))
     return;
 
-  stringstream stream;
+  ostringstream stream;
   stream << static_cast<int>(device.protocol_version_high) << "."
     << static_cast<int>(device.protocol_version_low);
   section.AddItem(new StringItem("Protocol Version", stream.str()));
@@ -1419,7 +1419,7 @@ void RDMHTTPModule::GetProductIdsHandler(
     return;
 
   bool first = true;
-  stringstream product_ids;
+  ostringstream product_ids;
   JsonSection section;
   vector<uint16_t>::const_iterator iter = ids.begin();
   for (; iter != ids.end(); ++iter) {
@@ -1767,7 +1767,7 @@ void RDMHTTPModule::GetBootSoftwareVersionHandler(
     string label,
     const ola::rdm::ResponseStatus &status,
     uint32_t version) {
-  stringstream str;
+  ostringstream str;
   str << label;
   if (CheckForRDMSuccess(status)) {
     if (!label.empty())
@@ -1917,7 +1917,7 @@ void RDMHTTPModule::SendSectionPersonalityResponse(HTTPResponse *response,
   for (unsigned int i = 1; i <= info->total; i++) {
     if (i <= info->personalities.size() &&
         info->personalities[i - 1].first != INVALID_PERSONALITY) {
-      stringstream str;
+      ostringstream str;
       str << info->personalities[i - 1].second << " (" <<
         info->personalities[i - 1].first << ")";
       item->AddItem(str.str(), i);
@@ -2116,7 +2116,7 @@ void RDMHTTPModule::SensorValueHandler(
   }
 
   JsonSection section;
-  stringstream str;
+  ostringstream str;
 
   if (definition)
     section.AddItem(new StringItem("Description", definition->description));
@@ -2852,7 +2852,7 @@ void RDMHTTPModule::ClockHandler(HTTPResponse *response,
     return;
 
   JsonSection section;
-  stringstream str;
+  ostringstream str;
   str << std::setfill('0') << std::setw(2) << static_cast<int>(clock.hour) <<
     ":" << std::setw(2) << static_cast<int>(clock.minute) << ":" <<
     std::setw(2) << static_cast<int>(clock.second) << " " <<
@@ -3245,7 +3245,7 @@ bool RDMHTTPModule::CheckForRDMSuccess(
 bool RDMHTTPModule::CheckForRDMSuccessWithError(
     const ola::rdm::ResponseStatus &status,
     string *error) {
-  stringstream str;
+  ostringstream str;
   if (!status.error.empty()) {
     str << "RDM command error: " << status.error;
     if (error)

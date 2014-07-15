@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Universe.cpp
  * Represents a universe of DMX data.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * Each universe has the following:
  *   A human readable name
@@ -54,9 +54,9 @@ namespace ola {
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
 using std::map;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe-uids";
@@ -90,7 +90,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
       m_clock(clock),
       m_rdm_discovery_interval(),
       m_last_discovery_time() {
-  stringstream universe_id_str, universe_name_str;
+  ostringstream universe_id_str, universe_name_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
   universe_name_str << "Universe " << universe_id;

@@ -11,7 +11,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # enforce_licence.py
 # Copyright (C) 2013 Simon Newton
@@ -25,25 +25,32 @@ import re
 import sys
 import textwrap
 
-CPP, PYTHON = xrange(2)
+CPP, JS, PYTHON = xrange(3)
 
 IGNORED_FILES = [
   'examples/ola-dmxconsole.cpp',
   'examples/ola-dmxmonitor.cpp',
   'include/ola/gen_callbacks.py',
-  'ola/common.h',
+  'olad/www/mobile.js',
+  'olad/www/ola.js',
+  'python/ola/PidStoreLocation.py',
+  'python/ola/Version.py',
   'tools/ola_trigger/config.tab.cpp',
   'tools/ola_trigger/config.tab.h',
   'tools/ola_trigger/lex.yy.cpp',
+  'tools/rdm/DataLocation.py',
+  'tools/rdm/static/jquery-1.7.2.min.js',
+  'tools/rdm/static/jquery-ui-1.8.21.custom.min.js',
+  'tools/rdm/static/ui.multiselect.js',
 ]
 
 def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
 
-  Walk the directory tree from the current directory, and make sure all .cpp
-  and .h files have the appropriate Licence. The licence is determined from the
-  LICENCE file in each branch of the directory tree.
+  Walk the directory tree from the current directory, and make sure all .cpp,
+  .h, .js and .py files have the appropriate Licence. The licence is determined
+  from the LICENCE file in each branch of the directory tree.
 
     --diff               Print the diffs.
     --fix                Fix the files.
@@ -95,6 +102,19 @@ def TransformLicence(licence):
   output.append(' *')
   return '\n'.join(output)
 
+def TransformCppToJsLicence(licence):
+  """Change a C++ licence to JS style"""
+  lines = licence.split('\n')
+  output = []
+  output.append('/**')
+  for l in lines[1:]:
+    l = l[2:].strip()
+    if l:
+      output.append(' * %s' % l)
+    else:
+      output.append(' *')
+  return '\n'.join(output)
+
 def TransformCppToPythonLicence(licence):
   """Change a C++ licence to Python style"""
   lines = licence.split('\n')
@@ -108,13 +128,18 @@ def ReplaceHeader(file_name, new_header, lang):
   breaks = 0
   line = f.readline()
   while line != '':
-    if lang == CPP and re.match(r'^ \*\s*\n$', line):
+    if (lang == CPP or lang == JS) and re.match(r'^ \*\s*\n$', line):
       breaks += 1
     if lang == PYTHON and re.match(r'^#\s*\n$', line):
       breaks += 1
     if breaks == 3:
       break
     line = f.readline()
+
+  if breaks < 3:
+    print "Couldn't find header for %s so couldn't fix it" % file_name
+    f.close()
+    return
 
   remainder = f.read()
   f.close()
@@ -143,7 +168,7 @@ def GetDirectoryLicences(root_dir):
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      print 'Adding LICENCE for %s' % dir_name
+      print 'Found LICENCE for directory %s' % dir_name
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
@@ -154,41 +179,53 @@ def GetDirectoryLicences(root_dir):
 
 def CheckLicenceForDir(dir_name, licence, diff, fix):
   """Check all files in a directory contain the correct licence."""
+  errors = 0
   # glob doesn't support { } so we iterate instead
   for match in ['*.h', '*.cpp']:
     for file_name in glob.glob(os.path.join(dir_name, match)):
       # skip the generated protobuf code
       if '.pb.' in file_name:
         continue
-      CheckLicenceForFile(file_name, licence, CPP, diff, fix)
+      errors += CheckLicenceForFile(file_name, licence, CPP, diff, fix)
+
+  for file_name in glob.glob(os.path.join(dir_name, '*.js')):
+    js_licence = TransformCppToJsLicence(licence)
+    errors += CheckLicenceForFile(file_name, js_licence, JS, diff, fix)
 
   for file_name in glob.glob(os.path.join(dir_name, '*.py')):
     # skip the generated protobuf code
     if file_name.endswith('__init__.py') or file_name.endswith('pb2.py'):
       continue
     python_licence = TransformCppToPythonLicence(licence)
-    CheckLicenceForFile(file_name, python_licence, PYTHON, diff, fix)
+    errors += CheckLicenceForFile(file_name, python_licence, PYTHON, diff, fix)
+
+  return errors
 
 def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   """Check a file contains the correct licence."""
   if IgnoreFile(file_name):
-    return
+    return 0
 
   f = open(file_name)
   header_size = len(licence)
   first_line = None
   if lang == PYTHON:
     first_line = f.readline()
+    if not first_line.startswith('#!') and not first_line.startswith('# !'):
+      # First line isn't a shebang, ignore it.
+      f.seek(0, os.SEEK_SET)
+      first_line = None
   header = f.read(header_size)
   f.close()
   if header == licence:
-    return
+    return 0
 
   if fix:
     print 'Fixing %s' % file_name
-    if lang == PYTHON:
+    if lang == PYTHON and first_line is not None:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
+    return 1
   else:
     print "File %s does not start with \"%s...\"" % (
         file_name,
@@ -197,12 +234,19 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
       pprint.pprint(result)
+    return 1
 
 def main():
   diff, fix = ParseArgs()
   licences = GetDirectoryLicences(os.getcwd())
+  errors = 0
   for dir_name, licence in licences.iteritems():
-    CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
+    errors += CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
+  print 'Found %d files with incorrect licences' % errors
+  if errors > 0:
+    sys.exit(1)
+  else:
+    sys.exit()
 
 if __name__ == '__main__':
   main()

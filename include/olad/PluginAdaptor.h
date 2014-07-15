@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PluginAdaptor.h
  * The provides operations on a ola_device.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
@@ -43,10 +43,10 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
     bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
                    bool delete_on_close = false);
-    bool RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
-    bool RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
+    void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
+    void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
     bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
-    bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
+    void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
     ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                                      Callback0<bool> *closure);

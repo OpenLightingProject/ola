@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MockUDPsocket.h
  * Header file for the Mock UDP Socket class
@@ -61,8 +61,8 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     bool Bind(const ola::network::IPV4SocketAddress &endpoint);
     bool GetSocketAddress(ola::network::IPV4SocketAddress *address) const;
     bool Close();
-    int ReadDescriptor() const { return m_dummy_sd; }
-    int WriteDescriptor() const { return m_dummy_sd; }
+    ola::io::DescriptorHandle ReadDescriptor() const { return m_dummy_handle; }
+    ola::io::DescriptorHandle WriteDescriptor() const { return m_dummy_handle; }
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
                    const ola::network::IPV4Address &ip,
@@ -88,12 +88,15 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                   ssize_t *data_read,
                   ola::network::IPV4Address &source,  // NOLINT
                   uint16_t &port) const;  // NOLINT
+    bool RecvFrom(uint8_t *buffer,
+                  ssize_t *data_read,
+                  ola::network::IPV4SocketAddress *source);
     bool EnableBroadcast();
-    bool SetMulticastInterface(const ola::network::IPV4Address &interface);
-    bool JoinMulticast(const ola::network::IPV4Address &interface,
+    bool SetMulticastInterface(const ola::network::IPV4Address &iface);
+    bool JoinMulticast(const ola::network::IPV4Address &iface,
                        const ola::network::IPV4Address &group,
                        bool loop = false);
-    bool LeaveMulticast(const ola::network::IPV4Address &interface,
+    bool LeaveMulticast(const ola::network::IPV4Address &iface,
                         const ola::network::IPV4Address &group);
 
     bool SetTos(uint8_t tos);
@@ -126,7 +129,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                                  uint16_t port,
                                  bool broadcast_set);
 
-    void SetInterface(const ola::network::IPV4Address &interface);
+    void SetInterface(const ola::network::IPV4Address &iface);
 
  private:
     typedef struct {
@@ -142,7 +145,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     bool m_init_called;
     // We need a sd so that calls to select continue to work. This isn't used
     // for anything else.
-    int m_dummy_sd;
+    ola::io::DescriptorHandle m_dummy_handle;
     bool m_bound_to_port;
     bool m_broadcast_set;
     uint16_t m_port;

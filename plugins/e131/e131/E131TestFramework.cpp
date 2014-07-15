@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131TestFramework.cpp
  * Allows testing of a remote E1.31 implementation.
@@ -101,11 +101,11 @@ bool StateManager::Init() {
 
 StateManager::~StateManager() {
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-  assert(m_ss->RemoveReadDescriptor(m_node1->GetSocket()));
-  assert(m_ss->RemoveReadDescriptor(m_node2->GetSocket()));
+  m_ss->RemoveReadDescriptor(m_node1->GetSocket());
+  m_ss->RemoveReadDescriptor(m_node2->GetSocket());
 
   if (m_local_node) {
-    assert(m_ss->RemoveReadDescriptor(m_local_node->GetSocket()));
+    m_ss->RemoveReadDescriptor(m_local_node->GetSocket());
     delete m_local_node;
   }
 

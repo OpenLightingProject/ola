@@ -11,12 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaDaemon.cpp
  * This is the main ola daemon
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <errno.h>
 #include <stdio.h>
@@ -24,7 +28,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <Shlobj.h>
 #endif
 #include <string>
@@ -33,6 +37,7 @@
 #include "ola/Logging.h"
 #include "ola/base/Credentials.h"
 #include "ola/base/Flags.h"
+#include "ola/file/Util.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/stl/STLUtils.h"
 
@@ -186,12 +191,12 @@ string OlaDaemon::DefaultConfigDir() {
     if (!GetPasswdUID(uid, &passwd_entry))
       return "";
 
-    return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
+    return passwd_entry.pw_dir + ola::file::PATH_SEPARATOR + OLA_CONFIG_DIR;
   } else {
-#ifdef WIN32
+#ifdef _WIN32
     char path[MAX_PATH];
     if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
-      return string(path) + "\\" + OLA_CONFIG_DIR;
+      return string(path) + ola::file::PATH_SEPARATOR + OLA_CONFIG_DIR;
     } else {
       return "";
     }
@@ -208,7 +213,11 @@ string OlaDaemon::DefaultConfigDir() {
 bool OlaDaemon::InitConfigDir(const string &path) {
   if (chdir(path.c_str())) {
     // try and create it
+#ifdef _WIN32
+    if (mkdir(path.c_str())) {
+#else
     if (mkdir(path.c_str(), 0755)) {
+#endif
       OLA_FATAL << "Couldn't mkdir " << path;
       return false;
     }

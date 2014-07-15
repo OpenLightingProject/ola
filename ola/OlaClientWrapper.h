@@ -11,12 +11,12 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaClientWrapper.h
  * This provides a helpful wrapper for the OlaClient & OlaCallbackClient
  * classes.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * The OlaClientWrapper classes takes care of setting up the socket, select
  * server and client for you.

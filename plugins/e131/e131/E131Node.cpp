@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Node.cpp
  * A E1.31 node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -341,7 +341,7 @@ bool E131Node::RemoveHandler(unsigned int universe) {
  */
 E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   tx_universe settings;
-  std::stringstream str;
+  std::ostringstream str;
   str << "Universe " << universe;
   settings.source = str.str();
   settings.sequence = 0;

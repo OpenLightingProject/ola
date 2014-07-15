@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaHTTPServer.h
  * A HTTP Server with export map integration.
@@ -31,8 +31,8 @@ namespace http {
 
 using ola::ExportMap;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char OlaHTTPServer::K_DATA_DIR_VAR[] = "http_data_dir";
@@ -75,7 +75,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
   ola::TimeStamp now;
   m_clock.CurrentTime(&now);
   ola::TimeInterval diff = now - m_start_time;
-  stringstream str;
+  ostringstream str;
   str << diff.InMilliSeconds();
   m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
 
@@ -84,7 +84,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
 
   vector<BaseVariable*>::iterator iter;
   for (iter = variables.begin(); iter != variables.end(); ++iter) {
-    stringstream out;
+    ostringstream out;
     out << (*iter)->Name() << ": " << (*iter)->Value() << "\n";
     response->Append(out.str());
   }

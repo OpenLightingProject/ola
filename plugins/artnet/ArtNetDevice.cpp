@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * artnetdevice.cpp
  * Art-Net device
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * An Art-Net device is an instance of libartnet bound to a single IP address
  * Art-Net is limited to four ports per direction per IP, so in this case
@@ -59,8 +59,8 @@ using ola::network::IPV4Address;
 using ola::plugin::artnet::Reply;
 using ola::plugin::artnet::Request;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
@@ -142,7 +142,7 @@ bool ArtNetDevice::StartHook() {
     return false;
   }
 
-  stringstream str;
+  ostringstream str;
   str << K_DEVICE_NAME << " [" << interface.ip_address << "]";
   SetName(str.str());
 

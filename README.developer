@@ -201,4 +201,5 @@ Useful tips
   http://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html
 * Prefer manualy dependencies over BUILT_SOURCES where possible, see
   http://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
-  As far as I can tell this doesn't work for libraries.
+  However this doesn't work in some cases (libraries?) because it overrides the
+  automake generated rules.

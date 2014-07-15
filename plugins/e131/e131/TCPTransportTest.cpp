@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * TCPTransportTest.cpp
  * Test fixture for the TCPTransport class
@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 
+#include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/IOStack.h"
@@ -36,6 +37,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::TimeInterval;
 using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::IOStack;
@@ -125,7 +127,7 @@ void TCPTransportTest::setUp() {
 void TCPTransportTest::tearDown() {
   // Close the loopback descriptor and drain the ss
   m_loopback.Close();
-  m_ss->RunOnce(0, 0);
+  m_ss->RunOnce();
 }
 
 
@@ -153,9 +155,9 @@ void TCPTransportTest::Receive() {
 void TCPTransportTest::testSinglePDU() {
   OLA_ASSERT_EQ(0u, m_pdus_received);
   SendPDU(__LINE__);
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(1u, m_pdus_received);
 }
@@ -170,9 +172,9 @@ void TCPTransportTest::testShortPreamble() {
     1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(0u, m_pdus_received);
 }
@@ -190,9 +192,9 @@ void TCPTransportTest::testBadPreamble() {
     1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT_FALSE(m_stream_ok);
   OLA_ASSERT_EQ(0u, m_pdus_received);
 }
@@ -205,9 +207,9 @@ void TCPTransportTest::testZeroLengthPDUBlock() {
   SendEmptyPDUBLock(__LINE__);
   SendPDU(__LINE__);
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(1u, m_pdus_received);
 }
@@ -221,9 +223,9 @@ void TCPTransportTest::testMultiplePDUs() {
   SendPDU(__LINE__);
   SendPDU(__LINE__);
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(3u, m_pdus_received);
 }
@@ -235,9 +237,9 @@ void TCPTransportTest::testMultiplePDUs() {
 void TCPTransportTest::testSinglePDUBlock() {
   SendPDUBlock(__LINE__);
 
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
   OLA_ASSERT(m_stream_ok);
   OLA_ASSERT_EQ(3u, m_pdus_received);
 }
@@ -247,7 +249,7 @@ void TCPTransportTest::testSinglePDUBlock() {
  * Send empty PDU block.
  */
 void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
 
   IOStack packet;
@@ -260,7 +262,7 @@ void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
  * Send a PDU
  */
 void TCPTransportTest::SendPDU(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   IOStack packet;
   MockPDU::PrependPDU(&packet, 4, 8);
@@ -273,7 +275,7 @@ void TCPTransportTest::SendPDU(unsigned int line) {
  * Send a block of PDUs
  */
 void TCPTransportTest::SendPDUBlock(unsigned int line) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
   IOStack packet;
   MockPDU::PrependPDU(&packet, 1, 2);

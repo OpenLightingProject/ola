@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * BaseTypes.h
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 enum {
-  DMX_UNIVERSE_SIZE = 512
+  DMX_UNIVERSE_SIZE = ola::DMX_UNIVERSE_SIZE,
 };
 
 /**

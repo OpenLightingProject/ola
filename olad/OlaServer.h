@@ -11,18 +11,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServer.h
  * Interface for the ola server class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_OLASERVER_H_
 #define OLAD_OLASERVER_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <map>
@@ -60,7 +60,7 @@ class OlaServer {
     bool http_enable_quit;  // enable /quit
     unsigned int http_port;  // port to run the http server on
     std::string http_data_dir;  // directory that contains the static content
-    std::string interface;
+    std::string network_interface;
     std::string pid_data_dir;  // directory with the pid definitions.
   };
 
@@ -82,7 +82,7 @@ class OlaServer {
   void StopServer() { m_ss->Terminate(); }
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
   void NewTCPConnection(ola::network::TCPSocket *socket);
-  void ChannelClosed(int read_descriptor);
+  void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
   bool RunHousekeeping();
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
@@ -93,7 +93,7 @@ class OlaServer {
     class OlaClientService *client_service;
   };
 
-  typedef std::map<int, ClientEntry> ClientMap;
+  typedef std::map<ola::io::DescriptorHandle, ClientEntry> ClientMap;
 
   class OlaClientServiceFactory *m_service_factory;
   std::vector<class PluginLoader*> m_plugin_loaders;
@@ -124,7 +124,7 @@ class OlaServer {
   ola::rdm::UID m_default_uid;
 
 #ifdef HAVE_LIBMICROHTTPD
-  bool StartHttpServer(const ola::network::Interface &interface);
+  bool StartHttpServer(const ola::network::Interface &iface);
 #endif
   void StopPlugins();
   void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIDevice.cpp
  * SPI device
@@ -25,6 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -39,9 +40,9 @@ namespace spi {
 
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::ostringstream;
 using std::set;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
@@ -60,9 +61,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),
       m_spi_device_name(spi_device) {
-  size_t pos = spi_device.find_last_of("/");
-  if (pos != string::npos)
-    m_spi_device_name = spi_device.substr(pos + 1);
+  m_spi_device_name = ola::file::FilenameFromPathOrPath(m_spi_device_name);
 
   SetDefaults();
   unsigned int port_count = 0;
@@ -158,7 +157,7 @@ bool SPIDevice::StartHook() {
 void SPIDevice::PrePortStop() {
   SPIPorts::iterator iter = m_spi_ports.begin();
   for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
-    stringstream str;
+    ostringstream str;
     str << static_cast<int>((*iter)->GetPersonality());
     m_preferences->SetValue(PersonalityKey(i), str.str());
     str.str("");

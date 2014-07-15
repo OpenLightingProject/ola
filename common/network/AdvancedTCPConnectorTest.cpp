@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AdvancedTCPConnectorTest.cpp
  * Test fixture for the TCPConnector class
@@ -64,47 +64,47 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    AdvancedTCPConnectorTest()
-        : CppUnit::TestFixture(),
-          m_localhost(IPV4Address::Loopback()),
-          m_server_address(m_localhost, 0) {
-    }
+  AdvancedTCPConnectorTest()
+      : CppUnit::TestFixture(),
+        m_localhost(IPV4Address::Loopback()),
+        m_server_address(m_localhost, 0) {
+  }
 
-    void setUp();
-    void tearDown();
-    void testConnect();
-    void testPause();
-    void testBackoff();
-    void testEarlyDestruction();
+  void setUp();
+  void tearDown();
+  void testConnect();
+  void testPause();
+  void testBackoff();
+  void testEarlyDestruction();
 
-    // timing out indicates something went wrong
-    void Timeout() {
-      OLA_FAIL("timeout");
-    }
+  // timing out indicates something went wrong
+  void Timeout() {
+    OLA_FAIL("timeout");
+  }
 
-    // Socket close actions
-    void TerminateOnClose() {
-      m_ss->Terminate();
-    }
+  // Socket close actions
+  void TerminateOnClose() {
+    m_ss->Terminate();
+  }
 
  private:
-    ola::MockClock m_clock;
-    SelectServer *m_ss;
-    auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
-    IPV4Address m_localhost;
-    IPV4SocketAddress m_server_address;
-    ola::thread::timeout_id m_timeout_id;
-    TCPSocket *m_connected_socket;
+  ola::MockClock m_clock;
+  SelectServer *m_ss;
+  auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
+  IPV4Address m_localhost;
+  IPV4SocketAddress m_server_address;
+  ola::thread::timeout_id m_timeout_id;
+  TCPSocket *m_connected_socket;
 
-    void ConfirmState(unsigned int line,
-                      const AdvancedTCPConnector &connector,
-                      const IPV4SocketAddress &endpoint,
-                      AdvancedTCPConnector::ConnectionState state,
-                      unsigned int failed_attempts);
-    void SetupListeningSocket(TCPAcceptingSocket *socket);
-    uint16_t ReservePort();
-    void AcceptedConnection(TCPSocket *socket);
-    void OnConnect(TCPSocket *socket);
+  void ConfirmState(unsigned int line,
+                    const AdvancedTCPConnector &connector,
+                    const IPV4SocketAddress &endpoint,
+                    AdvancedTCPConnector::ConnectionState state,
+                    unsigned int failed_attempts);
+  void SetupListeningSocket(TCPAcceptingSocket *socket);
+  uint16_t ReservePort();
+  void AcceptedConnection(TCPSocket *socket);
+  void OnConnect(TCPSocket *socket);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AdvancedTCPConnectorTest);
@@ -117,7 +117,6 @@ void AdvancedTCPConnectorTest::setUp() {
   m_tcp_socket_factory.reset(new ola::network::TCPSocketFactory(
       ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect)));
   m_connected_socket = NULL;
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
   m_ss = new SelectServer(NULL, &m_clock);
   m_timeout_id = m_ss->RegisterSingleTimeout(
@@ -154,7 +153,14 @@ void AdvancedTCPConnectorTest::testConnect() {
   connector.AddEndpoint(m_server_address, &policy);
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
 
-  m_ss->Run();
+  // The socket may be connected immediately depending on the platform.
+  AdvancedTCPConnector::ConnectionState state;
+  unsigned int failed_attempts;
+  connector.GetEndpointState(m_server_address, &state, &failed_attempts);
+  if (state == AdvancedTCPConnector::DISCONNECTED) {
+    m_ss->Run();
+  }
+
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
 
   // confirm the status is correct
@@ -165,7 +171,6 @@ void AdvancedTCPConnectorTest::testConnect() {
   OLA_ASSERT_TRUE(m_connected_socket);
   m_connected_socket->Close();
   delete m_connected_socket;
-  OLA_INFO << "disconnecting";
   connector.Disconnect(m_server_address, true);
 
   // state should be updated
@@ -202,15 +207,17 @@ void AdvancedTCPConnectorTest::testPause() {
   ConfirmState(__LINE__, connector, m_server_address,
                AdvancedTCPConnector::PAUSED, 0);
 
-  m_ss->RunOnce(0, 500000);
+  m_ss->RunOnce(TimeInterval(0, 500000));
 
   // now unpause
   connector.Resume(m_server_address);
-  ConfirmState(__LINE__, connector, m_server_address,
-               AdvancedTCPConnector::DISCONNECTED, 0);
-
-  m_ss->Run();
-
+  // The socket may be connected immediately depending on the platform.
+  AdvancedTCPConnector::ConnectionState state;
+  unsigned int failed_attempts;
+  connector.GetEndpointState(m_server_address, &state, &failed_attempts);
+  if (state == AdvancedTCPConnector::DISCONNECTED) {
+    m_ss->Run();
+  }
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
   ConfirmState(__LINE__, connector, m_server_address,
                AdvancedTCPConnector::CONNECTED, 0);
@@ -219,7 +226,6 @@ void AdvancedTCPConnectorTest::testPause() {
   OLA_ASSERT_TRUE(m_connected_socket);
   m_connected_socket->Close();
   delete m_connected_socket;
-  OLA_INFO << "disconnecting";
   connector.Disconnect(m_server_address, true);
 
   // state should be updated
@@ -257,12 +263,17 @@ void AdvancedTCPConnectorTest::testBackoff() {
   connector.AddEndpoint(target, &policy);
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
 
-  ConfirmState(__LINE__, connector, target,
-               AdvancedTCPConnector::DISCONNECTED, 0);
+  // failed_attempts may be 0 or 1, depending on the platform.
+  AdvancedTCPConnector::ConnectionState state;
+  unsigned int failed_attempts;
+  connector.GetEndpointState(target, &state, &failed_attempts);
+
+  OLA_ASSERT_EQ(AdvancedTCPConnector::DISCONNECTED, state);
+  OLA_ASSERT_TRUE(failed_attempts == 0 || failed_attempts == 1);
 
   // the timeout is 500ms, so we advance by 490 and set a 200ms timeout
   m_clock.AdvanceTime(0, 490000);
-  m_ss->RunOnce(0, 200000);
+  m_ss->RunOnce(TimeInterval(0, 200000));
 
   // should have one failure at this point
   ConfirmState(__LINE__, connector, target,
@@ -270,17 +281,17 @@ void AdvancedTCPConnectorTest::testBackoff() {
 
   // the next attempt should be in 5 seconds
   m_clock.AdvanceTime(4, 900000);
-  m_ss->RunOnce(1, 0);
+  m_ss->RunOnce(TimeInterval(1, 0));
 
   // wait for the timeout
   m_clock.AdvanceTime(0, 490000);
-  m_ss->RunOnce(0, 200000);
+  m_ss->RunOnce(TimeInterval(0, 200000));
 
   ConfirmState(__LINE__, connector, target,
                AdvancedTCPConnector::DISCONNECTED, 2);
 
   // run once more to clean up
-  m_ss->RunOnce(0, 10000);
+  m_ss->RunOnce(TimeInterval(0, 10000));
 
   // clean up
   connector.RemoveEndpoint(target);
@@ -289,7 +300,8 @@ void AdvancedTCPConnectorTest::testBackoff() {
 
 
 /*
- * Test that we can destroy the Connector and everything will work.
+ * Test that we don't leak memory when the AdvancedTCPConnector is destored
+ * while a connecting is pending.
  */
 void AdvancedTCPConnectorTest::testEarlyDestruction() {
   uint16_t port = ReservePort();
@@ -308,10 +320,7 @@ void AdvancedTCPConnectorTest::testEarlyDestruction() {
     connector.AddEndpoint(target, &policy);
     OLA_ASSERT_EQ(1u, connector.EndpointCount());
   }
-
-  m_ss->RunOnce();
 }
-
 
 /**
  * Confirm the state & failed attempts matches what we expected
@@ -322,7 +331,7 @@ void AdvancedTCPConnectorTest::ConfirmState(
     const IPV4SocketAddress &endpoint,
     AdvancedTCPConnector::ConnectionState expected_state,
     unsigned int expected_attempts) {
-  std::stringstream str;
+  std::ostringstream str;
   str << "Line " << line;
 
   AdvancedTCPConnector::ConnectionState state;
@@ -333,8 +342,6 @@ void AdvancedTCPConnectorTest::ConfirmState(
   OLA_ASSERT_EQ_MSG(expected_state, state, str.str());
   OLA_ASSERT_EQ_MSG(expected_attempts, failed_attempts, str.str());
 }
-
-
 
 /**
  * Setup a TCP socket that accepts connections

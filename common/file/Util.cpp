@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Util.cpp
  * File related helper functions.
@@ -23,15 +23,16 @@
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
-#ifdef WIN32
+#ifdef _WIN32
 #define VC_EXTRALEAN
-#include <windows.h>
+#include <Windows.h>
 #endif
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -42,16 +43,22 @@ namespace file {
 using std::string;
 using std::vector;
 
-#ifdef WIN32
+#ifdef _WIN32
 const char PATH_SEPARATOR = '\\';
 #else
 const char PATH_SEPARATOR = '/';
 #endif
 
-/**
- * Find all files in a directory that match the given prefix.
- * @returns a vector with the absolute path of the matching files.
- */
+static string ConvertPathSeparators(const string &path) {
+  string result = path;
+#ifdef _WIN32
+  std::replace(result.begin(), result.end(), '/', PATH_SEPARATOR);
+#else
+  std::replace(result.begin(), result.end(), '\\', PATH_SEPARATOR);
+#endif
+  return result;
+}
+
 void FindMatchingFiles(const string &directory,
                        const string &prefix,
                        vector<string> *files) {
@@ -60,22 +67,25 @@ void FindMatchingFiles(const string &directory,
   FindMatchingFiles(directory, prefixes, files);
 }
 
-
-/**
- * Find all files in a directory that match any of the prefixes.
- * @returns a vector with the absolute path of the matching files.
- */
 void FindMatchingFiles(const string &directory,
                        const vector<string> &prefixes,
                        vector<string> *files) {
   if (directory.empty() || prefixes.empty())
     return;
 
-#ifdef WIN32
+#ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
   HANDLE h_find;
+  string mutable_directory = ConvertPathSeparators(directory);
 
-  h_find = FindFirstFileA(directory.data(), &find_file_data);
+  // Strip trailing path separators, otherwise FindFirstFile fails
+  while (*mutable_directory.rbegin() == PATH_SEPARATOR) {
+    mutable_directory.erase(mutable_directory.size() - 1);
+  }
+
+  string search_pattern = mutable_directory + PATH_SEPARATOR + "*";
+
+  h_find = FindFirstFileA(search_pattern.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
     OLA_WARN << "Find first file failed: " << GetLastError();
     return;
@@ -86,7 +96,7 @@ void FindMatchingFiles(const string &directory,
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
       if (!strncmp(find_file_data.cFileName, iter->data(), iter->size())) {
         std::ostringstream str;
-        str << directory << PATH_SEPARATOR << find_file_data.cFileName;
+        str << mutable_directory << PATH_SEPARATOR << find_file_data.cFileName;
         files->push_back(str.str());
       }
     }
@@ -118,12 +128,28 @@ void FindMatchingFiles(const string &directory,
 #endif
 }
 
-string FilenameFromPath(const string &path) {
+void ListDirectory(const std::string& directory,
+                   std::vector<std::string> *files) {
+  FindMatchingFiles(directory, "", files);
+}
+
+string FilenameFromPathOrDefault(const string &path,
+                                 const string &default_value) {
+  string mutable_path = ConvertPathSeparators(path);
   string::size_type last_path_sep = string::npos;
-  last_path_sep = path.find_last_of(PATH_SEPARATOR);
+  last_path_sep = mutable_path.find_last_of(PATH_SEPARATOR);
   if (last_path_sep == string::npos)
-    return "";
-  return path.substr(last_path_sep + 1);  // Don't return the path sep itself
+    return default_value;
+  // Don't return the path sep itself
+  return mutable_path.substr(last_path_sep + 1);
+}
+
+string FilenameFromPathOrPath(const string &path) {
+  return FilenameFromPathOrDefault(path, path);
+}
+
+string FilenameFromPath(const string &path) {
+  return FilenameFromPathOrDefault(path, "");
 }
 }  // namespace file
 }  // namespace ola

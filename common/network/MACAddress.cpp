@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MACAddress.cpp
  * A MAC address
@@ -21,12 +21,15 @@
 #include "ola/network/MACAddress.h"
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-// TODO(Peter): Do something else, possibly define the type locally
+#ifdef _WIN32
+#include <Winsock2.h>
+struct ether_addr {
+  unsigned char octet[ola::network::MACAddress::LENGTH];
+};
+#define ether_addr_octet octet
 #else
 #include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
 #ifdef HAVE_NET_ETHERNET_H
@@ -117,7 +120,7 @@ string MACAddress::ToString() const {
    * ether_ntoa_r doesn't exist on Mac, so can't use it; ether_ntoa isn't
    * thread safe
    */
-  std::stringstream str;
+  std::ostringstream str;
   for (unsigned int i = 0 ; i < MACAddress::LENGTH; i++) {
     if (i != 0)
       str << ":";

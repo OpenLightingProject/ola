@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ExportMap.cpp
  * Exported Variables
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>
@@ -30,44 +30,9 @@
 namespace ola {
 
 using std::map;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
-
-
-/*
- * Return the string representation of this map variable.
- * The form is:
- *   var_name  map:label_name key1:value1 key2:value2
- * @return the string representation of the variable.
- */
-template<typename Type>
-const string MapVariable<Type>::Value() const {
-  stringstream value;
-  value << "map:" << m_label;
-  typename map<string, Type>::const_iterator iter;
-  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter)
-    value << " " << iter->first << ":" << iter->second;
-  return value.str();
-}
-
-
-/*
- * Strings need to be quoted
- */
-template<>
-const string MapVariable<string>::Value() const {
-  stringstream value;
-  value << "map:" << m_label;
-  map<string, string>::const_iterator iter;
-  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {
-    std::string var = iter->second;
-    Escape(&var);
-    value << " " << iter->first << ":\"" << var << "\"";
-  }
-  return value.str();
-}
-
 
 ExportMap::~ExportMap() {
   STLDeleteValues(&m_bool_variables);

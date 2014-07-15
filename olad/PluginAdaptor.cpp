@@ -11,12 +11,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PluginAdaptor.cpp
  * Provides a wrapper for the DeviceManager and SelectServer objects so that
  * the plugins can register devices and file handles for events
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string>
@@ -76,18 +76,18 @@ bool PluginAdaptor::AddReadDescriptor(
 /*
  * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveReadDescriptor(
+void PluginAdaptor::RemoveReadDescriptor(
     ola::io::ReadFileDescriptor *descriptor) {
-  return m_ss->RemoveReadDescriptor(descriptor);
+  m_ss->RemoveReadDescriptor(descriptor);
 }
 
 
 /*
  * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveReadDescriptor(
+void PluginAdaptor::RemoveReadDescriptor(
     ola::io::ConnectedDescriptor *descriptor) {
-  return m_ss->RemoveReadDescriptor(descriptor);
+  m_ss->RemoveReadDescriptor(descriptor);
 }
 
 
@@ -103,9 +103,9 @@ bool PluginAdaptor::AddWriteDescriptor(
 /*
  * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveWriteDescriptor(
+void PluginAdaptor::RemoveWriteDescriptor(
     ola::io::WriteFileDescriptor *descriptor) {
-  return m_ss->RemoveWriteDescriptor(descriptor);
+  m_ss->RemoveWriteDescriptor(descriptor);
 }
 
 

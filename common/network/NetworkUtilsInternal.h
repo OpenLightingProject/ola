@@ -11,22 +11,23 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkUtilsInternal.h
  * Abstract various network functions.
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
 #define COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_WINSOCK2_H
-#include <winsock2.h>
+#define VC_EXTRALEAN
+#include <Winsock2.h>
 #endif
 
 #ifdef HAVE_ARPA_INET_H

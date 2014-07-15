@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StreamingClient.h
  * Interface to the Streaming Client class.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 /**
  * @file
@@ -40,6 +40,40 @@ namespace rpc { class RpcChannel; }
 namespace client {
 
 /**
+ * @class StreamingClientInterface ola/client/StreamingClient.h
+ * @brief The interface for the StreamingClient class.
+ */
+class StreamingClientInterface {
+ public:
+  /**
+   * The arguments for the SendDmx method
+   */
+  class SendArgs {
+   public:
+    /**
+     * @brief the priority of the data.
+     * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
+     * ola::dmx::SOURCE_PRIORITY_MAX.
+     */
+    uint8_t priority;
+
+    SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
+  };
+
+  virtual ~StreamingClientInterface() {}
+
+  virtual bool Setup() = 0;
+
+  virtual void Stop() = 0;
+
+  virtual bool SendDmx(unsigned int universe, const DmxBuffer &data) = 0;
+
+  virtual bool SendDMX(unsigned int universe,
+                       const DmxBuffer &data,
+                       const SendArgs &args) = 0;
+};
+
+/**
  * @class StreamingClient ola/client/StreamingClient.h
  * @brief Send DMX512 data to olad.
  *
@@ -49,7 +83,7 @@ namespace client {
  *
  * @snippet streaming_client.cpp Tutorial Example
  */
-class StreamingClient {
+class StreamingClient : public StreamingClientInterface {
  public:
   /**
    * Controls the options for the StreamingClient class.
@@ -72,21 +106,6 @@ class StreamingClient {
      * The RPC port olad is listening on.
      */
     uint16_t server_port;
-  };
-
-  /**
-   * The arguments for the SendDmx method
-   */
-  class SendArgs {
-   public:
-    /**
-     * @brief the priority of the data.
-     * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
-     * ola::dmx::SOURCE_PRIORITY_MAX.
-     */
-    uint8_t priority;
-
-    SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
   };
 
   /**

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * slp-sa-test.cpp
  * Copyright (C) 2013 Simon Newton
@@ -36,7 +36,7 @@
 #include "tools/e133/SLPSATestRunner.h"
 #include "slp/ServerCommon.h"
 
-using ola::file::FilenameFromPath;
+using ola::file::FilenameFromPathOrPath;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using std::cout;
@@ -71,8 +71,8 @@ int main(int argc, char *argv[]) {
       "Stress test an SLP SA.\n"
       "\n"
       "Examples:\n"
-      "   " << FilenameFromPath(argv[0]) << " 192.168.0.1\n"
-      "   " << FilenameFromPath(argv[0]) << " 192.168.0.1:5568";
+      "   " << FilenameFromPathOrPath(argv[0]) << " 192.168.0.1\n"
+      "   " << FilenameFromPathOrPath(argv[0]) << " 192.168.0.1:5568";
 
   ola::AppInit(&argc, argv, "[options] <ip>[:port]", help_msg.str());
 

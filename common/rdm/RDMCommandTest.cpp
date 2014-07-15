@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMCommandTest.cpp
  * Test fixture for the RDMCommand classes
@@ -177,7 +177,6 @@ uint8_t RDMCommandTest::EXPECTED_UNMUTE_REQUEST[] = {
  * Fill in the checksums
  */
 void RDMCommandTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   UpdateChecksum(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
   UpdateChecksum(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   UpdateChecksum(EXPECTED_GET_RESPONSE_BUFFER,

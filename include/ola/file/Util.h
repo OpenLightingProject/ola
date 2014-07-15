@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Util.h
  * File related helper functions.
@@ -29,18 +29,60 @@ namespace file {
 
 extern const char PATH_SEPARATOR;
 
+/**
+ * Find all files in a directory that match the given prefix.
+ * @param[in] directory the directory to look in
+ * @param[in] prefix the prefix to match on
+ * @param[out] files a pointer to a vector with the absolute path of the
+ * matching files.
+ */
 void FindMatchingFiles(const std::string &directory,
                        const std::string &prefix,
                        std::vector<std::string> *files);
 
+/**
+ * Find all files in a directory that match any of the prefixes.
+ * @param[in] directory the directory to look in
+ * @param[in] prefixes the prefixes to match on
+ * @param[out] files a pointer to a vector with the absolute path of the
+ * matching files.
+ */
 void FindMatchingFiles(const std::string &directory,
                        const std::vector<std::string> &prefixes,
                        std::vector<std::string> *files);
 
 /**
+ * Get a list of all files in a directory. Entries in \p files will contain
+ * the full path to the file.
+ * @param[in] directory the directory to list
+ * @param[out] files a pointer to a string vector that will receive file paths
+ */
+void ListDirectory(const std::string& directory,
+                   std::vector<std::string> *files);
+
+/**
  * Convert a path to a filename
  * @param path a full path to a file
- * @return the filename (basename) part of the path
+ * @param default_value what to return if the path can't be found
+ * @return the filename (basename) part of the path or default if it can't be
+ *   found
+ */
+std::string FilenameFromPathOrDefault(const std::string &path,
+                                      const std::string &default_value);
+
+/**
+ * Convert a path to a filename (this variant is good for switching based on
+ *   executable names)
+ * @param path a full path to a file
+ * @return the filename (basename) part of the path or the whole path if it
+ *   can't be found
+ */
+std::string FilenameFromPathOrPath(const std::string &path);
+
+/**
+ * Convert a path to a filename
+ * @param path a full path to a file
+ * @return the filename (basename) part of the path or "" if it can't be found
  */
 std::string FilenameFromPath(const std::string &path);
 }  // namespace file

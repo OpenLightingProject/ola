@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EspNetNode.cpp
  * A EspNet node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -118,12 +118,12 @@ bool EspNetNode::Stop() {
 void EspNetNode::SocketReady() {
   espnet_packet_union_t packet;
   memset(&packet, 0, sizeof(packet));
-  ola::network::IPV4Address source;
+  ola::network::IPV4SocketAddress source;
 
   ssize_t packet_size = sizeof(packet);
   if (!m_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                          &packet_size,
-                         source))
+                         &source))
     return;
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
@@ -132,22 +132,22 @@ void EspNetNode::SocketReady() {
   }
 
   // skip packets sent by us
-  if (source == m_interface.ip_address) {
+  if (source.Host() == m_interface.ip_address) {
     return;
   }
 
   switch (NetworkToHost(packet.poll.head)) {
     case ESPNET_POLL:
-      HandlePoll(packet.poll, packet_size, source);
+      HandlePoll(packet.poll, packet_size, source.Host());
       break;
     case ESPNET_REPLY:
-      HandleReply(packet.reply, packet_size, source);
+      HandleReply(packet.reply, packet_size, source.Host());
       break;
     case ESPNET_DMX:
-      HandleData(packet.dmx, packet_size, source);
+      HandleData(packet.dmx, packet_size, source.Host());
       break;
     case ESPNET_ACK:
-      HandleAck(packet.ack, packet_size, source);
+      HandleAck(packet.ack, packet_size, source.Host());
       break;
     default:
       OLA_INFO << "Skipping a packet with invalid header" << packet.poll.head;
@@ -426,8 +426,7 @@ bool EspNetNode::SendPacket(const IPV4Address &dst,
   ssize_t bytes_sent = m_socket.SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      dst,
-      ESPNET_PORT);
+      IPV4SocketAddress(dst, ESPNET_PORT));
   if (bytes_sent != (ssize_t) size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TestUtils.h
  * Useful functions that improve upon CPPUNIT's test functions
@@ -93,6 +93,9 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 #define OLA_ASSERT_NE(expected, output)  \
   CPPUNIT_ASSERT((expected) != (output))
 
+#define OLA_ASSERT_DOUBLE_EQ(expected, output, delta)  \
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(expected, output, delta)
+
 #define OLA_ASSERT_LT(expected, output)  \
   CPPUNIT_ASSERT((expected) < (output))
 
@@ -121,6 +124,12 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
   CPPUNIT_NS::Asserter::failIf( \
     NULL == value, \
     CPPUNIT_NS::Message("Expression: " #value " == NULL"), \
+    CPPUNIT_SOURCELINE())
+
+#define OLA_ASSERT_NOT_EMPTY(container) \
+  CPPUNIT_NS::Asserter::failIf( \
+    container.empty(), \
+    CPPUNIT_NS::Message("Expression: " #container " is empty"), \
     CPPUNIT_SOURCELINE())
 
 #define OLA_FAIL(reason)  \

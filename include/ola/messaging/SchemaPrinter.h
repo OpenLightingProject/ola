@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SchemaPrinter.h
  * Builds a string which contains the text representation of the schema.
@@ -64,7 +64,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
 
  private:
     bool m_include_intervals, m_include_labels;
-    std::stringstream m_str;
+    std::ostringstream m_str;
     unsigned int m_indent, m_indent_size;
 
     void AppendHeading(const std::string &name, const std::string &type);

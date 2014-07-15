@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IPAddressTest.cpp
  * Test fixture for the IPV4Address class
- * Copyright (C) 2011-2014 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -26,6 +26,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#ifdef _WIN32
+#include <Winsock2.h>
+#ifndef in_addr_t
+#define in_addr_t uint32_t
+#endif
+#endif
 #include "common/network/NetworkUtilsInternal.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
@@ -84,7 +90,7 @@ void IPAddressTest::testIPV4Address() {
 
   // test stringification
   OLA_ASSERT_EQ(string("192.168.1.1"), address1.ToString());
-  std::stringstream str;
+  std::ostringstream str;
   str << address1;
   OLA_ASSERT_EQ(string("192.168.1.1"), str.str());
 

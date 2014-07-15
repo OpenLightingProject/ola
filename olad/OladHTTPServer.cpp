@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OladHTTPServer.cpp
  * Ola HTTP class
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sys/time.h>
@@ -54,8 +54,8 @@ using ola::web::JsonArray;
 using ola::web::JsonObject;
 using std::cout;
 using std::endl;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 const char OladHTTPServer::HELP_PARAMETER[] = "help";
@@ -421,7 +421,7 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
-                                HTTPResponse *response) {
+                                 HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response,
         "POST u=[universe], d=[DMX data (a comma separated list of values)]");
@@ -450,7 +450,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
-                               HTTPResponse *response) {
+                                HTTPResponse *response) {
   if (m_enable_quit) {
     response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
@@ -474,16 +474,11 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
+int OladHTTPServer::ReloadPlugins(const HTTPRequest*,
                                   HTTPResponse *response) {
-  m_ola_server->ReloadPlugins();
-  response->SetNoCache();
-  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
-  response->Append("ok");
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  m_client.ReloadPlugins(
+      NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
+  return MHD_YES;
 }
 
 
@@ -855,7 +850,7 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
                                   const client::DMXMetadata &,
                                   const DmxBuffer &buffer) {
   // rather than adding 512 JsonValue we cheat and use raw here
-  stringstream str;
+  ostringstream str;
   str << "[" << buffer.ToString() << "]";
   JsonObject json;
   json.AddRaw("dmx", str.str());
@@ -886,13 +881,13 @@ void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
 
 
 /**
- * Add the json representation of this port to the stringstream
+ * Add the json representation of this port to the ostringstream
  */
 void OladHTTPServer::PortToJson(JsonObject *json,
                                const OlaDevice &device,
                                const OlaPort &port,
                                bool is_output) {
-  stringstream str;
+  ostringstream str;
   str << device.Alias() << "-" << (is_output ? "O" : "I") << "-" << port.Id();
 
   json->Add("device", device.Name());

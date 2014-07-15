@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ACNVectors.h
  * Vectors used in ACN PDUs
@@ -61,7 +61,9 @@ enum DMPVector {
  * @brief Vectors used at the E1.31 layer.
  */
 enum E131Vector {
-  VECTOR_E131_DMP = 2,  /**< DMP data */
+  VECTOR_E131_DATA = 2,  /**< DMP data (DATA_PACKET_VECTOR( */
+  VECTOR_E131_SYNC = 3,  /**< Sync data (SYNC_PACKET_VECTOR) */
+  VECTOR_E131_DISCOVERY = 4,  /**< Discovery data (DISCOVERY_PACKET_VECTOR) */
 };
 
 /**

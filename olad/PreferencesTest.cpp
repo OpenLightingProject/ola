@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PreferencesTest.cpp
  * Test fixture for the Preferences classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -304,7 +304,8 @@ void PreferencesTest::testLoad() {
       "", "dummy", NULL);
   preferences->Clear();
   preferences->SetValue("foo", "bad");
-  preferences->LoadFromFile(TEST_SRC_DIR "/testdata/test_preferences.conf");
+  preferences->LoadFromFile(
+      TEST_SRC_DIR "/olad/testdata/test_preferences.conf");
 
   OLA_ASSERT_EQ(string("bar"), preferences->GetValue("foo"));
   OLA_ASSERT(preferences->HasKey("foo"));
@@ -321,13 +322,14 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
+  const string data_path = TEST_BUILD_DIR "/olad/ola-output.conf";
+
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
   FileBackedPreferences *preferences = new FileBackedPreferences(
-      ".", "output", &saver_thread);
+      TEST_BUILD_DIR "/olad", "output", &saver_thread);
   preferences->Clear();
 
-  string data_path = "./ola-output.conf";
   unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * logic-rdm-sniffer.cpp
  * RDM Sniffer software for the Saleae Logic Device.
@@ -19,7 +19,7 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_SALEAEDEVICEAPI_H
@@ -62,7 +62,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::io::SelectServer;
 using ola::messaging::Descriptor;
@@ -350,7 +349,7 @@ void DisplayReminder(LogicReader *reader) {
  * Main.
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(&argc, argv, "[options]",
+  ola::AppInit(&argc, argv, "[ options ]",
                "Decode DMX/RDM data from a Saleae Logic device");
 
   SelectServer ss;

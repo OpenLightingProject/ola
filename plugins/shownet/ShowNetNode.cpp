@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ShowNetNode.cpp
  * A ShowNet node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -142,8 +142,7 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   unsigned int bytes_sent = m_socket->SendTo(
       reinterpret_cast<uint8_t*>(&packet),
       size,
-      m_interface.bcast_address,
-      SHOWNET_PORT);
+      IPV4SocketAddress(m_interface.bcast_address, SHOWNET_PORT));
 
   if (bytes_sent != size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
@@ -209,14 +208,14 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
 void ShowNetNode::SocketReady() {
   shownet_packet packet;
   ssize_t packet_size = sizeof(packet);
-  ola::network::IPV4Address source;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                          &packet_size, source))
+                          &packet_size, &source))
     return;
 
   // skip packets sent by us
-  if (source != m_interface.ip_address)
+  if (source.Host() != m_interface.ip_address)
     HandlePacket(&packet, packet_size);
 }
 

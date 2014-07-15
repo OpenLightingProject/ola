@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOStackTest.cpp
  * Test fixture for the IOStack class.
@@ -48,10 +48,6 @@ class IOStackTest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-
     void testBasicWrite();
     void testBlockOverflow();
     void testIOVec();
@@ -96,7 +92,7 @@ void IOStackTest::testBasicWrite() {
   stack.Write(data3, sizeof(data3));
   OLA_ASSERT_EQ(5u, stack.Size());
 
-  std::stringstream str;
+  std::ostringstream str;
   stack.Dump(&str);
   OLA_ASSERT_EQ(
       string("03 04 02 00 01           .....\n"),

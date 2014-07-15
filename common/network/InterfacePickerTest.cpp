@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * InterfacePickerTest.cpp
  * Test fixture for the InterfacePicker class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -53,10 +53,6 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     void testGetInterfaces();
     void testGetLoopbackInterfaces();
     void testChooseInterface();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);

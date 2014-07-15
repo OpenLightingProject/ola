@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOUtils.h
  * IO Util functions.
@@ -30,7 +30,7 @@ namespace io {
 
 /**
  * @brief Wrapper around open().
- * This logs a message is the open fails.
+ * This logs a message if the open fails.
  * @param path the path to open
  * @param oflag flags passed to open
  * @param[out] fd a pointer to the fd which is returned.

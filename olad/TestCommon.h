@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UniverseTest.cpp
  * Test fixture for the Universe and UniverseStore classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_TESTCOMMON_H_
@@ -242,7 +242,7 @@ class TestMockPlugin: public ola::Plugin {
       return true;
     }
     std::string Name() const {
-      std::stringstream str;
+      std::ostringstream str;
       str << m_id;
       return str.str();
     }
@@ -283,14 +283,12 @@ class MockSelectServer: public ola::io::SelectServerInterface {
       return true;
     }
 
-    bool RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor) {
+    void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor) {
       (void) descriptor;
-      return true;
     }
 
-    bool RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor) {
+    void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor) {
       (void) descriptor;
-      return true;
     }
 
     bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
@@ -298,9 +296,8 @@ class MockSelectServer: public ola::io::SelectServerInterface {
       return true;
     }
 
-    bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
+    void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
       (void) descriptor;
-      return true;
     }
 
     ola::thread::timeout_id RegisterRepeatingTimeout(

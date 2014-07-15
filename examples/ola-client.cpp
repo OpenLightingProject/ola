@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-client.cpp
- *  The multi purpose ola client.
- *  Copyright (C) 2005-2008 Simon Newton
+ * ola-client.cpp
+ * The multi purpose ola client.
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -24,6 +24,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/file/Util.h>
 #include <ola/io/SelectServer.h>
 #include <olad/PortConstants.h>
 
@@ -332,27 +333,25 @@ void InitOptions(options *opts) {
  * Decide what mode we're running in
  */
 void SetMode(options *opts) {
-  string::size_type pos = opts->cmd.find_last_of("/");
+  opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
 
-  if (pos != string::npos)
-    opts->cmd = opts->cmd.substr(pos + 1);
-
-  if (opts->cmd == "ola_plugin_info")
+  if (opts->cmd == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;
-  else if (opts->cmd == "ola_plugin_state")
+  } else if (opts->cmd == "ola_plugin_state") {
     opts->m = PLUGIN_STATE;
-  else if (opts->cmd == "ola_patch")
+  } else if (opts->cmd == "ola_patch") {
     opts->m = DEVICE_PATCH;
-  else if (opts->cmd == "ola_uni_info")
+  } else if (opts->cmd == "ola_uni_info") {
     opts->m = UNIVERSE_INFO;
-  else if (opts->cmd == "ola_uni_name")
+  } else if (opts->cmd == "ola_uni_name") {
     opts->m = UNIVERSE_NAME;
-  else if (opts->cmd == "ola_uni_merge")
+  } else if (opts->cmd == "ola_uni_merge") {
     opts->m = UNI_MERGE;
-  else if (opts->cmd == "ola_set_dmx")
+  } else if (opts->cmd == "ola_set_dmx") {
     opts->m = SET_DMX;
-  else if (opts->cmd == "ola_set_priority")
+  } else if (opts->cmd == "ola_set_priority") {
     opts->m = SET_PORT_PRIORITY;
+  }
 }
 
 

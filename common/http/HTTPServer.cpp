@@ -11,18 +11,20 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * HTTPServer.cpp
  * The base HTTP Server class.
- * Copyright (C) 2005-2012 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdio.h>
 #include <ola/Logging.h>
+#include <ola/file/Util.h>
+#include <ola/http/HTTPServer.h>
 #include <ola/io/Descriptor.h>
 #include <ola/web/Json.h>
-#include <ola/http/HTTPServer.h>
+#include <ola/web/JsonWriter.h>
 
 #include <fstream>
 #include <iostream>
@@ -74,13 +76,13 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
  * Called by MHD_create_post_processor to iterate over the post form data
  * @param request_cls a pointer to a HTTPRequest object
  * @param key the header name
- * @param value the header value
+ * @param data the header value
  */
 int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *filename, const char *content_type,
                 const char *transfer_encoding, const char *data, uint64_t off,
                 size_t size) {
-  // libmicrohttpd has a bug where the zie isn't set correctly.
+  // libmicrohttpd has a bug where the size isn't set correctly.
   HTTPRequest *request = static_cast<HTTPRequest*>(request_cls);
   string value(data);
   request->AddPostParameter(key, value);
@@ -635,6 +637,8 @@ bool HTTPServer::RegisterFile(const std::string &path,
 bool HTTPServer::RegisterFile(const std::string &path,
                               const std::string &file,
                               const std::string &content_type) {
+  // TODO(Peter): The file detail probably needs slashes swapping on Windows
+  // here or above.
   map<string, static_file_info>::const_iterator file_iter = (
       m_static_content.find(path));
 
@@ -745,7 +749,8 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   char *data;
   unsigned int length;
   string file_path = m_data_dir;
-  file_path.append("/");
+  file_path.push_back(ola::file::PATH_SEPARATOR);
+  // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
   ifstream i_stream(file_path.data());
 

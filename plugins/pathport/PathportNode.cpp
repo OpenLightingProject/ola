@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PathportNode.cpp
  * A SandNet node
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -124,15 +124,14 @@ bool PathportNode::Stop() {
 void PathportNode::SocketReady(UDPSocket *socket) {
   pathport_packet_s packet;
   ssize_t packet_size = sizeof(packet);
-  IPV4Address source;
+  IPV4SocketAddress source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                        &packet_size,
-                        source))
+                        &packet_size, &source))
     return;
 
   // skip packets sent by us
-  if (source == m_interface.ip_address)
+  if (source.Host() == m_interface.ip_address)
     return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.header))) {
@@ -445,8 +444,7 @@ bool PathportNode::SendPacket(const pathport_packet_s &packet,
   ssize_t bytes_sent = m_socket.SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      destination,
-      PATHPORT_PORT);
+      IPV4SocketAddress(destination, PATHPORT_PORT));
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
     OLA_INFO << "Only sent " << bytes_sent << " of " << size;

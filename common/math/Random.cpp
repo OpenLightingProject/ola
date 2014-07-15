@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Random.cpp
  * Random number generator
@@ -19,7 +19,7 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <stdlib.h>
@@ -45,6 +45,8 @@ std::default_random_engine generator_;
 void InitRandom() {
 #ifdef HAVE_RANDOM
   generator_.seed(time(NULL));
+#elif defined(_WIN32)
+  srand(time(NULL));
 #else
   srandom(time(NULL));
 #endif
@@ -59,8 +61,11 @@ int Random(int lower, int upper) {
 #ifdef HAVE_RANDOM
   std::uniform_int_distribution<int> distribution(lower, upper);
   return distribution(generator_);
+#elif defined(_WIN32)
+  return (lower +
+          (rand() % (upper - lower + 1)));  // NOLINT(runtime/threadsafe_fn)
 #else
-  return lower + (random() % (upper - lower + 1));
+  return (lower + (random() % (upper - lower + 1)));
 #endif
 }
 }  // namespace math

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MockAction.cpp
  * A mock action uses for testing.
@@ -39,7 +39,7 @@ class MockAction: public Action {
     }
 
     void CheckForValue(int32_t line, uint8_t expected_value) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "Line " << line;
       CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
                                    static_cast<size_t>(1),
@@ -67,7 +67,7 @@ class BadAction: public Action {
     BadAction() : Action() {}
 
     void Execute(Context*, uint8_t slot_value) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "Incorrect action called for " << static_cast<int>(slot_value);
       CPPUNIT_FAIL(str.str());
     }

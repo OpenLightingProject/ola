@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Context.h
  * Copyright (C) 2011 Simon Newton
@@ -22,13 +22,25 @@
 #define TOOLS_OLA_TRIGGER_CONTEXT_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <stdint.h>
 #include <sstream>
 #include <string>
 #include HASH_MAP_H
+
+#ifndef HAVE_UNORDERED_MAP
+// This adds support for hashing strings if it's not present
+namespace HASH_NAMESPACE {
+
+template<> struct hash<std::string> {
+  size_t operator()(const std::string& x) const {
+    return hash<const char*>()(x.c_str());
+  }
+};
+}  // namespace HASH_NAMESPACE
+#endif
 
 /**
  * A context is a collection of variables and their values.

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OutgoingUDPTransport.cpp
  * The OutgoingUDPTransport class
@@ -22,8 +22,8 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketAddress.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/UDPTransport.h"
@@ -33,14 +33,14 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
-using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 
 /*
  * Send a block of PDU messages.
  * @param pdu_block the block of pdus to send
  */
 bool OutgoingUDPTransport::Send(const PDUBlock<PDU> &pdu_block) {
-  return m_impl->Send(pdu_block, m_destination, m_port);
+  return m_impl->Send(pdu_block, m_destination);
 }
 
 
@@ -51,15 +51,14 @@ bool OutgoingUDPTransport::Send(const PDUBlock<PDU> &pdu_block) {
  * @param port the destination port to send to
  */
 bool OutgoingUDPTransportImpl::Send(const PDUBlock<PDU> &pdu_block,
-                                    const IPV4Address &destination,
-                                    uint16_t port) {
+                                    const IPV4SocketAddress &destination) {
   unsigned int data_size;
   const uint8_t *data = m_packer->Pack(pdu_block, &data_size);
 
   if (!data)
     return false;
 
-  return m_socket->SendTo(data, data_size, destination, port);
+  return m_socket->SendTo(data, data_size, destination);
 }
 
 
@@ -80,10 +79,9 @@ void IncomingUDPTransport::Receive() {
     m_recv_buffer = new uint8_t[PreamblePacker::MAX_DATAGRAM_SIZE];
 
   ssize_t size = PreamblePacker::MAX_DATAGRAM_SIZE;
-  ola::network::IPV4Address src_address;
-  uint16_t src_port;
+  ola::network::IPV4SocketAddress source;
 
-  if (!m_socket->RecvFrom(m_recv_buffer, &size, src_address, src_port))
+  if (!m_socket->RecvFrom(m_recv_buffer, &size, &source))
     return;
 
   unsigned int header_size = PreamblePacker::ACN_HEADER_SIZE;
@@ -98,9 +96,7 @@ void IncomingUDPTransport::Receive() {
   }
 
   HeaderSet header_set;
-  TransportHeader transport_header(
-      ola::network::IPV4SocketAddress(src_address, src_port),
-      TransportHeader::UDP);
+  TransportHeader transport_header(source, TransportHeader::UDP);
   header_set.SetTransportHeader(transport_header);
 
   m_inflator->InflatePDUBlock(

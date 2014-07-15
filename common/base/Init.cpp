@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Init.cpp
  * A grab bag of functions useful for programs.
@@ -29,7 +29,7 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef HAVE_EXECINFO_H
@@ -39,8 +39,11 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Winsock2.h>
 #else
 #include <sys/resource.h>
 #endif
@@ -84,7 +87,6 @@ static void _SIGSEGV_Handler(int signal) {
   (void) signal;
 }
 
-
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
@@ -92,7 +94,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 
   if (export_map)
     InitExportMap(argc, argv, export_map);
-  return true;
+  return NetworkInit();
 }
 
 
@@ -118,12 +120,33 @@ bool AppInit(int *argc,
   InitLoggingFromFlags();
   if (!InstallSEGVHandler())
     return false;
-  return true;
+  return NetworkInit();
 }
 
+#ifdef _WIN32
+static void NetworkShutdown() {
+  WSACleanup();
+}
+#endif
+
+bool NetworkInit() {
+#ifdef _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  if (result != 0) {
+    OLA_WARN << "WinSock initialization failed with " << result;
+    return false;
+  } else {
+    atexit(NetworkShutdown);
+    return true;
+  }
+#else
+  return true;
+#endif
+}
 
 bool InstallSignal(int signal, void(*fp)(int signo)) {
-#ifdef WIN32
+#ifdef _WIN32
   if (::signal(signal, fp) == SIG_ERR) {
     OLA_WARN << "Failed to install signal for " << signal;
     return false;
@@ -138,18 +161,18 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
     OLA_WARN << "Failed to install signal for " << signal;
     return false;
   }
-#endif  // WIN32
+#endif  // _WIN32
   return true;
 }
 
 
 bool InstallSEGVHandler() {
-#ifndef WIN32
+#ifndef _WIN32
   if (!InstallSignal(SIGBUS, _SIGSEGV_Handler)) {
     OLA_WARN << "Failed to install signal SIGBUS";
     return false;
   }
-#endif  // !WIN32
+#endif  // !_WIN32
   if (!InstallSignal(SIGSEGV, _SIGSEGV_Handler)) {
     OLA_WARN << "Failed to install signal SIGSEGV";
     return false;
@@ -164,16 +187,16 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
 
   var = export_map->GetStringVar("cmd-line");
 
-  std::stringstream out;
+  std::ostringstream out;
   for (int i = 1; i < argc; i++) {
     out << argv[i] << " ";
   }
   var->Set(out.str());
 
   var = export_map->GetStringVar("fd-limit");
-#ifdef WIN32
+#ifdef _WIN32
   {
-    std::stringstream out;
+    std::ostringstream out;
     out << _getmaxstdio();
     var->Set(out.str());
   }
@@ -182,16 +205,16 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     var->Set("undetermined");
   } else {
-    std::stringstream out;
+    std::ostringstream out;
     out << rl.rlim_cur;
     var->Set(out.str());
   }
-#endif  // WIN32
+#endif  // _WIN32
 }
 
 
 void Daemonise() {
-#ifndef WIN32
+#ifndef _WIN32
   pid_t pid;
   unsigned int i;
   int fd0, fd1, fd2;
@@ -252,7 +275,7 @@ void Daemonise() {
       << fd2;
     exit(EXIT_OSERR);
   }
-#endif  // WIN32
+#endif  // _WIN32
 }
 /**@}*/
 }  // namespace ola

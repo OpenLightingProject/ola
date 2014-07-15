@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Serial.h
  * Serial IO functions.
@@ -22,7 +22,18 @@
 #define INCLUDE_OLA_IO_SERIAL_H_
 
 #include <stdint.h>
+#ifdef _WIN32
+// Define types and constants to mimic termios.h
+#define B9600 9600
+#define B19200 19200
+#define B38400 38400
+#define B57600 57600
+#define B115200 115200
+#define B230400 230400
+typedef unsigned speed_t;
+#else
 #include <termios.h>
+#endif
 
 namespace ola {
 namespace io {

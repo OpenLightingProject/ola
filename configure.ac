@@ -9,7 +9,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([subdir-objects])
 
 # Checks for programs.
 AC_LANG([C++])
@@ -28,8 +28,8 @@ AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
-                  linux/if_packet.h math.h net/ethernet.h \
+AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h errno.h execinfo.h \
+                  linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
 AC_CHECK_HEADERS([random])
@@ -115,8 +115,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_aton select socket strerror \
                 getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
-                getgrgid_r])
-AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
+                getgrgid_r secure_getenv])
 
 LT_INIT
 AC_PROG_LIBTOOL
@@ -128,6 +127,15 @@ DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
+
+# Epoll
+AX_HAVE_EPOLL(
+  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
+
+# kqueue
+AC_CHECK_FUNCS([kqueue])
+AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
@@ -249,6 +257,10 @@ AS_IF([test -z "$PKG_CONFIG"],
 
 # Libraries.
 #####################################################
+
+# dlopen
+AC_SEARCH_LIBS([dlopen], [dl], [have_dlopen="yes"])
+AM_CONDITIONAL([HAVE_DLOPEN], [test "x$have_dlopen" = xyes])
 
 # dmx4linux
 have_dmx4linux="no"
@@ -495,6 +507,17 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
 
+# UART direct plugin
+AC_ARG_ENABLE(
+  [uart],
+  [AS_HELP_STRING([--disable-uart],
+                  [Avoid using native uart support])])
+
+AC_CHECK_HEADERS([asm/termios.h], [have_asm_termios="yes"], [have_asm_termios="no"])
+AS_IF([test "x$have_asm_termios" = xyes],
+      [AC_DEFINE([USE_UART], [1], [define if asm/termios.h is available and direct UART support should be enabled])])
+
+
 # OSC Support.
 # look for liblo if the user asked us to
 AC_ARG_ENABLE(
@@ -619,6 +642,7 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_asm_termios])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 
@@ -626,19 +650,17 @@ PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
 for p in $PLUGINS; do
-  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/libola${p}.la"
+  PLUGIN_LIBS="$PLUGIN_LIBS plugins/${p}/libola${p}.la"
   OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# plugin & html data directories
-plugindir=$libdir/olad
+# html & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
-AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
 
@@ -672,99 +694,7 @@ AC_CONFIG_FILES([Doxyfile
                  tools/e133/libolae133slp.pc
                  ])
 # Makefiles
-AC_CONFIG_FILES([Makefile
-                 common/Makefile
-                 common/base/Makefile
-                 common/dmx/Makefile
-                 common/export_map/Makefile
-                 common/file/Makefile
-                 common/http/Makefile
-                 common/io/Makefile
-                 common/math/Makefile
-                 common/messaging/Makefile
-                 common/network/Makefile
-                 common/protocol/Makefile
-                 common/rdm/Makefile
-                 common/rdm/testdata/Makefile
-                 common/rdm/testdata/pids/Makefile
-                 common/rpc/Makefile
-                 common/system/Makefile
-                 common/testing/Makefile
-                 common/thread/Makefile
-                 common/timecode/Makefile
-                 common/utils/Makefile
-                 common/web/Makefile
-                 data/Makefile
-                 data/rdm/Makefile
-                 debian/Makefile
-                 doxygen/Makefile
-                 doxygen/examples/Makefile
-                 examples/Makefile
-                 include/Makefile
-                 include/ola/Makefile
-                 include/ola/acn/Makefile
-                 include/ola/base/Makefile
-                 include/ola/client/Makefile
-                 include/ola/dmx/Makefile
-                 include/ola/e133/Makefile
-                 include/ola/file/Makefile
-                 include/ola/http/Makefile
-                 include/ola/io/Makefile
-                 include/ola/math/Makefile
-                 include/ola/messaging/Makefile
-                 include/ola/network/Makefile
-                 include/ola/rdm/Makefile
-                 include/ola/slp/Makefile
-                 include/ola/stl/Makefile
-                 include/ola/system/Makefile
-                 include/ola/testing/Makefile
-                 include/ola/thread/Makefile
-                 include/ola/timecode/Makefile
-                 include/ola/util/Makefile
-                 include/ola/web/Makefile
-                 include/olad/Makefile
-                 java/Makefile
-                 man/Makefile
-                 ola/Makefile
-                 olad/Makefile
-                 olad/www/Makefile
-                 plugins/Makefile
-                 plugins/artnet/Makefile
-                 plugins/artnet/messages/Makefile
-                 plugins/dmx4linux/Makefile
-                 plugins/dummy/Makefile
-                 plugins/e131/Makefile
-                 plugins/e131/e131/Makefile
-                 plugins/e131/messages/Makefile
-                 plugins/espnet/Makefile
-                 plugins/ftdidmx/Makefile
-                 plugins/karate/Makefile
-                 plugins/kinet/Makefile
-                 plugins/milinst/Makefile
-                 plugins/opendmx/Makefile
-                 plugins/osc/Makefile
-                 plugins/pathport/Makefile
-                 plugins/renard/Makefile
-                 plugins/sandnet/Makefile
-                 plugins/shownet/Makefile
-                 plugins/spi/Makefile
-                 plugins/stageprofi/Makefile
-                 plugins/usbdmx/Makefile
-                 plugins/usbpro/Makefile
-                 plugins/usbpro/messages/Makefile
-                 protoc/Makefile
-                 python/Makefile
-                 python/examples/Makefile
-                 python/ola/Makefile
-                 python/ola/rpc/Makefile
-                 slp/Makefile
-                 tools/Makefile
-                 tools/e133/Makefile
-                 tools/logic/Makefile
-                 tools/ola_trigger/Makefile
-                 tools/rdm/Makefile
-                 tools/rdmpro/Makefile
-                 tools/usbpro/Makefile])
+AC_CONFIG_FILES([Makefile java/Makefile])
 AC_OUTPUT
 
 echo \

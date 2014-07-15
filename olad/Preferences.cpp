@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Preferences.cpp
  * This class stores preferences in files
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #include <dirent.h>
 #include <errno.h>
@@ -35,6 +35,7 @@
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/thread/Thread.h"
 #include "olad/Preferences.h"
@@ -383,8 +384,8 @@ bool FileBackedPreferences::Save() const {
 
 
 const string FileBackedPreferences::FileName() const {
-  return (m_directory + "/" + OLA_CONFIG_PREFIX + m_preference_name +
-          OLA_CONFIG_SUFFIX);
+  return (m_directory + ola::file::PATH_SEPARATOR + OLA_CONFIG_PREFIX +
+          m_preference_name + OLA_CONFIG_SUFFIX);
 }
 
 

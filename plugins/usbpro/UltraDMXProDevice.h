@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UltraDMXProDevice.h
  * A DMX King Ultra DMX Pro Device
@@ -139,13 +139,12 @@ class UltraDMXProOutputPort: public BasicOutputPort {
         m_primary(primary) {}
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-    if (m_bucket.GetToken(*m_wake_time))
-      if (m_primary)
-        return m_widget->SendDMX(buffer);
-      else
-        return m_widget->SendSecondaryDMX(buffer);
-    else
+    if (m_bucket.GetToken(*m_wake_time)) {
+      return m_primary ? m_widget->SendDMX(buffer)
+          : m_widget->SendSecondaryDMX(buffer);
+    } else {
       OLA_INFO << "Port rated limited, dropping frame";
+    }
     return true;
     (void) priority;
   }

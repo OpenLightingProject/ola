@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RootSenderTest.cpp
  * Test fixture for the RootSender class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -113,8 +113,7 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   ola::network::UDPSocket socket;
   OLA_ASSERT(socket.Init());
   OLA_ASSERT(
-      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
-                                    ola::acn::ACN_PORT)));
+      socket.Bind(IPV4SocketAddress(IPV4Address::Loopback(), 0)));
   OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &root_inflator);
@@ -122,12 +121,13 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
                                &IncomingUDPTransport::Receive));
   OLA_ASSERT(m_ss->AddReadDescriptor(&socket));
 
-  // outgoing transport
-  IPV4Address addr;
-  OLA_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
+  // Get the port we bound to.
+  IPV4SocketAddress local_address;
+  OLA_ASSERT(socket.GetSocketAddress(&local_address));
 
   OutgoingUDPTransportImpl udp_transport_impl(&socket);
-  OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
+  OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl,
+      IPV4Address::Loopback(), local_address.Port());
 
   // now actually send some data
   MockPDU mock_pdu(4, 8);

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServer.h
  * The select server interface
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_IO_SELECTSERVER_H_
@@ -39,55 +39,123 @@ namespace ola {
 namespace io {
 
 /**
- * This is the core of the event driven system. The SelectServer is responsible
- * for invoking Callbacks when events occur. All methods except Execute() and
- * Terminate() must be called from the thread that Run() was called in.
+ * @brief A single threaded I/O event management system.
+ *
+ * SelectServer is the core of the event driven system. It's responsible
+ * for invoking Callbacks when certain events occur.
+ *
+ * @examplepara
+ * The following snippet shows how a SelectServer can be used with a listening
+ * UDP socket. The ReceiveMessage function will be called whenever there is
+ * new data on the UDP socket.
+ *
+ * @snippet udp_server.cpp UDP Server
+ *
+ * The SelectServer has a number of different implementations depending on the
+ * platform. On systems with epoll, the flag --use-epoll will use epoll()
+ * rather than select(). The PollerInterface defines the contract between the
+ * SelectServer and the lower level, platform dependant Poller classes.
+ *
+ * All methods except Execute() and Terminate() must be called from the thread
+ * that Run() was called in.
  */
 class SelectServer: public SelectServerInterface {
  public :
-  enum Direction {READ, WRITE};
-
+  /**
+   * @brief Create a new SelectServer
+   * @param export_map the ExportMap to use for stats
+   * @param clock the Clock to use to keep time
+   */
   SelectServer(ola::ExportMap *export_map = NULL,
                Clock *clock = NULL);
+
+  /**
+   * @brief Clean up.
+   *
+   * The SelectServer should be terminated before it's deleted.
+   */
   ~SelectServer();
 
-  bool IsRunning() const { return !m_terminate; }
+  /**
+   * @brief Checks if the SelectServer is running.
+   * @returns true if the SelectServer is in the Run() method.
+   */
+  bool IsRunning() const { return m_is_running; }
+
   const TimeStamp *WakeUpTime() const;
 
+  /**
+   * @brief Exit from the Run() loop.
+   *
+   * Terminate() may be called from any thread.
+   */
   void Terminate();
 
-  void SetDefaultInterval(const TimeInterval &poll_interval);
+  /**
+   * @brief Set the duration to block for.
+   * @param block_interval the interval to block for.
+   *
+   * This controls the upper bound on the duration between callbacks added with
+   * RunInLoop().
+   */
+  void SetDefaultInterval(const TimeInterval &block_interval);
+
+  /**
+   * @brief Enter the event loop.
+   *
+   * Run() will return once Terminate() has been called.
+   */
   void Run();
-  void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
-               unsigned int delay_usec = POLL_INTERVAL_USECOND);
+
+  /**
+   * @brief Do a single pass through the event loop. Does not block.
+   */
+  void RunOnce();
+
+  /**
+   * @brief Do a single pass through the event loop.
+   * @param block_interval The maximum time to block if there is no I/O or
+   *   timer events.
+   */
+  void RunOnce(const TimeInterval &block_interval);
 
   bool AddReadDescriptor(ReadFileDescriptor *descriptor);
   bool AddReadDescriptor(ConnectedDescriptor *descriptor,
                          bool delete_on_close = false);
-  bool RemoveReadDescriptor(ReadFileDescriptor *descriptor);
-  bool RemoveReadDescriptor(ConnectedDescriptor *descriptor);
+  void RemoveReadDescriptor(ReadFileDescriptor *descriptor);
+  void RemoveReadDescriptor(ConnectedDescriptor *descriptor);
 
   bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
-  bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
+  void RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
 
   ola::thread::timeout_id RegisterRepeatingTimeout(
       unsigned int ms,
-      ola::Callback0<bool> *closure);
+      ola::Callback0<bool> *callback);
   ola::thread::timeout_id RegisterRepeatingTimeout(
       const ola::TimeInterval &interval,
-      ola::Callback0<bool> *closure);
+      ola::Callback0<bool> *callback);
 
   ola::thread::timeout_id RegisterSingleTimeout(
       unsigned int ms,
-      ola::SingleUseCallback0<void> *closure);
+      ola::SingleUseCallback0<void> *callback);
   ola::thread::timeout_id RegisterSingleTimeout(
       const ola::TimeInterval &interval,
-      ola::SingleUseCallback0<void> *closure);
+      ola::SingleUseCallback0<void> *callback);
   void RemoveTimeout(ola::thread::timeout_id id);
 
-  void RunInLoop(ola::Callback0<void> *closure);
+  /**
+   * @brief Execute a callback on every event loop.
+   * @param callback the Callback to execute. Ownership is transferrred to the
+   *   SelectServer.
+   *
+   * Be very cautious about using this, it's almost certainly not what you
+   * want.
+   *
+   * There is no way to remove a Callback added with this method.
+   */
+  void RunInLoop(ola::Callback0<void> *callback);
 
-  void Execute(ola::BaseCallback0<void> *closure);
+  void Execute(ola::BaseCallback0<void> *callback);
 
  private :
   typedef std::set<ola::Callback0<void>*> LoopClosureSet;
@@ -100,7 +168,7 @@ class SelectServer: public SelectServerInterface {
 
   Clock *m_clock;
   bool m_free_clock;
-  LoopClosureSet m_loop_closures;
+  LoopClosureSet m_loop_callbacks;
   std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
   ola::thread::Mutex m_incoming_mutex;
   LoopbackDescriptor m_incoming_descriptor;

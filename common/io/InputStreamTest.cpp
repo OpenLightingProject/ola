@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StreamTest.cpp
  * Test fixture for the InputStream classes.
@@ -31,24 +31,16 @@ using ola::io::MemoryBuffer;
 
 class InputStreamTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(InputStreamTest);
-    CPPUNIT_TEST(testRead);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(InputStreamTest);
+  CPPUNIT_TEST(testRead);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void tearDown() {}
-    void testRead();
+  void testRead();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InputStreamTest);
-
-
-void InputStreamTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
-
 
 /*
  * Confirm that reading works.

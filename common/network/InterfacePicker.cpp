@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * InterfacePicker.cpp
  * Chooses an interface to listen on
- * Copyright (C) 2005-2014 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string.h>
@@ -26,7 +26,7 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"
@@ -140,7 +140,7 @@ bool InterfacePicker::ChooseInterface(
  * Create the appropriate picker
  */
 InterfacePicker *InterfacePicker::NewPicker() {
-#ifdef WIN32
+#ifdef _WIN32
   return new WindowsInterfacePicker();
 #else
   return new PosixInterfacePicker();

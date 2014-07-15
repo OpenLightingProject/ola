@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,10 +10,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # OlaClient.py
-# Copyright (C) 2005-2009 Simon Newton
+# Copyright (C) 2005 Simon Newton
 
 """The client used to communicate with the Ola Server."""
 
@@ -307,6 +306,7 @@ class RDMResponse(object):
       the NACK.
     ack_timer: If the response type was ACK_TIMER, this is the number of ms to
       wait before checking for queued messages.
+    transaction_number:
   """
 
   RESPONSE_CODES_TO_STRING = {
@@ -343,14 +343,16 @@ class RDMResponse(object):
 
   def __init__(self, controller, response):
     self.status = RequestStatus(controller)
-    self._response_code = response.response_code
-    self._response_type = response.response_type
-    self._queued_messages = response.message_count
-    self.sub_device = response.sub_device
-    self.command_class = response.command_class
-    self.pid = response.param_id
-    self.data = response.data
-    self._raw_responses = response.raw_response
+    if (self.status.Succeeded() and (response != None)):
+      self._response_code = response.response_code
+      self._response_type = response.response_type
+      self._queued_messages = response.message_count
+      self._transaction_number = response.transaction_number
+      self.sub_device = response.sub_device
+      self.command_class = response.command_class
+      self.pid = response.param_id
+      self.data = response.data
+      self._raw_responses = response.raw_response
 
     # we populate these below if required
     self._nack_reason = None
@@ -388,6 +390,10 @@ class RDMResponse(object):
   @property
   def nack_reason(self):
     return self._nack_reason
+
+  @property
+  def transaction_number(self):
+    return self._transaction_number
 
   @property
   def raw_response(self):

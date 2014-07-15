@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * WidgetDetectorThread.h
  * A thread that periodically looks for usb serial devices, and runs the
@@ -93,7 +93,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Stop the thread.
     bool Join(void *ptr);
 
-    // Can be called from any thread.
+    // Used to release a widget. Should be called from the thread running the
+    // SelectServerInterface that was passed to the constructor.
     void FreeWidget(SerialWidgetInterface *widget);
 
     // blocks until the thread is running

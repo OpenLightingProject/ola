@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * UIDSet.h
  * A Set of UIDs
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -180,7 +180,7 @@ class UIDSet {
      * @returns a comma separated string with the UIDs from the set.
      */
     std::string ToString() const {
-      std::stringstream str;
+      std::ostringstream str;
       std::set<UID>::const_iterator iter;
       for (iter = m_uids.begin(); iter != m_uids.end(); ++iter) {
         if (iter != m_uids.begin())

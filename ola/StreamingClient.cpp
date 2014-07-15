@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StreamingClient.cpp
  * Implementation of Streaming Client
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <ola/AutoStart.h>
@@ -145,7 +145,7 @@ bool StreamingClient::Send(unsigned int universe, uint8_t priority,
   // connection. We could skip this and rely on the EPIPE delivered by the
   // write() below, but that introduces a race condition in the unittests.
   m_socket_closed = false;
-  m_ss->RunOnce(0, 0);
+  m_ss->RunOnce();
 
   if (m_socket_closed) {
     Stop();
