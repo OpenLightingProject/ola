@@ -112,12 +112,12 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       continue;
     }
 
-    if (dev->descriptor.idProduct != 0x6001 && 
+    if (dev->descriptor.idProduct != 0x6001 &&
         dev->descriptor.idProduct != 0x6011) {
       // Since all FTDI devices are found by ftdi_usb_find_all and I only know
       // that these IDs are supported by this code.
-      // This applies to libftdi 1.x from the source in 0.20 it seems it may 
-      // actually return all devices in which case adding a vendorId check 
+      // This applies to libftdi 1.x from the source in 0.20 it seems it may
+      // actually return all devices in which case adding a vendorId check
       // would be prudent.
       continue;
     }
@@ -150,10 +150,10 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI") ||
         std::string::npos != v.find("KMTRONIC") ||
         std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname, 
-                                        sserial, 
-                                        i, 
-                                        dev->descriptor.idVendor, 
+      widgets->push_back(FtdiWidgetInfo(sname,
+                                        sserial,
+                                        i,
+                                        dev->descriptor.idVendor,
                                         dev->descriptor.idProduct));
     } else {
       OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
