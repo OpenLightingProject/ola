@@ -27,7 +27,7 @@
  */
 
 #include <strings.h>
-#include <libftdi1/ftdi.h>
+#include <ftdi.h>
 #include <assert.h>
 
 #include <string>
