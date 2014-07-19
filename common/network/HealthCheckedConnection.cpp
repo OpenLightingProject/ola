@@ -105,7 +105,13 @@ void HealthCheckedConnection::UpdateReceiveTimer() {
         2.5 * m_heartbeat_interval.AsInt()));
   m_receive_timeout_id = m_scheduler->RegisterSingleTimeout(
     timeout_interval,
-    NewSingleCallback(this, &HealthCheckedConnection::HeartbeatTimeout));
+    NewSingleCallback(
+      this, &HealthCheckedConnection::InternalHeartbeatTimeout));
+}
+
+void HealthCheckedConnection::InternalHeartbeatTimeout() {
+  m_receive_timeout_id = ola::thread::INVALID_TIMEOUT;
+  HeartbeatTimeout();
 }
 }  // namespace network
 }  // namespace ola

@@ -402,6 +402,7 @@ void SelectServerTest::testRemoveWriteWhenOtherReadable() {
   Descriptors read_set, write_set, delete_set;
   LoopbackDescriptor *loopback = new LoopbackDescriptor();
   loopback->Init();
+  loopback->SetOnWritable(NewCallback(this, &SelectServerTest::NullHandler));
 
   write_set.insert(loopback);
   delete_set.insert(loopback);
@@ -426,12 +427,13 @@ void SelectServerTest::testRemoveWriteWhenOtherReadable() {
  */
 void SelectServerTest::testRemoveWriteWhenReadable() {
   // Ownership is transferred to the SelectServer.
-  LoopbackDescriptor *loopback = new LoopbackDescriptor();;
+  LoopbackDescriptor *loopback = new LoopbackDescriptor();
   loopback->Init();
 
   loopback->SetOnData(NewCallback(
       this, &SelectServerTest::ReadDataAndRemove,
       static_cast<ConnectedDescriptor*>(loopback)));
+  loopback->SetOnWritable(NewCallback(this, &SelectServerTest::NullHandler));
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(loopback));
   OLA_ASSERT_TRUE(m_ss->AddWriteDescriptor(loopback));
