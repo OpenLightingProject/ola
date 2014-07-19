@@ -25,16 +25,15 @@
  *
  * by Rui Barreiros
  *
- * Additional modifications to enable support for multiple outputs and 
+ * Additional modifications to enable support for multiple outputs and
  * additional device ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #include <strings.h>
 #include <ftdi.h>
 #include <assert.h>
-#include <libusb-1.0/libusb.h>
 
 #include <string>
 #include <algorithm>
@@ -68,9 +67,11 @@ FtdiWidget::~FtdiWidget() {
 
 /**
  * Get the number of physical interfaces our widgit has to offer.
- * 
- * This does not deal with product names being all caps etc.
- * Originally I had hoped to use ftdi_context::type however, it only gets set properly after the device has been opened.
+ *
+ * This does not deal with product names being all caps etc. or just named in
+ * a different way.
+ * Originally I had hoped to use ftdi_context::type however, it only gets set
+ * properly after the device has been opened.
  */
 int FtdiWidget::GetInterfaceCount() {
   if (std::string::npos != m_name.find("Plus4")) {
@@ -94,73 +95,75 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     return;
   }
 
-  struct ftdi_device_list* list = NULL;
+  const int pids[2] = { 0x6001, 0x6011 };
+  const int vid = 0x0403;
+  const unsigned int pidCount = 2;
 
-  int devices_found = ftdi_usb_find_all(ftdi, &list, 0, 0);
-  if (devices_found < 0)
-    OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
+  for (unsigned int cur_pid = 0; cur_pid < pidCount; cur_pid++) {
+    struct ftdi_device_list* list = NULL;
 
-  ftdi_device_list* current_device = list;
+    int devices_found = ftdi_usb_find_all(ftdi, &list, vid, pids[cur_pid]);
 
-  while (current_device != NULL) {
-    struct usb_device *dev = current_device->dev;
-    current_device = current_device->next;
-    i++;
-
-    if (!dev) {
-      OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
-      continue;
+    if (devices_found < 0) {
+      OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
     }
+    else {
+      OLA_INFO << "Found " << devices_found << " FTDI devices with PID: " << pids[cur_pid] << ".";
 
-    if (dev->descriptor.idProduct != 0x6001 &&
-        dev->descriptor.idProduct != 0x6011) {
-      // Since all FTDI devices are found by ftdi_usb_find_all and I only know
-      // that these IDs are supported by this code.
-      // This applies to libftdi 1.x from the source in 0.20 it seems it may
-      // actually return all devices in which case adding a vendorId check
-      // would be prudent.
-      continue;
-    }
-    char serial[256];
-    char name[256];
-    char vendor[256];
+      ftdi_device_list* current_device = list;
 
-    int r = ftdi_usb_get_strings(ftdi, dev,
-                                 vendor, sizeof(vendor),
-                                 name, sizeof(name),
-                                 serial, sizeof(serial));
+      while (current_device != NULL) {
+        struct usb_device *dev = current_device->dev;
+        current_device = current_device->next;
+        i++;
 
-    // libftdi doesn't enumerate error codes, -9 is 'get serial number failed'
-    if (r < 0 && r != -9) {
-      OLA_WARN << "Unable to fetch string information from USB device: " <<
-        ftdi_get_error_string(ftdi);
-      continue;
-    }
+        if (!dev) {
+          OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
+          continue;
+        }
 
-    string v = string(vendor);
-    string sname = string(name);
-    string sserial = string(serial);
-    if (sserial == "?" || r == -9) {
-      // this means there wasn't a serial number
-      sserial.clear();
+        char serial[256];
+        char name[256];
+        char vendor[256];
+
+        int r = ftdi_usb_get_strings(ftdi, dev,
+                                    vendor, sizeof(vendor),
+                                    name, sizeof(name),
+                                    serial, sizeof(serial));
+
+        // libftdi doesn't enumerate error codes, -9 is 'get serial number failed'
+        if (r < 0 && r != -9) {
+          OLA_WARN << "Unable to fetch string information from USB device: " <<
+            ftdi_get_error_string(ftdi);
+          continue;
+        }
+
+        string v = string(vendor);
+        string sname = string(name);
+        string sserial = string(serial);
+        if (sserial == "?" || r == -9) {
+          // this means there wasn't a serial number
+          sserial.clear();
+        }
+        OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
+          "', Serial: '" << sserial << "'";
+        std::transform(v.begin(), v.end(), v.begin(), ::toupper);
+        if (std::string::npos != v.find("FTDI") ||
+            std::string::npos != v.find("KMTRONIC") ||
+            std::string::npos != v.find("WWW.SOH.CZ")) {
+          widgets->push_back(FtdiWidgetInfo(sname,
+                                            sserial,
+                                            i,
+                                            vid,
+                                            pids[cur_pid]));
+        } else {
+          OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
+        }
+      }  // while (list != NULL)
+      OLA_DEBUG << "Freeing list";
+      ftdi_list_free(&list);
     }
-    OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
-      "', Serial: '" << sserial << "'";
-    std::transform(v.begin(), v.end(), v.begin(), ::toupper);
-    if (std::string::npos != v.find("FTDI") ||
-        std::string::npos != v.find("KMTRONIC") ||
-        std::string::npos != v.find("WWW.SOH.CZ")) {
-      widgets->push_back(FtdiWidgetInfo(sname,
-                                        sserial,
-                                        i,
-                                        dev->descriptor.idVendor,
-                                        dev->descriptor.idProduct));
-    } else {
-      OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
-    }
-  }  // while (list != NULL)
-  OLA_DEBUG << "Freeing list";
-  ftdi_list_free(&list);
+  }
   ftdi_free(ftdi);
 }
 
