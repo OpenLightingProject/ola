@@ -2,8 +2,8 @@
 
 # Python modules.
 ##################################################
-rpcpythondir = $(pkgpythondir)/rpc
 if BUILD_PYTHON_LIBS
+rpcpythondir = $(pkgpythondir)/rpc
 nodist_rpcpython_PYTHON = python/ola/rpc/Rpc_pb2.py
 rpcpython_PYTHON = python/ola/rpc/SimpleRpcController.py \
                    python/ola/rpc/StreamRpcChannel.py \
