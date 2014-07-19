@@ -204,7 +204,14 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
     return false;
   }
 
+#ifdef _WIN32
+  ola::io::DescriptorHandle temp_handle;
+  temp_handle.m_handle.m_fd = sd;
+  temp_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  if (!ola::io::ConnectedDescriptor::SetNonBlocking(temp_handle)) {
+#else
   if (!ola::io::ConnectedDescriptor::SetNonBlocking(sd)) {
+#endif
     OLA_WARN << "Failed to mark TCP accept socket as non-blocking";
     close(sd);
     return false;
@@ -289,7 +296,11 @@ void TCPAcceptingSocket::PerformRead() {
     int sd = accept(m_handle, (struct sockaddr*) &cli_address, &length);
 #endif
     if (sd < 0) {
+#ifdef _WIN32
+      if (WSAGetLastError() == WSAEWOULDBLOCK) {
+#else
       if (errno == EWOULDBLOCK) {
+#endif
         return;
       }
 
