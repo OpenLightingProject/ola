@@ -63,6 +63,7 @@ bool FtdiDmxDevice::StartHook() {
       AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
     } else {
       OLA_WARN << "Failed to add interface: " << i;
+      delete port;
     }
   }
   return true;
