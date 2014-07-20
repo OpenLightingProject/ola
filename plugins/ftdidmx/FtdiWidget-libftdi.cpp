@@ -150,8 +150,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
           // this means there wasn't a serial number
           sserial.clear();
         }
-        OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
-          "', Serial: '" << sserial << "'";
+        OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '"
+                 << sname << "', Serial: '" << sserial << "'";
         ToUpper(&v);
         if (std::string::npos != v.find("FTDI") ||
             std::string::npos != v.find("KMTRONIC") ||
