@@ -24,10 +24,10 @@
  * to follow OLA coding standards.
  *
  * by Rui Barreiros
- * 
- * Additional modifications to enable support for multiple outputs and 
+ *
+ * Additional modifications to enable support for multiple outputs and
  * additional devices ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
@@ -44,7 +44,6 @@
 #endif
 
 #include <string.h>
-#include <libusb-1.0/libusb.h>
 
 #include <string>
 #include <vector>
