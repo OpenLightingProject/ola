@@ -17,9 +17,9 @@
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  *
- * Additional modifications to enable support for multiple outputs and 
+ * Additional modifications to enable support for multiple outputs and
  * additional device ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
@@ -57,12 +57,13 @@ bool FtdiDmxDevice::StartHook() {
   int interfaceCount = m_widget->GetInterfaceCount();
   OLA_INFO << "there are " << interfaceCount << " interfaces.";
   for (int i = 1; i <= interfaceCount; i++) {
-    AddPort(
-      new FtdiDmxOutputPort(this,
-                            new FtdiInterface(m_widget,
-                            static_cast<ftdi_interface>(i)),
-                            i,
-                            m_frequency));
+    FtdiInterface* port = new FtdiInterface(m_widget,
+                                            static_cast<ftdi_interface>(i));
+    if(port->SetupOutput()) {
+      AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
+    } else {
+      OLA_WARN << "Failed to add interface: " << i;
+    }
   }
   return true;
 }

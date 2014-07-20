@@ -17,9 +17,9 @@
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  *
- * Additional modifications to enable support for multiple outputs and 
+ * Additional modifications to enable support for multiple outputs and
  * additional device ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
@@ -50,14 +50,6 @@ const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
  * Ownership of the FtdiDmxDevice is transfered to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
-/*  // Check if device is working before adding
-  if (device->GetDevice()->SetupOutput() == false) {
-    OLA_WARN << "Unable to setup device for output, device ignored "
-             << device->Description();
-    delete device;
-    return;
-  }*/
-
   if (device->Start()) {
       m_devices.push_back(device);
       m_plugin_adaptor->RegisterDevice(device);
