@@ -59,7 +59,7 @@ bool FtdiDmxDevice::StartHook() {
   for (int i = 1; i <= interfaceCount; i++) {
     FtdiInterface* port = new FtdiInterface(m_widget,
                                             static_cast<ftdi_interface>(i));
-    if(port->SetupOutput()) {
+    if (port->SetupOutput()) {
       AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
     } else {
       OLA_WARN << "Failed to add interface: " << i;
