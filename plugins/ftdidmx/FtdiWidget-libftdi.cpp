@@ -41,6 +41,7 @@
 
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
+#include "ola/StringUtils.h"
 #include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {
@@ -68,15 +69,17 @@ FtdiWidget::~FtdiWidget() {
 /**
  * Get the number of physical interfaces our widgit has to offer.
  *
- * This does not deal with product names being all caps etc. or just named in
- * a different way.
+ * This does not deal with product names being named in a different way.
+ *
  * Originally I had hoped to use ftdi_context::type however, it only gets set
  * properly after the device has been opened.
  */
 int FtdiWidget::GetInterfaceCount() {
-  if (std::string::npos != m_name.find("Plus4")) {
+  std::string tmp = m_name;
+  ToLower(&tmp);
+  if (std::string::npos != tmp.find("plus4")) {
     return 4;
-  } else  if (std::string::npos != m_name.find("Plus2")) {
+  } else  if (std::string::npos != tmp.find("plus2")) {
     return 2;
   } else {
     return 1;
@@ -105,10 +108,11 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     int devices_found = ftdi_usb_find_all(ftdi, &list, vid, pids[cur_pid]);
 
     if (devices_found < 0) {
-      OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
-    }
-    else {
-      OLA_INFO << "Found " << devices_found << " FTDI devices with PID: " << pids[cur_pid] << ".";
+      OLA_WARN << "Failed to get FTDI devices: "
+               << ftdi_get_error_string(ftdi);
+    } else {
+      OLA_INFO << "Found " << devices_found << " FTDI devices with PID: "
+               << pids[cur_pid] << ".";
 
       ftdi_device_list* current_device = list;
 
@@ -131,10 +135,11 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
                                     name, sizeof(name),
                                     serial, sizeof(serial));
 
-        // libftdi doesn't enumerate error codes, -9 is 'get serial number failed'
+        // libftdi doesn't enumerate error codes,
+        // -9 is 'get serial number failed', not ideal but workable.
         if (r < 0 && r != -9) {
-          OLA_WARN << "Unable to fetch string information from USB device: " <<
-            ftdi_get_error_string(ftdi);
+          OLA_WARN << "Unable to fetch string information from USB device: "
+                   << ftdi_get_error_string(ftdi);
           continue;
         }
 
@@ -147,7 +152,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         }
         OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
           "', Serial: '" << sserial << "'";
-        std::transform(v.begin(), v.end(), v.begin(), ::toupper);
+        ToUpper(&v);
         if (std::string::npos != v.find("FTDI") ||
             std::string::npos != v.find("KMTRONIC") ||
             std::string::npos != v.find("WWW.SOH.CZ")) {
