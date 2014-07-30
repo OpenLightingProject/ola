@@ -1,13 +1,13 @@
 x/y/2014 ola-0.9.2
  Features:
-
- API:
-
- RDM Tests:
+ * Added --use-epoll which uses epoll() rather than select().
+ * Added --use-kqueue which uses kqueue() rather than select().
 
  Bugs:
+ * Don't build ola_protoc if --with-ola-protoc= is provided.
 
  Internal:
+ * Changed to a non-recursive build. Reduced build times by 5-25%.
 
 21/6/2014 ola-0.9.1
  Features:
