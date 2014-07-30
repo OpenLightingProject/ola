@@ -2,7 +2,6 @@
 #########################
 if BUILD_OLA_PROTOC
 noinst_PROGRAMS += protoc/ola_protoc
-endif
 
 protoc_ola_protoc_SOURCES = \
     protoc/CppFileGenerator.cpp \
@@ -17,3 +16,5 @@ protoc_ola_protoc_SOURCES = \
     protoc/StrUtil.h \
     protoc/ola-protoc.cpp
 protoc_ola_protoc_LDADD = $(libprotobuf_LIBS) -lprotoc
+
+endif
