@@ -180,7 +180,8 @@ void LogLine::Write() {
  * @{
  */
 void StdErrorLogDestination::Write(log_level level, const string &log_line) {
-  write(STDERR_FILENO, log_line.c_str(), log_line.size());
+  ssize_t bytes = write(STDERR_FILENO, log_line.c_str(), log_line.size());
+  (void) bytes;
   (void) level;
 }
 
