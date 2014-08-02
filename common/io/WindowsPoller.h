@@ -39,9 +39,6 @@
 namespace ola {
 namespace io {
 
-class WindowsPollerDescriptor;
-class PollData;
-
 /**
  * @class WindowsPoller
  * @brief An implementation of PollerInterface for Windows.
@@ -72,8 +69,8 @@ class WindowsPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
-  typedef std::map<void*, WindowsPollerDescriptor*> DescriptorMap;
-  typedef std::vector<WindowsPollerDescriptor*> OrphanedDescriptors;
+  typedef std::map<void*, class WindowsPollerDescriptor*> DescriptorMap;
+  typedef std::vector<class WindowsPollerDescriptor*> OrphanedDescriptors;
 
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
@@ -86,11 +83,12 @@ class WindowsPoller : public PollerInterface {
 
   std::pair<WindowsPollerDescriptor*, bool>
       LookupOrCreateDescriptor(void* handle);
-  bool RemoveDescriptor(void* handle, int flag, bool warn_on_missing);
+  bool RemoveDescriptor(const DescriptorHandle &handle,
+                        int flag,
+                        bool warn_on_missing);
 
-  void HandleWakeup(PollData* data);
-  void FinalCheckIOs(std::vector<PollData*> data);
-  void CheckDescriptors();
+  void HandleWakeup(class PollData* data);
+  void FinalCheckIOs(std::vector<class PollData*> data);
 
   DISALLOW_COPY_AND_ASSIGN(WindowsPoller);
 };

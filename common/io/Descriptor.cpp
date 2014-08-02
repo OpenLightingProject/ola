@@ -68,7 +68,7 @@ DescriptorHandle::DescriptorHandle():
 DescriptorHandle::~DescriptorHandle() {
 }
 
-void* ToHandle(const DescriptorHandle& handle) {
+void* ToHandle(const DescriptorHandle &handle) {
   return handle.m_handle.m_handle;
 }
 
@@ -99,6 +99,10 @@ void DescriptorHandle::FreeAsyncBuffer() {
   }
 }
 
+bool DescriptorHandle::IsValid() const {
+  return (m_handle.m_fd != -1);
+}
+
 bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs) {
   return !(lhs == rhs);
 }
@@ -118,7 +122,7 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data) {
 }
 #endif
 
-int ToFD(const DescriptorHandle& handle) {
+int ToFD(const DescriptorHandle &handle) {
 #ifdef _WIN32
   switch (handle.m_type) {
     case SOCKET_DESCRIPTOR:

@@ -114,7 +114,6 @@ WindowsPoller::~WindowsPoller() {
     }
   }
 
-
   OrphanedDescriptors::iterator iter = m_orphaned_descriptors.begin();
   for (; iter != m_orphaned_descriptors.end(); ++iter) {
     if ((*iter)->delete_connected_on_close) {
@@ -142,7 +141,7 @@ bool WindowsPoller::AddReadDescriptor(ReadFileDescriptor *descriptor) {
   result.first->read_descriptor = descriptor;
   result.first->type = descriptor->ReadDescriptor().m_type;
 
-  return (result.second)? true : false;
+  return result.second ? true : false;
 }
 
 bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
@@ -168,13 +167,13 @@ bool WindowsPoller::AddReadDescriptor(ConnectedDescriptor *descriptor,
 }
 
 bool WindowsPoller::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
-  return RemoveDescriptor(ToHandle(descriptor->ReadDescriptor()),
+  return RemoveDescriptor(descriptor->ReadDescriptor(),
                           FLAG_READ,
                           true);
 }
 
 bool WindowsPoller::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
-  return RemoveDescriptor(ToHandle(descriptor->ReadDescriptor()),
+  return RemoveDescriptor(descriptor->ReadDescriptor(),
                           FLAG_READ,
                           true);
 }
@@ -208,7 +207,7 @@ bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
 }
 
 bool WindowsPoller::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
-  return RemoveDescriptor(ToHandle(descriptor->WriteDescriptor()),
+  return RemoveDescriptor(descriptor->WriteDescriptor(),
                           FLAG_WRITE,
                           true);
 }
@@ -279,7 +278,7 @@ void CancelIOs(std::vector<PollData*>* data) {
 }
 
 bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
-                        const TimeInterval &poll_interval) {
+                         const TimeInterval &poll_interval) {
   TimeInterval sleep_interval = poll_interval;
   TimeStamp now;
   m_clock->CurrentTime(&now);
@@ -309,6 +308,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   DescriptorMap::iterator next, iter = m_descriptor_map.begin();
   bool success = true;
 
+  // We're not using a for loop here since we might call RemoveDescriptor(),
+  // thereby invalidating the 'iter' iterator.
   while (iter != m_descriptor_map.end()) {
     next = iter;
     ++next;
@@ -342,7 +343,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
             event_holders.push_back(event_holder);
           } else if (!success && (result != ERROR_IO_PENDING)) {
             if (result == ERROR_BROKEN_PIPE) {
-              OLA_WARN << "Broken pipe: " << ToHandle(descriptor_handle);
+              OLA_DEBUG << "Broken pipe: " << ToHandle(descriptor_handle);
               // Pipe was closed, so close the descriptor
               ConnectedDescriptor::OnCloseCallback *on_close =
                 descriptor->connected_descriptor->TransferOnClose();
@@ -358,9 +359,9 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                   delete descriptor->connected_descriptor;
                   descriptor->connected_descriptor = NULL;
                 }
-                delete poll_data;
-                delete event_holder;
               }
+              delete poll_data;
+              delete event_holder;
             } else {
               OLA_WARN << "ReadFile failed with " << result << " for "
                        << ToHandle(descriptor_handle);
@@ -388,27 +389,21 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                              &(poll_data->size),
                              poll_data->overlapped);
           result = GetLastError();
-          if (success) {
+          if (success || (result == ERROR_IO_PENDING)) {
             data.push_back(poll_data);
             events.push_back(poll_data->event);
             event_holders.push_back(event_holder);
-          } else if (!success && (result != ERROR_IO_PENDING)) {
-            if (result == ERROR_BROKEN_PIPE) {
-              OLA_WARN << "Broken pipe: " << ToHandle(descriptor_handle);
+          } else if (result == ERROR_BROKEN_PIPE) {
+              OLA_DEBUG << "Broken pipe: " << ToHandle(descriptor_handle);
               // Pipe was closed, so close the descriptor
               descriptor->write_descriptor = NULL;
               delete poll_data;
               delete event_holder;
-            } else {
+          } else {
               OLA_WARN << "WriteFile failed with " << result << " for "
                        << ToHandle(descriptor_handle);
               delete poll_data;
               delete event_holder;
-            }
-          } else {
-            data.push_back(poll_data);
-            events.push_back(poll_data->event);
-            event_holders.push_back(event_holder);
           }
         }
         break;
@@ -558,15 +553,16 @@ std::pair<WindowsPollerDescriptor*, bool>
   return std::make_pair(result.first->second, new_descriptor);
 }
 
-bool WindowsPoller::RemoveDescriptor(void* handle,
+bool WindowsPoller::RemoveDescriptor(const DescriptorHandle &handle,
                                      int flag,
                                      bool warn_on_missing) {
-  if (handle == reinterpret_cast<void*>(-1)) {
+  if (!handle.IsValid()) {
     OLA_WARN << "Attempt to remove an invalid file descriptor";
     return false;
   }
 
-  WindowsPollerDescriptor *descriptor = STLFindOrNull(m_descriptor_map, handle);
+  WindowsPollerDescriptor *descriptor = STLFindOrNull(m_descriptor_map,
+                                                      ToHandle(handle));
   if (!descriptor) {
     if (warn_on_missing) {
       OLA_WARN << "Couldn't find WindowsPollerDescriptor for " << handle;
@@ -585,7 +581,7 @@ bool WindowsPoller::RemoveDescriptor(void* handle,
 
   if (descriptor->flags == 0) {
     m_orphaned_descriptors.push_back(
-        STLLookupAndRemovePtr(&m_descriptor_map, handle));
+        STLLookupAndRemovePtr(&m_descriptor_map, ToHandle(handle)));
   }
   return true;
 }
@@ -607,7 +603,9 @@ void WindowsPoller::HandleWakeup(PollData* data) {
         }
         if (data->read && descriptor->connected_descriptor) {
           if (!descriptor->connected_descriptor->ValidReadDescriptor()) {
-            RemoveDescriptor(descriptor, FLAG_READ, false);
+            RemoveDescriptor(descriptor->connected_descriptor->ReadDescriptor(),
+                             FLAG_READ,
+                             false);
             return;
           }
 
@@ -640,7 +638,9 @@ void WindowsPoller::HandleWakeup(PollData* data) {
         } else if (!data->read && descriptor->write_descriptor) {
           OLA_WARN << "Write wakeup";
           if (!descriptor->write_descriptor->ValidWriteDescriptor()) {
-            RemoveDescriptor(descriptor, FLAG_WRITE, false);
+            RemoveDescriptor(descriptor->write_descriptor->WriteDescriptor(),
+                             FLAG_WRITE,
+                             false);
             return;
           }
 

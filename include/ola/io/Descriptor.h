@@ -102,9 +102,11 @@ struct DescriptorHandle {
 
   bool AllocAsyncBuffer();
   void FreeAsyncBuffer();
+
+  bool IsValid() const;
 };
 
-void* ToHandle(const DescriptorHandle& handle);
+void* ToHandle(const DescriptorHandle &handle);
 
 static DescriptorHandle INVALID_DESCRIPTOR;
 static const uint32_t ASYNC_DATA_BUFFER_SIZE = 1024;
