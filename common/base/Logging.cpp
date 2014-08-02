@@ -192,31 +192,7 @@ void StdErrorLogDestination::Write(log_level level, const string &log_line) {
   (void) level;
 }
 
-bool UnixSyslogDestination::Init() {
-  return true;
-}
-
-void UnixSyslogDestination::Write(log_level level, const string &log_line) {
-  int pri;
-  switch (level) {
-    case OLA_LOG_FATAL:
-      pri = LOG_CRIT;
-      break;
-    case OLA_LOG_WARN:
-      pri = LOG_WARNING;
-      break;
-    case OLA_LOG_INFO:
-      pri = LOG_INFO;
-      break;
-    case OLA_LOG_DEBUG:
-      pri = LOG_DEBUG;
-      break;
-    default :
-      pri = LOG_INFO;
-  }
-  syslog(pri, "%s", log_line.data());
-}
-
+#ifdef _WIN32
 bool WindowsSyslogDestination::Init() {
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
   if (!m_eventlog) {
@@ -257,6 +233,32 @@ void WindowsSyslogDestination::Write(log_level level, const string &log_line) {
                strings,
                NULL);
 }
+#else
+bool UnixSyslogDestination::Init() {
+  return true;
+}
+
+void UnixSyslogDestination::Write(log_level level, const string &log_line) {
+  int pri;
+  switch (level) {
+    case OLA_LOG_FATAL:
+      pri = LOG_CRIT;
+      break;
+    case OLA_LOG_WARN:
+      pri = LOG_WARNING;
+      break;
+    case OLA_LOG_INFO:
+      pri = LOG_INFO;
+      break;
+    case OLA_LOG_DEBUG:
+      pri = LOG_DEBUG;
+      break;
+    default :
+      pri = LOG_INFO;
+  }
+  syslog(pri, "%s", log_line.data());
+}
+#endif
 
 }  // namespace  ola
 /**@}*/

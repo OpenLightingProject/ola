@@ -171,22 +171,7 @@ class SyslogDestination: public LogDestination {
   virtual void Write(log_level level, const std::string &log_line) = 0;
 };
 
-/**
-* @brief A SyslogDestination that writes to Unix syslog
-*/
-class UnixSyslogDestination : public SyslogDestination {
- public:
-  /**
-  * @brief Initialize the UnixSyslogDestination
-  */
-  bool Init();
-
-  /**
-  * @brief Write a line to syslog.
-  */
-  void Write(log_level level, const std::string &log_line);
-};
-
+#ifdef _WIN32
 /**
 * @brief A SyslogDestination that writes to Windows event log
 */
@@ -205,6 +190,23 @@ class WindowsSyslogDestination : public SyslogDestination {
   typedef void* WindowsLogHandle;
   WindowsLogHandle m_eventlog;
 };
+#else
+/**
+* @brief A SyslogDestination that writes to Unix syslog
+*/
+class UnixSyslogDestination : public SyslogDestination {
+ public:
+  /**
+  * @brief Initialize the UnixSyslogDestination
+  */
+  bool Init();
+
+  /**
+  * @brief Write a line to syslog.
+  */
+  void Write(log_level level, const std::string &log_line);
+};
+#endif
 
 /**@}*/
 
