@@ -180,10 +180,9 @@ void LogLine::Write() {
  * @{
  */
 void StdErrorLogDestination::Write(log_level level, const string &log_line) {
-  std::cerr << log_line;
+  write(STDERR_FILENO, log_line.c_str(), log_line.size());
   (void) level;
 }
-
 
 SyslogDestination::SyslogDestination()
     : LogDestination(),
