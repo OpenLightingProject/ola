@@ -162,7 +162,7 @@ class SyslogDestination: public LogDestination {
   /**
    * @brief Initialize the SyslogDestination
    */
-  virtual bool Init();
+  virtual bool Init() = 0;
 
   /**
    * @brief Write a line to the system logger.
