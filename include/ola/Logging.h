@@ -157,7 +157,7 @@ class SyslogDestination: public LogDestination {
   /**
   * @brief Destructor
   */
-  virtual ~LogDestination() {}
+  virtual ~SyslogDestination() {}
 
   /**
    * @brief Initialize the SyslogDestination
@@ -175,7 +175,7 @@ class SyslogDestination: public LogDestination {
 * @brief A SyslogDestination that writes to Unix syslog
 */
 class UnixSyslogDestination : public SyslogDestination {
-public:
+ public:
   /**
   * @brief Initialize the UnixSyslogDestination
   */
@@ -191,7 +191,7 @@ public:
 * @brief A SyslogDestination that writes to Windows event log
 */
 class WindowsSyslogDestination : public SyslogDestination {
-public:
+ public:
   /**
   * @brief Initialize the WindowsSyslogDestination
   */
@@ -201,7 +201,7 @@ public:
   * @brief Write a line to Windows event log.
   */
   void Write(log_level level, const std::string &log_line);
-private:
+ private:
   typedef void* WindowsLogHandle;
   WindowsLogHandle m_eventlog;
 };
