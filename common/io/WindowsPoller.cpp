@@ -337,7 +337,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                              &(poll_data->size),
                              poll_data->overlapped);
           result = GetLastError();
-          if (success) {
+          if (success || result == ERROR_IO_PENDING) {
             data.push_back(poll_data);
             events.push_back(poll_data->event);
             event_holders.push_back(event_holder);
@@ -368,10 +368,6 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
               delete poll_data;
               delete event_holder;
             }
-          } else {
-            data.push_back(poll_data);
-            events.push_back(poll_data->event);
-            event_holders.push_back(event_holder);
           }
         }
         if (descriptor->write_descriptor) {
