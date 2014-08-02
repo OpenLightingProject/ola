@@ -79,7 +79,11 @@ void IncrementLogLevel() {
 bool InitLoggingFromFlags() {
   LogDestination *destination;
   if (FLAGS_syslog) {
-    SyslogDestination *syslog_dest = new SyslogDestination();
+#ifdef _WIN32
+    SyslogDestination *syslog_dest = new WindowsSyslogDestination();
+#else
+    SyslogDestination *syslog_dest = new UnixSyslogDestination();
+#endif
     if (!syslog_dest->Init()) {
       delete syslog_dest;
       return false;
@@ -120,7 +124,11 @@ bool InitLoggingFromFlags() {
 bool InitLogging(log_level level, log_output output) {
   LogDestination *destination;
   if (output == OLA_LOG_SYSLOG) {
-    SyslogDestination *syslog_dest = new SyslogDestination();
+#ifdef _WIN32
+    SyslogDestination *syslog_dest = new WindowsSyslogDestination();
+#else
+    SyslogDestination *syslog_dest = new UnixSyslogDestination();
+#endif
     if (!syslog_dest->Init()) {
       delete syslog_dest;
       return false;
@@ -184,26 +192,41 @@ void StdErrorLogDestination::Write(log_level level, const string &log_line) {
   (void) level;
 }
 
-
-SyslogDestination::SyslogDestination()
-    : LogDestination(),
-      m_eventlog(NULL) {
+bool UnixSyslogDestination::Init() {
+  return true;
 }
 
-bool SyslogDestination::Init() {
-#ifdef _WIN32
+void UnixSyslogDestination::Write(log_level level, const string &log_line) {
+  int pri;
+  switch (level) {
+    case OLA_LOG_FATAL:
+      pri = LOG_CRIT;
+      break;
+    case OLA_LOG_WARN:
+      pri = LOG_WARNING;
+      break;
+    case OLA_LOG_INFO:
+      pri = LOG_INFO;
+      break;
+    case OLA_LOG_DEBUG:
+      pri = LOG_DEBUG;
+      break;
+    default :
+      pri = LOG_INFO;
+  }
+  syslog(pri, "%s", log_line.data());
+}
+
+bool WindowsSyslogDestination::Init() {
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
   if (!m_eventlog) {
     printf("Failed to initialize event logging\n");
     return false;
   }
-#endif
   return true;
 }
 
-
-void SyslogDestination::Write(log_level level, const string &log_line) {
-#ifdef _WIN32
+void WindowsSyslogDestination::Write(log_level level, const string &log_line) {
   WORD pri;
   const char* strings[1];
   strings[0] = log_line.data();
@@ -233,26 +256,7 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
                0,
                strings,
                NULL);
-#else
-  int pri;
-  switch (level) {
-    case OLA_LOG_FATAL:
-      pri = LOG_CRIT;
-      break;
-    case OLA_LOG_WARN:
-      pri = LOG_WARNING;
-      break;
-    case OLA_LOG_INFO:
-      pri = LOG_INFO;
-      break;
-    case OLA_LOG_DEBUG:
-      pri = LOG_DEBUG;
-      break;
-    default :
-      pri = LOG_INFO;
-  }
-  syslog(pri, "%s", log_line.data());
-#endif
 }
+
 }  // namespace  ola
 /**@}*/

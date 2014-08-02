@@ -150,24 +150,58 @@ class StdErrorLogDestination: public LogDestination {
 };
 
 /**
- * @brief A LogDestination that writes to syslog
+ * @brief An abstract base of LogDestination that writes to syslog
  */
 class SyslogDestination: public LogDestination {
  public:
-  SyslogDestination();
+  /**
+  * @brief Destructor
+  */
+  virtual ~LogDestination() {}
 
   /**
    * @brief Initialize the SyslogDestination
    */
-  bool Init();
+  virtual bool Init();
 
   /**
    * @brief Write a line to the system logger.
    * @note This is syslog on *nix or the event log on windows.
    */
-  void Write(log_level level, const std::string &log_line);
+  virtual void Write(log_level level, const std::string &log_line) = 0;
+};
 
- private:
+/**
+* @brief A SyslogDestination that writes to Unix syslog
+*/
+class UnixSyslogDestination : public SyslogDestination {
+public:
+  /**
+  * @brief Initialize the UnixSyslogDestination
+  */
+  bool Init();
+
+  /**
+  * @brief Write a line to syslog.
+  */
+  void Write(log_level level, const std::string &log_line);
+};
+
+/**
+* @brief A SyslogDestination that writes to Windows event log
+*/
+class WindowsSyslogDestination : public SyslogDestination {
+public:
+  /**
+  * @brief Initialize the WindowsSyslogDestination
+  */
+  bool Init();
+
+  /**
+  * @brief Write a line to Windows event log.
+  */
+  void Write(log_level level, const std::string &log_line);
+private:
   typedef void* WindowsLogHandle;
   WindowsLogHandle m_eventlog;
 };
