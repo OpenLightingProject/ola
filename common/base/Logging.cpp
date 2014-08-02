@@ -193,11 +193,11 @@ SyslogDestination::SyslogDestination()
 bool SyslogDestination::Init() {
 #ifdef _WIN32
   m_eventlog = RegisterEventSourceA(NULL, "OLA");
-#endif
   if (!m_eventlog) {
     printf("Failed to initialize event logging\n");
     return false;
   }
+#endif
   return true;
 }
 
