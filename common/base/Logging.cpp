@@ -36,6 +36,8 @@
 #include <syslog.h>
 #endif
 
+#include <unistd.h>
+
 #include <iostream>
 #include <string>
 #include "ola/Logging.h"
@@ -180,10 +182,10 @@ void LogLine::Write() {
  * @{
  */
 void StdErrorLogDestination::Write(log_level level, const string &log_line) {
-  std::cerr << log_line;
+  ssize_t bytes = write(STDERR_FILENO, log_line.c_str(), log_line.size());
+  (void) bytes;
   (void) level;
 }
-
 
 SyslogDestination::SyslogDestination()
     : LogDestination(),

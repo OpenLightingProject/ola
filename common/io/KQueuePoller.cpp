@@ -380,8 +380,13 @@ std::pair<KQueueData*, bool> KQueuePoller::LookupOrCreateDescriptor(
 bool KQueuePoller::ApplyChange(int fd, int16_t filter, uint16_t flags,
                                KQueueData *descriptor,
                                bool apply_immediately) {
+#ifdef __NetBSD__
   EV_SET(&m_change_set[m_next_change_entry++], fd, filter, flags, 0, 0,
-         reinterpret_cast<void*>(descriptor));
+         reinterpret_cast<intptr_t>(descriptor));
+#else
+  EV_SET(&m_change_set[m_next_change_entry++], fd, filter, flags, 0, 0,
+         descriptor);
+#endif
 
   if (m_next_change_entry == CHANGE_SET_SIZE || apply_immediately) {
     int r = kevent(m_kqueue_fd, m_change_set, m_next_change_entry, NULL, 0,

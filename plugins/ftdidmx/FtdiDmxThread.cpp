@@ -71,7 +71,7 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
  * The method called by the thread
  */
 void *FtdiDmxThread::Run() {
-  TimeStamp ts1, ts2;
+  TimeStamp ts1, ts2, ts3;
   Clock clock;
   CheckTimeGranularity();
   DmxBuffer buffer;
@@ -124,6 +124,16 @@ void *FtdiDmxThread::Run() {
         elapsed = ts2 - ts1;
       }
     } else {
+      // See if we can drop out of bad mode.
+      usleep(1000);
+      clock.CurrentTime(&ts3);
+      TimeInterval interval = ts3 - ts2;
+      if (interval.InMilliSeconds() < BAD_GRANULARITY_LIMIT) {
+        m_granularity = GOOD;
+        OLA_INFO << "Switching from BAD to GOOD granularity for ftdi thread";
+      }
+
+      elapsed = ts3 - ts1;
       while (elapsed.InMilliSeconds() < frameTime) {
         clock.CurrentTime(&ts2);
         elapsed = ts2 - ts1;
@@ -146,7 +156,8 @@ void FtdiDmxThread::CheckTimeGranularity() {
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = interval.InMilliSeconds() > 3 ? BAD : GOOD;
+  m_granularity = interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT ? BAD :
+      GOOD;
   OLA_INFO << "Granularity for ftdi thread is " <<
     (m_granularity == GOOD ? "GOOD" : "BAD");
 }
