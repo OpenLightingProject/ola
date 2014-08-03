@@ -260,8 +260,7 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
   DescriptorHandle m_handle;
 
  private:
-  UnmanagedFileDescriptor(const UnmanagedFileDescriptor &other);
-  UnmanagedFileDescriptor& operator=(const UnmanagedFileDescriptor &other);
+  DISALLOW_COPY_AND_ASSIGN(UnmanagedFileDescriptor);
 };
 
 
