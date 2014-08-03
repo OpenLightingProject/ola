@@ -77,20 +77,11 @@ void IncrementLogLevel() {
 
 
 bool InitLoggingFromFlags() {
-  LogDestination *destination;
+  log_output output = OLA_LOG_NULL;
   if (FLAGS_syslog) {
-#ifdef _WIN32
-    SyslogDestination *syslog_dest = new WindowsSyslogDestination();
-#else
-    SyslogDestination *syslog_dest = new UnixSyslogDestination();
-#endif
-    if (!syslog_dest->Init()) {
-      delete syslog_dest;
-      return false;
-    }
-    destination = syslog_dest;
+    output = OLA_LOG_SYSLOG;
   } else {
-    destination = new StdErrorLogDestination();
+    output = OLA_LOG_STDERR;
   }
 
   log_level log_level = ola::OLA_LOG_WARN;
@@ -116,8 +107,7 @@ bool InitLoggingFromFlags() {
       break;
   }
 
-  InitLogging(log_level, destination);
-  return true;
+  return InitLogging(log_level, output);
 }
 
 
