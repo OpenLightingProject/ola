@@ -211,7 +211,7 @@ class BidirectionalFileDescriptor: public ReadFileDescriptor,
 
   /**
    * @brief Set the callback to be run when the descriptor can be written to.
-   * @param on_read the callback to run, ownership of the callback is
+   * @param on_write the callback to run, ownership of the callback is
    *   transferred.
    */
   void SetOnWritable(ola::Callback0<void> *on_write) {
@@ -367,7 +367,7 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
   virtual bool IsSocket() const = 0;
 
   /**
-   * #brief Disable SIGPIPE for this descriptor.
+   * @brief Disable SIGPIPE for this descriptor.
    */
   bool SetNoSigPipe(DescriptorHandle fd);
 

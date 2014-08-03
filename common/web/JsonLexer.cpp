@@ -65,6 +65,7 @@ static bool TrimWhitespace(const char **input) {
  * @param input A pointer to a pointer with the data. This should point to the
  * first character after the quote (") character.
  * @param str A string object to store the extracted string.
+ * @param parser the JsonParserInterface to pass tokens to.
  * @returns true if the string was extracted correctly, false otherwise.
  */
 static bool ParseString(const char **input, string* str,
