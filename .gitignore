@@ -135,6 +135,8 @@ slp/slp_client
 slp/slp_client.exe
 slp/slp_server
 slp/slp_server.exe
+tools/e133/basic_device
+tools/e133/basic_controller
 tools/e133/e133_controller
 tools/e133/e133_monitor
 tools/e133/e133_receiver

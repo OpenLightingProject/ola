@@ -137,7 +137,7 @@ int ToFD(const DescriptorHandle &handle) {
 
 /**
  * Helper function to create a annonymous pipe
- * @param fd_pair a 2 element array which is updated with the fds
+ * @param handle_pair a 2 element array which is updated with the handles
  * @return true if successfull, false otherwise.
  */
 bool CreatePipe(DescriptorHandle handle_pair[2]) {

@@ -95,7 +95,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     bool SetMulticastInterface(const ola::network::IPV4Address &iface);
     bool JoinMulticast(const ola::network::IPV4Address &iface,
                        const ola::network::IPV4Address &group,
-                       bool loop = false);
+                       bool multicast_loop = false);
     bool LeaveMulticast(const ola::network::IPV4Address &iface,
                         const ola::network::IPV4Address &group);
 
