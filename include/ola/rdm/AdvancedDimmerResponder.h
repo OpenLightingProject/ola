@@ -28,6 +28,7 @@
 #ifndef INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/ResponderOps.h>
 #include <ola/rdm/ResponderPersonality.h>
@@ -90,31 +91,35 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetWithPin(const RDMRequest *request, uint16_t pin);
   };
 
+  PACK(
   struct min_level_s {
     uint16_t min_level_increasing;
     uint16_t min_level_decreasing;
     uint8_t on_below_min;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct preset_playback_s {
     uint16_t mode;
     uint8_t level;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct preset_status_s {
     uint16_t scene;
     uint16_t fade_up_time;
     uint16_t fade_down_time;
     uint16_t wait_time;
     uint8_t programmed;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct fail_mode_s {
     uint16_t scene;
     uint16_t delay;
     uint16_t hold_time;
     uint8_t level;
-  } __attribute__((packed));
+  });
 
   typedef fail_mode_s startup_mode_s;
 

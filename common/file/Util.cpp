@@ -87,7 +87,8 @@ void FindMatchingFiles(const string &directory,
 
   h_find = FindFirstFileA(search_pattern.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
-    OLA_WARN << "Find first file failed: " << GetLastError();
+    OLA_WARN << "Find first file failed: " << GetLastError() << " for "
+             << search_pattern;
     return;
   }
 

@@ -57,14 +57,59 @@ STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
 #ifdef _WIN32
 // DescriptorHandle
 // ------------------------------------------------
+DescriptorHandle::DescriptorHandle():
+    m_type(GENERIC_DESCRIPTOR),
+    m_event(NULL),
+    m_async_data(NULL),
+    m_async_data_size(NULL) {
+  m_handle.m_fd = -1;
+}
+
+DescriptorHandle::~DescriptorHandle() {
+}
+
+void* ToHandle(const DescriptorHandle &handle) {
+  return handle.m_handle.m_handle;
+}
+
+bool DescriptorHandle::AllocAsyncBuffer() {
+  if (m_async_data || m_async_data_size) {
+    OLA_WARN << "Async data already allocated";
+    return false;
+  }
+  try {
+    m_async_data = new uint8_t[ASYNC_DATA_BUFFER_SIZE];
+    m_async_data_size = new uint32_t;
+    *m_async_data_size = 0;
+  } catch (std::exception& ex) {
+    OLA_WARN << ex.what();
+  }
+
+  return (m_async_data && m_async_data_size);
+}
+
+void DescriptorHandle::FreeAsyncBuffer() {
+  if (m_async_data) {
+    delete[] m_async_data;
+    m_async_data = NULL;
+  }
+  if (m_async_data_size) {
+    delete m_async_data_size;
+    m_async_data_size = NULL;
+  }
+}
+
+bool DescriptorHandle::IsValid() const {
+  return (m_handle.m_fd != -1);
+}
+
 bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs) {
   return !(lhs == rhs);
 }
 
 bool operator==(const DescriptorHandle &lhs, const DescriptorHandle &rhs) {
   return ((lhs.m_handle.m_fd == rhs.m_handle.m_fd) &&
-          (lhs.m_type == rhs.m_type) &&
-          (lhs.m_event_handle == rhs.m_event_handle));
+          (lhs.m_type == rhs.m_type));
 }
 
 bool operator<(const DescriptorHandle &lhs, const DescriptorHandle &rhs) {
@@ -76,6 +121,19 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data) {
   return stream;
 }
 #endif
+
+int ToFD(const DescriptorHandle &handle) {
+#ifdef _WIN32
+  switch (handle.m_type) {
+    case SOCKET_DESCRIPTOR:
+      return handle.m_handle.m_fd;
+    default:
+      return -1;
+  }
+#else
+  return handle;
+#endif
+}
 
 /**
  * Helper function to create a annonymous pipe
@@ -134,10 +192,11 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
 
   handle_pair[0].m_handle.m_handle = read_handle;
   handle_pair[0].m_type = PIPE_DESCRIPTOR;
-  handle_pair[0].m_event_handle = 0;
   handle_pair[1].m_handle.m_handle = write_handle;
   handle_pair[1].m_type = PIPE_DESCRIPTOR;
-  handle_pair[1].m_event_handle = 0;
+
+  if (!handle_pair[0].AllocAsyncBuffer() || !handle_pair[1].AllocAsyncBuffer())
+    return false;
 #else
   if (pipe(handle_pair) < 0) {
     OLA_WARN << "pipe() failed, " << strerror(errno);
@@ -176,8 +235,6 @@ UnmanagedFileDescriptor::UnmanagedFileDescriptor(int fd)
 #ifdef _WIN32
   m_handle.m_handle.m_fd = fd;
   m_handle.m_type = GENERIC_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
-  OLA_WARN << "UnmanagedFileDescriptor doesn't support events on Windows yet";
 #else
   m_handle = fd;
 #endif
@@ -195,7 +252,7 @@ bool ConnectedDescriptor::SetNonBlocking(DescriptorHandle fd) {
   bool success = true;
   if (fd.m_type == SOCKET_DESCRIPTOR) {
     u_long mode = 1;
-    success = (ioctlsocket(fd.m_handle.m_fd, FIONBIO, &mode) != SOCKET_ERROR);
+    success = (ioctlsocket(ToFD(fd), FIONBIO, &mode) != SOCKET_ERROR);
   }
 #else
   int val = fcntl(fd, F_GETFL, 0);
@@ -238,8 +295,12 @@ int ConnectedDescriptor::DataRemaining() const {
 #ifdef _WIN32
   bool failed = false;
   if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
-    return ReadDescriptor().m_read_data_size ?
-        *ReadDescriptor().m_read_data_size : 0;
+    return ReadDescriptor().m_async_data_size ?
+        *ReadDescriptor().m_async_data_size : 0;
+  } else if (ReadDescriptor().m_type == SOCKET_DESCRIPTOR) {
+    u_long unrd;
+    failed = ioctlsocket(ToFD(ReadDescriptor()), FIONREAD, &unrd) < 0;
+    unread = unrd;
   } else {
     OLA_WARN << "DataRemaining() called on unsupported descriptor type";
     failed = true;
@@ -264,7 +325,7 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
 #ifdef _WIN32
   if (WriteDescriptor().m_type == PIPE_DESCRIPTOR) {
     DWORD bytes_written = 0;
-    if (!WriteFile(WriteDescriptor().m_handle.m_handle,
+    if (!WriteFile(ToHandle(WriteDescriptor()),
                    buffer,
                    size,
                    &bytes_written,
@@ -274,6 +335,11 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
     } else {
       bytes_sent = bytes_written;
     }
+  } else if (WriteDescriptor().m_type == SOCKET_DESCRIPTOR) {
+    bytes_sent = send(ToFD(WriteDescriptor()),
+                      reinterpret_cast<const char*>(buffer),
+                      size,
+                      0);
   } else {
     OLA_WARN << "Send() called on unsupported descriptor type";
     return 0;
@@ -366,22 +432,40 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
   while (data_read < size) {
 #ifdef _WIN32
     if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
+      if (!ReadDescriptor().m_async_data_size) {
+        OLA_WARN << "No async data buffer for descriptor " << ReadDescriptor();
+        return -1;
+      }
       // Check if data was read by the async ReadFile() call
-      DWORD read_data_size = *ReadDescriptor().m_read_data_size;
-      if (read_data_size > 0) {
-        DWORD size_to_copy = std::min(static_cast<DWORD>(size), read_data_size);
-        memcpy(buffer, ReadDescriptor().m_read_data, size_to_copy);
+      DWORD async_data_size = *ReadDescriptor().m_async_data_size;
+      if (async_data_size > 0) {
+        DWORD size_to_copy = std::min(static_cast<DWORD>(size),
+            async_data_size);
+        memcpy(buffer, ReadDescriptor().m_async_data, size_to_copy);
         data_read = size_to_copy;
-        if (read_data_size > size) {
-          memmove(buffer, &(buffer[size_to_copy]),
-              read_data_size - size_to_copy);
-          *ReadDescriptor().m_read_data_size -= size_to_copy;
-        } else {
-          *ReadDescriptor().m_read_data_size = 0;
+        if (async_data_size > size) {
+          memmove(ReadDescriptor().m_async_data,
+                  &(ReadDescriptor().m_async_data[size_to_copy]),
+                  async_data_size - size_to_copy);
         }
-        // TODO(lukase) what if there is unread data remanining?
+        *ReadDescriptor().m_async_data_size -= size_to_copy;
       }
       return 0;
+    } else if (ReadDescriptor().m_type == SOCKET_DESCRIPTOR) {
+      ret = recv(ToFD(ReadDescriptor()), reinterpret_cast<char*>(data),
+                 size - data_read, 0);
+      if (ret < 0) {
+        if (WSAGetLastError() == WSAEWOULDBLOCK) {
+          return 0;
+        } else if (WSAGetLastError() != WSAEINTR) {
+          OLA_WARN << "read failed, " << WSAGetLastError();
+          return -1;
+        }
+      } else if (ret == 0) {
+        return 0;
+      }
+      data_read += ret;
+      data += data_read;
     } else {
       OLA_WARN << "Descriptor type not implemented for reading: "
                << ReadDescriptor().m_type;
@@ -416,10 +500,6 @@ bool ConnectedDescriptor::IsClosed() const {
 LoopbackDescriptor::LoopbackDescriptor() {
   m_handle_pair[0] = INVALID_DESCRIPTOR;
   m_handle_pair[1] = INVALID_DESCRIPTOR;
-#ifdef _WIN32
-  memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
-  m_read_data_size = 0;
-#endif
 }
 
 bool LoopbackDescriptor::Init() {
@@ -429,10 +509,6 @@ bool LoopbackDescriptor::Init() {
 
   if (!CreatePipe(m_handle_pair))
     return false;
-#ifdef _WIN32
-  m_handle_pair[0].m_read_data = m_read_data;
-  m_handle_pair[0].m_read_data_size = &m_read_data_size;
-#endif
 
   SetReadNonBlocking();
   SetNoSigPipe(WriteDescriptor());
@@ -442,7 +518,7 @@ bool LoopbackDescriptor::Init() {
 bool LoopbackDescriptor::Close() {
   if (m_handle_pair[0] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
-    CloseHandle(m_handle_pair[0].m_handle.m_handle);
+    CloseHandle(ToHandle(m_handle_pair[0]));
 #else
     close(m_handle_pair[0]);
 #endif
@@ -450,7 +526,7 @@ bool LoopbackDescriptor::Close() {
 
   if (m_handle_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
-    CloseHandle(m_handle_pair[1].m_handle.m_handle);
+    CloseHandle(ToHandle(m_handle_pair[1]));
 #else
     close(m_handle_pair[1]);
 #endif
@@ -464,7 +540,7 @@ bool LoopbackDescriptor::Close() {
 bool LoopbackDescriptor::CloseClient() {
   if (m_handle_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
-    CloseHandle(m_handle_pair[1].m_handle.m_handle);
+    CloseHandle(ToHandle(m_handle_pair[1]));
 #else
     close(m_handle_pair[1]);
 #endif
@@ -481,10 +557,6 @@ PipeDescriptor::PipeDescriptor():
   m_other_end(NULL) {
   m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
   m_out_pair[0] = m_out_pair[1] = INVALID_DESCRIPTOR;
-#ifdef _WIN32
-  memset(m_read_data, 0, READ_DATA_BUFFER_SIZE);
-  m_read_data_size = 0;
-#endif
 }
 
 bool PipeDescriptor::Init() {
@@ -496,15 +568,10 @@ bool PipeDescriptor::Init() {
     return false;
   }
 
-#ifdef _WIN32
-  m_in_pair[0].m_read_data = m_read_data;
-  m_in_pair[0].m_read_data_size = &m_read_data_size;
-#endif
-
   if (!CreatePipe(m_out_pair)) {
 #ifdef _WIN32
-    CloseHandle(m_in_pair[0].m_handle.m_handle);
-    CloseHandle(m_in_pair[1].m_handle.m_handle);
+    CloseHandle(ToHandle(m_in_pair[0]));
+    CloseHandle(ToHandle(m_in_pair[1]));
 #else
     close(m_in_pair[0]);
     close(m_in_pair[1]);
@@ -533,7 +600,7 @@ PipeDescriptor *PipeDescriptor::OppositeEnd() {
 bool PipeDescriptor::Close() {
   if (m_in_pair[0] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
-    CloseHandle(m_in_pair[0].m_handle.m_handle);
+    CloseHandle(ToHandle(m_in_pair[0]));
 #else
     close(m_in_pair[0]);
 #endif
@@ -541,7 +608,7 @@ bool PipeDescriptor::Close() {
 
   if (m_out_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
-    CloseHandle(m_out_pair[1].m_handle.m_handle);
+    CloseHandle(ToHandle(m_out_pair[1]));
 #else
     close(m_out_pair[1]);
 #endif
@@ -555,7 +622,7 @@ bool PipeDescriptor::Close() {
 bool PipeDescriptor::CloseClient() {
   if (m_out_pair[1] != INVALID_DESCRIPTOR) {
 #ifdef _WIN32
-    CloseHandle(m_out_pair[1].m_handle.m_handle);
+    CloseHandle(ToHandle(m_out_pair[1]));
 #else
     close(m_out_pair[1]);
 #endif
@@ -573,10 +640,6 @@ PipeDescriptor::PipeDescriptor(DescriptorHandle in_pair[2],
   m_out_pair[0] = out_pair[0];
   m_out_pair[1] = out_pair[1];
   m_other_end = other_end;
-#ifdef _WIN32
-  m_in_pair[0].m_read_data = m_read_data;
-  m_in_pair[0].m_read_data_size = &m_read_data_size;
-#endif
 }
 
 
@@ -650,7 +713,6 @@ DeviceDescriptor::DeviceDescriptor(int fd) {
 #ifdef _WIN32
   m_handle.m_handle.m_fd = fd;
   m_handle.m_type = GENERIC_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
 #else
   m_handle = fd;
 #endif

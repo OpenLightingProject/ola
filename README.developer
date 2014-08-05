@@ -63,6 +63,16 @@ Be aware that OLA runs on big endian systems. When dealing with wire formats
 always use the functions in include/ola/network/NetworkUtils.h to convert or
 use the BigEndianOutputStream to manage this automatically for you.
 
+Structure Packing
+-----------------
+
+Structure packing syntax differs between platforms and compilers. If you declare
+a struct or class that needs to be packed, use the PACK() macro from
+ola/base/Macro.h . See below for an example of PACK() usage.
+
+Not that this macro doesn't work for enums. See plugins/espnet/EspNetPackets.h
+for an example of how to pack an enum.
+
 Non x86 platforms
 -----------------
 
@@ -71,10 +81,10 @@ pointers which aren't aligned.
 
 For example:
 
-struct f {
+PACK(struct f {
   uint8_t value1;
   uint16_t value2;
-} __attribute__((packed));
+});
 
 struct f foo = {1, 2};
 uint16_t *ptr = &foo.value2;

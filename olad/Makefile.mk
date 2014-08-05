@@ -10,14 +10,21 @@ noinst_HEADERS += olad/TestCommon.h
 
 # LIBRARIES
 ##################################################
+ola_server_plugin_interface_sources = \
+    olad/Device.cpp \
+    olad/DeviceManager.cpp \
+    olad/DeviceManager.h \
+    olad/Plugin.cpp \
+    olad/PluginAdaptor.cpp \
+    olad/PortBroker.cpp \
+    olad/PortManager.cpp \
+    olad/PortManager.h
+
 ola_server_sources = \
     olad/Client.cpp \
     olad/Client.h \
     olad/ClientBroker.cpp \
     olad/ClientBroker.h \
-    olad/Device.cpp \
-    olad/DeviceManager.cpp \
-    olad/DeviceManager.h \
     olad/DiscoveryAgent.cpp \
     olad/DiscoveryAgent.h \
     olad/DmxSource.cpp \
@@ -27,15 +34,10 @@ ola_server_sources = \
     olad/OlaServerServiceImpl.cpp \
     olad/OlaServerServiceImpl.h \
     olad/OladHTTPServer.h \
-    olad/Plugin.cpp \
-    olad/PluginAdaptor.cpp \
     olad/PluginLoader.h \
     olad/PluginManager.cpp \
     olad/PluginManager.h \
     olad/Port.cpp \
-    olad/PortBroker.cpp \
-    olad/PortManager.cpp \
-    olad/PortManager.h \
     olad/Preferences.cpp \
     olad/RDMHTTPModule.h \
     olad/Universe.cpp \
@@ -61,7 +63,15 @@ ola_server_additional_libs += common/http/libolahttp.la
 endif
 
 # lib olaserver
-lib_LTLIBRARIES += olad/libolaserver.la
+lib_LTLIBRARIES += olad/libolaserverplugininterface.la olad/libolaserver.la
+
+olad_libolaserverplugininterface_la_SOURCES = \
+    $(ola_server_plugin_interface_sources)
+olad_libolaserverplugininterface_la_CXXFLAGS = $(COMMON_CXXFLAGS)
+olad_libolaserverplugininterface_la_LIBADD = common/libolacommon.la \
+                                             common/web/libolaweb.la \
+                                             ola/libola.la
+
 olad_libolaserver_la_SOURCES = $(ola_server_sources) \
                                olad/OlaServer.cpp \
                                olad/OlaDaemon.cpp
@@ -71,6 +81,7 @@ olad_libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                               common/libolacommon.la \
                               common/web/libolaweb.la \
                               ola/libola.la \
+                              olad/libolaserverplugininterface.la \
                               $(ola_server_additional_libs)
 # Simon: I'm not too sure about this but it seems that because PLUGIN_LIBS is
 # determined at configure time, we need to add them here.
@@ -102,6 +113,7 @@ test_programs += \
 
 COMMON_OLAD_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
                          olad/libolaserver.la \
+                         olad/libolaserverplugininterface.la \
                          common/libolacommon.la
 
 olad_DeviceTester_SOURCES = olad/DeviceTest.cpp olad/DeviceManagerTest.cpp

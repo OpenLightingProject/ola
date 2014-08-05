@@ -47,6 +47,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
@@ -769,6 +770,11 @@ void DisplayHelpAndExit(char arg[]) {
 int main(int argc, char *argv[]) {
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
+
+  if (!ola::NetworkInit()) {
+    std::cerr << "Network initialization failed." << std::endl;
+    exit(ola::EXIT_UNAVAILABLE);
+  }
 
   // 10 bytes security, for file IO routines, will be optimized and checked
   // later

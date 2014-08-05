@@ -91,23 +91,25 @@ struct DescriptorHandle {
   // Type of this descriptor's handle
   DescriptorType m_type;
   // Handler to an event for async I/O
-  void* m_event_handle;
+  void* m_event;
   // Pointer to read result of an async I/O call
-  uint8_t* m_read_data;
+  uint8_t* m_async_data;
   // Pointer to size of read result data
-  uint32_t* m_read_data_size;
+  uint32_t* m_async_data_size;
 
-  DescriptorHandle()
-      : m_type(GENERIC_DESCRIPTOR),
-      m_event_handle(0),
-      m_read_data(NULL),
-      m_read_data_size(NULL) {
-    m_handle.m_fd = -1;
-  }
+  DescriptorHandle();
+  ~DescriptorHandle();
+
+  bool AllocAsyncBuffer();
+  void FreeAsyncBuffer();
+
+  bool IsValid() const;
 };
 
+void* ToHandle(const DescriptorHandle &handle);
+
 static DescriptorHandle INVALID_DESCRIPTOR;
-static const size_t READ_DATA_BUFFER_SIZE = 1024;
+static const uint32_t ASYNC_DATA_BUFFER_SIZE = 1024;
 bool operator!=(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
 bool operator==(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
 bool operator<(const DescriptorHandle &lhs, const DescriptorHandle &rhs);
@@ -120,6 +122,16 @@ static DescriptorHandle INVALID_DESCRIPTOR = -1;
 /**
  * @addtogroup io
  * @{
+ */
+/**
+ * Helper function to convert a DescriptorHandle to a file descriptor.
+ * @param handle The descriptor handle
+ * @return -1 on error, file descriptor otherwise
+ */
+int ToFD(const DescriptorHandle& handle);
+
+/*
+ * A FileDescriptor which can be read from.
  */
 
 /**
@@ -243,9 +255,11 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
   DescriptorHandle ReadDescriptor() const { return m_handle; }
   DescriptorHandle WriteDescriptor() const { return m_handle; }
 
- private:
+ protected:
+  // This is only protected because WIN32-specific subclasses need access.
   DescriptorHandle m_handle;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(UnmanagedFileDescriptor);
 };
 
@@ -412,10 +426,6 @@ class LoopbackDescriptor: public ConnectedDescriptor {
  private:
   DescriptorHandle m_handle_pair[2];
 
-#ifdef _WIN32
-  uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
-  uint32_t m_read_data_size;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(LoopbackDescriptor);
 };
@@ -469,10 +479,6 @@ class PipeDescriptor: public ConnectedDescriptor {
                  DescriptorHandle out_pair[2],
                  PipeDescriptor *other_end);
 
-#ifdef _WIN32
-  uint8_t m_read_data[READ_DATA_BUFFER_SIZE];
-  uint32_t m_read_data_size;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PipeDescriptor);
 };

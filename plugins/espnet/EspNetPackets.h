@@ -23,7 +23,9 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#ifndef _WIN32
 #include <netinet/in.h>
+#endif
 
 #include "ola/network/MACAddress.h"
 #include "ola/BaseTypes.h"
@@ -35,22 +37,32 @@ namespace espnet {
 enum { ESPNET_NAME_LENGTH = 10 };
 enum { ESPNET_DATA_LENGTH = 200 };
 
+// We can't use the PACK macro for enums
+#ifdef _WIN32
+#pragma pack(push, 1)
+#endif
 enum espnet_packet_type_e {
   ESPNET_POLL = 'E' << 24 | 'S' << 16 | 'P' << 8 | 'P',
   ESPNET_REPLY = 'E' << 24 | 'S' << 16 | 'P' << 8 | 'R',
   ESPNET_DMX = 'E' << 24 | 'S' << 16 | 'D' << 8 | 'D',
   ESPNET_ACK = 'E' << 24 | 'S' << 16 | 'A' << 8 | 'P'
-}__attribute__((packed));
+#ifdef _WIN32
+};
+#pragma pack(pop)
+#else
+} __attribute__((packed));
+#endif
 
 typedef enum espnet_packet_type_e espnet_packet_type_t;
 
 /*
  * poll datagram
  */
+PACK(
 struct espnet_poll_s {
   uint32_t head;
   uint8_t  type;
-} __attribute__((packed));
+});
 
 typedef struct espnet_poll_s espnet_poll_t;
 
@@ -69,6 +81,7 @@ typedef struct espnet_node_config_s espnet_node_config_t;
 /*
  * poll reply
  */
+PACK(
 struct espnet_poll_reply_s {
   uint32_t head;
   uint8_t  mac[ola::network::MACAddress::LENGTH];
@@ -80,24 +93,26 @@ struct espnet_poll_reply_s {
   uint8_t  tos;
   uint8_t  ttl;
   espnet_node_config_t config;
-} __attribute__((packed));
+});
 
 typedef struct espnet_poll_reply_s espnet_poll_reply_t;
 
 /*
  * ack datagram
  */
+PACK(
 struct espnet_ack_s {
   uint32_t head;
   uint8_t  status;
   uint8_t  crc;
-} __attribute__((packed));
+});
 
 typedef struct espnet_ack_s espnet_ack_t;
 
 /*
  * dmx datagram
  */
+PACK(
 struct espnet_data_s {
   uint32_t head;
   uint8_t  universe;
@@ -105,7 +120,7 @@ struct espnet_data_s {
   uint8_t  type;
   uint16_t size;
   uint8_t  data[DMX_UNIVERSE_SIZE];
-} __attribute__((packed));
+});
 
 typedef struct espnet_data_s espnet_data_t;
 

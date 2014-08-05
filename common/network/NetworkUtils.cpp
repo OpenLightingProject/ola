@@ -27,6 +27,10 @@
 
 #ifdef _WIN32
 typedef uint32_t in_addr_t;
+// Iphlpapi.h depends on Winsock2.h
+#define WIN_32_LEAN_AND_MEAN
+#include <Winsock2.h>
+#include <Iphlpapi.h>
 #else
 #include <netinet/in.h>
 #endif
@@ -318,10 +322,30 @@ bool NameServers(vector<IPV4Address> *name_servers) {
 
   res_nclose(&res);
 #elif defined(_WIN32)
-  // TODO(Lukas) Implement this for real
-  (void)name_servers;  // Silence compiler warning
-  OLA_WARN << "Nameserver enumeration not supported on Windows yet";
-  return false;
+  ULONG size = sizeof(FIXED_INFO);
+  PFIXED_INFO fixed_info = NULL;
+  while (1) {
+    fixed_info = reinterpret_cast<PFIXED_INFO>(new uint8_t[size]);
+    DWORD result = GetNetworkParams(fixed_info, &size);
+    if (result == ERROR_SUCCESS)
+      break;
+
+    if (result != ERROR_BUFFER_OVERFLOW) {
+      OLA_WARN << "GetNetworkParams failed with: " << GetLastError();
+      return false;
+    }
+
+    delete[] fixed_info;
+  }
+
+  IP_ADDR_STRING* addr = &(fixed_info->DnsServerList);
+  for (; addr; addr = addr->Next) {
+    IPV4Address ipv4addr = IPV4Address(inet_addr(addr->IpAddress.String));
+    OLA_DEBUG << "Found nameserver: " << ipv4addr;
+    name_servers->push_back(ipv4addr);
+  }
+
+  delete[] fixed_info;
 #else
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
@@ -598,9 +622,24 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   return GetDefaultRouteWithNetlink(if_index, default_gateway);
 #elif defined(_WIN32)
-  // TODO(Lukas) Implement this for real
-  OLA_WARN << "DefaultRoute not supported on Windows yet";
-  return false;
+  ULONG size = 4096;
+  PMIB_IPFORWARDTABLE forward_table =
+      reinterpret_cast<PMIB_IPFORWARDTABLE>(malloc(size));
+  DWORD result = GetIpForwardTable(forward_table, &size, TRUE);
+  if (result == NO_ERROR) {
+    for (int i = 0; i < forward_table->dwNumEntries; ++i) {
+      if (forward_table->table[i].dwForwardDest == 0) {
+        *default_gateway =
+            IPV4Address(forward_table->table[i].dwForwardNextHop);
+        *if_index = forward_table->table[i].dwForwardIfIndex;
+      }
+    }
+    free(forward_table);
+    return true;
+  } else {
+    OLA_WARN << "GetIpForwardTable failed with " << GetLastError();
+    return false;
+  }
 #else
 #error "DefaultRoute not implemented for this platform, please report this."
   // TODO(Peter): Do something else on machines without Netlink

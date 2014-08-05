@@ -52,7 +52,6 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
-
   CPPUNIT_TEST(testTCPSocketClientClose);
   CPPUNIT_TEST(testTCPSocketServerClose);
   CPPUNIT_TEST(testUDPSocket);
@@ -110,6 +109,12 @@ void SocketTest::setUp() {
   m_timeout_closure = ola::NewSingleCallback(this, &SocketTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                               m_timeout_closure));
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -118,6 +123,10 @@ void SocketTest::setUp() {
  */
 void SocketTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 

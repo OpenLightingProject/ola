@@ -33,6 +33,10 @@ namespace pathport {
 /*
  * Pathport opcodes
  */
+// We can't use the PACK macro for enums
+#ifdef _WIN32
+#pragma pack(push, 1)
+#endif
 enum pathport_packet_type_e {
   PATHPORT_DATA = 0x0100,
   PATHPORT_PATCH = 0x0200,
@@ -42,7 +46,12 @@ enum pathport_packet_type_e {
   PATHPORT_ARP_REQUEST = 0x0301,
   PATHPORT_ARP_REPLY = 0x0302,
   PATHPORT_SET = 0x0400,
-}__attribute__((packed));
+#ifdef _WIN32
+};
+#pragma pack(pop)
+#else
+} __attribute__((packed));
+#endif
 
 typedef enum pathport_packet_type_e pathport_packet_type_t;
 
@@ -50,6 +59,7 @@ typedef enum pathport_packet_type_e pathport_packet_type_t;
 /*
  * Pathport xDmx
  */
+PACK(
 struct pathport_pdu_data_s {
   uint16_t type;
   uint16_t channel_count;
@@ -57,7 +67,7 @@ struct pathport_pdu_data_s {
   uint8_t start_code;
   uint16_t offset;
   uint8_t data[0];
-}__attribute__((packed));
+});
 
 typedef struct pathport_pdu_data_s pathport_pdu_data;
 
@@ -65,9 +75,10 @@ typedef struct pathport_pdu_data_s pathport_pdu_data;
 /*
  * Pathport get request
  */
+PACK(
 struct pathport_pdu_get_s {
   uint16_t params[0];
-} __attribute__((packed));
+});
 
 typedef struct pathport_pdu_get_s pathport_pdu_get;
 
@@ -75,9 +86,10 @@ typedef struct pathport_pdu_get_s pathport_pdu_get;
 /*
  * Pathport get reply
  */
+PACK(
 struct pathport_pdu_getrep_s {
   uint8_t params[0];
-} __attribute__((packed));
+});
 
 typedef struct pathport_pdu_getrep_s pathport_pdu_getrep;
 
@@ -93,6 +105,7 @@ typedef struct pathport_pdu_getrep_alv_s pathport_pdu_getrep_alv;
 /*
  * Pathport arp reply
  */
+PACK(
 struct pathport_pdu_arp_reply_s {
   uint32_t id;
   uint8_t ip[ola::network::IPV4Address::LENGTH];
@@ -100,21 +113,22 @@ struct pathport_pdu_arp_reply_s {
   uint8_t device_class;  // device class
   uint8_t device_type;  // device type
   uint8_t component_count;  // number of dmx components
-}__attribute__((packed));
+});
 
 typedef struct pathport_pdu_arp_reply_s pathport_pdu_arp_reply;
 
-
+PACK(
 struct pathport_pdu_header_s {
   uint16_t type;    // pdu type
   uint16_t len;    // length
-}__attribute__((packed));
+});
 
 typedef struct pathport_pdu_header_s pathport_pdu_header;
 
 /*
  * PDU Header
  */
+PACK(
 struct pathport_packet_pdu_s {
   pathport_pdu_header head;
   union {
@@ -123,7 +137,7 @@ struct pathport_packet_pdu_s {
     pathport_pdu_getrep getrep;
     pathport_pdu_arp_reply arp_reply;
   } d;    // pdu data
-}__attribute__((packed));
+});
 
 typedef struct pathport_packet_pdu_s pathport_packet_pdu;
 
@@ -131,6 +145,7 @@ typedef struct pathport_packet_pdu_s pathport_packet_pdu;
 /*
  * A complete Pathport packet
  */
+PACK(
 struct pathport_packet_header_s {
   uint16_t protocol;
   uint8_t version_major;
@@ -139,7 +154,7 @@ struct pathport_packet_header_s {
   uint8_t reserved[6];  // set to 0
   uint32_t source;  // src id
   uint32_t destination;  // dst id
-}__attribute__((packed));
+});
 
 typedef struct pathport_packet_header_s pathport_packet_header;
 
@@ -147,13 +162,14 @@ typedef struct pathport_packet_header_s pathport_packet_header;
 /*
  * The complete pathport packet
  */
+PACK(
 struct pathport_packet_s {
   pathport_packet_header header;
   union {
     uint8_t data[1480];  // 1500 - header size
     pathport_packet_pdu pdu;
   } d;
-}__attribute__((packed));
+});
 }  // namespace pathport
 }  // namespace plugin
 }  // namespace ola

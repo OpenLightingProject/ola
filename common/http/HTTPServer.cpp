@@ -20,11 +20,16 @@
 
 #include <stdio.h>
 #include <ola/Logging.h>
+#include <ola/base/Macro.h>
 #include <ola/file/Util.h>
 #include <ola/http/HTTPServer.h>
 #include <ola/io/Descriptor.h>
 #include <ola/web/Json.h>
 #include <ola/web/JsonWriter.h>
+
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
 
 #include <fstream>
 #include <iostream>
@@ -36,6 +41,21 @@
 
 namespace ola {
 namespace http {
+
+#ifdef _WIN32
+class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
+ public:
+  explicit UnmanagedSocketDescriptor(int fd) :
+      ola::io::UnmanagedFileDescriptor(fd) {
+    m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+    // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(fd, FIONBIO, &mode);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
+};
+#endif
 
 using std::ifstream;
 using std::map;
@@ -508,8 +528,12 @@ void HTTPServer::UpdateSockets() {
   int max_fd = 0;
   FD_ZERO(&r_set);
   FD_ZERO(&w_set);
-
+#ifdef MHD_SOCKET_DEFINED
+  if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set,
+                               reinterpret_cast<MHD_socket*>(&max_fd))) {
+#else
   if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
+#endif
     OLA_WARN << "Failed to get a list of the file descriptors for MHD";
     return;
   }
@@ -520,14 +544,14 @@ void HTTPServer::UpdateSockets() {
   // FD in a more suitable way
   int i = 0;
   while (iter != m_sockets.end() && i <= max_fd) {
-    if ((*iter)->ReadDescriptor() < i) {
+    if (ola::io::ToFD((*iter)->ReadDescriptor()) < i) {
       // this socket is no longer required so remove it
       OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
       m_select_server.RemoveReadDescriptor(*iter);
       m_select_server.RemoveWriteDescriptor(*iter);
       delete *iter;
       m_sockets.erase(iter++);
-    } else if ((*iter)->ReadDescriptor() == i) {
+    } else if (ola::io::ToFD((*iter)->ReadDescriptor()) == i) {
       // this socket may need to be updated
       if (FD_ISSET(i, &r_set))
         m_select_server.AddReadDescriptor(*iter);
@@ -752,7 +776,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   file_path.push_back(ola::file::PATH_SEPARATOR);
   // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
-  ifstream i_stream(file_path.data());
+  ifstream i_stream(file_path.data(), ifstream::binary);
 
   if (!i_stream.is_open()) {
     OLA_WARN << "Missing file: " << file_path;
@@ -791,7 +815,11 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
 UnmanagedFileDescriptor *HTTPServer::NewSocket(fd_set *r_set,
                                                fd_set *w_set,
                                                int fd) {
+#ifdef _WIN32
+  UnmanagedSocketDescriptor *socket = new UnmanagedSocketDescriptor(fd);
+#else
   UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
+#endif
   socket->SetOnData(NewCallback(this, &HTTPServer::HandleHTTPIO));
   socket->SetOnWritable(NewCallback(this, &HTTPServer::HandleHTTPIO));
 

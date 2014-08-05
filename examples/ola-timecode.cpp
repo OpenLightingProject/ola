@@ -25,6 +25,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/timecode/TimeCode.h>
 #include <ola/timecode/TimeCodeEnums.h>
@@ -121,6 +122,10 @@ void TimeCodeDone(ola::io::SelectServer *ss,
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed.";
+    exit(ola::EXIT_UNAVAILABLE);
+  }
   ola::OlaCallbackClientWrapper ola_client;
   options opts;
 
