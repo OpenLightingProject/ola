@@ -35,6 +35,7 @@
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
 #include "ola/base/Version.h"
+#include "ola/file/Util.h"
 #include "ola/stl/STLUtils.h"
 
 /**
@@ -292,18 +293,7 @@ void FlagRegistry::GenManPage() {
 #endif
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
-  // Not using FilenameFromPathOrPath to avoid further dependancies
-  string exe_name = m_argv0;
-#ifdef _WIN32
-  char directory_separator = '\\';
-#else
-  char directory_separator = '/';
-#endif
-  string::size_type last_path_sep = m_argv0.find_last_of(directory_separator);
-  if (last_path_sep != string::npos) {
-    // Don't return the path sep itself
-    exe_name = m_argv0.substr(last_path_sep + 1);
-  }
+  string exe_name = ola::file::FilenameFromPathOrPath(m_argv0);
 
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
