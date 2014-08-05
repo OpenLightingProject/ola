@@ -783,6 +783,20 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, scroll";
       case SD_COLOR_SEMAPHORE:
         return "Primary, color semaphone";
+      case SD_COLOR_ADD_AMBER:
+        return "Primary, additive amber";
+      case SD_COLOR_ADD_WHITE:
+        return "Primary, additive white";
+      case SD_COLOR_ADD_WARM_WHITE:
+        return "Primary, additive warm white";
+      case SD_COLOR_ADD_COOL_WHITE:
+        return "Primary, additive cool white";
+      case SD_COLOR_SUB_UV:
+        return "Primary, subtractive UV";
+      case SD_COLOR_HUE:
+        return "Primary, hue";
+      case SD_COLOR_SATURATION:
+        return "Primary, saturation";
       case SD_STATIC_GOBO_WHEEL:
         return "Primary, static gobo wheel";
       case SD_ROTO_GOBO_WHEEL:
