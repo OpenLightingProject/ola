@@ -92,6 +92,11 @@ void SetHelpString(const std::string &first_line,
 void DisplayUsage();
 
 /**
+ * @brief Print the usage text to stdout then exit.
+ */
+void DisplayUsageAndExit();
+
+/**
  * @brief Print the version text to stdout.
  */
 void DisplayVersion();

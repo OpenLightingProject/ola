@@ -262,6 +262,10 @@ int main(int argc, char *argv[]) {
     universes.push_back(universe);
   }
 
+  if (universes.size() <= 0) {
+    ola::DisplayUsageAndExit();
+  }
+
   ola::OlaCallbackClientWrapper ola_client;
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";

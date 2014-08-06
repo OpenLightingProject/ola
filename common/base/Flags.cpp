@@ -85,6 +85,12 @@ void DisplayUsage() {
 }
 
 
+void DisplayUsageAndExit() {
+  GetRegistry()->DisplayUsage();
+  exit(ola::EXIT_USAGE);
+}
+
+
 void DisplayVersion() {
   GetRegistry()->DisplayVersion();
 }
