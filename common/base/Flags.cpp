@@ -305,8 +305,10 @@ void FlagRegistry::GenManPage() {
     // Strip lt- off the start if present, in case we're generating the man
     // page from a libtool wrapper script for the exe
     string remove = "lt-";
-    if ((exe_name.length() > remove.length()) && (0 == exe_name.compare(0, remove.length(), remove))) {
-      exe_name = exe_name.substr(remove.length(), exe_name.length() - remove.length());
+    if ((exe_name.length() > remove.length()) &&
+        (0 == exe_name.compare(0, remove.length(), remove))) {
+      exe_name = exe_name.substr(remove.length(),
+                                 exe_name.length() - remove.length());
     }
   }
 
