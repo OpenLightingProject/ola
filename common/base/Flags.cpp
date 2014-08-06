@@ -301,6 +301,15 @@ void FlagRegistry::GenManPage() {
 
   string exe_name = ola::file::FilenameFromPathOrPath(m_argv0);
 
+  if (0 != exe_name.compare(m_argv0)) {
+    // Strip lt- off the start if present, in case we're generating the man
+    // page from a libtool wrapper script for the exe
+    string remove = "lt-";
+    if ((exe_name.length() > remove.length()) && (0 == exe_name.compare(0, remove.length(), remove))) {
+      exe_name = exe_name.substr(remove.length(), exe_name.length() - remove.length());
+    }
+  }
+
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
   cout << exe_name << " \\- " << endl;
