@@ -7,6 +7,7 @@ x/y/2014 ola-0.9.2
 
  Bugs:
  * Don't build ola_protoc if --with-ola-protoc= is provided.
+ * Fix the inter-test delay in the RDM tests to work with values less than 1s.
 
  Internal:
  * Changed to a non-recursive build. Reduced build times by 5-25%.
