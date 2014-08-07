@@ -40,12 +40,15 @@ using ola::IntToHexString;
 using ola::PrefixedHexStringToInt;
 using ola::ReplaceAll;
 using ola::ShortenString;
+using ola::StringBeginsWith;
 using ola::StringEndsWith;
 using ola::StringJoin;
 using ola::StringSplit;
 using ola::StringToBool;
 using ola::StringToInt;
 using ola::StringTrim;
+using ola::StripPrefix;
+using ola::StripSuffix;
 using ola::ToLower;
 using ola::ToUpper;
 using std::string;
@@ -56,7 +59,10 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSplit);
   CPPUNIT_TEST(testTrim);
   CPPUNIT_TEST(testShorten);
+  CPPUNIT_TEST(testBeginsWith);
   CPPUNIT_TEST(testEndsWith);
+  CPPUNIT_TEST(testStripPrefix);
+  CPPUNIT_TEST(testStripSuffix);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testIntToHexString);
   CPPUNIT_TEST(testEscape);
@@ -83,7 +89,10 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testSplit();
     void testTrim();
     void testShorten();
+    void testBeginsWith();
     void testEndsWith();
+    void testStripPrefix();
+    void testStripSuffix();
     void testIntToString();
     void testIntToHexString();
     void testEscape();
@@ -210,6 +219,19 @@ void StringUtilsTest::testShorten() {
 
 
 /*
+ * Test the StringBeginsWith function.
+ */
+void StringUtilsTest::testBeginsWith() {
+  string input = "foo bar baz";
+  OLA_ASSERT_TRUE(StringBeginsWith(input, "foo"));
+  OLA_ASSERT_TRUE(StringBeginsWith(input, "foo "));
+  OLA_ASSERT_TRUE(StringBeginsWith(input, "foo bar"));
+  OLA_ASSERT_TRUE(StringBeginsWith(input, ""));
+  OLA_ASSERT_FALSE(StringBeginsWith(input, "baz"));
+}
+
+
+/*
  * Test the StringEndsWith function.
  */
 void StringUtilsTest::testEndsWith() {
@@ -219,6 +241,56 @@ void StringUtilsTest::testEndsWith() {
   OLA_ASSERT_TRUE(StringEndsWith(input, "bar baz"));
   OLA_ASSERT_TRUE(StringEndsWith(input, ""));
   OLA_ASSERT_FALSE(StringEndsWith(input, "foo"));
+}
+
+
+/*
+ * Test the StripPrefix function.
+ */
+void StringUtilsTest::testStripPrefix() {
+  string input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, "foo"));
+  OLA_ASSERT_EQ(string(" bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, "foo "));
+  OLA_ASSERT_EQ(string("bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, "foo bar"));
+  OLA_ASSERT_EQ(string(" baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, ""));
+  OLA_ASSERT_EQ(string("foo bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_FALSE(StripPrefix(&input, "baz"));
+}
+
+
+/*
+ * Test the StripSuffix function.
+ */
+void StringUtilsTest::testStripSuffix() {
+  string input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, "baz"));
+  OLA_ASSERT_EQ(string("foo bar "), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, " baz"));
+  OLA_ASSERT_EQ(string("foo bar"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, "bar baz"));
+  OLA_ASSERT_EQ(string("foo "), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, ""));
+  OLA_ASSERT_EQ(string("foo bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_FALSE(StripSuffix(&input, "foo"));
 }
 
 
