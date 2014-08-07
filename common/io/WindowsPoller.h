@@ -30,7 +30,8 @@
 #include <Windows.h>
 
 #include <map>
-#include <set>
+#include <utility>
+#include <vector>
 
 #include "common/io/PollerInterface.h"
 #include "common/io/TimeoutManager.h"
@@ -68,28 +69,8 @@ class WindowsPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
-  typedef struct {
-    ConnectedDescriptor *descriptor;
-    bool delete_on_close;
-  } connected_pipe_descriptor_t;
-
-  struct connected_pipe_descriptor_t_lt {
-    bool operator()(const connected_pipe_descriptor_t &c1,
-                    const connected_pipe_descriptor_t &c2) const {
-      return c1.descriptor->ReadDescriptor().m_handle.m_handle <
-          c2.descriptor->ReadDescriptor().m_handle.m_handle;
-    }
-  };
-
-  typedef struct {
-    OVERLAPPED m_overlapped;
-  } overlapped_handle_context_t;
-
-  typedef std::set<connected_pipe_descriptor_t,
-      connected_pipe_descriptor_t_lt>
-      ConnectedPipeDescriptorSet;
-  typedef std::set<ReadFileDescriptor*> SocketDescriptorSet;
-  typedef std::map<void*, overlapped_handle_context_t> OverlappedHandleMap;
+  typedef std::map<void*, class WindowsPollerDescriptor*> DescriptorMap;
+  typedef std::vector<class WindowsPollerDescriptor*> OrphanedDescriptors;
 
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
@@ -97,9 +78,17 @@ class WindowsPoller : public PollerInterface {
   Clock *m_clock;
   TimeStamp m_wake_up_time;
 
-  SocketDescriptorSet m_socket_read_descriptors;
-  ConnectedPipeDescriptorSet m_connected_pipe_read_descriptors;
-  OverlappedHandleMap m_overlapped_handle_map;
+  DescriptorMap m_descriptor_map;
+  OrphanedDescriptors m_orphaned_descriptors;
+
+  std::pair<WindowsPollerDescriptor*, bool>
+      LookupOrCreateDescriptor(void* handle);
+  bool RemoveDescriptor(const DescriptorHandle &handle,
+                        int flag,
+                        bool warn_on_missing);
+
+  void HandleWakeup(class PollData* data);
+  void FinalCheckIOs(std::vector<class PollData*> data);
 
   DISALLOW_COPY_AND_ASSIGN(WindowsPoller);
 };

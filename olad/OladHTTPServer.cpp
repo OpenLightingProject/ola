@@ -70,19 +70,19 @@ const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
  * @param export_map the ExportMap to display when /debug is called
  * @param client_socket A ConnectedDescriptor which is used to communicate with
  *   the server.
- * @param interface the network interface to bind to
+ * @param iface the network interface to bind to
  */
 OladHTTPServer::OladHTTPServer(ExportMap *export_map,
                                const OladHTTPServerOptions &options,
                                ConnectedDescriptor *client_socket,
                                OlaServer *ola_server,
-                               const ola::network::Interface &interface)
+                               const ola::network::Interface &iface)
     : OlaHTTPServer(options, export_map),
       m_client_socket(client_socket),
       m_client(client_socket),
       m_ola_server(ola_server),
       m_enable_quit(options.enable_quit),
-      m_interface(interface),
+      m_interface(iface),
       m_rdm_module(&m_server, &m_client) {
   // The main handlers
   RegisterHandler("/quit", &OladHTTPServer::DisplayQuit);
@@ -177,10 +177,15 @@ void OladHTTPServer::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
  */
 int OladHTTPServer::JsonServerStats(const HTTPRequest*,
                                    HTTPResponse *response) {
-  struct tm start_time;
   char start_time_str[50];
+#ifdef _WIN32
+  strftime(start_time_str, sizeof(start_time_str), "%c",
+      localtime(&m_start_time_t));
+#else
+  struct tm start_time;
   localtime_r(&m_start_time_t, &start_time);
   strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
+#endif
 
   JsonObject json;
   json.Add("hostname", ola::network::FQDN());

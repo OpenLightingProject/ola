@@ -35,6 +35,7 @@
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
 #include "ola/base/Version.h"
+#include "ola/file/Util.h"
 #include "ola/stl/STLUtils.h"
 
 /**
@@ -81,6 +82,12 @@ void SetHelpString(const string &first_line, const string &description) {
 
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
+}
+
+
+void DisplayUsageAndExit() {
+  GetRegistry()->DisplayUsage();
+  exit(ola::EXIT_USAGE);
 }
 
 
@@ -292,17 +299,12 @@ void FlagRegistry::GenManPage() {
 #endif
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
-  // Not using FilenameFromPathOrPath to avoid further dependancies
-  string exe_name = m_argv0;
-#ifdef _WIN32
-  char directory_separator = '\\';
-#else
-  char directory_separator = '/';
-#endif
-  string::size_type last_path_sep = m_argv0.find_last_of(directory_separator);
-  if (last_path_sep != string::npos) {
-    // Don't return the path sep itself
-    exe_name = m_argv0.substr(last_path_sep + 1);
+  string exe_name = ola::file::FilenameFromPathOrPath(m_argv0);
+
+  if (0 != exe_name.compare(m_argv0)) {
+    // Strip lt- off the start if present, in case we're generating the man
+    // page from a libtool wrapper script for the exe
+    ola::StripPrefix(&exe_name, "lt-");
   }
 
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;

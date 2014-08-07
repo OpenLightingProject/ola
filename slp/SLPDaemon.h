@@ -148,7 +148,7 @@ class SLPDaemon {
     auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
     auto_ptr<SLPServiceImpl> m_service_impl;
     // maps fd to ConnectedClient structure
-    map<int, class ConnectedClient*> m_connected_clients;
+    map<ola::io::DescriptorHandle, class ConnectedClient*> m_connected_clients;
     DisconnectedClients m_disconnected_clients;
 
     // The ExportMap & HTTPServer
@@ -160,7 +160,7 @@ class SLPDaemon {
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);
-    void RPCSocketClosed(int read_descriptor);
+    void RPCSocketClosed(ola::io::DescriptorHandle read_descriptor);
     bool CleanOldClients();
 
     static const uint16_t DEFAULT_SLP_HTTP_PORT;

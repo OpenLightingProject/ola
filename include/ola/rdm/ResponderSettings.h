@@ -20,6 +20,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERSETTINGS_H_
 #define INCLUDE_OLA_RDM_RESPONDERSETTINGS_H_
 
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/ResponderHelper.h>
 #include <stdint.h>
@@ -83,10 +84,11 @@ class BasicSetting : SettingInterface {
                                              uint8_t *data) const;
 
  private:
+    PACK(
     struct description_s {
       uint8_t setting;
       char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
+    });
 
     std::string m_description;
 };
@@ -133,11 +135,12 @@ class FrequencyModulationSetting : SettingInterface {
                                              uint8_t *data) const;
 
  private:
+    PACK(
     struct description_s {
       uint8_t setting;
       uint32_t frequency;
       char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
+    });
 
     uint32_t m_frequency;
     std::string m_description;

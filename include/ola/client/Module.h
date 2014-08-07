@@ -28,7 +28,7 @@
  * message or using another output mechanism.
  *
  * This file provides plugin interfaces so that a client code can load
- * a small subset of libola at runtime. For each function we #define the symbol
+ * a small subset of libola at runtime. For each function we \#define the symbol
  * name and then provide the function type signature and the actual function
  * itself.
  *

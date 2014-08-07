@@ -113,6 +113,12 @@ void TCPConnectorTest::setUp() {
   m_failure_calls = 0;
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                               m_timeout_closure));
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -121,6 +127,10 @@ void TCPConnectorTest::setUp() {
  */
 void TCPConnectorTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 
@@ -290,7 +300,11 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
     m_ss->Terminate();
   } else {
     OLA_ASSERT_TRUE(fd >= 0);
+#ifdef _WIN32
+    closesocket(fd);
+#else
     close(fd);
+#endif
   }
   m_sucessfull_calls++;
 }

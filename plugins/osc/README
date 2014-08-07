@@ -439,7 +439,7 @@ to the constructor as well as the UDP port to listen on.
 We also hold a pointer to a UnmanagedFileDescriptor which is how we add the
 socket description used by liblo to the SelectServer. There is also the
 lo_server data, as well as the OSCTargetMap and AddressCallbackMap discussed
-above.
+above. On Windows, we need to create an UnmanagedSocketDescriptor instead.
 
 The DescriptorReady method is called when the liblo socket description has data
 pending.

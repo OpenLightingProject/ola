@@ -57,6 +57,7 @@ class FtdiDmxThread : public ola::thread::Thread {
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
+    static const uint32_t BAD_GRANULARITY_LIMIT = 3;
 };
 }  // namespace ftdidmx
 }  // namespace plugin

@@ -81,7 +81,7 @@ class ArtNetNodeOptions {
 
 class ArtNetNodeImpl {
  public:
-  ArtNetNodeImpl(const ola::network::Interface &interface,
+  ArtNetNodeImpl(const ola::network::Interface &iface,
                  ola::io::SelectServerInterface *ss,
                  const ArtNetNodeOptions &options,
                  ola::network::UDPSocketInterface *socket = NULL);
@@ -370,7 +370,7 @@ class ArtNetNodeImplRDMWrapper
  */
 class ArtNetNode {
  public:
-  ArtNetNode(const ola::network::Interface &interface,
+  ArtNetNode(const ola::network::Interface &iface,
              ola::io::SelectServerInterface *ss,
              const ArtNetNodeOptions &options,
              ola::network::UDPSocketInterface *socket = NULL);
