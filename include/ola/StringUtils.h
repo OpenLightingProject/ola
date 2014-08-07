@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * StringUtils..h
+ * StringUtils.h
  * Random String functions.
  * Copyright (C) 2005 Simon Newton
  */
@@ -63,12 +63,36 @@ void StringTrim(std::string *input);
 void ShortenString(std::string *input);
 
 /**
+ * @brief Check if one string is a prefix of another.
+ * @param s the string to check
+ * @param prefix the prefix to check for
+ * @returns true if s begins with prefix, false otherwise.
+ */
+bool StringBeginsWith(const std::string &s, const std::string &prefix);
+
+/**
  * @brief Check if one string is a suffix of another.
  * @param s the string to check
  * @param suffix the suffix to check for
  * @returns true if s ends with suffix, false otherwise.
  */
 bool StringEndsWith(const std::string &s, const std::string &suffix);
+
+/**
+ * @brief Strips a prefix from a string.
+ * @param s the string to strip
+ * @param prefix the prefix to remove
+ * @returns true if we stripped prefix from s, false otherwise.
+ */
+bool StripPrefix(std::string *s, const std::string &prefix);
+
+/**
+ * @brief Strips a suffix from a string.
+ * @param s the string to strip
+ * @param suffix the suffix to remove
+ * @returns true if we stripped suffix from s, false otherwise.
+ */
+bool StripSuffix(std::string *s, const std::string &suffix);
 
 /**
  * @brief Convert an int to a string.
