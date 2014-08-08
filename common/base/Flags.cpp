@@ -307,14 +307,19 @@ void FlagRegistry::GenManPage() {
     ola::StripPrefix(&exe_name, "lt-");
   }
 
+  // Convert newlines to a suitable format for man pages
+  string man_description = m_description;
+  ReplaceAll(&man_description, "\n", "\n.PP\n");
+
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
   cout << exe_name << " \\- " << endl;
   cout << ".SH SYNOPSIS" << endl;
-  cout << exe_name << " " << m_first_line << endl;
+  cout << ".B " << exe_name << endl;
+  cout << m_first_line << endl;
   cout << ".SH DESCRIPTION" << endl;
-  cout << exe_name << endl;
-  cout << m_description << endl;
+  cout << ".B " << exe_name << endl;
+  cout << man_description << endl;
   cout << ".SH OPTIONS" << endl;
 
   // - comes before a-z which means flags without long options appear first. To
