@@ -4,7 +4,7 @@
 Basic Requirements
 ==================
 
-To build OLA on Windows with MinGW, you need an up-to-date installation. The MinGW project provides a package manager (MinGW Installation Manager, available at http://sourceforge.net/projects/mingw/files/Installer/).
+To build OLA on Windows with MinGW, you need an up-to-date MinGW installation. The MinGW project provides a package manager (MinGW Installation Manager, available at http://sourceforge.net/projects/mingw/files/Installer/).
 
 You need to select:
 - mingw-developer-toolkit
@@ -23,9 +23,12 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 export CPPFLAGS="-I/usr/local/include"
 export LDFLAGS="-L/usr/local/lib"
 
+
 In addition, edit ~/.profile and add
 
+
 [ -f ~/.bashrc ] && . ~/.bashrc
+
 
 If you haven't configured your MSYS fstab yet, do that as well. See http://www.mingw.org/wiki/Getting_Started for instructions.
 
@@ -78,6 +81,6 @@ Building OLA
 * autoreconf -i -f
 * ./configure --disable-libftdi --disable-libusb --disable-root-check --disable-dmx4linux --disable-e131 --disable-ftdidmx --disable-karate --disable-kinet --disable-milinst --disable-opendmx --disable-renard --disable-spi --disable-stageprofi --disable-usbpro --disable-usbdmx --disable-uart
 * make
+* make install
 
-!!! TODO: Fix the minimal build described above !!!
-!!! TODO: Continue porting to reduce the number of disabled features !!!
+!!! TODO: Reduce the number of disabled features !!!

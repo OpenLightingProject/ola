@@ -4,6 +4,18 @@ x/y/2014 ola-0.9.2
  * Added --use-kqueue which uses kqueue() rather than select().
  * Add some more additional slot definitions.
  * Allow the FTDI thread to switch from BAD to GOOD timing granularity.
+ * (Partial) Windows support using MinGW. Build instructions are in
+   README.mingw32.
+   Parts that are already working:
+   * building simple client applications
+   * running olad
+   * Plugins: Dummy, ArtNet, ShowNet, ESP Net, SandNet, Pathport, OSC
+   Parts that are not working yet:
+   * all other plugins, especially device-based
+   * Python bindings
+   * Java bindings
+   Please test the port and report any issues you encounter on Github and/or the
+   mailing list.
 
  Bugs:
  * Don't build ola_protoc if --with-ola-protoc= is provided.
