@@ -45,6 +45,37 @@
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+/**
+ * @def OLA_UNUSED
+ * @brief Mark unused arguments & types.
+ *
+ * @examplepara
+ *   @code
+ *   void Foo(OLA_UNUSED int bar) {}
+ *
+ *   OLA_UNUSED typedef int Baz;
+ *   @endcode
+ */
+#ifdef __GNUC__
+#define OLA_UNUSED __attribute__ ((unused))
+#else
+#define OLA_UNUSED
+#endif
+
+/**
+ * @def STATIC_ASSERT
+ * @brief Compile time assert().
+ *
+ * @examplepara
+ *   @code
+ *   PACK(
+ *   struct foo_s {
+ *     uint16_t bar;
+ *   });
+ *   STATIC_ASSERT(sizeof(foo_s) == 2);
+ *   @endcode
+ */
+
 /*
  * This code was adapted from:
  * http://blogs.msdn.com/b/abhinaba/archive/
@@ -64,7 +95,7 @@ namespace internal {
 }
 
 #define STATIC_ASSERT(x) \
-  typedef ::internal::static_assert_test<\
+  OLA_UNUSED typedef ::internal::static_assert_test<\
     sizeof(::internal::STATIC_ASSERT_FAILURE< static_cast<bool>( x ) >)>\
       JOIN(_static_assert_typedef, __LINE__)
 
@@ -78,13 +109,24 @@ namespace internal {
  * End of adapted code.
  */
 
-/*
+/**
+ * @def PACK
+ * @brief Pack structures.
+ *
  * In order to account for platform differences with regard to packing, we
  * need to use the following macro while declaring types that need to have a
  * specific binary layout.
  * Taken from:
  * http://stackoverflow.com/questions/1537964/
  *   visual-c-equivalent-of-gccs-attribute-packed
+ *
+ * @examplepara
+ *   @code
+ *   PACK(
+ *   struct foo_s {
+ *     uint16_t bar;
+ *   });
+ *   @endcode
  */
 #ifdef _WIN32
 #ifdef _MSC_VER
