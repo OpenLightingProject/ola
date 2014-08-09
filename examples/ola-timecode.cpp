@@ -19,7 +19,6 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
