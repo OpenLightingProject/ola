@@ -654,6 +654,10 @@ for p in $PLUGINS; do
   OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 
+if test -z "${USING_WIN32_TRUE}"; then
+  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lWs2_32 -lIphlpapi -lpthread"
+fi
+
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
@@ -663,6 +667,13 @@ www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
+
+# Additional libraries needed by Windows clients
+OLA_CLIENT_LIBS=''
+if test -z "${USING_WIN32_TRUE}"; then
+  OLA_CLIENT_LIBS="-lWs2_32 -lIphlpapi -lpthread"
+fi
+AC_SUBST(OLA_CLIENT_LIBS)
 
 # Output
 #####################################################
