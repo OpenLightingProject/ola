@@ -298,7 +298,7 @@ void ReplaceAll(string *original, const string &find, const string &replace) {
   while ((start = original->find(find, start)) != string::npos) {
     original->replace(start, find.length(), replace);
     // Move to the end of the replaced section
-    start += std::max(find.length(), replace.length());
+    start += ((replace.length() > find.length()) ? replace.length() : 0);
   }
 }
 
