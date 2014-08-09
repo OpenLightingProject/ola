@@ -887,4 +887,8 @@ void StringUtilsTest::testReplaceAll() {
   input = "abcdcdce";
   ReplaceAll(&input, "cdc", "c");
   OLA_ASSERT_EQ(string("abce"), input);
+
+  input = "abcdcdcdce";
+  ReplaceAll(&input, "cdcdc", "cdc");
+  OLA_ASSERT_EQ(string("abcdce"), input);
 }
