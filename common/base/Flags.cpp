@@ -68,11 +68,11 @@ using std::vector;
  *
  *   Then if you called your application with that flag:
  *   @code
- *   bash$myappliation -d
+ *   bash$myapplication -d
  *   @endcode
  *   Then the noMaster flag would be true.
  */
-const char Flag<bool>::NO_PREFIX[] = "no";
+const char Flag<bool>::NO_PREFIX[] = "no-";
 
 void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetFirstLine(first_line);

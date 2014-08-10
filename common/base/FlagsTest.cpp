@@ -153,7 +153,7 @@ void FlagsTest::testSetting() {
 void FlagsTest::testBoolFlags() {
   char bin_name[] = "foo";
   char opt1[] = "--default-false";
-  char opt2[] = "--nodefault-true";
+  char opt2[] = "--no-default-true";
 
   char *argv[] = {bin_name, opt1, opt2};
   int argc = sizeof(argv) / sizeof(argv[0]);
