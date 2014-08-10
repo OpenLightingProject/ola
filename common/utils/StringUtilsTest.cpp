@@ -45,6 +45,7 @@ using ola::StringEndsWith;
 using ola::StringJoin;
 using ola::StringSplit;
 using ola::StringToBool;
+using ola::StringToBoolTolerant;
 using ola::StringToInt;
 using ola::StringTrim;
 using ola::StripPrefix;
@@ -68,6 +69,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testEncodeString);
   CPPUNIT_TEST(testStringToBool);
+  CPPUNIT_TEST(testStringToBoolTolerant);
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
   CPPUNIT_TEST(testStringToUInt8);
@@ -98,6 +100,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testEscape();
     void testEncodeString();
     void testStringToBool();
+    void testStringToBoolTolerant();
     void testStringToUInt();
     void testStringToUInt16();
     void testStringToUInt8();
@@ -408,6 +411,43 @@ void StringUtilsTest::testStringToBool() {
   OLA_ASSERT_TRUE(StringToBool("1", &value));
   OLA_ASSERT_EQ(value, true);
   OLA_ASSERT_TRUE(StringToBool("0", &value));
+  OLA_ASSERT_EQ(value, false);
+}
+
+
+void StringUtilsTest::testStringToBoolTolerant() {
+  bool value;
+  OLA_ASSERT_FALSE(StringToBoolTolerant("", &value));
+  OLA_ASSERT_FALSE(StringToBoolTolerant("-1", &value));
+  OLA_ASSERT_FALSE(StringToBoolTolerant("2", &value));
+  OLA_ASSERT_FALSE(StringToBoolTolerant("a", &value));
+  OLA_ASSERT_TRUE(StringToBoolTolerant("true", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("false", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("TrUE", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("FalSe", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("t", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("f", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("T", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("F", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("1", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("0", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("on", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("off", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("On", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("oFf", &value));
   OLA_ASSERT_EQ(value, false);
 }
 
