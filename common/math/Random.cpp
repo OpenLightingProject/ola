@@ -22,14 +22,16 @@
 #include <config.h>
 #endif
 
+#include <stdint.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifdef HAVE_RANDOM
 #include <random>
 #endif
 
+#include "ola/Clock.h"
 #include "ola/math/Random.h"
 
 namespace ola {
@@ -43,8 +45,12 @@ std::default_random_engine generator_;
  * Seed the random number generator
  */
 void InitRandom() {
-  uint64_t seed = (static_cast<uint64_t>(time(NULL)) << 32) +
-                  static_cast<uint64_t>(getpid());
+  Clock clock;
+  TimeStamp now;
+  clock.CurrentTime(&now);
+
+  uint64_t seed = (static_cast<uint64_t>(now.MicroSeconds()) << 32) +
+                   static_cast<uint64_t>(getpid());
 #ifdef HAVE_RANDOM
   generator_.seed(seed);
 #elif defined(_WIN32)
