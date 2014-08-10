@@ -23,6 +23,7 @@
 #endif
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
 
 #ifdef HAVE_RANDOM
@@ -34,7 +35,6 @@
 namespace ola {
 namespace math {
 
-
 #ifdef HAVE_RANDOM
 std::default_random_engine generator_;
 #endif
@@ -43,12 +43,14 @@ std::default_random_engine generator_;
  * Seed the random number generator
  */
 void InitRandom() {
+  uint64_t seed = (static_cast<uint64_t>(time(NULL)) << 32) +
+                  static_cast<uint64_t>(getpid());
 #ifdef HAVE_RANDOM
-  generator_.seed(time(NULL));
+  generator_.seed(seed);
 #elif defined(_WIN32)
-  srand(time(NULL));
+  srand(seed);
 #else
-  srandom(time(NULL));
+  srandom(seed);
 #endif
 }
 
