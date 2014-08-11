@@ -148,10 +148,12 @@ bool StringToBoolTolerant(const string &value, bool *output) {
   } else {
     string lc_value(value);
     ToLower(&lc_value);
-    if (lc_value == "on") {
+    if ((lc_value == "on") || (lc_value == "enable") ||
+        (lc_value == "enabled")) {
       *output = true;
       return true;
-    } else if (lc_value == "off") {
+    } else if ((lc_value == "off") || (lc_value == "disable") ||
+               (lc_value == "disabled")) {
       *output = false;
       return true;
     }
