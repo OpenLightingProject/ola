@@ -311,9 +311,18 @@ void FlagRegistry::GenManPage() {
   string man_description = m_description;
   ReplaceAll(&man_description, "\n", "\n.PP\n");
 
+  // Guess at a single line synopsis, match ". " so we don't get standards
+  string synopsis = "";
+  std::size_t pos = man_description.find(". ");
+  if (pos != string::npos) {
+    synopsis = man_description.substr(0, pos + 1);
+  } else {
+    synopsis = man_description;
+  }
+
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
-  cout << exe_name << " \\- " << endl;
+  cout << exe_name << " \\- " << synopsis << endl;
   cout << ".SH SYNOPSIS" << endl;
   cout << ".B " << exe_name << endl;
   cout << m_first_line << endl;
