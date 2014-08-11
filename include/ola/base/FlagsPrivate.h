@@ -51,6 +51,7 @@ class FlagInterface {
     virtual bool has_arg() const = 0;
     virtual const char* arg_type() const = 0;
     virtual std::string help() const = 0;
+    virtual bool present() const = 0;
     virtual bool SetValue(const std::string &input) = 0;
 };
 
@@ -62,12 +63,15 @@ class BaseFlag : public FlagInterface {
     BaseFlag(const char *arg_type, const char *short_opt, const char *help)
         : m_arg_type(arg_type),
           m_short_opt(short_opt[0]),
-          m_help(help) {
+          m_help(help),
+          m_present(false) {
     }
 
     char short_opt() const { return m_short_opt; }
     const char* arg_type() const { return m_arg_type; }
     std::string help() const { return m_help; }
+    bool present() const { return m_present; }
+    void Visit() { m_present = true; }
 
  protected:
     void ReplaceUnderscoreWithHyphen(char *input);
@@ -77,6 +81,7 @@ class BaseFlag : public FlagInterface {
     const char *m_arg_type;
     char m_short_opt;
     const char *m_help;
+    bool m_present;
 };
 
 /**
@@ -153,6 +158,7 @@ class Flag<bool> : public BaseFlag {
     }
 
     bool SetValue(const std::string &input) {
+      Visit();
       if (m_use_option) {
         return ola::StringToBoolTolerant(input, &m_value);
       } else {
@@ -201,6 +207,7 @@ class Flag<std::string> : public BaseFlag {
     }
 
     bool SetValue(const std::string &input) {
+      Visit();
       m_value = input;
       return true;
     }
@@ -216,6 +223,7 @@ class Flag<std::string> : public BaseFlag {
  */
 template <typename T>
 bool Flag<T>::SetValue(const std::string &input) {
+  Visit();
   return ola::StringToInt(input, &m_value, true);
 }
 

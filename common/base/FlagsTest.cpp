@@ -62,14 +62,17 @@ class FlagsTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBoolFlags);
     CPPUNIT_TEST(testIntFlags);
     CPPUNIT_TEST(testStringFlags);
+    CPPUNIT_TEST(testFinalPresence);
     CPPUNIT_TEST_SUITE_END();
 
  public:
     void testDefaults();
+    void testPresence(bool presence);
     void testSetting();
     void testBoolFlags();
     void testIntFlags();
     void testStringFlags();
+    void testFinalPresence();
 };
 
 
@@ -112,6 +115,39 @@ void FlagsTest::testDefaults() {
                 static_cast<uint32_t>(FLAGS_s_uint32));
 
   OLA_ASSERT_EQ(string("bar"), FLAGS_s_str.str());
+
+  testPresence(false);
+}
+
+/**
+ * Check the presence state.
+ */
+void FlagsTest::testPresence(bool presence) {
+  OLA_ASSERT_EQ(presence, FLAGS_default_false.present());
+  OLA_ASSERT_EQ(presence, FLAGS_default_true.present());
+  OLA_ASSERT_EQ(presence, FLAGS_default_false_option.present());
+  OLA_ASSERT_EQ(presence, FLAGS_default_true_option.present());
+  OLA_ASSERT_EQ(presence, FLAGS_f_int8.present());
+  OLA_ASSERT_EQ(presence, FLAGS_f_uint8.present());
+  OLA_ASSERT_EQ(presence, FLAGS_f_int16.present());
+  OLA_ASSERT_EQ(presence, FLAGS_f_uint16.present());
+  OLA_ASSERT_EQ(presence, FLAGS_f_int32.present());
+  OLA_ASSERT_EQ(presence, FLAGS_f_uint32.present());
+
+  OLA_ASSERT_EQ(presence, FLAGS_f_str.present());
+
+  OLA_ASSERT_EQ(presence, FLAGS_s_default_false.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_default_true.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_default_false_option.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_default_true_option.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_int8.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_uint8.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_int16.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_uint16.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_int32.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_uint32.present());
+
+  OLA_ASSERT_EQ(presence, FLAGS_s_str.present());
 }
 
 /**
@@ -162,6 +198,8 @@ void FlagsTest::testSetting() {
   OLA_ASSERT_EQ(static_cast<uint32_t>(4000),
                 static_cast<uint32_t>(FLAGS_f_uint32));
   OLA_ASSERT_EQ(string("hello"), FLAGS_f_str.str());
+
+  testPresence(false);
 }
 
 
@@ -313,4 +351,11 @@ void FlagsTest::testStringFlags() {
   OLA_ASSERT_EQ(1, argc);
   OLA_ASSERT_EQ(string(bin_name), string(argv[0]));
   OLA_ASSERT_EQ(string("data3"), FLAGS_s_str.str());
+}
+
+/**
+ * Check the final presence state.
+ */
+void FlagsTest::testFinalPresence() {
+  testPresence(true);
 }
