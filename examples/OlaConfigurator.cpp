@@ -19,6 +19,7 @@
  */
 
 #include <ola/Callback.h>
+#include <ola/base/Flags.h>
 #include <ola/io/SelectServer.h>
 #include <stdlib.h>
 #include <iostream>
@@ -37,6 +38,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
+DEFINE_s_int32(dev, d, -1, "Id of the device to control.");
 
 /*
  * Clean up
