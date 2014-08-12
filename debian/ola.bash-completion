@@ -4,7 +4,7 @@
 #General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
 #General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
 #General todo: add completion for all the python examples in python/examples/
-#Todo: ola_dev_info feeds into ola_usbpro -d <dev>
+#Todo: ola_dev_info feeds into ola_usbpro, ola_e131 and ola_artnet -d <device>, ideally filtering based on type
 
 #General functions
 #Martin (lots of extra pids) 4d50:ffffffff
@@ -211,7 +211,7 @@ have ola_e131 && _ola_e131()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--dev --input --port-id --preview-mode'
+  opts='--device --input --port-id --preview-mode'
 
   case "$prev" in
     --preview-mode)

@@ -33,7 +33,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-DECLARE_int32(dev);
+DECLARE_int32(device);
 DEFINE_s_uint32(port_id, p, -1, "Id of the port to control");
 DEFINE_s_bool(input, i, false,
               "Set an input port, otherwise set an output port.");
@@ -44,8 +44,8 @@ DEFINE_bool_option(preview_mode, false, "Set the preview mode bit on|off");
  */
 class E131Configurator: public OlaConfigurator {
  public:
-  explicit E131Configurator()
-      : OlaConfigurator(FLAGS_dev, ola::OLA_PLUGIN_E131) {}
+  E131Configurator()
+      : OlaConfigurator(FLAGS_device, ola::OLA_PLUGIN_E131) {}
   void HandleConfigResponse(const string &reply, const string &error);
   void SendConfigRequest();
  private:
@@ -129,7 +129,7 @@ int main(int argc, char*argv[]) {
       "-d <dev-id> -p <port-id> [--input] --preview-mode <on|off>",
       "Configure E1.31 devices managed by OLA.");
 
-  if (FLAGS_dev < 0)
+  if (FLAGS_device < 0)
     ola::DisplayUsageAndExit();
 
   E131Configurator configurator;

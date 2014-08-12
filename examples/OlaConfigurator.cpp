@@ -38,7 +38,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-DEFINE_s_int32(dev, d, -1, "Id of the device to control.");
+DEFINE_s_int32(device, d, -1, "Id of the device to control.");
 
 /*
  * Clean up
