@@ -197,8 +197,8 @@ class NodeInactive: public NodeAction {
  */
 class NodeSimpleSend: public NodeAction {
  public:
-    NodeSimpleSend(uint8_t priority, const std::string &data = ""):
-        m_priority(priority) {
+    explicit NodeSimpleSend(uint8_t priority, const std::string &data = "")
+        : m_priority(priority) {
       if (data.empty())
         m_buffer.SetRangeToValue(0, m_priority, DMX_UNIVERSE_SIZE);
       else

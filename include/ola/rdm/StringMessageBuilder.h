@@ -37,9 +37,9 @@
 namespace ola {
 
 namespace messaging {
-  class Descriptor;
-  class MessageFieldInterface;
-  class Message;
+class Descriptor;
+class MessageFieldInterface;
+class Message;
 }
 
 namespace rdm {

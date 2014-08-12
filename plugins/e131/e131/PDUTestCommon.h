@@ -150,7 +150,8 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
  public:
-    MockInflator(const ola::acn::CID &cid, Callback0<void> *on_recv = NULL):
+    explicit MockInflator(const ola::acn::CID &cid,
+                          Callback0<void> *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}

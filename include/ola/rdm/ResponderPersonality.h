@@ -88,7 +88,7 @@ class PersonalityCollection {
  */
 class PersonalityManager {
  public:
-    explicit PersonalityManager() : m_active_personality(0) {}
+    PersonalityManager() : m_active_personality(0) {}
     explicit PersonalityManager(const PersonalityCollection *personalities);
 
     uint8_t PersonalityCount() const;

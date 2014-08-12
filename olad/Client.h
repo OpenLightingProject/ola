@@ -28,8 +28,8 @@
 
 namespace ola {
 namespace proto {
-  class OlaClientService_Stub;
-  class Ack;
+class OlaClientService_Stub;
+class Ack;
 }
 }
 
