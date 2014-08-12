@@ -22,6 +22,8 @@
  * @addtogroup flags
  * @{
  * @file FlagsPrivate.h
+ * @brief Internal functionality for the flags.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_BASE_FLAGSPRIVATE_H_
@@ -40,18 +42,54 @@
 namespace ola {
 
 /**
+ * @addtogroup flags
+ * @{
+ */
+
+/**
  * @brief The interface for the Flag classes.
  */
 class FlagInterface {
  public:
     virtual ~FlagInterface() {}
 
+    /**
+     * @brief Get the flag name
+     */
     virtual const char* name() const = 0;
+
+    /**
+     * @brief Get the flag short option
+     */
     virtual char short_opt() const = 0;
+
+    /**
+     * @brief Whether the flag requires an argument
+     */
     virtual bool has_arg() const = 0;
+
+    /**
+     * @brief Get the flag argument type
+     */
     virtual const char* arg_type() const = 0;
+
+    /**
+     * @brief Get the flag help string
+     */
     virtual std::string help() const = 0;
+
+    /**
+     * @brief Check if the flag was present on the command line. Good for
+     *        switching behaviour when a flag is used.
+     * @returns true if the flag was present, false otherwise
+     */
     virtual bool present() const = 0;
+
+    /**
+     * @brief Set the flag value
+     * @param input the input passed on the command line
+     * @returns true on success, false otherwise
+     */
     virtual bool SetValue(const std::string &input) = 0;
 };
 
@@ -60,6 +98,12 @@ class FlagInterface {
  */
 class BaseFlag : public FlagInterface {
  public:
+    /**
+     * @brief Create a new BaseFlag
+     * @param arg_type the type of flag argument
+     * @param short_opt the short option for the flag
+     * @param help the help string for the flag
+     */
     BaseFlag(const char *arg_type, const char *short_opt, const char *help)
         : m_arg_type(arg_type),
           m_short_opt(short_opt[0]),
@@ -71,7 +115,11 @@ class BaseFlag : public FlagInterface {
     const char* arg_type() const { return m_arg_type; }
     std::string help() const { return m_help; }
     bool present() const { return m_present; }
-    void Visit() { m_present = true; }
+
+    /**
+     * @brief Set that the flag was present on the command line
+     */
+    void MarkAsPresent() { m_present = true; }
 
  protected:
     void ReplaceUnderscoreWithHyphen(char *input);
@@ -91,6 +139,16 @@ class BaseFlag : public FlagInterface {
 template <typename T>
 class Flag : public BaseFlag {
  public:
+    /**
+     * @brief Create a new Flag
+     * @param name the name of the flag
+     * @param arg_type the type of flag argument
+     * @param short_opt the short option for the flag
+     * @param default_value the flag's default value
+     * @param help the help string for the flag
+     * @param use_option if the flag should use an option, only applies to
+     *        Flag<bool>
+     */
     Flag(const char *name, const char *arg_type, const char *short_opt,
          T default_value, const char *help,
          OLA_UNUSED const bool use_option = false)
@@ -158,7 +216,7 @@ class Flag<bool> : public BaseFlag {
     }
 
     bool SetValue(const std::string &input) {
-      Visit();
+      MarkAsPresent();
       if (m_use_option) {
         return ola::StringToBoolTolerant(input, &m_value);
       } else {
@@ -207,7 +265,7 @@ class Flag<std::string> : public BaseFlag {
     }
 
     bool SetValue(const std::string &input) {
-      Visit();
+      MarkAsPresent();
       m_value = input;
       return true;
     }
@@ -223,7 +281,7 @@ class Flag<std::string> : public BaseFlag {
  */
 template <typename T>
 bool Flag<T>::SetValue(const std::string &input) {
-  Visit();
+  MarkAsPresent();
   return ola::StringToInt(input, &m_value, true);
 }
 
@@ -283,7 +341,14 @@ class FlagRegisterer {
       GetRegistry()->RegisterFlag(flag);
     }
 };
+
+/** @} */
+
 }  // namespace ola
+
+/**
+ * @cond HIDDEN_SYMBOLS
+ */
 
 /**
  * @brief Declare a flag which was defined in another file.
@@ -318,5 +383,9 @@ class FlagRegisterer {
   } \
   using ola_flags::FLAGS_##name
 
+/**
+ * @endcond
+ * End Hidden Symbols
+ */
+
 #endif  // INCLUDE_OLA_BASE_FLAGSPRIVATE_H_
-/**@}*/
