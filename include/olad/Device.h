@@ -30,7 +30,7 @@
 
 namespace ola {
 namespace rpc {
-  class RpcController;
+class RpcController;
 }
 }
 

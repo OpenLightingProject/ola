@@ -28,7 +28,7 @@
 namespace ola {
 
 namespace messaging {
-  class Descriptor;
+class Descriptor;
 }
 
 namespace rdm {

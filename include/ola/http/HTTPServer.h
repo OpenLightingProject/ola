@@ -215,8 +215,26 @@ class HTTPServer: public ola::thread::Thread {
     std::string content_type;
   } static_file_info;
 
-  typedef std::set<ola::io::UnmanagedFileDescriptor*,
-                   ola::io::UnmanagedFileDescriptor_lt> SocketSet;
+  struct DescriptorState {
+   public:
+    explicit DescriptorState(ola::io::UnmanagedFileDescriptor *descriptor)
+        : descriptor(descriptor), read(0), write(0) {}
+
+    ola::io::UnmanagedFileDescriptor *descriptor;
+    uint8_t read    : 1;
+    uint8_t write   : 1;
+    uint8_t         : 6;
+  };
+
+  struct Descriptor_lt {
+    bool operator()(const DescriptorState *d1,
+                    const DescriptorState *d2) const {
+      return d1->descriptor->ReadDescriptor() <
+             d2->descriptor->ReadDescriptor();
+    }
+  };
+
+  typedef std::set<DescriptorState*, Descriptor_lt> SocketSet;
 
   struct MHD_Daemon *m_httpd;
   ola::io::SelectServer m_select_server;
@@ -231,9 +249,8 @@ class HTTPServer: public ola::thread::Thread {
   int ServeStaticContent(static_file_info *file_info,
                          HTTPResponse *response);
 
-  ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
-                                              fd_set *w_set,
-                                              int fd);
+  void InsertSocket(bool is_readable, bool is_writeable, int fd);
+  void FreeSocket(DescriptorState *state);
 
   DISALLOW_COPY_AND_ASSIGN(HTTPServer);
 };

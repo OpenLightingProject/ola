@@ -166,7 +166,7 @@ class SoftwareBackend : public SPIBackendInterface,
        */
       int16_t sync_output;
 
-      explicit Options() : outputs(1), sync_output(0) {}
+      Options() : outputs(1), sync_output(0) {}
     };
 
     SoftwareBackend(const Options &options,

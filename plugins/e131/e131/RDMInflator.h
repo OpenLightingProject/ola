@@ -42,7 +42,7 @@ class RDMInflator: public BaseInflator {
                            const std::string&  // rdm data
                           > RDMMessageHandler;
 
-    explicit RDMInflator();
+    RDMInflator();
     ~RDMInflator() {}
 
     uint32_t Id() const { return ola::acn::VECTOR_FRAMING_RDMNET; }
