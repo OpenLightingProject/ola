@@ -186,6 +186,20 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer,
   return true;
 }
 
+bool MockUDPSocket::RecvFrom(
+    uint8_t *buffer,
+    ssize_t *data_read,
+    ola::network::IPV4SocketAddress *source) {  // NOLINT
+  IPV4Address source_ip;
+  uint16_t port;
+
+  bool ok = RecvFrom(buffer, data_read, source_ip, port);
+  if (ok) {
+    *source = IPV4SocketAddress(source_ip, port);
+  }
+  return ok;
+}
+
 
 bool MockUDPSocket::EnableBroadcast() {
   m_broadcast_set = true;

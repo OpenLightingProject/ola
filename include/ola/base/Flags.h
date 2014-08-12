@@ -28,7 +28,7 @@
  * Features:
  *  - bool, uint8, uint16, uint32, int8, int16, int32 & string types.
  *  - short options (e.g. -x).
- *  - inverted bools, e.g. --nofoo
+ *  - inverted bools, e.g. --no-foo
  *
  * @note
  *   - Setting flags is not thread safe
@@ -90,6 +90,11 @@ void SetHelpString(const std::string &first_line,
  * @brief Print the usage text to stdout.
  */
 void DisplayUsage();
+
+/**
+ * @brief Print the usage text to stdout then exit.
+ */
+void DisplayUsageAndExit();
 
 /**
  * @brief Print the version text to stdout.

@@ -48,6 +48,7 @@ enum ShowNetPacketType {
 
 // The old style Shownet DMX packet. Type 0x202f . Apparently this isn't used
 // much.
+PACK(
 struct shownet_dmx_s {
   uint16_t port;
   uint16_t slot_length;
@@ -58,12 +59,13 @@ struct shownet_dmx_s {
   uint8_t universe;  // 0 = not used
   uint16_t spare[SHOWNET_SPARE_LENGTH];
   uint8_t dmx_data[SHOWNET_DMX_DATA_LENGTH];
-} __attribute__((packed));
+});
 
 typedef struct shownet_dmx_s shownet_dmx;
 
 // The 'new' style, compressed shownet packet. Type 0x808f
 // Each packet can contain up to 4 'blocks' of DMX data.
+PACK(
 struct shownet_compressed_dmx_s {
   uint16_t netSlot[4];       // start channel of each slot (hSlot)
   uint16_t slotSize[4];      // size of each slot
@@ -75,7 +77,7 @@ struct shownet_compressed_dmx_s {
                              // passwords. PasswordNumChans ?
   char name[SHOWNET_NAME_LENGTH];  // name of console
   uint8_t data[SHOWNET_COMPRESSED_DATA_LENGTH];  // RLE data.
-} __attribute__((packed));
+});
 
 typedef struct shownet_compressed_dmx_s shownet_compressed_dmx;
 

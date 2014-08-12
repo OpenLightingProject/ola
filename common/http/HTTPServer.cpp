@@ -20,11 +20,16 @@
 
 #include <stdio.h>
 #include <ola/Logging.h>
+#include <ola/base/Macro.h>
 #include <ola/file/Util.h>
 #include <ola/http/HTTPServer.h>
 #include <ola/io/Descriptor.h>
 #include <ola/web/Json.h>
 #include <ola/web/JsonWriter.h>
+
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
 
 #include <fstream>
 #include <iostream>
@@ -36,6 +41,21 @@
 
 namespace ola {
 namespace http {
+
+#ifdef _WIN32
+class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
+ public:
+  explicit UnmanagedSocketDescriptor(int fd) :
+      ola::io::UnmanagedFileDescriptor(fd) {
+    m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+    // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(fd, FIONBIO, &mode);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
+};
+#endif
 
 using std::ifstream;
 using std::map;
@@ -469,10 +489,9 @@ void *HTTPServer::Run() {
   // clean up any remaining sockets
   SocketSet::iterator iter = m_sockets.begin();
   for (; iter != m_sockets.end(); ++iter) {
-    m_select_server.RemoveReadDescriptor(*iter);
-    m_select_server.RemoveWriteDescriptor(*iter);
-    delete *iter;
+    FreeSocket(*iter);
   }
+  m_sockets.clear();
   return NULL;
 }
 
@@ -508,8 +527,12 @@ void HTTPServer::UpdateSockets() {
   int max_fd = 0;
   FD_ZERO(&r_set);
   FD_ZERO(&w_set);
-
+#ifdef MHD_SOCKET_DEFINED
+  if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set,
+                               reinterpret_cast<MHD_socket*>(&max_fd))) {
+#else
   if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
+#endif
     OLA_WARN << "Failed to get a list of the file descriptors for MHD";
     return;
   }
@@ -520,52 +543,48 @@ void HTTPServer::UpdateSockets() {
   // FD in a more suitable way
   int i = 0;
   while (iter != m_sockets.end() && i <= max_fd) {
-    if ((*iter)->ReadDescriptor() < i) {
-      // this socket is no longer required so remove it
-      OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
-      m_select_server.RemoveReadDescriptor(*iter);
-      m_select_server.RemoveWriteDescriptor(*iter);
-      delete *iter;
+    DescriptorState *state = *iter;
+    if (ola::io::ToFD(state->descriptor->ReadDescriptor()) < i) {
+      // This socket is no longer required so remove it
+      FreeSocket(state);
       m_sockets.erase(iter++);
-    } else if ((*iter)->ReadDescriptor() == i) {
-      // this socket may need to be updated
-      if (FD_ISSET(i, &r_set))
-        m_select_server.AddReadDescriptor(*iter);
-      else
-        m_select_server.RemoveReadDescriptor(*iter);
+    } else if (ola::io::ToFD(state->descriptor->ReadDescriptor()) == i) {
+      // Check if this socket must be updated.
+      if (FD_ISSET(i, &r_set) && state->read == 0) {
+        m_select_server.AddReadDescriptor(state->descriptor);
+        state->read = 1;
+      } else if ((!FD_ISSET(i, &r_set)) && state->read == 1) {
+        m_select_server.RemoveReadDescriptor(state->descriptor);
+        state->read = 0;
+      }
 
-      if (FD_ISSET(i, &w_set))
-        m_select_server.AddWriteDescriptor(*iter);
-      else
-        m_select_server.RemoveWriteDescriptor(*iter);
+      if (FD_ISSET(i, &w_set) && state->write == 0) {
+        m_select_server.AddWriteDescriptor(state->descriptor);
+        state->write = 1;
+      } else if ((!FD_ISSET(i, &w_set)) && state->write == 1) {
+        m_select_server.RemoveWriteDescriptor(state->descriptor);
+        state->write = 0;
+      }
       iter++;
       i++;
     } else {
       // this is a new socket
       if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
-        OLA_DEBUG << "Adding new socket " << i;
-        UnmanagedFileDescriptor *socket = NewSocket(&r_set, &w_set, i);
-        m_sockets.insert(socket);
+        InsertSocket(FD_ISSET(i, &r_set), FD_ISSET(i, &w_set), i);
       }
       i++;
     }
   }
 
   while (iter != m_sockets.end()) {
-    OLA_DEBUG << "Removing " << (*iter)->ReadDescriptor() <<
-      " as it's not longer needed";
-    m_select_server.RemoveWriteDescriptor(*iter);
-    m_select_server.RemoveReadDescriptor(*iter);
-    delete *iter;
+    FreeSocket(*iter);
     m_sockets.erase(iter++);
   }
 
   for (; i <= max_fd; i++) {
     // add the remaining sockets to the SS
     if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
-      OLA_DEBUG << "Adding " << i << " as a new socket";
-      UnmanagedFileDescriptor *socket = NewSocket(&r_set, &w_set, i);
-      m_sockets.insert(socket);
+      InsertSocket(FD_ISSET(i, &r_set), FD_ISSET(i, &w_set), i);
     }
   }
 }
@@ -752,7 +771,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   file_path.push_back(ola::file::PATH_SEPARATOR);
   // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
-  ifstream i_stream(file_path.data());
+  ifstream i_stream(file_path.data(), ifstream::binary);
 
   if (!i_stream.is_open()) {
     OLA_WARN << "Missing file: " << file_path;
@@ -787,20 +806,40 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   return ret;
 }
 
-
-UnmanagedFileDescriptor *HTTPServer::NewSocket(fd_set *r_set,
-                                               fd_set *w_set,
-                                               int fd) {
+void HTTPServer::InsertSocket(bool is_readable, bool is_writeable, int fd) {
+#ifdef _WIN32
+  UnmanagedSocketDescriptor *socket = new UnmanagedSocketDescriptor(fd);
+#else
   UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
+#endif
   socket->SetOnData(NewCallback(this, &HTTPServer::HandleHTTPIO));
   socket->SetOnWritable(NewCallback(this, &HTTPServer::HandleHTTPIO));
 
-  if (FD_ISSET(fd, r_set))
-    m_select_server.AddReadDescriptor(socket);
+  DescriptorState *state = new DescriptorState(socket);
 
-  if (FD_ISSET(fd, w_set))
-    m_select_server.AddWriteDescriptor(socket);
-  return socket;
+  if (is_readable) {
+    m_select_server.AddReadDescriptor(state->descriptor);
+    state->read = 1;
+  }
+
+  if (is_writeable) {
+    state->write = 1;
+    m_select_server.AddWriteDescriptor(state->descriptor);
+  }
+
+  m_sockets.insert(state);
+}
+
+void HTTPServer::FreeSocket(DescriptorState *state) {
+  if (state->read) {
+    m_select_server.RemoveReadDescriptor(state->descriptor);
+  }
+
+  if (state->write) {
+    m_select_server.RemoveWriteDescriptor(state->descriptor);
+  }
+  delete state->descriptor;
+  delete state;
 }
 }  // namespace http
 }  // namespace ola

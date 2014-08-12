@@ -249,9 +249,11 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_SLOT_INFO,
     ola::rdm::PID_SLOT_DESCRIPTION,
     ola::rdm::PID_DEFAULT_SLOT_VALUE,
+#ifdef HAVE_GETLOADAVG
     ola::rdm::PID_SENSOR_DEFINITION,
     ola::rdm::PID_SENSOR_VALUE,
     ola::rdm::PID_RECORD_SENSORS,
+#endif
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
     ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
@@ -316,7 +318,11 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
+#ifdef HAVE_GETLOADAVG
   device_descriptor.sensor_count = 3;
+#else
+  device_descriptor.sensor_count = 0;
+#endif
 
   RDMResponse *response = GetResponseFromData(
       request,
@@ -631,6 +637,7 @@ void DummyPortTest::testParamDescription() {
       reinterpret_cast<uint8_t*>(&param_id),  // data
       sizeof(param_id));  // data length
 
+  PACK(
   struct parameter_description_s {
     uint16_t pid;
     uint8_t pdl_size;
@@ -643,7 +650,7 @@ void DummyPortTest::testParamDescription() {
     uint32_t default_value;
     uint32_t max_value;
     char description[ola::rdm::MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
 
   struct parameter_description_s param_description;
   param_description.pid = HostToNetwork(
@@ -761,13 +768,17 @@ void DummyPortTest::testSlotInfo() {
       NULL,  // data
       0);  // data length
 
+  PACK(
+  struct slot_info_struct {
+    uint16_t offset;
+    uint8_t type;
+    uint16_t label;
+  });
+
+  PACK(
   struct slot_infos_s {
-    struct {
-      uint16_t offset;
-      uint8_t type;
-      uint16_t label;
-    } __attribute__((packed)) slot_info_s[5];
-  } __attribute__((packed));
+    slot_info_struct slot_info_s[5];
+  });
 
   slot_infos_s slot_infos = {
       {

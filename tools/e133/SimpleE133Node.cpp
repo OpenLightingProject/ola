@@ -183,11 +183,12 @@ void SimpleE133Node::DumpTCPStats() {
 void SimpleE133Node::SendUnsolicited() {
   OLA_INFO << "Sending unsolicited TCP stats message";
 
+  PACK(
   struct tcp_stats_message_s {
     uint32_t ip_address;
     uint16_t unhealthy_events;
     uint16_t connection_events;
-  } __attribute__((packed));
+  });
 
   struct tcp_stats_message_s tcp_stats_message;
 

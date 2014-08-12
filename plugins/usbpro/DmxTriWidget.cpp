@@ -439,13 +439,14 @@ void DmxTriWidgetImpl::DispatchRequest() {
     return;
   }
 
+  PACK(
   struct rdm_message {
     uint8_t command;
     uint8_t index;
     uint16_t sub_device;
     uint16_t param_id;
     uint8_t data[RDMCommandSerializer::MAX_PARAM_DATA_LENGTH];
-  } __attribute__((packed));
+  });
 
   rdm_message message;
 

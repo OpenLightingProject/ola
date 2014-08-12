@@ -34,7 +34,7 @@
 
 namespace ola {
 namespace rdm {
-  class RootPidStore;
+class RootPidStore;
 }  // rdm
 
 

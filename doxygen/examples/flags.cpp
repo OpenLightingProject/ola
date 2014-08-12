@@ -22,7 +22,7 @@
 using std::cout;
 using std::endl;
 
-// These options are --foo and --nobar.
+// These options are --foo and --no-bar.
 DEFINE_bool(foo, false, "Enable feature foo");
 DEFINE_bool(bar, true, "Disable feature bar");
 

@@ -20,8 +20,6 @@
 
 #include "ola/io/Serial.h"
 
-#include "ola/Logging.h"
-
 namespace ola {
 namespace io {
 

@@ -27,6 +27,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 #define INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
 #include <ola/rdm/NetworkManagerInterface.h>
@@ -252,13 +253,14 @@ class ResponderHelper {
         const RDMRequest *request, uint32_t *value,
         uint8_t queued_message_count = 0);
 
+    PACK(
     struct sensor_value_s {
       uint8_t sensor;
       int16_t value;
       int16_t lowest;
       int16_t highest;
       int16_t recorded;
-    } __attribute__((packed));
+    });
 
  private:
   static bool FindInterface(

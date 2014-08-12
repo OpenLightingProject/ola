@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * StringUtils..h
+ * StringUtils.h
  * Random String functions.
  * Copyright (C) 2005 Simon Newton
  */
@@ -63,12 +63,36 @@ void StringTrim(std::string *input);
 void ShortenString(std::string *input);
 
 /**
+ * @brief Check if one string is a prefix of another.
+ * @param s the string to check
+ * @param prefix the prefix to check for
+ * @returns true if s begins with prefix, false otherwise.
+ */
+bool StringBeginsWith(const std::string &s, const std::string &prefix);
+
+/**
  * @brief Check if one string is a suffix of another.
  * @param s the string to check
  * @param suffix the suffix to check for
  * @returns true if s ends with suffix, false otherwise.
  */
 bool StringEndsWith(const std::string &s, const std::string &suffix);
+
+/**
+ * @brief Strips a prefix from a string.
+ * @param s the string to strip
+ * @param prefix the prefix to remove
+ * @returns true if we stripped prefix from s, false otherwise.
+ */
+bool StripPrefix(std::string *s, const std::string &prefix);
+
+/**
+ * @brief Strips a suffix from a string.
+ * @param s the string to strip
+ * @param suffix the suffix to remove
+ * @returns true if we stripped suffix from s, false otherwise.
+ */
+bool StripSuffix(std::string *s, const std::string &suffix);
 
 /**
  * @brief Convert an int to a string.
@@ -171,13 +195,26 @@ void ReplaceAll(std::string *original,
 std::string EncodeString(const std::string &original);
 
 /**
- * @brief Convert a string to a bool. The string can be 'true' or 'false'.
+ * @brief Convert a string to a bool. The string can be 'true' or 'false', 't'
+ *     or 'f', '1' or '0' or case insensitive variations of any of the above.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @returns true if the value was converted, false if the string was not a
  * bool.
  */
 bool StringToBool(const std::string &value, bool *output);
+
+/**
+ * @brief Convert a string to a bool in a tolerant way. The string can be
+ *     'true' or 'false', 't' or 'f', '1' or '0', 'on' or 'off' or case
+ *     insensitive variations of any of the above.
+ * @param[in] value the string to convert
+ * @param[out] output a pointer where the value will be stored.
+ * @returns true if the value was converted, false if the string was not a
+ * bool.
+ * @sa StringToBool
+ */
+bool StringToBoolTolerant(const std::string &value, bool *output);
 
 /**
  * @brief Convert a string to a unsigned int.

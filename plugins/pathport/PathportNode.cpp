@@ -124,15 +124,14 @@ bool PathportNode::Stop() {
 void PathportNode::SocketReady(UDPSocket *socket) {
   pathport_packet_s packet;
   ssize_t packet_size = sizeof(packet);
-  IPV4Address source;
+  IPV4SocketAddress source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                        &packet_size,
-                        source))
+                        &packet_size, &source))
     return;
 
   // skip packets sent by us
-  if (source == m_interface.ip_address)
+  if (source.Host() == m_interface.ip_address)
     return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.header))) {
@@ -445,8 +444,7 @@ bool PathportNode::SendPacket(const pathport_packet_s &packet,
   ssize_t bytes_sent = m_socket.SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      destination,
-      PATHPORT_PORT);
+      IPV4SocketAddress(destination, PATHPORT_PORT));
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
     OLA_INFO << "Only sent " << bytes_sent << " of " << size;

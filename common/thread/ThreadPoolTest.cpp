@@ -56,7 +56,6 @@ class ThreadPoolTest: public CppUnit::TestFixture {
     }
 
     void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
       m_counter = 0;
     }
 

@@ -43,10 +43,10 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
     bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
                    bool delete_on_close = false);
-    bool RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
-    bool RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
+    void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
+    void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
     bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
-    bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
+    void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
     ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                                      Callback0<bool> *closure);

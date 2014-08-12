@@ -437,7 +437,7 @@ void DmxTriWidgetTest::testSendDMX() {
   m_ss.Run();
   // The ss may terminate before the widget has a chance to read from the
   // descriptor. Run the ss once more to catch this case.
-  m_ss.RunOnce();
+  m_ss.RunOnce(ola::TimeInterval(1, 0));
   m_endpoint->Verify();
 }
 

@@ -88,11 +88,14 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                   ssize_t *data_read,
                   ola::network::IPV4Address &source,  // NOLINT
                   uint16_t &port) const;  // NOLINT
+    bool RecvFrom(uint8_t *buffer,
+                  ssize_t *data_read,
+                  ola::network::IPV4SocketAddress *source);
     bool EnableBroadcast();
     bool SetMulticastInterface(const ola::network::IPV4Address &iface);
     bool JoinMulticast(const ola::network::IPV4Address &iface,
                        const ola::network::IPV4Address &group,
-                       bool loop = false);
+                       bool multicast_loop = false);
     bool LeaveMulticast(const ola::network::IPV4Address &iface,
                         const ola::network::IPV4Address &group);
 

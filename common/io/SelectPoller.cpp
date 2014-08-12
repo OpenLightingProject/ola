@@ -29,8 +29,10 @@
 #include <errno.h>
 
 #include <algorithm>
+#include <map>
 #include <queue>
 #include <string>
+#include <utility>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
@@ -40,6 +42,60 @@
 
 namespace ola {
 namespace io {
+
+using std::pair;
+using std::map;
+using std::string;
+
+/**
+ * @brief Insert a descriptor into one of the descriptor maps.
+ * @param descriptor_map the descriptor_map to insert into.
+ * @param fd the FD to use as the key
+ * @param value the value to associate with the key
+ * @param type the name of the map, used for logging if the fd already exists
+ *   in the map.
+ * @returns true if the descriptor was inserted, false if it was already in the
+ *   map.
+ *
+ * There are three possibilities:
+ *  - The fd does not already exist in the map
+ *  - The fd exists and the value is NULL.
+ *  - The fd exists and is not NULL.
+ */
+template <typename T>
+bool InsertIntoDescriptorMap(map<int, T*> *descriptor_map, int fd, T *value,
+                             const string &type) {
+  typedef map<int, T*> MapType;
+  pair<typename MapType::iterator, bool> p = descriptor_map->insert(
+      typename MapType::value_type(fd, value));
+
+  if (!p.second) {
+    // already in map
+    if (p.first->second == NULL) {
+      p.first->second = value;
+    } else {
+      OLA_WARN << "FD " << fd << " was already in the " << type
+          << " descriptor map: " << p.first->second << " : " << value;
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Remove a FD from a descriptor map by setting the value to NULL.
+ * @returns true if the FD was removed from the map, false if it didn't exist
+ *   in the map.
+ */
+template <typename T>
+bool RemoveFromDescriptorMap(map<int, T*> *descriptor_map, int fd) {
+  T **ptr = STLFind(descriptor_map, fd);
+  if (ptr) {
+    *ptr = NULL;
+    return true;
+  }
+  return false;
+}
 
 SelectPoller::SelectPoller(ExportMap *export_map, Clock* clock)
     : m_export_map(export_map),
@@ -53,10 +109,13 @@ SelectPoller::SelectPoller(ExportMap *export_map, Clock* clock)
 }
 
 SelectPoller::~SelectPoller() {
-  ConnectedDescriptorSet::iterator iter = m_connected_read_descriptors.begin();
+  ConnectedDescriptorMap::iterator iter = m_connected_read_descriptors.begin();
   for (; iter != m_connected_read_descriptors.end(); ++iter) {
-    if (iter->delete_on_close) {
-      delete iter->descriptor;
+    if (iter->second) {
+      if (iter->second->delete_on_close) {
+        delete iter->second->descriptor;
+      }
+      delete iter->second;
     }
   }
   m_read_descriptors.clear();
@@ -69,7 +128,9 @@ bool SelectPoller::AddReadDescriptor(class ReadFileDescriptor *descriptor) {
     OLA_WARN << "AddReadDescriptor called with invalid descriptor";
     return false;
   }
-  return STLInsertIfNotPresent(&m_read_descriptors, descriptor);
+
+  return InsertIntoDescriptorMap(&m_read_descriptors,
+      descriptor->ReadDescriptor(), descriptor, "read");
 }
 
 bool SelectPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
@@ -79,32 +140,42 @@ bool SelectPoller::AddReadDescriptor(class ConnectedDescriptor *descriptor,
     return false;
   }
 
-  // We make use of the fact that connected_descriptor_t_lt operates on the
-  // descriptor value alone.
-  connected_descriptor_t registered_descriptor = {descriptor, delete_on_close};
+  connected_descriptor_t *cd = new connected_descriptor_t();
+  cd->descriptor = descriptor;
+  cd->delete_on_close = delete_on_close;
 
-  return STLInsertIfNotPresent(&m_connected_read_descriptors,
-                               registered_descriptor);
+  bool ok = InsertIntoDescriptorMap(&m_connected_read_descriptors,
+      descriptor->ReadDescriptor(), cd, "connected");
+  if (!ok) {
+    delete cd;
+  }
+  return ok;
 }
 
 bool SelectPoller::RemoveReadDescriptor(class ReadFileDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor()) {
-    OLA_WARN << "Removing an invalid file descriptor";
+    OLA_WARN << "Removing an invalid ReadDescriptor";
     return false;
   }
 
-  return STLRemove(&m_read_descriptors, descriptor);
+  return RemoveFromDescriptorMap(&m_read_descriptors,
+                                 descriptor->ReadDescriptor());
 }
 
 bool SelectPoller::RemoveReadDescriptor(class ConnectedDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor()) {
-    OLA_WARN << "Removing an invalid file descriptor";
+    OLA_WARN << "Removing an invalid ConnectedDescriptor";
     return false;
   }
 
-  // Comparison is based on descriptor only, so the second value is redundant.
-  connected_descriptor_t registered_descriptor = {descriptor, false};
-  return STLRemove(&m_connected_read_descriptors, registered_descriptor);
+  connected_descriptor_t **ptr = STLFind(
+      &m_connected_read_descriptors, descriptor->ReadDescriptor());
+  if (ptr && *ptr) {
+    delete *ptr;
+    *ptr = NULL;
+    return true;
+  }
+  return false;
 }
 
 bool SelectPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
@@ -113,17 +184,19 @@ bool SelectPoller::AddWriteDescriptor(class WriteFileDescriptor *descriptor) {
     return false;
   }
 
-  return STLInsertIfNotPresent(&m_write_descriptors, descriptor);
+  return InsertIntoDescriptorMap(&m_write_descriptors,
+      descriptor->WriteDescriptor(), descriptor, "write");
 }
 
 bool SelectPoller::RemoveWriteDescriptor(
     class WriteFileDescriptor *descriptor) {
   if (!descriptor->ValidWriteDescriptor()) {
-    OLA_WARN << "Removing a closed descriptor";
+    OLA_WARN << "Removing an invalid WriteDescriptor";
     return false;
   }
 
-  return STLRemove(&m_write_descriptors, descriptor);
+  return RemoveFromDescriptorMap(&m_write_descriptors,
+                                 descriptor->WriteDescriptor());
 }
 
 bool SelectPoller::Poll(TimeoutManager *timeout_manager,
@@ -195,22 +268,33 @@ bool SelectPoller::Poll(TimeoutManager *timeout_manager,
 }
 
 /*
- * Add all the descriptors to the FD_SET
- * @returns true if there are closed descriptors.
+ * Add all the descriptors to the FD_SET.
+ * @returns true if there are descriptors that have been closed.
+ *
+ * This also takes care of removing any entries from the maps where the value
+ * is NULL. This is safe because we don't execute any callbacks from within
+ * this method.
  */
 bool SelectPoller::AddDescriptorsToSet(fd_set *r_set,
                                        fd_set *w_set,
                                        int *max_sd) {
   bool closed_descriptors = false;
 
-  ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
+  ReadDescriptorMap::iterator iter = m_read_descriptors.begin();
   while (iter != m_read_descriptors.end()) {
-    ReadDescriptorSet::iterator this_iter = iter;
+    ReadDescriptorMap::iterator this_iter = iter;
     iter++;
 
-    if ((*this_iter)->ValidReadDescriptor()) {
-      *max_sd = std::max(*max_sd, (*this_iter)->ReadDescriptor());
-      FD_SET((*this_iter)->ReadDescriptor(), r_set);
+    ReadFileDescriptor *descriptor = this_iter->second;
+    if (!descriptor) {
+      // This one was removed.
+      m_read_descriptors.erase(this_iter);
+      continue;
+    }
+
+    if (descriptor->ValidReadDescriptor()) {
+      *max_sd = std::max(*max_sd, descriptor->ReadDescriptor());
+      FD_SET(descriptor->ReadDescriptor(), r_set);
     } else {
       // The descriptor was probably closed without removing it from the select
       // server
@@ -222,28 +306,42 @@ bool SelectPoller::AddDescriptorsToSet(fd_set *r_set,
     }
   }
 
-  ConnectedDescriptorSet::iterator con_iter =
+  ConnectedDescriptorMap::iterator con_iter =
       m_connected_read_descriptors.begin();
   while (con_iter != m_connected_read_descriptors.end()) {
-    ConnectedDescriptorSet::iterator this_iter = con_iter;
+    ConnectedDescriptorMap::iterator this_iter = con_iter;
     con_iter++;
 
-    if (this_iter->descriptor->ValidReadDescriptor()) {
-      *max_sd = std::max(*max_sd, this_iter->descriptor->ReadDescriptor());
-      FD_SET(this_iter->descriptor->ReadDescriptor(), r_set);
+    if (!this_iter->second) {
+      // This one was removed.
+      m_connected_read_descriptors.erase(this_iter);
+      continue;
+    }
+
+    if (this_iter->second->descriptor->ValidReadDescriptor()) {
+      *max_sd = std::max(
+          *max_sd, this_iter->second->descriptor->ReadDescriptor());
+      FD_SET(this_iter->second->descriptor->ReadDescriptor(), r_set);
     } else {
       closed_descriptors = true;
     }
   }
 
-  WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
+  WriteDescriptorMap::iterator write_iter = m_write_descriptors.begin();
   while (write_iter != m_write_descriptors.end()) {
-    WriteDescriptorSet::iterator this_iter = write_iter;
+    WriteDescriptorMap::iterator this_iter = write_iter;
     write_iter++;
 
-    if ((*this_iter)->ValidWriteDescriptor()) {
-      *max_sd = std::max(*max_sd, (*this_iter)->WriteDescriptor());
-      FD_SET((*this_iter)->WriteDescriptor(), w_set);
+    WriteFileDescriptor *descriptor = this_iter->second;
+    if (!descriptor) {
+      // This one was removed.
+      m_write_descriptors.erase(this_iter);
+      continue;
+    }
+
+    if (descriptor->ValidWriteDescriptor()) {
+      *max_sd = std::max(*max_sd, descriptor->WriteDescriptor());
+      FD_SET(descriptor->WriteDescriptor(), w_set);
     } else {
       // The descriptor was probably closed without removing it from the select
       // server
@@ -264,72 +362,65 @@ bool SelectPoller::AddDescriptorsToSet(fd_set *r_set,
  *  - Excute OnClose if a remote end closed the connection
  */
 void SelectPoller::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
-  // Because the callbacks can add or remove descriptors from the select
-  // server, we have to call them after we've used the iterators.
-  std::queue<ReadFileDescriptor*> read_ready_queue;
-  std::queue<WriteFileDescriptor*> write_ready_queue;
-  std::queue<connected_descriptor_t> closed_queue;
-
-  ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
+  // Remember the add / remove methods above may be called during
+  // PerformRead(), PerformWrite() or the on close handler. Our iterators are
+  // safe because we only ever call erase from within AddDescriptorsToSet(),
+  // which isn't called from any of the Add / Remove methods.
+  ReadDescriptorMap::iterator iter = m_read_descriptors.begin();
   for (; iter != m_read_descriptors.end(); ++iter) {
-    if (FD_ISSET((*iter)->ReadDescriptor(), r_set))
-      read_ready_queue.push(*iter);
+    if (iter->second && FD_ISSET(iter->second->ReadDescriptor(), r_set)) {
+      iter->second->PerformRead();
+    }
   }
 
-  // check the read sockets
-  ConnectedDescriptorSet::iterator con_iter =
+  ConnectedDescriptorMap::iterator con_iter =
       m_connected_read_descriptors.begin();
-  while (con_iter != m_connected_read_descriptors.end()) {
-    ConnectedDescriptorSet::iterator this_iter = con_iter;
-    con_iter++;
+  for (; con_iter != m_connected_read_descriptors.end(); ++con_iter) {
+    if (!con_iter->second) {
+      continue;
+    }
+
+    connected_descriptor_t *cd = con_iter->second;
+    ConnectedDescriptor *descriptor = cd->descriptor;
+
     bool closed = false;
-    if (!this_iter->descriptor->ValidReadDescriptor()) {
+    if (!descriptor->ValidReadDescriptor()) {
       closed = true;
-    } else if (FD_ISSET(this_iter->descriptor->ReadDescriptor(), r_set)) {
-      if (this_iter->descriptor->IsClosed())
+    } else if (FD_ISSET(descriptor->ReadDescriptor(), r_set)) {
+      if (descriptor->IsClosed()) {
         closed = true;
-      else
-        read_ready_queue.push(this_iter->descriptor);
+      } else {
+        descriptor->PerformRead();
+      }
     }
 
     if (closed) {
-      closed_queue.push(*this_iter);
-      m_connected_read_descriptors.erase(this_iter);
+      ConnectedDescriptor::OnCloseCallback *on_close =
+        descriptor->TransferOnClose();
+      bool delete_on_close = cd->delete_on_close;
+
+      delete con_iter->second;
+      con_iter->second = NULL;
+      if (m_export_map) {
+        (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+      }
+
+      if (on_close)
+        on_close->Run();
+
+      if (delete_on_close)
+        delete descriptor;
     }
   }
 
-  // check the write sockets
-  WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
+  // Check the write sockets. These may have changed since the start of the
+  // method due to running callbacks.
+  WriteDescriptorMap::iterator write_iter = m_write_descriptors.begin();
   for (; write_iter != m_write_descriptors.end(); write_iter++) {
-    if (FD_ISSET((*write_iter)->WriteDescriptor(), w_set))
-      write_ready_queue.push(*write_iter);
-  }
-
-  // deal with anything that needs an action
-  while (!read_ready_queue.empty()) {
-    ReadFileDescriptor *descriptor = read_ready_queue.front();
-    descriptor->PerformRead();
-    read_ready_queue.pop();
-  }
-
-  while (!write_ready_queue.empty()) {
-    WriteFileDescriptor *descriptor = write_ready_queue.front();
-    descriptor->PerformWrite();
-    write_ready_queue.pop();
-  }
-
-  while (!closed_queue.empty()) {
-    const connected_descriptor_t &connected_descriptor = closed_queue.front();
-    ConnectedDescriptor::OnCloseCallback *on_close =
-      connected_descriptor.descriptor->TransferOnClose();
-    if (on_close)
-      on_close->Run();
-    if (connected_descriptor.delete_on_close)
-      delete connected_descriptor.descriptor;
-    if (m_export_map) {
-      (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+    if (write_iter->second &&
+        FD_ISSET(write_iter->second->WriteDescriptor(), w_set)) {
+      write_iter->second->PerformWrite();
     }
-    closed_queue.pop();
   }
 }
 }  // namespace io

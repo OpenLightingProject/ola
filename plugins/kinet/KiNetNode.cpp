@@ -124,11 +124,11 @@ bool KiNetNode::SendDMX(const IPV4Address &target_ip, const DmxBuffer &buffer) {
 void KiNetNode::SocketReady() {
   uint8_t packet[1500];
   ssize_t packet_size = sizeof(packet);
-  ola::network::IPV4Address source;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                           &packet_size,
-                          source))
+                          &source))
     return;
 
   OLA_INFO << "Received Kinet packet from " << source << ", discarding";

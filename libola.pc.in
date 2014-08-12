@@ -7,5 +7,5 @@ Name: libola
 Version: @VERSION@
 Description: Open Lighting Architecture Client
 Requires:
-Libs: -L${libdir} -lola -lolacommon -lprotobuf
+Libs: -L${libdir} -lola -lolacommon -lprotobuf @OLA_CLIENT_LIBS@
 Cflags: -I${includedir}

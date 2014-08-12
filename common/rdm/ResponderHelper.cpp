@@ -26,6 +26,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/base/Macro.h"
 #include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
@@ -93,6 +94,7 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
+  PACK(
   struct device_info_s {
     uint16_t rdm_version;
     uint16_t model;
@@ -104,7 +106,8 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
     uint16_t dmx_start_address;
     uint16_t sub_device_count;
     uint8_t sensor_count;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(device_info_s) == 19);
 
   struct device_info_s device_info;
   device_info.rdm_version = HostToNetwork(
@@ -178,10 +181,12 @@ const RDMResponse *ResponderHelper::GetPersonality(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
+  PACK(
   struct personality_info_s {
     uint8_t personality;
     uint8_t total;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(personality_info_s) == 2);
 
   struct personality_info_s personality_info = {
       personality_manager->ActivePersonalityNumber(),
@@ -232,11 +237,13 @@ const RDMResponse *ResponderHelper::GetPersonalityDescription(
   if (!personality) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   } else {
+    PACK(
     struct personality_description_s {
       uint8_t personality;
       uint16_t slots_required;
       char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(personality_description_s) == 35);
 
     struct personality_description_s personality_description;
     personality_description.personality = personality_number;
@@ -279,11 +286,13 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     return EmptyGetResponse(request, queued_message_count);
   }
 
+  PACK(
   struct slot_info_s {
     uint16_t offset;
     uint8_t type;
     uint16_t label;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(slot_info_s) == 5);
 
   slot_info_s slot_info_raw[slot_data->SlotCount()];
 
@@ -326,10 +335,12 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   }
 
+  PACK(
   struct slot_description_s {
     uint16_t slot;
     char description[MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(slot_description_s) == 34);
 
   struct slot_description_s slot_description;
   slot_description.slot = HostToNetwork(slot_number);
@@ -368,10 +379,12 @@ const RDMResponse *ResponderHelper::GetSlotDefaultValues(
     return EmptyGetResponse(request, queued_message_count);
   }
 
+  PACK(
   struct slot_default_s {
     uint16_t offset;
     uint8_t value;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(slot_default_s) == 3);
 
   slot_default_s slot_default_raw[slot_data->SlotCount()];
 
@@ -445,6 +458,7 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  PACK(
   struct sensor_definition_s {
     uint8_t sensor;
     uint8_t type;
@@ -456,7 +470,8 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     int16_t normal_max;
     uint8_t recorded_support;
     char description[MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(sensor_definition_s) == 45);
 
   const Sensor *sensor = sensor_list.at(sensor_number);
   struct sensor_definition_s sensor_definition;
@@ -580,6 +595,7 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
+  PACK(
   struct clock_s {
     uint16_t year;
     uint8_t month;
@@ -587,7 +603,8 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(clock_s) == 7);
 
   time_t now;
   now = time(NULL);
@@ -632,10 +649,12 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
   std::sort(interfaces.begin(), interfaces.end(),
             ola::network::InterfaceIndexOrdering());
 
+  PACK(
   struct list_interfaces_s {
     uint32_t index;
     uint16_t type;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(list_interfaces_s) == 6);
 
   list_interfaces_s list_interfaces[interfaces.size()];
 
@@ -668,10 +687,12 @@ const RDMResponse *ResponderHelper::GetInterfaceLabel(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  PACK(
   struct interface_label_s {
     uint32_t index;
     char label[MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(interface_label_s) == 36);
 
   struct interface_label_s interface_label;
   interface_label.index = HostToNetwork(interface.index);
@@ -709,10 +730,12 @@ const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  PACK(
   struct interface_hardware_address_s {
     uint32_t index;
     uint8_t hardware_address[MACAddress::LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(interface_hardware_address_s) == 10);
 
   struct interface_hardware_address_s interface_hardware_address;
   interface_hardware_address.index = HostToNetwork(interface.index);
@@ -740,12 +763,14 @@ const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  PACK(
   struct ipv4_current_address_s {
     uint32_t index;
     uint32_t ipv4_address;
     uint8_t netmask;
     uint8_t dhcp;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(ipv4_current_address_s) == 10);
 
   struct ipv4_current_address_s ipv4_current_address;
   ipv4_current_address.index = HostToNetwork(interface.index);
@@ -835,10 +860,12 @@ const RDMResponse *ResponderHelper::GetDNSNameServer(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  PACK(
   struct name_server_s {
     uint8_t index;
     uint32_t address;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(name_server_s) == 5);
 
   struct name_server_s name_server;
   name_server.index = name_server_number;
@@ -866,6 +893,7 @@ const RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t max_value,
     string description,
     uint8_t queued_message_count) {
+  PACK(
   struct parameter_description_s {
     uint16_t pid;
     uint8_t pdl_size;
@@ -878,7 +906,8 @@ const RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t default_value;
     uint32_t max_value;
     char description[MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(parameter_description_s) == 52);
 
   struct parameter_description_s param_description;
   param_description.pid = HostToNetwork(pid);

@@ -63,10 +63,6 @@ class VariableFieldSizeCalculatorTest: public CppUnit::TestFixture {
     void testMultipleVariableSizedFields();
     void testNestedVariableSizedGroups();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-
  private:
     ola::rdm::VariableFieldSizeCalculator m_calculator;
 };

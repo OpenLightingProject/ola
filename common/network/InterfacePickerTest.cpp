@@ -53,10 +53,6 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     void testGetInterfaces();
     void testGetLoopbackInterfaces();
     void testChooseInterface();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
@@ -100,7 +96,9 @@ void InterfacePickerTest::testGetLoopbackInterfaces() {
     if (iter->loopback)
       loopback_count++;
   }
+#ifndef _WIN32
   OLA_ASSERT_GT(loopback_count, 0);
+#endif
 }
 
 

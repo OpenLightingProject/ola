@@ -177,7 +177,6 @@ uint8_t RDMCommandTest::EXPECTED_UNMUTE_REQUEST[] = {
  * Fill in the checksums
  */
 void RDMCommandTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   UpdateChecksum(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
   UpdateChecksum(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   UpdateChecksum(EXPECTED_GET_RESPONSE_BUFFER,

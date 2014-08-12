@@ -18,6 +18,10 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#endif
+
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/ExportMap.h>
@@ -33,6 +37,21 @@
 namespace ola {
 namespace plugin {
 namespace osc {
+
+#ifdef _WIN32
+class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
+ public:
+  explicit UnmanagedSocketDescriptor(int fd) :
+      ola::io::UnmanagedFileDescriptor(fd) {
+    m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+    // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(fd, FIONBIO, &mode);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
+};
+#endif
 
 using ola::IntToString;
 using ola::io::SelectServerInterface;
@@ -231,7 +250,11 @@ bool OSCNode::Init() {
   // UnmanagedFileDescriptor, assign a callback and register with the
   // SelectServer.
   int fd = lo_server_get_socket_fd(m_osc_server);
+#ifdef _WIN32
+  m_descriptor.reset(new UnmanagedSocketDescriptor(fd));
+#else
   m_descriptor.reset(new ola::io::UnmanagedFileDescriptor(fd));
+#endif
   m_descriptor->SetOnData(NewCallback(this, &OSCNode::DescriptorReady));
   m_ss->AddReadDescriptor(m_descriptor.get());
 
@@ -480,7 +503,8 @@ bool OSCNode::SendBlob(const DmxBuffer &dmx_data,
                            m_osc_server,
                            LO_TT_IMMEDIATE,
                            (*target_iter)->osc_address.c_str(),
-                           "b", osc_data);
+                           "b", osc_data,
+                           LO_ARGS_END);
     ok &= (ret > 0);
   }
   // free the blob

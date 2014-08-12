@@ -26,7 +26,12 @@
 #include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 
-#include <set>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+#include <map>
+#include <utility>
+#include <vector>
 
 #include "common/io/PollerInterface.h"
 #include "common/io/TimeoutManager.h"
@@ -64,11 +69,26 @@ class WindowsPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
+  typedef std::map<void*, class WindowsPollerDescriptor*> DescriptorMap;
+  typedef std::vector<class WindowsPollerDescriptor*> OrphanedDescriptors;
+
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
   CounterVariable *m_loop_time;
   Clock *m_clock;
   TimeStamp m_wake_up_time;
+
+  DescriptorMap m_descriptor_map;
+  OrphanedDescriptors m_orphaned_descriptors;
+
+  std::pair<WindowsPollerDescriptor*, bool>
+      LookupOrCreateDescriptor(void* handle);
+  bool RemoveDescriptor(const DescriptorHandle &handle,
+                        int flag,
+                        bool warn_on_missing);
+
+  void HandleWakeup(class PollData* data);
+  void FinalCheckIOs(std::vector<class PollData*> data);
 
   DISALLOW_COPY_AND_ASSIGN(WindowsPoller);
 };

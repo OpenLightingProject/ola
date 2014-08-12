@@ -27,6 +27,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/base/Macro.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
@@ -2538,12 +2539,14 @@ bool RDMAPI::CapturePreset(
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
+  PACK(
   struct preset_config {
     uint16_t scene;
     uint16_t fade_up_time;
     uint16_t fade_down_time;
     uint16_t wait_time;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(preset_config) == 8);
   struct preset_config raw_config;
 
   raw_config.scene = HostToNetwork(scene);
@@ -2632,10 +2635,12 @@ bool RDMAPI::SetPresetPlaybackMode(
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
+  PACK(
   struct preset_config {
     uint16_t mode;
     uint8_t level;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(preset_config) == 3);
   struct preset_config raw_config;
 
   raw_config.mode = HostToNetwork(playback_mode);
@@ -3001,6 +3006,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
   ParameterDescriptor description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct param_description {
       uint16_t pid;
       uint8_t pdl_size;
@@ -3015,7 +3021,8 @@ void RDMAPI::_HandleGetParameterDescriptor(
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(param_description) == 53);
     struct param_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3238,13 +3245,15 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
   string description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct personality_description {
       uint8_t personality;
       uint16_t dmx_slots;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(personality_description) == 36);
     struct personality_description raw_description;
 
     unsigned int max = sizeof(personality_description) - 1;
@@ -3342,12 +3351,14 @@ void RDMAPI::_HandleGetSlotDescription(
   string description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct slot_description {
       uint16_t slot_index;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(slot_description) == 35);
     struct slot_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3417,6 +3428,7 @@ void RDMAPI::_HandleGetSensorDefinition(
   SensorDescriptor sensor;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct sensor_definition_s {
       uint8_t sensor_number;
       uint8_t type;
@@ -3428,7 +3440,8 @@ void RDMAPI::_HandleGetSensorDefinition(
       int16_t normal_max;
       uint8_t recorded_value_support;
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(sensor_definition_s) == 46);
     struct sensor_definition_s raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3529,12 +3542,14 @@ void RDMAPI::_HandleSelfTestDescription(
   string description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct self_test_description {
       uint8_t self_test_number;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(self_test_description) == 34);
     struct self_test_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3573,10 +3588,12 @@ void RDMAPI::_HandlePlaybackMode(
   uint8_t level = 0;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct preset_mode {
       uint16_t mode;
       uint8_t level;
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(preset_mode) == 3);
     struct preset_mode raw_config;
 
     if (data.size() >= sizeof(raw_config)) {

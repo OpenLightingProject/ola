@@ -104,10 +104,12 @@ const SettingCollection<BasicSetting>
 
 const RDMResponse *AdvancedDimmerResponder::
     LockManager::SetWithPin(const RDMRequest *request, uint16_t pin) {
+  PACK(
   struct lock_s {
     uint16_t pin;
     uint8_t state;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(lock_s) == 3);
 
   lock_s data;
 
@@ -370,6 +372,7 @@ const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  PACK(
   struct dimmer_info_s {
     uint16_t min_level_lower;
     uint16_t min_level_upper;
@@ -378,7 +381,8 @@ const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
     uint8_t curve_count;
     uint8_t level_resolution;
     uint8_t level_support;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(dimmer_info_s) == 11);
 
   struct dimmer_info_s dimmer_info;
   dimmer_info.min_level_lower = HostToNetwork(LOWER_MIN_LEVEL);
@@ -479,12 +483,14 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentify(
 
 const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
     const RDMRequest *request) {
+  PACK(
   struct preset_s {
     uint16_t scene;
     uint16_t fade_up_time;
     uint16_t fade_down_time;
     uint16_t wait_time;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(preset_s) == 8);
 
   preset_s args;
 
@@ -663,10 +669,12 @@ const RDMResponse *AdvancedDimmerResponder::GetLockPin(
 
 const RDMResponse *AdvancedDimmerResponder::SetLockPin(
     const RDMRequest *request) {
+  PACK(
   struct set_pin_s {
     uint16_t new_pin;
     uint16_t current_pin;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(set_pin_s) == 4);
 
   set_pin_s data;
 
@@ -775,6 +783,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  PACK(
   struct preset_info_s {
     uint8_t level_supported;
     uint8_t preset_seq_supported;
@@ -795,7 +804,8 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     uint16_t max_startup_delay;
     uint16_t min_startup_hold;
     uint16_t max_startup_hold;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(preset_info_s) == 32);
 
   uint16_t preset_count = m_presets.size();
 

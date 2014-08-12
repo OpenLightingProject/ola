@@ -58,26 +58,29 @@
 namespace ola {
 namespace network {
 
+namespace {
+
 bool ReceiveFrom(int fd, uint8_t *buffer, ssize_t *data_read,
                  struct sockaddr_in *source, socklen_t *src_size) {
   *data_read = recvfrom(
     fd, reinterpret_cast<char*>(buffer), *data_read,
-    0, reinterpret_cast<struct sockaddr*>(source), src_size);
+    0, reinterpret_cast<struct sockaddr*>(source), source ? src_size : NULL);
   if (*data_read < 0) {
+#ifdef _WIN32
+    OLA_WARN << "recvfrom fd: " << fd << " failed: " << WSAGetLastError();
+#else
     OLA_WARN << "recvfrom fd: " << fd << " failed: " << strerror(errno);
+#endif
     return false;
   }
   return true;
 }
 
+}  // namespace
 
 // UDPSocket
 // ------------------------------------------------
 
-/*
- * Start listening
- * @return true if it succeeded, false otherwise
- */
 bool UDPSocket::Init() {
   if (m_handle != ola::io::INVALID_DESCRIPTOR)
     return false;
@@ -92,17 +95,15 @@ bool UDPSocket::Init() {
 #ifdef _WIN32
   m_handle.m_handle.m_fd = sd;
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
+  // Set socket to nonblocking to enable WSAEventSelect
+    u_long mode = 1;
+    ioctlsocket(sd, FIONBIO, &mode);
 #else
   m_handle = sd;
 #endif
   return true;
 }
 
-
-/*
- * Bind this socket to an external address:port
- */
 bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
   if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return false;
@@ -154,10 +155,6 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
   return true;
 }
 
-
-/**
- * Returns the local address for this socket
- */
 bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
 #ifdef _WIN32
   GenericSocketAddress addr = GetLocalAddress(m_handle.m_handle.m_fd);
@@ -171,9 +168,6 @@ bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
   return true;
 }
 
-/*
- * Close this socket
- */
 bool UDPSocket::Close() {
   if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return false;
@@ -196,27 +190,25 @@ bool UDPSocket::Close() {
   return true;
 }
 
-
-/*
- * Send data
- * @param buffer the data to send
- * @param size the length of the data
- * @param ip_address the IP to send to
- * @param port the port to send to in HOST byte order.
- * @return the number of bytes sent
- */
 ssize_t UDPSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const IPV4Address &ip,
                           unsigned short port) const {
+  return SendTo(buffer, size, IPV4SocketAddress(ip, port));
+}
+
+ssize_t UDPSocket::SendTo(const uint8_t *buffer,
+                          unsigned int size,
+                          const IPV4SocketAddress &dest) const {
   if (!ValidWriteDescriptor())
     return 0;
 
   struct sockaddr_in destination;
-  memset(&destination, 0, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-  destination.sin_addr.s_addr = ip.AsInt();
+  if (!dest.ToSockAddr(reinterpret_cast<sockaddr*>(&destination),
+                       sizeof(destination))) {
+    return 0;
+  }
+
   ssize_t bytes_sent = sendto(
 #ifdef _WIN32
     m_handle.m_handle.m_fd,
@@ -229,27 +221,26 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
     reinterpret_cast<const struct sockaddr*>(&destination),
     sizeof(struct sockaddr));
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_INFO << "Failed to send to addr: " << ip << " : " << strerror(errno);
+    OLA_INFO << "sendto failed: " << dest << " : " << strerror(errno);
   return bytes_sent;
 }
 
-
-
-/*
- * Send data from an IOVecInterface. This will try to send as much data as
- * possible.
- * If the data exceeds the MTU the UDP packet will probably get fragmented at
- * the IP layer (depends on OS really). Try to avoid this.
- * @param data the IOVecInterface class to send.
- * @param ip_address the IP to send to
- * @param port the port to send to in HOST byte order.
- * @return the number of bytes sent.
- */
 ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
                           const IPV4Address &ip,
                           unsigned short port) const {
+  return SendTo(data, IPV4SocketAddress(ip, port));
+}
+
+ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
+                          const IPV4SocketAddress &dest) const {
   if (!ValidWriteDescriptor())
     return 0;
+
+  struct sockaddr_in destination;
+  if (!dest.ToSockAddr(reinterpret_cast<sockaddr*>(&destination),
+                       sizeof(destination))) {
+    return 0;
+  }
 
   int io_len;
   const struct ola::io::IOVec *iov = data->AsIOVec(&io_len);
@@ -258,43 +249,14 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
     return 0;
 
 #ifdef _WIN32
-  WSABUF* buffers = new WSABUF[io_len];
-  for (int buffer = 0; buffer < io_len; ++buffer) {
-    buffers[buffer].len = iov[buffer].iov_len;
-    buffers[buffer].buf = reinterpret_cast<char*>(iov[buffer].iov_base);
-  }
-
-  sockaddr_in destination;
-  memset(&destination, 0, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-  destination.sin_addr.s_addr = ip.AsInt();
-
-  SOCKET_ADDRESS address;
-  address.lpSockaddr = reinterpret_cast<SOCKADDR*>(&destination);
-  address.iSockaddrLength = sizeof(destination);
-
   ssize_t bytes_sent = 0;
-  DWORD platform_bytes_sent = 0;
 
-  // We should be using WSASendMsg here, but it's not available on MinGW
-  if (WSASendTo(WriteDescriptor().m_handle.m_fd, buffers, io_len,
-                &platform_bytes_sent, 0, reinterpret_cast<SOCKADDR*>(&address),
-                sizeof(address), NULL, NULL) == 0) {
-    bytes_sent = static_cast<ssize_t>(platform_bytes_sent);
-  } else {
-    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to addr: "
-             << ip << " : " <<  WSAGetLastError();
+  for (int buffer = 0; buffer < io_len; ++buffer) {
+    bytes_sent += SendTo(reinterpret_cast<uint8_t*>(iov[buffer].iov_base),
+        iov[buffer].iov_len, dest);
   }
 
-  delete [] buffers;
 #else
-  struct sockaddr_in destination;
-  memset(&destination, 0, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-  destination.sin_addr.s_addr = ip.AsInt();
-
   struct msghdr message;
   message.msg_name = &destination;
   message.msg_namelen = sizeof(destination);
@@ -309,22 +271,14 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   data->FreeIOVec(iov);
 
   if (bytes_sent < 0) {
-    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to addr: "
-             << ip << " : " <<  strerror(errno);
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to "
+             << dest << " : " <<  strerror(errno);
   } else {
     data->Pop(bytes_sent);
   }
   return bytes_sent;
 }
 
-
-/*
- * Receive data
- * @param buffer the buffer to store the data
- * @param data_read the size of the buffer, updated with the number of bytes
- * read
- * @return true or false
- */
 bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   socklen_t length = 0;
 #ifdef _WIN32
@@ -334,15 +288,6 @@ bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 #endif
 }
 
-
-/*
- * Receive data
- * @param buffer the buffer to store the data
- * @param data_read the size of the buffer, updated with the number of bytes
- * read
- * @param source the src ip of the packet
- * @return true or false
- */
 bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
                          IPV4Address &source) const {  // NOLINT
@@ -359,16 +304,6 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
   return ok;
 }
 
-
-/*
- * Receive data and record the src address & port
- * @param buffer the buffer to store the data
- * @param data_read the size of the buffer, updated with the number of bytes
- * read
- * @param source the src ip of the packet
- * @param port the src port of the packet in host byte order
- * @return true or false
- */
 bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
                          IPV4Address &source,  // NOLINT
@@ -388,11 +323,24 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
   return ok;
 }
 
+bool UDPSocket::RecvFrom(uint8_t *buffer,
+                         ssize_t *data_read,
+                         IPV4SocketAddress *source) {
+  struct sockaddr_in src_sockaddr;
+  socklen_t src_size = sizeof(src_sockaddr);
+#ifdef _WIN32
+  bool ok = ReceiveFrom(m_handle.m_handle.m_fd, buffer, data_read,
+                        &src_sockaddr, &src_size);
+#else
+  bool ok = ReceiveFrom(m_handle, buffer, data_read, &src_sockaddr, &src_size);
+#endif
+  if (ok) {
+    *source = IPV4SocketAddress(IPV4Address(src_sockaddr.sin_addr.s_addr),
+                                NetworkToHost(src_sockaddr.sin_port));
+  }
+  return ok;
+}
 
-/*
- * Enable broadcasting for this socket.
- * @return true if it worked, false otherwise
- */
 bool UDPSocket::EnableBroadcast() {
   if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return false;
@@ -415,9 +363,6 @@ bool UDPSocket::EnableBroadcast() {
 }
 
 
-/**
- * Set the outgoing interface to be used for multicast transmission
- */
 bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
   struct in_addr addr;
   addr.s_addr = iface.AsInt();
@@ -438,12 +383,6 @@ bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
   return true;
 }
 
-
-/*
- * Join a multicast group
- * @param group the address of the group to join
- * @return true if it worked, false otherwise
- */
 bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                               const IPV4Address &group,
                               bool multicast_loop) {
@@ -484,12 +423,6 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
   return true;
 }
 
-
-/*
- * Leave a multicast group
- * @param group the address of the group to join
- * @return true if it worked, false otherwise
- */
 bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
                                const IPV4Address &group) {
   struct ip_mreq mreq;
@@ -513,11 +446,6 @@ bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
   return true;
 }
 
-
-/*
- * Set the tos field for a socket
- * @param tos the tos field
- */
 bool UDPSocket::SetTos(uint8_t tos) {
   unsigned int value = tos & 0xFC;  // zero the ECN fields
 #ifdef _WIN32

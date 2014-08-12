@@ -29,13 +29,6 @@ namespace network {
 
 using std::pair;
 
-
-/**
- * Create a new AdvancedTCPConnector
- * @param ss the SelectServerInterface to use for scheduling
- * @param socket_factory the factory to use for creating new sockets
- * @param connection_timeout the timeout for TCP connects
- */
 AdvancedTCPConnector::AdvancedTCPConnector(
     ola::io::SelectServerInterface *ss,
     TCPSocketFactoryInterface *socket_factory,
@@ -46,10 +39,6 @@ AdvancedTCPConnector::AdvancedTCPConnector(
       m_connection_timeout(connection_timeout) {
 }
 
-
-/**
- * Cancel all outstanding connections.
- */
 AdvancedTCPConnector::~AdvancedTCPConnector() {
   ConnectionMap::iterator iter = m_connections.begin();
   for (; iter != m_connections.end(); ++iter) {
@@ -60,15 +49,6 @@ AdvancedTCPConnector::~AdvancedTCPConnector() {
 }
 
 
-/**
- * Add a remote host. This will trigger the connection process to start.
- * If the ip:port already exists this won't do anything.
- * When the connection is successfull the on_connect callback will be run, and
- * ownership of the TCPSocket object is transferred.
- * @param endpoint the IPV4SocketAddress to connect to.
- * @param backoff_policy the BackOffPolicy to use for this connection.
- * @param paused true if we don't want to immediately connect to this peer.
- */
 void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
                                        BackOffPolicy *backoff_policy,
                                        bool paused) {
@@ -84,6 +64,7 @@ void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
   state->retry_timeout = ola::thread::INVALID_TIMEOUT;
   state->connection_id = 0;
   state->policy = backoff_policy;
+  state->reconnect = true;
 
   m_connections[key] = state;
 
@@ -91,12 +72,6 @@ void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
     AttemptConnection(key, state);
 }
 
-
-/**
- * Remove a ip:port from the connection manager. This won't close the
- * connection.
- * @param endpoint the IPV4SocketAddress to remove.
- */
 void AdvancedTCPConnector::RemoveEndpoint(const IPV4SocketAddress &endpoint) {
   IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
@@ -108,12 +83,6 @@ void AdvancedTCPConnector::RemoveEndpoint(const IPV4SocketAddress &endpoint) {
   m_connections.erase(iter);
 }
 
-
-/**
- * Get the state & number of failed_attempts for an endpoint
- * @param endpoint the IPV4SocketAddress to get the state of.
- * @returns true if this endpoint was found, false otherwise.
- */
 bool AdvancedTCPConnector::GetEndpointState(
     const IPV4SocketAddress &endpoint,
     ConnectionState *connected,
@@ -128,12 +97,6 @@ bool AdvancedTCPConnector::GetEndpointState(
   return true;
 }
 
-
-/**
- * Mark a host as disconnected.
- * @param endpoint the IPV4SocketAddress to mark as disconnected.
- * @param pause if true, don't immediately try to reconnect.
- */
 void AdvancedTCPConnector::Disconnect(const IPV4SocketAddress &endpoint,
                                       bool pause) {
   IPPortPair key(endpoint.Host(), endpoint.Port());
@@ -160,10 +123,6 @@ void AdvancedTCPConnector::Disconnect(const IPV4SocketAddress &endpoint,
   }
 }
 
-
-/**
- * Resume trying to connect to a ip:port pair.
- */
 void AdvancedTCPConnector::Resume(const IPV4SocketAddress &endpoint) {
   IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
@@ -175,26 +134,6 @@ void AdvancedTCPConnector::Resume(const IPV4SocketAddress &endpoint) {
     AttemptConnection(iter->first, iter->second);
   }
 }
-
-
-/**
- * Decide what to do when a connection fails, completes or times out.
- */
-void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
-                                      ConnectionInfo *info,
-                                      int fd,
-                                      int) {
-  if (fd != -1) {
-    // ok
-    info->state = CONNECTED;
-    m_socket_factory->NewTCPSocket(fd);
-  } else {
-    // error
-    info->failed_attempts++;
-    ScheduleRetry(key, info);
-  }
-}
-
 
 /**
  * Schedule the re-try attempt for this connection
@@ -228,9 +167,7 @@ void AdvancedTCPConnector::RetryTimeout(IPPortPair key) {
 /**
  * Called by the TCPConnector when a connection is ready or it times out.
  */
-void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
-                                            int fd,
-                                            int error) {
+void AdvancedTCPConnector::ConnectionResult(IPPortPair key, int fd, int) {
   if (fd != -1) {
     OLA_INFO << "TCP Connection established to " << key.first << ":" <<
       key.second;
@@ -242,9 +179,20 @@ void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
       key.second << ", leaking sockets";
     return;
   }
+  ConnectionInfo *info = iter->second;
 
-  iter->second->connection_id = 0;
-  TakeAction(iter->first, iter->second, fd, error);
+  info->connection_id = 0;
+  if (fd != -1) {
+    // ok
+    info->state = CONNECTED;
+    m_socket_factory->NewTCPSocket(fd);
+  } else {
+    // error
+    info->failed_attempts++;
+    if (info->reconnect) {
+      ScheduleRetry(key, info);
+    }
+  }
 }
 
 
@@ -268,6 +216,7 @@ void AdvancedTCPConnector::AttemptConnection(const IPPortPair &key,
  */
 void AdvancedTCPConnector::AbortConnection(ConnectionInfo *state) {
   if (state->connection_id) {
+    state->reconnect = false;
     if (!m_connector.Cancel(state->connection_id))
       OLA_WARN << "Failed to cancel connection " << state->connection_id;
   }

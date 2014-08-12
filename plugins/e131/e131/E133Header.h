@@ -21,6 +21,8 @@
 #ifndef PLUGINS_E131_E131_E133HEADER_H_
 #define PLUGINS_E131_E131_E133HEADER_H_
 
+#include <ola/base/Macro.h>
+
 #include <stdint.h>
 #include <string>
 
@@ -55,12 +57,13 @@ class E133Header {
 
     enum { SOURCE_NAME_LEN = 64 };
 
+    PACK(
     struct e133_pdu_header_s {
       char source[SOURCE_NAME_LEN];
       uint32_t sequence;
       uint16_t endpoint;
       uint8_t reserved;
-    } __attribute__((packed));
+    });
     typedef struct e133_pdu_header_s e133_pdu_header;
 
  private:

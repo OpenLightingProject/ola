@@ -55,11 +55,11 @@ void ASSERT_DATA_EQUALS(unsigned int line,
       str.str("");
       str << std::dec << i << ": 0x" << std::hex
           << static_cast<int>(expected[i]);
-      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << ((expected[i] == actual[i]) ? " == " : " != ");
       str << "0x" << static_cast<int>(actual[i]) << " (";
       str << ((expected[i] >= '!' && expected[i] <= '~') ?
               static_cast<char>(expected[i]) : ' ');
-      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << ((expected[i] == actual[i]) ? " == " : " != ");
       str << ((actual[i] >= '!' && actual[i] <= '~') ?
               static_cast<char>(actual[i]) : ' ');
       str << ")";

@@ -73,11 +73,37 @@ void ShortenString(string *input) {
     input->erase(index);
 }
 
-
-bool StringEndsWith(const string &s, const string &ending) {
-  if (s.length() >= ending.length()) {
+bool StringBeginsWith(const string &s, const string &prefix) {
+  if (s.length() >= prefix.length()) {
     return
-      0 == s.compare(s.length() - ending.length(), ending.length(), ending);
+      0 == s.compare(0, prefix.length(), prefix);
+  } else {
+    return false;
+  }
+}
+
+bool StringEndsWith(const string &s, const string &suffix) {
+  if (s.length() >= suffix.length()) {
+    return
+      0 == s.compare(s.length() - suffix.length(), suffix.length(), suffix);
+  } else {
+    return false;
+  }
+}
+
+bool StripPrefix(string *s, const string &prefix) {
+  if (StringBeginsWith(*s, prefix)) {
+    *s = s->substr(prefix.length());
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool StripSuffix(string *s, const string &suffix) {
+  if (StringEndsWith(*s, suffix)) {
+    *s = s->substr(0, s->length() - suffix.length());
+    return true;
   } else {
     return false;
   }
@@ -116,6 +142,22 @@ bool StringToBool(const string &value, bool *output) {
   return false;
 }
 
+bool StringToBoolTolerant(const string &value, bool *output) {
+  if (StringToBool(value, output)) {
+    return true;
+  } else {
+    string lc_value(value);
+    ToLower(&lc_value);
+    if (lc_value == "on") {
+      *output = true;
+      return true;
+    } else if (lc_value == "off") {
+      *output = false;
+      return true;
+    }
+  }
+  return false;
+}
 
 bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (value.empty())
@@ -271,7 +313,8 @@ void ReplaceAll(string *original, const string &find, const string &replace) {
   size_t start = 0;
   while ((start = original->find(find, start)) != string::npos) {
     original->replace(start, find.length(), replace);
-    start += find.length();  // Move to the end of the replaced section
+    // Move to the end of the replaced section
+    start += ((replace.length() > find.length()) ? replace.length() : 0);
   }
 }
 

@@ -354,6 +354,7 @@ void FilePreferenceSaverThread::SaveToFile(
   for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {
     pref_file << iter->first << " = " << iter->second << std::endl;
   }
+  pref_file.flush();
   pref_file.close();
 }
 

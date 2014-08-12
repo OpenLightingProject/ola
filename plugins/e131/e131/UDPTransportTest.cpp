@@ -85,10 +85,12 @@ void UDPTransportTest::testUDPTransport() {
   // setup the socket
   ola::network::UDPSocket socket;
   OLA_ASSERT(socket.Init());
-  OLA_ASSERT(
-      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
-                                    ola::acn::ACN_PORT)));
+  OLA_ASSERT(socket.Bind(IPV4SocketAddress(IPV4Address::Loopback(), 0)));
   OLA_ASSERT(socket.EnableBroadcast());
+
+  // Get the port we bound to.
+  IPV4SocketAddress local_address;
+  OLA_ASSERT(socket.GetSocketAddress(&local_address));
 
   IncomingUDPTransport incoming_udp_transport(&socket, &inflator);
   socket.SetOnData(NewCallback(&incoming_udp_transport,
@@ -96,11 +98,9 @@ void UDPTransportTest::testUDPTransport() {
   OLA_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // outgoing transport
-  IPV4Address addr;
-  OLA_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
-
   OutgoingUDPTransportImpl udp_transport_impl(&socket);
-  OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
+  OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl,
+      IPV4Address::Loopback(), local_address.Port());
 
   // now actually send some data
   PDUBlock<PDU> pdu_block;

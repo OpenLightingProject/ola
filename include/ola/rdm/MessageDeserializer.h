@@ -44,7 +44,7 @@ namespace rdm {
  */
 class MessageDeserializer: public ola::messaging::FieldDescriptorVisitor {
  public:
-    explicit MessageDeserializer();
+    MessageDeserializer();
     ~MessageDeserializer();
 
     const ola::messaging::Message *InflateMessage(
