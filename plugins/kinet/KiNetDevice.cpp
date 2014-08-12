@@ -33,6 +33,14 @@
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetPort.h"
 
+// Some preprocessor magic to reduce Windows.h namespace pollution
+#ifdef _WIN32
+#ifdef AddPort
+#undef AddPort
+#define AddPort
+#endif
+#endif
+
 namespace ola {
 namespace plugin {
 namespace kinet {

@@ -142,6 +142,22 @@ bool StringToBool(const string &value, bool *output) {
   return false;
 }
 
+bool StringToBoolTolerant(const string &value, bool *output) {
+  if (StringToBool(value, output)) {
+    return true;
+  } else {
+    string lc_value(value);
+    ToLower(&lc_value);
+    if (lc_value == "on") {
+      *output = true;
+      return true;
+    } else if (lc_value == "off") {
+      *output = false;
+      return true;
+    }
+  }
+  return false;
+}
 
 bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (value.empty())
@@ -297,7 +313,8 @@ void ReplaceAll(string *original, const string &find, const string &replace) {
   size_t start = 0;
   while ((start = original->find(find, start)) != string::npos) {
     original->replace(start, find.length(), replace);
-    start += find.length();  // Move to the end of the replaced section
+    // Move to the end of the replaced section
+    start += ((replace.length() > find.length()) ? replace.length() : 0);
   }
 }
 

@@ -195,13 +195,26 @@ void ReplaceAll(std::string *original,
 std::string EncodeString(const std::string &original);
 
 /**
- * @brief Convert a string to a bool. The string can be 'true' or 'false'.
+ * @brief Convert a string to a bool. The string can be 'true' or 'false', 't'
+ *     or 'f', '1' or '0' or case insensitive variations of any of the above.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @returns true if the value was converted, false if the string was not a
  * bool.
  */
 bool StringToBool(const std::string &value, bool *output);
+
+/**
+ * @brief Convert a string to a bool in a tolerant way. The string can be
+ *     'true' or 'false', 't' or 'f', '1' or '0', 'on' or 'off' or case
+ *     insensitive variations of any of the above.
+ * @param[in] value the string to convert
+ * @param[out] output a pointer where the value will be stored.
+ * @returns true if the value was converted, false if the string was not a
+ * bool.
+ * @sa StringToBool
+ */
+bool StringToBoolTolerant(const std::string &value, bool *output);
 
 /**
  * @brief Convert a string to a unsigned int.

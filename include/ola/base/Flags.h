@@ -28,7 +28,7 @@
  * Features:
  *  - bool, uint8, uint16, uint32, int8, int16, int32 & string types.
  *  - short options (e.g. -x).
- *  - inverted bools, e.g. --nofoo
+ *  - inverted bools, e.g. --no-foo
  *
  * @note
  *   - Setting flags is not thread safe
