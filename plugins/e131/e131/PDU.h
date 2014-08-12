@@ -42,7 +42,7 @@ class PDU {
       FOUR_BYTES = 4,
     } vector_size;
 
-    PDU(unsigned int vector, vector_size size = FOUR_BYTES):
+    explicit PDU(unsigned int vector, vector_size size = FOUR_BYTES):
       m_vector(vector),
       m_vector_size(size) {}
     virtual ~PDU() {}
