@@ -43,7 +43,7 @@ class EndpointManager {
     typedef ola::Callback1<void, uint16_t> EndpointNotificationCallback;
     typedef enum { ADD, REMOVE, BOTH } EndpointNoticationEvent;
 
-    explicit EndpointManager() {}
+    EndpointManager() {}
     ~EndpointManager() {}
 
     uint32_t list_change_number() const { return m_list_change_number; }

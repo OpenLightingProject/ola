@@ -51,7 +51,7 @@ using std::string;
 namespace ola {
 
 namespace http {
-  class OlaHTTPServer;
+class OlaHTTPServer;
 }
 
 namespace slp {
