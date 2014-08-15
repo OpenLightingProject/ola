@@ -386,7 +386,7 @@ string FlagRegistry::GetShortOptsString() const {
 
 /**
  * @brief Allocate & populate the array of option structs for the call to
- * getopt_long. The caller is responsible for deleting the array.o
+ * getopt_long. The caller is responsible for deleting the array.
  *
  * The flag_map is populated with the option identifier (int) to FlagInterface*
  * mappings. The ownership of the pointers to FlagInterfaces is not transferred

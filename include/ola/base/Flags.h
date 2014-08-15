@@ -207,7 +207,7 @@ void ParseFlags(int *argc, char **argv);
   DEFINE_flag_with_short(bool, name, short_opt, default_value, help_str, true)
 
 /**
- * @brief Create a new longname bool flag that doesn't require an option.
+ * @brief Create a new longname bool flag that doesn't require an argument.
  *
  * By default the flag is set to default_value. If the flag is provided on the
  * command line, the value of the flag becomes !default_value.
@@ -222,7 +222,7 @@ void ParseFlags(int *argc, char **argv);
 
 /**
  * @brief Create a new bool flag with a long and short name that doesn't
- *     require an option.
+ *     require an argument.
  *
  * By default the flag is set to default_value. If the flag is provided on the
  * command line, the value of the flag becomes !default_value.

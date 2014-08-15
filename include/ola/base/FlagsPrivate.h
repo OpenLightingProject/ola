@@ -146,7 +146,7 @@ class Flag : public BaseFlag {
      * @param short_opt the short option for the flag
      * @param default_value the flag's default value
      * @param help the help string for the flag
-     * @param has_arg if the flag should use an option, only overrides
+     * @param has_arg if the flag should use an argument, only overrides
      *        Flag<bool>
      */
     Flag(const char *name, const char *arg_type, const char *short_opt,

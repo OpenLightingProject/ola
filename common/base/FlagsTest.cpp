@@ -27,8 +27,8 @@
 
 DEFINE_default_bool(default_false, false, "Default False");
 DEFINE_default_bool(default_true, true, "Default True");
-DEFINE_bool(default_false_option, false, "Default False Option");
-DEFINE_bool(default_true_option, true, "Default True Option");
+DEFINE_bool(default_false_arg, false, "Default False Arg");
+DEFINE_bool(default_true_arg, true, "Default True Arg");
 DEFINE_int8(f_int8, -10, "Default -10");
 DEFINE_uint8(f_uint8, 10, "Default 10");
 DEFINE_int16(f_int16, -1000, "Default -1000");
@@ -40,8 +40,8 @@ DEFINE_string(f_str, "foo", "Test String");
 // now flags with short options
 DEFINE_s_default_bool(s_default_false, a, false, "Default False");
 DEFINE_s_default_bool(s_default_true, b, true, "Default True");
-DEFINE_s_bool(s_default_false_option, c, false, "Default False Option");
-DEFINE_s_bool(s_default_true_option, d, true, "Default True Option");
+DEFINE_s_bool(s_default_false_arg, c, false, "Default False Arg");
+DEFINE_s_bool(s_default_true_arg, d, true, "Default True Arg");
 DEFINE_s_int8(s_int8, e, -10, "Default -10");
 DEFINE_s_uint8(s_uint8, f, 10, "Default 10");
 DEFINE_s_int16(s_int16, g, -1000, "Default -1000");
@@ -84,8 +84,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(FlagsTest);
 void FlagsTest::testDefaults() {
   OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_false));
   OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_true));
-  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_false_option));
-  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_true_option));
+  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_false_arg));
+  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_true_arg));
   OLA_ASSERT_EQ(static_cast<int8_t>(-10), static_cast<int8_t>(FLAGS_f_int8));
   OLA_ASSERT_EQ(static_cast<uint8_t>(10), static_cast<uint8_t>(FLAGS_f_uint8));
   OLA_ASSERT_EQ(static_cast<int16_t>(-1000),
@@ -101,8 +101,8 @@ void FlagsTest::testDefaults() {
 
   OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_s_default_false));
   OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_s_default_true));
-  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_s_default_false_option));
-  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_s_default_true_option));
+  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_s_default_false_arg));
+  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_s_default_true_arg));
   OLA_ASSERT_EQ(static_cast<int8_t>(-10), static_cast<int8_t>(FLAGS_s_int8));
   OLA_ASSERT_EQ(static_cast<uint8_t>(10), static_cast<uint8_t>(FLAGS_s_uint8));
   OLA_ASSERT_EQ(static_cast<int16_t>(-1000),
@@ -125,8 +125,8 @@ void FlagsTest::testDefaults() {
 void FlagsTest::testPresence(bool presence) {
   OLA_ASSERT_EQ(presence, FLAGS_default_false.present());
   OLA_ASSERT_EQ(presence, FLAGS_default_true.present());
-  OLA_ASSERT_EQ(presence, FLAGS_default_false_option.present());
-  OLA_ASSERT_EQ(presence, FLAGS_default_true_option.present());
+  OLA_ASSERT_EQ(presence, FLAGS_default_false_arg.present());
+  OLA_ASSERT_EQ(presence, FLAGS_default_true_arg.present());
   OLA_ASSERT_EQ(presence, FLAGS_f_int8.present());
   OLA_ASSERT_EQ(presence, FLAGS_f_uint8.present());
   OLA_ASSERT_EQ(presence, FLAGS_f_int16.present());
@@ -138,8 +138,8 @@ void FlagsTest::testPresence(bool presence) {
 
   OLA_ASSERT_EQ(presence, FLAGS_s_default_false.present());
   OLA_ASSERT_EQ(presence, FLAGS_s_default_true.present());
-  OLA_ASSERT_EQ(presence, FLAGS_s_default_false_option.present());
-  OLA_ASSERT_EQ(presence, FLAGS_s_default_true_option.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_default_false_arg.present());
+  OLA_ASSERT_EQ(presence, FLAGS_s_default_true_arg.present());
   OLA_ASSERT_EQ(presence, FLAGS_s_int8.present());
   OLA_ASSERT_EQ(presence, FLAGS_s_uint8.present());
   OLA_ASSERT_EQ(presence, FLAGS_s_int16.present());
@@ -156,8 +156,8 @@ void FlagsTest::testPresence(bool presence) {
 void FlagsTest::testSetting() {
   OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_false));
   OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_true));
-  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_false_option));
-  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_true_option));
+  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_false_arg));
+  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_true_arg));
   OLA_ASSERT_EQ(static_cast<int8_t>(-10), static_cast<int8_t>(FLAGS_f_int8));
   OLA_ASSERT_EQ(static_cast<uint8_t>(10), static_cast<uint8_t>(FLAGS_f_uint8));
   OLA_ASSERT_EQ(static_cast<int16_t>(-1000),
@@ -172,8 +172,8 @@ void FlagsTest::testSetting() {
 
   FLAGS_default_false = true;
   FLAGS_default_true = false;
-  FLAGS_default_false_option = true;
-  FLAGS_default_true_option = false;
+  FLAGS_default_false_arg = true;
+  FLAGS_default_true_arg = false;
   FLAGS_f_int8 = -20;
   FLAGS_f_uint8 = 20;
   FLAGS_f_int16 = -2000;
@@ -185,8 +185,8 @@ void FlagsTest::testSetting() {
 
   OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_false));
   OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_true));
-  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_false_option));
-  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_true_option));
+  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_false_arg));
+  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_true_arg));
   OLA_ASSERT_EQ(static_cast<int8_t>(-20), static_cast<int8_t>(FLAGS_f_int8));
   OLA_ASSERT_EQ(static_cast<uint8_t>(20), static_cast<uint8_t>(FLAGS_f_uint8));
   OLA_ASSERT_EQ(static_cast<int16_t>(-2000),
@@ -210,9 +210,9 @@ void FlagsTest::testBoolFlags() {
   char bin_name[] = "foo";
   char opt1[] = "--default-false";
   char opt2[] = "--no-default-true";
-  char opt3[] = "--default-false-option";
+  char opt3[] = "--default-false-arg";
   char opt4[] = "true";
-  char opt5[] = "--default-true-option";
+  char opt5[] = "--default-true-arg";
   char opt6[] = "off";
 
   char *argv[] = {bin_name, opt1, opt2, opt3, opt4, opt5, opt6};
@@ -224,8 +224,8 @@ void FlagsTest::testBoolFlags() {
 
   OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_false));
   OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_true));
-  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_false_option));
-  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_true_option));
+  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_default_false_arg));
+  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_default_true_arg));
 
   // now try the short option versions
   char sopt1[] = "-a";
@@ -243,8 +243,8 @@ void FlagsTest::testBoolFlags() {
 
   OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_s_default_false));
   OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_s_default_true));
-  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_s_default_false_option));
-  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_s_default_true_option));
+  OLA_ASSERT_EQ(true, static_cast<bool>(FLAGS_s_default_false_arg));
+  OLA_ASSERT_EQ(false, static_cast<bool>(FLAGS_s_default_true_arg));
 }
 
 /**
