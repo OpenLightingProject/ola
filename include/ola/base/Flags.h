@@ -80,7 +80,7 @@ namespace ola {
 /**
  * @brief Set the help string for the program.
  * @param first_line the inital line that is displayed in the help section.
- * This is displayed after argv[0].
+ *     This is displayed after argv[0].
  * @param description a multiline description of the program
  */
 void SetHelpString(const std::string &first_line,
@@ -174,10 +174,12 @@ void ParseFlags(int *argc, char **argv);
 
 /**
  * @brief Create a new longname bool flag
+ *
  * By default the flag is undefined, the same as the string and int ones, that
  * is is_present() returns false. If the flag is provided on the command line,
  * is_present() will be true, and operator bool() returns the value of the
  * flag.
+ *
  * @note The value must be parseable by StringToBoolTolerant.
  * @param name the name of the flag to create
  * @param default_value the default value for the flag. Either true, or false.
@@ -189,10 +191,12 @@ void ParseFlags(int *argc, char **argv);
 
 /**
  * @brief Create a new bool flag with a long and short name
+ *
  * By default the flag is undefined, the same as the string and int ones, that
  * is is_present() returns false. If the flag is provided on the command line,
  * is_present() will be true, and operator bool() returns the value of the
  * flag.
+ *
  * @note The value must be parseable by StringToBoolTolerant.
  * @param name the name of the flag to create
  * @param default_value the default value for the flag. Either true, or false.
@@ -204,8 +208,10 @@ void ParseFlags(int *argc, char **argv);
 
 /**
  * @brief Create a new longname bool flag that doesn't require an option.
+ *
  * By default the flag is set to default_value. If the flag is provided on the
  * command line, the value of the flag becomes !default_value.
+ *
  * @param name the name of the flag to create
  * @param default_value the default value for the flag. Either true, or false.
  * @param help_str the string displayed when the program is asked to display
@@ -217,8 +223,10 @@ void ParseFlags(int *argc, char **argv);
 /**
  * @brief Create a new bool flag with a long and short name that doesn't
  *     require an option.
+ *
  * By default the flag is set to default_value. If the flag is provided on the
  * command line, the value of the flag becomes !default_value.
+ *
  * @param name the full name of the flag to create
  * @param short_opt the short name of the flag. For example "-h", or "-d".
  * @param default_value the default value for the flag. Either true, or false.
