@@ -42,9 +42,9 @@
  * @private
  * @brief Define the help flag
  */
-DEFINE_s_bool(help, h, false, "Display the help message");
-DEFINE_s_bool(version, v, false, "Display version information");
-DEFINE_bool(gen_manpage, false, "Generate a man page snippet");
+DEFINE_s_default_bool(help, h, false, "Display the help message");
+DEFINE_s_default_bool(version, v, false, "Display version information");
+DEFINE_default_bool(gen_manpage, false, "Generate a man page snippet");
 
 namespace ola {
 
@@ -63,7 +63,7 @@ using std::vector;
  * The prefix used on inverted bool flags
  * @examplepara
  *   @code
- *   DEFINE_s_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
+ *   DEFINE_s_default_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
  *   @endcode
  *
  *   Then if you called your application with that flag:
@@ -193,7 +193,8 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     } else {
       if (flag->has_arg()) {
         if (!flag->SetValue(optarg)) {
-          cerr << "Invalid value " << optarg << endl;
+          cerr << "Invalid arg value " << optarg << " for flag "
+               << flag->name() << endl;
           exit(EXIT_USAGE);
         }
       } else {

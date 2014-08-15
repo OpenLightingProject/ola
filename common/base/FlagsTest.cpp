@@ -25,10 +25,10 @@
 #include "ola/base/Flags.h"
 #include "ola/testing/TestUtils.h"
 
-DEFINE_bool(default_false, false, "Default False");
-DEFINE_bool(default_true, true, "Default True");
-DEFINE_bool_option(default_false_option, false, "Default False Option");
-DEFINE_bool_option(default_true_option, true, "Default True Option");
+DEFINE_default_bool(default_false, false, "Default False");
+DEFINE_default_bool(default_true, true, "Default True");
+DEFINE_bool(default_false_option, false, "Default False Option");
+DEFINE_bool(default_true_option, true, "Default True Option");
 DEFINE_int8(f_int8, -10, "Default -10");
 DEFINE_uint8(f_uint8, 10, "Default 10");
 DEFINE_int16(f_int16, -1000, "Default -1000");
@@ -38,10 +38,10 @@ DEFINE_uint32(f_uint32, 2000, "Default 2000");
 DEFINE_string(f_str, "foo", "Test String");
 
 // now flags with short options
-DEFINE_s_bool(s_default_false, a, false, "Default False");
-DEFINE_s_bool(s_default_true, b, true, "Default True");
-DEFINE_s_bool_option(s_default_false_option, c, false, "Default False Option");
-DEFINE_s_bool_option(s_default_true_option, d, true, "Default True Option");
+DEFINE_s_default_bool(s_default_false, a, false, "Default False");
+DEFINE_s_default_bool(s_default_true, b, true, "Default True");
+DEFINE_s_bool(s_default_false_option, c, false, "Default False Option");
+DEFINE_s_bool(s_default_true_option, d, true, "Default True Option");
 DEFINE_s_int8(s_int8, e, -10, "Default -10");
 DEFINE_s_uint8(s_uint8, f, 10, "Default 10");
 DEFINE_s_int16(s_int16, g, -1000, "Default -1000");

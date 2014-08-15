@@ -173,29 +173,6 @@ void ParseFlags(int *argc, char **argv);
 // DEFINE_*
 
 /**
- * @brief Create a new longname bool flag
- * @param name the name of the flag to create
- * @param default_value the default value for the flag.
- *     Either true, or false.
- * @param help_str the string displayed when the program is asked to display
- *     the help screen
- */
-#define DEFINE_bool(name, default_value, help_str) \
-  DEFINE_flag(bool, name, \0, default_value, help_str, false)
-
-/**
- * @brief Create a new bool flag with a long and short name
- * @param name the full name of the flag to create
- * @param short_opt the short name of the flag. For example "-h", or "-d".
- * @param default_value the default value for the flag.
- *     Either true, or false
- * @param help_str the string displayed when the program is asked to display
- *     the help screen
- */
-#define DEFINE_s_bool(name, short_opt, default_value, help_str) \
-  DEFINE_flag_with_short(bool, name, short_opt, default_value, help_str, false)
-
-/**
  * @brief Create a new longname bool flag, where you pass the value as an
  *     option to the flag like the int and string ones behave, the value must
  *     be parseable by StringToBoolTolerant.
@@ -205,7 +182,7 @@ void ParseFlags(int *argc, char **argv);
  * @param help_str the string displayed when the program is asked to display
  *     the help screen
  */
-#define DEFINE_bool_option(name, default_value, help_str) \
+#define DEFINE_bool(name, default_value, help_str) \
   DEFINE_flag(bool, name, \0, default_value, help_str, true)
 
 /**
@@ -219,8 +196,31 @@ void ParseFlags(int *argc, char **argv);
  * @param help_str the string displayed when the program is asked to display
  *     the help screen
  */
-#define DEFINE_s_bool_option(name, short_opt, default_value, help_str) \
+#define DEFINE_s_bool(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(bool, name, short_opt, default_value, help_str, true)
+
+/**
+ * @brief Create a new longname bool flag
+ * @param name the name of the flag to create
+ * @param default_value the default value for the flag.
+ *     Either true, or false.
+ * @param help_str the string displayed when the program is asked to display
+ *     the help screen
+ */
+#define DEFINE_default_bool(name, default_value, help_str) \
+  DEFINE_flag(bool, name, \0, default_value, help_str, false)
+
+/**
+ * @brief Create a new bool flag with a long and short name
+ * @param name the full name of the flag to create
+ * @param short_opt the short name of the flag. For example "-h", or "-d".
+ * @param default_value the default value for the flag.
+ *     Either true, or false
+ * @param help_str the string displayed when the program is asked to display
+ *     the help screen
+ */
+#define DEFINE_s_default_bool(name, short_opt, default_value, help_str) \
+  DEFINE_flag_with_short(bool, name, short_opt, default_value, help_str, false)
 
 /**
  * @brief Create a new longname int8_t flag
@@ -230,7 +230,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_int8(name, default_value, help_str) \
-  DEFINE_flag(int8_t, name, \0, default_value, help_str, false)
+  DEFINE_flag(int8_t, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new int8_t flag with a long and short name
@@ -242,7 +242,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_int8(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(int8_t, name, short_opt, default_value, help_str, \
-                         false)
+                         true)
 
 /**
  * @brief Create a new longname uint8_t flag
@@ -252,7 +252,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_uint8(name, default_value, help_str) \
-  DEFINE_flag(uint8_t, name, \0, default_value, help_str, false)
+  DEFINE_flag(uint8_t, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new uint8_t flag with a long and short name
@@ -264,7 +264,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_uint8(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(uint8_t, name, short_opt, default_value, help_str, \
-                         false)
+                         true)
 
 /**
  * @brief Create a new longname int16_t flag
@@ -274,7 +274,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_int16(name, default_value, help_str) \
-  DEFINE_flag(int16_t, name, \0, default_value, help_str, false)
+  DEFINE_flag(int16_t, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new int16_t flag with a long and short name
@@ -286,7 +286,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_int16(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(int16_t, name, short_opt, default_value, help_str, \
-                         false)
+                         true)
 
 
 /**
@@ -297,7 +297,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_uint16(name, default_value, help_str) \
-  DEFINE_flag(uint16_t, name, \0, default_value, help_str, false)
+  DEFINE_flag(uint16_t, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new uint16_t flag with a long and short name
@@ -309,7 +309,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_uint16(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(uint16_t, name, short_opt, default_value, help_str, \
-                         false)
+                         true)
 
 /**
  * @brief Create a new longname int32_t flag
@@ -319,7 +319,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_int32(name, default_value, help_str) \
-  DEFINE_flag(int32_t, name, \0, default_value, help_str, false)
+  DEFINE_flag(int32_t, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new int32_t flag with a long and short name
@@ -331,7 +331,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_int32(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(int32_t, name, short_opt, default_value, help_str, \
-                         false)
+                         true)
 
 /**
  * @brief Create a new longname uint32_t flag
@@ -341,7 +341,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_uint32(name, default_value, help_str) \
-  DEFINE_flag(uint32_t, name, \0, default_value, help_str, false)
+  DEFINE_flag(uint32_t, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new int32_t flag with a long and short name
@@ -353,7 +353,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_uint32(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(uint32_t, name, short_opt, default_value, help_str, \
-                         false)
+                         true)
 
 /**
  * @brief Create a new longname string flag
@@ -363,7 +363,7 @@ void ParseFlags(int *argc, char **argv);
  * the help screen
  */
 #define DEFINE_string(name, default_value, help_str) \
-  DEFINE_flag(std::string, name, \0, default_value, help_str, false)
+  DEFINE_flag(std::string, name, \0, default_value, help_str, true)
 
 /**
  * @brief Create a new string flag with a long and short name
@@ -375,7 +375,7 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_string(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(std::string, name, short_opt, default_value, \
-                         help_str, false)
+                         help_str, true)
 
 /** @}*/
 

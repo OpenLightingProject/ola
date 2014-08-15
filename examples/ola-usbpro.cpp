@@ -35,13 +35,13 @@ using std::endl;
 using std::string;
 
 DECLARE_int32(device);
-DEFINE_s_bool(assignments, a, false, "Get the port assignments.");
+DEFINE_s_default_bool(assignments, a, false, "Get the port assignments.");
 DEFINE_s_int32(brk, b, -1, "Set the break time (9 - 127).");
-DEFINE_s_bool(get_params, g, false, "Get the current parameters.");
+DEFINE_s_default_bool(get_params, g, false, "Get the current parameters.");
 DEFINE_s_int32(mab, m, -1, "Set the make after-break-time (1 - 127).");
 DEFINE_s_int32(port, p, -1, "The port to configure.");
 DEFINE_s_int32(rate, r, -1, "Set the transmission rate (1 - 40).");
-DEFINE_s_bool(serial, s, false, "Get the serial number.");
+DEFINE_s_default_bool(serial, s, false, "Get the serial number.");
 
 /*
  * A class which configures UsbPro devices.

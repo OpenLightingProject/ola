@@ -51,7 +51,7 @@ DEFINE_uint16(listen_backlog, 100,
               "The backlog for the listen() call. Often limited to 128");
 DEFINE_uint32(expected_devices, 1,
               "Time how long it takes until this many devices connect.");
-DEFINE_bool(stop_after_all_devices, false,
+DEFINE_default_bool(stop_after_all_devices, false,
             "Exit once all devices connect");
 
 using ola::NewCallback;

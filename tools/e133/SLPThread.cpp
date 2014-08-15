@@ -39,7 +39,8 @@
 #include "tools/e133/SLPConstants.h"
 
 #ifdef HAVE_LIBSLP
-DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
+DEFINE_default_bool(openslp, false,
+                    "Use OpenSLP rather than the OLA SLP server");
 #endif
 
 namespace ola {

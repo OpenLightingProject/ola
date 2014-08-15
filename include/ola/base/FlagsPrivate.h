@@ -146,12 +146,12 @@ class Flag : public BaseFlag {
      * @param short_opt the short option for the flag
      * @param default_value the flag's default value
      * @param help the help string for the flag
-     * @param use_option if the flag should use an option, only applies to
+     * @param has_arg if the flag should use an option, only overrides
      *        Flag<bool>
      */
     Flag(const char *name, const char *arg_type, const char *short_opt,
          T default_value, const char *help,
-         OLA_UNUSED const bool use_option = false)
+         OLA_UNUSED const bool has_arg = true)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
@@ -185,13 +185,13 @@ template<>
 class Flag<bool> : public BaseFlag {
  public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
-         bool default_value, const char *help, const bool use_option = false)
+         bool default_value, const char *help, const bool has_arg = true)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
         m_value(default_value),
-        m_use_option(use_option) {
-      if (!use_option && default_value) {
+        m_has_arg(has_arg) {
+      if (!has_arg && default_value) {
         // prefix the long option with 'no'
         size_t total_size = strlen(NO_PREFIX) + strlen(name) + 1;
         char* new_name = new char[total_size];
@@ -205,7 +205,7 @@ class Flag<bool> : public BaseFlag {
     }
 
     const char *name() const { return m_name; }
-    bool has_arg() const { return m_use_option; }
+    bool has_arg() const { return m_has_arg; }
     bool default_value() const { return m_default; }
 
     operator bool() const { return m_value; }
@@ -217,7 +217,7 @@ class Flag<bool> : public BaseFlag {
 
     bool SetValue(const std::string &input) {
       MarkAsPresent();
-      if (m_use_option) {
+      if (m_has_arg) {
         return ola::StringToBoolTolerant(input, &m_value);
       } else {
         m_value = !m_default;
@@ -229,7 +229,7 @@ class Flag<bool> : public BaseFlag {
     const char *m_name;
     bool m_default;
     bool m_value;
-    bool m_use_option;
+    bool m_has_arg;
 
     static const char NO_PREFIX[];
 };
@@ -242,7 +242,7 @@ class Flag<std::string> : public BaseFlag {
  public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
          std::string default_value, const char *help,
-         OLA_UNUSED const bool use_option = false)
+         OLA_UNUSED const bool has_arg = true)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
@@ -361,10 +361,10 @@ class FlagRegisterer {
  * @brief Generic macro to define a flag
  */
 #define DEFINE_flag(type, name, short_opt, default_value, help_str, \
-                    use_option) \
+                    has_arg) \
   namespace ola_flags { \
     ola::Flag<type> FLAGS_##name(#name, #type, #short_opt, default_value, \
-                                 help_str, use_option); \
+                                 help_str, has_arg); \
     ola::FlagRegisterer flag_registerer_##name(&FLAGS_##name); \
   } \
   using ola_flags::FLAGS_##name
@@ -373,11 +373,11 @@ class FlagRegisterer {
  * @brief Generic macro to define a flag with a short option.
  */
 #define DEFINE_flag_with_short(type, name, short_opt, default_value, help_str, \
-                               use_option) \
+                               has_arg) \
   namespace ola_flags { char flag_short_##short_opt = 0; } \
   namespace ola_flags { \
     ola::Flag<type> FLAGS_##name(#name, #type, #short_opt, default_value, \
-                                 help_str, use_option); \
+                                 help_str, has_arg); \
     ola::FlagRegisterer flag_registerer_##name( \
         &FLAGS_##name, &flag_short_##short_opt); \
   } \

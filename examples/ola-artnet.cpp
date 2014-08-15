@@ -37,7 +37,7 @@ using std::string;
 DECLARE_int32(device);
 DEFINE_s_string(name, n, "", "Set the name of the ArtNet device.");
 DEFINE_string(long_name, "", "Set the long name of the ArtNet device.");
-DEFINE_s_int32(net, e, -1, "Set the net parameter of the ArtNet device.");
+DEFINE_int32(net, -1, "Set the net parameter of the ArtNet device.");
 DEFINE_s_int32(subnet, s, -1,
                "Set the subnet parameter of the ArtNet device.");
 DEFINE_s_uint32(universe, u, 0,

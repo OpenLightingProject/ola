@@ -55,12 +55,12 @@
 
 #ifdef HAVE_EPOLL
 #include "common/io/EPoller.h"
-DEFINE_bool(use_epoll, false, "Use epoll() if available");
+DEFINE_default_bool(use_epoll, false, "Use epoll() if available");
 #endif
 
 #ifdef HAVE_KQUEUE
 #include "common/io/KQueuePoller.h"
-DEFINE_bool(use_kqueue, false, "Use kqueue() if available");
+DEFINE_default_bool(use_kqueue, false, "Use kqueue() if available");
 #endif
 
 namespace ola {
