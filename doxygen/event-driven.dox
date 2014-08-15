@@ -57,7 +57,7 @@
  *
  * A caveat however that is that callbacks triggered by events can't block.
  * Doing so prevents control returning to the main event loop and will starve
- * other event notifications. typicall approaches are to either use
+ * other event notifications. typical approaches are to either use
  * non-blocking I/O or perform blocking I/O in a separate thread.
  *
  * @section sec_OLA OLA Event Management
@@ -90,7 +90,7 @@
     wrapper.Run()  # event loop is running
   ~~~~~~~~~~~~~~~~~~~~~
  *
- * @section sec_Integration Integration with other frameworks.
+ * @section sec_Integration Integration with other frameworks
  *
  * This section is for those who want to use the OLA client within another
  * event management framework. The OLA client code does not use timers so the
