@@ -79,8 +79,8 @@ class FlagInterface {
     virtual std::string help() const = 0;
 
     /**
-     * @brief Check if the flag was present on the command line. Good for
-     *        switching behaviour when a flag is used.
+     * @brief Check if the flag was present on the command line.
+     * Good for switching behaviour when a flag is used.
      * @returns true if the flag was present, false otherwise
      */
     virtual bool present() const = 0;
@@ -185,7 +185,7 @@ template<>
 class Flag<bool> : public BaseFlag {
  public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
-         bool default_value, const char *help, const bool has_arg = true)
+         bool default_value, const char *help, const bool has_arg)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
