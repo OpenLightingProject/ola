@@ -120,6 +120,10 @@
  * [QSocketNotifier](http://qt-project.org/doc/qt-4.8/qsocketnotifier.html)
  * which allows the OLA socket to be added to Qt's main loop.
  *
+ * @subsection sec_kivy Integration with Kivy
+ *
+ * See https://github.com/jesseanderson/ola-rpiui for an example.
+ *
  * @subsection sec_pygame Integration with PyGame
  *
  * TODO(someone): add me
