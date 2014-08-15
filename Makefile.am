@@ -126,6 +126,7 @@ test_scripts =
 include common/Makefile.mk
 include data/Makefile.mk
 include debian/Makefile.mk
+include doxygen/Makefile.mk
 include examples/Makefile.mk
 include include/Makefile.mk
 include man/Makefile.mk
