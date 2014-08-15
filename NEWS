@@ -20,7 +20,7 @@ x/y/2014 ola-0.9.2
  * Standardise some flags, using --device consistently. This affects
    ola_artnet, ola_e131 and ola_usbpro
  * Remove -l long name short option from ola_artnet as it clashes with the
-   global -l log level option.
+   global -l log level option. Remove the -e subnet short option too.
 
  Bugs:
  * Don't build ola_protoc if --with-ola-protoc= is provided.
@@ -29,6 +29,8 @@ x/y/2014 ola-0.9.2
  Internal:
  * Changed to a non-recursive build. Reduced build times by 5-25%.
  * Convert more of our programs to our flags module
+ * Standardise the bool flag behaviour to require an argument like
+   string and int do, add a default bool for the old use case.
 
 21/6/2014 ola-0.9.1
  Features:
