@@ -151,7 +151,7 @@ class Flag : public BaseFlag {
      */
     Flag(const char *name, const char *arg_type, const char *short_opt,
          T default_value, const char *help,
-         OLA_UNUSED const bool has_arg = true)
+         OLA_UNUSED const bool has_arg)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
@@ -242,7 +242,7 @@ class Flag<std::string> : public BaseFlag {
  public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
          std::string default_value, const char *help,
-         OLA_UNUSED const bool has_arg = true)
+         OLA_UNUSED const bool has_arg)
       : BaseFlag(arg_type, short_opt, help),
         m_name(name),
         m_default(default_value),
