@@ -38,11 +38,13 @@ namespace spi {
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   struct Options {
+    std::string device_label;
     uint8_t pixel_count;
     uint8_t output_number;
 
-    explicit Options(uint8_t output_number)
-        : pixel_count(25),  // For the https://www.adafruit.com/products/738
+    explicit Options(uint8_t output_number, std::string spi_device_name)
+        : device_label("SPI Device - " + spi_device_name),
+          pixel_count(25),  // For the https://www.adafruit.com/products/738
           output_number(output_number) {
     }
   };
@@ -52,6 +54,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
             const Options &options);
   ~SPIOutput();
 
+  std::string GetDeviceLabel() const;
+  bool SetDeviceLabel(std::string device_label);
   uint8_t GetPersonality() const;
   bool SetPersonality(uint16_t personality);
   uint16_t GetStartAddress() const;
@@ -87,9 +91,9 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   class SPIBackendInterface *m_backend;
   const uint8_t m_output_number;
   std::string m_spi_device_name;
-  std::string m_device_label;
   const ola::rdm::UID m_uid;
   const unsigned int m_pixel_count;
+  std::string m_device_label;
   uint16_t m_start_address;  // starts from 1
   bool m_identify_mode;
   std::auto_ptr<ola::rdm::PersonalityCollection> m_personality_collection;

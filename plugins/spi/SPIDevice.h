@@ -72,6 +72,7 @@ class SPIDevice: public ola::Device {
     std::string GPIOPinKey() const;
 
     // Per port options
+    std::string DeviceLabelKey(uint8_t port) const;
     std::string PersonalityKey(uint8_t port) const;
     std::string PixelCountKey(uint8_t port) const;
     std::string StartAddressKey(uint8_t port) const;

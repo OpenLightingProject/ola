@@ -37,6 +37,8 @@ class SPIOutputPort: public BasicOutputPort {
                   const ola::rdm::UID &uid, const SPIOutput::Options &options);
     ~SPIOutputPort() {}
 
+    std::string GetDeviceLabel() const;
+    bool SetDeviceLabel(std::string device_label);
     uint8_t GetPersonality() const;
     bool SetPersonality(uint16_t personality);
     uint16_t GetStartAddress() const;

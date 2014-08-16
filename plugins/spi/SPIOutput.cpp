@@ -144,10 +144,10 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       m_output_number(options.output_number),
       m_uid(uid),
       m_pixel_count(options.pixel_count),
+      m_device_label(options.device_label),
       m_start_address(1),
       m_identify_mode(false) {
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
-  m_device_label = "SPI Device - " + m_spi_device_name;
 
   PersonalityCollection::PersonalityList personalities;
   personalities.push_back(Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
@@ -181,6 +181,15 @@ SPIOutput::~SPIOutput() {
   STLDeleteElements(&m_sensors);
 }
 
+
+string SPIOutput::GetDeviceLabel() const {
+  return m_device_label;
+}
+
+bool SPIOutput::SetDeviceLabel(string device_label) {
+  m_device_label = device_label;
+  return true;
+}
 
 uint8_t SPIOutput::GetPersonality() const {
   return m_personality_manager->ActivePersonalityNumber();
