@@ -44,7 +44,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-DEFINE_bool(list_tests, false, "List the test names.");
+DEFINE_default_bool(list_tests, false, "List the test names.");
 DEFINE_s_uint32(timeout, t, 1000, "Number of ms to wait for responses");
 DEFINE_string(tests, "", "Restrict the tests that will be run");
 

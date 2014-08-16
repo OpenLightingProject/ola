@@ -70,8 +70,8 @@ using std::string;
 using std::vector;
 using ola::plugin::usbpro::DmxTriWidget;
 
-DEFINE_bool(dummy, true, "Include a dummy responder endpoint");
-DEFINE_bool(e131, true, "Include E1.31 support");
+DEFINE_default_bool(dummy, true, "Include a dummy responder endpoint");
+DEFINE_default_bool(e131, true, "Include E1.31 support");
 DEFINE_string(listen_ip, "", "The IP address to listen on.");
 DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
 DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");

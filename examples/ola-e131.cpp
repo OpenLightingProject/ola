@@ -19,8 +19,8 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <ola/plugin_id.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <plugins/e131/messages/E131ConfigMessages.pb.h>
@@ -33,35 +33,23 @@ using std::cout;
 using std::endl;
 using std::string;
 
-typedef enum {
-  PORT_INFO,
-  PORT_PREVIEW_MODE,
-} config_mode;
-
-typedef struct {
-  string command;   // argv[0]
-  int device_id;    // device id
-  bool help;        // help
-  config_mode mode;
-  unsigned int port_id;  // port_id
-  bool preview_mode;  // set preview mode
-  bool input_port;  // use the input port rather than output one
-} options;
-
+DECLARE_int32(device);
+DEFINE_s_uint32(port_id, p, -1, "Id of the port to control");
+DEFINE_s_default_bool(input, i, false,
+                      "Set an input port, otherwise set an output port.");
+DEFINE_bool(preview_mode, false, "Set the preview mode bit on|off");
 
 /*
  * A class that configures E131 devices
  */
 class E131Configurator: public OlaConfigurator {
  public:
-    explicit E131Configurator(const options &opts):
-      OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_E131),
-      m_options(opts) {}
-    void HandleConfigResponse(const string &reply, const string &error);
-    void SendConfigRequest();
+  E131Configurator()
+      : OlaConfigurator(FLAGS_device, ola::OLA_PLUGIN_E131) {}
+  void HandleConfigResponse(const string &reply, const string &error);
+  void SendConfigRequest();
  private:
-    void DisplayOptions(const ola::plugin::e131::PortInfoReply &reply);
-    options m_options;
+  void DisplayOptions(const ola::plugin::e131::PortInfoReply &reply);
 };
 
 
@@ -97,13 +85,13 @@ void E131Configurator::HandleConfigResponse(const string &reply,
 void E131Configurator::SendConfigRequest() {
   ola::plugin::e131::Request request;
 
-  if (m_options.mode == PORT_PREVIEW_MODE) {
+  if (FLAGS_preview_mode.present()) {
     request.set_type(ola::plugin::e131::Request::E131_PREVIEW_MODE);
     ola::plugin::e131::PreviewModeRequest *preview_request =
       request.mutable_preview_mode();
-    preview_request->set_port_id(m_options.port_id);
-    preview_request->set_preview_mode(m_options.preview_mode);
-    preview_request->set_input_port(m_options.input_port);
+    preview_request->set_port_id(FLAGS_port_id);
+    preview_request->set_preview_mode(FLAGS_preview_mode);
+    preview_request->set_input_port(FLAGS_input);
   } else {
     request.set_type(ola::plugin::e131::Request::E131_PORT_INFO);
   }
@@ -132,94 +120,19 @@ void E131Configurator::DisplayOptions(
 
 
 /*
- * Parse our cmd line options
- */
-int ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"dev",       required_argument,  0, 'd'},
-      {"help",      no_argument,        0, 'h'},
-      {"input",     no_argument,        0, 'i'},
-      {"port-id",   required_argument,  0, 'p'},
-      {"preview-mode", required_argument,  0, 'm'},
-      {0, 0, 0, 0}
-    };
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "d:him:p:", long_options, &option_index);
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'd':
-        opts->device_id = atoi(optarg);
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'i':
-        opts->input_port = true;
-        break;
-      case 'p':
-        opts->port_id = atoi(optarg);
-        break;
-      case 'm':
-        opts->preview_mode = (string(optarg) == "on" ? true : false);
-        opts->mode = PORT_PREVIEW_MODE;
-        break;
-      case '?':
-        break;
-    }
-  }
-  return 0;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(const options &opts) {
-  cout << "Usage: " << opts.command <<
-    " -d <dev-id> -p <port-id> [--input] --preview-mode <on|off>\n\n"
-    "Configure E1.31 devices managed by OLA.\n\n"
-    "  -d, --dev       Id of the device to control.\n"
-    "  -h, --help      Display this help message and exit.\n"
-    "  -i, --input     Input port\n"
-    "  -p, --port-id   Id of the port to control\n"
-    "  --preview-mode  Set the preview mode bit\n" <<
-    endl;
-  exit(0);
-}
-
-
-/*
  * The main function
  */
 int main(int argc, char*argv[]) {
-  if (!ola::NetworkInit()) {
-    cerr << "Network initialization failed." << endl;
-    exit(ola::EXIT_UNAVAILABLE);
-  }
+  ola::AppInit(
+      &argc,
+      argv,
+      "-d <dev-id> -p <port-id> [--input] --preview-mode <on|off>",
+      "Configure E1.31 devices managed by OLA.");
 
-  options opts;
-  opts.command = argv[0];
-  opts.device_id = -1;
-  opts.help = false;
-  opts.mode = PORT_INFO;
-  opts.port_id = -1;
-  opts.preview_mode = false;
-  opts.input_port = false;
+  if (FLAGS_device < 0)
+    ola::DisplayUsageAndExit();
 
-  ParseOptions(argc, argv, &opts);
-
-  if (opts.help || opts.device_id < 0)
-    DisplayHelpAndExit(opts);
-
-  E131Configurator configurator(opts);
+  E131Configurator configurator;
   if (!configurator.Setup()) {
     cerr << "Error: " << strerror(errno) << endl;
     exit(1);

@@ -42,9 +42,9 @@
  * @private
  * @brief Define the help flag
  */
-DEFINE_s_bool(help, h, false, "Display the help message");
-DEFINE_s_bool(version, v, false, "Display version information");
-DEFINE_bool(gen_manpage, false, "Generate a man page snippet");
+DEFINE_s_default_bool(help, h, false, "Display the help message");
+DEFINE_s_default_bool(version, v, false, "Display version information");
+DEFINE_default_bool(gen_manpage, false, "Generate a man page snippet");
 
 namespace ola {
 
@@ -63,7 +63,7 @@ using std::vector;
  * The prefix used on inverted bool flags
  * @examplepara
  *   @code
- *   DEFINE_s_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
+ *   DEFINE_s_default_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
  *   @endcode
  *
  *   Then if you called your application with that flag:
@@ -193,7 +193,8 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     } else {
       if (flag->has_arg()) {
         if (!flag->SetValue(optarg)) {
-          cerr << "Invalid value " << optarg << endl;
+          cerr << "Invalid arg value " << optarg << " for flag "
+               << flag->name() << endl;
           exit(EXIT_USAGE);
         }
       } else {
@@ -311,9 +312,18 @@ void FlagRegistry::GenManPage() {
   string man_description = m_description;
   ReplaceAll(&man_description, "\n", "\n.PP\n");
 
+  // Guess at a single line synopsis, match ". " so we don't get standards
+  string synopsis = "";
+  std::size_t pos = man_description.find(". ");
+  if (pos != string::npos) {
+    synopsis = man_description.substr(0, pos + 1);
+  } else {
+    synopsis = man_description;
+  }
+
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
-  cout << exe_name << " \\- " << endl;
+  cout << exe_name << " \\- " << synopsis << endl;
   cout << ".SH SYNOPSIS" << endl;
   cout << ".B " << exe_name << endl;
   cout << m_first_line << endl;
@@ -376,7 +386,7 @@ string FlagRegistry::GetShortOptsString() const {
 
 /**
  * @brief Allocate & populate the array of option structs for the call to
- * getopt_long. The caller is responsible for deleting the array.o
+ * getopt_long. The caller is responsible for deleting the array.
  *
  * The flag_map is populated with the option identifier (int) to FlagInterface*
  * mappings. The ownership of the pointers to FlagInterfaces is not transferred

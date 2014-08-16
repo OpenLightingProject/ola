@@ -77,11 +77,12 @@ using ola::thread::MutexLocker;
 using ola::NewSingleCallback;
 
 
-DEFINE_bool(display_asc, false,
-            "Display non-RDM alternate start code frames.");
-DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
-DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
-DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames. Defaults to false.");
+DEFINE_default_bool(display_asc, false,
+                    "Display non-RDM alternate start code frames.");
+DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_default_bool(display_dmx, d, false,
+                      "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
               "Only display the first N slots of DMX data.");
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
