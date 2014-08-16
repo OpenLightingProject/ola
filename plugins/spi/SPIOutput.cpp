@@ -107,7 +107,7 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
     NULL},
   { ola::rdm::PID_DEVICE_LABEL,
     &SPIOutput::GetDeviceLabel,
-    NULL},
+    &SPIOutput::SetDeviceLabel},
   { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
     &SPIOutput::GetSoftwareVersionLabel,
     NULL},
@@ -147,6 +147,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       m_start_address(1),
       m_identify_mode(false) {
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
+  m_device_label = "SPI Device - " + m_spi_device_name;
 
   PersonalityCollection::PersonalityList personalities;
   personalities.push_back(Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
@@ -452,7 +453,7 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
-      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 2,
+      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 3,
       m_personality_manager.get(),
       m_start_address,
       0, m_sensors.size());
@@ -479,7 +480,11 @@ const RDMResponse *SPIOutput::GetManufacturerLabel(
 }
 
 const RDMResponse *SPIOutput::GetDeviceLabel(const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "SPI Device");
+  return ResponderHelper::GetString(request, m_device_label);
+}
+
+const RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
+  return ResponderHelper::SetString(request, &m_device_label);
 }
 
 const RDMResponse *SPIOutput::GetSoftwareVersionLabel(

@@ -87,6 +87,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   class SPIBackendInterface *m_backend;
   const uint8_t m_output_number;
   std::string m_spi_device_name;
+  std::string m_device_label;
   const ola::rdm::UID m_uid;
   const unsigned int m_pixel_count;
   uint16_t m_start_address;  // starts from 1
@@ -116,6 +117,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   const ola::rdm::RDMResponse *GetManufacturerLabel(
       const ola::rdm::RDMRequest *request);
   const ola::rdm::RDMResponse *GetDeviceLabel(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *SetDeviceLabel(
       const ola::rdm::RDMRequest *request);
   const ola::rdm::RDMResponse *GetSoftwareVersionLabel(
       const ola::rdm::RDMRequest *request);
