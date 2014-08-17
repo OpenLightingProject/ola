@@ -24,7 +24,7 @@
 #include <ola/base/SysExits.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/plugin_id.h>
-#include <plugins/artnet/messages/ArtnetConfigMessages.pb.h>
+#include <plugins/artnet/messages/ArtNetConfigMessages.pb.h>
 #include <iostream>
 #include <string>
 #include "examples/OlaConfigurator.h"
