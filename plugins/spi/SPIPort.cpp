@@ -48,7 +48,7 @@ string SPIOutputPort::GetDeviceLabel() const {
   return m_spi_output.GetDeviceLabel();
 }
 
-bool SPIOutputPort::SetDeviceLabel(string device_label) {
+bool SPIOutputPort::SetDeviceLabel(const string &device_label) {
   return m_spi_output.SetDeviceLabel(device_label);
 }
 

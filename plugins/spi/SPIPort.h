@@ -38,7 +38,7 @@ class SPIOutputPort: public BasicOutputPort {
   ~SPIOutputPort() {}
 
   std::string GetDeviceLabel() const;
-  bool SetDeviceLabel(std::string device_label);
+  bool SetDeviceLabel(const std::string &device_label);
   uint8_t GetPersonality() const;
   bool SetPersonality(uint16_t personality);
   uint16_t GetStartAddress() const;

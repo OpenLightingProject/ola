@@ -42,7 +42,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     uint8_t pixel_count;
     uint8_t output_number;
 
-    explicit Options(uint8_t output_number, std::string spi_device_name)
+    explicit Options(uint8_t output_number, const std::string &spi_device_name)
         : device_label("SPI Device - " + spi_device_name),
           pixel_count(25),  // For the https://www.adafruit.com/products/738
           output_number(output_number) {
@@ -55,7 +55,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   ~SPIOutput();
 
   std::string GetDeviceLabel() const;
-  bool SetDeviceLabel(std::string device_label);
+  bool SetDeviceLabel(const std::string &device_label);
   uint8_t GetPersonality() const;
   bool SetPersonality(uint16_t personality);
   uint16_t GetStartAddress() const;

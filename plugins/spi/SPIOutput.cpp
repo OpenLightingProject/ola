@@ -186,7 +186,7 @@ string SPIOutput::GetDeviceLabel() const {
   return m_device_label;
 }
 
-bool SPIOutput::SetDeviceLabel(string device_label) {
+bool SPIOutput::SetDeviceLabel(const string &device_label) {
   m_device_label = device_label;
   return true;
 }
