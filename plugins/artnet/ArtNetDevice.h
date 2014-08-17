@@ -24,7 +24,7 @@
 #include <string>
 
 #include "olad/Device.h"
-#include "plugins/artnet/messages/ArtnetConfigMessages.pb.h"
+#include "plugins/artnet/messages/ArtNetConfigMessages.pb.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 namespace ola {
