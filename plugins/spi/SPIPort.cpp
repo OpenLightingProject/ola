@@ -44,6 +44,14 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackendInterface *backend,
 }
 
 
+string SPIOutputPort::GetDeviceLabel() const {
+  return m_spi_output.GetDeviceLabel();
+}
+
+bool SPIOutputPort::SetDeviceLabel(const string &device_label) {
+  return m_spi_output.SetDeviceLabel(device_label);
+}
+
 uint8_t SPIOutputPort::GetPersonality() const {
   return m_spi_output.GetPersonality();
 }

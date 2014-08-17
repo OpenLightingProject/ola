@@ -21,6 +21,8 @@ x/y/2014 ola-0.9.2
    ola_artnet, ola_e131 and ola_usbpro
  * Remove -l long name short option from ola_artnet as it clashes with the
    global -l log level option. Remove the -e subnet short option too.
+ * Allow the SPI RDM responder's device label to be set and store it in the
+   preferences file.
 
  Bugs:
  * Don't build ola_protoc if --with-ola-protoc= is provided.
