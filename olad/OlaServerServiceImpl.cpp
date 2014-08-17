@@ -16,7 +16,7 @@
  * OlaServerServiceImpl.cpp
  * Implementation of the OlaServerService interface. This is the class that
  * handles all the RPCs on the server side.
- * Copyright (C) 2005 - 2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>
