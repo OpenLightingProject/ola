@@ -25,9 +25,17 @@ import re
 import sys
 import textwrap
 
-CPP, JS, PYTHON = xrange(3)
+CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
 IGNORED_FILES = [
+  'common/rdm/testdata/duplicate_manufacturer.proto',
+  'common/rdm/testdata/duplicate_pid_name.proto',
+  'common/rdm/testdata/duplicate_pid_value.proto',
+  'common/rdm/testdata/inconsistent_pid.proto',
+  'common/rdm/testdata/invalid_esta_pid.proto',
+  'common/rdm/testdata/test_pids.proto',
+  'common/rdm/testdata/pids/pids1.proto',
+  'common/rdm/testdata/pids/pids2.proto',
   'examples/ola-dmxconsole.cpp',
   'examples/ola-dmxmonitor.cpp',
   'include/ola/gen_callbacks.py',
@@ -49,8 +57,8 @@ def Usage(arg0):
   Usage: %s
 
   Walk the directory tree from the current directory, and make sure all .cpp,
-  .h, .js and .py files have the appropriate Licence. The licence is determined
-  from the LICENCE file in each branch of the directory tree.
+  .h, .js, .proto and .py files have the appropriate Licence. The licence is
+  determined from the LICENCE file in each branch of the directory tree.
 
     --diff               Print the diffs.
     --fix                Fix the files.
@@ -128,7 +136,8 @@ def ReplaceHeader(file_name, new_header, lang):
   breaks = 0
   line = f.readline()
   while line != '':
-    if (lang == CPP or lang == JS) and re.match(r'^ \*\s*\n$', line):
+    if (lang == CPP or lang == JS or lang == PROTOBUF) and \
+       re.match(r'^ \*\s*\n$', line):
       breaks += 1
     if lang == PYTHON and re.match(r'^#\s*\n$', line):
       breaks += 1
@@ -188,15 +197,18 @@ def CheckLicenceForDir(dir_name, licence, diff, fix):
         continue
       errors += CheckLicenceForFile(file_name, licence, CPP, diff, fix)
 
+  js_licence = TransformCppToJsLicence(licence)
   for file_name in glob.glob(os.path.join(dir_name, '*.js')):
-    js_licence = TransformCppToJsLicence(licence)
     errors += CheckLicenceForFile(file_name, js_licence, JS, diff, fix)
 
+  for file_name in glob.glob(os.path.join(dir_name, '*.proto')):
+    errors += CheckLicenceForFile(file_name, licence, PROTOBUF, diff, fix)
+
+  python_licence = TransformCppToPythonLicence(licence)
   for file_name in glob.glob(os.path.join(dir_name, '*.py')):
     # skip the generated protobuf code
     if file_name.endswith('__init__.py') or file_name.endswith('pb2.py'):
       continue
-    python_licence = TransformCppToPythonLicence(licence)
     errors += CheckLicenceForFile(file_name, python_licence, PYTHON, diff, fix)
 
   return errors

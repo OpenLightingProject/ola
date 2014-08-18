@@ -47,7 +47,7 @@
 /**@private*/
 DEFINE_s_int8(log_level, l, ola::OLA_LOG_WARN, "Set the logging level 0 .. 4.");
 /**@private*/
-DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
+DEFINE_default_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
 

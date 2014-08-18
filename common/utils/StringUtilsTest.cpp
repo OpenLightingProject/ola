@@ -449,6 +449,22 @@ void StringUtilsTest::testStringToBoolTolerant() {
   OLA_ASSERT_EQ(value, true);
   OLA_ASSERT_TRUE(StringToBoolTolerant("oFf", &value));
   OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("enable", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("disable", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("EnAblE", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("dISaBle", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("enabled", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("disabled", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("eNabLED", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("DisaBLED", &value));
+  OLA_ASSERT_EQ(value, false);
 }
 
 
