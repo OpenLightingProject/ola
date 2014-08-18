@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
   auto_ptr<SPIOutput> spi_output;
   DmxBuffer spi_buffer;
 
-  if (!FLAGS_spi_device.str().empty()) {
+  if (FLAGS_spi_device.present() && !FLAGS_spi_device.str().empty()) {
     auto_ptr<UID> spi_uid(uid_allocator.AllocateNext());
     if (!spi_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the SPI device.";
@@ -224,8 +224,10 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
-    spi_output.reset(
-        new SPIOutput(*spi_uid, spi_backend.get(), SPIOutput::Options(0)));
+    spi_output.reset(new SPIOutput(
+        *spi_uid,
+        spi_backend.get(),
+        SPIOutput::Options(0, FLAGS_spi_device.str())));
     E133Endpoint::EndpointProperties properties;
     properties.is_physical = true;
     endpoints.push_back(new E133Endpoint(spi_output.get(), properties));

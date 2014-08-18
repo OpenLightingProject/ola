@@ -32,27 +32,27 @@ namespace spi {
 
 class SPIPlugin: public ola::Plugin {
  public:
-    explicit SPIPlugin(class ola::PluginAdaptor *plugin_adaptor)
-        : Plugin(plugin_adaptor) {}
+  explicit SPIPlugin(class ola::PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor) {}
 
-    std::string Name() const { return PLUGIN_NAME; }
-    std::string Description() const;
-    ola_plugin_id Id() const { return OLA_PLUGIN_SPI; }
-    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  std::string Description() const;
+  ola_plugin_id Id() const { return OLA_PLUGIN_SPI; }
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    std::vector<class SPIDevice*> m_devices;
+  std::vector<class SPIDevice*> m_devices;
 
-    bool StartHook();
-    bool StopHook();
-    bool SetDefaultPreferences();
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
 
-    static const char DEFAULT_BASE_UID[];
-    static const char DEFAULT_SPI_DEVICE_PREFIX[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
-    static const char SPI_BASE_UID_KEY[];
-    static const char SPI_DEVICE_PREFIX_KEY[];
+  static const char DEFAULT_BASE_UID[];
+  static const char DEFAULT_SPI_DEVICE_PREFIX[];
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
+  static const char SPI_BASE_UID_KEY[];
+  static const char SPI_DEVICE_PREFIX_KEY[];
 };
 }  // namespace spi
 }  // namespace plugin
