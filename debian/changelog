@@ -1,10 +1,10 @@
 ola (0.9.2-1) unstable; urgency=low
 
   * New upstream release
-  * Add usbpro_firmware program to the package
-  * Add ola_usbpro program to the package
+  * Add ola_usbpro program
+  * Add usbpro_firmware program
 
- -- RenZO <renzo@imaginux.com>  xxx, yy zzz 2014 aa:bb:cc +dddd
+ -- RenZO <renzo@imaginux.com>  Mon, 18 Aug 2014 19:24:01 +0200
 
 ola (0.9.1-1) unstable; urgency=low
 
