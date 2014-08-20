@@ -115,7 +115,6 @@ bool OlaDaemon::Init() {
   auto_ptr<PreferencesFactory> preferences_factory(
       new FileBackedPreferencesFactory(config_dir));
 
-  auto_ptr<SelectServer> ss(new SelectServer(m_export_map));
   auto_ptr<OlaClientServiceFactory> service_factory(
       new OlaClientServiceFactory());
 
