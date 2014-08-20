@@ -1,4 +1,4 @@
-x/y/2014 ola-0.9.2
+20/7/2014 ola-0.9.2
  Features:
  * Added --use-epoll which uses epoll() rather than select().
  * Added --use-kqueue which uses kqueue() rather than select().
@@ -23,6 +23,7 @@ x/y/2014 ola-0.9.2
    global -l log level option. Remove the -e subnet short option too.
  * Allow the SPI RDM responder's device label to be set and store it in the
    preferences file.
+ * Added new E1.33 example programs that follow the latest draft document.
 
  Bugs:
  * Don't build ola_protoc if --with-ola-protoc= is provided.
