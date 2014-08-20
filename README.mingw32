@@ -9,6 +9,7 @@ To build OLA on Windows with MinGW, you need an up-to-date MinGW installation. T
 You need to select:
 - mingw-developer-toolkit
 - mingw32-base
+- mingw32-gcc-g++
 - mingw32-pthreads-w32
 - msys-base
 - msys-coreutils
@@ -39,7 +40,7 @@ Additional tools and libraries
 pkg-config
 ----------
 - Download pkg-config-lite from http://sourceforge.net/projects/pkgconfiglite/files/
-- Extract to MinGW directory
+- Extract to MinGW directory (bin-win32 package) or build it from the tarball
 
 Python (optional)
 -----------------
