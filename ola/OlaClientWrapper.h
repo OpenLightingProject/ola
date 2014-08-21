@@ -56,7 +56,7 @@ class BaseClientWrapper {
    * The default action is to terminate the SelectServer. By setting a callback
    * you can override thie behavior.
    *
-   * @param callback, the Callback to run, ownership is transferred.
+   * @param callback the Callback to run, ownership is transferred.
    */
   void SetCloseCallback(CloseCallback *callback);
 
