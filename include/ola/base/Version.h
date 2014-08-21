@@ -29,7 +29,7 @@ namespace base {
 
 #define OLA_VERSION_MAJOR 0
 #define OLA_VERSION_MINOR 9
-#define OLA_VERSION_REVISION 1
+#define OLA_VERSION_REVISION 2
 
 /**
  * @class Version ola/base/Version.h

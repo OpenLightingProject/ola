@@ -180,7 +180,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   char start_time_str[50];
 #ifdef _WIN32
   strftime(start_time_str, sizeof(start_time_str), "%c",
-      localtime(&m_start_time_t));
+      localtime(&m_start_time_t));  // NOLINT
 #else
   struct tm start_time;
   localtime_r(&m_start_time_t, &start_time);
