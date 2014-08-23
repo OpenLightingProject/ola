@@ -26,10 +26,9 @@
 #include <string>
 #include <vector>
 
-#include "ola/Constants.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Array.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"

@@ -31,8 +31,8 @@
 #include <unistd.h>
 #include <string>
 
-#include "ola/Constants.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
 #include "plugins/opendmx/OpenDmxThread.h"

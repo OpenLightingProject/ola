@@ -21,8 +21,8 @@
 #ifndef TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
 #define TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
 
-#include <ola/Constants.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/network/NetworkUtils.h>
 
 #include <vector>

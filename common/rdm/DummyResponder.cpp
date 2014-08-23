@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 #include "ola/base/Array.h"
-#include "ola/Constants.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DummyResponder.h"

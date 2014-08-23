@@ -27,8 +27,8 @@
 #include <string>
 #include <vector>
 #include "ola/acn/CID.h"
-#include "ola/Constants.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"

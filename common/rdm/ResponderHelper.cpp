@@ -23,10 +23,10 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "ola/Constants.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Macro.h"
+#include "ola/Clock.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"

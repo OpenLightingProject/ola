@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 
-#include "ola/Constants.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "slp/SLPClientCore.h"
