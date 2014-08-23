@@ -22,7 +22,7 @@
 #include <Winsock2.h>
 #endif
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Callback.h>
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>

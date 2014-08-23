@@ -199,6 +199,7 @@ void ParseFlags(int *argc, char **argv);
  *
  * @note The value must be parseable by StringToBoolTolerant.
  * @param name the name of the flag to create
+ * @param short_opt the short name of the flag. For example "-h", or "-d".
  * @param default_value the default value for the flag. Either true, or false.
  * @param help_str the string displayed when the program is asked to display
  *     the help screen

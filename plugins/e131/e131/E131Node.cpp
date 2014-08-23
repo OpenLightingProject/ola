@@ -23,7 +23,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"
 #include "plugins/e131/e131/E131Node.h"

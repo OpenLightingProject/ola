@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Callback.h"
 #include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"

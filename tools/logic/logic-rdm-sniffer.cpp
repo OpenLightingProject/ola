@@ -34,7 +34,7 @@
 #include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Callback.h>
 #include <ola/base/SysExits.h>
 #include <ola/Clock.h>

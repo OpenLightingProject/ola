@@ -20,7 +20,7 @@
  * registered in slp and the RDM responder responds to E1.33 commands.
  */
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/base/Flags.h>

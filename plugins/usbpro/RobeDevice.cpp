@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/io/SelectServerInterface.h"
 #include "plugins/usbpro/RobeDevice.h"
 #include "plugins/usbpro/RobeWidget.h"

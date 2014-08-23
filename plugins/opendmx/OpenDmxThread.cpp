@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"

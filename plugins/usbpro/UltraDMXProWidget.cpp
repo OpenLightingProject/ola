@@ -18,7 +18,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "plugins/usbpro/UltraDMXProWidget.h"
 
 namespace ola {

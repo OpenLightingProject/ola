@@ -20,7 +20,7 @@
 #include <sstream>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "plugins/shownet/ShowNetDevice.h"

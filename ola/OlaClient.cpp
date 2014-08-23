@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"

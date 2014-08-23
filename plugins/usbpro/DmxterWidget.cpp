@@ -20,7 +20,7 @@
 
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"

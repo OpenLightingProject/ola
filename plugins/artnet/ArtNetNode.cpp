@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"

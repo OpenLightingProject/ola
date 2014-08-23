@@ -114,7 +114,7 @@ std::string FQDN();
 
 /**
  * Return the machine's full hostname (FQDN)
- * @deprecated use FQDN() instead (17 Nov 2013)
+ * @deprecated use ola::network::FQDN() instead (17 Nov 2013)
  */
 std::string FullHostname();
 

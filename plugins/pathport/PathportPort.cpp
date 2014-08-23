@@ -22,7 +22,7 @@
 #include <sstream>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 
 #include "plugins/pathport/PathportPort.h"
 

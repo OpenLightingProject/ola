@@ -22,7 +22,7 @@
 #define PLUGINS_USBPRO_ENTTECUSBPROWIDGETIMPL_H_
 
 #include <deque>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Callback.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"

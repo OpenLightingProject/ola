@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"

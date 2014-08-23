@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 
 namespace ola {

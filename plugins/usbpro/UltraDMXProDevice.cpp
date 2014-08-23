@@ -25,7 +25,7 @@
 #include <string>
 
 #include "common/rpc/RpcController.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/UltraDMXProDevice.h"

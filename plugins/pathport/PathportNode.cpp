@@ -24,7 +24,7 @@
 #include <map>
 #include <vector>
 #include "ola/Logging.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/pathport/PathportNode.h"
