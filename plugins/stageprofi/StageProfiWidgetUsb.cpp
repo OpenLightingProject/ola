@@ -33,10 +33,12 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+using std::string;
+
 /*
  * Connect to the widget
  */
-bool StageProfiWidgetUsb::Connect(const std::string &path) {
+bool StageProfiWidgetUsb::Connect(const string &path) {
   struct termios newtio;
 
   int fd;

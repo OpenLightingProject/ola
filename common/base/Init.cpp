@@ -68,7 +68,7 @@ namespace ola {
 
 using std::cout;
 using std::endl;
-
+using std::string;
 
 /**
  * @private
@@ -101,8 +101,8 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 bool ServerInit(int *argc,
                 char *argv[],
                 ExportMap *export_map,
-                const std::string &first_line,
-                const std::string &description) {
+                const string &first_line,
+                const string &description) {
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
   InitLoggingFromFlags();
@@ -112,8 +112,8 @@ bool ServerInit(int *argc,
 
 bool AppInit(int *argc,
              char *argv[],
-             const std::string &first_line,
-             const std::string &description) {
+             const string &first_line,
+             const string &description) {
   ola::math::InitRandom();
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);

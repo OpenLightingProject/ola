@@ -42,6 +42,7 @@ using ola::network::IPV4Address;
 using ola::network::HostToNetwork;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 class IPAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(IPAddressTest);
@@ -108,7 +109,7 @@ void IPAddressTest::testIPV4Address() {
   OLA_ASSERT_EQ(string("172.16.4.1"), string_address3.ToString());
 
   // make sure sorting works
-  std::vector<IPV4Address> addresses;
+  vector<IPV4Address> addresses;
   addresses.push_back(address1);
   addresses.push_back(*string_address);
   addresses.push_back(string_address3);

@@ -49,7 +49,7 @@ using std::vector;
  * @param dscp_value the DSCP value to tag outgoing packets with
  * @param port the UDP port to bind to, defaults to ACN_PORT
  */
-E131Node::E131Node(const std::string &ip_address,
+E131Node::E131Node(const string &ip_address,
                    const ola::acn::CID &cid,
                    bool use_rev2,
                    bool ignore_preview,

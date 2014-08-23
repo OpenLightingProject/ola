@@ -138,7 +138,7 @@ const RDMResponse *DimmerSubDevice::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    std::vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
+    vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
 }
 
 const RDMResponse *DimmerSubDevice::GetPersonality(

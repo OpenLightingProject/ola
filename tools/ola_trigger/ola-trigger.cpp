@@ -230,7 +230,7 @@ void NewDmx(unsigned int our_universe,
             DMXTrigger *trigger,
             unsigned int universe,
             const DmxBuffer &data,
-            const std::string &error) {
+            const string &error) {
   if (universe == our_universe) {
     if (error.empty())
       trigger->NewDMX(data);

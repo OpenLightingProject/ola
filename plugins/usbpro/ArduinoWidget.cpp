@@ -36,6 +36,7 @@ namespace usbpro {
 using ola::rdm::RDMCommandSerializer;
 using std::ostringstream;
 using std::string;
+using std::vector;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
 
@@ -79,7 +80,7 @@ ArduinoWidgetImpl::~ArduinoWidgetImpl() {
  */
 void ArduinoWidgetImpl::Stop() {
   // timeout any existing message
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
@@ -99,7 +100,7 @@ void ArduinoWidgetImpl::Stop() {
 void ArduinoWidgetImpl::SendRDMRequest(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *on_complete) {
-  std::vector<std::string> packets;
+  vector<string> packets;
 
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
     on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
@@ -163,7 +164,7 @@ void ArduinoWidgetImpl::HandleMessage(uint8_t label,
  */
 void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                           unsigned int length) {
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;

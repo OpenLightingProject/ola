@@ -481,7 +481,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     if (iter == m_output_uids.end()) {
       OLA_WARN << "Can't find UID " << request->DestinationUID() <<
         " in the output universe map, dropping request";
-      std::vector<std::string> packets;
+      vector<string> packets;
       callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
       delete request;
     } else {
@@ -787,7 +787,7 @@ void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
 void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
                                   ola::rdm::rdm_response_code code,
                                   const ola::rdm::RDMResponse *response,
-                                  const std::vector<std::string> &packets) {
+                                  const vector<string> &packets) {
   tracker->current_count++;
   if (code != ola::rdm::RDM_WAS_BROADCAST)
     // propagate errors though
@@ -823,7 +823,7 @@ void Universe::HandleBroadcastDiscovery(
     broadcast_request_tracker *tracker,
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
-    const std::vector<std::string> &packets) {
+    const vector<string> &packets) {
   tracker->current_count++;
 
   if (code == ola::rdm::RDM_DUB_RESPONSE) {

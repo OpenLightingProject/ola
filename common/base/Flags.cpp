@@ -417,14 +417,14 @@ struct option *FlagRegistry::GetLongOpts(FlagMap *flag_map) {
 /**
  * @brief Given a vector of flags lines, sort them and print to stdout.
  */
-void FlagRegistry::PrintFlags(std::vector<string> *lines) {
+void FlagRegistry::PrintFlags(vector<string> *lines) {
   std::sort(lines->begin(), lines->end());
   vector<string>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter)
     cout << *iter;
 }
 
-void FlagRegistry::PrintManPageFlags(std::vector<OptionPair> *lines) {
+void FlagRegistry::PrintManPageFlags(vector<OptionPair> *lines) {
   std::sort(lines->begin(), lines->end());
   vector<OptionPair>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter) {

@@ -72,6 +72,7 @@ using ola::rdm::UIDSet;
 using std::auto_ptr;
 using std::min;
 using std::string;
+using std::vector;
 
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
@@ -472,7 +473,7 @@ const RDMResponse *SPIOutput::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    std::vector<ola::rdm::rdm_product_detail>
+    vector<ola::rdm::rdm_product_detail>
         (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 

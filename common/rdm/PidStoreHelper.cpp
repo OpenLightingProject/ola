@@ -75,7 +75,7 @@ bool PidStoreHelper::Init() {
  * @return a PidDescriptor or NULL if the pid wasn't found.
  */
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
-    const std::string &pid_name,
+    const string &pid_name,
     uint16_t manufacturer_id) const {
   if (!m_root_store)
     return NULL;
@@ -232,7 +232,7 @@ const string PidStoreHelper::SchemaAsString(
  * Return the list of pids supported including manufacturer pids.
  */
 void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
-                                   std::vector<std::string> *pid_names) const {
+                                   vector<string> *pid_names) const {
   if (!m_root_store)
     return;
 
@@ -260,7 +260,7 @@ void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
  */
 void PidStoreHelper::SupportedPids(
     uint16_t manufacturer_id,
-    std::vector<const PidDescriptor*> *descriptors) const {
+    vector<const PidDescriptor*> *descriptors) const {
   if (!m_root_store)
     return;
 

@@ -35,7 +35,7 @@ namespace ola {
 namespace io {
 
 using std::min;
-
+using std::string;
 
 /**
  * IOStack.
@@ -127,7 +127,7 @@ unsigned int IOStack::Read(uint8_t *data, unsigned int length) {
 /**
  * Read up to n bytes into the string output.
  */
-unsigned int IOStack::Read(std::string *output, unsigned int length) {
+unsigned int IOStack::Read(string *output, unsigned int length) {
   unsigned int bytes_remaining = length;
   BlockVector::iterator iter = m_blocks.begin();
   while (iter != m_blocks.end() && bytes_remaining) {

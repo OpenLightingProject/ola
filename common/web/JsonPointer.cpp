@@ -37,7 +37,7 @@ JsonPointer::JsonPointer(const JsonPointer &other)
       m_tokens(other.m_tokens) {
 }
 
-JsonPointer::JsonPointer(const std::string &path)
+JsonPointer::JsonPointer(const string &path)
     : m_is_valid(true) {
   if (path.empty()) {
     return;

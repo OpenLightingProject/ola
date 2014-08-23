@@ -35,7 +35,7 @@
  * @defgroup rdm_api RDM API
  * @brief Old interface for RDM mesage handling.
  * @deprecated This is only used by the Web Server. New code should
- * use the PidStore.
+ * use ola::rdm::PidStore.
  *
  * @} //End rdm group
  */

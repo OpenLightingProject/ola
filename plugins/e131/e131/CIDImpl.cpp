@@ -26,6 +26,8 @@
 namespace ola {
 namespace acn {
 
+using std::string;
+
 #ifdef USE_OSSP_UUID
 CIDImpl::CIDImpl()
   : m_uuid(NULL) {
@@ -102,12 +104,12 @@ bool CIDImpl::operator!=(const CIDImpl& c1) const {
 }
 
 
-std::string CIDImpl::ToString() const {
+string CIDImpl::ToString() const {
   char cid[UUID_LEN_STR + 1];
   void *str = static_cast<void*>(cid);
   size_t length = UUID_LEN_STR + 1;
   uuid_export(m_uuid, UUID_FMT_STR, &str, &length);
-  return std::string(cid);
+  return string(cid);
 }
 
 void CIDImpl::Write(ola::io::OutputBufferInterface *output) const {
@@ -140,7 +142,7 @@ CIDImpl* CIDImpl::FromData(const uint8_t *data) {
 }
 
 
-CIDImpl* CIDImpl::FromString(const std::string &cid) {
+CIDImpl* CIDImpl::FromString(const string &cid) {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_import(uuid, UUID_FMT_STR, cid.data(), cid.length());
@@ -202,10 +204,10 @@ bool CIDImpl::operator!=(const CIDImpl& c1) const {
 }
 
 
-std::string CIDImpl::ToString() const {
+string CIDImpl::ToString() const {
   char str[37];
   uuid_unparse(m_uuid, str);
-  return std::string(str);
+  return string(str);
 }
 
 
@@ -223,7 +225,7 @@ CIDImpl* CIDImpl::FromData(const uint8_t *data) {
 }
 
 
-CIDImpl* CIDImpl::FromString(const std::string &cid) {
+CIDImpl* CIDImpl::FromString(const string &cid) {
   uuid_t uuid;
   int ret = uuid_parse(cid.data(), uuid);
   if (ret == -1)

@@ -75,13 +75,13 @@ bool IPV4Address::IsWildcard() const {
   return m_address == INADDR_ANY;
 }
 
-std::string IPV4Address::ToString() const {
+string IPV4Address::ToString() const {
   struct in_addr addr;
   addr.s_addr = m_address;
   return inet_ntoa(addr);
 }
 
-IPV4Address* IPV4Address::FromString(const std::string &address) {
+IPV4Address* IPV4Address::FromString(const string &address) {
   struct in_addr addr;
   if (!IPV4StringToAddress(address, &addr))
     return NULL;
@@ -89,7 +89,7 @@ IPV4Address* IPV4Address::FromString(const std::string &address) {
   return new IPV4Address(addr.s_addr);
 }
 
-bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
+bool IPV4Address::FromString(const string &address, IPV4Address *target) {
   struct in_addr addr;
   if (!IPV4StringToAddress(address, &addr))
     return false;
@@ -97,7 +97,7 @@ bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   return true;
 }
 
-IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
+IPV4Address IPV4Address::FromStringOrDie(const string &address) {
   struct in_addr addr;
   assert(IPV4StringToAddress(address, &addr));
   return IPV4Address(addr.s_addr);

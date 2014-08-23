@@ -110,7 +110,7 @@ void E133Receiver::HandleStatusMessage(
 void E133Receiver::HandlePacket(
     const ola::plugin::e131::TransportHeader *transport_header,
     const ola::plugin::e131::E133Header *e133_header,
-    const std::string &raw_response) {
+    const string &raw_response) {
   if (!m_rdm_callback)
     return;
 

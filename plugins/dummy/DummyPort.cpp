@@ -177,7 +177,7 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
       if (i != m_responders.end()) {
         i->second->SendRDMRequest(request, callback);
       } else {
-          std::vector<string> packets;
+          vector<string> packets;
           callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
           delete request;
       }

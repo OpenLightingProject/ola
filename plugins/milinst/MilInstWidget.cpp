@@ -28,6 +28,8 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
+using std::string;
+
 /*
  * New widget
  */
@@ -41,7 +43,7 @@ MilInstWidget::~MilInstWidget() {
 /*
  * Connect to the widget
  */
-int MilInstWidget::ConnectToWidget(const std::string &path, speed_t speed) {
+int MilInstWidget::ConnectToWidget(const string &path, speed_t speed) {
   struct termios newtio;
 
   if (path.empty()) {

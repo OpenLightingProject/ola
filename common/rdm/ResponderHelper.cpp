@@ -152,7 +152,7 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
 
 const RDMResponse *ResponderHelper::GetProductDetailList(
     const RDMRequest *request,
-    const std::vector<rdm_product_detail> &product_details,
+    const vector<rdm_product_detail> &product_details,
     uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
@@ -639,7 +639,7 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
-  std::vector<Interface> interfaces =
+  vector<Interface> interfaces =
       network_manager->GetInterfacePicker()->GetInterfaces(false);
 
   if (interfaces.size() == 0) {
@@ -1010,7 +1010,7 @@ const RDMResponse *ResponderHelper::GetIPV4Address(
  */
 const RDMResponse *ResponderHelper::GetString(
     const RDMRequest *request,
-    const std::string &value,
+    const string &value,
     uint8_t queued_message_count,
     uint8_t max_length) {
   if (request->ParamDataSize()) {
@@ -1054,7 +1054,7 @@ const RDMResponse *ResponderHelper::EmptySetResponse(
 
 const RDMResponse *ResponderHelper::SetString(
     const RDMRequest *request,
-    std::string *value,
+    string *value,
     uint8_t queued_message_count,
     uint8_t max_length) {
   if (request->ParamDataSize() > max_length) {

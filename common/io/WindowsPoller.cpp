@@ -267,8 +267,8 @@ class PollData {
   bool read;
 };
 
-void CancelIOs(std::vector<PollData*>* data) {
-  std::vector<PollData*>::iterator iter = data->begin();
+void CancelIOs(vector<PollData*>* data) {
+  vector<PollData*>::iterator iter = data->begin();
   for (; iter != data->end(); ++iter) {
     PollData* poll_data = *iter;
     if (poll_data->overlapped) {
@@ -301,9 +301,9 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   int ms_to_sleep = sleep_interval.InMilliSeconds();
 
   // Prepare events
-  std::vector<HANDLE> events;
-  std::vector<PollData*> data;
-  std::vector<EventHolder*> event_holders;
+  vector<HANDLE> events;
+  vector<PollData*> data;
+  vector<EventHolder*> event_holders;
 
   DescriptorMap::iterator next, iter = m_descriptor_map.begin();
   bool success = true;
@@ -700,8 +700,8 @@ void WindowsPoller::HandleWakeup(PollData* data) {
   }
 }
 
-void WindowsPoller::FinalCheckIOs(std::vector<PollData*> data) {
-  std::vector<PollData*>::iterator iter = data.begin();
+void WindowsPoller::FinalCheckIOs(vector<PollData*> data) {
+  vector<PollData*>::iterator iter = data.begin();
   for (; iter != data.end(); ++iter) {
     PollData* poll_data = *iter;
     if (!poll_data->overlapped) {

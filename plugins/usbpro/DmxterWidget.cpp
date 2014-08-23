@@ -36,6 +36,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::string;
+using std::vector;
 
 const uint8_t DmxterWidgetImpl::RDM_REQUEST_LABEL = 0x80;
 const uint8_t DmxterWidgetImpl::RDM_BCAST_REQUEST_LABEL = 0x81;
@@ -79,7 +80,7 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
  */
 void DmxterWidgetImpl::Stop() {
   // timeout any existing message
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
@@ -108,7 +109,7 @@ void DmxterWidgetImpl::Stop() {
  */
 void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
-  std::vector<std::string> packets;
+  vector<string> packets;
 
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
@@ -240,7 +241,7 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
 void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                          unsigned int length,
                                          bool is_dub) {
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
@@ -401,7 +402,7 @@ void DmxterWidgetImpl::HandleBroadcastRDMResponse(const uint8_t *data,
     OLA_WARN << "Got strange broadcast response, length was " << length <<
       ", data was " << data;
   }
-  std::vector<std::string> packets;
+  vector<string> packets;
   m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
   m_rdm_request_callback = NULL;
 }

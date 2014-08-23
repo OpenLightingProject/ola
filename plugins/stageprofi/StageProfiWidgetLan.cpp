@@ -32,12 +32,13 @@ namespace stageprofi {
 
 using ola::network::IPV4Address;
 using ola::network::TCPSocket;
+using std::string;
 
 /*
  * Connect to the widget
  * @returns true on success, false on failure
  */
-bool StageProfiWidgetLan::Connect(const std::string &ip) {
+bool StageProfiWidgetLan::Connect(const string &ip) {
   IPV4Address ip_address;
   if (!IPV4Address::FromString(ip, &ip_address))
     return false;

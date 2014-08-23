@@ -336,7 +336,7 @@ void IOQueueTest::testStringRead() {
   queue.Write(data1, sizeof(data1));
   OLA_ASSERT_EQ(9u, queue.Size());
 
-  std::string output;
+  string output;
   OLA_ASSERT_EQ(9u, queue.Read(&output, 9u));
   OLA_ASSERT_EQ(string("abcd1234 "), output);
 }

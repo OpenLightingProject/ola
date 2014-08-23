@@ -32,7 +32,7 @@
    #include <ola/web/Json.h>
    #include <ola/web/JsonParser.h>
 
-   std::string error;
+   string error;
    JsonValue *value = JsonParser::Parse(json_string, &error);
    ~~~~~~~~~~~~~~~~~~~~~
  */
