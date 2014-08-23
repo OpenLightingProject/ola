@@ -25,7 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"

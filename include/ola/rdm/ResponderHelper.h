@@ -226,9 +226,11 @@ class ResponderHelper {
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *SetString(const RDMRequest *request,
-                                        std::string *value,
-                                        uint8_t queued_message_count = 0);
+    static const RDMResponse *SetString(
+        const RDMRequest *request,
+        std::string *value,
+        uint8_t queued_message_count = 0,
+        uint8_t max_length = MAX_RDM_STRING_LENGTH);
     static const RDMResponse *GetBoolValue(
         const RDMRequest *request, bool value,
         uint8_t queued_message_count = 0);

@@ -18,7 +18,7 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include "plugins/espnet/RunLengthDecoder.h"
 
 namespace ola {

@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "common/protocol/Ola.pb.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"

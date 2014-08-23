@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/base/Macro.h"
@@ -1055,8 +1055,9 @@ const RDMResponse *ResponderHelper::EmptySetResponse(
 const RDMResponse *ResponderHelper::SetString(
     const RDMRequest *request,
     std::string *value,
-    uint8_t queued_message_count) {
-  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    uint8_t queued_message_count,
+    uint8_t max_length) {
+  if (request->ParamDataSize() > max_length) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   const string new_label(reinterpret_cast<const char*>(request->ParamData()),

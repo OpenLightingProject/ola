@@ -28,7 +28,7 @@
 
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>

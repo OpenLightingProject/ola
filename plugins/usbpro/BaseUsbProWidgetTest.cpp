@@ -24,7 +24,7 @@
 
 #include "ola/testing/TestUtils.h"
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -180,7 +180,7 @@ void BaseUsbProWidgetTest::testSendDMX() {
   buffer.SetFromString("0,1,2,3,4");
 
   // expected message
-  uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
+  uint8_t dmx_frame_data[] = {ola::DMX512_START_CODE, 0, 1, 2, 3, 4};
   m_endpoint->AddExpectedUsbProMessage(
       DMX_FRAME_LABEL,
       dmx_frame_data,
@@ -193,7 +193,7 @@ void BaseUsbProWidgetTest::testSendDMX() {
 
   // now test an empty frame
   DmxBuffer buffer2;
-  uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
+  uint8_t empty_frame_data[] = {ola::DMX512_START_CODE};  // just the start code
   m_endpoint->AddExpectedUsbProMessage(
       DMX_FRAME_LABEL,
       empty_frame_data,

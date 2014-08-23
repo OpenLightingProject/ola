@@ -40,7 +40,7 @@ DmxBuffer BufferFromString(const string &data) {
 
 DmxBuffer BufferFromValue(uint8_t value) {
   DmxBuffer buffer;
-  buffer.SetRangeToValue(0, value, DMX_UNIVERSE_SIZE);
+  buffer.SetRangeToValue(0, value, ola::DMX_UNIVERSE_SIZE);
   return buffer;
 }
 

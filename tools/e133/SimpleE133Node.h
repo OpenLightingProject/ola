@@ -23,7 +23,7 @@
 #ifndef TOOLS_E133_SIMPLEE133NODE_H_
 #define TOOLS_E133_SIMPLEE133NODE_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/base/Init.h>
 #include <ola/acn/CID.h>
 #include <ola/e133/SLPThread.h>

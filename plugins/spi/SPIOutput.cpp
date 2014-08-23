@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 #include "ola/base/Array.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/file/Util.h"
 #include "ola/network/NetworkUtils.h"
@@ -539,7 +539,7 @@ const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
         m_identify_mode ? "on" : "off");
     DmxBuffer identify_buffer;
     if (m_identify_mode) {
-      identify_buffer.SetRangeToValue(0, DMX_MAX_CHANNEL_VALUE,
+      identify_buffer.SetRangeToValue(0, DMX_MAX_SLOT_VALUE,
                                       DMX_UNIVERSE_SIZE);
     } else {
       identify_buffer.Blackout();

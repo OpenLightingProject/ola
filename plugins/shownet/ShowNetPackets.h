@@ -22,22 +22,25 @@
 #define PLUGINS_SHOWNET_SHOWNETPACKETS_H_
 
 /**
+ * @namespace ola::plugin::shownet
  * Some reference info:
  * https://code.google.com/p/open-lighting/issues/detail?id=218
  */
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 
 namespace ola {
 namespace plugin {
 namespace shownet {
 
-enum { SHOWNET_MAC_LENGTH = 6 };
+enum { SHOWNET_MAC_LENGTH = ola::network::MACAddress::LENGTH };
 enum { SHOWNET_NAME_LENGTH = 9 };
 enum { SHOWNET_SPARE_LENGTH = 22 };
 
 // Assume this is 512.
-enum { SHOWNET_DMX_DATA_LENGTH = 512 };
+enum { SHOWNET_DMX_DATA_LENGTH = DMX_UNIVERSE_SIZE };
 
 enum { SHOWNET_COMPRESSED_DATA_LENGTH = 1269 };
 
@@ -84,7 +87,7 @@ typedef struct shownet_compressed_dmx_s shownet_compressed_dmx;
 // The union of all packets.
 typedef struct {
   uint16_t type;   // packet type
-  uint8_t  ip[4];  // ip of sender
+  uint8_t  ip[ola::network::IPV4Address::LENGTH];  // ip of sender
   union {
     shownet_dmx dmx;
     shownet_compressed_dmx compressed_dmx;

@@ -21,7 +21,7 @@
 #ifndef PLUGINS_ARTNET_ARTNETPACKETS_H_
 #define PLUGINS_ARTNET_ARTNETPACKETS_H_
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/rdm/UID.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
