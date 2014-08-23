@@ -24,7 +24,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
@@ -212,7 +212,7 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   if (base_start_address < 1 ||
-      base_start_address + total_footprint - 1 > DMX_MAX_CHANNEL_VALUE) {
+      base_start_address + total_footprint - 1 > DMX_MAX_SLOT_VALUE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 

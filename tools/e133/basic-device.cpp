@@ -20,7 +20,7 @@
  * I'm using this for scale testing.
  */
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>

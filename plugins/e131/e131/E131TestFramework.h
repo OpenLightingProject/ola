@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/acn/CID.h"
 #include "ola/io/Descriptor.h"
@@ -200,7 +200,7 @@ class NodeSimpleSend: public NodeAction {
     explicit NodeSimpleSend(uint8_t priority, const std::string &data = "")
         : m_priority(priority) {
       if (data.empty())
-        m_buffer.SetRangeToValue(0, m_priority, DMX_UNIVERSE_SIZE);
+        m_buffer.SetRangeToValue(0, m_priority, ola::DMX_UNIVERSE_SIZE);
       else
         m_buffer.SetFromString(data);
     }
@@ -244,7 +244,7 @@ class NodeTerminateWithData: public NodeAction {
     void Tick() {
       if (!m_sent) {
         ola::DmxBuffer output;
-        output.SetRangeToValue(0, m_data, DMX_UNIVERSE_SIZE);
+        output.SetRangeToValue(0, m_data, ola::DMX_UNIVERSE_SIZE);
         m_node->StreamTerminated(UNIVERSE_ID, output);
       }
       m_sent = true;
@@ -275,12 +275,12 @@ class NodeVarySequenceNumber: public NodeAction {
       if (!m_counter || random) {
         // start off with good data
         ola::DmxBuffer output;
-        output.SetRangeToValue(0, m_good, DMX_UNIVERSE_SIZE);
+        output.SetRangeToValue(0, m_good, ola::DMX_UNIVERSE_SIZE);
         m_node->SendDMX(UNIVERSE_ID, output);
       } else {
         // fake an old packet, 1 to 18 packets behind.
         ola::DmxBuffer output;
-        output.SetRangeToValue(0, m_bad, DMX_UNIVERSE_SIZE);
+        output.SetRangeToValue(0, m_bad, ola::DMX_UNIVERSE_SIZE);
         int offset = ola::math::Random(1, 18);
         m_node->SendDMXWithSequenceOffset(UNIVERSE_ID, output,
                                           static_cast<int8_t>(-offset));

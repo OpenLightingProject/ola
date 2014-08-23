@@ -35,7 +35,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {

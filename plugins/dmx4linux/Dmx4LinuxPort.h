@@ -22,7 +22,7 @@
 #define PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/dmx4linux/Dmx4LinuxDevice.h"
 #include "plugins/dmx4linux/Dmx4LinuxSocket.h"

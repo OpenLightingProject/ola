@@ -20,7 +20,7 @@
 
 #include <string.h>
 #include <errno.h>
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 
 #include "plugins/dmx4linux/Dmx4LinuxPort.h"

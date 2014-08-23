@@ -25,7 +25,7 @@
 #ifndef INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 #define INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Macro.h>
 #include <ola/dmx/SourcePriorities.h>

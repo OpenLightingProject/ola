@@ -27,7 +27,7 @@
 #include <netinet/in.h>
 #endif
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
 #include "plugins/sandnet/SandNetCommon.h"

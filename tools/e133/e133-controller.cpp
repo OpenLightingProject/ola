@@ -23,7 +23,7 @@
  * response.
  */
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
@@ -182,7 +182,7 @@ SimpleE133Controller::SimpleE133Controller(
           &m_udp_socket,
           NewCallback(this, &SimpleE133Controller::HandleStatusMessage),
           NewCallback(this, &SimpleE133Controller::HandlePacket)),
-      m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
+      m_src_uid(ola::OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {

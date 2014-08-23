@@ -22,7 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/dmx/RunLengthEncoder.h"
 #include "ola/testing/TestUtils.h"
@@ -63,7 +63,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RunLengthEncoderTest);
  * allocate a scratch pad
  */
 void RunLengthEncoderTest::setUp() {
-  m_dst = new uint8_t[DMX_UNIVERSE_SIZE];
+  m_dst = new uint8_t[ola::DMX_UNIVERSE_SIZE];
 }
 
 
@@ -83,7 +83,7 @@ void RunLengthEncoderTest::checkEncode(const DmxBuffer &buffer,
                                        bool is_complete,
                                        const uint8_t *expected_data,
                                        unsigned int expected_length) {
-  memset(m_dst, 0, DMX_UNIVERSE_SIZE);
+  memset(m_dst, 0, ola::DMX_UNIVERSE_SIZE);
   OLA_ASSERT_EQ(is_complete,
                 m_encoder.Encode(buffer, m_dst, &dst_size));
   OLA_ASSERT_EQ(expected_length, dst_size);
@@ -103,7 +103,7 @@ void RunLengthEncoderTest::testEncode() {
                                     1};
   DmxBuffer buffer(TEST_DATA, sizeof(TEST_DATA));
 
-  checkEncode(buffer, DMX_UNIVERSE_SIZE, true, EXPECTED_DATA,
+  checkEncode(buffer, ola::DMX_UNIVERSE_SIZE, true, EXPECTED_DATA,
               sizeof(EXPECTED_DATA));
 
   checkEncode(buffer, 4, false, EXPECTED_DATA2, sizeof(EXPECTED_DATA2));
@@ -127,7 +127,7 @@ void RunLengthEncoderTest::testEncode2() {
   const uint8_t EXPECTED_DATA[] = {0x8A, 0};
   DmxBuffer buffer(TEST_DATA, sizeof(TEST_DATA));
 
-  checkEncode(buffer, DMX_UNIVERSE_SIZE, true, EXPECTED_DATA,
+  checkEncode(buffer, ola::DMX_UNIVERSE_SIZE, true, EXPECTED_DATA,
               sizeof(EXPECTED_DATA));
 
   checkEncode(buffer, 2, true, EXPECTED_DATA, sizeof(EXPECTED_DATA));
@@ -144,7 +144,7 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
   DmxBuffer src(data, data_size);
   DmxBuffer dst;
 
-  unsigned int dst_size = DMX_UNIVERSE_SIZE;
+  unsigned int dst_size = ola::DMX_UNIVERSE_SIZE;
   memset(m_dst, 0, dst_size);
   OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, &dst_size));
 

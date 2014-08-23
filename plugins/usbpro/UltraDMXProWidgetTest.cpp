@@ -21,7 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
@@ -72,7 +72,7 @@ void UltraDMXProWidgetTest::testPrimarySendDMX() {
   buffer.SetFromString("0,1,2,3,4");
 
   // expected message
-  uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
+  uint8_t dmx_frame_data[] = {ola::DMX512_START_CODE, 0, 1, 2, 3, 4};
   m_endpoint->AddExpectedUsbProMessage(
       PRIMARY_DMX_LABEL,
       dmx_frame_data,
@@ -85,7 +85,7 @@ void UltraDMXProWidgetTest::testPrimarySendDMX() {
 
   // now test an empty frame
   DmxBuffer buffer2;
-  uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
+  uint8_t empty_frame_data[] = {ola::DMX512_START_CODE};  // just the start code
   m_endpoint->AddExpectedUsbProMessage(
       PRIMARY_DMX_LABEL,
       empty_frame_data,
@@ -106,7 +106,7 @@ void UltraDMXProWidgetTest::testSecondarySendDMX() {
   buffer.SetFromString("0,1,2,3,4");
 
   // expected message
-  uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
+  uint8_t dmx_frame_data[] = {ola::DMX512_START_CODE, 0, 1, 2, 3, 4};
   m_endpoint->AddExpectedUsbProMessage(
       SECONDARY_DMX_LABEL,
       dmx_frame_data,
@@ -119,7 +119,7 @@ void UltraDMXProWidgetTest::testSecondarySendDMX() {
 
   // now test an empty frame
   DmxBuffer buffer2;
-  uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
+  uint8_t empty_frame_data[] = {ola::DMX512_START_CODE};  // just the start code
   m_endpoint->AddExpectedUsbProMessage(
       SECONDARY_DMX_LABEL,
       empty_frame_data,

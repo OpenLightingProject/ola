@@ -28,7 +28,7 @@
 #endif
 
 #include "ola/network/MACAddress.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 
 namespace ola {
 namespace plugin {

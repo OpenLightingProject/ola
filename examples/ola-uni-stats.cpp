@@ -22,7 +22,7 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
@@ -80,7 +80,7 @@ class UniverseTracker {
       UniverseStats() { Reset(); }
 
       void Reset() {
-        shortest_frame = DMX_UNIVERSE_SIZE + 1,
+        shortest_frame = ola::DMX_UNIVERSE_SIZE + 1,
         longest_frame = 0;
         frame_count = 0;
         frame_changes = 0;
@@ -150,7 +150,7 @@ void UniverseTracker::PrintStats() {
       ", Frames/sec: " << fps << endl;
     cout << "  Frame changes: " << stats.frame_changes << endl;
     cout << "  Smallest Frame: ";
-    if (stats.shortest_frame == DMX_UNIVERSE_SIZE + 1)
+    if (stats.shortest_frame == ola::DMX_UNIVERSE_SIZE + 1)
       cout << "N/A";
     else
       cout << stats.shortest_frame;

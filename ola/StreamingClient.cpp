@@ -19,7 +19,7 @@
  */
 
 #include <ola/AutoStart.h>
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
