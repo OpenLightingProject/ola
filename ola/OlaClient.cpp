@@ -93,7 +93,7 @@ void OlaClient::FetchCandidatePorts(unsigned int universe_id,
 }
 
 void OlaClient::ConfigureDevice(unsigned int device_alias,
-                                const std::string &msg,
+                                const string &msg,
                                 ConfigureDeviceCallback *callback) {
   m_core->ConfigureDevice(device_alias, msg, callback);
 }
@@ -124,7 +124,7 @@ void OlaClient::FetchUniverseInfo(unsigned int universe,
 }
 
 void OlaClient::SetUniverseName(unsigned int universe,
-                                const std::string &name,
+                                const string &name,
                                 SetCallback *callback) {
   m_core->SetUniverseName(universe, name, callback);
 }

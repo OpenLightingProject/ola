@@ -30,6 +30,7 @@
 
 using ola::DmxBuffer;
 using std::string;
+using std::vector;
 
 DmxBuffer BufferFromString(const string &data) {
   DmxBuffer buffer;
@@ -234,7 +235,7 @@ int main(int argc, char* argv[]) {
   bool interactive_mode = false;
 
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  std::vector<TestState*> test_states;
+  vector<TestState*> test_states;
   TestState **ptr = states;
   while (*ptr)
     test_states.push_back(*ptr++);

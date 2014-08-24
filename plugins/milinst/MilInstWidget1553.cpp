@@ -44,7 +44,7 @@ const uint16_t MilInstWidget1553::CHANNELS_512 = 512;
 const uint16_t MilInstWidget1553::DEFAULT_CHANNELS = CHANNELS_128;
 
 
-MilInstWidget1553::MilInstWidget1553(const std::string &path,
+MilInstWidget1553::MilInstWidget1553(const string &path,
                                      Preferences *preferences)
     : MilInstWidget(path),
       m_preferences(preferences) {

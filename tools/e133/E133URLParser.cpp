@@ -30,6 +30,7 @@ namespace e133 {
 using ola::network::IPV4Address;
 using ola::rdm::UID;
 using std::string;
+using std::vector;
 
 /**
  * Extract the IP Address and UID from a E1.33 SLP URL.
@@ -54,7 +55,7 @@ bool ParseE133URL(const string &url,
 
   const string remainder = url.substr(prefix_size);
 
-  std::vector<string> url_parts;
+  vector<string> url_parts;
   ola::StringSplit(remainder, url_parts, "/");
   if (url_parts.size() != 2)
     return false;

@@ -134,7 +134,7 @@ void ManagementEndpoint::SendRDMRequest(const RDMRequest *request,
     // This request just goes to the other responders.
     m_controller->SendRDMRequest(request, on_complete);
   } else {
-    std::vector<std::string> packets;
+    vector<string> packets;
     delete request;
     on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
   }

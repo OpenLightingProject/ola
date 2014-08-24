@@ -115,7 +115,7 @@ Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
  * done with it.
  * @return a pointer to a vector of Universe*
  */
-void UniverseStore::GetList(std::vector<Universe*> *universes) const {
+void UniverseStore::GetList(vector<Universe*> *universes) const {
   universes->reserve(UniverseCount());
 
   universe_map::const_iterator iter;

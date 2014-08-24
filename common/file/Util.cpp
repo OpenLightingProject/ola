@@ -129,8 +129,8 @@ void FindMatchingFiles(const string &directory,
 #endif
 }
 
-void ListDirectory(const std::string& directory,
-                   std::vector<std::string> *files) {
+void ListDirectory(const string& directory,
+                   vector<string> *files) {
   FindMatchingFiles(directory, "", files);
 }
 

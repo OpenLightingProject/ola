@@ -88,7 +88,7 @@ bool RDMCommand::operator==(const RDMCommand &other) const {
 }
 
 
-std::string RDMCommand::ToString() const {
+string RDMCommand::ToString() const {
   std::ostringstream str;
   str << m_source << " -> " << m_destination << ", Trans # " <<
     static_cast<int>(m_transaction_number) << ", Port ID " <<
@@ -351,7 +351,7 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
 /**
  * Inflate from some data
  */
-RDMRequest* RDMRequest::InflateFromData(const std::string &data) {
+RDMRequest* RDMRequest::InflateFromData(const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -519,7 +519,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 /**
  * Inflate from some data
  */
-RDMResponse* RDMResponse::InflateFromData(const std::string &data,
+RDMResponse* RDMResponse::InflateFromData(const string &data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
@@ -532,7 +532,7 @@ RDMResponse* RDMResponse::InflateFromData(const std::string &data,
 /**
  * Inflate from some data
  */
-RDMResponse* RDMResponse::InflateFromData(const std::string &data,
+RDMResponse* RDMResponse::InflateFromData(const string &data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request,
                                           uint8_t transaction_number) {
@@ -810,7 +810,7 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
  * Inflate a discovery request from some data.
  */
 RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
-    const std::string &data) {
+    const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -920,7 +920,7 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
  * Inflate a discovery response from some data.
  */
 RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
-    const std::string &data) {
+    const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }

@@ -40,8 +40,8 @@ const unsigned int UartDmxDevice::DEFAULT_MALF = 100;
 
 UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
                              class Preferences *preferences,
-                             const std::string &name,
-                             const std::string &path)
+                             const string &name,
+                             const string &path)
     : Device(owner, name),
       m_preferences(preferences),
       m_name(name),

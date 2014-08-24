@@ -25,6 +25,8 @@
 namespace ola {
 namespace rpc {
 
+using std::string;
+
 RpcController::RpcController()
     : m_failed(false),
       m_error_text("") {
@@ -34,7 +36,7 @@ void RpcController::Reset() {
   m_failed = false;
 }
 
-void RpcController::SetFailed(const std::string &reason) {
+void RpcController::SetFailed(const string &reason) {
   m_failed = true;
   m_error_text = reason;
 }

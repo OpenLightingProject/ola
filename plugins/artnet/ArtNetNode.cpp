@@ -270,7 +270,7 @@ bool ArtNetNodeImpl::Stop() {
     return false;
 
   // clean up any in-flight rdm requests
-  vector<std::string> packets;
+  vector<string> packets;
   InputPorts::iterator iter = m_input_ports.begin();
   for (; iter != m_input_ports.end(); ++iter) {
     InputPort *port = *iter;
@@ -737,7 +737,7 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                                     const RDMRequest *request,
                                     RDMCallback *on_complete) {
-  vector<std::string> packets;
+  vector<string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
     on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
                      NULL,
@@ -1462,7 +1462,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     uint8_t universe_address,
     ola::rdm::rdm_response_code code,
     const RDMResponse *raw_response,
-    const vector<std::string>&) {
+    const vector<string>&) {
   auto_ptr<const RDMResponse> response(raw_response);
   OutputPort *port = GetEnabledOutputPort(port_id, "ArtRDM");
   if (!port)
@@ -1637,7 +1637,7 @@ void ArtNetNodeImpl::TimeoutRDMRequest(InputPort *port) {
   port->pending_request = NULL;
   ola::rdm::RDMCallback *callback = port->rdm_request_callback;
   port->rdm_request_callback = NULL;
-  vector<std::string> packets;
+  vector<string> packets;
   callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
 }
 
@@ -2075,7 +2075,7 @@ void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
 void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
   if (!CheckInputPortId(port_id)) {
-    vector<std::string> packets;
+    vector<string> packets;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   } else {

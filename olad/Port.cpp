@@ -31,6 +31,7 @@
 namespace ola {
 
 using std::string;
+using std::vector;
 
 /*
  * Create a new basic input port
@@ -114,7 +115,7 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
         request,
         callback);
   } else {
-    std::vector<std::string> packets;
+    vector<string> packets;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   }
@@ -197,7 +198,7 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                      ola::rdm::RDMCallback *callback) {
   // broadcasts go to every port
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
     callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);

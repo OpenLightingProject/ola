@@ -23,8 +23,8 @@
  * response.
  */
 
-#include <ola/Constants.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>

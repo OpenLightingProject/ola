@@ -26,7 +26,6 @@
 #include <vector>
 #include "common/rdm/FakeNetworkManager.h"
 #include "ola/Constants.h"
-#include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"

@@ -89,7 +89,7 @@ bool IPV4SocketAddress::FromString(const string &input,
 
 
 IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
-    const std::string &address) {
+    const string &address) {
   IPV4SocketAddress socket_address;
   assert(FromString(address, &socket_address));
   return socket_address;

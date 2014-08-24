@@ -605,43 +605,43 @@ bool JsonObject::Equals(const JsonObject &other) const {
   return true;
 }
 
-void JsonObject::Add(const std::string &key, const std::string &value) {
+void JsonObject::Add(const string &key, const string &value) {
   STLReplaceAndDelete(&m_members, key, new JsonString(value));
 }
 
-void JsonObject::Add(const std::string &key, const char *value) {
+void JsonObject::Add(const string &key, const char *value) {
   Add(key, string(value));
 }
 
-void JsonObject::Add(const std::string &key, unsigned int i) {
+void JsonObject::Add(const string &key, unsigned int i) {
   STLReplaceAndDelete(&m_members, key, new JsonUInt(i));
 }
 
-void JsonObject::Add(const std::string &key, int i) {
+void JsonObject::Add(const string &key, int i) {
   STLReplaceAndDelete(&m_members, key, new JsonInt(i));
 }
 
-void JsonObject::Add(const std::string &key, double d) {
+void JsonObject::Add(const string &key, double d) {
   STLReplaceAndDelete(&m_members, key, new JsonDouble(d));
 }
 
-void JsonObject::Add(const std::string &key, bool value) {
+void JsonObject::Add(const string &key, bool value) {
   STLReplaceAndDelete(&m_members, key, new JsonBool(value));
 }
 
-void JsonObject::Add(const std::string &key) {
+void JsonObject::Add(const string &key) {
   STLReplaceAndDelete(&m_members, key, new JsonNull());
 }
 
-void JsonObject::AddRaw(const std::string &key, const std::string &value) {
+void JsonObject::AddRaw(const string &key, const string &value) {
   STLReplaceAndDelete(&m_members, key, new JsonRawValue(value));
 }
 
-bool JsonObject::Remove(const std::string &key) {
+bool JsonObject::Remove(const string &key) {
   return STLRemoveAndDelete(&m_members, key);
 }
 
-bool JsonObject::ReplaceValue(const std::string &key, JsonValue *value) {
+bool JsonObject::ReplaceValue(const string &key, JsonValue *value) {
   MemberMap::iterator iter = m_members.find(key);
   if (iter == m_members.end()) {
     delete value;
