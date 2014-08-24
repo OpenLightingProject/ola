@@ -46,14 +46,14 @@ const PidStore *RootPidStore::ManufacturerStore(uint16_t esta_id) const {
 }
 
 const PidDescriptor *RootPidStore::GetDescriptor(
-    const std::string &pid_name) const {
+    const string &pid_name) const {
   string canonical_pid_name = pid_name;
   ola::ToUpper(&canonical_pid_name);
   return InternalESTANameLookup(canonical_pid_name);
 }
 
 const PidDescriptor *RootPidStore::GetDescriptor(
-    const std::string &pid_name,
+    const string &pid_name,
     uint16_t manufacturer_id) const {
   string canonical_pid_name = pid_name;
   ola::ToUpper(&canonical_pid_name);
@@ -106,14 +106,14 @@ const PidDescriptor *RootPidStore::InternalESTANameLookup(
   return NULL;
 }
 
-const RootPidStore *RootPidStore::LoadFromFile(const std::string &file,
+const RootPidStore *RootPidStore::LoadFromFile(const string &file,
                                                bool validate) {
   PidStoreLoader loader;
   return loader.LoadFromFile(file, validate);
 }
 
 const RootPidStore *RootPidStore::LoadFromDirectory(
-    const std::string &directory,
+    const string &directory,
     bool validate) {
   PidStoreLoader loader;
   string data_source = directory;
@@ -179,7 +179,7 @@ const PidDescriptor *PidStore::LookupPID(uint16_t pid_value) const {
  * Lookup a PID by name
  * @param pid_name the name of the pid.
  */
-const PidDescriptor *PidStore::LookupPID(const std::string &pid_name) const {
+const PidDescriptor *PidStore::LookupPID(const string &pid_name) const {
   PidNameMap::const_iterator iter = m_pid_by_name.find(pid_name);
   if (iter == m_pid_by_name.end())
     return NULL;

@@ -42,6 +42,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 // The DMX frames have an extra 4 bytes at the end
 const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
@@ -65,7 +66,7 @@ RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
  * Stop the widget.
  */
 void RobeWidgetImpl::Stop() {
-  std::vector<string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
@@ -102,7 +103,7 @@ bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
  */
 void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                     ola::rdm::RDMCallback *on_complete) {
-  std::vector<string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -285,7 +286,7 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
   OLA_DEBUG << "Got RDM Response from Robe Widget, length " << length;
-  std::vector<string> packets;
+  vector<string> packets;
   if (m_unmute_callback) {
     UnMuteDeviceCallback *callback = m_unmute_callback;
     m_unmute_callback = NULL;
@@ -350,7 +351,7 @@ void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
     else
       callback->Run(data, length - RDM_PADDING_BYTES);
   } else if (m_rdm_request_callback) {
-    std::vector<string> packets;
+    vector<string> packets;
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
     auto_ptr<const RDMRequest> request(m_pending_request);

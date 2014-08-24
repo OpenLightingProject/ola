@@ -22,8 +22,8 @@
 #include <memory>
 #include <queue>
 
-#include "ola/Constants.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/BaseRobeWidget.h"

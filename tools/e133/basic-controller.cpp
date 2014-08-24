@@ -20,9 +20,9 @@
  * I'm using this for scale testing.
  */
 
-#include <ola/Constants.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>

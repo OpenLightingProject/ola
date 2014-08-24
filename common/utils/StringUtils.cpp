@@ -56,7 +56,7 @@ void StringSplit(const string &input,
   }
 }
 
-void StringTrim(std::string *input) {
+void StringTrim(string *input) {
   string characters_to_trim = " \n\r\t";
   string::size_type start = input->find_first_not_of(characters_to_trim);
   string::size_type end = input->find_last_not_of(characters_to_trim);

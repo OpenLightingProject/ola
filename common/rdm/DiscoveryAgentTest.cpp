@@ -35,7 +35,7 @@ using ola::rdm::DiscoveryAgent;
 using std::vector;
 
 
-typedef std::vector<class MockResponderInterface*> ResponderList;
+typedef vector<class MockResponderInterface*> ResponderList;
 
 
 class DiscoveryAgentTest: public CppUnit::TestFixture {

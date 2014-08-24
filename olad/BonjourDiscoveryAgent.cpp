@@ -80,8 +80,8 @@ void DNSSDDescriptor::PerformRead() {
 }
 
 BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
-    const std::string &service_name,
-    const std::string &type,
+    const string &service_name,
+    const string &type,
     uint16_t port,
     const RegisterOptions &options)
     : RegisterOptions(options),

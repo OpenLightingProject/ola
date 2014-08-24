@@ -27,8 +27,8 @@
 #include <string>
 #include <vector>
 #include "ola/acn/CID.h"
-#include "ola/Constants.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
@@ -44,7 +44,7 @@ using ola::plugin::e131::E131Node;
 using std::cout;
 using std::endl;
 using std::string;
-
+using std::vector;
 
 bool StateManager::Init() {
   m_cid1 = CID::Generate();
@@ -201,7 +201,7 @@ void StateManager::NextState() {
 void StateManager::ShowStatus() {
   if (!m_failed_tests.empty()) {
     cout << "Some tests failed:" << endl;
-    std::vector<TestState*>::iterator iter;
+    vector<TestState*>::iterator iter;
     for (iter = m_failed_tests.begin(); iter != m_failed_tests.end(); ++iter) {
       cout << "  " << (*iter)->StateName() << endl;
     }

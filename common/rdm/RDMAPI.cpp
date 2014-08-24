@@ -200,7 +200,7 @@ bool RDMAPI::GetQueuedMessage(
         const UID &uid,
         rdm_status_type status_type,
         QueuedMessageHandler *handler,
-        std::string *error) {
+        string *error) {
   if (!handler) {
     if (error)
       *error = "Callback is null, this is a programming error";
@@ -235,8 +235,8 @@ bool RDMAPI::GetQueuedMessage(
         SingleUseCallback3<void,
                            const ResponseStatus&,
                            uint16_t,
-                           const std::string&> *callback,
-        std::string *error) {
+                           const string&> *callback,
+        string *error) {
   if (CheckCallback(error, callback))
     return false;
   uint8_t type = status_type;
@@ -267,7 +267,7 @@ bool RDMAPI::GetStatusMessage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<StatusMessage>&> *callback,
-    std::string *error) {
+    string *error) {
   if (CheckCallback(error, callback))
     return false;
   if (CheckNotBroadcast(uid, error, callback))
@@ -3044,7 +3044,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
       description.max_value = NetworkToHost(raw_description.max_value);
       unsigned int label_size = data_size - (
           sizeof(raw_description) - LABEL_SIZE - 1);
-      description.description = std::string(raw_description.description,
+      description.description = string(raw_description.description,
                                             label_size);
       ShortenString(&description.description);
     } else {
@@ -3264,7 +3264,7 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
              std::min(static_cast<unsigned int>(data.size()), max));
       personality = raw_description.personality;
       dmx_slots = NetworkToHost(raw_description.dmx_slots);
-      description = std::string(raw_description.description, data_size - min);
+      description = string(raw_description.description, data_size - min);
       ShortenString(&description);
     } else {
       std::ostringstream str;
@@ -3368,7 +3368,7 @@ void RDMAPI::_HandleGetSlotDescription(
       raw_description.description[LABEL_SIZE] = 0;
       memcpy(&raw_description, data.data(), data.size());
       slot_index = NetworkToHost(raw_description.slot_index);
-      description = std::string(raw_description.description,
+      description = string(raw_description.description,
                                 data.size() - min);
       ShortenString(&description);
     } else {
@@ -3460,7 +3460,7 @@ void RDMAPI::_HandleGetSensorDefinition(
       sensor.normal_min = NetworkToHost(raw_description.normal_min);
       sensor.normal_max = NetworkToHost(raw_description.normal_max);
       sensor.recorded_value_support = raw_description.recorded_value_support;
-      sensor.description = std::string(raw_description.description,
+      sensor.description = string(raw_description.description,
                                        data_size - min);
       ShortenString(&sensor.description);
     } else {
@@ -3559,7 +3559,7 @@ void RDMAPI::_HandleSelfTestDescription(
       raw_description.description[LABEL_SIZE] = 0;
       memcpy(&raw_description, data.data(), data.size());
       self_test_number = raw_description.self_test_number;
-      description = std::string(raw_description.description,
+      description = string(raw_description.description,
                                 data.size() - min);
       ShortenString(&description);
     } else {

@@ -42,8 +42,8 @@
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
 #endif
-#include <ola/Constants.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>

@@ -30,6 +30,8 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
+using std::string;
+
 // Based on standard Renard firmware
 const uint8_t RenardWidget::RENARD_COMMAND_PAD = 0x7D;
 const uint8_t RenardWidget::RENARD_COMMAND_START_PACKET = 0x7E;
@@ -79,7 +81,7 @@ bool RenardWidget::Connect() {
 /*
  * Connect to the widget
  */
-int RenardWidget::ConnectToWidget(const std::string &path, speed_t speed) {
+int RenardWidget::ConnectToWidget(const string &path, speed_t speed) {
   struct termios newtio;
 
   if (path.empty()) {

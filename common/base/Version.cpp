@@ -40,7 +40,7 @@ unsigned int Version::GetRevision() {
   return OLA_VERSION_REVISION;
 }
 
-std::string Version::GetVersion() {
+string Version::GetVersion() {
   std::ostringstream str;
   str << GetMajor() << "." << GetMinor() << "." << GetRevision();
   return str.str();

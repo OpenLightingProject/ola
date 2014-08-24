@@ -32,6 +32,7 @@
 using ola::network::MACAddress;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 class MACAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(MACAddressTest);
@@ -95,7 +96,7 @@ void MACAddressTest::testMACAddress() {
   OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), string_address4.ToString());
 
   // make sure sorting works
-  std::vector<MACAddress> addresses;
+  vector<MACAddress> addresses;
   addresses.push_back(address1);
   addresses.push_back(*string_address);
   addresses.push_back(string_address4);
@@ -119,6 +120,6 @@ void MACAddressTest::testMACAddress() {
 void MACAddressTest::testMACAddressToString() {
   uint8_t hw_address[ola::network::MACAddress::LENGTH] = {
     0x0, 0xa, 0xff, 0x10, 0x25, 0x4};
-  const std::string mac_address = MACAddress(hw_address).ToString();
-  OLA_ASSERT_EQ(std::string("00:0a:ff:10:25:04"), mac_address);
+  const string mac_address = MACAddress(hw_address).ToString();
+  OLA_ASSERT_EQ(string("00:0a:ff:10:25:04"), mac_address);
 }

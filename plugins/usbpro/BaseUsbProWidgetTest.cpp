@@ -24,9 +24,9 @@
 
 #include "ola/testing/TestUtils.h"
 
+#include "ola/Callback.h"
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
-#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"

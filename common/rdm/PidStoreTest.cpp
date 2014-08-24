@@ -45,6 +45,7 @@ using ola::rdm::RootPidStore;
 using std::auto_ptr;
 using std::endl;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 
@@ -186,7 +187,7 @@ void PidStoreTest::testPidStoreLoad() {
   PidStoreLoader loader;
   // This is a stringstream not a ostringstream as the other end needs an
   // istream
-  std::stringstream str;
+  stringstream str;
 
   // check that this fails to load
   const RootPidStore *empty_root_store = loader.LoadFromStream(&str);

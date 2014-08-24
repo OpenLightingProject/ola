@@ -22,8 +22,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include <ola/Constants.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>

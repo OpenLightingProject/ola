@@ -28,6 +28,8 @@
 namespace ola {
 
 using std::set;
+using std::string;
+using std::vector;
 
 /**
  * Add a client to the broker
@@ -77,7 +79,7 @@ void ClientBroker::RequestComplete(const Client *key,
                                    ola::rdm::RDMCallback *callback,
                                    ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
-                                   const std::vector<std::string> &packets) {
+                                   const vector<string> &packets) {
   if (!STLContains(m_clients, key)) {
     OLA_INFO << "Client no longer exists, cleaning up from RDM response";
     delete response;

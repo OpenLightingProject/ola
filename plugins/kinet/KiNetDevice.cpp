@@ -54,7 +54,7 @@ using std::vector;
  */
 KiNetDevice::KiNetDevice(
     AbstractPlugin *owner,
-    const std::vector<ola::network::IPV4Address> &power_supplies,
+    const vector<ola::network::IPV4Address> &power_supplies,
     PluginAdaptor *plugin_adaptor)
     : Device(owner, "KiNet Device"),
       m_power_supplies(power_supplies),

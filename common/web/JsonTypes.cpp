@@ -26,7 +26,7 @@ namespace web {
 
 using std::string;
 
-std::string JsonTypeToString(JsonType type) {
+string JsonTypeToString(JsonType type) {
   switch (type) {
     case JSON_ARRAY:
       return "array";

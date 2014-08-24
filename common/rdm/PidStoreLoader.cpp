@@ -76,7 +76,7 @@ const RootPidStore *PidStoreLoader::LoadFromFile(const string &file,
  * @returns A pointer to a new RootPidStore or NULL if loading failed.
  */
 const RootPidStore *PidStoreLoader::LoadFromDirectory(
-    const std::string &directory,
+    const string &directory,
     bool validate) {
   vector<string> files;
 

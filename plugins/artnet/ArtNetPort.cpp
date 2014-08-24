@@ -33,6 +33,7 @@ namespace artnet {
 using ola::NewCallback;
 using ola::rdm::RDMCommand;
 using std::string;
+using std::vector;
 
 /*
  * Set the DMX Handlers as needed
@@ -137,7 +138,7 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 void ArtNetOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
     OLA_WARN << "Blocked attempt to send discovery command via Artnet";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);

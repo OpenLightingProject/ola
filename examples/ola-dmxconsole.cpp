@@ -42,8 +42,8 @@
 #include <time.h>
 #include <math.h>
 
-#include <ola/Constants.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>

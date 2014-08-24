@@ -176,43 +176,43 @@ void MemoryPreferences::Clear() {
 }
 
 
-void MemoryPreferences::SetValue(const std::string &key,
-                                 const std::string &value) {
+void MemoryPreferences::SetValue(const string &key,
+                                 const string &value) {
   m_pref_map.erase(key);
   m_pref_map.insert(make_pair(key, value));
 }
 
 
-void MemoryPreferences::SetValue(const std::string &key, unsigned int value) {
+void MemoryPreferences::SetValue(const string &key, unsigned int value) {
   SetValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetValue(const std::string &key, int value) {
+void MemoryPreferences::SetValue(const string &key, int value) {
   SetValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const std::string &key,
-                                         const std::string &value) {
+void MemoryPreferences::SetMultipleValue(const string &key,
+                                         const string &value) {
   m_pref_map.insert(make_pair(key, value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const std::string &key,
+void MemoryPreferences::SetMultipleValue(const string &key,
                                          unsigned int value) {
   SetMultipleValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const std::string &key, int value) {
+void MemoryPreferences::SetMultipleValue(const string &key, int value) {
   SetMultipleValue(key, IntToString(value));
 }
 
 
-bool MemoryPreferences::SetDefaultValue(const std::string &key,
+bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
-                                        const std::string &value) {
+                                        const string &value) {
   PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
@@ -224,14 +224,14 @@ bool MemoryPreferences::SetDefaultValue(const std::string &key,
 }
 
 
-bool MemoryPreferences::SetDefaultValue(const std::string &key,
+bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
                                         unsigned int value) {
   return SetDefaultValue(key, validator, IntToString(value));
 }
 
 
-bool MemoryPreferences::SetDefaultValue(const std::string &key,
+bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
                                         const int value) {
   return SetDefaultValue(key, validator, IntToString(value));
