@@ -9,6 +9,8 @@ x/y/2014 ola-0.9.3
  RDM Tests:
 
  Internal:
+ * Update the configure version method to ensure the version files are updated
+   automatically when it changes
 
 20/8/2014 ola-0.9.2
  Features:

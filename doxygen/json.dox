@@ -23,7 +23,7 @@
    friends->Add("Bob");
    friends->Add("Jane");
 
-   const string output = JsonWriter::AsString(json);
+   const std::string output = JsonWriter::AsString(json);
    ~~~~~~~~~~~~~~~~~~~~~
  *
  * @par Parsing Example
@@ -32,7 +32,7 @@
    #include <ola/web/Json.h>
    #include <ola/web/JsonParser.h>
 
-   string error;
+   std::string error;
    JsonValue *value = JsonParser::Parse(json_string, &error);
    ~~~~~~~~~~~~~~~~~~~~~
  */
