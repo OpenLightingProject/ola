@@ -3045,7 +3045,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
       unsigned int label_size = data_size - (
           sizeof(raw_description) - LABEL_SIZE - 1);
       description.description = string(raw_description.description,
-                                            label_size);
+                                       label_size);
       ShortenString(&description.description);
     } else {
       std::ostringstream str;
@@ -3369,7 +3369,7 @@ void RDMAPI::_HandleGetSlotDescription(
       memcpy(&raw_description, data.data(), data.size());
       slot_index = NetworkToHost(raw_description.slot_index);
       description = string(raw_description.description,
-                                data.size() - min);
+                           data.size() - min);
       ShortenString(&description);
     } else {
       std::ostringstream str;
@@ -3461,7 +3461,7 @@ void RDMAPI::_HandleGetSensorDefinition(
       sensor.normal_max = NetworkToHost(raw_description.normal_max);
       sensor.recorded_value_support = raw_description.recorded_value_support;
       sensor.description = string(raw_description.description,
-                                       data_size - min);
+                                  data_size - min);
       ShortenString(&sensor.description);
     } else {
       std::ostringstream str;
@@ -3560,7 +3560,7 @@ void RDMAPI::_HandleSelfTestDescription(
       memcpy(&raw_description, data.data(), data.size());
       self_test_number = raw_description.self_test_number;
       description = string(raw_description.description,
-                                data.size() - min);
+                           data.size() - min);
       ShortenString(&description);
     } else {
       std::ostringstream str;

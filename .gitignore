@@ -112,6 +112,7 @@ examples/ola_uni_stats
 examples/ola_uni_stats.exe
 examples/ola_usbpro
 examples/ola_usbpro.exe
+include/ola/base/Version.h
 include/ola/plugin_id.h
 include/ola/rdm/RDMResponseCodes.h
 include/ola/timecode/TimeCodeEnums.h

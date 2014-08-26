@@ -2,14 +2,25 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
-        [open-lighting@googlegroups.com])
+m4_include([config/ola_version.m4])
+AC_INIT([OLA], [ola_version], [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR([config])
 AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE([subdir-objects])
+
+# OLA version variables
+AC_SUBST([ola_major_version])
+OLA_MAJOR_VERSION=ola_major_version
+AC_SUBST(OLA_MAJOR_VERSION)
+AC_SUBST([ola_minor_version])
+OLA_MINOR_VERSION=ola_minor_version
+AC_SUBST(OLA_MINOR_VERSION)
+AC_SUBST([ola_revision_version])
+OLA_REVISION_VERSION=ola_revision_version
+AC_SUBST(OLA_REVISION_VERSION)
 
 # Checks for programs.
 AC_LANG([C++])
@@ -692,6 +703,7 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
 
 # Non-makefile generted files.
 AC_CONFIG_FILES([Doxyfile
+                 include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
