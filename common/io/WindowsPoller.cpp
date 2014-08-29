@@ -82,7 +82,7 @@ class EventHolder {
     CloseHandle(event);
   }
 
-  operator HANDLE() {
+  operator HANDLE () {
     return event;
   }
 
