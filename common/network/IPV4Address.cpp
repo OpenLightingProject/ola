@@ -52,6 +52,16 @@ namespace network {
 
 using std::string;
 
+bool IPV4Address::operator<(const IPV4Address &other) const {
+  // Stored in network byte order, so convert to sort appropriately
+  return NetworkToHost(m_address) < NetworkToHost(other.m_address);
+}
+
+bool IPV4Address::operator>(const IPV4Address &other) const {
+  // Stored in network byte order, so convert to sort appropriately
+  return NetworkToHost(m_address) > NetworkToHost(other.m_address);
+}
+
 bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
 // TODO(Peter): This currently allows some rather quirky values as per

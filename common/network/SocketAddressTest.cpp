@@ -92,8 +92,13 @@ void SocketAddressTest::testIPV4SocketAddress() {
 
   OLA_ASSERT_LT(socket_address2, socket_address);
   OLA_ASSERT_LT(socket_address, socket_address3);
-  OLA_ASSERT_LT(socket_address, socket_address4);
-  OLA_ASSERT_LT(socket_address3, socket_address4);
+  OLA_ASSERT_LT(socket_address4, socket_address);
+  OLA_ASSERT_LT(socket_address4, socket_address3);
+
+  OLA_ASSERT_GT(socket_address, socket_address2);
+  OLA_ASSERT_GT(socket_address3, socket_address);
+  OLA_ASSERT_GT(socket_address, socket_address4);
+  OLA_ASSERT_GT(socket_address3, socket_address4);
 
   // test assignment & copy constructor
   IPV4SocketAddress copy_address(socket_address);

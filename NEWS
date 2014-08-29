@@ -4,6 +4,8 @@ x/y/2014 ola-0.9.3
  Bugs:
 
  API:
+ * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they
+   sort the same regardless of endianness and in a logical way for humans
 
  RDM Tests:
 
