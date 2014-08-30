@@ -42,11 +42,6 @@ const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
 const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet";
 const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
 
-/**
- * Start the plugin, for now we just have one device.
- * @todo Allow multiple devices on different IPs?
- * @return true if we started ok, false otherwise
- */
 bool ArtNetPlugin::StartHook() {
   m_device = new ArtNetDevice(this,
                               m_preferences,

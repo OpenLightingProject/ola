@@ -70,13 +70,6 @@ void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
   }
 }
 
-/**
- * Create a new DummyPort
- * @param parent the parent device for this port
- * @param options the config for the DummyPort such as the number of fake RDM
- * devices to create
- * @param id the ID of this port
- */
 DummyPort::DummyPort(DummyDevice *parent,
                      const Options &options,
                      unsigned int id)
@@ -131,26 +124,14 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
   return true;
 }
 
-
-/*
- * This returns a single device
- */
 void DummyPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-
-/*
- * This returns a single device
- */
 void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-
-/*
- * Handle an RDM Request
- */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
   UID dest = request->DestinationUID();

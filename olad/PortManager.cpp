@@ -28,54 +28,24 @@ namespace ola {
 
 using std::vector;
 
-/**
- * Patch a port
- * @param port the port to patch
- * @param universe the universe to patch to
- * @returns true is successful, false otherwise
- */
 bool PortManager::PatchPort(InputPort *port,
                             unsigned int universe) {
   return GenericPatchPort(port, universe);
 }
 
-
-/**
- * Patch a port
- * @param port the port to patch
- * @param universe the universe to patch to
- * @returns true is successful, false otherwise
- */
 bool PortManager::PatchPort(OutputPort *port,
                             unsigned int universe) {
   return GenericPatchPort(port, universe);
 }
 
-
-/**
- * UnPatch a port
- * @param port the port to unpatch
- * @returns true is successful, false otherwise
- */
 bool PortManager::UnPatchPort(InputPort *port) {
   return GenericUnPatchPort(port);
 }
 
-
-/**
- * UnPatch a port
- * @param port the port to unpatch
- * @returns true is successful, false otherwise
- */
 bool PortManager::UnPatchPort(OutputPort *port) {
   return GenericUnPatchPort(port);
 }
 
-
-/**
- * Set a port to inherit priority mode.
- * @param port the port to configure
- */
 bool PortManager::SetPriorityInherit(Port *port) {
   if (port->PriorityCapability() != CAPABILITY_FULL)
     return true;
@@ -87,12 +57,6 @@ bool PortManager::SetPriorityInherit(Port *port) {
   return true;
 }
 
-
-/**
- * Set a port to override priority mode.
- * @param port the port to configure
- * @param value the new priority
- */
 bool PortManager::SetPriorityStatic(Port *port, uint8_t value) {
   if (port->PriorityCapability() == CAPABILITY_NONE)
     return true;
@@ -208,11 +172,6 @@ bool PortManager::CheckMultiPort<OutputPort>(
   return CheckOutputPortsForUniverse(device, new_universe_id);
 }
 
-
-/**
- * Check if any input ports in this device are bound to the universe.
- * @returns true if there is a match, false otherwise.
- */
 bool PortManager::CheckInputPortsForUniverse(const AbstractDevice *device,
                                              unsigned int universe_id) const {
   vector<InputPort*> ports;
@@ -220,11 +179,6 @@ bool PortManager::CheckInputPortsForUniverse(const AbstractDevice *device,
   return CheckForPortMatchingUniverse(ports, universe_id);
 }
 
-
-/**
- * Check if any output ports in this device are bound to the universe.
- * @returns true if there is a match, false otherwise.
- */
 bool PortManager::CheckOutputPortsForUniverse(const AbstractDevice *device,
                                               unsigned int universe_id) const {
   vector<OutputPort*> ports;
@@ -232,11 +186,6 @@ bool PortManager::CheckOutputPortsForUniverse(const AbstractDevice *device,
   return CheckForPortMatchingUniverse(ports, universe_id);
 }
 
-
-/**
- * Check for any port in a list that's bound to this universe.
- * @returns true if there is a match, false otherwise.
- */
 template<class PortClass>
 bool PortManager::CheckForPortMatchingUniverse(
     const vector<PortClass*> &ports,

@@ -33,9 +33,6 @@ namespace ola {
 using std::string;
 using std::vector;
 
-/**
- * Create a new basic input port
- */
 BasicInputPort::BasicInputPort(AbstractDevice *parent,
                                unsigned int port_id,
                                const PluginAdaptor *plugin_adaptor,
@@ -50,7 +47,6 @@ BasicInputPort::BasicInputPort(AbstractDevice *parent,
     m_supports_rdm(supports_rdm) {
 }
 
-
 bool BasicInputPort::SetUniverse(Universe *new_universe) {
   Universe *old_universe = GetUniverse();
   if (old_universe == new_universe)
@@ -64,7 +60,6 @@ bool BasicInputPort::SetUniverse(Universe *new_universe) {
   return false;
 }
 
-
 string BasicInputPort::UniqueId() const {
   if (m_port_string.empty()) {
     std::ostringstream str;
@@ -75,8 +70,6 @@ string BasicInputPort::UniqueId() const {
   return m_port_string;
 }
 
-
-
 bool BasicInputPort::SetPriority(uint8_t priority) {
   if (priority > ola::dmx::SOURCE_PRIORITY_MAX)
     return false;
@@ -85,10 +78,6 @@ bool BasicInputPort::SetPriority(uint8_t priority) {
   return true;
 }
 
-
-/**
- * Called when there is new data for this port
- */
 void BasicInputPort::DmxChanged() {
   if (GetUniverse()) {
     const DmxBuffer &buffer = ReadDMX();
@@ -101,11 +90,6 @@ void BasicInputPort::DmxChanged() {
   }
 }
 
-
-/**
- * Handle an RDM Request on this port.
- * @param request the RDMRequest object, ownership is transferred to us
- */
 void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *callback) {
   if (m_universe) {
@@ -121,10 +105,6 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
   }
 }
 
-
-/**
- * Trigger the RDM Discovery procedure for this universe
- */
 void BasicInputPort::TriggerRDMDiscovery(
     ola::rdm::RDMDiscoveryCallback *on_complete,
     bool full) {
@@ -136,10 +116,6 @@ void BasicInputPort::TriggerRDMDiscovery(
   }
 }
 
-
-/**
- * Create a new BasicOutputPort
- */
 BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
                                  unsigned int port_id,
                                  bool start_rdm_discovery_on_patch,
@@ -153,7 +129,6 @@ BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
     m_device(parent),
     m_supports_rdm(supports_rdm) {
 }
-
 
 bool BasicOutputPort::SetUniverse(Universe *new_universe) {
   Universe *old_universe = GetUniverse();
@@ -171,7 +146,6 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
   return false;
 }
 
-
 string BasicOutputPort::UniqueId() const {
   if (m_port_string.empty()) {
     std::ostringstream str;
@@ -182,7 +156,6 @@ string BasicOutputPort::UniqueId() const {
   return m_port_string;
 }
 
-
 bool BasicOutputPort::SetPriority(uint8_t priority) {
   if (priority > ola::dmx::SOURCE_PRIORITY_MAX)
     return false;
@@ -191,10 +164,6 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
   return true;
 }
 
-
-/**
- * Handle an RDMRequest, subclasses can implement this to support RDM
- */
 void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                      ola::rdm::RDMCallback *callback) {
   // broadcasts go to every port
@@ -210,36 +179,23 @@ void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   }
 }
 
-
-/**
- * This is a noop for ports that don't support RDM
- */
 void BasicOutputPort::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *on_complete) {
   ola::rdm::UIDSet uids;
   on_complete->Run(uids);
 }
 
-
-/**
- * This is a noop for ports that don't support RDM
- */
 void BasicOutputPort::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *on_complete) {
   ola::rdm::UIDSet uids;
   on_complete->Run(uids);
 }
 
-
-/**
- * Called when the discovery triggered by patching completes
- */
 void BasicOutputPort::UpdateUIDs(const ola::rdm::UIDSet &uids) {
   Universe *universe = GetUniverse();
   if (universe)
     universe->NewUIDList(this, uids);
 }
-
 
 template<class PortClass>
 bool IsInputPort() {

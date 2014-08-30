@@ -48,19 +48,10 @@ bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer,
   return true;
 }
 
-
-/**
- * Read operation
- * @return a DmxBufer with the data
- */
 const DmxBuffer &Dmx4LinuxInputPort::ReadDMX() const {
   return m_read_buffer;
 }
 
-
-/**
- * Process new Data
- */
 bool Dmx4LinuxInputPort::UpdateData(const uint8_t *in_buffer,
                                     unsigned int length) {
   DmxBuffer tmp_buffer = DmxBuffer(in_buffer, length);

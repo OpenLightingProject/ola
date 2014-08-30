@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ArtNetNodeImpl.h
+ * ArtNetNode.h
  * Header file for the ArtNetNodeImpl class
  * Copyright (C) 2005 Simon Newton
  */
@@ -81,85 +81,233 @@ class ArtNetNodeOptions {
 
 class ArtNetNodeImpl {
  public:
+  /**
+   * Create a new node
+   * @param iface the interface to use.
+   * @param short_name the short node name
+   * @param long_name the long node name
+   * @param subnet_address the ArtNet 'subnet' address, 4 bits.
+   */
   ArtNetNodeImpl(const ola::network::Interface &iface,
                  ola::io::SelectServerInterface *ss,
                  const ArtNetNodeOptions &options,
                  ola::network::UDPSocketInterface *socket = NULL);
+
+  /**
+   * Cleanup
+   */
   virtual ~ArtNetNodeImpl();
 
+  /**
+   * Start this node. The port modifying functions can be called before this.
+   */
   bool Start();
+
+  /**
+   * Stop this node
+   */
   bool Stop();
 
-  /*
-   * Configuration mode.
-   * This allows the caller to make changes without triggering an ArtPoll or
-   * ArtPollReply per change. e.g.
-   * node.EnterConfigurationMode()
-   * node.SetShortName()
-   * node.SetInputPortUniverse()
-   * node.SetOutputPortUniverse()
-   * // The poll / poll reply is sent here
-   * node.ExitConfigurationMode()
+  /**
+   * @brief Start the configuration transaction.
+   *
+   * Configuration mode allows the caller to make changes without triggering an
+   * ArtPoll or ArtPollReply per change. e.g.
+   * @examplepara
+   * @code
+   *   node.EnterConfigurationMode()
+   *   node.SetShortName()
+   *   node.SetInputPortUniverse()
+   *   node.SetOutputPortUniverse()
+   *   // The poll / poll reply is sent here
+   *   node.ExitConfigurationMode()
+   * @endcode
+   * @return false if there is already a transaction pending.
    */
   bool EnterConfigurationMode();
+
+  /**
+   * End the configuration transaction.
+   * @returns false if we weren't in a transaction.
+   * @sa EnterConfigurationMode
+   */
   bool ExitConfigurationMode();
 
 
   // Various parameters to control the behaviour
+  /**
+   * Set the short name.
+   */
   bool SetShortName(const std::string &name);
   std::string ShortName() const { return m_short_name; }
+
+  /**
+   * Set the long name.
+   */
   bool SetLongName(const std::string &name);
   std::string LongName() const { return m_long_name; }
 
-  uint8_t NetAddress() const { return m_net_address; }
+  /**
+   * Set the the net address for this node
+   */
   bool SetNetAddress(uint8_t net_address);
+  uint8_t NetAddress() const { return m_net_address; }
 
+  /**
+   * Set the the subnet address for this node
+   */
   bool SetSubnetAddress(uint8_t subnet_address);
   uint8_t SubnetAddress() const {
     return m_output_ports[0].universe_address >> 4;
   }
 
+  /**
+   * Get the number of input ports
+   * @returns the number of input ports
+   */
   uint8_t InputPortCount() const;
+
+  /**
+   * Set the universe address of an input port
+   */
   bool SetInputPortUniverse(uint8_t port_id, uint8_t universe_id);
+
+  /**
+   * Return the 8bit universe address for a port. This does not include the
+   * ArtNet III net-address. Invalid port_ids return 0.
+   */
   uint8_t GetInputPortUniverse(uint8_t port_id) const;
+
+  /**
+   * Disable an input port.
+   */
   void DisableInputPort(uint8_t port_id);
+
+  /**
+   * Return the state (enabled or disabled) of an input port. An invalid
+   * port_id returns false.
+   */
   bool InputPortState(uint8_t port_id) const;
 
+  /**
+   * Set the universe for an output port.
+   * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
+   * @param universe_id the new universe id.
+   */
   bool SetOutputPortUniverse(uint8_t port_id, uint8_t universe_id);
+
+  /**
+   * Return the current universe address for an output port
+   * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
+   */
   uint8_t GetOutputPortUniverse(uint8_t port_id);
+
+  /**
+   * Disable an output port.
+   */
   void DisableOutputPort(uint8_t port_id);
+
+  /**
+   * Return the state (enabled or disabled) of an output port. An invalid
+   * port_id returns false.
+   */
   bool OutputPortState(uint8_t port_id) const;
 
   void SetBroadcastThreshold(unsigned int threshold) {
     m_broadcast_threshold = threshold;
   }
 
+  /**
+   * Set the merge mode for an output port
+   */
   bool SetMergeMode(uint8_t port_id, artnet_merge_mode merge_mode);
 
-  // Poll, this should be called periodically if we're sending data.
+  /**
+   * @brief Send an ArtPoll if any of the ports are sending data
+   *
+   * This should be called periodically if we're sending data.
+   */
   bool SendPoll();
 
   // The following apply to Input Ports (those which send data)
+  /**
+   * Send some DMX data
+   * @param universe the id of the universe to send
+   * @param buffer the DMX data
+   * @return true if it was send successfully, false otherwise
+   */
   bool SendDMX(uint8_t port_id, const ola::DmxBuffer &buffer);
+
+  /**
+   * Flush the TOD and force a full discovery.
+   * The DiscoverableQueueingRDMController ensures this is only called one at a
+   * time.
+   * @param port_id port to send on
+   */
   void RunFullDiscovery(uint8_t port_id,
                         ola::rdm::RDMDiscoveryCallback *callback);
+
+  /**
+   * Run an 'incremental' discovery. This just involves fetching the TOD from
+   * all nodes.
+   *
+   * The DiscoverableQueueingRDMController ensures only one discovery process
+   * is running per port at any time.
+   * @param port_id port to send on
+   */
   void RunIncrementalDiscovery(uint8_t port_id,
                                ola::rdm::RDMDiscoveryCallback *callback);
+
+  /**
+   * Send an RDMRequest on this port, this may defer the sending if there are
+   * other outstanding messages in the queue.
+   * @param port_id the id of the port to send the request on
+   * @param request the RDMRequest object
+   *
+   * Because this is wrapped in the QueueingRDMController this will only be
+   * called one-at-a-time (per port)
+   */
   void SendRDMRequest(uint8_t port_id,
                       const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
+
+  /**
+   * Set the RDM handlers for an Input port
+   * @param port_id the id of the port to set the handlers for
+   * @param tod_callback the callback to be invoked when a ArtTod message is received,
+   *   and the RDM process isn't running.
+   */
   bool SetUnsolicitedUIDSetHandler(
       uint8_t port_id,
       ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod);
+
+  /**
+   * Populate the vector with a list of IP addresses that are known to be
+   * listening for the universe that this port is sending
+   */
   void GetSubscribedNodes(
       uint8_t port_id,
       std::vector<ola::network::IPV4Address> *node_addresses);
 
   // The following apply to Output Ports (those which receive data);
+  /**
+   * Set the closure to be called when we receive data for this universe.
+   * @param universe the universe to register the handler for
+   * @param handler the Callback0 to call when there is data for this universe.
+   * Ownership of the closure is transferred to the node.
+   */
   bool SetDMXHandler(uint8_t port_id,
                      DmxBuffer *buffer,
                      ola::Callback0<void> *handler);
+
+  /**
+   * Send an set of UIDs in one of more ArtTod packets
+   */
   bool SendTod(uint8_t port_id, const ola::rdm::UIDSet &uid_set);
+
+  /**
+   * Set the RDM handlers for an Output port
+   */
   bool SetOutputPortRDMHandlers(
       uint8_t port_id,
       ola::Callback0<void> *on_discover,
@@ -168,7 +316,9 @@ class ArtNetNodeImpl {
                      const ola::rdm::RDMRequest*,
                      ola::rdm::RDMCallback*> *on_rdm_request);
 
-  // send time code
+  /**
+   * Send a timecode packet
+   */
   bool SendTimeCode(const ola::timecode::TimeCode &timecode);
 
  private:
@@ -230,82 +380,222 @@ class ArtNetNodeImpl {
   ArtNetNodeImpl(const ArtNetNodeImpl&);
   ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
 
+  /**
+   * Called when there is data on this socket
+   */
   void SocketReady();
+
+  /**
+   * Send an ArtPoll if we're both running and not in configuration mode.
+   * If we're in configuration mode this sets m_artpoll_required instead.
+   */
   bool SendPollIfAllowed();
+
+  /**
+   * Send an ArtPollReply if we're both running and m_send_reply_on_change is
+   * true. If we're in configuration mode, this sets m_artpollreply_required
+   * instead of sending.
+   */
   bool SendPollReplyIfRequired();
+
+  /**
+   * Send an ArtPollReply message
+   */
   bool SendPollReply(const ola::network::IPV4Address &destination);
+
+  /**
+   * Send an IPProgReply
+   */
   bool SendIPReply(const ola::network::IPV4Address &destination);
+
+  /**
+   * Handle an ArtNet packet
+   */
   void HandlePacket(const ola::network::IPV4Address &source_address,
                     const artnet_packet &packet,
                     unsigned int packet_size);
+
+  /**
+   * Handle an ArtPoll packet
+   */
   void HandlePollPacket(const ola::network::IPV4Address &source_address,
                         const artnet_poll_t &packet,
                         unsigned int packet_size);
+
+  /**
+   * Handle an ArtPollReply packet
+   */
   void HandleReplyPacket(const ola::network::IPV4Address &source_address,
                          const artnet_reply_t &packet,
                          unsigned int packet_size);
+
+  /**
+   * Handle a DMX Data packet, this takes care of the merging
+   */
   void HandleDataPacket(const ola::network::IPV4Address &source_address,
                         const artnet_dmx_t &packet,
                         unsigned int packet_size);
+
+  /**
+   * Handle a TOD Request packet
+   */
   void HandleTodRequest(const ola::network::IPV4Address &source_address,
                         const artnet_todrequest_t &packet,
                         unsigned int packet_size);
+
+  /**
+   * Handle a TOD Data packet
+   */
   void HandleTodData(const ola::network::IPV4Address &source_address,
                      const artnet_toddata_t &packet,
                      unsigned int packet_size);
+
+  /**
+   * Handle a TOD Control packet
+   */
   void HandleTodControl(const ola::network::IPV4Address &source_address,
                         const artnet_todcontrol_t &packet,
                         unsigned int packet_size);
+
+  /**
+   * Handle an RDM packet
+   */
   void HandleRdm(const ola::network::IPV4Address &source_address,
                  const artnet_rdm_t &packet,
                  unsigned int packet_size);
+
+  /**
+   * Handle the completion of a request for an Output port
+   */
   void RDMRequestCompletion(ola::network::IPV4Address destination,
                             uint8_t port_id,
                             uint8_t universe_address,
                             ola::rdm::rdm_response_code code,
                             const ola::rdm::RDMResponse *response,
                             const std::vector<std::string> &packets);
+
+  /**
+   * @brief Handle an RDM response.
+   *
+   * <rant>
+   * ArtNet as a protocol is broken, the nodes don't buffer ACK_OVERFLOW messages
+   * so if another GET/SET message arrives from *any* controller the ACK_OVERFLOW
+   * session will be reset, possibly causing the controller to spin in a loop.
+   * </rant>
+   */
   void HandleRDMResponse(InputPort *port,
                          const std::string &rdm_data,
                          const ola::network::IPV4Address &source_address);
+
+  /**
+   * Handle an IP Program message.
+   */
   void HandleIPProgram(const ola::network::IPV4Address &source_address,
                        const artnet_ip_prog_t &packet,
                        unsigned int packet_size);
+
+  /**
+   * Fill in the header for a packet
+   */
   void PopulatePacketHeader(artnet_packet *packet, uint16_t op_code);
+
+  /**
+   * Send an ArtNet packet
+   * @param packet
+   * @param size the size of the packet, excluding the header portion
+   * @param destination where to send the packet to
+   */
   bool SendPacket(const artnet_packet &packet,
                   unsigned int size,
                   const ola::network::IPV4Address &destination);
+
+  /**
+   * Timeout a pending RDM request
+   * @param port_id the id of the port to timeout.
+   */
   void TimeoutRDMRequest(InputPort *port);
+
+  /**
+   * Send a generic ArtRdm message
+   */
   bool SendRDMCommand(const ola::rdm::RDMCommand &command,
                       const ola::network::IPV4Address &destination,
                       uint8_t universe);
+
+  /**
+   * Update a port from a source, merging if necessary
+   */
   void UpdatePortFromSource(OutputPort *port, const DMXSource &source);
+
+  /**
+   * Check the version number of a incoming packet
+   */
   bool CheckPacketVersion(const ola::network::IPV4Address &source_address,
                           const std::string &packet_type,
                           uint16_t version);
+
+  /**
+   * Check the size of an incoming packet
+   */
   bool CheckPacketSize(const ola::network::IPV4Address &source_address,
                        const std::string &packet_type,
                        unsigned int actual_size,
                        unsigned int expected_size);
 
   // methods for accessing Input & Output ports
+  /**
+   * Lookup an InputPort by id, if the id is invalid, we return NULL.
+   */
   InputPort *GetInputPort(uint8_t port_id, bool warn = true);
+
+  /**
+   * A const version of GetInputPort();
+   */
   const InputPort *GetInputPort(uint8_t port_id) const;
+
+  /**
+   * Similar to GetInputPort, but this also confirms the port is enabled.
+   */
   InputPort *GetEnabledInputPort(uint8_t port_id, const std::string &action);
 
+  /**
+   * Lookup an OutputPort by id, if the id is invalid, we return NULL.
+   */
   OutputPort *GetOutputPort(uint8_t port_id);
+
+  /**
+   * A const version of GetOutputPort();
+   */
   const OutputPort *GetOutputPort(uint8_t port_id) const;
+
+  /**
+   * Similar to GetOutputPort, but this also confirms the port is enabled.
+   */
   OutputPort *GetEnabledOutputPort(uint8_t port_id, const std::string &action);
 
+  /**
+   * Update a port with a new TOD list
+   */
   void UpdatePortFromTodPacket(InputPort *port,
                                const ola::network::IPV4Address &source_address,
                                const artnet_toddata_t &packet,
                                unsigned int packet_size);
 
+  /**
+   * Called when the discovery process times out.
+   */
   void ReleaseDiscoveryLock(InputPort *port);
+
+  /**
+   * Start the discovery process, this puts the port into discovery mode and
+   * sets up the callback.
+   */
   bool StartDiscoveryProcess(InputPort *port,
                              ola::rdm::RDMDiscoveryCallback *callback);
 
+  /**
+   * Setup the networking components.
+   */
   bool InitNetwork();
 
   static const char ARTNET_ID[];
@@ -456,10 +746,22 @@ class ArtNetNode {
   bool SendDMX(uint8_t port_id, const ola::DmxBuffer &buffer) {
     return m_impl.SendDMX(port_id, buffer);
   }
+
+  /**
+   * Trigger full discovery for a port
+   */
   void RunFullDiscovery(uint8_t port_id,
                         ola::rdm::RDMDiscoveryCallback *callback);
+
+  /**
+   * Trigger incremental discovery for a port.
+   */
   void RunIncrementalDiscovery(uint8_t port_id,
                                ola::rdm::RDMDiscoveryCallback *callback);
+
+  /**
+   * Send a RDM request by passing it though the Queuing Controller
+   */
   void SendRDMRequest(uint8_t port_id,
                       const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
@@ -511,6 +813,10 @@ class ArtNetNode {
   std::vector<ArtNetNodeImplRDMWrapper*> m_wrappers;
   std::vector<ola::rdm::DiscoverableQueueingRDMController*> m_controllers;
 
+  /**
+   * Check that the port_id is a valid input port.
+   * @return true if the port id is valid, false otherwise
+   */
   bool CheckInputPortId(uint8_t port_id);
 };
 }  // namespace artnet
