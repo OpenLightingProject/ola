@@ -113,21 +113,13 @@ class IPV4Address {
 
     /**
      * @brief Less than operator for partial ordering.
-     * @note This sorts in network-byte order, so the ordering won't match
-     * human's expectations.
      */
-    bool operator<(const IPV4Address &other) const {
-      return m_address < other.m_address;
-    }
+    bool operator<(const IPV4Address &other) const;
 
     /**
      * @brief Greater than operator.
-     * @note This sorts in network-byte order, so the ordering won't match
-     * human's expectations.
      */
-    bool operator>(const IPV4Address &other) const {
-      return m_address > other.m_address;
-    }
+    bool operator>(const IPV4Address &other) const;
 
     /**
      * @brief Return the IPV4Address as an int in network-byte order.

@@ -2875,7 +2875,7 @@ string RDMHTTPModule::SyncClock(HTTPResponse *response,
   time_t now = time(NULL);
   struct tm now_tm;
 #ifdef _WIN32
-  memcpy(&now_tm, localtime(&now), sizeof(now_tm));  // NOLINT
+  memcpy(&now_tm, localtime(&now), sizeof(now_tm));
 #else
   localtime_r(&now, &now_tm);
 #endif

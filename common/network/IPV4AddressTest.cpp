@@ -115,16 +115,10 @@ void IPAddressTest::testIPV4Address() {
   addresses.push_back(string_address3);
   std::sort(addresses.begin(), addresses.end());
 
-  // Addresses are in network byte order.
-  if (ola::network::IsBigEndian()) {
-    OLA_ASSERT_EQ(string("10.0.0.1"), addresses[0].ToString());
-    OLA_ASSERT_EQ(string("172.16.4.1"), addresses[1].ToString());
-    OLA_ASSERT_EQ(string("192.168.1.1"), addresses[2].ToString());
-  } else {
-    OLA_ASSERT_EQ(string("10.0.0.1"), addresses[0].ToString());
-    OLA_ASSERT_EQ(string("192.168.1.1"), addresses[1].ToString());
-    OLA_ASSERT_EQ(string("172.16.4.1"), addresses[2].ToString());
-  }
+  // The comparisons take into account network byte order automagically.
+  OLA_ASSERT_EQ(string("10.0.0.1"), addresses[0].ToString());
+  OLA_ASSERT_EQ(string("172.16.4.1"), addresses[1].ToString());
+  OLA_ASSERT_EQ(string("192.168.1.1"), addresses[2].ToString());
 
   uint8_t mask = 255;  // UINT8_MAX;
   OLA_ASSERT_TRUE(
