@@ -73,9 +73,6 @@ void PathportInputPort::PostSetUniverse(Universe *old_universe,
 }
 
 
-/*
- * Write operation
- */
 bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
                                   uint8_t priority) {
   if (GetUniverse())

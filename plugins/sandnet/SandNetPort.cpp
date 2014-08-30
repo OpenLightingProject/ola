@@ -60,10 +60,10 @@ string SandNetPortHelper::Description(const Universe *universe) const {
 }
 
 
-/*
- * Return the sandnet group that corresponds to a OLA Universe.
+/**
+ * @brief Return the SandNet group that corresponds to a OLA Universe.
  * @param universe the OLA universe
- * @returns the sandnet group number
+ * @return the SandNet group number
  */
 uint8_t SandNetPortHelper::SandnetGroup(const Universe *universe) const {
   if (universe)
@@ -72,11 +72,12 @@ uint8_t SandNetPortHelper::SandnetGroup(const Universe *universe) const {
 }
 
 
-/*
- * Return the sandnet group that corresponds to a OLA Universe. Sandnet
- * Universes range from 0 to 255 (represented as 1 to 256 in the packets).
+/**
+ * @brief Return the SandNet universe that corresponds to a OLA Universe.
+ *
+ * Sandnet universes range from 0 to 255 (represented as 1 to 256 in the packets).
  * @param universe the OLA universe
- * @returns the sandnet universe number
+ * @return the sandnet universe number
  */
 uint8_t SandNetPortHelper::SandnetUniverse(const Universe *universe) const {
   if (universe)
@@ -103,9 +104,6 @@ void SandNetInputPort::PostSetUniverse(Universe *old_universe,
 }
 
 
-/*
- * Write operation
- */
 bool SandNetOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  uint8_t priority) {
   (void) priority;

@@ -37,33 +37,55 @@ namespace ola {
 
 class AbstractDevice;
 
-/*
+/**
  * The base port class, all ports inherit from this.
  */
 class Port {
  public:
     virtual ~Port() {}
 
-    // return the id of the port within this deivce
+    /**
+     * Get the port ID
+     * @return the id of the port within this device
+     */
     virtual unsigned int PortId() const = 0;
 
-    // Return the device which owns this port
+    /**
+     * Get the device which owns this port
+     * @return the device which owns this port
+     */
     virtual AbstractDevice *GetDevice() const = 0;
 
-    // return a short description of this port
+    /**
+     * Get the port description
+     * return a short description of this port
+     */
     virtual std::string Description() const = 0;
 
-    // bind this port to a universe
+    /**
+     * Bind this port to a universe
+     * @param universe the universe to bind to
+     */
     virtual bool SetUniverse(Universe *universe) = 0;
 
-    // return the universe that this port is bound to or NULL
+    /**
+     * @brief Get the universe this port is bound to
+     * @return the universe that this port is bound to or NULL
+     */
     virtual Universe *GetUniverse() const = 0;
 
-    // Return a globally unique id of this port. This is used to preserve port
-    // universe bindings. An empty string means we don't preserve settings.
+    /**
+     * @brief Return a globally unique id of this port.
+     *
+     * This is used to preserve port universe bindings. An empty string means
+     * we don't preserve settings.
+     */
     virtual std::string UniqueId() const = 0;
 
-    // this tells us what sort of priority capabilities this port has
+    /**
+     * This tells us what sort of priority capabilities this port has
+     * @return a port_priority_capability
+     */
     virtual port_priority_capability PriorityCapability() const = 0;
 
     virtual bool SetPriority(uint8_t priority) = 0;
@@ -72,12 +94,15 @@ class Port {
     virtual void SetPriorityMode(port_priority_mode mode) = 0;
     virtual port_priority_mode GetPriorityMode() const = 0;
 
-    // If this port supports RDM or not
+    /**
+     * @brief If this port supports RDM or not
+     * @return true if RDM is supported, false otherwise
+     */
     virtual bool SupportsRDM() const = 0;
 };
 
 
-/*
+/**
  * The Input Port interface, for ports that provide push data into the OLA
  * system.
  */
@@ -85,29 +110,41 @@ class InputPort: public Port {
  public:
     virtual ~InputPort() {}
 
-    // signal the port that the DMX data has changed
+    /**
+     * Signal to the port that the DMX data has changed
+     */
     virtual void DmxChanged() = 0;
 
-    // Get the current data
+    /**
+     * Get the current DMX data
+     */
     virtual const DmxSource &SourceData() const = 0;
 
-    // Handle RDMRequests, ownership of the request object is transferred
+    /**
+     * Handle RDMRequests, ownership of the RDMRequest object is transferred
+     */
     virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) = 0;
 };
 
 
-/*
+/**
  * The Output Port interface, for ports that send data from the OLA system.
  */
 class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
  public:
     virtual ~OutputPort() {}
 
-    // Write dmx data to this port
+    /**
+     * @brief Write DMX data to this port
+     * @param buffer the DmxBuffer to write
+     * @return true on success, false on failure
+     */
     virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) = 0;
 
-    // Called if the universe name changes
+    /**
+     * Called if the universe name changes
+     */
     virtual void UniverseNameChanged(const std::string &new_name) = 0;
 
     // Methods from DiscoverableRDMControllerInterface
@@ -125,7 +162,7 @@ class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
 };
 
 
-/*
+/**
  * A Implementation of InputPort, provides the basic functionality which saves
  * the plugin implementations from having to do it.
  */
@@ -148,7 +185,7 @@ class BasicInputPort: public InputPort {
     void DmxChanged();
     const DmxSource &SourceData() const { return m_dmx_source; }
 
-    // rdm methods, the child class provides HandleRDMResponse
+    // RDM methods, the child class provides HandleRDMResponse
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback);
     void TriggerRDMDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete,
@@ -193,7 +230,7 @@ class BasicInputPort: public InputPort {
 };
 
 
-/*
+/**
  * An implementation of an OutputPort.
  */
 class BasicOutputPort: public OutputPort {
@@ -263,7 +300,7 @@ class BasicOutputPort: public OutputPort {
 };
 
 
-/*
+/**
  * This allows switching based on Port type.
  */
 template<class PortClass>

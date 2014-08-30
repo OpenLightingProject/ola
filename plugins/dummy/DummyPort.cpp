@@ -117,11 +117,6 @@ DummyPort::DummyPort(DummyDevice *parent,
 }
 
 
-/*
- * Write operation
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- */
 bool DummyPort::WriteDMX(const DmxBuffer &buffer,
                          uint8_t priority) {
   (void) priority;

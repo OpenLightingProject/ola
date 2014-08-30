@@ -28,7 +28,7 @@ namespace ola {
 
 using std::vector;
 
-/*
+/**
  * Patch a port
  * @param port the port to patch
  * @param universe the universe to patch to
@@ -40,7 +40,7 @@ bool PortManager::PatchPort(InputPort *port,
 }
 
 
-/*
+/**
  * Patch a port
  * @param port the port to patch
  * @param universe the universe to patch to
@@ -52,7 +52,7 @@ bool PortManager::PatchPort(OutputPort *port,
 }
 
 
-/*
+/**
  * UnPatch a port
  * @param port the port to unpatch
  * @returns true is successful, false otherwise
@@ -62,7 +62,7 @@ bool PortManager::UnPatchPort(InputPort *port) {
 }
 
 
-/*
+/**
  * UnPatch a port
  * @param port the port to unpatch
  * @returns true is successful, false otherwise
@@ -72,7 +72,7 @@ bool PortManager::UnPatchPort(OutputPort *port) {
 }
 
 
-/*
+/**
  * Set a port to inherit priority mode.
  * @param port the port to configure
  */
@@ -88,7 +88,7 @@ bool PortManager::SetPriorityInherit(Port *port) {
 }
 
 
-/*
+/**
  * Set a port to override priority mode.
  * @param port the port to configure
  * @param value the new priority
@@ -209,7 +209,7 @@ bool PortManager::CheckMultiPort<OutputPort>(
 }
 
 
-/*
+/**
  * Check if any input ports in this device are bound to the universe.
  * @returns true if there is a match, false otherwise.
  */
@@ -221,7 +221,7 @@ bool PortManager::CheckInputPortsForUniverse(const AbstractDevice *device,
 }
 
 
-/*
+/**
  * Check if any output ports in this device are bound to the universe.
  * @returns true if there is a match, false otherwise.
  */
@@ -233,7 +233,7 @@ bool PortManager::CheckOutputPortsForUniverse(const AbstractDevice *device,
 }
 
 
-/*
+/**
  * Check for any port in a list that's bound to this universe.
  * @returns true if there is a match, false otherwise.
  */

@@ -33,7 +33,7 @@ namespace ola {
 using std::string;
 using std::vector;
 
-/*
+/**
  * Create a new basic input port
  */
 BasicInputPort::BasicInputPort(AbstractDevice *parent,
@@ -86,7 +86,7 @@ bool BasicInputPort::SetPriority(uint8_t priority) {
 }
 
 
-/*
+/**
  * Called when there is new data for this port
  */
 void BasicInputPort::DmxChanged() {
@@ -102,7 +102,7 @@ void BasicInputPort::DmxChanged() {
 }
 
 
-/*
+/**
  * Handle an RDM Request on this port.
  * @param request the RDMRequest object, ownership is transferred to us
  */
@@ -122,7 +122,7 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 }
 
 
-/*
+/**
  * Trigger the RDM Discovery procedure for this universe
  */
 void BasicInputPort::TriggerRDMDiscovery(
@@ -137,7 +137,7 @@ void BasicInputPort::TriggerRDMDiscovery(
 }
 
 
-/*
+/**
  * Create a new BasicOutputPort
  */
 BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
@@ -192,7 +192,7 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 }
 
 
-/*
+/**
  * Handle an RDMRequest, subclasses can implement this to support RDM
  */
 void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
@@ -211,7 +211,7 @@ void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
 }
 
 
-/*
+/**
  * This is a noop for ports that don't support RDM
  */
 void BasicOutputPort::RunFullDiscovery(
@@ -221,7 +221,7 @@ void BasicOutputPort::RunFullDiscovery(
 }
 
 
-/*
+/**
  * This is a noop for ports that don't support RDM
  */
 void BasicOutputPort::RunIncrementalDiscovery(
@@ -241,9 +241,6 @@ void BasicOutputPort::UpdateUIDs(const ola::rdm::UIDSet &uids) {
 }
 
 
-/*
- * This allows switching based on Port type.
- */
 template<class PortClass>
 bool IsInputPort() {
   return true;

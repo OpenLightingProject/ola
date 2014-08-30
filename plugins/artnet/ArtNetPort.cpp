@@ -114,12 +114,6 @@ void ArtNetInputPort::TriggerDiscovery() {
       NewSingleCallback(this, &ArtNetInputPort::SendTODWithUIDs));
 }
 
-/*
- * Write operation
- * @param data pointer to the dmx data
- * @param length the length of the data
- * @return true if the write succeeded, false otherwise
- */
 bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
                                 uint8_t priority) {
   if (PortId() >= ARTNET_MAX_PORTS) {
