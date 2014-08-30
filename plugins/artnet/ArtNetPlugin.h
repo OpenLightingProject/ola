@@ -45,6 +45,11 @@ class ArtNetPlugin : public Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
+  /**
+   * Start the plugin, for now we just have one device.
+   * @todo Allow multiple devices on different IPs?
+   * @return true if we started ok, false otherwise
+   */
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
