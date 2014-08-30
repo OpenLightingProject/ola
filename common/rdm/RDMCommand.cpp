@@ -608,12 +608,15 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 // Helper functions follow
 
 /**
- * Guess the type of an RDM message, so we know whether we should unpack it as
- * a request or response. This doesn't perform any data checking (that's left
- * to the Inflate* methods).
- * @param type_arg a pointer to a rdm_message_type variable which is set to
- * RDM_REQUEST or RDM_RESPONSE.
- * @param data a pointer to the rdm message (excluding the start code)
+ * @brief Guess the type of an RDM message
+ *
+ * Used so we know whether we should unpack it as a request or response. This
+ * doesn't perform any data checking (that's left to the Inflate* methods).
+ * @param[out] type_arg a pointer to a rdm_message_type variable which is set
+ * to RDM_REQUEST or RDM_RESPONSE.
+ * @param[out] command_class_arg a pointer to a RDMCommandClass variable which
+ * is set to the command class type
+ * @param data a pointer to the RDM message (excluding the start code)
  * @param length length of the rdm data
  * @returns true if we could determine the type, false otherwise
  */
