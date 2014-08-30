@@ -328,7 +328,7 @@ class BasicOutputPort: public OutputPort {
   AbstractDevice *m_device;
   bool m_supports_rdm;
 
-   DISALLOW_COPY_AND_ASSIGN(BasicOutputPort);
+  DISALLOW_COPY_AND_ASSIGN(BasicOutputPort);
 };
 
 
