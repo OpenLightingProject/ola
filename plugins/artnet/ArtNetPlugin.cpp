@@ -42,10 +42,10 @@ const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
 const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet";
 const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
 
-/*
+/**
  * Start the plugin, for now we just have one device.
- * TODO: allow multiple devices on different IPs ?
- * @returns true if we started ok, false otherwise
+ * @todo Allow multiple devices on different IPs?
+ * @return true if we started ok, false otherwise
  */
 bool ArtNetPlugin::StartHook() {
   m_device = new ArtNetDevice(this,
@@ -65,10 +65,6 @@ bool ArtNetPlugin::StartHook() {
 }
 
 
-/*
- * Stop the plugin
- * @return true on success, false on failure
- */
 bool ArtNetPlugin::StopHook() {
   if (m_device) {
     // stop the device
@@ -81,10 +77,6 @@ bool ArtNetPlugin::StopHook() {
 }
 
 
-/*
- * Return the description for this plugin.
- * @return a string description of the plugin
- */
 string ArtNetPlugin::Description() const {
   return
       "ArtNet Plugin\n"
@@ -160,9 +152,6 @@ string ArtNetPlugin::Description() const {
 }
 
 
-/*
- * Set default preferences.
- */
 bool ArtNetPlugin::SetDefaultPreferences() {
   bool save = false;
 
@@ -199,7 +188,7 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   if (save)
     m_preferences->Save();
 
-  // check if this save correctly
+  // check if this saved correctly
   // we don't want to use it if null
   if (m_preferences->GetValue(ArtNetDevice::K_SHORT_NAME_KEY).empty() ||
       m_preferences->GetValue(ArtNetDevice::K_LONG_NAME_KEY).empty() ||

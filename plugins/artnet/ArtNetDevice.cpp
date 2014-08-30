@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * artnetdevice.cpp
+ * ArtNetDevice.cpp
  * Art-Net device
  * Copyright (C) 2005 Simon Newton
  *
@@ -21,8 +21,8 @@
  * Art-Net is limited to four ports per direction per IP, so in this case
  * our device has 8 ports :
  *
- * Ids 0-3 : Input ports (recv dmx)
- * Ids 4-7 : Output ports (send dmx)
+ * IDs 0-3 : Input ports (recv dmx)
+ * IDs 4-7 : Output ports (send dmx)
  */
 
 #include <google/protobuf/service.h>
@@ -74,7 +74,7 @@ const char ArtNetDevice::K_OUTPUT_PORT_KEY[] = "output_ports";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
 
-/*
+/**
  * Create a new Artnet Device
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
@@ -88,7 +88,7 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
 }
 
 
-/*
+/**
  * Start this device
  * @return true on success, false on failure
  */
@@ -165,7 +165,7 @@ void ArtNetDevice::PrePortStop() {
 }
 
 
-/*
+/**
  * Stop this device
  */
 void ArtNetDevice::PostPortStop() {
@@ -174,7 +174,7 @@ void ArtNetDevice::PostPortStop() {
 }
 
 
-/*
+/**
  * Handle device config messages
  * @param controller An RpcController
  * @param request the request data
@@ -205,7 +205,7 @@ void ArtNetDevice::Configure(RpcController *controller,
 }
 
 
-/*
+/**
  * Handle an options request
  */
 void ArtNetDevice::HandleOptions(Request *request, string *response) {

@@ -181,7 +181,7 @@ class ArtNetNodeImpl::InputPort {
     }
 };
 
-/*
+/**
  * Create a new node
  * @param iface the interface to use.
  * @param short_name the short node name
@@ -229,7 +229,7 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
 }
 
 
-/*
+/**
  * Cleanup
  */
 ArtNetNodeImpl::~ArtNetNodeImpl() {
@@ -250,7 +250,7 @@ ArtNetNodeImpl::~ArtNetNodeImpl() {
 }
 
 
-/*
+/**
  * Start this node. The port modifying functions can be called before this.
  */
 bool ArtNetNodeImpl::Start() {
@@ -262,7 +262,7 @@ bool ArtNetNodeImpl::Start() {
 }
 
 
-/*
+/**
  * Stop this node
  */
 bool ArtNetNodeImpl::Stop() {
@@ -310,7 +310,7 @@ bool ArtNetNodeImpl::Stop() {
 
 /**
  * Start the configuration transaction.
- * @returns false if there is already a transaction pending.
+ * @return false if there is already a transaction pending.
  */
 bool ArtNetNodeImpl::EnterConfigurationMode() {
   if (m_in_configuration_mode)
@@ -343,7 +343,7 @@ bool ArtNetNodeImpl::ExitConfigurationMode() {
 }
 
 
-/*
+/**
  * Set the short name.
  */
 bool ArtNetNodeImpl::SetShortName(const string &name) {
@@ -355,7 +355,7 @@ bool ArtNetNodeImpl::SetShortName(const string &name) {
 }
 
 
-/*
+/**
  * Set the long name.
  */
 bool ArtNetNodeImpl::SetLongName(const string &name) {
@@ -366,7 +366,7 @@ bool ArtNetNodeImpl::SetLongName(const string &name) {
 }
 
 
-/*
+/**
  * The the net address for this node
  */
 bool ArtNetNodeImpl::SetNetAddress(uint8_t net_address) {
@@ -392,7 +392,7 @@ bool ArtNetNodeImpl::SetNetAddress(uint8_t net_address) {
 }
 
 
-/*
+/**
  * The the subnet address for this node
  */
 bool ArtNetNodeImpl::SetSubnetAddress(uint8_t subnet_address) {
@@ -423,8 +423,9 @@ bool ArtNetNodeImpl::SetSubnetAddress(uint8_t subnet_address) {
 }
 
 
-/*
- * Return the number of input ports
+/**
+ * Get the number of input ports
+ * @returns the number of input ports
  */
 uint8_t ArtNetNodeImpl::InputPortCount() const {
   return m_input_ports.size();
@@ -457,7 +458,7 @@ uint8_t ArtNetNodeImpl::GetInputPortUniverse(uint8_t port_id) const {
 }
 
 
-/*
+/**
  * Disable an input port.
  */
 void ArtNetNodeImpl::DisableInputPort(uint8_t port_id) {
@@ -471,7 +472,7 @@ void ArtNetNodeImpl::DisableInputPort(uint8_t port_id) {
 }
 
 
-/*
+/**
  * Return the state (enabled or disabled) of an input port. An invalid port_id
  * returns false.
  */
@@ -481,7 +482,7 @@ bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
 }
 
 
-/*
+/**
  * Set the universe for an output port.
  * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
  * @param universe_id the new universe id.
@@ -502,7 +503,7 @@ bool ArtNetNodeImpl::SetOutputPortUniverse(uint8_t port_id,
 }
 
 
-/*
+/**
  * Return the current universe address for an output port
  * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
  */
@@ -512,7 +513,7 @@ uint8_t ArtNetNodeImpl::GetOutputPortUniverse(uint8_t port_id) {
 }
 
 
-/*
+/**
  * Disable an input port.
  */
 void ArtNetNodeImpl::DisableOutputPort(uint8_t port_id) {
@@ -525,7 +526,7 @@ void ArtNetNodeImpl::DisableOutputPort(uint8_t port_id) {
 }
 
 
-/*
+/**
  * Return the state (enabled or disabled) of an input port. An invalid port_id
  * returns false.
  */
@@ -535,7 +536,7 @@ bool ArtNetNodeImpl::OutputPortState(uint8_t port_id) const {
 }
 
 
-/*
+/**
  * Set the merge mode for an output port
  */
 bool ArtNetNodeImpl::SetMergeMode(uint8_t port_id,
@@ -549,7 +550,7 @@ bool ArtNetNodeImpl::SetMergeMode(uint8_t port_id,
 }
 
 
-/*
+/**
  * Send an ArtPoll if any of the ports are sending data
  */
 bool ArtNetNodeImpl::SendPoll() {
@@ -577,7 +578,7 @@ bool ArtNetNodeImpl::SendPoll() {
 }
 
 
-/*
+/**
  * Send some DMX data
  * @param universe the id of the universe to send
  * @param buffer the DMX data
@@ -657,7 +658,7 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 }
 
 
-/*
+/**
  * Flush the TOD and force a full discovery.
  * The DiscoverableQueueingRDMController ensures this is only called one at a
  * time.
@@ -689,7 +690,7 @@ void ArtNetNodeImpl::RunFullDiscovery(uint8_t port_id,
 }
 
 
-/*
+/**
  * Run an 'incremental' discovery. This just involves fetching the TOD from all
  * nodes.
  *
@@ -725,10 +726,10 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
 }
 
 
-/*
+/**
  * Send an RDMRequest on this port, this may defer the sending if there are
  * other outstanding messages in the queue.
- * @param port_id the if of the port to send the request on
+ * @param port_id the id of the port to send the request on
  * @param request the RDMRequest object
  *
  * Because this is wrapped in the QueueingRDMController this will only be
@@ -796,7 +797,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
 }
 
 
-/*
+/**
  * Set the RDM handlers for an Input port
  * @param port_id the id of the port to set the handlers for
  * @param tod_callback the callback to be invoked when a ArtTod message is received,
@@ -835,7 +836,7 @@ void ArtNetNodeImpl::GetSubscribedNodes(
 }
 
 
-/*
+/**
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
  * @param handler the Callback0 to call when there is data for this universe.
@@ -856,7 +857,7 @@ bool ArtNetNodeImpl::SetDMXHandler(uint8_t port_id,
 }
 
 
-/*
+/**
  * Send an set of UIDs in one of more ArtTod packets
  */
 bool ArtNetNodeImpl::SendTod(uint8_t port_id, const UIDSet &uid_set) {
@@ -909,7 +910,7 @@ bool ArtNetNodeImpl::SendTod(uint8_t port_id, const UIDSet &uid_set) {
 }
 
 
-/*
+/**
  * Set the RDM handlers for an Output port
  */
 bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
@@ -957,7 +958,7 @@ bool ArtNetNodeImpl::SendTimeCode(const ola::timecode::TimeCode &timecode) {
   return true;
 }
 
-/*
+/**
  * Called when there is data on this socket
  */
 void ArtNetNodeImpl::SocketReady() {
@@ -974,7 +975,7 @@ void ArtNetNodeImpl::SocketReady() {
 }
 
 
-/*
+/**
  * Send an ArtPoll if we're both running and not in configuration mode.
  * If we're in configuration mode this sets m_artpoll_required instead.
  */
@@ -991,7 +992,7 @@ bool ArtNetNodeImpl::SendPollIfAllowed() {
 }
 
 
-/*
+/**
  * Send an ArtPollReply if we're both running and m_send_reply_on_change is
  * true. If we're in configuration mode, this sets m_artpollreply_required
  * instead of sending.
@@ -1008,7 +1009,7 @@ bool ArtNetNodeImpl::SendPollReplyIfRequired() {
   return true;
 }
 
-/*
+/**
  * Send an ArtPollReply message
  */
 bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
@@ -1060,7 +1061,7 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
 }
 
 
-/*
+/**
  * Send an IPProgReply
  */
 bool ArtNetNodeImpl::SendIPReply(const IPV4Address &destination) {
@@ -1081,7 +1082,7 @@ bool ArtNetNodeImpl::SendIPReply(const IPV4Address &destination) {
 }
 
 
-/*
+/**
  * Handle a artnet packet
  */
 void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
@@ -1148,7 +1149,7 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle an ArtPoll packet
  */
 void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
@@ -1167,7 +1168,7 @@ void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle an ArtPollReply packet
  */
 void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
@@ -1215,7 +1216,7 @@ void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle a DMX Data packet, this takes care of the merging
  */
 void ArtNetNodeImpl::HandleDataPacket(const IPV4Address &source_address,
@@ -1257,7 +1258,7 @@ void ArtNetNodeImpl::HandleDataPacket(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle a TOD Request packet
  */
 void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
@@ -1310,7 +1311,7 @@ void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle a TOD data packet
  */
 void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
@@ -1352,7 +1353,7 @@ void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle a TOD Control packet
  */
 void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
@@ -1386,7 +1387,7 @@ void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Handle an RDM packet
  */
 void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
@@ -1593,7 +1594,7 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
            << "configuration";
 }
 
-/*
+/**
  * Fill in the header for a packet
  */
 void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
@@ -1603,7 +1604,7 @@ void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
 }
 
 
-/*
+/**
  * Send an ArtNet packet
  * @param packet
  * @param size the size of the packet, excluding the header portion
@@ -1642,7 +1643,7 @@ void ArtNetNodeImpl::TimeoutRDMRequest(InputPort *port) {
 }
 
 
-/*
+/**
  * Send a generic ArtRdm message
  */
 bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
@@ -1666,7 +1667,7 @@ bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
 }
 
 
-/*
+/**
  * Update a port from a source, merging if necessary
  */
 void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
@@ -1743,7 +1744,7 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
 }
 
 
-/*
+/**
  * Check the version number of a incoming packet
  */
 bool ArtNetNodeImpl::CheckPacketVersion(const IPV4Address &source_address,
@@ -1758,7 +1759,7 @@ bool ArtNetNodeImpl::CheckPacketVersion(const IPV4Address &source_address,
 }
 
 
-/*
+/**
  * Check the size of an incoming packet
  */
 bool ArtNetNodeImpl::CheckPacketSize(const IPV4Address &source_address,
@@ -1805,7 +1806,7 @@ const ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(
 }
 
 
-/*
+/**
  * Similar to GetInputPort, but this also confirms the port is enabled.
  */
 ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetEnabledInputPort(
@@ -1849,7 +1850,7 @@ const ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(
 }
 
 
-/*
+/**
  * Similar to GetOutputPort, but this also confirms the port is enabled.
  */
 ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetEnabledOutputPort(
@@ -1866,7 +1867,7 @@ ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetEnabledOutputPort(
 }
 
 
-/*
+/**
  * Setup the networking components.
  */
 bool ArtNetNodeImpl::InitNetwork() {
@@ -1891,7 +1892,7 @@ bool ArtNetNodeImpl::InitNetwork() {
 }
 
 
-/*
+/**
  * Update a port with a new TOD list
  */
 void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
@@ -1960,7 +1961,7 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
 }
 
 
-/*
+/**
  * Start the discovery process, this puts the port into discovery mode and
  * sets up the callback.
  */
@@ -1995,7 +1996,7 @@ bool ArtNetNodeImpl::StartDiscoveryProcess(InputPort *port,
 }
 
 
-/*
+/**
  * Called when the discovery process times out.
  */
 void ArtNetNodeImpl::ReleaseDiscoveryLock(InputPort *port) {
