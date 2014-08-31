@@ -10,6 +10,7 @@ matrix:
       env: TASK='compile'
     - compiler: gcc
       env: TASK='compile'
+    - env: TASK='doxygen'
     - env: TASK='lint'
     - env: TASK='check-licences'
 
@@ -19,7 +20,8 @@ before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo apt-get update -qq
  - sudo apt-cache search microhttpd
- - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
+ - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev doxygen
+#g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 #Remove the old g++/gcc to ensure we're using the latest ones

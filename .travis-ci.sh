@@ -18,6 +18,12 @@ elif [[ $TASK = 'check-licences' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+elif [[ $TASK = 'doxygen' ]]; then
+  # check doxygen only if it is the requested task
+   autoreconf -i && ./configure && make doxygen-doc
+  if [[ $? -ne 0 ]]; then
+    exit 1;
+  fi;
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make distcheck
