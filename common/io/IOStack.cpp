@@ -39,7 +39,6 @@ using std::string;
 
 /**
  * IOStack.
- * @param block_size the size of blocks to use.
  */
 IOStack::IOStack()
     : m_pool(new MemoryBlockPool()),

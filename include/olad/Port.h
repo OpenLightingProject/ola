@@ -45,25 +45,25 @@ class Port {
   virtual ~Port() {}
 
   /**
-   * Get the port ID
+   * @brief Get the port ID
    * @return the id of the port within this device
    */
   virtual unsigned int PortId() const = 0;
 
   /**
-   * Get the device which owns this port
+   * @brief Get the device which owns this port
    * @return the device which owns this port
    */
   virtual AbstractDevice *GetDevice() const = 0;
 
   /**
-   * Get the port description
-   * return a short description of this port
+   * @brief Get the port description
+   * @return a short description of this port
    */
   virtual std::string Description() const = 0;
 
   /**
-   * Bind this port to a universe
+   * @brief Bind this port to a universe
    * @param universe the universe to bind to
    */
   virtual bool SetUniverse(Universe *universe) = 0;
@@ -83,7 +83,7 @@ class Port {
   virtual std::string UniqueId() const = 0;
 
   /**
-   * This tells us what sort of priority capabilities this port has
+   * @brief This tells us what sort of priority capabilities this port has
    * @return a port_priority_capability
    */
   virtual port_priority_capability PriorityCapability() const = 0;
@@ -111,17 +111,17 @@ class InputPort: public Port {
   virtual ~InputPort() {}
 
   /**
-   * Signal to the port that the DMX data has changed
+   * @brief Signal to the port that the DMX data has changed
    */
   virtual void DmxChanged() = 0;
 
   /**
-   * Get the current DMX data
+   * @brief Get the current DMX data
    */
   virtual const DmxSource &SourceData() const = 0;
 
   /**
-   * Handle RDMRequests, ownership of the RDMRequest object is transferred
+   * @brief Handle RDMRequests, ownership of the RDMRequest object is transferred
    */
   virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *callback) = 0;
@@ -138,12 +138,13 @@ class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
   /**
    * @brief Write DMX data to this port
    * @param buffer the DmxBuffer to write
+   * @param priority the priority of the DMX data
    * @return true on success, false on failure
    */
   virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) = 0;
 
   /**
-   * Called if the universe name changes
+   * @brief Called if the universe name changes
    */
   virtual void UniverseNameChanged(const std::string &new_name) = 0;
 
@@ -169,7 +170,7 @@ class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
 class BasicInputPort: public InputPort {
  public:
   /**
-   * Create a new basic input port
+   * @brief Create a new basic input port
    */
   BasicInputPort(AbstractDevice *parent,
                  unsigned int port_id,
@@ -187,21 +188,22 @@ class BasicInputPort: public InputPort {
   port_priority_mode GetPriorityMode() const { return m_priority_mode; }
 
   /**
-   * Called when there is new data for this port
+   * @brief Called when there is new data for this port
    */
   void DmxChanged();
   const DmxSource &SourceData() const { return m_dmx_source; }
 
   // RDM methods, the child class provides HandleRDMResponse
   /**
-   * Handle an RDM Request on this port.
+   * @brief Handle an RDM Request on this port.
    * @param request the RDMRequest object, ownership is transferred to us
+   * @param callback the callback to run
    */
   void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
   /**
-   * Trigger the RDM Discovery procedure for this universe
+   * @brief Trigger the RDM Discovery procedure for this universe
    */
   void TriggerRDMDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete,
                            bool full = true);
@@ -251,7 +253,7 @@ class BasicInputPort: public InputPort {
 class BasicOutputPort: public OutputPort {
  public:
   /**
-   * Create a new BasicOutputPort
+   * @brief Create a new BasicOutputPort
    */
   BasicOutputPort(AbstractDevice *parent,
                   unsigned int port_id,
@@ -278,17 +280,17 @@ class BasicOutputPort: public OutputPort {
 
   // DiscoverableRDMControllerInterface methods
   /**
-   * Handle an RDMRequest, subclasses can implement this to support RDM
+   * @brief Handle an RDMRequest, subclasses can implement this to support RDM
    */
   virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback);
   /**
-   * This is a noop for ports that don't support RDM
+   * @brief This is a noop for ports that don't support RDM
    */
   virtual void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete);
 
   /**
-   * This is a noop for ports that don't support RDM
+   * @brief This is a noop for ports that don't support RDM
    */
   virtual void RunIncrementalDiscovery(
       ola::rdm::RDMDiscoveryCallback *on_complete);
@@ -297,7 +299,7 @@ class BasicOutputPort: public OutputPort {
   virtual bool SupportsTimeCode() const { return false; }
 
   /**
-   * This is a noop for ports that don't support TimeCode
+   * @brief This is a noop for ports that don't support TimeCode
    */
   virtual bool SendTimeCode(const ola::timecode::TimeCode &) {
     return true;
@@ -314,7 +316,7 @@ class BasicOutputPort: public OutputPort {
   virtual bool SupportsPriorities() const { return false; }
 
   /**
-   * Called when the discovery triggered by patching completes
+   * @brief Called when the discovery triggered by patching completes
    */
   void UpdateUIDs(const ola::rdm::UIDSet &uids);
 
@@ -333,7 +335,7 @@ class BasicOutputPort: public OutputPort {
 
 
 /**
- * This allows switching based on Port type.
+ * @brief This allows switching based on Port type.
  */
 template<class PortClass>
 bool IsInputPort();

@@ -35,8 +35,10 @@ using std::vector;
  * Figure out the number of group repetitions required.
  *
  * This method is *not* re-entrant.
- * @param descriptor The descriptor to use to build the Message
- * @returns A Message object, or NULL if the inputs failed.
+ * @param token_count the number of tokens supplied
+ * @param descriptor the descriptor to use to build the Message
+ * @param[out] group_repeat_count the number of repeated groups
+ * @returns the state of the calculator as a calculator_state.
  */
 GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
     unsigned int token_count,
