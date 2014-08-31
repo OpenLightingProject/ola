@@ -51,7 +51,7 @@ StringMessageBuilder::StringMessageBuilder()
 
 
 /**
- * Clean up
+ * @brief Clean up
  */
 StringMessageBuilder::~StringMessageBuilder() {
   CleanUpVector();
@@ -59,11 +59,12 @@ StringMessageBuilder::~StringMessageBuilder() {
 
 
 /**
- * Get the Message object that this Builder created
+ * @brief Get the Message object that this Builder created
  *
  * This method is *not* re-entrant.
- * @param descriptor The descriptor to use to build the Message
- * @returns A Message object, or NULL if the inputs failed.
+ * @param inputs the string inputs provided to build the Message
+ * @param descriptor the descriptor to use to build the Message
+ * @returns a Message object, or NULL if the inputs failed.
  */
 const ola::messaging::Message *StringMessageBuilder::GetMessage(
     const vector<string> &inputs,
