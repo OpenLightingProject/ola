@@ -102,16 +102,9 @@ void MACAddressTest::testMACAddress() {
   addresses.push_back(string_address4);
   std::sort(addresses.begin(), addresses.end());
 
-  // Addresses are in network byte order.
-  if (ola::network::IsBigEndian()) {
-    OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), addresses[0].ToString());
-    OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), addresses[1].ToString());
-    OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), addresses[2].ToString());
-  } else {
-    OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), addresses[0].ToString());
-    OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), addresses[1].ToString());
-    OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), addresses[2].ToString());
-  }
+  OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), addresses[0].ToString());
+  OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), addresses[1].ToString());
+  OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), addresses[2].ToString());
 }
 
 /*

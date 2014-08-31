@@ -42,10 +42,7 @@ string PathportPortHelper::Description(const Universe *universe) const {
   return str.str();
 }
 
-
-/*
- * Don't allow us to patch ports out of range
- */
+// Don't allow us to patch ports out of range
 bool PathportPortHelper::PreSetUniverse(Universe *new_universe) {
   if (new_universe &&
       new_universe->UniverseId() > PathportNode::MAX_UNIVERSES) {
@@ -73,9 +70,6 @@ void PathportInputPort::PostSetUniverse(Universe *old_universe,
 }
 
 
-/*
- * Write operation
- */
 bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
                                   uint8_t priority) {
   if (GetUniverse())

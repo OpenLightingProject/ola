@@ -37,8 +37,7 @@ using std::min;
 using std::string;
 
 /**
- * IOQueue.
- * @param block_size the size of blocks to use.
+ * @brief IOQueue.
  */
 IOQueue::IOQueue()
     : m_pool(new MemoryBlockPool()),

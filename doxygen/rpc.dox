@@ -142,6 +142,14 @@
  * to this ip:port and write serialized protobufs (see \ref sec_RPCLayer) to
  * the connection.
  *
+ * Why TCP and not UDP? Mostly because the original developer was lazy and
+ * didn't want to deal with chunking data into packets, when TCP handles this
+ * for us. However TCP has it's own problems, with [Head of line
+ * blocking](http://en.wikipedia.org/wiki/Head-of-line_blocking). For this
+ * reason RPC traffic should only be used on localhost, where packet loss is
+ * unlikely. If you want cross-host RPC you should probably be using E1.31
+ * (sACN) or the Web APIs.
+ *
  * The OLA client libraries follow the thin, asyncronous client model.
  * There is usually a 1:1 mapping between API methods and the underlying RPC
  * calls. The clients take the arguments supplied to the API method, construct

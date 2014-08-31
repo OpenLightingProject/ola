@@ -110,11 +110,28 @@ class IPV4SocketAddress: public SocketAddress {
       return !(*this == other);
     }
 
+    /**
+     * @brief Less than operator for partial ordering.
+     *
+     * Sorts by host, then port.
+     */
     bool operator<(const IPV4SocketAddress &other) const {
       if (m_host == other.m_host)
         return m_port < other.m_port;
       else
         return m_host < other.m_host;
+    }
+
+    /**
+     * @brief Greater than operator.
+     *
+     * Sorts by host, then port.
+     */
+    bool operator>(const IPV4SocketAddress &other) const {
+      if (m_host == other.m_host)
+        return m_port > other.m_port;
+      else
+        return m_host > other.m_host;
     }
 
     uint16_t Family() const { return AF_INET; }

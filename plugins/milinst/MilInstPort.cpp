@@ -24,11 +24,6 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
-/*
- * Write operation
- * @param the buffer to write
- * @return true on success, false on failure
- */
 bool MilInstOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  uint8_t priority) {
   return m_widget->SendDmx(buffer);
