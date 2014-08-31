@@ -23,7 +23,7 @@
  *
  * @examplepara
  * ~~~~~~~~~~~~~~~~~~~~~
- * #include <ola/Logging.h>
+ * \#include <ola/Logging.h>
  *
  * // Call this once
  * ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);

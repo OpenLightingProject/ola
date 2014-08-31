@@ -41,9 +41,6 @@ namespace math {
 std::default_random_engine generator_;
 #endif
 
-/**
- * Seed the random number generator
- */
 void InitRandom() {
   Clock clock;
   TimeStamp now;
@@ -60,11 +57,6 @@ void InitRandom() {
 #endif
 }
 
-
-/**
- * Return a random number between lower and upper, inclusive. i.e.
- * [lower, upper]
- */
 int Random(int lower, int upper) {
 #ifdef HAVE_RANDOM
   std::uniform_int_distribution<int> distribution(lower, upper);

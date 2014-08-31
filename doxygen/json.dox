@@ -11,8 +11,8 @@
  * @par Serialization Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~
-   #include <ola/web/Json.h>
-   #include <ola/web/JsonWriter.h>
+   \#include <ola/web/Json.h>
+   \#include <ola/web/JsonWriter.h>
 
    JsonObject obj;
    obj.Add("name", "simon");
@@ -29,8 +29,8 @@
  * @par Parsing Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~
-   #include <ola/web/Json.h>
-   #include <ola/web/JsonParser.h>
+   \#include <ola/web/Json.h>
+   \#include <ola/web/JsonParser.h>
 
    std::string error;
    JsonValue *value = JsonParser::Parse(json_string, &error);
