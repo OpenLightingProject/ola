@@ -20,8 +20,12 @@ elif [[ $TASK = 'check-licences' ]]; then
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
-   autoreconf -i && ./configure && make doxygen-doc
-  if [[ $? -ne 0 ]]; then
+  # print the output for info
+  autoreconf -i && ./configure && make doxygen-doc
+  # count the number of warnings
+  warnings=$(make doxygen-doc 2>&1 >/dev/null | wc -l)
+  if [[ $warnings -ne 0 ]]; then
+    echo "Found $warnings doxygen warnings"
     exit 1;
   fi;
 else
