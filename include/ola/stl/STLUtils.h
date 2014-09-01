@@ -384,6 +384,24 @@ bool STLLookupAndRemove(T1 *container,
 }
 
 /**
+ * @brief Lookup or insert a NULL value.
+ * @tparam T1 A container.
+ * @param[in] container the container to remove the key from.
+ * @param[in] key the key to loopup.
+ * @returns An iterator pointing to the value.
+ *
+ * Lookup a value by key in a pair associative container or insert NULL if it
+ * doesn't already exist.
+ */
+template<typename T1>
+typename T1::iterator STLLookupOrInsertNull(T1 *container,
+                                            const typename T1::key_type &key) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, NULL));
+  return p.first;
+}
+
+/**
  * @brief Remove a value from a pair associative container and delete it.
  * @tparam T1 A container.
  * @param[in] container the container to remove the key from.

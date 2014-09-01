@@ -50,6 +50,27 @@ message PortInfoReply {
   repeated OutputPortInfo output_port = 2;
 }
 
+/**
+ *
+ */
+message SourceListRequest {
+  // No options for now.
+}
+
+message SourceEntry {
+ required string cid = 1;
+ required string ip_address = 2;
+ optional string source_name = 3;
+ repeated int32 universe = 4;
+}
+
+message SourceListReply {
+  // True if discovery wasn't enabled
+  optional bool unsupported = 1 [ default = true ];
+
+  repeated SourceEntry source = 2;
+}
+
 
 /*
  * A generic request
@@ -58,16 +79,20 @@ message Request {
   enum RequestType {
     E131_PORT_INFO = 1;
     E131_PREVIEW_MODE = 2;
+    E131_SOURCES_LIST = 3;
   }
 
   required RequestType type = 1;
   optional PreviewModeRequest preview_mode = 2;
+  optional SourceListRequest source_list = 3;
 }
 
 message Reply {
   enum ReplyType {
     E131_PORT_INFO = 1;
+    E131_SOURCES_LIST = 2;
   }
   required ReplyType type = 1;
   optional PortInfoReply port_info = 2;
+  optional SourceListReply source_list = 3;
 }

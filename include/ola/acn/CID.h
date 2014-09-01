@@ -110,6 +110,11 @@ class CID {
   bool operator!=(const CID& c1) const;
 
   /**
+   * @brief Inequality operator.
+   */
+  bool operator<(const CID& c1) const;
+
+  /**
    * @brief Generate a new CID
    */
   static CID Generate();

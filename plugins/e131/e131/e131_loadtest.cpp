@@ -60,12 +60,12 @@ int main(int argc, char* argv[]) {
 
   DmxBuffer output;
   output.Blackout();
+  SelectServer ss;
 
-  E131Node node("");
+  E131Node node(&ss, "", E131Node::Options());
   if (!node.Start())
     return -1;
 
-  SelectServer ss;
   ss.AddReadDescriptor(node.GetSocket());
   ss.RegisterRepeatingTimeout(
       1000 / fps,
