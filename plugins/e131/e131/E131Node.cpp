@@ -50,7 +50,8 @@ class TrackedSource {
  public:
   TrackedSource()
       : clean_counter(0),
-        current_sequence_number(0) {
+        current_sequence_number(0),
+        total_pages(0) {
   }
 
   IPV4Address ip_address;
@@ -75,7 +76,10 @@ void TrackedSource::NewPage(uint8_t page_number, uint8_t last_page,
                             const vector<uint16_t> &rx_universes) {
   clean_counter = 0;
 
-  if (sequence_number != current_sequence_number) {
+  // This is broken because we don't actually get a sequence number in the
+  // packet yet.
+  if (sequence_number != current_sequence_number ||
+      total_pages != last_page) {
     current_sequence_number = sequence_number;
     total_pages = last_page;
     received_pages.clear();
@@ -95,9 +99,10 @@ void TrackedSource::NewPage(uint8_t page_number, uint8_t last_page,
     expected_page++;
   }
 
-  if (expected_page == total_pages) {
+  if (expected_page == total_pages + 1) {
     universes = new_universes;
     received_pages.clear();
+    new_universes.clear();
     total_pages = 0;
   }
 }
@@ -415,7 +420,6 @@ void E131Node::NewDiscoveryPage(
     return;
   }
 
-  OLA_INFO << "Got page for " << headers.GetRootHeader().GetCid().ToString();
   TrackedSources::iterator iter = STLLookupOrInsertNull(
       &m_discovered_sources,
       headers.GetRootHeader().GetCid());

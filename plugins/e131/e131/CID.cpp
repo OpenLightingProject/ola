@@ -59,7 +59,7 @@ bool CID::operator!=(const CID& c1) const {
 }
 
 bool CID::operator<(const CID& c1) const {
-  return *this < c1;
+  return *m_impl < *c1.m_impl;
 }
 
 string CID::ToString() const {
