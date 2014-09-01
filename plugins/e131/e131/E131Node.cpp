@@ -453,7 +453,6 @@ void E131Node::SendDiscoveryPage(const std::vector<uint16_t> &universes,
     page_data[i + 1] = HostToNetwork(
         universes[this_page * DISCOVERY_PAGE_SIZE + i]);
   }
-  OLA_INFO << page_data[1];
 
   E131Header header("OLA Discovery", 0, 0, DISCOVERY_UNIVERSE_ID);
   m_e131_sender.SendDiscoveryData(

@@ -78,9 +78,10 @@ class E131Node {
 
   /**
    * @brief Create a new E1.31 node.
+   * @param ss the SchedulerInterface to use.
    * @param ip_address the IP address to prefer to listen on
    * @param options the Options to use for the node.
-   * @param cid, the CID to use, if not provided we generate one.
+   * @param cid the CID to use, if not provided we generate one.
    */
   E131Node(ola::thread::SchedulerInterface *ss,
            const std::string &ip_address,
@@ -126,7 +127,6 @@ class E131Node {
    *
    * @param universe the id of the universe to send
    * @param buffer the DMX data
-   * @param cid the cid to send from
    * @param sequence_offset used to twiddle the sequence numbers, this doesn't
    * increment the sequence counter.
    * @param priority the priority to use
@@ -143,6 +143,7 @@ class E131Node {
   /**
    * @brief Signal termination of the stream for a universe.
    * @param universe the id of the universe to send
+   * @param buffer the last DmxBuffer to send.
    * @param priority the priority to use, this doesn't actually make a
    * difference.
    */
@@ -154,6 +155,7 @@ class E131Node {
    * Set the Callback to be run when we receive data for this universe.
    * @param universe the universe to register the handler for
    * @param buffer the DmxBuffer to copy the data to.
+   * @param priority the priority to set.
    * @param handler the Callback to call when there is data for this universe.
    *   Ownership is transferred.
    */
