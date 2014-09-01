@@ -32,7 +32,6 @@ using std::vector;
 unsigned int E131DiscoveryInflator::InflatePDUBlock(HeaderSet *headers,
                                                     const uint8_t *data,
                                                     unsigned int len) {
-  OLA_INFO << "Got InflatePDUBlock";
   if (!m_page_callback.get()) {
     return len;
   }
