@@ -1,5 +1,7 @@
 x/y/2014 ola-0.9.3
  Features:
+  * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
+  * Add support for the draft E1.31 discovery protocol.
 
  Bugs:
 
