@@ -148,7 +148,9 @@ int main(int argc, char *argv[]) {
   // Setup E1.31 if required.
   auto_ptr<ola::plugin::e131::E131Node> e131_node;
   if (FLAGS_e131) {
-    e131_node.reset(new ola::plugin::e131::E131Node(FLAGS_listen_ip, cid));
+    e131_node.reset(new ola::plugin::e131::E131Node(
+          node.SelectServer(), FLAGS_listen_ip,
+          ola::plugin::e131::E131Node::Options(), cid));
     if (!e131_node->Start()) {
       OLA_WARN << "Failed to start E1.31 node";
       exit(ola::EXIT_UNAVAILABLE);

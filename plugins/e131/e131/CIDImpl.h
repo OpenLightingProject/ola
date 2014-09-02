@@ -62,6 +62,7 @@ class CIDImpl {
   CIDImpl& operator=(const CIDImpl& c1);
   bool operator==(const CIDImpl& c1) const;
   bool operator!=(const CIDImpl& c1) const;
+  bool operator<(const CIDImpl& c1) const;
 
   static CIDImpl* Generate();
   static CIDImpl* FromData(const uint8_t *data);
