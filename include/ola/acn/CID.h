@@ -110,7 +110,7 @@ class CID {
   bool operator!=(const CID& c1) const;
 
   /**
-   * @brief Inequality operator.
+   * @brief Less than operator.
    */
   bool operator<(const CID& c1) const;
 

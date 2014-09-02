@@ -107,10 +107,10 @@ void E131Configurator::SendConfigRequest() {
     preview_request->set_port_id(FLAGS_port_id);
     preview_request->set_preview_mode(FLAGS_preview_mode);
     preview_request->set_input_port(FLAGS_input);
-  } else if (FLAGS_discovery.present()) {
+  } else if (FLAGS_discovery) {
     request.set_type(ola::plugin::e131::Request::E131_SOURCES_LIST);
     ola::plugin::e131::SourceListRequest *source_list_request =
-      request.mutable_source_list();
+        request.mutable_source_list();
     (void) source_list_request;  // no options for now.
   } else {
     request.set_type(ola::plugin::e131::Request::E131_PORT_INFO);

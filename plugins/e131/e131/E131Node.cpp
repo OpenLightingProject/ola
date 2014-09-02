@@ -78,6 +78,7 @@ void TrackedSource::NewPage(uint8_t page_number, uint8_t last_page,
 
   // This is broken because we don't actually get a sequence number in the
   // packet yet.
+  // TODO(simon): Get the draft updated and fix this.
   if (sequence_number != current_sequence_number ||
       total_pages != last_page) {
     current_sequence_number = sequence_number;

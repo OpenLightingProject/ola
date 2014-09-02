@@ -152,7 +152,7 @@ class E131Node {
                         uint8_t priority = DEFAULT_PRIORITY);
 
   /**
-   * Set the Callback to be run when we receive data for this universe.
+   * @brief Set the Callback to be run when we receive data for this universe.
    * @param universe the universe to register the handler for
    * @param buffer the DmxBuffer to copy the data to.
    * @param priority the priority to set.

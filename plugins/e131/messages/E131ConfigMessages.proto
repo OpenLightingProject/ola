@@ -51,17 +51,21 @@ message PortInfoReply {
 }
 
 /**
- *
+ * The SourceList request message.
  */
 message SourceListRequest {
   // No options for now.
 }
 
 message SourceEntry {
- required string cid = 1;
- required string ip_address = 2;
- optional string source_name = 3;
- repeated int32 universe = 4;
+  // The CID of the source
+  required string cid = 1;
+  // The IP address of the source
+  required string ip_address = 2;
+  // The name of the source
+  optional string source_name = 3;
+  // The universes reported by the source.
+  repeated int32 universe = 4;
 }
 
 message SourceListReply {

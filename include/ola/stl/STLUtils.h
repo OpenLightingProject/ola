@@ -384,10 +384,10 @@ bool STLLookupAndRemove(T1 *container,
 }
 
 /**
- * @brief Lookup or insert a NULL value.
+ * @brief Lookup or insert a NULL value into a pair associative container.
  * @tparam T1 A container.
- * @param[in] container the container to remove the key from.
- * @param[in] key the key to loopup.
+ * @param[in] container the container to lookup from or insert into.
+ * @param[in] key the key to lookup.
  * @returns An iterator pointing to the value.
  *
  * Lookup a value by key in a pair associative container or insert NULL if it
