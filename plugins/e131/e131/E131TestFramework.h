@@ -224,7 +224,7 @@ class NodeTerminate: public NodeAction {
     }
     void Tick() {
       if (!m_sent)
-        m_node->StreamTerminated(UNIVERSE_ID);
+        m_node->SendStreamTerminated(UNIVERSE_ID);
       m_sent = true;
     }
  private:
@@ -245,7 +245,7 @@ class NodeTerminateWithData: public NodeAction {
       if (!m_sent) {
         ola::DmxBuffer output;
         output.SetRangeToValue(0, m_data, ola::DMX_UNIVERSE_SIZE);
-        m_node->StreamTerminated(UNIVERSE_ID, output);
+        m_node->SendStreamTerminated(UNIVERSE_ID, output);
       }
       m_sent = true;
     }

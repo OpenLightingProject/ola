@@ -218,6 +218,14 @@ bool E131Node::SetSourceName(uint16_t universe, const string &source) {
   return true;
 }
 
+bool E131Node::TerminateStream(uint16_t universe, uint8_t priority) {
+  // The standard says to send this 3 times
+  for (unsigned int i = 0; i < 3; i++) {
+    SendStreamTerminated(universe, DmxBuffer(), priority);
+  }
+  STLRemove(&m_tx_universes, universe);
+  return true;
+}
 
 bool E131Node::SendDMX(uint16_t universe,
                        const ola::DmxBuffer &buffer,
@@ -278,9 +286,9 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
   return result;
 }
 
-bool E131Node::StreamTerminated(uint16_t universe,
-                                const ola::DmxBuffer &buffer,
-                                uint8_t priority) {
+bool E131Node::SendStreamTerminated(uint16_t universe,
+                                    const ola::DmxBuffer &buffer,
+                                    uint8_t priority) {
   ActiveTxUniverses::iterator iter = m_tx_universes.find(universe);
 
   string source_name;
@@ -296,10 +304,11 @@ bool E131Node::StreamTerminated(uint16_t universe,
 
   unsigned int data_size = DMX_UNIVERSE_SIZE;
   buffer.Get(m_send_buffer + 1, &data_size);
+  data_size++;
 
   TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) data_size);
   DMPAddressData<TwoByteRangeDMPAddress> range_chunk(
-      &range_addr, m_send_buffer, data_size + 1);
+      &range_addr, m_send_buffer, data_size);
   vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
   ranged_chunks.push_back(range_chunk);
   const DMPPDU *pdu = NewRangeDMPSetProperty<uint16_t>(
