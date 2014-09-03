@@ -19,20 +19,19 @@
 #include <ola/DmxBuffer.h>
 #include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
-#include <ola/client/ClientWrapper.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/Callback.h>
 
 using std::cout;
 using std::endl;
 
-bool SendData(ola::client::OlaClientWrapper *wrapper) {
+bool SendData(ola::OlaCallbackClientWrapper *wrapper) {
   static unsigned int universe = 1;
   static unsigned int i = 0;
   ola::DmxBuffer buffer;
   buffer.Blackout();
   buffer.SetChannel(0, i);
-
-  wrapper->GetClient()->SendDMX(universe, buffer, ola::client::SendDMXArgs());
+  wrapper->GetClient()->SendDmx(universe, buffer);
 
   if (++i == 100) {
     wrapper->GetSelectServer()->Terminate();
@@ -42,7 +41,7 @@ bool SendData(ola::client::OlaClientWrapper *wrapper) {
 
 int main(int, char *[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  ola::client::OlaClientWrapper wrapper;
+  ola::OlaCallbackClientWrapper wrapper;
 
   if (!wrapper.Setup()) {
     std::cerr << "Setup failed" << endl;

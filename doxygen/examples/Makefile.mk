@@ -21,6 +21,10 @@ doxygen_examples_callback_client_transmit_SOURCES = \
     doxygen/examples/callback_client_transmit.cpp
 doxygen_examples_callback_client_transmit_LDADD = $(DOXYGEN_EXAMPLES_LDADD)
 
+doxygen_examples_legacy_callback_client_transmit_SOURCES = \
+    doxygen/examples/legacy_callback_client_transmit.cpp
+doxygen_examples_legacy_callback_client_transmit_LDADD = $(DOXYGEN_EXAMPLES_LDADD)
+
 doxygen_examples_flags_SOURCES = \
     doxygen/examples/flags.cpp
 doxygen_examples_flags_LDADD = $(DOXYGEN_EXAMPLES_LDADD)
