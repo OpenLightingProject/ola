@@ -107,6 +107,14 @@ class E131Node {
   bool SetSourceName(uint16_t universe, const std::string &source);
 
   /**
+   * @brief Signal that we will no longer send on this particular universe.
+   * @param universe to terminate sending on.
+   * @param priority the priority to use in the stream terminated message.
+   */
+  bool TerminateStream(uint16_t universe,
+                       uint8_t priority = DEFAULT_PRIORITY);
+
+  /**
    * @brief Send some DMX data.
    * @param universe the id of the universe to send
    * @param buffer the DMX data.
@@ -146,10 +154,13 @@ class E131Node {
    * @param buffer the last DmxBuffer to send.
    * @param priority the priority to use, this doesn't actually make a
    * difference.
+   *
+   * This does not remove the universe from the list of active TX universes, so
+   * it should only be used for testing purposes.
    */
-  bool StreamTerminated(uint16_t universe,
-                        const ola::DmxBuffer &buffer = DmxBuffer(),
-                        uint8_t priority = DEFAULT_PRIORITY);
+  bool SendStreamTerminated(uint16_t universe,
+                            const ola::DmxBuffer &buffer = DmxBuffer(),
+                            uint8_t priority = DEFAULT_PRIORITY);
 
   /**
    * @brief Set the Callback to be run when we receive data for this universe.
