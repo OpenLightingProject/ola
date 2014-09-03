@@ -49,5 +49,11 @@
  *
  * @section sec_Receiver DMX Receiver
  *
+ * For releases 0.9.0 onwards, you should use code such as:
+ *
  * @snippet receiver.cpp Tutorial Example
+ *
+ * For releases prior to 0.9.0, use
+ *
+ * @snippet legacy_receiver.cpp Tutorial Example
  */
