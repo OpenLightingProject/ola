@@ -54,7 +54,7 @@ bool StateManager::Init() {
   if (!m_interactive) {
     // local node test
     CID local_cid = CID::Generate();
-    m_local_node = new E131Node("", local_cid);
+    m_local_node = new E131Node(m_ss, "", E131Node::Options(), local_cid);
     assert(m_local_node->Start());
     assert(m_ss->AddReadDescriptor(m_local_node->GetSocket()));
 
@@ -65,8 +65,13 @@ bool StateManager::Init() {
           ola::NewCallback(this, &StateManager::NewDMX)));
   }
 
-  m_node1 = new E131Node("", m_cid1, false, true, 0, 5567);
-  m_node2 = new E131Node("", m_cid2, false, true, 0, 5569);
+  E131Node::Options options1;
+  options1.port = 5567;
+  E131Node::Options options2(options1);
+  options1.port = 5569;
+
+  m_node1 = new E131Node(m_ss, "", options1, m_cid1);
+  m_node2 = new E131Node(m_ss, "", options2, m_cid2);
   assert(m_node1->Start());
   assert(m_node2->Start());
   assert(m_ss->AddReadDescriptor(m_node1->GetSocket()));

@@ -24,7 +24,18 @@
 namespace ola {
 namespace math {
 
+/**
+ * @brief Seed the random number generator
+ */
 void InitRandom();
+
+/**
+ * @brief Return a random number between lower and upper, inclusive. i.e.
+ * [lower, upper]
+ * @param lower the lower bound of the range the random number should be within
+ * @param upper the upper bound of the range the random number should be within
+ * @return the random number
+ */
 int Random(int lower, int upper);
 }  // namespace math
 }  // namespace ola

@@ -43,11 +43,11 @@ class DMPE131Inflator: public DMPInflator {
     }
     ~DMPE131Inflator();
 
-    bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
+    bool SetHandler(uint16_t universe, ola::DmxBuffer *buffer,
                     uint8_t *priority, ola::Callback0<void> *handler);
-    bool RemoveHandler(unsigned int universe);
+    bool RemoveHandler(uint16_t universe);
 
-    void RegisteredUniverses(std::vector<unsigned int> *universes);
+    void RegisteredUniverses(std::vector<uint16_t> *universes);
 
  protected:
     virtual bool HandlePDUData(uint32_t vector,
@@ -71,7 +71,9 @@ class DMPE131Inflator: public DMPInflator {
       std::vector<dmx_source> sources;
     } universe_handler;
 
-    std::map<unsigned int, universe_handler> m_handlers;
+    typedef std::map<uint16_t, universe_handler> UniverseHandlers;
+
+    UniverseHandlers m_handlers;
     bool m_ignore_preview;
     ola::Clock m_clock;
 

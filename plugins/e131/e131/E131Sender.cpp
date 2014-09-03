@@ -74,6 +74,25 @@ bool E131Sender::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   return m_root_sender->SendPDU(vector, pdu, &transport);
 }
 
+bool E131Sender::SendDiscoveryData(const E131Header &header,
+                                   const uint8_t *data,
+                                   unsigned int data_size) {
+  if (!m_root_sender)
+    return false;
+
+  IPV4Address addr;
+  if (!UniverseIP(header.Universe(), &addr)) {
+    OLA_INFO << "Could not convert universe to ip.";
+    return false;
+  }
+
+  OutgoingUDPTransport transport(&m_transport_impl, addr);
+
+  E131PDU pdu(ola::acn::VECTOR_E131_DISCOVERY, header, data, data_size);
+  unsigned int vector = ola::acn::VECTOR_ROOT_E131;
+  return m_root_sender->SendPDU(vector, pdu, &transport);
+}
+
 
 /*
  * Calculate the IP that corresponds to a universe.

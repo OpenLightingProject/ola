@@ -43,7 +43,7 @@ const TimeInterval DMPE131Inflator::EXPIRY_INTERVAL(2500000);
 
 
 DMPE131Inflator::~DMPE131Inflator() {
-  map<unsigned int, universe_handler>::iterator iter;
+  UniverseHandlers::iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
     delete iter->second.closure;
   }
@@ -64,7 +64,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   }
 
   E131Header e131_header = headers.GetE131Header();
-  map<unsigned int, universe_handler>::iterator universe_iter =
+  UniverseHandlers::iterator universe_iter =
       m_handlers.find(e131_header.Universe());
 
   if (e131_header.PreviewData() && m_ignore_preview) {
@@ -172,15 +172,14 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
  * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
-bool DMPE131Inflator::SetHandler(unsigned int universe,
+bool DMPE131Inflator::SetHandler(uint16_t universe,
                                  ola::DmxBuffer *buffer,
                                  uint8_t *priority,
                                  ola::Callback0<void> *closure) {
   if (!closure || !buffer)
     return false;
 
-  map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe);
+  UniverseHandlers::iterator iter = m_handlers.find(universe);
 
   if (iter == m_handlers.end()) {
     universe_handler handler;
@@ -205,9 +204,8 @@ bool DMPE131Inflator::SetHandler(unsigned int universe,
  * @param universe the universe handler to remove
  * @param true if removed, false if it didn't exist
  */
-bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
-  map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe);
+bool DMPE131Inflator::RemoveHandler(uint16_t universe) {
+  UniverseHandlers::iterator iter = m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
     Callback0<void> *old_closure = iter->second.closure;
@@ -224,9 +222,9 @@ bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
  * @param universes a pointer to a vector which is populated with the list of
  *   universes that have handlers installed.
  */
-void DMPE131Inflator::RegisteredUniverses(vector<unsigned int> *universes) {
+void DMPE131Inflator::RegisteredUniverses(vector<uint16_t> *universes) {
   universes->clear();
-  map<unsigned int, universe_handler>::iterator iter;
+  UniverseHandlers::iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
     universes->push_back(iter->first);
   }

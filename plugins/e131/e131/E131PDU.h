@@ -32,25 +32,40 @@ class DMPPDU;
 
 class E131PDU: public PDU {
  public:
-    E131PDU(unsigned int vector,
-            const E131Header &header,
-            const DMPPDU *dmp_pdu):
-      PDU(vector),
-      m_header(header),
-      m_dmp_pdu(dmp_pdu) {}
-    ~E131PDU() {}
+  E131PDU(unsigned int vector,
+          const E131Header &header,
+          const DMPPDU *dmp_pdu):
+    PDU(vector),
+    m_header(header),
+    m_dmp_pdu(dmp_pdu),
+    m_data(NULL),
+    m_data_size(0) {}
 
-    unsigned int HeaderSize() const;
-    unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int *length) const;
-    bool PackData(uint8_t *data, unsigned int *length) const;
+  E131PDU(unsigned int vector,
+          const E131Header &header,
+          const uint8_t *data,
+          unsigned int data_size):
+    PDU(vector),
+    m_header(header),
+    m_dmp_pdu(NULL),
+    m_data(data),
+    m_data_size(data_size) {}
 
-    void PackHeader(ola::io::OutputStream *stream) const;
-    void PackData(ola::io::OutputStream *stream) const;
+  ~E131PDU() {}
+
+  unsigned int HeaderSize() const;
+  unsigned int DataSize() const;
+  bool PackHeader(uint8_t *data, unsigned int *length) const;
+  bool PackData(uint8_t *data, unsigned int *length) const;
+
+  void PackHeader(ola::io::OutputStream *stream) const;
+  void PackData(ola::io::OutputStream *stream) const;
 
  private:
-    E131Header m_header;
-    const DMPPDU *m_dmp_pdu;
+  E131Header m_header;
+  const DMPPDU *m_dmp_pdu;
+  const uint8_t *m_data;
+  const unsigned int m_data_size;
 };
 }  // namespace e131
 }  // namespace plugin

@@ -23,8 +23,8 @@
 namespace ola {
 
 /**
- * SequenceNumber, this ensures that we increment the sequence number whenver
- * we go to use it.
+ * @brief SequenceNumber, this ensures that we increment the sequence number
+ * whenever we go to use it.
  */
 template<typename sequence_type>
 class SequenceNumber {

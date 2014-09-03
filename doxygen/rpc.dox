@@ -18,8 +18,8 @@
  * If you have used RPCs in other situations (JMI, CORBA, Thrift, etc.) you may
  * want to skip this bit.
  *
- * http://en.wikipedia.org/wiki/Remote_procedure_call has some good background
- * reading.
+ * <a href="http://en.wikipedia.org/wiki/Remote_procedure_call">Remote
+ * procedure call</a> has some good background reading.
  *
  * On the client side there is a stub, usually a class. Each stub method takes
  * some request data and some sort of callback function that is run when the
@@ -96,10 +96,10 @@
    public:
     DictionaryLookup_Stub(::google::protobuf::RpcChannel* channel);
 
-    void Lookup(::google::protobuf::RpcController* controller,
-                const ::WordQuery* request,
-                ::WordDefinition* response,
-                ::google::protobuf::Closure* done);
+    void Lookup(\::google::protobuf::RpcController* controller,
+                const \::WordQuery* request,
+                \::WordDefinition* response,
+                \::google::protobuf::Closure* done);
   };
   ~~~~~~~~~~~~~~~~~~~~~
  *
@@ -114,10 +114,10 @@
  * through to the RpcChannel class:
  *
   ~~~~~~~~~~~~~~~~~~~~~
-    void DictionaryLookup_Stub::Lookup(::google::protobuf::RpcController* controller,
-                                       const ::WordQuery* request,
-                                       ::WordDefinition* response,
-                                       ::google::protobuf::Closure* done) {
+    void DictionaryLookup_Stub::Lookup(\::google::protobuf::RpcController* controller,
+                                       const \::WordQuery* request,
+                                       \::WordDefinition* response,
+                                       \::google::protobuf::Closure* done) {
       channel_->CallMethod(descriptor()->method(0),
                            controller, request, response, done);
     }
@@ -241,11 +241,12 @@
  * When writing the code that sends a message, it's very important to enable
  * TCP_NODELAY on the socket and write the 4 byte header and the serialized
  * RpcMessage in a single call to write(). Otherwise, the write-write-read
- * pattern can introduce delays of up to 500ms to the RPCs,
- * http://en.wikipedia.org/wiki/Nagle's_algorithm has a detailed analysis of
- * why this is so. Fixing this in the C++ & Python clients led to a 1000x
- * improvement in the RPC latency and a 4x speedup in the RDM Responder Tests,
- * see commit a80ce0ee1e714ffa3c036b14dc30cc0141c13363.
+ * pattern can introduce delays of up to 500ms to the RPCs, <a 
+ * href="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's algorithm</a>
+ * has a detailed analysis of why this is so. Fixing this in the C++ & Python
+ * clients led to a 1000x improvement in the RPC latency and a 4x speedup in
+ * the RDM Responder Tests, see commit
+ * a80ce0ee1e714ffa3c036b14dc30cc0141c13363.
  *
  * @section sec_OLAServices OLA Methods
  *

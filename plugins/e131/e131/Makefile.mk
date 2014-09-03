@@ -40,6 +40,8 @@ plugins_e131_e131_libolae131core_la_SOURCES = \
     plugins/e131/e131/DMPInflator.h \
     plugins/e131/e131/DMPPDU.cpp \
     plugins/e131/e131/DMPPDU.h \
+    plugins/e131/e131/E131DiscoveryInflator.cpp \
+    plugins/e131/e131/E131DiscoveryInflator.h \
     plugins/e131/e131/E131Header.h \
     plugins/e131/e131/E131Inflator.cpp \
     plugins/e131/e131/E131Inflator.h \
