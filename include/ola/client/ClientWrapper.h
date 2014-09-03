@@ -22,6 +22,11 @@
  * server and client for you.
  */
 
+/**
+ * @file ClientWrapper.h
+ * @brief Helper classes for managing OLA clients.
+ */
+
 #ifndef INCLUDE_OLA_CLIENT_CLIENTWRAPPER_H_
 #define INCLUDE_OLA_CLIENT_CLIENTWRAPPER_H_
 
