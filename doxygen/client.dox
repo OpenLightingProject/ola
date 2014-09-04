@@ -15,7 +15,7 @@
  * @section sec_StreamingClient Streaming Client DMX512 Transmit
  *
  * The quickest way to get started is by using ola::client::StreamingClient
- * (ola::StreamingClient in releases <= 0.9.0). The
+ * (ola::StreamingClient in releases < 0.9.0). The
  * program below sends 100 frames of DMX data to the olad server on universe 1.
  * The frames are sent 25ms apart which gives a frame rate of 40 fps.
  *
