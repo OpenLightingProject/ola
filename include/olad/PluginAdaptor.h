@@ -18,6 +18,12 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+/**
+ * @file PluginAdaptor.h
+ * @brief Provides a wrapper for the DeviceManager and SelectServer objects so
+ * that the plugins can register devices and file handles for events
+ */
+
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
 #define INCLUDE_OLAD_PLUGINADAPTOR_H_
 
@@ -33,58 +39,147 @@ namespace ola {
 
 class PluginAdaptor: public ola::io::SelectServerInterface {
  public:
-    PluginAdaptor(class DeviceManager *device_manager,
-                  ola::io::SelectServerInterface *select_server,
-                  ExportMap *export_map,
-                  class PreferencesFactory *preferences_factory,
-                  class PortBrokerInterface *port_broker);
+  /**
+   * @brief Create a new PluginAdaptor
+   * @param device_manager  pointer to a DeviceManager object
+   * @param select_server pointer to the SelectServer object
+   * @param preferences_factory pointer to the PreferencesFactory object
+   */
+  PluginAdaptor(class DeviceManager *device_manager,
+                ola::io::SelectServerInterface *select_server,
+                ExportMap *export_map,
+                class PreferencesFactory *preferences_factory,
+                class PortBrokerInterface *port_broker);
 
-    // The following methods are part of the SelectServerInterface
-    bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
-    bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
-                   bool delete_on_close = false);
-    void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
-    void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
-    bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
-    void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
+  // The following methods are part of the SelectServerInterface
+  /**
+   * @brief Register a descriptor with the select server.
+   * @param descriptor the descriptor to register
+   * @return true on success, false on failure.
+   */
+  bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
 
-    ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                                     Callback0<bool> *closure);
-    ola::thread::timeout_id RegisterRepeatingTimeout(
-        const TimeInterval &interval,
-        Callback0<bool> *closure);
-    ola::thread::timeout_id RegisterSingleTimeout(
-        unsigned int ms,
-        SingleUseCallback0<void> *closure);
-    ola::thread::timeout_id RegisterSingleTimeout(
-        const TimeInterval &interval,
-        SingleUseCallback0<void> *closure);
-    void RemoveTimeout(ola::thread::timeout_id id);
+  /**
+   * @brief Register a descriptor with the select server.
+   * @param descriptor the descriptor to register
+   * @return true on success, false on failure.
+   */
+  bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
+                         bool delete_on_close = false);
 
-    void Execute(ola::BaseCallback0<void> *closure);
+  /**
+   * @brief Remove a descriptor from the select server
+   */
+  void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
 
-    const TimeStamp *WakeUpTime() const;
+  /**
+   * @brief Remove a descriptor from the select server
+   */
+  void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
 
-    ExportMap *GetExportMap() const {
-      return m_export_map;
-    }
+  /**
+   * @brief Register a WriteFileDescriptor with the SelectServer
+   */
+  bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
-    // These are the extra bits for the plugins
-    bool RegisterDevice(class AbstractDevice *device) const;
-    bool UnregisterDevice(class AbstractDevice *device) const;
-    class Preferences *NewPreference(const std::string &name) const;
-    class PortBrokerInterface *GetPortBroker() const {
-      return m_port_broker;
-    }
+  /**
+   * @brief Remove a descriptor from the select server
+   */
+  void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
+
+  /**
+   * @brief Register a repeating timeout
+   * @param ms the time between function calls
+   * @param closure the OlaClosure to call when the timeout expires
+   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+   */
+  ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
+                                                   Callback0<bool> *closure);
+
+  /**
+   * @brief Register a repeating timeout
+   * @param ms the time between function calls
+   * @param closure the OlaClosure to call when the timeout expires
+   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+   */
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      const TimeInterval &interval,
+      Callback0<bool> *closure);
+
+  /**
+   * @brief Register a single timeout
+   * @param ms the time between function calls
+   * @param closure the OlaClosure to call when the timeout expires
+   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+   */
+  ola::thread::timeout_id RegisterSingleTimeout(
+      unsigned int ms,
+      SingleUseCallback0<void> *closure);
+
+  /**
+   * @brief Register a single timeout
+   * @param interval the time between function calls
+   * @param closure the OlaClosure to call when the timeout expires
+   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+   */
+  ola::thread::timeout_id RegisterSingleTimeout(
+      const TimeInterval &interval,
+      SingleUseCallback0<void> *closure);
+
+  /*
+   * @brief Remove a timeout
+   * @param id the id of the timeout to remove
+   */
+  void RemoveTimeout(ola::thread::timeout_id id);
+
+  /**
+   * @brief Execute a closure in the main thread.
+   * @param closure the closure to execute.
+   */
+  void Execute(ola::BaseCallback0<void> *closure);
+
+  /**
+   * @brief Return the wake up time for the select server
+   * @return a TimeStamp object
+   */
+  const TimeStamp *WakeUpTime() const;
+
+  ExportMap *GetExportMap() const {
+    return m_export_map;
+  }
+
+  // These are the extra bits for the plugins
+  /**
+   * @brief Register a device
+   * @param dev  the device to register
+   * @return true on success, false on error
+   */
+  bool RegisterDevice(class AbstractDevice *device) const;
+
+  /**
+   * @brief Unregister a device
+   * @param dev  the device to unregister
+   * @return true on success, false on error
+   */
+  bool UnregisterDevice(class AbstractDevice *device) const;
+
+  /**
+   * @brief Create a new preferences container
+   * @return a Preferences object
+   */
+  class Preferences *NewPreference(const std::string &name) const;
+  class PortBrokerInterface *GetPortBroker() const {
+    return m_port_broker;
+  }
 
  private:
-    DeviceManager *m_device_manager;
-    ola::io::SelectServerInterface *m_ss;
-    ExportMap *m_export_map;
-    class PreferencesFactory *m_preferences_factory;
-    class PortBrokerInterface *m_port_broker;
+  DeviceManager *m_device_manager;
+  ola::io::SelectServerInterface *m_ss;
+  ExportMap *m_export_map;
+  class PreferencesFactory *m_preferences_factory;
+  class PortBrokerInterface *m_port_broker;
 
-    DISALLOW_COPY_AND_ASSIGN(PluginAdaptor);
+  DISALLOW_COPY_AND_ASSIGN(PluginAdaptor);
 };
 }  // namespace ola
 #endif  // INCLUDE_OLAD_PLUGINADAPTOR_H_

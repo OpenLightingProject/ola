@@ -70,6 +70,8 @@ debian/ola/
 debian/tmp/
 doxygen/examples/callback_client_transmit
 doxygen/examples/flags
+doxygen/examples/legacy_receiver
+doxygen/examples/legacy_streaming_client
 doxygen/examples/receiver
 doxygen/examples/streaming_client
 doxygen/examples/streaming_client_plugin
