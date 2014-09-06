@@ -12,9 +12,10 @@
  *
  *     g++ example.cpp $(pkg-config --cflags --libs libola)
  *
- * @section sec_StreamingClient Streaming Client Sender
+ * @section sec_StreamingClient Streaming Client DMX512 Transmit
  *
- * The quickest way to get started is by using ola::StreamingClient. The
+ * The quickest way to get started is by using ola::client::StreamingClient
+ * (ola::StreamingClient in releases < 0.9.0). The
  * program below sends 100 frames of DMX data to the olad server on universe 1.
  * The frames are sent 25ms apart which gives a frame rate of 40 fps.
  *
@@ -32,22 +33,40 @@
  *     2475     100,0,0,0,.....
  * ~~~~~~~~~~~~~~~~~~~~~
  *
+ * For releases 0.9.0 onwards, you should use code such as:
+ *
  * @snippet streaming_client.cpp Tutorial Example
+ *
+ * For releases prior to 0.9.0, use
+ *
+ * @snippet legacy_streaming_client.cpp Tutorial Example
  *
  * While ola::StreamingClient is easy to use it has the drawback that it can
  * only send DMX512 data. It's not possible to retrieve information (like the
  * active universes etc.) from olad using the StreamingClient.
  *
- * @section sec_CallbackClient Callback Client Sender
+ * @section sec_CallbackClient OLA Client DMX512 Transmit
  *
- * The ola::OlaCallbackClient provides a much richer interface for interacting
+ * The ola::client::OlaClient provides a much richer interface for interacting
  * with the server. However, because of this it's slightly harder to use.
  *
  * The following code behaves thes same as the \ref sec_StreamingClient example.
  *
+ * For releases 0.9.0 onwards, you should use code such as:
+ *
  * @snippet callback_client_transmit.cpp Tutorial Example
  *
- * @section sec_Receiver DMX Receiver
+ * For releases prior to 0.9.0, use
+ *
+ * @snippet legacy_callback_client_transmit.cpp Tutorial Example
+ *
+ * @section sec_Receiver DMX512 Receive
+ *
+ * For releases 0.9.0 onwards, you should use code such as:
  *
  * @snippet receiver.cpp Tutorial Example
+ *
+ * For releases prior to 0.9.0, use
+ *
+ * @snippet legacy_receiver.cpp Tutorial Example
  */

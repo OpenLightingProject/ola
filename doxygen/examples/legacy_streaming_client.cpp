@@ -16,44 +16,45 @@
  * Copyright (C) 2010 Simon Newton
  */
 //! [Tutorial Example] NOLINT(whitespace/comments)
+#include <stdlib.h>
+#include <unistd.h>
 #include <ola/DmxBuffer.h>
-#include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
-#include <ola/client/ClientWrapper.h>
-#include <ola/Callback.h>
+#include <ola/StreamingClient.h>
+
+#include <iostream>
 
 using std::cout;
 using std::endl;
 
-bool SendData(ola::client::OlaClientWrapper *wrapper) {
-  static unsigned int universe = 1;
-  static unsigned int i = 0;
-  ola::DmxBuffer buffer;
-  buffer.Blackout();
-  buffer.SetChannel(0, i);
-
-  wrapper->GetClient()->SendDMX(universe, buffer, ola::client::SendDMXArgs());
-
-  if (++i == 100) {
-    wrapper->GetSelectServer()->Terminate();
-  }
-  return true;
-}
-
 int main(int, char *[]) {
-  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  ola::client::OlaClientWrapper wrapper;
+  unsigned int universe = 1;  // universe to use for sending data
 
-  if (!wrapper.Setup()) {
+  // turn on OLA logging
+  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+
+  ola::DmxBuffer buffer;  // A DmxBuffer to hold the data.
+  buffer.Blackout();  // Set all channels to 0
+
+  // Create a new client.
+  ola::StreamingClient ola_client((ola::StreamingClient::Options()));
+
+  // Setup the client, this connects to the server
+  if (!ola_client.Setup()) {
     std::cerr << "Setup failed" << endl;
     exit(1);
   }
 
-  // Create a timeout and register it with the SelectServer
-  ola::io::SelectServer *ss = wrapper.GetSelectServer();
-  ss->RegisterRepeatingTimeout(25, ola::NewCallback(&SendData, &wrapper));
-
-  // Start the main loop
-  ss->Run();
+  // Send 100 frames to the server. Increment slot (channel) 0 each time a
+  // frame is sent.
+  for (unsigned int i = 0; i < 100; i++) {
+    buffer.SetChannel(0, i);
+    if (!ola_client.SendDmx(universe, buffer)) {
+      cout << "Send DMX failed" << endl;
+      exit(1);
+    }
+    usleep(20000);   // sleep for 25ms between frames.
+  }
+  return 0;
 }
 //! [Tutorial Example] NOLINT(whitespace/comments)
