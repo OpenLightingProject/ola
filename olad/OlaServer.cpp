@@ -76,13 +76,6 @@ const char OlaServer::K_UID_VAR[] = "server-uid";
 const char OlaServer::K_DISCOVERY_SERVICE_TYPE[] = "_http._tcp,_ola";
 const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 10000;
 
-
-/*
- * Create a new OlaServer
- * @param factory the factory to use to create OlaService objects
- * @param m_plugin_loader the loader to use for the plugins
- * @param socket the socket to listen on for new connections
- */
 OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
@@ -119,10 +112,6 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
   }
 }
 
-
-/*
- * Shutdown the server
- */
 OlaServer::~OlaServer() {
 #ifdef HAVE_LIBMICROHTTPD
   if (m_httpd.get()) {
@@ -163,11 +152,6 @@ OlaServer::~OlaServer() {
   m_service_impl.reset();
 }
 
-
-/*
- * Initialise the server
- * * @return true on success, false on failure
- */
 bool OlaServer::Init() {
   if (m_service_impl.get())
     return false;
@@ -271,19 +255,10 @@ bool OlaServer::Init() {
   return true;
 }
 
-
-/*
- * Reload all plugins, this can be called from a separate thread or in an
- * interrupt handler.
- */
 void OlaServer::ReloadPlugins() {
   m_ss->Execute(NewCallback(this, &OlaServer::ReloadPluginsInternal));
 }
 
-
-/*
- * Reload the pid store.
- */
 void OlaServer::ReloadPidStore() {
   // We load the pids in this thread, and then hand the RootPidStore over to
   // the main thread. This avoids doing disk I/O in the network thread.
@@ -295,22 +270,12 @@ void OlaServer::ReloadPidStore() {
   m_ss->Execute(NewCallback(this, &OlaServer::UpdatePidStore, pid_store));
 }
 
-
-/*
- * Add a new ConnectedDescriptor to this Server.
- * @param socket the new ConnectedDescriptor
- */
 void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
   if (!descriptor)
     return;
   InternalNewConnection(descriptor);
 }
 
-
-/*
- * Add a new ConnectedDescriptor to this Server.
- * @param socket the new ConnectedDescriptor
- */
 void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
   if (!socket)
     return;
@@ -318,10 +283,6 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
   InternalNewConnection(socket);
 }
 
-
-/*
- * Called when a socket is closed
- */
 void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor) {
   ClientEntry client_entry;
   bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
@@ -335,10 +296,6 @@ void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor) {
   }
 }
 
-
-/*
- * Run the garbage collector
- */
 bool OlaServer::RunHousekeeping() {
   OLA_DEBUG << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
@@ -361,11 +318,6 @@ bool OlaServer::RunHousekeeping() {
   return true;
 }
 
-
-/*
- * Setup the HTTP server if required.
- * @param interface the primary interface that the server is using.
- */
 #ifdef HAVE_LIBMICROHTTPD
 bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   if (!m_options.http_enable)
@@ -404,10 +356,6 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
 }
 #endif
 
-
-/*
- * Stop and unload all the plugins
- */
 void OlaServer::StopPlugins() {
   if (m_plugin_manager.get())
     m_plugin_manager->UnloadAll();
@@ -420,11 +368,6 @@ void OlaServer::StopPlugins() {
   }
 }
 
-
-/*
- * Add a new ConnectedDescriptor to this Server.
- * @param socket the new ConnectedDescriptor
- */
 void OlaServer::InternalNewConnection(
     ola::io::ConnectedDescriptor *socket) {
   RpcChannel *channel = new RpcChannel(NULL, socket, m_export_map);
@@ -451,10 +394,6 @@ void OlaServer::InternalNewConnection(
   m_ss->AddReadDescriptor(socket);
 }
 
-
-/*
- * Cleanup everything related to a client connection
- */
 void OlaServer::CleanupConnection(ClientEntry client_entry) {
   Client *client = client_entry.client_service->GetClient();
   m_broker->RemoveClient(client);
@@ -478,18 +417,12 @@ void OlaServer::CleanupConnection(ClientEntry client_entry) {
   delete client_entry.client_descriptor;
 }
 
-/**
- * Reload the plugins. Called from the SelectServer thread.
- */
 void OlaServer::ReloadPluginsInternal() {
   OLA_INFO << "Reloading plugins";
   StopPlugins();
   m_plugin_manager->LoadAll();
 }
 
-/**
- * Update the Pid store with the new values.
- */
 void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
   OLA_INFO << "Updated PID definitions.";
 #ifdef HAVE_LIBMICROHTTPD

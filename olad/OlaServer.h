@@ -55,15 +55,22 @@ typedef int OladHTTPServer_t;
 class OlaServer {
  public:
   struct Options {
-    bool http_enable;  // run the http server
+    bool http_enable;  // run the HTTP server
     bool http_localhost_only;  // restrict access to localhost only
     bool http_enable_quit;  // enable /quit
-    unsigned int http_port;  // port to run the http server on
+    unsigned int http_port;  // port to run the HTTP server on
     std::string http_data_dir;  // directory that contains the static content
     std::string network_interface;
-    std::string pid_data_dir;  // directory with the pid definitions.
+    std::string pid_data_dir;  // directory with the PID definitions.
+    std::string instance_name;
   };
 
+  /**
+   * @brief Create a new OlaServer
+   * @param factory the factory to use to create OlaService objects
+   * @param plugin_loaders a vector of loaders to use for the plugins
+   * @param socket the socket to listen on for new connections
+   */
   OlaServer(class OlaClientServiceFactory *factory,
             const std::vector<class PluginLoader*> &plugin_loaders,
             class PreferencesFactory *preferences_factory,
@@ -71,18 +78,44 @@ class OlaServer {
             const Options &ola_options,
             ola::network::TCPAcceptingSocket *socket = NULL,
             ExportMap *export_map = NULL);
+  /**
+   * @brief Shutdown the server
+   */
   ~OlaServer();
 
+  /*
+   * @brief Initialise the server
+   * @return true on success, false on failure
+   */
   bool Init();
 
   // Thread safe.
+  /**
+   * @brief Reload all plugins
+   *
+   * This can be called from a separate thread or in an interrupt handler.
+   */
   void ReloadPlugins();
+
+  /**
+   * @brief Reload the PID store.
+   */
   void ReloadPidStore();
 
   void StopServer() { m_ss->Terminate(); }
+  /**
+   * @brief Add a new ConnectedDescriptor to this Server.
+   * @param descriptor the new ConnectedDescriptor
+   */
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
   void NewTCPConnection(ola::network::TCPSocket *socket);
+  /**
+   * @brief Called when a socket is closed
+   */
   void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
+  /**
+   * @brief Run the garbage collector
+   */
   bool RunHousekeeping();
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
@@ -124,12 +157,32 @@ class OlaServer {
   ola::rdm::UID m_default_uid;
 
 #ifdef HAVE_LIBMICROHTTPD
+  /**
+   * @brief Setup the HTTP server if required.
+   * @param interface the primary interface that the server is using.
+   */
   bool StartHttpServer(const ola::network::Interface &iface);
 #endif
+  /**
+   * @brief Stop and unload all the plugins
+   */
   void StopPlugins();
+  /**
+   * @brief Add a new ConnectedDescriptor to this Server.
+   * @param descriptor the new ConnectedDescriptor
+   */
   void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
+  /**
+   * @brief Cleanup everything related to a client connection
+   */
   void CleanupConnection(ClientEntry client);
+  /**
+   * @brief Reload the plugins. Called from the SelectServer thread.
+   */
   void ReloadPluginsInternal();
+  /**
+   * @brief Update the Pid store with the new values.
+   */
   void UpdatePidStore(const ola::rdm::RootPidStore *pid_store);
 
   static const char UNIVERSE_PREFERENCES[];
