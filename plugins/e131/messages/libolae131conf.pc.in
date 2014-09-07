@@ -6,4 +6,6 @@ includedir=@includedir@
 Name: libolae131conf
 Version: @VERSION@
 Description: Open Lighting Architecture - E1.31 Config Messages
-Libs: -lprotobuf
+Requires: protobuf
+Libs: -L${libdir} -lolae131conf
+Cflags: -I${includedir}
