@@ -43,7 +43,9 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    * @brief Create a new PluginAdaptor
    * @param device_manager  pointer to a DeviceManager object
    * @param select_server pointer to the SelectServer object
+   * @param export_map pointer to the ExportMap object
    * @param preferences_factory pointer to the PreferencesFactory object
+   * @param port_broker pointer to the PortBroker object
    */
   PluginAdaptor(class DeviceManager *device_manager,
                 ola::io::SelectServerInterface *select_server,
@@ -62,6 +64,8 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
   /**
    * @brief Register a descriptor with the select server.
    * @param descriptor the descriptor to register
+   * @param delete_on_close if true, ownership of the
+   * ola::io::ConnectedDescriptor is transferred to the SelectServer
    * @return true on success, false on failure.
    */
   bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
@@ -97,8 +101,8 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
                                                    Callback0<bool> *closure);
 
   /**
-   * @brief Register a repeating timeout
-   * @param ms the time between function calls
+   * Register a repeating timeout
+   * @param interval the time between function calls
    * @param closure the OlaClosure to call when the timeout expires
    * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
    */
@@ -151,14 +155,14 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
   // These are the extra bits for the plugins
   /**
    * @brief Register a device
-   * @param dev  the device to register
+   * @param device  the device to register
    * @return true on success, false on error
    */
   bool RegisterDevice(class AbstractDevice *device) const;
 
   /**
    * @brief Unregister a device
-   * @param dev  the device to unregister
+   * @param device  the device to unregister
    * @return true on success, false on error
    */
   bool UnregisterDevice(class AbstractDevice *device) const;
