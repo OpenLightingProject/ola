@@ -164,7 +164,7 @@ bool OlaServer::Init() {
     return false;
 
   const RootPidStore* pid_store =
-    RootPidStore::LoadFromDirectory(m_options.pid_data_dir);
+      RootPidStore::LoadFromDirectory(m_options.pid_data_dir);
   if (!pid_store)
     OLA_WARN << "No PID definitions loaded";
 
@@ -183,7 +183,7 @@ bool OlaServer::Init() {
   ola::network::Interface iface;
   {
     auto_ptr<ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
+        ola::network::InterfacePicker::NewPicker());
     if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
     } else {
@@ -211,7 +211,8 @@ bool OlaServer::Init() {
       new DeviceManager(m_preferences_factory, m_port_manager.get()));
   m_plugin_adaptor.reset(
       new PluginAdaptor(m_device_manager.get(), m_ss, m_export_map,
-                        m_preferences_factory, m_port_broker.get()));
+                        m_preferences_factory, m_port_broker.get(),
+                        &m_options.instance_name));
 
   m_plugin_manager.reset(
     new PluginManager(m_plugin_loaders, m_plugin_adaptor.get()));

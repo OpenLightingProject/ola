@@ -49,19 +49,20 @@ typedef class OladHTTPServer OladHTTPServer_t;
 typedef int OladHTTPServer_t;
 #endif
 
-/*
- * The main OlaServer class
+/**
+ * @brief The main OlaServer class
  */
 class OlaServer {
  public:
   struct Options {
-    bool http_enable;  // run the HTTP server
-    bool http_localhost_only;  // restrict access to localhost only
-    bool http_enable_quit;  // enable /quit
-    unsigned int http_port;  // port to run the HTTP server on
-    std::string http_data_dir;  // directory that contains the static content
+    bool http_enable;  /** @brief Run the HTTP server */
+    bool http_localhost_only;  /** @brief Restrict access to localhost only */
+    bool http_enable_quit;  /** @brief Enable /quit URL */
+    unsigned int http_port;  /** @brief Port to run the HTTP server on */
+    /** @brief Directory that contains the static content */
+    std::string http_data_dir;
     std::string network_interface;
-    std::string pid_data_dir;  // directory with the PID definitions.
+    std::string pid_data_dir;  /** @brief Directory with the PID definitions */
     std::string instance_name;
   };
 
@@ -69,7 +70,11 @@ class OlaServer {
    * @brief Create a new OlaServer
    * @param factory the factory to use to create OlaService objects
    * @param plugin_loaders a vector of loaders to use for the plugins
+   * @param preferences_factory pointer to the PreferencesFactory object
+   * @param ss pointer to the SelectServer object
+   * @param ola_options the Options to run the server with
    * @param socket the socket to listen on for new connections
+   * @param export_map pointer to the ExportMap object
    */
   OlaServer(class OlaClientServiceFactory *factory,
             const std::vector<class PluginLoader*> &plugin_loaders,

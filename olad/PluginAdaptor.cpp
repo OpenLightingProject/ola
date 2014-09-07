@@ -36,12 +36,14 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              SelectServerInterface *select_server,
                              ExportMap *export_map,
                              PreferencesFactory *preferences_factory,
-                             PortBrokerInterface *port_broker):
+                             PortBrokerInterface *port_broker,
+                             const std::string *instance_name):
   m_device_manager(device_manager),
   m_ss(select_server),
   m_export_map(export_map),
   m_preferences_factory(preferences_factory),
-  m_port_broker(port_broker) {
+  m_port_broker(port_broker),
+  m_instance_name(instance_name) {
 }
 
 bool PluginAdaptor::AddReadDescriptor(
@@ -121,5 +123,9 @@ Preferences *PluginAdaptor::NewPreference(const string &name) const {
 
 const TimeStamp *PluginAdaptor::WakeUpTime() const {
   return m_ss->WakeUpTime();
+}
+
+const std::string *PluginAdaptor::InstanceName() {
+  return m_instance_name;
 }
 }  // namespace ola
