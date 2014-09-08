@@ -223,8 +223,7 @@ class GenericAckCheck: public parent {
  */
 void OlaServerServiceImplTest::testGetDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL,
-                            NULL, m_uid, NULL);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
@@ -284,8 +283,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
  */
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL,
-                            NULL, m_uid, NULL);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   // Register for a universe that doesn't exist
@@ -369,8 +367,8 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   ola::TimeStamp time1;
   ola::Client client(NULL);
   ola::Client client2(NULL);
-  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL,
-                            &time1, m_uid, NULL);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, &time1, m_uid,
+                            NULL);
   OlaClientService service1(&client, &impl);
   OlaClientService service2(&client2, &impl);
 
@@ -445,8 +443,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
  */
 void OlaServerServiceImplTest::testSetUniverseName() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, NULL,
-                            m_uid, NULL);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   unsigned int universe_id = 0;
@@ -511,8 +508,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
  */
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, NULL,
-                            m_uid, NULL);
+  OlaServerServiceImpl impl(&store, NULL, NULL, NULL, NULL, NULL, m_uid, NULL);
   OlaClientService service(NULL, &impl);
 
   unsigned int universe_id = 0;
