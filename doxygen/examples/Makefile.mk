@@ -5,6 +5,7 @@ DOXYGEN_EXAMPLES_LDADD = common/libolacommon.la \
 if BUILD_EXAMPLES
 noinst_PROGRAMS += \
     doxygen/examples/callback_client_transmit \
+    doxygen/examples/legacy_callback_client_transmit \
     doxygen/examples/flags \
     doxygen/examples/legacy_receiver \
     doxygen/examples/legacy_streaming_client \
