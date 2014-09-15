@@ -153,7 +153,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
 
     // This is how device identification is done, see
     // http://opendmx.net/index.php/USB_Protocol_Extensions
-    // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
+    // OPEN_LIGHTING_ESTA_CODE is in Constants.h
 
     // DmxKing Device Models
     static const uint16_t DMX_KING_DMX512_ID = 0;

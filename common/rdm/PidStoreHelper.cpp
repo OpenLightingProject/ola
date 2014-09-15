@@ -34,7 +34,7 @@ using std::string;
 using std::vector;
 
 /**
- * Set up a new PidStoreHelper object
+ * @brief Set up a new PidStoreHelper object
  */
 PidStoreHelper::PidStoreHelper(const string &pid_location,
                                unsigned int initial_indent)
@@ -46,7 +46,7 @@ PidStoreHelper::PidStoreHelper(const string &pid_location,
 
 
 /**
- * Clean up
+ * @brief Clean up
  */
 PidStoreHelper::~PidStoreHelper() {
   if (m_root_store)
@@ -55,7 +55,7 @@ PidStoreHelper::~PidStoreHelper() {
 
 
 /**
- * Init the PidStoreHelper, this loads the pid store
+ * @brief Init the PidStoreHelper, this loads the PID store
  */
 bool PidStoreHelper::Init() {
   if (m_root_store) {
@@ -69,13 +69,13 @@ bool PidStoreHelper::Init() {
 
 
 /**
- * Lookup a PidDescriptor by name.
+ * @brief Lookup a PidDescriptor by name.
  * @param manufacturer_id the ESTA id of the manufacturer_id
  * @param pid_name the name of the pid
  * @return a PidDescriptor or NULL if the pid wasn't found.
  */
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
-    const std::string &pid_name,
+    const string &pid_name,
     uint16_t manufacturer_id) const {
   if (!m_root_store)
     return NULL;
@@ -84,7 +84,7 @@ const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
 
 
 /**
- * Lookup a PidDescriptor by pid value.
+ * @brief Lookup a PidDescriptor by PID value.
  * @param manufacturer_id the ESTA id of the manufacturer_id
  * @param pid_value the pid to lookup
  * @return a PidDescriptor or NULL if the pid wasn't found.
@@ -99,7 +99,7 @@ const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
 
 
 /**
- * Build a Message object from a series of input strings
+ * @brief Build a Message object from a series of input strings
  */
 const ola::messaging::Message *PidStoreHelper::BuildMessage(
     const ola::messaging::Descriptor *descriptor,
@@ -115,7 +115,7 @@ const ola::messaging::Message *PidStoreHelper::BuildMessage(
 
 
 /**
- * Serialize a message to binary format
+ * @brief Serialize a message to binary format
  */
 const uint8_t *PidStoreHelper::SerializeMessage(
     const ola::messaging::Message *message,
@@ -126,7 +126,7 @@ const uint8_t *PidStoreHelper::SerializeMessage(
 
 
 /**
- * DeSerialize a message
+ * @brief DeSerialize a message
  */
 const ola::messaging::Message *PidStoreHelper::DeserializeMessage(
     const ola::messaging::Descriptor *descriptor,
@@ -137,7 +137,7 @@ const ola::messaging::Message *PidStoreHelper::DeserializeMessage(
 
 
 /**
- * Convert a message to a string
+ * @brief Convert a message to a string
  * @param message the Message object to print
  * @returns a formatted string representation of the message.
  */
@@ -148,9 +148,12 @@ const string PidStoreHelper::MessageToString(
 
 
 /**
- * Pretty print a RDM message based on the PID, if we can't find a custom
- * MessagePrinter we default to the GenericMessagePrinter.
+ * @brief Pretty print a RDM message based on the PID.
+ *
+ * If we can't find a custom MessagePrinter we default to the
+ * GenericMessagePrinter.
  * @param manufacturer_id the manufacturer ID
+ * @param is_set true if the message is a set command, false otherwise
  * @param pid the pid value
  * @param message the Message object to print
  * @returns a formatted string representation of the message.
@@ -161,7 +164,7 @@ const string PidStoreHelper::PrettyPrintMessage(
     uint16_t pid,
     const ola::messaging::Message *message) {
 
-  // switch based on command class and pid
+  // switch based on command class and PID
   if (is_set) {
     { }
   } else {
@@ -218,7 +221,7 @@ const string PidStoreHelper::PrettyPrintMessage(
 
 
 /**
- * Return a string describing the schema for a descriptor
+ * @brief Return a string describing the schema for a descriptor
  */
 const string PidStoreHelper::SchemaAsString(
     const ola::messaging::Descriptor *descriptor) {
@@ -229,10 +232,10 @@ const string PidStoreHelper::SchemaAsString(
 
 
 /**
- * Return the list of pids supported including manufacturer pids.
+ * @brief Return the list of PIDs supported including manufacturer PIDs.
  */
 void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
-                                   std::vector<std::string> *pid_names) const {
+                                   vector<string> *pid_names) const {
   if (!m_root_store)
     return;
 
@@ -255,12 +258,14 @@ void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
 
 
 /**
- * Return the list of PidDescriptors supported. The caller does not owner the
- * pointers, they are valid for the lifetime of the PidStoreHelper.
+ * @brief Return the list of PidDescriptors supported.
+ *
+ * The caller does not own the pointers, they are valid for the lifetime of the
+ * PidStoreHelper.
  */
 void PidStoreHelper::SupportedPids(
     uint16_t manufacturer_id,
-    std::vector<const PidDescriptor*> *descriptors) const {
+    vector<const PidDescriptor*> *descriptors) const {
   if (!m_root_store)
     return;
 

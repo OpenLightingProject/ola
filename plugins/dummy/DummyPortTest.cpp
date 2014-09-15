@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
@@ -637,6 +637,7 @@ void DummyPortTest::testParamDescription() {
       reinterpret_cast<uint8_t*>(&param_id),  // data
       sizeof(param_id));  // data length
 
+  PACK(
   struct parameter_description_s {
     uint16_t pid;
     uint8_t pdl_size;
@@ -649,7 +650,7 @@ void DummyPortTest::testParamDescription() {
     uint32_t default_value;
     uint32_t max_value;
     char description[ola::rdm::MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
 
   struct parameter_description_s param_description;
   param_description.pid = HostToNetwork(
@@ -767,13 +768,17 @@ void DummyPortTest::testSlotInfo() {
       NULL,  // data
       0);  // data length
 
+  PACK(
+  struct slot_info_struct {
+    uint16_t offset;
+    uint8_t type;
+    uint16_t label;
+  });
+
+  PACK(
   struct slot_infos_s {
-    struct {
-      uint16_t offset;
-      uint8_t type;
-      uint16_t label;
-    } __attribute__((packed)) slot_info_s[5];
-  } __attribute__((packed));
+    slot_info_struct slot_info_s[5];
+  });
 
   slot_infos_s slot_infos = {
       {

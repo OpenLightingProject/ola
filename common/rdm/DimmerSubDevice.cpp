@@ -26,10 +26,9 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Array.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
@@ -139,7 +138,7 @@ const RDMResponse *DimmerSubDevice::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    std::vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
+    vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
 }
 
 const RDMResponse *DimmerSubDevice::GetPersonality(

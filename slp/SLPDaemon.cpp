@@ -21,8 +21,8 @@
 #include <config.h>
 #endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/BigEndianStream.h>
@@ -243,7 +243,7 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
 /**
  * Called when RPC socket is closed by the remote end.
  */
-void SLPDaemon::RPCSocketClosed(int read_descriptor) {
+void SLPDaemon::RPCSocketClosed(ola::io::DescriptorHandle read_descriptor) {
   ConnectedClient *client = STLLookupAndRemovePtr(&m_connected_clients,
       read_descriptor);
   OLA_DEBUG << "RPC Socket closed";

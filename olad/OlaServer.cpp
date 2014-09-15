@@ -32,7 +32,7 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/RpcChannel.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"

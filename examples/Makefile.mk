@@ -21,14 +21,20 @@ examples_libolaconfig_la_SOURCES = \
 ##################################################
 bin_PROGRAMS += \
     examples/ola_dev_info \
-    examples/ola_e131 \
     examples/ola_rdm_discover \
     examples/ola_rdm_get \
     examples/ola_recorder \
     examples/ola_streaming_client \
     examples/ola_timecode \
-    examples/ola_uni_stats \
-    examples/ola_usbpro
+    examples/ola_uni_stats
+
+if USE_E131
+bin_PROGRAMS += examples/ola_e131
+endif
+
+if USE_USBPRO
+bin_PROGRAMS += examples/ola_usbpro
+endif
 
 if USE_ARTNET
 bin_PROGRAMS += examples/ola_artnet
@@ -95,9 +101,16 @@ examples_ola_throughput_LDADD = $(EXAMPLE_COMMON_LIBS)
 examples_ola_latency_SOURCES = examples/ola-latency.cpp
 examples_ola_latency_LDADD = $(EXAMPLE_COMMON_LIBS)
 
+if USING_WIN32
+# rename this program, otherwise UAC will block it
+OLA_PATCH_NAME = ola_ptch
+else
+OLA_PATCH_NAME = ola_patch
+endif
+
 # Many of the example programs are just symlinks to ola_dev_info
 install-exec-hook-examples:
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_patch
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/$(OLA_PATCH_NAME)
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_info
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_dmx
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_priority

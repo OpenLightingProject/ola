@@ -9,8 +9,11 @@ dist_man_MANS += \
     man/ola_recorder.1 \
     man/ola_set_priority.1 \
     man/ola_streaming_client.1 \
+    man/ola_timecode.1 \
     man/ola_trigger.1 \
     man/ola_uni_info.1 \
+    man/ola_uni_stats.1 \
     man/ola_usbpro.1 \
     man/olad.1 \
-    man/rdmpro_sniffer.1
+    man/rdmpro_sniffer.1 \
+    man/usbpro_firmware.1

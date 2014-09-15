@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/UID.h"

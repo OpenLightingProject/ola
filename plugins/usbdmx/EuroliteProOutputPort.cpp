@@ -22,7 +22,7 @@
 #include <string.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"

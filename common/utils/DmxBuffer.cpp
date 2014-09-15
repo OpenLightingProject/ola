@@ -32,7 +32,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -73,7 +73,7 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
 }
 
 
-DmxBuffer::DmxBuffer(const std::string &data)
+DmxBuffer::DmxBuffer(const string &data)
     : m_ref_count(0),
       m_copy_on_write(false),
       m_data(NULL),
@@ -150,7 +150,7 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
 }
 
 
-bool DmxBuffer::Set(const std::string &data) {
+bool DmxBuffer::Set(const string &data) {
   return Set(reinterpret_cast<const uint8_t*>(data.data()), data.length());
 }
 
@@ -295,7 +295,7 @@ bool DmxBuffer::Blackout() {
   if (!m_data)
     if (!Init())
       return false;
-  memset(m_data, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
+  memset(m_data, DMX_MIN_SLOT_VALUE, DMX_UNIVERSE_SIZE);
   m_length = DMX_UNIVERSE_SIZE;
   return true;
 }

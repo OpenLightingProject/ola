@@ -33,6 +33,14 @@
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetPort.h"
 
+// Some preprocessor magic to reduce Windows.h namespace pollution
+#ifdef _WIN32
+#ifdef AddPort
+#undef AddPort
+#define AddPort
+#endif
+#endif
+
 namespace ola {
 namespace plugin {
 namespace kinet {
@@ -46,7 +54,7 @@ using std::vector;
  */
 KiNetDevice::KiNetDevice(
     AbstractPlugin *owner,
-    const std::vector<ola::network::IPV4Address> &power_supplies,
+    const vector<ola::network::IPV4Address> &power_supplies,
     PluginAdaptor *plugin_adaptor)
     : Device(owner, "KiNet Device"),
       m_power_supplies(power_supplies),

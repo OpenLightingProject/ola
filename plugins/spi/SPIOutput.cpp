@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 #include "ola/base/Array.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/file/Util.h"
 #include "ola/network/NetworkUtils.h"
@@ -72,6 +72,7 @@ using ola::rdm::UIDSet;
 using std::auto_ptr;
 using std::min;
 using std::string;
+using std::vector;
 
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
@@ -107,7 +108,7 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
     NULL},
   { ola::rdm::PID_DEVICE_LABEL,
     &SPIOutput::GetDeviceLabel,
-    NULL},
+    &SPIOutput::SetDeviceLabel},
   { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
     &SPIOutput::GetSoftwareVersionLabel,
     NULL},
@@ -144,6 +145,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       m_output_number(options.output_number),
       m_uid(uid),
       m_pixel_count(options.pixel_count),
+      m_device_label(options.device_label),
       m_start_address(1),
       m_identify_mode(false) {
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
@@ -180,6 +182,15 @@ SPIOutput::~SPIOutput() {
   STLDeleteElements(&m_sensors);
 }
 
+
+string SPIOutput::GetDeviceLabel() const {
+  return m_device_label;
+}
+
+bool SPIOutput::SetDeviceLabel(const string &device_label) {
+  m_device_label = device_label;
+  return true;
+}
 
 uint8_t SPIOutput::GetPersonality() const {
   return m_personality_manager->ActivePersonalityNumber();
@@ -452,7 +463,7 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
-      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 2,
+      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 3,
       m_personality_manager.get(),
       m_start_address,
       0, m_sensors.size());
@@ -462,7 +473,7 @@ const RDMResponse *SPIOutput::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    std::vector<ola::rdm::rdm_product_detail>
+    vector<ola::rdm::rdm_product_detail>
         (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
@@ -479,7 +490,11 @@ const RDMResponse *SPIOutput::GetManufacturerLabel(
 }
 
 const RDMResponse *SPIOutput::GetDeviceLabel(const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "SPI Device");
+  return ResponderHelper::GetString(request, m_device_label);
+}
+
+const RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
+  return ResponderHelper::SetString(request, &m_device_label);
 }
 
 const RDMResponse *SPIOutput::GetSoftwareVersionLabel(
@@ -525,7 +540,7 @@ const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
         m_identify_mode ? "on" : "off");
     DmxBuffer identify_buffer;
     if (m_identify_mode) {
-      identify_buffer.SetRangeToValue(0, DMX_MAX_CHANNEL_VALUE,
+      identify_buffer.SetRangeToValue(0, DMX_MAX_SLOT_VALUE,
                                       DMX_UNIVERSE_SIZE);
     } else {
       identify_buffer.Blackout();

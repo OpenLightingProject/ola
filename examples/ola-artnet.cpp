@@ -19,10 +19,12 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/plugin_id.h>
-#include <plugins/artnet/messages/ArtnetConfigMessages.pb.h>
+#include <plugins/artnet/messages/ArtNetConfigMessages.pb.h>
 #include <iostream>
 #include <string>
 #include "examples/OlaConfigurator.h"
@@ -32,39 +34,29 @@ using std::cout;
 using std::endl;
 using std::string;
 
-typedef struct {
-  string command;   // argv[0]
-  int device_id;    // device id
-  bool help;        // help
-  bool has_name;
-  string name;      // short name
-  bool has_long_name;
-  string long_name;  // long name
-  bool has_subnet;
-  int subnet;       // the subnet
-  bool has_net;
-  int net;  // the net address
-  unsigned int universe;
-  bool fetch_node_list;
-} options;
-
+DECLARE_int32(device);
+DEFINE_s_string(name, n, "", "Set the name of the ArtNet device.");
+DEFINE_string(long_name, "", "Set the long name of the ArtNet device.");
+DEFINE_int32(net, -1, "Set the net parameter of the ArtNet device.");
+DEFINE_s_int32(subnet, s, -1,
+               "Set the subnet parameter of the ArtNet device.");
+DEFINE_s_uint32(universe, u, 0,
+                "List the IPs of ArtNet devices for this universe.");
 
 /*
  * A class that configures Artnet devices
  */
 class ArtnetConfigurator: public OlaConfigurator {
  public:
-    explicit ArtnetConfigurator(const options &opts):
-      OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_ARTNET),
-      m_options(opts) {}
-    void HandleConfigResponse(const string &reply, const string &error);
-    void SendConfigRequest();
+  ArtnetConfigurator()
+      : OlaConfigurator(FLAGS_device, ola::OLA_PLUGIN_ARTNET) {}
+  void HandleConfigResponse(const string &reply, const string &error);
+  void SendConfigRequest();
  private:
-    void SendOptionRequest();
-    void SendNodeListRequest();
-    void DisplayOptions(const ola::plugin::artnet::OptionsReply &reply);
-    void DisplayNodeList(const ola::plugin::artnet::NodeListReply &reply);
-    options m_options;
+  void SendOptionRequest();
+  void SendNodeListRequest();
+  void DisplayOptions(const ola::plugin::artnet::OptionsReply &reply);
+  void DisplayNodeList(const ola::plugin::artnet::NodeListReply &reply);
 };
 
 
@@ -88,7 +80,7 @@ void ArtnetConfigurator::HandleConfigResponse(const string &reply,
     DisplayOptions(reply_pb.options());
     return;
   } else if (reply_pb.type() ==
-               ola::plugin::artnet::Reply::ARTNET_NODE_LIST_REPLY &&
+                 ola::plugin::artnet::Reply::ARTNET_NODE_LIST_REPLY &&
              reply_pb.has_node_list()) {
     DisplayNodeList(reply_pb.node_list());
   } else {
@@ -101,10 +93,11 @@ void ArtnetConfigurator::HandleConfigResponse(const string &reply,
  * Send a request
  */
 void ArtnetConfigurator::SendConfigRequest() {
-  if (m_options.fetch_node_list)
+  if (FLAGS_universe.present()) {
     SendNodeListRequest();
-  else
+  } else {
     SendOptionRequest();
+  }
 }
 
 /**
@@ -115,14 +108,14 @@ void ArtnetConfigurator::SendOptionRequest() {
   request.set_type(ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST);
   ola::plugin::artnet::OptionsRequest *options = request.mutable_options();
 
-  if (m_options.has_name)
-    options->set_short_name(m_options.name);
-  if (m_options.has_long_name)
-    options->set_long_name(m_options.long_name);
-  if (m_options.has_subnet)
-    options->set_subnet(m_options.subnet);
-  if (m_options.has_net)
-    options->set_net(m_options.net);
+  if (FLAGS_name.present())
+    options->set_short_name(FLAGS_name.str());
+  if (FLAGS_long_name.present())
+    options->set_long_name(FLAGS_long_name.str());
+  if (FLAGS_subnet.present())
+    options->set_subnet(FLAGS_subnet);
+  if (FLAGS_net.present())
+    options->set_net(FLAGS_net);
   SendMessage(request);
 }
 
@@ -134,13 +127,13 @@ void ArtnetConfigurator::SendNodeListRequest() {
   ola::plugin::artnet::Request request;
   request.set_type(ola::plugin::artnet::Request::ARTNET_NODE_LIST_REQUEST);
   ola::plugin::artnet::NodeListRequest *node_list_request =
-    request.mutable_node_list();
-  node_list_request->set_universe(m_options.universe);
+      request.mutable_node_list();
+  node_list_request->set_universe(FLAGS_universe);
   SendMessage(request);
 }
 
 
-/*
+/**
  * Display the widget parameters
  */
 void ArtnetConfigurator::DisplayOptions(
@@ -167,105 +160,18 @@ void ArtnetConfigurator::DisplayNodeList(
 
 
 /*
- * Parse our cmd line options
- */
-int ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"dev",       required_argument,  0, 'd'},
-      {"help",      no_argument,        0, 'h'},
-      {"long-name", required_argument,  0, 'l'},
-      {"name",      required_argument,  0, 'n'},
-      {"subnet",    required_argument,  0, 's'},
-      {"net",       required_argument,  0, 'e'},
-      {"universes", required_argument, 0, 'u'},
-      {0, 0, 0, 0}
-    };
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "d:e:hl:n:s:u:", long_options, &option_index);
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'd':
-        opts->device_id = atoi(optarg);
-        break;
-      case 'e':
-        opts->net = atoi(optarg);
-        opts->has_net = true;
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        opts->long_name = optarg;
-        opts->has_long_name = true;
-        break;
-      case 'n':
-        opts->name = optarg;
-        opts->has_name = true;
-        break;
-      case 's':
-        opts->subnet = atoi(optarg);
-        opts->has_subnet = true;
-        break;
-      case 'u':
-        opts->universe = atoi(optarg);
-        opts->fetch_node_list = true;
-        break;
-      case '?':
-        break;
-    }
-  }
-  return 0;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(const options &opts) {
-  cout << "Usage: " << opts.command <<
-    " -d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
-    "Configure ArtNet devices managed by OLA.\n\n"
-    "  -d, --dev       The ArtNet device to configure\n"
-    "  -e, --net       Set the net parameter of the ArtNet device\n"
-    "  -h, --help      Display this help message and exit.\n"
-    "  -l, --long-name Set the long name of the ArtNet device\n"
-    "  -n, --name      Set the name of the ArtNet device\n"
-    "  -s, --subnet    Set the subnet of the ArtNet device\n"
-    "  -u, --universe  List the IPs of devices for this universe\n" <<
-    endl;
-  exit(0);
-}
-
-
-/*
  * The main function
  */
 int main(int argc, char*argv[]) {
-  options opts;
-  opts.command = argv[0];
-  opts.device_id = -1;
-  opts.help = false;
-  opts.has_name = false;
-  opts.has_long_name = false;
-  opts.has_subnet = false;
-  opts.has_net = false;
-  opts.fetch_node_list = false;
-  opts.universe = 0;
+  ola::AppInit(&argc,
+               argv,
+               "-d <dev_id> -n <name> -l <long_name> -s <subnet>",
+               "Configure ArtNet devices managed by OLA.");
 
-  ParseOptions(argc, argv, &opts);
+  if (FLAGS_device < 0)
+    ola::DisplayUsageAndExit();
 
-  if (opts.help || opts.device_id < 0)
-    DisplayHelpAndExit(opts);
-
-  ArtnetConfigurator configurator(opts);
+  ArtnetConfigurator configurator;
   if (!configurator.Setup()) {
     cerr << "Error: " << strerror(errno) << endl;
     exit(1);

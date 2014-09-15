@@ -26,9 +26,9 @@
 #include <string>
 
 #include "common/rpc/RpcController.h"
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -63,7 +63,7 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
 
  public:
     OlaServerServiceImplTest():
-      m_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
+      m_uid(ola::OPEN_LIGHTING_ESTA_CODE, 0) {
     }
 
     void setUp() {

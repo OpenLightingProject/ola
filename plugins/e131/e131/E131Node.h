@@ -23,19 +23,25 @@
 #define PLUGINS_E131_E131_E131NODE_H_
 
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/acn/ACNPort.h"
 #include "ola/acn/CID.h"
+#include "ola/base/Macro.h"
+#include "ola/io/SelectServerInterface.h"
+#include "ola/thread/SchedulerInterface.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
-#include "plugins/e131/e131/E131Sender.h"
+#include "plugins/e131/e131/DMPE131Inflator.h"
+#include "plugins/e131/e131/E131DiscoveryInflator.h"
 #include "plugins/e131/e131/E131Inflator.h"
+#include "plugins/e131/e131/E131Sender.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/UDPTransport.h"
-#include "plugins/e131/e131/DMPE131Inflator.h"
 
 namespace ola {
 namespace plugin {
@@ -43,75 +49,203 @@ namespace e131 {
 
 class E131Node {
  public:
-    E131Node(const std::string &ip_address,
-             const ola::acn::CID &cid = ola::acn::CID::Generate(),
-             bool use_rev2 = false,
-             bool ignore_preview = true,
-             uint8_t dscp_value = 0,  // default off
-             uint16_t port = ola::acn::ACN_PORT);
-    ~E131Node();
+  /**
+   * @brief Options for the E131Node.
+   */
+  struct Options {
+   public:
+    Options()
+       : use_rev2(false),
+         ignore_preview(true),
+         enable_draft_discovery(false),
+         dscp(0),
+         port(ola::acn::ACN_PORT) {
+    }
 
-    bool Start();
-    bool Stop();
+    bool use_rev2;  /**< Use Revision 0.2 of the 2009 draft */
+    bool ignore_preview;  /**< Ignore preview data */
+    bool enable_draft_discovery;  /**< Enable 2014 draft discovery */
+    uint8_t dscp;  /**< The DSCP value to tag packets with */
+    uint16_t port; /**< The UDP port to use, defaults to ACN_PORT */
+  };
 
-    bool SetSourceName(unsigned int universe, const std::string &source);
-    bool SendDMX(uint16_t universe,
-                 const ola::DmxBuffer &buffer,
-                 uint8_t priority = DEFAULT_PRIORITY,
-                 bool preview = false);
+  struct KnownController {
+    acn::CID cid;
+    ola::network::IPV4Address ip_address;
+    std::string source_name;
+    std::set<uint16_t> universes;
+  };
 
-    // The following method is provided for the testing framework. Don't use
-    // it in production code!
-    bool SendDMXWithSequenceOffset(uint16_t universe,
-                                   const ola::DmxBuffer &buffer,
-                                   int8_t sequence_offset,
-                                   uint8_t priority = DEFAULT_PRIORITY,
-                                   bool preview = false);
+  /**
+   * @brief Create a new E1.31 node.
+   * @param ss the SchedulerInterface to use.
+   * @param ip_address the IP address to prefer to listen on
+   * @param options the Options to use for the node.
+   * @param cid the CID to use, if not provided we generate one.
+   */
+  E131Node(ola::thread::SchedulerInterface *ss,
+           const std::string &ip_address,
+           const Options &options,
+           const ola::acn::CID &cid = ola::acn::CID::Generate());
+  ~E131Node();
 
-    bool StreamTerminated(uint16_t universe,
-                          const ola::DmxBuffer &buffer = DmxBuffer(),
-                          uint8_t priority = DEFAULT_PRIORITY);
+  /**
+   * @brief Start this node
+   */
+  bool Start();
 
-    bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    uint8_t *priority, ola::Callback0<void> *handler);
-    bool RemoveHandler(unsigned int universe);
+  /**
+   * @brief Stop this node
+   */
+  bool Stop();
 
-    const ola::network::Interface &GetInterface() const { return m_interface; }
+  /**
+   * @brief Set the name for a universe.
+   * @param universe the id of the universe to send
+   * @param source the new source name.
+   */
+  bool SetSourceName(uint16_t universe, const std::string &source);
 
-    ola::network::UDPSocket* GetSocket() { return &m_socket; }
+  /**
+   * @brief Signal that we will no longer send on this particular universe.
+   * @param universe to terminate sending on.
+   * @param priority the priority to use in the stream terminated message.
+   */
+  bool TerminateStream(uint16_t universe,
+                       uint8_t priority = DEFAULT_PRIORITY);
+
+  /**
+   * @brief Send some DMX data.
+   * @param universe the id of the universe to send
+   * @param buffer the DMX data.
+   * @param priority the priority to use
+   * @param preview set to true to turn on the preview bit
+   * @return true if it was sent successfully, false otherwise
+   */
+  bool SendDMX(uint16_t universe,
+               const ola::DmxBuffer &buffer,
+               uint8_t priority = DEFAULT_PRIORITY,
+               bool preview = false);
+
+  /**
+   * @brief Send some DMX data, allowing finer grained control of parameters.
+   *
+   * The method is provided for the testing framework. Don't use it in
+   * production code!
+   *
+   * @param universe the id of the universe to send
+   * @param buffer the DMX data
+   * @param sequence_offset used to twiddle the sequence numbers, this doesn't
+   * increment the sequence counter.
+   * @param priority the priority to use
+   * @param preview set to true to turn on the preview bit
+   * @return true if it was sent successfully, false otherwise
+   */
+  bool SendDMXWithSequenceOffset(uint16_t universe,
+                                 const ola::DmxBuffer &buffer,
+                                 int8_t sequence_offset,
+                                 uint8_t priority = DEFAULT_PRIORITY,
+                                 bool preview = false);
+
+
+  /**
+   * @brief Signal termination of the stream for a universe.
+   * @param universe the id of the universe to send
+   * @param buffer the last DmxBuffer to send.
+   * @param priority the priority to use, this doesn't actually make a
+   * difference.
+   *
+   * This does not remove the universe from the list of active TX universes, so
+   * it should only be used for testing purposes.
+   */
+  bool SendStreamTerminated(uint16_t universe,
+                            const ola::DmxBuffer &buffer = DmxBuffer(),
+                            uint8_t priority = DEFAULT_PRIORITY);
+
+  /**
+   * @brief Set the Callback to be run when we receive data for this universe.
+   * @param universe the universe to register the handler for
+   * @param buffer the DmxBuffer to copy the data to.
+   * @param priority the priority to set.
+   * @param handler the Callback to call when there is data for this universe.
+   *   Ownership is transferred.
+   */
+  bool SetHandler(uint16_t universe, ola::DmxBuffer *buffer,
+                  uint8_t *priority, ola::Callback0<void> *handler);
+
+  /**
+   * @brief Remove the handler for a particular universe.
+   * @param universe the universe handler to remove
+   * @return true if removed, false if it didn't exist
+   */
+  bool RemoveHandler(uint16_t universe);
+
+  /**
+   * @brief Return the Interface this node is using.
+   */
+  const ola::network::Interface &GetInterface() const { return m_interface; }
+
+  /**
+   * @brief Return the UDP socket this node is using.
+   */
+  ola::network::UDPSocket* GetSocket() { return &m_socket; }
+
+  /**
+   * @brief Return a list of known controllers.
+   *
+   * This will return an empty list unless enable_draft_discovery was set in
+   * the node Options.
+   */
+  void GetKnownControllers(std::vector<KnownController> *controllers);
 
  private:
-    typedef struct {
-      std::string source;
-      uint8_t sequence;
-    } tx_universe;
+  struct tx_universe {
+    std::string source;
+    uint8_t sequence;
+  };
 
-    std::string m_preferred_ip;
-    ola::network::Interface m_interface;
-    ola::network::UDPSocket m_socket;
-    ola::acn::CID m_cid;
-    bool m_use_rev2;
-    uint8_t m_dscp;
-    uint16_t m_udp_port;
-    // senders
-    RootSender m_root_sender;
-    E131Sender m_e131_sender;
-    // inflators
-    RootInflator m_root_inflator;
-    E131Inflator m_e131_inflator;
-    E131InflatorRev2 m_e131_rev2_inflator;
-    DMPE131Inflator m_dmp_inflator;
+  typedef std::map<uint16_t, tx_universe> ActiveTxUniverses;
+  typedef std::map<acn::CID, class TrackedSource*> TrackedSources;
 
-    IncomingUDPTransport m_incoming_udp_transport;
-    std::map<unsigned int, tx_universe> m_tx_universes;
-    uint8_t *m_send_buffer;
+  ola::thread::SchedulerInterface *m_ss;
+  const Options m_options;
+  const std::string m_preferred_ip;
+  const ola::acn::CID m_cid;
 
-    tx_universe *SetupOutgoingSettings(unsigned int universe);
+  ola::network::Interface m_interface;
+  ola::network::UDPSocket m_socket;
+  // senders
+  RootSender m_root_sender;
+  E131Sender m_e131_sender;
+  // inflators
+  RootInflator m_root_inflator;
+  E131Inflator m_e131_inflator;
+  E131InflatorRev2 m_e131_rev2_inflator;
+  DMPE131Inflator m_dmp_inflator;
+  E131DiscoveryInflator m_discovery_inflator;
 
-    E131Node(const E131Node&);
-    E131Node& operator=(const E131Node&);
+  IncomingUDPTransport m_incoming_udp_transport;
+  ActiveTxUniverses m_tx_universes;
+  uint8_t *m_send_buffer;
 
-    static const uint16_t DEFAULT_PRIORITY = 100;
+  // Discovery members
+  ola::thread::timeout_id m_discovery_timeout;
+  TrackedSources m_discovered_sources;
+
+  tx_universe *SetupOutgoingSettings(uint16_t universe);
+
+  bool PerformDiscoveryHousekeeping();
+  void NewDiscoveryPage(const HeaderSet &headers,
+                        const E131DiscoveryInflator::DiscoveryPage &page);
+  void SendDiscoveryPage(const std::vector<uint16_t> &universes, uint8_t page,
+                         uint8_t last_page, uint32_t sequence_number);
+
+  static const uint16_t DEFAULT_PRIORITY = 100;
+  static const uint16_t UNIVERSE_DISCOVERY_INTERVAL = 10000;  // milliseconds
+  static const uint16_t DISCOVERY_UNIVERSE_ID = 64214;
+  static const uint16_t DISCOVERY_PAGE_SIZE = 512;
+
+  DISALLOW_COPY_AND_ASSIGN(E131Node);
 };
 }  // namespace e131
 }  // namespace plugin

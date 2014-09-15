@@ -53,7 +53,7 @@ class Action {
  */
 class ActionQueue {
  public:
-    ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
+    explicit ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
       m_on_complete(on_complete),
       m_action_index(-1),
       m_success(true) {

@@ -27,14 +27,14 @@
 namespace ola {
 namespace base {
 
-#define OLA_VERSION_MAJOR 0
-#define OLA_VERSION_MINOR 9
-#define OLA_VERSION_REVISION 1
+#define OLA_VERSION_MAJOR @OLA_MAJOR_VERSION@
+#define OLA_VERSION_MINOR @OLA_MINOR_VERSION@
+#define OLA_VERSION_REVISION @OLA_REVISION_VERSION@
 
 /**
  * @class Version ola/base/Version.h
  * @brief Provides version information.
- * OLA Version numbers are in the form major.minor.revision.
+ * OLA Version numbers are in the form major.minor.revision e.g. @VERSION@
  */
 class Version {
  public:

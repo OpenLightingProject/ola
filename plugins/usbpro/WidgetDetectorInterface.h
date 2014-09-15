@@ -24,7 +24,7 @@
 
 namespace ola {
 namespace io {
-  class ConnectedDescriptor;
+class ConnectedDescriptor;
 }
 
 namespace plugin {

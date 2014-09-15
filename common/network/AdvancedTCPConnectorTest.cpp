@@ -123,6 +123,12 @@ void AdvancedTCPConnectorTest::setUp() {
         ABORT_TIMEOUT_IN_MS,
         ola::NewSingleCallback(this, &AdvancedTCPConnectorTest::Timeout));
   OLA_ASSERT_TRUE(m_timeout_id);
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -131,6 +137,10 @@ void AdvancedTCPConnectorTest::setUp() {
  */
 void AdvancedTCPConnectorTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 

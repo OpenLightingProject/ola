@@ -13,16 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * artnetdevice.cpp
+ * ArtNetDevice.cpp
  * Art-Net device
  * Copyright (C) 2005 Simon Newton
- *
- * An Art-Net device is an instance of libartnet bound to a single IP address
- * Art-Net is limited to four ports per direction per IP, so in this case
- * our device has 8 ports :
- *
- * Ids 0-3 : Input ports (recv dmx)
- * Ids 4-7 : Output ports (send dmx)
  */
 
 #include <google/protobuf/service.h>
@@ -74,9 +67,6 @@ const char ArtNetDevice::K_OUTPUT_PORT_KEY[] = "output_ports";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
 
-/*
- * Create a new Artnet Device
- */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            ola::Preferences *preferences,
                            PluginAdaptor *plugin_adaptor)
@@ -87,11 +77,6 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
       m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
-
-/*
- * Start this device
- * @return true on success, false on failure
- */
 bool ArtNetDevice::StartHook() {
   unsigned int subnet = 0;
   StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet);
@@ -152,10 +137,6 @@ bool ArtNetDevice::StartHook() {
   return true;
 }
 
-
-/**
- * Stop this device. This is called before the ports are deleted
- */
 void ArtNetDevice::PrePortStop() {
   if (m_timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
@@ -164,23 +145,11 @@ void ArtNetDevice::PrePortStop() {
   m_node->Stop();
 }
 
-
-/*
- * Stop this device
- */
 void ArtNetDevice::PostPortStop() {
   delete m_node;
   m_node = NULL;
 }
 
-
-/*
- * Handle device config messages
- * @param controller An RpcController
- * @param request the request data
- * @param response the response to return
- * @param done the closure to call once the request is complete
- */
 void ArtNetDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
@@ -204,10 +173,6 @@ void ArtNetDevice::Configure(RpcController *controller,
   }
 }
 
-
-/*
- * Handle an options request
- */
 void ArtNetDevice::HandleOptions(Request *request, string *response) {
   bool status = true;
   if (request->has_options()) {
@@ -237,10 +202,6 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   reply.SerializeToString(response);
 }
 
-
-/**
- * Handle a node list request
- */
 void ArtNetDevice::HandleNodeList(Request *request,
                                   string *response,
                                   RpcController *controller) {

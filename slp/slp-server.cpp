@@ -20,7 +20,9 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <signal.h>
+#ifndef _WIN32
 #include <sysexits.h>
+#endif
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
@@ -324,14 +326,14 @@ int main(int argc, char *argv[]) {
 
   {
     // find an interface to use
-    ola::network::Interface interface;
+    ola::network::Interface iface;
     auto_ptr<const ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&interface, options.preferred_ip_address)) {
+    if (!picker->ChooseInterface(&iface, options.preferred_ip_address)) {
       OLA_INFO << "Failed to find an interface";
       exit(ola::EXIT_UNAVAILABLE);
     }
-    slp_options.ip_address = interface.ip_address;
+    slp_options.ip_address = iface.ip_address;
   }
 
   auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(slp_options.slp_port));

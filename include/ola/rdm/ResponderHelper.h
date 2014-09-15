@@ -27,6 +27,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 #define INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
 #include <ola/rdm/NetworkManagerInterface.h>
@@ -212,9 +213,11 @@ class ResponderHelper {
         uint8_t queued_message_count = 0);
 
     // Generic Helpers.
-    static const RDMResponse *GetString(const RDMRequest *request,
-                                        const std::string &value,
-                                        uint8_t queued_message_count = 0);
+    static const RDMResponse *GetString(
+        const RDMRequest *request,
+        const std::string &value,
+        uint8_t queued_message_count = 0,
+        uint8_t max_length = MAX_RDM_STRING_LENGTH);
 
     static const RDMResponse *EmptyGetResponse(
         const RDMRequest *request,
@@ -223,9 +226,11 @@ class ResponderHelper {
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *SetString(const RDMRequest *request,
-                                        std::string *value,
-                                        uint8_t queued_message_count = 0);
+    static const RDMResponse *SetString(
+        const RDMRequest *request,
+        std::string *value,
+        uint8_t queued_message_count = 0,
+        uint8_t max_length = MAX_RDM_STRING_LENGTH);
     static const RDMResponse *GetBoolValue(
         const RDMRequest *request, bool value,
         uint8_t queued_message_count = 0);
@@ -252,13 +257,14 @@ class ResponderHelper {
         const RDMRequest *request, uint32_t *value,
         uint8_t queued_message_count = 0);
 
+    PACK(
     struct sensor_value_s {
       uint8_t sensor;
       int16_t value;
       int16_t lowest;
       int16_t highest;
       int16_t recorded;
-    } __attribute__((packed));
+    });
 
  private:
   static bool FindInterface(

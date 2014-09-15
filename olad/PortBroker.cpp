@@ -27,8 +27,10 @@
 
 namespace ola {
 
-using std::set;
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 /**
  * Add a port to the broker
@@ -84,7 +86,7 @@ void PortBroker::RequestComplete(port_key key,
                                  ola::rdm::RDMCallback *callback,
                                  ola::rdm::rdm_response_code code,
                                  const ola::rdm::RDMResponse *response,
-                                 const std::vector<std::string> &packets) {
+                                 const vector<string> &packets) {
   set<port_key>::const_iterator iter = m_ports.find(key);
   if (iter == m_ports.end()) {
     OLA_INFO << "Port no longer exists, cleaning up from RDM response";

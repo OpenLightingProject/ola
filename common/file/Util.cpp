@@ -87,7 +87,8 @@ void FindMatchingFiles(const string &directory,
 
   h_find = FindFirstFileA(search_pattern.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
-    OLA_WARN << "Find first file failed: " << GetLastError();
+    OLA_WARN << "Find first file failed: " << GetLastError() << " for "
+             << search_pattern;
     return;
   }
 
@@ -128,8 +129,8 @@ void FindMatchingFiles(const string &directory,
 #endif
 }
 
-void ListDirectory(const std::string& directory,
-                   std::vector<std::string> *files) {
+void ListDirectory(const string& directory,
+                   vector<string> *files) {
   FindMatchingFiles(directory, "", files);
 }
 

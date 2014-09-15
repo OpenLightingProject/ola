@@ -22,8 +22,8 @@
  * It then waits to receive E1.33 messages on the TCP connections.
  */
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/acn/CID.h>

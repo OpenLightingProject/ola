@@ -23,8 +23,8 @@
  * response.
  */
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
@@ -65,8 +65,8 @@ DEFINE_s_string(target, t, "", "List of IPs to connect to, overrides SLP");
 DEFINE_string(listen_ip, "", "The IP address to listen on");
 DEFINE_s_string(pid_location, p, "",
                 "The directory to read PID definitiions from");
-DEFINE_s_bool(set, s, false, "Perform a SET (default is GET)");
-DEFINE_bool(list_pids, false, "Display a list of pids");
+DEFINE_s_default_bool(set, s, false, "Perform a SET (default is GET)");
+DEFINE_default_bool(list_pids, false, "Display a list of pids");
 DEFINE_s_string(uid, u, "", "The UID of the device to control.");
 
 using ola::NewCallback;
@@ -182,7 +182,7 @@ SimpleE133Controller::SimpleE133Controller(
           &m_udp_socket,
           NewCallback(this, &SimpleE133Controller::HandleStatusMessage),
           NewCallback(this, &SimpleE133Controller::HandlePacket)),
-      m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
+      m_src_uid(ola::OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {

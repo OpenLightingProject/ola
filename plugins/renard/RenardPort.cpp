@@ -24,11 +24,6 @@ namespace ola {
 namespace plugin {
 namespace renard {
 
-/*
- * Write operation
- * @param the buffer to write
- * @return true on success, false on failure
- */
 bool RenardOutputPort::WriteDMX(const DmxBuffer &buffer,
                                 uint8_t priority) {
   return m_widget->SendDmx(buffer);

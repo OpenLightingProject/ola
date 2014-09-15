@@ -169,7 +169,7 @@ bool E133Device::CloseTCPConnection() {
 void E133Device::EndpointRequest(
     const ola::plugin::e131::TransportHeader *transport_header,
     const ola::plugin::e131::E133Header *e133_header,
-    const std::string &raw_request) {
+    const string &raw_request) {
   IPV4SocketAddress target = transport_header->Source();
   uint16_t endpoint_id = e133_header->Endpoint();
   OLA_INFO << "Got request for to endpoint " << endpoint_id
@@ -223,7 +223,7 @@ void E133Device::EndpointRequestComplete(
     uint16_t endpoint_id,
     ola::rdm::rdm_response_code response_code,
     const ola::rdm::RDMResponse *response_ptr,
-    const std::vector<std::string>&) {
+    const vector<string>&) {
   auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
 
   if (response_code != ola::rdm::RDM_COMPLETED_OK) {

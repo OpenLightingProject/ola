@@ -19,12 +19,13 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/timecode/TimeCode.h>
 #include <ola/timecode/TimeCodeEnums.h>
@@ -37,75 +38,12 @@ using ola::OlaCallbackClientWrapper;
 using ola::StringToInt;
 using ola::io::SelectServer;
 using ola::timecode::TimeCode;
+using std::cerr;
+using std::endl;
 using std::string;
 using std::vector;
 
-
-typedef struct {
-  bool help;
-  std::vector<string> args;  // extra args
-  string format;  // timecode format
-} options;
-
-
-/*
- * parse our cmd line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"format", required_argument, 0, 'f'},
-      {0, 0, 0, 0}
-    };
-
-  opts->help = false;
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "f:h", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'f':
-        opts->format = optarg;
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-
-  int index = optind;
-  for (; index < argc; index++)
-    opts->args.push_back(argv[index]);
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char arg[]) {
-  std::cout << "Usage: " << arg << " <time_code>\n"
-  "\n"
-  "Send TimeCode data to OLA. time_code is in the form: \n"
-  "Hours:Minutes:Seconds:Frames\n"
-  "\n"
-  "  -h, --help     Display this help message and exit.\n"
-  "  -f, --format   One of FILM, EBU, DF, SMPTE (default).\n"
-  << std::endl;
-  exit(ola::EXIT_USAGE);
-}
-
+DEFINE_s_string(format, f, "SMPTE", "One of FILM, EBU, DF, SMPTE (default).");
 
 /**
  * Called on when we return from sending timecode data.
@@ -120,48 +58,59 @@ void TimeCodeDone(ola::io::SelectServer *ss,
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  ola::AppInit(
+      &argc,
+      argv,
+      "[options] <time_code>",
+      "Send TimeCode data to OLA. time_code is in the form: \n"
+          "Hours:Minutes:Seconds:Frames");
   ola::OlaCallbackClientWrapper ola_client;
-  options opts;
 
-  ParseOptions(argc, argv, &opts);
-
-  if (opts.help)
-    DisplayHelpAndExit(argv[0]);
-
-  if (opts.args.size() != 1)
-    DisplayHelpAndExit(argv[0]);
+  if (argc != 2)
+    ola::DisplayUsageAndExit();
 
   ola::timecode::TimeCodeType time_code_type = ola::timecode::TIMECODE_SMPTE;
-  if (!opts.format.empty()) {
-    string type = opts.format;
+  if (!FLAGS_format.str().empty()) {
+    string type = FLAGS_format;
     ola::ToLower(&type);
-    if (type == "film")
+    if (type == "film") {
       time_code_type = ola::timecode::TIMECODE_FILM;
-    else if (type == "ebu")
+    } else if (type == "ebu") {
       time_code_type = ola::timecode::TIMECODE_EBU;
-    else if (type == "df")
+    } else if (type == "df") {
       time_code_type = ola::timecode::TIMECODE_DF;
-    else if (type == "smpte")
+    } else if (type == "smpte") {
       time_code_type = ola::timecode::TIMECODE_SMPTE;
-    else
-      DisplayHelpAndExit(argv[0]);
+    } else {
+      cerr << "Invalid TimeCode format " << type << endl;
+      exit(ola::EXIT_USAGE);
+    }
   }
 
   vector<string> tokens;
-  ola::StringSplit(opts.args[0], tokens, ":");
-  if (tokens.size() != 4)
-    DisplayHelpAndExit(argv[0]);
+  ola::StringSplit(argv[1], tokens, ":");
+  if (tokens.size() != 4) {
+    cerr << "Invalid TimeCode value " << argv[1] << endl;
+    exit(ola::EXIT_USAGE);
+  }
 
   uint8_t hours, minutes, seconds, frames;
-  if (!StringToInt(tokens[0], &hours, true))
-    DisplayHelpAndExit(argv[0]);
-  if (!StringToInt(tokens[1], &minutes, true))
-    DisplayHelpAndExit(argv[0]);
-  if (!StringToInt(tokens[2], &seconds, true))
-    DisplayHelpAndExit(argv[0]);
-  if (!StringToInt(tokens[3], &frames, true))
-    DisplayHelpAndExit(argv[0]);
+  if (!StringToInt(tokens[0], &hours, true)) {
+    cerr << "Invalid TimeCode hours " << tokens[0] << endl;
+    exit(ola::EXIT_USAGE);
+  }
+  if (!StringToInt(tokens[1], &minutes, true)) {
+    cerr << "Invalid TimeCode minutes " << tokens[1] << endl;
+    exit(ola::EXIT_USAGE);
+  }
+  if (!StringToInt(tokens[2], &seconds, true)) {
+    cerr << "Invalid TimeCode seconds " << tokens[2] << endl;
+    exit(ola::EXIT_USAGE);
+  }
+  if (!StringToInt(tokens[3], &frames, true)) {
+    cerr << "Invalid TimeCode frames " << tokens[3] << endl;
+    exit(ola::EXIT_USAGE);
+  }
 
   TimeCode timecode(time_code_type, hours, minutes, seconds, frames);
   if (!timecode.IsValid()) {

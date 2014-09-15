@@ -24,11 +24,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Array.h"
-#include "ola/stl/STLUtils.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/math/Random.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
@@ -37,6 +35,7 @@
 #include "ola/rdm/ResponderLoadSensor.h"
 #include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/SensorResponder.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace rdm {

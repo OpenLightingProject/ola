@@ -24,8 +24,8 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
 #include "ola/Logging.h"
@@ -57,6 +57,8 @@ using std::vector;
  * @param ss the SelectServer to use when calling the handler object. This is
  * also used by some of the widgets so it should be the same SelectServer that
  * you intend to use the Widgets with.
+ * @param usb_pro_timeout the time in ms between each USB Pro discovery message.
+ * @param robe_timeout the time in ms between each Robe discovery message.
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,

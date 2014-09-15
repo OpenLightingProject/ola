@@ -36,9 +36,7 @@ namespace e131 {
  */
 class PreamblePacker {
  public:
-    explicit PreamblePacker()
-        : m_send_buffer(NULL) {
-    }
+    PreamblePacker() : m_send_buffer(NULL) {}
     ~PreamblePacker();
 
     const uint8_t *Pack(const PDUBlock<PDU> &pdu_block,

@@ -29,8 +29,8 @@
 #include <utility>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaCallbackClient.h"
 #include "ola/StringUtils.h"
@@ -2874,7 +2874,11 @@ string RDMHTTPModule::SyncClock(HTTPResponse *response,
                                 const UID &uid) {
   time_t now = time(NULL);
   struct tm now_tm;
+#ifdef _WIN32
+  memcpy(&now_tm, localtime(&now), sizeof(now_tm));
+#else
   localtime_r(&now, &now_tm);
+#endif
   ola::rdm::ClockValue clock_value;
 
   clock_value.year = now_tm.tm_year + 1900;

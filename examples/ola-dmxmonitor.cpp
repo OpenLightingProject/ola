@@ -42,11 +42,12 @@
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
 #endif
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
@@ -261,8 +262,8 @@ void DmxMonitor::StdinReady() {
       break;
 
     case KEY_END:
-      current_channel = DMX_UNIVERSE_SIZE - 1;
-      if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
+      current_channel = ola::DMX_UNIVERSE_SIZE - 1;
+      if (channels_per_screen >= ola::DMX_UNIVERSE_SIZE) {
         first_channel = 0;
       } else {
         first_channel = current_channel - (channels_per_screen - 1);
@@ -273,7 +274,7 @@ void DmxMonitor::StdinReady() {
     case 'l':
     case 'L':
     case KEY_RIGHT:
-      if (current_channel < DMX_UNIVERSE_SIZE - 1) {
+      if (current_channel < ola::DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
         if (current_channel >=
             static_cast<int>(first_channel + channels_per_screen)) {
@@ -301,8 +302,8 @@ void DmxMonitor::StdinReady() {
     case 'J':
     case KEY_DOWN:
       current_channel += channels_per_line;
-      if (current_channel >= DMX_UNIVERSE_SIZE)
-        current_channel = DMX_UNIVERSE_SIZE - 1;
+      if (current_channel >= ola::DMX_UNIVERSE_SIZE)
+        current_channel = ola::DMX_UNIVERSE_SIZE - 1;
       if (current_channel >=
           static_cast<int>(first_channel + channels_per_screen)) {
         first_channel += channels_per_line;
@@ -430,13 +431,13 @@ void DmxMonitor::Mask() {
   (void) attrset(palette[CHANNEL]);
   for (y = 1;
        static_cast<int>(y) < LINES &&
-       static_cast<int>(channel) < DMX_UNIVERSE_SIZE &&
+       static_cast<int>(channel) < ola::DMX_UNIVERSE_SIZE &&
        i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          static_cast<int>(x) < static_cast<int>(channels_per_line) &&
-         static_cast<int>(channel) < DMX_UNIVERSE_SIZE &&
+         static_cast<int>(channel) < ola::DMX_UNIVERSE_SIZE &&
          static_cast<int>(i < channels_per_screen);
          x++, i++, channel++) {
       switch (display_mode) {
@@ -462,21 +463,21 @@ void DmxMonitor::Values() {
 
   /* values */
   for (y = ROWS_PER_CHANNEL_ROW;
-       y < LINES && z < DMX_UNIVERSE_SIZE &&
+       y < LINES && z < ola::DMX_UNIVERSE_SIZE &&
        i < static_cast<int>(channels_per_screen);
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          x < static_cast<int>(channels_per_line) &&
-         z < DMX_UNIVERSE_SIZE &&
+         z < ola::DMX_UNIVERSE_SIZE &&
          i < static_cast<int>(channels_per_screen);
          x++, z++, i++) {
       const int d = m_buffer.Get(z);
       switch (d) {
-        case DMX_MIN_CHANNEL_VALUE:
+        case ola::DMX_MIN_SLOT_VALUE:
           (void) attrset(palette[ZERO]);
           break;
-        case DMX_MAX_CHANNEL_VALUE:
+        case ola::DMX_MAX_SLOT_VALUE:
           (void) attrset(palette[FULL]);
           break;
         default:
@@ -512,18 +513,18 @@ void DmxMonitor::Values() {
         case DISP_MODE_DMX:
         default:
           switch (d) {
-            case DMX_MIN_CHANNEL_VALUE:
+            case ola::DMX_MIN_SLOT_VALUE:
               if (static_cast<int>(m_buffer.Size()) <= z) {
                 addstr("--- ");
               } else {
                 addstr("    ");
               }
               break;
-            case DMX_MAX_CHANNEL_VALUE:
+            case ola::DMX_MAX_SLOT_VALUE:
               addstr(" FL ");
               break;
             default:
-              printw(" %02d ", (d * 100) / DMX_MAX_CHANNEL_VALUE);
+              printw(" %02d ", (d * 100) / ola::DMX_MAX_SLOT_VALUE);
           }
       }
     }
@@ -688,6 +689,11 @@ void DisplayHelpAndExit(char arg[]) {
 int main(int argc, char *argv[]) {
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
+
+  if (!ola::NetworkInit()) {
+    std::cerr << "Network initialization failed." << std::endl;
+    exit(ola::EXIT_UNAVAILABLE);
+  }
 
   options opts;
 

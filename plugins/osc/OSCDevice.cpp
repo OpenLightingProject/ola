@@ -26,6 +26,14 @@
 #include "plugins/osc/OSCDevice.h"
 #include "plugins/osc/OSCPort.h"
 
+// Some preprocessor magic to reduce Windows.h namespace pollution
+#ifdef _WIN32
+#ifdef AddPort
+#undef AddPort
+#define AddPort
+#endif
+#endif
+
 namespace ola {
 namespace plugin {
 namespace osc {

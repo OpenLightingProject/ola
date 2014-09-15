@@ -36,9 +36,7 @@ namespace sandnet {
 
 using std::string;
 
-/*
- * We override the set universe method to update the universe -> port hash
- */
+// We override the set universe method to update the universe -> port hash
 bool SandNetPortHelper::PreSetUniverse(Universe *old_universe,
                                        Universe *new_universe) {
   if (new_universe && !new_universe->UniverseId()) {
@@ -59,32 +57,17 @@ string SandNetPortHelper::Description(const Universe *universe) const {
   return str.str();
 }
 
-
-/*
- * Return the sandnet group that corresponds to a OLA Universe.
- * @param universe the OLA universe
- * @returns the sandnet group number
- */
 uint8_t SandNetPortHelper::SandnetGroup(const Universe *universe) const {
   if (universe)
     return (uint8_t) ((universe->UniverseId() - 1) >> 8);
   return 0;
 }
 
-
-/*
- * Return the sandnet group that corresponds to a OLA Universe. Sandnet
- * Universes range from 0 to 255 (represented as 1 to 256 in the packets).
- * @param universe the OLA universe
- * @returns the sandnet universe number
- */
 uint8_t SandNetPortHelper::SandnetUniverse(const Universe *universe) const {
   if (universe)
     return universe->UniverseId() - 1;
   return 0;
 }
-
-
 
 void SandNetInputPort::PostSetUniverse(Universe *old_universe,
                                        Universe *new_universe) {
@@ -103,9 +86,6 @@ void SandNetInputPort::PostSetUniverse(Universe *old_universe,
 }
 
 
-/*
- * Write operation
- */
 bool SandNetOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  uint8_t priority) {
   (void) priority;

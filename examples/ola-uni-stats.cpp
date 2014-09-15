@@ -19,17 +19,17 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <signal.h>
 #include <stdlib.h>
 
-#include <ola/BaseTypes.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/StdinHandler.h>
@@ -80,7 +80,7 @@ class UniverseTracker {
       UniverseStats() { Reset(); }
 
       void Reset() {
-        shortest_frame = DMX_UNIVERSE_SIZE + 1,
+        shortest_frame = ola::DMX_UNIVERSE_SIZE + 1,
         longest_frame = 0;
         frame_count = 0;
         frame_changes = 0;
@@ -150,7 +150,7 @@ void UniverseTracker::PrintStats() {
       ", Frames/sec: " << fps << endl;
     cout << "  Frame changes: " << stats.frame_changes << endl;
     cout << "  Smallest Frame: ";
-    if (stats.shortest_frame == DMX_UNIVERSE_SIZE + 1)
+    if (stats.shortest_frame == ola::DMX_UNIVERSE_SIZE + 1)
       cout << "N/A";
     else
       cout << stats.shortest_frame;
@@ -232,88 +232,6 @@ void UniverseTracker::RegisterComplete(const string &error) {
 }
 
 
-typedef struct {
-  bool help;
-  ola::log_level log_level;
-  vector<string> args;
-} TrackerOptions;
-
-
-/*
- * parse our cmd line options
- */
-void ParseOptions(int argc, char *argv[], TrackerOptions *options) {
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {0, 0, 0, 0}
-    };
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "hl:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        options->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            options->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            options->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            options->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            options->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            options->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-
-  int index = optind;
-  for (; index < argc; index++)
-    options->args.push_back(argv[index]);
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char arg[]) {
-  std::cout << "Usage: " << arg << " [options] <universe1> <universe2> ...\n"
-  "\n"
-  "Watch one or more universes and produce stats on DMX frame rates.\n"
-  "\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  << std::endl;
-  exit(ola::EXIT_USAGE);
-}
-
 SelectServer *ss = NULL;
 
 static void InteruptSignal(int unused) {
@@ -327,29 +245,25 @@ static void InteruptSignal(int unused) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  TrackerOptions options;
-  options.help = false;
-  options.log_level = ola::OLA_LOG_WARN;
-  ParseOptions(argc, argv, &options);
-
-  if (options.help)
-    DisplayHelpAndExit(argv[0]);
-
-  if (options.args.empty())
-    DisplayHelpAndExit(argv[0]);
+  ola::AppInit(
+      &argc,
+      argv,
+      "[options] <universe1> <universe2> ...",
+      "Watch one or more universes and produce stats on DMX frame rates.");
 
   vector<unsigned int> universes;
-  vector<string>::const_iterator iter = options.args.begin();
-  for (; iter != options.args.end(); ++iter) {
+  for (int i = 1; i < argc; i++) {
     unsigned int universe;
-    if (!StringToInt(*iter, &universe, true)) {
-      cerr << "Invalid Universe " << *iter << endl;
+    if (!StringToInt(argv[i], &universe, true)) {
+      cerr << "Invalid Universe " << argv[i] << endl;
       exit(ola::EXIT_USAGE);
     }
     universes.push_back(universe);
   }
 
-  ola::InitLogging(options.log_level, ola::OLA_LOG_STDERR);
+  if (universes.size() <= 0) {
+    ola::DisplayUsageAndExit();
+  }
 
   ola::OlaCallbackClientWrapper ola_client;
   if (!ola_client.Setup()) {

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * artnet.cpp
+ * artnet_loadtest.cpp
  * A simple ArtNet load tester
  * Copyright (C) 2013 Simon Newton
  */
@@ -45,7 +45,7 @@ using std::min;
 
 DEFINE_s_uint32(fps, f, 10, "Frames per second per universe [1 - 1000]");
 DEFINE_s_uint16(universes, u, 1, "Number of universes to send");
-DEFINE_string(interface, "", "The interface to send from");
+DEFINE_string(iface, "", "The interface to send from");
 
 /**
  * Send N DMX frames using ArtNet, where N is given by number_of_universes.
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   {
     auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
 
-    if (!picker->ChooseInterface(&iface, FLAGS_interface.str())) {
+    if (!picker->ChooseInterface(&iface, FLAGS_iface.str())) {
       return -1;
     }
   }

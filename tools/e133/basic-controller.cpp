@@ -20,9 +20,9 @@
  * I'm using this for scale testing.
  */
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
@@ -51,7 +51,7 @@ DEFINE_uint16(listen_backlog, 100,
               "The backlog for the listen() call. Often limited to 128");
 DEFINE_uint32(expected_devices, 1,
               "Time how long it takes until this many devices connect.");
-DEFINE_bool(stop_after_all_devices, false,
+DEFINE_default_bool(stop_after_all_devices, false,
             "Exit once all devices connect");
 
 using ola::NewCallback;

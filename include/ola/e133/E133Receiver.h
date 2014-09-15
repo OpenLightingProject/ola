@@ -39,13 +39,13 @@ namespace ola {
 // and allocate the members on the heap.
 namespace plugin {
 namespace e131 {
-  class E133Header;
-  class E133Inflator;
-  class E133StatusInflator;
-  class IncomingUDPTransport;
-  class RDMInflator;
-  class RootInflator;
-  class TransportHeader;
+class E133Header;
+class E133Inflator;
+class E133StatusInflator;
+class IncomingUDPTransport;
+class RDMInflator;
+class RootInflator;
+class TransportHeader;
 }  // namespace e131
 }  // namespace plugin
 

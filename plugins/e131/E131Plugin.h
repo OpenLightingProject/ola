@@ -50,6 +50,7 @@ class E131Plugin: public ola::Plugin {
     static const char CID_KEY[];
     static const char DEFAULT_DSCP_VALUE[];
     static const char DEFAULT_PORT_COUNT[];
+    static const char DRAFT_DISCOVERY_KEY[];
     static const char DSCP_KEY[];
     static const char IGNORE_PREVIEW_DATA_KEY[];
     static const char INPUT_PORT_COUNT_KEY[];

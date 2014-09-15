@@ -24,7 +24,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/ExportMap.h"
 #include "ola/base/Macro.h"
 #include "ola/io/SelectServer.h"
@@ -34,7 +34,7 @@
 
 namespace ola {
 namespace rdm {
-  class RootPidStore;
+class RootPidStore;
 }  // rdm
 
 

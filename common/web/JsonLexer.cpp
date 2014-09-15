@@ -65,6 +65,7 @@ static bool TrimWhitespace(const char **input) {
  * @param input A pointer to a pointer with the data. This should point to the
  * first character after the quote (") character.
  * @param str A string object to store the extracted string.
+ * @param parser the JsonParserInterface to pass tokens to.
  * @returns true if the string was extracted correctly, false otherwise.
  */
 static bool ParseString(const char **input, string* str,
@@ -426,7 +427,7 @@ bool ParseRaw(const char *input, JsonParserInterface *parser) {
   return !TrimWhitespace(&input);
 }
 
-bool JsonLexer::Parse(const std::string &input,
+bool JsonLexer::Parse(const string &input,
                       JsonParserInterface *parser) {
   // TODO(simon): Do we need to convert to unicode here? I think this may be
   // an issue on Windows. Consider mbstowcs.

@@ -15,7 +15,7 @@
  *
  * ArtNetPort.cpp
  * The ArtNet plugin for ola
- * Copyright (C) 2005 - 2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #include <string.h>
 #include <string>
@@ -33,10 +33,8 @@ namespace artnet {
 using ola::NewCallback;
 using ola::rdm::RDMCommand;
 using std::string;
+using std::vector;
 
-/*
- * Set the DMX Handlers as needed
- */
 void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
                                       Universe *new_universe) {
   if (new_universe)
@@ -72,10 +70,6 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
         NewSingleCallback(this, &ArtNetInputPort::SendTODWithUIDs));
 }
 
-
-/*
- * Respond With Tod
- */
 void ArtNetInputPort::RespondWithTod() {
   ola::rdm::UIDSet uids;
   if (GetUniverse())
@@ -96,29 +90,15 @@ string ArtNetInputPort::Description() const {
   return str.str();
 }
 
-
-/**
- * Send a list of UIDs in a TOD
- */
 void ArtNetInputPort::SendTODWithUIDs(const ola::rdm::UIDSet &uids) {
   m_node->SendTod(PortId(), uids);
 }
 
-
-/**
- * Run the RDM discovery routine
- */
 void ArtNetInputPort::TriggerDiscovery() {
   TriggerRDMDiscovery(
       NewSingleCallback(this, &ArtNetInputPort::SendTODWithUIDs));
 }
 
-/*
- * Write operation
- * @param data pointer to the dmx data
- * @param length the length of the data
- * @return true if the write succeeded, false otherwise
- */
 bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
                                 uint8_t priority) {
   if (PortId() >= ARTNET_MAX_PORTS) {
@@ -130,14 +110,10 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
   (void) priority;
 }
 
-
-/*
- * Handle an RDMRequest
- */
 void ArtNetOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
     OLA_WARN << "Blocked attempt to send discovery command via Artnet";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -147,19 +123,11 @@ void ArtNetOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   }
 }
 
-
-/*
- * Run the full RDM discovery process
- */
 void ArtNetOutputPort::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   m_node->RunFullDiscovery(PortId(), callback);
 }
 
-
-/*
- * Run the incremental RDM discovery process
- */
 void ArtNetOutputPort::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   // ArtNet nodes seem to run incremental discovery in the background. The
@@ -168,10 +136,6 @@ void ArtNetOutputPort::RunIncrementalDiscovery(
   m_node->RunIncrementalDiscovery(PortId(), callback);
 }
 
-
-/*
- * Set the RDM handlers as appropriate
- */
 void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
                                        Universe *new_universe) {
   if (new_universe)

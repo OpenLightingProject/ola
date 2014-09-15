@@ -29,7 +29,8 @@ namespace ola {
 namespace io {
 
 /**
- * MemoryBlockPool. This class is not thread safe.
+ * @brief MemoryBlockPool. This class is not thread safe.
+ * @param block_size the size of blocks to use.
  */
 class MemoryBlockPool {
  public:

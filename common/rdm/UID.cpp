@@ -26,8 +26,11 @@
 namespace ola {
 namespace rdm {
 
-UID* UID::FromString(const std::string &uid) {
-  std::vector<std::string> tokens;
+using std::string;
+using std::vector;
+
+UID* UID::FromString(const string &uid) {
+  vector<string> tokens;
   ola::StringSplit(uid, tokens, ":");
 
   if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8)

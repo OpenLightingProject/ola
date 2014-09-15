@@ -34,11 +34,10 @@ namespace ola {
 namespace io {
 
 using std::min;
-
+using std::string;
 
 /**
- * IOQueue.
- * @param block_size the size of blocks to use.
+ * @brief IOQueue.
  */
 IOQueue::IOQueue()
     : m_pool(new MemoryBlockPool()),
@@ -123,7 +122,7 @@ unsigned int IOQueue::Read(uint8_t *data, unsigned int n) {
 /**
  * Read up to n bytes into the string output.
  */
-unsigned int IOQueue::Read(std::string *output, unsigned int n) {
+unsigned int IOQueue::Read(string *output, unsigned int n) {
   unsigned int bytes_remaining = n;
   BlockVector::iterator iter = m_blocks.begin();
   while (iter != m_blocks.end() && bytes_remaining) {

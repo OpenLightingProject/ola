@@ -53,7 +53,8 @@ class BaseInflatorTest: public CppUnit::TestFixture {
 
 class TestInflator: public ola::plugin::e131::BaseInflator {
  public:
-    TestInflator(unsigned int id = 0, PDU::vector_size v_size = PDU::TWO_BYTES)
+    explicit TestInflator(unsigned int id = 0,
+                          PDU::vector_size v_size = PDU::TWO_BYTES)
         : BaseInflator(v_size),
           m_id(id),
           m_blocks_handled(0) {}

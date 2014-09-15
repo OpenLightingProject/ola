@@ -35,15 +35,16 @@
 #include "ola/base/Flags.h"
 #include "ola/base/SysExits.h"
 #include "ola/base/Version.h"
+#include "ola/file/Util.h"
 #include "ola/stl/STLUtils.h"
 
 /**
  * @private
  * @brief Define the help flag
  */
-DEFINE_s_bool(help, h, false, "Display the help message");
-DEFINE_s_bool(version, v, false, "Display version information");
-DEFINE_bool(gen_manpage, false, "Generate a man page snippet");
+DEFINE_s_default_bool(help, h, false, "Display the help message");
+DEFINE_s_default_bool(version, v, false, "Display version information");
+DEFINE_default_bool(gen_manpage, false, "Generate a man page snippet");
 
 namespace ola {
 
@@ -62,16 +63,16 @@ using std::vector;
  * The prefix used on inverted bool flags
  * @examplepara
  *   @code
- *   DEFINE_s_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
+ *   DEFINE_s_default_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
  *   @endcode
  *
  *   Then if you called your application with that flag:
  *   @code
- *   bash$myappliation -d
+ *   bash$myapplication -d
  *   @endcode
  *   Then the noMaster flag would be true.
  */
-const char Flag<bool>::NO_PREFIX[] = "no";
+const char Flag<bool>::NO_PREFIX[] = "no-";
 
 void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetFirstLine(first_line);
@@ -81,6 +82,12 @@ void SetHelpString(const string &first_line, const string &description) {
 
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
+}
+
+
+void DisplayUsageAndExit() {
+  GetRegistry()->DisplayUsage();
+  exit(ola::EXIT_USAGE);
 }
 
 
@@ -186,7 +193,8 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     } else {
       if (flag->has_arg()) {
         if (!flag->SetValue(optarg)) {
-          cerr << "Invalid value " << optarg << endl;
+          cerr << "Invalid arg value " << optarg << " for flag "
+               << flag->name() << endl;
           exit(EXIT_USAGE);
         }
       } else {
@@ -292,27 +300,36 @@ void FlagRegistry::GenManPage() {
 #endif
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
-  // Not using FilenameFromPathOrPath to avoid further dependancies
-  string exe_name = m_argv0;
-#ifdef _WIN32
-  char directory_separator = '\\';
-#else
-  char directory_separator = '/';
-#endif
-  string::size_type last_path_sep = m_argv0.find_last_of(directory_separator);
-  if (last_path_sep != string::npos) {
-    // Don't return the path sep itself
-    exe_name = m_argv0.substr(last_path_sep + 1);
+  string exe_name = ola::file::FilenameFromPathOrPath(m_argv0);
+
+  if (0 != exe_name.compare(m_argv0)) {
+    // Strip lt- off the start if present, in case we're generating the man
+    // page from a libtool wrapper script for the exe
+    ola::StripPrefix(&exe_name, "lt-");
+  }
+
+  // Convert newlines to a suitable format for man pages
+  string man_description = m_description;
+  ReplaceAll(&man_description, "\n", "\n.PP\n");
+
+  // Guess at a single line synopsis, match ". " so we don't get standards
+  string synopsis = "";
+  std::size_t pos = man_description.find(". ");
+  if (pos != string::npos) {
+    synopsis = man_description.substr(0, pos + 1);
+  } else {
+    synopsis = man_description;
   }
 
   cout << ".TH " << exe_name << " 1 \"" << date_str << "\"" << endl;
   cout << ".SH NAME" << endl;
-  cout << exe_name << " \\- " << endl;
+  cout << exe_name << " \\- " << synopsis << endl;
   cout << ".SH SYNOPSIS" << endl;
-  cout << exe_name << " " << m_first_line << endl;
+  cout << ".B " << exe_name << endl;
+  cout << m_first_line << endl;
   cout << ".SH DESCRIPTION" << endl;
-  cout << exe_name << endl;
-  cout << m_description << endl;
+  cout << ".B " << exe_name << endl;
+  cout << man_description << endl;
   cout << ".SH OPTIONS" << endl;
 
   // - comes before a-z which means flags without long options appear first. To
@@ -369,7 +386,7 @@ string FlagRegistry::GetShortOptsString() const {
 
 /**
  * @brief Allocate & populate the array of option structs for the call to
- * getopt_long. The caller is responsible for deleting the array.o
+ * getopt_long. The caller is responsible for deleting the array.
  *
  * The flag_map is populated with the option identifier (int) to FlagInterface*
  * mappings. The ownership of the pointers to FlagInterfaces is not transferred
@@ -400,14 +417,14 @@ struct option *FlagRegistry::GetLongOpts(FlagMap *flag_map) {
 /**
  * @brief Given a vector of flags lines, sort them and print to stdout.
  */
-void FlagRegistry::PrintFlags(std::vector<string> *lines) {
+void FlagRegistry::PrintFlags(vector<string> *lines) {
   std::sort(lines->begin(), lines->end());
   vector<string>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter)
     cout << *iter;
 }
 
-void FlagRegistry::PrintManPageFlags(std::vector<OptionPair> *lines) {
+void FlagRegistry::PrintManPageFlags(vector<OptionPair> *lines) {
   std::sort(lines->begin(), lines->end());
   vector<OptionPair>::const_iterator iter = lines->begin();
   for (; iter != lines->end(); ++iter) {

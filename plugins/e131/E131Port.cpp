@@ -69,12 +69,22 @@ void E131InputPort::PostSetUniverse(Universe *old_universe,
         NewCallback<E131InputPort, void>(this, &E131InputPort::DmxChanged));
 }
 
+E131OutputPort::~E131OutputPort() {
+  Universe *universe = GetUniverse();
+  if (universe) {
+    m_node->TerminateStream(universe->UniverseId(), m_last_priority);
+  }
+}
 
 /*
  * Set the universe for an output port.
  */
 void E131OutputPort::PostSetUniverse(Universe *old_universe,
                                      Universe *new_universe) {
+  if (old_universe) {
+    m_node->TerminateStream(old_universe->UniverseId(), m_last_priority);
+  }
+
   if (new_universe) {
     if (m_prepend_hostname) {
       std::ostringstream str;
@@ -83,8 +93,6 @@ void E131OutputPort::PostSetUniverse(Universe *old_universe,
     } else {
       m_node->SetSourceName(new_universe->UniverseId(), new_universe->Name());
     }
-  } else {
-    m_node->SetSourceName(old_universe->UniverseId(), "");
   }
 }
 
@@ -97,12 +105,9 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   if (!universe)
     return false;
 
-  if (GetPriorityMode() == PRIORITY_MODE_STATIC)
-    priority = GetPriority();
-
-  return m_node->SendDMX(universe->UniverseId(),
-                         buffer,
-                         priority,
+  m_last_priority = (GetPriorityMode() == PRIORITY_MODE_STATIC) ?
+      GetPriority() : priority;
+  return m_node->SendDMX(universe->UniverseId(), buffer, m_last_priority,
                          m_preview_on);
 }
 

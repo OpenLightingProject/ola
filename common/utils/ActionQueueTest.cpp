@@ -53,7 +53,7 @@ class ActionQueueTest: public CppUnit::TestFixture {
  */
 class MockAction: public Action {
  public:
-    MockAction(bool fatal = false, bool fail = false):
+    explicit MockAction(bool fatal = false, bool fail = false):
       Action(),
       m_fatal(fatal),
       m_failed(fail),

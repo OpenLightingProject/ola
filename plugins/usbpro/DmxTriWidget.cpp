@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
@@ -40,9 +40,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::auto_ptr;
-using std::map;
-using std::string;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMCommand;
@@ -51,7 +48,10 @@ using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-
+using std::auto_ptr;
+using std::map;
+using std::string;
+using std::vector;
 
 /*
  * New DMX TRI Widget
@@ -129,7 +129,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
  */
 void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
-  std::vector<string> packets;
+  vector<string> packets;
   if (IsDUBRequest(request) && !m_use_raw_rdm) {
     on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED, NULL,
                      packets);
@@ -439,13 +439,14 @@ void DmxTriWidgetImpl::DispatchRequest() {
     return;
   }
 
+  PACK(
   struct rdm_message {
     uint8_t command;
     uint8_t index;
     uint16_t sub_device;
     uint16_t param_id;
     uint8_t data[RDMCommandSerializer::MAX_PARAM_DATA_LENGTH];
-  } __attribute__((packed));
+  });
 
   rdm_message message;
 
@@ -684,7 +685,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
     return;
   }
 
-  std::vector<string> packets;
+  vector<string> packets;
   packets.push_back(string(reinterpret_cast<const char*>(data), length));
 
   // handle responses to DUB commands
@@ -832,7 +833,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
              << static_cast<int>(return_code);
     code = ola::rdm::RDM_INVALID_RESPONSE;
   }
-  std::vector<string> packets;
+  vector<string> packets;
   // Unfortunately we don't get to see the raw response here, which limits the
   // use of the TRI for testing. For testing use the raw mode.
   callback->Run(code, response, packets);
@@ -912,7 +913,7 @@ void DmxTriWidgetImpl::HandleRDMError(ola::rdm::rdm_response_code error_code) {
   delete m_pending_rdm_request;
   m_pending_rdm_request = NULL;
   m_rdm_request_callback = NULL;
-  std::vector<string> packets;
+  vector<string> packets;
   if (callback)
     callback->Run(error_code, NULL, packets);
 }

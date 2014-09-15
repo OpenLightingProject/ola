@@ -2,14 +2,25 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
-        [open-lighting@googlegroups.com])
+m4_include([config/ola_version.m4])
+AC_INIT([OLA], [ola_version], [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR([config])
 AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE([subdir-objects])
+
+# OLA version variables
+AC_SUBST([ola_major_version])
+OLA_MAJOR_VERSION=ola_major_version
+AC_SUBST(OLA_MAJOR_VERSION)
+AC_SUBST([ola_minor_version])
+OLA_MINOR_VERSION=ola_minor_version
+AC_SUBST(OLA_MINOR_VERSION)
+AC_SUBST([ola_revision_version])
+OLA_REVISION_VERSION=ola_revision_version
+AC_SUBST(OLA_REVISION_VERSION)
 
 # Checks for programs.
 AC_LANG([C++])
@@ -428,7 +439,7 @@ AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 # Optionally install the E1.33 library.
 AC_ARG_ENABLE(
   [e133],
-  [AS_HELP_STRING([--install-e133], [Install the E1.33 library])])
+  [AS_HELP_STRING([--enable-e133], [Install the E1.33 library])])
 # For now we install the ACN lib if the E1.33 lib is requested
 AM_CONDITIONAL([INSTALL_ACN], [test "x$enable_e133" = xyes])
 AM_CONDITIONAL([INSTALL_E133], [test "x$enable_e133" = xyes])
@@ -654,6 +665,10 @@ for p in $PLUGINS; do
   OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 
+if test -z "${USING_WIN32_TRUE}"; then
+  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lWs2_32 -lIphlpapi -lpthread"
+fi
+
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
@@ -663,6 +678,13 @@ www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
+
+# Additional libraries needed by Windows clients
+OLA_CLIENT_LIBS=''
+if test -z "${USING_WIN32_TRUE}"; then
+  OLA_CLIENT_LIBS="-lWs2_32 -lIphlpapi -lpthread"
+fi
+AC_SUBST(OLA_CLIENT_LIBS)
 
 # Output
 #####################################################
@@ -681,6 +703,7 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
 
 # Non-makefile generted files.
 AC_CONFIG_FILES([Doxyfile
+                 include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc

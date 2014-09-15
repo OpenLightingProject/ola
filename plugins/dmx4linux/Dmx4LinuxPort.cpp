@@ -20,7 +20,7 @@
 
 #include <string.h>
 #include <errno.h>
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 
 #include "plugins/dmx4linux/Dmx4LinuxPort.h"
@@ -31,11 +31,6 @@ namespace plugin {
 namespace dmx4linux {
 
 
-/*
- * Write operation
- * @param buffer the DmxBuffer to write
- * @return true on success, false on failure
- */
 bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer,
                                    uint8_t priority) {
   int offset = DMX_UNIVERSE_SIZE * m_d4l_universe;
@@ -53,19 +48,10 @@ bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer,
   return true;
 }
 
-
-/*
- * Read operation
- * @return a DmxBufer with the data
- */
 const DmxBuffer &Dmx4LinuxInputPort::ReadDMX() const {
   return m_read_buffer;
 }
 
-
-/*
- * Process new Data
- */
 bool Dmx4LinuxInputPort::UpdateData(const uint8_t *in_buffer,
                                     unsigned int length) {
   DmxBuffer tmp_buffer = DmxBuffer(in_buffer, length);

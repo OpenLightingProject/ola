@@ -5,7 +5,7 @@ include python/ola/rpc/Makefile.mk
 # Python modules.
 ##################################################
 artnet_path = ${top_srcdir}/plugins/artnet/messages
-artnet_proto = $(artnet_path)/ArtnetConfigMessages.proto
+artnet_proto = $(artnet_path)/ArtNetConfigMessages.proto
 ola_path = ${top_srcdir}/common/protocol
 ola_proto = $(ola_path)/Ola.proto
 pids_path = ${top_srcdir}/common/rdm
@@ -15,7 +15,7 @@ usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 if BUILD_PYTHON_LIBS
 output_files = \
-    python/ola/ArtnetConfigMessages_pb2.py \
+    python/ola/ArtNetConfigMessages_pb2.py \
     python/ola/Ola_pb2.py \
     python/ola/UsbProConfigMessages_pb2.py \
     python/ola/Pids_pb2.py \
@@ -37,7 +37,7 @@ pkgpython_PYTHON = \
     python/ola/__init__.py
 endif
 
-python/ola/ArtnetConfigMessages_pb2.py: $(artnet_proto)
+python/ola/ArtNetConfigMessages_pb2.py: $(artnet_proto)
 	$(PROTOC) --python_out python/ola/ -I $(artnet_path) $(artnet_proto)
 
 python/ola/Ola_pb2.py: $(ola_proto)

@@ -39,6 +39,7 @@ using std::string;
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
 const char E131Plugin::DSCP_KEY[] = "dscp";
+const char E131Plugin::DRAFT_DISCOVERY_KEY[] = "draft_discovery";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
 const char E131Plugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
 const char E131Plugin::IP_KEY[] = "ip";
@@ -65,6 +66,8 @@ bool E131Plugin::StartHook() {
       PREPEND_HOSTNAME_KEY);
   options.ignore_preview = m_preferences->GetValueAsBool(
       IGNORE_PREVIEW_DATA_KEY);
+  options.enable_draft_discovery = m_preferences->GetValueAsBool(
+      DRAFT_DISCOVERY_KEY);
 
   unsigned int dscp;
   if (!StringToInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
@@ -132,6 +135,9 @@ string E131Plugin::Description() const {
 "dscp = [int]\n"
 "The DSCP value to tag the packets with, range is 0 to 63.\n"
 "\n"
+"draft_discovery = [bool]\n"
+"Enable the draft (2014) E1.31 discovery protocol.\n"
+"\n"
 "ignore_preview = [true|false]\n"
 "Ignore preview data.\n"
 "\n"
@@ -176,6 +182,11 @@ bool E131Plugin::SetDefaultPreferences() {
       DSCP_KEY,
       UIntValidator(0, 63),
       DEFAULT_DSCP_VALUE);
+
+  save |= m_preferences->SetDefaultValue(
+      DRAFT_DISCOVERY_KEY,
+      BoolValidator(),
+      BoolValidator::DISABLED);
 
   save |= m_preferences->SetDefaultValue(
       IGNORE_PREVIEW_DATA_KEY,

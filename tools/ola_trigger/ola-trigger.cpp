@@ -25,8 +25,8 @@
 #include <sys/wait.h>
 #endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
@@ -230,7 +230,7 @@ void NewDmx(unsigned int our_universe,
             DMXTrigger *trigger,
             unsigned int universe,
             const DmxBuffer &data,
-            const std::string &error) {
+            const string &error) {
   if (universe == our_universe) {
     if (error.empty())
       trigger->NewDMX(data);
@@ -263,9 +263,9 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
   SlotActionMap::const_iterator iter = global_slots.begin();
   for (; iter != global_slots.end(); ++iter) {
     Slot *slots = iter->second;
-    if (slots->SlotOffset() + offset >= DMX_UNIVERSE_SIZE) {
+    if (slots->SlotOffset() + offset >= ola::DMX_UNIVERSE_SIZE) {
       OLA_FATAL << "Slot " << slots->SlotOffset() << " + offset " <<
-        offset << " is greater than " << DMX_UNIVERSE_SIZE - 1;
+        offset << " is greater than " << ola::DMX_UNIVERSE_SIZE - 1;
       ok = false;
       break;
     }
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(argv);
 
-  if (opts.offset >= DMX_UNIVERSE_SIZE) {
+  if (opts.offset >= ola::DMX_UNIVERSE_SIZE) {
     std::cerr << "Invalid slot offset: " << opts.offset << std::endl;
     DisplayHelpAndExit(argv);
   }

@@ -127,8 +127,7 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
   /**
    * @brief Send data from an IOVecInterface.
    * @param data the IOVecInterface class to send.
-   * @param ip the IP to send to
-   * @param port the port to send to in HOST byte order.
+   * @param dest the IPV4SocketAddress to send to
    * @return the number of bytes sent.
    *
    * This will try to send as much data as possible.
@@ -205,11 +204,12 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
    * @brief Join a multicast group
    * @param iface the address of the interface to use.
    * @param group the address of the group to join
+   * @param multicast_loop enable multicast loop
    * @return true if it worked, false otherwise
    */
   virtual bool JoinMulticast(const IPV4Address &iface,
                              const IPV4Address &group,
-                             bool loop = false) = 0;
+                             bool multicast_loop = false) = 0;
 
   /**
    * @brief Leave a multicast group
@@ -280,7 +280,7 @@ class UDPSocket: public UDPSocketInterface {
   bool SetMulticastInterface(const IPV4Address &iface);
   bool JoinMulticast(const IPV4Address &iface,
                      const IPV4Address &group,
-                     bool loop = false);
+                     bool multicast_loop = false);
   bool LeaveMulticast(const IPV4Address &iface,
                       const IPV4Address &group);
 

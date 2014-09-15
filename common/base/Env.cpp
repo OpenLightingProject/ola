@@ -22,9 +22,11 @@
 
 #include "ola/base/Env.h"
 
+using std::string;
+
 namespace ola {
 
-bool GetEnv(const std::string &var, std::string *value) {
+bool GetEnv(const string &var, string *value) {
   char *v = NULL;
 #ifdef HAVE_SECURE_GETENV
   v = secure_getenv(var.c_str());

@@ -46,10 +46,10 @@ using ola::thread::SignalThread;
 using std::cout;
 using std::endl;
 
-DEFINE_bool(http, true, "Disable the HTTP server.");
-DEFINE_bool(http_quit, true, "Disable the HTTP /quit handler.");
+DEFINE_default_bool(http, true, "Disable the HTTP server.");
+DEFINE_default_bool(http_quit, true, "Disable the HTTP /quit handler.");
 #ifndef _WIN32
-DEFINE_s_bool(daemon, f, false, "Fork and run in the background.");
+DEFINE_s_default_bool(daemon, f, false, "Fork and run in the background.");
 #endif
 DEFINE_s_string(http_data_dir, d, "", "The path to the static www content.");
 DEFINE_s_string(interface, i, "",

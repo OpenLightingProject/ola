@@ -88,7 +88,9 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRemoveWriteWhenReadable);
   CPPUNIT_TEST(testRemoveOthersWhenReadable);
   CPPUNIT_TEST(testRemoveOthersWhenWriteable);
+#ifndef _WIN32
   CPPUNIT_TEST(testReadWriteInteraction);
+#endif
   CPPUNIT_TEST(testShutdownWithActiveDescriptors);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST(testOffByOneTimeout);

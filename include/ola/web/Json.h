@@ -813,7 +813,7 @@ class JsonNull: public JsonLeafValue {
   /**
    * @brief Create a new JsonNull
    */
-  explicit JsonNull() {}
+  JsonNull() {}
 
   void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
   void Accept(JsonValueConstVisitorInterface *visitor) const {

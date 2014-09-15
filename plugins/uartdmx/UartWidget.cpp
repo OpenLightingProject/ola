@@ -40,7 +40,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/io/ExtendedSerial.h"
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
