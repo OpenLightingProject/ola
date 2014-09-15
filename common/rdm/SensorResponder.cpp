@@ -88,7 +88,7 @@ const ResponderOps<SensorResponder>::ParamHandler
  * A class which represents a sensor.
  */
 class FakeSensor: public Sensor {
-  public:
+ public:
     FakeSensor(ola::rdm::rdm_sensor_type type,
                ola::rdm::rdm_pid_unit unit,
                ola::rdm::rdm_pid_prefix prefix,
@@ -101,7 +101,7 @@ class FakeSensor: public Sensor {
       m_recorded = 0;
     }
 
-  protected:
+ protected:
     int16_t PollSensor();
 };
 
@@ -161,9 +161,14 @@ SensorResponder::SensorResponder(const UID &uid)
                                      "Fake Beta Particle Counter",
                                      fake_beta_particle_counter_options));
 
-  m_sensors.push_back(new LoadSensor(0, "Load Average 1 minute"));
-  m_sensors.push_back(new LoadSensor(1, "Load Average 5 minutes"));
-  m_sensors.push_back(new LoadSensor(2, "Load Average 15 minutes"));
+#ifdef HAVE_GETLOADAVG
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_1_MIN,
+                                     "Load Average 1 minute"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_5_MINS,
+                                     "Load Average 5 minutes"));
+  m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
+                                     "Load Average 15 minutes"));
+#endif
 }
 
 

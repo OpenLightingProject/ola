@@ -35,14 +35,14 @@ using std::string;
  * Parse a registration file and extract the services.
  */
 class RegistrationFileParser {
-  public:
+ public:
     RegistrationFileParser() {}
     ~RegistrationFileParser() {}
 
     bool ParseFile(const string &file, ServiceEntries *services) const;
     bool ParseStream(std::istream *input, ServiceEntries *services) const;
 
-  private:
+ private:
     void SplitLine(const string &line, std::vector<string> *tokens) const;
 };
 }  // namespace slp

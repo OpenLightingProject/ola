@@ -77,7 +77,7 @@ class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRDMSend);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testLifecycle();
@@ -91,7 +91,7 @@ class UniverseTest: public CppUnit::TestFixture {
     void testRDMDiscovery();
     void testRDMSend();
 
-  private:
+ private:
     ola::MemoryPreferences *m_preferences;
     ola::UniverseStore *m_store;
     DmxBuffer m_buffer;
@@ -117,7 +117,7 @@ class UniverseTest: public CppUnit::TestFixture {
 
 
 class MockClient: public ola::Client {
-  public:
+ public:
     MockClient(): ola::Client(NULL), m_dmx_set(false) {}
     bool SendDMX(unsigned int universe_id, uint8_t priority,
                  const DmxBuffer &buffer) {
@@ -413,7 +413,7 @@ void UniverseTest::testLtpMerging() {
   ola::DmxSource source(client_buffer, time_stamp,
                         ola::dmx::SOURCE_PRIORITY_DEFAULT);
   MockClient input_client;
-  input_client.DMXRecieved(TEST_UNIVERSE, source);
+  input_client.DMXReceived(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);
 
   DmxBuffer client_htp_merge_result;
@@ -501,7 +501,7 @@ void UniverseTest::testHtpMerging() {
   m_clock.CurrentTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp, new_priority);
   MockClient input_client;
-  input_client.DMXRecieved(TEST_UNIVERSE, source);
+  input_client.DMXReceived(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);
 
   DmxBuffer client_htp_merge_result;

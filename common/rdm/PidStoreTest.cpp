@@ -64,7 +64,7 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInconsistentData);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testPidDescriptor();
     void testPidStore();
     void testPidStoreLoad();
@@ -82,7 +82,7 @@ class PidStoreTest: public CppUnit::TestFixture {
     }
     void tearDown() {}
 
-  private:
+ private:
 };
 
 

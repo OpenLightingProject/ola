@@ -32,7 +32,7 @@ namespace plugin {
 namespace sandnet {
 
 class SandNetPortHelper {
-  public:
+ public:
     SandNetPortHelper() {}
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description(const Universe *universe) const;
@@ -42,7 +42,7 @@ class SandNetPortHelper {
 
 
 class SandNetInputPort: public BasicInputPort {
-  public:
+ public:
     SandNetInputPort(SandNetDevice *parent,
                      unsigned int id,
                      class PluginAdaptor *plugin_adaptor,
@@ -58,7 +58,7 @@ class SandNetInputPort: public BasicInputPort {
     }
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
-  private:
+ private:
     SandNetPortHelper m_helper;
     SandNetNode *m_node;
     DmxBuffer m_buffer;
@@ -66,7 +66,7 @@ class SandNetInputPort: public BasicInputPort {
 
 
 class SandNetOutputPort: public BasicOutputPort {
-  public:
+ public:
     SandNetOutputPort(SandNetDevice *parent,
                       unsigned int id,
                       SandNetNode *node):
@@ -81,7 +81,7 @@ class SandNetOutputPort: public BasicOutputPort {
     }
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
-  private:
+ private:
     SandNetPortHelper m_helper;
     SandNetNode *m_node;
 };

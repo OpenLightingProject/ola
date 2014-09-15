@@ -41,7 +41,7 @@ class BigEndianInputStreamInterface: public InputStreamInterface {};
  * host order.
  */
 class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
-  public:
+ public:
     // Ownership of the stream is not transferred.
     explicit BigEndianInputStreamAdaptor(InputStreamInterface *stream)
         : m_stream(stream) {
@@ -59,7 +59,7 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
       return m_stream->ReadString(output, size);
     }
 
-  private:
+ private:
     InputStreamInterface *m_stream;
 
     template <typename T>
@@ -78,7 +78,7 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
  * A Big Endian Input stream that wraps an InputBufferInterface
  */
 class BigEndianInputStream: public BigEndianInputStreamInterface {
-  public:
+ public:
     // Ownership of the InputBuffer is not transferred.
     explicit BigEndianInputStream(InputBufferInterface *buffer)
         : m_input_stream(buffer),
@@ -97,7 +97,7 @@ class BigEndianInputStream: public BigEndianInputStreamInterface {
       return m_adaptor.ReadString(output, size);
     }
 
-  private:
+ private:
     InputStream m_input_stream;
     BigEndianInputStreamAdaptor m_adaptor;
 
@@ -115,7 +115,7 @@ class BigEndianOutputStreamInterface: public OutputStreamInterface {};
  * host order.
  */
 class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
-  public:
+ public:
     // Ownership of the stream is not transferred.
     explicit BigEndianOutputStreamAdaptor(OutputStreamInterface *stream)
         : m_stream(stream) {
@@ -150,7 +150,7 @@ class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
       return ConvertAndWrite(val);
     }
 
-  private:
+ private:
     OutputStreamInterface *m_stream;
 
     template <typename T>
@@ -169,7 +169,7 @@ class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
  * A Big Endian Input stream that wraps an OutputBufferInterface
  */
 class BigEndianOutputStream: public BigEndianOutputStreamInterface {
-  public:
+ public:
     // Ownership of the OutputBuffer is not transferred.
     explicit BigEndianOutputStream(OutputBufferInterface *buffer)
         : m_output_stream(buffer),
@@ -188,7 +188,7 @@ class BigEndianOutputStream: public BigEndianOutputStreamInterface {
     BigEndianOutputStream& operator<<(int32_t val) { return Output(val); }
     BigEndianOutputStream& operator<<(uint32_t val) { return Output(val); }
 
-  private:
+ private:
     OutputStream m_output_stream;
     BigEndianOutputStreamAdaptor m_adaptor;
 

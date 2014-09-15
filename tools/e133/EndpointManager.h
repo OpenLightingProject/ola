@@ -39,7 +39,7 @@
  * added & removed. This is done through callbacks.
  */
 class EndpointManager {
-  public:
+ public:
     typedef ola::Callback1<void, uint16_t> EndpointNotificationCallback;
     typedef enum { ADD, REMOVE, BOTH } EndpointNoticationEvent;
 
@@ -61,7 +61,7 @@ class EndpointManager {
                               EndpointNotificationCallback *callback);
     bool UnRegisterNotification(EndpointNotificationCallback *callback);
 
-  private:
+ private:
     // hash_map of non-root endpoints
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint16_t, class E133Endpoint*>
       EndpointMap;

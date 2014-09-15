@@ -51,7 +51,7 @@ enum { ESPNET_MAX_UNIVERSES = 512 };
 using std::string;
 
 class EspNetNode {
-  public:
+ public:
     explicit EspNetNode(const string &ip_address);
     virtual ~EspNetNode();
 
@@ -79,7 +79,7 @@ class EspNetNode {
     bool SendPoll(bool full_poll = false);
     bool SendDMX(uint8_t universe, const ola::DmxBuffer &buffer);
 
-  private:
+ private:
     typedef struct {
       DmxBuffer *buffer;
       Callback0<void> *closure;

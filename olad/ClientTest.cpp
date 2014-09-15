@@ -48,11 +48,11 @@ class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testGetSetDMX);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSendDMX();
     void testGetSetDMX();
 
-  private:
+ private:
     ola::Clock m_clock;
 };
 
@@ -64,7 +64,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
  * Mock out the ClientStub for testing
  */
 class MockClientStub: public ola::proto::OlaClientService_Stub {
-  public:
+ public:
     MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
 
     void UpdateDmxData(ola::rpc::RpcController *controller,
@@ -121,7 +121,7 @@ void ClientTest::testGetSetDMX() {
   ola::DmxSource source(buffer, timestamp, 100);
 
   // check get/set works
-  client.DMXRecieved(TEST_UNIVERSE, source);
+  client.DMXReceived(TEST_UNIVERSE, source);
   const ola::DmxSource &source2 = client.SourceData(TEST_UNIVERSE);
   OLA_ASSERT(source2.IsSet());
   OLA_ASSERT(source2.Data() == buffer);
@@ -136,7 +136,7 @@ void ClientTest::testGetSetDMX() {
   OLA_ASSERT_EQ((uint8_t) 100, source2.Priority());
 
   source.UpdateData(buffer, timestamp, 120);
-  client.DMXRecieved(TEST_UNIVERSE, source);
+  client.DMXReceived(TEST_UNIVERSE, source);
   const ola::DmxSource source3 = client.SourceData(TEST_UNIVERSE);
   OLA_ASSERT(source3.IsSet());
   OLA_ASSERT(buffer == source3.Data());

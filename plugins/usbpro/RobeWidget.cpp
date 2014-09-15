@@ -317,7 +317,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
 
   if (length == RDM_PADDING_BYTES) {
-    // this indicates that no request was recieved
+    // this indicates that no request was received
     callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
     return;
   }
@@ -357,7 +357,7 @@ void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
     m_pending_request = NULL;
 
     if (length <= RDM_PADDING_BYTES) {
-      // this indicates that no request was recieved
+      // this indicates that no request was received
       callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
     } else {
       packets.push_back(

@@ -35,7 +35,7 @@ namespace e131 {
 using ola::acn::CID;
 
 class RootPDU: public PDU {
-  public:
+ public:
     explicit RootPDU(unsigned int vector):
       PDU(vector),
       m_block(NULL),
@@ -63,7 +63,7 @@ class RootPDU: public PDU {
     static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
                            const CID &cid);
 
-  private:
+ private:
     CID m_cid;
     const PDUBlock<PDU> *m_block;
     unsigned int m_block_size;

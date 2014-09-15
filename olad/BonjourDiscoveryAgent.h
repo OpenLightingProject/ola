@@ -42,7 +42,7 @@ class CallbackThread;
  * dns_sd.h library.
  */
 class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
-  public:
+ public:
     BonjourDiscoveryAgent();
     ~BonjourDiscoveryAgent();
 
@@ -53,7 +53,7 @@ class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
                          uint16_t port,
                          const RegisterOptions &options);
 
-  private:
+ private:
     struct RegisterArgs : public RegisterOptions {
       std::string service_name;
       std::string type;

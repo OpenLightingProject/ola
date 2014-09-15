@@ -59,7 +59,7 @@ using ola::network::IPV4Address;
 using ola::slp::URLEntries;
 
 class SLPThreadServerInfo : public ola::slp::ServerInfo {
-  public:
+ public:
     string backend_type;
 
     SLPThreadServerInfo() : ServerInfo() {}
@@ -78,7 +78,7 @@ class SLPThreadServerInfo : public ola::slp::ServerInfo {
  * The base class for a thread which handles all the SLP stuff.
  */
 class BaseSLPThread: public ola::thread::Thread {
-  public:
+ public:
     typedef ola::BaseCallback1<void, bool> RegistrationCallback;
     typedef ola::Callback2<void, bool, const ola::slp::URLEntries&>
         DiscoveryCallback;
@@ -123,7 +123,7 @@ class BaseSLPThread: public ola::thread::Thread {
 
     static const unsigned int DEFAULT_DISCOVERY_INTERVAL_SECONDS;
 
-  protected:
+ protected:
     typedef ola::SingleUseCallback2<void, bool, const ola::slp::URLEntries&>
         InternalDiscoveryCallback;
 
@@ -155,7 +155,7 @@ class BaseSLPThread: public ola::thread::Thread {
 
     static const char RDNMET_SCOPE[];
 
-  private:
+ private:
     typedef struct {
       uint16_t lifetime;
       ola::thread::timeout_id timeout;
@@ -220,13 +220,13 @@ class BaseSLPThread: public ola::thread::Thread {
  * Creates new SLPThreads based on a command line flag.
  */
 class SLPThreadFactory {
-  public:
+ public:
     static BaseSLPThread* NewSLPThread(
       ola::thread::ExecutorInterface *ss,
       unsigned int discovery_interval =
           BaseSLPThread::DEFAULT_DISCOVERY_INTERVAL_SECONDS);
 
-  private:
+ private:
     DISALLOW_COPY_AND_ASSIGN(SLPThreadFactory);
 };
 }  // namespace e133

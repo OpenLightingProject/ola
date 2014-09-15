@@ -48,5 +48,5 @@
  * @brief Timecode
  *
  * @namespace ola::web
- * @brief Classes to build JSON.
+ * @brief Classes to deal with web services.
  */

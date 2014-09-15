@@ -47,7 +47,7 @@ class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     DescriptorTest() {}
     void testFieldDescriptors();
     void testFieldDescriptorGroup();

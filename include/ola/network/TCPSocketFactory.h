@@ -31,7 +31,7 @@ namespace network {
  * The Factory Interface
  */
 class TCPSocketFactoryInterface {
-  public:
+ public:
     virtual ~TCPSocketFactoryInterface() {}
 
     virtual void NewTCPSocket(int fd) = 0;
@@ -43,7 +43,7 @@ class TCPSocketFactoryInterface {
  */
 template<class SocketType>
 class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
-  public:
+ public:
     typedef ola::Callback1<void, SocketType*> NewSocketCallback;
 
     explicit GenericTCPSocketFactory(NewSocketCallback *on_accept)
@@ -61,7 +61,7 @@ class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
       m_new_socket->Run(socket);
     }
 
-  private:
+ private:
     NewSocketCallback *m_new_socket;
 };
 

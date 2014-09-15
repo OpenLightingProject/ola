@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(ola, [0.8.33])
+AC_INIT(ola, m4_esyscmd([./version.sh | tr -d '\n']))
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
@@ -72,6 +72,10 @@ AM_CONDITIONAL(FATAL_WARNINGS, test "${enable_fatal_warnings}" != "no")
 
 # check for hash_map
 AC_CXX_STL_HASH
+
+# epoll
+AX_HAVE_EPOLL(
+  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
@@ -203,6 +207,7 @@ PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
 PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
+PLUGIN_SUPPORT(renard, USE_RENARD)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 
@@ -654,6 +659,7 @@ AC_OUTPUT( Makefile \
     common/rdm/testdata/Makefile \
     common/rdm/testdata/pids/Makefile \
     common/rpc/Makefile \
+    common/system/Makefile \
     common/testing/Makefile \
     common/thread/Makefile \
     common/timecode/Makefile \
@@ -681,6 +687,7 @@ AC_OUTPUT( Makefile \
     include/ola/rdm/Makefile \
     include/ola/slp/Makefile \
     include/ola/stl/Makefile \
+    include/ola/system/Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \
@@ -717,6 +724,7 @@ AC_OUTPUT( Makefile \
     plugins/opendmx/Makefile \
     plugins/osc/Makefile \
     plugins/pathport/Makefile \
+    plugins/renard/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
     plugins/spi/Makefile \

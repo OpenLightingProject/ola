@@ -39,7 +39,8 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
                            DmxTriWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
-                           uint32_t serial)
+                           uint32_t serial,
+                           uint16_t firmware_version)
     : UsbSerialDevice(owner, name, widget),
       m_tri_widget(widget) {
   std::stringstream str;
@@ -47,7 +48,8 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
   m_device_id = str.str();
 
   str.str("");
-  str << "Serial #: " << serial;
+  str << "Serial #: " << serial << ", firmware "
+      << (firmware_version >> 8) << "." << (firmware_version & 0xff);
   ola::OutputPort *output_port = new DmxTriOutputPort(
       this,
       widget,
@@ -71,10 +73,10 @@ void DmxTriDevice::PrePortStop() {
  */
 DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
                                    DmxTriWidget *widget,
-                                   const string &serial)
+                                   const string &description)
     : BasicOutputPort(parent, 0, true, true),
       m_tri_widget(widget),
-      m_serial(serial) {
+      m_description(description) {
 }
 
 

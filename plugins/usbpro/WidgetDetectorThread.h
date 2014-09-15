@@ -42,12 +42,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::set;
 using std::string;
-using std::vector;
-using ola::io::ConnectedDescriptor;
-using ola::thread::ConditionVariable;
-using ola::thread::Mutex;
 
 
 /**
@@ -58,7 +53,7 @@ using ola::thread::Mutex;
  * discovered.
  */
 class NewWidgetHandler {
-  public:
+ public:
     virtual ~NewWidgetHandler() {}
 
     virtual void NewWidget(class ArduinoWidget *widget,
@@ -80,7 +75,7 @@ class NewWidgetHandler {
  * Discovers new USB Serial widgets and calls the handler.
  */
 class WidgetDetectorThread: public ola::thread::Thread {
-  public:
+ public:
     explicit WidgetDetectorThread(NewWidgetHandler *widget_handler,
                                   ola::io::SelectServerInterface *ss,
                                   unsigned int usb_pro_timeout = 200,
@@ -90,9 +85,9 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Must be called before Run()
     void SetDeviceDirectory(const string &directory);
     // Must be called before Run()
-    void SetDevicePrefixes(const vector<string> &prefixes);
+    void SetDevicePrefixes(const std::vector<string> &prefixes);
     // Must be called before Run()
-    void SetIgnoredDevices(const vector<string> &devices);
+    void SetIgnoredDevices(const std::vector<string> &devices);
 
     // Start the thread, this will call the SuccessHandler whenever a new
     // Widget is located.
@@ -107,45 +102,45 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // blocks until the thread is running
     void WaitUntilRunning();
 
-  protected:
+ protected:
     virtual bool RunScan();
     void PerformDiscovery(const string &path,
-                          ConnectedDescriptor *descriptor);
+                          ola::io::ConnectedDescriptor *descriptor);
 
-  private:
+ private:
     ola::io::SelectServerInterface *m_other_ss;
     ola::io::SelectServer m_ss;  // ss for this thread
-    vector<WidgetDetectorInterface*> m_widget_detectors;
+    std::vector<WidgetDetectorInterface*> m_widget_detectors;
     string m_directory;  // directory to look for widgets in
-    vector<string> m_prefixes;  // prefixes to try
-    set<string> m_ignored_devices;  // devices to ignore
+    std::vector<string> m_prefixes;  // prefixes to try
+    std::set<string> m_ignored_devices;  // devices to ignore
     NewWidgetHandler *m_handler;
     bool m_is_running;
     unsigned int m_usb_pro_timeout;
     unsigned int m_robe_timeout;
-    Mutex m_mutex;
-    ConditionVariable m_condition;
+    ola::thread::Mutex m_mutex;
+    ola::thread::ConditionVariable m_condition;
 
     // those paths that are either in discovery, or in use
-    set<string> m_active_paths;
+    std::set<string> m_active_paths;
     // holds the path and current widget detector offset
     typedef std::pair<string, int> DescriptorInfo;
     // map of descriptor to DescriptorInfo
-    typedef map<ConnectedDescriptor*, DescriptorInfo>
+    typedef map<ola::io::ConnectedDescriptor*, DescriptorInfo>
       ActiveDescriptors;
     // the descriptors that are in the discovery process
     ActiveDescriptors m_active_descriptors;
 
     // called when we find new widgets of a particular type
-    void UsbProWidgetReady(ConnectedDescriptor *descriptor,
+    void UsbProWidgetReady(ola::io::ConnectedDescriptor *descriptor,
                            const UsbProWidgetInformation *info);
-    void RobeWidgetReady(ConnectedDescriptor *descriptor,
+    void RobeWidgetReady(ola::io::ConnectedDescriptor *descriptor,
                          const RobeWidgetInformation *info);
 
-    void DescriptorFailed(ConnectedDescriptor *descriptor);
-    void PerformNextDiscoveryStep(ConnectedDescriptor *descriptor);
+    void DescriptorFailed(ola::io::ConnectedDescriptor *descriptor);
+    void PerformNextDiscoveryStep(ola::io::ConnectedDescriptor *descriptor);
     void InternalFreeWidget(SerialWidgetInterface *widget);
-    void FreeDescriptor(ConnectedDescriptor *descriptor);
+    void FreeDescriptor(ola::io::ConnectedDescriptor *descriptor);
 
     template<typename WidgetType, typename InfoType>
     void DispatchWidget(WidgetType *widget, const InfoType *information);

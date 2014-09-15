@@ -36,7 +36,7 @@ namespace e131 {
  * An RDM PDU carries a RDMCommand.
  */
 class RDMPDU: public PDU {
-  public:
+ public:
     /**
      * Ownership of the command is transferred here
      */
@@ -60,7 +60,7 @@ class RDMPDU: public PDU {
 
     static void PrependPDU(ola::io::IOStack *stack);
 
-  private:
+ private:
     std::auto_ptr<const ola::rdm::RDMCommand> m_command;
 };
 }  // namespace e131

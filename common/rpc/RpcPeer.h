@@ -29,7 +29,7 @@ namespace ola {
 namespace rpc {
 
 class RpcPeer {
-  public:
+ public:
     explicit RpcPeer(const ola::network::GenericSocketAddress &socket_addr)
       : m_socket_addr(socket_addr) {
     }
@@ -65,7 +65,7 @@ class RpcPeer {
       return out << peer.ToString();
     }
 
-  private:
+ private:
     ola::network::GenericSocketAddress m_socket_addr;
 };
 }  // namespace rpc

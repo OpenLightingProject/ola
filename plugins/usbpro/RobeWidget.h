@@ -42,15 +42,13 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::auto_ptr;
-
 /*
  * A Robe USB Widget implementation.
  */
 class RobeWidgetImpl: public BaseRobeWidget,
                       public ola::rdm::DiscoverableRDMControllerInterface,
                       public ola::rdm::DiscoveryTargetInterface {
-  public:
+ public:
     explicit RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                             const ola::rdm::UID &uid);
     ~RobeWidgetImpl() {}
@@ -82,13 +80,13 @@ class RobeWidgetImpl: public BaseRobeWidget,
 
     static const int DMX_FRAME_DATA_SIZE;
 
-  private:
+ private:
     ola::rdm::RDMCallback *m_rdm_request_callback;
     MuteDeviceCallback *m_mute_callback;
     UnMuteDeviceCallback *m_unmute_callback;
     BranchCallback *m_branch_callback;
     ola::rdm::DiscoveryAgent m_discovery_agent;
-    auto_ptr<Callback0<void> > m_dmx_callback;
+    std::auto_ptr<Callback0<void> > m_dmx_callback;
     DmxBuffer m_buffer;
     const ola::rdm::RDMRequest *m_pending_request;
     const ola::rdm::UID m_uid;
@@ -116,7 +114,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
  */
 class RobeWidget: public SerialWidgetInterface,
                   public ola::rdm::DiscoverableRDMControllerInterface {
-  public:
+ public:
     RobeWidget(ola::io::ConnectedDescriptor *descriptor,
                const ola::rdm::UID &uid,
                unsigned int queue_size = 20);
@@ -160,7 +158,7 @@ class RobeWidget: public SerialWidgetInterface,
     // the tests access the implementation directly.
     friend class ::RobeWidgetTest;
 
-  private:
+ private:
     // we need to control the order of construction & destruction here so these
     // are pointers.
     RobeWidgetImpl *m_impl;

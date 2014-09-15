@@ -131,7 +131,7 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
 
 
 /*
- * This is called when we recieve universe results from the client
+ * This is called when we receive universe results from the client
  * @param list_ids_only show ids only
  * @param universes a vector of OlaUniverses
  */

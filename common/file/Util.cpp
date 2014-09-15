@@ -30,6 +30,9 @@
 namespace ola {
 namespace file {
 
+using std::string;
+using std::vector;
+
 /**
  * Find all files in a directory that match the given prefix.
  * @returns a vector with the absolute path of the matching files.
@@ -74,6 +77,14 @@ void FindMatchingFiles(const string &directory,
     readdir_r(dp, &dir_ent, &dir_ent_p);
   }
   closedir(dp);
+}
+
+string FilenameFromPath(const string &path) {
+  string::size_type last_path_sep = string::npos;
+  last_path_sep = path.find_last_of(PATH_SEPARATOR);
+  if (last_path_sep == string::npos)
+    return "";
+  return path.substr(last_path_sep + 1);  // Don't return the path sep itself
 }
 }  // namespace file
 }  // namespace ola

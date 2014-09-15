@@ -42,7 +42,7 @@ class FieldDescriptorVisitor;
  * Describes a field, which may be a group of sub fields.
  */
 class FieldDescriptorInterface {
-  public:
+ public:
     virtual ~FieldDescriptorInterface() {}
 
     // Returns the name of this field
@@ -67,7 +67,7 @@ class FieldDescriptorInterface {
  * The base implementation of a field.
  */
 class FieldDescriptor: public FieldDescriptorInterface {
-  public:
+ public:
     explicit FieldDescriptor(const string &name)
         : m_name(name) {
     }
@@ -76,7 +76,7 @@ class FieldDescriptor: public FieldDescriptorInterface {
     // Returns the name of this field
     const string& Name() const { return m_name; }
 
-  private:
+ private:
     string m_name;
 };
 
@@ -85,7 +85,7 @@ class FieldDescriptor: public FieldDescriptorInterface {
  * A FieldDescriptor that represents a bool
  */
 class BoolFieldDescriptor: public FieldDescriptor {
-  public:
+ public:
     explicit BoolFieldDescriptor(const string &name)
         : FieldDescriptor(name) {
     }
@@ -104,7 +104,7 @@ class BoolFieldDescriptor: public FieldDescriptor {
  * A FieldDescriptor that represents a IPv4 Address
  */
 class IPV4FieldDescriptor: public FieldDescriptor {
-  public:
+ public:
     explicit IPV4FieldDescriptor(const string &name)
         : FieldDescriptor(name) {
     }
@@ -123,7 +123,7 @@ class IPV4FieldDescriptor: public FieldDescriptor {
  * A FieldDescriptor that represents a MAC Address
  */
 class MACFieldDescriptor: public FieldDescriptor {
-  public:
+ public:
     explicit MACFieldDescriptor(const string &name)
         : FieldDescriptor(name) {
     }
@@ -142,7 +142,7 @@ class MACFieldDescriptor: public FieldDescriptor {
  * A FieldDescriptor that represents a UID
  */
 class UIDFieldDescriptor: public FieldDescriptor {
-  public:
+ public:
     explicit UIDFieldDescriptor(const string &name)
         : FieldDescriptor(name) {
     }
@@ -161,7 +161,7 @@ class UIDFieldDescriptor: public FieldDescriptor {
  * A FieldDescriptor that represents a string
  */
 class StringFieldDescriptor: public FieldDescriptor {
-  public:
+ public:
     StringFieldDescriptor(const string &name,
                           uint8_t min_size,
                           uint8_t max_size)
@@ -179,7 +179,7 @@ class StringFieldDescriptor: public FieldDescriptor {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     uint8_t m_min_size, m_max_size;
 };
 
@@ -191,7 +191,7 @@ class StringFieldDescriptor: public FieldDescriptor {
  */
 template <typename type>
 class IntegerFieldDescriptor: public FieldDescriptor {
-  public:
+ public:
     typedef std::pair<type, type> Interval;
     typedef vector<std::pair<type, type> > IntervalVector;
     typedef std::map<string, type> LabeledValues;
@@ -259,7 +259,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
       visitor->Visit(this);
     }
 
-  private:
+ private:
     bool m_little_endian;
     int8_t m_multipler;
     IntervalVector m_intervals;
@@ -321,7 +321,7 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
  * (true, "foo") & (true, 1000) are the blocks.
  */
 class FieldDescriptorGroup: public FieldDescriptor {
-  public:
+ public:
     static const int16_t UNLIMITED_BLOCKS;
 
     FieldDescriptorGroup(const string &name,
@@ -382,10 +382,10 @@ class FieldDescriptorGroup: public FieldDescriptor {
 
     virtual void Accept(FieldDescriptorVisitor *visitor) const;
 
-  protected:
+ protected:
     vector<const class FieldDescriptor *> m_fields;
 
-  private:
+ private:
     uint16_t m_min_blocks;
     int16_t m_max_blocks;
     mutable bool m_populated;
@@ -400,7 +400,7 @@ class FieldDescriptorGroup: public FieldDescriptor {
  * A descriptor is a group of fields which can't be repeated
  */
 class Descriptor: public FieldDescriptorGroup {
-  public:
+ public:
     Descriptor(const string &name,
                const vector<const FieldDescriptor*> &fields)
         : FieldDescriptorGroup(name, fields, 1, 1) {}

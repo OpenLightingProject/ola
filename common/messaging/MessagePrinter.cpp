@@ -21,6 +21,7 @@
 
 #include <ola/messaging/Message.h>
 #include <ola/messaging/MessagePrinter.h>
+#include <ola/StringUtils.h>
 #include <iostream>
 #include <string>
 
@@ -74,7 +75,7 @@ void GenericMessagePrinter::Visit(const UIDMessageField *message) {
 void GenericMessagePrinter::Visit(const StringMessageField *message) {
   Stream() << string(m_indent, ' ') <<
     TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << message->Value() << endl;
+    << EncodeString(message->Value()) << endl;
 }
 
 

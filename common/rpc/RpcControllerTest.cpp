@@ -35,10 +35,10 @@ class RpcControllerTest : public CppUnit::TestFixture {
   CPPUNIT_TEST(testFailed);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testFailed();
 
-  private:
+ private:
     void Callback();
     bool m_callback_run;
 };

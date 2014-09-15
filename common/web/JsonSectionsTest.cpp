@@ -48,7 +48,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSection);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testStringItem();
     void testUIntItem();
     void testSelectItem();
@@ -56,7 +56,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
     void testHiddenItem();
     void testSection();
 
-  private:
+ private:
     string ConvertToString(const GenericItem &item);
 };
 
@@ -100,7 +100,7 @@ void JsonSectionsTest::testStringItem() {
   item3.SetButtonText("Action\n");
   string expected3 =
     "{\n"
-    "  \"button\": \"Action\\n\",\n"
+    "  \"button\": \"Action\\\\x0a\",\n"
     "  \"description\": \"Foo\\\" bar\",\n"
     "  \"type\": \"string\",\n"
     "  \"value\": \"baz\\\\\"\n"
@@ -252,7 +252,7 @@ void JsonSectionsTest::testSection() {
     "      \"description\": \"\",\n"
     "      \"id\": \"baz\",\n"
     "      \"type\": \"hidden\",\n"
-    "      \"value\": \"bar\\r\"\n"
+    "      \"value\": \"bar\\\\x0d\"\n"
     "    }\n"
     "  ],\n"
     "  \"refresh\": false,\n"

@@ -31,17 +31,15 @@
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
 
-
-
 using ola::plugin::usbpro::DmxterWidget;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::UID;
+using std::auto_ptr;
 using std::string;
 using std::vector;
-
 
 class DmxterWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(DmxterWidgetTest);
@@ -54,37 +52,37 @@ class DmxterWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testShutdown);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
-    void setUp();
+ public:
+  void setUp();
 
-    void testTod();
-    void testSendRDMRequest();
-    void testSendRDMMute();
-    void testSendRDMDUB();
-    void testErrorCodes();
-    void testErrorConditions();
-    void testShutdown();
+  void testTod();
+  void testSendRDMRequest();
+  void testSendRDMMute();
+  void testSendRDMDUB();
+  void testErrorCodes();
+  void testErrorConditions();
+  void testShutdown();
 
-  private:
-    auto_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
-    unsigned int m_tod_counter;
+ private:
+  auto_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
+  unsigned int m_tod_counter;
 
-    void Terminate() { m_ss.Terminate(); }
-    void ValidateTod(const ola::rdm::UIDSet &uids);
-    void ValidateResponse(ola::rdm::rdm_response_code code,
-                          const ola::rdm::RDMResponse *response,
-                          const vector<string> &packets);
-    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
-                        vector<string> expected_packets,
-                        ola::rdm::rdm_response_code code,
+  void Terminate() { m_ss.Terminate(); }
+  void ValidateTod(const ola::rdm::UIDSet &uids);
+  void ValidateResponse(ola::rdm::rdm_response_code code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
-    const RDMRequest *NewRequest(const UID &source,
-                                 const UID &destination,
-                                 const uint8_t *data,
-                                 unsigned int length);
+  void ValidateStatus(ola::rdm::rdm_response_code expected_code,
+                      vector<string> expected_packets,
+                      ola::rdm::rdm_response_code code,
+                      const ola::rdm::RDMResponse *response,
+                      const vector<string> &packets);
+  const RDMRequest *NewRequest(const UID &source,
+                               const UID &destination,
+                               const uint8_t *data,
+                               unsigned int length);
 
-    static const uint8_t TEST_RDM_DATA[];
+  static const uint8_t TEST_RDM_DATA[];
 };
 
 

@@ -53,13 +53,13 @@ typedef struct {
  * A class that configures Artnet devices
  */
 class ArtnetConfigurator: public OlaConfigurator {
-  public:
+ public:
     explicit ArtnetConfigurator(const options &opts):
       OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_ARTNET),
       m_options(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();
-  private:
+ private:
     void SendOptionRequest();
     void SendNodeListRequest();
     void DisplayOptions(const ola::plugin::artnet::OptionsReply &reply);

@@ -39,7 +39,7 @@ namespace osc {
  * template, as well as the current value.
  */
 class OSCInputPort: public BasicInputPort {
-  public:
+ public:
     /**
      * Create an OSCInputPort.
      * @param device the parent device
@@ -52,7 +52,7 @@ class OSCInputPort: public BasicInputPort {
                  unsigned int port_id,
                  PluginAdaptor *plugin_adaptor,
                  OSCNode *node,
-                 const string &address);
+                 const std::string &address);
 
     /**
      * Just return our DmxBuffer.
@@ -68,13 +68,13 @@ class OSCInputPort: public BasicInputPort {
     /**
      * Return the actual description
      */
-    string Description() const { return m_actual_address; }
+    std::string Description() const { return m_actual_address; }
 
-  private:
+ private:
     OSCNode *m_node;
     DmxBuffer m_buffer;
     const string m_address;
-    string m_actual_address;
+    std::string m_actual_address;
 
     /**
      * This is called when we receive new DMX values via OSC.
@@ -87,7 +87,7 @@ class OSCInputPort: public BasicInputPort {
  * The Output Port class, for sending DMX via OSC.
  */
 class OSCOutputPort: public BasicOutputPort {
-  public:
+ public:
     /**
      * Create an OSCOutputPort.
      * @param device the parent device
@@ -98,7 +98,7 @@ class OSCOutputPort: public BasicOutputPort {
     OSCOutputPort(OSCDevice *device,
                   unsigned int port_id,
                   OSCNode *node,
-                  const vector<OSCTarget> &targets,
+                  const std::vector<OSCTarget> &targets,
                   OSCNode::DataFormat data_format);
     ~OSCOutputPort();
 
@@ -120,13 +120,13 @@ class OSCOutputPort: public BasicOutputPort {
     /**
      * Return the description for this port
      */
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
-  private:
+ private:
     OSCNode *m_node;
     const vector<OSCTarget> m_template_targets;
-    vector<OSCTarget> m_registered_targets;
-    string m_description;
+    std::vector<OSCTarget> m_registered_targets;
+    std::string m_description;
     OSCNode::DataFormat m_data_format;
 
     void RemoveTargets();

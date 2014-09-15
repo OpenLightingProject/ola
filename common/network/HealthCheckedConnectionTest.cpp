@@ -39,7 +39,7 @@ using ola::io::SelectServer;
 
 
 class MockHealthCheckedConnection: public HealthCheckedConnection {
-  public:
+ public:
     struct Options {
       uint8_t end_after;  // terminate after this many heartbeats
       uint8_t send_every;  // don't send every N heartbeats
@@ -99,7 +99,7 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
 
     bool ChannelOk() const { return m_channel_ok; }
 
-  private:
+ private:
     ola::io::ConnectedDescriptor *m_descriptor;
     SelectServer *m_ss;
     Options m_options;
@@ -111,7 +111,7 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
 
 
 class HealthCheckedConnectionTest: public CppUnit::TestFixture {
-  public:
+ public:
     HealthCheckedConnectionTest()
         : CppUnit::TestFixture(),
           m_ss(NULL, &m_clock),
@@ -125,7 +125,7 @@ class HealthCheckedConnectionTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPauseAndResume);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown() {}
     void testSimpleChannel();
@@ -143,7 +143,7 @@ class HealthCheckedConnectionTest: public CppUnit::TestFixture {
       m_ss.AddReadDescriptor(&socket);
     }
 
-  private:
+ private:
     MockClock m_clock;
     SelectServer m_ss;
     LoopbackDescriptor socket;
@@ -163,7 +163,7 @@ void HealthCheckedConnectionTest::setUp() {
 
 
 /*
- * Check that the channel stays up when all heartbeats are recieved.
+ * Check that the channel stays up when all heartbeats are received.
  */
 void HealthCheckedConnectionTest::testSimpleChannel() {
   options.validate_heartbeat = true;

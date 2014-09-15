@@ -50,7 +50,7 @@ using std::string;
 using std::vector;
 
 class PacketBuilderTest: public CppUnit::TestFixture {
-  public:
+ public:
     PacketBuilderTest() : output(&ioqueue) {}
 
     CPPUNIT_TEST_SUITE(PacketBuilderTest);
@@ -77,13 +77,13 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildServiceAck();
     void testBuildError();
 
-  public:
+ public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
       xid = 0x1234;
     }
 
-  private:
+ private:
     IOQueue ioqueue;
     BigEndianOutputStream output;
     ola::slp::xid_t xid;

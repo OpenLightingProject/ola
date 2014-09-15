@@ -29,6 +29,7 @@
 #include <ola/util/Backoff.h>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "olad/DiscoveryAgent.h"
 
@@ -39,7 +40,7 @@ namespace ola {
  * client library.
  */
 class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
-  public:
+ public:
     AvahiDiscoveryAgent();
     ~AvahiDiscoveryAgent();
 
@@ -67,22 +68,31 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
      */
     void ReconnectTimeout();
 
-  private:
+ private:
     // The structure used to track services.
     struct ServiceEntry : public RegisterOptions {
+     public:
       const std::string service_name;
       // This may differ from the service name if there was a collision.
       std::string actual_service_name;
-      const std::string type;
       const uint16_t port;
       AvahiEntryGroup *group;
       AvahiEntryGroupState state;
       struct EntryGroupParams *params;
 
       ServiceEntry(const std::string &service_name,
-                   const std::string &type,
+                   const std::string &type_spec,
                    uint16_t port,
                    const RegisterOptions &options);
+
+      std::string key() const;
+      const std::string &type() const { return m_type; }
+      const std::vector<std::string> sub_types() const { return m_sub_types; }
+
+     private:
+      std::string m_type_spec;   // type[,subtype]
+      std::string m_type;
+      std::vector<std::string> m_sub_types;
     };
 
     typedef std::map<std::string, ServiceEntry*> Services;
@@ -100,10 +110,8 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
     void SetUpReconnectTimeout();
     bool RenameAndRegister(ServiceEntry *service);
 
-    std::string MakeServiceKey(const std::string &service_name,
-                               const std::string &type);
-    std::string ClientStateToString(AvahiClientState state);
-    std::string GroupStateToString(AvahiEntryGroupState state);
+    static std::string ClientStateToString(AvahiClientState state);
+    static std::string GroupStateToString(AvahiEntryGroupState state);
 
     DISALLOW_COPY_AND_ASSIGN(AvahiDiscoveryAgent);
 };

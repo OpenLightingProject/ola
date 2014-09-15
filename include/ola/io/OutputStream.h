@@ -32,7 +32,7 @@ namespace io {
  * Similar to ostream.
  */
 class OutputStreamInterface {
-  public:
+ public:
     virtual ~OutputStreamInterface() {}
 
     // Append some data to this OutputQueue
@@ -51,7 +51,7 @@ class OutputStreamInterface {
  * OutputStream. This writes data to an OutputBuffer
  */
 class OutputStream: public OutputStreamInterface {
-  public:
+ public:
     // Ownership of the OutputBuffer is not transferred.
     explicit OutputStream(OutputBufferInterface *buffer)
         : m_buffer(buffer) {
@@ -70,12 +70,13 @@ class OutputStream: public OutputStreamInterface {
     OutputStream& operator<<(int16_t val) { return Write(val); }
     OutputStream& operator<<(int32_t val) { return Write(val); }
 
-  private:
+ private:
     OutputBufferInterface *m_buffer;
 
     template<typename T>
     OutputStream& Write(const T &val) {
-      m_buffer->Write(reinterpret_cast<const uint8_t*>(&val), sizeof(val));
+      m_buffer->Write(reinterpret_cast<const uint8_t*>(&val),
+                      static_cast<unsigned int>(sizeof(val)));
       return *this;
     }
 

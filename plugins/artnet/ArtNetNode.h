@@ -361,7 +361,7 @@ class ArtNetNodeImplRDMWrapper
 
   void RunFullDiscovery(RDMDiscoveryCallback *callback) {
     m_impl->RunFullDiscovery(m_port_id, callback);
-  };
+  }
 
   void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
     m_impl->RunIncrementalDiscovery(m_port_id, callback);
@@ -467,7 +467,7 @@ class ArtNetNode {
                       ola::rdm::RDMCallback *on_complete);
 
   /*
-   * This handler is called if we recieve ArtTod packets and a discovery
+   * This handler is called if we receive ArtTod packets and a discovery
    * process isn't running.
    */
   bool SetUnsolicitedUIDSetHandler(

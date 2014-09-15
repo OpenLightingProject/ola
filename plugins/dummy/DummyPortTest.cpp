@@ -51,9 +51,8 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::min;
 
-
 class MockDummyPort: public DummyPort {
-  public:
+ public:
     MockDummyPort()
       : DummyPort(NULL, DummyPort::Options(), 0) {
     }
@@ -74,82 +73,79 @@ class DummyPortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSlotInfo);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
-    DummyPortTest():
-      TestFixture(),
-      m_expected_uid(0x7a70, 0xffffff00),
-      m_test_source(1, 2) {
-        ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
+ public:
+  DummyPortTest():
+    TestFixture(),
+    m_expected_uid(0x7a70, 0xffffff00),
+    m_test_source(1, 2) {
+      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  }
 
-    void setUp() {
-      m_expected_response = NULL;
-      m_got_uids = false;
-    }
-    void HandleRDMResponse(ola::rdm::rdm_response_code code,
-                           const RDMResponse *response,
-                           const vector<string> &packets);
-    void SetExpectedResponse(ola::rdm::rdm_response_code code,
-                             const RDMResponse *response);
-    void Verify() { OLA_ASSERT_FALSE(m_expected_response); }
+  void setUp() {
+    m_expected_response = NULL;
+    m_got_uids = false;
+  }
+  void HandleRDMResponse(ola::rdm::rdm_response_code code,
+                         const RDMResponse *response,
+                         const vector<string> &packets);
+  void SetExpectedResponse(ola::rdm::rdm_response_code code,
+                           const RDMResponse *response);
+  void Verify() { OLA_ASSERT_FALSE(m_expected_response); }
 
-    void testRDMDiscovery();
-    void testUnknownPid();
-    void testSupportedParams();
-    void testDeviceInfo();
-    void testSoftwareVersion();
-    void testDmxAddress();
-    void testIdentifyDevice();
-    void testParamDescription();
-    void testOlaManufacturerPidCodeVersion();
-    void testSlotInfo();
+  void testRDMDiscovery();
+  void testUnknownPid();
+  void testSupportedParams();
+  void testDeviceInfo();
+  void testSoftwareVersion();
+  void testDmxAddress();
+  void testIdentifyDevice();
+  void testParamDescription();
+  void testOlaManufacturerPidCodeVersion();
+  void testSlotInfo();
 
+ private:
+  UID m_expected_uid;
+  UID m_test_source;
+  MockDummyPort m_port;
+  ola::rdm::rdm_response_code m_expected_code;
+  const RDMResponse *m_expected_response;
+  bool m_got_uids;
 
-  private:
-    UID m_expected_uid;
-    UID m_test_source;
-    MockDummyPort m_port;
-    ola::rdm::rdm_response_code m_expected_code;
-    const RDMResponse *m_expected_response;
-    bool m_got_uids;
-
-    void VerifyUIDs(const UIDSet &uids);
-    void checkSubDeviceOutOfRange(uint16_t pid);
-    void checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid) {
-        checkSubDeviceOutOfRange(static_cast<uint16_t>(pid));
-    };
-    void checkSubDeviceOutOfRange(ola::rdm::rdm_ola_manufacturer_pid pid) {
-        checkSubDeviceOutOfRange(static_cast<uint16_t>(pid));
-    };
-    void checkMalformedRequest(uint16_t pid,
-        ola::rdm::rdm_nack_reason expected_response =
-        ola::rdm::NR_FORMAT_ERROR);
-    void checkMalformedRequest(ola::rdm::rdm_pid pid,
-        ola::rdm::rdm_nack_reason expected_response =
-        ola::rdm::NR_FORMAT_ERROR) {
-            checkMalformedRequest(static_cast<uint16_t>(pid),
-                                  expected_response);
-        };
-    void checkMalformedRequest(ola::rdm::rdm_ola_manufacturer_pid pid,
-        ola::rdm::rdm_nack_reason expected_response =
-        ola::rdm::NR_FORMAT_ERROR) {
-            checkMalformedRequest(static_cast<uint16_t>(pid),
-                                  expected_response);
-        };
-    void checkSetRequest(uint16_t pid);
-    void checkSetRequest(ola::rdm::rdm_pid pid) {
-        checkSetRequest(static_cast<uint16_t>(pid));
-    };
-    void checkSetRequest(ola::rdm::rdm_ola_manufacturer_pid pid) {
-        checkSetRequest(static_cast<uint16_t>(pid));
-    };
-    void checkNoBroadcastResponse(uint16_t pid);
-    void checkNoBroadcastResponse(ola::rdm::rdm_pid pid) {
-        checkNoBroadcastResponse(static_cast<uint16_t>(pid));
-    };
-    void checkNoBroadcastResponse(ola::rdm::rdm_ola_manufacturer_pid pid) {
-        checkNoBroadcastResponse(static_cast<uint16_t>(pid));
-    };
+  void VerifyUIDs(const UIDSet &uids);
+  void checkSubDeviceOutOfRange(uint16_t pid);
+  void checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid) {
+    checkSubDeviceOutOfRange(static_cast<uint16_t>(pid));
+  }
+  void checkSubDeviceOutOfRange(ola::rdm::rdm_ola_manufacturer_pid pid) {
+    checkSubDeviceOutOfRange(static_cast<uint16_t>(pid));
+  }
+  void checkMalformedRequest(uint16_t pid,
+                             ola::rdm::rdm_nack_reason expected_response =
+                             ola::rdm::NR_FORMAT_ERROR);
+  void checkMalformedRequest(ola::rdm::rdm_pid pid,
+                             ola::rdm::rdm_nack_reason expected_response =
+                             ola::rdm::NR_FORMAT_ERROR) {
+    checkMalformedRequest(static_cast<uint16_t>(pid), expected_response);
+  }
+  void checkMalformedRequest(ola::rdm::rdm_ola_manufacturer_pid pid,
+                             ola::rdm::rdm_nack_reason expected_response =
+                             ola::rdm::NR_FORMAT_ERROR) {
+    checkMalformedRequest(static_cast<uint16_t>(pid), expected_response);
+  }
+  void checkSetRequest(uint16_t pid);
+  void checkSetRequest(ola::rdm::rdm_pid pid) {
+    checkSetRequest(static_cast<uint16_t>(pid));
+  }
+  void checkSetRequest(ola::rdm::rdm_ola_manufacturer_pid pid) {
+    checkSetRequest(static_cast<uint16_t>(pid));
+  }
+  void checkNoBroadcastResponse(uint16_t pid);
+  void checkNoBroadcastResponse(ola::rdm::rdm_pid pid) {
+    checkNoBroadcastResponse(static_cast<uint16_t>(pid));
+  }
+  void checkNoBroadcastResponse(ola::rdm::rdm_ola_manufacturer_pid pid) {
+    checkNoBroadcastResponse(static_cast<uint16_t>(pid));
+  }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
@@ -239,6 +235,9 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_SLOT_INFO,
     ola::rdm::PID_SLOT_DESCRIPTION,
     ola::rdm::PID_DEFAULT_SLOT_VALUE,
+    ola::rdm::PID_SENSOR_DEFINITION,
+    ola::rdm::PID_SENSOR_VALUE,
+    ola::rdm::PID_RECORD_SENSORS,
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
     ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
@@ -283,18 +282,19 @@ void DummyPortTest::testDeviceInfo() {
   ola::rdm::DeviceDescriptor device_descriptor;
   device_descriptor.protocol_version_high = 1;
   device_descriptor.protocol_version_low = 0;
-  device_descriptor.device_model = HostToNetwork(static_cast<uint16_t>(1));
+  device_descriptor.device_model = HostToNetwork(
+      static_cast<uint16_t>(ola::rdm::OLA_DUMMY_DEVICE_MODEL));
   device_descriptor.product_category = HostToNetwork(
       static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
-  device_descriptor.software_version = HostToNetwork(static_cast<uint32_t>(2));
+  device_descriptor.software_version = HostToNetwork(static_cast<uint32_t>(3));
   device_descriptor.dmx_footprint =
     HostToNetwork(static_cast<uint16_t>(5));
   device_descriptor.current_personality = 2;
-  device_descriptor.personaility_count = 4;
+  device_descriptor.personality_count = 4;
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
-  device_descriptor.sensor_count = 0;
+  device_descriptor.sensor_count = 3;
 
   RDMResponse *response = GetResponseFromData(
     request,

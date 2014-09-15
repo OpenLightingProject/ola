@@ -28,6 +28,7 @@ import struct
 from ExpectedResults import *
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
+from TestHelpers import ContainsUnprintable
 from collections import deque
 from ola import PidStore
 from ola.DUBDecoder import DecodeResponse
@@ -70,8 +71,28 @@ class GetMixin(object):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
+class GetStringMixin(GetMixin):
+  """GET Mixin for an optional string PID. Verify EXPECTED_FIELD is in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+  """
+  def VerifyResult(self, response, fields):
+    if response.WasAcked() and self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+
+    if not response.WasAcked():
+      return
+
+    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           fields[self.EXPECTED_FIELD].encode('string-escape')))
+
 class GetRequiredMixin(object):
-  """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
+  """GET Mixin for a required PID. Verify EXPECTED_FIELD is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
@@ -84,6 +105,26 @@ class GetRequiredMixin(object):
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+
+class GetRequiredStringMixin(GetRequiredMixin):
+  """GET Mixin for a required string PID. Verify EXPECTED_FIELD is in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+  """
+  def VerifyResult(self, response, fields):
+    if response.WasAcked() and self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+
+    if not response.WasAcked():
+      return
+
+    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           fields[self.EXPECTED_FIELD].encode('string-escape')))
 
 class GetWithDataMixin(object):
   """GET a PID with junk param data."""
@@ -109,8 +150,11 @@ class AllSubDevicesGetMixin(object):
 
   def Test(self):
     # E1.20, section 9.2.2
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    results = [self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE)]
+    # Some devices check the PID before the sub device.
+    if not self.PidSupported():
+      results.append(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
+    self.AddExpectedResults(results)
     self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, self.DATA)
 
 # Generic SET Mixins
@@ -208,7 +252,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
   """Send a SET device label to a broadcast or vendorcast uid."""
   def Test(self):
     if not self.Property('set_device_label_supported'):
-      self.SetNotRun(' Previous set label was nacked')
+      self.SetNotRun('Previous set label was nacked')
       self.Stop()
       return
 
@@ -389,12 +433,12 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
     footprint = self.Property('dmx_footprint')
     current_address = self.Property('dmx_address')
     if footprint == 0 or current_address == 0xffff:
-      self.SetNotRun(" Device doesn't use a DMX address")
+      self.SetNotRun("Device doesn't use a DMX address")
       self.Stop()
       return
 
     if not self.Property('set_dmx_address_supported'):
-      self.SetNotRun(' Previous set start address was nacked')
+      self.SetNotRun('Previous set start address was nacked')
       self.Stop()
       return
 
@@ -475,7 +519,7 @@ class SetUndefinedSensorValues(object):
       # loop and get all values
       self._DoAction()
     else:
-      self.SetNotRun(' All sensors declared')
+      self.SetNotRun('All sensors declared')
       self.Stop()
       return
 
@@ -799,7 +843,8 @@ class GetSettingDescriptionsMixin(object):
   """Perform a GET for each setting in the range 0 .. NumberOfSettings().
 
     Subclasses must define EXPECTED_FIELD, which is the field to validate the
-    index against.
+    index against and DESCRIPTION_FIELD, which is the field to check for
+    unprintable characters.
   """
   CATEGORY = TestCategory.DIMMER_SETTINGS
 
@@ -836,3 +881,12 @@ class GetSettingDescriptionsMixin(object):
       self.AddWarning(
           '%s mismatch, sent %d, received %d' %
           (self.pid, self.current_item, fields[self.EXPECTED_FIELD]))
+
+    if ContainsUnprintable(fields[self.DESCRIPTION_FIELD]):
+      self.AddAdvisory(
+          '%s field in %s for %s %d contains unprintable characters, was %s' %
+          (self.DESCRIPTION_FIELD.capitalize(),
+           self.PID,
+           self.DESCRIPTION_FIELD,
+           self.current_item,
+           fields[self.DESCRIPTION_FIELD].encode('string-escape')))

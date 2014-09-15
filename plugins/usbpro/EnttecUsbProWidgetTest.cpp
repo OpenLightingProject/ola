@@ -62,7 +62,7 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testBranch);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
 
     void testParams();
@@ -75,7 +75,7 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
     void testUnMuteAll();
     void testBranch();
 
-  private:
+ private:
     auto_ptr<EnttecUsbProWidget> m_widget;
     uint8_t m_transaction_number;
     ola::rdm::rdm_response_code m_received_code;
@@ -139,11 +139,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(EnttecUsbProWidgetTest);
 
 void EnttecUsbProWidgetTest::setUp() {
   CommonWidgetTest::setUp();
-  m_widget.reset(
-      new EnttecUsbProWidget(
-          &m_descriptor,
-          EnttecUsbProWidget::EnttecUsbProWidgetOptions(
-            EnttecUsbProWidget::ENTTEC_ESTA_ID, 1)));
+  EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
+      EnttecUsbProWidget::ENTTEC_ESTA_ID, 1);
+  options.enable_rdm = true;
+  m_widget.reset(new EnttecUsbProWidget(&m_descriptor, options));
 
   m_transaction_number = 0;
   m_got_dmx = false;
@@ -376,7 +375,7 @@ void EnttecUsbProWidgetTest::testParams() {
 
 
 /**
- * Check that recieving DMX works.
+ * Check that receiving DMX works.
  */
 void EnttecUsbProWidgetTest::testReceiveDMX() {
   EnttecPort *port = m_widget->GetPort(0);

@@ -37,7 +37,7 @@ bool SendData(ola::OlaCallbackClientWrapper *wrapper) {
     wrapper->GetSelectServer()->Terminate();
   }
   return true;
-};
+}
 
 int main(int, char *[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);

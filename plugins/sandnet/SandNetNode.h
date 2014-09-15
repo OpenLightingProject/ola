@@ -41,7 +41,7 @@ using ola::network::IPV4Address;
 using ola::network::UDPSocket;
 
 class SandNetNode {
-  public:
+ public:
     typedef enum {
       SANDNET_PORT_MODE_DISABLED,
       SANDNET_PORT_MODE_OUT,
@@ -76,7 +76,7 @@ class SandNetNode {
     bool SendAdvertisement();
     bool SendDMX(uint8_t port_id, const DmxBuffer &buffer);
 
-  private:
+ private:
     typedef struct {
       uint8_t group;
       uint8_t universe;

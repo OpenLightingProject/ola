@@ -61,12 +61,12 @@ using std::string;
 
 
 class SLPServerDATest: public CppUnit::TestFixture {
-  public:
+ public:
     SLPServerDATest()
         : m_helper(&m_udp_socket) {
     }
 
-  public:
+ public:
     CPPUNIT_TEST_SUITE(SLPServerDATest);
     CPPUNIT_TEST(testConfiguredScopes);
     CPPUNIT_TEST(testDumpStore);
@@ -95,7 +95,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
     void testRemoteServiceTimeout();
     void testServiceTypeRequests();
 
-  public:
+ public:
     void setUp() {
       ola::math::InitRandom();
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -108,7 +108,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
       m_helper.RunOnce();
     }
 
-  private:
+ private:
     typedef set<IPV4Address> PRList;
 
     MockUDPSocket m_udp_socket;

@@ -43,7 +43,7 @@ namespace rdm {
  */
 class DiscoverableRDMControllerAdaptor
     : public DiscoverableRDMControllerInterface {
-  public:
+ public:
     // Ownership is not transferred.
     DiscoverableRDMControllerAdaptor(const UID &uid,
                                      RDMControllerInterface *interface)
@@ -61,7 +61,7 @@ class DiscoverableRDMControllerAdaptor
       RunDiscovery(callback);
     }
 
-  private:
+ private:
     const UID m_uid;
     RDMControllerInterface *m_interface;
 

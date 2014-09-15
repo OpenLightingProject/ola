@@ -40,7 +40,7 @@ class E131InputPort;
 class E131OutputPort;
 
 class E131Device: public ola::Device {
-  public:
+ public:
     struct E131DeviceOptions {
       unsigned int input_ports;
       unsigned int output_ports;
@@ -72,12 +72,12 @@ class E131Device: public ola::Device {
                    string *response,
                    ConfigureCallback *done);
 
-  protected:
+ protected:
     bool StartHook();
     void PrePortStop();
     void PostPortStop();
 
-  private:
+ private:
     class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
     bool m_use_rev2;

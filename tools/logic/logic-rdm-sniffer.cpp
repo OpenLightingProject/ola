@@ -78,16 +78,15 @@ using ola::NewSingleCallback;
 
 
 DEFINE_bool(display_asc, false,
-            "Display non-RDM alternate start code frames");
-DEFINE_bool(summarize_rdm, false,
-            "Print single-line versions of the RDM messages");
-DEFINE_bool(timestamp, false, "Include timestamps");
-DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames");
+            "Display non-RDM alternate start code frames.");
+DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
-              "Only display the first N DMX slots");
-DEFINE_uint32(sample_rate, 4000000, "Sample rate in Hz");
+              "Only display the first N slots of DMX data.");
+DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
 DEFINE_string(pid_location, PID_DATA_DIR,
-              "The directory containing the PID definitions");
+              "The directory containing the PID definitions.");
 
 void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
                 void *user_data);
@@ -95,7 +94,7 @@ void OnError(U64 device_id, void *user_data);
 void ProcessData(U8 *data, uint32_t data_length);
 
 class LogicReader {
-  public:
+ public:
     explicit LogicReader(SelectServer *ss, unsigned int sample_rate)
       : m_sample_rate(sample_rate),
         m_device_id(0),
@@ -114,11 +113,16 @@ class LogicReader {
 
     void Stop();
 
-  private:
+    bool IsConnected() const {
+      MutexLocker lock(&m_mu);
+      return m_logic != NULL;
+    }
+
+ private:
     const unsigned int m_sample_rate;
     U64 m_device_id;  // GUARDED_BY(mu_);
     LogicInterface *m_logic;  // GUARDED_BY(mu_);
-    Mutex m_mu;
+    mutable Mutex m_mu;
     SelectServer *m_ss;
     DMXSignalProcessor m_signal_processor;
     PidStoreHelper m_pid_helper;
@@ -268,10 +272,10 @@ void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
   auto_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(data), length));
   if (command.get()) {
-    if (!FLAGS_summarize_rdm)
+    if (FLAGS_full_rdm)
       cout << "---------------------------------------" << endl;
 
-    command->Print(&m_command_printer, !FLAGS_summarize_rdm, true);
+    command->Print(&m_command_printer, FLAGS_full_rdm, true);
   } else {
     DisplayRawData(data, length);
   }
@@ -334,6 +338,13 @@ void OnError(U64 device_id, void *user_data) {
   (void) user_data;
 }
 
+void DisplayReminder(LogicReader *reader) {
+  if (!reader->IsConnected()) {
+    cout << "No devices found, maybe you should check the permissions "
+         << "and/or the cable?" << endl;
+  }
+}
+
 /*
  * Main.
  */
@@ -351,6 +362,7 @@ int main(int argc, char *argv[]) {
   DevicesManagerInterface::BeginConnect();
 
   OLA_INFO << "Running...";
+  ss.RegisterSingleTimeout(1000, NewSingleCallback(DisplayReminder, &reader));
   ss.Run();
   reader.Stop();
   return ola::EXIT_OK;

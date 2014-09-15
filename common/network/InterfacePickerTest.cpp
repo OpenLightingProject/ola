@@ -47,7 +47,7 @@ class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testChooseInterface);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testGetInterfaces();
     void testGetLoopbackInterfaces();
     void testChooseInterface();
@@ -59,7 +59,7 @@ class InterfacePickerTest: public CppUnit::TestFixture {
 
 
 class MockPicker: public InterfacePicker {
-  public:
+ public:
     explicit MockPicker(const vector<Interface> &interfaces)
         : InterfacePicker(),
           m_interfaces(interfaces) {}
@@ -68,7 +68,7 @@ class MockPicker: public InterfacePicker {
       return m_interfaces;
       (void) loopback;
     }
-  private:
+ private:
     const vector<Interface> &m_interfaces;
 };
 

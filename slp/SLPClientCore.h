@@ -44,7 +44,7 @@ using ola::rpc::RpcController;
 using ola::rpc::RpcChannel;
 
 class SLPClientCore {
-  public:
+ public:
     explicit SLPClientCore(ConnectedDescriptor *descriptor);
     ~SLPClientCore();
 
@@ -123,7 +123,7 @@ class SLPClientCore {
 
     void HandleServerInfo(server_info_arg *args);
 
-  private:
+ private:
     ConnectedDescriptor *m_descriptor;
     RpcChannel *m_channel;
     ola::slp::proto::SLPService_Stub *m_stub;

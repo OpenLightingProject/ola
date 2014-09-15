@@ -49,7 +49,7 @@ using std::string;
  * Our test implementation
  */
 class TestServiceImpl: public TestService {
-  public:
+ public:
     explicit TestServiceImpl(SelectServer *ss): m_ss(ss) {}
     ~TestServiceImpl() {}
 
@@ -68,7 +68,7 @@ class TestServiceImpl: public TestService {
                 STREAMING_NO_RESPONSE* response,
                 CompletionCallback* done);
 
-  private:
+ private:
     SelectServer *m_ss;
 };
 
@@ -80,7 +80,7 @@ class RpcChannelTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStreamRequest);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void tearDown();
     void testEcho();
@@ -89,7 +89,7 @@ class RpcChannelTest: public CppUnit::TestFixture {
     void EchoComplete();
     void FailedEchoComplete();
 
-  private:
+ private:
     RpcController m_controller;
     EchoRequest m_request;
     EchoReply m_reply;

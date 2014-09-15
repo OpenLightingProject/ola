@@ -34,16 +34,16 @@ using ola::DmxBuffer;
 
 
 class E131PortHelper {
-  public:
+ public:
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description(Universe *universe) const;
-  private:
+ private:
     static const unsigned int MAX_E131_UNIVERSE = 63999;
 };
 
 
 class E131InputPort: public BasicInputPort {
-  public:
+ public:
     E131InputPort(E131Device *parent, int id, E131Node *node,
                   class PluginAdaptor *plugin_adaptor)
         : BasicInputPort(parent, id, plugin_adaptor),
@@ -60,7 +60,7 @@ class E131InputPort: public BasicInputPort {
     bool SupportsPriorities() const { return true; }
     uint8_t InheritedPriority() const { return m_priority; }
 
-  private:
+ private:
     DmxBuffer m_buffer;
     E131Node *m_node;
     E131PortHelper m_helper;
@@ -69,7 +69,7 @@ class E131InputPort: public BasicInputPort {
 
 
 class E131OutputPort: public BasicOutputPort {
-  public:
+ public:
     E131OutputPort(E131Device *parent, int id, E131Node *node,
                    bool prepend_hostname)
         : BasicOutputPort(parent, id),
@@ -90,7 +90,7 @@ class E131OutputPort: public BasicOutputPort {
     bool PreviewMode() const { return m_preview_on; }
     bool SupportsPriorities() const { return true; }
 
-  private:
+ private:
     bool m_prepend_hostname;
     bool m_preview_on;
     DmxBuffer m_buffer;

@@ -851,7 +851,7 @@ void RDMHTTPModule::UIDInfoHandler(HTTPResponse *response,
   json.Add("address", device.dmx_start_address);
   json.Add("footprint", device.dmx_footprint);
   json.Add("personality", static_cast<int>(device.current_personality));
-  json.Add("personality_count", static_cast<int>(device.personaility_count));
+  json.Add("personality_count", static_cast<int>(device.personality_count));
 
   response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
@@ -1372,7 +1372,7 @@ void RDMHTTPModule::GetDeviceInfoHandler(
 
   stream.str("");
   stream << static_cast<int>(device.current_personality) << " of " <<
-    static_cast<int>(device.personaility_count);
+    static_cast<int>(device.personality_count);
   section.AddItem(new StringItem("Personality", stream.str()));
 
   section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));

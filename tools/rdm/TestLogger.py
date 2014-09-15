@@ -211,11 +211,13 @@ class TestLogger(object):
 
     manufacturer_label = test_data['properties'].get('manufacturer_label', None)
     if manufacturer_label:
-      results_log.append('Manufacturer: %s' % manufacturer_label)
+      results_log.append('Manufacturer: %s' %
+                         manufacturer_label.encode('string-escape'))
 
     model_description = test_data['properties'].get('model_description', None)
     if model_description:
-      results_log.append('Model Description: %s' % model_description)
+      results_log.append('Model Description: %s' %
+                         model_description.encode('string-escape'))
 
     software_version = test_data['properties'].get('software_version', None)
     if software_version:

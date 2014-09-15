@@ -34,7 +34,7 @@ namespace ola {
  * The DmxSource class
  */
 class DmxSource {
-  public:
+ public:
     DmxSource():
         m_buffer(),
         m_timestamp(),
@@ -123,7 +123,7 @@ class DmxSource {
      */
     uint8_t Priority() const { return m_priority; }
 
-  private:
+ private:
     DmxBuffer m_buffer;
     TimeStamp m_timestamp;
     uint8_t m_priority;

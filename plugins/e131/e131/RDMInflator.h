@@ -34,7 +34,7 @@ namespace e131 {
 class RDMInflator: public BaseInflator {
   friend class RDMInflatorTest;
 
-  public:
+ public:
     // These are pointers so the callers don't have to pull in all the headers.
     typedef ola::Callback3<void,
                            const TransportHeader*,  // src ip & port
@@ -51,7 +51,7 @@ class RDMInflator: public BaseInflator {
 
     static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
-  protected:
+ protected:
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
@@ -64,7 +64,7 @@ class RDMInflator: public BaseInflator {
                                const uint8_t *data,
                                unsigned int pdu_len);
 
-  private:
+ private:
     std::auto_ptr<RDMMessageHandler> m_rdm_handler;
 };
 }  // namespace e131

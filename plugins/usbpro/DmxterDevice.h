@@ -34,7 +34,7 @@ namespace usbpro {
  * An DMXter Device
  */
 class DmxterDevice: public UsbSerialDevice {
-  public:
+ public:
     DmxterDevice(ola::AbstractPlugin *owner,
                  const string &name,
                  DmxterWidget *widget,
@@ -43,7 +43,7 @@ class DmxterDevice: public UsbSerialDevice {
                  uint32_t serial);
     string DeviceId() const { return m_device_id; }
 
-  private:
+ private:
     string m_device_id;
 };
 
@@ -52,7 +52,7 @@ class DmxterDevice: public UsbSerialDevice {
  * A single Output port per device
  */
 class DmxterOutputPort: public BasicOutputPort {
-  public:
+ public:
     DmxterOutputPort(DmxterDevice *parent, DmxterWidget *widget)
         : BasicOutputPort(parent, 0, true, true),
           m_widget(widget) {}
@@ -79,7 +79,7 @@ class DmxterOutputPort: public BasicOutputPort {
 
     string Description() const { return "RDM Only"; }
 
-  private:
+ private:
     DmxterWidget *m_widget;
 };
 }  // namespace usbpro

@@ -32,36 +32,32 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
-using ola::io::ConnectedDescriptor;
-using ola::io::SelectServer;
-
 class MilInstWidget {
-  public:
-    static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
+ public:
+  static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
 
-    explicit MilInstWidget(const std::string &path):
-      m_enabled(false),
-      m_path(path),
-      m_socket(NULL),
-      m_ss(NULL) {}
-    virtual ~MilInstWidget();
+  explicit MilInstWidget(const std::string &path)
+      : m_enabled(false),
+        m_path(path),
+        m_socket(NULL) {}
 
-    // these methods are for communicating with the device
-    virtual bool Connect() = 0;
-    int Disconnect();
-    ConnectedDescriptor *GetSocket() { return m_socket; }
-    string GetPath() { return m_path; }
-    virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
-    virtual bool DetectDevice() = 0;
+  virtual ~MilInstWidget();
 
-  protected:
-    virtual int SetChannel(unsigned int chan, uint8_t val) const = 0;
+  // these methods are for communicating with the device
+  virtual bool Connect() = 0;
+  int Disconnect();
+  ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
+  string GetPath() { return m_path; }
+  virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
+  virtual bool DetectDevice() = 0;
 
-    // instance variables
-    bool m_enabled;
-    const string m_path;
-    ConnectedDescriptor *m_socket;
-    SelectServer *m_ss;
+ protected:
+  virtual int SetChannel(unsigned int chan, uint8_t val) const = 0;
+
+  // instance variables
+  bool m_enabled;
+  const string m_path;
+  ola::io::ConnectedDescriptor *m_socket;
 };
 }  // namespace milinst
 }  // namespace plugin

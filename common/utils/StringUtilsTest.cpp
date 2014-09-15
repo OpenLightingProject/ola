@@ -31,6 +31,7 @@ using ola::CapitalizeLabel;
 using ola::CustomCapitalizeLabel;
 using ola::Escape;
 using ola::EscapeString;
+using ola::EncodeString;
 using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
@@ -55,6 +56,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEndsWith);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
+  CPPUNIT_TEST(testEncodeString);
   CPPUNIT_TEST(testStringToBool);
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
@@ -72,13 +74,14 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringJoin);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSplit();
     void testTrim();
     void testShorten();
     void testEndsWith();
     void testIntToString();
     void testEscape();
+    void testEncodeString();
     void testStringToBool();
     void testStringToUInt();
     void testStringToUInt16();
@@ -259,6 +262,27 @@ void StringUtilsTest::testEscape() {
   OLA_ASSERT_EQ(
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
       result);
+}
+
+/**
+ * Test encoding string
+ */
+void StringUtilsTest::testEncodeString() {
+  string s1 = "foo";
+  OLA_ASSERT_EQ(string("foo"), EncodeString(s1));
+
+  s1 = "newline\ntest";
+  OLA_ASSERT_EQ(string("newline\\x0atest"), EncodeString(s1));
+
+  s1 = "newline\n\ntest";
+  OLA_ASSERT_EQ(string("newline\\x0a\\x0atest"), EncodeString(s1));
+
+  s1 = "\x01newline\x02test";
+  OLA_ASSERT_EQ(string("\\x01newline\\x02test"), EncodeString(s1));
+
+  // Test a null in the middle of a string
+  s1 = string("newline" "\x00" "test", 12);
+  OLA_ASSERT_EQ(string("newline\\x00test"), EncodeString(s1));
 }
 
 void StringUtilsTest::testStringToBool() {
@@ -490,6 +514,13 @@ void StringUtilsTest::testPrefixedHexStringToInt() {
   OLA_ASSERT_EQ(28927, value);
   OLA_ASSERT_TRUE(PrefixedHexStringToInt("0xffffffff", &value));
   OLA_ASSERT_EQ(-1, value);
+
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0X7f", &value));
+  OLA_ASSERT_EQ(127, value);
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0X7F", &value));
+  OLA_ASSERT_EQ(127, value);
+  OLA_ASSERT_TRUE(PrefixedHexStringToInt("0x7F", &value));
+  OLA_ASSERT_EQ(127, value);
 }
 
 
@@ -635,7 +666,7 @@ void StringUtilsTest::testCapitalizeLabel() {
   string label = "this-is_a_test";
   CapitalizeLabel(&label);
   OLA_ASSERT_EQ(string("This Is A Test"), label);
-};
+}
 
 
 void StringUtilsTest::testCustomCapitalizeLabel() {
@@ -674,7 +705,7 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   string label9 = "dns_via_dhcp";
   CustomCapitalizeLabel(&label9);
   OLA_ASSERT_EQ(string("DNS Via DHCP"), label9);
-};
+}
 
 
 void StringUtilsTest::testFormatData() {

@@ -45,7 +45,7 @@ using std::vector;
 
 
 class ExpectedResult {
-  public:
+ public:
     unsigned int universe;
     const UID uid;
     uint16_t sub_device;
@@ -83,7 +83,7 @@ class ExpectedResult {
 
 
 class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
-  public:
+ public:
     bool RDMGet(rdm_callback *callback,
                 unsigned int universe,
                 const UID &uid,
@@ -214,7 +214,7 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
       OLA_ASSERT_FALSE(m_set_expected.size());
     }
 
-  private:
+ private:
     deque<ExpectedResult*> m_get_expected;
     deque<ExpectedResult*> m_set_expected;
 };
@@ -229,7 +229,7 @@ class RDMAPITest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDmxSetup);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     RDMAPITest():
       m_api(&m_impl),
       m_uid(1, 2),
@@ -246,7 +246,7 @@ class RDMAPITest: public CppUnit::TestFixture {
     void setUp() {}
     void tearDown();
 
-  private:
+ private:
     static const unsigned int UNIVERSE = 1;
     static const char BROADCAST_ERROR[];
     static const char DEVICE_RANGE_ERROR[];
@@ -379,7 +379,7 @@ class RDMAPITest: public CppUnit::TestFixture {
       OLA_ASSERT_EQ(static_cast<uint8_t>(1),
                            descriptor.current_personality);
       OLA_ASSERT_EQ(static_cast<uint8_t>(2),
-                           descriptor.personaility_count);
+                           descriptor.personality_count);
       OLA_ASSERT_EQ(static_cast<uint16_t>(12),
                            descriptor.dmx_start_address);
       OLA_ASSERT_EQ(static_cast<uint16_t>(10),
@@ -737,7 +737,7 @@ void RDMAPITest::testProductInformation() {
     uint32_t software_version;
     uint16_t dmx_footprint;
     uint8_t current_personality;
-    uint8_t personaility_count;
+    uint8_t personality_count;
     uint16_t dmx_start_address;
     uint16_t sub_device_count;
     uint8_t sensor_count;
@@ -751,7 +751,7 @@ void RDMAPITest::testProductInformation() {
     static_cast<uint32_t>(0x12345678));
   device_info.dmx_footprint = HostToNetwork(static_cast<uint16_t>(400));
   device_info.current_personality = 1;
-  device_info.personaility_count = 2;
+  device_info.personality_count = 2;
   device_info.dmx_start_address = HostToNetwork(static_cast<uint16_t>(12));
   device_info.sub_device_count = HostToNetwork(static_cast<uint16_t>(10));
   device_info.sensor_count = 4;

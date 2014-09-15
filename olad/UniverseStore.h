@@ -34,7 +34,7 @@ namespace ola {
 class Universe;
 
 class UniverseStore {
-  public:
+ public:
     UniverseStore(class Preferences *preferences, class ExportMap *export_map);
     ~UniverseStore();
 
@@ -48,7 +48,7 @@ class UniverseStore {
     void AddUniverseGarbageCollection(Universe *universe);
     void GarbageCollectUniverses();
 
-  private:
+ private:
     typedef std::map<unsigned int, Universe*> universe_map;
 
     Preferences *m_preferences;

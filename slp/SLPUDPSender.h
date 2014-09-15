@@ -42,7 +42,7 @@ namespace slp {
  * This class is not thread safe.
  */
 class SLPUDPSender {
-  public:
+ public:
     // Ownership is not transferred.
     explicit SLPUDPSender(ola::network::UDPSocketInterface *socket);
     ~SLPUDPSender() {}
@@ -105,7 +105,7 @@ class SLPUDPSender {
                    const string &language,
                    uint16_t error_code);
 
-  private:
+ private:
     ola::network::UDPSocketInterface *m_udp_socket;
     ola::io::IOQueue m_output;
     ola::io::BigEndianOutputStream m_output_stream;

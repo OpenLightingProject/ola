@@ -49,7 +49,7 @@ using std::string;
  * The module that deals with RDM requests.
  */
 class RDMHTTPModule {
-  public:
+ public:
     RDMHTTPModule(HTTPServer *http_server,
                   ola::client::OlaClient *client);
     ~RDMHTTPModule();
@@ -78,7 +78,7 @@ class RDMHTTPModule {
 
     void PruneUniverseList(const vector<client::OlaUniverse> &universes);
 
-  private:
+ private:
     typedef struct {
       string manufacturer;
       string device;

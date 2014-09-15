@@ -17,12 +17,9 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include "ola/Logging.h"
 #include "ola/rdm/ResponderLoadSensor.h"
+#include "ola/system/SystemUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -30,26 +27,12 @@ namespace rdm {
  * Fetch a Sensor value
  */
 int16_t LoadSensor::PollSensor() {
-#ifdef HAVE_GETLOADAVG
-  if (m_load_average >= LOAD_SENSOR_NUM_AVERAGES) {
-    return LOAD_SENSOR_ERROR_VALUE;
-  }
-  double averages[LOAD_SENSOR_NUM_AVERAGES];
-  uint8_t returned;
-  returned = getloadavg(averages, LOAD_SENSOR_NUM_AVERAGES);
-  if (returned != LOAD_SENSOR_NUM_AVERAGES) {
-    OLA_WARN << "getloadavg only returned " << static_cast<int>(returned)
-        << " values, expecting " << static_cast<int>(LOAD_SENSOR_NUM_AVERAGES)
-        << " values";
+  double average;
+  if (!ola::system::LoadAverage(m_load_average, &average)) {
     return LOAD_SENSOR_ERROR_VALUE;
   } else {
-    return static_cast<int16_t>(averages[m_load_average] * 100);
+    return static_cast<int16_t>(average * 100);
   }
-#else
-  // No getloadavg, do something else if Windows?
-  OLA_WARN << "getloadavg not supported, returning default value";
-  return LOAD_SENSOR_ERROR_VALUE;
-#endif
 }
 }  // namespace rdm
 }  // namespace ola

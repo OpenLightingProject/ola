@@ -99,7 +99,7 @@ struct device_info_s {
   uint32_t software_version;
   uint16_t dmx_footprint;
   uint8_t current_personality;
-  uint8_t personaility_count;
+  uint8_t personality_count;
   uint16_t dmx_start_address;
   uint16_t sub_device_count;
   uint8_t sensor_count;
@@ -178,7 +178,7 @@ typedef struct clock_value_s ClockValue;
  * The interface for objects which deal with queued messages
  */
 class QueuedMessageHandler {
-  public:
+ public:
     virtual ~QueuedMessageHandler() {}
 
     virtual void ProxiedDeviceCount(const ResponseStatus &status,
@@ -292,7 +292,7 @@ class QueuedMessageHandler {
  * The high level RDM API.
  */
 class RDMAPI {
-  public:
+ public:
     explicit RDMAPI(class RDMAPIImplInterface *impl):
       m_impl(impl) {
     }
@@ -1152,7 +1152,7 @@ class RDMAPI {
         const ResponseStatus &status,
         const string &data);
 
-  private:
+ private:
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
 

@@ -38,14 +38,6 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-using ola::ExportMap;
-using ola::io::SelectServerInterface;
-using ola::network::IPV4SocketAddress;
-using std::auto_ptr;
-using std::map;
-using std::string;
-using std::vector;
-
 /**
  * The OSCNode object handles sending and receiving DMX data using OSC.
  *
@@ -75,123 +67,123 @@ using std::vector;
  *   node.RegisterAddress("/dmx/1", NULL);
  */
 class OSCNode {
-  public:
-    // The different data formats we can send in.
-    enum DataFormat {
-      FORMAT_BLOB,
-      FORMAT_INT_ARRAY,
-      FORMAT_INT_INDIVIDUAL,
-      FORMAT_FLOAT_ARRAY,
-      FORMAT_FLOAT_INDIVIDUAL,
-    };
+ public:
+  // The different data formats we can send in.
+  enum DataFormat {
+    FORMAT_BLOB,
+    FORMAT_INT_ARRAY,
+    FORMAT_INT_INDIVIDUAL,
+    FORMAT_FLOAT_ARRAY,
+    FORMAT_FLOAT_INDIVIDUAL,
+  };
 
-    // The options for the OSCNode object.
-    struct OSCNodeOptions {
-      uint16_t listen_port;  // UDP port to listen on
+  // The options for the OSCNode object.
+  struct OSCNodeOptions {
+    uint16_t listen_port;  // UDP port to listen on
 
-      OSCNodeOptions() : listen_port(DEFAULT_OSC_PORT) {}
-    };
+    OSCNodeOptions() : listen_port(DEFAULT_OSC_PORT) {}
+  };
 
-    // The callback run when we receive new DMX data.
-    typedef Callback1<void, const DmxBuffer&> DMXCallback;
+  // The callback run when we receive new DMX data.
+  typedef Callback1<void, const DmxBuffer&> DMXCallback;
 
-    OSCNode(SelectServerInterface *ss,
-            ExportMap *export_map,
-            const OSCNodeOptions &options);
-    ~OSCNode();
+  OSCNode(ola::io::SelectServerInterface *ss,
+          ola::ExportMap *export_map,
+          const OSCNodeOptions &options);
+  ~OSCNode();
 
-    bool Init();
-    void Stop();
+  bool Init();
+  void Stop();
 
-    // Sending methods
-    void AddTarget(unsigned int group, const OSCTarget &target);
-    bool RemoveTarget(unsigned int group, const OSCTarget &target);
-    bool SendData(unsigned int group, DataFormat data_format,
-                  const ola::DmxBuffer &data);
+  // Sending methods
+  void AddTarget(unsigned int group, const OSCTarget &target);
+  bool RemoveTarget(unsigned int group, const OSCTarget &target);
+  bool SendData(unsigned int group, DataFormat data_format,
+                const ola::DmxBuffer &data);
 
-    // Receiving methods
-    bool RegisterAddress(const string &osc_address, DMXCallback *callback);
+  // Receiving methods
+  bool RegisterAddress(const std::string &osc_address, DMXCallback *callback);
 
-    // Called by the liblo handlers.
-    void SetUniverse(const string &osc_address, const uint8_t *data,
-                     unsigned int size);
-    void SetSlot(const string &osc_address, uint16_t slot, uint8_t value);
+  // Called by the liblo handlers.
+  void SetUniverse(const std::string &osc_address, const uint8_t *data,
+                   unsigned int size);
+  void SetSlot(const std::string &osc_address, uint16_t slot, uint8_t value);
 
-    // The port OSC is listening on.
-    uint16_t ListeningPort() const;
+  // The port OSC is listening on.
+  uint16_t ListeningPort() const;
 
-  private:
-    class NodeOSCTarget {
-      public:
-        explicit NodeOSCTarget(const OSCTarget &target);
-        ~NodeOSCTarget();
+ private:
+  class NodeOSCTarget {
+   public:
+    explicit NodeOSCTarget(const OSCTarget &target);
+    ~NodeOSCTarget();
 
-        bool operator==(const NodeOSCTarget &other) const {
-          return (socket_address == other.socket_address &&
-                  osc_address == other.osc_address);
-        }
+    bool operator==(const NodeOSCTarget &other) const {
+      return (socket_address == other.socket_address &&
+              osc_address == other.osc_address);
+    }
 
-        bool operator==(const OSCTarget &other) const {
-          return (socket_address == other.socket_address &&
-                  osc_address == other.osc_address);
-        }
+    bool operator==(const OSCTarget &other) const {
+      return (socket_address == other.socket_address &&
+              osc_address == other.osc_address);
+    }
 
-        IPV4SocketAddress socket_address;
-        string osc_address;
-        lo_address liblo_address;
+    ola::network::IPV4SocketAddress socket_address;
+    string osc_address;
+    lo_address liblo_address;
 
-      private:
-        NodeOSCTarget(const NodeOSCTarget&);
-        NodeOSCTarget& operator=(const NodeOSCTarget&);
-    };
+   private:
+    NodeOSCTarget(const NodeOSCTarget&);
+    NodeOSCTarget& operator=(const NodeOSCTarget&);
+  };
 
-    typedef vector<NodeOSCTarget*> OSCTargetVector;
+  typedef std::vector<NodeOSCTarget*> OSCTargetVector;
 
-    struct OSCOutputGroup {
-      OSCTargetVector targets;
-      DmxBuffer dmx;  // holds the last values.
-    };
+  struct OSCOutputGroup {
+    OSCTargetVector targets;
+    DmxBuffer dmx;  // holds the last values.
+  };
 
-    struct OSCInputGroup {
-      explicit OSCInputGroup(DMXCallback *callback) : callback(callback) {}
+  struct OSCInputGroup {
+    explicit OSCInputGroup(DMXCallback *callback) : callback(callback) {}
 
-      DmxBuffer dmx;
-      auto_ptr<DMXCallback> callback;
-    };
+    DmxBuffer dmx;
+    std::auto_ptr<DMXCallback> callback;
+  };
 
-    typedef map<unsigned int, OSCOutputGroup*> OutputGroupMap;
-    typedef map<string, OSCInputGroup*> InputUniverseMap;
+  typedef std::map<unsigned int, OSCOutputGroup*> OutputGroupMap;
+  typedef std::map<string, OSCInputGroup*> InputUniverseMap;
 
-    struct SlotMessage {
-      unsigned int slot;
-      lo_message message;
-    };
+  struct SlotMessage {
+    unsigned int slot;
+    lo_message message;
+  };
 
-    SelectServerInterface *m_ss;
-    const uint16_t m_listen_port;
-    auto_ptr<ola::io::UnmanagedFileDescriptor> m_descriptor;
-    lo_server m_osc_server;
-    OutputGroupMap m_output_map;
-    InputUniverseMap m_input_map;
+  ola::io::SelectServerInterface *m_ss;
+  const uint16_t m_listen_port;
+  std::auto_ptr<ola::io::UnmanagedFileDescriptor> m_descriptor;
+  lo_server m_osc_server;
+  OutputGroupMap m_output_map;
+  InputUniverseMap m_input_map;
 
-    void DescriptorReady();
-    bool SendBlob(const DmxBuffer &data, const OSCTargetVector &targets);
-    bool SendIndividualFloats(const DmxBuffer &data,
-                              OSCOutputGroup *group);
-    bool SendIndividualInts(const DmxBuffer &data,
+  void DescriptorReady();
+  bool SendBlob(const DmxBuffer &data, const OSCTargetVector &targets);
+  bool SendIndividualFloats(const DmxBuffer &data,
                             OSCOutputGroup *group);
-    bool SendIntArray(const DmxBuffer &data,
+  bool SendIndividualInts(const DmxBuffer &data,
+                          OSCOutputGroup *group);
+  bool SendIntArray(const DmxBuffer &data,
+                    const OSCTargetVector &targets);
+  bool SendFloatArray(const DmxBuffer &data,
                       const OSCTargetVector &targets);
-    bool SendFloatArray(const DmxBuffer &data,
-                        const OSCTargetVector &targets);
-    bool SendMessageToTargets(lo_message message,
-                              const OSCTargetVector &targets);
-    bool SendIndividualMessages(const DmxBuffer &data,
-                                OSCOutputGroup *group,
-                                const string &osc_type);
+  bool SendMessageToTargets(lo_message message,
+                            const OSCTargetVector &targets);
+  bool SendIndividualMessages(const DmxBuffer &data,
+                              OSCOutputGroup *group,
+                              const std::string &osc_type);
 
-    static const uint16_t DEFAULT_OSC_PORT = 7770;
-    static const char OSC_PORT_VARIABLE[];
+  static const uint16_t DEFAULT_OSC_PORT = 7770;
+  static const char OSC_PORT_VARIABLE[];
 };
 }  // namespace osc
 }  // namespace plugin

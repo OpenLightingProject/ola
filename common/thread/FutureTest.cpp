@@ -38,7 +38,7 @@ class FutureTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testMultithreadedFuture);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testSingleThreadedFuture();
     void testSingleThreadedVoidFuture();
     void testMultithreadedFuture();
@@ -51,7 +51,7 @@ class FutureTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(FutureTest);
 
 class AdderThread: public ola::thread::Thread {
-  public:
+ public:
     AdderThread(int i, int j, Future<int> *future)
         : Thread(),
           i(i),
@@ -66,7 +66,7 @@ class AdderThread: public ola::thread::Thread {
     }
 
 
-  private:
+ private:
     const int i, j;
     Future<int> *future;
 };

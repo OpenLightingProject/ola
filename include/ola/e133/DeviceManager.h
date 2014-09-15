@@ -47,7 +47,7 @@ using std::vector;
  * pull in all the headers.
  */
 class DeviceManager {
-  public:
+ public:
     /*
      * The callback used to receive RDMNet layer messages from the devices.
      * @returns true if the data should be acknowledged, false otherwise.
@@ -75,7 +75,7 @@ class DeviceManager {
     void RemoveDeviceIfNotConnected(const IPV4Address &ip_address);
     void ListManagedDevices(vector<IPV4Address> *devices) const;
 
-  private:
+ private:
     class DeviceManagerImpl *m_impl;
 
     DISALLOW_COPY_AND_ASSIGN(DeviceManager);

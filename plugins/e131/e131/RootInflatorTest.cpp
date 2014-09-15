@@ -36,7 +36,7 @@ class RootInflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInflatePDU);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testInflatePDU();
 };
 

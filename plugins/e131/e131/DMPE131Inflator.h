@@ -36,7 +36,7 @@ namespace e131 {
 class DMPE131Inflator: public DMPInflator {
   friend class DMPE131InflatorTest;
 
-  public:
+ public:
     explicit DMPE131Inflator(bool ignore_preview):
       DMPInflator(),
       m_ignore_preview(ignore_preview) {
@@ -49,13 +49,13 @@ class DMPE131Inflator: public DMPInflator {
 
     void RegisteredUniverses(std::vector<unsigned int> *universes);
 
-  protected:
+ protected:
     virtual bool HandlePDUData(uint32_t vector,
                                const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 
-  private:
+ private:
     typedef struct {
       CID cid;
       uint8_t sequence;

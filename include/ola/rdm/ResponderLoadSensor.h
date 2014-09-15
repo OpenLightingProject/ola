@@ -30,6 +30,7 @@
 
 #include <string>
 #include "ola/rdm/ResponderSensor.h"
+#include "ola/system/SystemUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -37,33 +38,33 @@ namespace rdm {
  * A class which represents a load sensor.
  */
 class LoadSensor: public Sensor {
-  public:
-    LoadSensor(const uint8_t load_average, const string &description)
-        : Sensor(SENSOR_OTHER,
-                 UNITS_NONE,
-                 PREFIX_CENTI,
-                 description,
-                 SensorOptions(true,
-                               true,
-                               0,
-                               SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
-                               0,
-                               SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)),
-          m_load_average(load_average) {
-      // set high / low to something
-      Reset();
-      // Force recorded back to zero
-      m_recorded = 0;
-    }
+ public:
+  LoadSensor(const ola::system::load_averages load_average,
+             const string &description)
+      : Sensor(SENSOR_OTHER,
+               UNITS_NONE,
+               PREFIX_CENTI,
+               description,
+               SensorOptions(true,
+                             true,
+                             0,
+                             SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
+                             0,
+                             SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)),
+        m_load_average(load_average) {
+    // set high / low to something
+    Reset();
+    // Force recorded back to zero
+    m_recorded = 0;
+  }
 
-    static const int16_t LOAD_SENSOR_NUM_AVERAGES = 3;
-    static const int16_t LOAD_SENSOR_ERROR_VALUE = 0;
+  static const int16_t LOAD_SENSOR_ERROR_VALUE = 0;
 
-  protected:
-    int16_t PollSensor();
+ protected:
+  int16_t PollSensor();
 
-  private:
-    uint8_t m_load_average;
+ private:
+  ola::system::load_averages m_load_average;
 };
 }  // namespace rdm
 }  // namespace ola

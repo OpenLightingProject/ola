@@ -45,18 +45,18 @@ using ola::thread::SignalThread;
 using std::cout;
 using std::endl;
 
-DEFINE_bool(http, true, "Disable the HTTP server");
-DEFINE_bool(http_quit, true, "Disable the HTTP /quit hanlder");
-DEFINE_s_bool(daemon, f, false, "Fork and run in the background");
-DEFINE_s_bool(version, v, false, "Print version information");
-DEFINE_s_string(http_data_dir, d, "", "Path to the static www content");
+DEFINE_bool(http, true, "Disable the HTTP server.");
+DEFINE_bool(http_quit, true, "Disable the HTTP /quit handler.");
+DEFINE_s_bool(daemon, f, false, "Fork and run in the background.");
+DEFINE_s_bool(version, v, false, "Print version information.");
+DEFINE_s_string(http_data_dir, d, "", "The path to the static www content.");
 DEFINE_s_string(interface, i, "",
                 "The interface name (e.g. eth0) or IP of the network interface "
-                "to use");
+                "to use.");
 DEFINE_string(pid_location, PID_DATA_DIR,
-              "The directory containing the PID definitions");
+              "The directory containing the PID definitions.");
 DEFINE_s_uint16(http_port, p, ola::OlaServer::DEFAULT_HTTP_PORT,
-                "Port to run the http server on");
+                "The port to run the http server on. Defaults to 9090.");
 
 
 /**

@@ -43,71 +43,72 @@ using ola::plugin::usbpro::Request;
  * An Enttec Usb Pro device
  */
 class UsbProDevice: public UsbSerialDevice {
-  public:
-    UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
-                 ola::AbstractPlugin *owner,
-                 const string &name,
-                 EnttecUsbProWidget *widget,
-                 uint32_t serial,
-                 unsigned int fps_limit);
+ public:
+  UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
+               ola::AbstractPlugin *owner,
+               const string &name,
+               EnttecUsbProWidget *widget,
+               uint32_t serial,
+               uint16_t firmware_version,
+               unsigned int fps_limit);
 
-    string DeviceId() const { return m_serial; }
+  string DeviceId() const { return m_serial; }
 
-    void Configure(ola::rpc::RpcController *controller,
-                   const string &request,
-                   string *response,
-                   ConfigureCallback *done);
+  void Configure(ola::rpc::RpcController *controller,
+                 const string &request,
+                 string *response,
+                 ConfigureCallback *done);
 
-    bool AllowMultiPortPatching() const { return true; }
+  bool AllowMultiPortPatching() const { return true; }
 
-  protected:
-    void PrePortStop();
+ protected:
+  void PrePortStop();
 
-  private:
-    struct PortParams {
-      bool got_parameters;
-      uint8_t break_time;
-      uint8_t mab_time;
-      uint8_t rate;
-    };
+ private:
+  struct PortParams {
+    bool got_parameters;
+    uint8_t break_time;
+    uint8_t mab_time;
+    uint8_t rate;
+  };
 
-    void UpdateParams(unsigned int port_id, bool status,
-                      const usb_pro_parameters &params);
+  void UpdateParams(unsigned int port_id, bool status,
+                    const usb_pro_parameters &params);
 
-    void HandleParametersRequest(ola::rpc::RpcController *controller,
-                                 const Request *request,
-                                 string *response,
-                                 ConfigureCallback *done);
+  void HandleParametersRequest(ola::rpc::RpcController *controller,
+                               const Request *request,
+                               string *response,
+                               ConfigureCallback *done);
 
-    void HandleParametersResponse(ola::rpc::RpcController *controller,
-                                  string *response,
-                                  ConfigureCallback *done,
-                                  unsigned int port_id,
-                                  bool status,
-                                  const usb_pro_parameters &params);
+  void HandleParametersResponse(ola::rpc::RpcController *controller,
+                                string *response,
+                                ConfigureCallback *done,
+                                unsigned int port_id,
+                                bool status,
+                                const usb_pro_parameters &params);
 
-    void HandleSerialRequest(ola::rpc::RpcController *controller,
-                             const Request *request,
-                             string *response,
-                             ConfigureCallback *done);
+  void HandleSerialRequest(ola::rpc::RpcController *controller,
+                           const Request *request,
+                           string *response,
+                           ConfigureCallback *done);
 
-    void HandlePortAssignmentRequest(ola::rpc::RpcController *controller,
-                                     const Request *request,
-                                     string *response,
-                                     ConfigureCallback *done);
+  void HandlePortAssignmentRequest(ola::rpc::RpcController *controller,
+                                   const Request *request,
+                                   string *response,
+                                   ConfigureCallback *done);
 
-    void HandlePortAssignmentResponse(ola::rpc::RpcController *controller,
-                                      string *response,
-                                      ConfigureCallback *done,
-                                      bool status,
-                                      uint8_t port1_assignment,
-                                      uint8_t port2_assignment);
+  void HandlePortAssignmentResponse(ola::rpc::RpcController *controller,
+                                    string *response,
+                                    ConfigureCallback *done,
+                                    bool status,
+                                    uint8_t port1_assignment,
+                                    uint8_t port2_assignment);
 
-    static string SerialToString(uint32_t serial);
+  static string SerialToString(uint32_t serial);
 
-    EnttecUsbProWidget *m_pro_widget;
-    string m_serial;
-    vector<PortParams> m_port_params;
+  EnttecUsbProWidget *m_pro_widget;
+  string m_serial;
+  vector<PortParams> m_port_params;
 };
 
 
@@ -115,26 +116,26 @@ class UsbProDevice: public UsbSerialDevice {
  * The Input port
  */
 class UsbProInputPort: public BasicInputPort {
-  public:
-    // The EnttecPort is owner by the caller.
-    UsbProInputPort(UsbProDevice *parent,
-                    EnttecPort *port,
-                    unsigned int id,
-                    ola::PluginAdaptor *plugin_adaptor,
-                    const string &serial)
-        : BasicInputPort(parent, id, plugin_adaptor),
-          m_serial(serial),
-          m_port(port) {}
+ public:
+  // The EnttecPort is owner by the caller.
+  UsbProInputPort(UsbProDevice *parent,
+                  EnttecPort *port,
+                  unsigned int id,
+                  ola::PluginAdaptor *plugin_adaptor,
+                  const string &description)
+      : BasicInputPort(parent, id, plugin_adaptor),
+        m_description(description),
+        m_port(port) {}
 
-    const DmxBuffer &ReadDMX() const {
-      return m_port->FetchDMX();
-    }
+  const DmxBuffer &ReadDMX() const {
+    return m_port->FetchDMX();
+  }
 
-    string Description() const { return "Serial #: " + m_serial; }
+  string Description() const { return m_description; }
 
-  private:
-    const string m_serial;
-    EnttecPort *m_port;
+ private:
+  const string m_description;
+  EnttecPort *m_port;
 };
 
 
@@ -142,54 +143,54 @@ class UsbProInputPort: public BasicInputPort {
  * The output port
  */
 class UsbProOutputPort: public BasicOutputPort {
-  public:
-    // The EnttecPort is owner by the caller.
-    UsbProOutputPort(UsbProDevice *parent,
-                     EnttecPort *port,
-                     unsigned int id,
-                     const string &serial,
-                     const TimeStamp *wake_time,
-                     unsigned int max_burst,
-                     unsigned int rate)
-        : BasicOutputPort(parent, id, true, true),
-          m_serial(serial),
-          m_port(port),
-          m_bucket(max_burst, rate, max_burst, *wake_time),
-          m_wake_time(wake_time) {}
+ public:
+  // The EnttecPort is owner by the caller.
+  UsbProOutputPort(UsbProDevice *parent,
+                   EnttecPort *port,
+                   unsigned int id,
+                   const string &description,
+                   const TimeStamp *wake_time,
+                   unsigned int max_burst,
+                   unsigned int rate)
+      : BasicOutputPort(parent, id, true, true),
+        m_description(description),
+        m_port(port),
+        m_bucket(max_burst, rate, max_burst, *wake_time),
+        m_wake_time(wake_time) {}
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
-      if (m_bucket.GetToken(*m_wake_time))
-        return m_port->SendDMX(buffer);
-      else
-        OLA_INFO << "Port rated limited, dropping frame";
-      return true;
-    }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
+    if (m_bucket.GetToken(*m_wake_time))
+      return m_port->SendDMX(buffer);
+    else
+      OLA_INFO << "Port rated limited, dropping frame";
+    return true;
+  }
 
-    void PostSetUniverse(Universe*, Universe *new_universe) {
-      if (!new_universe)
-        m_port->ChangeToReceiveMode(false);
-    }
+  void PostSetUniverse(Universe*, Universe *new_universe) {
+    if (!new_universe)
+      m_port->ChangeToReceiveMode(false);
+  }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback) {
-      m_port->SendRDMRequest(request, callback);
-    }
+  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMCallback *callback) {
+    m_port->SendRDMRequest(request, callback);
+  }
 
-    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_port->RunFullDiscovery(callback);
-    }
+  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+    m_port->RunFullDiscovery(callback);
+  }
 
-    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_port->RunIncrementalDiscovery(callback);
-    }
+  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+    m_port->RunIncrementalDiscovery(callback);
+  }
 
-    string Description() const { return "Serial #: " + m_serial; }
+  string Description() const { return m_description; }
 
-  private:
-    const string m_serial;
-    EnttecPort *m_port;
-    TokenBucket m_bucket;
-    const TimeStamp *m_wake_time;
+ private:
+  const string m_description;
+  EnttecPort *m_port;
+  TokenBucket m_bucket;
+  const TimeStamp *m_wake_time;
 };
 }  // namespace usbpro
 }  // namespace plugin

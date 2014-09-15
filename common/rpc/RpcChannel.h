@@ -51,7 +51,7 @@ class OutstandingRequest {
   /*
    * These are requests on the server end that haven't completed yet.
    */
-  public:
+ public:
     OutstandingRequest() {}
     ~OutstandingRequest() {}
 
@@ -67,7 +67,7 @@ class OutstandingRequest {
  * used over TCP or pipes.
  */
 class RpcChannel {
-  public :
+ public :
     /**
      * @@brief Create a new RpcChannel.
      * @param service the Service to use to handle incoming requests. Ownership
@@ -139,7 +139,7 @@ class RpcChannel {
      */
     static const unsigned int PROTOCOL_VERSION = 1;
 
-  private:
+ private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, class OutstandingResponse*>
       ResponseMap;
 

@@ -33,7 +33,7 @@ namespace io {
  * use with the sendmsg() call.
  */
 class IOVecInterface {
-  public:
+ public:
     virtual ~IOVecInterface() {}
 
     /*

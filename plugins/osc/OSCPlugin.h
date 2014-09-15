@@ -31,15 +31,12 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-
 class OSCDevice;
 
-class OSCPlugin: public Plugin {
-  public:
-    explicit OSCPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor),
+class OSCPlugin: public ola::Plugin {
+ public:
+    explicit OSCPlugin(ola::PluginAdaptor *plugin_adaptor):
+      ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
 
     string Name() const { return PLUGIN_NAME; }
@@ -47,7 +44,7 @@ class OSCPlugin: public Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_OSC; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

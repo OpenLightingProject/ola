@@ -31,7 +31,7 @@ namespace thread {
  */
 template <typename T>
 class Future {
-  public:
+ public:
     Future() : m_impl(new FutureImpl<T>()) {}
 
     ~Future() {
@@ -63,7 +63,7 @@ class Future {
       m_impl->Set(t);
     }
 
-  private:
+ private:
     class FutureImpl<T> *m_impl;
 };
 
@@ -72,7 +72,7 @@ class Future {
  */
 template <>
 class Future<void> {
-  public:
+ public:
     Future() : m_impl(new FutureImpl<void>()) {}
 
     ~Future() {
@@ -104,7 +104,7 @@ class Future<void> {
       m_impl->Set();
     }
 
-  private:
+ private:
     class FutureImpl<void> *m_impl;
 };
 }  // namespace thread

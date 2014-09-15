@@ -34,7 +34,7 @@ namespace opendmx {
 using std::string;
 
 class OpenDmxOutputPort: public BasicOutputPort {
-  public:
+ public:
     OpenDmxOutputPort(OpenDmxDevice *parent,
                       unsigned int id,
                       const string &path)
@@ -55,7 +55,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
       (void) priority;
     }
 
-  private:
+ private:
     OpenDmxThread m_thread;
     string m_path;
 };

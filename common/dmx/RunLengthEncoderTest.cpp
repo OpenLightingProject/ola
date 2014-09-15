@@ -37,13 +37,13 @@ class RunLengthEncoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEncode2);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void testEncode();
     void testEncode2();
     void testEncodeDecode();
     void setUp();
     void tearDown();
-  private:
+ private:
     RunLengthEncoder m_encoder;
     uint8_t *m_dst;
 

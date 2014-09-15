@@ -34,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
+using ola::network::IPV4SocketAddress;
 using std::string;
 using std::vector;
 
@@ -169,15 +170,15 @@ bool OSCPlugin::SetDefaultPreferences() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(INPUT_PORT_COUNT_KEY,
-                                         IntValidator(0, 32),
+                                         UIntValidator(0, 32),
                                          DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(OUTPUT_PORT_COUNT_KEY,
-                                         IntValidator(0, 32),
+                                         UIntValidator(0, 32),
                                          DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(UDP_PORT_KEY,
-                                         IntValidator(1, 0xffff),
+                                         UIntValidator(1, 0xffff),
                                          DEFAULT_UDP_PORT);
 
   for (unsigned int i = 0; i < GetPortCount(INPUT_PORT_COUNT_KEY); i++) {

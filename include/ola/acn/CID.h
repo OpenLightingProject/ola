@@ -45,93 +45,93 @@ namespace acn {
  * @}
  */
 class CID {
-  public :
-    /**
-     * @brief The length of the CID data.
-     */
-    enum {
-      CID_LENGTH = 16  /**< The length of a CID in binary form */
-    };
+ public :
+  /**
+   * @brief The length of the CID data.
+   */
+  enum {
+    CID_LENGTH = 16  /**< The length of a CID in binary form */
+  };
 
-    /**
-     * @brief Create a new uninitialized CID.
-     */
-    CID();
+  /**
+   * @brief Create a new uninitialized CID.
+   */
+  CID();
 
-    /**
-     * @brief Copy constructor
-     */
-    CID(const CID& other);
+  /**
+   * @brief Copy constructor
+   */
+  CID(const CID& other);
 
-    /**
-     * @brief CID destructor.
-     */
-    ~CID();
+  /**
+   * @brief CID destructor.
+   */
+  ~CID();
 
-    /**
-     * @brief Returns true if the CID is uninitialized.
-     */
-    bool IsNil() const;
+  /**
+   * @brief Returns true if the CID is uninitialized.
+   */
+  bool IsNil() const;
 
-    /**
-     * @brief Pack a CID into the binary representation.
-     * @param[out] output the data buffer to use for the CID. Must be at least
-     * CID_LENGTH long.
-     */
-    void Pack(uint8_t *output) const;
+  /**
+   * @brief Pack a CID into the binary representation.
+   * @param[out] output the data buffer to use for the CID. Must be at least
+   * CID_LENGTH long.
+   */
+  void Pack(uint8_t *output) const;
 
-    /**
-     * @brief Return the CID as a human readable string.
-     * @examplepara
-     * @code
-     * "D5D46622-ECCB-410D-BC9A-267C6099C136"
-     * @endcode
-     */
-    std::string ToString() const;
+  /**
+   * @brief Return the CID as a human readable string.
+   * @examplepara
+   * @code
+   * "D5D46622-ECCB-410D-BC9A-267C6099C136"
+   * @endcode
+   */
+  std::string ToString() const;
 
-    /**
-     * @brief Write the CID to an OutputBufferInterface
-     */
-    void Write(ola::io::OutputBufferInterface *output) const;
+  /**
+   * @brief Write the CID to an OutputBufferInterface
+   */
+  void Write(ola::io::OutputBufferInterface *output) const;
 
-    /**
-     * @brief Assignment operator
-     */
-    CID& operator=(const CID& c1);
+  /**
+   * @brief Assignment operator
+   */
+  CID& operator=(const CID& c1);
 
-    /**
-     * @brief Equality operator.
-     */
-    bool operator==(const CID& c1) const;
+  /**
+   * @brief Equality operator.
+   */
+  bool operator==(const CID& c1) const;
 
-    /**
-     * @brief Inequality operator.
-     */
-    bool operator!=(const CID& c1) const;
+  /**
+   * @brief Inequality operator.
+   */
+  bool operator!=(const CID& c1) const;
 
-    /**
-     * @brief Generate a new CID
-     */
-    static CID Generate();
+  /**
+   * @brief Generate a new CID
+   */
+  static CID Generate();
 
-    /**
-     * @brief Create a new CID from a binary representation
-     * @param data the memory location that stores the binary representation of
-     * the CID.
-     */
-    static CID FromData(const uint8_t *data);
+  /**
+   * @brief Create a new CID from a binary representation
+   * @param data the memory location that stores the binary representation of
+   * the CID.
+   */
+  static CID FromData(const uint8_t *data);
 
-    /**
-     * @brief Create a new CID from a human readable string
-     * @param cid the CID in string format.
-     */
-    static CID FromString(const std::string &cid);
+  /**
+   * @brief Create a new CID from a human readable string
+   * @param cid the CID in string format.
+   */
+  static CID FromString(const std::string &cid);
 
-  private:
-    class CIDImpl *m_impl;
+ private:
+  class CIDImpl *m_impl;
 
-    // Takes ownership;
-    explicit CID(class CIDImpl *impl);
+  // Takes ownership;
+  explicit CID(class CIDImpl *impl);
 };
 }  // namespace acn
 }  // namespace ola

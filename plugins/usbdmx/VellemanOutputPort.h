@@ -42,7 +42,7 @@ namespace usbdmx {
 class VellemanDevice;
 
 class VellemanOutputPort: public BasicOutputPort, ola::thread::Thread {
-  public:
+ public:
     VellemanOutputPort(VellemanDevice *parent,
                        unsigned int id,
                        libusb_device *usb_device);
@@ -54,7 +54,7 @@ class VellemanOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const;
 
-  private:
+ private:
     static const unsigned char ENDPOINT = 0x01;
     // 25ms seems to be about the shortest we can go
     static const unsigned int URB_TIMEOUT_MS = 25;

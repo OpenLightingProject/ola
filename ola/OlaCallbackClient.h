@@ -62,7 +62,7 @@ enum PortDirection {INPUT_PORT, OUTPUT_PORT};
  * @deprecated Use ola::client::OlaClient instead.
  */
 class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
-  public:
+ public:
     struct PluginState {
       string name;
       bool enabled;
@@ -243,7 +243,7 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
     bool SendTimeCode(ola::SingleUseCallback1<void, const string&> *callback,
                       const ola::timecode::TimeCode &timecode);
 
-  private:
+ private:
     std::auto_ptr<client::OlaClientCore> m_core;
     std::auto_ptr<DMXCallback> m_dmx_callback;
     std::auto_ptr<DMXCallbackWithPriority> m_priority_dmx_callback;

@@ -476,7 +476,7 @@ void OlaCallbackClient::HandleDMX(const client::DMXMetadata &metadata,
     m_dmx_callback->Run(metadata.universe, data, "");
   }
 
-  if (m_dmx_callback.get()) {
+  if (m_priority_dmx_callback.get()) {
     m_priority_dmx_callback->Run(metadata.universe, metadata.priority, data,
                                  "");
   }

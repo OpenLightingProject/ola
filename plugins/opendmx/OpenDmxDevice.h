@@ -32,7 +32,7 @@ namespace opendmx {
 using std::string;
 
 class OpenDmxDevice: public ola::Device {
-  public:
+ public:
     OpenDmxDevice(ola::AbstractPlugin *owner,
                   const string &name,
                   const string &path,
@@ -41,10 +41,10 @@ class OpenDmxDevice: public ola::Device {
     // we only support one widget for now
     string DeviceId() const { return m_device_id; }
 
-  protected:
+ protected:
     bool StartHook();
 
-  private:
+ private:
     string m_path;
     string m_device_id;
 };

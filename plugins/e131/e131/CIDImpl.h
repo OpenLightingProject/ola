@@ -67,7 +67,7 @@ class CIDImpl {
     static CIDImpl* FromData(const uint8_t *data);
     static CIDImpl* FromString(const std::string &cid);
 
-  private:
+ private:
 #ifdef USE_OSSP_UUID
     uuid_t *m_uuid;
     explicit CIDImpl(uuid_t *uuid);

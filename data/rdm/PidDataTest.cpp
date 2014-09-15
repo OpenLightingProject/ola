@@ -33,7 +33,7 @@ class PidDataTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDataLoad);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     void setUp();
     void testDataLoad();
 };

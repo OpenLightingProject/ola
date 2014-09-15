@@ -37,7 +37,7 @@ namespace usbdmx {
 using ola::io::ConnectedDescriptor;
 
 class UsbDmxPlugin: public ola::Plugin {
-  public:
+ public:
     explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_anyma_devices_missing_serial_numbers(false) {
@@ -52,7 +52,7 @@ class UsbDmxPlugin: public ola::Plugin {
     bool RemoveDeviceDescriptor(int fd);
     void SocketReady();
 
-  private:
+ private:
     struct USBDeviceInformation {
       string manufacturer;
       string product;

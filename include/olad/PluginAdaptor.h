@@ -34,7 +34,7 @@ namespace ola {
 using ola::thread::timeout_id;
 
 class PluginAdaptor: public ola::io::SelectServerInterface {
-  public:
+ public:
     PluginAdaptor(class DeviceManager *device_manager,
                   ola::io::SelectServerInterface *select_server,
                   ExportMap *export_map,
@@ -76,7 +76,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
       return m_port_broker;
     }
 
-  private:
+ private:
     DeviceManager *m_device_manager;
     ola::io::SelectServerInterface *m_ss;
     ExportMap *m_export_map;

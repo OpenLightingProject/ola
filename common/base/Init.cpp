@@ -66,7 +66,7 @@ using std::endl;
  * Print a stack trace on seg fault.
  */
 static void _SIGSEGV_Handler(int signal) {
-  cout << "Recieved SIGSEGV or SIGBUS" << endl;
+  cout << "Received SIGSEGV or SIGBUS" << endl;
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
   void *array[STACK_SIZE];

@@ -34,7 +34,7 @@ namespace e131 {
  * The header for the transport layer
  */
 class TransportHeader {
-  public:
+ public:
     enum TransportType {
       TCP,
       UDP,
@@ -60,7 +60,7 @@ class TransportHeader {
       m_transport_type = other.m_transport_type;
     }
 
-  private:
+ private:
     ola::network::IPV4SocketAddress m_source;
     TransportType m_transport_type;
 };

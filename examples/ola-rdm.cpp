@@ -203,7 +203,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
 
 
 class RDMController {
-  public:
+ public:
     explicit RDMController(string pid_location);
 
     bool InitPidHelper();
@@ -220,7 +220,7 @@ class RDMController {
     void HandleResponse(const ola::rdm::ResponseStatus &response_status,
                         const string &rdm_data);
 
-  private:
+ private:
     typedef struct {
       unsigned int universe;
       const UID *uid;

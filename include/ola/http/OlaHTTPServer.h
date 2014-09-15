@@ -40,7 +40,7 @@ using ola::NewCallback;
  * implement specific handlers.
  */
 class OlaHTTPServer {
-  public:
+ public:
     OlaHTTPServer(const HTTPServer::HTTPServerOptions &options,
                   ExportMap *export_map);
     virtual ~OlaHTTPServer() {}
@@ -49,7 +49,7 @@ class OlaHTTPServer {
     bool Start() { return m_server.Start(); }
     void Stop() { return m_server.Stop(); }
 
-  protected:
+ protected:
     Clock m_clock;
     ExportMap *m_export_map;
     HTTPServer m_server;
@@ -62,7 +62,7 @@ class OlaHTTPServer {
         m_server.RegisterFile("/" + file, file, content_type);
     }
 
-  private:
+ private:
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];
 

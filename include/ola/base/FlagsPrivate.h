@@ -33,6 +33,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ola {
@@ -43,7 +44,7 @@ using std::string;
  * @brief The interface for the Flag classes.
  */
 class FlagInterface {
-  public:
+ public:
     virtual ~FlagInterface() {}
 
     virtual const char* name() const = 0;
@@ -58,7 +59,7 @@ class FlagInterface {
  * @brief The common implementation.
  */
 class BaseFlag : public FlagInterface {
-  public:
+ public:
     BaseFlag(const char *arg_type, const char *short_opt, const char *help)
         : m_arg_type(arg_type),
           m_short_opt(short_opt[0]),
@@ -69,11 +70,11 @@ class BaseFlag : public FlagInterface {
     const char* arg_type() const { return m_arg_type; }
     string help() const { return m_help; }
 
-  protected:
+ protected:
     void ReplaceUnderscoreWithHyphen(char *input);
     const char* NewCanonicalName(const char *name);
 
-  private:
+ private:
     const char *m_arg_type;
     char m_short_opt;
     const char *m_help;
@@ -85,7 +86,7 @@ class BaseFlag : public FlagInterface {
  */
 template <typename T>
 class Flag : public BaseFlag {
-  public:
+ public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
          T default_value, const char *help)
       : BaseFlag(arg_type, short_opt, help),
@@ -108,7 +109,7 @@ class Flag : public BaseFlag {
 
     bool SetValue(const string &input);
 
-  private:
+ private:
     const char *m_name;
     T m_default;
     T m_value;
@@ -119,7 +120,7 @@ class Flag : public BaseFlag {
  */
 template<>
 class Flag<bool> : public BaseFlag {
-  public:
+ public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
          bool default_value, const char *help)
       : BaseFlag(arg_type, short_opt, help),
@@ -155,7 +156,7 @@ class Flag<bool> : public BaseFlag {
       return true;
     }
 
-  private:
+ private:
     const char *m_name;
     bool m_default;
     bool m_value;
@@ -168,7 +169,7 @@ class Flag<bool> : public BaseFlag {
  */
 template<>
 class Flag<string> : public BaseFlag {
-  public:
+ public:
     Flag(const char *name, const char *arg_type, const char *short_opt,
          string default_value, const char *help)
       : BaseFlag(arg_type, short_opt, help),
@@ -197,7 +198,7 @@ class Flag<string> : public BaseFlag {
       return true;
     }
 
-  private:
+ private:
     const char *m_name;
     string m_default;
     string m_value;
@@ -217,7 +218,7 @@ bool Flag<T>::SetValue(const std::string &input) {
  * command line.
  */
 class FlagRegistry {
-  public:
+ public:
     FlagRegistry() {}
 
     void RegisterFlag(FlagInterface *flag);
@@ -226,11 +227,13 @@ class FlagRegistry {
     void SetFirstLine(const string &help);
     void SetDecription(const string &help);
     void DisplayUsage();
+    void GenManPage();
 
-  private:
+ private:
     typedef std::map<std::string, FlagInterface*> LongOpts;
     typedef std::map<char, FlagInterface*> ShortOpts;
     typedef std::map<int, FlagInterface*> FlagMap;
+    typedef std::pair<string, string> OptionPair;  // <flag, description>
 
     LongOpts m_long_opts;
     ShortOpts m_short_opts;
@@ -241,6 +244,7 @@ class FlagRegistry {
     string GetShortOptsString() const;
     struct option *GetLongOpts(FlagMap *flag_map);
     void PrintFlags(std::vector<string> *lines);
+    void PrintManPageFlags(std::vector<OptionPair> *lines);
 };
 
 /**
@@ -252,7 +256,7 @@ FlagRegistry *GetRegistry();
  * @brief This class is responsible for registering a flag
  */
 class FlagRegisterer {
-  public:
+ public:
     explicit FlagRegisterer(FlagInterface *flag) {
       GetRegistry()->RegisterFlag(flag);
     }

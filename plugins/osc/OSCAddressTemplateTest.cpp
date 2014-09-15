@@ -33,7 +33,7 @@ class OSCAddressTemplateTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testExpand);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
+ public:
     // The test method
     void testExpand();
 };

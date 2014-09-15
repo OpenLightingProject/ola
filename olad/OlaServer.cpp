@@ -71,7 +71,8 @@ using std::pair;
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
 const char OlaServer::K_UID_VAR[] = "server-uid";
-const char OlaServer::K_DISCOVERY_SERVICE_TYPE[] = "_http._tcp";
+// The Bonjour API expects <service>[,<sub-type>] so we use that form here.
+const char OlaServer::K_DISCOVERY_SERVICE_TYPE[] = "_http._tcp,_ola";
 const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 10000;
 
 

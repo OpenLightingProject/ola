@@ -221,7 +221,7 @@ bool IsKiNet(const kinet_packet *packet, unsigned int size) {
   return (size > sizeof(struct kinet_header) &&
           KINET_MAGIC == LittleEndianToHost(packet->header.magic) &&
           KINET_VERSION == LittleEndianToHost(packet->header.version));
-};
+}
 
 
 /**

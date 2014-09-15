@@ -37,7 +37,7 @@ namespace dmx4linux {
  * always 0.
  */
 class Dmx4LinuxOutputPort: public BasicOutputPort {
-  public:
+ public:
     Dmx4LinuxOutputPort(Dmx4LinuxDevice *parent,
                         Dmx4LinuxSocket *socket,
                         int d4l_universe) :
@@ -49,7 +49,7 @@ class Dmx4LinuxOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
-  private:
+ private:
     Dmx4LinuxSocket *m_socket;
     int m_d4l_universe;  // dmx4linux universe that this maps to
 };
@@ -60,7 +60,7 @@ class Dmx4LinuxOutputPort: public BasicOutputPort {
  * always 0.
  */
 class Dmx4LinuxInputPort: public BasicInputPort {
-  public:
+ public:
     explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent,
                                 class PluginAdaptor *plugin_adaptor):
         BasicInputPort(parent, 0, plugin_adaptor) {
@@ -71,7 +71,7 @@ class Dmx4LinuxInputPort: public BasicInputPort {
     bool UpdateData(const uint8_t *in_buffer, unsigned int length);
     string Description() const { return ""; }
 
-  private:
+ private:
     DmxBuffer m_read_buffer;
 };
 }  // namespace dmx4linux

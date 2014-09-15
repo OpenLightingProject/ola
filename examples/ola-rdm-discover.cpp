@@ -61,7 +61,7 @@ options opts;
 SelectServer *ss;
 
 /*
- * This is called when we recieve uids for a universe
+ * This is called when we receive uids for a universe
  * @param universes a vector of OlaUniverses
  */
 void UIDList(const ola::rdm::UIDSet &uids,

@@ -533,7 +533,7 @@ ola.common.Server.prototype.rdmGetUIDPersonalities = function(universe_id,
  * @param {number} universe_id the id of the universe to modify.
  * @param {string} universe_name the new name.
  * @param {string} merge_mode HTP or LTP.
- * @param {Array.<{{id: string, mode: string, priority: number}}>
+ * @param {Array.<{{id: string, mode: string, priority: number}}>}
  *   port_priorities an array of new port priorities.
  * @param {Array.<string>} ports_to_remove list of port ids to remove.
  * @param {Array.<string>} ports_to_add list of port ids to add.

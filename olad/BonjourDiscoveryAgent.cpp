@@ -33,7 +33,7 @@ using std::auto_ptr;
 using std::string;
 
 class DNSSDDescriptor : public ola::io::ReadFileDescriptor {
-  public:
+ public:
     explicit DNSSDDescriptor(DNSServiceRef service_ref)
         : m_service_ref(service_ref) {
     }
@@ -44,7 +44,7 @@ class DNSSDDescriptor : public ola::io::ReadFileDescriptor {
 
     void PerformRead();
 
-  private:
+ private:
     DNSServiceRef m_service_ref;
 };
 

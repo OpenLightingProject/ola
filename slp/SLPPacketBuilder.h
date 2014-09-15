@@ -44,7 +44,7 @@ namespace slp {
  * The SLPPacketBuilder constructs packets.
  */
 class SLPPacketBuilder {
-  public:
+ public:
     SLPPacketBuilder() {}
     ~SLPPacketBuilder() {}
 

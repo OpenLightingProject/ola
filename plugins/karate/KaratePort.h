@@ -34,7 +34,7 @@ namespace karate {
 using std::string;
 
 class KarateOutputPort: public BasicOutputPort {
-  public:
+ public:
     KarateOutputPort(KarateDevice *parent,
                      unsigned int id,
                      const string &path)
@@ -55,7 +55,7 @@ class KarateOutputPort: public BasicOutputPort {
       (void) priority;
     }
 
-  private:
+ private:
     KarateThread m_thread;
     string m_path;
 };

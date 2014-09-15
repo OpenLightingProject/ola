@@ -29,21 +29,19 @@
 #include <ola/network/Socket.h>
 #include <ola/thread/Thread.h>
 
+#include <memory>
 #include <queue>
 #include <set>
-#include <string>
-#include <vector>
+
+#include "common/io/PollerInterface.h"
+#include "common/io/TimeoutManager.h"
 
 class SelectServerTest;
 
 namespace ola {
 namespace io {
 
-using ola::ExportMap;
 using ola::thread::timeout_id;
-using std::priority_queue;
-using std::set;
-using std::string;
 
 
 /**
@@ -52,200 +50,76 @@ using std::string;
  * Terminate() must be called from the thread that Run() was called in.
  */
 class SelectServer: public SelectServerInterface {
-  public :
-    enum Direction {READ, WRITE};
+ public :
+  enum Direction {READ, WRITE};
 
-    SelectServer(ExportMap *export_map = NULL,
-                 Clock *clock = NULL);
-    ~SelectServer();
+  SelectServer(ola::ExportMap *export_map = NULL,
+               Clock *clock = NULL);
+  ~SelectServer();
 
-    bool IsRunning() const { return !m_terminate; }
-    const TimeStamp *WakeUpTime() const { return &m_wake_up_time; }
+  bool IsRunning() const { return !m_terminate; }
+  const TimeStamp *WakeUpTime() const;
 
-    void Terminate();
+  void Terminate();
 
-    void SetDefaultInterval(const TimeInterval &poll_interval);
-    void Run();
-    void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
-                 unsigned int delay_usec = POLL_INTERVAL_USECOND);
+  void SetDefaultInterval(const TimeInterval &poll_interval);
+  void Run();
+  void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
+               unsigned int delay_usec = POLL_INTERVAL_USECOND);
 
-    bool AddReadDescriptor(ReadFileDescriptor *descriptor);
-    bool AddReadDescriptor(ConnectedDescriptor *descriptor,
-                           bool delete_on_close = false);
-    bool RemoveReadDescriptor(ReadFileDescriptor *descriptor);
-    bool RemoveReadDescriptor(ConnectedDescriptor *descriptor);
+  bool AddReadDescriptor(ReadFileDescriptor *descriptor);
+  bool AddReadDescriptor(ConnectedDescriptor *descriptor,
+                         bool delete_on_close = false);
+  bool RemoveReadDescriptor(ReadFileDescriptor *descriptor);
+  bool RemoveReadDescriptor(ConnectedDescriptor *descriptor);
 
-    bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
-    bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
+  bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
+  bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
 
-    timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                        ola::Callback0<bool> *closure);
-    timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
-                                        ola::Callback0<bool> *closure);
+  timeout_id RegisterRepeatingTimeout(unsigned int ms,
+                                      ola::Callback0<bool> *closure);
+  timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
+                                      ola::Callback0<bool> *closure);
 
-    timeout_id RegisterSingleTimeout(unsigned int ms,
-                                     ola::SingleUseCallback0<void> *closure);
-    timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
-                                     ola::SingleUseCallback0<void> *closure);
-    void RemoveTimeout(timeout_id id);
+  timeout_id RegisterSingleTimeout(unsigned int ms,
+                                   ola::SingleUseCallback0<void> *closure);
+  timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
+                                   ola::SingleUseCallback0<void> *closure);
+  void RemoveTimeout(timeout_id id);
 
-    void RunInLoop(ola::Callback0<void> *closure);
+  void RunInLoop(ola::Callback0<void> *closure);
 
-    void Execute(ola::BaseCallback0<void> *closure);
+  void Execute(ola::BaseCallback0<void> *closure);
 
-    // these are pubic so that the tests can access them
-    static const char K_READ_DESCRIPTOR_VAR[];
-    static const char K_WRITE_DESCRIPTOR_VAR[];
-    static const char K_CONNECTED_DESCRIPTORS_VAR[];
-    static const char K_TIMER_VAR[];
-    static const char K_LOOP_TIME[];
-    static const char K_LOOP_COUNT[];
+ private :
+  typedef std::set<ola::Callback0<void>*> LoopClosureSet;
 
-  private :
-    /*
-     * These are timer events, they are used inside the SelectServer class
-     */
-    class Event {
-      public:
-        explicit Event(const TimeInterval &interval, const Clock *clock)
-            : m_interval(interval) {
-          TimeStamp now;
-          clock->CurrentTime(&now);
-          m_next = now + m_interval;
-        }
-        virtual ~Event() {}
-        virtual bool Trigger() = 0;
+  ExportMap *m_export_map;
+  bool m_terminate, m_is_running;
+  TimeInterval m_poll_interval;
+  std::auto_ptr<TimeoutManager> m_timeout_manager;
+  std::auto_ptr<PollerInterface> m_poller;
 
-        void UpdateTime(const TimeStamp &now) {
-          m_next = now + m_interval;
-        }
+  Clock *m_clock;
+  bool m_free_clock;
+  LoopClosureSet m_loop_closures;
+  std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
+  ola::thread::Mutex m_incoming_mutex;
+  LoopbackDescriptor m_incoming_descriptor;
 
-        TimeStamp NextTime() const { return m_next; }
+  bool CheckForEvents(const TimeInterval &poll_interval);
+  void DrainAndExecute();
+  void SetTerminate() { m_terminate = true; }
 
-      private:
-        TimeInterval m_interval;
-        TimeStamp m_next;
-    };
+  // the maximum time we'll wait in the select call
+  static const unsigned int POLL_INTERVAL_SECOND = 10;
+  static const unsigned int POLL_INTERVAL_USECOND = 0;
 
-    // An event that only happens once
-    class SingleEvent: public Event {
-      public:
-        SingleEvent(const TimeInterval &interval,
-                    const Clock *clock,
-                    ola::BaseCallback0<void> *closure):
-          Event(interval, clock),
-          m_closure(closure) {
-        }
+  static const TimeStamp empty_time;
 
-        virtual ~SingleEvent() {
-          if (m_closure)
-            delete m_closure;
-        }
+  friend class ::SelectServerTest;
 
-        bool Trigger() {
-          if (m_closure) {
-            m_closure->Run();
-            // it's deleted itself at this point
-            m_closure = NULL;
-          }
-          return false;
-        }
-
-      private:
-        ola::BaseCallback0<void> *m_closure;
-    };
-
-
-    /*
-     * An event that occurs more than once. The closure can return false to
-     * indicate that it should not be called again.
-     */
-    class RepeatingEvent: public Event {
-      public:
-        RepeatingEvent(const TimeInterval &interval,
-                       const Clock *clock,
-                       ola::BaseCallback0<bool> *closure):
-          Event(interval, clock),
-          m_closure(closure) {
-        }
-        ~RepeatingEvent() {
-          delete m_closure;
-        }
-        bool Trigger() {
-          if (!m_closure)
-            return false;
-          return m_closure->Run();
-        }
-
-      private:
-        ola::BaseCallback0<bool> *m_closure;
-    };
-
-    typedef struct {
-      ConnectedDescriptor *descriptor;
-      bool delete_on_close;
-    } connected_descriptor_t;
-
-    struct connected_descriptor_t_lt {
-      bool operator()(const connected_descriptor_t &c1,
-                      const connected_descriptor_t &c2) const {
-        return c1.descriptor->ReadDescriptor() <
-            c2.descriptor->ReadDescriptor();
-      }
-    };
-
-    struct ltevent {
-      bool operator()(Event *e1, Event *e2) const {
-        return e1->NextTime() > e2->NextTime();
-      }
-    };
-
-    typedef set<ReadFileDescriptor*> ReadDescriptorSet;
-    typedef set<WriteFileDescriptor*> WriteDescriptorSet;
-    typedef set<connected_descriptor_t, connected_descriptor_t_lt>
-      ConnectedDescriptorSet;
-    typedef set<ola::Callback0<void>*> LoopClosureSet;
-
-    bool m_terminate, m_is_running;
-    TimeInterval m_poll_interval;
-    unsigned int m_next_id;
-    ReadDescriptorSet m_read_descriptors;
-    ConnectedDescriptorSet m_connected_read_descriptors;
-    WriteDescriptorSet m_write_descriptors;
-    set<timeout_id> m_removed_timeouts;
-    ExportMap *m_export_map;
-
-    typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
-    event_queue_t m_events;
-    CounterVariable *m_loop_iterations;
-    CounterVariable *m_loop_time;
-    TimeStamp m_wake_up_time;
-    Clock *m_clock;
-    bool m_free_clock;
-    LoopClosureSet m_loop_closures;
-    std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
-    ola::thread::Mutex m_incoming_mutex;
-    LoopbackDescriptor m_incoming_descriptor;
-
-    SelectServer(const SelectServer&);
-    SelectServer operator=(const SelectServer&);
-    bool CheckForEvents(const TimeInterval &poll_interval);
-    void CheckDescriptors(fd_set *r_set, fd_set *w_set);
-    bool AddDescriptorsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
-    TimeStamp CheckTimeouts(const TimeStamp &now);
-    void UnregisterAll();
-    void DrainAndExecute();
-    void SetTerminate() { m_terminate = true; }
-    void SafeIncrement(const string &var_name);
-    void SafeDecrement(const string &var_name);
-
-    static const int K_MS_IN_SECOND = 1000;
-    static const int K_US_IN_SECOND = 1000000;
-    // the maximum time we'll wait in the select call
-    static const unsigned int POLL_INTERVAL_SECOND = 10;
-    static const unsigned int POLL_INTERVAL_USECOND = 0;
-
-    friend class ::SelectServerTest;
+  DISALLOW_COPY_AND_ASSIGN(SelectServer);
 };
 }  // namespace io
 }  // namespace ola

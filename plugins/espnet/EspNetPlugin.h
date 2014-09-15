@@ -33,7 +33,7 @@ namespace espnet {
 class EspNetDevice;
 
 class EspNetPlugin: public ola::Plugin {
-  public:
+ public:
     explicit EspNetPlugin(ola::PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
@@ -43,7 +43,7 @@ class EspNetPlugin: public ola::Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_ESPNET; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
+ private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();

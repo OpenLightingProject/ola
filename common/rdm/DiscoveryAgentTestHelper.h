@@ -44,7 +44,7 @@ typedef std::vector<class MockResponderInterface*> ResponderList;
  * The interface for MockResponders
  */
 class MockResponderInterface {
-  public:
+ public:
     virtual ~MockResponderInterface() {}
 
     virtual const UID& GetUID() const = 0;
@@ -63,7 +63,7 @@ class MockResponderInterface {
  * A MockResponder.
  */
 class MockResponder: public MockResponderInterface {
-  public:
+ public:
     explicit MockResponder(const UID &uid)
         : m_uid(uid),
           m_muted(false) {
@@ -120,7 +120,7 @@ class MockResponder: public MockResponderInterface {
       return true;
     }
 
-  protected:
+ protected:
     virtual bool ShouldRespond(const UID &lower, const UID &upper) const {
       if (m_uid < lower || m_uid > upper)
         return false;
@@ -133,7 +133,7 @@ class MockResponder: public MockResponderInterface {
     UID m_uid;
     bool m_muted;
 
-  private:
+ private:
     void OrAndChecksum(uint8_t *data,
                        unsigned int offset,
                        uint8_t value,
@@ -149,12 +149,12 @@ class MockResponder: public MockResponderInterface {
  * simulates a responder with broken UID inequality handling.
  */
 class BiPolarResponder: public MockResponder {
-  public:
+ public:
     explicit BiPolarResponder(const UID &uid)
         : MockResponder(uid) {
     }
 
-  protected:
+ protected:
     bool ShouldRespond(const UID &lower, const UID &upper) const {
       if (m_uid < lower || m_uid > upper)
         return false;
@@ -174,12 +174,12 @@ class BiPolarResponder: public MockResponder {
  * A responder which doesn't honor mute.
  */
 class ObnoxiousResponder: public MockResponder {
-  public:
+ public:
     explicit ObnoxiousResponder(const UID &uid)
         : MockResponder(uid) {
     }
 
-  protected:
+ protected:
     bool ShouldRespond(const UID &lower, const UID &upper) const {
       if (m_uid < lower || m_uid > upper)
         return false;
@@ -192,7 +192,7 @@ class ObnoxiousResponder: public MockResponder {
  * A responder which replies to DUB with extra data
  */
 class RamblingResponder: public MockResponder {
-  public:
+ public:
     explicit RamblingResponder(const UID &uid)
         : MockResponder(uid) {
     }
@@ -217,7 +217,7 @@ class RamblingResponder: public MockResponder {
  * A responder which replies to DUB with too little data
  */
 class BriefResponder: public MockResponder {
-  public:
+ public:
     explicit BriefResponder(const UID &uid)
         : MockResponder(uid) {
     }
@@ -238,7 +238,7 @@ class BriefResponder: public MockResponder {
  * A responder that doesn't respond to a mute message.
  */
 class NonMutingResponder: public MockResponder {
-  public:
+ public:
     explicit NonMutingResponder(const UID &uid)
         : MockResponder(uid) {
     }
@@ -251,7 +251,7 @@ class NonMutingResponder: public MockResponder {
  * A responder that only mutes after N attempts
  */
 class FlakeyMutingResponder: public MockResponder {
-  public:
+ public:
     explicit FlakeyMutingResponder(const UID &uid,
                                   unsigned int threshold = 2)
         : MockResponder(uid),
@@ -273,7 +273,7 @@ class FlakeyMutingResponder: public MockResponder {
 
     void Reset() { m_attempts = 0; }
 
-  private:
+ private:
     unsigned int m_threshold;
     unsigned int m_attempts;
 };
@@ -283,7 +283,7 @@ class FlakeyMutingResponder: public MockResponder {
  * A proxy responder
  */
 class ProxyResponder: public MockResponder {
-  public:
+ public:
     explicit ProxyResponder(const UID &uid,
                             const ResponderList &responders)
         : MockResponder(uid),
@@ -330,7 +330,7 @@ class ProxyResponder: public MockResponder {
       return r;
     }
 
-  private:
+ private:
     ResponderList m_responders;
 };
 
@@ -339,7 +339,7 @@ class ProxyResponder: public MockResponder {
  * A class which implements the DiscoveryTargetInterface
  */
 class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
-  public:
+ public:
     explicit MockDiscoveryTarget(const ResponderList &responders)
         : m_responders(responders) {
     }
@@ -411,7 +411,7 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
       }
     }
 
-  private:
+ private:
     ResponderList m_responders;
 };
 #endif  // COMMON_RDM_DISCOVERYAGENTTESTHELPER_H_

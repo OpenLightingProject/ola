@@ -108,7 +108,7 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
   if (ok < 0) {
     OLA_WARN << "can't set SO_REUSEPORT for " << m_fd << ", " <<
       strerror(errno);
-    return false;
+    // This is non fatal, since Linux introduced this option in the 3.9 series.
   }
   #endif
 

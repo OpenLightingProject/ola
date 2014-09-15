@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 #define INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -37,7 +38,7 @@ using std::string;
  * Represents a personality.
  */
 class Personality {
-  public:
+ public:
     Personality(uint16_t footprint, const string &description);
     Personality(uint16_t footprint, const string &description,
                 const SlotDataCollection &slot_data);
@@ -51,7 +52,7 @@ class Personality {
       return m_slot_data.Lookup(slot_number);
     }
 
-  private:
+ private:
     uint16_t m_footprint;
     string m_description;
     SlotDataCollection m_slot_data;
@@ -64,7 +65,7 @@ class Personality {
  * singleton.
  */
 class PersonalityCollection {
-  public:
+ public:
     typedef std::vector<Personality> PersonalityList;
 
     explicit PersonalityCollection(const PersonalityList &personalities);
@@ -74,11 +75,13 @@ class PersonalityCollection {
 
     const Personality *Lookup(uint8_t personality) const;
 
-  protected:
+ protected:
     PersonalityCollection() {}
 
-  private:
+ private:
     const PersonalityList m_personalities;
+
+    DISALLOW_COPY_AND_ASSIGN(PersonalityCollection);
 };
 
 
@@ -86,7 +89,8 @@ class PersonalityCollection {
  * Manages the personalities for a single responder
  */
 class PersonalityManager {
-  public:
+ public:
+    explicit PersonalityManager() : m_active_personality(0) {}
     explicit PersonalityManager(const PersonalityCollection *personalities);
 
     uint8_t PersonalityCount() const;
@@ -94,11 +98,14 @@ class PersonalityManager {
     uint8_t ActivePersonalityNumber() const { return m_active_personality; }
     const Personality *ActivePersonality() const;
     uint16_t ActivePersonalityFootprint() const;
+    string ActivePersonalityDescription() const;
     const Personality *Lookup(uint8_t personality) const;
 
-  private:
+ private:
     const PersonalityCollection *m_personalities;
     uint8_t m_active_personality;
+
+    DISALLOW_COPY_AND_ASSIGN(PersonalityManager);
 };
 }  // namespace rdm
 }  // namespace ola

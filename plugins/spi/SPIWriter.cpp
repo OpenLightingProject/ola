@@ -29,6 +29,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
 #include "plugins/spi/SPIWriter.h"
@@ -70,12 +71,11 @@ SPIWriter::~SPIWriter() {
 }
 
 bool SPIWriter::Init() {
-  int fd = open(m_device_path.c_str(), O_RDWR);
-  ola::network::SocketCloser closer(fd);
-  if (fd < 0) {
-    OLA_WARN << "Failed to open " << m_device_path << " : " << strerror(errno);
+  int fd;
+  if (!ola::io::Open(m_device_path, O_RDWR, &fd)) {
     return false;
   }
+  ola::network::SocketCloser closer(fd);
 
   uint8_t spi_mode = SPI_MODE;
   if (m_cs_enable_high) {
