@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCNode.h
  * A DMX orientated, C++ wrapper around liblo.
@@ -129,7 +129,7 @@ class OSCNode {
     }
 
     ola::network::IPV4SocketAddress socket_address;
-    string osc_address;
+    std::string osc_address;
     lo_address liblo_address;
 
    private:
@@ -152,7 +152,7 @@ class OSCNode {
   };
 
   typedef std::map<unsigned int, OSCOutputGroup*> OutputGroupMap;
-  typedef std::map<string, OSCInputGroup*> InputUniverseMap;
+  typedef std::map<std::string, OSCInputGroup*> InputUniverseMap;
 
   struct SlotMessage {
     unsigned int slot;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RootInflator.cpp
  * The Inflator for the root level packets over UDP
@@ -25,6 +25,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 
 /*
  * Decode the root headers. If data is null we're expected to use the last
@@ -37,18 +38,18 @@ namespace e131 {
 bool RootInflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
-                                unsigned int &bytes_used) {
+                                unsigned int *bytes_used) {
   if (data) {
     if (length >= CID::CID_LENGTH) {
       CID cid = CID::FromData(data);
       m_last_hdr.SetCid(cid);
       headers->SetRootHeader(m_last_hdr);
-      bytes_used = CID::CID_LENGTH;
+      *bytes_used = CID::CID_LENGTH;
       return true;
     }
     return false;
   }
-  bytes_used = 0;
+  *bytes_used = 0;
   if (m_last_hdr.GetCid().IsNil()) {
     OLA_WARN << "Missing CID data";
     return false;

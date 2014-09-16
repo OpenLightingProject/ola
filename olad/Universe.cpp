@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Universe.cpp
  * Represents a universe of DMX data.
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * Each universe has the following:
  *   A human readable name
@@ -51,6 +51,14 @@
 
 namespace ola {
 
+using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::UID;
+using std::map;
+using std::ostringstream;
+using std::set;
+using std::string;
+using std::vector;
+
 const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe-uids";
 const char Universe::K_FPS_VAR[] = "universe-dmx-frames";
 const char Universe::K_MERGE_HTP_STR[] = "htp";
@@ -82,7 +90,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
       m_clock(clock),
       m_rdm_discovery_interval(),
       m_last_discovery_time() {
-  stringstream universe_id_str, universe_name_str;
+  ostringstream universe_id_str, universe_name_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
   universe_name_str << "Universe " << universe_id;
@@ -473,7 +481,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     if (iter == m_output_uids.end()) {
       OLA_WARN << "Can't find UID " << request->DestinationUID() <<
         " in the output universe map, dropping request";
-      std::vector<std::string> packets;
+      vector<string> packets;
       callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
       delete request;
     } else {
@@ -779,7 +787,7 @@ void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
 void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
                                   ola::rdm::rdm_response_code code,
                                   const ola::rdm::RDMResponse *response,
-                                  const std::vector<std::string> &packets) {
+                                  const vector<string> &packets) {
   tracker->current_count++;
   if (code != ola::rdm::RDM_WAS_BROADCAST)
     // propagate errors though
@@ -815,7 +823,7 @@ void Universe::HandleBroadcastDiscovery(
     broadcast_request_tracker *tracker,
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
-    const std::vector<std::string> &packets) {
+    const vector<string> &packets) {
   tracker->current_count++;
 
   if (code == ola::rdm::RDM_DUB_RESPONSE) {

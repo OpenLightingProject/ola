@@ -1,45 +1,171 @@
-X/Y/2013 ola-0.9.0`
- API:
- * Added the ability to specify the priority of the DMX data in the C++ API -
-   #266
- * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
- * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
+x/y/2014 ola-0.9.3
+ Features:
+  * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
+  * Add support for the draft E1.31 discovery protocol.
 
+ Bugs:
+
+ API:
+ * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they
+   sort the same regardless of endianness and in a logical way for humans
+
+ RDM Tests:
+
+ Internal:
+ * Update the configure version method to ensure the version files are updated
+   automatically when it changes
+
+20/8/2014 ola-0.9.2
+ Features:
+ * Added --use-epoll which uses epoll() rather than select().
+ * Added --use-kqueue which uses kqueue() rather than select().
+ * Add some more additional slot definitions.
+ * Allow the FTDI thread to switch from BAD to GOOD timing granularity.
+ * Change the flags so the negated ones are --no-, this mostly affects --nohttp
+   and --nohttp-quit in olad
+ * Partial Windows support using MinGW. Build instructions are in
+   README.mingw32.
+   Working:
+   * Building simple client applications
+   * olad, with the web UI
+   * Plugins: Dummy, ArtNet, ShowNet, ESP Net, SandNet, Pathport, OSC, KiNet
+   * Python bindings
+   Not working yet:
+   * all other plugins, especially device-based ones (USB, serial, SPI)
+   * Java bindings
+ * Use the PID (process ID) and current time to init the random seed - #227
+ * Standardise some flags, using --device consistently. This affects
+   ola_artnet, ola_e131 and ola_usbpro
+ * Remove -l long name short option from ola_artnet as it clashes with the
+   global -l log level option. Remove the -e subnet short option too.
+ * Allow the SPI RDM responder's device label to be set and store it in the
+   preferences file.
+ * Added new E1.33 example programs that follow the latest draft document.
+
+ Bugs:
+ * Don't build ola_protoc if --with-ola-protoc= is provided.
+ * Fix the inter-test delay in the RDM tests to work with values less than 1s.
+
+ Internal:
+ * Changed to a non-recursive build. Reduced build times by 5-25%.
+ * Convert more of our programs to our flags module
+ * Standardise the bool flag behaviour to require an argument like
+   string and int do, add a default bool for the old use case.
+ * Standardise ArtnetConfigMessages to ArtNetConfigMessages and ripple related changes through.
+
+21/6/2014 ola-0.9.1
+ Features:
+ * Pretty print IPV4 addresses within the Python RDM code.
+ * Add some additional slot definitions and status messages.
+ * Add a timestamp to model data filenames so they're unique.
+ * Allow OSC ports to be looped.
+ * Add the ability to reload plugins via RPC.
+ * Added a plugin which uses the onboard UART.
+ * Added a Python fade controller demo.
+
+ API:
+ * Change GetIdentifyMode to GetIdentifyDevice in the RDM API to clarify it's
+   the IDENTIFY_DEVICE PID not the newer IDENTIFY_MODE one.
+
+ RDM Tests:
+ * Added the inter-test delay option to the Web UI.
+ * Show transaction numbers in the responder tests to aid debugging
+ * Don't warn about unknown slot definitions if they are manufacturer ones
+ * Added a number of missing Get...WithData tests.
+
+ Bugs:
+ * Fix sensor numbering from 0 on web UI so it matches CLI
+ * Fix the minimum and maximum level supported RDM tests
+ * Stop the Python client throwing an AttributeError if the universe doesn't
+   exist.
+ * Ensure the RDM Model Collector works if the fixture doesn't have personality
+   descriptions.
+ * Only try and fetch supported params for manufacturer PIDs in the model
+   collector.
+ * Fix an issue with strings in hash maps on OS X 10.5
+ * Ensure Rpc_pb2.py is always built.
+ * Fix the recent code changes to work with FreeBSD, NetBSD and OpenBSD
+ * Stop ola_trigger segfaulting at startup - #409
+
+ Internal:
+ * Convert stringstream to ostringstream where possible
+ * Tidy up copyright messages so we're Debian compliant.
+ * Correct FSF address within licenses
+ * Removed #ifdefs from the installed headers.
+ * Clean up the ShowNet code.
+ * Added a JSON & JSON Schame parser.
+ * Documented the RPC format.
+ * First changes required to run on Windows.
+
+1/3/2014 ola-0.9.0
  Features:
  * Added priority support for input ports - #259
  * Added DNS-SD registration support with both Bonjour and Avahi so that the
    OLA web UI appears as _http._tcp - #270
  * Added plugin for Renard serial protocol (Renard SS24, SS8, etc) - #277
- * Added more RDM responder tests to cover some slot related edge cases.
- * Log an error if we try and run an RDM test that doesn't exist.
  * Refactor sensor functionality in the software RDM responders and add a load
    average sensor to them and the SPI responder.
+ * Add a class to represent MAC addresses and support for MAC address RDM types
  * Added pretty printing of sensor definition messages.
  * Added a --duration option to the show recorder - #255.
  * Add a warning if the firmware in an Enttec USB Pro widget doesn't support
    RDM - #275.
  * Print a warning if no Logic device is found when using the RDM sniffer.
- * Added checks to the RDM tests to flag if non-printable characters are
-   returned in any RDM strings - #262.
  * Added support for the P9813 family of SPI pixels.
  * Show dashes in the CLI DMX monitor if a universe has fewer than 512
    channels.
+ * Added initial support for the MilInst 1-553 interface.
+ * Added a version option to all flags based commands; removed the -v verify
+   short option from ola_recorder that clashed.
+ * Added a dummy responder which implements the draft E1.37-2 PIDs.
+ * Standardised all the following long arguments from _ to - in programs and
+   completion: --skip_queued_messages --www_dir --log_directory
+   --world_writeable
+ * Standardised on --pid-location in Python programs and
+   completion.
+
+ API:
+ * Added the ability to specify the priority of the DMX data in the C++ API -
+   #266
+ * Clean up of the C++ client API. deprecated ola::OlaCallbackClient.
+ * Added a Version API.
+ * Renamed DMXRecieved(sic) to DMXReceived in ola::Client
+ * Renamed valiator(sic) to validator, incomming(sic) to incoming, mimimun(sic)
+   to minimum and overiding(sic) to overriding, all of which may or may not
+   have impact to APIs.
+
+ RDM Tests:
+ * Added more RDM responder tests to cover some slot related edge cases.
+ * Log an error if we try and run an RDM test that doesn't exist.
+ * Added the --inter-test-delay option
+ * Added checks to the RDM tests to flag if non-printable characters are
+   returned in any RDM strings - #262.
+ * Fixed bugs in the MuteDevice, Fail & Startup mode tests.
 
  Bugs:
  * Build fixes for OS X 10.9 - #265.
  * Build fixes for FreeBSD 10.0-BETA3.
- * Fix a bug in the RDM tests relating to Fail & Startup modes.
  * Fix the web and CLI UIs so they work if strings from RDM devices have
    unprintable characters in them - #263.
  * Fix a bug in the KiNet plugin - #276
 
  Internal:
+ * Cleaned up the autotools configuration, `make distcheck` now works.
+ * Cleaned up public header files.
+ * Added configuration for Travis continuous integration.
  * Switched to using a custom generator for the C++ RPC Code.
  * Split PID data into 3 files.
  * Added more code documentation, cleaned up some new linter warnings.
  * Added the DISALLOW_COPY_AND_ASSIGN macro.
  * Refactor load average function out into system utils.
  * Switch the SPI RDM responders to using the core personality management code.
+ * Renamed SetDecription(sic) to SetDescription in ola::Flags
+
+Documentation:
+ * Changed links from google code to github.
+ * Added more doxygen comments.
+ * Added more man pages.
+ * Updated README, CONTRIBUTING and README.developer
 
 22/10/2013 ola-0.8.33
  * Fix the build breakage when using XCode 5 (clang 500)

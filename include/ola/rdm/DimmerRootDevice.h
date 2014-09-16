@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerRootDevice_h
  * Copyright (C) 2013 Simon Newton
@@ -29,24 +29,23 @@
 #ifndef INCLUDE_OLA_RDM_DIMMERROOTDEVICE_H_
 #define INCLUDE_OLA_RDM_DIMMERROOTDEVICE_H_
 
+#include <ola/rdm/DimmerSubDevice.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/UID.h>
+
 #include <string>
 #include <map>
-#include "ola/rdm/DimmerSubDevice.h"
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
-
-using std::vector;
 
 /**
  * The root device in the simulated dimmer.
  */
 class DimmerRootDevice: public RDMControllerInterface {
  public:
-    typedef const map<uint16_t, class DimmerSubDevice*> SubDeviceMap;
+    typedef const std::map<uint16_t, class DimmerSubDevice*> SubDeviceMap;
 
     DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices);
 

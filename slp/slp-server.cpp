@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * slp-server.cpp
  * Copyright (C) 2012 Simon Newton
@@ -20,7 +20,9 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <signal.h>
+#ifndef _WIN32
 #include <sysexits.h>
+#endif
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
@@ -324,14 +326,14 @@ int main(int argc, char *argv[]) {
 
   {
     // find an interface to use
-    ola::network::Interface interface;
+    ola::network::Interface iface;
     auto_ptr<const ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&interface, options.preferred_ip_address)) {
+    if (!picker->ChooseInterface(&iface, options.preferred_ip_address)) {
       OLA_INFO << "Failed to find an interface";
       exit(ola::EXIT_UNAVAILABLE);
     }
-    slp_options.ip_address = interface.ip_address;
+    slp_options.ip_address = iface.ip_address;
   }
 
   auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(slp_options.slp_port));

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseInflator.cpp
  * The BaseInflator, other Inflators inherit from this one.
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <algorithm>
@@ -80,7 +80,7 @@ unsigned int BaseInflator::InflatePDUBlock(HeaderSet *headers,
   do {
     unsigned int bytes_used = 0;
     unsigned int pdu_length = 0;
-    if (!DecodeLength(data + offset, length - offset, pdu_length, bytes_used))
+    if (!DecodeLength(data + offset, length - offset, &pdu_length, &bytes_used))
       return offset;
 
     if (offset + pdu_length <= length) {
@@ -112,12 +112,12 @@ void BaseInflator::ResetPDUFields() {
  */
 bool BaseInflator::DecodeLength(const uint8_t *data,
                                 unsigned int length,
-                                unsigned int &pdu_length,
-                                unsigned int &bytes_used) const {
+                                unsigned int *pdu_length,
+                                unsigned int *bytes_used) const {
   uint8_t flags = data[0];
   if (!length) {
-    bytes_used = 0;
-    pdu_length = 0;
+    *bytes_used = 0;
+    *pdu_length = 0;
     return false;
   }
 
@@ -126,8 +126,8 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
       OLA_WARN << "PDU length " << length << " < 3 and the LENGTH bit is set";
       return false;
     }
-    bytes_used = 3;
-    pdu_length =(data[2] +
+    *bytes_used = 3;
+    *pdu_length = (data[2] +
         static_cast<unsigned int>(data[1] << 8) +
         static_cast<unsigned int>((data[0] & LENGTH_MASK) << 16));
   } else {
@@ -135,14 +135,14 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
       OLA_WARN << "PDU length " << length << " < 2";
       return false;
     }
-    bytes_used = 2;
-    pdu_length = data[1] + static_cast<unsigned int>(
+    *bytes_used = 2;
+    *pdu_length = data[1] + static_cast<unsigned int>(
         (data[0] & LENGTH_MASK) << 8);
   }
-  if (pdu_length < bytes_used) {
-    OLA_WARN << "PDU length was set to " << pdu_length << " but " << bytes_used
-      << " bytes were used in the header";
-    bytes_used = 0;
+  if (*pdu_length < *bytes_used) {
+    OLA_WARN << "PDU length was set to " << *pdu_length << " but "
+             << *bytes_used << " bytes were used in the header";
+    *bytes_used = 0;
     return false;
   }
   return true;
@@ -158,25 +158,25 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
  * @param bytes_used the number of bytes consumed
  */
 bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
-                                unsigned int length, uint32_t &vector,
-                                unsigned int &bytes_used) {
+                                unsigned int length, uint32_t *vector,
+                                unsigned int *bytes_used) {
   if (flags & PDU::VFLAG_MASK) {
     if ((unsigned int) m_vector_size > length) {
-      vector = 0;
-      bytes_used = 0;
+      *vector = 0;
+      *bytes_used = 0;
       return false;
     }
 
     switch (m_vector_size) {
       case PDU::ONE_BYTE:
-        vector = *data;
+        *vector = *data;
         break;
       case PDU::TWO_BYTES:
-        vector = data[1] + static_cast<unsigned int>(data[0] << 8);
+        *vector = data[1] + static_cast<unsigned int>(data[0] << 8);
         break;
       case PDU::FOUR_BYTES:
         // careful: we can't cast to a uint32 because this isn't word aligned
-        vector = data[3] +
+        *vector = data[3] +
           static_cast<unsigned int>(data[2] << 8) +
           static_cast<unsigned int>(data[1] << 16) +
           static_cast<unsigned int>(data[0] << 24);
@@ -186,15 +186,15 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
         return false;
     }
     m_vector_set = true;
-    bytes_used = m_vector_size;
-    m_last_vector = vector;
+    *bytes_used = m_vector_size;
+    m_last_vector = *vector;
   } else {
-    bytes_used = 0;
+    *bytes_used = 0;
     if (m_vector_set) {
-      vector = m_last_vector;
+      *vector = m_last_vector;
     } else {
-      vector = 0;
-      bytes_used = 0;
+      *vector = 0;
+      *bytes_used = 0;
       OLA_WARN << "Vector not set and no field to inherit from";
       return false;
     }
@@ -219,15 +219,15 @@ bool BaseInflator::InflatePDU(HeaderSet *headers,
   unsigned int data_offset, header_bytes_used;
   bool result;
 
-  if (!DecodeVector(flags, data, pdu_len, vector, data_offset))
+  if (!DecodeVector(flags, data, pdu_len, &vector, &data_offset))
     return false;
 
   if (flags & PDU::HFLAG_MASK) {
     result = DecodeHeader(headers, data + data_offset,
                           pdu_len - data_offset,
-                          header_bytes_used);
+                          &header_bytes_used);
   } else {
-    result = DecodeHeader(headers, NULL, 0, header_bytes_used);
+    result = DecodeHeader(headers, NULL, 0, &header_bytes_used);
     header_bytes_used = 0;
   }
   if (!result)

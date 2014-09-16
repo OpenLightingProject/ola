@@ -1,17 +1,17 @@
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderLoadSensor.h
  * Copyright (C) 2013 Peter Newman
@@ -28,9 +28,10 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERLOADSENSOR_H_
 #define INCLUDE_OLA_RDM_RESPONDERLOADSENSOR_H_
 
+#include <ola/rdm/ResponderSensor.h>
+#include <ola/system/SystemUtils.h>
+
 #include <string>
-#include "ola/rdm/ResponderSensor.h"
-#include "ola/system/SystemUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -40,7 +41,7 @@ namespace rdm {
 class LoadSensor: public Sensor {
  public:
   LoadSensor(const ola::system::load_averages load_average,
-             const string &description)
+             const std::string &description)
       : Sensor(SENSOR_OTHER,
                UNITS_NONE,
                PREFIX_CENTI,

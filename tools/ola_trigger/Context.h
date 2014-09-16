@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Context.h
  * Copyright (C) 2011 Simon Newton
@@ -22,7 +22,7 @@
 #define TOOLS_OLA_TRIGGER_CONTEXT_H_
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <stdint.h>
@@ -30,8 +30,17 @@
 #include <string>
 #include HASH_MAP_H
 
-using std::string;
+#ifndef HAVE_UNORDERED_MAP
+// This adds support for hashing strings if it's not present
+namespace HASH_NAMESPACE {
 
+template<> struct hash<std::string> {
+  size_t operator()(const std::string& x) const {
+    return hash<const char*>()(x.c_str());
+  }
+};
+}  // namespace HASH_NAMESPACE
+#endif
 
 /**
  * A context is a collection of variables and their values.
@@ -41,20 +50,21 @@ class Context {
     Context() {}
     ~Context();
 
-    bool Lookup(const string &name, string *value) const;
-    void Update(const string &name, const string &value);
+    bool Lookup(const std::string &name, std::string *value) const;
+    void Update(const std::string &name, const std::string &value);
 
     void SetSlotValue(uint8_t value);
     void SetSlotOffset(uint16_t offset);
 
-    string AsString() const;
+    std::string AsString() const;
     friend std::ostream& operator<<(std::ostream &out, const Context&);
 
     static const char SLOT_VALUE_VARIABLE[];
     static const char SLOT_OFFSET_VARIABLE[];
 
  private:
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;
+    typedef HASH_NAMESPACE::HASH_MAP_CLASS<std::string,
+                                           std::string> VariableMap;
     VariableMap m_variables;
 };
 #endif  // TOOLS_OLA_TRIGGER_CONTEXT_H_

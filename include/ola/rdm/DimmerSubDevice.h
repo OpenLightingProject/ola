@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerSubDevice.h
  * Copyright (C) 2013 Simon Newton
@@ -28,12 +28,13 @@
 #ifndef INCLUDE_OLA_RDM_DIMMERSUBDEVICE_H_
 #define INCLUDE_OLA_RDM_DIMMERSUBDEVICE_H_
 
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/ResponderPersonality.h>
+#include <ola/rdm/UID.h>
+
 #include <string>
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/ResponderPersonality.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {

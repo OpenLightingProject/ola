@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Port.h
  * The E1.31 port for OLA
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131PORT_H_
@@ -30,72 +30,78 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::DmxBuffer;
-
-
 class E131PortHelper {
  public:
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description(Universe *universe) const;
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+  std::string Description(Universe *universe) const;
  private:
-    static const unsigned int MAX_E131_UNIVERSE = 63999;
+  static const unsigned int MAX_E131_UNIVERSE = 63999;
 };
 
 
 class E131InputPort: public BasicInputPort {
  public:
-    E131InputPort(E131Device *parent, int id, E131Node *node,
-                  class PluginAdaptor *plugin_adaptor)
-        : BasicInputPort(parent, id, plugin_adaptor),
-          m_node(node) {
-      SetPriorityMode(PRIORITY_MODE_INHERIT);
-    }
+  E131InputPort(E131Device *parent, int id, E131Node *node,
+                class PluginAdaptor *plugin_adaptor)
+      : BasicInputPort(parent, id, plugin_adaptor),
+        m_node(node) {
+    SetPriorityMode(PRIORITY_MODE_INHERIT);
+  }
 
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
-      return m_helper.PreSetUniverse(old_universe, new_universe);
-    }
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description() const { return m_helper.Description(GetUniverse()); }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool SupportsPriorities() const { return true; }
-    uint8_t InheritedPriority() const { return m_priority; }
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    return m_helper.PreSetUniverse(old_universe, new_universe);
+  }
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+  std::string Description() const {
+    return m_helper.Description(GetUniverse());
+  }
+  const ola::DmxBuffer &ReadDMX() const { return m_buffer; }
+  bool SupportsPriorities() const { return true; }
+  uint8_t InheritedPriority() const { return m_priority; }
 
  private:
-    DmxBuffer m_buffer;
-    E131Node *m_node;
-    E131PortHelper m_helper;
-    uint8_t m_priority;
+  ola::DmxBuffer m_buffer;
+  E131Node *m_node;
+  E131PortHelper m_helper;
+  uint8_t m_priority;
 };
 
 
 class E131OutputPort: public BasicOutputPort {
  public:
-    E131OutputPort(E131Device *parent, int id, E131Node *node,
-                   bool prepend_hostname)
-        : BasicOutputPort(parent, id),
-          m_prepend_hostname(prepend_hostname),
-          m_preview_on(false),
-          m_node(node) {}
+  E131OutputPort(E131Device *parent, int id, E131Node *node,
+                 bool prepend_hostname)
+      : BasicOutputPort(parent, id),
+        m_prepend_hostname(prepend_hostname),
+        m_preview_on(false),
+        m_node(node) {
+    m_last_priority = GetPriority();
+  }
 
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
-      return m_helper.PreSetUniverse(old_universe, new_universe);
-    }
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
-    string Description() const { return m_helper.Description(GetUniverse()); }
+  ~E131OutputPort();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    void UniverseNameChanged(const string &new_name);
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    return m_helper.PreSetUniverse(old_universe, new_universe);
+  }
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+  std::string Description() const {
+    return m_helper.Description(GetUniverse());
+  }
 
-    void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
-    bool PreviewMode() const { return m_preview_on; }
-    bool SupportsPriorities() const { return true; }
+  bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority);
+  void UniverseNameChanged(const std::string &new_name);
+
+  void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
+  bool PreviewMode() const { return m_preview_on; }
+  bool SupportsPriorities() const { return true; }
 
  private:
-    bool m_prepend_hostname;
-    bool m_preview_on;
-    DmxBuffer m_buffer;
-    E131Node *m_node;
-    E131PortHelper m_helper;
+  bool m_prepend_hostname;
+  bool m_preview_on;
+  uint8_t m_last_priority;
+  ola::DmxBuffer m_buffer;
+  E131Node *m_node;
+  E131PortHelper m_helper;
 };
 }  // namespace e131
 }  // namespace plugin

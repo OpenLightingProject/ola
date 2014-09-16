@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * UID.h
  * Representation of an RDM UID
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -35,9 +35,6 @@
 
 namespace ola {
 namespace rdm {
-
-using std::ostream;
-using std::string;
 
 /**
  * @addtogroup rdm_uid
@@ -186,7 +183,7 @@ class UID {
      * @returns a string in the form XXXX:YYYYYYYY.
      */
     std::string ToString() const {
-      std::stringstream str;
+      std::ostringstream str;
       str << std::setfill('0') << std::setw(4) << std::hex << m_uid.esta_id
         << ":" << std::setw(8) << m_uid.device_id;
       return str.str();
@@ -197,7 +194,7 @@ class UID {
      * @param out the ostream
      * @param uid the UID to write.
      */
-    friend ostream& operator<< (ostream &out, const UID &uid) {
+    friend std::ostream& operator<< (std::ostream &out, const UID &uid) {
       return out << uid.ToString();
     }
 
@@ -253,7 +250,7 @@ class UID {
      * @return a new UID object, or NULL if the string is not a valid UID.
      * Ownership of the new UID object is transferred to the caller.
      */
-    static UID* FromString(const string &uid);
+    static UID* FromString(const std::string &uid);
 
     /**
      * The size of a UID.

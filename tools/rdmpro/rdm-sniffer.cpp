@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * rdm-sniffer.cpp
  * RDM Sniffer software for the ENTTEC RDM Pro.
@@ -21,11 +21,12 @@
 #include <string.h>
 #include <time.h>
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
@@ -50,7 +51,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-using std::stringstream;
 using std::vector;
 using ola::io::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
@@ -61,17 +61,17 @@ using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
 
-DEFINE_s_bool(display_dmx, d, false,
-              "Display DMX frames. Defaults to false.");
-DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
-DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_default_bool(display_dmx, d, false,
+                      "Display DMX frames. Defaults to false.");
+DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
 DEFINE_s_string(readfile, p, "",
                 "Display data from a previously captured file.");
 DEFINE_s_string(savefile, w, "",
                 "Also write the captured data to a file.");
-DEFINE_bool(display_asc, false,
-              "Display non-RDM alternate start code frames.");
-DEFINE_int16(dmx_slot_limit, 512,
+DEFINE_default_bool(display_asc, false,
+                    "Display non-RDM alternate start code frames.");
+DEFINE_int16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
              "Only display the first N slots of DMX data.");
 
 /**
@@ -120,12 +120,12 @@ class RDMSniffer {
 
     static void InitOptions(RDMSnifferOptions *options) {
       options->display_dmx_frames = false;
-      options->dmx_slot_limit = DMX_UNIVERSE_SIZE;
+      options->dmx_slot_limit = ola::DMX_UNIVERSE_SIZE;
       options->display_rdm_frames = true;
       options->summarize_rdm_frames = true;
       options->unpack_param_data = true;
       options->display_non_rdm_asc_frames = true;
-      options->pid_location = PID_DATA_DIR;
+      options->pid_location = "";
       options->write_file = "";
       options->timestamp = false;
     }
@@ -289,7 +289,7 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
  */
 void RDMSniffer::ProcessFrame() {
   switch (m_frame[0]) {
-    case DMX512_START_CODE:
+    case ola::DMX512_START_CODE:
       if (m_options.display_dmx_frames)
         DisplayDmxFrame();
       break;
@@ -439,11 +439,8 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options] <usb-device-path>",
-      "Sniff traffic from a ENTTEC RDM Pro device.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[ options ] <usb-device-path>",
+               "Sniff traffic from a ENTTEC RDM Pro device.");
 
   if (!FLAGS_savefile.str().empty() && !FLAGS_readfile.str().empty()) {
     ola::DisplayUsage();

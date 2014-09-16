@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ManagementEndpoint.cpp
  * Copyright (C) 2012 Simon Newton
@@ -134,7 +134,7 @@ void ManagementEndpoint::SendRDMRequest(const RDMRequest *request,
     // This request just goes to the other responders.
     m_controller->SendRDMRequest(request, on_complete);
   } else {
-    std::vector<std::string> packets;
+    vector<string> packets;
     delete request;
     on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
   }
@@ -240,10 +240,11 @@ const RDMResponse *ManagementEndpoint::GetEndpointIdentify(
     return NackWithReason(request, ola::rdm::NR_ENDPOINT_NUMBER_INVALID);
   }
 
+  PACK(
   struct IdentifyEndpointParamData {
     uint16_t endpoint_number;
     uint8_t identify_mode;
-  } __attribute__((packed));
+  });
   IdentifyEndpointParamData endpoint_identify_message = {
     HostToNetwork(endpoint_id), endpoint->identify_mode()
   };
@@ -256,10 +257,11 @@ const RDMResponse *ManagementEndpoint::GetEndpointIdentify(
 
 const RDMResponse *ManagementEndpoint::SetEndpointIdentify(
     const RDMRequest *request) {
+  PACK(
   struct IdentifyEndpointParamData {
     uint16_t endpoint_number;
     uint8_t identify_mode;
-  } __attribute__((packed));
+  });
   IdentifyEndpointParamData endpoint_identify_message;
 
   if (request->ParamDataSize() != sizeof(endpoint_identify_message)) {
@@ -417,11 +419,12 @@ const RDMResponse *ManagementEndpoint::GetTCPCommsStatus(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  PACK(
   struct tcp_stats_message_s {
     uint32_t ip_address;
     uint16_t unhealthy_events;
     uint16_t connection_events;
-  } __attribute__((packed));
+  });
   struct tcp_stats_message_s tcp_stats_message;
 
   tcp_stats_message.ip_address = m_tcp_stats->ip_address.AsInt();

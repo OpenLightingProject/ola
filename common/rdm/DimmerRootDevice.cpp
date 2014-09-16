@@ -11,20 +11,20 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerRootDevice.cpp
  * Copyright (C) 2013 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
@@ -160,10 +160,12 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  PACK(
   struct block_address_pdl {
     uint16_t total_footprint;
     uint16_t base_address;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(block_address_pdl) == 4);
 
   block_address_pdl pdl;
   pdl.base_address = 0;
@@ -210,7 +212,7 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   if (base_start_address < 1 ||
-      base_start_address + total_footprint - 1 > DMX_MAX_CHANNEL_VALUE) {
+      base_start_address + total_footprint - 1 > DMX_MAX_SLOT_VALUE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 

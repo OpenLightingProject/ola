@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SLPSATestRunner.cpp
  * Copyright (C) 2013 Simon Newton
@@ -303,15 +303,14 @@ void TestRunner::Run() {
 void TestRunner::ReceiveData() {
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
-  ola::network::IPV4Address source_ip;
-  uint16_t port;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                         &packet_size, source_ip, port))
+                         &packet_size, &source))
     return;
 
-  if (source_ip != m_target.Host()) {
-    OLA_INFO << "Ignoring message from " << source_ip;
+  if (source.Host() != m_target.Host()) {
+    OLA_INFO << "Ignoring message from " << source;
     return;
   }
 

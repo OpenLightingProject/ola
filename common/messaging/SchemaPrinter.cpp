@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SchemaPrinter.cpp
  * Prints the text representation of a schema.
@@ -38,7 +38,8 @@ void SchemaPrinter::Visit(const BoolFieldDescriptor *descriptor) {
 
 
 void SchemaPrinter::Visit(const IPV4FieldDescriptor *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": IPv4" << endl;
+  m_str << string(m_indent, ' ') << descriptor->Name() << ": IPv4 address"
+        << endl;
 }
 
 

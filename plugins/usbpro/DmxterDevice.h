@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxterDevice.h
  * The Goddard Design Dmxter RDM and miniDmxter
@@ -36,15 +36,15 @@ namespace usbpro {
 class DmxterDevice: public UsbSerialDevice {
  public:
     DmxterDevice(ola::AbstractPlugin *owner,
-                 const string &name,
+                 const std::string &name,
                  DmxterWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial);
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
 
  private:
-    string m_device_id;
+    std::string m_device_id;
 };
 
 
@@ -77,7 +77,7 @@ class DmxterOutputPort: public BasicOutputPort {
       m_widget->RunIncrementalDiscovery(on_complete);
     }
 
-    string Description() const { return "RDM Only"; }
+    std::string Description() const { return "RDM Only"; }
 
  private:
     DmxterWidget *m_widget;

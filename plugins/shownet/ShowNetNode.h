@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ShowNetNode.h
  * Header file for the ShowNetNode class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_SHOWNET_SHOWNETNODE_H_
@@ -25,6 +25,7 @@
 #include <map>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/base/Macro.h"
 #include "ola/dmx/RunLengthEncoder.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
@@ -34,16 +35,14 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-using std::string;
-
 class ShowNetNode {
  public:
-    explicit ShowNetNode(const string &ip_address);
+    explicit ShowNetNode(const std::string &ip_address);
     virtual ~ShowNetNode();
 
     bool Start();
     bool Stop();
-    void SetName(const string &name);
+    void SetName(const std::string &name);
 
     bool SendDMX(unsigned int universe, const ola::DmxBuffer &buffer);
     bool SetHandler(unsigned int universe,
@@ -70,27 +69,28 @@ class ShowNetNode {
 
     bool m_running;
     uint16_t m_packet_count;
-    string m_node_name;
-    string m_preferred_ip;
+    std::string m_node_name;
+    std::string m_preferred_ip;
     std::map<unsigned int, universe_handler> m_handlers;
     ola::network::Interface m_interface;
     ola::dmx::RunLengthEncoder m_encoder;
     ola::network::UDPSocket *m_socket;
 
-    ShowNetNode(const ShowNetNode&);
-    ShowNetNode& operator=(const ShowNetNode&);
-    bool HandlePacket(const shownet_data_packet &packet, unsigned int size);
-    unsigned int PopulatePacket(shownet_data_packet *packet,
-                                unsigned int universe,
-                                const DmxBuffer &buffer);
+    bool HandlePacket(const shownet_packet *packet, unsigned int size);
+    bool HandleCompressedPacket(const shownet_compressed_dmx *packet,
+                                unsigned int packet_size);
+    unsigned int BuildCompressedPacket(shownet_packet *packet,
+                                       unsigned int universe,
+                                       const DmxBuffer &buffer);
     bool InitNetwork();
-    inline uint8_t ShortGetHigh(uint16_t x) const { return (0xff00 & x) >> 8; }
-    inline uint8_t ShortGetLow(uint16_t x) const { return 0x00ff & x; }
 
     static const uint16_t SHOWNET_PORT = 2501;
-    static const uint8_t SHOWNET_ID_HIGH = 0x80;
-    static const uint8_t SHOWNET_ID_LOW = 0x8f;
+    // In the shownet spec, the pass(2) and name(9) fields are combined with the
+    // compressed data. This means the indicies referenced in indexBlocks are
+    // off by 11.
     static const int MAGIC_INDEX_OFFSET = 11;
+
+    DISALLOW_COPY_AND_ASSIGN(ShowNetNode);
 };
 }  // namespace shownet
 }  // namespace plugin

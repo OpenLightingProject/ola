@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCTarget.h
  * Represents a IP:Port & OSC Address pair used to direct OSC messages.
@@ -30,7 +30,7 @@ namespace osc {
 
 struct OSCTarget {
   ola::network::IPV4SocketAddress socket_address;
-  string osc_address;
+  std::string osc_address;
 
   // The default constructor.
   OSCTarget() {}
@@ -55,9 +55,9 @@ struct OSCTarget {
   /**
    * @brief A helper function to write a OSCTarget to an ostream.
    * @param out the ostream
-   * @param uid the UID to write.
+   * @param target the OSCTarget to write.
    */
-  friend ostream& operator<<(ostream &out, const OSCTarget &target) {
+  friend std::ostream& operator<<(std::ostream &out, const OSCTarget &target) {
     return out << target.ToString();
   }
 };

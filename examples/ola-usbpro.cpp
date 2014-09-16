@@ -11,16 +11,17 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-dev-info.cpp
- *  Displays the available devices and ports
- *  Copyright (C) 2005-2009 Simon Newton
+ * ola-usbpro.cpp
+ * Configure Enttec USB Pro Devices managed by OLA
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <ola/plugin_id.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <plugins/usbpro/messages/UsbProConfigMessages.pb.h>
 #include <iomanip>
 #include <iostream>
@@ -33,39 +34,22 @@ using std::cout;
 using std::endl;
 using std::string;
 
-static const int K_INVALID_VALUE = -1;
-
-/*
- * the config_mode is determined by the name in which we were called
- */
-typedef enum {
-  NONE,
-  MODE_PARAM,
-  MODE_SERIAL,
-  MODE_PORT_ASSIGNMENT,
-} config_mode;
-
-
-typedef struct {
-  config_mode mode;  // config_mode
-  string command;    // argv[0]
-  int device_id;     // device id
-  int port;          // port
-  bool help;         // help
-  int brk;           // brk
-  int mab;           // mab
-  int rate;          // rate
-} options;
-
+DECLARE_int32(device);
+DEFINE_s_default_bool(assignments, a, false, "Get the port assignments.");
+DEFINE_s_int32(brk, b, -1, "Set the break time (9 - 127).");
+DEFINE_s_default_bool(get_params, g, false, "Get the current parameters.");
+DEFINE_s_int32(mab, m, -1, "Set the make after-break-time (1 - 127).");
+DEFINE_s_int32(port, p, -1, "The port to configure.");
+DEFINE_s_int32(rate, r, -1, "Set the transmission rate (1 - 40).");
+DEFINE_s_default_bool(serial, s, false, "Get the serial number.");
 
 /*
  * A class which configures UsbPro devices.
  */
 class UsbProConfigurator: public OlaConfigurator {
  public:
-    explicit UsbProConfigurator(const options &opts):
-      OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_USBPRO),
-      m_opts(opts) {}
+    UsbProConfigurator()
+        : OlaConfigurator(FLAGS_device, ola::OLA_PLUGIN_USBPRO) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();
     bool SendParametersRequest();
@@ -77,7 +61,6 @@ class UsbProConfigurator: public OlaConfigurator {
     void DisplaySerial(const ola::plugin::usbpro::SerialNumberReply &reply);
     void DisplayPortAssignment(
         const ola::plugin::usbpro::PortAssignmentReply &reply);
-    options m_opts;
 };
 
 
@@ -119,19 +102,13 @@ void UsbProConfigurator::HandleConfigResponse(const string &reply,
  * Send the appropriate ConfigRequest
  */
 void UsbProConfigurator::SendConfigRequest() {
-  switch (m_opts.mode) {
-    case MODE_PARAM:
-      SendParametersRequest();
-      break;
-    case MODE_SERIAL:
-      SendSerialRequest();
-      break;
-    case MODE_PORT_ASSIGNMENT:
-      SendPortAssignmentRequest();
-      break;
-    default:
-      cout << "Unknown mode" << endl;
-      Terminate();
+  if (FLAGS_serial) {
+    SendSerialRequest();
+  } else if (FLAGS_assignments) {
+    SendPortAssignmentRequest();
+  } else {
+    // Also FLAGS_get_params
+    SendParametersRequest();
   }
 }
 
@@ -145,13 +122,13 @@ bool UsbProConfigurator::SendParametersRequest() {
 
   ola::plugin::usbpro::ParameterRequest *parameter_request =
     request.mutable_parameters();
-  parameter_request->set_port_id(m_opts.port);
-  if (m_opts.brk != K_INVALID_VALUE)
-    parameter_request->set_break_time(m_opts.brk);
-  if (m_opts.mab != K_INVALID_VALUE)
-    parameter_request->set_mab_time(m_opts.mab);
-  if (m_opts.rate != K_INVALID_VALUE)
-    parameter_request->set_rate(m_opts.rate);
+  parameter_request->set_port_id(FLAGS_port);
+  if (FLAGS_brk.present())
+    parameter_request->set_break_time(FLAGS_brk);
+  if (FLAGS_mab.present())
+    parameter_request->set_mab_time(FLAGS_mab);
+  if (FLAGS_rate.present())
+    parameter_request->set_rate(FLAGS_rate);
   return SendMessage(request);
 }
 
@@ -216,127 +193,34 @@ void UsbProConfigurator::DisplayPortAssignment(
 
 
 /*
- * Init options
- */
-void InitOptions(options *opts) {
-  opts->mode = MODE_PARAM;
-  opts->device_id = K_INVALID_VALUE;
-  opts->port = K_INVALID_VALUE;
-  opts->help = false;
-  opts->brk = K_INVALID_VALUE;
-  opts->mab = K_INVALID_VALUE;
-  opts->rate = K_INVALID_VALUE;
-}
-
-
-/*
- * Parse our cmd line options
- */
-int ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"brk",     required_argument,  0, 'k'},
-      {"dev",     required_argument,  0, 'd'},
-      {"help",    no_argument,        0, 'h'},
-      {"mab",     required_argument,  0, 'm'},
-      {"port",    required_argument,  0, 'p'},
-      {"rate",    required_argument,  0, 'r'},
-      {"serial",  no_argument,  0, 's'},
-      {0, 0, 0, 0}
-    };
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "ab:d:hm:p:r:s", long_options, &option_index);
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'a':
-        opts->mode = MODE_PORT_ASSIGNMENT;
-        break;
-      case 'b':
-        opts->brk = atoi(optarg);
-        break;
-      case 'd':
-        opts->device_id = atoi(optarg);
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'm':
-        opts->mab = atoi(optarg);
-        break;
-      case 'p':
-        opts->port = atoi(optarg);
-        break;
-      case 'r':
-        opts->rate = atoi(optarg);
-        break;
-      case 's':
-        opts->mode = MODE_SERIAL;
-        break;
-      case '?':
-        break;
-    }
-  }
-  return 0;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(const options &opts) {
-  cout << "Usage: " << opts.command <<
-    " -d <dev_id> [--serial | -b <brk> -m <mab> -r <rate>]\n\n"
-    "Configure Enttec USB Pro Devices managed by OLA.\n\n"
-    "  -a, --assignments   Get the port assignments.\n" <<
-    "  -b, --brk <brk>     Set the break time (9 - 127)\n"
-    "  -d, --dev <device>  The device to configure\n"
-    "  -h, --help          Display this help message and exit.\n"
-    "  -m, --mab <mab>     Set the make after-break-time (1 - 127)\n"
-    "  -p, --port <port>   The port to configure\n"
-    "  -r, --rate <rate>   Set the transmission rate (1 - 40).\n"
-    "  -s, --serial        Get the serial number.\n" <<
-    endl;
-  exit(0);
-}
-
-
-void CheckOptions(options *opts) {
-  // check for valid parameters
-  if (opts->brk != K_INVALID_VALUE && (opts->brk < 9 || opts->brk > 127))
-    opts->mode = NONE;
-
-  if (opts->mab != K_INVALID_VALUE && (opts->mab < 1 || opts->mab > 127))
-    opts->mode = NONE;
-
-  if (opts->rate != K_INVALID_VALUE && (opts->rate < 1 || opts->rate > 40))
-    opts->mode = NONE;
-}
-
-
-/*
  * The main function
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  opts.command = argv[0];
-  InitOptions(&opts);
-  ParseOptions(argc, argv, &opts);
-  CheckOptions(&opts);
+  ola::AppInit(
+      &argc,
+      argv,
+      "-d <dev_id> [--serial | -p <port> --g | -p <port> -b <brk> -m <mab> -r "
+          "<rate>]",
+      "Configure Enttec USB Pro Devices managed by OLA.");
 
-  if (opts.help || opts.device_id < 0 || opts.mode == NONE)
-    DisplayHelpAndExit(opts);
+  if (FLAGS_device < 0)
+    ola::DisplayUsageAndExit();
 
-  if (opts.mode == MODE_PARAM && opts.port == K_INVALID_VALUE)
-    DisplayHelpAndExit(opts);
+  // check for valid parameters
+  if (FLAGS_brk.present() && (FLAGS_brk < 9 || FLAGS_brk > 127))
+    ola::DisplayUsageAndExit();
 
-  UsbProConfigurator configurator(opts);
+  if (FLAGS_mab.present() && (FLAGS_mab < 1 || FLAGS_mab > 127))
+    ola::DisplayUsageAndExit();
+
+  if (FLAGS_rate.present() && (FLAGS_rate < 1 || FLAGS_rate > 40))
+    ola::DisplayUsageAndExit();
+
+  if ((FLAGS_get_params || (!FLAGS_assignments && !FLAGS_serial)) &&
+      (FLAGS_port < 0))
+    ola::DisplayUsageAndExit();
+
+  UsbProConfigurator configurator;
   if (!configurator.Setup()) {
     cerr << "Error: " << strerror(errno) << endl;
     exit(1);

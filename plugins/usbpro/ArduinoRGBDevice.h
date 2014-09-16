@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArduinoRGBDevice.h
  * The Arduino RGB Mixer device.
@@ -39,16 +39,16 @@ class ArduinoRGBDevice: public UsbSerialDevice {
  public:
     ArduinoRGBDevice(ola::io::SelectServerInterface *ss,
                      ola::AbstractPlugin *owner,
-                     const string &name,
+                     const std::string &name,
                      ArduinoWidget *widget,
                      uint16_t esta_id,
                      uint16_t device_id,
                      uint32_t serial);
 
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
 
  private:
-    string m_device_id;
+    std::string m_device_id;
 };
 
 
@@ -64,7 +64,7 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
                          unsigned int initial_count,
                          unsigned int rate);
 
-    string Description() const { return m_description; }
+    std::string Description() const { return m_description; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
       if (m_bucket.GetToken(*m_wake_time))
@@ -91,7 +91,7 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
     ArduinoWidget *m_widget;
     TokenBucket m_bucket;
     const TimeStamp *m_wake_time;
-    string m_description;
+    std::string m_description;
 };
 }  // namespace usbpro
 }  // namespace plugin

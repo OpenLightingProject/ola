@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # rdm_snapshot.py
 # Copyright (C) 2012 Simon Newton
@@ -429,9 +429,9 @@ def Usage():
     -d, --debug               Print extra debug info.
     -h, --help                Display this help message and exit.
     -i, --input               File to read configuration from.
-    --pid_file                The PID data store to use.
-    --output                  File to save configuration to.
-    --skip_queued_messages    Don't attempt to fetch queued messages for the
+    -p, --pid-location        The directory to read PID definitions from.
+    -o, --output              File to save configuration to.
+    --skip-queued-messages    Don't attempt to fetch queued messages for the
                               device.
     -u, --universe <universe> Universe number.""")
 
@@ -467,8 +467,8 @@ def main():
     opts, args = getopt.getopt(
         sys.argv[1:],
         'dhi:o:p:u:',
-        ['debug', 'help', 'input=', 'skip_queued_messages', 'output=',
-         'pid_file=', 'universe='])
+        ['debug', 'help', 'input=', 'skip-queued-messages', 'output=',
+         'pid-location=', 'universe='])
   except getopt.GetoptError, err:
     print str(err)
     Usage()
@@ -477,7 +477,7 @@ def main():
   universe = None
   output_file = None
   input_file = None
-  pid_file = None
+  pid_location = None
   level = logging.INFO
   skip_queued_messages = False
   for o, a in opts:
@@ -488,12 +488,12 @@ def main():
       sys.exit()
     elif o in ('-i', '--input'):
       input_file = a
-    elif o in ('--skip_queued_messages'):
+    elif o in ('--skip-queued-messages'):
       skip_queued_messages = True
     elif o in ('-o', '--output'):
       output_file = a
-    elif o in ('--pid_file',):
-      pid_file = a
+    elif o in ('-p', '--pid-location',):
+      pid_location = a
     elif o in ('-u', '--universe'):
       universe = int(a)
 
@@ -510,7 +510,7 @@ def main():
       format='%(message)s')
 
   client_wrapper = ClientWrapper()
-  pid_store = PidStore.GetStore(pid_file)
+  pid_store = PidStore.GetStore(pid_location)
 
   if input_file:
     configuration = ReadFile(input_file)

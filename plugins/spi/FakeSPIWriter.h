@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FakeSPIWriter.h
  * The SPIWriter used for testing.
@@ -30,53 +30,51 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-using std::string;
-
 /**
  * A Fake SPI Writer used for testing
  */
 class FakeSPIWriter : public SPIWriterInterface {
  public:
-    explicit FakeSPIWriter(const string &device_path)
-      : m_device_path(device_path),
-        m_write_pending(0),
-        m_writes(0),
-        m_last_write_size(0),
-        m_data(NULL) {
-    }
+  explicit FakeSPIWriter(const std::string &device_path)
+    : m_device_path(device_path),
+      m_write_pending(0),
+      m_writes(0),
+      m_last_write_size(0),
+      m_data(NULL) {
+  }
 
-    ~FakeSPIWriter() {
-      delete[] m_data;
-    }
+  ~FakeSPIWriter() {
+    delete[] m_data;
+  }
 
-    bool Init() { return true; }
+  bool Init() { return true; }
 
-    string DevicePath() const { return m_device_path; }
+  std::string DevicePath() const { return m_device_path; }
 
-    bool WriteSPIData(const uint8_t *data, unsigned int length);
+  bool WriteSPIData(const uint8_t *data, unsigned int length);
 
-    // Methods used for testing
-    void BlockWriter();
-    void UnblockWriter();
+  // Methods used for testing
+  void BlockWriter();
+  void UnblockWriter();
 
-    void ResetWrite();
-    void WaitForWrite();
+  void ResetWrite();
+  void WaitForWrite();
 
-    unsigned int WriteCount() const;
-    unsigned int LastWriteSize() const;
-    void CheckDataMatches(unsigned int line, const uint8_t *data,
-                          unsigned int length);
+  unsigned int WriteCount() const;
+  unsigned int LastWriteSize() const;
+  void CheckDataMatches(unsigned int line, const uint8_t *data,
+                        unsigned int length);
 
  private:
-    const string m_device_path;
-    bool m_write_pending;  // GUARDED_BY(m_mutex)
-    unsigned int m_writes;  // GUARDED_BY(m_mutex)
-    unsigned int m_last_write_size;  // GUARDED_BY(m_mutex)
-    uint8_t *m_data;  // GUARDED_BY(m_mutex)
+  const std::string m_device_path;
+  bool m_write_pending;  // GUARDED_BY(m_mutex)
+  unsigned int m_writes;  // GUARDED_BY(m_mutex)
+  unsigned int m_last_write_size;  // GUARDED_BY(m_mutex)
+  uint8_t *m_data;  // GUARDED_BY(m_mutex)
 
-    ola::thread::Mutex m_write_lock;
-    mutable ola::thread::Mutex m_mutex;
-    ola::thread::ConditionVariable m_cond_var;
+  ola::thread::Mutex m_write_lock;
+  mutable ola::thread::Mutex m_mutex;
+  ola::thread::ConditionVariable m_cond_var;
 };
 
 }  // namespace spi

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * StringUtils..h
+ * StringUtils.h
  * Random String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -27,11 +27,15 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace ola {
+
+/** @brief the width of a hex character in bits */
+enum { HEX_BIT_WIDTH = 4 };
 
 /**
  * @brief Split a string into pieces.
@@ -43,7 +47,7 @@ namespace ola {
  * @param delimiters the delimiiter to use for splitting. Defaults to ' '
  */
 void StringSplit(const std::string &input,
-                 std::vector<std::string> &tokens,
+                 std::vector<std::string> &tokens,  // NOLINT
                  const std::string &delimiters=" ");
 
 /**
@@ -59,12 +63,36 @@ void StringTrim(std::string *input);
 void ShortenString(std::string *input);
 
 /**
+ * @brief Check if one string is a prefix of another.
+ * @param s the string to check
+ * @param prefix the prefix to check for
+ * @returns true if s begins with prefix, false otherwise.
+ */
+bool StringBeginsWith(const std::string &s, const std::string &prefix);
+
+/**
  * @brief Check if one string is a suffix of another.
  * @param s the string to check
  * @param suffix the suffix to check for
  * @returns true if s ends with suffix, false otherwise.
  */
 bool StringEndsWith(const std::string &s, const std::string &suffix);
+
+/**
+ * @brief Strips a prefix from a string.
+ * @param s the string to strip
+ * @param prefix the prefix to remove
+ * @returns true if we stripped prefix from s, false otherwise.
+ */
+bool StripPrefix(std::string *s, const std::string &prefix);
+
+/**
+ * @brief Strips a suffix from a string.
+ * @param s the string to strip
+ * @param suffix the suffix to remove
+ * @returns true if we stripped suffix from s, false otherwise.
+ */
+bool StripSuffix(std::string *s, const std::string &suffix);
 
 /**
  * @brief Convert an int to a string.
@@ -81,9 +109,49 @@ std::string IntToString(int i);
 std::string IntToString(unsigned int i);
 
 /**
+ * Convert an unsigned int to a hex string.
+ * @param i the unsigned int to convert
+ * @param width the width to zero pad to
+ * @return The hex string representation of the unsigned int
+ * @note We don't currently support signed ints due to a lack of requirement
+ * for it and issues with negative handling and hex in C++
+ */
+std::string IntToHexString(unsigned int i, unsigned int width);
+
+/**
+ * Convert a uint8_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint8_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint8_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
+ * Convert a uint16_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint16_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint16_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
+ * Convert a uint32_t to a hex string.
+ * @param i the number to convert
+ * @return The string representation of the number
+ */
+inline std::string IntToHexString(uint32_t i) {
+  return IntToHexString(i, (std::numeric_limits<uint32_t>::digits /
+                            HEX_BIT_WIDTH));
+}
+
+/**
  * @brief Escape a string with \\ .
  *
- * The string is modified in place.
+ * The string is modified in place according to the grammar from json.org
  * The following characters are escaped:
  *  - \\
  *  - "
@@ -106,6 +174,16 @@ void Escape(std::string *original);
 std::string EscapeString(const std::string &original);
 
 /**
+ * @brief Replace all instances of the find string with the replace string.
+ * @param original the string to operate on.
+ * @param find the string to find
+ * @param replace what to replace it with
+ */
+void ReplaceAll(std::string *original,
+                const std::string &find,
+                const std::string &replace);
+
+/**
  * @brief Encode any unprintable characters in a string as hex, returning a
  * copy.
  *
@@ -117,13 +195,32 @@ std::string EscapeString(const std::string &original);
 std::string EncodeString(const std::string &original);
 
 /**
- * @brief Convert a string to a bool. The string can be 'true' or 'false'.
+ * @brief Convert a string to a bool.
+ *
+ * The string can be 'true' or 'false', 't' or 'f', '1' or '0' or case
+ * insensitive variations of any of the above.
+ *
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @returns true if the value was converted, false if the string was not a
  * bool.
  */
 bool StringToBool(const std::string &value, bool *output);
+
+/**
+ * @brief Convert a string to a bool in a tolerant way.
+ *
+ * The string can be 'true' or 'false', 't' or 'f', '1' or '0', 'on' or 'off',
+ * 'enable' or 'disable', 'enabled' or 'disabled' or case insensitive
+ * variations of any of the above.
+ *
+ * @param[in] value the string to convert
+ * @param[out] output a pointer where the value will be stored.
+ * @returns true if the value was converted, false if the string was not a
+ * bool.
+ * @sa StringToBool
+ */
+bool StringToBoolTolerant(const std::string &value, bool *output);
 
 /**
  * @brief Convert a string to a unsigned int.
@@ -328,7 +425,8 @@ bool PrefixedHexStringToInt(const std::string &input, int_type *output) {
 
 /**
  * @brief Join a vector of a type.
- * @param T can be any type for which the << operator is defined
+ * @param delim the delimiter to use between items in the vector
+ * @param input T can be any type for which the << operator is defined
  */
 template<typename T>
 std::string StringJoin(const std::string &delim, const T &input) {

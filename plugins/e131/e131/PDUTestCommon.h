@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PDUTestCommon.cpp
  * Provides a simple PDU class for testing
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_E131_E131_PDUTESTCOMMON_H_
@@ -31,8 +31,6 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
-
-using ola::acn::CID;
 
 /*
  * This isn't a PDU at all, it just packs a uint32 for testing.
@@ -65,7 +63,7 @@ class FakePDU: public PDU {
     }
 
     void Write(ola::io::OutputStream *stream) const {
-      *stream << HostToNetwork(m_value);
+      *stream << ola::network::HostToNetwork(m_value);
     }
 
     void PackHeader(ola::io::OutputStream*) const {}
@@ -127,11 +125,13 @@ class MockPDU: public PDU {
                    sizeof(data));
       stack->Write(reinterpret_cast<const uint8_t*>(&header),
                    sizeof(header));
-      unsigned int vector = HostToNetwork(TEST_DATA_VECTOR);
+      unsigned int vector = ola::network::HostToNetwork(TEST_DATA_VECTOR);
       stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-      PrependFlagsAndLength(stack,
-                            sizeof(data) + sizeof(header) + sizeof(vector),
-                            VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
+      PrependFlagsAndLength(
+          stack,
+          static_cast<unsigned int>(
+              sizeof(data) + sizeof(header) + sizeof(vector)),
+          VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
     }
 
     // This is used to id 'Mock' PDUs in the higher level protocol
@@ -150,7 +150,8 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
  public:
-    MockInflator(const CID &cid, Callback0<void> *on_recv = NULL):
+    explicit MockInflator(const ola::acn::CID &cid,
+                          Callback0<void> *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}
@@ -158,12 +159,12 @@ class MockInflator: public BaseInflator {
 
  protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet *,
+    bool DecodeHeader(HeaderSet*,
                       const uint8_t *data,
                       unsigned int,
-                      unsigned int &bytes_used) {
+                      unsigned int *bytes_used) {
       if (data) {
-        bytes_used = 4;
+        *bytes_used = 4;
         memcpy(&m_last_header, data, sizeof(m_last_header));
       }
       return true;
@@ -188,7 +189,7 @@ class MockInflator: public BaseInflator {
     }
 
  private:
-    CID m_cid;
+    ola::acn::CID m_cid;
     Callback0<void> *m_on_recv;
     unsigned int m_last_header;
 };

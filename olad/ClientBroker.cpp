@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ClientBroker.cpp
  * Acts as the glue between clients and the RDM request path.
@@ -28,6 +28,8 @@
 namespace ola {
 
 using std::set;
+using std::string;
+using std::vector;
 
 /**
  * Add a client to the broker
@@ -77,7 +79,7 @@ void ClientBroker::RequestComplete(const Client *key,
                                    ola::rdm::RDMCallback *callback,
                                    ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
-                                   const std::vector<std::string> &packets) {
+                                   const vector<string> &packets) {
   if (!STLContains(m_clients, key)) {
     OLA_INFO << "Client no longer exists, cleaning up from RDM response";
     delete response;

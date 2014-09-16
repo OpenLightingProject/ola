@@ -11,18 +11,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Dmx4LinuxPort.h
  * The Dmx4Linux plugin for ola
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 #define PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/dmx4linux/Dmx4LinuxDevice.h"
 #include "plugins/dmx4linux/Dmx4LinuxSocket.h"
@@ -38,20 +38,20 @@ namespace dmx4linux {
  */
 class Dmx4LinuxOutputPort: public BasicOutputPort {
  public:
-    Dmx4LinuxOutputPort(Dmx4LinuxDevice *parent,
-                        Dmx4LinuxSocket *socket,
-                        int d4l_universe) :
-        BasicOutputPort(parent, 0),
-        m_socket(socket),
-        m_d4l_universe(d4l_universe) {
-    }
+  Dmx4LinuxOutputPort(Dmx4LinuxDevice *parent,
+                      Dmx4LinuxSocket *socket,
+                      int d4l_universe)
+    : BasicOutputPort(parent, 0),
+      m_socket(socket),
+      m_d4l_universe(d4l_universe) {
+  }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  string Description() const { return ""; }
 
  private:
-    Dmx4LinuxSocket *m_socket;
-    int m_d4l_universe;  // dmx4linux universe that this maps to
+  Dmx4LinuxSocket *m_socket;
+  int m_d4l_universe;  // dmx4linux universe that this maps to
 };
 
 
@@ -61,18 +61,26 @@ class Dmx4LinuxOutputPort: public BasicOutputPort {
  */
 class Dmx4LinuxInputPort: public BasicInputPort {
  public:
-    explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent,
-                                class PluginAdaptor *plugin_adaptor):
-        BasicInputPort(parent, 0, plugin_adaptor) {
-      m_read_buffer.SetRangeToValue(0, 0, DMX_UNIVERSE_SIZE);
-    }
+  explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent,
+                              class PluginAdaptor *plugin_adaptor)
+    : BasicInputPort(parent, 0, plugin_adaptor) {
+    m_read_buffer.SetRangeToValue(0, 0, DMX_UNIVERSE_SIZE);
+  }
 
-    const DmxBuffer &ReadDMX() const;
-    bool UpdateData(const uint8_t *in_buffer, unsigned int length);
-    string Description() const { return ""; }
+  /**
+   * Read operation
+   * @return a DmxBufer with the data
+   */
+  const DmxBuffer &ReadDMX() const;
+
+  /**
+   * Process new Data
+   */
+  bool UpdateData(const uint8_t *in_buffer, unsigned int length);
+  string Description() const { return ""; }
 
  private:
-    DmxBuffer m_read_buffer;
+  DmxBuffer m_read_buffer;
 };
 }  // namespace dmx4linux
 }  // namespace plugin

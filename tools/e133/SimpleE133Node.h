@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e133-receiver.cpp
  * Copyright (C) 2011 Simon Newton
@@ -23,7 +23,7 @@
 #ifndef TOOLS_E133_SIMPLEE133NODE_H_
 #define TOOLS_E133_SIMPLEE133NODE_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/base/Init.h>
 #include <ola/acn/CID.h>
 #include <ola/e133/SLPThread.h>

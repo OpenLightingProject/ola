@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KarateLight.h
  * The KarateLight communication class
@@ -23,10 +23,8 @@
 #include <stdint.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
-
-using std::string;
 
 namespace ola {
 namespace plugin {
@@ -34,7 +32,7 @@ namespace karate {
 
 class KarateLight {
  public:
-  explicit KarateLight(const string &dev);
+  explicit KarateLight(const std::string &dev);
   ~KarateLight();
   bool Init();
   void Close();
@@ -56,7 +54,7 @@ class KarateLight {
                    int n_bytes_expected);
   bool UpdateColors();
 
-  const string m_devname;
+  const std::string m_devname;
   int m_fd;
 
   static const uint16_t CMD_MAX_LENGTH = 64;

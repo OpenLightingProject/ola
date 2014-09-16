@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TimeCode.cpp
  * The TimeCode class
@@ -22,6 +22,7 @@
 #include <iostream>
 #include <string>
 #include "ola/Logging.h"
+
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
 
@@ -30,6 +31,7 @@ namespace timecode {
 
 using std::setw;
 using std::setfill;
+using std::string;
 
 
 TimeCode::TimeCode(const TimeCode &other)
@@ -72,7 +74,7 @@ bool TimeCode::IsValid() const {
 }
 
 string TimeCode::AsString() const {
-  std::stringstream str;
+  std::ostringstream str;
   str << setw(2) << setfill('0') << static_cast<int>(m_hours) << ":"
     << setw(2) << setfill('0') << static_cast<int>(m_minutes) << ":"
     << setw(2) << setfill('0') << static_cast<int>(m_seconds) << ":"

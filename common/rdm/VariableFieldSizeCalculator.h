@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * VariableFieldSizeCalculator.h
  * Calculate the number of items in a group, given a fixed number of tokens.
@@ -28,15 +28,10 @@
 namespace ola {
 
 namespace messaging {
-  class Descriptor;
+class Descriptor;
 }
 
 namespace rdm {
-
-using std::vector;
-using ola::messaging::FieldDescriptorInterface;
-using ola::messaging::StringFieldDescriptor;
-using ola::messaging::FieldDescriptorGroup;
 
 
 /**
@@ -82,8 +77,10 @@ class VariableFieldSizeCalculator
 
  private:
     unsigned int m_fixed_size_sum;
-    vector<const StringFieldDescriptor*> m_variable_string_fields;
-    vector<const FieldDescriptorGroup*> m_variable_group_fields;
+    std::vector<const ola::messaging::StringFieldDescriptor*>
+        m_variable_string_fields;
+    std::vector<const ola::messaging::FieldDescriptorGroup*>
+        m_variable_group_fields;
 
     unsigned int DetermineGroupSize(const
         ola::messaging::FieldDescriptorGroup*);

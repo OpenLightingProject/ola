@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbProDevice.cpp
  * An Enttec Usb Pro device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  *
  * The device creates two ports, one in and one out, but you can only use one
  * at a time.
@@ -26,8 +26,8 @@
 #include <string>
 
 #include "common/rpc/RpcController.h"
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "olad/Preferences.h"
 #include "plugins/usbpro/UsbProDevice.h"
@@ -40,6 +40,8 @@ namespace usbpro {
 using ola::plugin::usbpro::Reply;
 using ola::plugin::usbpro::Request;
 using ola::rpc::RpcController;
+using std::ostringstream;
+using std::string;
 
 /*
  * Create a new device
@@ -57,7 +59,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
     : UsbSerialDevice(owner, name, widget),
       m_pro_widget(widget),
       m_serial(SerialToString(serial)) {
-  stringstream str;
+  ostringstream str;
   str << "Serial #: " << m_serial << ", firmware "
       << (firmware_version >> 8) << "." << (firmware_version & 0xff);
 
@@ -173,6 +175,7 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
   if (enttec_port == NULL) {
       controller->SetFailed("Invalid port id");
       done->Run();
+      return;
   }
 
   if (request->has_parameters() &&
@@ -298,7 +301,7 @@ void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
 
 
 string UsbProDevice::SerialToString(uint32_t serial) {
-  std::stringstream str;
+  ostringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
   for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {

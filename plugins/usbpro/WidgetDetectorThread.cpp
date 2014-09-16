@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * WidgetDetectorThread.cpp
- * A thread that periodically looks for usb pro devices, and runs the callback
+ * A thread that periodically looks for USB Pro devices, and runs the callback
  * if they are valid widgets.
  * Copyright (C) 2011 Simon Newton
  */
@@ -24,12 +24,13 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
-#include "ola/Logging.h"
-#include "ola/StringUtils.h"
+#include "ola/Constants.h"
 #include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
+#include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
+#include "ola/StringUtils.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
@@ -45,8 +46,10 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-
 using ola::io::ConnectedDescriptor;
+using std::string;
+using std::vector;
+
 
 /**
  * Constructor
@@ -54,6 +57,8 @@ using ola::io::ConnectedDescriptor;
  * @param ss the SelectServer to use when calling the handler object. This is
  * also used by some of the widgets so it should be the same SelectServer that
  * you intend to use the Widgets with.
+ * @param usb_pro_timeout the time in ms between each USB Pro discovery message.
+ * @param robe_timeout the time in ms between each Robe discovery message.
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,
@@ -130,18 +135,15 @@ void *WidgetDetectorThread::Run() {
       ola::NewSingleCallback(this, &WidgetDetectorThread::MarkAsRunning));
   m_ss.Run();
 
-  vector<WidgetDetectorInterface*>::const_iterator iter =
-  m_widget_detectors.begin();
-  for (; iter != m_widget_detectors.end(); ++iter)
-    // this will trigger a call to InternalFreeWidget for any remaining widgets
-    delete *iter;
+  // This will trigger a call to InternalFreeWidget for any remaining widgets
+  STLDeleteElements(&m_widget_detectors);
 
   if (!m_active_descriptors.empty())
     OLA_WARN << m_active_descriptors.size() << " are still active";
 
-  ActiveDescriptors::const_iterator iter2 = m_active_descriptors.begin();
-  for (; iter2 != m_active_descriptors.end(); ++iter2) {
-    OLA_INFO  << iter2->first;
+  ActiveDescriptors::const_iterator iter = m_active_descriptors.begin();
+  for (; iter != m_active_descriptors.end(); ++iter) {
+    OLA_INFO  << iter->first;
   }
   m_widget_detectors.clear();
   return NULL;
@@ -159,10 +161,12 @@ bool WidgetDetectorThread::Join(void *ptr) {
 
 /**
  * Indicate that this widget is no longer is use and can be deleted.
- * This can be called from any thread.
  */
 void WidgetDetectorThread::FreeWidget(SerialWidgetInterface *widget) {
+  // We have to remove the descriptor from the ss before closing.
   m_other_ss->RemoveReadDescriptor(widget->GetDescriptor());
+  widget->GetDescriptor()->Close();
+
   m_ss.Execute(
       ola::NewSingleCallback(this,
                              &WidgetDetectorThread::InternalFreeWidget,
@@ -200,8 +204,7 @@ bool WidgetDetectorThread::RunScan() {
       continue;
 
     OLA_INFO << "Found potential USB Serial device at " << *it;
-    ConnectedDescriptor *descriptor =
-      BaseUsbProWidget::OpenDevice(*it);
+    ConnectedDescriptor *descriptor = BaseUsbProWidget::OpenDevice(*it);
     if (!descriptor)
       continue;
 
@@ -211,9 +214,8 @@ bool WidgetDetectorThread::RunScan() {
   return true;
 }
 
-
 /**
- * Start the discovery sequence for a descriptor.
+ * Start the discovery sequence for a widget.
  */
 void WidgetDetectorThread::PerformDiscovery(const string &path,
                                             ConnectedDescriptor *descriptor) {
@@ -221,7 +223,6 @@ void WidgetDetectorThread::PerformDiscovery(const string &path,
   m_active_paths.insert(path);
   PerformNextDiscoveryStep(descriptor);
 }
-
 
 /**
  * Called when a new widget becomes ready. Ownership of both objects transferrs
@@ -306,12 +307,14 @@ void WidgetDetectorThread::UsbProWidgetReady(
   EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
       information->esta_id, information->serial);
   options.dual_ports = information->dual_port;
-  // 2.4 is the first version that properly supports RDM.
-  options.enable_rdm = information->firmware_version >= 0x0204;
-  if (!options.enable_rdm) {
-    OLA_WARN << "USB Pro Firmware >= 2.4 is required for RDM support, this "
-             << "widget is running " << (information->firmware_version >> 8)
-             << "." << (information->firmware_version & 0xff);
+  if (information->has_firmware_version) {
+    // 2.4 is the first version that properly supports RDM.
+    options.enable_rdm = information->firmware_version >= 0x0204;
+    if (!options.enable_rdm) {
+      OLA_WARN << "USB Pro Firmware >= 2.4 is required for RDM support, this "
+               << "widget is running " << (information->firmware_version >> 8)
+               << "." << (information->firmware_version & 0xff);
+    }
   }
   DispatchWidget(new EnttecUsbProWidget(descriptor, options), information);
 }
@@ -383,8 +386,10 @@ void WidgetDetectorThread::PerformNextDiscoveryStep(
  */
 void WidgetDetectorThread::InternalFreeWidget(SerialWidgetInterface *widget) {
   ConnectedDescriptor *descriptor = widget->GetDescriptor();
-  // remove descriptor from our ss if it's there
-  m_ss.RemoveReadDescriptor(descriptor);
+  // remove descriptor from our ss if it's still there
+  if (descriptor->ValidReadDescriptor()) {
+    m_ss.RemoveReadDescriptor(descriptor);
+  }
   delete widget;
   FreeDescriptor(descriptor);
 }

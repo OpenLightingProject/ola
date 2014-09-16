@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiDevice.h
  * Interface for the stageprofi device
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_
@@ -33,19 +33,16 @@ class AbstractPlugin;
 namespace plugin {
 namespace stageprofi {
 
-using ola::Device;
-using std::auto_ptr;
-
 class StageProfiDevice: public Device {
  public:
     StageProfiDevice(AbstractPlugin *owner,
-                     const string &name,
-                     const string &dev_path);
+                     const std::string &name,
+                     const std::string &dev_path);
     ~StageProfiDevice();
 
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
-    string DeviceId() const { return m_path; }
+    std::string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
  protected:
@@ -53,8 +50,8 @@ class StageProfiDevice: public Device {
     void PrePortStop();
 
  private:
-    string m_path;
-    auto_ptr<class StageProfiWidget> m_widget;
+    std::string m_path;
+    std::auto_ptr<class StageProfiWidget> m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin

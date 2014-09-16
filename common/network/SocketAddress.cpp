@@ -11,12 +11,23 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketAddress.cpp
  * Represents a sockaddr structure.
  * Copyright (C) 2012 Simon Newton
  */
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>  // Required by FreeBSD
+#endif
 
 #include <assert.h>
 #include <ola/Logging.h>
@@ -30,6 +41,13 @@ namespace ola {
 namespace network {
 
 using std::string;
+
+
+string IPV4SocketAddress::ToString() const {
+  std::ostringstream str;
+  str << Host() << ":" << Port();
+  return str.str();
+}
 
 /**
  * Copy this IPV4SocketAddress into a sockaddr.
@@ -45,7 +63,7 @@ bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr,
   memset(v4_addr, 0, size);
   v4_addr->sin_family = AF_INET;
   v4_addr->sin_port = HostToNetwork(m_port);
-  v4_addr->sin_addr = m_host.Address();
+  v4_addr->sin_addr.s_addr = m_host.AsInt();
   return true;
 }
 
@@ -71,10 +89,15 @@ bool IPV4SocketAddress::FromString(const string &input,
 
 
 IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
-    const std::string &address) {
+    const string &address) {
   IPV4SocketAddress socket_address;
   assert(FromString(address, &socket_address));
   return socket_address;
+}
+
+
+bool GenericSocketAddress::IsValid() const {
+  return Family() != AF_UNSPEC;
 }
 
 
@@ -99,7 +122,7 @@ IPV4SocketAddress GenericSocketAddress::V4Addr() const {
   if (Family() == AF_INET) {
     const struct sockaddr_in *v4_addr =
       reinterpret_cast<const struct sockaddr_in*>(&m_addr);
-    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr),
+    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr.s_addr),
                              NetworkToHost(v4_addr->sin_port));
   } else {
     OLA_FATAL << "Invalid conversion of socket family " << Family();

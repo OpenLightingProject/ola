@@ -1,30 +1,24 @@
-# ola Java client
+# OLA Java client
 
 EXTRA_DIST = pom.xml \
              src/main/java/ola/OlaClient.java \
              src/main/java/ola/rpc/SimpleRpcController.java \
-             src/main/java/ola/rpc/StreamRpcChannel.java
+             src/main/java/ola/rpc/StreamRpcChannel.java \
+             src/test/java/ola/OlaClientTest.java
 
-if BUILD_JAVA_LIBS
+src/main/java/ola/proto/Ola.java: ${top_srcdir}/common/protocol/Ola.proto
+	$(PROTOC) --java_out=src/main/java --proto_path=${top_srcdir}/common/protocol ${top_srcdir}/common/protocol/Ola.proto
 
-BUILT_SOURCES = src/main/java/ola/proto/Ola.java \
-                src/main/java/ola/rpc/Rpc.java
-
-# hardly a program...
-noinst_PROGRAMS = ola.jar
+src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
+	$(PROTOC) --java_out=src/main/java --proto_path=${top_srcdir}/common/rpc ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
 	mvn package
-ola_jar_SOURCES = 
 
-src/main/java/ola/proto/Ola.java: ../common/protocol/Ola.proto
-	$(PROTOC)  --java_out=src/main/java --proto_path=../common/protocol ../common/protocol/Ola.proto
+CLEANFILES = src/main/java/ola/proto/Ola.java \
+             src/main/java/ola/rpc/Rpc.java
 
-src/main/java/ola/rpc/Rpc.java: ../common/rpc/Rpc.proto
-	$(PROTOC)  --java_out=src/main/java --proto_path=../common/rpc ../common/rpc/Rpc.proto
-
-clean-local:
-	rm -f src/main/java/ola/proto/Ola.java
-	rm -f src/main/java/ola/rpc/Rpc.java
-
+if BUILD_JAVA_LIBS
+# .jars aren't really data, but it sure ain't a program.
+noinst_DATA = ola.jar
 endif

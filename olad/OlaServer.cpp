@@ -11,29 +11,28 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServer.cpp
  * OlaServer is the main OLA Server class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/RpcChannel.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"
@@ -63,10 +62,12 @@
 
 namespace ola {
 
+using ola::proto::OlaClientService_Stub;
 using ola::rdm::RootPidStore;
 using ola::rpc::RpcChannel;
 using std::auto_ptr;
 using std::pair;
+using std::vector;
 
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
@@ -190,7 +191,7 @@ bool OlaServer::Init() {
     m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
-#ifndef WIN32
+#ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
 #endif
 
@@ -199,7 +200,7 @@ bool OlaServer::Init() {
   {
     auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&iface, m_options.interface)) {
+    if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
     } else {
       // default to using the ip as a id
@@ -238,7 +239,8 @@ bool OlaServer::Init() {
       m_port_manager.get(),
       m_broker.get(),
       m_ss->WakeUpTime(),
-      m_default_uid));
+      m_default_uid,
+      NewCallback(this, &OlaServer::ReloadPluginsInternal)));
 
   // The plugin load procedure can take a while so we run it in the main loop.
   m_ss->Execute(
@@ -320,7 +322,7 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void OlaServer::ChannelClosed(int read_descriptor) {
+void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor) {
   ClientEntry client_entry;
   bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
                                   &client_entry);

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * InterfacePickerTest.cpp
  * Test fixture for the InterfacePicker class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -25,11 +25,13 @@
 #include <string>
 #include <vector>
 
+#include "common/network/FakeInterfacePicker.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
 
+using ola::network::FakeInterfacePicker;
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::network::InterfacePicker;
@@ -51,25 +53,6 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     void testGetInterfaces();
     void testGetLoopbackInterfaces();
     void testChooseInterface();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-};
-
-
-class MockPicker: public InterfacePicker {
- public:
-    explicit MockPicker(const vector<Interface> &interfaces)
-        : InterfacePicker(),
-          m_interfaces(interfaces) {}
-
-    std::vector<Interface> GetInterfaces(bool loopback) const {
-      return m_interfaces;
-      (void) loopback;
-    }
- private:
-    const vector<Interface> &m_interfaces;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
@@ -87,9 +70,11 @@ void InterfacePickerTest::testGetInterfaces() {
   cout << endl;
   for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
     cout << iter->name << endl;
+    cout << " index: " << iter->index << endl;
     cout << " ip: " << iter->ip_address << endl;
     cout << " bcast: " << iter->bcast_address << endl;
     cout << " subnet: " << iter->subnet_mask << endl;
+    cout << " type: " << iter->type << endl;
     cout << " hw_addr: " << iter->hw_address << endl;
     cout << endl;
     cout << "---------------" << endl;
@@ -111,13 +96,15 @@ void InterfacePickerTest::testGetLoopbackInterfaces() {
     if (iter->loopback)
       loopback_count++;
   }
+#ifndef _WIN32
   OLA_ASSERT_GT(loopback_count, 0);
+#endif
 }
 
 
 void InterfacePickerTest::testChooseInterface() {
   vector<Interface> interfaces;
-  MockPicker picker(interfaces);
+  FakeInterfacePicker picker(interfaces);
 
   // no interfaces
   Interface iface;
@@ -128,7 +115,9 @@ void InterfacePickerTest::testChooseInterface() {
   iface1.name = "eth0";
   OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
+
+  FakeInterfacePicker picker2(interfaces);
+  OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "192.168.1.1"));
   OLA_ASSERT_TRUE(iface1 == iface);
 
   // check that preferred works
@@ -136,17 +125,19 @@ void InterfacePickerTest::testChooseInterface() {
   iface2.name = "eth1";
   OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
   interfaces.push_back(iface2);
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
+
+  FakeInterfacePicker picker3(interfaces);
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "192.168.1.1"));
   OLA_ASSERT_TRUE(iface2 == iface);
 
   // now check for iface name
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "eth0"));
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth0"));
   OLA_ASSERT_TRUE(iface1 == iface);
 
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "eth1"));
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth1"));
   OLA_ASSERT_TRUE(iface2 == iface);
 
   // a invalid address should return the first one
-  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "foo"));
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo"));
   OLA_ASSERT_TRUE(iface1 == iface);
 }

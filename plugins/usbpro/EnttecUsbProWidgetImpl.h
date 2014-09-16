@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EnttecUsbProWidgetImpl.h
  * The Enttec USB Pro Widget
@@ -22,8 +22,8 @@
 #define PLUGINS_USBPRO_ENTTECUSBPROWIDGETIMPL_H_
 
 #include <deque>
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -31,11 +31,6 @@
 namespace ola {
 namespace plugin {
 namespace usbpro {
-
-using ola::rdm::RDMRequest;
-using ola::rdm::UID;
-using ola::rdm::UIDSet;
-
 
 enum {
   // port 1 labels
@@ -88,7 +83,7 @@ class EnttecPortImpl
     typedef ola::Callback3<bool, uint8_t, const uint8_t*, unsigned int>
       SendCallback;
 
-    EnttecPortImpl(const OperationLabels &ops, const UID &uid,
+    EnttecPortImpl(const OperationLabels &ops, const ola::rdm::UID &uid,
                    SendCallback *send_cb);
 
     void Stop();
@@ -118,7 +113,7 @@ class EnttecPortImpl
     // Called by the EnttecUsbProWidgetImpl
     void HandleRDMTimeout(unsigned int length);
     void HandleParameters(const uint8_t *data, unsigned int length);
-    void HandleIncommingDataMessage(const uint8_t *data, unsigned int length);
+    void HandleIncomingDataMessage(const uint8_t *data, unsigned int length);
     void HandleDMXDiff(const uint8_t *data, unsigned int length);
 
  private:

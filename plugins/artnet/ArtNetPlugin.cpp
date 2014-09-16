@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetPlugin.cpp
  * The ArtNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdlib.h>
@@ -33,6 +33,8 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
+using std::string;
+
 const char ArtNetPlugin::ARTNET_LONG_NAME[] = "OLA - ArtNet node";
 const char ArtNetPlugin::ARTNET_SHORT_NAME[] = "OLA - ArtNet node";
 const char ArtNetPlugin::ARTNET_NET[] = "0";
@@ -40,11 +42,6 @@ const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
 const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet";
 const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
 
-/*
- * Start the plugin, for now we just have one device.
- * TODO: allow multiple devices on different IPs ?
- * @returns true if we started ok, false otherwise
- */
 bool ArtNetPlugin::StartHook() {
   m_device = new ArtNetDevice(this,
                               m_preferences,
@@ -63,10 +60,6 @@ bool ArtNetPlugin::StartHook() {
 }
 
 
-/*
- * Stop the plugin
- * @return true on success, false on failure
- */
 bool ArtNetPlugin::StopHook() {
   if (m_device) {
     // stop the device
@@ -79,10 +72,6 @@ bool ArtNetPlugin::StopHook() {
 }
 
 
-/*
- * Return the description for this plugin.
- * @return a string description of the plugin
- */
 string ArtNetPlugin::Description() const {
   return
       "ArtNet Plugin\n"
@@ -158,9 +147,6 @@ string ArtNetPlugin::Description() const {
 }
 
 
-/*
- * Set default preferences.
- */
 bool ArtNetPlugin::SetDefaultPreferences() {
   bool save = false;
 
@@ -197,7 +183,7 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   if (save)
     m_preferences->Save();
 
-  // check if this save correctly
+  // check if this saved correctly
   // we don't want to use it if null
   if (m_preferences->GetValue(ArtNetDevice::K_SHORT_NAME_KEY).empty() ||
       m_preferences->GetValue(ArtNetDevice::K_LONG_NAME_KEY).empty() ||

@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # RDMConstants.py
 # Copyright (C) 2010 Simon Newton
@@ -21,8 +20,13 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-RDM_MANUFACTURER_PID_MIN = 0x8000;
+RDM_ZERO_FOOTPRINT_DMX_ADDRESS = 0xFFFF
+
+RDM_MANUFACTURER_PID_MIN = 0x8000
 RDM_MANUFACTURER_PID_MAX = 0xFFDF
+
+RDM_MANUFACTURER_SD_MIN = 0x8000
+RDM_MANUFACTURER_SD_MAX = 0xFFDF
 
 def _ReverseDict(input):
   output = {}
@@ -311,6 +315,13 @@ SLOT_DEFINITIONS = {
   'SD_COLOR_CORRECTION': 0x0208,
   'SD_COLOR_SCROLL': 0x0209,
   'SD_COLOR_SEMAPHORE': 0x0210,
+  'SD_COLOR_ADD_AMBER': 0x0211,
+  'SD_COLOR_ADD_WHITE': 0x0212,
+  'SD_COLOR_ADD_WARM_WHITE': 0x0213,
+  'SD_COLOR_ADD_COOL_WHITE': 0x0214,
+  'SD_COLOR_SUB_UV': 0x0215,
+  'SD_COLOR_HUE': 0x0216,
+  'SD_COLOR_SATURATION': 0x0217,
   'SD_STATIC_GOBO_WHEEL': 0x0301,
   'SD_ROTO_GOBO_WHEEL': 0x0302,
   'SD_PRISM_WHEEL': 0x0303,
@@ -328,6 +339,10 @@ SLOT_DEFINITIONS = {
   'SD_FIXTURE_CONTROL': 0x0502,
   'SD_FIXTURE_SPEED': 0x0503,
   'SD_MACRO': 0x0504,
+  'SD_POWER_CONTROL': 0x0505,
+  'SD_FAN_CONTROL': 0x0506,
+  'SD_HEATER_CONTROL': 0x0507,
+  'SD_FOUNTAIN_CONTROL': 0x0508,
   'SD_UNDEFINED': 0xFFFF,
 }
 

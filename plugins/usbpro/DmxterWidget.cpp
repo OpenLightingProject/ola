@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxterWidgetImpl.h
  * The Goddard Design Dmxter RDM and miniDmxter
@@ -20,7 +20,7 @@
 
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
@@ -36,6 +36,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::string;
+using std::vector;
 
 const uint8_t DmxterWidgetImpl::RDM_REQUEST_LABEL = 0x80;
 const uint8_t DmxterWidgetImpl::RDM_BCAST_REQUEST_LABEL = 0x81;
@@ -79,7 +80,7 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
  */
 void DmxterWidgetImpl::Stop() {
   // timeout any existing message
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
@@ -108,7 +109,7 @@ void DmxterWidgetImpl::Stop() {
  */
 void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
-  std::vector<std::string> packets;
+  vector<string> packets;
 
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
@@ -240,7 +241,7 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
 void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                          unsigned int length,
                                          bool is_dub) {
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
@@ -401,7 +402,7 @@ void DmxterWidgetImpl::HandleBroadcastRDMResponse(const uint8_t *data,
     OLA_WARN << "Got strange broadcast response, length was " << length <<
       ", data was " << data;
   }
-  std::vector<std::string> packets;
+  vector<string> packets;
   m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
   m_rdm_request_callback = NULL;
 }
@@ -415,10 +416,14 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
   if (length || data) {
     OLA_WARN << "Invalid shutdown message, length was " << length;
   } else {
-    OLA_INFO << "Received shutdown message from Dmxter";
-    // this closed descriptor will be detected the the ss, which will then
-    // invoke the on_close callback, removing the device.
-    GetDescriptor()->Close();
+    OLA_INFO << "Received shutdown message from the Dmxter";
+    // Run the on close handler which calls WidgetDetectorThread::FreeWidget.
+    // This removes the descriptor from the SS and closes the FD.
+    // This is the same behaviour as if the remote end closed the connection
+    // i.e. the device was plugged.
+    ola::io::ConnectedDescriptor::OnCloseCallback *on_close =
+        GetDescriptor()->TransferOnClose();
+    on_close->Run();
   }
 }
 
@@ -443,7 +448,6 @@ DmxterWidget::DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
   m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
                                                                  queue_size);
 }
-
 
 DmxterWidget::~DmxterWidget() {
   // delete the controller after the impl because the controller owns the

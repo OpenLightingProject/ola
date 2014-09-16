@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ActionQueue.h
  * Interface for the ActionQueue class.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * An ActionQueue allows Actions to be queued up and the executed
  * asynchronously. Perform(on_done) is called on each action in turn and an
@@ -25,8 +25,8 @@
 #ifndef INCLUDE_OLA_ACTIONQUEUE_H_
 #define INCLUDE_OLA_ACTIONQUEUE_H_
 
+#include <ola/Callback.h>
 #include <vector>
-#include "ola/Callback.h"
 
 namespace ola {
 
@@ -53,7 +53,7 @@ class Action {
  */
 class ActionQueue {
  public:
-    ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
+    explicit ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
       m_on_complete(on_complete),
       m_action_index(-1),
       m_success(true) {

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtnetPort.h
  * The ArtNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETPORT_H_
@@ -42,16 +42,30 @@ class ArtNetInputPort: public BasicInputPort {
 
   const DmxBuffer &ReadDMX() const { return m_buffer; }
 
+  /**
+   * Set the DMX Handlers as needed
+   */
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+
+  /*
+   * Respond With Tod
+   */
   void RespondWithTod();
 
-  string Description() const;
+  std::string Description() const;
 
  private:
   DmxBuffer m_buffer;
   ArtNetNode *m_node;
 
+  /**
+   * Send a list of UIDs in a TOD
+   */
   void SendTODWithUIDs(const ola::rdm::UIDSet &uids);
+
+  /**
+   * Run the RDM discovery routine
+   */
   void TriggerDiscovery();
 };
 
@@ -64,14 +78,29 @@ class ArtNetOutputPort: public BasicOutputPort {
         m_node(node) {}
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+
+  /*
+   * Handle an RDMRequest
+   */
   void SendRDMRequest(const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
+
+  /*
+   * Run the full RDM discovery process
+   */
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+
+  /*
+   * Run the incremental RDM discovery process
+   */
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+  /*
+   * Set the RDM handlers as appropriate
+   */
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
-  string Description() const;
+  std::string Description() const;
 
   // only the first output port supports timecode, otherwise we send it
   // multiple times.

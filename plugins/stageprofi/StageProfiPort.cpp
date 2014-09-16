@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiPort.cpp
  * The StageProfi plugin for ola
- * Copyright (C) 2006-2009 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <string.h>
@@ -26,11 +26,6 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-/*
- * Write operation
- * @param the buffer to write
- * @return true on success, false on failure
- */
 bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
                                     uint8_t priority) {
   return m_widget->SendDmx(buffer);

@@ -11,9 +11,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * artnet.cpp
+ * artnet_loadtest.cpp
  * A simple ArtNet load tester
  * Copyright (C) 2013 Simon Newton
  */
@@ -26,6 +26,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
+#include "ola/base/Init.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
 #include "plugins/artnet/ArtNetNode.h"
@@ -44,7 +45,7 @@ using std::min;
 
 DEFINE_s_uint32(fps, f, 10, "Frames per second per universe [1 - 1000]");
 DEFINE_s_uint16(universes, u, 1, "Number of universes to send");
-DEFINE_string(interface, "", "The interface to send from");
+DEFINE_string(iface, "", "The interface to send from");
 
 /**
  * Send N DMX frames using ArtNet, where N is given by number_of_universes.
@@ -58,9 +59,7 @@ bool SendFrames(ArtNetNode *node, DmxBuffer *buffer,
 }
 
 int main(int argc, char* argv[]) {
-  ola::SetHelpString("", "Run the E1.31 load test.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "", "Run the E1.31 load test.");
 
   if (FLAGS_universes == 0 || FLAGS_fps == 0)
     return -1;
@@ -75,7 +74,7 @@ int main(int argc, char* argv[]) {
   {
     auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
 
-    if (!picker->ChooseInterface(&iface, FLAGS_interface.str())) {
+    if (!picker->ChooseInterface(&iface, FLAGS_iface.str())) {
       return -1;
     }
   }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SubDeviceDispatcher_h
  * Handles dispatching RDM requests to the correct sub device.
@@ -29,10 +29,11 @@
 #ifndef INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 #define INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 
+#include <ola/rdm/RDMControllerInterface.h>
+
 #include <map>
 #include <string>
 #include <vector>
-#include "ola/rdm/RDMControllerInterface.h"
 
 namespace ola {
 namespace rdm {

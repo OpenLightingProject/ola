@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ModelCollector.py
 # Copyright (C) 2011 Simon Newton
@@ -211,7 +211,9 @@ class ModelCollector(object):
     this_version = self._GetVersion()
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
-      if (param_info['param_id'] >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN):
+      if (param_info['param_id'] >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN
+          and param_info['param_id'] <=
+            ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
         self.manufacturer_pids.append(param_info['param_id'])
     self._NextState()
 
@@ -414,6 +416,14 @@ class ModelCollector(object):
       else:
         self._NextState()
     else:
+      if self.personalities:
+        # If we have personalities but no description, we still need the basic
+        # data structure to add the other info to
+        this_version = self._GetVersion()
+        for personality_index in self.personalities:
+          this_version['personalities'].append({
+            'index': personality_index,
+          })
       logging.debug("Skipping pid %s as it's not supported on this device" %
                     pid)
       self._NextState()

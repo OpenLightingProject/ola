@@ -1,17 +1,17 @@
-/*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+/**
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
  */
@@ -537,12 +537,12 @@ RDMTests.prototype.run_tests = function(test_filter) {
       {
           'u': $('#universe_options').val(),
           'uid': $('#devices_list').val(),
-          'w': $('#write_delay').val(),
-          'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
-                $('#dmx_frame_rate').val() : 0),
-          'c': $('#slot_count').val(),
-          'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
-                $('#slot_count').val() : 128),
+          'broadcast_write_delay': $('#write_delay').val(),
+          'inter_test_delay': $('#inter_test_delay').val(),
+          'dmx_frame_rate': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+                             $('#dmx_frame_rate').val() : 0),
+          'slot_count': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+                         $('#slot_count').val() : 0),
           't': test_filter.join(',')
       },
       function(data) {
@@ -778,14 +778,18 @@ RDMTests.prototype.validate_form = function() {
     return false;
   }
 
-  if (!(this.isNumberField($('#write_delay')) &&
-        this.isNumberField($('#dmx_frame_rate')) &&
-        this.isNumberField($('#slot_count')))) {
+  if (!this.isNumberField($('#write_delay')) ||
+      !this.isNumberField($('#inter_test_delay')) ||
+      ($('#rdm-tests-send_dmx_in_bg').attr('checked') &&
+       (!this.isNumberField($('#dmx_frame_rate')) ||
+        !this.isNumberField($('#slot_count'))))) {
+    rdmtests.display_dialog_message('Error', 'Invalid options entered');
     return false;
   }
 
   var slot_count_val = parseFloat($('#slot_count').val());
-  if (slot_count_val < 1 || slot_count_val > 512) {
+  if ($('#rdm-tests-send_dmx_in_bg').attr('checked') &&
+      (slot_count_val < 1 || slot_count_val > 512)) {
     rdmtests.display_dialog_message(
         'Error',
         'Invalid number of slots (expected: [1-512])');

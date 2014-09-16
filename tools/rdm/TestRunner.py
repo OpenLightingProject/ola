@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # TestRunner.py
 # Copyright (C) 2011 Simon Newton
@@ -21,6 +21,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import datetime
 import inspect
 import logging
+import time
 from ola.testing.rdm import ResponderTest
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
@@ -206,17 +207,17 @@ def GetTestClasses(module):
       classes.append(cls)
   return classes
 
-
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, broadcast_write_delay, pid_store,
-               wrapper, timestamp = False):
+  def __init__(self, universe, uid, broadcast_write_delay, inter_test_delay,
+               pid_store, wrapper, timestamp = False):
     """Create a new TestRunner.
 
     Args:
       universe: The universe number to use
       uid: The UID object to test
       broadcast_write_delay: the delay to use after sending broadcast sets
+      inter_test_delay: the delay to use between tests
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
       timestamp: true to print timestamps with each test
@@ -224,6 +225,7 @@ class TestRunner(object):
     self._universe = universe
     self._uid = uid
     self._broadcast_write_delay = broadcast_write_delay
+    self._inter_test_delay = inter_test_delay
     self._timestamp = timestamp
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
@@ -326,6 +328,10 @@ class TestRunner(object):
 
       test.Run()
 
+      #Use inter_test_delay on all but the last test
+      if test != tests[-1]:
+        time.sleep(self._inter_test_delay / 1000.0)
+      
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
       tests_completed += 1
     return tests, device

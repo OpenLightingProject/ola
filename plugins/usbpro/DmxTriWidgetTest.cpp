@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxTriWidgetTest.cpp
  * Test fixture for the DmxTriWidget class
@@ -437,7 +437,7 @@ void DmxTriWidgetTest::testSendDMX() {
   m_ss.Run();
   // The ss may terminate before the widget has a chance to read from the
   // descriptor. Run the ss once more to catch this case.
-  m_ss.RunOnce();
+  m_ss.RunOnce(ola::TimeInterval(1, 0));
   m_endpoint->Verify();
 }
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbProWidgetDetector.cpp
  * Handles the discovery process for widgets that implement the Usb Pro frame
@@ -41,8 +41,8 @@
 
 #include <string.h>
 
-#include <map>
 #include <string>
+#include <ostream>
 
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
@@ -55,6 +55,9 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using std::string;
+
+
 UsbProWidgetInformation& UsbProWidgetInformation::operator=(
     const UsbProWidgetInformation &other) {
   esta_id = other.esta_id;
@@ -62,6 +65,7 @@ UsbProWidgetInformation& UsbProWidgetInformation::operator=(
   manufacturer = other.manufacturer;
   device = other.device;
   serial = other.serial;
+  has_firmware_version = other.has_firmware_version;
   firmware_version = other.firmware_version;
   return *this;
 }
@@ -72,7 +76,7 @@ UsbProWidgetInformation& UsbProWidgetInformation::operator=(
  * @param scheduler a SchedulingExecutorInterface to use to register events.
  * @param on_success A callback to run if discovery succeeds.
  * @param on_failure A callback to run if discovery fails.
- * @param timeout the time in ms between each discovery message.
+ * @param message_interval the time in ms between each discovery message.
  */
 UsbProWidgetDetector::UsbProWidgetDetector(
     ola::thread::SchedulingExecutorInterface *scheduler,
@@ -415,8 +419,7 @@ void UsbProWidgetDetector::HandleGetParams(DispatchingUsbProWidget *widget,
   } else {
     const widget_params *params = reinterpret_cast<const widget_params*>(data);
     UsbProWidgetInformation &information = iter->second.information;
-    information.firmware_version =
-        (params->firmware_hi << 8) + params->firmware_lo;
+    information.SetFirmware((params->firmware_hi << 8) + params->firmware_lo);
   }
 
   MaybeSendHardwareVersionRequest(widget);
@@ -493,10 +496,23 @@ void UsbProWidgetDetector::CompleteWidgetDiscovery(
     return;
   }
 
-  OLA_INFO << "Detected USB Device: ESTA Id: 0x" << std::hex <<
-    information.esta_id  << " (" << information.manufacturer << "), device: "
-    << information.device_id << " (" << information.device << "), serial: " <<
-    "0x" << information.serial;
+  std::ostringstream str;
+  str << "ESTA Id: 0x" << std::hex << information.esta_id;
+  if (!information.manufacturer.empty()) {
+    str << " (" << information.manufacturer << ")";
+  }
+  str << ", device Id: " << information.device_id;
+  if (!information.device.empty()) {
+    str << " (" << information.device << ")";
+  }
+  str << ", serial: " << "0x" << information.serial << ", f/w version: ";
+  if (information.has_firmware_version) {
+     str << std::dec << (information.firmware_version >> 8) << "." <<
+       (information.firmware_version & 0xff);
+  } else {
+    str << "N/A";
+  }
+  OLA_INFO << "Detected USB Device: " << str.str();
 
   const UsbProWidgetInformation *widget_info = new UsbProWidgetInformation(
       information);

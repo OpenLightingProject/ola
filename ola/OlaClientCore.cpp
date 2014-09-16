@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaClientCore.cpp
  * Implementation of OlaClientCore
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdio.h>
@@ -29,8 +29,8 @@
 #include <vector>
 
 #include "common/protocol/Ola.pb.h"
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/client/ClientTypes.h"
@@ -41,7 +41,10 @@
 namespace ola {
 namespace client {
 
+using ola::io::ConnectedDescriptor;
 using ola::proto::OlaServerService_Stub;
+using ola::rpc::RpcChannel;
+using ola::rpc::RpcController;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -109,6 +112,23 @@ void OlaClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
 
 void OlaClientCore::SetDMXCallback(RepeatableDMXCallback *callback) {
   m_dmx_callback.reset(callback);
+}
+
+void OlaClientCore::ReloadPlugins(SetCallback *callback) {
+  ola::proto::PluginReloadRequest request;
+  RpcController *controller = new RpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->ReloadPlugins(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
 }
 
 void OlaClientCore::FetchPluginList(PluginListCallback *callback) {

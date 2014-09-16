@@ -11,16 +11,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UniverseStore.cpp
  * The universe store class. This maintains the set of all active universes and
  * saves the settings.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <iostream>
-#include <map>
 #include <set>
 #include <sstream>
 #include <string>
@@ -37,6 +36,9 @@
 namespace ola {
 
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 const unsigned int UniverseStore::MINIMUM_RDM_DISCOVERY_INTERVAL = 30;
 
@@ -113,7 +115,7 @@ Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
  * done with it.
  * @return a pointer to a vector of Universe*
  */
-void UniverseStore::GetList(std::vector<Universe*> *universes) const {
+void UniverseStore::GetList(vector<Universe*> *universes) const {
   universes->reserve(UniverseCount());
 
   universe_map::const_iterator iter;

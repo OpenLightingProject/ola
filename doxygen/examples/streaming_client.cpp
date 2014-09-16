@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2010 Simon Newton
  */
@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/StreamingClient.h>
+#include <ola/client/StreamingClient.h>
 
 #include <iostream>
 
@@ -37,7 +37,8 @@ int main(int, char *[]) {
   buffer.Blackout();  // Set all channels to 0
 
   // Create a new client.
-  ola::StreamingClient ola_client((ola::StreamingClient::Options()));
+  ola::client::StreamingClient ola_client(
+      (ola::client::StreamingClient::Options()));
 
   // Setup the client, this connects to the server
   if (!ola_client.Setup()) {

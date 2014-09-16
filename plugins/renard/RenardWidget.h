@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RenardWidget.h
  * Interface for the renard widget
@@ -26,6 +26,7 @@
 #include <string>
 
 #include "ola/io/SelectServer.h"
+#include "ola/io/Serial.h"
 #include "ola/DmxBuffer.h"
 
 namespace ola {
@@ -67,7 +68,7 @@ class RenardWidget {
     bool Connect();
     int Disconnect();
     ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
-    string GetPath() { return m_path; }
+    std::string GetPath() { return m_path; }
     bool SendDmx(const DmxBuffer &buffer);
     bool DetectDevice();
 
@@ -77,7 +78,7 @@ class RenardWidget {
     int ConnectToWidget(const std::string &path, speed_t speed);
 
     // instance variables
-    const string m_path;
+    const std::string m_path;
     ola::io::ConnectedDescriptor *m_socket;
     uint32_t m_byteCounter;
     uint32_t m_dmxOffset;

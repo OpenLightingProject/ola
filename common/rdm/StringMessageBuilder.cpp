@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringMessageBuilder.cpp
  * Builds a Message object from a list of strings & a Descriptor.
@@ -39,6 +39,8 @@ namespace rdm {
 using ola::messaging::MessageFieldInterface;
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 
 StringMessageBuilder::StringMessageBuilder()
@@ -49,7 +51,7 @@ StringMessageBuilder::StringMessageBuilder()
 
 
 /**
- * Clean up
+ * @brief Clean up
  */
 StringMessageBuilder::~StringMessageBuilder() {
   CleanUpVector();
@@ -57,11 +59,12 @@ StringMessageBuilder::~StringMessageBuilder() {
 
 
 /**
- * Get the Message object that this Builder created
+ * @brief Get the Message object that this Builder created
  *
  * This method is *not* re-entrant.
- * @param descriptor The descriptor to use to build the Message
- * @returns A Message object, or NULL if the inputs failed.
+ * @param inputs the string inputs provided to build the Message
+ * @param descriptor the descriptor to use to build the Message
+ * @returns a Message object, or NULL if the inputs failed.
  */
 const ola::messaging::Message *StringMessageBuilder::GetMessage(
     const vector<string> &inputs,
@@ -78,10 +81,19 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
 
   switch (state) {
     case GroupSizeCalculator::INSUFFICIENT_TOKENS:
+      SetError("Insufficient tokens");
+      return NULL;
     case GroupSizeCalculator::EXTRA_TOKENS:
+      SetError("Extra tokens");
+      return NULL;
     case GroupSizeCalculator::MISMATCHED_TOKENS:
+      SetError("Mismatched tokens");
+      return NULL;
     case GroupSizeCalculator::MULTIPLE_VARIABLE_GROUPS:
+      SetError("Multiple variable groups");
+      return NULL;
     case GroupSizeCalculator::NESTED_VARIABLE_GROUPS:
+      SetError("Nested variable groups");
       return NULL;
     case GroupSizeCalculator::SINGLE_VARIABLE_GROUP:
     case GroupSizeCalculator::NO_VARIABLE_GROUPS:

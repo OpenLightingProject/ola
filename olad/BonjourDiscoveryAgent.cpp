@@ -11,26 +11,49 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BonjourDiscoveryAgent.cpp
  * The Bonjour implementation of DiscoveryAgentInterface.
  * Copyright (C) 2013 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+
 #include "olad/BonjourDiscoveryAgent.h"
 
 #include <dns_sd.h>
+#include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/thread/CallbackThread.h>
 
 #include <string>
 
 namespace ola {
 
+using ola::network::HostToNetwork;
 using std::auto_ptr;
 using std::string;
+
+static void RegisterCallback(DNSServiceRef service,
+                             DNSServiceFlags flags,
+                             DNSServiceErrorType error_code,
+                             const char *name,
+                             const char *type,
+                             const char *domain,
+                             void *context) {
+  if (error_code != kDNSServiceErr_NoError) {
+    OLA_WARN << "DNSServiceRegister for " << name << "." << type << domain
+             << " returned error " << error_code;
+  } else {
+    OLA_INFO << "Registered: " << name << "." << type << domain;
+  }
+  (void) service;
+  (void) flags;
+  (void) context;
+}
 
 class DNSSDDescriptor : public ola::io::ReadFileDescriptor {
  public:
@@ -57,8 +80,8 @@ void DNSSDDescriptor::PerformRead() {
 }
 
 BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
-    const std::string &service_name,
-    const std::string &type,
+    const string &service_name,
+    const string &type,
     uint16_t port,
     const RegisterOptions &options)
     : RegisterOptions(options),
@@ -114,9 +137,9 @@ void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
       0, args->if_index, args->service_name.c_str(), args->type.c_str(),
       args->domain.c_str(),
       NULL,  // use default host name
-      htons(args->port),
+      HostToNetwork(args->port),
       txt_data.size(), txt_data.c_str(),
-      NULL,  // call back function
+      &RegisterCallback,  // call back function
       NULL);  // no context
 
   if (error != kDNSServiceErr_NoError) {

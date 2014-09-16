@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-latency.cpp
- *  Call FetchDmx and track the latency for each call.
- *  Copyright (C) 2005-2010 Simon Newton
+ * ola-latency.cpp
+ * Call FetchDmx and track the latency for each call.
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <stdlib.h>
@@ -41,7 +41,7 @@ using std::endl;
 using std::string;
 
 DEFINE_s_uint32(universe, u, 1, "The universe to receive data for");
-DEFINE_bool(send_dmx, false, "Use SendDmx messages, default is GetDmx");
+DEFINE_default_bool(send_dmx, false, "Use SendDmx messages, default is GetDmx");
 DEFINE_s_uint32(count, c, 0,
     "Exit after this many RPCs, default: infinite (0)");
 
@@ -147,10 +147,8 @@ void Tracker::StartSignalThread() {
 }
 
 int main(int argc, char *argv[]) {
-  ola::AppInit(argc, argv);
-  ola::SetHelpString("[options]", "Measure the latency of RPCs to olad.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]",
+               "Measure the latency of RPCs to olad.");
 
   Tracker tracker;
   if (!tracker.Setup()) {

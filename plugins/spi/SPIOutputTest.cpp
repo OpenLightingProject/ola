@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIOutputTest.cpp
  * Test fixture for SPIOutput.
@@ -79,8 +79,8 @@ void SPIOutputTest::setUp() {
  */
 void SPIOutputTest::testDescription() {
   FakeSPIBackend backend(2);
-  SPIOutput output1(m_uid, &backend, SPIOutput::Options(0));
-  SPIOutput::Options options(1);
+  SPIOutput output1(m_uid, &backend, SPIOutput::Options(0, "Test SPI Device"));
+  SPIOutput::Options options(1, "Test SPI Device");
   options.pixel_count = 32;
   SPIOutput output2(m_uid, &backend, options);
 
@@ -112,7 +112,7 @@ void SPIOutputTest::testDescription() {
  */
 void SPIOutputTest::testIndividualWS2801Control() {
   FakeSPIBackend backend(2);
-  SPIOutput::Options options(0);
+  SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
 
@@ -168,7 +168,7 @@ void SPIOutputTest::testIndividualWS2801Control() {
  */
 void SPIOutputTest::testCombinedWS2801Control() {
   FakeSPIBackend backend(2);
-  SPIOutput::Options options(0);
+  SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
   output.SetPersonality(2);
@@ -217,7 +217,7 @@ void SPIOutputTest::testCombinedWS2801Control() {
  */
 void SPIOutputTest::testIndividualLPD8806Control() {
   FakeSPIBackend backend(2);
-  SPIOutput::Options options(0);
+  SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
   output.SetPersonality(3);
@@ -272,7 +272,7 @@ void SPIOutputTest::testIndividualLPD8806Control() {
  */
 void SPIOutputTest::testCombinedLPD8806Control() {
   FakeSPIBackend backend(2);
-  SPIOutput::Options options(0);
+  SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
   output.SetPersonality(4);
@@ -319,7 +319,7 @@ void SPIOutputTest::testCombinedLPD8806Control() {
  */
 void SPIOutputTest::testIndividualP9813Control() {
   FakeSPIBackend backend(2);
-  SPIOutput::Options options(0);
+  SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
   output.SetPersonality(5);
@@ -378,7 +378,7 @@ void SPIOutputTest::testIndividualP9813Control() {
  */
 void SPIOutputTest::testCombinedP9813Control() {
   FakeSPIBackend backend(2);
-  SPIOutput::Options options(0);
+  SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
   output.SetPersonality(6);

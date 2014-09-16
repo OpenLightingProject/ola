@@ -1,6 +1,13 @@
 #!/bin/bash
 # Autogenerate the TimeCodeEnums.h file from the protobuf definition.
 
+if [ $# != 1 ]; then
+  echo "Usage: $0 <path-to-proto>";
+  exit;
+fi
+
+proto=$1;
+
 (
 cat <<EOM
 /*
@@ -16,7 +23,7 @@ cat <<EOM
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TimeCodeEnums.h
  * Contains the enum for different time code types
@@ -33,11 +40,11 @@ namespace timecode {
 
 typedef enum {
 EOM
-grep TIMECODE_ ../../../common/protocol/Ola.proto | sed "s/;/,/"
+grep TIMECODE_ $proto | sed "s/;/,/"
 cat <<EOM
 } TimeCodeType;
 }  // namespace timecode
 }  // namespace ola
 #endif  // INCLUDE_OLA_TIMECODE_TIMECODEENUMS_H_
 EOM
-) > TimeCodeEnums.h
+)

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOVecInterface.h
  * An interface for a class which provides a way of accessing it's data via
@@ -23,24 +23,42 @@
 #ifndef INCLUDE_OLA_IO_IOVECINTERFACE_H_
 #define INCLUDE_OLA_IO_IOVECINTERFACE_H_
 
-#include <sys/uio.h>
+#include <stdlib.h>
 
 namespace ola {
 namespace io {
 
 /**
- * The interface for an object which can be converted to an array of iovecs for
- * use with the sendmsg() call.
+ * Portable structure for scatter/gather data. This is binary compatible to
+ * iovec on *nix. On Windows, this needs to be converted to WSABUF for socket
+ * operations.
+ */
+struct IOVec {
+ public:
+    /*
+     * Contains the address of a buffer.
+     */
+    void* iov_base;
+
+    /*
+     * Contains the length of the buffer.
+     */
+    size_t iov_len;
+};
+
+/**
+ * The interface for an object which can be converted to an array of IOVecs for
+ * use with the sendmsg() or WSASendMsg call.
  */
 class IOVecInterface {
  public:
     virtual ~IOVecInterface() {}
 
     /*
-     * Returns a pointer to an array of iovecs and sets io_count to be the
-     * number of iovecs in the array
+     * Returns a pointer to an array of IOVecs and sets io_count to be the
+     * number of IOVecs in the array.
      */
-    virtual const struct iovec *AsIOVec(int *io_count) const = 0;
+    virtual const struct IOVec *AsIOVec(int *io_count) const = 0;
 
     /**
      * Removes the specified number of bytes from the object.
@@ -48,9 +66,9 @@ class IOVecInterface {
     virtual void Pop(unsigned int bytes) = 0;
 
     /*
-     * Frees the iovec array returned by AsIOVec()
+     * Frees the IOVec array returned by AsIOVec()
      */
-    static void FreeIOVec(const struct iovec *iov) {
+    static void FreeIOVec(const struct IOVec *iov) {
       if (iov)
         delete[] iov;
     }

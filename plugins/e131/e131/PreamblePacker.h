@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PreamblePacker.h
  * This class takes a block of Root Layer PDUs, prepends the ACN preamble and
@@ -36,9 +36,7 @@ namespace e131 {
  */
 class PreamblePacker {
  public:
-    explicit PreamblePacker()
-        : m_send_buffer(NULL) {
-    }
+    PreamblePacker() : m_send_buffer(NULL) {}
     ~PreamblePacker();
 
     const uint8_t *Pack(const PDUBlock<PDU> &pdu_block,

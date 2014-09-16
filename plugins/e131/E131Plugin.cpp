@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Plugin.cpp
  * The E1.31 plugin for ola
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
 
 #include <set>
@@ -34,10 +34,12 @@ namespace plugin {
 namespace e131 {
 
 using ola::acn::CID;
+using std::string;
 
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
 const char E131Plugin::DSCP_KEY[] = "dscp";
+const char E131Plugin::DRAFT_DISCOVERY_KEY[] = "draft_discovery";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
 const char E131Plugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
 const char E131Plugin::IP_KEY[] = "ip";
@@ -64,6 +66,8 @@ bool E131Plugin::StartHook() {
       PREPEND_HOSTNAME_KEY);
   options.ignore_preview = m_preferences->GetValueAsBool(
       IGNORE_PREVIEW_DATA_KEY);
+  options.enable_draft_discovery = m_preferences->GetValueAsBool(
+      DRAFT_DISCOVERY_KEY);
 
   unsigned int dscp;
   if (!StringToInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
@@ -131,6 +135,9 @@ string E131Plugin::Description() const {
 "dscp = [int]\n"
 "The DSCP value to tag the packets with, range is 0 to 63.\n"
 "\n"
+"draft_discovery = [bool]\n"
+"Enable the draft (2014) E1.31 discovery protocol.\n"
+"\n"
 "ignore_preview = [true|false]\n"
 "Ignore preview data.\n"
 "\n"
@@ -177,6 +184,11 @@ bool E131Plugin::SetDefaultPreferences() {
       DEFAULT_DSCP_VALUE);
 
   save |= m_preferences->SetDefaultValue(
+      DRAFT_DISCOVERY_KEY,
+      BoolValidator(),
+      BoolValidator::DISABLED);
+
+  save |= m_preferences->SetDefaultValue(
       IGNORE_PREVIEW_DATA_KEY,
       BoolValidator(),
       BoolValidator::ENABLED);
@@ -198,13 +210,13 @@ bool E131Plugin::SetDefaultPreferences() {
       BoolValidator(),
       BoolValidator::ENABLED);
 
-  set<string> revision_values;
+  std::set<string> revision_values;
   revision_values.insert(REVISION_0_2);
   revision_values.insert(REVISION_0_46);
 
   save |= m_preferences->SetDefaultValue(
       REVISION_KEY,
-      SetValidator(revision_values),
+      SetValidator<string>(revision_values),
       REVISION_0_46);
 
   if (save)

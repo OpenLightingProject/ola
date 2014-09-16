@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Backoff.h
  * Copyright (C) 2013 Simon Newton
@@ -36,15 +36,17 @@ class BackOffPolicy {
     virtual ~BackOffPolicy() {}
 
     /**
-     * Failed attempts is the number of unsuccessfull connection attempts since
-     * the last successful connection.
+     * @brief Calculate the backoff time
+     * @param failed_attempts is the number of unsuccessfull connection
+     * attempts since the last successful connection.
+     * @return how long to wait before the next attempt
      */
     virtual TimeInterval BackOffTime(unsigned int failed_attempts) const = 0;
 };
 
 
 /**
- * Constant time back off polcy. For a duration of 1s we'd produce.
+ * Constant time back off policy. For a duration of 1s we'd produce.
  *   1, 1, 1, 1, 1, ...
  */
 class ConstantBackoffPolicy: public BackOffPolicy {

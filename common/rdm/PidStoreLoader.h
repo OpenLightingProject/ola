@@ -11,9 +11,9 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * PidStoreHelper.h
+ * PidStoreLoader.h
  * This class does the heavy lifting for loading the PidStore from a protobuf.
  * It's separate so that PidStore.h doesn't have to include the Pids.pb.h
  * header.
@@ -62,7 +62,7 @@ class PidStoreLoader {
     const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
                                    bool validate);
     template <typename pb_object>
-    bool GetPidList(vector<const PidDescriptor*> *pids,
+    bool GetPidList(std::vector<const PidDescriptor*> *pids,
                     const pb_object &store,
                     bool validate,
                     bool limit_pid_values);
@@ -82,7 +82,7 @@ class PidStoreLoader {
         const ola::rdm::pid::Field &field);
     const ola::messaging::FieldDescriptor *GroupFieldToFieldDescriptor(
         const ola::rdm::pid::Field &field);
-    PidDescriptor::sub_device_valiator ConvertSubDeviceValidator(
+    PidDescriptor::sub_device_validator ConvertSubDeviceValidator(
         const ola::rdm::pid::SubDeviceRange &sub_device_range);
     void CleanStore();
 };

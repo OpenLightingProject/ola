@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EuroliteProOutputPort.cpp
  * Thread for the EurolitePro Output Port
@@ -22,7 +22,7 @@
 #include <string.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
@@ -125,7 +125,7 @@ bool EuroliteProOutputPort::Start() {
   OLA_INFO << "Bus_number: " <<  bus_number << ", Device_address: " <<
     device_address;
 
-  std::stringstream str;
+  std::ostringstream str;
   str << bus_number << "-" << device_address;
   m_serial = str.str();
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaClient.cpp
  * Implementation of OlaClient
@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"
@@ -60,6 +60,10 @@ void OlaClient::SetDMXCallback(RepeatableDMXCallback *callback) {
   m_core->SetDMXCallback(callback);
 }
 
+void OlaClient::ReloadPlugins(SetCallback *callback) {
+  m_core->ReloadPlugins(callback);
+}
+
 void OlaClient::FetchPluginList(PluginListCallback *callback) {
   m_core->FetchPluginList(callback);
 }
@@ -89,7 +93,7 @@ void OlaClient::FetchCandidatePorts(unsigned int universe_id,
 }
 
 void OlaClient::ConfigureDevice(unsigned int device_alias,
-                                const std::string &msg,
+                                const string &msg,
                                 ConfigureDeviceCallback *callback) {
   m_core->ConfigureDevice(device_alias, msg, callback);
 }
@@ -120,7 +124,7 @@ void OlaClient::FetchUniverseInfo(unsigned int universe,
 }
 
 void OlaClient::SetUniverseName(unsigned int universe,
-                                const std::string &name,
+                                const string &name,
                                 SetCallback *callback) {
   m_core->SetUniverseName(universe, name, callback);
 }

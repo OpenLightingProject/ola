@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Init.h
  * A grab bag of functions useful for programs.
@@ -46,6 +46,7 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Callback.h>
+#include <string>
 
 namespace ola {
 /**
@@ -65,14 +66,51 @@ namespace ola {
 bool ServerInit(int argc, char *argv[], ExportMap *export_map);
 
 /**
+ * @brief Used to initialize a server. Installs the SEGV handler, initializes
+ * the random number generator and populates the export map. Also sets the help
+ * string for the program, parses flags and initialises logging from flags.
+ * @param argc argument count
+ * @param argv pointer to argument strings
+ * @param export_map an optional pointer to an ExportMap
+ * @param first_line the inital line that is displayed in the help section.
+ * This is displayed after argv[0].
+ * @param description a multiline description of the program
+ * @return true on success and false otherwise
+ * @note If you are a client/application then call AppInit() instead.
+ * @sa ola::SetHelpString ola::ParseFlags ola::InitLoggingFromFlags
+ */
+bool ServerInit(int *argc,
+                char *argv[],
+                ExportMap *export_map,
+                const std::string &first_line,
+                const std::string &description);
+
+/**
  * @brief Used to initialize a application. Installs the SEGV handler and
- * initializes the random number generator.
+ * initializes the random number generator, sets the help string for the
+ * program, parses flags and initialises logging from flags.
  * @param argc argument count
  * @param argv pointer to the argument strings
+ * @param first_line the inital line that is displayed in the help section.
+ * This is displayed after argv[0].
+ * @param description a multiline description of the program
  * @return true on success and false otherwise
  * @note If you are a server then call ServerInit() instead.
+ * @sa ola::SetHelpString ola::ParseFlags ola::InitLoggingFromFlags
  */
-bool AppInit(int argc, char *argv[]);
+bool AppInit(int *argc,
+             char *argv[],
+             const std::string &first_line,
+             const std::string &description);
+
+/**
+ * @brief Perform platform-specific initialization of the networking subsystem.
+ *
+ * This method is called by ServerInit() and AppInit(), so you only need to
+ * call this yourself if you're not using those.
+ * @return true on success and false otherwise
+ */
+bool NetworkInit();
 
 /**
  * @brief Install a signal handler.

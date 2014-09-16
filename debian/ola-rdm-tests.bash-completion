@@ -10,13 +10,19 @@ have rdm_responder_test.py && _rdm_responder_test.py()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--slot-count --debug --dmx-frame-rate --log --list-tests --pid-store --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe'
+  opts='--slot-count --debug --dmx-frame-rate --log --list-tests --pid-location --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe --inter-test-delay'
 
   case "$prev" in
-    -l | --log | -p | --pid-store)
-      #Log and pidstore want files
+    -l | --log)
+      #Log wants a file
       #We're not interested in supplying opts, so set compreply and break out with a return
       _filedir
+      return 0
+      ;;
+    -p | --pid-location)
+      #pid-location wants a directory
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
       return 0
       ;;
     -t | --tests)
@@ -41,13 +47,13 @@ have rdm_model_collector.py && _rdm_model_collector.py()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--debug --pid_file --skip_queued_messages --universe'
+  opts='--debug --pid-location --skip-queued-messages --universe'
 
   case "$prev" in
-    --pid_file)
-      #Pid file wants a file
+    -p | --pid-location)
+      #Pid location wants a directory
       #We're not interested in supplying opts, so set compreply and break out with a return
-      _filedir
+      _filedir -d
       return 0
       ;;
   esac;
@@ -66,16 +72,16 @@ have rdm_test_server.py && _rdm_test_server.py()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--pid_store --www_dir --log_directory --world_writeable'
+  opts='--pid-location --www-dir --log-directory --world-writeable'
 
   case "$prev" in
-    -p | --pid_store)
-      #Pid store wants a file
+    -p | --pid-location)
+      #pid-location wants a directory
       #We're not interested in supplying opts, so set compreply and break out with a return
-      _filedir
+      _filedir -d
       return 0
       ;;
-    -d | --www_dir | -l | --log_directory)
+    -d | --www-dir | -l | --log-directory)
       #WWW dir and log dir want directories
       #We're not interested in supplying opts, so set compreply and break out with a return
       _filedir -d

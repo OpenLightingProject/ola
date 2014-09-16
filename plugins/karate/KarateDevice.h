@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KarateDevice.h
  * Interface for the karate device
@@ -28,24 +28,22 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
-using std::string;
-
 class KarateDevice: public ola::Device {
  public:
     KarateDevice(ola::AbstractPlugin *owner,
-                 const string &name,
-                 const string &path,
+                 const std::string &name,
+                 const std::string &path,
                  unsigned int device_id);
 
     // we only support one widget for now
-    string DeviceId() const { return m_device_id; }
+    std::string DeviceId() const { return m_device_id; }
 
  protected:
     bool StartHook();
 
  private:
-    string m_path;
-    string m_device_id;
+    std::string m_path;
+    std::string m_device_id;
 };
 }  // namespace karate
 }  // namespace plugin

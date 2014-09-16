@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetDevice.cpp
  * A KiNet Device.
@@ -33,6 +33,14 @@
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetPort.h"
 
+// Some preprocessor magic to reduce Windows.h namespace pollution
+#ifdef _WIN32
+#ifdef AddPort
+#undef AddPort
+#define AddPort
+#endif
+#endif
+
 namespace ola {
 namespace plugin {
 namespace kinet {
@@ -46,7 +54,7 @@ using std::vector;
  */
 KiNetDevice::KiNetDevice(
     AbstractPlugin *owner,
-    const std::vector<ola::network::IPV4Address> &power_supplies,
+    const vector<ola::network::IPV4Address> &power_supplies,
     PluginAdaptor *plugin_adaptor)
     : Device(owner, "KiNet Device"),
       m_power_supplies(power_supplies),

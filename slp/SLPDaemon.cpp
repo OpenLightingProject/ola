@@ -11,18 +11,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SLPDaemon.cpp
  * Copyright (C) 2012 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/BigEndianStream.h>
@@ -243,7 +243,7 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
 /**
  * Called when RPC socket is closed by the remote end.
  */
-void SLPDaemon::RPCSocketClosed(int read_descriptor) {
+void SLPDaemon::RPCSocketClosed(ola::io::DescriptorHandle read_descriptor) {
   ConnectedClient *client = STLLookupAndRemovePtr(&m_connected_clients,
       read_descriptor);
   OLA_DEBUG << "RPC Socket closed";

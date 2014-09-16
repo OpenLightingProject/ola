@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIWriter.cpp
  * This writes data to a SPI device.
@@ -28,7 +28,6 @@
 #include <numeric>
 #include <sstream>
 #include <string>
-#include <vector>
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
@@ -38,13 +37,14 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using ola::thread::MutexLocker;
+using std::string;
+
 const uint8_t SPIWriter::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIWriter::SPI_MODE = 0;
 const char SPIWriter::SPI_DEVICE_KEY[] = "device";
 const char SPIWriter::SPI_ERROR_VAR[] = "spi-write-errors";
 const char SPIWriter::SPI_WRITE_VAR[] = "spi-writes";
-
-using ola::thread::MutexLocker;
 
 SPIWriter::SPIWriter(const string &spi_device,
                      const Options &options,

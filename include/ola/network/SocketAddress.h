@@ -11,11 +11,19 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketAddress.h
  * Represents a sockaddr structure.
  * Copyright (C) 2012 Simon Newton
+ */
+
+/**
+ * @addtogroup network
+ * @{
+ * @file SocketAddress.h
+ * @brief Represents Socket Addresses.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
@@ -23,18 +31,27 @@
 
 #include <ola/network/IPV4Address.h>
 #include <stdint.h>
+#ifdef _WIN32
+#define VC_EXTRALEAN
+#include <Winsock2.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <sstream>
 #include <string>
 
 namespace ola {
 namespace network {
 
-using std::string;
+/**
+ * @addtogroup network
+ * @{
+ */
 
 /**
- * The base SocketAddress. One day if we support V6 there will be another
- * derived class.
+ * @brief The base SocketAddress.
+ *
+ * One day if we support V6 there will be another derived class.
  **/
 class SocketAddress {
  public:
@@ -42,15 +59,18 @@ class SocketAddress {
 
     virtual uint16_t Family() const = 0;
     virtual bool ToSockAddr(struct sockaddr *addr, unsigned int size) const = 0;
-    virtual string ToString() const = 0;
+    virtual std::string ToString() const = 0;
 
-    friend ostream& operator<< (ostream &out, const SocketAddress &address) {
+    friend std::ostream& operator<<(std::ostream &out,
+                                    const SocketAddress &address) {
       return out << address.ToString();
     }
 };
 
 
 /**
+ * @brief An IPv4 SocketAddress.
+ *
  * Wraps a sockaddr_in.
  */
 class IPV4SocketAddress: public SocketAddress {
@@ -90,11 +110,28 @@ class IPV4SocketAddress: public SocketAddress {
       return !(*this == other);
     }
 
+    /**
+     * @brief Less than operator for partial ordering.
+     *
+     * Sorts by host, then port.
+     */
     bool operator<(const IPV4SocketAddress &other) const {
       if (m_host == other.m_host)
         return m_port < other.m_port;
       else
         return m_host < other.m_host;
+    }
+
+    /**
+     * @brief Greater than operator.
+     *
+     * Sorts by host, then port.
+     */
+    bool operator>(const IPV4SocketAddress &other) const {
+      if (m_host == other.m_host)
+        return m_port > other.m_port;
+      else
+        return m_host > other.m_host;
     }
 
     uint16_t Family() const { return AF_INET; }
@@ -103,13 +140,9 @@ class IPV4SocketAddress: public SocketAddress {
     uint16_t Port() const { return m_port; }
     void Port(uint16_t port) { m_port = port; }
 
-    string ToString() const {
-      std::ostringstream str;
-      str << Host() << ":" << Port();
-      return str.str();
-    }
+    std::string ToString() const;
 
-    static bool FromString(const string &str,
+    static bool FromString(const std::string &str,
                            IPV4SocketAddress *socket_address);
 
     // useful for testing
@@ -124,6 +157,8 @@ class IPV4SocketAddress: public SocketAddress {
 
 
 /**
+ * @brief a Generic Socket Address
+ *
  * Wraps a struct sockaddr.
  */
 class GenericSocketAddress: public SocketAddress {
@@ -136,9 +171,7 @@ class GenericSocketAddress: public SocketAddress {
       memset(reinterpret_cast<uint8_t*>(&m_addr), 0, sizeof(m_addr));
     }
 
-    bool IsValid() const {
-      return Family() != AF_UNSPEC;
-    }
+    bool IsValid() const;
 
     uint16_t Family() const {
       return m_addr.sa_family;
@@ -157,7 +190,7 @@ class GenericSocketAddress: public SocketAddress {
       (void) size;
     }
 
-    string ToString() const;
+    std::string ToString() const;
 
     // Return a IPV4SocketAddress object, only valid if Family() is AF_INET
     IPV4SocketAddress V4Addr() const;
@@ -166,6 +199,9 @@ class GenericSocketAddress: public SocketAddress {
  private:
     struct sockaddr m_addr;
 };
+/**
+ * @}
+ */
 }  // namespace network
 }  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_

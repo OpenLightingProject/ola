@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AdvancedDimmerResponder_h
  * Copyright (C) 2013 Simon Newton
@@ -28,6 +28,7 @@
 #ifndef INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/ResponderOps.h>
 #include <ola/rdm/ResponderPersonality.h>
@@ -39,8 +40,6 @@
 
 namespace ola {
 namespace rdm {
-
-using std::auto_ptr;
 
 /**
  * A dimmer that supports many of the E1.37-1 PIDs.
@@ -92,31 +91,35 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetWithPin(const RDMRequest *request, uint16_t pin);
   };
 
+  PACK(
   struct min_level_s {
     uint16_t min_level_increasing;
     uint16_t min_level_decreasing;
     uint8_t on_below_min;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct preset_playback_s {
     uint16_t mode;
     uint8_t level;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct preset_status_s {
     uint16_t scene;
     uint16_t fade_up_time;
     uint16_t fade_down_time;
     uint16_t wait_time;
     uint8_t programmed;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct fail_mode_s {
     uint16_t scene;
     uint16_t delay;
     uint16_t hold_time;
     uint8_t level;
-  } __attribute__((packed));
+  });
 
   typedef fail_mode_s startup_mode_s;
 

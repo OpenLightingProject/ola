@@ -11,18 +11,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SLPServer.cpp
  * Copyright (C) 2012 Simon Newton
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/BigEndianStream.h>
@@ -391,13 +391,11 @@ uint16_t SLPServer::DeRegisterService(const ServiceEntry &service) {
 void SLPServer::UDPData() {
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
-  ola::network::IPV4Address source_ip;
-  uint16_t port;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_udp_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                              &packet_size, source_ip, port))
+                              &packet_size, &source))
     return;
-  IPV4SocketAddress source(source_ip, port);
 
   OLA_DEBUG << "Got " << packet_size << " UDP bytes from " << source;
   if (m_export_map)

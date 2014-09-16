@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * UIDSet.h
  * A Set of UIDs
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -38,9 +38,6 @@
 namespace ola {
 namespace rdm {
 
-using std::ostream;
-using std::set;
-
 /**
  * @addtogroup rdm_uid
  * @{
@@ -53,7 +50,7 @@ class UIDSet {
     /**
      * @brief the Iterator for a UIDSets
      */
-    typedef set<UID>::const_iterator Iterator;
+    typedef std::set<UID>::const_iterator Iterator;
 
     /**
      * @brief Construct an empty set
@@ -124,7 +121,7 @@ class UIDSet {
      * @return the union of the two UIDSets.
      */
     UIDSet Union(const UIDSet &other) {
-      set<UID> result;
+      std::set<UID> result;
       set_union(m_uids.begin(),
                 m_uids.end(),
                 other.Begin(),
@@ -153,7 +150,7 @@ class UIDSet {
      * @return the difference between this UIDSet and other.
      */
     UIDSet SetDifference(const UIDSet &other) {
-      set<UID> difference;
+      std::set<UID> difference;
       std::set_difference(m_uids.begin(),
                           m_uids.end(),
                           other.m_uids.begin(),
@@ -183,8 +180,8 @@ class UIDSet {
      * @returns a comma separated string with the UIDs from the set.
      */
     std::string ToString() const {
-      std::stringstream str;
-      set<UID>::const_iterator iter;
+      std::ostringstream str;
+      std::set<UID>::const_iterator iter;
       for (iter = m_uids.begin(); iter != m_uids.end(); ++iter) {
         if (iter != m_uids.begin())
           str << ",";
@@ -198,14 +195,14 @@ class UIDSet {
      * @param out the ostream
      * @param uid_set the UIDSet to write.
      */
-    friend ostream& operator<< (ostream &out, const UIDSet &uid_set) {
+    friend std::ostream& operator<< (std::ostream &out, const UIDSet &uid_set) {
       return out << uid_set.ToString();
     }
 
  private:
-    set<UID> m_uids;
+    std::set<UID> m_uids;
 
-    explicit UIDSet(const set<UID> uids) {
+    explicit UIDSet(const std::set<UID> uids) {
       m_uids = uids;
     }
 };

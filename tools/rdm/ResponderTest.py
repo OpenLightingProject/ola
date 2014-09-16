@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ResponderTestFixture.py
 # Copyright (C) 2010 Simon Newton
@@ -537,15 +537,17 @@ class ResponderTestFixture(TestFixture):
     # now log the result
     if response.WasAcked():
       if unpack_exception:
-        self.LogDebug(' Response: %s, PID: 0x%04hx, Error: %s' %
-                      (response, response.pid, unpack_exception))
+        self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d, Error: %s' %
+                      (response, response.pid, response.transaction_number,
+                       unpack_exception))
       else:
         escaped_string = '%s' % self._EscapeData(unpacked_data)
-        self.LogDebug(' Response: %s, PID: 0x%04hx, PDL: %d, data: %s' %
-                      (response, response.pid, len(response.data),
-                       escaped_string))
+        self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d, PDL: %d, data: %s'
+                      % (response, response.pid, response.transaction_number,
+                       len(response.data), escaped_string))
     else:
-      self.LogDebug(' Response: %s, PID: 0x%04hx' % (response, response.pid))
+      self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d' %
+                    (response, response.pid, response.transaction_number))
 
     return True
 

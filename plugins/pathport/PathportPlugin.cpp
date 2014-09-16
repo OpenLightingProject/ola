@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PathportPlugin.cpp
  * The Pathport plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <limits.h>
@@ -32,6 +32,8 @@
 namespace ola {
 namespace plugin {
 namespace pathport {
+
+using std::string;
 
 const char PathportPlugin::PLUGIN_NAME[] = "Pathport";
 const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
@@ -130,7 +132,7 @@ bool PathportPlugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
                                          UIntValidator(0, UINT_MAX),
-                                         IntToString(product_id));
+                                         product_id);
 
   if (save)
     m_preferences->Save();

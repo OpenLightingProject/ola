@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetNode.cpp
  * An KiNet node
@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/SocketAddress.h"
@@ -124,11 +124,11 @@ bool KiNetNode::SendDMX(const IPV4Address &target_ip, const DmxBuffer &buffer) {
 void KiNetNode::SocketReady() {
   uint8_t packet[1500];
   ssize_t packet_size = sizeof(packet);
-  ola::network::IPV4Address source;
+  ola::network::IPV4SocketAddress source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                           &packet_size,
-                          source))
+                          &source))
     return;
 
   OLA_INFO << "Received Kinet packet from " << source << ", discarding";

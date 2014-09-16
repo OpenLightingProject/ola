@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * CommandPrinter.h
  * Write out RDMCommands in a human-readable format.
@@ -31,11 +31,12 @@
 namespace ola {
 namespace rdm {
 
+using ola::messaging::Descriptor;
 using ola::messaging::Message;
 using ola::network::NetworkToHost;
 using std::auto_ptr;
 using std::endl;
-using std::stringstream;
+using std::string;
 
 /**
  * Constructor
@@ -172,7 +173,7 @@ void CommandPrinter::DisplayResponse(const RDMResponse *response,
 
 /**
  * Write out a RDM discovery request
- * @param response the request to format
+ * @param request the request to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.

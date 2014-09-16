@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ola-trigger.cpp
  * Copyright (C) 2011 Simon Newton
@@ -21,10 +21,12 @@
 #include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
+#ifndef _WIN32
 #include <sys/wait.h>
+#endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
@@ -44,6 +46,7 @@
 
 using ola::DmxBuffer;
 using std::map;
+using std::string;
 using std::vector;
 
 // prototype of bison-generated parser function
@@ -157,6 +160,7 @@ void DisplayHelpAndExit(char *argv[]) {
 /*
  * Catch SIGCHLD.
  */
+#ifndef _WIN32
 static void CatchSIGCHLD(int signo) {
   pid_t pid;
   do {
@@ -164,6 +168,7 @@ static void CatchSIGCHLD(int signo) {
   } while (pid > 0);
   (void) signo;
 }
+#endif
 
 
 /*
@@ -182,6 +187,17 @@ static void CatchSIGINT(int signo) {
  * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
+#ifdef WIN32
+  // There's no SIGCHILD on Windows
+  if (signal(SIGINT, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
+    OLA_WARN << "Failed to install signal SIGINT";
+    return false;
+  }
+  if (signal(SIGTERM, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
+    OLA_WARN << "Failed to install signal SIGTERM";
+    return false;
+  }
+#else
   struct sigaction act, oact;
 
   act.sa_handler = CatchSIGCHLD;
@@ -202,6 +218,7 @@ bool InstallSignals() {
     OLA_WARN << "Failed to install signal SIGTERM";
     return false;
   }
+#endif
   return true;
 }
 
@@ -213,7 +230,7 @@ void NewDmx(unsigned int our_universe,
             DMXTrigger *trigger,
             unsigned int universe,
             const DmxBuffer &data,
-            const std::string &error) {
+            const string &error) {
   if (universe == our_universe) {
     if (error.empty())
       trigger->NewDMX(data);
@@ -246,9 +263,9 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
   SlotActionMap::const_iterator iter = global_slots.begin();
   for (; iter != global_slots.end(); ++iter) {
     Slot *slots = iter->second;
-    if (slots->SlotOffset() + offset >= DMX_UNIVERSE_SIZE) {
+    if (slots->SlotOffset() + offset >= ola::DMX_UNIVERSE_SIZE) {
       OLA_FATAL << "Slot " << slots->SlotOffset() << " + offset " <<
-        offset << " is greater than " << DMX_UNIVERSE_SIZE - 1;
+        offset << " is greater than " << ola::DMX_UNIVERSE_SIZE - 1;
       ok = false;
       break;
     }
@@ -282,7 +299,7 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(argv);
 
-  if (opts.offset >= DMX_UNIVERSE_SIZE) {
+  if (opts.offset >= ola::DMX_UNIVERSE_SIZE) {
     std::cerr << "Invalid slot offset: " << opts.offset << std::endl;
     DisplayHelpAndExit(argv);
   }

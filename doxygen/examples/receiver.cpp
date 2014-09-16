@@ -11,51 +11,47 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2010 Simon Newton
  */
 //! [Tutorial Example] NOLINT(whitespace/comments)
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/OlaClientWrapper.h>
+#include <ola/client/ClientWrapper.h>
 #include <string>
 
 static const unsigned int UNIVERSE = 1;
 
 // Called when universe registration completes.
-void RegisterComplete(const std::string& error) {
-  if (!error.empty()) {
-    OLA_WARN << "Failed to register universe";
+void RegisterComplete(const ola::client::Result& result) {
+  if (!result.Success()) {
+    OLA_WARN << "Failed to register universe: " << result.Error();
   }
 }
 
 // Called when new DMX data arrives.
-void NewDmx(unsigned int universe,
-            uint8_t priority,
-            const ola::DmxBuffer &data,
-            const std::string &error) {
-  if (error.empty()) {
-    OLA_INFO << "Received " << data.Size()
-             << " channels for universe " << universe
-             << ", priority " << static_cast<int>(priority);
-  } else {
-    OLA_WARN << "Receive failed: " << error;
-  }
+void NewDmx(const ola::client::DMXMetadata &metadata,
+            const ola::DmxBuffer &data) {
+  std::cout << "Received " << data.Size()
+            << " channels for universe " << metadata.universe
+            << ", priority " << static_cast<int>(metadata.priority)
+            << std::endl;
 }
 
 int main() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
-  ola::OlaCallbackClientWrapper wrapper;
+  ola::client::OlaClientWrapper wrapper;
   if (!wrapper.Setup())
     exit(1);
 
-  ola::OlaCallbackClient *client = wrapper.GetClient();
+  ola::client::OlaClient *client = wrapper.GetClient();
   // Set the callback and register our interest in this universe
-  client->SetDmxCallback(ola::NewCallback(&NewDmx));
+  client->SetDMXCallback(ola::NewCallback(&NewDmx));
   client->RegisterUniverse(
-      UNIVERSE, ola::REGISTER, ola::NewSingleCallback(&RegisterComplete));
+      UNIVERSE, ola::client::REGISTER,
+      ola::NewSingleCallback(&RegisterComplete));
 
   wrapper.GetSelectServer()->Run();
 }

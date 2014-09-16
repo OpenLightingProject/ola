@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIBackend.cpp
  * The backend for SPI output. These are the classes which write the data to
@@ -42,6 +42,8 @@ namespace plugin {
 namespace spi {
 
 using ola::thread::MutexLocker;
+using std::string;
+using std::vector;
 
 const char SPIBackendInterface::SPI_DROP_VAR[] = "spi-drops";
 const char SPIBackendInterface::SPI_DROP_VAR_KEY[] = "device";
@@ -305,8 +307,7 @@ SoftwareBackend::SoftwareBackend(const Options &options,
       m_output_sizes(options.outputs, 0),
       m_latch_bytes(options.outputs, 0),
       m_output(NULL),
-      m_length(0),
-      m_buffer_size(0) {
+      m_length(0) {
   if (export_map) {
     m_drop_map = export_map->GetUIntMapVar(SPI_DROP_VAR,
                                            SPI_DROP_VAR_KEY);

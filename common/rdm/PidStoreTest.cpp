@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PidStoreTest.cpp
  * Test fixture for the PidStore & Pid classes
@@ -26,14 +26,13 @@
 #include <vector>
 
 #include "common/rdm/PidStoreLoader.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/SchemaPrinter.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/testing/TestUtils.h"
-
 
 
 using ola::messaging::Descriptor;
@@ -46,6 +45,7 @@ using ola::rdm::RootPidStore;
 using std::auto_ptr;
 using std::endl;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 
@@ -65,24 +65,25 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testPidDescriptor();
-    void testPidStore();
-    void testPidStoreLoad();
-    void testPidStoreFileLoad();
-    void testPidStoreDirectoryLoad();
-    void testPidStoreLoadMissingFile();
-    void testPidStoreLoadDuplicateManufacturer();
-    void testPidStoreLoadDuplicateValue();
-    void testPidStoreLoadDuplicateName();
-    void testPidStoreLoadInvalidEstaPid();
-    void testInconsistentData();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
-    void tearDown() {}
+  void testPidDescriptor();
+  void testPidStore();
+  void testPidStoreLoad();
+  void testPidStoreFileLoad();
+  void testPidStoreDirectoryLoad();
+  void testPidStoreLoadMissingFile();
+  void testPidStoreLoadDuplicateManufacturer();
+  void testPidStoreLoadDuplicateValue();
+  void testPidStoreLoadDuplicateName();
+  void testPidStoreLoadInvalidEstaPid();
+  void testInconsistentData();
 
  private:
+  string GetTestDataFile(const string &filename) {
+    string path = TEST_SRC_DIR;
+    path.append("/common/rdm/testdata/");
+    path.append(filename);
+    return path;
+  }
 };
 
 
@@ -184,7 +185,9 @@ void PidStoreTest::testPidStore() {
  */
 void PidStoreTest::testPidStoreLoad() {
   PidStoreLoader loader;
-  std::stringstream str;
+  // This is a stringstream not a ostringstream as the other end needs an
+  // istream
+  stringstream str;
 
   // check that this fails to load
   const RootPidStore *empty_root_store = loader.LoadFromStream(&str);
@@ -228,23 +231,23 @@ void PidStoreTest::testPidStoreLoad() {
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
-    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+    root_store->ManufacturerStore(ola::OPEN_LIGHTING_ESTA_CODE);
   OLA_ASSERT_TRUE(open_lighting_store);
   OLA_ASSERT_EQ(0u, open_lighting_store->PidCount());
 
   // lookup by value
   OLA_ASSERT_TRUE(root_store->GetDescriptor(16));
   OLA_ASSERT_FALSE(root_store->GetDescriptor(17));
-  OLA_ASSERT_TRUE(root_store->GetDescriptor(16, OPEN_LIGHTING_ESTA_CODE));
-  OLA_ASSERT_FALSE(root_store->GetDescriptor(17, OPEN_LIGHTING_ESTA_CODE));
+  OLA_ASSERT_TRUE(root_store->GetDescriptor(16, ola::OPEN_LIGHTING_ESTA_CODE));
+  OLA_ASSERT_FALSE(root_store->GetDescriptor(17, ola::OPEN_LIGHTING_ESTA_CODE));
 
   // lookup by name
   OLA_ASSERT_TRUE(root_store->GetDescriptor("PROXIED_DEVICES"));
   OLA_ASSERT_FALSE(root_store->GetDescriptor("DEVICE_INFO"));
   OLA_ASSERT_TRUE(root_store->GetDescriptor("PROXIED_DEVICES",
-                                            OPEN_LIGHTING_ESTA_CODE));
+                                            ola::OPEN_LIGHTING_ESTA_CODE));
   OLA_ASSERT_FALSE(root_store->GetDescriptor("DEVICE_INFO",
-                                             OPEN_LIGHTING_ESTA_CODE));
+                                             ola::OPEN_LIGHTING_ESTA_CODE));
 
   // check lookups
   const PidStore *esta_store = root_store->EstaStore();
@@ -280,8 +283,7 @@ void PidStoreTest::testPidStoreLoad() {
 
   // this is ugly but it's a test
   const FieldDescriptorGroup *group_descriptor =
-    dynamic_cast<const FieldDescriptorGroup*>(  // NOLINT(runtime/rtti)
-        proxied_group);
+    dynamic_cast<const FieldDescriptorGroup*>(proxied_group);  // NOLINT
   OLA_ASSERT_TRUE(group_descriptor);
 
   // check all the group properties
@@ -323,12 +325,11 @@ void PidStoreTest::testPidStoreLoad() {
 void PidStoreTest::testPidStoreFileLoad() {
   PidStoreLoader loader;
 
-  auto_ptr<const RootPidStore> root_store(loader.LoadFromFile(
-      "./testdata/test_pids.proto"));
+  auto_ptr<const RootPidStore> root_store(
+      loader.LoadFromFile(GetTestDataFile("test_pids.proto")));
   OLA_ASSERT_NOT_NULL(root_store.get());
   // check version
-  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774),
-                       root_store->Version());
+  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774), root_store->Version());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();
@@ -364,7 +365,7 @@ void PidStoreTest::testPidStoreFileLoad() {
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
-    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+    root_store->ManufacturerStore(ola::OPEN_LIGHTING_ESTA_CODE);
   OLA_ASSERT_NOT_NULL(open_lighting_store);
   OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 
@@ -396,7 +397,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
   PidStoreLoader loader;
 
   auto_ptr<const RootPidStore> root_store(loader.LoadFromDirectory(
-      "./testdata/pids"));
+      GetTestDataFile("pids")));
   OLA_ASSERT_NOT_NULL(root_store.get());
   // check version
   OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774),
@@ -412,7 +413,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
-    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+    root_store->ManufacturerStore(ola::OPEN_LIGHTING_ESTA_CODE);
   OLA_ASSERT_NOT_NULL(open_lighting_store);
   OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 
@@ -443,7 +444,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
 void PidStoreTest::testPidStoreLoadMissingFile() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/missing_file_pids.proto");
+      GetTestDataFile("missing_file_pids.proto"));
   OLA_ASSERT_NULL(root_store);
 }
 
@@ -454,7 +455,7 @@ void PidStoreTest::testPidStoreLoadMissingFile() {
 void PidStoreTest::testPidStoreLoadDuplicateManufacturer() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/duplicate_manufacturer.proto");
+      GetTestDataFile("duplicate_manufacturer.proto"));
   OLA_ASSERT_NULL(root_store);
 }
 
@@ -465,7 +466,7 @@ void PidStoreTest::testPidStoreLoadDuplicateManufacturer() {
 void PidStoreTest::testPidStoreLoadDuplicateValue() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/duplicate_pid_value.proto");
+      GetTestDataFile("duplicate_pid_value.proto"));
   OLA_ASSERT_NULL(root_store);
 }
 
@@ -476,7 +477,7 @@ void PidStoreTest::testPidStoreLoadDuplicateValue() {
 void PidStoreTest::testPidStoreLoadDuplicateName() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/duplicate_pid_name.proto");
+      GetTestDataFile("duplicate_pid_name.proto"));
   OLA_ASSERT_NULL(root_store);
 }
 
@@ -487,7 +488,7 @@ void PidStoreTest::testPidStoreLoadDuplicateName() {
 void PidStoreTest::testPidStoreLoadInvalidEstaPid() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/invalid_esta_pid.proto");
+      GetTestDataFile("invalid_esta_pid.proto"));
   OLA_ASSERT_NULL(root_store);
 }
 
@@ -498,6 +499,6 @@ void PidStoreTest::testPidStoreLoadInvalidEstaPid() {
 void PidStoreTest::testInconsistentData() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/inconsistent_pid.proto");
+      GetTestDataFile("inconsistent_pid.proto"));
   OLA_ASSERT_NULL(root_store);
 }

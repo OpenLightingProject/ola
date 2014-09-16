@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133URLParser.cpp
  * Copyright (C) 2011 Simon Newton
@@ -30,6 +30,7 @@ namespace e133 {
 using ola::network::IPV4Address;
 using ola::rdm::UID;
 using std::string;
+using std::vector;
 
 /**
  * Extract the IP Address and UID from a E1.33 SLP URL.
@@ -54,7 +55,7 @@ bool ParseE133URL(const string &url,
 
   const string remainder = url.substr(prefix_size);
 
-  std::vector<string> url_parts;
+  vector<string> url_parts;
   ola::StringSplit(remainder, url_parts, "/");
   if (url_parts.size() != 2)
     return false;

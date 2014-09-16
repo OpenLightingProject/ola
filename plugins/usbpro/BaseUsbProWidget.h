@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseUsbProWidget.h
  * Read and Write to a USB Serial Widget that uses the Enttec Usb Pro frame
@@ -54,7 +54,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
                    const uint8_t *data,
                    unsigned int length) const;
 
-  static ola::io::ConnectedDescriptor *OpenDevice(const string &path);
+  static ola::io::ConnectedDescriptor *OpenDevice(const std::string &path);
 
   static const uint8_t DEVICE_LABEL = 78;
   static const uint8_t DMX_LABEL = 6;

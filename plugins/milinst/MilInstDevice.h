@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstDevice.h
  * Interface for the milinst device
@@ -36,7 +36,7 @@ namespace milinst {
 class MilInstDevice: public ola::Device {
  public:
   MilInstDevice(AbstractPlugin *owner,
-                const std::string &name,
+                class Preferences *preferences,
                 const std::string &dev_path);
   ~MilInstDevice();
 
@@ -49,7 +49,18 @@ class MilInstDevice: public ola::Device {
 
  private:
   std::string m_path;
+  class Preferences *m_preferences;
   std::auto_ptr<class MilInstWidget> m_widget;
+
+  static const char MILINST_DEVICE_NAME[];
+
+  // Per device options
+  std::string DeviceTypeKey() const;
+
+  void SetDeviceDefaults();
+
+  static const char TYPE_1463[];
+  static const char TYPE_1553[];
 };
 }  // namespace milinst
 }  // namespace plugin

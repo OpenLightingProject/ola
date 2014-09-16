@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Credentials.h
  * Handle getting and setting a process's credentials.
@@ -36,13 +36,21 @@
 #include <unistd.h>
 #include <string>
 
+#ifdef _WIN32
+#ifndef uid_t
+#define uid_t int
+#endif
+#ifndef gid_t
+#define gid_t int
+#endif
+#endif
+
 namespace ola {
 
 /**
  * @addtogroup cred
  * @{
  */
-using std::string;
 
 // These functions wrap their POSIX counterparts.
 
@@ -52,16 +60,24 @@ using std::string;
  * */
 
 /**
- * @brief Get the real UID of the process.
- * @return real user id of the proccess
+ * @brief Check whether the current platform supports User and Group IDs.
+ * @return true on *nix, false on Windows
  */
-uid_t GetUID();
+bool SupportsUIDs();
+
+/**
+ * @brief Get the real UID of the process.
+ * @param uid is the variable to receive the real UID
+ * @return true on success, false otherwise
+ */
+bool GetUID(uid_t* uid);
 
 /**
  * @brief Get the effective UID of the process.
- * @return effective user id of the process
+ * @param euid is the variable to receive the effective UID
+ * @return true on success, false otherwise
  */
-uid_t GetEUID();
+bool GetEUID(uid_t* euid);
 
 /**
  * @brief Set the effective UID of the process.
@@ -81,15 +97,17 @@ bool SetUID(uid_t new_uid);
 
 /**
  * @brief Get the real Group ID
- * @return the real Group ID
+ * @param gid is the variable to receive the real Group ID
+ * @return true on success, false otherwise
  */
-gid_t GetGID();
+bool GetGID(gid_t* gid);
 
 /**
  * @brief Get the effective group ID
- * @return the effective Group ID
+ * @param egid is the variable to receive the effective Group ID
+ * @return true on success, false otherwise
  */
-gid_t GetEGID();
+bool GetEGID(gid_t* egid);
 
 /**
  * @brief Set the effective Group ID of the process
@@ -110,10 +128,10 @@ bool SetGID(gid_t new_gid);
  */
 typedef struct {
   /** @brief name of the user */
-  string pw_name;
+  std::string pw_name;
 
   /** @brief Unused currently*/
-  string pw_passwd;  // no passwd for now
+  std::string pw_passwd;  // no passwd for now
 
   /** @brief real User ID */
   uid_t pw_uid;
@@ -122,10 +140,10 @@ typedef struct {
   gid_t pw_gid;
 
   /** @brief user's home directory */
-  string pw_dir;
+  std::string pw_dir;
 
   /** @brief user's shell program */
-  string pw_shell;
+  std::string pw_shell;
 } PasswdEntry;
 
 /**
@@ -144,7 +162,7 @@ typedef struct {
  * @param[out] passwd struct to hold information for username name
  * @return true on success, false otherwise
  */
-bool GetPasswdName(const string &name, PasswdEntry *passwd);
+bool GetPasswdName(const std::string &name, PasswdEntry *passwd);
 
 /**
  * @brief Lookup a user account by UID.
@@ -168,12 +186,12 @@ bool GetPasswdUID(uid_t uid, PasswdEntry *passwd);
  */
 typedef struct {
   /** @brief name of the group */
-  string gr_name;
+  std::string gr_name;
   /**
    * @brief password for the group
    * @note UNUSED
    */
-  string gr_passwd;  // no passwd for now
+  std::string gr_passwd;  // no passwd for now
   /** @brief Group ID */
   gid_t gr_gid;
   // vector<string> gr_mem;  // no members for now
@@ -194,7 +212,7 @@ typedef struct {
  * @param[out] passwd is a GroupEntry to be populated upon success
  * @returns true on success and false otherwise
  */
-bool GetGroupName(const string &name, GroupEntry *passwd);
+bool GetGroupName(const std::string &name, GroupEntry *passwd);
 
 /**
  * @brief Lookup a group account by GID.

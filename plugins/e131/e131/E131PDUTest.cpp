@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131PDUTest.cpp
  * Test fixture for the E131PDU class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -27,12 +27,12 @@
 #include "plugins/e131/e131/E131PDU.h"
 #include "ola/testing/TestUtils.h"
 
-
 namespace ola {
 namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using std::string;
 
 class E131PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E131PDUTest);

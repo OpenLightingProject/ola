@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbSerialPlugin.h
  * Interface for the usbpro plugin class
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #ifndef PLUGINS_USBPRO_USBSERIALPLUGIN_H_
@@ -33,17 +33,15 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::io::ConnectedDescriptor;
-
 class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
  public:
     explicit UsbSerialPlugin(PluginAdaptor *plugin_adaptor);
 
-    string Name() const { return PLUGIN_NAME; }
-    string Description() const;
+    std::string Name() const { return PLUGIN_NAME; }
+    std::string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
     void DeviceRemoved(UsbSerialDevice *device);
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     void NewWidget(ArduinoWidget *widget,
                    const UsbProWidgetInformation &information);
@@ -64,12 +62,12 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     bool StopHook();
     bool SetDefaultPreferences();
     void DeleteDevice(UsbSerialDevice *device);
-    string GetDeviceName(const UsbProWidgetInformation &information);
+    std::string GetDeviceName(const UsbProWidgetInformation &information);
     unsigned int GetProFrameLimit();
     unsigned int GetDmxTriFrameLimit();
     unsigned int GetUltraDMXProFrameLimit();
 
-    vector<UsbSerialDevice*> m_devices;  // list of our devices
+    std::vector<UsbSerialDevice*> m_devices;  // list of our devices
     WidgetDetectorThread m_detector_thread;
 
     static const char DEFAULT_DEVICE_DIR[];

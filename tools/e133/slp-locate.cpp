@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * slp-thread.cpp
  * Copyright (C) 2011 Simon Newton
@@ -69,10 +69,7 @@ static void InteruptSignal(int signo) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(argc, argv);
-  ola::SetHelpString("[options]", "Locate E1.33 SLP services.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Locate E1.33 SLP services.");
 
   ola::InstallSignal(SIGINT, InteruptSignal);
 

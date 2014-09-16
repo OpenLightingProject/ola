@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortBroker.h
  * The port broker exists to handle the case where a port may be removed
@@ -64,7 +64,7 @@ class PortBroker: public PortBrokerInterface {
                         ola::rdm::RDMCallback *callback);
 
  private:
-    typedef std::pair<string, const Port*> port_key;
+    typedef std::pair<std::string, const Port*> port_key;
 
     void RequestComplete(port_key key,
                          ola::rdm::RDMCallback *callback,

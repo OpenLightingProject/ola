@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Plugin.h
  * Header file for plugin class - plugins inherit from this.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PLUGIN_H_
@@ -30,10 +30,9 @@
 
 namespace ola {
 
-using std::string;
 class PluginAdaptor;
 
-/*
+/**
  * The interface for a plugin
  */
 class AbstractPlugin {
@@ -41,23 +40,52 @@ class AbstractPlugin {
   AbstractPlugin() {}
   virtual ~AbstractPlugin() {}
 
-  // load the preferences for a plugin
+  /**
+   * @brief Load the preferences for a plugin
+   */
   virtual bool LoadPreferences() = 0;
-  // The location for preferences. This can be anything really but should
-  // indicate to the user how how the preferences were loaded.
-  virtual string PreferenceSource() const = 0;
-  // true if this plugin is enabled
+
+  /**
+   * @brief The location for preferences. This can be anything really but should
+   * indicate to the user how how the preferences were loaded.
+   */
+  virtual std::string PreferenceSource() const = 0;
+
+  /**
+   * @brief Is the plugin enabled?
+   * @return true if this plugin is enabled
+   */
   virtual bool IsEnabled() const = 0;
-  // start the plugin
+
+  /**
+   * Start the plugin
+   * @return true if we started ok, false otherwise
+   */
   virtual bool Start() = 0;
-  // stop the plugin
+
+  /**
+   * Stop the plugin
+   * @return true on success, false on failure
+   */
   virtual bool Stop() = 0;
-  // return the plugin_id of this plugin
+
+  /**
+   * @brief Get the plugin ID of this plugin
+   * @return the ola_plugin_id of this plugin
+   */
   virtual ola_plugin_id Id() const = 0;
-  // return the name of this plugin
-  virtual string Name() const = 0;
-  // return the description of this plugin
-  virtual string Description() const = 0;
+
+  /**
+   * @brief Get the plugin name
+   * @return the name of this plugin
+   */
+  virtual std::string Name() const = 0;
+
+  /**
+   * Return the description for this plugin.
+   * @return a string description of the plugin
+   */
+  virtual std::string Description() const = 0;
 
   virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) = 0;
 
@@ -85,7 +113,7 @@ class Plugin: public AbstractPlugin {
   virtual ~Plugin() {}
 
   bool LoadPreferences();
-  string PreferenceSource() const;
+  std::string PreferenceSource() const;
   bool IsEnabled() const;
   virtual bool Start();
   virtual bool Stop();
@@ -94,7 +122,7 @@ class Plugin: public AbstractPlugin {
   virtual ola_plugin_id Id() const = 0;
 
   // return the prefix used to identify this plugin
-  virtual string PluginPrefix() const = 0;
+  virtual std::string PluginPrefix() const = 0;
 
   // by default we don't conflict with any other plugins
   virtual void ConflictsWith(std::set<ola_plugin_id>*) {}
@@ -106,6 +134,10 @@ class Plugin: public AbstractPlugin {
  protected:
   virtual bool StartHook() { return 0; }
   virtual bool StopHook() { return 0; }
+
+  /**
+   * Set default preferences.
+   */
   virtual bool SetDefaultPreferences() { return true; }
 
   PluginAdaptor *m_plugin_adaptor;

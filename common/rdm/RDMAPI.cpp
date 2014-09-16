@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMAPI.cpp
  * Provides a generic RDM API that can use different implementations.
@@ -27,6 +27,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/base/Macro.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
@@ -193,7 +194,6 @@ bool RDMAPI::ClearCommStatus(
 
 /**
  * Send a queued message request.
- *
  */
 bool RDMAPI::GetQueuedMessage(
         unsigned int universe,
@@ -267,7 +267,7 @@ bool RDMAPI::GetStatusMessage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<StatusMessage>&> *callback,
-  string *error) {
+    string *error) {
   if (CheckCallback(error, callback))
     return false;
   if (CheckNotBroadcast(uid, error, callback))
@@ -2176,14 +2176,14 @@ bool RDMAPI::SetClock(
 
 
 /*
- * Check the identify mode for a device
+ * Check the identify state for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
  * @param error a pointer to a string which it set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
-bool RDMAPI::GetIdentifyMode(
+bool RDMAPI::GetIdentifyDevice(
     unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
@@ -2211,7 +2211,7 @@ bool RDMAPI::GetIdentifyMode(
 
 
 /*
- * Change the identify mode for a device
+ * Change the identify state for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param mode the identify mode to set
@@ -2273,13 +2273,13 @@ bool RDMAPI::ResetDevice(
     this,
     &RDMAPI::_HandleEmptyResponse,
     callback);
-  uint8_t option = warm_reset ? 0x01 : 0xff;
+  uint8_t option = warm_reset ? RESET_WARM : RESET_COLD;
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
                    universe,
                    uid,
                    sub_device,
-                   PID_IDENTIFY_DEVICE,
+                   PID_RESET_DEVICE,
                    &option,
                    sizeof(option)),
     error);
@@ -2539,12 +2539,14 @@ bool RDMAPI::CapturePreset(
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
+  PACK(
   struct preset_config {
     uint16_t scene;
     uint16_t fade_up_time;
     uint16_t fade_down_time;
     uint16_t wait_time;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(preset_config) == 8);
   struct preset_config raw_config;
 
   raw_config.scene = HostToNetwork(scene);
@@ -2633,10 +2635,12 @@ bool RDMAPI::SetPresetPlaybackMode(
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
+  PACK(
   struct preset_config {
     uint16_t mode;
     uint8_t level;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(preset_config) == 3);
   struct preset_config raw_config;
 
   raw_config.mode = HostToNetwork(playback_mode);
@@ -2672,7 +2676,7 @@ void RDMAPI::_HandleLabelResponse(
     const string &data) {
   ResponseStatus response_status = status;
   if (status.WasAcked() && data.size() > LABEL_SIZE) {
-    std::stringstream str;
+    std::ostringstream str;
     str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
     response_status.error = str.str();
   }
@@ -3002,6 +3006,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
   ParameterDescriptor description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct param_description {
       uint16_t pid;
       uint8_t pdl_size;
@@ -3016,7 +3021,8 @@ void RDMAPI::_HandleGetParameterDescriptor(
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(param_description) == 53);
     struct param_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3025,7 +3031,8 @@ void RDMAPI::_HandleGetParameterDescriptor(
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
              std::min(static_cast<unsigned int>(data.size()), max));
-      description.description[LABEL_SIZE] = 0;
+      raw_description.description[LABEL_SIZE] = 0;
+
       description.pid = NetworkToHost(raw_description.pid);
       description.pdl_size = raw_description.pdl_size;
       description.data_type = raw_description.data_type;
@@ -3037,11 +3044,11 @@ void RDMAPI::_HandleGetParameterDescriptor(
       description.max_value = NetworkToHost(raw_description.max_value);
       unsigned int label_size = data_size - (
           sizeof(raw_description) - LABEL_SIZE - 1);
-      description.description = std::string(raw_description.description,
-                                            label_size);
+      description.description = string(raw_description.description,
+                                       label_size);
       ShortenString(&description.description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3101,12 +3108,12 @@ void RDMAPI::_HandleGetProductDetailIdList(
   if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size > MAX_DETAIL_IDS * sizeof(uint16_t)) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be <= " << (MAX_DETAIL_IDS * sizeof(uint16_t)) <<
         ", was " << data_size;
       response_status.error = str.str();
     } else if (data_size % 2) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
       response_status.error = str.str();
     } else {
@@ -3136,7 +3143,7 @@ void RDMAPI::_HandleGetLanguageCapabilities(
   if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size % 2) {
-      std::stringstream str;
+      std::ostringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
       response_status.error = str.str();
     } else {
@@ -3238,13 +3245,15 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
   string description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct personality_description {
       uint8_t personality;
       uint16_t dmx_slots;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(personality_description) == 36);
     struct personality_description raw_description;
 
     unsigned int max = sizeof(personality_description) - 1;
@@ -3255,10 +3264,10 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
              std::min(static_cast<unsigned int>(data.size()), max));
       personality = raw_description.personality;
       dmx_slots = NetworkToHost(raw_description.dmx_slots);
-      description = std::string(raw_description.description, data_size - min);
+      description = string(raw_description.description, data_size - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3342,12 +3351,14 @@ void RDMAPI::_HandleGetSlotDescription(
   string description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct slot_description {
       uint16_t slot_index;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(slot_description) == 35);
     struct slot_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3357,11 +3368,11 @@ void RDMAPI::_HandleGetSlotDescription(
       raw_description.description[LABEL_SIZE] = 0;
       memcpy(&raw_description, data.data(), data.size());
       slot_index = NetworkToHost(raw_description.slot_index);
-      description = std::string(raw_description.description,
-                                data.size() - min);
+      description = string(raw_description.description,
+                           data.size() - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3417,6 +3428,7 @@ void RDMAPI::_HandleGetSensorDefinition(
   SensorDescriptor sensor;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct sensor_definition_s {
       uint8_t sensor_number;
       uint8_t type;
@@ -3428,7 +3440,8 @@ void RDMAPI::_HandleGetSensorDefinition(
       int16_t normal_max;
       uint8_t recorded_value_support;
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(sensor_definition_s) == 46);
     struct sensor_definition_s raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3447,11 +3460,11 @@ void RDMAPI::_HandleGetSensorDefinition(
       sensor.normal_min = NetworkToHost(raw_description.normal_min);
       sensor.normal_max = NetworkToHost(raw_description.normal_max);
       sensor.recorded_value_support = raw_description.recorded_value_support;
-      sensor.description = std::string(raw_description.description,
-                                       data_size - min);
+      sensor.description = string(raw_description.description,
+                                  data_size - min);
       ShortenString(&sensor.description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3529,12 +3542,14 @@ void RDMAPI::_HandleSelfTestDescription(
   string description;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct self_test_description {
       uint8_t self_test_number;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(self_test_description) == 34);
     struct self_test_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
@@ -3544,11 +3559,11 @@ void RDMAPI::_HandleSelfTestDescription(
       raw_description.description[LABEL_SIZE] = 0;
       memcpy(&raw_description, data.data(), data.size());
       self_test_number = raw_description.self_test_number;
-      description = std::string(raw_description.description,
-                                data.size() - min);
+      description = string(raw_description.description,
+                           data.size() - min);
       ShortenString(&description);
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
       response_status.error = str.str();
     }
@@ -3573,10 +3588,12 @@ void RDMAPI::_HandlePlaybackMode(
   uint8_t level = 0;
 
   if (response_status.WasAcked()) {
+    PACK(
     struct preset_mode {
       uint16_t mode;
       uint8_t level;
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(preset_mode) == 3);
     struct preset_mode raw_config;
 
     if (data.size() >= sizeof(raw_config)) {
@@ -3584,7 +3601,7 @@ void RDMAPI::_HandlePlaybackMode(
       mode = NetworkToHost(raw_config.mode);
       level = raw_config.level;
     } else {
-      std::stringstream str;
+      std::ostringstream str;
       str << data.size() << " needs to be more than " << sizeof(raw_config);
       response_status.error = str.str();
     }

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketTest.cpp
  * Test fixture for the Socket classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -52,7 +52,6 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
-
   CPPUNIT_TEST(testTCPSocketClientClose);
   CPPUNIT_TEST(testTCPSocketServerClose);
   CPPUNIT_TEST(testUDPSocket);
@@ -106,11 +105,16 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
  * Setup the select server
  */
 void SocketTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &SocketTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                               m_timeout_closure));
+
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
 }
 
 
@@ -119,6 +123,10 @@ void SocketTest::setUp() {
  */
 void SocketTest::tearDown() {
   delete m_ss;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 
@@ -368,15 +376,16 @@ void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
  * Receive some data and check it.
  */
 void SocketTest::UDPReceiveAndTerminate(UDPSocket *socket) {
-  IPV4Address expected_address, src_address;
+  IPV4Address expected_address;
   OLA_ASSERT_TRUE(IPV4Address::FromString("127.0.0.1", &expected_address));
 
-  uint16_t src_port;
+  IPV4SocketAddress source;
+
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src_address, src_port);
+  socket->RecvFrom(buffer, &data_read, &source);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  OLA_ASSERT_TRUE(expected_address == src_address);
+  OLA_ASSERT_EQ(expected_address, source.Host());
   m_ss->Terminate();
 }
 
@@ -387,20 +396,15 @@ void SocketTest::UDPReceiveAndTerminate(UDPSocket *socket) {
 void SocketTest::UDPReceiveAndSend(UDPSocket *socket) {
   IPV4Address expected_address;
   OLA_ASSERT_TRUE(IPV4Address::FromString("127.0.0.1", &expected_address));
+  IPV4SocketAddress source;
 
-  IPV4Address src_address;
-  uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src_address, src_port);
+  socket->RecvFrom(buffer, &data_read, &source);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  OLA_ASSERT_TRUE(expected_address == src_address);
+  OLA_ASSERT_EQ(expected_address, source.Host());
 
-  ssize_t data_sent = socket->SendTo(
-      buffer,
-      data_read,
-      src_address,
-      src_port);
+  ssize_t data_sent = socket->SendTo(buffer, data_read, source);
   OLA_ASSERT_EQ(data_read, data_sent);
 }
 

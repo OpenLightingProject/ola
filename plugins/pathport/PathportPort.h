@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PathportPort.h
  * The Pathport plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_PATHPORT_PATHPORTPORT_H_
@@ -33,7 +33,7 @@ namespace pathport {
 class PathportPortHelper {
  public:
     PathportPortHelper() {}
-    string Description(const Universe *universe) const;
+    std::string Description(const Universe *universe) const;
     bool PreSetUniverse(Universe *new_universe);
 };
 
@@ -48,7 +48,9 @@ class PathportInputPort: public BasicInputPort {
       m_node(node) {}
     ~PathportInputPort() {}
 
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
@@ -73,7 +75,9 @@ class PathportOutputPort: public BasicOutputPort {
       m_node(node) {}
     ~PathportOutputPort() {}
 
-    string Description() const { return m_helper.Description(GetUniverse()); }
+    std::string Description() const {
+      return m_helper.Description(GetUniverse());
+    }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);

@@ -3,6 +3,3 @@ usr/lib/pkgconfig/*
 usr/lib/libola*.so
 usr/lib/libola*.la
 usr/lib/libola*.a
-usr/lib/olad/libola*.so
-usr/lib/olad/libola*.la
-usr/lib/olad/libola*.a

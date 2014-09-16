@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtils.cpp
  * Random String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
@@ -34,12 +34,12 @@
 namespace ola {
 
 using std::endl;
+using std::ostringstream;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 void StringSplit(const string &input,
-                 vector<string> &tokens,
+                 vector<string> &tokens,  // NOLINT
                  const string &delimiters) {
   string::size_type start_offset = 0;
   string::size_type end_offset = 0;
@@ -56,7 +56,7 @@ void StringSplit(const string &input,
   }
 }
 
-void StringTrim(std::string *input) {
+void StringTrim(string *input) {
   string characters_to_trim = " \n\r\t";
   string::size_type start = input->find_first_not_of(characters_to_trim);
   string::size_type end = input->find_last_not_of(characters_to_trim);
@@ -73,25 +73,59 @@ void ShortenString(string *input) {
     input->erase(index);
 }
 
-
-bool StringEndsWith(const string &s, const string &ending) {
-  if (s.length() >= ending.length()) {
+bool StringBeginsWith(const string &s, const string &prefix) {
+  if (s.length() >= prefix.length()) {
     return
-      0 == s.compare(s.length() - ending.length(), ending.length(), ending);
+      0 == s.compare(0, prefix.length(), prefix);
+  } else {
+    return false;
+  }
+}
+
+bool StringEndsWith(const string &s, const string &suffix) {
+  if (s.length() >= suffix.length()) {
+    return
+      0 == s.compare(s.length() - suffix.length(), suffix.length(), suffix);
+  } else {
+    return false;
+  }
+}
+
+bool StripPrefix(string *s, const string &prefix) {
+  if (StringBeginsWith(*s, prefix)) {
+    *s = s->substr(prefix.length());
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool StripSuffix(string *s, const string &suffix) {
+  if (StringEndsWith(*s, suffix)) {
+    *s = s->substr(0, s->length() - suffix.length());
+    return true;
   } else {
     return false;
   }
 }
 
 string IntToString(int i) {
-  stringstream str;
+  ostringstream str;
   str << i;
   return str.str();
 }
 
 string IntToString(unsigned int i) {
-  stringstream str;
+  ostringstream str;
   str << i;
+  return str.str();
+}
+
+string IntToHexString(unsigned int i, unsigned int width) {
+  ostringstream str;
+  // In C++, you only get the 0x on non-zero values, so we have to explicitly
+  // add it for all values
+  str << "0x" << std::setw(width) << std::hex << std::setfill('0') << i;
   return str.str();
 }
 
@@ -108,6 +142,24 @@ bool StringToBool(const string &value, bool *output) {
   return false;
 }
 
+bool StringToBoolTolerant(const string &value, bool *output) {
+  if (StringToBool(value, output)) {
+    return true;
+  } else {
+    string lc_value(value);
+    ToLower(&lc_value);
+    if ((lc_value == "on") || (lc_value == "enable") ||
+        (lc_value == "enabled")) {
+      *output = true;
+      return true;
+    } else if ((lc_value == "off") || (lc_value == "disable") ||
+               (lc_value == "disabled")) {
+      *output = false;
+      return true;
+    }
+  }
+  return false;
+}
 
 bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (value.empty())
@@ -131,7 +183,7 @@ bool StringToInt(const string &value, uint16_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
     return false;
-  if (v > 0xffff)
+  if (v > UINT16_MAX)
     return false;
   *output = static_cast<uint16_t>(v);
   return true;
@@ -141,7 +193,7 @@ bool StringToInt(const string &value, uint8_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
     return false;
-  if (v > 0xff)
+  if (v > UINT8_MAX)
     return false;
   *output = static_cast<uint8_t>(v);
   return true;
@@ -239,7 +291,7 @@ string EscapeString(const string &original) {
 }
 
 string EncodeString(const string &original) {
-  stringstream encoded;
+  ostringstream encoded;
   for (string::const_iterator iter = original.begin();
        iter != original.end();
        ++iter) {
@@ -251,6 +303,21 @@ string EncodeString(const string &original) {
     }
   }
   return encoded.str();
+}
+
+void ReplaceAll(string *original, const string &find, const string &replace) {
+  if (original->empty())
+    return;  // No text, so nothing to do
+
+  if (find.empty())
+    return;  // Nothing to find, so nothing to do
+
+  size_t start = 0;
+  while ((start = original->find(find, start)) != string::npos) {
+    original->replace(start, find.length(), replace);
+    // Move to the end of the replaced section
+    start += ((replace.length() > find.length()) ? replace.length() : 0);
+  }
 }
 
 bool HexStringToInt(const string &value, uint8_t *output) {
@@ -349,6 +416,7 @@ void CustomCapitalizeLabel(string *s) {
     "dmx",
     "dns",
     "ip",
+    "ipv4",  // Should really be IPv4 probably, but better than nothing
     "led",
     "rdm",
     "uid",
@@ -387,7 +455,7 @@ void FormatData(std::ostream *out,
                 unsigned int length,
                 unsigned int indent,
                 unsigned int byte_per_line) {
-  stringstream raw, ascii;
+  ostringstream raw, ascii;
   raw << std::setw(2) << std::hex;
   for (unsigned int i = 0; i != length; i++) {
     raw << std::setfill('0') << std::setw(2) <<

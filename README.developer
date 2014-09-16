@@ -14,9 +14,8 @@ General
 Code Reviews
 ------------
 
-To have patches reviewed please push your changes to a github or Google Code
-Repo. Then open an issue with 'Type-Review' at
-https://github.com/OpenLightingProject/ola/issues
+To have patches reviewed please push your changes to GitHub and create a Pull
+Request from within your fork.
 
 If you're using Google Code please enable comments on the repo. Under
 Administer -> Source check:
@@ -64,6 +63,16 @@ Be aware that OLA runs on big endian systems. When dealing with wire formats
 always use the functions in include/ola/network/NetworkUtils.h to convert or
 use the BigEndianOutputStream to manage this automatically for you.
 
+Structure Packing
+-----------------
+
+Structure packing syntax differs between platforms and compilers. If you declare
+a struct or class that needs to be packed, use the PACK() macro from
+ola/base/Macro.h . See below for an example of PACK() usage.
+
+Not that this macro doesn't work for enums. See plugins/espnet/EspNetPackets.h
+for an example of how to pack an enum.
+
 Non x86 platforms
 -----------------
 
@@ -72,10 +81,10 @@ pointers which aren't aligned.
 
 For example:
 
-struct f {
+PACK(struct f {
   uint8_t value1;
   uint16_t value2;
-} __attribute__((packed));
+});
 
 struct f foo = {1, 2};
 uint16_t *ptr = &foo.value2;
@@ -186,3 +195,21 @@ We use the Google Python style guide:
 
 However we deviate from the standard and use 2 space indents, so it's
 consistent with the C++ code.
+
+Build System
+===============================================================================
+
+Autotools is a complex beast. Even after reading two books and a using it for a
+decade I still feel like I hardly understand it.
+
+Useful tips
+-----------
+
+* Run `make distcheck` to ensure you haven't broken anything.
+* Use $(srcdir), $(top_srcdir) to reference files where required. This is to
+  support VPATH builds:
+  http://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html
+* Prefer manualy dependencies over BUILT_SOURCES where possible, see
+  http://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
+  However this doesn't work in some cases (libraries?) because it overrides the
+  automake generated rules.

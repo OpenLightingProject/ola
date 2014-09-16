@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Device.cpp
  * Base implementation of the device class.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 #include <stdlib.h>
 
@@ -37,7 +37,10 @@
 
 namespace ola {
 
+using std::map;
 using std::pair;
+using std::string;
+using std::vector;
 
 /*
  * Create a new device
@@ -166,7 +169,7 @@ string Device::UniqueId() const {
       return "";
     }
 
-    std::stringstream str;
+    std::ostringstream str;
     str << Owner()->Id() << "-" << DeviceId();
     m_unique_id = str.str();
   }

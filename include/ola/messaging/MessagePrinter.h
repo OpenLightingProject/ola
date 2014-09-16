@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MessagePrinter.h
  * Print the contents of a message.
@@ -53,12 +53,14 @@ class MessagePrinter: public MessageVisitor {
     virtual void PostVisit(const GroupMessageField*) {}
 
  protected:
-    std::stringstream& Stream() { return m_str; }
+    std::ostringstream& Stream() { return m_str; }
     virtual void PostStringHook() {}
-    virtual string TransformLabel(const string &label) { return label; }
+    virtual std::string TransformLabel(const std::string &label) {
+      return label;
+    }
 
  private:
-    std::stringstream m_str;
+    std::ostringstream m_str;
 };
 
 
@@ -93,13 +95,13 @@ class GenericMessagePrinter: public MessagePrinter {
  private:
     unsigned int m_indent, m_indent_size;
 
-    void AppendUInt(const string &name,
+    void AppendUInt(const std::string &name,
                     unsigned int value,
-                    const string &label,
+                    const std::string &label,
                     int8_t multipler);
-    void AppendInt(const string &name,
+    void AppendInt(const std::string &name,
                    int value,
-                   const string &label,
+                   const std::string &label,
                    int8_t multipler);
     void AppendMultipler(int8_t multipler);
 };

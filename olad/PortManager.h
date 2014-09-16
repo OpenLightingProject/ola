@@ -11,17 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortManager.h
  * Provides a unified interface for controlling port patchings & priorities.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_PORTMANAGER_H_
 #define OLAD_PORTMANAGER_H_
 
-#include <string>
 #include <vector>
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
@@ -34,50 +33,98 @@ namespace ola {
 
 class PortManager {
  public:
-    explicit PortManager(UniverseStore *universe_store,
-                         PortBroker *broker)
-        : m_universe_store(universe_store),
-          m_broker(broker) {
-    }
-    ~PortManager() {}
+  explicit PortManager(UniverseStore *universe_store,
+                       PortBroker *broker)
+      : m_universe_store(universe_store),
+        m_broker(broker) {
+  }
+  ~PortManager() {}
 
-    bool PatchPort(InputPort *port, unsigned int universe);
-    bool PatchPort(OutputPort *port, unsigned int universe);
-    bool UnPatchPort(InputPort *port);
-    bool UnPatchPort(OutputPort *port);
+  /**
+   * Patch a port
+   * @param port the port to patch
+   * @param universe the universe to patch to
+   * @returns true is successful, false otherwise
+   */
+  bool PatchPort(InputPort *port, unsigned int universe);
 
-    bool SetPriorityInherit(Port *port);
-    bool SetPriorityStatic(Port *port, uint8_t value);
+  /**
+   * Patch a port
+   * @param port the port to patch
+   * @param universe the universe to patch to
+   * @returns true is successful, false otherwise
+   */
+  bool PatchPort(OutputPort *port, unsigned int universe);
+
+  /**
+   * UnPatch a port
+   * @param port the port to unpatch
+   * @returns true is successful, false otherwise
+   */
+  bool UnPatchPort(InputPort *port);
+
+  /**
+   * UnPatch a port
+   * @param port the port to unpatch
+   * @returns true is successful, false otherwise
+   */
+  bool UnPatchPort(OutputPort *port);
+
+  /**
+   * Set a port to inherit priority mode.
+   * @param port the port to configure
+   */
+  bool SetPriorityInherit(Port *port);
+
+  /**
+   * Set a port to override priority mode.
+   * @param port the port to configure
+   * @param value the new priority
+   */
+  bool SetPriorityStatic(Port *port, uint8_t value);
 
  private:
-    template<class PortClass>
-    bool GenericPatchPort(PortClass *port,
-                          unsigned int new_universe_id);
+  template<class PortClass>
+  bool GenericPatchPort(PortClass *port,
+                        unsigned int new_universe_id);
 
-    template<class PortClass>
-    bool GenericUnPatchPort(PortClass *port);
+  template<class PortClass>
+  bool GenericUnPatchPort(PortClass *port);
 
-    template<class PortClass>
-    bool CheckLooping(const AbstractDevice *device,
+  template<class PortClass>
+  bool CheckLooping(const AbstractDevice *device,
+                    unsigned int new_universe_id) const;
+
+  template<class PortClass>
+  bool CheckMultiPort(const AbstractDevice *device,
                       unsigned int new_universe_id) const;
 
-    template<class PortClass>
-    bool CheckMultiPort(const AbstractDevice *device,
-                        unsigned int new_universe_id) const;
+  /**
+   * Check if any input ports in this device are bound to the universe.
+   * @returns true if there is a match, false otherwise.
+   */
+  bool CheckInputPortsForUniverse(const AbstractDevice *device,
+                                  unsigned int universe_id) const;
 
-    bool CheckInputPortsForUniverse(const AbstractDevice *device,
+  /**
+   * Check if any output ports in this device are bound to the universe.
+   * @returns true if there is a match, false otherwise.
+   */
+  bool CheckOutputPortsForUniverse(const AbstractDevice *device,
+                                   unsigned int universe_id) const;
+
+  /**
+   * Check for any port in a list that's bound to this universe.
+   * @returns true if there is a match, false otherwise.
+   */
+  template<class PortClass>
+  bool CheckForPortMatchingUniverse(const std::vector<PortClass*> &ports,
                                     unsigned int universe_id) const;
-    bool CheckOutputPortsForUniverse(const AbstractDevice *device,
-                                     unsigned int universe_id) const;
 
-    template<class PortClass>
-    bool CheckForPortMatchingUniverse(const vector<PortClass*> &ports,
-                                      unsigned int universe_id) const;
+  UniverseStore * const m_universe_store;
+  PortBroker *m_broker;
 
-    UniverseStore * const m_universe_store;
-    PortBroker *m_broker;
-
-    DISALLOW_COPY_AND_ASSIGN(PortManager);
+  DISALLOW_COPY_AND_ASSIGN(PortManager);
 };
 }  // namespace ola
 #endif  // OLAD_PORTMANAGER_H_

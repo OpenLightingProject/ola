@@ -11,11 +11,21 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetDevice.h
  * Interface for the ArtNet device
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
+ */
+
+/**
+ * @namespace ola::plugin::artnet
+ * An Art-Net device is an instance of libartnet bound to a single IP address
+ * Art-Net is limited to four ports per direction per IP, so in this case
+ * our device has 8 ports :
+ *
+ * IDs 0-3 : Input ports (recv DMX)
+ * IDs 4-7 : Output ports (send DMX)
  */
 
 #ifndef PLUGINS_ARTNET_ARTNETDEVICE_H_
@@ -24,7 +34,7 @@
 #include <string>
 
 #include "olad/Device.h"
-#include "plugins/artnet/messages/ArtnetConfigMessages.pb.h"
+#include "plugins/artnet/messages/ArtNetConfigMessages.pb.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 namespace ola {
@@ -34,25 +44,31 @@ class Preferences;
 namespace plugin {
 namespace artnet {
 
-using ola::Device;
-using ola::plugin::artnet::Request;
-using std::string;
-
 class ArtNetDevice: public Device {
  public:
+  /**
+   * Create a new Artnet Device
+   */
   ArtNetDevice(AbstractPlugin *owner,
                class Preferences *preferences,
                class PluginAdaptor *plugin_adaptor);
 
   // only one ArtNet device
-  string DeviceId() const { return "1"; }
+  std::string DeviceId() const { return "1"; }
 
   void EnterConfigurationMode() { m_node->EnterConfigurationMode(); }
   void ExitConfigurationMode() { m_node->ExitConfigurationMode(); }
 
+  /**
+   * Handle device config messages
+   * @param controller An RpcController
+   * @param request the request data
+   * @param response the response to return
+   * @param done the closure to call once the request is complete
+   */
   void Configure(ola::rpc::RpcController *controller,
-                 const string &request,
-                 string *response,
+                 const std::string &request,
+                 std::string *response,
                  ConfigureCallback *done);
 
   static const char K_ALWAYS_BROADCAST_KEY[];
@@ -69,8 +85,20 @@ class ArtNetDevice: public Device {
   static const unsigned int POLL_INTERVAL = 10000;
 
  protected:
+  /**
+   * Start this device
+   * @return true on success, false on failure
+   */
   bool StartHook();
+
+  /**
+   * Stop this device. This is called before the ports are deleted
+   */
   void PrePortStop();
+
+  /**
+   * Stop this device
+   */
   void PostPortStop();
 
  private:
@@ -79,9 +107,16 @@ class ArtNetDevice: public Device {
   class PluginAdaptor *m_plugin_adaptor;
   ola::thread::timeout_id m_timeout_id;
 
-  void HandleOptions(Request *request, string *response);
+  /**
+   * Handle an options request
+   */
+  void HandleOptions(Request *request, std::string *response);
+
+  /**
+   * Handle a node list request
+   */
   void HandleNodeList(Request *request,
-                      string *response,
+                      std::string *response,
                       ola::rpc::RpcController *controller);
 };
 }  // namespace artnet

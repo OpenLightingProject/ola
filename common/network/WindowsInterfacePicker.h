@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * WindowsInterfacePicker.h
  * Choose an interface to listen on
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef COMMON_NETWORK_WINDOWSINTERFACEPICKER_H_
@@ -32,7 +32,7 @@ namespace network {
  */
 class WindowsInterfacePicker: public InterfacePicker {
  public:
-    std::vector<Interface> GetInterfaces() const;
+    std::vector<Interface> GetInterfaces(bool include_loopback) const;
 };
 }  // namespace network
 }  // namespace ola

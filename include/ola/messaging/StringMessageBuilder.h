@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringMessageBuilder.h
  * The interface for the class which builds Message objects from a vector of
@@ -30,16 +30,12 @@ namespace ola {
 namespace messaging {
 
 
-using std::string;
-using std::vector;
-
-
 /**
  * This visitor builds a Message object from a list of strings.
  */
 class StringMessageBuilder: public FieldDescriptorVisitor {
  public:
-    explicit StringMessageBuilder(const vector<string> &input)
+    explicit StringMessageBuilder(const std::vector<std::string> &input)
         : m_input(input) {
     }
     ~StringMessageBuilderVisitor() {}
@@ -59,7 +55,7 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
     void PostVisit(const FieldDescriptorGroup*);
 
  private:
-    vector<string> m_input;
+    std::vector<std::string> m_input;
 };
 }  // namespace messaging
 }  // namespace ola

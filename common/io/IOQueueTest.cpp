@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOQueueTest.cpp
  * Test fixture for the IOQueue class.
@@ -29,6 +29,7 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
+using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
@@ -61,7 +62,7 @@ class IOQueueTest: public CppUnit::TestFixture {
  private:
     auto_ptr<IOQueue> m_buffer;
 
-    unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
+    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 
@@ -69,15 +70,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IOQueueTest);
 
 
 void IOQueueTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_buffer.reset(new IOQueue());
 }
 
 
 /**
- * Sum up the length of data in a iovec
+ * Sum up the length of data in a IOVec
  */
-unsigned int IOQueueTest::SumLengthOfIOVec(const struct iovec *iov,
+unsigned int IOQueueTest::SumLengthOfIOVec(const struct IOVec *iov,
                                             int iocnt) {
   unsigned int sum = 0;
   for (int i = 0; i < iocnt; iov++, i++)
@@ -276,7 +276,7 @@ void IOQueueTest::testPeek() {
 
 
 /**
- * Test getting / setting iovecs work.
+ * Test getting / setting IOVec work.
  */
 void IOQueueTest::testIOVec() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -286,7 +286,7 @@ void IOQueueTest::testIOVec() {
   OLA_ASSERT_FALSE(m_buffer->Empty());
 
   int iocnt;
-  const struct iovec *vector = m_buffer->AsIOVec(&iocnt);
+  const struct IOVec *vector = m_buffer->AsIOVec(&iocnt);
   OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
   OLA_ASSERT_EQ(1, iocnt);
   m_buffer->FreeIOVec(vector);
@@ -316,7 +316,7 @@ void IOQueueTest::testDump() {
   queue.Write(data1, sizeof(data1));
   OLA_ASSERT_EQ(9u, queue.Size());
 
-  std::stringstream str;
+  std::ostringstream str;
   queue.Dump(&str);
   OLA_ASSERT_EQ(
       string("00 01 02 03 04 05 06 07  ........\n"
@@ -336,7 +336,7 @@ void IOQueueTest::testStringRead() {
   queue.Write(data1, sizeof(data1));
   OLA_ASSERT_EQ(9u, queue.Size());
 
-  std::string output;
+  string output;
   OLA_ASSERT_EQ(9u, queue.Read(&output, 9u));
   OLA_ASSERT_EQ(string("abcd1234 "), output);
 }

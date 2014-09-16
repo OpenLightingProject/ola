@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TestUtils.h
  * Useful functions that improve upon CPPUNIT's test functions
@@ -33,9 +33,6 @@
 namespace ola {
 namespace testing {
 
-using std::vector;
-using std::set;
-
 // Assert that two data blocks are the same.
 void ASSERT_DATA_EQUALS(unsigned int line,
                         const uint8_t *expected,
@@ -46,13 +43,13 @@ void ASSERT_DATA_EQUALS(unsigned int line,
 // Private, use OLA_ASSERT_VECTOR_EQ below
 template <typename T>
 void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
-                     const vector<T> &t1,
-                     const vector<T> &t2) {
+                     const std::vector<T> &t1,
+                     const std::vector<T> &t2) {
   CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
                            "Vector sizes not equal");
 
-  typename vector<T>::const_iterator iter1 = t1.begin();
-  typename vector<T>::const_iterator iter2 = t2.begin();
+  typename std::vector<T>::const_iterator iter1 = t1.begin();
+  typename std::vector<T>::const_iterator iter2 = t2.begin();
   while (iter1 != t1.end())
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Vector elements not equal");
@@ -61,13 +58,13 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
 // Private, use OLA_ASSERT_SET_EQ below
 template <typename T>
 void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
-                  const set<T> &t1,
-                  const set<T> &t2) {
+                  const std::set<T> &t1,
+                  const std::set<T> &t2) {
   CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
                            "Set sizes not equal");
 
-  typename set<T>::const_iterator iter1 = t1.begin();
-  typename set<T>::const_iterator iter2 = t2.begin();
+  typename std::set<T>::const_iterator iter1 = t1.begin();
+  typename std::set<T>::const_iterator iter2 = t2.begin();
   while (iter1 != t1.end())
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Set elements not equal");
@@ -95,6 +92,9 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
 #define OLA_ASSERT_NE(expected, output)  \
   CPPUNIT_ASSERT((expected) != (output))
+
+#define OLA_ASSERT_DOUBLE_EQ(expected, output, delta)  \
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(expected, output, delta)
 
 #define OLA_ASSERT_LT(expected, output)  \
   CPPUNIT_ASSERT((expected) < (output))
@@ -124,6 +124,12 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
   CPPUNIT_NS::Asserter::failIf( \
     NULL == value, \
     CPPUNIT_NS::Message("Expression: " #value " == NULL"), \
+    CPPUNIT_SOURCELINE())
+
+#define OLA_ASSERT_NOT_EMPTY(container) \
+  CPPUNIT_NS::Asserter::failIf( \
+    container.empty(), \
+    CPPUNIT_NS::Message("Expression: " #container " is empty"), \
     CPPUNIT_SOURCELINE())
 
 #define OLA_FAIL(reason)  \

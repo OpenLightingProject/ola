@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,20 +11,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_artnet_params.py
-# Copyright (C) 2005-2009 Simon Newton
+# Copyright (C) 2005 Simon Newton
 
-"""Send some DMX data."""
+"""Fetch some ArtNet parameters."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola.ClientWrapper import ClientWrapper
-from ola import ArtnetConfigMessages_pb2
+from ola import ArtNetConfigMessages_pb2
 
 def ArtNetConfigureReply(state, response):
-  reply = ArtnetConfigMessages_pb2.Reply()
+  reply = ArtNetConfigMessages_pb2.Reply()
   reply.ParseFromString(response)
   print 'Short Name: %s' % reply.options.short_name
   print 'Long Name: %s' % reply.options.long_name
@@ -36,7 +36,7 @@ def ArtNetConfigureReply(state, response):
 device_alias = 1
 wrapper = ClientWrapper()
 client = wrapper.Client()
-artnet_request = ArtnetConfigMessages_pb2.Request()
+artnet_request = ArtNetConfigMessages_pb2.Request()
 artnet_request.type = artnet_request.ARTNET_OPTIONS_REQUEST
 client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
                        ArtNetConfigureReply)

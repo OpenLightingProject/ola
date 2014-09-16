@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * URLEntry.h
  * The object which holds a url and lifetime.
@@ -29,9 +29,6 @@
 namespace ola {
 namespace slp {
 
-using std::ostream;
-using std::string;
-
 /**
  * Represents a URL with the an associated lifetime. The URL cannot be changed
  * once the object is created. This object is cheap to copy so it can be used
@@ -46,14 +43,14 @@ class URLEntry {
      * @param url the url string
      * @param lifetime the lifetime in seconds.
      */
-    URLEntry(const string &url, uint16_t lifetime)
+    URLEntry(const std::string &url, uint16_t lifetime)
         : m_url(url),
           m_lifetime(lifetime) {
     }
 
     ~URLEntry() {}
 
-    string url() const { return m_url; }
+    std::string url() const { return m_url; }
     uint16_t lifetime() const { return m_lifetime; }
     void set_lifetime(uint16_t lifetime) { m_lifetime = lifetime; }
 
@@ -93,23 +90,23 @@ class URLEntry {
       return *this;
     }
 
-    void ToStream(ostream *out) const {
+    void ToStream(std::ostream *out) const {
       *out << m_url << "(" << m_lifetime << ")";
     }
 
-    string ToString() const {
+    std::string ToString() const {
       std::ostringstream str;
       ToStream(&str);
       return str.str();
     }
 
-    friend ostream& operator<<(ostream &out, const URLEntry &entry) {
+    friend std::ostream& operator<<(std::ostream &out, const URLEntry &entry) {
       entry.ToStream(&out);
       return out;
     }
 
  protected:
-    string m_url;
+    std::string m_url;
     uint16_t m_lifetime;
     // TODO(simon): add auth blocks here
 };

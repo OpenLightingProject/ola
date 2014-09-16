@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbDmxPlugin.cpp
  * The UsbDmx plugin for ola
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006 Simon Newton
  */
 
 #include <errno.h>
@@ -49,6 +49,9 @@ namespace plugin {
 namespace usbdmx {
 
 using ola::io::DeviceDescriptor;
+using std::pair;
+using std::string;
+using std::vector;
 
 const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
@@ -264,7 +267,7 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
   bool save = m_preferences->SetDefaultValue(
       LIBUSB_DEBUG_LEVEL_KEY,
       UIntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
-      IntToString(LIBUSB_DEFAULT_DEBUG_LEVEL));
+      LIBUSB_DEFAULT_DEBUG_LEVEL);
 
   if (save)
     m_preferences->Save();

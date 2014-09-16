@@ -11,18 +11,26 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderHelper.cpp
  * Copyright (C) 2013 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/base/Macro.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderSensor.h"
@@ -32,6 +40,10 @@ namespace ola {
 namespace rdm {
 
 using ola::network::HostToNetwork;
+using ola::network::Interface;
+using ola::network::InterfacePicker;
+using ola::network::IPV4Address;
+using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using std::min;
 using std::string;
@@ -82,6 +94,7 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
+  PACK(
   struct device_info_s {
     uint16_t rdm_version;
     uint16_t model;
@@ -93,7 +106,8 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
     uint16_t dmx_start_address;
     uint16_t sub_device_count;
     uint8_t sensor_count;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(device_info_s) == 19);
 
   struct device_info_s device_info;
   device_info.rdm_version = HostToNetwork(
@@ -138,7 +152,7 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
 
 const RDMResponse *ResponderHelper::GetProductDetailList(
     const RDMRequest *request,
-    const std::vector<rdm_product_detail> &product_details,
+    const vector<rdm_product_detail> &product_details,
     uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
@@ -167,10 +181,12 @@ const RDMResponse *ResponderHelper::GetPersonality(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
+  PACK(
   struct personality_info_s {
     uint8_t personality;
     uint8_t total;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(personality_info_s) == 2);
 
   struct personality_info_s personality_info = {
       personality_manager->ActivePersonalityNumber(),
@@ -221,11 +237,13 @@ const RDMResponse *ResponderHelper::GetPersonalityDescription(
   if (!personality) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   } else {
+    PACK(
     struct personality_description_s {
       uint8_t personality;
       uint16_t slots_required;
       char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
+    });
+    STATIC_ASSERT(sizeof(personality_description_s) == 35);
 
     struct personality_description_s personality_description;
     personality_description.personality = personality_number;
@@ -268,11 +286,13 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     return EmptyGetResponse(request, queued_message_count);
   }
 
+  PACK(
   struct slot_info_s {
     uint16_t offset;
     uint8_t type;
     uint16_t label;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(slot_info_s) == 5);
 
   slot_info_s slot_info_raw[slot_data->SlotCount()];
 
@@ -315,10 +335,12 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   }
 
+  PACK(
   struct slot_description_s {
     uint16_t slot;
     char description[MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(slot_description_s) == 34);
 
   struct slot_description_s slot_description;
   slot_description.slot = HostToNetwork(slot_number);
@@ -357,10 +379,12 @@ const RDMResponse *ResponderHelper::GetSlotDefaultValues(
     return EmptyGetResponse(request, queued_message_count);
   }
 
+  PACK(
   struct slot_default_s {
     uint16_t offset;
     uint8_t value;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(slot_default_s) == 3);
 
   slot_default_s slot_default_raw[slot_data->SlotCount()];
 
@@ -434,6 +458,7 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  PACK(
   struct sensor_definition_s {
     uint8_t sensor;
     uint8_t type;
@@ -444,12 +469,13 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
     int16_t normal_min;
     int16_t normal_max;
     uint8_t recorded_support;
-    char description[32];
-  } __attribute__((packed));
+    char description[MAX_RDM_STRING_LENGTH];
+  });
+  STATIC_ASSERT(sizeof(sensor_definition_s) == 45);
 
   const Sensor *sensor = sensor_list.at(sensor_number);
   struct sensor_definition_s sensor_definition;
-  sensor_definition.sensor =  sensor_number;
+  sensor_definition.sensor = sensor_number;
   sensor_definition.type = sensor->Type();
   sensor_definition.unit = sensor->Unit();
   sensor_definition.prefix = sensor->Prefix();
@@ -559,7 +585,6 @@ const RDMResponse *ResponderHelper::RecordSensor(
   return GetResponseFromData(request, NULL, 0);
 }
 
-
 /**
  * Get the clock response.
  */
@@ -570,6 +595,7 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
+  PACK(
   struct clock_s {
     uint16_t year;
     uint8_t month;
@@ -577,12 +603,17 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(clock_s) == 7);
 
   time_t now;
   now = time(NULL);
   struct tm tm_now;
+#ifdef _WIN32
+  tm_now = *localtime(&now);  // NOLINT(runtime/threadsafe_fn)
+#else
   localtime_r(&now, &tm_now);
+#endif
 
   struct clock_s clock;
   clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));
@@ -600,6 +631,261 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
       queued_message_count);
 }
 
+const RDMResponse *ResponderHelper::GetListInterfaces(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  vector<Interface> interfaces =
+      network_manager->GetInterfacePicker()->GetInterfaces(false);
+
+  if (interfaces.size() == 0) {
+    return EmptyGetResponse(request, queued_message_count);
+  }
+
+  std::sort(interfaces.begin(), interfaces.end(),
+            ola::network::InterfaceIndexOrdering());
+
+  PACK(
+  struct list_interfaces_s {
+    uint32_t index;
+    uint16_t type;
+  });
+  STATIC_ASSERT(sizeof(list_interfaces_s) == 6);
+
+  list_interfaces_s list_interfaces[interfaces.size()];
+
+  for (uint16_t i = 0; i < interfaces.size(); i++) {
+    list_interfaces[i].index = HostToNetwork(interfaces[i].index);
+    list_interfaces[i].type = HostToNetwork(
+        static_cast<uint16_t>(interfaces[i].type));
+  }
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&list_interfaces),
+      sizeof(list_interfaces),
+      RDM_ACK,
+      queued_message_count);
+}
+
+
+const RDMResponse *ResponderHelper::GetInterfaceLabel(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  uint32_t index;
+  if (!ResponderHelper::ExtractUInt32(request, &index)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  Interface interface;
+  if (!FindInterface(network_manager, &interface, index)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  PACK(
+  struct interface_label_s {
+    uint32_t index;
+    char label[MAX_RDM_STRING_LENGTH];
+  });
+  STATIC_ASSERT(sizeof(interface_label_s) == 36);
+
+  struct interface_label_s interface_label;
+  interface_label.index = HostToNetwork(interface.index);
+
+  size_t str_len = min(interface.name.size(), sizeof(interface_label.label));
+  strncpy(interface_label.label, interface.name.c_str(), str_len);
+
+  unsigned int param_data_size = (
+      sizeof(interface_label) -
+      sizeof(interface_label.label) + str_len);
+
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&interface_label),
+                             param_data_size,
+                             RDM_ACK,
+                             queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::GetInterfaceHardwareAddressType1(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  uint32_t index;
+  if (!ResponderHelper::ExtractUInt32(request, &index)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  Interface interface;
+  if (!FindInterface(network_manager, &interface, index)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  // Only return type 1 (Ethernet)
+  if (interface.type != Interface::ARP_ETHERNET_TYPE) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  PACK(
+  struct interface_hardware_address_s {
+    uint32_t index;
+    uint8_t hardware_address[MACAddress::LENGTH];
+  });
+  STATIC_ASSERT(sizeof(interface_hardware_address_s) == 10);
+
+  struct interface_hardware_address_s interface_hardware_address;
+  interface_hardware_address.index = HostToNetwork(interface.index);
+  interface.hw_address.Get(interface_hardware_address.hardware_address);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&interface_hardware_address),
+      sizeof(interface_hardware_address),
+      RDM_ACK,
+      queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::GetIPV4CurrentAddress(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  uint32_t index;
+  if (!ResponderHelper::ExtractUInt32(request, &index)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  Interface interface;
+  if (!FindInterface(network_manager, &interface, index)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  PACK(
+  struct ipv4_current_address_s {
+    uint32_t index;
+    uint32_t ipv4_address;
+    uint8_t netmask;
+    uint8_t dhcp;
+  });
+  STATIC_ASSERT(sizeof(ipv4_current_address_s) == 10);
+
+  struct ipv4_current_address_s ipv4_current_address;
+  ipv4_current_address.index = HostToNetwork(interface.index);
+
+  // Already in correct byte order
+  ipv4_current_address.ipv4_address = interface.ip_address.AsInt();
+
+  uint8_t mask = UINT8_MAX;
+  if (!IPV4Address::ToCIDRMask(interface.subnet_mask, &mask)) {
+    OLA_WARN << "Error converting " << interface.subnet_mask
+             << " to CIDR value";
+  }
+
+  ipv4_current_address.netmask = mask;
+  ipv4_current_address.dhcp = static_cast<uint8_t>(
+      network_manager->GetDHCPStatus(interface));
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&ipv4_current_address),
+      sizeof(ipv4_current_address),
+      RDM_ACK,
+      queued_message_count);
+}
+
+
+const RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  IPV4Address default_route;
+  if (!network_manager->GetIPV4DefaultRoute(&default_route)) {
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  }
+  if (default_route.IsWildcard()) {
+    // No default route set, return special value
+    return GetUInt32Value(request, NO_DEFAULT_ROUTE, queued_message_count);
+  } else {
+    return GetIPV4Address(request, default_route, queued_message_count);
+  }
+}
+
+
+const RDMResponse *ResponderHelper::GetDNSHostname(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  const string hostname = network_manager->GetHostname();
+  if (hostname.empty() || hostname.length() > MAX_RDM_HOSTNAME_LENGTH) {
+    // Hostname outside of the allowed parameters for RDM, return an error
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  } else {
+    return GetString(request,
+                     hostname,
+                     queued_message_count,
+                     MAX_RDM_HOSTNAME_LENGTH);
+  }
+}
+
+
+const RDMResponse *ResponderHelper::GetDNSDomainName(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  string domain_name = network_manager->GetDomainName();
+  if (domain_name.length() > MAX_RDM_DOMAIN_NAME_LENGTH) {
+    // Domain name outside of the allowed parameters for RDM, return an error
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  } else {
+    return GetString(request,
+                     domain_name,
+                     queued_message_count,
+                     MAX_RDM_DOMAIN_NAME_LENGTH);
+  }
+}
+
+const RDMResponse *ResponderHelper::GetDNSNameServer(
+    const RDMRequest *request,
+    const NetworkManagerInterface *network_manager,
+    uint8_t queued_message_count) {
+  uint8_t name_server_number;
+  if (!ResponderHelper::ExtractUInt8(request, &name_server_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  vector<IPV4Address> name_servers;
+  if (!network_manager->GetNameServers(&name_servers)) {
+    return NackWithReason(request, NR_HARDWARE_FAULT);
+  }
+
+  if ((name_server_number >= name_servers.size()) ||
+      (name_server_number > DNS_NAME_SERVER_MAX_INDEX)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  PACK(
+  struct name_server_s {
+    uint8_t index;
+    uint32_t address;
+  });
+  STATIC_ASSERT(sizeof(name_server_s) == 5);
+
+  struct name_server_s name_server;
+  name_server.index = name_server_number;
+  // s_addr is already in network byte order, so doesn't need converting
+  name_server.address = name_servers.at(name_server_number).AsInt();
+
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&name_server),
+    sizeof(name_server),
+    RDM_ACK,
+    queued_message_count);
+}
+
 const RDMResponse *ResponderHelper::GetParamDescription(
     const RDMRequest *request,
     uint16_t pid,
@@ -613,6 +899,7 @@ const RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t max_value,
     string description,
     uint8_t queued_message_count) {
+  PACK(
   struct parameter_description_s {
     uint16_t pid;
     uint8_t pdl_size;
@@ -625,7 +912,8 @@ const RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t default_value;
     uint32_t max_value;
     char description[MAX_RDM_STRING_LENGTH];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(parameter_description_s) == 52);
 
   struct parameter_description_s param_description;
   param_description.pid = HostToNetwork(pid);
@@ -703,20 +991,40 @@ const RDMResponse *ResponderHelper::GetBitFieldParamDescription(
 }
 
 /*
- * Handle a request that returns a string
+ * Handle a request that returns an IPv4 address
+ */
+const RDMResponse *ResponderHelper::GetIPV4Address(
+    const RDMRequest *request,
+    const IPV4Address &value,
+    uint8_t queued_message_count) {
+  return GetUInt32Value(request,
+                        // Flip it back because s_addr is in network byte order
+                        // already
+                        NetworkToHost(value.AsInt()),
+                        queued_message_count);
+}
+
+/**
+ * @brief Handle a request that returns a string
+ * @note this truncates the string to max_length
  */
 const RDMResponse *ResponderHelper::GetString(
     const RDMRequest *request,
-    const std::string &value,
-    uint8_t queued_message_count) {
+    const string &value,
+    uint8_t queued_message_count,
+    uint8_t max_length) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  return GetResponseFromData(request,
-                             reinterpret_cast<const uint8_t*>(value.data()),
-                             value.size(),
-                             RDM_ACK,
-                             queued_message_count);
+  string sanitised_value = value.substr(
+      0,
+      min(static_cast<uint8_t>(value.length()), max_length));
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<const uint8_t*>(sanitised_value.data()),
+      sanitised_value.size(),
+      RDM_ACK,
+      queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::EmptyGetResponse(
@@ -746,9 +1054,10 @@ const RDMResponse *ResponderHelper::EmptySetResponse(
 
 const RDMResponse *ResponderHelper::SetString(
     const RDMRequest *request,
-    std::string *value,
-    uint8_t queued_message_count) {
-  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    string *value,
+    uint8_t queued_message_count,
+    uint8_t max_length) {
+  if (request->ParamDataSize() > max_length) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   const string new_label(reinterpret_cast<const char*>(request->ParamData()),
@@ -851,6 +1160,16 @@ const RDMResponse *ResponderHelper::SetUInt32Value(
     uint32_t *value,
     uint8_t queued_message_count) {
   return GenericSetIntValue(request, value, queued_message_count);
+}
+
+
+bool ResponderHelper::FindInterface(
+    const NetworkManagerInterface *network_manager,
+    Interface *interface, uint32_t index) {
+  InterfacePicker::Options options;
+  options.specific_only = true;
+  return network_manager->GetInterfacePicker()->ChooseInterface(
+      interface, index, options);
 }
 }  // namespace rdm
 }  // namespace ola

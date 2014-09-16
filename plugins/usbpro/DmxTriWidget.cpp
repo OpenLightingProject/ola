@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxTriWidget.h
  * The Jese DMX TRI device.
@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
@@ -40,9 +40,6 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::auto_ptr;
-using std::map;
-using std::string;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMCommand;
@@ -51,7 +48,10 @@ using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-
+using std::auto_ptr;
+using std::map;
+using std::string;
+using std::vector;
 
 /*
  * New DMX TRI Widget
@@ -129,7 +129,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
  */
 void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
-  std::vector<string> packets;
+  vector<string> packets;
   if (IsDUBRequest(request) && !m_use_raw_rdm) {
     on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED, NULL,
                      packets);
@@ -328,7 +328,7 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
 /*
  * Send a DiscoAuto message to begin the discovery process.
  */
-void DmxTriWidgetImpl::SendDiscoveryStart() {
+void DmxTriWidgetImpl::SendDiscoveryAuto() {
   m_discovery_state = NO_DISCOVERY_ACTION;
   uint8_t command_id = DISCOVER_AUTO_COMMAND_ID;
   if (!SendCommandToTRI(EXTENDED_COMMAND_LABEL, &command_id,
@@ -347,7 +347,7 @@ void DmxTriWidgetImpl::SendDiscoveryStart() {
 
 
 /*
- * Send a DiscoAuto message to begin the discovery process.
+ * Send a RemoteUID message to fetch UID in TRI register.
  */
 void DmxTriWidgetImpl::FetchNextUID() {
   m_discovery_state = NO_DISCOVERY_ACTION;
@@ -371,7 +371,7 @@ bool DmxTriWidgetImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
 
 
 /*
- * Send a DiscoStat message to begin the discovery process.
+ * Send a DiscoStat message to get status of the discovery process.
  */
 void DmxTriWidgetImpl::SendDiscoveryStat() {
   m_discovery_state = NO_DISCOVERY_ACTION;
@@ -439,13 +439,14 @@ void DmxTriWidgetImpl::DispatchRequest() {
     return;
   }
 
+  PACK(
   struct rdm_message {
     uint8_t command;
     uint8_t index;
     uint16_t sub_device;
     uint16_t param_id;
     uint8_t data[RDMCommandSerializer::MAX_PARAM_DATA_LENGTH];
-  } __attribute__((packed));
+  });
 
   rdm_message message;
 
@@ -684,7 +685,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
     return;
   }
 
-  std::vector<string> packets;
+  vector<string> packets;
   packets.push_back(string(reinterpret_cast<const char*>(data), length));
 
   // handle responses to DUB commands
@@ -832,7 +833,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
              << static_cast<int>(return_code);
     code = ola::rdm::RDM_INVALID_RESPONSE;
   }
-  std::vector<string> packets;
+  vector<string> packets;
   // Unfortunately we don't get to see the raw response here, which limits the
   // use of the TRI for testing. For testing use the raw mode.
   callback->Run(code, response, packets);
@@ -888,7 +889,7 @@ void DmxTriWidgetImpl::MaybeSendNextRequest() {
       // there is an RDM command to send
       SendQueuedRDMCommand();
     } else if (m_discovery_state == DISCOVER_AUTO_REQUIRED) {
-      SendDiscoveryStart();
+      SendDiscoveryAuto();
     } else if (m_discovery_state == DISCOVER_STATUS_REQUIRED) {
       SendDiscoveryStat();
     } else if (m_discovery_state == FETCH_UID_REQUIRED) {
@@ -912,7 +913,7 @@ void DmxTriWidgetImpl::HandleRDMError(ola::rdm::rdm_response_code error_code) {
   delete m_pending_rdm_request;
   m_pending_rdm_request = NULL;
   m_rdm_request_callback = NULL;
-  std::vector<string> packets;
+  vector<string> packets;
   if (callback)
     callback->Run(error_code, NULL, packets);
 }

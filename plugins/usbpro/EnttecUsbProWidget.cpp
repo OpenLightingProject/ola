@@ -11,9 +11,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EnttecUsbProWidget.h
+ * EnttecUsbProWidget.cpp
  * The Enttec USB Pro Widget
  * Copyright (C) 2010 Simon Newton
  */
@@ -24,8 +24,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
@@ -49,6 +49,8 @@ using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
+using std::string;
+using std::vector;
 
 
 const uint16_t EnttecUsbProWidget::ENTTEC_ESTA_ID = 0x454E;
@@ -194,12 +196,13 @@ void EnttecPortImpl::GetParameters(usb_pro_params_callback *callback) {
 bool EnttecPortImpl::SetParameters(uint8_t break_time,
                                    uint8_t mab_time,
                                    uint8_t rate) {
+  PACK(
   struct widget_params_s {
     uint16_t length;
     uint8_t break_time;
     uint8_t mab_time;
     uint8_t rate;
-  } __attribute__((packed));
+  });
 
   widget_params_s widget_parameters = {
     0,
@@ -225,7 +228,7 @@ void EnttecPortImpl::SendRDMRequest(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *on_complete) {
   auto_ptr<const ola::rdm::RDMRequest> request_ptr(request);
-  std::vector<string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -295,7 +298,7 @@ void EnttecPortImpl::RunIncrementalDiscovery(
 /**
  * Mute a responder
  * @param target the UID to mute
- * @param MuteDeviceCallback the callback to run once the mute request
+ * @param mute_complete the callback to run once the mute request
  * completes.
  */
 void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
@@ -312,7 +315,7 @@ void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
 
 /**
  * Unmute all responders
- * @param UnMuteDeviceCallback the callback to run once the unmute request
+ * @param unmute_complete the callback to run once the unmute request
  * completes.
  */
 void EnttecPortImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
@@ -396,7 +399,7 @@ void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
     m_rdm_request_callback = NULL;
     delete m_pending_request;
     m_pending_request = NULL;
-    std::vector<std::string> packets;
+    vector<string> packets;
     callback->Run(code, NULL, packets);
   }
 }
@@ -433,7 +436,7 @@ void EnttecPortImpl::HandleParameters(const uint8_t *data,
 
 
 /**
- * Handle an incomming frame.
+ * Handle an incoming frame.
  * @param data the incoming data buffer
  * @param length the length of the data buffer.
  *
@@ -441,8 +444,8 @@ void EnttecPortImpl::HandleParameters(const uint8_t *data,
  * The second byte is the start code
  * The remaining bytes are the actual data.
  */
-void EnttecPortImpl::HandleIncommingDataMessage(const uint8_t *data,
-                                                unsigned int length) {
+void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
+                                               unsigned int length) {
   bool waiting_for_dub_response = (
       m_branch_callback != NULL || (
       (m_rdm_request_callback && IsDUBRequest(m_pending_request))));
@@ -459,7 +462,7 @@ void EnttecPortImpl::HandleIncommingDataMessage(const uint8_t *data,
   // Do we still get the timeout message or is this the only response?
   // I need to check with Nic.
   if (data[0]) {
-    OLA_WARN << "Incomming frame corrupted";
+    OLA_WARN << "Incoming frame corrupted";
     return;
   }
 
@@ -492,7 +495,7 @@ void EnttecPortImpl::HandleIncommingDataMessage(const uint8_t *data,
     const ola::rdm::RDMRequest *request = m_pending_request;
     m_pending_request = NULL;
 
-    std::vector<std::string> packets;
+    vector<string> packets;
     ola::rdm::rdm_response_code response_code;
     ola::rdm::RDMResponse *response = NULL;
 
@@ -673,7 +676,7 @@ void EnttecPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   if (m_enable_rdm) {
     m_controller->SendRDMRequest(request, on_complete);
   } else {
-    std::vector<std::string> packets;
+    vector<string> packets;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   }
@@ -855,7 +858,7 @@ void EnttecUsbProWidgetImpl::HandleLabel(EnttecPortImpl *port,
   } else if (ops.rdm_timeout == label) {
     port->HandleRDMTimeout(length);
   } else if (ops.recv_dmx == label) {
-    port->HandleIncommingDataMessage(data, length);
+    port->HandleIncomingDataMessage(data, length);
   } else if (ops.cos_dmx == label) {
     port->HandleDMXDiff(data, length);
   } else {

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KaratePort.h
  * The karate plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_KARATE_KARATEPORT_H_
@@ -31,13 +31,11 @@ namespace ola {
 namespace plugin {
 namespace karate {
 
-using std::string;
-
 class KarateOutputPort: public BasicOutputPort {
  public:
     KarateOutputPort(KarateDevice *parent,
                      unsigned int id,
-                     const string &path)
+                     const std::string &path)
         : BasicOutputPort(parent, id),
           m_thread(path),
           m_path(path) {
@@ -48,16 +46,16 @@ class KarateOutputPort: public BasicOutputPort {
       m_thread.Stop();
     }
 
-    string Description() const { return "KarateLight at " + m_path; }
+    std::string Description() const { return "KarateLight at " + m_path; }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);
       (void) priority;
     }
 
  private:
     KarateThread m_thread;
-    string m_path;
+    std::string m_path;
 };
 }  // namespace karate
 }  // namespace plugin

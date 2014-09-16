@@ -11,13 +11,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131PDU.cpp
  * The E131PDU
- * Copyright (C) 2007-2009 Simon Newton
+ * Copyright (C) 2007 Simon Newton
  */
-
 
 #include <string.h>
 #include <ola/Logging.h>
@@ -29,6 +28,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
 /*
@@ -48,6 +48,8 @@ unsigned int E131PDU::HeaderSize() const {
 unsigned int E131PDU::DataSize() const {
   if (m_dmp_pdu)
     return m_dmp_pdu->Size();
+  if (m_data)
+    return m_data_size;
   return 0;
 }
 
@@ -98,6 +100,11 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int *length) const {
 bool E131PDU::PackData(uint8_t *data, unsigned int *length) const {
   if (m_dmp_pdu)
     return m_dmp_pdu->Pack(data, length);
+  if (m_data) {
+    memcpy(data, m_data, m_data_size);
+    *length = m_data_size;
+    return true;
+  }
   *length = 0;
   return true;
 }
@@ -137,8 +144,11 @@ void E131PDU::PackHeader(OutputStream *stream) const {
  * Pack the data into a buffer
  */
 void E131PDU::PackData(OutputStream *stream) const {
-  if (m_dmp_pdu)
+  if (m_dmp_pdu) {
     m_dmp_pdu->Write(stream);
+  } else if (m_data) {
+    stream->Write(m_data, m_data_size);
+  }
 }
 }  // namespace e131
 }  // namespace plugin

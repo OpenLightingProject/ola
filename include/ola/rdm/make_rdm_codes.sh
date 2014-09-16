@@ -1,6 +1,13 @@
 #!/bin/bash
 # Autogenerate the RDMResponseCodes.h file from the protobuf definition.
 
+if [ $# != 1 ]; then
+  echo "Usage: $0 <path-to-proto>";
+  exit;
+fi
+
+proto=$1;
+
 (
 cat <<EOM
 /*
@@ -16,7 +23,7 @@ cat <<EOM
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMResponseCodes.h
  * Enums representing the state of a response. This is generated from the proto
@@ -42,19 +49,17 @@ namespace rdm {
 
 typedef enum {
 EOM
-sed -ne  '/^enum RDMResponseCode/,/^}/p' ../../../common/protocol/Ola.proto |
-grep RDM_ | sed "s/;/,/"
+sed -ne  '/^enum RDMResponseCode/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
 } rdm_response_code;
 
 typedef enum {
 EOM
-sed -ne  '/^enum RDMResponseType/,/^}/p' ../../../common/protocol/Ola.proto |
-grep RDM_ | sed "s/;/,/"
+sed -ne  '/^enum RDMResponseType/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
 } rdm_response_type;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMRESPONSECODES_H_
 EOM
-) > RDMResponseCodes.h
+)

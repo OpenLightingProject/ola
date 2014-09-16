@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetNodeTest.cpp
  * Test fixture for the ArtNetNode class
@@ -145,7 +145,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   RDMCallback *m_rdm_callback;
   const RDMResponse *m_rdm_response;
   uint8_t m_port_id;
-  Interface interface;
+  Interface iface;
   IPV4Address peer_ip, peer_ip2, peer_ip3;
   IPV4Address broadcast_ip;
   MockUDPSocket *m_socket;
@@ -192,13 +192,13 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   }
 
   void ExpectedBroadcast(const uint8_t *data, unsigned int data_size) {
-    ExpectedSend(data, data_size, interface.bcast_address);
+    ExpectedSend(data, data_size, iface.bcast_address);
   }
 
   void ReceiveFromPeer(const uint8_t *data,
                        unsigned int data_size,
                        const IPV4Address &address) {
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     m_socket->InjectData(data, data_size, address, ARTNET_PORT);
   }
 
@@ -349,7 +349,7 @@ void ArtNetNodeTest::setUp() {
   OLA_ASSERT(interface_builder.SetBroadcast("10.255.255.255"));
   interface_builder.SetHardwareAddress(
       MACAddress::FromStringOrDie("0a:0b:0c:12:34:56"));
-  interface = interface_builder.Construct();
+  iface = interface_builder.Construct();
 
   ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
   ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
@@ -362,7 +362,7 @@ void ArtNetNodeTest::setUp() {
  */
 void ArtNetNodeTest::testBasicBehaviour() {
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
 
   node.SetShortName("Short Name");
   OLA_ASSERT_EQ(string("Short Name"), node.ShortName());
@@ -428,7 +428,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
  */
 void ArtNetNodeTest::testConfigurationMode() {
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
 
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -602,7 +602,7 @@ void ArtNetNodeTest::testConfigurationMode() {
 void ArtNetNodeTest::testExtendedInputPorts() {
   ArtNetNodeOptions node_options;
   node_options.input_port_count = 8;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
 
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -642,7 +642,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
 
   ArtNetNodeOptions node_options;
   node_options.always_broadcast = true;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
 
   OLA_ASSERT(node.Start());
@@ -710,7 +710,7 @@ void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
 
   ArtNetNodeOptions node_options;
   node_options.always_broadcast = true;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
 
   node.SetNetAddress(0);
   node.SetSubnetAddress(0);
@@ -814,7 +814,7 @@ void ArtNetNodeTest::testLimitedBroadcastDMX() {
   ArtNetNodeOptions node_options;
   node_options.always_broadcast = true;
   node_options.use_limited_broadcast_address = true;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
 
   OLA_ASSERT(node.Start());
@@ -849,7 +849,7 @@ void ArtNetNodeTest::testLimitedBroadcastDMX() {
 void ArtNetNodeTest::testNonBroadcastSendDMX() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -1030,7 +1030,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
 void ArtNetNodeTest::testReceiveDMX() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   DmxBuffer input_buffer;
   node.SetDMXHandler(m_port_id,
@@ -1104,7 +1104,7 @@ void ArtNetNodeTest::testReceiveDMX() {
 void ArtNetNodeTest::testReceiveDMXZeroUniverse() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
 
   node.SetNetAddress(0);
   node.SetSubnetAddress(0);
@@ -1177,7 +1177,7 @@ void ArtNetNodeTest::testReceiveDMXZeroUniverse() {
 void ArtNetNodeTest::testHTPMerge() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   DmxBuffer input_buffer;
   node.SetDMXHandler(m_port_id,
@@ -1370,7 +1370,7 @@ void ArtNetNodeTest::testHTPMerge() {
 void ArtNetNodeTest::testLTPMerge() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   DmxBuffer input_buffer;
   node.SetDMXHandler(m_port_id,
@@ -1539,7 +1539,7 @@ void ArtNetNodeTest::testLTPMerge() {
 void ArtNetNodeTest::testControllerDiscovery() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -1564,7 +1564,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   {
     SocketVerifier verifer(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1609,7 +1609,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   {
     SocketVerifier verifer(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1675,7 +1675,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   {
     SocketVerifier verifer(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1704,7 +1704,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 void ArtNetNodeTest::testControllerIncrementalDiscovery() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -1760,7 +1760,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 
     // advance the clock and run the select server
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
-    ss.RunOnce(0, 0);  // update the wake up time
+    ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
 
     UIDSet uids;
@@ -1789,7 +1789,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 void ArtNetNodeTest::testUnsolicitedTod() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.SetUnsolicitedUIDSetHandler(
       m_port_id,
@@ -1838,7 +1838,7 @@ void ArtNetNodeTest::testUnsolicitedTod() {
 void ArtNetNodeTest::testResponderDiscovery() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -1971,7 +1971,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
 void ArtNetNodeTest::testRDMResponder() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -2073,7 +2073,7 @@ void ArtNetNodeTest::testRDMResponder() {
 void ArtNetNodeTest::testRDMRequest() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -2127,7 +2127,7 @@ void ArtNetNodeTest::testRDMRequest() {
 void ArtNetNodeTest::testRDMRequestTimeout() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -2146,7 +2146,7 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
   }
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
-  ss.RunOnce(0, 0);
+  ss.RunOnce();
   OLA_ASSERT(m_got_rdm_timeout);
 }
 
@@ -2157,7 +2157,7 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
 void ArtNetNodeTest::testRDMRequestIPMismatch() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -2203,7 +2203,7 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
   }
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
-  ss.RunOnce(0, 0);
+  ss.RunOnce();
   OLA_ASSERT(m_got_rdm_timeout);
 }
 
@@ -2214,7 +2214,7 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
 void ArtNetNodeTest::testRDMRequestUIDMismatch() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -2260,7 +2260,7 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
   }
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
-  ss.RunOnce(0, 0);
+  ss.RunOnce();
   OLA_ASSERT(m_got_rdm_timeout);
 }
 
@@ -2271,7 +2271,7 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
 void ArtNetNodeTest::testTimeCode() {
   m_socket->SetDiscardMode(true);
   ArtNetNodeOptions node_options;
-  ArtNetNode node(interface, &ss, node_options, m_socket);
+  ArtNetNode node(iface, &ss, node_options, m_socket);
 
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);

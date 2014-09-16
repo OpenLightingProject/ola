@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * HttpServerActions.h
  * The list of actions the Ola Server performs.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef OLAD_HTTPSERVERACTIONS_H_
@@ -28,9 +28,6 @@
 #include "ola/base/Macro.h"
 
 namespace ola {
-
-using std::string;
-
 
 /*
  * The base action
@@ -70,7 +67,7 @@ class SetNameAction: public BaseHttpAction {
  public:
     SetNameAction(client::OlaClient *client,
                   unsigned int universe,
-                  const string &name,
+                  const std::string &name,
                   bool is_fatal):
       BaseHttpAction(client),
       m_universe(universe),
@@ -85,7 +82,7 @@ class SetNameAction: public BaseHttpAction {
 
  private:
     unsigned int m_universe;
-    string m_name;
+    std::string m_name;
     bool m_is_fatal;
 
     DISALLOW_COPY_AND_ASSIGN(SetNameAction);

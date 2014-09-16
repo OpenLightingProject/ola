@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FtdiDmxThread.h
  * The FTDI usb chipset DMX plugin for ola
@@ -52,6 +52,7 @@ class FtdiDmxThread : public ola::thread::Thread {
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
+    static const uint32_t BAD_GRANULARITY_LIMIT = 3;
 };
 }  // namespace ftdidmx
 }  // namespace plugin

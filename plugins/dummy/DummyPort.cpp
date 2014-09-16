@@ -11,12 +11,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *
  * DummyPort.cpp
  * The Dummy Port for ola
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <iostream>
@@ -30,6 +30,7 @@
 #include "ola/rdm/DimmerResponder.h"
 #include "ola/rdm/DummyResponder.h"
 #include "ola/rdm/MovingLightResponder.h"
+#include "ola/rdm/NetworkResponder.h"
 #include "ola/rdm/SensorResponder.h"
 #include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UIDSet.h"
@@ -41,9 +42,16 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
-using std::auto_ptr;
 using ola::rdm::DimmerResponder;
 using ola::rdm::DummyResponder;
+using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::UID;
+using std::auto_ptr;
+using std::map;
+using std::ostringstream;
+using std::string;
+using std::vector;
+
 
 /**
  * A count number of responders of type T.
@@ -62,14 +70,6 @@ void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
   }
 }
 
-/**
- * Create a new DummyPort
- * @param parent the parent device for this port
- * @param id the ID of this port
- * @param device_count the number of fake RDM devices to create
- * @param subdevice_count the number of subdevices each fake device should
- *   have.
- */
 DummyPort::DummyPort(DummyDevice *parent,
                      const Options &options,
                      unsigned int id)
@@ -105,20 +105,17 @@ DummyPort::DummyPort(DummyDevice *parent,
       &m_responders, &allocator, options.number_of_advanced_dimmers);
   AddResponders<ola::rdm::SensorResponder>(
       &m_responders, &allocator, options.number_of_sensor_responders);
+  AddResponders<ola::rdm::NetworkResponder>(
+      &m_responders, &allocator, options.number_of_network_responders);
 }
 
 
-/*
- * Write operation
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- */
 bool DummyPort::WriteDMX(const DmxBuffer &buffer,
                          uint8_t priority) {
   (void) priority;
   m_buffer = buffer;
-  stringstream str;
-  std::string data = buffer.Get();
+  ostringstream str;
+  string data = buffer.Get();
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
   for (unsigned int i = 0; i < 10 && i < data.size(); i++)
@@ -127,26 +124,14 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
   return true;
 }
 
-
-/*
- * This returns a single device
- */
 void DummyPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-
-/*
- * This returns a single device
- */
 void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-
-/*
- * Handle an RDM Request
- */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
   UID dest = request->DestinationUID();
@@ -168,7 +153,7 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
       if (i != m_responders.end()) {
         i->second->SendRDMRequest(request, callback);
       } else {
-          std::vector<std::string> packets;
+          vector<string> packets;
           callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
           delete request;
       }
@@ -189,7 +174,7 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
 void DummyPort::HandleBroadcastAck(broadcast_request_tracker *tracker,
                                    ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
-                                   const std::vector<std::string> &packets) {
+                                   const vector<string> &packets) {
   tracker->current_count++;
   if (code != ola::rdm::RDM_WAS_BROADCAST)
     tracker->failed = true;

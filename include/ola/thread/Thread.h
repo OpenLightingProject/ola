@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Thread.h
  * A thread object.
@@ -21,6 +21,12 @@
 #ifndef INCLUDE_OLA_THREAD_THREAD_H_
 #define INCLUDE_OLA_THREAD_THREAD_H_
 
+#ifdef _WIN32
+// On MinGW, pthread.h pulls in Windows.h, which in turn pollutes the global
+// namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <pthread.h>
 #include <ola/base/Macro.h>
 #include <ola/thread/Mutex.h>

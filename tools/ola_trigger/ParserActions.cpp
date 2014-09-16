@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ParserActions.cpp
  * Copyright (C) 2011 Simon Newton
@@ -21,7 +21,7 @@
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/SysExits.h>
 #include <stdlib.h>
@@ -60,7 +60,7 @@ Slot *LookupSlot(uint16_t slot) {
  * Check a slot offset is valid
  */
 void CheckSlotOffset(unsigned int slot) {
-  if (slot == 0 || slot > DMX_UNIVERSE_SIZE) {
+  if (slot == 0 || slot > ola::DMX_UNIVERSE_SIZE) {
     OLA_FATAL << "Line " << yylineno << ": slot offset " << slot << " invalid";
     exit(ola::EXIT_DATAERR);
   }

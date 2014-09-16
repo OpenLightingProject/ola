@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCPlugin.h
  * Interface for the OSC plugin.
@@ -39,19 +39,19 @@ class OSCPlugin: public ola::Plugin {
       ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
 
-    string Name() const { return PLUGIN_NAME; }
-    string Description() const;
+    std::string Name() const { return PLUGIN_NAME; }
+    std::string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_OSC; }
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
 
-    unsigned int GetPortCount(const string &key) const;
-    bool ExtractOSCTarget(const string &str, OSCTarget *target);
-    void SetDataFormat(const string &format_option,
+    unsigned int GetPortCount(const std::string &key) const;
+    bool ExtractOSCTarget(const std::string &str, OSCTarget *target);
+    void SetDataFormat(const std::string &format_option,
                        OSCDevice::PortConfig *port_config);
 
     OSCDevice *m_device;

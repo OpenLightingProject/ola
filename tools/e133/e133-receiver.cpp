@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e133-receiver.cpp
  * Copyright (C) 2011 Simon Newton
@@ -21,14 +21,14 @@
  */
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include <signal.h>
 
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
@@ -70,8 +70,8 @@ using std::string;
 using std::vector;
 using ola::plugin::usbpro::DmxTriWidget;
 
-DEFINE_bool(dummy, true, "Include a dummy responder endpoint");
-DEFINE_bool(e131, true, "Include E1.31 support");
+DEFINE_default_bool(dummy, true, "Include a dummy responder endpoint");
+DEFINE_default_bool(e131, true, "Include E1.31 support");
 DEFINE_string(listen_ip, "", "The IP address to listen on.");
 DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
 DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");
@@ -105,11 +105,7 @@ void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString(
-      "[options]",
-      "Run a very simple E1.33 Responder.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 Responder.");
 
   auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
   if (!uid.get()) {
@@ -152,7 +148,9 @@ int main(int argc, char *argv[]) {
   // Setup E1.31 if required.
   auto_ptr<ola::plugin::e131::E131Node> e131_node;
   if (FLAGS_e131) {
-    e131_node.reset(new ola::plugin::e131::E131Node(FLAGS_listen_ip, cid));
+    e131_node.reset(new ola::plugin::e131::E131Node(
+          node.SelectServer(), FLAGS_listen_ip,
+          ola::plugin::e131::E131Node::Options(), cid));
     if (!e131_node->Start()) {
       OLA_WARN << "Failed to start E1.31 node";
       exit(ola::EXIT_UNAVAILABLE);
@@ -211,7 +209,7 @@ int main(int argc, char *argv[]) {
   auto_ptr<SPIOutput> spi_output;
   DmxBuffer spi_buffer;
 
-  if (!FLAGS_spi_device.str().empty()) {
+  if (FLAGS_spi_device.present() && !FLAGS_spi_device.str().empty()) {
     auto_ptr<UID> spi_uid(uid_allocator.AllocateNext());
     if (!spi_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the SPI device.";
@@ -228,8 +226,10 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
-    spi_output.reset(
-        new SPIOutput(*spi_uid, spi_backend.get(), SPIOutput::Options(0)));
+    spi_output.reset(new SPIOutput(
+        *spi_uid,
+        spi_backend.get(),
+        SPIOutput::Options(0, FLAGS_spi_device.str())));
     E133Endpoint::EndpointProperties properties;
     properties.is_physical = true;
     endpoints.push_back(new E133Endpoint(spi_output.get(), properties));

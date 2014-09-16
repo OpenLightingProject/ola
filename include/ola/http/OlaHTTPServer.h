@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaHTTPServer.h
  * A HTTP Server with export map integration.
@@ -31,10 +31,6 @@
 namespace ola {
 namespace http {
 
-using ola::ExportMap;
-using std::string;
-using ola::NewCallback;
-
 /*
  * A HTTP Server with ExportMap support. You can inherit from this class to
  * implement specific handlers.
@@ -42,7 +38,7 @@ using ola::NewCallback;
 class OlaHTTPServer {
  public:
     OlaHTTPServer(const HTTPServer::HTTPServerOptions &options,
-                  ExportMap *export_map);
+                  ola::ExportMap *export_map);
     virtual ~OlaHTTPServer() {}
 
     virtual bool Init();
@@ -51,14 +47,15 @@ class OlaHTTPServer {
 
  protected:
     Clock m_clock;
-    ExportMap *m_export_map;
+    ola::ExportMap *m_export_map;
     HTTPServer m_server;
     TimeStamp m_start_time;
 
     /**
      * Register a static file to serve
      */
-    void RegisterFile(const string &file, const string &content_type) {
+    void RegisterFile(const std::string &file,
+                      const std::string &content_type) {
         m_server.RegisterFile("/" + file, file, content_type);
     }
 
@@ -67,13 +64,16 @@ class OlaHTTPServer {
     static const char K_UPTIME_VAR[];
 
     inline void RegisterHandler(
-        const string &path,
+        const std::string &path,
         int (OlaHTTPServer::*method)(const HTTPRequest*, HTTPResponse*)) {
       m_server.RegisterHandler(
           path,
-          NewCallback<OlaHTTPServer, int, const HTTPRequest*, HTTPResponse*>(
-            this,
-            method));
+          ola::NewCallback<OlaHTTPServer,
+                           int,
+                           const HTTPRequest*,
+                           HTTPResponse*>(
+                               this,
+                               method));
     }
 
     int DisplayDebug(const HTTPRequest *request, HTTPResponse *response);

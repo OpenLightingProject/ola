@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Constants.h
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 /**
@@ -53,7 +53,7 @@ static const uint8_t DMX_MAX_SLOT_VALUE = 255;
 static const uint8_t DMX512_START_CODE = 0;
 
 /**
- * @brief The default port which olad listens on for incomming RPC connections.
+ * @brief The default port which olad listens on for incoming RPC connections.
  */
 static const int OLA_DEFAULT_PORT = 9010;
 

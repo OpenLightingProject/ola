@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcChannel.cpp
  * Interface for the UDP RPC Channel
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -38,8 +38,11 @@
 namespace ola {
 namespace rpc {
 
+using google::protobuf::Message;
+using google::protobuf::MethodDescriptor;
 using google::protobuf::ServiceDescriptor;
 using std::auto_ptr;
+using std::string;
 
 const char RpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
 const char RpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
@@ -289,7 +292,7 @@ bool RpcChannel::SendMsg(RpcMessage *msg) {
 
 
 /*
- * Allocate an incomming message buffer
+ * Allocate an incoming message buffer
  * @param size the size of the new buffer to allocate
  * @returns the size of the new buffer
  */

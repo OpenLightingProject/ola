@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcController.cpp
  * The  RPC Controller
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <string>
@@ -24,6 +24,8 @@
 
 namespace ola {
 namespace rpc {
+
+using std::string;
 
 RpcController::RpcController()
     : m_failed(false),
@@ -34,7 +36,7 @@ void RpcController::Reset() {
   m_failed = false;
 }
 
-void RpcController::SetFailed(const std::string &reason) {
+void RpcController::SetFailed(const string &reason) {
   m_failed = true;
   m_error_text = reason;
 }

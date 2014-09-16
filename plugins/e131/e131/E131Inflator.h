@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Inflator.h
  * Interface for the E131Inflator class.
@@ -47,7 +47,7 @@ class E131Inflator: public BaseInflator {
     bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
-                      unsigned int &bytes_used);
+                      unsigned int *bytes_used);
 
     void ResetHeaderField() {
       m_last_header_valid = false;
@@ -74,7 +74,7 @@ class E131InflatorRev2: public BaseInflator {
 
  protected:
     bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
-                      unsigned int len, unsigned int &bytes_used);
+                      unsigned int len, unsigned int *bytes_used);
 
     void ResetHeaderField() {
       m_last_header_valid = false;

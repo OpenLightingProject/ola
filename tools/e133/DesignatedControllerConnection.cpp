@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DesignatedControllerConnection.cpp
  * Copyright (C) 2013 Simon Newton
@@ -217,14 +217,16 @@ void DesignatedControllerConnection::NewTCPConnection(
   m_message_queue = new MessageQueue(m_tcp_socket, m_ss,
                                      m_message_builder->pool());
 
-  if (m_health_checked_connection)
+  if (m_health_checked_connection) {
     OLA_WARN << "Already have a E133HealthCheckedConnection";
-    m_health_checked_connection = new E133HealthCheckedConnection(
-      m_message_builder,
-      m_message_queue,
-      ola::NewSingleCallback(
-        this, &DesignatedControllerConnection::TCPConnectionUnhealthy),
-      m_ss);
+  }
+
+  m_health_checked_connection = new E133HealthCheckedConnection(
+    m_message_builder,
+    m_message_queue,
+    ola::NewSingleCallback(
+      this, &DesignatedControllerConnection::TCPConnectionUnhealthy),
+    m_ss);
 
   // this sends a heartbeat message to indicate this is the live connection
   if (!m_health_checked_connection->Setup()) {
@@ -251,10 +253,11 @@ void DesignatedControllerConnection::NewTCPConnection(
   }
   m_unsent_messages = !sent_all;
 
-  if (m_incoming_tcp_transport)
+  if (m_incoming_tcp_transport) {
     OLA_WARN << "Already have an IncomingTCPTransport";
-    m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
-        &m_root_inflator, m_tcp_socket);
+  }
+  m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
+      &m_root_inflator, m_tcp_socket);
 
   m_tcp_stats->connection_events++;
   m_tcp_stats->ip_address = v4_address.Host();

@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ola-throughput.cpp
  * Send a bunch of frames quickly to load test the server.
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -43,10 +43,7 @@ DEFINE_s_uint32(sleep, s, 40000, "Time between DMX updates in micro-seconds");
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(argc, argv);
-  ola::SetHelpString("[options]", "Send DMX512 data to OLA.");
-  ola::ParseFlags(&argc, argv);
-  ola::InitLoggingFromFlags();
+  ola::AppInit(&argc, argv, "[options]", "Send DMX512 data to OLA.");
 
   StreamingClient ola_client;
   if (!ola_client.Setup()) {

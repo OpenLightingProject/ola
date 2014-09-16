@@ -1,6 +1,6 @@
 %{
-#include "ConfigCommon.h"
-#include "config.tab.h"
+#include "tools/ola_trigger/ConfigCommon.h"
+#include "tools/ola_trigger/config.tab.h"
 
 #define YY_NO_INPUT
 
@@ -24,16 +24,16 @@ whitespace   [ \t]
                     return INTEGER_LITERAL;
                   }
 {word}            { count();
-                    yylval.str_val = new string(yytext);
+                    yylval.str_val = new std::string(yytext);
                     return WORD_LITERAL;
                   }
 \"(\\.|[^\\"])*\" { count();
-                    string *s = new string(++yytext);
+                    std::string *s = new std::string(++yytext);
                     s->erase(s->size() - 1, 1);
                     yylval.str_val = s;
                     return QUOTED_VALUE; }
 \'(\\.|[^\\'])*\' { count();
-                    string *s = new string(++yytext);
+                    std::string *s = new std::string(++yytext);
                     s->erase(s->size() - 1, 1);
                     yylval.str_val = s;
                     return QUOTED_VALUE; }

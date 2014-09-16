@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SLPServerTestHelper.h
  * A Helper class for the SLPServer tests.
@@ -71,11 +71,11 @@ class SLPServerTestHelper {
     void AdvanceTime(int32_t sec) {
       m_clock.AdvanceTime(sec, 0);
       // run any timeouts, and update the WakeUpTime
-      m_ss.RunOnce(0, 0);
+      m_ss.RunOnce();
     }
 
     void RunOnce() {
-      m_ss.RunOnce(0, 0);
+      m_ss.RunOnce();
     }
 
     // Print the time since the server started, this is useful for debugging

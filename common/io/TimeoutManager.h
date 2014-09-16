@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TimeoutManager.h
  * Manages timeout events.
@@ -34,10 +34,6 @@
 namespace ola {
 namespace io {
 
-using ola::ExportMap;
-using ola::thread::timeout_id;
-using std::priority_queue;
-using std::set;
 
 /**
  * @class TimeoutManager
@@ -53,21 +49,22 @@ class TimeoutManager {
    * @param export_map an ExportMap to update
    * @param clock the Clock to use.
    */
-  TimeoutManager(ExportMap *export_map, Clock *clock);
+  TimeoutManager(ola::ExportMap *export_map, Clock *clock);
 
   ~TimeoutManager();
 
   /**
    * @brief Register a repeating timeout.
    * Returning false from the Callback will cancel this timer.
-   * @param TimeInterval the delay before the closure will be run.
+   * @param interval the delay before the closure will be run.
    * @param closure the closure to invoke when the event triggers. Ownership is
    * given up to the select server - make sure nothing else uses this Callback.
    * @returns the identifier for this timeout, this can be used to remove it
    * later.
    */
-  timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
-                                      ola::Callback0<bool> *closure);
+  ola::thread::timeout_id RegisterRepeatingTimeout(
+      const ola::TimeInterval &interval,
+      ola::Callback0<bool> *closure);
 
   /**
    * @brief Register a single use timeout function.
@@ -76,13 +73,15 @@ class TimeoutManager {
    * @returns the identifier for this timeout, this can be used to remove it
    * later.
    */
-  timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
-                                   ola::SingleUseCallback0<void> *closure);
+  ola::thread::timeout_id RegisterSingleTimeout(
+      const ola::TimeInterval &interval,
+      ola::SingleUseCallback0<void> *closure);
+
   /**
    * @brief Cancel a timeout.
-   * @param timeout_id the id of the timeout
+   * @param id the id of the timeout
    */
-  void CancelTimeout(timeout_id id);
+  void CancelTimeout(ola::thread::timeout_id id);
 
   /**
    * @brief Check if there are any events in the queue.
@@ -95,7 +94,7 @@ class TimeoutManager {
 
   /**
    * @brief Execute any expired timeouts.
-   * @param now[in|out] the current time, set to the last time events were
+   * @param[in,out] now the current time, set to the last time events were
    * checked.
    * @returns the time until the next event.
    */
@@ -185,13 +184,14 @@ class TimeoutManager {
     }
   };
 
-  typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
+  typedef std::priority_queue<Event*, std::vector<Event*>, ltevent>
+      event_queue_t;
 
-  ExportMap *m_export_map;
+  ola::ExportMap *m_export_map;
   Clock *m_clock;
 
   event_queue_t m_events;
-  set<timeout_id> m_removed_timeouts;
+  std::set<ola::thread::timeout_id> m_removed_timeouts;
 
   DISALLOW_COPY_AND_ASSIGN(TimeoutManager);
 };

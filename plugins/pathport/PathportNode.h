@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PathportNode.h
  * Header file for the PathportNode class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_PATHPORT_PATHPORTNODE_H_
@@ -34,12 +34,9 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
-using ola::network::IPV4Address;
-using ola::network::UDPSocket;
-
 class PathportNode {
  public:
-    explicit PathportNode(const string &preferred_ip, uint32_t device_id,
+    explicit PathportNode(const std::string &preferred_ip, uint32_t device_id,
                           uint8_t dscp);
     ~PathportNode();
 
@@ -48,8 +45,8 @@ class PathportNode {
     const ola::network::Interface &GetInterface() const {
       return m_interface;
     }
-    UDPSocket *GetSocket() { return &m_socket; }
-    void SocketReady(UDPSocket *socket);
+    ola::network::UDPSocket *GetSocket() { return &m_socket; }
+    void SocketReady(ola::network::UDPSocket *socket);
 
     bool SetHandler(uint8_t universe,
                     DmxBuffer *buffer,
@@ -111,20 +108,20 @@ class PathportNode {
     bool SendArpRequest(uint32_t destination = PATHPORT_ID_BROADCAST);
     bool SendPacket(const pathport_packet_s &packet,
                     unsigned int size,
-                    IPV4Address dest);
+                    ola::network::IPV4Address dest);
 
     bool m_running;
     uint8_t m_dscp;
-    string m_preferred_ip;
+    std::string m_preferred_ip;
     uint32_t m_device_id;  // the pathport device id
     uint16_t m_sequence_number;
 
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
-    UDPSocket m_socket;
-    IPV4Address m_config_addr;
-    IPV4Address m_status_addr;
-    IPV4Address m_data_addr;
+    ola::network::UDPSocket m_socket;
+    ola::network::IPV4Address m_config_addr;
+    ola::network::IPV4Address m_status_addr;
+    ola::network::IPV4Address m_data_addr;
 
     static const uint16_t PATHPORT_PORT = 0xed0;
     static const uint16_t PATHPORT_PROTOCOL = 0xed01;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortBroker.cpp
  * Acts as the glue between ports and the RDM request path.
@@ -27,8 +27,10 @@
 
 namespace ola {
 
-using std::set;
 using std::pair;
+using std::set;
+using std::string;
+using std::vector;
 
 /**
  * Add a port to the broker
@@ -84,7 +86,7 @@ void PortBroker::RequestComplete(port_key key,
                                  ola::rdm::RDMCallback *callback,
                                  ola::rdm::rdm_response_code code,
                                  const ola::rdm::RDMResponse *response,
-                                 const std::vector<std::string> &packets) {
+                                 const vector<string> &packets) {
   set<port_key>::const_iterator iter = m_ports.find(key);
   if (iter == m_ports.end()) {
     OLA_INFO << "Port no longer exists, cleaning up from RDM response";

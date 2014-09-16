@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerResponder_h
  * Simulates a RDM enabled dimmer with sub devices.
@@ -30,17 +30,16 @@
 #ifndef INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 
+#include <ola/rdm/DimmerRootDevice.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/SubDeviceDispatcher.h>
+#include <ola/rdm/UID.h>
+
 #include <map>
 #include <memory>
-#include "ola/rdm/DimmerRootDevice.h"
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/SubDeviceDispatcher.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
-
-using std::auto_ptr;
 
 /**
  * A RDM responder that simulates a dimmer rack. This has a configurable number
@@ -55,7 +54,7 @@ class DimmerResponder: public RDMControllerInterface {
 
  private:
   SubDeviceDispatcher m_dispatcher;
-  auto_ptr<DimmerRootDevice> m_root_device;
+  std::auto_ptr<DimmerRootDevice> m_root_device;
   std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;
 };
 }  // namespace rdm

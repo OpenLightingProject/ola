@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ola-rdm.cpp
  *  The command line tool for controlling RDM devices
@@ -24,7 +24,9 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/file/Util.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMEnums.h>
@@ -69,18 +71,16 @@ typedef struct {
 void ParseOptions(int argc, char *argv[], options *opts) {
   opts->cmd = argv[0];
   opts->set_mode = false;
-  opts->pid_location = PID_DATA_DIR;
+  opts->pid_location = "";
   opts->list_pids = false;
   opts->help = false;
   opts->universe = 1;
   opts->uid = NULL;
   opts->sub_device = 0;
 
-  std::vector<string> tokens;
-  ola::StringSplit(argv[0], tokens, "/");
-
-  if (string(tokens[tokens.size() - 1]) == "ola_rdm_set")
+  if (ola::file::FilenameFromPathOrPath(argv[0]) == "ola_rdm_set") {
     opts->set_mode = true;
+  }
 
   int uid_set = 0;
   static struct option long_options[] = {
@@ -480,6 +480,10 @@ void RDMController::HandleAckResponse(uint16_t manufacturer_id,
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed." << endl;
+    exit(ola::EXIT_UNAVAILABLE);
+  }
   options opts;
   ParseOptions(argc, argv, &opts);
   RDMController controller(opts.pid_location);

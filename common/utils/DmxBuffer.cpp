@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DmxBuffer.cpp
  * The DmxBuffer class
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  *
  * This implements a DmxBuffer which uses copy-on-write and delayed init.
  *
@@ -32,7 +32,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -41,6 +41,7 @@ namespace ola {
 
 using std::min;
 using std::max;
+using std::string;
 using std::vector;
 
 DmxBuffer::DmxBuffer()
@@ -237,8 +238,8 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   }
 
   if (channel > m_length) {
-    OLA_WARN << "attempting to set channel " << channel << "when length is " <<
-      m_length;
+    OLA_WARN << "attempting to set channel " << channel << " when length is "
+             << m_length;
     return;
   }
 
@@ -294,7 +295,7 @@ bool DmxBuffer::Blackout() {
   if (!m_data)
     if (!Init())
       return false;
-  memset(m_data, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
+  memset(m_data, DMX_MIN_SLOT_VALUE, DMX_UNIVERSE_SIZE);
   m_length = DMX_UNIVERSE_SIZE;
   return true;
 }
@@ -310,7 +311,7 @@ string DmxBuffer::ToString() const {
   if (!m_data)
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   for (unsigned int i = 0; i < Size(); i++) {
     if (i)
       str << ",";

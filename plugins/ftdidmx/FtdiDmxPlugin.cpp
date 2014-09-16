@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FtdiDmxPlugin.cpp
  * The FTDI usb chipset DMX plugin for ola
@@ -32,6 +32,8 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
+using std::string;
+using std::vector;
 
 const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";

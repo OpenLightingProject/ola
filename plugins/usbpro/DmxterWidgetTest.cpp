@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxterWidgetTest.cpp
  * Test fixture for the DmxterWidget class
@@ -67,7 +67,17 @@ class DmxterWidgetTest: public CommonWidgetTest {
   auto_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
   unsigned int m_tod_counter;
 
-  void Terminate() { m_ss.Terminate(); }
+  void Terminate() {
+    m_ss.Terminate();
+  }
+
+  void CloseAndTerminate() {
+    m_ss.RemoveReadDescriptor(&m_descriptor);
+    m_ss.RemoveReadDescriptor(m_other_end.get());
+    m_descriptor.Close();
+    m_other_end->Close();
+    m_ss.Terminate();
+  }
   void ValidateTod(const ola::rdm::UIDSet &uids);
   void ValidateResponse(ola::rdm::rdm_response_code code,
                         const ola::rdm::RDMResponse *response,
@@ -710,6 +720,9 @@ void DmxterWidgetTest::testShutdown() {
   m_endpoint->Verify();
   OLA_ASSERT(m_descriptor.ValidReadDescriptor());
   OLA_ASSERT(m_descriptor.ValidWriteDescriptor());
+
+  m_descriptor.SetOnClose(
+      ola::NewSingleCallback(this, &DmxterWidgetTest::CloseAndTerminate));
 
   // now send a valid shutdown message
   m_endpoint->SendUnsolicitedUsbProData(SHUTDOWN_LABEL, NULL, 0);

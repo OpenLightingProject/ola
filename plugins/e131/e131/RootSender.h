@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RootSender.h
  * The RootSender class manages the sending of Root Layer PDUs.
@@ -30,11 +30,9 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::acn::CID;
-
 class RootSender {
  public:
-    explicit RootSender(const CID &cid);
+    explicit RootSender(const ola::acn::CID &cid);
     ~RootSender() {}
 
     // Convenience method to encapsulate & send a single PDU
@@ -47,7 +45,7 @@ class RootSender {
     // Use for testing to force a message from a particular cid
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
-                 const CID &cid,
+                 const ola::acn::CID &cid,
                  OutgoingTransport *transport);
     // Encapsulation & send a block of PDUs
     bool SendPDUBlock(unsigned int vector,

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EuroliteProOutputPort.h
  * The output port for a EurolitePro device.
@@ -39,13 +39,13 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
                           unsigned int id,
                           libusb_device *usb_device);
     ~EuroliteProOutputPort();
-    string SerialNumber() const { return m_serial; }
+    std::string SerialNumber() const { return m_serial; }
 
     bool Start();
     void *Run();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+    std::string Description() const { return ""; }
 
  private:
     static const unsigned int URB_TIMEOUT_MS = 500;
@@ -57,7 +57,7 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
 
     bool m_term;
     int m_interface_number;
-    string m_serial;
+    std::string m_serial;
 
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
@@ -69,7 +69,7 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
 
     bool GetDescriptorString(libusb_device_handle *usb_handle,
                              uint8_t desc_index,
-                             string *data);
+                             std::string *data);
     bool LocateInterface();
 
     // 513 + header + code + size(2) + footer

@@ -11,12 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaDaemon.cpp
  * This is the main ola daemon
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <errno.h>
 #include <stdio.h>
@@ -24,13 +28,16 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include <Shlobj.h>
+#endif
 #include <string>
-#include <vector>
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/base/Credentials.h"
 #include "ola/base/Flags.h"
+#include "ola/file/Util.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/stl/STLUtils.h"
 
@@ -41,7 +48,8 @@
 #include "olad/Preferences.h"
 
 DEFINE_s_string(config_dir, c, "",
-                "The path to the config directory, Defaults to ~/.ola/ .");
+                "The path to the config directory, Defaults to ~/.ola/ " \
+                "on *nix and %LOCALAPPDATA%\\.ola\\ on Windows.");
 DEFINE_s_uint16(rpc_port, r, ola::OlaDaemon::DEFAULT_RPC_PORT,
                 "The port to listen for RPCs on. Defaults to 9010.");
 
@@ -52,6 +60,8 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::thread::MutexLocker;
+using std::auto_ptr;
+using std::string;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
@@ -105,7 +115,6 @@ bool OlaDaemon::Init() {
   auto_ptr<PreferencesFactory> preferences_factory(
       new FileBackedPreferencesFactory(config_dir));
 
-  auto_ptr<SelectServer> ss(new SelectServer(m_export_map));
   auto_ptr<OlaClientServiceFactory> service_factory(
       new OlaClientServiceFactory());
 
@@ -173,11 +182,27 @@ ola::network::GenericSocketAddress OlaDaemon::RPCAddress() const {
  * Return the home directory for the current user
  */
 string OlaDaemon::DefaultConfigDir() {
-  PasswdEntry passwd_entry;
-  if (!GetPasswdUID(GetUID(), &passwd_entry))
-    return "";
+  if (SupportsUIDs()) {
+    PasswdEntry passwd_entry;
+    uid_t uid;
+    if (!GetUID(&uid))
+      return "";
+    if (!GetPasswdUID(uid, &passwd_entry))
+      return "";
 
-  return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
+    return passwd_entry.pw_dir + ola::file::PATH_SEPARATOR + OLA_CONFIG_DIR;
+  } else {
+#ifdef _WIN32
+    char path[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, path))) {
+      return string(path) + ola::file::PATH_SEPARATOR + OLA_CONFIG_DIR;
+    } else {
+      return "";
+    }
+#else
+    return "";
+#endif
+  }
 }
 
 /**
@@ -187,7 +212,11 @@ string OlaDaemon::DefaultConfigDir() {
 bool OlaDaemon::InitConfigDir(const string &path) {
   if (chdir(path.c_str())) {
     // try and create it
+#ifdef _WIN32
+    if (mkdir(path.c_str())) {
+#else
     if (mkdir(path.c_str(), 0755)) {
+#endif
       OLA_FATAL << "Couldn't mkdir " << path;
       return false;
     }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RenardDevice.h
  * Interface for the renard device
@@ -53,9 +53,9 @@ class RenardDevice: public ola::Device {
     class Preferences *m_preferences;
 
     // Per device options
-    string DeviceBaudrateKey() const;
-    string DeviceChannelsKey() const;
-    string DeviceDmxOffsetKey() const;
+    std::string DeviceBaudrateKey() const;
+    std::string DeviceChannelsKey() const;
+    std::string DeviceDmxOffsetKey() const;
 
     void SetDefaults();
 
@@ -65,10 +65,6 @@ class RenardDevice: public ola::Device {
     static const uint8_t DEFAULT_DMX_OFFSET;
     static const uint8_t DEFAULT_NUM_CHANNELS;
     static const uint32_t DEFAULT_BAUDRATE;
-    static const char BAUDRATE_19200[];
-    static const char BAUDRATE_38400[];
-    static const char BAUDRATE_57600[];
-    static const char BAUDRATE_115200[];
 };
 }  // namespace renard
 }  // namespace plugin

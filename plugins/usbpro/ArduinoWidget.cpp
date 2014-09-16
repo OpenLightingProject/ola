@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArduinoRGBDevice.h
  * The Arduino RGB Mixer device.
@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
@@ -34,7 +34,9 @@ namespace plugin {
 namespace usbpro {
 
 using ola::rdm::RDMCommandSerializer;
+using std::ostringstream;
 using std::string;
+using std::vector;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
 
@@ -78,7 +80,7 @@ ArduinoWidgetImpl::~ArduinoWidgetImpl() {
  */
 void ArduinoWidgetImpl::Stop() {
   // timeout any existing message
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
@@ -98,7 +100,7 @@ void ArduinoWidgetImpl::Stop() {
 void ArduinoWidgetImpl::SendRDMRequest(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *on_complete) {
-  std::vector<std::string> packets;
+  vector<string> packets;
 
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
     on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
@@ -162,13 +164,13 @@ void ArduinoWidgetImpl::HandleMessage(uint8_t label,
  */
 void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                           unsigned int length) {
-  std::vector<std::string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
   }
 
-  stringstream str;
+  ostringstream str;
   for (unsigned int i = 0; i < length; ++i) {
     str << std::hex << static_cast<int>(data[i]) << " ";
   }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ManagementEndpoint.h
  * Copyright (C) 2012 Simon Newton
@@ -53,17 +53,17 @@ class ManagementEndpoint: public E133Endpoint {
      * The RDM Operations for the MovingLightResponder.
      */
     class RDMOps : public ola::rdm::ResponderOps<ManagementEndpoint> {
-      public:
-        static RDMOps *Instance() {
-          if (!instance)
-            instance = new RDMOps();
-          return instance;
-        }
+     public:
+      static RDMOps *Instance() {
+        if (!instance)
+          instance = new RDMOps();
+        return instance;
+      }
 
-      private:
-        RDMOps() : ola::rdm::ResponderOps<ManagementEndpoint>(PARAM_HANDLERS) {}
+     private:
+      RDMOps() : ola::rdm::ResponderOps<ManagementEndpoint>(PARAM_HANDLERS) {}
 
-        static RDMOps *instance;
+      static RDMOps *instance;
     };
 
     const ola::rdm::UID m_uid;

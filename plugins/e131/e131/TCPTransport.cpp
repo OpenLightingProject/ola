@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * TCPTransport.cpp
  * The classes for transporting ACN over TCP.
@@ -43,17 +43,16 @@ const uint8_t ACN_HEADER[] = {
 const unsigned int ACN_HEADER_SIZE = sizeof(ACN_HEADER);
 
 // TODO(simon): tune this once we have an idea of what the sizes will be
-const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
+const unsigned int IncomingStreamTransport::INITIAL_SIZE = 500;
 
 
 /**
- * Create a new IncommingStreamTransport.
+ * Create a new IncomingStreamTransport.
  * @param inflator the inflator to call for each PDU
  * @param descriptor the descriptor to read from
- * @param ip_address the IP to use in the transport header
- * @param port the port to use in the transport header
+ * @param source the IP and port to use in the transport header
  */
-IncommingStreamTransport::IncommingStreamTransport(
+IncomingStreamTransport::IncomingStreamTransport(
     BaseInflator *inflator,
     ola::io::ConnectedDescriptor *descriptor,
     const ola::network::IPV4SocketAddress &source)
@@ -74,7 +73,7 @@ IncommingStreamTransport::IncommingStreamTransport(
 /**
  * Clean up
  */
-IncommingStreamTransport::~IncommingStreamTransport() {
+IncomingStreamTransport::~IncomingStreamTransport() {
   if (m_buffer_start)
     delete[] m_buffer_start;
 }
@@ -85,7 +84,7 @@ IncommingStreamTransport::~IncommingStreamTransport() {
  * @returns false if the stream is no longer consistent. At this point the
  * caller should close the descriptor since the data is no longer valid.
  */
-bool IncommingStreamTransport::Receive() {
+bool IncomingStreamTransport::Receive() {
   while (true) {
     OLA_DEBUG << "start read, outstanding bytes is " << m_outstanding_data;
     // Read as much as we need
@@ -123,7 +122,7 @@ bool IncommingStreamTransport::Receive() {
  * Handle the Preamble data.
  * @pre 20 bytes in the buffer
  */
-void IncommingStreamTransport::HandlePreamble() {
+void IncomingStreamTransport::HandlePreamble() {
   OLA_DEBUG << "in handle preamble, data len is " << DataLength();
 
   if (memcmp(m_buffer_start, ACN_HEADER, ACN_HEADER_SIZE) != 0) {
@@ -155,7 +154,7 @@ void IncommingStreamTransport::HandlePreamble() {
  * need to read the length.
  * @pre 1 byte in the buffer
  */
-void IncommingStreamTransport::HandlePDUFlags() {
+void IncomingStreamTransport::HandlePDUFlags() {
   OLA_DEBUG << "Reading PDU flags, data size is " << DataLength();
   m_pdu_length_size = (*m_buffer_start  & BaseInflator::LFLAG_MASK) ?
     THREE_BYTES : TWO_BYTES;
@@ -170,7 +169,7 @@ void IncommingStreamTransport::HandlePDUFlags() {
  * Handle the PDU Length data.
  * @pre 2 or 3 bytes of data in the buffer, depending on m_pdu_length_size
  */
-void IncommingStreamTransport::HandlePDULength() {
+void IncomingStreamTransport::HandlePDULength() {
   if (m_pdu_length_size == THREE_BYTES) {
     m_pdu_size = (
       m_buffer_start[2] +
@@ -203,7 +202,7 @@ void IncommingStreamTransport::HandlePDULength() {
  * Handle a PDU
  * @pre m_pdu_size bytes in the buffer
  */
-void IncommingStreamTransport::HandlePDU() {
+void IncomingStreamTransport::HandlePDU() {
   OLA_DEBUG << "Got PDU, data length is " << DataLength() << ", expected " <<
     m_pdu_size;
 
@@ -243,7 +242,7 @@ void IncommingStreamTransport::HandlePDU() {
 /**
  * Grow the rx buffer to the new size.
  */
-void IncommingStreamTransport::IncreaseBufferSize(unsigned int new_size) {
+void IncomingStreamTransport::IncreaseBufferSize(unsigned int new_size) {
   if (new_size <= BufferSize())
     return;
 
@@ -272,7 +271,7 @@ void IncommingStreamTransport::IncreaseBufferSize(unsigned int new_size) {
  * Read data until we reach the number of bytes we required or there is no more
  * data to be read
  */
-void IncommingStreamTransport::ReadRequiredData() {
+void IncomingStreamTransport::ReadRequiredData() {
   if (m_outstanding_data == 0)
     return;
 
@@ -295,7 +294,7 @@ void IncommingStreamTransport::ReadRequiredData() {
 /**
  * Enter the wait-for-preamble state
  */
-void IncommingStreamTransport::EnterWaitingForPreamble() {
+void IncomingStreamTransport::EnterWaitingForPreamble() {
   m_data_end = m_buffer_start;
   m_state = WAITING_FOR_PREAMBLE;
   m_outstanding_data = ACN_HEADER_SIZE + PDU_BLOCK_SIZE;
@@ -305,7 +304,7 @@ void IncommingStreamTransport::EnterWaitingForPreamble() {
 /**
  * Enter the wait-for-pdu state
  */
-void IncommingStreamTransport::EnterWaitingForPDU() {
+void IncomingStreamTransport::EnterWaitingForPDU() {
   m_state = WAITING_FOR_PDU_FLAGS;
   m_data_end = m_buffer_start;
   // we need 1 byte to read the flags
@@ -323,7 +322,7 @@ IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
   if (address.Family() == AF_INET) {
     ola::network::IPV4SocketAddress v4_addr = address.V4Addr();
     m_transport.reset(
-        new IncommingStreamTransport(inflator, socket, v4_addr));
+        new IncomingStreamTransport(inflator, socket, v4_addr));
   } else {
     OLA_WARN << "Invalid address for fd " << socket->ReadDescriptor();
   }

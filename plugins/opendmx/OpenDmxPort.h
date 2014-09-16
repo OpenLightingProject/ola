@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OpenDmxPort.h
  * The Open DMX plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_OPENDMX_OPENDMXPORT_H_
@@ -31,13 +31,11 @@ namespace ola {
 namespace plugin {
 namespace opendmx {
 
-using std::string;
-
 class OpenDmxOutputPort: public BasicOutputPort {
  public:
     OpenDmxOutputPort(OpenDmxDevice *parent,
                       unsigned int id,
-                      const string &path)
+                      const std::string &path)
         : BasicOutputPort(parent, id),
           m_thread(path),
           m_path(path) {
@@ -48,7 +46,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
       m_thread.Stop();
     }
 
-    string Description() const { return "Open Dmx at " + m_path; }
+    std::string Description() const { return "Open Dmx at " + m_path; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);
@@ -57,7 +55,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
 
  private:
     OpenDmxThread m_thread;
-    string m_path;
+    std::string m_path;
 };
 }  // namespace opendmx
 }  // namespace plugin

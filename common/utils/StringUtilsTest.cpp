@@ -11,13 +11,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringUtilsTest.cpp
  * Unittest for String functions.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
+#include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <iostream>
 #include <string>
@@ -35,14 +36,20 @@ using ola::EncodeString;
 using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
+using ola::IntToHexString;
 using ola::PrefixedHexStringToInt;
+using ola::ReplaceAll;
 using ola::ShortenString;
+using ola::StringBeginsWith;
 using ola::StringEndsWith;
 using ola::StringJoin;
 using ola::StringSplit;
 using ola::StringToBool;
+using ola::StringToBoolTolerant;
 using ola::StringToInt;
 using ola::StringTrim;
+using ola::StripPrefix;
+using ola::StripSuffix;
 using ola::ToLower;
 using ola::ToUpper;
 using std::string;
@@ -53,11 +60,16 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSplit);
   CPPUNIT_TEST(testTrim);
   CPPUNIT_TEST(testShorten);
+  CPPUNIT_TEST(testBeginsWith);
   CPPUNIT_TEST(testEndsWith);
+  CPPUNIT_TEST(testStripPrefix);
+  CPPUNIT_TEST(testStripSuffix);
   CPPUNIT_TEST(testIntToString);
+  CPPUNIT_TEST(testIntToHexString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testEncodeString);
   CPPUNIT_TEST(testStringToBool);
+  CPPUNIT_TEST(testStringToBoolTolerant);
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
   CPPUNIT_TEST(testStringToUInt8);
@@ -72,17 +84,23 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCustomCapitalizeLabel);
   CPPUNIT_TEST(testFormatData);
   CPPUNIT_TEST(testStringJoin);
+  CPPUNIT_TEST(testReplaceAll);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testSplit();
     void testTrim();
     void testShorten();
+    void testBeginsWith();
     void testEndsWith();
+    void testStripPrefix();
+    void testStripSuffix();
     void testIntToString();
+    void testIntToHexString();
     void testEscape();
     void testEncodeString();
     void testStringToBool();
+    void testStringToBoolTolerant();
     void testStringToUInt();
     void testStringToUInt16();
     void testStringToUInt8();
@@ -97,6 +115,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testCustomCapitalizeLabel();
     void testFormatData();
     void testStringJoin();
+    void testReplaceAll();
 };
 
 
@@ -203,6 +222,19 @@ void StringUtilsTest::testShorten() {
 
 
 /*
+ * Test the StringBeginsWith function.
+ */
+void StringUtilsTest::testBeginsWith() {
+  string input = "foo bar baz";
+  OLA_ASSERT_TRUE(StringBeginsWith(input, "foo"));
+  OLA_ASSERT_TRUE(StringBeginsWith(input, "foo "));
+  OLA_ASSERT_TRUE(StringBeginsWith(input, "foo bar"));
+  OLA_ASSERT_TRUE(StringBeginsWith(input, ""));
+  OLA_ASSERT_FALSE(StringBeginsWith(input, "baz"));
+}
+
+
+/*
  * Test the StringEndsWith function.
  */
 void StringUtilsTest::testEndsWith() {
@@ -216,6 +248,56 @@ void StringUtilsTest::testEndsWith() {
 
 
 /*
+ * Test the StripPrefix function.
+ */
+void StringUtilsTest::testStripPrefix() {
+  string input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, "foo"));
+  OLA_ASSERT_EQ(string(" bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, "foo "));
+  OLA_ASSERT_EQ(string("bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, "foo bar"));
+  OLA_ASSERT_EQ(string(" baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripPrefix(&input, ""));
+  OLA_ASSERT_EQ(string("foo bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_FALSE(StripPrefix(&input, "baz"));
+}
+
+
+/*
+ * Test the StripSuffix function.
+ */
+void StringUtilsTest::testStripSuffix() {
+  string input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, "baz"));
+  OLA_ASSERT_EQ(string("foo bar "), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, " baz"));
+  OLA_ASSERT_EQ(string("foo bar"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, "bar baz"));
+  OLA_ASSERT_EQ(string("foo "), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_TRUE(StripSuffix(&input, ""));
+  OLA_ASSERT_EQ(string("foo bar baz"), input);
+
+  input = "foo bar baz";
+  OLA_ASSERT_FALSE(StripSuffix(&input, "foo"));
+}
+
+
+/*
  * test the IntToString function.
  */
 void StringUtilsTest::testIntToString() {
@@ -224,6 +306,23 @@ void StringUtilsTest::testIntToString() {
   OLA_ASSERT_EQ(string("-1234"), IntToString(-1234));
   unsigned int i = 42;
   OLA_ASSERT_EQ(string("42"), IntToString(i));
+}
+
+
+/*
+ * test the IntToHexString function.
+ */
+void StringUtilsTest::testIntToHexString() {
+  OLA_ASSERT_EQ(string("0x00"), IntToHexString((uint8_t)0));
+
+  OLA_ASSERT_EQ(string("0x01"), IntToHexString((uint8_t)1));
+  OLA_ASSERT_EQ(string("0x42"), IntToHexString((uint8_t)0x42));
+  OLA_ASSERT_EQ(string("0x0001"), IntToHexString((uint16_t)0x0001));
+  OLA_ASSERT_EQ(string("0xabcd"), IntToHexString((uint16_t)0xABCD));
+  OLA_ASSERT_EQ(string("0xdeadbeef"), IntToHexString((uint32_t)0xDEADBEEF));
+
+  unsigned int i = 0x42;
+  OLA_ASSERT_EQ(string("0x00000042"), IntToHexString(i));
 }
 
 
@@ -264,6 +363,7 @@ void StringUtilsTest::testEscape() {
       result);
 }
 
+
 /**
  * Test encoding string
  */
@@ -284,6 +384,7 @@ void StringUtilsTest::testEncodeString() {
   s1 = string("newline" "\x00" "test", 12);
   OLA_ASSERT_EQ(string("newline\\x00test"), EncodeString(s1));
 }
+
 
 void StringUtilsTest::testStringToBool() {
   bool value;
@@ -312,6 +413,60 @@ void StringUtilsTest::testStringToBool() {
   OLA_ASSERT_TRUE(StringToBool("0", &value));
   OLA_ASSERT_EQ(value, false);
 }
+
+
+void StringUtilsTest::testStringToBoolTolerant() {
+  bool value;
+  OLA_ASSERT_FALSE(StringToBoolTolerant("", &value));
+  OLA_ASSERT_FALSE(StringToBoolTolerant("-1", &value));
+  OLA_ASSERT_FALSE(StringToBoolTolerant("2", &value));
+  OLA_ASSERT_FALSE(StringToBoolTolerant("a", &value));
+  OLA_ASSERT_TRUE(StringToBoolTolerant("true", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("false", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("TrUE", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("FalSe", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("t", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("f", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("T", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("F", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("1", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("0", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("on", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("off", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("On", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("oFf", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("enable", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("disable", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("EnAblE", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("dISaBle", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("enabled", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("disabled", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("eNabLED", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("DisaBLED", &value));
+  OLA_ASSERT_EQ(value, false);
+}
+
 
 void StringUtilsTest::testStringToUInt() {
   unsigned int value;
@@ -702,16 +857,16 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   CustomCapitalizeLabel(&label8);
   OLA_ASSERT_EQ(string("Device RDM UID"), label8);
 
-  string label9 = "dns_via_dhcp";
+  string label9 = "dns_via_ipv4_dhcp";
   CustomCapitalizeLabel(&label9);
-  OLA_ASSERT_EQ(string("DNS Via DHCP"), label9);
+  OLA_ASSERT_EQ(string("DNS Via IPV4 DHCP"), label9);
 }
 
 
 void StringUtilsTest::testFormatData() {
   uint8_t data[] = {0, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd',
                     1, 2};
-  std::stringstream str;
+  std::ostringstream str;
   FormatData(&str, data, sizeof(data));
   OLA_ASSERT_EQ(
       string("00 48 65 6c 6c 6f 20 57  .Hello W\n"
@@ -738,6 +893,7 @@ void StringUtilsTest::testFormatData() {
       str.str());
 }
 
+
 void StringUtilsTest::testStringJoin() {
   vector<int> ints;
   ints.push_back(1);
@@ -750,4 +906,45 @@ void StringUtilsTest::testStringJoin() {
   strings.push_back("two");
   strings.push_back("three");
   OLA_ASSERT_EQ(string("one,two,three"), StringJoin(",", strings));
+}
+
+
+void StringUtilsTest::testReplaceAll() {
+  string input = "";
+  ReplaceAll(&input, "", "");
+  OLA_ASSERT_EQ(string(""), input);
+
+  input = "abc";
+  ReplaceAll(&input, "", "");
+  OLA_ASSERT_EQ(string("abc"), input);
+  ReplaceAll(&input, "", "def");
+  OLA_ASSERT_EQ(string("abc"), input);
+
+  input = "abc";
+  ReplaceAll(&input, "b", "d");
+  OLA_ASSERT_EQ(string("adc"), input);
+
+  input = "aaa";
+  ReplaceAll(&input, "a", "b");
+  OLA_ASSERT_EQ(string("bbb"), input);
+
+  input = "abcdef";
+  ReplaceAll(&input, "cd", "cds");
+  OLA_ASSERT_EQ(string("abcdsef"), input);
+
+  input = "abcdefabcdef";
+  ReplaceAll(&input, "cd", "gh");
+  OLA_ASSERT_EQ(string("abghefabghef"), input);
+
+  input = "abcde";
+  ReplaceAll(&input, "c", "cdc");
+  OLA_ASSERT_EQ(string("abcdcde"), input);
+
+  input = "abcdcdce";
+  ReplaceAll(&input, "cdc", "c");
+  OLA_ASSERT_EQ(string("abce"), input);
+
+  input = "abcdcdcdce";
+  ReplaceAll(&input, "cdcdc", "cdc");
+  OLA_ASSERT_EQ(string("abcdce"), input);
 }

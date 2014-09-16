@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * UtilTest.cpp
  * Unittest for file util functions.
@@ -26,6 +26,8 @@
 
 
 using ola::file::FilenameFromPath;
+using ola::file::FilenameFromPathOrDefault;
+using ola::file::FilenameFromPathOrPath;
 using std::string;
 
 class UtilTest: public CppUnit::TestFixture {
@@ -46,11 +48,31 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UtilTest);
 void UtilTest::testFilenameFromPath() {
   // TODO(Peter): Make these tests work on Windows too
   OLA_ASSERT_EQ(string(""), FilenameFromPath(""));
+  OLA_ASSERT_EQ(string(""), FilenameFromPath("foo"));
   OLA_ASSERT_EQ(string(""), FilenameFromPath("/"));
   OLA_ASSERT_EQ(string("foo"), FilenameFromPath("/foo"));
   OLA_ASSERT_EQ(string(""), FilenameFromPath("/foo/"));
   OLA_ASSERT_EQ(string("bar"), FilenameFromPath("/foo/bar"));
   OLA_ASSERT_EQ(string(""), FilenameFromPath("/foo/bar/"));
   OLA_ASSERT_EQ(string("baz"), FilenameFromPath("/foo/bar/baz"));
+
+  OLA_ASSERT_EQ(string("bak"), FilenameFromPathOrDefault("", "bak"));
+  OLA_ASSERT_EQ(string("bak"), FilenameFromPathOrDefault("foo", "bak"));
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrDefault("/", "bak"));
+  OLA_ASSERT_EQ(string("foo"), FilenameFromPathOrDefault("/foo", "bak"));
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrDefault("/foo/", "bak"));
+  OLA_ASSERT_EQ(string("bar"), FilenameFromPathOrDefault("/foo/bar", "bak"));
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrDefault("/foo/bar/", "bak"));
+  OLA_ASSERT_EQ(string("baz"),
+                FilenameFromPathOrDefault("/foo/bar/baz", "bak"));
+
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrPath(""));
+  OLA_ASSERT_EQ(string("foo"), FilenameFromPathOrPath("foo"));
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrPath("/"));
+  OLA_ASSERT_EQ(string("foo"), FilenameFromPathOrPath("/foo"));
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrPath("/foo/"));
+  OLA_ASSERT_EQ(string("bar"), FilenameFromPathOrPath("/foo/bar"));
+  OLA_ASSERT_EQ(string(""), FilenameFromPathOrPath("/foo/bar/"));
+  OLA_ASSERT_EQ(string("baz"), FilenameFromPathOrPath("/foo/bar/baz"));
 }
 

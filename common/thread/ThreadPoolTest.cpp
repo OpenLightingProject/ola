@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ThreadPoolTest.cpp
  * Test fixture for the ThreadPool class
@@ -56,7 +56,6 @@ class ThreadPoolTest: public CppUnit::TestFixture {
     }
 
     void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
       m_counter = 0;
     }
 

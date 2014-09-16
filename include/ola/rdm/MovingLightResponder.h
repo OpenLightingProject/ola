@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MovingLightResponder_h
  * Copyright (C) 2013 Simon Newton
@@ -29,12 +29,13 @@
 #ifndef INCLUDE_OLA_RDM_MOVINGLIGHTRESPONDER_H_
 #define INCLUDE_OLA_RDM_MOVINGLIGHTRESPONDER_H_
 
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/ResponderPersonality.h>
+#include <ola/rdm/UID.h>
+
 #include <string>
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/ResponderPersonality.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
@@ -88,7 +89,7 @@ class MovingLightResponder: public RDMControllerInterface {
 
   const UID m_uid;
   uint16_t m_start_address;
-  string m_language;
+  std::string m_language;
   bool m_identify_mode;
   bool m_pan_invert;
   bool m_tilt_invert;
@@ -102,7 +103,7 @@ class MovingLightResponder: public RDMControllerInterface {
   uint8_t m_display_level;
   bool m_pan_tilt_swap;
   rdm_power_state m_power_state;
-  string m_device_label;
+  std::string m_device_label;
   PersonalityManager m_personality_manager;
 
   const RDMResponse *GetParamDescription(const RDMRequest *request);

@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # DMXSenderThread.py
 # Copyright (C) 2011 Simon Newton
@@ -39,7 +39,7 @@ class DMXSender(object):
     self._send = True
 
     if (frame_rate > 0 and slot_count > 0):
-      logging.info('Sending %d fps of DMX data with %d slots' %
+      logging.info('Sending %d FPS of DMX data with %d slots' %
                    (frame_rate, self._slot_count))
       for i in xrange(0, self._slot_count):
         self._data.append(0)

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * slp-client.cpp
  * Copyright (C) 2012 Simon Newton
@@ -213,8 +213,7 @@ int main(int argc, char *argv[]) {
       "   " << argv[0] << " findsrvs service:myserv.x\n"
       "   " << argv[0] << " findsrvs service:myserv.x";
 
-  ola::SetHelpString("[options] command-and-arguments", help_msg.str());
-  ola::ParseFlags(&argc, argv);
+  ola::AppInit(&argc, argv, "[options] command-and-arguments", help_msg.str());
 
   vector<string> args;
   for (int i = 1; i < argc; i++) {
@@ -226,9 +225,6 @@ int main(int argc, char *argv[]) {
     ola::DisplayUsage();
     exit(ola::EXIT_OK);
   }
-
-  ola::InitLoggingFromFlags();
-  ola::AppInit(argc, argv);
 
   ola::slp::SLPClientWrapper client_wrapper;
   if (!client_wrapper.Setup())

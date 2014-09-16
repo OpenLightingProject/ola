@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMCommand.cpp
  * The RDMCommand class
@@ -34,6 +34,8 @@
 
 namespace ola {
 namespace rdm {
+
+using std::string;
 
 /**
  * @addtogroup rdm_command
@@ -86,8 +88,8 @@ bool RDMCommand::operator==(const RDMCommand &other) const {
 }
 
 
-std::string RDMCommand::ToString() const {
-  std::stringstream str;
+string RDMCommand::ToString() const {
+  std::ostringstream str;
   str << m_source << " -> " << m_destination << ", Trans # " <<
     static_cast<int>(m_transaction_number) << ", Port ID " <<
     static_cast<int>(m_port_id) << ", Msg Cnt " <<
@@ -546,7 +548,7 @@ RDMResponse* RDMResponse::InflateFromData(const string &data,
  * This combines two RDMResponses into one. It's used to combine the data from
  * two responses in an ACK_OVERFLOW session together.
  * @param response1 the first response.
- * @param response1 the second response.
+ * @param response2 the second response.
  * @return A new response with the data from the first and second combined or
  * NULL if the size limit is reached.
  */
@@ -606,12 +608,15 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 // Helper functions follow
 
 /**
- * Guess the type of an RDM message, so we know whether we should unpack it as
- * a request or response. This doesn't perform any data checking (that's left
- * to the Inflate* methods).
- * @param type a pointer to a rdm_message_type variable which is set to
- * RDM_REQUEST or RDM_RESPONSE.
- * @param data a pointer to the rdm message (excluding the start code)
+ * @brief Guess the type of an RDM message
+ *
+ * Used so we know whether we should unpack it as a request or response. This
+ * doesn't perform any data checking (that's left to the Inflate* methods).
+ * @param[out] type_arg a pointer to a rdm_message_type variable which is set
+ * to RDM_REQUEST or RDM_RESPONSE.
+ * @param[out] command_class_arg a pointer to a RDMCommandClass variable which
+ * is set to the command class type
+ * @param data a pointer to the RDM message (excluding the start code)
  * @param length length of the rdm data
  * @returns true if we could determine the type, false otherwise
  */
@@ -807,7 +812,8 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
 /*
  * Inflate a discovery request from some data.
  */
-RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(const string &data) {
+RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
+    const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }

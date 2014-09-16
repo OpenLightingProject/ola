@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DMPAddress.cpp
  * Defines the DMP property address types
@@ -81,16 +81,16 @@ const BaseDMPAddress *NewRangeAddress(unsigned int value,
 const BaseDMPAddress *DecodeAddress(dmp_address_size size,
                                     dmp_address_type type,
                                     const uint8_t *data,
-                                    unsigned int &length) {
+                                    unsigned int *length) {
   unsigned int byte_count = (type == NON_RANGE ? 1 : 3) *
                             DMPSizeToByteSize(size);
 
-  if (size == RES_BYTES || length < byte_count) {
-    length = 0;
+  if (size == RES_BYTES || *length < byte_count) {
+    *length = 0;
     return NULL;
   }
 
-  length = byte_count;
+  *length = byte_count;
   const uint8_t *addr1 = data;
   // We have to do a memcpy to avoid the word alignment issues on ARM
   uint16_t addr2[3];

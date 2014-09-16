@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AckTimerResponder_h
  * Copyright (C) 2013 Simon Newton
@@ -28,15 +28,16 @@
 #ifndef INCLUDE_OLA_RDM_ACKTIMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ACKTIMERRESPONDER_H_
 
+#include <ola/Clock.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/ResponderPersonality.h>
+#include <ola/rdm/UID.h>
+
 #include <queue>
 #include <string>
 #include <vector>
-#include "ola/Clock.h"
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/ResponderPersonality.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
@@ -98,7 +99,7 @@ class AckTimerResponder: public RDMControllerInterface {
 
   ResponseQueue m_queued_messages;
   PendingResponses m_upcoming_queued_messages;
-  auto_ptr<class QueuedResponse> m_last_queued_message;
+  std::auto_ptr<class QueuedResponse> m_last_queued_message;
   ola::Clock m_clock;
 
   uint16_t Footprint() const {

@@ -11,18 +11,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *
  * SandNetPort.cpp
  * The SandNet plugin for ola
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <sstream>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 
 #include "plugins/pathport/PathportPort.h"
 
@@ -30,21 +30,19 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
+using std::string;
 
 string PathportPortHelper::Description(const Universe *universe) const {
   if (!universe)
     return "";
 
-  std::stringstream str;
+  std::ostringstream str;
   str << "Pathport xDMX " << DMX_UNIVERSE_SIZE * universe->UniverseId() <<
     " - " << DMX_UNIVERSE_SIZE * (1 + universe->UniverseId()) - 1;
   return str.str();
 }
 
-
-/*
- * Don't allow us to patch ports out of range
- */
+// Don't allow us to patch ports out of range
 bool PathportPortHelper::PreSetUniverse(Universe *new_universe) {
   if (new_universe &&
       new_universe->UniverseId() > PathportNode::MAX_UNIVERSES) {
@@ -72,9 +70,6 @@ void PathportInputPort::PostSetUniverse(Universe *old_universe,
 }
 
 
-/*
- * Write operation
- */
 bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
                                   uint8_t priority) {
   if (GetUniverse())

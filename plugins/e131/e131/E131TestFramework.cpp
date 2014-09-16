@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131TestFramework.cpp
  * Allows testing of a remote E1.31 implementation.
@@ -27,8 +27,8 @@
 #include <string>
 #include <vector>
 #include "ola/acn/CID.h"
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
@@ -44,7 +44,7 @@ using ola::plugin::e131::E131Node;
 using std::cout;
 using std::endl;
 using std::string;
-
+using std::vector;
 
 bool StateManager::Init() {
   m_cid1 = CID::Generate();
@@ -54,7 +54,7 @@ bool StateManager::Init() {
   if (!m_interactive) {
     // local node test
     CID local_cid = CID::Generate();
-    m_local_node = new E131Node("", local_cid);
+    m_local_node = new E131Node(m_ss, "", E131Node::Options(), local_cid);
     assert(m_local_node->Start());
     assert(m_ss->AddReadDescriptor(m_local_node->GetSocket()));
 
@@ -65,8 +65,13 @@ bool StateManager::Init() {
           ola::NewCallback(this, &StateManager::NewDMX)));
   }
 
-  m_node1 = new E131Node("", m_cid1, false, true, 0, 5567);
-  m_node2 = new E131Node("", m_cid2, false, true, 0, 5569);
+  E131Node::Options options1;
+  options1.port = 5567;
+  E131Node::Options options2(options1);
+  options1.port = 5569;
+
+  m_node1 = new E131Node(m_ss, "", options1, m_cid1);
+  m_node2 = new E131Node(m_ss, "", options2, m_cid2);
   assert(m_node1->Start());
   assert(m_node2->Start());
   assert(m_ss->AddReadDescriptor(m_node1->GetSocket()));
@@ -101,11 +106,11 @@ bool StateManager::Init() {
 
 StateManager::~StateManager() {
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-  assert(m_ss->RemoveReadDescriptor(m_node1->GetSocket()));
-  assert(m_ss->RemoveReadDescriptor(m_node2->GetSocket()));
+  m_ss->RemoveReadDescriptor(m_node1->GetSocket());
+  m_ss->RemoveReadDescriptor(m_node2->GetSocket());
 
   if (m_local_node) {
-    assert(m_ss->RemoveReadDescriptor(m_local_node->GetSocket()));
+    m_ss->RemoveReadDescriptor(m_local_node->GetSocket());
     delete m_local_node;
   }
 
@@ -201,7 +206,7 @@ void StateManager::NextState() {
 void StateManager::ShowStatus() {
   if (!m_failed_tests.empty()) {
     cout << "Some tests failed:" << endl;
-    std::vector<TestState*>::iterator iter;
+    vector<TestState*>::iterator iter;
     for (iter = m_failed_tests.begin(); iter != m_failed_tests.end(); ++iter) {
       cout << "  " << (*iter)->StateName() << endl;
     }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * WidgetDetectorThread.h
  * A thread that periodically looks for usb serial devices, and runs the
@@ -41,9 +41,6 @@
 namespace ola {
 namespace plugin {
 namespace usbpro {
-
-using std::string;
-
 
 /**
  * The interface to implement to catch new widgets from the
@@ -83,11 +80,11 @@ class WidgetDetectorThread: public ola::thread::Thread {
     ~WidgetDetectorThread() {}
 
     // Must be called before Run()
-    void SetDeviceDirectory(const string &directory);
+    void SetDeviceDirectory(const std::string &directory);
     // Must be called before Run()
-    void SetDevicePrefixes(const std::vector<string> &prefixes);
+    void SetDevicePrefixes(const std::vector<std::string> &prefixes);
     // Must be called before Run()
-    void SetIgnoredDevices(const std::vector<string> &devices);
+    void SetIgnoredDevices(const std::vector<std::string> &devices);
 
     // Start the thread, this will call the SuccessHandler whenever a new
     // Widget is located.
@@ -96,7 +93,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Stop the thread.
     bool Join(void *ptr);
 
-    // Can be called from any thread.
+    // Used to release a widget. Should be called from the thread running the
+    // SelectServerInterface that was passed to the constructor.
     void FreeWidget(SerialWidgetInterface *widget);
 
     // blocks until the thread is running
@@ -104,16 +102,16 @@ class WidgetDetectorThread: public ola::thread::Thread {
 
  protected:
     virtual bool RunScan();
-    void PerformDiscovery(const string &path,
+    void PerformDiscovery(const std::string &path,
                           ola::io::ConnectedDescriptor *descriptor);
 
  private:
     ola::io::SelectServerInterface *m_other_ss;
     ola::io::SelectServer m_ss;  // ss for this thread
     std::vector<WidgetDetectorInterface*> m_widget_detectors;
-    string m_directory;  // directory to look for widgets in
-    std::vector<string> m_prefixes;  // prefixes to try
-    std::set<string> m_ignored_devices;  // devices to ignore
+    std::string m_directory;  // directory to look for widgets in
+    std::vector<std::string> m_prefixes;  // prefixes to try
+    std::set<std::string> m_ignored_devices;  // devices to ignore
     NewWidgetHandler *m_handler;
     bool m_is_running;
     unsigned int m_usb_pro_timeout;
@@ -122,11 +120,11 @@ class WidgetDetectorThread: public ola::thread::Thread {
     ola::thread::ConditionVariable m_condition;
 
     // those paths that are either in discovery, or in use
-    std::set<string> m_active_paths;
+    std::set<std::string> m_active_paths;
     // holds the path and current widget detector offset
-    typedef std::pair<string, int> DescriptorInfo;
+    typedef std::pair<std::string, int> DescriptorInfo;
     // map of descriptor to DescriptorInfo
-    typedef map<ola::io::ConnectedDescriptor*, DescriptorInfo>
+    typedef std::map<ola::io::ConnectedDescriptor*, DescriptorInfo>
       ActiveDescriptors;
     // the descriptors that are in the discovery process
     ActiveDescriptors m_active_descriptors;
@@ -155,7 +153,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
 
     // This is how device identification is done, see
     // http://opendmx.net/index.php/USB_Protocol_Extensions
-    // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
+    // OPEN_LIGHTING_ESTA_CODE is in Constants.h
 
     // DmxKing Device Models
     static const uint16_t DMX_KING_DMX512_ID = 0;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RootInflator.h
  * Interface for the RootInflator class.
@@ -66,7 +66,7 @@ class RootInflator: public BaseInflator {
  protected:
   // Decode a header block and adds any PduHeaders to the HeaderSet object
   bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
-                    unsigned int len, unsigned int &bytes_used);
+                    unsigned int len, unsigned int *bytes_used);
 
   void ResetHeaderField();
   bool PostHeader(uint32_t vector, const HeaderSet &headers);

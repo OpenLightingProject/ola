@@ -7,7 +7,7 @@
     <script src='/static/jquery-ui-1.8.21.custom.min.js'></script>
     <script src='/static/ui.multiselect.js'></script>
     <script src='/static/rdm_tests.js'></script>
-    <title>RDM Tests</title>
+    <title>RDM Tests &amp; Publisher</title>
     <style type='text/css'>
       body {
         margin: 0px;
@@ -314,9 +314,10 @@
        </fieldset>
        <fieldset>
          <legend>RDM Options</legend>
-          Delay after sending broadcast SETs
-
-          <input id='write_delay' maxlength='16' size='4' value='0'> milliseconds
+          <div>Delay after sending broadcast SETs
+          <input id='write_delay' maxlength='16' size='4' value='0'> milliseconds</div>
+          <div>Delay in-between tests
+          <input id='inter_test_delay' maxlength='16' size='4' value='0'> milliseconds</div>
        </fieldset>
        <fieldset>
         <legend>DMX512 Options</legend>

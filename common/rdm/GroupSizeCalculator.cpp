@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * GroupSizeCalculator.cpp
  * Copyright (C) 2011 Simon Newton
@@ -28,14 +28,17 @@ namespace rdm {
 
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
+using std::vector;
 
 
 /**
  * Figure out the number of group repetitions required.
  *
  * This method is *not* re-entrant.
- * @param descriptor The descriptor to use to build the Message
- * @returns A Message object, or NULL if the inputs failed.
+ * @param token_count the number of tokens supplied
+ * @param descriptor the descriptor to use to build the Message
+ * @param[out] group_repeat_count the number of repeated groups
+ * @returns the state of the calculator as a calculator_state.
  */
 GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
     unsigned int token_count,
@@ -55,8 +58,15 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
     return INSUFFICIENT_TOKENS;
 
   // this takes care of the easy case where there are no groups
-  if (!m_groups.size())
-    return required_tokens == token_count ? NO_VARIABLE_GROUPS : EXTRA_TOKENS;
+  if (m_groups.empty()) {
+    if (required_tokens == token_count) {
+      return NO_VARIABLE_GROUPS;
+    } else {
+      OLA_WARN << "Got an incorrect number of tokens, expecting "
+               << required_tokens << " tokens, got " << token_count;
+      return EXTRA_TOKENS;
+    }
+  }
 
   // check all groups, looking for multiple non-fixed sized groups
   unsigned int variable_group_counter = 0;
@@ -82,8 +92,15 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
   if (required_tokens > token_count)
     return INSUFFICIENT_TOKENS;
 
-  if (!variable_group_counter)
-    return required_tokens == token_count ? NO_VARIABLE_GROUPS : EXTRA_TOKENS;
+  if (!variable_group_counter) {
+    if (required_tokens == token_count) {
+      return NO_VARIABLE_GROUPS;
+    } else {
+      OLA_WARN << "Got an incorrect number of tokens, expecting "
+               << required_tokens << " tokens, got " << token_count;
+      return EXTRA_TOKENS;
+    }
+  }
 
   // now we have a single variable sized group and a 0 or more tokens remaining
   unsigned int remaining_tokens = token_count - required_tokens;
@@ -187,8 +204,8 @@ void GroupSizeCalculator::PostVisit(
  * single instance of the group. This assumes that the group does not contain
  * any variable-sized groups but it may contain fixed sized nested groups.
  * @param descriptor the group descriptor
- * @param group_input_size the number of inputs required to build a single
- * instance of this group.
+ * @param token_count the number of inputs required to build a single instance
+ * of this group.
  * @return true if we could calculate the inputs required, false if this group
  * was of a variable size.
  */

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DMXSignalProcessor.cpp
  * Process a stream of bits and decode into DMX frames.
@@ -47,6 +47,14 @@
 #include "tools/logic/DMXSignalProcessor.h"
 
 using std::vector;
+
+const double DMXSignalProcessor::MIN_BREAK_TIME = 88.0;
+const double DMXSignalProcessor::MIN_MAB_TIME = 8.0;
+const double DMXSignalProcessor::MAX_MAB_TIME = 1000000.0;
+const double DMXSignalProcessor::MIN_BIT_TIME = 3.75;
+const double DMXSignalProcessor::MAX_BIT_TIME = 4.08;
+const double DMXSignalProcessor::MIN_LAST_BIT_TIME = 2.64;
+const double DMXSignalProcessor::MAX_MARK_BETWEEN_SLOTS = 1000000.0;
 
 /**
  * Create a new DMXSignalProcessor which runs the specified callback when a new

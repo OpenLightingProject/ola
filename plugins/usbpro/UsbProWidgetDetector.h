@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbProWidgetDetector.h
  * Handles the discovery process for widgets that implement the Usb Pro frame
@@ -48,6 +48,7 @@ class UsbProWidgetInformation {
       device_id(0),
       serial(0),
       firmware_version(0),
+      has_firmware_version(false),
       dual_port(false) {
   }
   UsbProWidgetInformation(const UsbProWidgetInformation &other):
@@ -55,11 +56,17 @@ class UsbProWidgetInformation {
       device_id(other.device_id),
       serial(other.serial),
       firmware_version(other.firmware_version),
+      has_firmware_version(other.has_firmware_version),
       manufacturer(other.manufacturer),
       device(other.device),
       dual_port(other.dual_port) {
   }
   UsbProWidgetInformation& operator=(const UsbProWidgetInformation &other);
+
+  void SetFirmware(DeviceFirmwareVersion new_firmware_version) {
+    has_firmware_version = true;
+    firmware_version = new_firmware_version;
+  }
 
   enum {SERIAL_LENGTH = 4};
 
@@ -67,8 +74,9 @@ class UsbProWidgetInformation {
   uint16_t device_id;
   DeviceSerialNumber serial;
   DeviceFirmwareVersion firmware_version;
-  string manufacturer;
-  string device;
+  bool has_firmware_version;
+  std::string manufacturer;
+  std::string device;
   bool dual_port;
 };
 
