@@ -125,7 +125,7 @@ const TimeStamp *PluginAdaptor::WakeUpTime() const {
   return m_ss->WakeUpTime();
 }
 
-const std::string *PluginAdaptor::InstanceName() {
-  return m_instance_name;
+const std::string PluginAdaptor::InstanceName() {
+  return *m_instance_name;
 }
 }  // namespace ola
