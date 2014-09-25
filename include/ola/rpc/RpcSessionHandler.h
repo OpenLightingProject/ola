@@ -18,8 +18,8 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef COMMON_RPC_RPCSESSIONHANDLER_H_
-#define COMMON_RPC_RPCSESSIONHANDLER_H_
+#ifndef INCLUDE_OLA_RPC_RPCSESSIONHANDLER_H_
+#define INCLUDE_OLA_RPC_RPCSESSIONHANDLER_H_
 
 namespace ola {
 namespace rpc {
@@ -52,4 +52,4 @@ class RpcSessionHandlerInterface {
 
 }  // namespace rpc
 }  // namespace ola
-#endif  // COMMON_RPC_RPCSESSIONHANDLER_H_
+#endif  // INCLUDE_OLA_RPC_RPCSESSIONHANDLER_H_

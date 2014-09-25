@@ -20,12 +20,12 @@
 
 #include <memory>
 
-#include "common/rpc/RpcSession.h"
 #include "common/rpc/RpcServer.h"
-#include "common/rpc/RpcSessionHandler.h"
-#include "common/rpc/TestServiceService.pb.h"
+#include "common/rpc/RpcSession.h"
 #include "common/rpc/TestService.h"
+#include "common/rpc/TestServiceService.pb.h"
 #include "ola/io/SelectServer.h"
+#include "ola/rpc/RpcSessionHandler.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::SelectServer;

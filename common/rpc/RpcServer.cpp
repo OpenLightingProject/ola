@@ -20,13 +20,13 @@
 
 #include "common/rpc/RpcServer.h"
 
+#include <ola/ExportMap.h>
+#include <ola/Logging.h>
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocket.h>
-#include <ola/Logging.h>
-#include <ola/ExportMap.h>
+#include <ola/rpc/RpcSessionHandler.h>
 #include "common/rpc/RpcChannel.h"
 #include "common/rpc/RpcSession.h"
-#include "common/rpc/RpcSessionHandler.h"
 
 namespace ola {
 namespace rpc {
