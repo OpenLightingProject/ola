@@ -243,7 +243,8 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
 /**
  * Called when RPC socket is closed by the remote end.
  */
-void SLPDaemon::RPCSocketClosed(ola::io::DescriptorHandle read_descriptor) {
+void SLPDaemon::RPCSocketClosed(ola::io::DescriptorHandle read_descriptor,
+                                OLA_UNUSED ola::rpc::RpcSession *session) {
   ConnectedClient *client = STLLookupAndRemovePtr(&m_connected_clients,
       read_descriptor);
   OLA_DEBUG << "RPC Socket closed";

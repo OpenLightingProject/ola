@@ -106,8 +106,13 @@ bool OlaClientCore::Stop() {
 /**
  * Set the close handler.
  */
-void OlaClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
-  m_channel->SetChannelCloseHandler(callback);
+void OlaClientCore::SetCloseHandler(ClosedCallback *callback) {
+  if (callback) {
+    m_channel->SetChannelCloseHandler(
+        NewSingleCallback(this, &OlaClientCore::ChannelClosed, callback));
+  } else {
+    m_channel->SetChannelCloseHandler(NULL);
+  }
 }
 
 void OlaClientCore::SetDMXCallback(RepeatableDMXCallback *callback) {
@@ -606,6 +611,11 @@ void OlaClientCore::UpdateDmxData(ola::rpc::RpcController*,
     m_dmx_callback->Run(metadata, buffer);
   }
   done->Run();
+}
+
+void OlaClientCore::ChannelClosed(ClosedCallback *callback,
+                                   OLA_UNUSED ola::rpc::RpcSession *session) {
+  callback->Run();
 }
 
 

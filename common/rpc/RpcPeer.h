@@ -30,43 +30,43 @@ namespace rpc {
 
 class RpcPeer {
  public:
-    explicit RpcPeer(const ola::network::GenericSocketAddress &socket_addr)
-      : m_socket_addr(socket_addr) {
-    }
+  explicit RpcPeer(const ola::network::GenericSocketAddress &socket_addr)
+    : m_socket_addr(socket_addr) {
+  }
 
-    const ola::network::GenericSocketAddress& SocketAddress() const {
-      return m_socket_addr;
-    }
+  const ola::network::GenericSocketAddress& SocketAddress() const {
+    return m_socket_addr;
+  }
 
-   /**
-     * @brief Assignment operator
-     */
-    RpcPeer& operator=(const RpcPeer& other) {
-      if (this != &other) {
-        m_socket_addr = other.m_socket_addr;
-      }
-      return *this;
+ /**
+   * @brief Assignment operator
+   */
+  RpcPeer& operator=(const RpcPeer& other) {
+    if (this != &other) {
+      m_socket_addr = other.m_socket_addr;
     }
+    return *this;
+  }
 
-    /**
-     * @brief Convert a UID to a human readable string.
-     * @returns a string in the form XXXX:YYYYYYYY.
-     */
-    std::string ToString() const {
-      return m_socket_addr.ToString();
-    }
+  /**
+   * @brief Convert a UID to a human readable string.
+   * @returns a string in the form XXXX:YYYYYYYY.
+   */
+  std::string ToString() const {
+    return m_socket_addr.ToString();
+  }
 
-    /**
-     * @brief A helper function to write a UID to an ostream.
-     * @param out the ostream
-     * @param peer the RpcPeer to write.
-     */
-    friend ostream& operator<<(ostream &out, const RpcPeer &peer) {
-      return out << peer.ToString();
-    }
+  /**
+   * @brief A helper function to write an RpcPeer to an ostream.
+   * @param out the ostream
+   * @param peer the RpcPeer to write.
+   */
+  friend ostream& operator<<(ostream &out, const RpcPeer &peer) {
+    return out << peer.ToString();
+  }
 
  private:
-    ola::network::GenericSocketAddress m_socket_addr;
+  ola::network::GenericSocketAddress m_socket_addr;
 };
 }  // namespace rpc
 }  // namespace ola
