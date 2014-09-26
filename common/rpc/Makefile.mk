@@ -18,8 +18,7 @@ common_libolacommon_la_SOURCES += \
     common/rpc/RpcPeer.h \
     common/rpc/RpcServer.cpp \
     common/rpc/RpcServer.h \
-    common/rpc/RpcService.h \
-    common/rpc/RpcSessionHandler.h
+    common/rpc/RpcService.h
 nodist_common_libolacommon_la_SOURCES += common/rpc/Rpc.pb.cc
 common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
 
