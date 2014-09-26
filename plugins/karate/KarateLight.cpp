@@ -225,7 +225,9 @@ bool KarateLight::SetColors(const DmxBuffer &da) {
 /**
  * Tries to read an answer from the device
  * \parm rd_data buffer for the received data (excluding the header)
- * \parm rd_len number of bytes received (excluding the header)
+ * \parm rd_len number of bytes to read (excluding the header). will be 
+ *              overwrittem with the number of bytes receivued  in case 
+ *              of mismatch
  * \return true on success
  */
 bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
@@ -233,11 +235,25 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
   uint8_t rd_buffer[CMD_MAX_LENGTH];
 
   // read header (4 bytes)
-  while (bytesread != CMD_DATA_START) {
-    bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
-    if (bytesread < 0) {
-      if (errno != EINTR) {  // this is also true for EAGAIN
-        OLA_WARN << "could not read 4 bytes (header) from " << m_devname
+  bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
+  if (bytesread != CMD_DATA_START) {
+    if (errno != EINTR) {  // this is also true for EAGAIN
+      OLA_WARN << "could not read 4 bytes (header) from " << m_devname
+               << "ErrorCode: " << strerror(errno);
+      KarateLight::Close();
+      return false;
+    }
+  }
+  bytesread = 0;
+
+  // read payload-data (if there is any)
+  if (rd_buffer[CMD_HD_LEN] > 0) {
+    // we wont enter this loop if there are no bytes to receive
+    bytesread = read(m_fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN]);
+    if (bytesread != rd_buffer[CMD_HD_LEN]) {
+      if (errno != EINTR) {  // this is also true for EAGAIN (timeout)
+        OLA_WARN << "reading >" << static_cast<int>(rd_buffer[CMD_HD_LEN])
+                 << "< bytes payload from " << m_devname
                  << "ErrorCode: " << strerror(errno);
         KarateLight::Close();
         return false;
@@ -245,28 +261,13 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
     }
   }
 
-  // read payload-data (if there is any)
-  bytesread = 0;
-  while (bytesread != rd_buffer[CMD_HD_LEN]) {
-    // we wont enter this loop if there are no bytes to receive
-    bytesread = read(m_fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN]);
-    if (bytesread < 0) {
-      if (errno != EINTR) {  // this is also true for EAGAIN (timeout)
-        OLA_WARN << "reading " << static_cast<int>(rd_buffer[CMD_HD_LEN])
-                 << "bytes payload from " << m_devname
-                 << "ErrorCode: " << strerror(errno);
-        KarateLight::Close();
-        return false;
-      }
-    }  // if (bytesread < request)
-  }  // while
-
   // verify data-length
   if ((*rd_len != rd_buffer[CMD_HD_LEN]) ||
       (bytesread != rd_buffer[CMD_HD_LEN])) {
-    OLA_WARN << "number of bytes read" << bytesread
-             << "does not match number of bytes expected"
-             << static_cast<int>(rd_buffer[CMD_HD_LEN]);
+    OLA_WARN << "number of bytes read >" << bytesread
+             << "< does not match number of bytes expected >"
+             << static_cast<int>(rd_buffer[CMD_HD_LEN])
+             << "<";
     KarateLight::Close();
     return false;
   }
@@ -360,10 +361,10 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
 
   // now write to the serial port
   if (write(m_fd, wr_buffer, cmd_length) != cmd_length) {
-      OLA_WARN << "failed to write data to " << m_devname;
-      KarateLight::Close();
-      return false;
-    }
+    OLA_WARN << "failed to write data to " << m_devname;
+    KarateLight::Close();
+    return false;
+  }
 
   // read the answer, check if we got the number of bytes we expected
   n_bytes_read = n_bytes_expected;
