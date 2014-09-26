@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcServer.h
  * A generic RPC server.
@@ -36,7 +36,7 @@ namespace rpc {
 /**
  * @brief An RPC server.
  *
- * The RPCServer starts listening on 127.0.0.0:<listen_port> for new client
+ * The RPCServer starts listening on 127.0.0.0:[listen_port] for new client
  * connections. After accepting a new client connection it calls
  * RpcSessionHandlerInterface::NewClient() on the session_handler. For each RPC
  * it then invokes the correct method from the RpcService object.
@@ -85,7 +85,6 @@ class RpcServer {
    * @param session_handler the RpcSessionHandlerInterface to use for client
    *   connect / disconnect notifications.
    * @param options Options for the RpcServer.
-   * @param export_map the ExportMap to use for stats tracking.
    */
   RpcServer(ola::io::SelectServerInterface *ss,
             class RpcService *service,

@@ -43,7 +43,7 @@ class RpcController {
  public:
   /**
    * Create a new RpcController
-   * @param RpcSession the session to use. Ownership is not transferred.
+   * @param session the RpcSession to use. Ownership is not transferred.
    */
   explicit RpcController(RpcSession *session = NULL);
   ~RpcController() {}

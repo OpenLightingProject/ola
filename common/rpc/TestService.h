@@ -31,7 +31,7 @@
 
 class TestServiceImpl: public ola::rpc::TestService {
  public:
-  TestServiceImpl(ola::io::SelectServer *ss) : m_ss(ss) {}
+  explicit TestServiceImpl(ola::io::SelectServer *ss) : m_ss(ss) {}
   ~TestServiceImpl() {}
 
   void Echo(ola::rpc::RpcController* controller,
