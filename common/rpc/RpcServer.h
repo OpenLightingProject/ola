@@ -54,7 +54,7 @@ class RpcServer {
     /**
      * @brief The TCP port to listen on.
      *
-     * If tcp_socket is passed, this option is ignored.
+     * If listen_socket is passed, this option is ignored.
      */
     uint16_t listen_port;
 
@@ -69,12 +69,12 @@ class RpcServer {
      * Ownership of the socket is transferred to the RpcServer.
      * This overrides the listen_port option.
      */
-    ola::network::TCPAcceptingSocket *tcp_socket;
+    ola::network::TCPAcceptingSocket *listen_socket;
 
     Options()
       : listen_port(0),
         export_map(NULL),
-        tcp_socket(NULL) {
+        listen_socket(NULL) {
     }
   };
 

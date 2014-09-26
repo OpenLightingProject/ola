@@ -68,8 +68,8 @@ bool RpcServer::Init() {
 
   auto_ptr<TCPAcceptingSocket> accepting_socket;
 
-  if (m_options.tcp_socket) {
-    accepting_socket.reset(m_options.tcp_socket);
+  if (m_options.listen_socket) {
+    accepting_socket.reset(m_options.listen_socket);
   } else {
     accepting_socket.reset(
       new TCPAcceptingSocket(&m_tcp_socket_factory));
