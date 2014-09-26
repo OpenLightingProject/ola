@@ -55,9 +55,9 @@ common_rpc_RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                              $(libprotobuf_LIBS)
 
 common_rpc_RpcServerTester_SOURCES = \
-    common/rpc/RpcServerTest.cpp
+    common/rpc/RpcServerTest.cpp \
+    $(common_rpc_TEST_SOURCES)
 nodist_common_rpc_RpcServerTester_SOURCES = \
-    $(common_rpc_TEST_SOURCES) \
     common/rpc/TestService.pb.cc \
     common/rpc/TestServiceService.pb.cpp
 common_rpc_RpcServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
