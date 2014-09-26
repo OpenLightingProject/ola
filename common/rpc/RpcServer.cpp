@@ -66,14 +66,20 @@ bool RpcServer::Init() {
     return false;
   }
 
-  auto_ptr<TCPAcceptingSocket> accepting_socket(
+  auto_ptr<TCPAcceptingSocket> accepting_socket;
+
+  if (m_options.tcp_socket) {
+    accepting_socket.reset(m_options.tcp_socket);
+  } else {
+    accepting_socket.reset(
       new TCPAcceptingSocket(&m_tcp_socket_factory));
 
-  if (!accepting_socket->Listen(
-        IPV4SocketAddress(IPV4Address::Loopback(), m_options.listen_port))) {
-    OLA_FATAL << "Could not listen on the RPC port " << m_options.listen_port
-              << ", you probably have another instance of running.";
-    return false;
+    if (!accepting_socket->Listen(
+          IPV4SocketAddress(IPV4Address::Loopback(), m_options.listen_port))) {
+      OLA_FATAL << "Could not listen on the RPC port " << m_options.listen_port
+                << ", you probably have another instance of running.";
+      return false;
+    }
   }
 
   m_ss->AddReadDescriptor(accepting_socket.get());

@@ -51,12 +51,30 @@ class RpcServer {
    */
   struct Options {
    public:
-    uint16_t listen_port;  /**< The port to listen on. */
+    /**
+     * @brief The TCP port to listen on.
+     *
+     * If tcp_socket is passed, this option is ignored.
+     */
+    uint16_t listen_port;
+
     class ExportMap *export_map; /**< The export map to use for stats. */
+
+    /**
+     * @brief The listening TCP socket to wait for clients on.
+     *
+     * The socket should be in listening mode, i.e. have had
+     * TCPAcceptingSocket::Listen() called.
+     *
+     * Ownership of the socket is transferred to the RpcServer.
+     * This overrides the listen_port option.
+     */
+    ola::network::TCPAcceptingSocket *tcp_socket;
 
     Options()
       : listen_port(0),
-        export_map(NULL) {
+        export_map(NULL),
+        tcp_socket(NULL) {
     }
   };
 
