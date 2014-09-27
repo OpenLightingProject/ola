@@ -64,7 +64,6 @@ RpcServer::~RpcServer() {
   for (; iter != sockets.end(); ++iter) {
     (*iter)->TransferOnClose()->Run();
   }
-  OLA_INFO << "m_connected_sockets is " << m_connected_sockets.size();
 
   if (m_accepting_socket.get() && m_accepting_socket->ValidReadDescriptor()) {
     m_ss->RemoveReadDescriptor(m_accepting_socket.get());
