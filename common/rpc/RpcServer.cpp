@@ -57,6 +57,15 @@ RpcServer::RpcServer(ola::io::SelectServerInterface *ss,
 }
 
 RpcServer::~RpcServer() {
+  // Take a copy since calling the close handler will cause the socket to be
+  // removed from m_connected_sockets
+  TCPSockets sockets = m_connected_sockets;
+  TCPSockets::const_iterator iter = sockets.begin();
+  for (; iter != sockets.end(); ++iter) {
+    (*iter)->TransferOnClose()->Run();
+  }
+  OLA_INFO << "m_connected_sockets is " << m_connected_sockets.size();
+
   if (m_accepting_socket.get() && m_accepting_socket->ValidReadDescriptor()) {
     m_ss->RemoveReadDescriptor(m_accepting_socket.get());
   }
@@ -88,7 +97,11 @@ bool RpcServer::Init() {
     }
   }
 
-  m_ss->AddReadDescriptor(accepting_socket.get());
+  if (!m_ss->AddReadDescriptor(accepting_socket.get())) {
+    OLA_WARN << "Failed to add RPC socket to SelectServer";
+    return false;
+  }
+
   m_accepting_socket.reset(accepting_socket.release());
   return true;
 }
@@ -106,7 +119,7 @@ void RpcServer::NewTCPConnection(TCPSocket *socket) {
 
   socket->SetNoDelay();
 
-  // If RpcChannel had a pointer to the SelectServer to use, we could handl off
+  // If RpcChannel had a pointer to the SelectServer to use, we could hand off
   // ownership of the socket here.
   RpcChannel *channel = new RpcChannel(m_service, socket, m_options.export_map);
 
@@ -122,6 +135,7 @@ void RpcServer::NewTCPConnection(TCPSocket *socket) {
   }
 
   m_ss->AddReadDescriptor(socket);
+  m_connected_sockets.insert(socket);
 }
 
 void RpcServer::ChannelClosed(TCPSocket *socket, RpcSession *session) {
@@ -134,6 +148,7 @@ void RpcServer::ChannelClosed(TCPSocket *socket, RpcSession *session) {
   }
 
   m_ss->RemoveReadDescriptor(socket);
+  m_connected_sockets.erase(socket);
 
   // We're in the call stack of both the descriptor and the channel here.
   // We schedule deletion during the next run of the event loop to break out of

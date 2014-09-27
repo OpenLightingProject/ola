@@ -25,6 +25,7 @@
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/TCPSocketFactory.h>
 
+#include <set>
 #include <memory>
 
 namespace ola {
@@ -106,6 +107,8 @@ class RpcServer {
   ola::network::GenericSocketAddress ListenAddress();
 
  private:
+  typedef std::set<ola::network::TCPSocket*> TCPSockets;
+
   ola::io::SelectServerInterface *m_ss;
   RpcService *m_service;
   class RpcSessionHandlerInterface *m_session_handler;
@@ -113,6 +116,7 @@ class RpcServer {
 
   ola::network::TCPSocketFactory m_tcp_socket_factory;
   std::auto_ptr<ola::network::TCPAcceptingSocket> m_accepting_socket;
+  TCPSockets m_connected_sockets;
 
   void NewTCPConnection(ola::network::TCPSocket *socket);
   void ChannelClosed(ola::network::TCPSocket *socket,
