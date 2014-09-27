@@ -162,11 +162,12 @@ void DeviceManagerTest::testRestorePatchings() {
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   OLA_ASSERT(prefs);
-  prefs->SetValue("2-test_device_1-I-1", "1");
-  prefs->SetValue("2-test_device_1-O-1", "3");
+  // Use a hyphen to confirm we can parse these correctly
+  prefs->SetValue("2-test-device-1-I-1", "1");
+  prefs->SetValue("2-test-device-1-O-1", "3");
 
   TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
-  MockDevice device1(&plugin, "test_device_1");
+  MockDevice device1(&plugin, "test-device-1");
   TestMockInputPort input_port(&device1, 1, NULL);
   TestMockOutputPort output_port(&device1, 1);
   device1.AddPort(&input_port);
@@ -188,8 +189,8 @@ void DeviceManagerTest::testRestorePatchings() {
   manager.UnregisterAllDevices();
   OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
-  OLA_ASSERT_EQ(string("10"), prefs->GetValue("2-test_device_1-I-1"));
-  OLA_ASSERT_EQ(string("3"), prefs->GetValue("2-test_device_1-O-1"));
+  OLA_ASSERT_EQ(string("10"), prefs->GetValue("2-test-device-1-I-1"));
+  OLA_ASSERT_EQ(string("3"), prefs->GetValue("2-test-device-1-O-1"));
 }
 
 
