@@ -298,7 +298,7 @@ void SLPClientCore::HandleServerInfo(server_info_arg *args) {
 
 
 void SLPClientCore::ChannelClosed(ClosedCallback *callback,
-                           OLA_UNUSED ola::rpc::RpcSession *session) {
+                                  OLA_UNUSED ola::rpc::RpcSession *session) {
   callback->Run();
 }
 

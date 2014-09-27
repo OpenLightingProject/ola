@@ -58,7 +58,7 @@ class RpcServer {
      */
     uint16_t listen_port;
 
-    class ExportMap *export_map; /**< The export map to use for stats. */
+    class ExportMap *export_map;  ///< The export map to use for stats.
 
     /**
      * @brief The listening TCP socket to wait for clients on.
@@ -122,6 +122,7 @@ class RpcServer {
                       ola::network::TCPSocket *socket);
 
   static const char K_CLIENT_VAR[];
+  static const char K_RPC_PORT_VAR[];
 };
 }  // namespace rpc
 }  // namespace ola

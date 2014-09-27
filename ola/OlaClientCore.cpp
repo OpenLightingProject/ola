@@ -614,7 +614,7 @@ void OlaClientCore::UpdateDmxData(ola::rpc::RpcController*,
 }
 
 void OlaClientCore::ChannelClosed(ClosedCallback *callback,
-                                   OLA_UNUSED ola::rpc::RpcSession *session) {
+                                  OLA_UNUSED ola::rpc::RpcSession *session) {
   callback->Run();
 }
 

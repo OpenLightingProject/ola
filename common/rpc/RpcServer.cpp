@@ -39,6 +39,7 @@ using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 
 const char RpcServer::K_CLIENT_VAR[] = "clients-connected";
+const char RpcServer::K_RPC_PORT_VAR[] = "rpc-port";
 
 RpcServer::RpcServer(ola::io::SelectServerInterface *ss,
                      RpcService *service,
@@ -70,6 +71,7 @@ bool RpcServer::Init() {
 
   if (m_options.listen_socket) {
     accepting_socket.reset(m_options.listen_socket);
+    accepting_socket->SetFactory(&m_tcp_socket_factory);
   } else {
     accepting_socket.reset(
       new TCPAcceptingSocket(&m_tcp_socket_factory));
@@ -79,6 +81,10 @@ bool RpcServer::Init() {
       OLA_FATAL << "Could not listen on the RPC port " << m_options.listen_port
                 << ", you probably have another instance of running.";
       return false;
+    }
+    if (m_options.export_map) {
+      m_options.export_map->GetIntegerVar(K_RPC_PORT_VAR)->Set(
+          m_options.listen_port);
     }
   }
 

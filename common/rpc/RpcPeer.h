@@ -38,7 +38,7 @@ class RpcPeer {
     return m_socket_addr;
   }
 
- /**
+  /**
    * @brief Assignment operator
    */
   RpcPeer& operator=(const RpcPeer& other) {
@@ -49,7 +49,7 @@ class RpcPeer {
   }
 
   /**
-   * @brief Convert a UID to a human readable string.
+   * @brief Convert a peer to a human readable string.
    * @returns a string in the form XXXX:YYYYYYYY.
    */
   std::string ToString() const {
