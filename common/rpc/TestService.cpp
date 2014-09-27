@@ -50,7 +50,7 @@ void TestServiceImpl::Echo(OLA_UNUSED RpcController* controller,
                            CompletionCallback* done) {
   OLA_ASSERT_TRUE(request->has_session_ptr());
   uintptr_t expected_ptr = request->session_ptr();
-  OLA_ASSERT_EQ(reinterpret_cast<uintptr_t>(expected_ptr),
+  OLA_ASSERT_EQ(expected_ptr,
                 reinterpret_cast<uintptr_t>(controller->Session()->GetData()));
   response->set_data(request->data());
   done->Run();
