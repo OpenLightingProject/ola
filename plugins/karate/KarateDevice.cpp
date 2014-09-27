@@ -31,11 +31,8 @@ namespace karate {
 using ola::Device;
 using std::string;
 
-/*
- * Create a new device
- * @param owner
- * @param name
- * @param path to device
+/**
+ * @brief Create a new device
  */
 KarateDevice::KarateDevice(AbstractPlugin *owner,
                            const string &name,
@@ -48,8 +45,8 @@ KarateDevice::KarateDevice(AbstractPlugin *owner,
   m_device_id = str.str();
 }
 
-/*
- * Start this device
+/**
+ * @brief Start this device
  */
 bool KarateDevice::StartHook() {
   AddPort(new KarateOutputPort(this, 0, m_path));

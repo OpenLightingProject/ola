@@ -48,8 +48,8 @@ const char KaratePlugin::PLUGIN_NAME[] = "KarateLight";
 const char KaratePlugin::PLUGIN_PREFIX[] = "karate";
 const char KaratePlugin::DEVICE_KEY[] = "device";
 
-/*
- * Start the plugin
+/**
+ * @brief Start the plugin
  */
 bool KaratePlugin::StartHook() {
   vector<string> devices = m_preferences->GetMultipleValue(DEVICE_KEY);
@@ -83,8 +83,8 @@ bool KaratePlugin::StartHook() {
 }
 
 
-/*
- * Stop the plugin
+/**
+ * @brief Stop the plugin
  * @return true on success, false on failure
  */
 bool KaratePlugin::StopHook() {
@@ -100,8 +100,8 @@ bool KaratePlugin::StopHook() {
 }
 
 
-/*
- * Return the description for this plugin
+/**
+ * @brief Return the description for this plugin
  */
 string KaratePlugin::Description() const {
     return
@@ -119,8 +119,8 @@ string KaratePlugin::Description() const {
 }
 
 
-/*
- * Set default preferences.
+/**
+ * @brief Set default preferences.
  */
 bool KaratePlugin::SetDefaultPreferences() {
   if (!m_preferences)
@@ -130,7 +130,7 @@ bool KaratePlugin::SetDefaultPreferences() {
                                      KARATE_DEVICE_PATH))
     m_preferences->Save();
 
-  // check if this save correctly
+  // check if this saved correctly
   // we don't want to use it if null
   if (m_preferences->GetValue(DEVICE_KEY).empty())
     return false;
