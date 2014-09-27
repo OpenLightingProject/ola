@@ -63,7 +63,6 @@ class OlaServer {
     std::string http_data_dir;
     std::string network_interface;
     std::string pid_data_dir;  /** @brief Directory with the PID definitions */
-    std::string instance_name;
   };
 
   /**
@@ -142,6 +141,7 @@ class OlaServer {
   std::auto_ptr<class ExportMap> m_our_export_map;
   class ExportMap *m_export_map;
   class PreferencesFactory *m_preferences_factory;
+  class Preferences *m_server_preferences;
   class Preferences *m_universe_preferences;
 
   std::auto_ptr<class DeviceManager> m_device_manager;
@@ -160,6 +160,7 @@ class OlaServer {
   std::auto_ptr<class DiscoveryAgentInterface> m_discovery_agent;
   const Options m_options;
   ola::rdm::UID m_default_uid;
+  std::string m_instance_name;
 
 #ifdef HAVE_LIBMICROHTTPD
   /**
@@ -190,8 +191,11 @@ class OlaServer {
    */
   void UpdatePidStore(const ola::rdm::RootPidStore *pid_store);
 
+  static const char SERVER_PREFERENCES[];
   static const char UNIVERSE_PREFERENCES[];
+  static const char INSTANCE_NAME_KEY[];
   static const char K_CLIENT_VAR[];
+  static const char K_INSTANCE_NAME_VAR[];
   static const char K_UID_VAR[];
   static const char K_DISCOVERY_SERVICE_TYPE[];
   static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;

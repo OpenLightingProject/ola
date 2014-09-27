@@ -69,8 +69,11 @@ using std::auto_ptr;
 using std::pair;
 using std::vector;
 
+const char OlaServer::SERVER_PREFERENCES[] = "server";
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
+const char OlaServer::INSTANCE_NAME_KEY[] = "instance-name";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
+const char OlaServer::K_INSTANCE_NAME_VAR[] = "server-instance-name";
 const char OlaServer::K_UID_VAR[] = "server-uid";
 // The Bonjour API expects <service>[,<sub-type>] so we use that form here.
 const char OlaServer::K_DISCOVERY_SERVICE_TYPE[] = "_http._tcp,_ola";
@@ -91,6 +94,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
       m_accepting_socket(socket),
       m_export_map(export_map),
       m_preferences_factory(preferences_factory),
+      m_server_preferences(NULL),
       m_universe_preferences(NULL),
       m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT),
       m_options(ola_options),
@@ -139,6 +143,10 @@ OlaServer::~OlaServer() {
   if (m_universe_store.get()) {
     m_universe_store->DeleteAll();
     m_universe_store.reset();
+  }
+
+  if (m_server_preferences) {
+    m_server_preferences->Save();
   }
 
   if (m_universe_preferences) {
@@ -195,6 +203,18 @@ bool OlaServer::Init() {
   m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());
   OLA_INFO << "Server UID is " << m_default_uid;
 
+  m_server_preferences = m_preferences_factory->NewPreference(
+      SERVER_PREFERENCES);
+  m_server_preferences->Load();
+  if (m_server_preferences->SetDefaultValue(INSTANCE_NAME_KEY,
+                                            StringValidator(),
+                                            "Ola Server")) {
+    m_server_preferences->Save();
+  }
+  m_instance_name = m_server_preferences->GetValue(INSTANCE_NAME_KEY);
+  m_export_map->GetStringVar(K_INSTANCE_NAME_VAR)->Set(m_instance_name);
+  OLA_INFO << "Server instance name is " << m_instance_name;
+
   m_universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
@@ -212,7 +232,7 @@ bool OlaServer::Init() {
   m_plugin_adaptor.reset(
       new PluginAdaptor(m_device_manager.get(), m_ss, m_export_map,
                         m_preferences_factory, m_port_broker.get(),
-                        &m_options.instance_name));
+                        &m_instance_name));
 
   m_plugin_manager.reset(
     new PluginManager(m_plugin_loaders, m_plugin_adaptor.get()));
