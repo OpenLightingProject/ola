@@ -94,7 +94,12 @@ bool SLPClientCore::Stop() {
  * Set the close handler.
  */
 void SLPClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
-  m_channel->SetChannelCloseHandler(callback);
+  if (callback) {
+    m_channel->SetChannelCloseHandler(
+        NewSingleCallback(this, &SLPClientCore::ChannelClosed, callback));
+  } else {
+    m_channel->SetChannelCloseHandler(NULL);
+  }
 }
 
 
@@ -291,6 +296,11 @@ void SLPClientCore::HandleServerInfo(server_info_arg *args) {
   FreeArgs(args);
 }
 
+
+void SLPClientCore::ChannelClosed(ClosedCallback *callback,
+                                  OLA_UNUSED ola::rpc::RpcSession *session) {
+  callback->Run();
+}
 
 /*
  * Internal method to register services.

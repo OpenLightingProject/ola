@@ -29,12 +29,10 @@
 #include <google/protobuf/service.h>
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
-#include <ola/io/SelectServer.h>
 #include <ola/util/SequenceNumber.h>
 #include <memory>
 
 #include "ola/ExportMap.h"
-#include "common/rpc/RpcController.h"
 
 #include HASH_MAP_H
 
@@ -44,19 +42,6 @@ namespace rpc {
 class RpcMessage;
 class RpcService;
 
-class OutstandingRequest {
-  /*
-   * These are requests on the server end that haven't completed yet.
-   */
- public:
-    OutstandingRequest() {}
-    ~OutstandingRequest() {}
-
-    int id;
-    RpcController *controller;
-    google::protobuf::Message *response;
-};
-
 /**
  * @brief The RPC channel used to communicate between the client and the
  * server.
@@ -65,8 +50,16 @@ class OutstandingRequest {
  */
 class RpcChannel {
  public :
+  /**
+   * @brief The callback to run when the channel is closed.
+   *
+   * When run, the callback is passed the RpcSession associated with this
+   * channel.
+   */
+  typedef SingleUseCallback1<void, class RpcSession*> CloseCallback;
+
     /**
-     * @@brief Create a new RpcChannel.
+     * @brief Create a new RpcChannel.
      * @param service the Service to use to handle incoming requests. Ownership
      *   is not transferred.
      * @param descriptor the descriptor to use for reading/writing data. The
@@ -111,15 +104,15 @@ class RpcChannel {
      * @note
      * The callback will be run from the call stack of the RpcChannel
      * object. This means you can't delete the RpcChannel object from
-     * within the called, you'll need to queue it up an delete it later.
+     * within the called, you'll need to queue it up and delete it later.
      */
-    void SetChannelCloseHandler(SingleUseCallback0<void> *callback);
+    void SetChannelCloseHandler(CloseCallback *callback);
 
     /**
      * @brief Invoke an RPC method on this channel.
      */
     void CallMethod(const google::protobuf::MethodDescriptor *method,
-                    RpcController *controller,
+                    class RpcController *controller,
                     const google::protobuf::Message *request,
                     google::protobuf::Message *response,
                     SingleUseCallback0<void> *done);
@@ -129,7 +122,13 @@ class RpcChannel {
      * response is ready.
      * @param request the OutstandingRequest that is now complete.
      */
-    void RequestComplete(OutstandingRequest *request);
+    void RequestComplete(class OutstandingRequest *request);
+
+    /**
+     * @brief Return the RpcSession associated with this channel.
+     * @returns the RpcSession associated with this channel.
+     */
+    RpcSession *Session();
 
     /**
      * @brief the RPC protocol version.
@@ -140,6 +139,21 @@ class RpcChannel {
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, class OutstandingResponse*>
       ResponseMap;
 
+    std::auto_ptr<RpcSession> m_session;
+    RpcService *m_service;  // service to dispatch requests to
+    std::auto_ptr<CloseCallback> m_on_close;
+    // the descriptor to read/write to.
+    class ola::io::ConnectedDescriptor *m_descriptor;
+    SequenceNumber<uint32_t> m_sequence;
+    uint8_t *m_buffer;  // buffer for incoming msgs
+    unsigned int m_buffer_size;  // size of the buffer
+    unsigned int m_expected_size;  // the total size of the current msg
+    unsigned int m_current_size;  // the amount of data read for the current msg
+    HASH_NAMESPACE::HASH_MAP_CLASS<int, class OutstandingRequest*> m_requests;
+    ResponseMap m_responses;
+    ExportMap *m_export_map;
+    UIntMap *m_recv_type_map;
+
     bool SendMsg(RpcMessage *msg);
     int AllocateMsgBuffer(unsigned int size);
     int ReadHeader(unsigned int *version, unsigned int *size) const;
@@ -148,9 +162,9 @@ class RpcChannel {
     void HandleStreamRequest(RpcMessage *msg);
 
     // server end
-    void SendRequestFailed(OutstandingRequest *request);
+    void SendRequestFailed(class OutstandingRequest *request);
     void SendNotImplemented(int msg_id);
-    void DeleteOutstandingRequest(OutstandingRequest *request);
+    void DeleteOutstandingRequest(class OutstandingRequest *request);
 
     // client end
     void HandleResponse(RpcMessage *msg);
@@ -159,20 +173,6 @@ class RpcChannel {
     void HandleNotImplemented(RpcMessage *msg);
 
     void HandleChannelClose();
-
-    RpcService *m_service;  // service to dispatch requests to
-    std::auto_ptr<SingleUseCallback0<void> > m_on_close;
-    // the descriptor to read/write to.
-    class ola::io::ConnectedDescriptor *m_descriptor;
-    SequenceNumber<uint32_t> m_sequence;
-    uint8_t *m_buffer;  // buffer for incoming msgs
-    unsigned int m_buffer_size;  // size of the buffer
-    unsigned int m_expected_size;  // the total size of the current msg
-    unsigned int m_current_size;  // the amount of data read for the current msg
-    HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingRequest*> m_requests;
-    ResponseMap m_responses;
-    ExportMap *m_export_map;
-    UIntMap *m_recv_type_map;
 
     static const char K_RPC_RECEIVED_TYPE_VAR[];
     static const char K_RPC_RECEIVED_VAR[];
