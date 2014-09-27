@@ -50,7 +50,7 @@ class RpcPeer {
 
   /**
    * @brief Convert a peer to a human readable string.
-   * @returns a string in the form XXXX:YYYYYYYY.
+   * @returns a string representation of the peer.
    */
   std::string ToString() const {
     return m_socket_addr.ToString();
