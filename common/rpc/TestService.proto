@@ -25,6 +25,7 @@ option py_generic_services = true;
 
 message EchoRequest {
   required string data = 1;
+  optional int64 session_ptr = 2;
 }
 
 message EchoReply {

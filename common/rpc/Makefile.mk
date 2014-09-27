@@ -11,10 +11,13 @@ built_sources += \
 common_libolacommon_la_SOURCES += \
     common/rpc/RpcChannel.cpp \
     common/rpc/RpcChannel.h \
+    common/rpc/RpcSession.h \
     common/rpc/RpcController.cpp \
     common/rpc/RpcController.h \
     common/rpc/RpcHeader.h \
     common/rpc/RpcPeer.h \
+    common/rpc/RpcServer.cpp \
+    common/rpc/RpcServer.h \
     common/rpc/RpcService.h
 nodist_common_libolacommon_la_SOURCES += common/rpc/Rpc.pb.cc
 common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
@@ -34,7 +37,11 @@ common/rpc/TestServiceService.pb.cpp common/rpc/TestServiceService.pb.h: common/
 
 # TESTS
 ##################################################
-test_programs += common/rpc/RpcTester
+test_programs += common/rpc/RpcTester common/rpc/RpcServerTester
+
+common_rpc_TEST_SOURCES = \
+    common/rpc/TestService.h \
+    common/rpc/TestService.cpp
 
 common_rpc_RpcTester_SOURCES = \
     common/rpc/RpcControllerTest.cpp \
@@ -46,3 +53,13 @@ nodist_common_rpc_RpcTester_SOURCES = \
 common_rpc_RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_rpc_RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                              $(libprotobuf_LIBS)
+
+common_rpc_RpcServerTester_SOURCES = \
+    common/rpc/RpcServerTest.cpp \
+    $(common_rpc_TEST_SOURCES)
+nodist_common_rpc_RpcServerTester_SOURCES = \
+    common/rpc/TestService.pb.cc \
+    common/rpc/TestServiceService.pb.cpp
+common_rpc_RpcServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rpc_RpcServerTester_LDADD = $(COMMON_TESTING_LIBS) \
+                                   $(libprotobuf_LIBS)

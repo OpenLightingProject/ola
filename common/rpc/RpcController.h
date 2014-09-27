@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcController.h
- * Interface for a basic RPC Controller.
+ * The RpcController.
  * Copyright (C) 2005 Simon Newton
  */
 
@@ -27,20 +27,62 @@
 namespace ola {
 namespace rpc {
 
+class RpcSession;
+
+/**
+ * @brief A RpcController object is passed every time an RPC is invoked and is
+ * used to indicate the success or failure of the RPC.
+ *
+ * On the client side, the controller can is used once the callback completes to
+ * check the outcome of the RPC with Failed(). If the RPC failed, a description
+ * of the error is available by calling ErrorText().
+ *
+ * On the server side, the server can fail the RPC by calling SetFailed(...).
+ */
 class RpcController {
  public:
-    RpcController();
-    ~RpcController() {}
+  /**
+   * @brief Create a new RpcController
+   * @param session the RpcSession to use. Ownership is not transferred.
+   */
+  explicit RpcController(RpcSession *session = NULL);
+  ~RpcController() {}
 
-    void Reset();
-    bool Failed() const { return m_failed; }
-    std::string ErrorText() const { return m_error_text; }
+  /**
+   * @brief Reset the state of this controller. Does not affect the session.
+   */
+  void Reset();
 
-    void SetFailed(const std::string &reason);
+  /**
+   * @brief Check if the RPC call this controller was associated with failed.
+   * @returns true if the RPC failed, false if the RPC succeeded.
+   */
+  bool Failed() const { return m_failed; }
+
+  /**
+   * @brief Return the error string if the RPC failed.
+   * @returns the error text, or the empty string if the RPC succeeded.
+   */
+  std::string ErrorText() const { return m_error_text; }
+
+  /**
+   * @brief Mark this RPC as failed.
+   * @param reason the string to return in ErrorText().
+   */
+  void SetFailed(const std::string &reason);
+
+  /**
+   * @brief Get the session infomation for this RPC.
+   *
+   * Unless specfically provided, the session be NULL on the client side.
+   * @returns the RpcSession object, ownership is not transferred.
+   */
+  RpcSession *Session();
 
  private:
-    bool m_failed;
-    std::string m_error_text;
+  RpcSession *m_session;
+  bool m_failed;
+  std::string m_error_text;
 };
 }  // namespace rpc
 }  // namespace ola

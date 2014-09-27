@@ -103,10 +103,16 @@ bool ServerInit(int *argc,
                 ExportMap *export_map,
                 const string &first_line,
                 const string &description) {
+  // Take a copy of the arguments otherwise the export map is incorrect.
+  int original_argc = *argc;
+  char *original_argv[original_argc];
+  for (int i = 0; i < original_argc; i++) {
+    original_argv[i] = argv[i];
+  }
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
   InitLoggingFromFlags();
-  return ServerInit(*argc, argv, export_map);
+  return ServerInit(original_argc, original_argv, export_map);
 }
 
 

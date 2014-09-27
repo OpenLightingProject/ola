@@ -303,7 +303,11 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
   InternalNewConnection(socket);
 }
 
-void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor) {
+/*
+ * Called when a socket is closed
+ */
+void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor,
+                              OLA_UNUSED ola::rpc::RpcSession *session) {
   ClientEntry client_entry;
   bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
                                   &client_entry);

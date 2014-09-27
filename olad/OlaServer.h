@@ -42,6 +42,10 @@
 
 namespace ola {
 
+namespace rpc {
+class RpcSession;
+}
+
 
 #ifdef HAVE_LIBMICROHTTPD
 typedef class OladHTTPServer OladHTTPServer_t;
@@ -116,7 +120,8 @@ class OlaServer {
   /**
    * @brief Called when a socket is closed
    */
-  void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
+  void ChannelClosed(ola::io::DescriptorHandle read_descriptor,
+                     ola::rpc::RpcSession *session);
   /**
    * @brief Run the garbage collector
    */

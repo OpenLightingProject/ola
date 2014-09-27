@@ -32,6 +32,7 @@
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
 #include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcSession.h"
 
 namespace ola {
 namespace client {
@@ -165,7 +166,7 @@ bool StreamingClient::Send(unsigned int universe, uint8_t priority,
   return true;
 }
 
-void StreamingClient::ChannelClosed() {
+void StreamingClient::ChannelClosed(OLA_UNUSED ola::rpc::RpcSession *session) {
   m_socket_closed = true;
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";

@@ -50,6 +50,10 @@ using std::string;
 
 namespace ola {
 
+namespace rpc {
+class RpcSession;
+}
+
 namespace http {
 class OlaHTTPServer;
 }
@@ -160,7 +164,8 @@ class SLPDaemon {
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);
-    void RPCSocketClosed(ola::io::DescriptorHandle read_descriptor);
+    void RPCSocketClosed(ola::io::DescriptorHandle read_descriptor,
+                         ola::rpc::RpcSession *session);
     bool CleanOldClients();
 
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
