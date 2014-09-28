@@ -41,7 +41,9 @@ class ExecutorInterface {
    * @brief Execute the supplied callback at some point in the future.
    * @param callback the callback to run.
    *
-   * This method guarantees the callback will not be run immediately.
+   * This method guarantees the callback will not be run immediately, but that
+   * the callback will be run at some point. This may mean the callback is
+   * executed during the destruction of the ExecutorInterface.
    */
   virtual void Execute(ola::BaseCallback0<void> *callback) = 0;
 };
