@@ -158,6 +158,7 @@ class SelectServer: public SelectServerInterface {
   void Execute(ola::BaseCallback0<void> *callback);
 
  private :
+  typedef std::queue<ola::BaseCallback0<void>*> CallbackQueue;
   typedef std::set<ola::Callback0<void>*> LoopClosureSet;
 
   ExportMap *m_export_map;
@@ -169,12 +170,13 @@ class SelectServer: public SelectServerInterface {
   Clock *m_clock;
   bool m_free_clock;
   LoopClosureSet m_loop_callbacks;
-  std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
+  CallbackQueue m_incoming_queue;
   ola::thread::Mutex m_incoming_mutex;
   LoopbackDescriptor m_incoming_descriptor;
 
   bool CheckForEvents(const TimeInterval &poll_interval);
   void DrainAndExecute();
+  void RunCallbacks(CallbackQueue *callbacks);
   void SetTerminate() { m_terminate = true; }
 
   // the maximum time we'll wait in the select call

@@ -131,10 +131,7 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
 }
 
 SelectServer::~SelectServer() {
-  while (!m_incoming_queue.empty()) {
-    delete m_incoming_queue.front();
-    m_incoming_queue.pop();
-  }
+  RunCallbacks(&m_incoming_queue);
 
   STLDeleteElements(&m_loop_callbacks);
   if (m_free_clock)
@@ -327,17 +324,25 @@ void SelectServer::DrainAndExecute() {
                                   sizeof(message), size);
   }
 
-  while (true) {
-    ola::BaseCallback0<void> *callback = NULL;
-    {
-      thread::MutexLocker lock(&m_incoming_mutex);
-      if (m_incoming_queue.empty())
-        break;
-      callback = m_incoming_queue.front();
-      m_incoming_queue.pop();
-    }
-    if (callback)
+  // We can't hold the mutex while we execute the callback, so instead we swap
+  // out the queue under a lock, release the lock and then run all the
+  // callbacks.
+  CallbackQueue callbacks_to_run;
+  {
+    thread::MutexLocker lock(&m_incoming_mutex);
+    m_incoming_queue.swap(callbacks_to_run);
+  }
+
+  RunCallbacks(&callbacks_to_run);
+}
+
+void SelectServer::RunCallbacks(CallbackQueue *callbacks) {
+  while (!callbacks->empty()) {
+    ola::BaseCallback0<void> *callback = callbacks->front();
+    callbacks->pop();
+    if (callback) {
       callback->Run();
+    }
   }
 }
 }  // namespace io
