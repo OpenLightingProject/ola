@@ -330,7 +330,10 @@ void SelectServer::DrainAndExecute() {
   CallbackQueue callbacks_to_run;
   {
     thread::MutexLocker lock(&m_incoming_mutex);
-    m_incoming_queue.swap(callbacks_to_run);
+    while (!m_incoming_queue.empty()) {
+      callbacks_to_run.push(m_incoming_queue.front());
+      m_incoming_queue.pop();
+    }
   }
 
   RunCallbacks(&callbacks_to_run);
