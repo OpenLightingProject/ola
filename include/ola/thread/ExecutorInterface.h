@@ -41,11 +41,28 @@ class ExecutorInterface {
    * @brief Execute the supplied callback at some point in the future.
    * @param callback the callback to run.
    *
-   * This method guarantees the callback will not be run immediately, but that
-   * the callback will be run at some point. This may mean the callback is
-   * executed during the destruction of the ExecutorInterface.
+   * This method provides the following guarantees:
+   *  - The callback will not be run immediately.
+   *  - The callback will be run at some point in the future. That is, the
+   *    callback will not leak. Any remaining pending callbacks will be run
+   *    during the destruction of the class implementing ExecutorInterface.
+   *  - For a given thread, callbacks will be run in the order in which they
+   *    were added.
+   *
+   * When queuing callbacks, you ether need to ensure that either:
+   *   - The objects used in the callback outlive the ExecutorInterface
+   *   - That the calback is run before the objects are deleted.
+   *
+   * To achieve the latter it's common to keep track of the number of
+   * outstanding callbacks and then call DrainCallbacks() in the destructor
+   * if the number of outstanding callbacks is non-0.
    */
   virtual void Execute(ola::BaseCallback0<void> *callback) = 0;
+
+  /**
+   * @brief Run all callbacks until there are none left.
+   */
+  virtual void DrainCallbacks() = 0;
 };
 }  // namespace thread
 }  // namespace ola
