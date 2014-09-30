@@ -98,6 +98,8 @@ UsbProWidgetDetector::UsbProWidgetDetector(
  * Fail any widgets that are still in the discovery process.
  */
 UsbProWidgetDetector::~UsbProWidgetDetector() {
+  m_scheduler->DrainCallbacks();
+
   WidgetStateMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
     iter->first->GetDescriptor()->SetOnClose(NULL);

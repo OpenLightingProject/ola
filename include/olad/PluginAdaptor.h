@@ -185,6 +185,8 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     return m_port_broker;
   }
 
+  void DrainCallbacks();
+
  private:
   DeviceManager *m_device_manager;
   ola::io::SelectServerInterface *m_ss;

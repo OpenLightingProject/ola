@@ -109,6 +109,10 @@ void PluginAdaptor::Execute(ola::BaseCallback0<void> *closure) {
   m_ss->Execute(closure);
 }
 
+void PluginAdaptor::DrainCallbacks() {
+  m_ss->DrainCallbacks();
+}
+
 bool PluginAdaptor::RegisterDevice(AbstractDevice *device) const {
   return m_device_manager->RegisterDevice(device);
 }

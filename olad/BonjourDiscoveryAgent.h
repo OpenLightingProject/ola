@@ -79,6 +79,7 @@ class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
 
     void InternalRegisterService(RegisterArgs *args);
     std::string BuildTxtRecord(const RegisterOptions::TxtData &txt_data);
+    void RunThread();
     DISALLOW_COPY_AND_ASSIGN(BonjourDiscoveryAgent);
 };
 }  // namespace ola

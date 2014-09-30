@@ -131,6 +131,7 @@ class TCPConnector {
   ola::io::SelectServerInterface *m_ss;
   ConnectionSet m_connections;
   ConnectionList m_orphaned_connections;
+  unsigned int m_pending_callbacks;
 
   void SocketWritable(PendingTCPConnection *connection);
   void FreePendingConnection(PendingTCPConnection *connection);

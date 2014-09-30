@@ -297,7 +297,6 @@ FilePreferenceSaverThread::FilePreferenceSaverThread() {
   m_ss.SetDefaultInterval(TimeInterval(60, 0));
 }
 
-
 void FilePreferenceSaverThread::SavePreferences(
     const string &file_name,
     const PreferencesMap &preferences) {
@@ -314,6 +313,7 @@ void FilePreferenceSaverThread::SavePreferences(
 
 void *FilePreferenceSaverThread::Run() {
   m_ss.Run();
+  m_ss.DrainCallbacks();
   return NULL;
 }
 

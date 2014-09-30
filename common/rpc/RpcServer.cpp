@@ -65,6 +65,10 @@ RpcServer::~RpcServer() {
     (*iter)->TransferOnClose()->Run();
   }
 
+  if (!sockets.empty()) {
+    m_ss->DrainCallbacks();
+  }
+
   if (m_accepting_socket.get() && m_accepting_socket->ValidReadDescriptor()) {
     m_ss->RemoveReadDescriptor(m_accepting_socket.get());
   }

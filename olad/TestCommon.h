@@ -327,6 +327,7 @@ class MockSelectServer: public ola::io::SelectServerInterface {
       callback->Run();
     }
 
+    void DrainCallbacks() {}
 
  private:
     const ola::TimeStamp *m_wake_up;
