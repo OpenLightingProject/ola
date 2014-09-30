@@ -124,6 +124,8 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
  * Shutdown the server
  */
 OlaServer::~OlaServer() {
+  m_ss->DrainCallbacks();
+
 #ifdef HAVE_LIBMICROHTTPD
   if (m_httpd.get()) {
     m_httpd->Stop();
