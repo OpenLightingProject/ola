@@ -62,6 +62,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     void RemoveTimeout(ola::thread::timeout_id id);
 
     void Execute(ola::BaseCallback0<void> *closure);
+    void DrainCallbacks();
 
     const TimeStamp *WakeUpTime() const;
 

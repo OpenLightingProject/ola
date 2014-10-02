@@ -42,6 +42,10 @@
 
 namespace ola {
 
+namespace rpc {
+class RpcSession;
+}
+
 
 #ifdef HAVE_LIBMICROHTTPD
 typedef class OladHTTPServer OladHTTPServer_t;
@@ -82,7 +86,8 @@ class OlaServer {
   void StopServer() { m_ss->Terminate(); }
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
   void NewTCPConnection(ola::network::TCPSocket *socket);
-  void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
+  void ChannelClosed(ola::io::DescriptorHandle read_descriptor,
+                     ola::rpc::RpcSession *session);
   bool RunHousekeeping();
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;

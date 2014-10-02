@@ -34,6 +34,11 @@
 #include "slp/SLPService.pb.h"
 
 namespace ola {
+
+namespace rpc {
+class RpcSession;
+}
+
 namespace slp {
 
 class SLPClientCoreServiceImpl;
@@ -41,6 +46,9 @@ class SLPClientCoreServiceImpl;
 
 class SLPClientCore {
  public:
+    typedef ola::SingleUseCallback0<void> ClosedCallback;
+
+
     explicit SLPClientCore(ola::io::ConnectedDescriptor *descriptor);
     ~SLPClientCore();
 
@@ -130,6 +138,8 @@ class SLPClientCore {
 
     SLPClientCore(const SLPClientCore&);
     SLPClientCore operator=(const SLPClientCore&);
+
+    void ChannelClosed(ClosedCallback *callback, ola::rpc::RpcSession *session);
 
     bool GenericRegisterService(
         const std::vector<std::string> &scopes,

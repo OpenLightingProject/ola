@@ -77,7 +77,7 @@ void *KarateThread::Run() {
       // try to reopen the device...
       TimeStamp wake_up;
       clock.CurrentTime(&wake_up);
-      wake_up += TimeInterval(1, 0);
+      wake_up += TimeInterval(2, 0);
 
       // wait for either a signal that we should terminate, or ts seconds
       m_term_mutex.Lock();

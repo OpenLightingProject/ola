@@ -124,6 +124,8 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
  * Shutdown the server
  */
 OlaServer::~OlaServer() {
+  m_ss->DrainCallbacks();
+
 #ifdef HAVE_LIBMICROHTTPD
   if (m_httpd.get()) {
     m_httpd->Stop();
@@ -322,7 +324,8 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor) {
+void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor,
+                              OLA_UNUSED ola::rpc::RpcSession *session) {
   ClientEntry client_entry;
   bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
                                   &client_entry);

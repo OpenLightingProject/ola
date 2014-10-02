@@ -178,6 +178,10 @@ void PluginAdaptor::Execute(ola::BaseCallback0<void> *closure) {
   m_ss->Execute(closure);
 }
 
+void PluginAdaptor::DrainCallbacks() {
+  m_ss->DrainCallbacks();
+}
+
 
 /*
  * Register a device
