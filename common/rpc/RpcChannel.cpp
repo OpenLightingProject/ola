@@ -510,7 +510,8 @@ void RpcChannel::HandleStreamRequest(RpcMessage *msg) {
     return;
   }
 
-  m_service->CallMethod(method, NULL, request_pb, NULL, NULL);
+  RpcController controller(m_session.get());
+  m_service->CallMethod(method, &controller, request_pb, NULL, NULL);
   delete request_pb;
 }
 
