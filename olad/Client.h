@@ -70,7 +70,7 @@ class Client {
   /**
    * @brief Called when this client sends us new data
    * @param universe the id of the universe for the new data
-   * @param buffer the new data
+   * @param source the new DMX data.
    */
   void DMXReceived(unsigned int universe, const DmxSource &source);
 
@@ -91,7 +91,7 @@ class Client {
 
   /**
    * @brief Set the UID for the client.
-   * @param UID the new UID to use for this client.
+   * @param uid the new UID to use for this client.
    */
   void SetUID(const ola::rdm::UID &uid);
 

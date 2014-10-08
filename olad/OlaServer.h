@@ -75,7 +75,6 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
 
   /**
    * @brief Create a new instance of the OlaServer.
-   * @param
    * @param plugin_loaders A list of PluginLoaders to use to find plugins.
    * @param preferences_factory The factory to use when creating Preference
    *   objects.
@@ -128,8 +127,7 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
 
   /**
    * @brief Add a new ConnectedDescriptor to this Server.
-   * @param socket the new ConnectedDescriptor
-   * TODO(simon): think about what we want to do with this??
+   * @param descriptor the new ConnectedDescriptor, ownership is transferred.
    */
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
 
