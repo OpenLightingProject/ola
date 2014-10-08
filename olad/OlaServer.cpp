@@ -32,9 +32,12 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcServer.h"
+#include "common/rpc/RpcSession.h"
 #include "ola/Constants.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/base/Flags.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/PidStore.h"
@@ -60,69 +63,49 @@
 #include "olad/OladHTTPServer.h"
 #endif
 
+DEFINE_s_uint16(rpc_port, r, ola::OlaServer::DEFAULT_RPC_PORT,
+                "The port to listen for RPCs on. Defaults to 9010.");
+DEFINE_bool(register_with_dns_sd, true,
+            "Register the web service using DNS-SD (Bonjour).");
+
 namespace ola {
 
 using ola::proto::OlaClientService_Stub;
 using ola::rdm::RootPidStore;
 using ola::rpc::RpcChannel;
+using ola::rpc::RpcSession;
+using ola::rpc::RpcServer;
 using std::auto_ptr;
 using std::pair;
 using std::vector;
 
-const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
-const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
 const char OlaServer::K_UID_VAR[] = "server-uid";
+const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 // The Bonjour API expects <service>[,<sub-type>] so we use that form here.
 const char OlaServer::K_DISCOVERY_SERVICE_TYPE[] = "_http._tcp,_ola";
 const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 10000;
 
-
-/*
- * Create a new OlaServer
- * @param factory the factory to use to create OlaService objects
- * @param m_plugin_loader the loader to use for the plugins
- * @param socket the socket to listen on for new connections
- */
-OlaServer::OlaServer(OlaClientServiceFactory *factory,
-                     const vector<PluginLoader*> &plugin_loaders,
+OlaServer::OlaServer(const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
                      ola::io::SelectServer *select_server,
                      const Options &ola_options,
                      ola::network::TCPAcceptingSocket *socket,
                      ExportMap *export_map)
-    : m_service_factory(factory),
+    : m_options(ola_options),
       m_plugin_loaders(plugin_loaders),
+      m_preferences_factory(preferences_factory),
       m_ss(select_server),
-      m_tcp_socket_factory(
-          ola::NewCallback(this, &OlaServer::NewTCPConnection)),
       m_accepting_socket(socket),
       m_export_map(export_map),
-      m_preferences_factory(preferences_factory),
+      m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0),
       m_universe_preferences(NULL),
-      m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT),
-      m_options(ola_options),
-      m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
+      m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT) {
   if (!m_export_map) {
     m_our_export_map.reset(new ExportMap());
     m_export_map = m_our_export_map.get();
   }
-
-  m_export_map->GetIntegerVar(K_CLIENT_VAR);
-
-  DiscoveryAgentFactory discovery_agent_factory;
-  m_discovery_agent.reset(discovery_agent_factory.New());
-  if (m_discovery_agent.get()) {
-    if (!m_discovery_agent->Init()) {
-      OLA_WARN << "Failed to Init DiscoveryAgent";
-      m_discovery_agent.reset();
-    }
-  }
 }
 
-
-/*
- * Shutdown the server
- */
 OlaServer::~OlaServer() {
   m_ss->DrainCallbacks();
 
@@ -133,21 +116,17 @@ OlaServer::~OlaServer() {
   }
 #endif
 
+  // Order is important during shutdown.
+  // Shutdown the RPC server first since it depends on almost everything else.
+  m_rpc_server.reset();
+
   if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT)
     m_ss->RemoveTimeout(m_housekeeping_timeout);
 
   StopPlugins();
 
-  ClientMap::iterator iter = m_sd_to_service.begin();
-  for (; iter != m_sd_to_service.end(); ++iter) {
-    CleanupConnection(iter->second);
-  }
-
   m_broker.reset();
   m_port_broker.reset();
-
-  if (m_accepting_socket && m_accepting_socket->ValidReadDescriptor())
-    m_ss->RemoveReadDescriptor(m_accepting_socket);
 
   if (m_universe_store.get()) {
     m_universe_store->DeleteAll();
@@ -165,32 +144,21 @@ OlaServer::~OlaServer() {
   m_service_impl.reset();
 }
 
-
-/*
- * Initialise the server
- * * @return true on success, false on failure
- */
 bool OlaServer::Init() {
   if (m_service_impl.get())
     return false;
 
-  if (!m_service_factory || !m_ss)
+  if (!m_ss)
     return false;
 
   // TODO(simon): run without preferences & PluginLoader
   if (m_plugin_loaders.empty() || !m_preferences_factory)
     return false;
 
-  const RootPidStore* pid_store =
-    RootPidStore::LoadFromDirectory(m_options.pid_data_dir);
-  if (!pid_store)
+  auto_ptr<const RootPidStore> pid_store(
+      RootPidStore::LoadFromDirectory(m_options.pid_data_dir));
+  if (!pid_store.get()) {
     OLA_WARN << "No PID definitions loaded";
-
-  UpdatePidStore(pid_store);
-
-  if (m_accepting_socket) {
-    m_accepting_socket->SetFactory(&m_tcp_socket_factory);
-    m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
 #ifndef _WIN32
@@ -213,79 +181,124 @@ bool OlaServer::Init() {
   m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());
   OLA_INFO << "Server UID is " << m_default_uid;
 
-  m_universe_preferences = m_preferences_factory->NewPreference(
+  Preferences *universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
-  m_universe_preferences->Load();
-  m_universe_store.reset(
-      new UniverseStore(m_universe_preferences, m_export_map));
+  universe_preferences->Load();
 
-  m_port_broker.reset(new PortBroker());
-  m_port_manager.reset(
-      new PortManager(m_universe_store.get(), m_port_broker.get()));
-  m_broker.reset(new ClientBroker());
+  auto_ptr<UniverseStore> universe_store(
+      new UniverseStore(universe_preferences, m_export_map));
 
-  // setup the objects
-  m_device_manager.reset(
-      new DeviceManager(m_preferences_factory, m_port_manager.get()));
-  m_plugin_adaptor.reset(
-      new PluginAdaptor(m_device_manager.get(), m_ss, m_export_map,
-                        m_preferences_factory, m_port_broker.get()));
+  auto_ptr<PortBroker> port_broker(new PortBroker());
 
-  m_plugin_manager.reset(
-    new PluginManager(m_plugin_loaders, m_plugin_adaptor.get()));
-  m_service_impl.reset(new OlaServerServiceImpl(
-      m_universe_store.get(),
-      m_device_manager.get(),
-      m_plugin_manager.get(),
+  auto_ptr<PortManager> port_manager(
+      new PortManager(universe_store.get(), port_broker.get()));
+
+  auto_ptr<ClientBroker> broker(new ClientBroker());
+
+  auto_ptr<DeviceManager> device_manager(
+      new DeviceManager(m_preferences_factory, port_manager.get()));
+
+  auto_ptr<PluginAdaptor> plugin_adaptor(
+      new PluginAdaptor(device_manager.get(), m_ss, m_export_map,
+                        m_preferences_factory, port_broker.get()));
+
+  auto_ptr<PluginManager> plugin_manager(
+    new PluginManager(m_plugin_loaders, plugin_adaptor.get()));
+
+  auto_ptr<OlaServerServiceImpl> service_impl(new OlaServerServiceImpl(
+      universe_store.get(),
+      device_manager.get(),
+      plugin_manager.get(),
       m_export_map,
-      m_port_manager.get(),
-      m_broker.get(),
+      port_manager.get(),
+      broker.get(),
       m_ss->WakeUpTime(),
-      m_default_uid,
       NewCallback(this, &OlaServer::ReloadPluginsInternal)));
 
-  // The plugin load procedure can take a while so we run it in the main loop.
-  m_ss->Execute(
-      ola::NewSingleCallback(m_plugin_manager.get(), &PluginManager::LoadAll));
+  // Initialize the RPC server.
+  RpcServer::Options rpc_options;
+  rpc_options.listen_socket = m_accepting_socket;
+  rpc_options.listen_port = FLAGS_rpc_port;
+  rpc_options.export_map = m_export_map;
+
+  OLA_INFO << "socket: " << m_accepting_socket;
+  OLA_INFO << "Init RPC server";
+  auto_ptr<ola::rpc::RpcServer> rpc_server(
+      new RpcServer(m_ss, service_impl.get(), this, rpc_options));
+
+  if (!rpc_server->Init()) {
+    OLA_WARN << "Failed to init RPC server";
+    return false;
+  }
+
+  // Discovery
+  auto_ptr<DiscoveryAgentInterface> discovery_agent;
+  if (FLAGS_register_with_dns_sd) {
+    DiscoveryAgentFactory discovery_agent_factory;
+    discovery_agent.reset(discovery_agent_factory.New());
+    if (discovery_agent.get()) {
+      if (!discovery_agent->Init()) {
+        OLA_WARN << "Failed to Init DiscoveryAgent";
+        return false;
+      }
+    }
+  }
 
   bool web_server_started = false;
 
 #ifdef HAVE_LIBMICROHTTPD
-  if (m_options.http_enable && StartHttpServer(iface)) {
-    web_server_started = true;
-  } else {
-    OLA_WARN << "Failed to start the HTTP server.";
+  if (m_options.http_enable) {
+    if (StartHttpServer(iface)) {
+      web_server_started = true;
+    } else {
+      OLA_WARN << "Failed to start the HTTP server.";
+      return false;
+    }
   }
 #endif
 
-  if (web_server_started && m_discovery_agent.get()) {
+  if (web_server_started && discovery_agent.get()) {
     DiscoveryAgentInterface::RegisterOptions options;
     options.txt_data["path"] = "/";
-    m_discovery_agent->RegisterService(
+    discovery_agent->RegisterService(
         "OLA Web Console",
         K_DISCOVERY_SERVICE_TYPE, m_options.http_port, options);
+  }
+
+  // Ok, we've created and initialized everything correctly by this point. Now
+  // we save all the pointers and schedule the last of the callbacks.
+  m_broker.reset(broker.release());
+  m_device_manager.reset(device_manager.release());
+  m_discovery_agent.reset(discovery_agent.release());
+  m_plugin_adaptor.reset(plugin_adaptor.release());
+  m_plugin_manager.reset(plugin_manager.release());
+  m_port_broker.reset(port_broker.release());
+  m_port_manager.reset(port_manager.release());
+  m_rpc_server.reset(rpc_server.release());
+  m_service_impl.reset(service_impl.release());
+  m_universe_store.reset(universe_store.release());
+
+  UpdatePidStore(pid_store.release());
+
+  if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT) {
+    m_ss->RemoveTimeout(m_housekeeping_timeout);
   }
 
   m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
       K_HOUSEKEEPING_TIMEOUT_MS,
       ola::NewCallback(this, &OlaServer::RunHousekeeping));
 
+  // The plugin load procedure can take a while so we run it in the main loop.
+  m_ss->Execute(
+      ola::NewSingleCallback(m_plugin_manager.get(), &PluginManager::LoadAll));
+
   return true;
 }
 
-
-/*
- * Reload all plugins, this can be called from a separate thread or in an
- * interrupt handler.
- */
 void OlaServer::ReloadPlugins() {
   m_ss->Execute(NewCallback(this, &OlaServer::ReloadPluginsInternal));
 }
 
-
-/*
- * Reload the pid store.
- */
 void OlaServer::ReloadPidStore() {
   // We load the pids in this thread, and then hand the RootPidStore over to
   // the main thread. This avoids doing disk I/O in the network thread.
@@ -297,11 +310,6 @@ void OlaServer::ReloadPidStore() {
   m_ss->Execute(NewCallback(this, &OlaServer::UpdatePidStore, pid_store));
 }
 
-
-/*
- * Add a new ConnectedDescriptor to this Server.
- * @param socket the new ConnectedDescriptor
- */
 void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
   if (!descriptor)
     return;
@@ -309,35 +317,40 @@ void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
 }
 
 
-/*
- * Add a new ConnectedDescriptor to this Server.
- * @param socket the new ConnectedDescriptor
- */
-void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
-  if (!socket)
-    return;
-  socket->SetNoDelay();
-  InternalNewConnection(socket);
-}
-
-
-/*
- * Called when a socket is closed
- */
-void OlaServer::ChannelClosed(ola::io::DescriptorHandle read_descriptor,
-                              OLA_UNUSED ola::rpc::RpcSession *session) {
-  ClientEntry client_entry;
-  bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
-                                  &client_entry);
-  if (found) {
-    (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
-    m_ss->Execute(NewSingleCallback(this, &OlaServer::CleanupConnection,
-                                    client_entry));
+ola::network::GenericSocketAddress OlaServer::LocalRPCAddress() const {
+  if (m_rpc_server.get()) {
+    return m_rpc_server->ListenAddress();
   } else {
-    OLA_WARN << "A socket was closed but we didn't find the client";
+    return ola::network::GenericSocketAddress();
   }
 }
 
+void OlaServer::NewClient(RpcSession *session) {
+  OlaClientService_Stub *stub = new OlaClientService_Stub(session->Channel());
+  Client *client = new Client(stub, m_default_uid);
+  session->SetData(static_cast<void*>(client));
+  m_broker->AddClient(client);
+}
+
+void OlaServer::ClientRemoved(RpcSession *session) {
+  Client *client = reinterpret_cast<Client*>(session->GetData());
+  session->SetData(NULL);
+
+  m_broker->RemoveClient(client);
+
+  vector<Universe*> universe_list;
+  m_universe_store->GetList(&universe_list);
+  vector<Universe*>::iterator uni_iter;
+
+  // O(universes * clients). Clean this up sometime.
+  for (uni_iter = universe_list.begin();
+       uni_iter != universe_list.end(); ++uni_iter) {
+    (*uni_iter)->RemoveSourceClient(client);
+    (*uni_iter)->RemoveSinkClient(client);
+  }
+
+  delete client;
+}
 
 /*
  * Run the garbage collector
@@ -430,6 +443,8 @@ void OlaServer::StopPlugins() {
  */
 void OlaServer::InternalNewConnection(
     ola::io::ConnectedDescriptor *socket) {
+  (void) socket;
+  /*
   RpcChannel *channel = new RpcChannel(NULL, socket, m_export_map);
   channel->SetChannelCloseHandler(
       NewSingleCallback(this, &OlaServer::ChannelClosed,
@@ -452,33 +467,7 @@ void OlaServer::InternalNewConnection(
 
   // This hands off socket ownership to the select server
   m_ss->AddReadDescriptor(socket);
-}
-
-
-/*
- * Cleanup everything related to a client connection
- */
-void OlaServer::CleanupConnection(ClientEntry client_entry) {
-  Client *client = client_entry.client_service->GetClient();
-  m_broker->RemoveClient(client);
-
-  vector<Universe*> universe_list;
-  m_universe_store->GetList(&universe_list);
-  vector<Universe*>::iterator uni_iter;
-
-  // O(universes * clients). Clean this up sometime.
-  for (uni_iter = universe_list.begin();
-       uni_iter != universe_list.end();
-       ++uni_iter) {
-    (*uni_iter)->RemoveSourceClient(client);
-    (*uni_iter)->RemoveSinkClient(client);
-  }
-  delete client->Stub()->channel();
-  delete client->Stub();
-  delete client;
-  delete client_entry.client_service;
-  m_ss->RemoveReadDescriptor(client_entry.client_descriptor);
-  delete client_entry.client_descriptor;
+  */
 }
 
 /**
@@ -502,5 +491,6 @@ void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
 #endif
 
   m_pid_store.reset(pid_store);
+  OLA_INFO << "pid store is at " << m_pid_store.get();
 }
 }  // namespace ola
