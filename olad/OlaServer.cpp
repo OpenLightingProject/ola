@@ -221,8 +221,6 @@ bool OlaServer::Init() {
   rpc_options.listen_port = FLAGS_rpc_port;
   rpc_options.export_map = m_export_map;
 
-  OLA_INFO << "socket: " << m_accepting_socket;
-  OLA_INFO << "Init RPC server";
   auto_ptr<ola::rpc::RpcServer> rpc_server(
       new RpcServer(m_ss, service_impl.get(), this, rpc_options));
 
@@ -246,12 +244,17 @@ bool OlaServer::Init() {
 
   bool web_server_started = false;
 
+  // Initializing the web server causes a call to NewClient. We need to have
+  // the broker in place for the call, otherwise we'll segfault.
+  m_broker.reset(broker.release());
+
 #ifdef HAVE_LIBMICROHTTPD
   if (m_options.http_enable) {
-    if (StartHttpServer(iface)) {
+    if (StartHttpServer(rpc_server.get(), iface)) {
       web_server_started = true;
     } else {
       OLA_WARN << "Failed to start the HTTP server.";
+      m_broker.reset();
       return false;
     }
   }
@@ -267,7 +270,6 @@ bool OlaServer::Init() {
 
   // Ok, we've created and initialized everything correctly by this point. Now
   // we save all the pointers and schedule the last of the callbacks.
-  m_broker.reset(broker.release());
   m_device_manager.reset(device_manager.release());
   m_discovery_agent.reset(discovery_agent.release());
   m_plugin_adaptor.reset(plugin_adaptor.release());
@@ -313,7 +315,7 @@ void OlaServer::ReloadPidStore() {
 void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
   if (!descriptor)
     return;
-  InternalNewConnection(descriptor);
+  InternalNewConnection(m_rpc_server.get(), descriptor);
 }
 
 
@@ -383,7 +385,8 @@ bool OlaServer::RunHousekeeping() {
  * @param interface the primary interface that the server is using.
  */
 #ifdef HAVE_LIBMICROHTTPD
-bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
+bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
+                                const ola::network::Interface &iface) {
   if (!m_options.http_enable)
     return true;
 
@@ -410,7 +413,7 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   if (httpd->Init()) {
     httpd->Start();
     // register the pipe descriptor as a client
-    InternalNewConnection(pipe_descriptor.release());
+    InternalNewConnection(server, pipe_descriptor.release());
     m_httpd.reset(httpd.release());
     return true;
   } else {
@@ -430,7 +433,7 @@ void OlaServer::StopPlugins() {
   if (m_device_manager.get()) {
     if (m_device_manager->DeviceCount()) {
       OLA_WARN << "Some devices failed to unload, we're probably leaking "
-        << "memory now";
+               << "memory now";
     }
     m_device_manager->UnregisterAllDevices();
   }
@@ -441,33 +444,15 @@ void OlaServer::StopPlugins() {
  * Add a new ConnectedDescriptor to this Server.
  * @param socket the new ConnectedDescriptor
  */
-void OlaServer::InternalNewConnection(
-    ola::io::ConnectedDescriptor *socket) {
-  (void) socket;
-  /*
-  RpcChannel *channel = new RpcChannel(NULL, socket, m_export_map);
-  channel->SetChannelCloseHandler(
-      NewSingleCallback(this, &OlaServer::ChannelClosed,
-                        socket->ReadDescriptor()));
-  OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
-  Client *client = new Client(stub);
-  OlaClientService *service = m_service_factory->New(
-      client, m_service_impl.get());
-  m_broker->AddClient(client);
-  channel->SetService(service);
-
-  ClientEntry client_entry = {socket, service};
-  bool replaced = STLReplace(&m_sd_to_service, socket->ReadDescriptor(),
-                             client_entry);
-  if (replaced) {
-    OLA_WARN << "New socket but the client already exists!";
+bool OlaServer::InternalNewConnection(
+    ola::rpc::RpcServer *server,
+    ola::io::ConnectedDescriptor *descriptor) {
+  if (server) {
+    return server->AddClient(descriptor);
   } else {
-    (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+    delete descriptor;
+    return false;
   }
-
-  // This hands off socket ownership to the select server
-  m_ss->AddReadDescriptor(socket);
-  */
 }
 
 /**

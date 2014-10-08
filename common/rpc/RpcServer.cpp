@@ -32,6 +32,7 @@ namespace ola {
 namespace rpc {
 
 using std::auto_ptr;
+using ola::io::ConnectedDescriptor;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -63,8 +64,8 @@ RpcServer::~RpcServer() {
   m_ss->DrainCallbacks();
   // Take a copy since calling the close handler will cause the socket to be
   // removed from m_connected_sockets
-  TCPSockets sockets = m_connected_sockets;
-  TCPSockets::const_iterator iter = sockets.begin();
+  ClientDescriptors sockets = m_connected_sockets;
+  ClientDescriptors::const_iterator iter = sockets.begin();
   for (; iter != sockets.end(); ++iter) {
     (*iter)->TransferOnClose()->Run();
   }
@@ -120,32 +121,39 @@ GenericSocketAddress RpcServer::ListenAddress() {
   return GenericSocketAddress();
 }
 
-void RpcServer::NewTCPConnection(TCPSocket *socket) {
-  if (!socket)
-    return;
-
-  socket->SetNoDelay();
-
+bool RpcServer::AddClient(ConnectedDescriptor *descriptor) {
   // If RpcChannel had a pointer to the SelectServer to use, we could hand off
   // ownership of the socket here.
-  RpcChannel *channel = new RpcChannel(m_service, socket, m_options.export_map);
+  RpcChannel *channel = new RpcChannel(m_service, descriptor,
+                                       m_options.export_map);
 
   if (m_session_handler) {
     m_session_handler->NewClient(channel->Session());
   }
 
   channel->SetChannelCloseHandler(
-      NewSingleCallback(this, &RpcServer::ChannelClosed, socket));
+      NewSingleCallback(this, &RpcServer::ChannelClosed, descriptor));
 
   if (m_options.export_map) {
     (*m_options.export_map->GetIntegerVar(K_CLIENT_VAR))++;
   }
 
-  m_ss->AddReadDescriptor(socket);
-  m_connected_sockets.insert(socket);
+  m_ss->AddReadDescriptor(descriptor);
+  m_connected_sockets.insert(descriptor);
+
+  return true;
 }
 
-void RpcServer::ChannelClosed(TCPSocket *socket, RpcSession *session) {
+void RpcServer::NewTCPConnection(TCPSocket *socket) {
+  if (!socket)
+    return;
+
+  socket->SetNoDelay();
+  AddClient(socket);
+}
+
+void RpcServer::ChannelClosed(ConnectedDescriptor *descriptor,
+                              RpcSession *session) {
   if (m_session_handler) {
     m_session_handler->ClientRemoved(session);
   }
@@ -154,19 +162,20 @@ void RpcServer::ChannelClosed(TCPSocket *socket, RpcSession *session) {
     (*m_options.export_map->GetIntegerVar(K_CLIENT_VAR))--;
   }
 
-  m_ss->RemoveReadDescriptor(socket);
-  m_connected_sockets.erase(socket);
+  m_ss->RemoveReadDescriptor(descriptor);
+  m_connected_sockets.erase(descriptor);
 
   // We're in the call stack of both the descriptor and the channel here.
   // We schedule deletion during the next run of the event loop to break out of
   // the stack.
   m_ss->Execute(NewSingleCallback(this, &RpcServer::CleanupChannel,
-                                  session->Channel(), socket));
+                                  session->Channel(), descriptor));
 }
 
-void RpcServer::CleanupChannel(RpcChannel *channel, TCPSocket *socket) {
+void RpcServer::CleanupChannel(RpcChannel *channel,
+                               ConnectedDescriptor *descriptor) {
   delete channel;
-  delete socket;
+  delete descriptor;
 }
 }  // namespace rpc
 }  // namespace ola

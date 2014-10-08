@@ -187,10 +187,12 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
   bool RunHousekeeping();
 
 #ifdef HAVE_LIBMICROHTTPD
-  bool StartHttpServer(const ola::network::Interface &iface);
+  bool StartHttpServer(ola::rpc::RpcServer *server,
+                       const ola::network::Interface &iface);
 #endif
   void StopPlugins();
-  void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
+  bool InternalNewConnection(ola::rpc::RpcServer *server,
+                             ola::io::ConnectedDescriptor *descriptor);
   void ReloadPluginsInternal();
   void UpdatePidStore(const ola::rdm::RootPidStore *pid_store);
 
