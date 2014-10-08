@@ -57,6 +57,10 @@ RpcServer::RpcServer(ola::io::SelectServerInterface *ss,
 }
 
 RpcServer::~RpcServer() {
+  // Since we use ss->Execute() below, we need to ensure all pending callbacks
+  // are run.
+
+  m_ss->DrainCallbacks();
   // Take a copy since calling the close handler will cause the socket to be
   // removed from m_connected_sockets
   TCPSockets sockets = m_connected_sockets;
