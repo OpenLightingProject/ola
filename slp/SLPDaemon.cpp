@@ -45,6 +45,7 @@
 #include <vector>
 
 #include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcServer.h"
 #include "slp/SLPDaemon.h"
 
 namespace ola {
@@ -58,31 +59,13 @@ using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 using ola::network::UDPSocket;
 using ola::rpc::RpcChannel;
+using ola::rpc::RpcServer;
 using std::auto_ptr;
 using std::string;
 
 
 const uint16_t SLPDaemon::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPDaemon::DEFAULT_SLP_RPC_PORT = 9011;
-
-class ConnectedClient {
- public:
-    RpcChannel *channel;
-    TCPSocket *socket;
-
-    explicit ConnectedClient(TCPSocket *socket)
-      : channel(NULL),
-        socket(socket) {
-    }
-
-    ~ConnectedClient() {
-      if (channel)
-        delete channel;
-      if (socket)
-        delete socket;
-    }
-};
-
 
 /**
  * Setup a new SLP server.
@@ -98,8 +81,6 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
       m_stdin_handler(&m_ss, NewCallback(this, &SLPDaemon::Input)),
 
       m_rpc_port(options.rpc_port),
-      m_rpc_socket_factory(NewCallback(this, &SLPDaemon::NewTCPConnection)),
-      m_rpc_accept_socket(&m_rpc_socket_factory),
       m_service_impl(new SLPServiceImpl(&m_slp_server)),
       m_export_map(export_map) {
 #ifdef HAVE_LIBMICROHTTPD
@@ -114,13 +95,7 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
 }
 
 
-SLPDaemon::~SLPDaemon() {
-  m_rpc_accept_socket.Close();
-
-  STLDeleteElements(&m_disconnected_clients);
-  STLDeleteValues(&m_connected_clients);
-}
-
+SLPDaemon::~SLPDaemon() {}
 
 /**
  * Init the server
@@ -129,13 +104,20 @@ bool SLPDaemon::Init() {
   if (!m_slp_server.Init())
     return false;
 
-  // setup the accepting TCP socket
-  if (!m_rpc_accept_socket.Listen(
-        IPV4SocketAddress(IPV4Address::Loopback(), m_rpc_port))) {
+  // Initialize the RPC server.
+  RpcServer::Options rpc_options;
+  rpc_options.listen_port = m_rpc_port;
+  rpc_options.export_map = m_export_map;
+
+  auto_ptr<ola::rpc::RpcServer> rpc_server(
+      new RpcServer(&m_ss, m_service_impl.get(), NULL, rpc_options));
+
+  if (!rpc_server->Init()) {
+    OLA_WARN << "Failed to init RPC server";
     return false;
   }
 
-  m_ss.AddReadDescriptor(&m_rpc_accept_socket);
+  m_rpc_server.reset(rpc_server.release());
 
 #ifdef HAVE_LIBMICROHTTPD
   if (m_http_server.get())
@@ -150,12 +132,7 @@ void SLPDaemon::Run() {
   if (m_http_server.get())
     m_http_server->Start();
 #endif
-  ola::thread::timeout_id cleanup_timeout = m_ss.RegisterRepeatingTimeout(
-    2000,
-    NewCallback(this, &SLPDaemon::CleanOldClients));
   m_ss.Run();
-  m_ss.RemoveTimeout(cleanup_timeout);
-  CleanOldClients();
 }
 
 
@@ -213,68 +190,6 @@ void SLPDaemon::GetDirectoryAgents() {
   for (vector<DirectoryAgent>::const_iterator iter = agents.begin();
        iter != agents.end(); ++iter)
     std::cout << *iter << std::endl;
-}
-
-
-/**
- * Called when RPC client connects.
- */
-void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
-  ola::network::GenericSocketAddress address = socket->GetPeerAddress();
-  OLA_INFO << "New connection from " << address;
-
-  // Ownership of the socket is transferred.
-  ConnectedClient *client = new ConnectedClient(socket);
-  if (!STLInsertIfNotPresent(&m_connected_clients, socket->ReadDescriptor(),
-                             client)) {
-    OLA_FATAL << "SLP Server FD collision for " << socket->ReadDescriptor();
-    delete client;
-  }
-
-  client->channel = new RpcChannel(m_service_impl.get(), socket, m_export_map),
-
-  client->channel->SetChannelCloseHandler(NewSingleCallback(
-      this, &SLPDaemon::RPCSocketClosed, socket->ReadDescriptor()));
-
-  m_ss.AddReadDescriptor(socket);
-}
-
-
-/**
- * Called when RPC socket is closed by the remote end.
- */
-void SLPDaemon::RPCSocketClosed(ola::io::DescriptorHandle read_descriptor,
-                                OLA_UNUSED ola::rpc::RpcSession *session) {
-  ConnectedClient *client = STLLookupAndRemovePtr(&m_connected_clients,
-      read_descriptor);
-  OLA_DEBUG << "RPC Socket closed";
-  if (!client) {
-    OLA_WARN << "Socket " << read_descriptor
-             << " closed but the ConnectedClient couldn't be found";
-  } else {
-    m_disconnected_clients.push_back(client);
-  }
-}
-
-
-/**
- * Check the list of disconnected clients for ones that no longer have pending
- * RPCs.
- */
-bool SLPDaemon::CleanOldClients() {
-  DisconnectedClients::iterator iter = m_disconnected_clients.begin();
-  DisconnectedClients new_disconnected_clients;
-
-  for (; iter != m_disconnected_clients.end(); ++iter) {
-    ConnectedClient *client = *iter;
-    if (client->channel->PendingRPCs()) {
-      new_disconnected_clients.push_back(client);
-    } else {
-      delete client;
-    }
-  }
-  m_disconnected_clients.swap(new_disconnected_clients);
-  return true;
 }
 
 //------------------------------------------------------------------------------

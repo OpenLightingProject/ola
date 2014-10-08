@@ -14,6 +14,8 @@ x/y/2014 ola-0.9.3
  Internal:
  * Update the configure version method to ensure the version files are updated
    automatically when it changes
+ * Add a generic RpcServer class and switch OlaServer to use it.
+ * SelectServer now runs any remaining pending callbacks during shutdown.
 
 20/8/2014 ola-0.9.2
  Features:
