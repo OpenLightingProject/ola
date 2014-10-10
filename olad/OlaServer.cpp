@@ -335,23 +335,20 @@ void OlaServer::NewClient(RpcSession *session) {
 }
 
 void OlaServer::ClientRemoved(RpcSession *session) {
-  Client *client = reinterpret_cast<Client*>(session->GetData());
+  auto_ptr<Client> client(reinterpret_cast<Client*>(session->GetData()));
   session->SetData(NULL);
 
-  m_broker->RemoveClient(client);
+  m_broker->RemoveClient(client.get());
 
   vector<Universe*> universe_list;
   m_universe_store->GetList(&universe_list);
   vector<Universe*>::iterator uni_iter;
 
-  // O(universes * clients). Clean this up sometime.
   for (uni_iter = universe_list.begin();
        uni_iter != universe_list.end(); ++uni_iter) {
-    (*uni_iter)->RemoveSourceClient(client);
-    (*uni_iter)->RemoveSinkClient(client);
+    (*uni_iter)->RemoveSourceClient(client.get());
+    (*uni_iter)->RemoveSinkClient(client.get());
   }
-
-  delete client;
 }
 
 /*
