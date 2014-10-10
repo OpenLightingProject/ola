@@ -36,11 +36,11 @@ namespace ola {
 /**
  * @brief The OLA Server RPC methods.
  *
- * After then RPC system un-marshalls the data, it invokes the methods of this
- * class. This therefore contains all the methods a client and invoke on the
+ * After the RPC system un-marshalls the data, it invokes the methods of this
+ * class. This therefore contains all the methods a client can invoke on the
  * server.
  *
- * There is not client specific member data, so a single OlaServerServiceImpl
+ * There is no client specific member data, so a single OlaServerServiceImpl
  * is created. Any OLA client data is passed via the user data in the
  * ola::rpc::RpcSession object, accessible via the ola::rpc::RpcController.
  */
@@ -224,7 +224,8 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   /**
    * @brief Handle an RDM Discovery Command.
    *
-   * This should only be used for the RDM responder tests.
+   * This is used by the RDM responder tests. Normally clients don't need to
+   * send raw discovery packets and can just use the GetUIDs method.
    */
   void RDMDiscoveryCommand(ola::rpc::RpcController* controller,
                            const ::ola::proto::RDMDiscoveryRequest* request,
@@ -287,13 +288,5 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   const class TimeStamp *m_wake_up_time;
   std::auto_ptr<ReloadPluginsCallback> m_reload_plugins_callback;
 };
-
-/**
- * This is the factory method for creating new OlaServerService(s)
-class OlaClientServiceFactory {
- public:
-    OlaClientService *New(Client *client, OlaServerServiceImpl *impl);
-};
- */
 }  // namespace ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

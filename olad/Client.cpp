@@ -92,7 +92,7 @@ void Client::SetUID(const ola::rdm::UID &uid) {
   m_uid = uid;
 }
 
-/**
+/*
  * Called when UpdateDmxData completes.
  */
 void Client::SendDMXCallback(RpcController *controller,

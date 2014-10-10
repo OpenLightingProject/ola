@@ -68,7 +68,7 @@ const uint16_t SLPDaemon::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPDaemon::DEFAULT_SLP_RPC_PORT = 9011;
 
 /**
- * Setup a new SLP server.
+ * @brief Setup a new SLP server.
  * @param socket the UDP Socket to use for SLP messages.
  * @param options the SLP Server options.
  */
@@ -98,7 +98,7 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
 SLPDaemon::~SLPDaemon() {}
 
 /**
- * Init the server
+ * @brief Init the server
  */
 bool SLPDaemon::Init() {
   if (!m_slp_server.Init())
@@ -146,7 +146,7 @@ void SLPDaemon::Stop() {
 
 
 /**
- * Bulk load a set of ServiceEntries
+ * @brief Bulk load a set of ServiceEntries
  */
 bool SLPDaemon::BulkLoad(const ServiceEntries &services) {
   bool error = false;
