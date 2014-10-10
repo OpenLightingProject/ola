@@ -106,6 +106,7 @@ endif
 # TESTS
 ##################################################
 test_programs += \
+    olad/ClientTester \
     olad/DeviceTester \
     olad/OlaTester \
     olad/PortTester \
@@ -115,6 +116,10 @@ COMMON_OLAD_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
                          olad/libolaserver.la \
                          olad/libolaserverplugininterface.la \
                          common/libolacommon.la
+
+olad_ClientTester_SOURCES = olad/ClientTest.cpp
+olad_ClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+olad_ClientTester_LDADD = $(COMMON_OLAD_TEST_LDADD)
 
 olad_DeviceTester_SOURCES = olad/DeviceTest.cpp olad/DeviceManagerTest.cpp
 olad_DeviceTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
@@ -128,8 +133,7 @@ olad_OlaTester_SOURCES = \
     olad/DmxSourceTest.cpp \
     olad/PluginManagerTest.cpp \
     olad/PreferencesTest.cpp \
-    olad/OlaServerServiceImplTest.cpp \
-    olad/ClientTest.cpp
+    olad/OlaServerServiceImplTest.cpp
 olad_OlaTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 olad_OlaTester_LDADD = $(COMMON_OLAD_TEST_LDADD)
 

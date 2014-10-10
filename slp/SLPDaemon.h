@@ -51,7 +51,7 @@ using std::string;
 namespace ola {
 
 namespace rpc {
-class RpcSession;
+class RpcServer;
 }
 
 namespace http {
@@ -138,8 +138,6 @@ class SLPDaemon {
                                const URLEntries &urls);
     };
 
-    typedef vector<class ConnectedClient*> DisconnectedClients;
-
     ola::Clock m_clock;
     ola::io::SelectServer m_ss;
     SLPServer m_slp_server;
@@ -147,13 +145,9 @@ class SLPDaemon {
 
     // RPC members
     const uint16_t m_rpc_port;
-    ola::network::TCPSocketFactory m_rpc_socket_factory;
-    ola::network::TCPAcceptingSocket m_rpc_accept_socket;
-    auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
-    auto_ptr<SLPServiceImpl> m_service_impl;
-    // maps fd to ConnectedClient structure
-    map<ola::io::DescriptorHandle, class ConnectedClient*> m_connected_clients;
-    DisconnectedClients m_disconnected_clients;
+    std::auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
+    std::auto_ptr<SLPServiceImpl> m_service_impl;
+    std::auto_ptr<ola::rpc::RpcServer> m_rpc_server;
 
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;
@@ -161,12 +155,6 @@ class SLPDaemon {
 
     // Random methods
     void GetDirectoryAgents();
-
-    // RPC methods
-    void NewTCPConnection(TCPSocket *socket);
-    void RPCSocketClosed(ola::io::DescriptorHandle read_descriptor,
-                         ola::rpc::RpcSession *session);
-    bool CleanOldClients();
 
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
     static const uint16_t DEFAULT_SLP_RPC_PORT;
