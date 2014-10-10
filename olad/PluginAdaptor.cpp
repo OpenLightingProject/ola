@@ -130,6 +130,10 @@ const TimeStamp *PluginAdaptor::WakeUpTime() const {
 }
 
 const std::string PluginAdaptor::InstanceName() {
-  return *m_instance_name;
+  if (m_instance_name) {
+    return *m_instance_name;
+  } else {
+    return "";
+  }
 }
 }  // namespace ola

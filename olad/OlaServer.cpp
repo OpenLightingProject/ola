@@ -210,7 +210,7 @@ bool OlaServer::Init() {
   m_server_preferences->Load();
   if (m_server_preferences->SetDefaultValue(INSTANCE_NAME_KEY,
                                             StringValidator(),
-                                            "Ola Server")) {
+                                            "OLA Server")) {
     m_server_preferences->Save();
   }
   m_instance_name = m_server_preferences->GetValue(INSTANCE_NAME_KEY);

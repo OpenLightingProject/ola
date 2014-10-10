@@ -57,100 +57,41 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
                 const std::string *instance_name);
 
   // The following methods are part of the SelectServerInterface
-  /**
-   * @brief Register a descriptor with the select server.
-   * @param descriptor the descriptor to register
-   * @return true on success, false on failure.
-   */
   bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
 
-  /**
-   * @brief Register a descriptor with the select server.
-   * @param descriptor the descriptor to register
-   * @param delete_on_close if true, ownership of the
-   * ola::io::ConnectedDescriptor is transferred to the SelectServer
-   * @return true on success, false on failure.
-   */
   bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
                          bool delete_on_close = false);
 
-  /**
-   * @brief Remove a descriptor from the select server
-   */
   void RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
 
-  /**
-   * @brief Remove a descriptor from the select server
-   */
   void RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
 
-  /**
-   * @brief Register a WriteFileDescriptor with the SelectServer
-   */
   bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
-  /**
-   * @brief Remove a descriptor from the select server
-   */
   void RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
-  /**
-   * @brief Register a repeating timeout
-   * @param ms the time between function calls
-   * @param closure the OlaClosure to call when the timeout expires
-   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
-   */
   ola::thread::timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                                    Callback0<bool> *closure);
 
-  /**
-   * Register a repeating timeout
-   * @param interval the time between function calls
-   * @param closure the OlaClosure to call when the timeout expires
-   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
-   */
   ola::thread::timeout_id RegisterRepeatingTimeout(
       const TimeInterval &interval,
       Callback0<bool> *closure);
 
-  /**
-   * @brief Register a single timeout
-   * @param ms the time between function calls
-   * @param closure the OlaClosure to call when the timeout expires
-   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
-   */
   ola::thread::timeout_id RegisterSingleTimeout(
       unsigned int ms,
       SingleUseCallback0<void> *closure);
 
-  /**
-   * @brief Register a single timeout
-   * @param interval the time between function calls
-   * @param closure the OlaClosure to call when the timeout expires
-   * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
-   */
   ola::thread::timeout_id RegisterSingleTimeout(
       const TimeInterval &interval,
       SingleUseCallback0<void> *closure);
 
-  /*
-   * @brief Remove a timeout
-   * @param id the id of the timeout to remove
-   */
   void RemoveTimeout(ola::thread::timeout_id id);
 
-  /**
-   * @brief Execute a closure in the main thread.
-   * @param closure the closure to execute.
-   */
   void Execute(ola::BaseCallback0<void> *closure);
 
-  /**
-   * @brief Return the wake up time for the select server
-   * @return a TimeStamp object
-   */
   const TimeStamp *WakeUpTime() const;
 
+  // These are the extra bits for the plugins
   /**
    * @brief Return the instance name for the OLA server
    * @return a string which is the instance name
@@ -161,17 +102,16 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     return m_export_map;
   }
 
-  // These are the extra bits for the plugins
   /**
    * @brief Register a device
-   * @param device  the device to register
+   * @param device the device to register
    * @return true on success, false on error
    */
   bool RegisterDevice(class AbstractDevice *device) const;
 
   /**
    * @brief Unregister a device
-   * @param device  the device to unregister
+   * @param device the device to unregister
    * @return true on success, false on error
    */
   bool UnregisterDevice(class AbstractDevice *device) const;

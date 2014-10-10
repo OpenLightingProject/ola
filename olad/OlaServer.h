@@ -127,6 +127,14 @@ class OlaServer {
    */
   bool RunHousekeeping();
 
+  /**
+   * @brief Get the instance name
+   * @return a string which is the instance name
+   */
+  const std::string InstanceName() {
+    return m_instance_name;
+  }
+
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
  private :

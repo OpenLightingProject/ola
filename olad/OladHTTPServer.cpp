@@ -191,6 +191,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 
   JsonObject json;
   json.Add("hostname", ola::network::FQDN());
+  json.Add("instance_name", m_ola_server->InstanceName());
   json.Add("ip", m_interface.ip_address.ToString());
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
