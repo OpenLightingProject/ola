@@ -17,4 +17,11 @@ protoc_ola_protoc_SOURCES = \
     protoc/ola-protoc.cpp
 protoc_ola_protoc_LDADD = $(libprotobuf_LIBS) -lprotoc
 
+else
+
+# If we're using a different ola_protoc, we need to provide a rule to create
+# this file since the generated service configs depend on it.
+protoc/ola_protoc$(EXEEXT):
+	touch protoc/ola_protoc$(EXEEXT)
+
 endif

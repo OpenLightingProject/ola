@@ -48,6 +48,8 @@ bool LoadAverage(load_averages average, double *value) {
 #else
   // No getloadavg, do something else if Windows?
   OLA_WARN << "getloadavg not supported, can't fetch value";
+  (void) average;
+  *value = 0;
   return false;
 #endif
 }
