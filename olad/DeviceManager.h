@@ -79,7 +79,7 @@ class DeviceManager {
    * @param device The device to register, ownership is not transferred.
    * @returns true on success, false on failure.
    *
-   * During registration, any saved port patchings for this device are retored.
+   * During registration, any saved port patchings for this device are restored.
    */
   bool RegisterDevice(AbstractDevice *device);
 

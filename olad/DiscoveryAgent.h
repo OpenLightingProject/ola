@@ -42,6 +42,7 @@ class DiscoveryAgentInterface {
 
   /**
    * @brief Options for the RegisterService method
+   *
    * This controls options like the interface index, domain and TXT record
    * data.
    */
@@ -59,8 +60,9 @@ class DiscoveryAgentInterface {
 
     int if_index;  /**< The interface index to register on */
     /**
-     * @brief The domain to use. The empty string uses the system default
-     * domain.
+     * @brief The domain to use.
+     *
+     * The empty string uses the system default domain.
      */
     std::string domain;
     TxtData txt_data;   /**< The TXT record data. */
@@ -77,7 +79,6 @@ class DiscoveryAgentInterface {
     }
   };
 
-  // Think about what sort of error handling we want here
   /**
    * @brief Register a service
    * @param service_name the name of the service
@@ -85,6 +86,7 @@ class DiscoveryAgentInterface {
    * @param port the port the service is on
    * @param options extra options that control registration.
    */
+  // TODO(simon): Think about what sort of error handling we want here
   virtual void RegisterService(const std::string &service_name,
                                const std::string &type,
                                uint16_t port,
@@ -93,6 +95,7 @@ class DiscoveryAgentInterface {
 
 /**
  * @brief A Factory which produces implementations of DiscoveryAgentInterface.
+ *
  * The exact type of object returns depends on what implementation of DNS-SD was
  * available at build time.
  */
@@ -102,6 +105,7 @@ class DiscoveryAgentFactory {
 
   /**
    * @brief Create a new DiscoveryAgent.
+   *
    * This returns a DiscoveryAgent appropriate for the platform. It can
    * either be a BonjourDiscoveryAgent or a AvahiDiscoveryAgent.
    */

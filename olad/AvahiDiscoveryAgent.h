@@ -57,7 +57,7 @@ class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
   void ClientStateChanged(AvahiClientState state, AvahiClient *client);
 
   /**
-   * @brief Called when a entry group state changes.
+   * @brief Called when an entry group state changes.
    */
   void GroupStateChanged(const std::string &service_key,
                          AvahiEntryGroup *group,

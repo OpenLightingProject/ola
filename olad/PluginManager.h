@@ -86,7 +86,7 @@ class PluginManager {
 
   /**
    * @brief Return a list of active plugins.
-   * @param[out] plugins the list of plugins.
+   * @param[out] plugins the list of active plugins.
    */
   void ActivePlugins(std::vector<AbstractPlugin*> *plugins) const;
 

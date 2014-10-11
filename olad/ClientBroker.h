@@ -46,7 +46,7 @@ namespace ola {
  *
  * The ClientBroker acts as an in-between by holding a list of active clients
  * and proxying RDM calls. When the RDM call returns, if the client responsible
- * for the call has been deleted, we delete the callback rather the executing
+ * for the call has been deleted, we delete the callback rather then executing
  * it.
  */
 class ClientBroker {
