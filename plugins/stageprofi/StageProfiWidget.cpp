@@ -18,11 +18,11 @@
  * Copyright (C) 2006 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+
 #include "plugins/stageprofi/StageProfiWidget.h"
 
-#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <stdint.h>
-
 #include <string.h>
 #include <algorithm>
 #include "ola/Callback.h"
