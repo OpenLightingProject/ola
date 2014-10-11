@@ -20,11 +20,12 @@
  * The StageProfi LAN Widget.
  */
 
+#include "plugins/stageprofi/StageProfiWidgetLan.h"
+
 #include <string>
 #include "ola/Callback.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/network/TCPSocket.h"
-#include "plugins/stageprofi/StageProfiWidgetLan.h"
 
 namespace ola {
 namespace plugin {

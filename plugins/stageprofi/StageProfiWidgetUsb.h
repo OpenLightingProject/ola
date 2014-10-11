@@ -30,10 +30,11 @@ namespace stageprofi {
 
 class StageProfiWidgetUsb: public StageProfiWidget {
  public:
-    StageProfiWidgetUsb(): StageProfiWidget() {}
-    ~StageProfiWidgetUsb() {}
+  StageProfiWidgetUsb()
+      : StageProfiWidget() {}
+  ~StageProfiWidgetUsb() {}
 
-    bool Connect(const std::string &path);
+  bool Connect(const std::string &path);
 };
 }  // namespace stageprofi
 }  // namespace plugin

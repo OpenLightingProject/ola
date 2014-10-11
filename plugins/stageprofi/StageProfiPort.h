@@ -33,17 +33,17 @@ namespace stageprofi {
 
 class StageProfiOutputPort: public BasicOutputPort {
  public:
-    StageProfiOutputPort(StageProfiDevice *parent,
-                         unsigned int id,
-                         StageProfiWidget *widget)
-        : BasicOutputPort(parent, id),
-          m_widget(widget) {}
+  StageProfiOutputPort(StageProfiDevice *parent,
+                       unsigned int id,
+                       StageProfiWidget *widget)
+      : BasicOutputPort(parent, id),
+        m_widget(widget) {}
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    std::string Description() const { return m_widget->GetDevicePath(); }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const { return m_widget->GetDevicePath(); }
 
  private:
-    StageProfiWidget *m_widget;
+  StageProfiWidget *m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin
