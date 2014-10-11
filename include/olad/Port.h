@@ -101,7 +101,7 @@ class Port {
 
   /**
    * @brief Set the Priority for this Port.
-   * @param mode the priority to use.
+   * @param priority the priority to use.
    */
   virtual bool SetPriority(uint8_t priority) = 0;
 
