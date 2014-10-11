@@ -16,15 +16,6 @@
  * DeviceManager.h
  * Interface to the DeviceManager class
  * Copyright (C) 2005 Simon Newton
- *
- * The DeviceManager assigns an unsigned int as an alias to each device which
- * remains consistent throughout the lifetime of the DeviceManager. These are
- * used in the user facing portion as '1' is easier to understand/type
- * than 5-02050016. If a device is registered, then unregistered, then
- * registered again, it'll have the same device alias.
- *
- * The DeviceManager is also responsible for restoring the port patchings when
- * devices are registered.
  */
 
 #ifndef OLAD_DEVICEMANAGER_H_
@@ -42,60 +33,141 @@
 namespace ola {
 
 // pair a device with it's alias
-typedef struct {
+class device_alias_pair {
+ public:
   unsigned int alias;
   AbstractDevice *device;
-} device_alias_pair;
+
+  device_alias_pair(unsigned int alias, AbstractDevice *device)
+      : alias(alias), device(device) {}
+};
 
 bool operator <(const device_alias_pair& left, const device_alias_pair &right);
 
+/**
+ * @brief Keeps track of OLA's devices.
+ *
+ * Devices can be identified in one of two ways, by device-id or by alias.
+ * device-ids are strings and are persistent across restarting olad and reload
+ * the plugins. device-ids are the keys used in preference containers to
+ * identify devices.
+ *
+ * Device aliases are unsigned integers and are only valid for the lifetime of
+ * the DeviceManager object. Device aliases are used by users when patching /
+ * controlling a device. since '1' is easier to understand / type
+ * than 5-02050016. If a device is registered, then unregistered, then
+ * registered again, it'll have the same device alias.
+ */
 class DeviceManager {
  public:
-    DeviceManager(PreferencesFactory *prefs_factory,
-                  class PortManager *port_manager);
-    ~DeviceManager();
+  /**
+   * @brief Create a new DeviceManager.
+   * @param prefs_factory the PreferencesFactory to use, ownership is not
+   *   transferred.
+   * @param port_manager the PortManager to use, ownership is not transferred.
+   */
+  DeviceManager(PreferencesFactory *prefs_factory,
+                class PortManager *port_manager);
 
-    bool RegisterDevice(AbstractDevice *device);
-    bool UnregisterDevice(const std::string &device_id);
-    bool UnregisterDevice(const AbstractDevice *device);
-    unsigned int DeviceCount() const;
-    std::vector<device_alias_pair> Devices() const;
-    AbstractDevice *GetDevice(unsigned int alias) const;
-    device_alias_pair GetDevice(const std::string &unique_id) const;
-    void UnregisterAllDevices();
+  /**
+   * @brief Destructor.
+   */
+  ~DeviceManager();
 
-    void SendTimeCode(const ola::timecode::TimeCode &timecode);
+  /**
+   * @brief Register a device.
+   * @param device The device to register, ownership is not transferred.
+   * @returns true on success, false on failure.
+   *
+   * During registration, any saved port patchings for this device are retored.
+   */
+  bool RegisterDevice(AbstractDevice *device);
 
-    static const unsigned int MISSING_DEVICE_ALIAS;
-    static const char PRIORITY_VALUE_SUFFIX[];
-    static const char PRIORITY_MODE_SUFFIX[];
+  /**
+   * @brief Unregister a device by id.
+   * @param device_id the id of the device to remove
+   * @returns true on sucess, false on failure
+   */
+  bool UnregisterDevice(const std::string &device_id);
+
+  /**
+   * @brief Unregister a device by pointer.
+   * @param device a pointer to the device.
+   * @returns true on sucess, false on failure
+   */
+  bool UnregisterDevice(const AbstractDevice *device);
+
+  /**
+   * @brief Return the number of devices.
+   * @returns the number of devices.
+   */
+  unsigned int DeviceCount() const;
+
+  /**
+   * @brief Return a list of all devices and their aliases.
+   * @returns a vector of device_alias_pairs.
+   */
+  std::vector<device_alias_pair> Devices() const;
+
+  /**
+   * @brief Lookup a device using the device alias.
+   * @returns a pointer to the device or NULL if the device wasn't found.
+   */
+  AbstractDevice *GetDevice(unsigned int alias) const;
+
+  /**
+   * @brief Lookup a device using the device id.
+   * @param unique_id the device id of the device.
+   * @returns a device_alias_pair, if the device isn't found the alias is set to
+   *   MISSING_DEVICE_ALIAS and the device pointer is NULL.
+   */
+  device_alias_pair GetDevice(const std::string &unique_id) const;
+
+  /**
+   * @brief Remove all devices.
+   */
+  void UnregisterAllDevices();
+
+
+  /**
+   * @brief Send timecode to all ports which support timecode.
+   * @param timecode the TimeCode information.
+   */
+  void SendTimeCode(const ola::timecode::TimeCode &timecode);
+
+  static const unsigned int MISSING_DEVICE_ALIAS;
 
  private:
-    Preferences *m_port_preferences;
-    class PortManager *m_port_manager;
-    // map device_ids to devices
-    std::map<std::string, device_alias_pair> m_devices;
-    // map alias to devices
-    std::map<unsigned int, AbstractDevice*> m_alias_map;
-    unsigned int m_next_device_alias;
-    std::set<class OutputPort*> m_timecode_ports;
+  typedef std::map<std::string, device_alias_pair> DeviceIdMap;
+  typedef std::map<unsigned int, AbstractDevice*> DeviceAliasMap;
 
-    void ReleaseDevice(const AbstractDevice *device);
-    void RestoreDevicePortSettings(AbstractDevice *device);
+  Preferences *m_port_preferences;
+  class PortManager *m_port_manager;
 
-    template <class PortClass>
-    void SavePortPatchings(const std::vector<PortClass*> &ports) const;
+  DeviceIdMap m_devices;
+  DeviceAliasMap m_alias_map;
 
-    void SavePortPriority(const Port &port) const;
-    void RestorePortPriority(Port *port) const;
+  unsigned int m_next_device_alias;
+  std::set<class OutputPort*> m_timecode_ports;
 
-    template <class PortClass>
-    void RestorePortSettings(const std::vector<PortClass*> &ports) const;
+  void ReleaseDevice(const AbstractDevice *device);
+  void RestoreDevicePortSettings(AbstractDevice *device);
 
-    static const char PORT_PREFERENCES[];
-    static const unsigned int FIRST_DEVICE_ALIAS = 1;
+  template <class PortClass>
+  void SavePortPatchings(const std::vector<PortClass*> &ports) const;
 
-    DISALLOW_COPY_AND_ASSIGN(DeviceManager);
+  void SavePortPriority(const Port &port) const;
+  void RestorePortPriority(Port *port) const;
+
+  template <class PortClass>
+  void RestorePortSettings(const std::vector<PortClass*> &ports) const;
+
+  static const char PORT_PREFERENCES[];
+  static const unsigned int FIRST_DEVICE_ALIAS = 1;
+  static const char PRIORITY_VALUE_SUFFIX[];
+  static const char PRIORITY_MODE_SUFFIX[];
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManager);
 };
 }  // namespace ola
 #endif  // OLAD_DEVICEMANAGER_H_

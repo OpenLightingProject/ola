@@ -36,30 +36,61 @@
 
 namespace ola {
 
+/**
+ * @brief Handles async client operations.
+ *
+ * Since some client operations such as RDM commands are asynchronous,
+ * we can run into problems if the client disconnects while the operation
+ * is in progress. This is because the completion callback will hold a pointer
+ * to a client which has been deleted.
+ *
+ * The ClientBroker acts as an in-between by holding a list of active clients
+ * and proxying RDM calls. When the RDM call returns, if the client responsible
+ * for the call has been deleted, we delete the callback rather the executing
+ * it.
+ */
 class ClientBroker {
  public:
-    ClientBroker() {}
-    ~ClientBroker() {}
+  ClientBroker() {}
+  ~ClientBroker() {}
 
-    void AddClient(const Client *client);
-    void RemoveClient(const Client *client);
+  /**
+  * @brief Add a client to the broker.
+  * @param client the Client to add. Ownership is not transferred.
+  */
+  void AddClient(const Client *client);
 
-    void SendRDMRequest(const Client *client,
-                        Universe *universe,
-                        const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback);
+  /**
+   * @brief Remove a client from the broker.
+   * @param client The Client to remove.
+   */
+  void RemoveClient(const Client *client);
+
+  /**
+   * @brief Make an RDM call.
+   * @param client the Client responsible for making the call.
+   * @param universe the universe to send the RDM request on.
+   * @param request the RDM request.
+   * @param callback the callback to run when the request completes. Ownership
+   *   is transferred.
+   */
+  void SendRDMRequest(const Client *client,
+                      Universe *universe,
+                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMCallback *callback);
 
  private:
-    void RequestComplete(const Client *key,
-                         ola::rdm::RDMCallback *callback,
-                         ola::rdm::rdm_response_code code,
-                         const ola::rdm::RDMResponse *response,
-                         const std::vector<std::string> &packets);
+  typedef std::set<const Client*> client_set;
 
-    typedef std::set<const Client*> client_set;
-    client_set m_clients;
+  client_set m_clients;
 
-    DISALLOW_COPY_AND_ASSIGN(ClientBroker);
+  void RequestComplete(const Client *key,
+                       ola::rdm::RDMCallback *callback,
+                       ola::rdm::rdm_response_code code,
+                       const ola::rdm::RDMResponse *response,
+                       const std::vector<std::string> &packets);
+
+  DISALLOW_COPY_AND_ASSIGN(ClientBroker);
 };
 }  // namespace ola
 #endif  // OLAD_CLIENTBROKER_H_
