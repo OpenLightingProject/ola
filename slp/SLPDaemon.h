@@ -30,7 +30,6 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
-#include <ola/network/TCPSocketFactory.h>
 
 #include <iostream>
 #include <map>
