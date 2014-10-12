@@ -18,6 +18,8 @@
  * Copyright (C) 2006 Simon Newton
  */
 
+#include "plugins/stageprofi/StageProfiPlugin.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -27,7 +29,6 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
-#include "plugins/stageprofi/StageProfiPlugin.h"
 
 namespace ola {
 namespace plugin {
@@ -57,8 +58,9 @@ bool StageProfiPlugin::StartHook() {
   device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
 
   for (it = device_names.begin(); it != device_names.end(); ++it) {
-    if (it->empty())
+    if (it->empty()) {
       continue;
+    }
 
     device = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
 
@@ -117,8 +119,9 @@ int StageProfiPlugin::SocketClosed(ConnectedDescriptor *socket) {
   vector<StageProfiDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    if ((*iter)->GetSocket() == socket)
+    if ((*iter)->GetSocket() == socket) {
       break;
+    }
   }
 
   if (iter == m_devices.end()) {
@@ -145,11 +148,13 @@ bool StageProfiPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
                                          STAGEPROFI_DEVICE_PATH);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(DEVICE_KEY).empty())
+  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
     return false;
+  }
   return true;
 }
 

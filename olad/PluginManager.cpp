@@ -18,6 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include "olad/PluginManager.h"
+
 #include <set>
 #include <vector>
 #include "ola/Logging.h"
@@ -25,7 +27,6 @@
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/PluginLoader.h"
-#include "olad/PluginManager.h"
 
 namespace ola {
 
@@ -38,15 +39,10 @@ PluginManager::PluginManager(const vector<PluginLoader*> &plugin_loaders,
       m_plugin_adaptor(plugin_adaptor) {
 }
 
-
 PluginManager::~PluginManager() {
   UnloadAll();
 }
 
-
-/*
- * Load all the plugins and start them.
- */
 void PluginManager::LoadAll() {
   vector<AbstractPlugin*> enabled_plugins;
   set<ola_plugin_id> enabled_plugin_ids;
@@ -114,10 +110,6 @@ void PluginManager::LoadAll() {
   }
 }
 
-
-/*
- * Unload all the plugins.
- */
 void PluginManager::UnloadAll() {
   PluginMap::iterator plugin_iter = m_loaded_plugins.begin();
   for (; plugin_iter != m_loaded_plugins.end(); ++plugin_iter) {
@@ -133,46 +125,24 @@ void PluginManager::UnloadAll() {
   }
 }
 
-
-/*
- * Return the list of plugins loaded
- */
 void PluginManager::Plugins(vector<AbstractPlugin*> *plugins) const {
   plugins->clear();
   STLValues(m_loaded_plugins, plugins);
 }
 
-
-/*
- * Return the list of active plugins.
- */
 void PluginManager::ActivePlugins(vector<AbstractPlugin*> *plugins) const {
   plugins->clear();
   STLValues(m_active_plugins, plugins);
 }
 
-
-/*
- * Lookup a plugin by ID.
- * @param plugin_id the id of the plugin to find
- * @return the plugin matching the id or NULL if not found.
- */
 AbstractPlugin* PluginManager::GetPlugin(ola_plugin_id plugin_id) const {
   return STLFindOrNull(m_loaded_plugins, plugin_id);
 }
 
-/*
- * Returns true if the plugin was loaded.
- * @param plugin_id the id of the plugin to find
- */
 bool PluginManager::IsActive(ola_plugin_id plugin_id) const {
   return STLContains(m_active_plugins, plugin_id);
 }
 
-
-/**
- * Return a list of plugins that conflict with this particular plugin.
- */
 void PluginManager::GetConflictList(ola_plugin_id plugin_id,
                                     vector<AbstractPlugin*> *plugins) {
   PluginMap::iterator iter = m_loaded_plugins.begin();

@@ -30,12 +30,14 @@ namespace stageprofi {
 
 class StageProfiWidgetLan: public StageProfiWidget {
  public:
-    StageProfiWidgetLan(): StageProfiWidget() {}
-    ~StageProfiWidgetLan() {}
+  StageProfiWidgetLan()
+      : StageProfiWidget() {}
+  ~StageProfiWidgetLan() {}
 
-    bool Connect(const std::string &ip);
+  bool Connect(const std::string &ip);
+
  private:
-    static const uint16_t STAGEPROFI_PORT = 10001;
+  static const uint16_t STAGEPROFI_PORT = 10001;
 };
 }  // namespace stageprofi
 }  // namespace plugin

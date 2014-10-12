@@ -111,24 +111,18 @@ namespace ola {
 
 using std::vector;
 
-
 DynamicPluginLoader::~DynamicPluginLoader() {
   STLDeleteElements(&m_plugins);
 }
 
-
-/*
- * Return the plugins that we were linked against
- * @returns a vector of plugins
- */
 vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
-  if (m_plugins.empty())
+  if (m_plugins.empty()) {
     PopulatePlugins();
+  }
   return m_plugins;
 }
 
-
-/**
+/*
  * Setup the plugin list
  */
 void DynamicPluginLoader::PopulatePlugins() {

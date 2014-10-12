@@ -200,6 +200,24 @@ typename T1::mapped_type* STLFind(T1 *container,
  * @tparam T1 A container.
  * @param container the container to search in.
  * @param key the key to search for.
+ * @returns A pointer to the value, or NULL if the value isn't found.
+ */
+template<typename T1>
+typename T1::mapped_type const* STLFind(const T1 *container,
+                                        const typename T1::key_type &key) {
+  typename T1::const_iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    return &iter->second;
+  }
+}
+
+/**
+ * @brief Lookup a value by key in a associative container.
+ * @tparam T1 A container.
+ * @param container the container to search in.
+ * @param key the key to search for.
  * @returns The value matching the key, or NULL if the value isn't found.
  *
  * This assumes that NULL can be co-erced to the mapped_type of the container.
