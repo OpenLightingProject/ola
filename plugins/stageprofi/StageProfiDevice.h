@@ -33,34 +33,34 @@ class AbstractPlugin;
 namespace plugin {
 namespace stageprofi {
 
+class StageProfiWidget;
+
 class StageProfiDevice: public Device {
  public:
   /**
    * @brief Create a new StageProfi device.
-   *
-   * @param owner the plugin that owns this device
+   * @param owner the Plugin that owns this device
    * @param name the device name
-   * @param dev_path Either the path to the USB Serial device or an IP Address.
    */
   StageProfiDevice(AbstractPlugin *owner,
-                   const std::string &name,
-                   const std::string &dev_path);
+                   StageProfiWidget *widget,
+                   const std::string &name);
 
+  /**
+   * @brief Destructor.
+   */
   ~StageProfiDevice();
 
-  // I don't think this get us full stickiness because USB devices may
-  // appear as different devices.
-  std::string DeviceId() const { return m_path; }
-
-  ola::io::ConnectedDescriptor *GetSocket() const;
+  // TODO(simon): I don't think this get us full stickiness because USB devices
+  // may appear as different devices.
+  std::string DeviceId() const;
 
  protected:
   bool StartHook();
-  void PrePortStop();
 
  private:
   std::string m_path;
-  std::auto_ptr<class StageProfiWidget> m_widget;
+  std::auto_ptr<StageProfiWidget> m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin

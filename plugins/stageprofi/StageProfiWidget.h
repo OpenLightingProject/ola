@@ -22,9 +22,10 @@
 #define PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_
 
 #include <string>
-#include "ola/io/SelectServer.h"
-#include "ola/network/Socket.h"
 #include "ola/DmxBuffer.h"
+#include "ola/Callback.h"
+#include "ola/io/Descriptor.h"
+#include "ola/io/SelectServerInterface.h"
 
 namespace ola {
 namespace plugin {
@@ -33,40 +34,50 @@ namespace stageprofi {
 
 class StageProfiWidget {
  public:
-  StageProfiWidget()
-      : m_enabled(false),
-        m_got_response(false),
-        m_socket(NULL),
-        m_ss(NULL) {}
+  typedef ola::SingleUseCallback0<void> DisconnectCallback;
 
-  virtual ~StageProfiWidget();
+  /**
+   * @brief Create a new StageProfiWidget.
+   * @param ss The SelectServer.
+   * @param descriptor The descriptor to use for the widget. Ownership is
+   *   transferred.
+   * @param widget_path the path to the widget.
+   * @param disconnect_cb Called if the widget is disconnected.
+   */
+  StageProfiWidget(ola::io::SelectServerInterface *ss,
+                   ola::io::ConnectedDescriptor *descriptor,
+                   const std::string &widget_path,
+                   DisconnectCallback *disconnect_cb);
 
-  // These methods are for communicating with the device
-  virtual bool Connect(const std::string &path) = 0;
-  int Disconnect();
-  std::string GetDevicePath() { return m_device_path; }
-  ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
-  bool SendDmx(const DmxBuffer &buffer) const;
-  bool DetectDevice();
-  void SocketReady();
-  void Timeout();
+  /**
+   * @brief Destructor.
+   */
+  ~StageProfiWidget();
 
- protected:
-  int Send255(uint16_t start, const uint8_t *buf, unsigned int len) const;
-  int SetChannel(uint16_t chan, uint8_t val) const;
+  /**
+   * @brief Return the path for this widget.
+   * @returns Either a filesystem path, or an IP address.
+   */
+  std::string GetPath() const { return m_widget_path; }
 
-  // instance variables
-  bool m_enabled;
-  bool m_got_response;
-  std::string m_device_path;
-  ola::io::ConnectedDescriptor *m_socket;
-  ola::io::SelectServer *m_ss;
+  bool SendDmx(const DmxBuffer &buffer);
 
+ private:
   enum { DMX_MSG_LEN = 255 };
   enum { DMX_HEADER_SIZE = 4};
 
- private:
-  int DoRecv();
+  ola::io::SelectServerInterface *m_ss;
+  std::auto_ptr<ola::io::ConnectedDescriptor> m_descriptor;
+  const std::string m_widget_path;
+  DisconnectCallback *m_disconnect_cb;
+  ola::thread::timeout_id m_timeout_id;
+  bool m_got_response;
+
+  void SocketReady();
+  void DiscoveryTimeout();
+  bool Send255(uint16_t start, const uint8_t *buf, unsigned int len) const;
+  void SendQueryPacket();
+  void RunDisconnectHandler();
 };
 }  // namespace stageprofi
 }  // namespace plugin
