@@ -29,7 +29,7 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
-#include <ola/network/TCPSocketFactory.h>
+#include <ola/network/TCPSocket.h>
 #include <ola/slp/Base.h>
 
 #include <memory>
