@@ -40,6 +40,7 @@ class StageProfiDevice: public Device {
   /**
    * @brief Create a new StageProfi device.
    * @param owner the Plugin that owns this device
+   * @param widget The StageProfiWidget to use for this device.
    * @param name the device name
    */
   StageProfiDevice(AbstractPlugin *owner,
