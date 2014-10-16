@@ -94,6 +94,7 @@ bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) {
                                  buffer.Size() - index);
     bool ok = Send255(index, buffer.GetRaw() + index, size);
     if (!ok) {
+      OLA_INFO << "Failed to send StageProfi message, closing socket";
       RunDisconnectHandler();
     }
     index += size;
@@ -121,6 +122,7 @@ void StageProfiWidget::SocketReady() {
 
 void StageProfiWidget::DiscoveryTimeout() {
   if (!m_got_response) {
+    OLA_INFO << "No response from StageProfiWidget";
     RunDisconnectHandler();
   }
 }
