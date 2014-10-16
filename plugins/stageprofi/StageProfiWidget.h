@@ -21,6 +21,7 @@
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_
 #define PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_
 
+#include <memory>
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "ola/Callback.h"
