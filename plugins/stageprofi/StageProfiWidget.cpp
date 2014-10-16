@@ -150,7 +150,8 @@ bool StageProfiWidget::Send255(uint16_t start,
 
 void StageProfiWidget::SendQueryPacket() {
   uint8_t query[] = {'C', '?'};
-  m_descriptor->Send(query, arraysize(query));
+  ssize_t bytes_sent = m_descriptor->Send(query, arraysize(query));
+  OLA_DEBUG << "Sending StageprofiWidget query: C? returned " << bytes_sent;
 }
 
 void StageProfiWidget::RunDisconnectHandler() {
