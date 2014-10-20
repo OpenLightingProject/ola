@@ -105,6 +105,7 @@ class LogicReader {
         m_pid_helper(FLAGS_pid_location.str(), 4),
         m_command_printer(&cout, &m_pid_helper) {
     }
+    ~LogicReader();
 
     void DeviceConnected(U64 device, GenericInterface *interface);
     void DeviceDisconnected(U64 device);
@@ -137,6 +138,9 @@ class LogicReader {
     void DisplayRawData(const uint8_t *data, unsigned int length);
 };
 
+LogicReader::~LogicReader() {
+  m_ss->DrainCallbacks();
+}
 
 void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
   OLA_INFO << "Device " << device << " connected, setting sample rate to "

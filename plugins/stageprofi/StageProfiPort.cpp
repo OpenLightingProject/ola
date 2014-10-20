@@ -18,8 +18,10 @@
  * Copyright (C) 2006 Simon Newton
  */
 
-#include <string.h>
 #include "plugins/stageprofi/StageProfiPort.h"
+
+#include <string.h>
+#include "ola/base/Macro.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
 
 namespace ola {
@@ -27,9 +29,8 @@ namespace plugin {
 namespace stageprofi {
 
 bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                    uint8_t priority) {
+                                    OLA_UNUSED uint8_t priority) {
   return m_widget->SendDmx(buffer);
-  (void) priority;
 }
 }  // namespace stageprofi
 }  // namespace plugin

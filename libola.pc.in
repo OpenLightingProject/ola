@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libola
 Version: @VERSION@
 Description: Open Lighting Architecture Client
-Requires:
-Libs: -L${libdir} -lola -lolacommon -lprotobuf @OLA_CLIENT_LIBS@
+Requires: protobuf
+Libs: -L${libdir} -lola -lolacommon @OLA_CLIENT_LIBS@
 Cflags: -I${includedir}

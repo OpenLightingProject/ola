@@ -38,44 +38,55 @@ namespace ola {
 class AbstractDevice;
 
 /**
- * The base port class, all ports inherit from this.
+ * @brief The base port class.
+ *
+ * Ports represent a single universe of DMX512. They are either input (receive
+ * DMX) or output (send DMX) but not both.
+ *
+ * Every port is part of a Device. Ports can be associated (patched) to a
+ * universe.
  */
 class Port {
  public:
   virtual ~Port() {}
 
   /**
-   * @brief Get the port ID
-   * @return the id of the port within this device
+   * @brief Get the Port ID. This is the index within the device.
+   * @return the id of the Port.
    */
   virtual unsigned int PortId() const = 0;
 
   /**
-   * @brief Get the device which owns this port
-   * @return the device which owns this port
+   * @brief Get the device which owns this Port.
+   * @returns the Device which owns this Port.
    */
   virtual AbstractDevice *GetDevice() const = 0;
 
   /**
-   * @brief Get the port description
-   * @return a short description of this port
+   * @brief Fetch the string description for a Port.
+   * @returns a short text description of this port.
    */
   virtual std::string Description() const = 0;
 
   /**
-   * @brief Bind this port to a universe
-   * @param universe the universe to bind to
+   * @brief Bind this port to a universe.
+   * @param universe the Universe to bind to.
+   * @returns true if the patch succeeded, false otherwise.
+   *
+   * This shouldn't be called directly. Instead use PortManager::PatchPort()
+   * which takes care of everything for you.
    */
   virtual bool SetUniverse(Universe *universe) = 0;
 
   /**
-   * @brief Get the universe this port is bound to
-   * @return the universe that this port is bound to or NULL
+   * @brief Fetch the universe this Port is bound to.
+   * @returns the Universe that this Port is bound to or NULL if the Port isn't
+   *   patched.
    */
   virtual Universe *GetUniverse() const = 0;
 
   /**
-   * @brief Return a globally unique id of this port.
+   * @brief Return the globally unique id for a Port.
    *
    * This is used to preserve port universe bindings. An empty string means
    * we don't preserve settings.
@@ -83,28 +94,45 @@ class Port {
   virtual std::string UniqueId() const = 0;
 
   /**
-   * @brief This tells us what sort of priority capabilities this port has
-   * @return a port_priority_capability
+   * @brief Get the priority capabilities for this port.
+   * @returns a port_priority_capability.
    */
   virtual port_priority_capability PriorityCapability() const = 0;
 
+  /**
+   * @brief Set the Priority for this Port.
+   * @param priority the priority to use.
+   */
   virtual bool SetPriority(uint8_t priority) = 0;
+
+  /**
+   * @brief Get the numeric priority for this Port.
+   * @returns the priority, higher numbers take precedence.
+   */
   virtual uint8_t GetPriority() const = 0;
 
+  /**
+   * @brief Set the Priority Mode for this Port.
+   * @param mode the Priority Mode to use.
+   */
   virtual void SetPriorityMode(port_priority_mode mode) = 0;
+
+  /**
+   * @brief Get the Priority Mode for this Port.
+   * @returns the Priority Mode.
+   */
   virtual port_priority_mode GetPriorityMode() const = 0;
 
   /**
-   * @brief If this port supports RDM or not
-   * @return true if RDM is supported, false otherwise
+   * @brief Check if this Port supports RDM or not
+   * @returns true if RDM is supported for this Port, false otherwise.
    */
   virtual bool SupportsRDM() const = 0;
 };
 
 
 /**
- * The Input Port interface, for ports that provide push data into the OLA
- * system.
+ * @brief A port that receives DMX512 data.
  */
 class InputPort: public Port {
  public:
@@ -121,7 +149,8 @@ class InputPort: public Port {
   virtual const DmxSource &SourceData() const = 0;
 
   /**
-   * @brief Handle RDMRequests, ownership of the RDMRequest object is transferred
+   * @brief Handle RDMRequests, ownership of the RDMRequest object is
+   *   transferred
    */
   virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *callback) = 0;
@@ -129,7 +158,7 @@ class InputPort: public Port {
 
 
 /**
- * The Output Port interface, for ports that send data from the OLA system.
+ * @brief A port that sends DMX512 data.
  */
 class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
  public:

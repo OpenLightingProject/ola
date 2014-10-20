@@ -439,7 +439,7 @@ AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 # Optionally install the E1.33 library.
 AC_ARG_ENABLE(
   [e133],
-  [AS_HELP_STRING([--install-e133], [Install the E1.33 library])])
+  [AS_HELP_STRING([--enable-e133], [Install the E1.33 library])])
 # For now we install the ACN lib if the E1.33 lib is requested
 AM_CONDITIONAL([INSTALL_ACN], [test "x$enable_e133" = xyes])
 AM_CONDITIONAL([INSTALL_E133], [test "x$enable_e133" = xyes])

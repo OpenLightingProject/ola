@@ -51,6 +51,8 @@ JsonValue *GetParent(JsonValue *value, const JsonPointer &pointer) {
  */
 class ObjectOrArrayAction {
  public:
+  virtual ~ObjectOrArrayAction() {}
+
   bool TakeActionOn(JsonValue *value, const JsonPointer &target);
 
   // Implement these with the specific actions

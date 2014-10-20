@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMCommand.h"
@@ -78,56 +79,60 @@ class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void tearDown();
-    void testLifecycle();
-    void testSetGetDmx();
-    void testSendDmx();
-    void testReceiveDmx();
-    void testSourceClients();
-    void testSinkClients();
-    void testLtpMerging();
-    void testHtpMerging();
-    void testRDMDiscovery();
-    void testRDMSend();
+  void setUp();
+  void tearDown();
+  void testLifecycle();
+  void testSetGetDmx();
+  void testSendDmx();
+  void testReceiveDmx();
+  void testSourceClients();
+  void testSinkClients();
+  void testLtpMerging();
+  void testHtpMerging();
+  void testRDMDiscovery();
+  void testRDMSend();
 
  private:
-    ola::MemoryPreferences *m_preferences;
-    ola::UniverseStore *m_store;
-    DmxBuffer m_buffer;
-    ola::Clock m_clock;
+  ola::MemoryPreferences *m_preferences;
+  ola::UniverseStore *m_store;
+  DmxBuffer m_buffer;
+  ola::Clock m_clock;
 
-    void ConfirmUIDs(UIDSet *expected, const UIDSet &uids);
+  void ConfirmUIDs(UIDSet *expected, const UIDSet &uids);
 
-    void ConfirmRDM(int line,
-                    rdm_response_code expected_response_code,
-                    const RDMResponse *expected_response,
-                    rdm_response_code response_code,
-                    const RDMResponse *response,
-                    const vector<string>&);
+  void ConfirmRDM(int line,
+                  rdm_response_code expected_response_code,
+                  const RDMResponse *expected_response,
+                  rdm_response_code response_code,
+                  const RDMResponse *response,
+                  const vector<string>&);
 
-    void ReturnRDMCode(rdm_response_code response_code,
-                       const RDMRequest *request,
-                       RDMCallback *callback) {
-      vector<string> packets;
-      delete request;
-      callback->Run(response_code, NULL, packets);
-    }
+  void ReturnRDMCode(rdm_response_code response_code,
+                     const RDMRequest *request,
+                     RDMCallback *callback) {
+    vector<string> packets;
+    delete request;
+    callback->Run(response_code, NULL, packets);
+  }
 };
 
 
 class MockClient: public ola::Client {
  public:
-    MockClient(): ola::Client(NULL), m_dmx_set(false) {}
-    bool SendDMX(unsigned int universe_id, uint8_t priority,
-                 const DmxBuffer &buffer) {
-      OLA_ASSERT_EQ(TEST_UNIVERSE, universe_id);
-      OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_MIN, priority);
-      OLA_ASSERT_EQ(string(TEST_DATA), buffer.Get());
-      m_dmx_set = true;
-      return true;
-    }
-    bool m_dmx_set;
+  MockClient()
+      : ola::Client(NULL, UID(ola::OPEN_LIGHTING_ESTA_CODE, 0)),
+        m_dmx_set(false) {
+  }
+
+  bool SendDMX(unsigned int universe_id, uint8_t priority,
+               const DmxBuffer &buffer) {
+    OLA_ASSERT_EQ(TEST_UNIVERSE, universe_id);
+    OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_MIN, priority);
+    OLA_ASSERT_EQ(string(TEST_DATA), buffer.Get());
+    m_dmx_set = true;
+    return true;
+  }
+  bool m_dmx_set;
 };
 
 
@@ -141,12 +146,10 @@ void UniverseTest::setUp() {
   m_buffer.Set(TEST_DATA);
 }
 
-
 void UniverseTest::tearDown() {
   delete m_store;
   delete m_preferences;
 }
-
 
 /*
  * Test that we can create universes and save their settings

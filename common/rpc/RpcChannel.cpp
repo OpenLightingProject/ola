@@ -18,6 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include "common/rpc/RpcChannel.h"
+
 #include <errno.h>
 #include <google/protobuf/service.h>
 #include <google/protobuf/message.h>
@@ -26,10 +28,10 @@
 #include <string>
 
 #include "common/rpc/Rpc.pb.h"
-#include "common/rpc/RpcService.h"
+#include "common/rpc/RpcSession.h"
 #include "common/rpc/RpcController.h"
-#include "common/rpc/RpcChannel.h"
 #include "common/rpc/RpcHeader.h"
+#include "common/rpc/RpcService.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
@@ -56,6 +58,20 @@ const char *RpcChannel::K_RPC_VARIABLES[] = {
   K_RPC_SENT_VAR,
 };
 
+class OutstandingRequest {
+  /*
+   * These are requests on the server end that haven't completed yet.
+   */
+ public:
+    OutstandingRequest() {}
+    ~OutstandingRequest() {}
+
+    int id;
+    RpcController *controller;
+    google::protobuf::Message *response;
+};
+
+
 class OutstandingResponse {
   /*
    * These are Requests on the client end that haven't completed yet.
@@ -74,7 +90,8 @@ RpcChannel::RpcChannel(
     RpcService *service,
     ola::io::ConnectedDescriptor *descriptor,
     ExportMap *export_map)
-    : m_service(service),
+    : m_session(new RpcSession(this)),
+      m_service(service),
       m_descriptor(descriptor),
       m_buffer(NULL),
       m_buffer_size(0),
@@ -161,9 +178,8 @@ void RpcChannel::DescriptorReady() {
   return;
 }
 
-void RpcChannel::SetChannelCloseHandler(
-    SingleUseCallback0<void> *closure) {
-  m_on_close.reset(closure);
+void RpcChannel::SetChannelCloseHandler(CloseCallback *callback) {
+  m_on_close.reset(callback);
 }
 
 void RpcChannel::CallMethod(const MethodDescriptor *method,
@@ -238,6 +254,10 @@ void RpcChannel::RequestComplete(OutstandingRequest *request) {
   message.set_buffer(output);
   SendMsg(&message);
   DeleteOutstandingRequest(request);
+}
+
+RpcSession *RpcChannel::Session() {
+  return m_session.get();
 }
 
 // private
@@ -434,7 +454,7 @@ void RpcChannel::HandleRequest(RpcMessage *msg) {
 
   OutstandingRequest *request = new OutstandingRequest();
   request->id = msg->id();
-  request->controller = new RpcController();
+  request->controller = new RpcController(m_session.get());
   request->response = response_pb;
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
@@ -490,7 +510,8 @@ void RpcChannel::HandleStreamRequest(RpcMessage *msg) {
     return;
   }
 
-  m_service->CallMethod(method, NULL, request_pb, NULL, NULL);
+  RpcController controller(m_session.get());
+  m_service->CallMethod(method, &controller, request_pb, NULL, NULL);
   delete request_pb;
 }
 
@@ -590,7 +611,7 @@ void RpcChannel::HandleNotImplemented(RpcMessage *msg) {
  */
 void RpcChannel::HandleChannelClose() {
   if (m_on_close.get()) {
-    m_on_close.release()->Run();
+    m_on_close.release()->Run(m_session.get());
   }
 }
 }  // namespace rpc

@@ -35,11 +35,16 @@ namespace ola {
 namespace network {
 
 TCPConnector::TCPConnector(ola::io::SelectServerInterface *ss)
-    : m_ss(ss) {
+    : m_ss(ss),
+      m_pending_callbacks(0) {
 }
 
 TCPConnector::~TCPConnector() {
   CancelAll();
+  if (m_pending_callbacks) {
+    m_ss->DrainCallbacks();
+  }
+  m_pending_callbacks++;
   CleanUpOrphans();
 }
 
@@ -187,6 +192,7 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   // we're already within the PendingTCPConnection's call stack here
   // schedule the deletion to run later
   m_orphaned_connections.push_back(connection);
+  m_pending_callbacks++;
   m_ss->Execute(ola::NewSingleCallback(this, &TCPConnector::CleanUpOrphans));
 }
 
@@ -262,6 +268,7 @@ void TCPConnector::PendingTCPConnection::PerformWrite() {
 }
 
 void TCPConnector::CleanUpOrphans() {
+  m_pending_callbacks--;
   STLDeleteElements(&m_orphaned_connections);
 }
 }  // namespace network

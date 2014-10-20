@@ -18,6 +18,8 @@
  * Copyright (C) 2006 Simon Newton
  */
 
+#include "plugins/stageprofi/StageProfiDevice.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +29,6 @@
 #include "ola/Logging.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
-#include "plugins/stageprofi/StageProfiDevice.h"
 #include "plugins/stageprofi/StageProfiPort.h"
 #include "plugins/stageprofi/StageProfiWidgetLan.h"
 #include "plugins/stageprofi/StageProfiWidgetUsb.h"
@@ -41,13 +42,6 @@ using ola::io::ConnectedDescriptor;
 using std::string;
 
 
-/*
- * Create a new device
- *
- * @param owner  the plugin that owns this device
- * @param name  the device name
- * @param dev_path  path to the pro widget
- */
 StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
                                    const string &name,
                                    const string &dev_path)
@@ -63,7 +57,7 @@ StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
 
 /*
  * Destroy this device
-*/
+ */
 StageProfiDevice::~StageProfiDevice() {
   // Stub destructor for compatibility with StageProfiWidget subclasses
 }
@@ -85,9 +79,8 @@ bool StageProfiDevice::StartHook() {
     return false;
   }
 
-  StageProfiOutputPort *port = new StageProfiOutputPort(this,
-                                                        0,
-                                                        m_widget.get());
+  StageProfiOutputPort *port = new StageProfiOutputPort(
+      this, 0, m_widget.get());
   AddPort(port);
   return true;
 }

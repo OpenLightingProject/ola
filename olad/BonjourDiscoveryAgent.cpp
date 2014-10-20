@@ -92,7 +92,7 @@ BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
 
 BonjourDiscoveryAgent::BonjourDiscoveryAgent()
     : m_thread(new ola::thread::CallbackThread(NewSingleCallback(
-          &m_ss, &ola::io::SelectServer::Run))) {
+          this, &BonjourDiscoveryAgent::RunThread))) {
 }
 
 BonjourDiscoveryAgent::~BonjourDiscoveryAgent() {
@@ -171,5 +171,10 @@ string BonjourDiscoveryAgent::BuildTxtRecord(
     output.append(iter->second);
   }
   return output;
+}
+
+void BonjourDiscoveryAgent::RunThread() {
+  m_ss.Run();
+  m_ss.DrainCallbacks();
 }
 }  // namespace ola

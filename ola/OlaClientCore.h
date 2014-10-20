@@ -42,6 +42,11 @@
 #include "ola/timecode/TimeCode.h"
 
 namespace ola {
+
+namespace rpc {
+class RpcSession;
+}
+
 namespace client {
 
 /**
@@ -50,13 +55,15 @@ namespace client {
  */
 class OlaClientCore: public ola::proto::OlaClientService {
  public:
+  typedef ola::SingleUseCallback0<void> ClosedCallback;
+
   explicit OlaClientCore(ola::io::ConnectedDescriptor *descriptor);
   ~OlaClientCore();
 
   bool Setup();
   bool Stop();
 
-  void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
+  void SetCloseHandler(ClosedCallback *callback);
 
   /**
    * @brief Set the callback to be run when new DMX data arrives.
@@ -311,6 +318,8 @@ class OlaClientCore: public ola::proto::OlaClientService {
   std::auto_ptr<ola::rpc::RpcChannel> m_channel;
   std::auto_ptr<ola::proto::OlaServerService_Stub> m_stub;
   int m_connected;
+
+  void ChannelClosed(ClosedCallback *callback, ola::rpc::RpcSession *session);
 
   /**
    * @brief Called when GetPlugins() completes.

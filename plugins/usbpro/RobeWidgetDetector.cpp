@@ -74,6 +74,7 @@ RobeWidgetDetector::RobeWidgetDetector(
  * Fail any widgets that are still in the discovery process.
  */
 RobeWidgetDetector::~RobeWidgetDetector() {
+  m_scheduler->DrainCallbacks();
   WidgetStateMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
     RemoveTimeout(&iter->second);

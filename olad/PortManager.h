@@ -31,53 +31,65 @@
 
 namespace ola {
 
+/**
+ * @brief Responsible for performing Port operations.
+ */
 class PortManager {
  public:
-  explicit PortManager(UniverseStore *universe_store,
-                       PortBroker *broker)
+  /**
+   * @brief Create a new PortManager.
+   * @param universe_store the UniverseStore used to lookup / create Universes.
+   * @param broker the PortBroker to update when Ports are added / removed.
+   */
+  PortManager(UniverseStore *universe_store,
+              PortBroker *broker)
       : m_universe_store(universe_store),
         m_broker(broker) {
   }
+
+  /**
+   * @brief Destructor.
+   */
   ~PortManager() {}
 
   /**
-   * Patch a port
+   * @brief Patch an InputPort to a universe.
    * @param port the port to patch
-   * @param universe the universe to patch to
+   * @param universe the universe-id to patch to.
    * @returns true is successful, false otherwise
    */
   bool PatchPort(InputPort *port, unsigned int universe);
 
   /**
-   * Patch a port
+   * @brief Patch an OutputPort to a universe.
    * @param port the port to patch
-   * @param universe the universe to patch to
+   * @param universe the universe-id to patch to.
    * @returns true is successful, false otherwise
    */
   bool PatchPort(OutputPort *port, unsigned int universe);
 
   /**
-   * UnPatch a port
+   * @brief UnPatch an InputPort.
    * @param port the port to unpatch
    * @returns true is successful, false otherwise
    */
   bool UnPatchPort(InputPort *port);
 
   /**
-   * UnPatch a port
+   * @brief UnPatch an OutputPort.
    * @param port the port to unpatch
    * @returns true is successful, false otherwise
    */
   bool UnPatchPort(OutputPort *port);
 
   /**
-   * Set a port to inherit priority mode.
+   * @brief Set a port to 'inherit' priority mode.
    * @param port the port to configure
    */
   bool SetPriorityInherit(Port *port);
 
   /**
-   * Set a port to override priority mode.
+   * @brief Set a port to 'override' priority mode.
    * @param port the port to configure
    * @param value the new priority
    */

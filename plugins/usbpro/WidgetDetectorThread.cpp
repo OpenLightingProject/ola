@@ -134,6 +134,7 @@ void *WidgetDetectorThread::Run() {
   m_ss.Execute(
       ola::NewSingleCallback(this, &WidgetDetectorThread::MarkAsRunning));
   m_ss.Run();
+  m_ss.DrainCallbacks();
 
   // This will trigger a call to InternalFreeWidget for any remaining widgets
   STLDeleteElements(&m_widget_detectors);
