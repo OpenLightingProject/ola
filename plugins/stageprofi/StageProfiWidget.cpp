@@ -19,13 +19,14 @@
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
-#include <stdint.h>
 
+#include "plugins/stageprofi/StageProfiWidget.h"
+
+#include <stdint.h>
 #include <string.h>
 #include <algorithm>
 #include "ola/Callback.h"
 #include "ola/util/Utils.h"
-#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {

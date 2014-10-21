@@ -18,10 +18,11 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include "olad/PortManager.h"
+
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "olad/PortManager.h"
 #include "olad/Port.h"
 
 namespace ola {

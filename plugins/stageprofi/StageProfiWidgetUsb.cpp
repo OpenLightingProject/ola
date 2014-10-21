@@ -14,9 +14,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiWidgetUsb.cpp
- * The StageProfi Usb Widget.
+ * The StageProfi USB Widget.
  * Copyright (C) 2006 Simon Newton
  */
+
+#include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -27,7 +29,6 @@
 #include "ola/Callback.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/IOUtils.h"
-#include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
 namespace ola {
 namespace plugin {

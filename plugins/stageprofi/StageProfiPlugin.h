@@ -35,29 +35,29 @@ class StageProfiDevice;
 
 class StageProfiPlugin: public Plugin {
  public:
-    explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
-    ~StageProfiPlugin() {}
+  explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor) {}
+  ~StageProfiPlugin() {}
 
-    std::string Name() const { return PLUGIN_NAME; }
-    ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
-    std::string Description() const;
-    int SocketClosed(ola::io::ConnectedDescriptor *socket);
-    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
+  std::string Description() const;
+  int SocketClosed(ola::io::ConnectedDescriptor *socket);
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    bool StartHook();
-    bool StopHook();
-    bool SetDefaultPreferences();
-    void DeleteDevice(StageProfiDevice *device);
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
+  void DeleteDevice(StageProfiDevice *device);
 
-    std::vector<StageProfiDevice*> m_devices;  // list of our devices
+  std::vector<StageProfiDevice*> m_devices;  // list of our devices
 
-    static const char STAGEPROFI_DEVICE_PATH[];
-    static const char STAGEPROFI_DEVICE_NAME[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
-    static const char DEVICE_KEY[];
+  static const char STAGEPROFI_DEVICE_PATH[];
+  static const char STAGEPROFI_DEVICE_NAME[];
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
+  static const char DEVICE_KEY[];
 };
 }  // namespace stageprofi
 }  // namespace plugin

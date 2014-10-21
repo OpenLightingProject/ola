@@ -127,6 +127,7 @@ void DeviceManagerTest::testDeviceManager() {
   OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), manager.GetDevice(2));
 
   devices = manager.Devices();
+  OLA_ASSERT_EQ((size_t) 1, devices.size());
   OLA_ASSERT_EQ(2u, devices[0].alias);
   OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), devices[0].device);
 

@@ -33,39 +33,40 @@ namespace stageprofi {
 
 class StageProfiWidget {
  public:
-    StageProfiWidget():
-      m_enabled(false),
-      m_got_response(false),
-      m_socket(NULL),
-      m_ss(NULL) {}
-    virtual ~StageProfiWidget();
+  StageProfiWidget()
+      : m_enabled(false),
+        m_got_response(false),
+        m_socket(NULL),
+        m_ss(NULL) {}
 
-    // these methods are for communicating with the device
-    virtual bool Connect(const std::string &path) = 0;
-    int Disconnect();
-    std::string GetDevicePath() { return m_device_path; }
-    ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
-    bool SendDmx(const DmxBuffer &buffer) const;
-    bool DetectDevice();
-    void SocketReady();
-    void Timeout();
+  virtual ~StageProfiWidget();
+
+  // These methods are for communicating with the device
+  virtual bool Connect(const std::string &path) = 0;
+  int Disconnect();
+  std::string GetDevicePath() { return m_device_path; }
+  ola::io::ConnectedDescriptor *GetSocket() { return m_socket; }
+  bool SendDmx(const DmxBuffer &buffer) const;
+  bool DetectDevice();
+  void SocketReady();
+  void Timeout();
 
  protected:
-    int Send255(uint16_t start, const uint8_t *buf, unsigned int len) const;
-    int SetChannel(uint16_t chan, uint8_t val) const;
+  int Send255(uint16_t start, const uint8_t *buf, unsigned int len) const;
+  int SetChannel(uint16_t chan, uint8_t val) const;
 
-    // instance variables
-    bool m_enabled;
-    bool m_got_response;
-    std::string m_device_path;
-    ola::io::ConnectedDescriptor *m_socket;
-    ola::io::SelectServer *m_ss;
+  // instance variables
+  bool m_enabled;
+  bool m_got_response;
+  std::string m_device_path;
+  ola::io::ConnectedDescriptor *m_socket;
+  ola::io::SelectServer *m_ss;
 
-    enum { DMX_MSG_LEN = 255 };
-    enum { DMX_HEADER_SIZE = 4};
+  enum { DMX_MSG_LEN = 255 };
+  enum { DMX_HEADER_SIZE = 4};
 
  private:
-    int DoRecv();
+  int DoRecv();
 };
 }  // namespace stageprofi
 }  // namespace plugin
