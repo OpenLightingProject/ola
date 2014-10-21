@@ -106,8 +106,15 @@ class RpcServer {
    */
   ola::network::GenericSocketAddress ListenAddress();
 
+  /**
+   * @brief Manually attach a new client on the given descriptor
+   * @param descriptor The ConnectedDescriptor that the client is using.
+   *   Ownership of the descriptor is transferred.
+   */
+  bool AddClient(ola::io::ConnectedDescriptor *descriptor);
+
  private:
-  typedef std::set<ola::network::TCPSocket*> TCPSockets;
+  typedef std::set<ola::io::ConnectedDescriptor*> ClientDescriptors;
 
   ola::io::SelectServerInterface *m_ss;
   RpcService *m_service;
@@ -116,14 +123,14 @@ class RpcServer {
 
   ola::network::TCPSocketFactory m_tcp_socket_factory;
   std::auto_ptr<ola::network::TCPAcceptingSocket> m_accepting_socket;
-  TCPSockets m_connected_sockets;
+  ClientDescriptors m_connected_sockets;
 
   void NewTCPConnection(ola::network::TCPSocket *socket);
-  void ChannelClosed(ola::network::TCPSocket *socket,
+  void ChannelClosed(ola::io::ConnectedDescriptor *socket,
                      class RpcSession *session);
 
   void CleanupChannel(class RpcChannel *channel,
-                      ola::network::TCPSocket *socket);
+                      ola::io::ConnectedDescriptor *socket);
 
   static const char K_CLIENT_VAR[];
   static const char K_RPC_PORT_VAR[];

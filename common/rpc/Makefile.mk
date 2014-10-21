@@ -46,7 +46,8 @@ common_rpc_TEST_SOURCES = \
 common_rpc_RpcTester_SOURCES = \
     common/rpc/RpcControllerTest.cpp \
     common/rpc/RpcChannelTest.cpp \
-    common/rpc/RpcHeaderTest.cpp
+    common/rpc/RpcHeaderTest.cpp \
+    $(common_rpc_TEST_SOURCES)
 nodist_common_rpc_RpcTester_SOURCES = \
     common/rpc/TestService.pb.cc \
     common/rpc/TestServiceService.pb.cpp

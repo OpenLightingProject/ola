@@ -68,7 +68,7 @@ void TestServiceImpl::Stream(RpcController* controller,
                              const ::ola::rpc::EchoRequest* request,
                              STREAMING_NO_RESPONSE* response,
                              CompletionCallback* done) {
-  OLA_ASSERT_FALSE(controller);
+  OLA_ASSERT_NOT_NULL(controller);
   OLA_ASSERT_FALSE(response);
   OLA_ASSERT_FALSE(done);
   OLA_ASSERT_TRUE(request);
