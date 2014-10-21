@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServerServiceImpl.h
- * Implemtation of the OlaService interface
+ * Implementation of the OlaService interface
  * Copyright (C) 2005 Simon Newton
  */
 
