@@ -34,7 +34,7 @@ using std::endl;
 using std::string;
 
 DECLARE_int32(device);
-DEFINE_s_uint32(port_id, p, -1, "Id of the port to control");
+DEFINE_s_uint32(port_id, p, 0, "Id of the port to control");
 DEFINE_s_default_bool(input, i, false,
                       "Set an input port, otherwise set an output port.");
 DEFINE_bool(preview_mode, false, "Set the preview mode bit on|off");
