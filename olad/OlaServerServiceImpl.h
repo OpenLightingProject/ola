@@ -57,7 +57,6 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   OlaServerServiceImpl(class UniverseStore *universe_store,
                        class DeviceManager *device_manager,
                        class PluginManager *plugin_manager,
-                       class ExportMap *export_map,
                        class PortManager *port_manager,
                        class ClientBroker *broker,
                        const class TimeStamp *wake_up_time,
@@ -282,7 +281,6 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   UniverseStore *m_universe_store;
   DeviceManager *m_device_manager;
   class PluginManager *m_plugin_manager;
-  class ExportMap *m_export_map;
   class PortManager *m_port_manager;
   class ClientBroker *m_broker;
   const class TimeStamp *m_wake_up_time;

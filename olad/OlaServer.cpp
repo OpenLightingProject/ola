@@ -230,7 +230,6 @@ bool OlaServer::Init() {
       universe_store.get(),
       device_manager.get(),
       plugin_manager.get(),
-      m_export_map,
       port_manager.get(),
       broker.get(),
       m_ss->WakeUpTime(),
