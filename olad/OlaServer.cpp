@@ -79,7 +79,10 @@ using std::auto_ptr;
 using std::pair;
 using std::vector;
 
+const char OlaServer::INSTANCE_NAME_KEY[] = "instance-name";
+const char OlaServer::K_INSTANCE_NAME_VAR[] = "server-instance-name";
 const char OlaServer::K_UID_VAR[] = "server-uid";
+const char OlaServer::SERVER_PREFERENCES[] = "server";
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 // The Bonjour API expects <service>[,<sub-type>] so we use that form here.
 const char OlaServer::K_DISCOVERY_SERVICE_TYPE[] = "_http._tcp,_ola";
@@ -98,6 +101,7 @@ OlaServer::OlaServer(const vector<PluginLoader*> &plugin_loaders,
       m_accepting_socket(socket),
       m_export_map(export_map),
       m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0),
+      m_server_preferences(NULL),
       m_universe_preferences(NULL),
       m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT) {
   if (!m_export_map) {
@@ -131,6 +135,10 @@ OlaServer::~OlaServer() {
   if (m_universe_store.get()) {
     m_universe_store->DeleteAll();
     m_universe_store.reset();
+  }
+
+  if (m_server_preferences) {
+    m_server_preferences->Save();
   }
 
   if (m_universe_preferences) {
@@ -169,7 +177,7 @@ bool OlaServer::Init() {
   ola::network::Interface iface;
   {
     auto_ptr<ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
+        ola::network::InterfacePicker::NewPicker());
     if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
     } else {
@@ -180,6 +188,18 @@ bool OlaServer::Init() {
   }
   m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());
   OLA_INFO << "Server UID is " << m_default_uid;
+
+  m_server_preferences = m_preferences_factory->NewPreference(
+      SERVER_PREFERENCES);
+  m_server_preferences->Load();
+  if (m_server_preferences->SetDefaultValue(INSTANCE_NAME_KEY,
+                                            StringValidator(),
+                                            "OLA Server")) {
+    m_server_preferences->Save();
+  }
+  m_instance_name = m_server_preferences->GetValue(INSTANCE_NAME_KEY);
+  m_export_map->GetStringVar(K_INSTANCE_NAME_VAR)->Set(m_instance_name);
+  OLA_INFO << "Server instance name is " << m_instance_name;
 
   Preferences *universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
@@ -200,7 +220,8 @@ bool OlaServer::Init() {
 
   auto_ptr<PluginAdaptor> plugin_adaptor(
       new PluginAdaptor(device_manager.get(), m_ss, m_export_map,
-                        m_preferences_factory, port_broker.get()));
+                        m_preferences_factory, port_broker.get(),
+                        &m_instance_name));
 
   auto_ptr<PluginManager> plugin_manager(
     new PluginManager(m_plugin_loaders, plugin_adaptor.get()));
@@ -209,7 +230,6 @@ bool OlaServer::Init() {
       universe_store.get(),
       device_manager.get(),
       plugin_manager.get(),
-      m_export_map,
       port_manager.get(),
       broker.get(),
       m_ss->WakeUpTime(),
@@ -318,7 +338,6 @@ void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
   InternalNewConnection(m_rpc_server.get(), descriptor);
 }
 
-
 ola::network::GenericSocketAddress OlaServer::LocalRPCAddress() const {
   if (m_rpc_server.get()) {
     return m_rpc_server->ListenAddress();
@@ -376,11 +395,6 @@ bool OlaServer::RunHousekeeping() {
   return true;
 }
 
-
-/*
- * Setup the HTTP server if required.
- * @param interface the primary interface that the server is using.
- */
 #ifdef HAVE_LIBMICROHTTPD
 bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
                                 const ola::network::Interface &iface) {
@@ -420,10 +434,6 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
 }
 #endif
 
-
-/*
- * Stop and unload all the plugins
- */
 void OlaServer::StopPlugins() {
   if (m_plugin_manager.get())
     m_plugin_manager->UnloadAll();
@@ -435,7 +445,6 @@ void OlaServer::StopPlugins() {
     m_device_manager->UnregisterAllDevices();
   }
 }
-
 
 /*
  * Add a new ConnectedDescriptor to this Server.
@@ -452,18 +461,12 @@ bool OlaServer::InternalNewConnection(
   }
 }
 
-/**
- * Reload the plugins. Called from the SelectServer thread.
- */
 void OlaServer::ReloadPluginsInternal() {
   OLA_INFO << "Reloading plugins";
   StopPlugins();
   m_plugin_manager->LoadAll();
 }
 
-/**
- * Update the Pid store with the new values.
- */
 void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
   OLA_INFO << "Updated PID definitions.";
 #ifdef HAVE_LIBMICROHTTPD

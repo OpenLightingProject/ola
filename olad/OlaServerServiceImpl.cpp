@@ -27,7 +27,6 @@
 #include "ola/Callback.h"
 #include "ola/CallbackRunner.h"
 #include "ola/DmxBuffer.h"
-#include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UIDSet.h"
@@ -83,7 +82,6 @@ OlaServerServiceImpl::OlaServerServiceImpl(
     UniverseStore *universe_store,
     DeviceManager *device_manager,
     PluginManager *plugin_manager,
-    ExportMap *export_map,
     PortManager *port_manager,
     ClientBroker *broker,
     const TimeStamp *wake_up_time,
@@ -91,7 +89,6 @@ OlaServerServiceImpl::OlaServerServiceImpl(
     : m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_manager(plugin_manager),
-      m_export_map(export_map),
       m_port_manager(port_manager),
       m_broker(broker),
       m_wake_up_time(wake_up_time),

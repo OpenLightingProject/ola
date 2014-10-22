@@ -242,7 +242,7 @@ void UniverseTest::testReceiveDmx() {
   ola::PortManager port_manager(m_store, &broker);
   TimeStamp time_stamp;
   MockSelectServer ss(&time_stamp);
-  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL);
 
   MockDevice device(NULL, "foo");
   TestMockInputPort port(&device, 1, &plugin_adaptor);  // input port
@@ -367,7 +367,7 @@ void UniverseTest::testLtpMerging() {
 
   TimeStamp time_stamp;
   MockSelectServer ss(&time_stamp);
-  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL);
   MockDevice device(NULL, "foo");
   MockDevice device2(NULL, "bar");
   TestMockInputPort port(&device, 1, &plugin_adaptor);  // input port
@@ -447,7 +447,7 @@ void UniverseTest::testHtpMerging() {
 
   TimeStamp time_stamp;
   MockSelectServer ss(&time_stamp);
-  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL);
   MockDevice device(NULL, "foo");
   MockDevice device2(NULL, "bar");
   TestMockInputPort port(&device, 1, &plugin_adaptor);  // input port

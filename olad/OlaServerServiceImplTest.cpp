@@ -217,8 +217,7 @@ class GenericAckCheck: public parent {
  */
 void OlaServerServiceImplTest::testGetDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl service(
-      &store, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
     missing_universe_check;
@@ -275,8 +274,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *service,
  */
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL,
-                               NULL, NULL);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   // Register for a universe that doesn't exist
   unsigned int universe_id = 0;
@@ -357,7 +355,7 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   ola::TimeStamp time1;
   ola::Client client1(NULL, m_uid);
   ola::Client client2(NULL, m_uid);
-  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL,
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL,
                                &time1, NULL);
 
   GenericMissingUniverseCheck<UpdateDmxDataCheck, ola::proto::Ack>
@@ -429,8 +427,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
  */
 void OlaServerServiceImplTest::testSetUniverseName() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl service(
-      &store, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   unsigned int universe_id = 0;
   string universe_name = "test 1";
@@ -488,8 +485,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
  */
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl service(
-      &store, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   unsigned int universe_id = 0;
 

@@ -72,6 +72,7 @@ doxygen/examples/callback_client_transmit
 doxygen/examples/callback_client_transmit.exe
 doxygen/examples/flags
 doxygen/examples/flags.exe
+doxygen/examples/legacy_callback_client_transmit
 doxygen/examples/legacy_callback_client_transmit.exe
 doxygen/examples/legacy_receiver
 doxygen/examples/legacy_receiver.exe

@@ -64,13 +64,14 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
    * @brief Options for the OlaServer.
    */
   struct Options {
-    bool http_enable;  // run the http server
-    bool http_localhost_only;  // restrict access to localhost only
-    bool http_enable_quit;  // enable /quit
-    unsigned int http_port;  // port to run the http server on
-    std::string http_data_dir;  // directory that contains the static content
+    bool http_enable;  /** @brief Run the HTTP server */
+    bool http_localhost_only;  /** @brief Restrict access to localhost only */
+    bool http_enable_quit;  /** @brief Enable /quit URL */
+    unsigned int http_port;  /** @brief Port to run the HTTP server on */
+    /** @brief Directory that contains the static content */
+    std::string http_data_dir;
     std::string network_interface;
-    std::string pid_data_dir;  // directory with the pid definitions.
+    std::string pid_data_dir;  /** @brief Directory with the PID definitions */
   };
 
   /**
@@ -124,7 +125,6 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
    */
   void StopServer() { m_ss->Terminate(); }
 
-
   /**
    * @brief Add a new ConnectedDescriptor to this Server.
    * @param descriptor the new ConnectedDescriptor, ownership is transferred.
@@ -141,6 +141,14 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
   // Called by the RpcServer when clients connect or disconnect.
   void NewClient(ola::rpc::RpcSession *session);
   void ClientRemoved(ola::rpc::RpcSession *session);
+
+  /**
+   * @brief Get the instance name
+   * @return a string which is the instance name
+   */
+  const std::string InstanceName() {
+    return m_instance_name;
+  }
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
@@ -177,7 +185,9 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
   std::auto_ptr<const ola::rdm::RootPidStore> m_pid_store;
   std::auto_ptr<class DiscoveryAgentInterface> m_discovery_agent;
   std::auto_ptr<ola::rpc::RpcServer> m_rpc_server;
+  class Preferences *m_server_preferences;
   class Preferences *m_universe_preferences;
+  std::string m_instance_name;
 
   ola::thread::timeout_id m_housekeeping_timeout;
   std::auto_ptr<OladHTTPServer_t> m_httpd;
@@ -188,14 +198,23 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
   bool StartHttpServer(ola::rpc::RpcServer *server,
                        const ola::network::Interface &iface);
 #endif
+  /**
+   * @brief Stop and unload all the plugins
+   */
   void StopPlugins();
   bool InternalNewConnection(ola::rpc::RpcServer *server,
                              ola::io::ConnectedDescriptor *descriptor);
   void ReloadPluginsInternal();
+  /**
+   * @brief Update the Pid store with the new values.
+   */
   void UpdatePidStore(const ola::rdm::RootPidStore *pid_store);
 
+  static const char INSTANCE_NAME_KEY[];
+  static const char K_INSTANCE_NAME_VAR[];
   static const char K_DISCOVERY_SERVICE_TYPE[];
   static const char K_UID_VAR[];
+  static const char SERVER_PREFERENCES[];
   static const char UNIVERSE_PREFERENCES[];
   static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;
 

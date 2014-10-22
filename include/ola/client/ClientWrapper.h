@@ -58,7 +58,7 @@ class BaseClientWrapper {
    * @brief Set the callback to be run when the client socket is closed.
    *
    * The default action is to terminate the SelectServer. By setting a callback
-   * you can override thie behavior.
+   * you can override this behavior.
    *
    * @param callback the Callback to run, ownership is transferred.
    */
