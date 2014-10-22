@@ -12,3 +12,6 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idPro
 
 # udev rules for the Eurolite
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="fa63", GROUP="plugdev" MODE="660" 
+
+# udev rules for the img Stage Line DMX device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="ff86", GROUP="plugdev"

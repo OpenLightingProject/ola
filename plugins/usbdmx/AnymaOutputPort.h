@@ -39,34 +39,34 @@ class AnymaDevice;
 
 class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
  public:
-    AnymaOutputPort(AnymaDevice *parent,
-                    unsigned int id,
-                    libusb_device_handle *usb_handle,
-                    const std::string &serial);
-    ~AnymaOutputPort();
-    std::string SerialNumber() const { return m_serial; }
+  AnymaOutputPort(AnymaDevice *parent,
+                  unsigned int id,
+                  libusb_device_handle *usb_handle,
+                  const std::string &serial);
+  ~AnymaOutputPort();
+  std::string SerialNumber() const { return m_serial; }
 
-    bool Start();
-    void *Run();
+  bool Start();
+  void *Run();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    std::string Description() const { return ""; }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const { return ""; }
 
  private:
-    static const unsigned int URB_TIMEOUT_MS = 500;
-    static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
+  static const unsigned int URB_TIMEOUT_MS = 500;
+  static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
 
-    bool m_term;
-    std::string m_serial;
-    libusb_device_handle *m_usb_handle;
-    DmxBuffer m_buffer;
-    ola::thread::Mutex m_data_mutex;
-    ola::thread::Mutex m_term_mutex;
+  bool m_term;
+  std::string m_serial;
+  libusb_device_handle *m_usb_handle;
+  DmxBuffer m_buffer;
+  ola::thread::Mutex m_data_mutex;
+  ola::thread::Mutex m_term_mutex;
 
-    bool SendDMX(const DmxBuffer &buffer_old);
-    bool GetDescriptorString(libusb_device_handle *usb_handle,
-                             uint8_t desc_index,
-                             std::string *data);
+  bool SendDMX(const DmxBuffer &buffer_old);
+  bool GetDescriptorString(libusb_device_handle *usb_handle,
+                           uint8_t desc_index,
+                           std::string *data);
 };
 }  // namespace usbdmx
 }  // namespace plugin

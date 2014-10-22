@@ -13,43 +13,35 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * UsbDevice.h
- * Interface for the generic usb device
- * Copyright (C) 2010 Simon Newton
+ * ImgStageLineDevice.cpp
+ * The img Stage Line DMX-1USB device
+ * Copyright (C) 2014 Peter Newman
  */
 
-#ifndef PLUGINS_USBDMX_USBDEVICE_H_
-#define PLUGINS_USBDMX_USBDEVICE_H_
+#include <string.h>
+#include <sys/time.h>
 
-#include <libusb.h>
-#include <string>
-#include "olad/Device.h"
+#include "ola/Logging.h"
+#include "plugins/usbdmx/ImgStageLineDevice.h"
+#include "plugins/usbdmx/ImgStageLineOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 /*
- * A Usb device, this is just like the generic Device class but it has a
- * Start() method as well to do the USB setup.
+ * Start this device.
  */
-class UsbDevice: public ola::Device {
- public:
-  UsbDevice(ola::AbstractPlugin *owner,
-            const std::string &name,
-            libusb_device *device)
-      : Device(owner, name),
-        m_usb_device(device) {
-        libusb_ref_device(device);
+bool ImgStageLineDevice::StartHook() {
+  ImgStageLineOutputPort *output_port =
+      new ImgStageLineOutputPort(this, 0, m_usb_device);
+  if (!output_port->Start()) {
+    delete output_port;
+    return false;
   }
-  virtual ~UsbDevice() {
-     libusb_unref_device(m_usb_device);
-  }
-
- protected:
-  libusb_device *m_usb_device;
-};
+  AddPort(output_port);
+  return true;
+}
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_USBDEVICE_H_

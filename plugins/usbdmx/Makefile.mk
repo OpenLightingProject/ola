@@ -12,6 +12,10 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/EuroliteProOutputPort.cpp \
     plugins/usbdmx/EuroliteProOutputPort.h \
     plugins/usbdmx/FirmwareLoader.h \
+    plugins/usbdmx/ImgStageLineDevice.cpp \
+    plugins/usbdmx/ImgStageLineDevice.h \
+    plugins/usbdmx/ImgStageLineOutputPort.cpp \
+    plugins/usbdmx/ImgStageLineOutputPort.h \
     plugins/usbdmx/SunliteDevice.cpp \
     plugins/usbdmx/SunliteDevice.h \
     plugins/usbdmx/SunliteFirmware.h \

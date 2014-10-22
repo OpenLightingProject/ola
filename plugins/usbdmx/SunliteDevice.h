@@ -34,15 +34,15 @@ namespace usbdmx {
  */
 class SunliteDevice: public UsbDevice {
  public:
-    SunliteDevice(ola::AbstractPlugin *owner,
-                  libusb_device *usb_device):
-        UsbDevice(owner, "Sunlite USB Device", usb_device) {
-    }
+  SunliteDevice(ola::AbstractPlugin *owner,
+                libusb_device *usb_device)
+      : UsbDevice(owner, "Sunlite USB Device", usb_device) {
+  }
 
-    std::string DeviceId() const { return "usbdmx2"; }
+  std::string DeviceId() const { return "usbdmx2"; }
 
  protected:
-    bool StartHook();
+  bool StartHook();
 };
 }  // namespace usbdmx
 }  // namespace plugin

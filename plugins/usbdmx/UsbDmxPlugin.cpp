@@ -37,6 +37,7 @@
 #include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
+#include "plugins/usbdmx/ImgStageLineDevice.h"
 #include "plugins/usbdmx/SunliteDevice.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
 #include "plugins/usbdmx/UsbDevice.h"
@@ -187,17 +188,25 @@ void UsbDmxPlugin::FindDevices() {
       OLA_INFO << "Found a Velleman USB device";
       device = new VellemanDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x0962 &&
-        device_descriptor.idProduct == 0x2001) {
+               device_descriptor.idProduct == 0x2001) {
       OLA_INFO << "Found a Sunlite device";
       device = new SunliteDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x16C0 &&
-        device_descriptor.idProduct == 0x05DC) {
+               device_descriptor.idProduct == 0x05DC) {
       OLA_INFO << "Found an Anyma device";
       device = NewAnymaDevice(usb_device, device_descriptor);
     } else if (device_descriptor.idVendor == 0x04d8 &&
-        device_descriptor.idProduct == 0xfa63) {
+               device_descriptor.idProduct == 0xfa63) {
       OLA_INFO << "Found a EUROLITE device";
-       device = new EuroliteProDevice(this, usb_device);
+      device = new EuroliteProDevice(this, usb_device);
+    } else if (device_descriptor.idVendor == 0x04d8 &&
+               device_descriptor.idProduct == 0xff86) {
+      OLA_INFO << "Found an img Stage Line device";
+      device = new ImgStageLineDevice(this, usb_device);
+    } else {
+      OLA_DEBUG << "Found an unknown device, skipping. VID: "
+                << device_descriptor.idVendor << ", PID: "
+                << device_descriptor.idProduct;
     }
 
     if (device) {
@@ -246,7 +255,7 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n"
+"Anyma uDMX, img Stage line DMX-1USB, Sunlite USBDMX2 & Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"
