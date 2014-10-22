@@ -34,7 +34,7 @@ using std::endl;
 using std::string;
 
 DECLARE_int32(device);
-DEFINE_s_uint32(port_id, p, -1, "Id of the port to control");
+DEFINE_s_uint32(port_id, p, 0, "Id of the port to control");
 DEFINE_s_default_bool(input, i, false,
                       "Set an input port, otherwise set an output port.");
 DEFINE_bool(preview_mode, false, "Set the preview mode bit on|off");
@@ -101,12 +101,17 @@ void E131Configurator::SendConfigRequest() {
   ola::plugin::e131::Request request;
 
   if (FLAGS_preview_mode.present()) {
-    request.set_type(ola::plugin::e131::Request::E131_PREVIEW_MODE);
-    ola::plugin::e131::PreviewModeRequest *preview_request =
-      request.mutable_preview_mode();
-    preview_request->set_port_id(FLAGS_port_id);
-    preview_request->set_preview_mode(FLAGS_preview_mode);
-    preview_request->set_input_port(FLAGS_input);
+    if (FLAGS_port_id.present()) {
+      request.set_type(ola::plugin::e131::Request::E131_PREVIEW_MODE);
+      ola::plugin::e131::PreviewModeRequest *preview_request =
+          request.mutable_preview_mode();
+      preview_request->set_port_id(FLAGS_port_id);
+      preview_request->set_preview_mode(FLAGS_preview_mode);
+      preview_request->set_input_port(FLAGS_input);
+    } else {
+      cout << "Please specify a port number" << endl;
+      request.set_type(ola::plugin::e131::Request::E131_PORT_INFO);
+    }
   } else if (FLAGS_discovery) {
     request.set_type(ola::plugin::e131::Request::E131_SOURCES_LIST);
     ola::plugin::e131::SourceListRequest *source_list_request =
