@@ -31,8 +31,8 @@ namespace plugin {
 namespace stageprofi {
 
 StageProfiOutputPort::StageProfiOutputPort(StageProfiDevice *parent,
-                       unsigned int id,
-                       StageProfiWidget *widget)
+                                           unsigned int id,
+                                           StageProfiWidget *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }

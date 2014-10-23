@@ -34,6 +34,7 @@
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/IOUtils.h"
 #include "ola/io/SelectServerInterface.h"
@@ -89,7 +90,7 @@ StageProfiDetector::StageProfiDetector(SelectServerInterface *ss,
       continue;
     }
 
-    if (iter->at(0) == '/') {
+    if (iter->at(0) == ola::file::PATH_SEPARATOR) {
       STLReplace(&m_usb_widgets, *iter, NULL);
     } else {
       IPV4SocketAddress socket_addr;
@@ -129,7 +130,7 @@ void StageProfiDetector::ReleaseWidget(const std::string &widget_path) {
   }
 
   iter = m_tcp_widgets.find(widget_path);
-  if (iter != m_usb_widgets.end()) {
+  if (iter != m_tcp_connector.end()) {
     iter->second = NULL;
     IPV4SocketAddress socket_addr;
     if (EndpointFromString(widget_path, &socket_addr)) {

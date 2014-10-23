@@ -28,7 +28,7 @@ using std::cout;
 using std::endl;
 
 int main(int, char *[]) {
-  unsigned int universe = 3;  // universe to use for sending data
+  unsigned int universe = 1;  // universe to use for sending data
 
   // turn on OLA logging
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
@@ -48,13 +48,13 @@ int main(int, char *[]) {
 
   // Send 100 frames to the server. Increment slot (channel) 0 each time a
   // frame is sent.
-  for (unsigned int i = 0; i < 5000; i++) {
+  for (unsigned int i = 0; i < 100; i++) {
     buffer.SetChannel(0, i);
     if (!ola_client.SendDmx(universe, buffer)) {
       cout << "Send DMX failed" << endl;
       exit(1);
     }
-    usleep(200000);   // sleep for 25ms between frames.
+    usleep(25000);   // sleep for 25ms between frames.
   }
   return 0;
 }
