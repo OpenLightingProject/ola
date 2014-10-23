@@ -21,7 +21,8 @@
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
 #define PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
 
-#include <vector>
+#include <memory>
+#include <map>
 #include <string>
 #include "olad/Plugin.h"
 #include "ola/network/Socket.h"
@@ -37,21 +38,27 @@ class StageProfiPlugin: public Plugin {
  public:
   explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor)
       : Plugin(plugin_adaptor) {}
-  ~StageProfiPlugin() {}
+  ~StageProfiPlugin();
 
   std::string Name() const { return PLUGIN_NAME; }
   ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
   std::string Description() const;
-  int SocketClosed(ola::io::ConnectedDescriptor *socket);
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
+  typedef std::map<std::string, StageProfiDevice*> DeviceMap;
+
+  DeviceMap m_devices;
+  std::auto_ptr<class StageProfiDetector> m_detector;
+
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
-  void DeleteDevice(StageProfiDevice *device);
+  void NewWidget(const std::string &widget_path,
+                 ola::io::ConnectedDescriptor *descriptor);
 
-  std::vector<StageProfiDevice*> m_devices;  // list of our devices
+  void DeviceRemoved(std::string widget_path);
+  void DeleteDevice(StageProfiDevice *device);
 
   static const char STAGEPROFI_DEVICE_PATH[];
   static const char STAGEPROFI_DEVICE_NAME[];

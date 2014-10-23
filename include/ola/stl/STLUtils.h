@@ -98,8 +98,11 @@ void STLEmptyStackAndDelete(T *stack) {
 template<typename T>
 void STLDeleteElements(T *sequence) {
   typename T::iterator iter = sequence->begin();
-  for (; iter != sequence->end(); ++iter)
-    delete *iter;
+  for (; iter != sequence->end(); ++iter) {
+    if (*iter) {
+      delete *iter;
+    }
+  }
   sequence->clear();
 }
 
@@ -130,11 +133,13 @@ void STLDeleteElements(T *sequence) {
 template<typename T>
 void STLDeleteValues(T *container) {
   typename T::iterator iter = container->begin();
-  for (; iter != container->end(); ++iter)
-    delete iter->second;
+  for (; iter != container->end(); ++iter) {
+    if (iter->second) {
+      delete iter->second;
+    }
+  }
   container->clear();
 }
-
 
 /**
  * Returns true if the container contains the value.
@@ -460,6 +465,30 @@ typename T1::mapped_type STLLookupAndRemovePtr(
     typename T1::mapped_type value = iter->second;
     container->erase(iter);
     return value;
+  }
+}
+
+/**
+ * Add elements of a sequence to an associative container.
+ * @param output The associative container to add to.
+ * @param input The sequence containing the elements to add.
+ * @param value The value to use for each key in input.
+ * @tparam T1 A pair associative container.
+ * @tparam T2 A sequence.
+ *
+ * Any existing elements that conflict with the values in the sequence will be
+ * replaced.
+ */
+template<typename T1, typename T2>
+void STLMapFromKeys(T1 *output, const T2 input,
+                    typename T1::mapped_type value) {
+  typename T2::const_iterator iter = input.begin();
+  for (; iter != input.end(); ++iter) {
+    std::pair<typename T1::iterator, bool> p = output->insert(
+        typename T1::value_type(*iter, value));
+    if (!p.second) {
+      p.first->second = value;
+    }
   }
 }
 }  // namespace ola

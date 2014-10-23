@@ -26,15 +26,21 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/PluginAdaptor.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/TCPSocket.h"
 #include "olad/Preferences.h"
+#include "plugins/stageprofi/StageProfiDetector.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
 using ola::io::ConnectedDescriptor;
+using std::auto_ptr;
 using std::string;
 using std::vector;
 
@@ -44,57 +50,31 @@ const char StageProfiPlugin::PLUGIN_NAME[] = "StageProfi";
 const char StageProfiPlugin::PLUGIN_PREFIX[] = "stageprofi";
 const char StageProfiPlugin::DEVICE_KEY[] = "device";
 
-/*
- * Start the plugin
- *
- * Multiple devices now supported
- */
+StageProfiPlugin::~StageProfiPlugin() {
+}
+
 bool StageProfiPlugin::StartHook() {
-  vector<string> device_names;
-  vector<string>::iterator it;
-  StageProfiDevice *device;
-
-  // fetch device listing
-  device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
-
-  for (it = device_names.begin(); it != device_names.end(); ++it) {
-    if (it->empty()) {
-      continue;
-    }
-
-    device = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
-
-    if (!device->Start()) {
-      delete device;
-      continue;
-    }
-
-    m_plugin_adaptor->AddReadDescriptor(device->GetSocket());
-    m_plugin_adaptor->RegisterDevice(device);
-    m_devices.push_back(device);
-  }
+  vector<string> device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
+  m_detector.reset(new StageProfiDetector(
+      m_plugin_adaptor, device_names,
+      NewCallback(this, &StageProfiPlugin::NewWidget)));
+  m_detector->Start();
   return true;
 }
 
-
-/*
- * Stop the plugin
- * @return true on success, false on failure
- */
 bool StageProfiPlugin::StopHook() {
-  vector<StageProfiDevice*>::iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    m_plugin_adaptor->RemoveReadDescriptor((*iter)->GetSocket());
-    DeleteDevice(*iter);
+  m_detector->Stop();
+
+  DeviceMap::iterator iter = m_devices.begin();
+  for (; iter != m_devices.end(); ++iter) {
+    DeleteDevice(iter->second);
   }
+  // There may be devices pending in the callback queue. Take care of them now.
+  m_plugin_adaptor->DrainCallbacks();
   m_devices.clear();
   return true;
 }
 
-
-/*
- * Return the description for this plugin
- */
 string StageProfiPlugin::Description() const {
     return
 "StageProfi Plugin\n"
@@ -111,34 +91,6 @@ string StageProfiPlugin::Description() const {
 "\n";
 }
 
-
-/*
- * Called when the file descriptor is closed.
- */
-int StageProfiPlugin::SocketClosed(ConnectedDescriptor *socket) {
-  vector<StageProfiDevice*>::iterator iter;
-
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    if ((*iter)->GetSocket() == socket) {
-      break;
-    }
-  }
-
-  if (iter == m_devices.end()) {
-    OLA_WARN << "unknown fd";
-    return -1;
-  }
-
-  DeleteDevice(*iter);
-  m_devices.erase(iter);
-  return 0;
-}
-
-
-/*
- * load the plugin prefs and default to sensible values
- *
- */
 bool StageProfiPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
@@ -158,14 +110,51 @@ bool StageProfiPlugin::SetDefaultPreferences() {
   return true;
 }
 
+void StageProfiPlugin::NewWidget(const std::string &widget_path,
+                                 ConnectedDescriptor *descriptor) {
+  OLA_INFO << "New StageProfiWidget: " << widget_path;
 
-/*
- * Cleanup a single device
- */
+  DeviceMap::iterator iter = STLLookupOrInsertNull(&m_devices, widget_path);
+  if (iter->second) {
+    OLA_WARN << "Pre-existing StageProfiDevice for " << widget_path;
+    return;
+  }
+
+  auto_ptr<StageProfiDevice> device(new StageProfiDevice(
+      this,
+      new StageProfiWidget(
+          m_plugin_adaptor, descriptor, widget_path,
+          NewSingleCallback(this, &StageProfiPlugin::DeviceRemoved,
+                            widget_path)),
+      STAGEPROFI_DEVICE_NAME));
+
+  if (!device->Start()) {
+    OLA_INFO << "Failed to start StageProfiDevice";
+    return;
+  }
+
+  m_plugin_adaptor->RegisterDevice(device.get());
+  iter->second = device.release();
+}
+
+void StageProfiPlugin::DeviceRemoved(std::string widget_path) {
+  OLA_INFO << "StageProfi device " << widget_path << " was removed";
+  StageProfiDevice *device = STLReplacePtr(&m_devices, widget_path, NULL);
+  if (device) {
+    // Since this is called within the call stack of the StageProfiWidget
+    // itself, we need to schedule deletion for later.
+    m_plugin_adaptor->Execute(
+        NewSingleCallback(this, &StageProfiPlugin::DeleteDevice, device));
+  }
+  m_detector->ReleaseWidget(widget_path);
+}
+
 void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
-  m_plugin_adaptor->UnregisterDevice(device);
-  device->Stop();
-  delete device;
+  if (device) {
+    m_plugin_adaptor->UnregisterDevice(device);
+    device->Stop();
+    delete device;
+  }
 }
 }  // namespace stageprofi
 }  // namespace plugin

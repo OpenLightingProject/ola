@@ -25,22 +25,32 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
-#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+class StageProfiWidget;
+
+/**
+ * @brief An OutputPort for the StageProfi Device.
+ */
 class StageProfiOutputPort: public BasicOutputPort {
  public:
+  /**
+   * @brief Create a new StageProfi Output Port.
+   * @param parent the StageProfiDevice this port belongs to
+   * @param id the port-id.
+   * @param widget the StageProfiWidget to use for this port, ownership is not
+   *   transferred.
+   */
   StageProfiOutputPort(StageProfiDevice *parent,
                        unsigned int id,
-                       StageProfiWidget *widget)
-      : BasicOutputPort(parent, id),
-        m_widget(widget) {}
+                       StageProfiWidget *widget);
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-  std::string Description() const { return m_widget->GetDevicePath(); }
+
+  std::string Description() const;
 
  private:
   StageProfiWidget *m_widget;

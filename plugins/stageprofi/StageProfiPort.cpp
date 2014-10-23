@@ -21,16 +21,29 @@
 #include "plugins/stageprofi/StageProfiPort.h"
 
 #include <string.h>
+#include <string>
 #include "ola/base/Macro.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+StageProfiOutputPort::StageProfiOutputPort(StageProfiDevice *parent,
+                                           unsigned int id,
+                                           StageProfiWidget *widget)
+    : BasicOutputPort(parent, id),
+      m_widget(widget) {
+}
+
 bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
                                     OLA_UNUSED uint8_t priority) {
   return m_widget->SendDmx(buffer);
+}
+
+std::string StageProfiOutputPort::Description() const {
+  return m_widget->GetPath();
 }
 }  // namespace stageprofi
 }  // namespace plugin

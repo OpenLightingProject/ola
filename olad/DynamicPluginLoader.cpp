@@ -112,7 +112,7 @@ namespace ola {
 using std::vector;
 
 DynamicPluginLoader::~DynamicPluginLoader() {
-  STLDeleteElements(&m_plugins);
+  UnloadPlugins();
 }
 
 vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
@@ -217,5 +217,9 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
 #endif
+}
+
+void DynamicPluginLoader::UnloadPlugins() {
+  STLDeleteElements(&m_plugins);
 }
 }  // namespace ola
