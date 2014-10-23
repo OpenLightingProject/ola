@@ -144,7 +144,8 @@ bool StageProfiWidget::Send255(uint16_t start,
   msg[3] = len;
   memcpy(msg + DMX_HEADER_SIZE, buf, len);
 
-  const unsigned int bytes_to_send = len + DMX_HEADER_SIZE;
+  // This needs to be an int, as m_descriptor->Send() below returns an int
+  const int bytes_to_send = len + DMX_HEADER_SIZE;
   return m_descriptor->Send(msg, bytes_to_send) == bytes_to_send;
 }
 

@@ -27,6 +27,7 @@
 #include "olad/Plugin.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
+#include "plugins/stageprofi/StageProfiDetector.h"
 
 namespace ola {
 namespace plugin {
