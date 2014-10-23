@@ -37,7 +37,7 @@ class DynamicPluginLoader: public PluginLoader {
 
   std::vector<class AbstractPlugin*> LoadPlugins();
 
-  void UnloadPlugins() {}
+  void UnloadPlugins();
 
  private:
   void PopulatePlugins();

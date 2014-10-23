@@ -54,7 +54,7 @@ int main(int, char *[]) {
       cout << "Send DMX failed" << endl;
       exit(1);
     }
-    usleep(20000);   // sleep for 25ms between frames.
+    usleep(25000);   // sleep for 25ms between frames.
   }
   return 0;
 }

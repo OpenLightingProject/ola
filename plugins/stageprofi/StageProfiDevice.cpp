@@ -20,18 +20,11 @@
 
 #include "plugins/stageprofi/StageProfiDevice.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
 #include <string>
 
 #include "ola/Logging.h"
-#include "olad/Preferences.h"
-#include "olad/Universe.h"
 #include "plugins/stageprofi/StageProfiPort.h"
-#include "plugins/stageprofi/StageProfiWidgetLan.h"
-#include "plugins/stageprofi/StageProfiWidgetUsb.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -43,63 +36,29 @@ using std::string;
 
 
 StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
-                                   const string &name,
-                                   const string &dev_path)
+                                   StageProfiWidget *widget,
+                                   const string &name)
     : Device(owner, name),
-      m_path(dev_path) {
-    if (dev_path.at(0) == '/') {
-      m_widget.reset(new StageProfiWidgetUsb());
-    } else {
-      m_widget.reset(new StageProfiWidgetLan());
-    }
+      m_widget(widget) {
 }
 
 
-/*
- * Destroy this device
- */
 StageProfiDevice::~StageProfiDevice() {
   // Stub destructor for compatibility with StageProfiWidget subclasses
 }
 
-/*
- * Start this device
- */
+string StageProfiDevice::DeviceId() const {
+  return m_widget->GetPath();
+}
+
 bool StageProfiDevice::StartHook() {
   if (!m_widget.get())
     return false;
-
-  if (!m_widget->Connect(m_path)) {
-    OLA_WARN << "StageProfiPlugin: failed to connect to " << m_path;
-    return false;
-  }
-
-  if (!m_widget->DetectDevice()) {
-    OLA_WARN << "StageProfiPlugin: no device found at " << m_path;
-    return false;
-  }
 
   StageProfiOutputPort *port = new StageProfiOutputPort(
       this, 0, m_widget.get());
   AddPort(port);
   return true;
-}
-
-
-/*
- * Stop this device
- */
-void StageProfiDevice::PrePortStop() {
-  // disconnect from widget
-  m_widget->Disconnect();
-}
-
-
-/*
- * return the sd for this device
- */
-ConnectedDescriptor *StageProfiDevice::GetSocket() const {
-  return m_widget->GetSocket();
 }
 }  // namespace stageprofi
 }  // namespace plugin

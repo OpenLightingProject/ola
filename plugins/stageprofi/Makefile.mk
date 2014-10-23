@@ -3,6 +3,8 @@
 if USE_STAGEPROFI
 lib_LTLIBRARIES += plugins/stageprofi/libolastageprofi.la
 plugins_stageprofi_libolastageprofi_la_SOURCES = \
+    plugins/stageprofi/StageProfiDetector.cpp \
+    plugins/stageprofi/StageProfiDetector.h \
     plugins/stageprofi/StageProfiDevice.cpp \
     plugins/stageprofi/StageProfiDevice.h \
     plugins/stageprofi/StageProfiPlugin.cpp \
@@ -10,10 +12,7 @@ plugins_stageprofi_libolastageprofi_la_SOURCES = \
     plugins/stageprofi/StageProfiPort.cpp \
     plugins/stageprofi/StageProfiPort.h \
     plugins/stageprofi/StageProfiWidget.cpp \
-    plugins/stageprofi/StageProfiWidget.h \
-    plugins/stageprofi/StageProfiWidgetLan.cpp \
-    plugins/stageprofi/StageProfiWidgetLan.h \
-    plugins/stageprofi/StageProfiWidgetUsb.cpp \
-    plugins/stageprofi/StageProfiWidgetUsb.h
+    plugins/stageprofi/StageProfiWidget.h
 plugins_stageprofi_libolastageprofi_la_LIBADD = common/libolacommon.la
 endif
+
