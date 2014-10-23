@@ -130,7 +130,7 @@ void StageProfiDetector::ReleaseWidget(const std::string &widget_path) {
   }
 
   iter = m_tcp_widgets.find(widget_path);
-  if (iter != m_tcp_connector.end()) {
+  if (iter != m_tcp_widgets.end()) {
     iter->second = NULL;
     IPV4SocketAddress socket_addr;
     if (EndpointFromString(widget_path, &socket_addr)) {
