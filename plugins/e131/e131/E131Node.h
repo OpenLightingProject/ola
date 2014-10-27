@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/acn/ACNPort.h"
 #include "ola/acn/CID.h"
@@ -59,7 +60,8 @@ class E131Node {
          ignore_preview(true),
          enable_draft_discovery(false),
          dscp(0),
-         port(ola::acn::ACN_PORT) {
+         port(ola::acn::ACN_PORT),
+         source_name(ola::OLA_DEFAULT_INSTANCE_NAME) {
     }
 
     bool use_rev2;  /**< Use Revision 0.2 of the 2009 draft */
@@ -67,6 +69,7 @@ class E131Node {
     bool enable_draft_discovery;  /**< Enable 2014 draft discovery */
     uint8_t dscp;  /**< The DSCP value to tag packets with */
     uint16_t port; /**< The UDP port to use, defaults to ACN_PORT */
+    std::string source_name; /**< The source name to use */
   };
 
   struct KnownController {

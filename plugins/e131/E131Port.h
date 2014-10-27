@@ -89,7 +89,6 @@ class E131OutputPort: public BasicOutputPort {
   }
 
   bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority);
-  void UniverseNameChanged(const std::string &new_name);
 
   void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
   bool PreviewMode() const { return m_preview_on; }

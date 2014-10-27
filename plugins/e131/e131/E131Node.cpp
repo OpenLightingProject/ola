@@ -295,7 +295,7 @@ bool E131Node::SendStreamTerminated(uint16_t universe,
   uint8_t sequence_number;
 
   if (iter == m_tx_universes.end()) {
-    source_name = "";
+    source_name = m_options.source_name;
     sequence_number = 0;
   } else {
     source_name = iter->second.source;
@@ -384,9 +384,7 @@ void E131Node::GetKnownControllers(std::vector<KnownController> *controllers) {
  */
 E131Node::tx_universe *E131Node::SetupOutgoingSettings(uint16_t universe) {
   tx_universe settings;
-  std::ostringstream str;
-  str << "Universe " << universe;
-  settings.source = str.str();
+  settings.source = m_options.source_name;
   settings.sequence = 0;
   ActiveTxUniverses::iterator iter =
       m_tx_universes.insert(std::make_pair(universe, settings)).first;
