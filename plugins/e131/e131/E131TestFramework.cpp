@@ -22,7 +22,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <termios.h>
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -79,14 +78,6 @@ bool StateManager::Init() {
   m_node1->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 1");
   m_node2->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 2");
 
-  // setup notifications for stdin & turn off buffering
-  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &StateManager::Input));
-  m_ss->AddReadDescriptor(&m_stdin_descriptor);
-  tcgetattr(STDIN_FILENO, &m_old_tc);
-  termios new_tc = m_old_tc;
-  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
-
   // tick every 200ms
   m_ss->RegisterRepeatingTimeout(
       TICK_INTERVAL_MS,
@@ -105,7 +96,6 @@ bool StateManager::Init() {
 
 
 StateManager::~StateManager() {
-  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   m_ss->RemoveReadDescriptor(m_node1->GetSocket());
   m_ss->RemoveReadDescriptor(m_node2->GetSocket());
 
@@ -148,8 +138,8 @@ bool StateManager::Tick() {
 }
 
 
-void StateManager::Input() {
-  switch (getchar()) {
+void StateManager::Input(char c) {
+  switch (c) {
     case 'e':
       cout << m_states[m_count]->ExpectedResults() << endl;
       break;
