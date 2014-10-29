@@ -97,7 +97,9 @@ bool CIDImpl::operator!=(const CIDImpl& c1) const {
 }
 
 bool CIDImpl::operator<(const CIDImpl& c1) const {
-  return uuid_compare(m_uuid, c1.m_uuid, &result) < 0;
+  int result;
+  uuid_compare(m_uuid, c1.m_uuid, &result);
+  return result < 0;
 }
 
 string CIDImpl::ToString() const {
