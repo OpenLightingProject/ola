@@ -23,6 +23,7 @@
 #ifndef PLUGINS_E131_E131_E131TESTFRAMEWORK_H_
 #define PLUGINS_E131_E131_E131TESTFRAMEWORK_H_
 
+#include <termios.h>
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -31,7 +32,6 @@
 #include "ola/acn/CID.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
-#include "ola/io/StdinHandler.h"
 #include "ola/math/Random.h"
 #include "plugins/e131/e131/E131Node.h"
 
@@ -304,33 +304,34 @@ class NodeVarySequenceNumber: public NodeAction {
 class StateManager {
  public:
     StateManager(const std::vector<TestState*> &states,
-                 bool interactive_mode = false)
-        : m_interactive(interactive_mode),
-          m_count(0),
-          m_ticker(0),
-          m_local_node(NULL),
-          m_node1(NULL),
-          m_node2(NULL),
-          m_ss(NULL),
-          m_stdin_handler(m_ss, ola::NewCallback(this, &StateManager::Input)),
-          m_states(states) {
+                 bool interactive_mode = false):
+        m_interactive(interactive_mode),
+        m_count(0),
+        m_ticker(0),
+        m_local_node(NULL),
+        m_node1(NULL),
+        m_node2(NULL),
+        m_ss(NULL),
+        m_states(states),
+        m_stdin_descriptor(STDIN_FILENO) {
     }
     ~StateManager();
     bool Init();
     void Run() { m_ss->Run(); }
     bool Tick();
-    void Input(char c);
+    void Input();
     void NewDMX();
     bool Passed() const { return m_failed_tests.empty(); }
 
  private:
     bool m_interactive;
     unsigned int m_count, m_ticker;
+    termios m_old_tc;
     ola::acn::CID m_cid1, m_cid2;
     ola::plugin::e131::E131Node *m_local_node, *m_node1, *m_node2;
     ola::io::SelectServer *m_ss;
-    ola::io::StdinHandler m_stdin_handler;
     std::vector<TestState*> m_states;
+    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     ola::DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
 
