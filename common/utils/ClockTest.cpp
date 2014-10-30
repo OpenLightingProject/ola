@@ -79,8 +79,8 @@ void ClockTest::testTimeStamp() {
 
   // test equalities
   // Windows only seems to have ms resolution, to make the tests pass we need
-  // to sleep here
-  usleep(1000);
+  // to sleep here; XP only has 16ms resolution, so sleep a bit longer
+  usleep(20000);
   clock.CurrentTime(&timestamp3);
   OLA_ASSERT_NE(timestamp3, timestamp);
   OLA_ASSERT_GT(timestamp3, timestamp);
