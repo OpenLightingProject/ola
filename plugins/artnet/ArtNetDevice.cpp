@@ -84,13 +84,13 @@ bool ArtNetDevice::StartHook() {
   unsigned int net;
   StringToInt(m_preferences->GetValue(K_NET_KEY), &net);
 
-  ola::network::Interface interface;
+  ola::network::Interface iface;
   auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
   ola::network::InterfacePicker::Options options;
   options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);
   if (!picker->ChooseInterface(
-          &interface,
+          &iface,
           m_preferences->GetValue(K_IP_KEY),
           options)) {
     OLA_INFO << "Failed to find an interface";
@@ -106,7 +106,7 @@ bool ArtNetDevice::StartHook() {
   StringToInt(m_preferences->GetValue(K_OUTPUT_PORT_KEY),
               &node_options.input_port_count);
 
-  m_node = new ArtNetNode(interface, m_plugin_adaptor, node_options);
+  m_node = new ArtNetNode(iface, m_plugin_adaptor, node_options);
   m_node->SetNetAddress(net);
   m_node->SetSubnetAddress(subnet);
   m_node->SetShortName(m_preferences->GetValue(K_SHORT_NAME_KEY));
@@ -128,7 +128,7 @@ bool ArtNetDevice::StartHook() {
   }
 
   ostringstream str;
-  str << K_DEVICE_NAME << " [" << interface.ip_address << "]";
+  str << K_DEVICE_NAME << " [" << iface.ip_address << "]";
   SetName(str.str());
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(

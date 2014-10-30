@@ -108,6 +108,9 @@ void IPAddressTest::testIPV4Address() {
   OLA_ASSERT_TRUE(IPV4Address::FromString("172.16.4.1", &string_address3));
   OLA_ASSERT_EQ(string("172.16.4.1"), string_address3.ToString());
 
+  IPV4Address string_address4;
+  OLA_ASSERT_FALSE(IPV4Address::FromString("", &string_address4));
+
   // make sure sorting works
   vector<IPV4Address> addresses;
   addresses.push_back(address1);

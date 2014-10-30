@@ -67,6 +67,11 @@ bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
 // TODO(Peter): This currently allows some rather quirky values as per
 // inet_aton, we may want to restrict that in future to match IPV4Validator
 
+  if (address.length() == 0) {
+    // Don't bother trying to extract an address if we weren't given one
+    return false;
+  }
+
 #ifdef HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), addr));
 #else
