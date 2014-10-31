@@ -83,7 +83,8 @@ class DMPE131Inflator: public DMPInflator {
 
     // The max number of sources we'll track per universe.
     static const uint8_t MAX_MERGE_SOURCES = 6;
-    static const uint8_t MAX_PRIORITY = 200;
+    // The max merge priority.
+    static const uint8_t MAX_E131_PRIORITY = 200;
     // ignore packets that differ by less than this amount from the last one
     static const int8_t SEQUENCE_DIFF_THRESHOLD = -20;
     // expire sources after 2.5s
