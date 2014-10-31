@@ -1,13 +1,14 @@
 x/y/2014 ola-0.9.3
  Features:
-  * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
-  * Add support for the draft E1.31 discovery protocol.
-  * Switch the dummy responder which implements the E1.37-2 PIDs to their final
-    values.
-  * Add the ability to whitelist rather than blacklist plugins during configure
-    (via --disable-all-plugins) and switch the Windows build to this method.
+ * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
+ * Add support for the draft E1.31 discovery protocol.
+ * Switch the dummy responder which implements the E1.37-2 PIDs to their final
+   values.
+ * Add the ability to whitelist rather than blacklist plugins during configure
+   (via --disable-all-plugins) and switch the Windows build to this method.
 
  Bugs:
+ * Fix some build issues on OS X 10.5.8
 
  API:
  * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they
