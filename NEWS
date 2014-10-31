@@ -6,6 +6,8 @@ x/y/2014 ola-0.9.3
    values.
  * Add the ability to whitelist rather than blacklist plugins during configure
    (via --disable-all-plugins) and switch the Windows build to this method.
+ * Convert ola_trigger to our flags module; change it's default universe value
+   to be 0 to align with other programs.
 
  Bugs:
  * Fix some build issues on OS X 10.5.8
