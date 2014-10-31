@@ -733,6 +733,7 @@ Python API: ${enable_python_libs}
 Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
+Enabled Plugins: ${PLUGINS}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
