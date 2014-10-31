@@ -632,6 +632,12 @@ AS_IF([test "x$build_java_libs" = xyes],
 # Plugins
 #####################################################
 
+AC_ARG_ENABLE(
+  [all-plugins],
+  AS_HELP_STRING(
+      [--disable-all-plugins],
+      [Disable all plugins, then enable the specific ones you want]))
+
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
 PLUGINS=""

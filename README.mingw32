@@ -86,7 +86,7 @@ Building OLA
 * git clone https://github.com/OpenLightingProject/ola.git ola
 * cd ola
 * autoreconf -i -f
-* ./configure --enable-python-libs --disable-e131 --disable-karate --disable-milinst --disable-renard --disable-spi --disable-stageprofi --disable-usbpro --disable-usbdmx --disable-uart
+* ./configure --enable-python-libs --disable-all-plugins --enable-artnet --enable-dummy --enable-espnet --enable-kinet --enable-opendmx --enable-pathport --enable-sandnet --enable-shownet
 * make
 * make install
 
