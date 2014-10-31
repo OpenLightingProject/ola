@@ -87,11 +87,11 @@
 #include "plugins/usbpro/UsbSerialPlugin.h"
 #endif
 
-#ifdef HAVE_LIBUSB
+#ifdef USE_LIBUSB
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 #endif
 
-#ifdef HAVE_LIBFTDI
+#ifdef USE_FTDI
 #include "plugins/ftdidmx/FtdiDmxPlugin.h"
 #endif
 
@@ -99,11 +99,11 @@
 #include "plugins/uartdmx/UartDmxPlugin.h"
 #endif
 
-#ifdef HAVE_DMX4LINUX
+#ifdef USE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
 
-#ifdef HAVE_LIBLO
+#ifdef USE_OSC
 #include "plugins/osc/OSCPlugin.h"
 #endif
 
@@ -126,10 +126,11 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
  * Setup the plugin list
  */
 void DynamicPluginLoader::PopulatePlugins() {
-#ifdef HAVE_DMX4LINUX
+#ifdef USE_DMX4LINUX
   m_plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
+
 #ifdef USE_ARTNET
   m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
 #endif
@@ -165,7 +166,7 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
 #endif
 
-#ifdef HAVE_LIBLO
+#ifdef USE_OSC
   m_plugins.push_back(
       new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
 #endif
@@ -200,7 +201,7 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::usbpro::UsbSerialPlugin(m_plugin_adaptor));
 #endif
 
-#ifdef HAVE_LIBUSB
+#ifdef USE_LIBUSB
   m_plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
 #endif
 
@@ -209,10 +210,11 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
 #endif
 
-#ifdef HAVE_LIBFTDI
+#ifdef USE_FTDI
   m_plugins.push_back(
       new ola::plugin::ftdidmx::FtdiDmxPlugin(m_plugin_adaptor));
 #endif
+
 #ifdef USE_UART
   m_plugins.push_back(
       new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
