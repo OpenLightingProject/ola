@@ -92,7 +92,7 @@ bool E131Device::StartHook() {
 
   for (unsigned int i = 0; i < m_options.output_ports; i++) {
     E131OutputPort *output_port = new E131OutputPort(
-        this, i, m_node.get(), m_options.prepend_hostname);
+        this, i, m_node.get());
     AddPort(output_port);
     m_output_ports.push_back(output_port);
   }
