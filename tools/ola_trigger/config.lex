@@ -11,7 +11,7 @@ void count();
 %option yylineno
 
 alpha        [a-zA-Z_]
-alphanumeric [a-zA-Z0-9_]
+alphanumeric [a-zA-Z0-9_\-\.]
 digit        [0-9]
 word         {alpha}{alphanumeric}*
 int          {digit}+
