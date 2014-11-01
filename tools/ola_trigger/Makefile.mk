@@ -5,7 +5,8 @@ EXTRA_DIST += \
 dist_noinst_DATA += \
     tools/ola_trigger/contrib/mac_itunes.conf \
     tools/ola_trigger/contrib/mac_volume.conf \
-    tools/ola_trigger/example.conf
+    tools/ola_trigger/example.conf \
+    tools/ola_trigger/test_file.conf
 
 # LIBRARIES
 ##################################################
@@ -66,3 +67,29 @@ tools_ola_trigger_ActionTester_SOURCES = \
 tools_ola_trigger_ActionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 tools_ola_trigger_ActionTester_LDADD = $(COMMON_TESTING_LIBS) \
                                        tools/ola_trigger/libolatrigger.la
+
+test_scripts += tools/ola_trigger/ContribMacItunesValidateTest.sh \
+                tools/ola_trigger/ContribMacVolumeValidateTest.sh \
+                tools/ola_trigger/ExampleValidateTest.sh \
+                tools/ola_trigger/TestFileValidateTest.sh
+
+tools/ola_trigger/ContribMacItunesValidateTest.sh: tools/ola_trigger/Makefile.mk
+	echo "${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf; exit \$$?" > tools/ola_trigger/ContribMacItunesValidateTest.sh
+	chmod +x tools/ola_trigger/ContribMacItunesValidateTest.sh
+
+tools/ola_trigger/ContribMacVolumeValidateTest.sh: tools/ola_trigger/Makefile.mk
+	echo "${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf; exit \$$?" > tools/ola_trigger/ContribMacVolumeValidateTest.sh
+	chmod +x tools/ola_trigger/ContribMacVolumeValidateTest.sh
+
+tools/ola_trigger/ExampleValidateTest.sh: tools/ola_trigger/Makefile.mk
+	echo "${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate ${srcdir}/tools/ola_trigger/example.conf; exit \$$?" > tools/ola_trigger/ExampleValidateTest.sh
+	chmod +x tools/ola_trigger/ExampleValidateTest.sh
+
+tools/ola_trigger/TestFileValidateTest.sh: tools/ola_trigger/Makefile.mk
+	echo "${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate ${srcdir}/tools/ola_trigger/test_file.conf; exit \$$?" > tools/ola_trigger/TestFileValidateTest.sh
+	chmod +x tools/ola_trigger/TestFileValidateTest.sh
+
+CLEANFILES += tools/ola_trigger/ContribMacItunesValidateTest.sh \
+              tools/ola_trigger/ContribMacVolumeValidateTest.sh \
+              tools/ola_trigger/ExampleValidateTest.sh \
+              tools/ola_trigger/TestFileValidateTest.sh

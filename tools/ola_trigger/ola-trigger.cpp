@@ -54,6 +54,8 @@ DEFINE_s_uint16(offset, o, 0,
                 "Apply an offset to the slot numbers. Valid offsets are 0 to "
                 "512, default is 0.");
 DEFINE_s_uint32(universe, u, 0, "The universe to use, defaults to 0.");
+DEFINE_default_bool(validate, false,
+                    "Validate the config file, rather than running it.");
 
 // prototype of bison-generated parser function
 int yyparse();
@@ -66,23 +68,6 @@ SlotActionMap global_slots;
 ola::io::SelectServer *ss = NULL;
 
 typedef vector<Slot*> SlotList;
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-
-  std::cout << "Usage: " << argv[0] << " [options] <config_file>\n"
-  "\n"
-  "Run programs based on the values in a DMX stream.\n"
-  "\n"
-  "  -o, --offset <slot_offset> Apply an offset to the slot numbers. Valid\n"
-  "                             offsets are 0 to 512, default is 0.\n"
-  "  -u, --universe <universe>  The universe to use, defaults to 1"
-  << std::endl;
-  exit(0);
-}
-
 
 /*
  * Catch SIGCHLD.
@@ -241,7 +226,14 @@ int main(int argc, char *argv[]) {
 
   yyparse();
 
-  // if we got to this stage the config is ok, setup the client
+  if (FLAGS_validate) {
+    std::cout << "File " << argv[1] << " is valid." << std::endl;
+    // TODO(Peter): Print some stats here, validate the offset if supplied
+    exit(ola::EXIT_OK);
+  }
+
+  // if we got to this stage the config is ok and we want to run it, setup the
+  // client
   ola::OlaCallbackClientWrapper wrapper;
 
   if (!wrapper.Setup())
