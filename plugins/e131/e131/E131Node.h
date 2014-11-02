@@ -61,8 +61,7 @@ class E131Node {
          enable_draft_discovery(false),
          dscp(0),
          port(ola::acn::ACN_PORT),
-         source_name(ola::OLA_DEFAULT_INSTANCE_NAME),
-         prepend_hostname(false) {
+         source_name(ola::OLA_DEFAULT_INSTANCE_NAME) {
     }
 
     bool use_rev2;  /**< Use Revision 0.2 of the 2009 draft */
@@ -71,7 +70,6 @@ class E131Node {
     uint8_t dscp;  /**< The DSCP value to tag packets with */
     uint16_t port; /**< The UDP port to use, defaults to ACN_PORT */
     std::string source_name; /**< The source name to use */
-    bool prepend_hostname; /**< Prepend the hostname to the source name */
   };
 
   struct KnownController {

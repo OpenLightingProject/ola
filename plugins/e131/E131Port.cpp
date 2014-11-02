@@ -20,7 +20,6 @@
 
 #include <string>
 #include "ola/Logging.h"
-#include "ola/network/NetworkUtils.h"
 #include "olad/Universe.h"
 #include "plugins/e131/E131Port.h"
 #include "plugins/e131/E131Device.h"

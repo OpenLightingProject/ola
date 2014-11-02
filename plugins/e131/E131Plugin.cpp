@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/StringUtils.h"
 #include "ola/acn/CID.h"
 #include "olad/PluginAdaptor.h"
@@ -68,7 +69,13 @@ bool E131Plugin::StartHook() {
       IGNORE_PREVIEW_DATA_KEY);
   options.enable_draft_discovery = m_preferences->GetValueAsBool(
       DRAFT_DISCOVERY_KEY);
-  options.source_name = m_plugin_adaptor->InstanceName();
+  if (options.prepend_hostname) {
+    std::ostringstream str;
+    str << ola::network::Hostname() << "-" << m_plugin_adaptor->InstanceName();
+    options.source_name = str.str();
+  } else {
+    options.source_name = m_plugin_adaptor->InstanceName();
+  }
 
   unsigned int dscp;
   if (!StringToInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
