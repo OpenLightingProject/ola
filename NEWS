@@ -8,6 +8,8 @@ x/y/2014 ola-0.9.3
    (via --disable-all-plugins) and switch the Windows build to this method.
  * Convert ola_trigger to our flags module; change it's default universe value
    to be 0 to align with other programs.
+ * Make the ola_trigger config syntax more flexible, including dots in program
+   names and quoted program names #507
 
  Bugs:
  * Fix some build issues on OS X 10.5.8
