@@ -143,6 +143,7 @@ argument:
 
 program:
       WORD_LITERAL
+    | QUOTED_VALUE
     | full_path
 ;
 
