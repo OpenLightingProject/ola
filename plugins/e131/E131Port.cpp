@@ -83,6 +83,9 @@ void E131OutputPort::PostSetUniverse(Universe *old_universe,
   if (old_universe) {
     m_node->TerminateStream(old_universe->UniverseId(), m_last_priority);
   }
+  if (new_universe) {
+    m_node->StartStream(new_universe->UniverseId());
+  }
 }
 
 

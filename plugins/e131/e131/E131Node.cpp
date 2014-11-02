@@ -218,6 +218,19 @@ bool E131Node::SetSourceName(uint16_t universe, const string &source) {
   return true;
 }
 
+bool E131Node::StartStream(uint16_t universe) {
+  ActiveTxUniverses::iterator iter = m_tx_universes.find(universe);
+
+  if (iter == m_tx_universes.end()) {
+    SetupOutgoingSettings(universe);
+  } else {
+    OLA_WARN << "Trying to StartStream on universe " << universe << " which "
+             << "is already started";
+    return false;
+  }
+  return true;
+}
+
 bool E131Node::TerminateStream(uint16_t universe, uint8_t priority) {
   // The standard says to send this 3 times
   for (unsigned int i = 0; i < 3; i++) {
@@ -243,10 +256,11 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
   ActiveTxUniverses::iterator iter = m_tx_universes.find(universe);
   tx_universe *settings;
 
-  if (iter == m_tx_universes.end())
+  if (iter == m_tx_universes.end()) {
     settings = SetupOutgoingSettings(universe);
-  else
+  } else {
     settings = &iter->second;
+  }
 
   const uint8_t *dmp_data;
   unsigned int dmp_data_length;

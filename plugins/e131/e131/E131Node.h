@@ -110,6 +110,13 @@ class E131Node {
   bool SetSourceName(uint16_t universe, const std::string &source);
 
   /**
+   * @brief Signal that we will start sending on this particular universe.
+   *   Without sending any DMX data.
+   * @param universe to start sending on.
+   */
+  bool StartStream(uint16_t universe);
+
+  /**
    * @brief Signal that we will no longer send on this particular universe.
    * @param universe to terminate sending on.
    * @param priority the priority to use in the stream terminated message.
