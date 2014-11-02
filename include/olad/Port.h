@@ -193,7 +193,7 @@ class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
 
 
 /**
- * A Implementation of InputPort, provides the basic functionality which saves
+ * An implementation of InputPort, provides the basic functionality which saves
  * the plugin implementations from having to do it.
  */
 class BasicInputPort: public InputPort {
