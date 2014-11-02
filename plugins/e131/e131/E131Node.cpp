@@ -218,6 +218,19 @@ bool E131Node::SetSourceName(uint16_t universe, const string &source) {
   return true;
 }
 
+bool E131Node::StartStream(uint16_t universe) {
+  ActiveTxUniverses::iterator iter = m_tx_universes.find(universe);
+
+  if (iter == m_tx_universes.end()) {
+    SetupOutgoingSettings(universe);
+  } else {
+    OLA_WARN << "Trying to StartStream on universe " << universe << " which "
+             << "is already started";
+    return false;
+  }
+  return true;
+}
+
 bool E131Node::TerminateStream(uint16_t universe, uint8_t priority) {
   // The standard says to send this 3 times
   for (unsigned int i = 0; i < 3; i++) {
@@ -243,10 +256,11 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
   ActiveTxUniverses::iterator iter = m_tx_universes.find(universe);
   tx_universe *settings;
 
-  if (iter == m_tx_universes.end())
+  if (iter == m_tx_universes.end()) {
     settings = SetupOutgoingSettings(universe);
-  else
+  } else {
     settings = &iter->second;
+  }
 
   const uint8_t *dmp_data;
   unsigned int dmp_data_length;
@@ -295,7 +309,7 @@ bool E131Node::SendStreamTerminated(uint16_t universe,
   uint8_t sequence_number;
 
   if (iter == m_tx_universes.end()) {
-    source_name = "";
+    source_name = m_options.source_name;
     sequence_number = 0;
   } else {
     source_name = iter->second.source;
@@ -384,9 +398,7 @@ void E131Node::GetKnownControllers(std::vector<KnownController> *controllers) {
  */
 E131Node::tx_universe *E131Node::SetupOutgoingSettings(uint16_t universe) {
   tx_universe settings;
-  std::ostringstream str;
-  str << "Universe " << universe;
-  settings.source = str.str();
+  settings.source = m_options.source_name;
   settings.sequence = 0;
   ActiveTxUniverses::iterator iter =
       m_tx_universes.insert(std::make_pair(universe, settings)).first;
@@ -468,7 +480,7 @@ void E131Node::SendDiscoveryPage(const std::vector<uint16_t> &universes,
         universes[this_page * DISCOVERY_PAGE_SIZE + i]);
   }
 
-  E131Header header("OLA Discovery", 0, 0, DISCOVERY_UNIVERSE_ID);
+  E131Header header(m_options.source_name, 0, 0, DISCOVERY_UNIVERSE_ID);
   m_e131_sender.SendDiscoveryData(
       header, reinterpret_cast<uint8_t*>(page_data), (in_this_page + 1) * 2);
   delete[] page_data;
