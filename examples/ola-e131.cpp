@@ -154,7 +154,7 @@ void E131Configurator::DisplaySourceList(
     const ola::plugin::e131::SourceEntry &entry = reply.source(i);
     cout << entry.cid() << " (" << entry.ip_address() << ")";
     if (entry.has_source_name()) {
-      cout << " , " << entry.source_name();
+      cout << ", " << entry.source_name();
     }
     cout << endl;
     for (int j = 0; j < entry.universe_size(); j++) {

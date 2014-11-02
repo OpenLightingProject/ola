@@ -480,7 +480,7 @@ void E131Node::SendDiscoveryPage(const std::vector<uint16_t> &universes,
         universes[this_page * DISCOVERY_PAGE_SIZE + i]);
   }
 
-  E131Header header("OLA Discovery", 0, 0, DISCOVERY_UNIVERSE_ID);
+  E131Header header(m_options.source_name, 0, 0, DISCOVERY_UNIVERSE_ID);
   m_e131_sender.SendDiscoveryData(
       header, reinterpret_cast<uint8_t*>(page_data), (in_this_page + 1) * 2);
   delete[] page_data;
