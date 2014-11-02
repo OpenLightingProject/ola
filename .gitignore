@@ -174,10 +174,7 @@ tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
 tools/ola_trigger/ola_trigger
 tools/ola_trigger/ola_trigger.exe
-tools/ola_trigger/ContribMacItunesValidateTest.sh
-tools/ola_trigger/ContribMacVolumeValidateTest.sh
-tools/ola_trigger/ExampleValidateTest.sh
-tools/ola_trigger/TestFileValidateTest.sh
+tools/ola_trigger/FileValidateTest.sh
 tools/rdm/DataLocation.py
 tools/rdmpro/rdmpro_sniffer
 tools/rdmpro/rdmpro_sniffer.exe
