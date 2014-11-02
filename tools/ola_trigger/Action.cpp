@@ -63,7 +63,7 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
 void CommandAction::Execute(Context *context, uint8_t) {
   char **args = BuildArgList(context);
 
-  if (ola::LogLevel() == ola::OLA_LOG_INFO) {
+  if (ola::LogLevel() >= ola::OLA_LOG_INFO) {
     std::ostringstream str;
     char **ptr = args;
     str << "Executing: " << m_command << " : [";
