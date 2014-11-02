@@ -79,7 +79,7 @@ E131OutputPort::~E131OutputPort() {
  * Set the universe for an output port.
  */
 void E131OutputPort::PostSetUniverse(Universe *old_universe,
-                                     OLA_UNUSED Universe *new_universe) {
+                                     Universe *new_universe) {
   if (old_universe) {
     m_node->TerminateStream(old_universe->UniverseId(), m_last_priority);
   }

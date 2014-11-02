@@ -44,11 +44,9 @@ class E131Device: public ola::Device {
    public:
     E131DeviceOptions()
       : E131Node::Options(),
-        prepend_hostname(false),
         input_ports(0),
         output_ports(0) {
     }
-    bool prepend_hostname; /**< Prepend the hostname to the source name */
     unsigned int input_ports;
     unsigned int output_ports;
   };

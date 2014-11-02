@@ -63,13 +63,11 @@ bool E131Plugin::StartHook() {
 
   E131Device::E131DeviceOptions options;
   options.use_rev2 = (m_preferences->GetValue(REVISION_KEY) == REVISION_0_2);
-  options.prepend_hostname = m_preferences->GetValueAsBool(
-      PREPEND_HOSTNAME_KEY);
   options.ignore_preview = m_preferences->GetValueAsBool(
       IGNORE_PREVIEW_DATA_KEY);
   options.enable_draft_discovery = m_preferences->GetValueAsBool(
       DRAFT_DISCOVERY_KEY);
-  if (options.prepend_hostname) {
+  if (m_preferences->GetValueAsBool(PREPEND_HOSTNAME_KEY)) {
     std::ostringstream str;
     str << ola::network::Hostname() << "-" << m_plugin_adaptor->InstanceName();
     options.source_name = str.str();
