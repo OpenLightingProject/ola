@@ -20,7 +20,6 @@
 
 #include <string>
 #include "ola/Logging.h"
-#include "ola/network/NetworkUtils.h"
 #include "olad/Universe.h"
 #include "plugins/e131/E131Port.h"
 #include "plugins/e131/E131Device.h"
@@ -84,15 +83,8 @@ void E131OutputPort::PostSetUniverse(Universe *old_universe,
   if (old_universe) {
     m_node->TerminateStream(old_universe->UniverseId(), m_last_priority);
   }
-
   if (new_universe) {
-    if (m_prepend_hostname) {
-      std::ostringstream str;
-      str << ola::network::Hostname() << "-" << new_universe->Name();
-      m_node->SetSourceName(new_universe->UniverseId(), str.str());
-    } else {
-      m_node->SetSourceName(new_universe->UniverseId(), new_universe->Name());
-    }
+    m_node->StartStream(new_universe->UniverseId());
   }
 }
 
@@ -109,14 +101,6 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       GetPriority() : priority;
   return m_node->SendDMX(universe->UniverseId(), buffer, m_last_priority,
                          m_preview_on);
-}
-
-
-/*
- * Update the universe name
- */
-void E131OutputPort::UniverseNameChanged(const string &new_name) {
-  m_node->SetSourceName(GetUniverse()->UniverseId(), new_name);
 }
 }  // namespace e131
 }  // namespace plugin

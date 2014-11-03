@@ -76,7 +76,7 @@ TCPSocket *ConnectToServer(unsigned short port) {
                      NULL,
                      &startup_info,
                      &process_information)) {
-    OLA_WARN << "Could not launch olad" << GetLastError();
+    OLA_WARN << "Could not launch olad " << GetLastError();
     _exit(1);
   }
 

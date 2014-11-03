@@ -69,10 +69,8 @@ class E131InputPort: public BasicInputPort {
 
 class E131OutputPort: public BasicOutputPort {
  public:
-  E131OutputPort(E131Device *parent, int id, E131Node *node,
-                 bool prepend_hostname)
+  E131OutputPort(E131Device *parent, int id, E131Node *node)
       : BasicOutputPort(parent, id),
-        m_prepend_hostname(prepend_hostname),
         m_preview_on(false),
         m_node(node) {
     m_last_priority = GetPriority();
@@ -89,14 +87,12 @@ class E131OutputPort: public BasicOutputPort {
   }
 
   bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority);
-  void UniverseNameChanged(const std::string &new_name);
 
   void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
   bool PreviewMode() const { return m_preview_on; }
   bool SupportsPriorities() const { return true; }
 
  private:
-  bool m_prepend_hostname;
   bool m_preview_on;
   uint8_t m_last_priority;
   ola::DmxBuffer m_buffer;

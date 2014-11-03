@@ -1,20 +1,29 @@
 x/y/2014 ola-0.9.3
  Features:
  * Added support for the img Stage Line DMX-1USB - #398
-  * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
-  * Add support for the draft E1.31 discovery protocol.
+ * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
+ * Add support for the draft E1.31 discovery protocol.
+ * Switch the dummy responder which implements the E1.37-2 PIDs to their final
+   values.
+ * Add the ability to whitelist rather than blacklist plugins during configure
+   (via --disable-all-plugins) and switch the Windows build to this method.
+ * Convert ola_trigger to our flags module; change it's default universe value
+   to be 0 to align with other programs.
+ * Make the ola_trigger config syntax more flexible, including dots in program
+   names and quoted program names #507
 
  Bugs:
+ * Fix some build issues on OS X 10.5.8
 
  API:
  * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they
-   sort the same regardless of endianness and in a logical way for humans
+   sort the same regardless of endianness and in a logical way for humans.
 
  RDM Tests:
 
  Internal:
  * Update the configure version method to ensure the version files are updated
-   automatically when it changes
+   automatically when it changes.
  * Add a generic RpcServer class and switch OlaServer to use it.
  * SelectServer now runs any remaining pending callbacks during shutdown.
 

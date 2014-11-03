@@ -194,7 +194,7 @@ bool OlaServer::Init() {
   m_server_preferences->Load();
   if (m_server_preferences->SetDefaultValue(INSTANCE_NAME_KEY,
                                             StringValidator(),
-                                            "OLA Server")) {
+                                            OLA_DEFAULT_INSTANCE_NAME)) {
     m_server_preferences->Save();
   }
   m_instance_name = m_server_preferences->GetValue(INSTANCE_NAME_KEY);
@@ -284,8 +284,10 @@ bool OlaServer::Init() {
     DiscoveryAgentInterface::RegisterOptions options;
     options.txt_data["path"] = "/";
     discovery_agent->RegisterService(
-        "OLA Web Console",
-        K_DISCOVERY_SERVICE_TYPE, m_options.http_port, options);
+        m_instance_name,
+        K_DISCOVERY_SERVICE_TYPE,
+        m_options.http_port,
+        options);
   }
 
   // Ok, we've created and initialized everything correctly by this point. Now

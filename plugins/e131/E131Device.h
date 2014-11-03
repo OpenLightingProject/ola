@@ -47,7 +47,6 @@ class E131Device: public ola::Device {
         input_ports(0),
         output_ports(0) {
     }
-    bool prepend_hostname;
     unsigned int input_ports;
     unsigned int output_ports;
   };

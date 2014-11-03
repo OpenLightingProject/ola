@@ -522,11 +522,13 @@ AS_IF([test "x$have_libusb" = xyes],
 AC_ARG_ENABLE(
   [uart],
   [AS_HELP_STRING([--disable-uart],
-                  [Avoid using native uart support])])
+                  [Avoid using native uart support even if it exists])])
 
-AC_CHECK_HEADERS([asm/termios.h], [have_asm_termios="yes"], [have_asm_termios="no"])
-AS_IF([test "x$have_asm_termios" = xyes],
-      [AC_DEFINE([USE_UART], [1], [define if asm/termios.h is available and direct UART support should be enabled])])
+have_uart="no"
+AS_IF([test "x$enable_uart" != xno],
+      [AC_CHECK_HEADERS([asm/termios.h], [have_uart="yes"], [true])])
+AS_IF([test "x$have_uart" = xyes],
+      [AC_DEFINE([HAVE_UART], [1], [define if native UART support exists])])
 
 
 # OSC Support.
@@ -632,6 +634,12 @@ AS_IF([test "x$build_java_libs" = xyes],
 # Plugins
 #####################################################
 
+AC_ARG_ENABLE(
+  [all-plugins],
+  AS_HELP_STRING(
+      [--disable-all-plugins],
+      [Disable all plugins, then enable the specific ones you want]))
+
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
 PLUGINS=""
@@ -653,7 +661,7 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
-PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_asm_termios])
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 
@@ -733,6 +741,7 @@ Python API: ${enable_python_libs}
 Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
+Enabled Plugins: ${PLUGINS}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
