@@ -284,8 +284,10 @@ bool OlaServer::Init() {
     DiscoveryAgentInterface::RegisterOptions options;
     options.txt_data["path"] = "/";
     discovery_agent->RegisterService(
-        "OLA Web Console",
-        K_DISCOVERY_SERVICE_TYPE, m_options.http_port, options);
+        m_instance_name,
+        K_DISCOVERY_SERVICE_TYPE,
+        m_options.http_port,
+        options);
   }
 
   // Ok, we've created and initialized everything correctly by this point. Now
