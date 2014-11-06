@@ -70,6 +70,9 @@ class UsbDmxPlugin: public ola::Plugin {
     class UsbDevice* NewAnymaDevice(
         struct libusb_device *usb_device,
         const struct libusb_device_descriptor &device_descriptor);
+    class UsbDevice* NewScanlimeDevice(
+        struct libusb_device *usb_device,
+        const struct libusb_device_descriptor &device_descriptor);
 
     void GetDeviceInfo(
         struct libusb_device_handle *usb_handle,
