@@ -26,6 +26,7 @@
 #include "ola/Logging.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
+#include "plugins/usbdmx/UsbDmxPlugin.h"
 
 namespace ola {
 namespace plugin {
@@ -80,8 +81,9 @@ bool EuroliteProOutputPort::Start() {
   }
 
   string data;
-  if (!GetDescriptorString(usb_handle, device_descriptor.iManufacturer,
-                           &data)) {
+  if (!UsbDmxPlugin::GetDescriptorString(usb_handle,
+                                         device_descriptor.iManufacturer,
+                                         &data)) {
     OLA_INFO << "Failed to get manufacturer name";
     libusb_close(usb_handle);
     return false;
@@ -94,7 +96,9 @@ bool EuroliteProOutputPort::Start() {
     return false;
   }
 
-  if (!GetDescriptorString(usb_handle, device_descriptor.iProduct, &data)) {
+  if (!UsbDmxPlugin::GetDescriptorString(usb_handle,
+                                         device_descriptor.iProduct,
+                                         &data)) {
     OLA_INFO << "Failed to get product name";
     libusb_close(usb_handle);
     return false;
@@ -233,32 +237,6 @@ bool EuroliteProOutputPort::SendDMX(const DmxBuffer &buffer) {
     OLA_INFO << "return code was: " << ret << ", transferred bytes  " <<
       transferred;
   return ret == 0;
-}
-
-
-/*
- * Return a string descriptor
- * @param usb_handle the usb handle to the device
- * @param desc_index the index of the descriptor
- * @param data where to store the output string
- * @returns true if we got the value, false otherwise
- */
-bool EuroliteProOutputPort::GetDescriptorString(
-    libusb_device_handle *usb_handle,
-    uint8_t desc_index,
-    string *data) {
-  enum { buffer_size = 32 };
-  unsigned char buffer[buffer_size];
-  int r = libusb_get_string_descriptor_ascii(
-      usb_handle,
-      desc_index,
-      buffer,
-      buffer_size);
-
-  if (r <= 0)
-    return false;
-  data->assign(reinterpret_cast<char*>(buffer));
-  return true;
 }
 
 

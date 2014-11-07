@@ -21,6 +21,8 @@
 #ifndef PLUGINS_USBDMX_USBDMXPLUGIN_H_
 #define PLUGINS_USBDMX_USBDMXPLUGIN_H_
 
+#include <libusb.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -50,6 +52,10 @@ class UsbDmxPlugin: public ola::Plugin {
     bool RemoveDeviceDescriptor(int fd);
     void SocketReady();
 
+    static bool GetDescriptorString(libusb_device_handle *usb_handle,
+                                    uint8_t desc_index,
+                                    std::string *data);
+
  private:
     struct USBDeviceInformation {
       std::string manufacturer;
@@ -78,9 +84,6 @@ class UsbDmxPlugin: public ola::Plugin {
     bool MatchManufacturer(const std::string &expected,
                            const std::string &actual);
     bool MatchProduct(const std::string &expected, const std::string &actual);
-    bool GetDescriptorString(libusb_device_handle *usb_handle,
-                             uint8_t desc_index,
-                             std::string *data);
 
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];

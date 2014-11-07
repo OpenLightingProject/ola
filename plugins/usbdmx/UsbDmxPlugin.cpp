@@ -21,7 +21,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <libusb.h>
 
 #include <string>
 #include <utility>
@@ -187,15 +186,15 @@ void UsbDmxPlugin::FindDevices() {
       OLA_INFO << "Found a Velleman USB device";
       device = new VellemanDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x0962 &&
-        device_descriptor.idProduct == 0x2001) {
+               device_descriptor.idProduct == 0x2001) {
       OLA_INFO << "Found a Sunlite device";
       device = new SunliteDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x16C0 &&
-        device_descriptor.idProduct == 0x05DC) {
+               device_descriptor.idProduct == 0x05DC) {
       OLA_INFO << "Found an Anyma device";
       device = NewAnymaDevice(usb_device, device_descriptor);
     } else if (device_descriptor.idVendor == 0x04d8 &&
-        device_descriptor.idProduct == 0xfa63) {
+               device_descriptor.idProduct == 0xfa63) {
       OLA_INFO << "Found a EUROLITE device";
        device = new EuroliteProDevice(this, usb_device);
     }
@@ -424,11 +423,10 @@ bool UsbDmxPlugin::GetDescriptorString(libusb_device_handle *usb_handle,
                                        string *data) {
   enum { buffer_size = 32 };  // static arrays FTW!
   unsigned char buffer[buffer_size];
-  int r = libusb_get_string_descriptor_ascii(
-      usb_handle,
-      desc_index,
-      buffer,
-      buffer_size);
+  int r = libusb_get_string_descriptor_ascii(usb_handle,
+                                             desc_index,
+                                             buffer,
+                                             buffer_size);
 
   if (r <= 0) {
     OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
