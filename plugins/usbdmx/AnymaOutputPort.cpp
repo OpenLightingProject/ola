@@ -140,33 +140,6 @@ bool AnymaOutputPort::SendDMX(const DmxBuffer &buffer) {
   // Sometimes we get PIPE errors here, those are non-fatal
   return r > 0 || r == LIBUSB_ERROR_PIPE;
 }
-
-
-/*
- * Return a string descriptor
- * @param usb_handle the usb handle to the device
- * @param desc_index the index of the descriptor
- * @param data where to store the output string
- * @returns true if we got the value, false otherwise
- */
-bool AnymaOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
-                                          uint8_t desc_index,
-                                          string *data) {
-  enum { buffer_size = 32 };  // static arrays FTW!
-  unsigned char buffer[buffer_size];
-  int r = libusb_get_string_descriptor_ascii(
-      usb_handle,
-      desc_index,
-      buffer,
-      buffer_size);
-
-  if (r <= 0) {
-    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
-    return false;
-  }
-  data->assign(reinterpret_cast<char*>(buffer));
-  return true;
-}
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola

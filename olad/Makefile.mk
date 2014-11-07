@@ -87,6 +87,11 @@ olad_libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
 # determined at configure time, we need to add them here.
 EXTRA_olad_libolaserver_la_DEPENDENCIES = $(PLUGIN_LIBS)
 
+if USE_LIBUSB
+olad_libolaserver_la_CXXFLAGS += $(libusb_CFLAGS)
+olad_libolaserver_la_LIBADD += $(libusb_LIBS)
+endif
+
 # PROGRAMS
 ##################################################
 bin_PROGRAMS += olad/olad
