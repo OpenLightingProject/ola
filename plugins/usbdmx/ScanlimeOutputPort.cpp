@@ -125,19 +125,27 @@ bool ScanlimeOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
  * @return true on success, false on failure
  */
 bool ScanlimeOutputPort::SendDMX(const DmxBuffer &buffer) {
-  return false;
-  int r = libusb_control_transfer(m_usb_handle,
-          LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
-          LIBUSB_ENDPOINT_OUT,
-          UDMX_SET_CHANNEL_RANGE,
-          buffer.Size(),
-          0,
-          // the suck
-          const_cast<unsigned char*>(buffer.GetRaw()),
-          buffer.Size(),
-          URB_TIMEOUT_MS);
-  // Sometimes we get PIPE errors here, those are non-fatal
-  return r > 0 || r == LIBUSB_ERROR_PIPE;
+  uint8_t packet[64];
+  memset(&packet, 0, sizeof(packet));
+  packet[0] = 0x80;
+  packet[1] = (1 << 2);
+
+  if (buffer.Get(0) > 127) {
+    packet[1] |= (1 << 3);
+  }
+
+  int txed = 0;
+
+  int r = libusb_bulk_transfer(m_usb_handle,
+                               1,
+                               packet,
+                               sizeof(packet),
+                               &txed,
+                               2000);
+
+  OLA_INFO << "Transferred " << txed << " bytes";
+
+  return r == 0;
 }
 
 
