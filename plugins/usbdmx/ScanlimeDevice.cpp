@@ -43,9 +43,9 @@ const char ScanlimeDevice::EXPECTED_PRODUCT[] = "Fadecandy";
  * @param serial the serial number, may be empty.
  */
 ScanlimeDevice::ScanlimeDevice(ola::AbstractPlugin *owner,
-                                 libusb_device *usb_device,
-                                 libusb_device_handle *usb_handle,
-                                 const string &serial)
+                               libusb_device *usb_device,
+                               libusb_device_handle *usb_handle,
+                               const string &serial)
     : UsbDevice(owner, "Scanlime USB Device", usb_device),
       m_output_port(new ScanlimeOutputPort(this, 0, usb_handle)),
       m_serial(serial) {

@@ -188,19 +188,19 @@ void UsbDmxPlugin::FindDevices() {
       OLA_INFO << "Found a Velleman USB device";
       device = new VellemanDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x0962 &&
-        device_descriptor.idProduct == 0x2001) {
+               device_descriptor.idProduct == 0x2001) {
       OLA_INFO << "Found a Sunlite device";
       device = new SunliteDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x16C0 &&
-        device_descriptor.idProduct == 0x05DC) {
+               device_descriptor.idProduct == 0x05DC) {
       OLA_INFO << "Found an Anyma device";
       device = NewAnymaDevice(usb_device, device_descriptor);
     } else if (device_descriptor.idVendor == 0x04d8 &&
-        device_descriptor.idProduct == 0xfa63) {
+               device_descriptor.idProduct == 0xfa63) {
       OLA_INFO << "Found a EUROLITE device";
        device = new EuroliteProDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x1D50 &&
-        device_descriptor.idProduct == 0x607A) {
+               device_descriptor.idProduct == 0x607A) {
       OLA_INFO << "Found a Scanlime device";
       device = NewScanlimeDevice(usb_device, device_descriptor);
     }

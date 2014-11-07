@@ -40,8 +40,8 @@ class ScanlimeDevice;
 class ScanlimeOutputPort: public BasicOutputPort, ola::thread::Thread {
  public:
     ScanlimeOutputPort(ScanlimeDevice *parent,
-                        unsigned int id,
-                        libusb_device_handle *usb_handle);
+                       unsigned int id,
+                       libusb_device_handle *usb_handle);
     ~ScanlimeOutputPort();
 
     bool Start();

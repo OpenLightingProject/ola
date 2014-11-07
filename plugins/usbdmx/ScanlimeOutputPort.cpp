@@ -38,8 +38,8 @@ using std::string;
  * Create a new ScanlimeOutputPort object
  */
 ScanlimeOutputPort::ScanlimeOutputPort(ScanlimeDevice *parent,
-                                         unsigned int id,
-                                         libusb_device_handle *usb_handle)
+                                       unsigned int id,
+                                       libusb_device_handle *usb_handle)
     : BasicOutputPort(parent, id),
       m_term(false),
       m_usb_handle(usb_handle) {
@@ -157,8 +157,8 @@ bool ScanlimeOutputPort::SendDMX(const DmxBuffer &buffer) {
  * @returns true if we got the value, false otherwise
  */
 bool ScanlimeOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
-                                              uint8_t desc_index,
-                                              string *data) {
+                                             uint8_t desc_index,
+                                             string *data) {
   enum { buffer_size = 32 };  // static arrays FTW!
   unsigned char buffer[buffer_size];
   int r = libusb_get_string_descriptor_ascii(

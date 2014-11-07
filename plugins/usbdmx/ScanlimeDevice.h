@@ -36,9 +36,9 @@ namespace usbdmx {
 class ScanlimeDevice: public UsbDevice {
  public:
     ScanlimeDevice(ola::AbstractPlugin *owner,
-                    libusb_device *usb_device,
-                    libusb_device_handle *usb_handle,
-                    const std::string &serial);
+                   libusb_device *usb_device,
+                   libusb_device_handle *usb_handle,
+                   const std::string &serial);
 
     std::string SerialNumber() const { return m_serial; }
     std::string DeviceId() const;
