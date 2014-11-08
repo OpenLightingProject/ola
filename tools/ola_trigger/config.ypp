@@ -148,7 +148,10 @@ program:
 ;
 
 full_path:
-    '/' WORD_LITERAL { $$ = new std::string("/"); $$->append(*$2); }
+    '/' WORD_LITERAL {
+      $$ = new std::string("/"); $$->append(*$2);
+      delete $2;
+    }
     | full_path '/' WORD_LITERAL  {
         $$ = new std::string(*$1);
         $$->append("/");
