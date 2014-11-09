@@ -27,7 +27,6 @@
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
 #include "plugins/usbdmx/LibUsbUtils.h"
-#include "plugins/usbdmx/UsbDmxPlugin.h"
 
 namespace ola {
 namespace plugin {
