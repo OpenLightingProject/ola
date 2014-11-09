@@ -26,6 +26,7 @@
 #include "ola/Logging.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
+#include "plugins/usbdmx/LibUsbUtils.h"
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 
 namespace ola {
@@ -81,9 +82,9 @@ bool EuroliteProOutputPort::Start() {
   }
 
   string data;
-  if (!UsbDmxPlugin::GetDescriptorString(usb_handle,
-                                         device_descriptor.iManufacturer,
-                                         &data)) {
+  if (!GetDescriptorString(usb_handle,
+                           device_descriptor.iManufacturer,
+                           &data)) {
     OLA_INFO << "Failed to get manufacturer name";
     libusb_close(usb_handle);
     return false;
@@ -96,9 +97,9 @@ bool EuroliteProOutputPort::Start() {
     return false;
   }
 
-  if (!UsbDmxPlugin::GetDescriptorString(usb_handle,
-                                         device_descriptor.iProduct,
-                                         &data)) {
+  if (!GetDescriptorString(usb_handle,
+                           device_descriptor.iProduct,
+                           &data)) {
     OLA_INFO << "Failed to get product name";
     libusb_close(usb_handle);
     return false;

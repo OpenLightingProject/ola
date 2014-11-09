@@ -21,8 +21,6 @@
 #ifndef PLUGINS_USBDMX_USBDMXPLUGIN_H_
 #define PLUGINS_USBDMX_USBDMXPLUGIN_H_
 
-#include <libusb.h>
-
 #include <set>
 #include <string>
 #include <utility>
@@ -51,10 +49,6 @@ class UsbDmxPlugin: public ola::Plugin {
     bool AddDeviceDescriptor(int fd);
     bool RemoveDeviceDescriptor(int fd);
     void SocketReady();
-
-    static bool GetDescriptorString(libusb_device_handle *usb_handle,
-                                    uint8_t desc_index,
-                                    std::string *data);
 
  private:
     struct USBDeviceInformation {

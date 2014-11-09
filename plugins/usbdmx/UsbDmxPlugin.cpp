@@ -36,6 +36,7 @@
 #include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
+#include "plugins/usbdmx/LibUsbUtils.h"
 #include "plugins/usbdmx/SunliteDevice.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
 #include "plugins/usbdmx/UsbDevice.h"
@@ -408,31 +409,6 @@ bool UsbDmxPlugin::MatchProduct(const string &expected, const string &actual) {
     OLA_WARN << "Product mismatch: " << expected << " != " << actual;
     return false;
   }
-  return true;
-}
-
-/*
- * Return a string descriptor.
- * @param usb_handle the usb handle to the device
- * @param desc_index the index of the descriptor
- * @param data where to store the output string
- * @returns true if we got the value, false otherwise
- */
-bool UsbDmxPlugin::GetDescriptorString(libusb_device_handle *usb_handle,
-                                       uint8_t desc_index,
-                                       string *data) {
-  enum { buffer_size = 32 };  // static arrays FTW!
-  unsigned char buffer[buffer_size];
-  int r = libusb_get_string_descriptor_ascii(usb_handle,
-                                             desc_index,
-                                             buffer,
-                                             buffer_size);
-
-  if (r <= 0) {
-    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
-    return false;
-  }
-  data->assign(reinterpret_cast<char*>(buffer));
   return true;
 }
 }  // namespace usbdmx
