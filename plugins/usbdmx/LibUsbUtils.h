@@ -23,6 +23,8 @@
 
 #include <libusb.h>
 
+#include <string>
+
 namespace ola {
 namespace plugin {
 namespace usbdmx {
