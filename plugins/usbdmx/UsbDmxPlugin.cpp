@@ -197,7 +197,11 @@ void UsbDmxPlugin::FindDevices() {
     } else if (device_descriptor.idVendor == 0x04d8 &&
                device_descriptor.idProduct == 0xfa63) {
       OLA_INFO << "Found a EUROLITE device";
-       device = new EuroliteProDevice(this, usb_device);
+      device = new EuroliteProDevice(this, usb_device);
+    } else {
+      OLA_INFO << "Found an unknown device, skipping. VID: "
+               << device_descriptor.idVendor ", PID: "
+               << device_descriptor.idProduct;
     }
 
     if (device) {
