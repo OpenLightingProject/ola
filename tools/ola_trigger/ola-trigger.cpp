@@ -24,16 +24,17 @@
 #include <sys/wait.h>
 #endif
 
-#include <ola/base/Flags.h>
-#include <ola/base/Init.h>
-#include <ola/base/SysExits.h>
 #include <ola/Callback.h>
 #include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
-#include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
+#include <ola/io/SelectServer.h>
+#include <ola/stl/STLUtils.h>
 
 #include <iostream>
 #include <map>
@@ -46,6 +47,8 @@
 #include "tools/ola_trigger/ParserGlobals.h"
 
 using ola::DmxBuffer;
+using ola::STLDeleteElements;
+using ola::STLDeleteValues;
 using std::map;
 using std::string;
 using std::vector;
@@ -73,12 +76,11 @@ typedef vector<Slot*> SlotList;
  * Catch SIGCHLD.
  */
 #ifndef _WIN32
-static void CatchSIGCHLD(int signo) {
+static void CatchSIGCHLD(OLA_UNUSED int signo) {
   pid_t pid;
   do {
     pid = waitpid(-1, NULL, WNOHANG);
   } while (pid > 0);
-  (void) signo;
 }
 #endif
 
@@ -86,12 +88,12 @@ static void CatchSIGCHLD(int signo) {
 /*
  * Terminate cleanly on interrupt
  */
-static void CatchSIGINT(int signo) {
+static void CatchSIGINT(OLA_UNUSED int signo) {
   // there is a race condition here if you send the signal before we call Run()
   // it's not a huge deal though.
-  if (ss)
+  if (ss) {
     ss->Terminate();
-  (void) signo;
+  }
 }
 
 
@@ -142,25 +144,11 @@ void NewDmx(unsigned int our_universe,
             DMXTrigger *trigger,
             unsigned int universe,
             const DmxBuffer &data,
-            const string &error) {
-  if (universe == our_universe) {
-    if (error.empty())
-      trigger->NewDMX(data);
+            OLA_UNUSED const string &error) {
+  if (universe == our_universe && error.empty()) {
+    trigger->NewDMX(data);
   }
-  (void) error;
 }
-
-
-/**
- * Delete all the slot actions in the vector.
- */
-void FreeSlot(SlotList *slots) {
-  SlotList::iterator action_iter = slots->begin();
-  for (; action_iter != slots->end(); ++action_iter)
-    delete *action_iter;
-  slots->clear();
-}
-
 
 /**
  * Build a vector of Slot from the global_slots map with the
@@ -187,9 +175,7 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
 
   if (!ok) {
     all_slots->clear();
-    for (iter = global_slots.begin(); iter != global_slots.end();
-         ++iter)
-      delete iter->second;
+    STLDeleteValues(&global_slots);
   }
 
   global_slots.clear();
@@ -229,6 +215,7 @@ int main(int argc, char *argv[]) {
   if (FLAGS_validate) {
     std::cout << "File " << argv[1] << " is valid." << std::endl;
     // TODO(Peter): Print some stats here, validate the offset if supplied
+    STLDeleteValues(&global_slots);
     exit(ola::EXIT_OK);
   }
 
@@ -263,5 +250,5 @@ int main(int argc, char *argv[]) {
   }
 
   // cleanup
-  FreeSlot(&slots);
+  STLDeleteElements(&slots);
 }

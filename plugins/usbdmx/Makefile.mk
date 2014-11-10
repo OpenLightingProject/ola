@@ -11,6 +11,8 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/EuroliteProDevice.h \
     plugins/usbdmx/EuroliteProOutputPort.cpp \
     plugins/usbdmx/EuroliteProOutputPort.h \
+    plugins/usbdmx/LibUsbUtils.cpp \
+    plugins/usbdmx/LibUsbUtils.h \
     plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/ScanlimeDevice.cpp \
     plugins/usbdmx/ScanlimeDevice.h \
