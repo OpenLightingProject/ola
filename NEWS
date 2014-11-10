@@ -11,9 +11,14 @@ x/y/2014 ola-0.9.3
    to be 0 to align with other programs.
  * Make the ola_trigger config syntax more flexible, including dots in program
    names and quoted program names #507
+ * Add an instance name to OLA server and use it within E1.31 and the DNS-SD
+   code to make multiple instances of OLA easier to track.
 
  Bugs:
  * Fix some build issues on OS X 10.5.8
+ * Fix some build issues on Windows XP
+ * Use the correct ifdefs within plugin loading so we only load stuff if we
+   asked for it
 
  API:
  * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they

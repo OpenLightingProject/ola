@@ -64,9 +64,6 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
   ola::thread::Mutex m_term_mutex;
 
   bool SendDMX(const DmxBuffer &buffer_old);
-  bool GetDescriptorString(libusb_device_handle *usb_handle,
-                           uint8_t desc_index,
-                           std::string *data);
 };
 }  // namespace usbdmx
 }  // namespace plugin

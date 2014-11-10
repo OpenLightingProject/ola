@@ -66,9 +66,6 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
 
   bool SendDMX(const DmxBuffer &buffer_old);
 
-  bool GetDescriptorString(libusb_device_handle *usb_handle,
-                           uint8_t desc_index,
-                           std::string *data);
   bool LocateInterface();
 
   // 513 + header + code + size(2) + footer

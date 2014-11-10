@@ -78,9 +78,6 @@ class UsbDmxPlugin: public ola::Plugin {
   bool MatchManufacturer(const std::string &expected,
                          const std::string &actual);
   bool MatchProduct(const std::string &expected, const std::string &actual);
-  bool GetDescriptorString(libusb_device_handle *usb_handle,
-                           uint8_t desc_index,
-                           std::string *data);
 
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
