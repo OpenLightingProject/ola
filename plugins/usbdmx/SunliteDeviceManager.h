@@ -13,49 +13,42 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteOutputPort.h
- * The output port for a Sunlite USBDMX2 device.
- * Copyright (C) 2010 Simon Newton
+ * SunliteDeviceManager.h
+ * The Sunlite Device Manager
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
-#define PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
+#ifndef PLUGINS_USBDMX_SUNLITEDEVICEMANAGER_H_
+#define PLUGINS_USBDMX_SUNLITEDEVICEMANAGER_H_
 
-#include <string>
 #include "ola/base/Macro.h"
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
+#include "plugins/usbdmx/UsbDeviceManagerInterface.h"
+#include "plugins/usbdmx/SunliteDevice.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class SunliteDevice;
-
-class SunliteOutputPort: public BasicOutputPort {
+/**
+ * @brief Manages SunLite Devices
+ */
+class SunliteDeviceManager : public BaseDeviceFactory<SunliteDevice> {
  public:
-  /**
-   * @brief Create a new SunliteOutputPort.
-   */
-  SunliteOutputPort(SunliteDevice *parent,
-                    unsigned int id,
-                    class SunliteWidgetInterface *widget);
+  SunliteDeviceManager(PluginAdaptor *plugin_adaptor,
+                       Plugin *plugin)
+      : BaseDeviceFactory<SunliteDevice>(plugin_adaptor, plugin) {}
 
-  /**
-   * @brief Cleanup.
-   */
-  ~SunliteOutputPort();
+  bool DeviceAdded(libusb_device *device,
+                   const struct libusb_device_descriptor &descriptor);
 
-  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-
-  std::string Description() const { return ""; }
+  void DeviceRemoved(libusb_device *device);
 
  private:
-  class SunliteWidgetInterface* const m_widget;
+  static const uint16_t SUNLITE_VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(SunliteOutputPort);
+  DISALLOW_COPY_AND_ASSIGN(SunliteDeviceManager);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
+#endif  // PLUGINS_USBDMX_SUNLITEDEVICEMANAGER_H_

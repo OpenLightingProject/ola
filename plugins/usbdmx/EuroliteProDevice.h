@@ -22,33 +22,36 @@
 #ifndef PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
 #define PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
 
-#include <libusb.h>
+#include <memory>
 #include <string>
-#include "plugins/usbdmx/UsbDevice.h"
-#include "plugins/usbdmx/EuroliteProOutputPort.h"
+#include "ola/base/Macro.h"
+#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A EurolitePro device
+/**
+ * @brief An EurolitePro device.
  */
-class EuroliteProDevice: public UsbDevice {
+class EuroliteProDevice: public Device {
  public:
-    EuroliteProDevice(ola::AbstractPlugin *owner,
-                      libusb_device *usb_device):
-        UsbDevice(owner, "EurolitePro USB Device", usb_device),
-        m_output_port(NULL) {
-    }
+  EuroliteProDevice(ola::AbstractPlugin *owner,
+              class EuroliteProWidgetInterface *widget,
+              const std::string &serial);
 
-    std::string DeviceId() const;
+  std::string DeviceId() const {
+    return m_device_id;
+  }
 
  protected:
-    bool StartHook();
+  bool StartHook();
 
  private:
-    EuroliteProOutputPort *m_output_port;
+  const std::string m_device_id;
+  std::auto_ptr<class EuroliteProOutputPort> m_port;
+
+  DISALLOW_COPY_AND_ASSIGN(EuroliteProDevice);
 };
 }  // namespace usbdmx
 }  // namespace plugin

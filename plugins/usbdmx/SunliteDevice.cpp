@@ -14,33 +14,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SunliteDevice.cpp
- * The USBDMX2 device
+ * The Sunlite USBDMX2 device.
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <string.h>
-#include <sys/time.h>
-
-#include "ola/Logging.h"
 #include "plugins/usbdmx/SunliteDevice.h"
+
 #include "plugins/usbdmx/SunliteOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * Start this device.
- */
+SunliteDevice::SunliteDevice(ola::AbstractPlugin *owner,
+                             SunliteWidgetInterface *widget)
+    : Device(owner, "Sunlite USBDMX2 Device"),
+      m_port(new SunliteOutputPort(this, 0, widget)) {
+}
+
 bool SunliteDevice::StartHook() {
-  SunliteOutputPort *output_port = new SunliteOutputPort(this,
-                                                         0,
-                                                         m_usb_device);
-  if (!output_port->Start()) {
-    delete output_port;
-    return false;
-  }
-  AddPort(output_port);
+  AddPort(m_port.release());
   return true;
 }
 }  // namespace usbdmx

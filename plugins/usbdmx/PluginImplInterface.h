@@ -13,49 +13,44 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteOutputPort.h
- * The output port for a Sunlite USBDMX2 device.
- * Copyright (C) 2010 Simon Newton
+ * PluginImplInterface.h
+ * The interface for the various implementations of the USBDMX plugin.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
-#define PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
+#ifndef PLUGINS_USBDMX_PLUGINIMPLINTERFACE_H_
+#define PLUGINS_USBDMX_PLUGINIMPLINTERFACE_H_
 
+#include <libusb.h>
+#include <set>
 #include <string>
-#include "ola/base/Macro.h"
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
+#include <utility>
+#include <vector>
+#include "ola/plugin_id.h"
+#include "olad/Plugin.h"
+#include "ola/io/Descriptor.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class SunliteDevice;
-
-class SunliteOutputPort: public BasicOutputPort {
+class PluginImplInterface {
  public:
-  /**
-   * @brief Create a new SunliteOutputPort.
-   */
-  SunliteOutputPort(SunliteDevice *parent,
-                    unsigned int id,
-                    class SunliteWidgetInterface *widget);
+  virtual ~PluginImplInterface() {}
 
   /**
-   * @brief Cleanup.
+   * @brief Start the implementation.
+   * @returns true if succuessful, false otherwise.
    */
-  ~SunliteOutputPort();
+  virtual bool Start() = 0;
 
-  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-
-  std::string Description() const { return ""; }
-
- private:
-  class SunliteWidgetInterface* const m_widget;
-
-  DISALLOW_COPY_AND_ASSIGN(SunliteOutputPort);
+  /**
+   * @brief Stop the implementation.
+   * @returns true if succuessful, false otherwise.
+   */
+  virtual bool Stop() = 0;
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
+#endif  // PLUGINS_USBDMX_PLUGINIMPLINTERFACE_H_

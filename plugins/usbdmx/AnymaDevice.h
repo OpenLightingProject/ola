@@ -14,42 +14,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AnymaDevice.h
- * Interface for the Anyma device
+ * The Anyma uDMX device.
  * Copyright (C) 2010 Simon Newton
  */
 
 #ifndef PLUGINS_USBDMX_ANYMADEVICE_H_
 #define PLUGINS_USBDMX_ANYMADEVICE_H_
 
-#include <libusb.h>
+#include <memory>
 #include <string>
-#include "plugins/usbdmx/UsbDevice.h"
-#include "plugins/usbdmx/AnymaOutputPort.h"
+#include "ola/base/Macro.h"
+#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Anyma device
+/**
+ * @brief An Anyma device.
  */
-class AnymaDevice: public UsbDevice {
+class AnymaDevice: public Device {
  public:
-    AnymaDevice(ola::AbstractPlugin *owner,
-                libusb_device *usb_device,
-                libusb_device_handle *usb_handle,
-                const std::string &serial);
+  AnymaDevice(ola::AbstractPlugin *owner,
+              class AnymaWidgetInterface *widget,
+              const std::string &serial);
 
-    std::string DeviceId() const;
-
-    static const char EXPECTED_MANUFACTURER[];
-    static const char EXPECTED_PRODUCT[];
+  std::string DeviceId() const {
+    return m_device_id;
+  }
 
  protected:
-    bool StartHook();
+  bool StartHook();
 
  private:
-    AnymaOutputPort *m_output_port;
+  const std::string m_device_id;
+  std::auto_ptr<class AnymaOutputPort> m_port;
+
+  DISALLOW_COPY_AND_ASSIGN(AnymaDevice);
 };
 }  // namespace usbdmx
 }  // namespace plugin

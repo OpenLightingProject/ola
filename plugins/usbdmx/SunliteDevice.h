@@ -14,35 +14,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SunliteDevice.h
- * Interface for the Sunlite device
+ * The Sunlite USBDMX2 device.
  * Copyright (C) 2010 Simon Newton
  */
 
 #ifndef PLUGINS_USBDMX_SUNLITEDEVICE_H_
 #define PLUGINS_USBDMX_SUNLITEDEVICE_H_
 
-#include <libusb.h>
+#include <memory>
 #include <string>
-#include "plugins/usbdmx/UsbDevice.h"
+#include "ola/base/Macro.h"
+#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Sunlite device
+/**
+ * @brief A Sunlite device
  */
-class SunliteDevice: public UsbDevice {
+class SunliteDevice: public Device {
  public:
-    SunliteDevice(ola::AbstractPlugin *owner,
-                  libusb_device *usb_device):
-        UsbDevice(owner, "Sunlite USB Device", usb_device) {
-    }
+  SunliteDevice(ola::AbstractPlugin *owner,
+                class SunliteWidgetInterface *widget);
 
-    std::string DeviceId() const { return "usbdmx2"; }
+  std::string DeviceId() const { return "usbdmx2"; }
 
  protected:
-    bool StartHook();
+  bool StartHook();
+
+ private:
+  std::auto_ptr<class SunliteOutputPort> m_port;
+
+  DISALLOW_COPY_AND_ASSIGN(SunliteDevice);
 };
 }  // namespace usbdmx
 }  // namespace plugin

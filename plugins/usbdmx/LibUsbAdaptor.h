@@ -13,49 +13,35 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteOutputPort.h
- * The output port for a Sunlite USBDMX2 device.
- * Copyright (C) 2010 Simon Newton
+ * LibUsbAdaptor.h
+ * The wrapper around libusb that abstracts syncronous vs asyncronous calls.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
-#define PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
+#ifndef PLUGINS_USBDMX_LIBUSBADAPTOR_H_
+#define PLUGINS_USBDMX_LIBUSBADAPTOR_H_
 
-#include <string>
+#include <libusb.h>
 #include "ola/base/Macro.h"
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class SunliteDevice;
-
-class SunliteOutputPort: public BasicOutputPort {
+class LibUsbAdaptor {
  public:
-  /**
-   * @brief Create a new SunliteOutputPort.
-   */
-  SunliteOutputPort(SunliteDevice *parent,
-                    unsigned int id,
-                    class SunliteWidgetInterface *widget);
+  explicit LibUsbAdaptor(unsigned int debug_level)
+      : m_debug_level(debug_level) {
+  }
 
-  /**
-   * @brief Cleanup.
-   */
-  ~SunliteOutputPort();
-
-  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-
-  std::string Description() const { return ""; }
+  void SetDebug(libusb_context *context);
 
  private:
-  class SunliteWidgetInterface* const m_widget;
+  unsigned int m_debug_level;
 
-  DISALLOW_COPY_AND_ASSIGN(SunliteOutputPort);
+  DISALLOW_COPY_AND_ASSIGN(LibUsbAdaptor);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_
+#endif  // PLUGINS_USBDMX_LIBUSBADAPTOR_H_

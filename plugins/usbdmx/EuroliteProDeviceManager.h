@@ -13,40 +13,43 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProOutputPort.cpp
- * Thread for the EurolitePro Output Port
- * Copyright (C) 2011 Simon Newton & Harry F
- * Eurolite Pro USB DMX ArtNo. 51860120
+ * EuroliteProDeviceManager.h
+ * The EurolitePro Device Manager.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/EuroliteProOutputPort.h"
+#ifndef PLUGINS_USBDMX_EUROLITEPRODEVICEMANAGER_H_
+#define PLUGINS_USBDMX_EUROLITEPRODEVICEMANAGER_H_
 
-#include "ola/Logging.h"
+#include "ola/base/Macro.h"
+#include "plugins/usbdmx/UsbDeviceManagerInterface.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
-#include "plugins/usbdmx/EuroliteProWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-EuroliteProOutputPort::EuroliteProOutputPort(EuroliteProDevice *parent,
-                                 unsigned int id,
-                                 EuroliteProWidgetInterface *widget)
-    : BasicOutputPort(parent, id),
-      m_widget(widget) {
-}
+/**
+ * @brief Manages EurolitePro Devices
+ */
+class EuroliteProDeviceManager : public BaseDeviceFactory<EuroliteProDevice> {
+ public:
+  EuroliteProDeviceManager(PluginAdaptor *plugin_adaptor,
+                     Plugin *plugin)
+      : BaseDeviceFactory<EuroliteProDevice>(plugin_adaptor, plugin) {
+  }
 
-EuroliteProOutputPort::~EuroliteProOutputPort() {
-  // TODO(simon): stop the thread here??
-  OLA_INFO << "EuroliteProOutputPort::~EuroliteProOutputPort()";
-  delete m_widget;
-}
+  bool DeviceAdded(
+    libusb_device *device,
+    const struct libusb_device_descriptor &descriptor);
 
-bool EuroliteProOutputPort::WriteDMX(const DmxBuffer &buffer,
-                               OLA_UNUSED uint8_t priority) {
-  m_widget->SendDMX(buffer);
-  return true;
-}
+ private:
+  static const uint16_t EUROLITE_PRODUCT_ID;
+  static const uint16_t EUROLITE_VENDOR_ID;
+
+  DISALLOW_COPY_AND_ASSIGN(EuroliteProDeviceManager);
+};
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
+#endif  // PLUGINS_USBDMX_EUROLITEPRODEVICEMANAGER_H_

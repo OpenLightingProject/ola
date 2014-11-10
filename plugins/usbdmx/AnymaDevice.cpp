@@ -14,66 +14,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AnymaDevice.cpp
- * The Anyma usb driver
+ * The Anyma uDMX device.
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <string.h>
-#include <sys/time.h>
-#include <string>
-
-#include "ola/Logging.h"
 #include "plugins/usbdmx/AnymaDevice.h"
+
+#include <string>
+#include "ola/Logging.h"
+#include "plugins/usbdmx/AnymaOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using std::string;
-
-const char AnymaDevice::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
-const char AnymaDevice::EXPECTED_PRODUCT[] = "uDMX";
-
-
-/**
- * New AnymaDevice.
- * @param owner the plugin that owns this device
- * @param usb_device a USB device
- * @param usb_handle a claimed handle to the device. Ownership is transferred.
- * @param serial the serial number, may be empty.
- */
 AnymaDevice::AnymaDevice(ola::AbstractPlugin *owner,
-                         libusb_device *usb_device,
-                         libusb_device_handle *usb_handle,
-                         const string &serial)
-    : UsbDevice(owner, "Anyma USB Device", usb_device),
-      m_output_port(new AnymaOutputPort(this, 0, usb_handle, serial)) {
+                         AnymaWidgetInterface *widget,
+                         const std::string &serial)
+    : Device(owner, "Anyma USB Device"),
+      m_device_id("anyma-" + serial),
+      m_port(new AnymaOutputPort(this, 0, widget)) {
 }
 
-
-/*
- * Start this device.
- */
 bool AnymaDevice::StartHook() {
-  if (!m_output_port->Start()) {
-    delete m_output_port;
-    m_output_port = NULL;
-    return false;
-  }
-  AddPort(m_output_port);
+  AddPort(m_port.release());
   return true;
-}
-
-
-/*
- * Get the device id
- */
-string AnymaDevice::DeviceId() const {
-  if (m_output_port) {
-    return "anyma-" + m_output_port->SerialNumber();
-  } else {
-    return "";
-  }
 }
 }  // namespace usbdmx
 }  // namespace plugin

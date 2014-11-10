@@ -19,41 +19,27 @@
  * Eurolite Pro USB DMX   ArtNo. 51860120
  */
 
-#include <string>
-
-#include "ola/Logging.h"
 #include "plugins/usbdmx/EuroliteProDevice.h"
+
+#include <string>
+#include "ola/Logging.h"
+#include "plugins/usbdmx/EuroliteProOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using std::string;
-
-/*
- * Start this device.
- */
-bool EuroliteProDevice::StartHook() {
-  m_output_port = new EuroliteProOutputPort(this, 0, m_usb_device);
-  if (!m_output_port->Start()) {
-    delete m_output_port;
-    m_output_port = NULL;
-    return false;
-  }
-  AddPort(m_output_port);
-  return true;
+EuroliteProDevice::EuroliteProDevice(ola::AbstractPlugin *owner,
+                         EuroliteProWidgetInterface *widget,
+                         const std::string &serial)
+    : Device(owner, "EurolitePro USB Device"),
+      m_device_id("eurolite-" + serial),
+      m_port(new EuroliteProOutputPort(this, 0, widget)) {
 }
 
-
-/*
- * Get the device id
- */
-string EuroliteProDevice::DeviceId() const {
-  if (m_output_port) {
-    return "eurolite-" + m_output_port->SerialNumber();
-  } else {
-    return "";
-  }
+bool EuroliteProDevice::StartHook() {
+  AddPort(m_port.release());
+  return true;
 }
 }  // namespace usbdmx
 }  // namespace plugin

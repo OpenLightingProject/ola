@@ -14,21 +14,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AnymaOutputPort.h
- * The output port for a Anyma device.
+ * The Anyma uDMX output port.
  * Copyright (C) 2010 Simon Newton
- *
- * It takes around 21ms to send one universe of data. so we do this in a
- * separate thread.
  */
 
 #ifndef PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_
 #define PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_
 
-#include <libusb.h>
-#include <pthread.h>
 #include <string>
+#include "ola/base/Macro.h"
 #include "ola/DmxBuffer.h"
-#include "ola/thread/Thread.h"
 #include "olad/Port.h"
 
 namespace ola {
@@ -37,36 +32,27 @@ namespace usbdmx {
 
 class AnymaDevice;
 
-class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
+class AnymaOutputPort: public BasicOutputPort {
  public:
-    AnymaOutputPort(AnymaDevice *parent,
-                    unsigned int id,
-                    libusb_device_handle *usb_handle,
-                    const std::string &serial);
-    ~AnymaOutputPort();
-    std::string SerialNumber() const { return m_serial; }
+  /**
+   * @brief Create a new AnymaOutputPort.
+   */
+  AnymaOutputPort(AnymaDevice *parent,
+                  unsigned int id,
+                  class AnymaWidgetInterface *widget);
+  /**
+   * @brief Cleanup.
+   */
+  ~AnymaOutputPort();
 
-    bool Start();
-    void *Run();
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    std::string Description() const { return ""; }
+  std::string Description() const { return ""; }
 
  private:
-    static const unsigned int URB_TIMEOUT_MS = 500;
-    static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
+  class AnymaWidgetInterface* const m_widget;
 
-    bool m_term;
-    std::string m_serial;
-    libusb_device_handle *m_usb_handle;
-    DmxBuffer m_buffer;
-    ola::thread::Mutex m_data_mutex;
-    ola::thread::Mutex m_term_mutex;
-
-    bool SendDMX(const DmxBuffer &buffer_old);
-    bool GetDescriptorString(libusb_device_handle *usb_handle,
-                             uint8_t desc_index,
-                             std::string *data);
+  DISALLOW_COPY_AND_ASSIGN(AnymaOutputPort);
 };
 }  // namespace usbdmx
 }  // namespace plugin

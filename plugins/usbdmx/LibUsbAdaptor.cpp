@@ -13,47 +13,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * UsbDevice.h
- * Interface for the generic usb device
- * Copyright (C) 2010 Simon Newton
+ * LibUsbAdaptor.h
+ * The wrapper around libusb that abstracts syncronous vs asyncronous calls.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_USBDEVICE_H_
-#define PLUGINS_USBDMX_USBDEVICE_H_
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 
+#include <ola/Logging.h>
 #include <libusb.h>
-#include <string>
-#include "ola/base/Macro.h"
-#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Usb device, this is just like the generic Device class but it has a
- * Start() method as well to do the USB setup.
- */
-class UsbDevice: public ola::Device {
- public:
-    UsbDevice(ola::AbstractPlugin *owner,
-              const std::string &name,
-              libusb_device *device):
-        Device(owner, name),
-        m_usb_device(device) {
-      libusb_ref_device(device);
-    }
-    virtual ~UsbDevice() {
-      libusb_unref_device(m_usb_device);
-    }
-
- protected:
-  libusb_device *m_usb_device;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UsbDevice);
-};
+void LibUsbAdaptor::SetDebug(libusb_context *context) {
+  OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+  libusb_set_debug(context, m_debug_level);
+}
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_USBDEVICE_H_

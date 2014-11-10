@@ -25,6 +25,7 @@
 #define PLUGINS_USBDMX_SUNLITEFIRMWARELOADER_H_
 
 #include <libusb.h>
+#include "ola/base/Macro.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
 
 namespace ola {
@@ -33,19 +34,21 @@ namespace usbdmx {
 
 class SunliteFirmwareLoader: public FirmwareLoader {
  public:
-    explicit SunliteFirmwareLoader(libusb_device *usb_device)
-        : m_device(usb_device) {}
-    ~SunliteFirmwareLoader() {}
+  explicit SunliteFirmwareLoader(libusb_device *usb_device)
+      : m_device(usb_device) {}
+  ~SunliteFirmwareLoader() {}
 
-    bool LoadFirmware();
+  bool LoadFirmware();
 
  private:
-    libusb_device *m_device;
+  libusb_device *m_device;
 
-    static const int INTERFACE_NUMBER = 0;  // the device only has 1 interface
-    static const uint8_t UPLOAD_REQUEST_TYPE = 0x40;
-    static const uint8_t UPLOAD_REQUEST = 0xa0;
-    static const unsigned int UPLOAD_TIMEOUT = 300;  // ms
+  static const int INTERFACE_NUMBER = 0;  // the device only has 1 interface
+  static const uint8_t UPLOAD_REQUEST_TYPE = 0x40;
+  static const uint8_t UPLOAD_REQUEST = 0xa0;
+  static const unsigned int UPLOAD_TIMEOUT = 300;  // ms
+
+  DISALLOW_COPY_AND_ASSIGN(SunliteFirmwareLoader);
 };
 }  // namespace usbdmx
 }  // namespace plugin
