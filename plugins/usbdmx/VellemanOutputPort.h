@@ -43,35 +43,35 @@ class VellemanDevice;
 
 class VellemanOutputPort: public BasicOutputPort, ola::thread::Thread {
  public:
-    VellemanOutputPort(VellemanDevice *parent,
-                       unsigned int id,
-                       libusb_device *usb_device);
-    ~VellemanOutputPort();
+  VellemanOutputPort(VellemanDevice *parent,
+                     unsigned int id,
+                     libusb_device *usb_device);
+  ~VellemanOutputPort();
 
-    bool Start();
-    void *Run();
+  bool Start();
+  void *Run();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    std::string Description() const;
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const;
 
  private:
-    static const unsigned char ENDPOINT = 0x01;
-    // 25ms seems to be about the shortest we can go
-    static const unsigned int URB_TIMEOUT_MS = 25;
-    static const int CONFIGURATION = 1;
-    static const int INTERFACE = 0;
-    static const unsigned int UPGRADED_CHUNK_SIZE = 64;
+  static const unsigned char ENDPOINT = 0x01;
+  // 25ms seems to be about the shortest we can go
+  static const unsigned int URB_TIMEOUT_MS = 25;
+  static const int CONFIGURATION = 1;
+  static const int INTERFACE = 0;
+  static const unsigned int UPGRADED_CHUNK_SIZE = 64;
 
-    bool m_term;
-    unsigned int m_chunk_size;
-    libusb_device *m_usb_device;
-    libusb_device_handle *m_usb_handle;
-    DmxBuffer m_buffer;
-    ola::thread::Mutex m_data_mutex;
-    ola::thread::Mutex m_term_mutex;
+  bool m_term;
+  unsigned int m_chunk_size;
+  libusb_device *m_usb_device;
+  libusb_device_handle *m_usb_handle;
+  DmxBuffer m_buffer;
+  ola::thread::Mutex m_data_mutex;
+  ola::thread::Mutex m_term_mutex;
 
-    bool SendDMX(const DmxBuffer &buffer_old);
-    bool SendDataChunk(uint8_t *usb_data);
+  bool SendDMX(const DmxBuffer &buffer_old);
+  bool SendDataChunk(uint8_t *usb_data);
 };
 }  // namespace usbdmx
 }  // namespace plugin

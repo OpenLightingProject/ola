@@ -36,19 +36,19 @@ namespace usbdmx {
  */
 class EuroliteProDevice: public UsbDevice {
  public:
-    EuroliteProDevice(ola::AbstractPlugin *owner,
-                      libusb_device *usb_device):
-        UsbDevice(owner, "EurolitePro USB Device", usb_device),
+  EuroliteProDevice(ola::AbstractPlugin *owner,
+                    libusb_device *usb_device)
+      : UsbDevice(owner, "EurolitePro USB Device", usb_device),
         m_output_port(NULL) {
-    }
+  }
 
-    std::string DeviceId() const;
+  std::string DeviceId() const;
 
  protected:
-    bool StartHook();
+  bool StartHook();
 
  private:
-    EuroliteProOutputPort *m_output_port;
+  EuroliteProOutputPort *m_output_port;
 };
 }  // namespace usbdmx
 }  // namespace plugin
