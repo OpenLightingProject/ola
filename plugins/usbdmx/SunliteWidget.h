@@ -22,9 +22,10 @@
 #define PLUGINS_USBDMX_SUNLITEWIDGET_H_
 
 #include <libusb.h>
-#include "ola/base/Macro.h"
 #include "ola/DmxBuffer.h"
+#include "ola/base/Macro.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
+#include "plugins/usbdmx/Widget.h"
 
 namespace ola {
 namespace plugin {
@@ -35,7 +36,7 @@ class SunliteThreadedSender;
 /**
  * @brief The interface for the Sunlite Widgets
  */
-class SunliteWidget {
+class SunliteWidget : public Widget {
  public:
   virtual ~SunliteWidget() {}
 

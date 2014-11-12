@@ -20,7 +20,8 @@
 
 #include "plugins/usbdmx/SunliteDevice.h"
 
-#include "plugins/usbdmx/SunliteOutputPort.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
+#include "plugins/usbdmx/SunliteWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -29,7 +30,7 @@ namespace usbdmx {
 SunliteDevice::SunliteDevice(ola::AbstractPlugin *owner,
                              SunliteWidget *widget)
     : Device(owner, "Sunlite USBDMX2 Device"),
-      m_port(new SunliteOutputPort(this, 0, widget)) {
+      m_port(new GenericOutputPort(this, 0, widget)) {
 }
 
 bool SunliteDevice::StartHook() {

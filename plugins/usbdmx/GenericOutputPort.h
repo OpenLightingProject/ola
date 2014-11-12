@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaOutputPort.h
- * The Anyma uDMX output port.
- * Copyright (C) 2010 Simon Newton
+ * GenericOutputPort.h
+ * A Generic output port that uses a widget.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_
-#define PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_
+#ifndef PLUGINS_USBDMX_GENERICOUTPUTPORT_H_
+#define PLUGINS_USBDMX_GENERICOUTPUTPORT_H_
 
 #include <string>
 #include "ola/base/Macro.h"
@@ -27,34 +27,37 @@
 #include "olad/Port.h"
 
 namespace ola {
+
+class Device;
+
 namespace plugin {
 namespace usbdmx {
 
-class AnymaDevice;
+class Widget;
 
-class AnymaOutputPort: public BasicOutputPort {
+class GenericOutputPort: public BasicOutputPort {
  public:
   /**
-   * @brief Create a new AnymaOutputPort.
+   * @brief Create a new GenericOutputPort..
    */
-  AnymaOutputPort(AnymaDevice *parent,
-                  unsigned int id,
-                  class AnymaWidget *widget);
+  GenericOutputPort(Device *parent,
+                    unsigned int id,
+                    class Widget *widget);
   /**
    * @brief Cleanup.
    */
-  ~AnymaOutputPort();
+  ~GenericOutputPort();
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
   std::string Description() const { return ""; }
 
  private:
-  class AnymaWidget* const m_widget;
+  class Widget* const m_widget;
 
-  DISALLOW_COPY_AND_ASSIGN(AnymaOutputPort);
+  DISALLOW_COPY_AND_ASSIGN(GenericOutputPort);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_
+#endif  // PLUGINS_USBDMX_GENERICOUTPUTPORT_H_

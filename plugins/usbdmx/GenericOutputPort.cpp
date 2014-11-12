@@ -13,35 +13,34 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteOutputPort.cpp
- * The output port for a Sunlite USBDMX2 device.
- * Copyright (C) 2010 Simon Newton
+ * GenericOutputPort.cpp
+ * A Generic output port that uses a widget.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/SunliteOutputPort.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
 
 #include "ola/Logging.h"
-#include "plugins/usbdmx/SunliteDevice.h"
-#include "plugins/usbdmx/SunliteWidget.h"
+#include "olad/Device.h"
+#include "plugins/usbdmx/Widget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-SunliteOutputPort::SunliteOutputPort(SunliteDevice *parent,
+GenericOutputPort::GenericOutputPort(Device *parent,
                                      unsigned int id,
-                                     SunliteWidget *widget)
+                                     Widget *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }
 
-SunliteOutputPort::~SunliteOutputPort() {
+GenericOutputPort::~GenericOutputPort() {
   // TODO(simon): stop the thread here??
-  OLA_INFO << "SunliteOutputPort::~SunliteOutputPort()";
-  delete m_widget;
+  OLA_INFO << "GenericOutputPort::~GenericOutputPort()";
 }
 
-bool SunliteOutputPort::WriteDMX(const DmxBuffer &buffer,
+bool GenericOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  OLA_UNUSED uint8_t priority) {
   m_widget->SendDMX(buffer);
   return true;

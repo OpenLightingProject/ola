@@ -23,7 +23,7 @@
 
 #include <string>
 #include "ola/Logging.h"
-#include "plugins/usbdmx/EuroliteProOutputPort.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
 #include "plugins/usbdmx/EuroliteProWidget.h"
 
 namespace ola {
@@ -34,7 +34,7 @@ EuroliteProDevice::EuroliteProDevice(ola::AbstractPlugin *owner,
                          EuroliteProWidget *widget)
     : Device(owner, "EurolitePro USB Device"),
       m_device_id("eurolite-" + widget->SerialNumber()),
-      m_port(new EuroliteProOutputPort(this, 0, widget)) {
+      m_port(new GenericOutputPort(this, 0, widget)) {
 }
 
 bool EuroliteProDevice::StartHook() {

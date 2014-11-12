@@ -44,7 +44,7 @@ class SunliteDevice: public Device {
   bool StartHook();
 
  private:
-  std::auto_ptr<class SunliteOutputPort> m_port;
+  std::auto_ptr<class GenericOutputPort> m_port;
 
   DISALLOW_COPY_AND_ASSIGN(SunliteDevice);
 };

@@ -20,8 +20,8 @@
 
 #include "plugins/usbdmx/AnymaDevice.h"
 
-#include "plugins/usbdmx/AnymaOutputPort.h"
 #include "plugins/usbdmx/AnymaWidget.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
 
 namespace ola {
 namespace plugin {
@@ -31,7 +31,7 @@ AnymaDevice::AnymaDevice(ola::AbstractPlugin *owner,
                          AnymaWidget *widget)
     : Device(owner, "Anyma USB Device"),
       m_device_id("anyma-" + widget->SerialNumber()),
-      m_port(new AnymaOutputPort(this, 0, widget)) {
+      m_port(new GenericOutputPort(this, 0, widget)) {
 }
 
 bool AnymaDevice::StartHook() {

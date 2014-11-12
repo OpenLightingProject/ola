@@ -48,7 +48,7 @@ class EuroliteProDevice: public Device {
 
  private:
   const std::string m_device_id;
-  std::auto_ptr<class EuroliteProOutputPort> m_port;
+  std::auto_ptr<class GenericOutputPort> m_port;
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProDevice);
 };
