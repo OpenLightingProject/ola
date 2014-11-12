@@ -22,9 +22,12 @@
 #define PLUGINS_USBDMX_ANYMAWIDGET_H_
 
 #include <libusb.h>
-#include "ola/base/Macro.h"
+#include <string>
+
 #include "ola/DmxBuffer.h"
-#include "plugins/usbdmx/ThreadedUsbSender.h"
+#include "ola/base/Macro.h"
+#include "ola/thread/Mutex.h"
+#include "plugins/usbdmx/Widget.h"
 
 namespace ola {
 namespace plugin {
@@ -33,16 +36,25 @@ namespace usbdmx {
 /**
  * @brief The interface for the Anyma Widgets
  */
-class AnymaWidgetInterface {
+class AnymaWidget: public Widget {
  public:
-  virtual ~AnymaWidgetInterface() {}
+  explicit AnymaWidget(const std::string &serial) : m_serial(serial) {}
+
+  virtual ~AnymaWidget() {}
 
   virtual bool Init() = 0;
 
   virtual bool SendDMX(const DmxBuffer &buffer) = 0;
 
+  std::string SerialNumber() const {
+    return m_serial;
+  }
+
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];
+
+ private:
+  std::string m_serial;
 };
 
 /**
@@ -50,9 +62,10 @@ class AnymaWidgetInterface {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousAnymaWidget: public AnymaWidgetInterface {
+class SynchronousAnymaWidget: public AnymaWidget {
  public:
-  explicit SynchronousAnymaWidget(libusb_device *usb_device);
+  SynchronousAnymaWidget(libusb_device *usb_device,
+                          const std::string &serial);
 
   bool Init();
 
@@ -68,9 +81,10 @@ class SynchronousAnymaWidget: public AnymaWidgetInterface {
 /**
  * @brief An Anyma widget that uses asynchronous libusb operations.
  */
-class AsynchronousAnymaWidget : public AnymaWidgetInterface {
+class AsynchronousAnymaWidget : public AnymaWidget {
  public:
-  explicit AsynchronousAnymaWidget(libusb_device *usb_device);
+  AsynchronousAnymaWidget(libusb_device *usb_device,
+                          const std::string &serial);
   ~AsynchronousAnymaWidget();
 
   bool Init();

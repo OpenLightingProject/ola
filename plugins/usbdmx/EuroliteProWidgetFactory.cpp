@@ -13,26 +13,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProDeviceManager.cpp
- * The EurolitePro Device Manager
+ * EuroliteProWidgetFactory.cpp
+ * The WidgetFactory for EurolitePro widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/EuroliteProDeviceManager.h"
+#include "plugins/usbdmx/EuroliteProWidgetFactory.h"
 
 #include "ola/Logging.h"
-#include "plugins/usbdmx/EuroliteProDevice.h"
-#include "plugins/usbdmx/EuroliteProWidget.h"
 #include "plugins/usbdmx/LibUsbHelper.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t EuroliteProDeviceManager::EUROLITE_PRODUCT_ID = 0xfa63;
-const uint16_t EuroliteProDeviceManager::EUROLITE_VENDOR_ID = 0x04d;
+const uint16_t EuroliteProWidgetFactory::EUROLITE_PRODUCT_ID = 0xfa63;
+const uint16_t EuroliteProWidgetFactory::EUROLITE_VENDOR_ID = 0x04d;
 
-bool EuroliteProDeviceManager::DeviceAdded(
+bool EuroliteProWidgetFactory::DeviceAdded(
+    WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
   if (descriptor.idVendor != EUROLITE_VENDOR_ID ||
@@ -48,12 +47,12 @@ bool EuroliteProDeviceManager::DeviceAdded(
   }
 
   if (!LibUsbHelper::CheckManufacturer(
-        EuroliteProWidgetInterface::EXPECTED_MANUFACTURER, info.manufacturer)) {
+        EuroliteProWidget::EXPECTED_MANUFACTURER, info.manufacturer)) {
     return false;
   }
 
-  if (!LibUsbHelper::CheckProduct(EuroliteProWidgetInterface::EXPECTED_PRODUCT,
-                                  info.product)) {
+  if (!LibUsbHelper::CheckProduct(
+        EuroliteProWidget::EXPECTED_PRODUCT, info.product)) {
     return false;
   }
 
@@ -72,16 +71,10 @@ bool EuroliteProDeviceManager::DeviceAdded(
   std::ostringstream serial_str;
   serial_str << bus_number << "-" << device_address;
 
-  AsynchronousEuroliteProWidget *widget = new AsynchronousEuroliteProWidget(
-     usb_device);
-  if (!widget->Init()) {
-    delete widget;
-    return false;
-  }
-
-  EuroliteProDevice *device = new EuroliteProDevice(ParentPlugin(), widget,
-                                                    serial_str.str());
-  return RegisterDevice(usb_device, device);
+  return AddWidget(
+      observer,
+      usb_device,
+      new AsynchronousEuroliteProWidget(usb_device, serial_str.str()));
 }
 }  // namespace usbdmx
 }  // namespace plugin

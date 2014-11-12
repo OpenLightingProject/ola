@@ -36,7 +36,7 @@ namespace usbdmx {
 class SunliteDevice: public Device {
  public:
   SunliteDevice(ola::AbstractPlugin *owner,
-                class SunliteWidgetInterface *widget);
+                class SunliteWidget *widget);
 
   std::string DeviceId() const { return "usbdmx2"; }
 

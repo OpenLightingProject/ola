@@ -35,9 +35,9 @@ class SunliteThreadedSender;
 /**
  * @brief The interface for the Sunlite Widgets
  */
-class SunliteWidgetInterface {
+class SunliteWidget {
  public:
-  virtual ~SunliteWidgetInterface() {}
+  virtual ~SunliteWidget() {}
 
   virtual bool Init() = 0;
 
@@ -52,7 +52,7 @@ class SunliteWidgetInterface {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousSunliteWidget: public SunliteWidgetInterface {
+class SynchronousSunliteWidget: public SunliteWidget {
  public:
   explicit SynchronousSunliteWidget(libusb_device *usb_device);
 
@@ -70,7 +70,7 @@ class SynchronousSunliteWidget: public SunliteWidgetInterface {
 /**
  * @brief An Sunlite widget that uses asynchronous libusb operations.
  */
-class AsynchronousSunliteWidget: public SunliteWidgetInterface {
+class AsynchronousSunliteWidget: public SunliteWidget {
  public:
   explicit AsynchronousSunliteWidget(libusb_device *usb_device);
   ~AsynchronousSunliteWidget();

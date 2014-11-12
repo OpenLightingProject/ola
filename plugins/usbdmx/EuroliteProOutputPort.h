@@ -40,7 +40,7 @@ class EuroliteProOutputPort: public BasicOutputPort {
    */
   EuroliteProOutputPort(class EuroliteProDevice *parent,
                         unsigned int id,
-                        class EuroliteProWidgetInterface *widget);
+                        class EuroliteProWidget *widget);
 
   /**
    * @brief Cleanup.
@@ -51,7 +51,7 @@ class EuroliteProOutputPort: public BasicOutputPort {
   std::string Description() const { return ""; }
 
  private:
-  class EuroliteProWidgetInterface* const m_widget;
+  class EuroliteProWidget* const m_widget;
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProOutputPort);
 };

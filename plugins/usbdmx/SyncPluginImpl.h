@@ -87,6 +87,8 @@ class SyncPluginImpl: public PluginImplInterface {
   class Device* NewAnymaDevice(
       struct libusb_device *usb_device,
       const struct libusb_device_descriptor &device_descriptor);
+  class Device* NewEuroliteProDevice(
+      struct libusb_device *usb_device);
 
   void GetDeviceInfo(
       struct libusb_device_handle *usb_handle,

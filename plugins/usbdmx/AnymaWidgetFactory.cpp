@@ -13,15 +13,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaDeviceManager.cpp
- * The Anyma Device Manager
+ * AnymaWidgetFactory.cpp
+ * The WidgetFactory for Anyma widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/AnymaDeviceManager.h"
+#include "plugins/usbdmx/AnymaWidgetFactory.h"
 
 #include "ola/Logging.h"
-#include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/AnymaWidget.h"
 #include "plugins/usbdmx/LibUsbHelper.h"
 
@@ -29,13 +28,15 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t AnymaDeviceManager::ANYMA_VENDOR_ID = 0x16C0;
+const uint16_t AnymaWidgetFactory::ANYMA_VENDOR_ID = 0x16C0;
+const uint16_t AnymaWidgetFactory::ANYMA_PRODUCT_ID = 0x05DC;
 
-bool AnymaDeviceManager::DeviceAdded(
+bool AnymaWidgetFactory::DeviceAdded(
+    WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
   if (descriptor.idVendor != ANYMA_VENDOR_ID ||
-      descriptor.idProduct != 0x05DC ||
+      descriptor.idProduct != ANYMA_PRODUCT_ID ||
       HasDevice(usb_device)) {
     return false;
   }
@@ -47,15 +48,18 @@ bool AnymaDeviceManager::DeviceAdded(
   }
 
   if (!LibUsbHelper::CheckManufacturer(
-        AnymaWidgetInterface::EXPECTED_MANUFACTURER, info.manufacturer)) {
+        AnymaWidget::EXPECTED_MANUFACTURER, info.manufacturer)) {
     return false;
   }
 
-  if (!LibUsbHelper::CheckProduct(AnymaWidgetInterface::EXPECTED_PRODUCT,
-                                  info.product)) {
+  if (!LibUsbHelper::CheckProduct(
+        AnymaWidget::EXPECTED_PRODUCT, info.product)) {
     return false;
   }
 
+  // Some Anyma devices don't have serial numbers. Since there isn't another
+  // good way to uniquely identify a USB device, we only support one of these
+  // types of devices per host.
   if (info.serial.empty()) {
     if (m_missing_serial_number) {
       OLA_WARN << "Failed to read serial number or serial number empty. "
@@ -69,14 +73,8 @@ bool AnymaDeviceManager::DeviceAdded(
     }
   }
 
-  AsynchronousAnymaWidget *widget = new AsynchronousAnymaWidget(usb_device);
-  if (!widget->Init()) {
-    delete widget;
-    return false;
-  }
-
-  AnymaDevice *device = new AnymaDevice(ParentPlugin(), widget, info.serial);
-  return RegisterDevice(usb_device, device);
+  return AddWidget(observer, usb_device,
+                   new AsynchronousAnymaWidget(usb_device, info.serial));
 }
 }  // namespace usbdmx
 }  // namespace plugin

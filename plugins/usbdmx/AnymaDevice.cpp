@@ -20,19 +20,17 @@
 
 #include "plugins/usbdmx/AnymaDevice.h"
 
-#include <string>
-#include "ola/Logging.h"
 #include "plugins/usbdmx/AnymaOutputPort.h"
+#include "plugins/usbdmx/AnymaWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 AnymaDevice::AnymaDevice(ola::AbstractPlugin *owner,
-                         AnymaWidgetInterface *widget,
-                         const std::string &serial)
+                         AnymaWidget *widget)
     : Device(owner, "Anyma USB Device"),
-      m_device_id("anyma-" + serial),
+      m_device_id("anyma-" + widget->SerialNumber()),
       m_port(new AnymaOutputPort(this, 0, widget)) {
 }
 

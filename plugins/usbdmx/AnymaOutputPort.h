@@ -39,7 +39,7 @@ class AnymaOutputPort: public BasicOutputPort {
    */
   AnymaOutputPort(AnymaDevice *parent,
                   unsigned int id,
-                  class AnymaWidgetInterface *widget);
+                  class AnymaWidget *widget);
   /**
    * @brief Cleanup.
    */
@@ -50,7 +50,7 @@ class AnymaOutputPort: public BasicOutputPort {
   std::string Description() const { return ""; }
 
  private:
-  class AnymaWidgetInterface* const m_widget;
+  class AnymaWidget* const m_widget;
 
   DISALLOW_COPY_AND_ASSIGN(AnymaOutputPort);
 };

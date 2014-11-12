@@ -21,16 +21,21 @@
 #include "plugins/usbdmx/AnymaWidget.h"
 
 #include <unistd.h>
+#include <string>
+
 #include "ola/Logging.h"
 #include "ola/Constants.h"
 #include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char AnymaWidgetInterface::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
-const char AnymaWidgetInterface::EXPECTED_PRODUCT[] = "uDMX";
+const char AnymaWidget::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
+const char AnymaWidget::EXPECTED_PRODUCT[] = "uDMX";
+
+using std::string;
 
 namespace {
 
@@ -84,8 +89,10 @@ bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 
-SynchronousAnymaWidget::SynchronousAnymaWidget(libusb_device *usb_device)
-    : m_usb_device(usb_device) {
+SynchronousAnymaWidget::SynchronousAnymaWidget(libusb_device *usb_device,
+                                               const string &serial)
+    : AnymaWidget(serial),
+      m_usb_device(usb_device) {
 }
 
 bool SynchronousAnymaWidget::Init() {
@@ -111,8 +118,10 @@ bool SynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
 }
 
 AsynchronousAnymaWidget::AsynchronousAnymaWidget(
-    libusb_device *usb_device)
-    : m_usb_device(usb_device),
+    libusb_device *usb_device,
+    const string &serial)
+    : AnymaWidget(serial),
+      m_usb_device(usb_device),
       m_usb_handle(NULL),
       m_control_setup_buffer(NULL),
       m_transfer_state(IDLE) {

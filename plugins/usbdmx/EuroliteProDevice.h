@@ -37,8 +37,7 @@ namespace usbdmx {
 class EuroliteProDevice: public Device {
  public:
   EuroliteProDevice(ola::AbstractPlugin *owner,
-              class EuroliteProWidgetInterface *widget,
-              const std::string &serial);
+                    class EuroliteProWidget *widget);
 
   std::string DeviceId() const {
     return m_device_id;

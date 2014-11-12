@@ -48,8 +48,8 @@ void AsyncCallback(struct libusb_transfer *transfer) {
 /*
  * Initialize a USBDMX2 packet
  */
-void InitPacket(uint8_t packet[SunliteWidgetInterface::SUNLITE_PACKET_SIZE]) {
-  memset(packet, 0, SunliteWidgetInterface::SUNLITE_PACKET_SIZE);
+void InitPacket(uint8_t packet[SunliteWidget::SUNLITE_PACKET_SIZE]) {
+  memset(packet, 0, SunliteWidget::SUNLITE_PACKET_SIZE);
 
   // The packet is divided into 26 chunks of 32 bytes each. Each chunk contains
   // the data for 20 channels (except the last one which has 12 channels of
@@ -82,7 +82,7 @@ void InitPacket(uint8_t packet[SunliteWidgetInterface::SUNLITE_PACKET_SIZE]) {
  * Update a USBDMX2 packet to match the supplied DmxBuffer.
  */
 void UpdatePacket(const DmxBuffer &buffer,
-                  uint8_t packet[SunliteWidgetInterface::SUNLITE_PACKET_SIZE]) {
+                  uint8_t packet[SunliteWidget::SUNLITE_PACKET_SIZE]) {
   for (unsigned int i = 0; i < buffer.Size(); i++) {
     packet[(i / CHANNELS_PER_CHUNK) * CHUNK_SIZE +
              ((i / 4) % 5) * 6 + 3 + (i % 4)] = buffer.Get(i);
@@ -100,7 +100,7 @@ class SunliteThreadedSender: public ThreadedUsbSender {
                         libusb_device_handle *handle);
 
  private:
-  uint8_t m_packet[SunliteWidgetInterface::SUNLITE_PACKET_SIZE];
+  uint8_t m_packet[SunliteWidget::SUNLITE_PACKET_SIZE];
 
   bool TransmitBuffer(libusb_device_handle *handle,
                       const DmxBuffer &buffer);
@@ -121,10 +121,10 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       handle,
       ENDPOINT,
       (unsigned char*) m_packet,
-      SunliteWidgetInterface::SUNLITE_PACKET_SIZE,
+      SunliteWidget::SUNLITE_PACKET_SIZE,
       &transferred,
       TIMEOUT);
-  if (transferred != SunliteWidgetInterface::SUNLITE_PACKET_SIZE) {
+  if (transferred != SunliteWidget::SUNLITE_PACKET_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "Sunlite driver failed to transfer all data";
   }

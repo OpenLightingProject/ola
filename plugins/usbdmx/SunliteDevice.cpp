@@ -27,7 +27,7 @@ namespace plugin {
 namespace usbdmx {
 
 SunliteDevice::SunliteDevice(ola::AbstractPlugin *owner,
-                             SunliteWidgetInterface *widget)
+                             SunliteWidget *widget)
     : Device(owner, "Sunlite USBDMX2 Device"),
       m_port(new SunliteOutputPort(this, 0, widget)) {
 }

@@ -13,43 +13,42 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProDeviceManager.h
- * The EurolitePro Device Manager.
+ * AnymaWidgetFactory.h
+ * The WidgetFactory for Anyma widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_EUROLITEPRODEVICEMANAGER_H_
-#define PLUGINS_USBDMX_EUROLITEPRODEVICEMANAGER_H_
+#ifndef PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
+#define PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
 
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/UsbDeviceManagerInterface.h"
-#include "plugins/usbdmx/EuroliteProDevice.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Manages EurolitePro Devices
+ * @brief Manages Anyma Devices
  */
-class EuroliteProDeviceManager : public BaseDeviceFactory<EuroliteProDevice> {
+class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
  public:
-  EuroliteProDeviceManager(PluginAdaptor *plugin_adaptor,
-                     Plugin *plugin)
-      : BaseDeviceFactory<EuroliteProDevice>(plugin_adaptor, plugin) {
-  }
+  AnymaWidgetFactory() : m_missing_serial_number(false) {}
 
   bool DeviceAdded(
-    libusb_device *device,
-    const struct libusb_device_descriptor &descriptor);
+      WidgetObserver *observer,
+      libusb_device *usb_device,
+      const struct libusb_device_descriptor &descriptor);
 
  private:
-  static const uint16_t EUROLITE_PRODUCT_ID;
-  static const uint16_t EUROLITE_VENDOR_ID;
+  bool m_missing_serial_number;
 
-  DISALLOW_COPY_AND_ASSIGN(EuroliteProDeviceManager);
+  static const uint16_t ANYMA_VENDOR_ID;
+  static const uint16_t ANYMA_PRODUCT_ID;
+
+  DISALLOW_COPY_AND_ASSIGN(AnymaWidgetFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_EUROLITEPRODEVICEMANAGER_H_
+#endif  // PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_

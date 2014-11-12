@@ -39,7 +39,7 @@ class SunliteOutputPort: public BasicOutputPort {
    */
   SunliteOutputPort(SunliteDevice *parent,
                     unsigned int id,
-                    class SunliteWidgetInterface *widget);
+                    class SunliteWidget *widget);
 
   /**
    * @brief Cleanup.
@@ -51,7 +51,7 @@ class SunliteOutputPort: public BasicOutputPort {
   std::string Description() const { return ""; }
 
  private:
-  class SunliteWidgetInterface* const m_widget;
+  class SunliteWidget* const m_widget;
 
   DISALLOW_COPY_AND_ASSIGN(SunliteOutputPort);
 };

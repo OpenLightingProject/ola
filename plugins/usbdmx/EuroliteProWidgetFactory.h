@@ -13,42 +13,42 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteDeviceManager.h
- * The Sunlite Device Manager
+ * EuroliteProWidgetFactory.h
+ * The WidgetFactory for EurolitePro widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEDEVICEMANAGER_H_
-#define PLUGINS_USBDMX_SUNLITEDEVICEMANAGER_H_
+#ifndef PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
+#define PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
 
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/UsbDeviceManagerInterface.h"
-#include "plugins/usbdmx/SunliteDevice.h"
+#include "plugins/usbdmx/EuroliteProWidget.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Manages SunLite Devices
+ * @brief Manages EurolitePro Devices
  */
-class SunliteDeviceManager : public BaseDeviceFactory<SunliteDevice> {
+class EuroliteProWidgetFactory
+    : public BaseWidgetFactory<class EuroliteProWidget> {
  public:
-  SunliteDeviceManager(PluginAdaptor *plugin_adaptor,
-                       Plugin *plugin)
-      : BaseDeviceFactory<SunliteDevice>(plugin_adaptor, plugin) {}
+  EuroliteProWidgetFactory() {}
 
-  bool DeviceAdded(libusb_device *device,
-                   const struct libusb_device_descriptor &descriptor);
-
-  void DeviceRemoved(libusb_device *device);
+  bool DeviceAdded(
+      WidgetObserver *observer,
+      libusb_device *usb_device,
+      const struct libusb_device_descriptor &descriptor);
 
  private:
-  static const uint16_t SUNLITE_VENDOR_ID;
+  static const uint16_t EUROLITE_PRODUCT_ID;
+  static const uint16_t EUROLITE_VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(SunliteDeviceManager);
+  DISALLOW_COPY_AND_ASSIGN(EuroliteProWidgetFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEDEVICEMANAGER_H_
+#endif  // PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_

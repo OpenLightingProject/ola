@@ -20,6 +20,8 @@
 
 #include "plugins/usbdmx/EuroliteProWidget.h"
 
+#include <string>
+
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbdmx/LibUsbHelper.h"
@@ -28,9 +30,11 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char EuroliteProWidgetInterface::EXPECTED_MANUFACTURER[] = "Eurolite";
-const char EuroliteProWidgetInterface::EXPECTED_PRODUCT[] =
+const char EuroliteProWidget::EXPECTED_MANUFACTURER[] = "Eurolite";
+const char EuroliteProWidget::EXPECTED_PRODUCT[] =
     "Eurolite DMX512 Pro";
+
+using std::string;
 
 namespace {
 
@@ -53,7 +57,7 @@ void AsyncCallback(struct libusb_transfer *transfer) {
  */
 void CreateFrame(
     const DmxBuffer &buffer,
-    uint8_t frame[EuroliteProWidgetInterface::EUROLITE_PRO_FRAME_SIZE]) {
+    uint8_t frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE]) {
   unsigned int frame_size = buffer.Size();
 
   // header
@@ -66,7 +70,7 @@ void CreateFrame(
   memset(frame + 5 + frame_size, 0, DMX_UNIVERSE_SIZE - frame_size);
   // End message delimiter
 
-  frame[EuroliteProWidgetInterface::EUROLITE_PRO_FRAME_SIZE - 1] =  0xE7;
+  frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE - 1] =  0xE7;
 }
 
 /**
@@ -115,7 +119,7 @@ bool LocateInterface(libusb_device *usb_device,
 class EuroliteProThreadedSender: public ThreadedUsbSender {
  public:
   EuroliteProThreadedSender(libusb_device *usb_device,
-                        libusb_device_handle *handle);
+                            libusb_device_handle *handle);
 
  private:
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -130,7 +134,7 @@ EuroliteProThreadedSender::EuroliteProThreadedSender(
 
 bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                            const DmxBuffer &buffer) {
-  uint8_t frame[EuroliteProWidgetInterface::EUROLITE_PRO_FRAME_SIZE];
+  uint8_t frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE];
   CreateFrame(buffer, frame);
 
   int transferred;
@@ -138,10 +142,10 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       handle,
       ENDPOINT,
       frame,
-      EuroliteProWidgetInterface::EUROLITE_PRO_FRAME_SIZE,
+      EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE,
       &transferred,
       URB_TIMEOUT_MS);
-  if (transferred != EuroliteProWidgetInterface::EUROLITE_PRO_FRAME_SIZE) {
+  if (transferred != EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "EurolitePro driver failed to transfer all data";
   }
@@ -149,8 +153,10 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 SynchronousEuroliteProWidget::SynchronousEuroliteProWidget(
-    libusb_device *usb_device)
-    : m_usb_device(usb_device) {
+    libusb_device *usb_device,
+    const string &serial)
+    : EuroliteProWidget(serial),
+      m_usb_device(usb_device) {
 }
 
 bool SynchronousEuroliteProWidget::Init() {
@@ -181,8 +187,10 @@ bool SynchronousEuroliteProWidget::SendDMX(const DmxBuffer &buffer) {
 }
 
 AsynchronousEuroliteProWidget::AsynchronousEuroliteProWidget(
-    libusb_device *usb_device)
-    : m_usb_device(usb_device),
+    libusb_device *usb_device,
+    const string &serial)
+    : EuroliteProWidget(serial),
+      m_usb_device(usb_device),
       m_usb_handle(NULL),
       m_transfer_state(IDLE) {
   m_transfer = libusb_alloc_transfer(0);

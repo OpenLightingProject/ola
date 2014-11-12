@@ -36,8 +36,7 @@ namespace usbdmx {
 class AnymaDevice: public Device {
  public:
   AnymaDevice(ola::AbstractPlugin *owner,
-              class AnymaWidgetInterface *widget,
-              const std::string &serial);
+              class AnymaWidget *widget);
 
   std::string DeviceId() const {
     return m_device_id;

@@ -22,9 +22,11 @@
 #define PLUGINS_USBDMX_EUROLITEPROWIDGET_H_
 
 #include <libusb.h>
+#include <string>
 #include "ola/base/Macro.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
+#include "plugins/usbdmx/Widget.h"
 
 namespace ola {
 namespace plugin {
@@ -33,21 +35,29 @@ namespace usbdmx {
 class EuroliteProThreadedSender;
 
 /**
- * @brief The interface for the EurolitePro Widgets
+ * @brief The EurolitePro Widget.
  */
-class EuroliteProWidgetInterface {
+class EuroliteProWidget : public Widget {
  public:
-  virtual ~EuroliteProWidgetInterface() {}
+  explicit EuroliteProWidget(const std::string &serial) : m_serial(serial) {}
+  virtual ~EuroliteProWidget() {}
 
   virtual bool Init() = 0;
 
   virtual bool SendDMX(const DmxBuffer &buffer) = 0;
+
+  std::string SerialNumber() const {
+    return m_serial;
+  }
 
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];
 
   // 513 + header + code + size(2) + footer
   enum { EUROLITE_PRO_FRAME_SIZE = 518 };
+
+ private:
+  std::string m_serial;
 };
 
 
@@ -56,9 +66,10 @@ class EuroliteProWidgetInterface {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousEuroliteProWidget: public EuroliteProWidgetInterface {
+class SynchronousEuroliteProWidget: public EuroliteProWidget {
  public:
-  explicit SynchronousEuroliteProWidget(libusb_device *usb_device);
+  SynchronousEuroliteProWidget(libusb_device *usb_device,
+                               const std::string &serial);
 
   bool Init();
 
@@ -74,9 +85,10 @@ class SynchronousEuroliteProWidget: public EuroliteProWidgetInterface {
 /**
  * @brief An EurolitePro widget that uses asynchronous libusb operations.
  */
-class AsynchronousEuroliteProWidget: public EuroliteProWidgetInterface {
+class AsynchronousEuroliteProWidget: public EuroliteProWidget {
  public:
-  explicit AsynchronousEuroliteProWidget(libusb_device *usb_device);
+  explicit AsynchronousEuroliteProWidget(libusb_device *usb_device,
+                                         const std::string &serial);
   ~AsynchronousEuroliteProWidget();
 
   bool Init();

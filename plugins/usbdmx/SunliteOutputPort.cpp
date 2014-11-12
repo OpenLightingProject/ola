@@ -30,7 +30,7 @@ namespace usbdmx {
 
 SunliteOutputPort::SunliteOutputPort(SunliteDevice *parent,
                                      unsigned int id,
-                                     SunliteWidgetInterface *widget)
+                                     SunliteWidget *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }

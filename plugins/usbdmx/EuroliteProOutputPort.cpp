@@ -31,7 +31,7 @@ namespace usbdmx {
 
 EuroliteProOutputPort::EuroliteProOutputPort(EuroliteProDevice *parent,
                                  unsigned int id,
-                                 EuroliteProWidgetInterface *widget)
+                                 EuroliteProWidget *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }
@@ -39,11 +39,10 @@ EuroliteProOutputPort::EuroliteProOutputPort(EuroliteProDevice *parent,
 EuroliteProOutputPort::~EuroliteProOutputPort() {
   // TODO(simon): stop the thread here??
   OLA_INFO << "EuroliteProOutputPort::~EuroliteProOutputPort()";
-  delete m_widget;
 }
 
 bool EuroliteProOutputPort::WriteDMX(const DmxBuffer &buffer,
-                               OLA_UNUSED uint8_t priority) {
+                                     OLA_UNUSED uint8_t priority) {
   m_widget->SendDMX(buffer);
   return true;
 }

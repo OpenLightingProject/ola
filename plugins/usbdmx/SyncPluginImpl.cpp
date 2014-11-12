@@ -183,13 +183,7 @@ void SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
   } else if (device_descriptor.idVendor == 0x04d8 &&
              device_descriptor.idProduct == 0xfa63) {
     OLA_INFO << "Found a EUROLITE device";
-    SynchronousEuroliteProWidget *widget = new SynchronousEuroliteProWidget(
-        usb_device);
-    if (!widget->Init()) {
-      delete widget;
-      return;
-    }
-    device = new EuroliteProDevice(m_plugin, widget);
+    device = NewEuroliteProDevice(usb_device);
   }
 
   if (device) {
@@ -219,13 +213,13 @@ Device* SyncPluginImpl::NewAnymaDevice(
   USBDeviceInformation info;
   GetDeviceInfo(usb_handle, device_descriptor, &info);
 
-  if (!MatchManufacturer(AnymaWidgetInterface::EXPECTED_MANUFACTURER,
+  if (!MatchManufacturer(AnymaWidget::EXPECTED_MANUFACTURER,
                         info.manufacturer)) {
     libusb_close(usb_handle);
     return NULL;
   }
 
-  if (!MatchProduct(AnymaWidgetInterface::EXPECTED_PRODUCT, info.product)) {
+  if (!MatchProduct(AnymaWidget::EXPECTED_PRODUCT, info.product)) {
     libusb_close(usb_handle);
     return NULL;
   }
@@ -243,14 +237,37 @@ Device* SyncPluginImpl::NewAnymaDevice(
     }
   }
 
-  SynchronousAnymaWidget *widget = new SynchronousAnymaWidget(usb_device);
+  SynchronousAnymaWidget *widget = new SynchronousAnymaWidget(
+      usb_device, info.serial);
   if (!widget->Init()) {
     delete widget;
     return NULL;
   }
-  return new AnymaDevice(m_plugin, widget, info.serial);
+  return new AnymaDevice(m_plugin, widget);
 }
 
+Device* SyncPluginImpl::NewEuroliteProDevice(
+    struct libusb_device *usb_device) {
+
+  // There is no Serialnumber--> work around: bus+device number
+  int bus_number = libusb_get_bus_number(usb_device);
+  int device_address = libusb_get_device_address(usb_device);
+
+  OLA_INFO << "Bus_number: " <<  bus_number << ", Device_address: " <<
+    device_address;
+
+  std::ostringstream serial_str;
+  serial_str << bus_number << "-" << device_address;
+
+  SynchronousEuroliteProWidget *widget = new SynchronousEuroliteProWidget(
+      usb_device, serial_str.str());
+  if (!widget->Init()) {
+    delete widget;
+    return NULL;
+  }
+
+  return new EuroliteProDevice(m_plugin, widget);
+}
 
 /**
  * Get the Manufacturer, Product and Serial number strings for a device.

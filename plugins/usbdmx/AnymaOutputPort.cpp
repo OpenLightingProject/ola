@@ -30,7 +30,7 @@ namespace usbdmx {
 
 AnymaOutputPort::AnymaOutputPort(AnymaDevice *parent,
                                  unsigned int id,
-                                 AnymaWidgetInterface *widget)
+                                 AnymaWidget *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }
@@ -38,7 +38,6 @@ AnymaOutputPort::AnymaOutputPort(AnymaDevice *parent,
 AnymaOutputPort::~AnymaOutputPort() {
   // TODO(simon): stop the thread here??
   OLA_INFO << "AnymaOutputPort::~AnymaOutputPort()";
-  delete m_widget;
 }
 
 bool AnymaOutputPort::WriteDMX(const DmxBuffer &buffer,

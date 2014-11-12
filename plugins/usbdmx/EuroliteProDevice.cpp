@@ -24,16 +24,16 @@
 #include <string>
 #include "ola/Logging.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
+#include "plugins/usbdmx/EuroliteProWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 EuroliteProDevice::EuroliteProDevice(ola::AbstractPlugin *owner,
-                         EuroliteProWidgetInterface *widget,
-                         const std::string &serial)
+                         EuroliteProWidget *widget)
     : Device(owner, "EurolitePro USB Device"),
-      m_device_id("eurolite-" + serial),
+      m_device_id("eurolite-" + widget->SerialNumber()),
       m_port(new EuroliteProOutputPort(this, 0, widget)) {
 }
 

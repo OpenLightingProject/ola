@@ -29,9 +29,13 @@
 #include "ola/stl/STLUtils.h"
 #include "olad/PluginAdaptor.h"
 
-#include "plugins/usbdmx/AnymaDeviceManager.h"
-#include "plugins/usbdmx/SunliteDeviceManager.h"
-#include "plugins/usbdmx/EuroliteProDeviceManager.h"
+#include "plugins/usbdmx/AnymaWidgetFactory.h"
+#include "plugins/usbdmx/AnymaWidget.h"
+#include "plugins/usbdmx/AnymaDevice.h"
+#include "plugins/usbdmx/EuroliteProWidgetFactory.h"
+#include "plugins/usbdmx/EuroliteProDevice.h"
+#include "plugins/usbdmx/SunliteWidgetFactory.h"
+#include "plugins/usbdmx/SunliteDevice.h"
 
 #include "plugins/usbdmx/VellemanDevice.h"
 
@@ -136,7 +140,9 @@ void *LibUsbThread::Run() {
 AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                                  Plugin *plugin,
                                  LibUsbAdaptor *libusb_adaptor)
-    : m_libusb_adaptor(libusb_adaptor),
+    : m_plugin_adaptor(plugin_adaptor),
+      m_plugin(plugin),
+      m_libusb_adaptor(libusb_adaptor),
       m_context(NULL),
       m_use_hotplug(false),
       m_stopping(false) {
@@ -144,14 +150,13 @@ AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_hotplug_handle = 0;
   #endif
 
-  m_device_managers.push_back(new AnymaDeviceManager(plugin_adaptor, plugin));
-  m_device_managers.push_back(new SunliteDeviceManager(plugin_adaptor, plugin));
-  m_device_managers.push_back(new EuroliteProDeviceManager(plugin_adaptor,
-                                                           plugin));
+  m_widget_factories.push_back(new AnymaWidgetFactory());
+  m_widget_factories.push_back(new EuroliteProWidgetFactory());
+  m_widget_factories.push_back(new SunliteWidgetFactory());
 }
 
 AsyncPluginImpl::~AsyncPluginImpl() {
-  STLDeleteElements(&m_device_managers);
+  STLDeleteElements(&m_widget_factories);
 }
 
 bool AsyncPluginImpl::Start() {
@@ -193,9 +198,9 @@ bool AsyncPluginImpl::Stop() {
   m_usb_thread.reset();
 
   // I think we need a lock here
-  DeviceToFactoryMap::iterator iter = m_device_factory_map.begin();
+  USBDeviceToFactoryMap::iterator iter = m_device_factory_map.begin();
   for (; iter != m_device_factory_map.end(); ++iter) {
-    iter->second->DeviceRemoved(iter->first);
+    iter->second->DeviceRemoved(this, iter->first);
   }
   m_device_factory_map.clear();
 
@@ -217,6 +222,60 @@ void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
   }
 }
 #endif
+
+bool AsyncPluginImpl::NewWidget(class Widget *widget) {
+  (void) widget;
+  return false;
+}
+
+bool AsyncPluginImpl::NewWidget(class AnymaWidget *widget) {
+  AnymaDevice *device = new AnymaDevice(m_plugin, widget);
+
+  if (!device->Start()) {
+    delete device;
+    return false;
+  }
+
+  Device *old_device = STLReplacePtr(&m_widget_device_map, widget, device);
+  if (old_device) {
+    m_plugin_adaptor->UnregisterDevice(old_device);
+    old_device->Stop();
+    delete old_device;
+  }
+  m_plugin_adaptor->RegisterDevice(device);
+  return true;
+}
+
+bool AsyncPluginImpl::NewWidget(class EuroliteProWidget *widget) {
+  (void) widget;
+  return false;
+}
+
+bool AsyncPluginImpl::NewWidget(class SunliteWidget *widget) {
+  (void) widget;
+  return false;
+}
+
+void AsyncPluginImpl::WidgetRemoved(class Widget *widget) {
+  (void) widget;
+}
+
+void AsyncPluginImpl::WidgetRemoved(class AnymaWidget *widget) {
+  Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
+  if (device) {
+    m_plugin_adaptor->UnregisterDevice(device);
+    device->Stop();
+    delete device;
+  }
+}
+
+void AsyncPluginImpl::WidgetRemoved(class EuroliteProWidget *widget) {
+  (void) widget;
+}
+
+void AsyncPluginImpl::WidgetRemoved(class SunliteWidget *widget) {
+  (void) widget;
+}
 
 bool AsyncPluginImpl::SetupHotPlug() {
 #if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
@@ -261,9 +320,9 @@ void AsyncPluginImpl::DeviceAdded(libusb_device *usb_device) {
   struct libusb_device_descriptor device_descriptor;
   libusb_get_device_descriptor(usb_device, &device_descriptor);
 
-  DeviceManagers::iterator iter = m_device_managers.begin();
-  for (; iter != m_device_managers.end(); ++iter) {
-    if ((*iter)->DeviceAdded(usb_device, device_descriptor)) {
+  WidgetFactories::iterator iter = m_widget_factories.begin();
+  for (; iter != m_widget_factories.end(); ++iter) {
+    if ((*iter)->DeviceAdded(this, usb_device, device_descriptor)) {
       STLReplacePtr(&m_device_factory_map, usb_device, *iter);
       return;
     }
@@ -279,10 +338,10 @@ void AsyncPluginImpl::DeviceAdded(libusb_device *usb_device) {
 }
 
 void AsyncPluginImpl::DeviceRemoved(libusb_device *usb_device) {
-  UsbDeviceManagerInterface *factory = STLLookupAndRemovePtr(
+  WidgetFactory *factory = STLLookupAndRemovePtr(
       &m_device_factory_map, usb_device);
   if (factory) {
-    factory->DeviceRemoved(usb_device);
+    factory->DeviceRemoved(this, usb_device);
   }
 }
 }  // namespace usbdmx

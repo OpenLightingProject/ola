@@ -32,9 +32,12 @@
 #include "ola/thread/Thread.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
-#include "plugins/usbdmx/UsbDeviceManagerInterface.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
+
+class Device;
+
 namespace plugin {
 namespace usbdmx {
 
@@ -45,7 +48,7 @@ namespace usbdmx {
 /**
  * @brief The asynchronous libusb implementation.
  */
-class AsyncPluginImpl: public PluginImplInterface {
+class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
  public:
   /**
    * @brief Create a new AsyncPluginImpl.
@@ -80,10 +83,20 @@ class AsyncPluginImpl: public PluginImplInterface {
                     libusb_hotplug_event event);
   #endif
 
+  bool NewWidget(class Widget *widget);
+  bool NewWidget(class AnymaWidget *widget);
+  bool NewWidget(class EuroliteProWidget *widget);
+  bool NewWidget(class SunliteWidget *widget);
+
+  void WidgetRemoved(class Widget *widget);
+  void WidgetRemoved(class AnymaWidget *widget);
+  void WidgetRemoved(class EuroliteProWidget *widget);
+  void WidgetRemoved(class SunliteWidget *widget);
+
  private:
-  typedef std::vector<UsbDeviceManagerInterface*> DeviceManagers;
-  typedef std::map<struct libusb_device*, UsbDeviceManagerInterface*>
-    DeviceToFactoryMap;
+  typedef std::vector<class WidgetFactory*> WidgetFactories;
+  typedef std::map<struct libusb_device*, WidgetFactory*> USBDeviceToFactoryMap;
+  typedef std::map<Widget*, Device*> WidgetToDeviceMap;
 
   struct USBDeviceInformation {
     std::string manufacturer;
@@ -91,14 +104,17 @@ class AsyncPluginImpl: public PluginImplInterface {
     std::string serial;
   };
 
+  PluginAdaptor* const m_plugin_adaptor;
+  Plugin* const m_plugin;
   LibUsbAdaptor* const m_libusb_adaptor;
   libusb_context *m_context;
   bool m_use_hotplug;
   bool m_stopping;
   std::auto_ptr<class LibUsbThread> m_usb_thread;
 
-  DeviceManagers m_device_managers;
-  DeviceToFactoryMap m_device_factory_map;
+  WidgetFactories m_widget_factories;
+  USBDeviceToFactoryMap m_device_factory_map;
+  WidgetToDeviceMap m_widget_device_map;
 
   #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
   libusb_hotplug_callback_handle m_hotplug_handle;
