@@ -37,15 +37,13 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 
-#include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/AnymaWidget.h"
 #include "plugins/usbdmx/EuroliteProWidget.h"
-
-#include "plugins/usbdmx/EuroliteProDevice.h"
-#include "plugins/usbdmx/FirmwareLoader.h"
-#include "plugins/usbdmx/SunliteDevice.h"
-#include "plugins/usbdmx/SunliteFirmwareLoader.h"
+#include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/SunliteWidget.h"
+
+#include "plugins/usbdmx/FirmwareLoader.h"
+#include "plugins/usbdmx/SunliteFirmwareLoader.h"
 #include "plugins/usbdmx/UsbDevice.h"
 #include "plugins/usbdmx/VellemanDevice.h"
 
@@ -174,7 +172,8 @@ void SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
       delete widget;
       return;
     }
-    device = new SunliteDevice(m_plugin, widget);
+    device = new GenericDevice(
+        m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2");
 
   } else if (device_descriptor.idVendor == 0x16C0 &&
              device_descriptor.idProduct == 0x05DC) {
@@ -243,7 +242,8 @@ Device* SyncPluginImpl::NewAnymaDevice(
     delete widget;
     return NULL;
   }
-  return new AnymaDevice(m_plugin, widget);
+  return new GenericDevice(
+      m_plugin, widget, "Anyma USB Device", "anyma-" + widget->SerialNumber());
 }
 
 Device* SyncPluginImpl::NewEuroliteProDevice(
@@ -266,7 +266,9 @@ Device* SyncPluginImpl::NewEuroliteProDevice(
     return NULL;
   }
 
-  return new EuroliteProDevice(m_plugin, widget);
+  return new GenericDevice(
+      m_plugin, widget, "EurolitePro USB Device",
+      "eurolite-" + widget->SerialNumber());
 }
 
 /**

@@ -29,13 +29,11 @@
 #include "ola/stl/STLUtils.h"
 #include "olad/PluginAdaptor.h"
 
-#include "plugins/usbdmx/AnymaWidgetFactory.h"
 #include "plugins/usbdmx/AnymaWidget.h"
-#include "plugins/usbdmx/AnymaDevice.h"
+#include "plugins/usbdmx/AnymaWidgetFactory.h"
 #include "plugins/usbdmx/EuroliteProWidgetFactory.h"
-#include "plugins/usbdmx/EuroliteProDevice.h"
+#include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/SunliteWidgetFactory.h"
-#include "plugins/usbdmx/SunliteDevice.h"
 
 #include "plugins/usbdmx/VellemanDevice.h"
 
@@ -229,7 +227,8 @@ bool AsyncPluginImpl::NewWidget(class Widget *widget) {
 }
 
 bool AsyncPluginImpl::NewWidget(class AnymaWidget *widget) {
-  AnymaDevice *device = new AnymaDevice(m_plugin, widget);
+  GenericDevice *device = new GenericDevice(
+      m_plugin, widget, "Anyma USB Device", "anyma-" + widget->SerialNumber());
 
   if (!device->Start()) {
     delete device;
