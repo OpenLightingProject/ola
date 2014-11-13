@@ -23,7 +23,6 @@
 
 #include <string>
 #include "ola/base/Macro.h"
-#include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 
 namespace ola {
@@ -35,10 +34,16 @@ namespace usbdmx {
 
 class Widget;
 
+/**
+ * @brief A thin wrapper around a Widget so that it can operate as a Port.
+ */
 class GenericOutputPort: public BasicOutputPort {
  public:
   /**
-   * @brief Create a new GenericOutputPort..
+   * @brief Create a new GenericOutputPort.
+   * @param parent The parent device for this port.
+   * @param id The port id.
+   * @param widget The widget to use to send DMX frames.
    */
   GenericOutputPort(Device *parent,
                     unsigned int id,
