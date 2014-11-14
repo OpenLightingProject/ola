@@ -34,19 +34,22 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+/**
+ * @brief The interface for an implementation of the USB DMX plugin.
+ */
 class PluginImplInterface {
  public:
   virtual ~PluginImplInterface() {}
 
   /**
    * @brief Start the implementation.
-   * @returns true if succuessful, false otherwise.
+   * @returns true if successful, false otherwise.
    */
   virtual bool Start() = 0;
 
   /**
    * @brief Stop the implementation.
-   * @returns true if succuessful, false otherwise.
+   * @returns true if successful, false otherwise.
    */
   virtual bool Stop() = 0;
 };

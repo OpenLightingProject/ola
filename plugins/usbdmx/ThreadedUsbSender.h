@@ -44,16 +44,45 @@ namespace usbdmx {
  */
 class ThreadedUsbSender: private ola::thread::Thread {
  public:
+  /**
+   * @brief Create a new ThreadedUsbSender.
+   * @param usb_device The usb_device to use. The ThreadedUsbSender takes a ref
+   *   on the device, while the ThreadedUsbSender object exists.
+   * @param usb_handle The handle to use for the DMX transfer.
+   */
   ThreadedUsbSender(libusb_device *usb_device,
                     libusb_device_handle *usb_handle);
   virtual ~ThreadedUsbSender();
 
+  /**
+   * @brief Start the new thread.
+   * @returns true if the thread is running, false otherwise.
+   */
   bool Start();
+
+  /**
+   * @brief Entry point for the new thread.
+   * @returns NULL.
+   */
   void *Run();
 
+  /**
+   * @brief Buffer a DMX frame for sending.
+   * @param buffer the DmxBuffer to send.
+   *
+   * This should be called in the main thread.
+   */
   bool SendDMX(const DmxBuffer &buffer);
 
  protected:
+  /**
+   * @brief Perform the DMX transfer.
+   * @param handle the libusb_device_handle to use for the transfer.
+   * @param buffer The DmxBuffer to transfer.
+   * @returns true if the transfer was completed, false otherwise.
+   *
+   * This is called from the sender thread.
+   */
   virtual bool TransmitBuffer(libusb_device_handle *handle,
                               const DmxBuffer &buffer) = 0;
 

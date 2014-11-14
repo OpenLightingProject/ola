@@ -32,9 +32,18 @@ namespace usbdmx {
 
 /**
  * @brief An Generic device.
+ *
+ * This simple generic device creates a single output port around a Widget.
  */
 class GenericDevice: public Device {
  public:
+  /**
+   * @brief Create a new GenericDevice.
+   * @param owner The plugin this device belongs to
+   * @param widget The widget to use for this device.
+   * @param device_name The name of the device.
+   * @param device_id The id of the device.
+   */
   GenericDevice(ola::AbstractPlugin *owner,
                 class Widget *widget,
                 const std::string &device_name,
