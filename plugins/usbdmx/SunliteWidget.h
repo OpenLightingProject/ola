@@ -55,7 +55,6 @@ class SynchronousSunliteWidget: public SunliteWidget {
   /**
    * @brief Create a new SynchronousSunliteWidget.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   explicit SynchronousSunliteWidget(libusb_device *usb_device);
 
@@ -78,7 +77,6 @@ class AsynchronousSunliteWidget: public SunliteWidget {
   /**
    * @brief Create a new AsynchronousSunliteWidget.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   explicit AsynchronousSunliteWidget(libusb_device *usb_device);
   ~AsynchronousSunliteWidget();

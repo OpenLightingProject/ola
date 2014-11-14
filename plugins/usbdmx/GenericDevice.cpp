@@ -20,6 +20,7 @@
 
 #include "plugins/usbdmx/GenericDevice.h"
 
+#include <string>
 #include "plugins/usbdmx/Widget.h"
 #include "plugins/usbdmx/GenericOutputPort.h"
 

@@ -81,7 +81,7 @@ class SynchronousAnymaWidget: public AnymaWidget {
    * @param serial the serial number of the widget.
    */
   SynchronousAnymaWidget(libusb_device *usb_device,
-                          const std::string &erial);
+                          const std::string &serial);
 
   bool Init();
 

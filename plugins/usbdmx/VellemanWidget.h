@@ -48,7 +48,6 @@ class SynchronousVellemanWidget: public VellemanWidget {
   /**
    * @brief Create a new SynchronousVellemanWidget.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   explicit SynchronousVellemanWidget(libusb_device *usb_device);
 
@@ -71,7 +70,6 @@ class AsynchronousVellemanWidget : public VellemanWidget {
   /**
    * @brief Create a new AsynchronousVellemanWidget.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   explicit AsynchronousVellemanWidget(libusb_device *usb_device);
   ~AsynchronousVellemanWidget();

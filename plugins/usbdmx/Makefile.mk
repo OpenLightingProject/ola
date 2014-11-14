@@ -40,6 +40,7 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/VellemanWidget.h \
     plugins/usbdmx/VellemanWidgetFactory.cpp \
     plugins/usbdmx/VellemanWidgetFactory.h \
+    plugins/usbdmx/Widget.h \
     plugins/usbdmx/WidgetFactory.h
 
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
