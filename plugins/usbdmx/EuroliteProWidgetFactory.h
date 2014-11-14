@@ -30,7 +30,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Manages EurolitePro Devices
+ * @brief Creates EurolitePro widgets.
  */
 class EuroliteProWidgetFactory
     : public BaseWidgetFactory<class EuroliteProWidget> {

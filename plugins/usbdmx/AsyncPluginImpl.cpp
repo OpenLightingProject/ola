@@ -222,11 +222,6 @@ void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
 }
 #endif
 
-bool AsyncPluginImpl::NewWidget(class Widget *widget) {
-  (void) widget;
-  return false;
-}
-
 bool AsyncPluginImpl::NewWidget(class AnymaWidget *widget) {
   return StartAndRegisterDevice(
       widget,
@@ -251,10 +246,6 @@ bool AsyncPluginImpl::NewWidget(class VellemanWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));
-}
-
-void AsyncPluginImpl::WidgetRemoved(class Widget *widget) {
-  (void) widget;
 }
 
 void AsyncPluginImpl::WidgetRemoved(class AnymaWidget *widget) {

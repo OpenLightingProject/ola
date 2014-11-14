@@ -54,8 +54,6 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
    * @brief Create a new AsyncPluginImpl.
    * @param plugin_adaptor The PluginAdaptor to use, ownership is not
    * transferred.
-   * @param preferences The Preference object to use, ownership is not
-   *   transferred.
    * @param plugin The parent Plugin object which is used when creating
    * devices.
    * @param libusb_adaptor The adaptor to use when calling libusb.
@@ -83,13 +81,11 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
                     libusb_hotplug_event event);
   #endif
 
-  bool NewWidget(class Widget *widget);
   bool NewWidget(class AnymaWidget *widget);
   bool NewWidget(class EuroliteProWidget *widget);
   bool NewWidget(class SunliteWidget *widget);
   bool NewWidget(class VellemanWidget *widget);
 
-  void WidgetRemoved(class Widget *widget);
   void WidgetRemoved(class AnymaWidget *widget);
   void WidgetRemoved(class EuroliteProWidget *widget);
   void WidgetRemoved(class SunliteWidget *widget);
@@ -98,7 +94,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;
   typedef std::map<struct libusb_device*, WidgetFactory*> USBDeviceToFactoryMap;
-  typedef std::map<Widget*, Device*> WidgetToDeviceMap;
+  typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
 
   struct USBDeviceInformation {
     std::string manufacturer;
@@ -126,7 +122,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   void DeviceAdded(libusb_device *device);
   void DeviceRemoved(libusb_device *device);
 
-  bool StartAndRegisterDevice(Widget *, Device *device);
+  bool StartAndRegisterDevice(class Widget *widget, Device *device);
 
   void FindUSBDevices();
 

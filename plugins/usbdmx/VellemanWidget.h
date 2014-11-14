@@ -36,10 +36,7 @@ namespace usbdmx {
 /**
  * @brief The interface for the Velleman Widgets
  */
-class VellemanWidget: public Widget {
- public:
-  virtual ~VellemanWidget() {}
-};
+class VellemanWidget: public Widget {};
 
 /**
  * @brief An Velleman widget that uses synchronous libusb operations.
@@ -48,6 +45,11 @@ class VellemanWidget: public Widget {
  */
 class SynchronousVellemanWidget: public VellemanWidget {
  public:
+  /**
+   * @brief Create a new SynchronousVellemanWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   explicit SynchronousVellemanWidget(libusb_device *usb_device);
 
   bool Init();
@@ -66,6 +68,11 @@ class SynchronousVellemanWidget: public VellemanWidget {
  */
 class AsynchronousVellemanWidget : public VellemanWidget {
  public:
+  /**
+   * @brief Create a new AsynchronousVellemanWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   explicit AsynchronousVellemanWidget(libusb_device *usb_device);
   ~AsynchronousVellemanWidget();
 
@@ -73,6 +80,11 @@ class AsynchronousVellemanWidget : public VellemanWidget {
 
   bool SendDMX(const DmxBuffer &buffer);
 
+  /**
+   * @brief Called from the libusb callback when the asynchronous transfer
+   *   completes.
+   * @param transfer the completed transfer.
+   */
   void TransferComplete(struct libusb_transfer *transfer);
 
  private:

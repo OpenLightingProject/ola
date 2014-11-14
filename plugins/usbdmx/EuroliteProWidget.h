@@ -39,21 +39,35 @@ class EuroliteProThreadedSender;
  */
 class EuroliteProWidget : public Widget {
  public:
+  /**
+   * @brief Create a new EuroliteProWidget.
+   * @param serial the serial number of the widget.
+   */
   explicit EuroliteProWidget(const std::string &serial) : m_serial(serial) {}
-  virtual ~EuroliteProWidget() {}
 
-  virtual bool Init() = 0;
-
-  virtual bool SendDMX(const DmxBuffer &buffer) = 0;
-
+  /**
+   * @brief Get the serial number of this widget.
+   * @returns The serial number of the widget.
+   */
   std::string SerialNumber() const {
     return m_serial;
   }
 
+  /**
+   * @brief The expected manufacturer string for a EurolitePro widget.
+   */
   static const char EXPECTED_MANUFACTURER[];
+
+  /**
+   * @brief The expected product string for a EurolitePro widget.
+   */
   static const char EXPECTED_PRODUCT[];
 
-  // 513 + header + code + size(2) + footer
+  /**
+   * @brief The size of a EurolitePro frame.
+   *
+   * This consists of 513 bytes of DMX data + header + code + size(2) + footer
+   */
   enum { EUROLITE_PRO_FRAME_SIZE = 518 };
 
  private:
@@ -68,6 +82,11 @@ class EuroliteProWidget : public Widget {
  */
 class SynchronousEuroliteProWidget: public EuroliteProWidget {
  public:
+  /**
+   * @brief Create a new SynchronousEuroliteProWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   SynchronousEuroliteProWidget(libusb_device *usb_device,
                                const std::string &serial);
 
@@ -87,14 +106,24 @@ class SynchronousEuroliteProWidget: public EuroliteProWidget {
  */
 class AsynchronousEuroliteProWidget: public EuroliteProWidget {
  public:
-  explicit AsynchronousEuroliteProWidget(libusb_device *usb_device,
-                                         const std::string &serial);
+  /**
+   * @brief Create a new AsynchronousEuroliteProWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
+  AsynchronousEuroliteProWidget(libusb_device *usb_device,
+                                const std::string &serial);
   ~AsynchronousEuroliteProWidget();
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
+  /**
+   * @brief Called from the libusb callback when the asynchronous transfer
+   *   completes.
+   * @param transfer the completed transfer.
+   */
   void TransferComplete(struct libusb_transfer *transfer);
 
  private:

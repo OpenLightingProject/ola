@@ -31,73 +31,136 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Receives notifications when new widgets are detected.
+ * @brief Receives notifications when Widgets are added or removed.
+ *
+ * Classes implementing the WidgetObserver can be used with WidgetFactories to
+ * receive notifcations when widgets are added or removed.
+ *
+ * On adding a new Widget, the appropriate NewWidget() method is called. The
+ * observer can mark a widget as in-use by returning true.
+ *
+ * When widgets are removed, the appropriate WidgetRemoved() method is called.
+ * The observer must not access the removed widget object once the call to
+ * WidgetRemoved() completes.
  */
 class WidgetObserver {
  public:
   virtual ~WidgetObserver() {}
 
   /**
-   * @brief Called when a new generic widget is found.
-   * @param widget the new Widget.
-   * @returns true if the widget is now in use, false if the widget was
+   * @brief Called when a new AnymaWidget is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class Widget *widget) = 0;
   virtual bool NewWidget(class AnymaWidget *widget) = 0;
+
+  /**
+   * @brief Called when a new EuroliteProWidget is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
   virtual bool NewWidget(class EuroliteProWidget *widget) = 0;
+
+  /**
+   * @brief Called when a new SunliteWidget is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
   virtual bool NewWidget(class SunliteWidget *widget) = 0;
+
+  /**
+   * @brief Called when a new VellemanWidget is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
   virtual bool NewWidget(class VellemanWidget *widget) = 0;
 
   /**
-   * @brief Called when a generic widget is removed.
+   * @brief Called when an AnymaWidget is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class Widget *widget) = 0;
-
   virtual void WidgetRemoved(class AnymaWidget *widget) = 0;
+
+  /**
+   * @brief Called when a EuroliteProWidget is removed.
+   * @param widget the Widget that has been removed.
+   *
+   * It is an error to use the widget once this call completes.
+   */
   virtual void WidgetRemoved(class EuroliteProWidget *widget) = 0;
+
+  /**
+   * @brief Called when a SunliteWidget is removed.
+   * @param widget the Widget that has been removed.
+   *
+   * It is an error to use the widget once this call completes.
+   */
   virtual void WidgetRemoved(class SunliteWidget *widget) = 0;
+
+  /**
+   * @brief Called when a VellemanWidget is removed.
+   * @param widget the Widget that has been removed.
+   *
+   * It is an error to use the widget once this call completes.
+   */
   virtual void WidgetRemoved(class VellemanWidget *widget) = 0;
 };
 
 /**
- * @brief 
+ * @brief Creates new Widget objects to represent DMX USB hardware.
+ *
+ * WidgetFactories are called when new USB devices are located. By inspecting
+ * the device's vendor and product ID, they may choose to create a new Widget
+ * object. The WidgetFactory then calls the WidgetObserver object to indicate a
+ * new Widget has been added.
+ *
+ * When a USB device is removed, the factory that created a Widget from the
+ * device has it's DeviceRemoved() method called. The factory should then
+ * invoke WidgetRemoved on the observer object.
  */
 class WidgetFactory {
  public:
   virtual ~WidgetFactory() {}
 
   /**
-   * @brief 
+   * @brief Called when a new USB device is added.
    * @param observer The WidgetObserver to notify if this results in a new
-   * widget.
-   * @param device the libusb_device that was added.
+   *   widget.
+   * @param usb_device the libusb_device that was added.
    * @param descriptor the libusb_device_descriptor that corresponds to the
-   *   libusb_device.
+   *   usb_device.
    * @returns True if this factory has claimed the usb_device, false otherwise.
    */
   virtual bool DeviceAdded(
       WidgetObserver *observer,
-      libusb_device *device,
+      libusb_device *usb_device,
       const struct libusb_device_descriptor &descriptor) = 0;
 
   /**
-   * @brief 
-   * @param observer The WidgetObserver to notify if this results in a widget
-   *   removal.
+   * @brief Called when a USB device is removed.
+   * @param observer The WidgetObserver to notify if this action results in a
+   *   widget removal.
+   * @param usb_device the libusb_device that was removed.
    */
   virtual void DeviceRemoved(WidgetObserver *observer,
-                             libusb_device *device) = 0;
+                             libusb_device *usb_device) = 0;
 };
 
 /**
  * @brief A partial implementation of WidgetFactory.
  *
  * This handles the mapping of libusb_devices to widgets and notifying the
- * observer.
+ * observer when widgets are added or removed.
  */
 template <typename WidgetType>
 class BaseWidgetFactory : public WidgetFactory {
@@ -108,10 +171,23 @@ class BaseWidgetFactory : public WidgetFactory {
                      libusb_device *device);
 
  protected:
-  bool HasDevice(libusb_device *device) {
-    return STLContains(m_widget_map, device);
+  /**
+   * @brief Check if this factory is already using this device.
+   * @param usb_device The libusb_device to check for.
+   * @returns true if we already have a widget registered for this device,
+   *   false otherwise.
+   */
+  bool HasDevice(libusb_device *usb_device) {
+    return STLContains(m_widget_map, usb_device);
   }
 
+  /**
+   * @brief Initialize a widget and notify the observer.
+   * @param observer The WidgetObserver to notify of the new widget.
+   * @param usb_device the libusb_device associated with the widget.
+   * @param widget the new Widget, ownership is transferred.
+   * @returns True if the widget was added, false otherwise.
+   */
   bool AddWidget(WidgetObserver *observer, libusb_device *usb_device,
                  WidgetType *widget);
 
@@ -150,9 +226,8 @@ bool BaseWidgetFactory<WidgetType>::AddWidget(WidgetObserver *observer,
 }
 
 template <typename WidgetType>
-void BaseWidgetFactory<WidgetType>::DeviceRemoved(
-    WidgetObserver *observer,
-    libusb_device *usb_device) {
+void BaseWidgetFactory<WidgetType>::DeviceRemoved(WidgetObserver *observer,
+                                                  libusb_device *usb_device) {
   OLA_INFO << "Removing device " << usb_device;
   WidgetType *widget = STLLookupAndRemovePtr(&m_widget_map, usb_device);
   if (widget) {

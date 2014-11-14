@@ -29,7 +29,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Manages Anyma Devices
+ * @brief Creates Anyma widgets.
  */
 class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
  public:

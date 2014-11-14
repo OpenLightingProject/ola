@@ -30,7 +30,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Manages SunLite Devices
+ * @brief Creates SunLite widgets.
  */
 class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
  public:

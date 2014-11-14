@@ -28,14 +28,23 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A generic USB Widget.
+ * @brief The interface for an generic USB Widget.
  */
 class Widget {
  public:
   virtual ~Widget() {}
 
+  /**
+   * @brief Initialize the widget.
+   * @returns true if this widget was initialized correctly, false otherwise.
+   */
   virtual bool Init() = 0;
 
+  /**
+   * @brief Send DMX data from this widget
+   * @param buffer The DmxBuffer containing the data to send.
+   * @returns true if the data was sent, false otherwise.
+   */
   virtual bool SendDMX(const DmxBuffer &buffer) = 0;
 };
 }  // namespace usbdmx

@@ -29,7 +29,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Manages Velleman Devices
+ * @brief Creates Velleman widgets.
  */
 class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
  public:

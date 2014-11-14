@@ -34,23 +34,34 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief The interface for the Anyma Widgets
+ * @brief The base class for Anyma Widgets.
  */
 class AnymaWidget: public Widget {
  public:
+  /**
+   * @brief Create a new AnymaWidget.
+   * @param serial the serial number of the widget.
+   */
   explicit AnymaWidget(const std::string &serial) : m_serial(serial) {}
 
   virtual ~AnymaWidget() {}
 
-  virtual bool Init() = 0;
-
-  virtual bool SendDMX(const DmxBuffer &buffer) = 0;
-
+  /**
+   * @brief Get the serial number of this widget.
+   * @returns The serial number of the widget.
+   */
   std::string SerialNumber() const {
     return m_serial;
   }
 
+  /**
+   * @brief The expected manufacturer string for an Anyma widget.
+   */
   static const char EXPECTED_MANUFACTURER[];
+
+  /**
+   * @brief The expected product string for an Anyma widget.
+   */
   static const char EXPECTED_PRODUCT[];
 
  private:
@@ -64,8 +75,13 @@ class AnymaWidget: public Widget {
  */
 class SynchronousAnymaWidget: public AnymaWidget {
  public:
+  /**
+   * @brief Create a new SynchronousAnymaWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   SynchronousAnymaWidget(libusb_device *usb_device,
-                          const std::string &serial);
+                          const std::string &erial);
 
   bool Init();
 
@@ -83,6 +99,11 @@ class SynchronousAnymaWidget: public AnymaWidget {
  */
 class AsynchronousAnymaWidget : public AnymaWidget {
  public:
+  /**
+   * @brief Create a new AsynchronousAnymaWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   AsynchronousAnymaWidget(libusb_device *usb_device,
                           const std::string &serial);
   ~AsynchronousAnymaWidget();
@@ -91,6 +112,11 @@ class AsynchronousAnymaWidget : public AnymaWidget {
 
   bool SendDMX(const DmxBuffer &buffer);
 
+  /**
+   * @brief Called from the libusb callback when the asynchronous transfer
+   *   completes.
+   * @param transfer the completed transfer.
+   */
   void TransferComplete(struct libusb_transfer *transfer);
 
  private:

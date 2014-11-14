@@ -31,8 +31,7 @@ namespace plugin {
 namespace usbdmx {
 
 const char EuroliteProWidget::EXPECTED_MANUFACTURER[] = "Eurolite";
-const char EuroliteProWidget::EXPECTED_PRODUCT[] =
-    "Eurolite DMX512 Pro";
+const char EuroliteProWidget::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
 
 using std::string;
 

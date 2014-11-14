@@ -38,12 +38,9 @@ class SunliteThreadedSender;
  */
 class SunliteWidget : public Widget {
  public:
-  virtual ~SunliteWidget() {}
-
-  virtual bool Init() = 0;
-
-  virtual bool SendDMX(const DmxBuffer &buffer) = 0;
-
+  /**
+   * @brief The size of a Sunlite frame.
+   */
   enum {SUNLITE_PACKET_SIZE = 0x340};
 };
 
@@ -55,6 +52,11 @@ class SunliteWidget : public Widget {
  */
 class SynchronousSunliteWidget: public SunliteWidget {
  public:
+  /**
+   * @brief Create a new SynchronousSunliteWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   explicit SynchronousSunliteWidget(libusb_device *usb_device);
 
   bool Init();
@@ -73,6 +75,11 @@ class SynchronousSunliteWidget: public SunliteWidget {
  */
 class AsynchronousSunliteWidget: public SunliteWidget {
  public:
+  /**
+   * @brief Create a new AsynchronousSunliteWidget.
+   * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
+   */
   explicit AsynchronousSunliteWidget(libusb_device *usb_device);
   ~AsynchronousSunliteWidget();
 
@@ -80,6 +87,11 @@ class AsynchronousSunliteWidget: public SunliteWidget {
 
   bool SendDMX(const DmxBuffer &buffer);
 
+  /**
+   * @brief Called from the libusb callback when the asynchronous transfer
+   *   completes.
+   * @param transfer the completed transfer.
+   */
   void TransferComplete(struct libusb_transfer *transfer);
 
  private:
