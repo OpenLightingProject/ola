@@ -47,6 +47,7 @@ class WidgetObserver {
   virtual bool NewWidget(class AnymaWidget *widget) = 0;
   virtual bool NewWidget(class EuroliteProWidget *widget) = 0;
   virtual bool NewWidget(class SunliteWidget *widget) = 0;
+  virtual bool NewWidget(class VellemanWidget *widget) = 0;
 
   /**
    * @brief Called when a generic widget is removed.
@@ -59,6 +60,7 @@ class WidgetObserver {
   virtual void WidgetRemoved(class AnymaWidget *widget) = 0;
   virtual void WidgetRemoved(class EuroliteProWidget *widget) = 0;
   virtual void WidgetRemoved(class SunliteWidget *widget) = 0;
+  virtual void WidgetRemoved(class VellemanWidget *widget) = 0;
 };
 
 /**
@@ -126,11 +128,13 @@ bool BaseWidgetFactory<WidgetType>::AddWidget(WidgetObserver *observer,
                                               libusb_device *usb_device,
                                               WidgetType *widget) {
   if (!widget->Init()) {
+    OLA_INFO << "widget init failed";
     delete widget;
     return false;
   }
 
   if (!observer->NewWidget(widget)) {
+    OLA_INFO << "observer rejected widget";
     delete widget;
     return false;
   }

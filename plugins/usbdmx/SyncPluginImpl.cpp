@@ -20,7 +20,6 @@
 
 #include "plugins/usbdmx/SyncPluginImpl.h"
 
-#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <libusb.h>
@@ -32,20 +31,16 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "ola/io/Descriptor.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/PluginAdaptor.h"
-#include "olad/Preferences.h"
 
 #include "plugins/usbdmx/AnymaWidget.h"
 #include "plugins/usbdmx/EuroliteProWidget.h"
-#include "plugins/usbdmx/GenericDevice.h"
-#include "plugins/usbdmx/SunliteWidget.h"
-
 #include "plugins/usbdmx/FirmwareLoader.h"
+#include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
-#include "plugins/usbdmx/UsbDevice.h"
-#include "plugins/usbdmx/VellemanDevice.h"
+#include "plugins/usbdmx/SunliteWidget.h"
+#include "plugins/usbdmx/VellemanWidget.h"
 
 
 namespace ola {
@@ -163,7 +158,15 @@ void SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
   if (device_descriptor.idVendor == 0x10cf &&
       device_descriptor.idProduct == 0x8062) {
     OLA_INFO << "Found a Velleman USB device";
-    device = new VellemanDevice(m_plugin, usb_device);
+    SynchronousVellemanWidget *widget = new SynchronousVellemanWidget(
+        usb_device);
+    if (!widget->Init()) {
+      delete widget;
+      return;
+    }
+    device = new GenericDevice(
+        m_plugin, widget, "Velleman USB Device", "velleman");
+
   } else if (device_descriptor.idVendor == 0x0962 &&
              device_descriptor.idProduct == 0x2001) {
     OLA_INFO << "Found a Sunlite device";

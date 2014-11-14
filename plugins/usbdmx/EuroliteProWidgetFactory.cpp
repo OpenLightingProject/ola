@@ -27,15 +27,14 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t EuroliteProWidgetFactory::EUROLITE_PRODUCT_ID = 0xfa63;
-const uint16_t EuroliteProWidgetFactory::EUROLITE_VENDOR_ID = 0x04d;
+const uint16_t EuroliteProWidgetFactory::PRODUCT_ID = 0xfa63;
+const uint16_t EuroliteProWidgetFactory::VENDOR_ID = 0x04d;
 
 bool EuroliteProWidgetFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != EUROLITE_VENDOR_ID ||
-      descriptor.idProduct != EUROLITE_PRODUCT_ID ||
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
       HasDevice(usb_device)) {
     return false;
   }

@@ -87,11 +87,13 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool NewWidget(class AnymaWidget *widget);
   bool NewWidget(class EuroliteProWidget *widget);
   bool NewWidget(class SunliteWidget *widget);
+  bool NewWidget(class VellemanWidget *widget);
 
   void WidgetRemoved(class Widget *widget);
   void WidgetRemoved(class AnymaWidget *widget);
   void WidgetRemoved(class EuroliteProWidget *widget);
   void WidgetRemoved(class SunliteWidget *widget);
+  void WidgetRemoved(class VellemanWidget *widget);
 
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;
@@ -124,7 +126,9 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   void DeviceAdded(libusb_device *device);
   void DeviceRemoved(libusb_device *device);
 
-  void FindDevices();
+  bool StartAndRegisterDevice(Widget *, Device *device);
+
+  void FindUSBDevices();
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPluginImpl);
 };

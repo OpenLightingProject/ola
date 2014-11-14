@@ -13,42 +13,47 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanDevice.h
- * Interface for the Velleman device
- * Copyright (C) 2010 Simon Newton
+ * GenericDevice.h
+ * A Generic device that creates a single port.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_VELLEMANDEVICE_H_
-#define PLUGINS_USBDMX_VELLEMANDEVICE_H_
+#ifndef PLUGINS_USBDMX_GENERICDEVICE_H_
+#define PLUGINS_USBDMX_GENERICDEVICE_H_
 
-#include <libusb.h>
+#include <memory>
 #include <string>
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/UsbDevice.h"
+#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Velleman device
+/**
+ * @brief An Generic device.
  */
-class VellemanDevice: public UsbDevice {
+class GenericDevice: public Device {
  public:
-  VellemanDevice(ola::AbstractPlugin *owner,
-                 libusb_device *usb_device):
-      UsbDevice(owner, "Velleman USB Device", usb_device) {
-  }
+  GenericDevice(ola::AbstractPlugin *owner,
+                class Widget *widget,
+                const std::string &device_name,
+                const std::string &device_id);
 
-  std::string DeviceId() const { return "velleman"; }
+  std::string DeviceId() const {
+    return m_device_id;
+  }
 
  protected:
   bool StartHook();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(VellemanDevice);
+  const std::string m_device_id;
+  std::auto_ptr<class GenericOutputPort> m_port;
+
+  DISALLOW_COPY_AND_ASSIGN(GenericDevice);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_VELLEMANDEVICE_H_
+#endif  // PLUGINS_USBDMX_GENERICDEVICE_H_

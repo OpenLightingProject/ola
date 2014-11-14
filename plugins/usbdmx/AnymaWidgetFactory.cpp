@@ -28,15 +28,14 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t AnymaWidgetFactory::ANYMA_VENDOR_ID = 0x16C0;
-const uint16_t AnymaWidgetFactory::ANYMA_PRODUCT_ID = 0x05DC;
+const uint16_t AnymaWidgetFactory::VENDOR_ID = 0x16C0;
+const uint16_t AnymaWidgetFactory::PRODUCT_ID = 0x05DC;
 
 bool AnymaWidgetFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != ANYMA_VENDOR_ID ||
-      descriptor.idProduct != ANYMA_PRODUCT_ID ||
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
       HasDevice(usb_device)) {
     return false;
   }

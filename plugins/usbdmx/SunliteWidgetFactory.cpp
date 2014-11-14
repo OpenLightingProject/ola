@@ -27,21 +27,23 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t SunliteWidgetFactory::SUNLITE_VENDOR_ID = 0x0962;
+const uint16_t SunliteWidgetFactory::EMPTY_PRODUCT_ID = 0x2000;
+const uint16_t SunliteWidgetFactory::FULL_PRODUCT_ID = 0x2001;
+const uint16_t SunliteWidgetFactory::VENDOR_ID = 0x0962;
 
 bool SunliteWidgetFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor == SUNLITE_VENDOR_ID &&
-      descriptor.idProduct == 0x2000) {
+  if (descriptor.idVendor == VENDOR_ID &&
+      descriptor.idProduct == EMPTY_PRODUCT_ID) {
     OLA_INFO << "New empty SunliteDevice";
     // TODO(simon): Make this async.
     SunliteFirmwareLoader loader(usb_device);
     loader.LoadFirmware();
     return true;
-  } else if (descriptor.idVendor == SUNLITE_VENDOR_ID &&
-             descriptor.idProduct == 0x2001 &&
+  } else if (descriptor.idVendor == VENDOR_ID &&
+             descriptor.idProduct == FULL_PRODUCT_ID &&
              !HasDevice(usb_device)) {
     OLA_INFO << "Found a new Sunlite device";
 

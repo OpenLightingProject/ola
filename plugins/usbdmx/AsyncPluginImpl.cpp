@@ -34,8 +34,8 @@
 #include "plugins/usbdmx/EuroliteProWidgetFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/SunliteWidgetFactory.h"
-
-#include "plugins/usbdmx/VellemanDevice.h"
+#include "plugins/usbdmx/VellemanWidget.h"
+#include "plugins/usbdmx/VellemanWidgetFactory.h"
 
 namespace ola {
 namespace plugin {
@@ -151,6 +151,7 @@ AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_widget_factories.push_back(new AnymaWidgetFactory());
   m_widget_factories.push_back(new EuroliteProWidgetFactory());
   m_widget_factories.push_back(new SunliteWidgetFactory());
+  m_widget_factories.push_back(new VellemanWidgetFactory());
 }
 
 AsyncPluginImpl::~AsyncPluginImpl() {
@@ -178,7 +179,7 @@ bool AsyncPluginImpl::Start() {
     /*
     m_plugin_adaptor->RegisterRepeatingTimeout(
         3500,
-        NewSingleCallback(this, &AsyncPluginImpl::FindDevices));
+        NewSingleCallback(this, &AsyncPluginImpl::FindUSBDevices));
     */
   }
 
@@ -227,32 +228,29 @@ bool AsyncPluginImpl::NewWidget(class Widget *widget) {
 }
 
 bool AsyncPluginImpl::NewWidget(class AnymaWidget *widget) {
-  GenericDevice *device = new GenericDevice(
-      m_plugin, widget, "Anyma USB Device", "anyma-" + widget->SerialNumber());
-
-  if (!device->Start()) {
-    delete device;
-    return false;
-  }
-
-  Device *old_device = STLReplacePtr(&m_widget_device_map, widget, device);
-  if (old_device) {
-    m_plugin_adaptor->UnregisterDevice(old_device);
-    old_device->Stop();
-    delete old_device;
-  }
-  m_plugin_adaptor->RegisterDevice(device);
-  return true;
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "Anyma USB Device",
+                        "anyma-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(class EuroliteProWidget *widget) {
-  (void) widget;
-  return false;
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
+                        "eurolite-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(class SunliteWidget *widget) {
-  (void) widget;
-  return false;
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
+}
+
+bool AsyncPluginImpl::NewWidget(class VellemanWidget *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));
 }
 
 void AsyncPluginImpl::WidgetRemoved(class Widget *widget) {
@@ -273,6 +271,10 @@ void AsyncPluginImpl::WidgetRemoved(class EuroliteProWidget *widget) {
 }
 
 void AsyncPluginImpl::WidgetRemoved(class SunliteWidget *widget) {
+  (void) widget;
+}
+
+void AsyncPluginImpl::WidgetRemoved(class VellemanWidget *widget) {
   (void) widget;
 }
 
@@ -305,7 +307,7 @@ bool AsyncPluginImpl::SetupHotPlug() {
 /*
  * Find known devices & register them
  */
-void AsyncPluginImpl::FindDevices() {
+void AsyncPluginImpl::FindUSBDevices() {
   libusb_device **device_list;
   size_t device_count = libusb_get_device_list(NULL, &device_list);
 
@@ -326,14 +328,6 @@ void AsyncPluginImpl::DeviceAdded(libusb_device *usb_device) {
       return;
     }
   }
-
-  // Old style
-  /*
-  if (device_descriptor.idVendor == 0x10cf &&
-      device_descriptor.idProduct == 0x8062) {
-    OLA_INFO << "Found a Velleman USB device";
-    device = new VellemanDevice(m_plugin, usb_device);
-  */
 }
 
 void AsyncPluginImpl::DeviceRemoved(libusb_device *usb_device) {
@@ -342,6 +336,22 @@ void AsyncPluginImpl::DeviceRemoved(libusb_device *usb_device) {
   if (factory) {
     factory->DeviceRemoved(this, usb_device);
   }
+}
+
+bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
+  if (!device->Start()) {
+    delete device;
+    return false;
+  }
+
+  Device *old_device = STLReplacePtr(&m_widget_device_map, widget, device);
+  if (old_device) {
+    m_plugin_adaptor->UnregisterDevice(old_device);
+    old_device->Stop();
+    delete old_device;
+  }
+  m_plugin_adaptor->RegisterDevice(device);
+  return true;
 }
 }  // namespace usbdmx
 }  // namespace plugin

@@ -13,38 +13,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanDevice.cpp
- * The Velleman usb driver
- * Copyright (C) 2010 Simon Newton
+ * VellemanWidgetFactory.h
+ * The WidgetFactory for Velleman widgets.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#include <string.h>
-#include <sys/time.h>
-#include <string>
+#ifndef PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
+#define PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
 
-#include "ola/Logging.h"
-#include "plugins/usbdmx/VellemanDevice.h"
-#include "plugins/usbdmx/VellemanOutputPort.h"
+#include "ola/base/Macro.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-
-/*
- * Start this device.
+/**
+ * @brief Manages Velleman Devices
  */
-bool VellemanDevice::StartHook() {
-  VellemanOutputPort *output_port = new VellemanOutputPort(this,
-                                                           0,
-                                                           m_usb_device);
-  if (!output_port->Start()) {
-    delete output_port;
-    return false;
-  }
-  AddPort(output_port);
-  return true;
-}
+class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
+ public:
+  VellemanWidgetFactory() {}
+
+  bool DeviceAdded(
+      WidgetObserver *observer,
+      libusb_device *usb_device,
+      const struct libusb_device_descriptor &descriptor);
+
+ private:
+  static const uint16_t VENDOR_ID;
+  static const uint16_t PRODUCT_ID;
+
+  DISALLOW_COPY_AND_ASSIGN(VellemanWidgetFactory);
+};
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
+#endif  // PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_

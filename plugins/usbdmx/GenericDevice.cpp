@@ -13,42 +13,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProWidgetFactory.h
- * The WidgetFactory for EurolitePro widgets.
+ * GenericDevice.cpp
+ * A Generic device that creates a single port.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
+#include "plugins/usbdmx/GenericDevice.h"
 
-#include "ola/base/Macro.h"
-#include "plugins/usbdmx/EuroliteProWidget.h"
-#include "plugins/usbdmx/WidgetFactory.h"
+#include "plugins/usbdmx/Widget.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/**
- * @brief Manages EurolitePro Devices
- */
-class EuroliteProWidgetFactory
-    : public BaseWidgetFactory<class EuroliteProWidget> {
- public:
-  EuroliteProWidgetFactory() {}
+GenericDevice::GenericDevice(ola::AbstractPlugin *owner,
+                             Widget *widget,
+                             const std::string &device_name,
+                             const std::string &device_id)
+    : Device(owner, device_name),
+      m_device_id(device_id),
+      m_port(new GenericOutputPort(this, 0, widget)) {
+}
 
-  bool DeviceAdded(
-      WidgetObserver *observer,
-      libusb_device *usb_device,
-      const struct libusb_device_descriptor &descriptor);
-
- private:
-  static const uint16_t PRODUCT_ID;
-  static const uint16_t VENDOR_ID;
-
-  DISALLOW_COPY_AND_ASSIGN(EuroliteProWidgetFactory);
-};
+bool GenericDevice::StartHook() {
+  AddPort(m_port.release());
+  return true;
+}
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_

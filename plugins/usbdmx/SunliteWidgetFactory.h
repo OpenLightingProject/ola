@@ -45,7 +45,11 @@ class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
                      libusb_device *device);
 
  private:
-  static const uint16_t SUNLITE_VENDOR_ID;
+  // The product ID for widgets that are missing their firmware.
+  static const uint16_t EMPTY_PRODUCT_ID;
+  // The product ID for widgets with the firmware.
+  static const uint16_t FULL_PRODUCT_ID;
+  static const uint16_t VENDOR_ID;
 
   DISALLOW_COPY_AND_ASSIGN(SunliteWidgetFactory);
 };

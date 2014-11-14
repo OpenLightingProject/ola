@@ -43,8 +43,8 @@ class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
  private:
   bool m_missing_serial_number;
 
-  static const uint16_t ANYMA_VENDOR_ID;
-  static const uint16_t ANYMA_PRODUCT_ID;
+  static const uint16_t VENDOR_ID;
+  static const uint16_t PRODUCT_ID;
 
   DISALLOW_COPY_AND_ASSIGN(AnymaWidgetFactory);
 };

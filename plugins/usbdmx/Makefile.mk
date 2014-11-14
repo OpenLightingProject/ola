@@ -34,13 +34,12 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/SyncPluginImpl.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
-    plugins/usbdmx/UsbDevice.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
     plugins/usbdmx/UsbDmxPlugin.h \
-    plugins/usbdmx/VellemanDevice.cpp \
-    plugins/usbdmx/VellemanDevice.h \
-    plugins/usbdmx/VellemanOutputPort.cpp \
-    plugins/usbdmx/VellemanOutputPort.h \
+    plugins/usbdmx/VellemanWidget.cpp \
+    plugins/usbdmx/VellemanWidget.h \
+    plugins/usbdmx/VellemanWidgetFactory.cpp \
+    plugins/usbdmx/VellemanWidgetFactory.h \
     plugins/usbdmx/WidgetFactory.h
 
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
