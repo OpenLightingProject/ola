@@ -46,6 +46,7 @@ namespace {
 /*
  * Called by libusb when a USB device is added / removed.
  */
+#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
                      struct libusb_device *dev,
                      libusb_hotplug_event event,
@@ -54,6 +55,7 @@ int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
   plugin->HotPlugEvent(dev, event);
   return 0;
 }
+#endif
 }  // namespace
 
 class LibUsbThread : private ola::thread::Thread {
