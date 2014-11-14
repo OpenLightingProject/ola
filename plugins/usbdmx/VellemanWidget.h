@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_VELLEMANWIDGET_H_
 
 #include <libusb.h>
+#include <memory>
 #include <string>
 
 #include "ola/DmxBuffer.h"

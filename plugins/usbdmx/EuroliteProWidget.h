@@ -22,10 +22,11 @@
 #define PLUGINS_USBDMX_EUROLITEPROWIDGET_H_
 
 #include <libusb.h>
+#include <memory>
 #include <string>
-#include "ola/base/Macro.h"
 #include "ola/DmxBuffer.h"
-#include "plugins/usbdmx/ThreadedUsbSender.h"
+#include "ola/base/Macro.h"
+#include "ola/thread/Mutex.h"
 #include "plugins/usbdmx/Widget.h"
 
 namespace ola {

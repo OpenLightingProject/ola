@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_ANYMAWIDGET_H_
 
 #include <libusb.h>
+#include <memory>
 #include <string>
 
 #include "ola/DmxBuffer.h"

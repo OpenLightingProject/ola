@@ -249,24 +249,19 @@ bool AsyncPluginImpl::NewWidget(class VellemanWidget *widget) {
 }
 
 void AsyncPluginImpl::WidgetRemoved(class AnymaWidget *widget) {
-  Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
-  if (device) {
-    m_plugin_adaptor->UnregisterDevice(device);
-    device->Stop();
-    delete device;
-  }
+  RemoveWidget(widget);
 }
 
 void AsyncPluginImpl::WidgetRemoved(class EuroliteProWidget *widget) {
-  (void) widget;
+  RemoveWidget(widget);
 }
 
 void AsyncPluginImpl::WidgetRemoved(class SunliteWidget *widget) {
-  (void) widget;
+  RemoveWidget(widget);
 }
 
 void AsyncPluginImpl::WidgetRemoved(class VellemanWidget *widget) {
-  (void) widget;
+  RemoveWidget(widget);
 }
 
 bool AsyncPluginImpl::SetupHotPlug() {
@@ -343,6 +338,15 @@ bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
   }
   m_plugin_adaptor->RegisterDevice(device);
   return true;
+}
+
+void AsyncPluginImpl::RemoveWidget(class Widget *widget) {
+  Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
+  if (device) {
+    m_plugin_adaptor->UnregisterDevice(device);
+    device->Stop();
+    delete device;
+  }
 }
 }  // namespace usbdmx
 }  // namespace plugin

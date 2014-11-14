@@ -25,6 +25,7 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
 namespace plugin {

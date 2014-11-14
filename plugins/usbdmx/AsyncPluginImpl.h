@@ -123,6 +123,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   void DeviceRemoved(libusb_device *device);
 
   bool StartAndRegisterDevice(class Widget *widget, Device *device);
+  void RemoveWidget(class Widget *widget);
 
   void FindUSBDevices();
 
