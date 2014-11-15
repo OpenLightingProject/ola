@@ -18,6 +18,7 @@ x/y/2014 ola-0.9.3
  * Fix some build issues on Windows XP
  * Use the correct ifdefs within plugin loading so we only load stuff if we
    asked for it
+ * Fix the inability to Ctrl+C in ola_recorder
 
  API:
  * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they
