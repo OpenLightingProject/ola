@@ -93,6 +93,9 @@ int RecordShow() {
         SIGINT, ola::NewCallback(TerminateRecorder, &show_recorder));
     signal_thread.InstallSignalHandler(
         SIGTERM, ola::NewCallback(TerminateRecorder, &show_recorder));
+    if (!signal_thread.Start()) {
+      show_recorder.Stop();
+    }
     show_recorder.Record();
   }
   cout << "Saved " << show_recorder.FrameCount() << " frames" << endl;
@@ -140,7 +143,12 @@ int VerifyShow(const string &filename) {
   cout << "Playback time: " << total_time / 1000 << "." << total_time % 10 <<
     " seconds" << endl;
 
-  return ola::EXIT_OK;
+  if ((state == ShowLoader::OK) || (state == ShowLoader::END_OF_FILE)) {
+    return ola::EXIT_OK;
+  } else {
+    OLA_FATAL << "Error loading show, got state " << state;
+    return ola::EXIT_DATAERR;
+  }
 }
 
 /*
