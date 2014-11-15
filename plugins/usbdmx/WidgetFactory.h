@@ -24,6 +24,7 @@
 #include <libusb.h>
 #include <map>
 #include "ola/Logging.h"
+#include "ola/base/Macro.h"
 #include "ola/stl/STLUtils.h"
 
 namespace ola {

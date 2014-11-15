@@ -282,6 +282,7 @@ AsynchronousVellemanWidget::~AsynchronousVellemanWidget() {
 
   libusb_free_transfer(m_transfer);
   delete[] m_control_setup_buffer;
+  libusb_close(m_usb_handle);
   libusb_unref_device(m_usb_device);
 }
 

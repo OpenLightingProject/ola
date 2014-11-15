@@ -184,6 +184,7 @@ AsynchronousSunliteWidget::~AsynchronousSunliteWidget() {
   }
 
   libusb_free_transfer(m_transfer);
+  libusb_close(m_usb_handle);
   libusb_unref_device(m_usb_device);
 }
 

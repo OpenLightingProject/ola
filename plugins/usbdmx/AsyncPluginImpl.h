@@ -33,6 +33,7 @@
 #include "ola/thread/Thread.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
+#include "plugins/usbdmx/SyncronizedWidgetObserver.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
@@ -106,6 +107,8 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
   LibUsbAdaptor* const m_libusb_adaptor;
+  SyncronizedWidgetObserver m_widget_observer;
+
   libusb_context *m_context;
   bool m_use_hotplug;
   bool m_stopping;

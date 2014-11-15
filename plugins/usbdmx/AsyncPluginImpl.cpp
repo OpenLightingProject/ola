@@ -90,7 +90,6 @@ void LibUsbThread::HotPlugStart() {
 }
 
 void LibUsbThread::HotPlugStop(libusb_hotplug_callback_handle handle) {
-  OLA_INFO << "stopping libusb thread";
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
@@ -143,6 +142,7 @@ AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
       m_libusb_adaptor(libusb_adaptor),
+      m_widget_observer(this, plugin_adaptor),
       m_context(NULL),
       m_use_hotplug(false),
       m_stopping(false) {
@@ -214,8 +214,10 @@ bool AsyncPluginImpl::Stop() {
 #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
                                    libusb_hotplug_event event) {
+  /*
   OLA_INFO << "Got USB hotplug event  for " << usb_device << " : "
            << (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED ? "add" : "del");
+  */
   if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED) {
     DeviceAdded(usb_device);
   } else if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT) {
@@ -306,12 +308,12 @@ void AsyncPluginImpl::FindUSBDevices() {
 }
 
 void AsyncPluginImpl::DeviceAdded(libusb_device *usb_device) {
-  struct libusb_device_descriptor device_descriptor;
-  libusb_get_device_descriptor(usb_device, &device_descriptor);
+  struct libusb_device_descriptor descriptor;
+  libusb_get_device_descriptor(usb_device, &descriptor);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
   for (; iter != m_widget_factories.end(); ++iter) {
-    if ((*iter)->DeviceAdded(this, usb_device, device_descriptor)) {
+    if ((*iter)->DeviceAdded(&m_widget_observer, usb_device, descriptor)) {
       STLReplacePtr(&m_device_factory_map, usb_device, *iter);
       return;
     }
@@ -322,7 +324,7 @@ void AsyncPluginImpl::DeviceRemoved(libusb_device *usb_device) {
   WidgetFactory *factory = STLLookupAndRemovePtr(
       &m_device_factory_map, usb_device);
   if (factory) {
-    factory->DeviceRemoved(this, usb_device);
+    factory->DeviceRemoved(&m_widget_observer, usb_device);
   }
 }
 

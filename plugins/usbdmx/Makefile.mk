@@ -32,6 +32,8 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/SunliteWidgetFactory.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \
+    plugins/usbdmx/SyncronizedWidgetObserver.cpp \
+    plugins/usbdmx/SyncronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
