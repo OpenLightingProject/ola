@@ -1,4 +1,4 @@
-x/y/2014 ola-0.9.3
+16/11/2014 ola-0.9.3
  Features:
  * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
  * Add support for the draft E1.31 discovery protocol.
@@ -23,8 +23,6 @@ x/y/2014 ola-0.9.3
  API:
  * Update ola::network::IPV4Address and ola::network::IPV4SocketAddress so they
    sort the same regardless of endianness and in a logical way for humans.
-
- RDM Tests:
 
  Internal:
  * Update the configure version method to ensure the version files are updated
