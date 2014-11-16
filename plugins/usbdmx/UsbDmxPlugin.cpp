@@ -33,7 +33,7 @@
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
 
-DEFINE_default_bool(use_async_libusb, true,
+DEFINE_default_bool(use_async_libusb, false,
                     "Use the asyncronous libusb calls.");
 
 namespace ola {
