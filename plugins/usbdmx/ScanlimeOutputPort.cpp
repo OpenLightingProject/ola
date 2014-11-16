@@ -126,52 +126,44 @@ bool ScanlimeOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
  */
 bool ScanlimeOutputPort::SendDMX(const DmxBuffer &buffer) {
   uint8_t packet[64];
+  unsigned int index = 0;
   memset(&packet, 0, sizeof(packet));
-  packet[0] = 0x80;
-  packet[1] = (1 << 2);
 
-  if (buffer.Get(0) > 127) {
-    packet[1] |= (1 << 3);
+  for (unsigned int entry = 0; entry < (512*3); entry++) {
+    unsigned int packet_entry = ((entry % (21 * 3)) + 1);
+    OLA_DEBUG << "Working on entry " << entry << " with packet index " << index << ", packet entry " << packet_entry;
+    if (entry < buffer.Size()) {
+      OLA_DEBUG << "Using channel " << entry << " with val " << static_cast<unsigned int>(buffer.Get(entry));
+      packet[packet_entry] = buffer.Get(entry);
+    }
+    if ((packet_entry == (21 * 3)) || (entry == ((512*3) - 1))) {
+      if (entry == ((512*3) - 1)) {
+        OLA_DEBUG << "Setting final flag on packet";
+        packet[0] |= (1 << 5);  // Final
+      }
+      packet[0] |= index;
+
+      // Send the data
+      int txed = 0;
+
+      int r = libusb_bulk_transfer(m_usb_handle,
+                                   1,
+                                   packet,
+                                   sizeof(packet),
+                                   &txed,
+                                   2000);
+
+      OLA_INFO << "Packet " << index << " transferred " << txed << " bytes";
+
+      if (r != 0) {
+        return false;
+      }
+
+      // Get ready for the next packet
+      index++;
+      memset(&packet, 0, sizeof(packet));
+    }
   }
-
-  int txed = 0;
-
-  int r = libusb_bulk_transfer(m_usb_handle,
-                               1,
-                               packet,
-                               sizeof(packet),
-                               &txed,
-                               2000);
-
-  OLA_INFO << "Transferred " << txed << " bytes";
-
-  return r == 0;
-}
-
-
-/*
- * Return a string descriptor
- * @param usb_handle the usb handle to the device
- * @param desc_index the index of the descriptor
- * @param data where to store the output string
- * @returns true if we got the value, false otherwise
- */
-bool ScanlimeOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
-                                             uint8_t desc_index,
-                                             string *data) {
-  enum { buffer_size = 32 };  // static arrays FTW!
-  unsigned char buffer[buffer_size];
-  int r = libusb_get_string_descriptor_ascii(
-      usb_handle,
-      desc_index,
-      buffer,
-      buffer_size);
-
-  if (r <= 0) {
-    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
-    return false;
-  }
-  data->assign(reinterpret_cast<char*>(buffer));
   return true;
 }
 }  // namespace usbdmx
