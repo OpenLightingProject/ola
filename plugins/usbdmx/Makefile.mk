@@ -20,8 +20,8 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/GenericOutputPort.h \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
-    plugins/usbdmx/LibUsbHelper.cpp \
-    plugins/usbdmx/LibUsbHelper.h \
+    plugins/usbdmx/LibUsbThread.cpp \
+    plugins/usbdmx/LibUsbThread.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \

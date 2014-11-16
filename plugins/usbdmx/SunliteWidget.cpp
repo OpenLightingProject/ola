@@ -22,7 +22,7 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
@@ -133,14 +133,16 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 
-SynchronousSunliteWidget::SynchronousSunliteWidget(libusb_device *usb_device)
-    : m_usb_device(usb_device) {
+SynchronousSunliteWidget::SynchronousSunliteWidget(LibUsbAdaptor *adaptor,
+                                                   libusb_device *usb_device)
+    : SunliteWidget(adaptor),
+      m_usb_device(usb_device) {
 }
 
 bool SynchronousSunliteWidget::Init() {
   libusb_device_handle *usb_handle;
 
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, 0, &usb_handle);
   if (!ok) {
     return false;
@@ -160,8 +162,10 @@ bool SynchronousSunliteWidget::SendDMX(const DmxBuffer &buffer) {
 }
 
 AsynchronousSunliteWidget::AsynchronousSunliteWidget(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : m_usb_device(usb_device),
+    : SunliteWidget(adaptor),
+      m_usb_device(usb_device),
       m_usb_handle(NULL),
       m_transfer_state(IDLE) {
   InitPacket(m_packet);
@@ -189,7 +193,7 @@ AsynchronousSunliteWidget::~AsynchronousSunliteWidget() {
 }
 
 bool AsynchronousSunliteWidget::Init() {
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, 0, &m_usb_handle);
   if (!ok) {
     return false;

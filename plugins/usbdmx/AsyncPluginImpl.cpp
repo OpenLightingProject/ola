@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <libusb.h>
 
+#include <set>
+
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
@@ -33,6 +35,8 @@
 #include "plugins/usbdmx/AnymaWidgetFactory.h"
 #include "plugins/usbdmx/EuroliteProWidgetFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "plugins/usbdmx/LibUsbThread.h"
 #include "plugins/usbdmx/SunliteWidgetFactory.h"
 #include "plugins/usbdmx/VellemanWidget.h"
 #include "plugins/usbdmx/VellemanWidgetFactory.h"
@@ -43,8 +47,8 @@ namespace usbdmx {
 
 namespace {
 
-/*
- * Called by libusb when a USB device is added / removed.
+/**
+ * @brief Called by libusb when a USB device is added / removed.
  */
 #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
@@ -58,102 +62,16 @@ int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
 #endif
 }  // namespace
 
-class LibUsbThread : private ola::thread::Thread {
- public:
-  explicit LibUsbThread(libusb_context *context)
-    : m_context(context),
-      m_term(false),
-      m_device_count(0) {
-  }
-
-  #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
-  void HotPlugStart();
-  void HotPlugStop(libusb_hotplug_callback_handle handle);
-  #endif
-
-  void AddDevice();
-  void RemoveDevice(libusb_device_handle *handle);
-
-  void *Run();
-
- private:
-  libusb_context *m_context;
-  bool m_term;  // GUARDED_BY(m_term_mutex)
-  ola::thread::Mutex m_term_mutex;
-  unsigned int m_device_count;
-};
-
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
-void LibUsbThread::HotPlugStart() {
-  OLA_INFO << "STarting libusb thread";
-  Start();
-}
-
-void LibUsbThread::HotPlugStop(libusb_hotplug_callback_handle handle) {
-  {
-    ola::thread::MutexLocker locker(&m_term_mutex);
-    m_term = true;
-  }
-  libusb_hotplug_deregister_callback(m_context, handle);
-  Join();
-}
-#endif
-
-void LibUsbThread::AddDevice() {
-  m_device_count++;
-  if (m_device_count == 1) {
-    Start();
-  }
-}
-
-void LibUsbThread::RemoveDevice(libusb_device_handle *handle) {
-  if (m_device_count == 1) {
-    {
-      ola::thread::MutexLocker locker(&m_term_mutex);
-      m_term = true;
-    }
-  }
-  libusb_close(handle);
-  if (m_device_count == 1) {
-    Join();
-  }
-  m_device_count--;
-}
-
-void *LibUsbThread::Run() {
-  OLA_INFO << "----libusb event thread is running";
-  while (1) {
-    {
-      ola::thread::MutexLocker locker(&m_term_mutex);
-      if (m_term)
-        break;
-    }
-    // TODO(simon): If hotplug isn't active, use libusb_handle_events_timeout
-    // here.
-    libusb_handle_events(m_context);
-  }
-  OLA_INFO << "----libusb thread exiting";
-  return NULL;
-}
-
 AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                                  Plugin *plugin,
-                                 LibUsbAdaptor *libusb_adaptor)
+                                 unsigned int debug_level)
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
-      m_libusb_adaptor(libusb_adaptor),
+      m_debug_level(debug_level),
       m_widget_observer(this, plugin_adaptor),
       m_context(NULL),
       m_use_hotplug(false),
-      m_stopping(false) {
-  #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
-  m_hotplug_handle = 0;
-  #endif
-
-  m_widget_factories.push_back(new AnymaWidgetFactory());
-  m_widget_factories.push_back(new EuroliteProWidgetFactory());
-  m_widget_factories.push_back(new SunliteWidgetFactory());
-  m_widget_factories.push_back(new VellemanWidgetFactory());
+      m_scan_timeout(ola::thread::INVALID_TIMEOUT) {
 }
 
 AsyncPluginImpl::~AsyncPluginImpl() {
@@ -166,62 +84,81 @@ bool AsyncPluginImpl::Start() {
     return false;
   }
 
-  m_libusb_adaptor->SetDebug(m_context);
+  OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+  libusb_set_debug(m_context, m_debug_level);
 
-  m_use_hotplug = SetupHotPlug();
-  OLA_INFO << "SetupHotPlug returned " << m_use_hotplug;
+  m_use_hotplug = HotplugSupported();
+  OLA_INFO << "HotplugSupported returned " << m_use_hotplug;
   if (m_use_hotplug) {
-    m_usb_thread.reset((new LibUsbThread(m_context)));
-    m_usb_thread->HotPlugStart();
+    m_usb_thread.reset(new LibUsbHotplugThread(
+          m_context, hotplug_callback, this));
   } else {
+    m_usb_thread.reset(new LibUsbSimpleThread(m_context));
+  }
+  m_usb_adaptor.reset(new AsyncronousLibUsbAdaptor(m_usb_thread.get()));
+
+  // Setup the factories.
+  m_widget_factories.push_back(new AnymaWidgetFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(
+      new EuroliteProWidgetFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new SunliteWidgetFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new VellemanWidgetFactory(m_usb_adaptor.get()));
+
+  // If we're using hotplug, this starts the hotplug thread.
+  if (!m_usb_thread->Init()) {
+    STLDeleteElements(&m_widget_factories);
+    m_usb_adaptor.reset();
+    m_usb_thread.reset();
+    return false;
+  }
+
+  if (!m_use_hotplug) {
     // Either we don't support hotplug or the setup failed.
     // As poor man's hotplug, we call libusb_get_device_list periodically to
     // check for new devices.
+    m_scan_timeout = m_plugin_adaptor->RegisterRepeatingTimeout(
+        TimeInterval(5, 0),
+        NewCallback(this, &AsyncPluginImpl::ScanUSBDevices));
 
-    /*
-    m_plugin_adaptor->RegisterRepeatingTimeout(
-        3500,
-        NewSingleCallback(this, &AsyncPluginImpl::FindUSBDevices));
-    */
+    // Call it immediately now.
+    ScanUSBDevices();
   }
 
   return true;
 }
 
 bool AsyncPluginImpl::Stop() {
-  m_stopping = true;
-
-  if (m_usb_thread.get()) {
-    if (m_use_hotplug) {
-      m_usb_thread->HotPlugStop(m_hotplug_handle);
-    }
+  if (m_scan_timeout != ola::thread::INVALID_TIMEOUT) {
+    m_plugin_adaptor->RemoveTimeout(m_scan_timeout);
+    m_scan_timeout = ola::thread::INVALID_TIMEOUT;
   }
-  m_usb_thread.reset();
 
-  // I think we need a lock here
+  m_usb_thread->Shutdown();
+
   USBDeviceToFactoryMap::iterator iter = m_device_factory_map.begin();
   for (; iter != m_device_factory_map.end(); ++iter) {
     iter->second->DeviceRemoved(this, iter->first);
   }
   m_device_factory_map.clear();
 
+  m_usb_thread.reset();
+  m_usb_adaptor.reset();
+  STLDeleteElements(&m_widget_factories);
+
   libusb_exit(m_context);
   m_context = NULL;
   return true;
 }
 
-
 #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
                                    libusb_hotplug_event event) {
-  /*
   OLA_INFO << "Got USB hotplug event  for " << usb_device << " : "
            << (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED ? "add" : "del");
-  */
   if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED) {
-    DeviceAdded(usb_device);
+    USBDeviceAdded(usb_device);
   } else if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT) {
-    DeviceRemoved(usb_device);
+    USBDeviceRemoved(usb_device);
   }
 }
 #endif
@@ -268,59 +205,47 @@ void AsyncPluginImpl::WidgetRemoved(class VellemanWidget *widget) {
   RemoveWidget(widget);
 }
 
-bool AsyncPluginImpl::SetupHotPlug() {
-#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
-  if (libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) == 0) {
-    return false;
-  }
-
-  OLA_INFO << "Calling libusb_hotplug_register_callback";
-  int rc = libusb_hotplug_register_callback(
-      NULL,
-      static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
-                                        LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT),
-      LIBUSB_HOTPLUG_ENUMERATE, LIBUSB_HOTPLUG_MATCH_ANY,
-      LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY,
-      hotplug_callback, this, &m_hotplug_handle);
-
-  if (LIBUSB_SUCCESS != rc) {
-    OLA_WARN << "Error creating a hotplug callback";
-    return false;
-  }
-  OLA_INFO << "libusb_hotplug_register_callback passed";
-  return true;
+/**
+ * @brief Check if this platform supports hotplug.
+ * @returns true if hotplug is supported and enabled on this platform, false
+ *   otherwise.
+ */
+bool AsyncPluginImpl::HotplugSupported() {
+#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+  return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
 #else
   return false;
 #endif
 }
 
-/*
- * Find known devices & register them
+/**
+ * @brief Signal a new USB device has been added.
+ *
+ * This can be called from either the libusb thread or the main thread. However
+ * only one of those will be active at once, so we can avoid locking.
  */
-void AsyncPluginImpl::FindUSBDevices() {
-  libusb_device **device_list;
-  size_t device_count = libusb_get_device_list(NULL, &device_list);
-
-  for (unsigned int i = 0; i < device_count; i++) {
-    DeviceAdded(device_list[i]);
-  }
-  libusb_free_device_list(device_list, 1);  // unref devices
-}
-
-void AsyncPluginImpl::DeviceAdded(libusb_device *usb_device) {
+bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   struct libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(usb_device, &descriptor);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
+  OLA_INFO << "Checking " << m_widget_factories.size() << " factories";
   for (; iter != m_widget_factories.end(); ++iter) {
     if ((*iter)->DeviceAdded(&m_widget_observer, usb_device, descriptor)) {
       STLReplacePtr(&m_device_factory_map, usb_device, *iter);
-      return;
+      return true;
     }
   }
+  return false;
 }
 
-void AsyncPluginImpl::DeviceRemoved(libusb_device *usb_device) {
+/**
+ * @brief Signal a USB device has been removed.
+ *
+ * This can be called from either the libusb thread or the main thread. However
+ * only one of those will be active at once, so we can avoid locking.
+ */
+void AsyncPluginImpl::USBDeviceRemoved(libusb_device *usb_device) {
   WidgetFactory *factory = STLLookupAndRemovePtr(
       &m_device_factory_map, usb_device);
   if (factory) {
@@ -328,6 +253,13 @@ void AsyncPluginImpl::DeviceRemoved(libusb_device *usb_device) {
   }
 }
 
+/*
+ * @brief Signal widget / device addition.
+ * @param widget The widget that was added.
+ * @param device The new olad device that uses this new widget.
+ *
+ * This is run within the main thread.
+ */
 bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
   if (!device->Start()) {
     delete device;
@@ -344,6 +276,12 @@ bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
   return true;
 }
 
+/*
+ * @brief Signal widget removal.
+ * @param widget The widget that was removed.
+ *
+ * This is run within the main thread.
+ */
 void AsyncPluginImpl::RemoveWidget(class Widget *widget) {
   Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
   if (device) {
@@ -352,6 +290,52 @@ void AsyncPluginImpl::RemoveWidget(class Widget *widget) {
     delete device;
   }
 }
+
+/*
+ * If hotplug isn't supported, this is called periodically to checked for
+ * USB devices that have been added or removed.
+ *
+ * This is run within the main thread, since the libusb thread only runs if at
+ * least one USB device is used.
+ */
+bool AsyncPluginImpl::ScanUSBDevices() {
+  OLA_INFO << "Scanning USB devices....";
+  std::set<USBDeviceID> current_device_ids;
+
+  libusb_device **device_list;
+  size_t device_count = libusb_get_device_list(NULL, &device_list);
+
+  OLA_INFO << "Got " << device_count << " devices";
+  for (unsigned int i = 0; i < device_count; i++) {
+    libusb_device *usb_device = device_list[i];
+
+    USBDeviceID device_id(libusb_get_bus_number(usb_device),
+                          libusb_get_device_address(usb_device));
+
+    current_device_ids.insert(device_id);
+
+    if (!STLContains(m_seen_usb_devices, device_id)) {
+      OLA_INFO << "  " << usb_device;
+      bool claimed = USBDeviceAdded(usb_device);
+      STLReplace(&m_seen_usb_devices, device_id, claimed ? usb_device : NULL);
+    }
+  }
+  libusb_free_device_list(device_list, 1);  // unref devices
+
+  USBDeviceIDs::iterator iter = m_seen_usb_devices.begin();
+  while (iter != m_seen_usb_devices.end()) {
+    if (!STLContains(current_device_ids, iter->first)) {
+      if (iter->second) {
+        USBDeviceRemoved(iter->second);
+      }
+      m_seen_usb_devices.erase(iter++);
+    } else {
+      iter++;
+    }
+  }
+  return true;
+}
+
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola

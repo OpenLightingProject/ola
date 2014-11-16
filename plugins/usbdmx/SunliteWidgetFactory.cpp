@@ -21,7 +21,10 @@
 #include "plugins/usbdmx/SunliteWidgetFactory.h"
 
 #include "ola/Logging.h"
+#include "ola/base/Flags.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
+
+DECLARE_bool(use_async_libusb);
 
 namespace ola {
 namespace plugin {
@@ -47,8 +50,13 @@ bool SunliteWidgetFactory::DeviceAdded(
              !HasDevice(usb_device)) {
     OLA_INFO << "Found a new Sunlite device";
 
-    return AddWidget(observer, usb_device,
-                     new AsynchronousSunliteWidget(usb_device));
+    SunliteWidget *widget = NULL;
+    if (FLAGS_use_async_libusb) {
+      widget = new AsynchronousSunliteWidget(m_adaptor, usb_device);
+    } else {
+      widget = new SynchronousSunliteWidget(m_adaptor, usb_device);
+    }
+    return AddWidget(observer, usb_device, widget);
   }
   return false;
 }

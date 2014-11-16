@@ -35,7 +35,8 @@ namespace usbdmx {
 class EuroliteProWidgetFactory
     : public BaseWidgetFactory<class EuroliteProWidget> {
  public:
-  EuroliteProWidgetFactory() {}
+  explicit EuroliteProWidgetFactory(class LibUsbAdaptor *adaptor)
+      : m_adaptor(adaptor) {}
 
   bool DeviceAdded(
       WidgetObserver *observer,
@@ -43,6 +44,8 @@ class EuroliteProWidgetFactory
       const struct libusb_device_descriptor &descriptor);
 
  private:
+  class LibUsbAdaptor *m_adaptor;
+
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 

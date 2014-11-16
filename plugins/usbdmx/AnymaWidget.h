@@ -37,13 +37,17 @@ namespace usbdmx {
 /**
  * @brief The base class for Anyma Widgets.
  */
-class AnymaWidget: public Widget {
+class AnymaWidget: public BaseWidget {
  public:
   /**
    * @brief Create a new AnymaWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param serial the serial number of the widget.
    */
-  explicit AnymaWidget(const std::string &serial) : m_serial(serial) {}
+  AnymaWidget(LibUsbAdaptor *adaptor,
+              const std::string &serial)
+      : BaseWidget(adaptor),
+        m_serial(serial) {}
 
   virtual ~AnymaWidget() {}
 
@@ -78,11 +82,13 @@ class SynchronousAnymaWidget: public AnymaWidget {
  public:
   /**
    * @brief Create a new SynchronousAnymaWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousAnymaWidget(libusb_device *usb_device,
-                          const std::string &serial);
+  SynchronousAnymaWidget(LibUsbAdaptor *adaptor,
+                         libusb_device *usb_device,
+                         const std::string &serial);
 
   bool Init();
 
@@ -102,10 +108,12 @@ class AsynchronousAnymaWidget : public AnymaWidget {
  public:
   /**
    * @brief Create a new AsynchronousAnymaWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousAnymaWidget(libusb_device *usb_device,
+  AsynchronousAnymaWidget(LibUsbAdaptor *adaptor,
+                          libusb_device *usb_device,
                           const std::string &serial);
   ~AsynchronousAnymaWidget();
 
@@ -124,6 +132,7 @@ class AsynchronousAnymaWidget : public AnymaWidget {
   enum TransferState {
     IDLE,
     IN_PROGRESS,
+    DISCONNECTED,
   };
 
   libusb_device* const m_usb_device;

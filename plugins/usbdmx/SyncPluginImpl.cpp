@@ -54,10 +54,10 @@ using std::vector;
 
 SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
                                Plugin *plugin,
-                               LibUsbAdaptor *libusb_adaptor)
+                               unsigned int debug_level)
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
-      m_libusb_adaptor(libusb_adaptor),
+      m_debug_level(debug_level),
       m_context(NULL),
       m_anyma_devices_missing_serial_numbers(false) {
 }
@@ -68,7 +68,8 @@ bool SyncPluginImpl::Start() {
     return false;
   }
 
-  m_libusb_adaptor->SetDebug(m_context);
+  OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+  libusb_set_debug(m_context, m_debug_level);
 
   if (LoadFirmware()) {
     // we loaded firmware for at least one device, set up a callback to run in
@@ -159,7 +160,7 @@ void SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
       device_descriptor.idProduct == 0x8062) {
     OLA_INFO << "Found a Velleman USB device";
     SynchronousVellemanWidget *widget = new SynchronousVellemanWidget(
-        usb_device);
+        &m_usb_adaptor, usb_device);
     if (!widget->Init()) {
       delete widget;
       return;
@@ -170,7 +171,8 @@ void SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
   } else if (device_descriptor.idVendor == 0x0962 &&
              device_descriptor.idProduct == 0x2001) {
     OLA_INFO << "Found a Sunlite device";
-    SynchronousSunliteWidget *widget = new SynchronousSunliteWidget(usb_device);
+    SynchronousSunliteWidget *widget = new SynchronousSunliteWidget(
+        &m_usb_adaptor, usb_device);
     if (!widget->Init()) {
       delete widget;
       return;
@@ -240,7 +242,7 @@ Device* SyncPluginImpl::NewAnymaDevice(
   }
 
   SynchronousAnymaWidget *widget = new SynchronousAnymaWidget(
-      usb_device, info.serial);
+      &m_usb_adaptor, usb_device, info.serial);
   if (!widget->Init()) {
     delete widget;
     return NULL;
@@ -263,7 +265,7 @@ Device* SyncPluginImpl::NewEuroliteProDevice(
   serial_str << bus_number << "-" << device_address;
 
   SynchronousEuroliteProWidget *widget = new SynchronousEuroliteProWidget(
-      usb_device, serial_str.str());
+      &m_usb_adaptor, usb_device, serial_str.str());
   if (!widget->Init()) {
     delete widget;
     return NULL;

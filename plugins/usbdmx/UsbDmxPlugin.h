@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbDmxPlugin.h
- * Interface for the usbdmx plugin class
+ * A plugin that uses libusb to communicate with USB devices.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -32,9 +32,9 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A plugin which uses libusb to comunicate with devices.
+ * @brief A plugin that uses libusb to communicate with USB devices.
  *
- * This Plugin supports a number of USB dongles including
+ * This plugin supports a number of USB dongles including
  *   - Anyma
  *   - Eurolite
  *   - Sunlite
@@ -56,7 +56,6 @@ class UsbDmxPlugin: public ola::Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-  std::auto_ptr<class LibUsbAdaptor> m_libusb_adaptor;
   std::auto_ptr<class PluginImplInterface> m_impl;
 
   bool StartHook();

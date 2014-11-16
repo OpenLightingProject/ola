@@ -21,8 +21,12 @@
 #include "plugins/usbdmx/AnymaWidgetFactory.h"
 
 #include "ola/Logging.h"
+#include "ola/base/Flags.h"
 #include "plugins/usbdmx/AnymaWidget.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
+
+DECLARE_bool(use_async_libusb);
+
 
 namespace ola {
 namespace plugin {
@@ -41,18 +45,17 @@ bool AnymaWidgetFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new Anyma device";
-  LibUsbHelper::DeviceInformation info;
-  if (!LibUsbHelper::GetDeviceInfo(usb_device, descriptor, &info)) {
+  LibUsbAdaptor::DeviceInformation info;
+  if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
   }
 
-  if (!LibUsbHelper::CheckManufacturer(
+  if (!m_adaptor->CheckManufacturer(
         AnymaWidget::EXPECTED_MANUFACTURER, info.manufacturer)) {
     return false;
   }
 
-  if (!LibUsbHelper::CheckProduct(
-        AnymaWidget::EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(AnymaWidget::EXPECTED_PRODUCT, info.product)) {
     return false;
   }
 
@@ -72,8 +75,13 @@ bool AnymaWidgetFactory::DeviceAdded(
     }
   }
 
-  return AddWidget(observer, usb_device,
-                   new AsynchronousAnymaWidget(usb_device, info.serial));
+  AnymaWidget *widget;
+  if (FLAGS_use_async_libusb) {
+    widget = new AsynchronousAnymaWidget(m_adaptor, usb_device, info.serial);
+  } else {
+    widget = new SynchronousAnymaWidget(m_adaptor, usb_device, info.serial);
+  }
+  return AddWidget(observer, usb_device, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

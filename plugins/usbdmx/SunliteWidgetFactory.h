@@ -34,7 +34,8 @@ namespace usbdmx {
  */
 class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
  public:
-  SunliteWidgetFactory() {}
+  explicit SunliteWidgetFactory(class LibUsbAdaptor *adaptor)
+      : m_adaptor(adaptor) {}
 
   bool DeviceAdded(
       WidgetObserver *observer,
@@ -45,6 +46,8 @@ class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
                      libusb_device *device);
 
  private:
+  class LibUsbAdaptor* const m_adaptor;
+
   // The product ID for widgets that are missing their firmware.
   static const uint16_t EMPTY_PRODUCT_ID;
   // The product ID for widgets with the firmware.

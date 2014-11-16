@@ -27,9 +27,8 @@
 #include <utility>
 #include <vector>
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
-
+#include "plugins/usbdmx/PluginImplInterface.h"
 
 namespace ola {
 
@@ -54,11 +53,11 @@ class SyncPluginImpl: public PluginImplInterface {
    * transferred.
    * @param plugin The parent Plugin object which is used when creating
    * devices.
-   * @param libusb_adaptor The adaptor to use when calling libusb.
+   * @param debug_level the debug level to use for libusb.
    */
   SyncPluginImpl(PluginAdaptor *plugin_adaptor,
                  Plugin *plugin,
-                 LibUsbAdaptor *libusb_adaptor);
+                 unsigned int debug_level);
 
   bool Start();
   bool Stop();
@@ -70,9 +69,10 @@ class SyncPluginImpl: public PluginImplInterface {
     std::string serial;
   };
 
-  PluginAdaptor *m_plugin_adaptor;
-  Plugin *m_plugin;
-  LibUsbAdaptor *m_libusb_adaptor;
+  PluginAdaptor* const m_plugin_adaptor;
+  Plugin* const m_plugin;
+  const unsigned int m_debug_level;
+  SyncronousLibUsbAdaptor m_usb_adaptor;
 
   libusb_context *m_context;
 

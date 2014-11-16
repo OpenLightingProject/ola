@@ -31,7 +31,6 @@
 
 #include "ola/base/Macro.h"
 #include "ola/thread/Thread.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncronizedWidgetObserver.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -58,11 +57,11 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
    * transferred.
    * @param plugin The parent Plugin object which is used when creating
    * devices.
-   * @param libusb_adaptor The adaptor to use when calling libusb.
+   * @param debug_level the debug level to use for libusb.
    */
   AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                   Plugin *plugin,
-                  LibUsbAdaptor *libusb_adaptor);
+                  unsigned int debug_level);
   ~AsyncPluginImpl();
 
   bool Start();
@@ -97,39 +96,36 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   typedef std::vector<class WidgetFactory*> WidgetFactories;
   typedef std::map<struct libusb_device*, WidgetFactory*> USBDeviceToFactoryMap;
   typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
-
-  struct USBDeviceInformation {
-    std::string manufacturer;
-    std::string product;
-    std::string serial;
-  };
+  typedef std::pair<uint8_t, uint8_t> USBDeviceID;
+  typedef std::map<USBDeviceID, struct libusb_device*> USBDeviceIDs;
 
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
-  LibUsbAdaptor* const m_libusb_adaptor;
+  const unsigned int m_debug_level;
+
   SyncronizedWidgetObserver m_widget_observer;
 
   libusb_context *m_context;
   bool m_use_hotplug;
-  bool m_stopping;
   std::auto_ptr<class LibUsbThread> m_usb_thread;
+  std::auto_ptr<class LibUsbAdaptor> m_usb_adaptor;
 
   WidgetFactories m_widget_factories;
   USBDeviceToFactoryMap m_device_factory_map;
   WidgetToDeviceMap m_widget_device_map;
 
-  #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
-  libusb_hotplug_callback_handle m_hotplug_handle;
-  #endif
+  // Members used if hotplug is not supported
+  ola::thread::timeout_id m_scan_timeout;
+  USBDeviceIDs m_seen_usb_devices;
 
-  bool SetupHotPlug();
-  void DeviceAdded(libusb_device *device);
-  void DeviceRemoved(libusb_device *device);
+  bool HotplugSupported();
+  bool USBDeviceAdded(libusb_device *device);
+  void USBDeviceRemoved(libusb_device *device);
 
   bool StartAndRegisterDevice(class Widget *widget, Device *device);
   void RemoveWidget(class Widget *widget);
 
-  void FindUSBDevices();
+  bool ScanUSBDevices();
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPluginImpl);
 };

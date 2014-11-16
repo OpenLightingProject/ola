@@ -38,13 +38,17 @@ class EuroliteProThreadedSender;
 /**
  * @brief The EurolitePro Widget.
  */
-class EuroliteProWidget : public Widget {
+class EuroliteProWidget : public BaseWidget {
  public:
   /**
    * @brief Create a new EuroliteProWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param serial the serial number of the widget.
    */
-  explicit EuroliteProWidget(const std::string &serial) : m_serial(serial) {}
+  EuroliteProWidget(LibUsbAdaptor *adaptor,
+                    const std::string &serial)
+      : BaseWidget(adaptor),
+        m_serial(serial) {}
 
   /**
    * @brief Get the serial number of this widget.
@@ -85,10 +89,12 @@ class SynchronousEuroliteProWidget: public EuroliteProWidget {
  public:
   /**
    * @brief Create a new SynchronousEuroliteProWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousEuroliteProWidget(libusb_device *usb_device,
+  SynchronousEuroliteProWidget(LibUsbAdaptor *adaptor,
+                               libusb_device *usb_device,
                                const std::string &serial);
 
   bool Init();
@@ -112,7 +118,8 @@ class AsynchronousEuroliteProWidget: public EuroliteProWidget {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousEuroliteProWidget(libusb_device *usb_device,
+  AsynchronousEuroliteProWidget(class LibUsbAdaptor *adaptor,
+                                libusb_device *usb_device,
                                 const std::string &serial);
   ~AsynchronousEuroliteProWidget();
 

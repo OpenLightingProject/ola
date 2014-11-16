@@ -33,7 +33,9 @@ namespace usbdmx {
  */
 class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
  public:
-  VellemanWidgetFactory() {}
+  explicit VellemanWidgetFactory(class LibUsbAdaptor *adaptor)
+      : m_adaptor(adaptor) {
+  }
 
   bool DeviceAdded(
       WidgetObserver *observer,
@@ -41,6 +43,8 @@ class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
       const struct libusb_device_descriptor &descriptor);
 
  private:
+  class LibUsbAdaptor* const m_adaptor;
+
   static const uint16_t VENDOR_ID;
   static const uint16_t PRODUCT_ID;
 

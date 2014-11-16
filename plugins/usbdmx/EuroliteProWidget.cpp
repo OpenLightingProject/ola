@@ -24,7 +24,7 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
@@ -78,7 +78,7 @@ void CreateFrame(
  * 1 but we check them all just in case.
  */
 bool LocateInterface(libusb_device *usb_device,
-                                               int *interface_number) {
+                     int *interface_number) {
   struct libusb_config_descriptor *device_config;
   if (libusb_get_config_descriptor(usb_device, 0, &device_config) != 0) {
     OLA_WARN << "Failed to get device config descriptor";
@@ -133,7 +133,7 @@ EuroliteProThreadedSender::EuroliteProThreadedSender(
 }
 
 bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                           const DmxBuffer &buffer) {
+                                               const DmxBuffer &buffer) {
   uint8_t frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE];
   CreateFrame(buffer, frame);
 
@@ -153,9 +153,10 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 SynchronousEuroliteProWidget::SynchronousEuroliteProWidget(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : EuroliteProWidget(serial),
+    : EuroliteProWidget(adaptor, serial),
       m_usb_device(usb_device) {
 }
 
@@ -167,7 +168,7 @@ bool SynchronousEuroliteProWidget::Init() {
     return false;
   }
 
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, interface_number, &usb_handle);
   if (!ok) {
     return false;
@@ -187,9 +188,10 @@ bool SynchronousEuroliteProWidget::SendDMX(const DmxBuffer &buffer) {
 }
 
 AsynchronousEuroliteProWidget::AsynchronousEuroliteProWidget(
+    class LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : EuroliteProWidget(serial),
+    : EuroliteProWidget(adaptor, serial),
       m_usb_device(usb_device),
       m_usb_handle(NULL),
       m_transfer_state(IDLE) {
@@ -222,7 +224,7 @@ bool AsynchronousEuroliteProWidget::Init() {
     return false;
   }
 
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, 0, &m_usb_handle);
   if (!ok) {
     return false;

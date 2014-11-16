@@ -37,7 +37,12 @@ namespace usbdmx {
 /**
  * @brief The interface for the Velleman Widgets
  */
-class VellemanWidget: public Widget {};
+class VellemanWidget: public BaseWidget {
+ public:
+  explicit VellemanWidget(LibUsbAdaptor *adaptor)
+      : BaseWidget(adaptor) {
+  }
+};
 
 /**
  * @brief An Velleman widget that uses synchronous libusb operations.
@@ -48,9 +53,11 @@ class SynchronousVellemanWidget: public VellemanWidget {
  public:
   /**
    * @brief Create a new SynchronousVellemanWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  explicit SynchronousVellemanWidget(libusb_device *usb_device);
+  SynchronousVellemanWidget(LibUsbAdaptor *adaptor,
+                            libusb_device *usb_device);
 
   bool Init();
 
@@ -70,9 +77,11 @@ class AsynchronousVellemanWidget : public VellemanWidget {
  public:
   /**
    * @brief Create a new AsynchronousVellemanWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  explicit AsynchronousVellemanWidget(libusb_device *usb_device);
+  AsynchronousVellemanWidget(LibUsbAdaptor *adaptor,
+                             libusb_device *usb_device);
   ~AsynchronousVellemanWidget();
 
   bool Init();

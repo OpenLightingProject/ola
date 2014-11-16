@@ -35,11 +35,6 @@ GenericOutputPort::GenericOutputPort(Device *parent,
       m_widget(widget) {
 }
 
-GenericOutputPort::~GenericOutputPort() {
-  // TODO(simon): stop the thread here??
-  OLA_INFO << "GenericOutputPort::~GenericOutputPort()";
-}
-
 bool GenericOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  OLA_UNUSED uint8_t priority) {
   m_widget->SendDMX(buffer);

@@ -33,7 +33,10 @@ namespace usbdmx {
  */
 class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
  public:
-  AnymaWidgetFactory() : m_missing_serial_number(false) {}
+  explicit AnymaWidgetFactory(class LibUsbAdaptor *adaptor)
+      : m_missing_serial_number(false),
+        m_adaptor(adaptor) {
+  }
 
   bool DeviceAdded(
       WidgetObserver *observer,
@@ -42,6 +45,7 @@ class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
 
  private:
   bool m_missing_serial_number;
+  class LibUsbAdaptor *m_adaptor;
 
   static const uint16_t VENDOR_ID;
   static const uint16_t PRODUCT_ID;

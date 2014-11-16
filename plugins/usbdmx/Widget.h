@@ -47,6 +47,26 @@ class Widget {
    */
   virtual bool SendDMX(const DmxBuffer &buffer) = 0;
 };
+
+/**
+ * @brief A base widget class.
+ *
+ * This holds a pointer to a LibUsbAdaptor so we don't have to duplicate that
+ * code in all the Widgets.
+ */
+class BaseWidget : public Widget {
+ public:
+  /**
+   * @brief Create a new BaseWidget.
+   * @param adaptor the LibUsbAdaptor to use.
+   */
+  explicit BaseWidget(class LibUsbAdaptor *adaptor)
+     : m_adaptor(adaptor) {
+  }
+
+ protected:
+  class LibUsbAdaptor* const m_adaptor;
+};
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola

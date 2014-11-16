@@ -21,8 +21,11 @@
 #include "plugins/usbdmx/VellemanWidgetFactory.h"
 
 #include "ola/Logging.h"
+#include "ola/base/Flags.h"
 #include "plugins/usbdmx/VellemanWidget.h"
 #include "plugins/usbdmx/LibUsbHelper.h"
+
+DECLARE_bool(use_async_libusb);
 
 namespace ola {
 namespace plugin {
@@ -41,8 +44,14 @@ bool VellemanWidgetFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new Velleman device";
-  return AddWidget(observer, usb_device,
-                   new AsynchronousVellemanWidget(usb_device));
+  VellemanWidget *widget = NULL;
+  if (FLAGS_use_async_libusb) {
+    widget = new AsynchronousVellemanWidget(m_adaptor, usb_device);
+
+  } else {
+    widget = new SynchronousVellemanWidget(m_adaptor, usb_device);
+  }
+  return AddWidget(observer, usb_device, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

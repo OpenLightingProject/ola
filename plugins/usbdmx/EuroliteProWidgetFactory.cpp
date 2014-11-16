@@ -21,7 +21,10 @@
 #include "plugins/usbdmx/EuroliteProWidgetFactory.h"
 
 #include "ola/Logging.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "ola/base/Flags.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
+
+DECLARE_bool(use_async_libusb);
 
 namespace ola {
 namespace plugin {
@@ -40,17 +43,17 @@ bool EuroliteProWidgetFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new EurolitePro device";
-  LibUsbHelper::DeviceInformation info;
-  if (!LibUsbHelper::GetDeviceInfo(usb_device, descriptor, &info)) {
+  LibUsbAdaptor::DeviceInformation info;
+  if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
   }
 
-  if (!LibUsbHelper::CheckManufacturer(
+  if (!m_adaptor->CheckManufacturer(
         EuroliteProWidget::EXPECTED_MANUFACTURER, info.manufacturer)) {
     return false;
   }
 
-  if (!LibUsbHelper::CheckProduct(
+  if (!m_adaptor->CheckProduct(
         EuroliteProWidget::EXPECTED_PRODUCT, info.product)) {
     return false;
   }
@@ -70,10 +73,15 @@ bool EuroliteProWidgetFactory::DeviceAdded(
   std::ostringstream serial_str;
   serial_str << bus_number << "-" << device_address;
 
-  return AddWidget(
-      observer,
-      usb_device,
-      new AsynchronousEuroliteProWidget(usb_device, serial_str.str()));
+  EuroliteProWidget *widget = NULL;
+  if (FLAGS_use_async_libusb) {
+    widget = new AsynchronousEuroliteProWidget(m_adaptor, usb_device,
+                                               serial_str.str());
+  } else {
+    widget = new SynchronousEuroliteProWidget(m_adaptor, usb_device,
+                                              serial_str.str());
+  }
+  return AddWidget(observer, usb_device, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

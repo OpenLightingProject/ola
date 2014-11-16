@@ -26,7 +26,7 @@
 
 #include "ola/Logging.h"
 #include "ola/Constants.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
@@ -179,14 +179,16 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
 
 
 SynchronousVellemanWidget::SynchronousVellemanWidget(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : m_usb_device(usb_device) {
+    : VellemanWidget(adaptor),
+      m_usb_device(usb_device) {
 }
 
 bool SynchronousVellemanWidget::Init() {
   libusb_device_handle *usb_handle;
 
-  bool ok = LibUsbHelper::OpenDevice(m_usb_device, &usb_handle);
+  bool ok = m_adaptor->OpenDevice(m_usb_device, &usb_handle);
   if (!ok) {
     return false;
   }
@@ -253,8 +255,9 @@ bool SynchronousVellemanWidget::SendDMX(const DmxBuffer &buffer) {
 
 
 AsynchronousVellemanWidget::AsynchronousVellemanWidget(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanWidget(),
+    : VellemanWidget(adaptor),
       m_usb_device(usb_device),
       m_usb_handle(NULL),
       m_control_setup_buffer(NULL),
@@ -287,7 +290,7 @@ AsynchronousVellemanWidget::~AsynchronousVellemanWidget() {
 }
 
 bool AsynchronousVellemanWidget::Init() {
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, 0, &m_usb_handle);
   if (!ok) {
     return false;

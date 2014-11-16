@@ -25,7 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/Constants.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
@@ -73,7 +73,7 @@ AnymaThreadedSender::AnymaThreadedSender(
 }
 
 bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                           const DmxBuffer &buffer) {
+                                         const DmxBuffer &buffer) {
   int r = libusb_control_transfer(
       handle,
       LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
@@ -89,16 +89,17 @@ bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 
-SynchronousAnymaWidget::SynchronousAnymaWidget(libusb_device *usb_device,
+SynchronousAnymaWidget::SynchronousAnymaWidget(LibUsbAdaptor *adaptor,
+                                               libusb_device *usb_device,
                                                const string &serial)
-    : AnymaWidget(serial),
+    : AnymaWidget(adaptor, serial),
       m_usb_device(usb_device) {
 }
 
 bool SynchronousAnymaWidget::Init() {
   libusb_device_handle *usb_handle;
 
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, 0, &usb_handle);
   if (!ok) {
     return false;
@@ -118,9 +119,10 @@ bool SynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
 }
 
 AsynchronousAnymaWidget::AsynchronousAnymaWidget(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : AnymaWidget(serial),
+    : AnymaWidget(adaptor, serial),
       m_usb_device(usb_device),
       m_usb_handle(NULL),
       m_control_setup_buffer(NULL),
@@ -134,26 +136,30 @@ AsynchronousAnymaWidget::AsynchronousAnymaWidget(
 
 AsynchronousAnymaWidget::~AsynchronousAnymaWidget() {
   bool canceled = false;
-  OLA_INFO << "AsynchronousAnymaWidget shutdown";
   while (1) {
     ola::thread::MutexLocker locker(&m_mutex);
-    if (m_transfer_state == IDLE) {
+    /*
+    OLA_INFO << "AsynchronousAnymaWidget shutdown, state is "
+             << m_transfer_state;
+    */
+    if (m_transfer_state == IDLE || m_transfer_state == DISCONNECTED) {
       break;
     }
     if (!canceled) {
       libusb_cancel_transfer(m_transfer);
       canceled = true;
+      OLA_INFO << "Canceling transfer";
     }
   }
 
   libusb_free_transfer(m_transfer);
   delete[] m_control_setup_buffer;
-  libusb_close(m_usb_handle);
+  m_adaptor->CloseHandle(m_usb_handle);
   libusb_unref_device(m_usb_device);
 }
 
 bool AsynchronousAnymaWidget::Init() {
-  bool ok = LibUsbHelper::OpenDeviceAndClaimInterface(
+  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
       m_usb_device, 0, &m_usb_handle);
   if (!ok) {
     return false;
@@ -162,8 +168,6 @@ bool AsynchronousAnymaWidget::Init() {
 }
 
 bool AsynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
-  OLA_INFO << "Call to AsynchronousAnymaWidget::SendDMX";
-
   if (!m_usb_handle) {
     OLA_WARN << "AsynchronousAnymaWidget hasn't been initialized";
     return false;
@@ -196,9 +200,13 @@ bool AsynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
   int ret = libusb_submit_transfer(m_transfer);
   if (ret) {
     OLA_WARN << "libusb_submit_transfer returned " << libusb_error_name(ret);
+    if (ret == LIBUSB_ERROR_NO_DEVICE) {
+      OLA_INFO << "State now DISCONNECTED";
+      m_transfer_state = DISCONNECTED;
+    }
     return false;
   }
-  OLA_INFO << "submit ok";
+  OLA_INFO << "submit ok, state now IN_PROGRESS";
   m_transfer_state = IN_PROGRESS;
   return true;
 }
@@ -211,9 +219,19 @@ void AsynchronousAnymaWidget::TransferComplete(
     return;
   }
 
-  OLA_INFO << "async transfer complete";
+
+  OLA_WARN << "Transfer returned " << transfer->status;
+  if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
+    OLA_WARN << "Transfer returned " << transfer->status;
+  }
+
+  OLA_INFO << transfer->length << " " << (transfer->actual_length +
+      LIBUSB_CONTROL_SETUP_SIZE);
+
   ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = IDLE;
+  m_transfer_state = transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
+    DISCONNECTED : IDLE;
+  OLA_INFO << "State now " << m_transfer_state;
 }
 }  // namespace usbdmx
 }  // namespace plugin

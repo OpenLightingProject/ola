@@ -48,10 +48,6 @@ class GenericOutputPort: public BasicOutputPort {
   GenericOutputPort(Device *parent,
                     unsigned int id,
                     class Widget *widget);
-  /**
-   * @brief Cleanup.
-   */
-  ~GenericOutputPort();
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbDmxPlugin.cpp
- * The UsbDmx plugin for OLA.
+ * A plugin that uses libusb to communicate with USB devices.
  * Copyright (C) 2006 Simon Newton
  */
 
@@ -26,7 +26,6 @@
 #include "ola/base/Flags.h"
 #include "olad/Preferences.h"
 #include "plugins/usbdmx/AsyncPluginImpl.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
 
@@ -63,18 +62,16 @@ bool UsbDmxPlugin::StartHook() {
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
   }
 
-  std::auto_ptr<LibUsbAdaptor> libusb_adaptor(new LibUsbAdaptor(debug_level));
   std::auto_ptr<PluginImplInterface> impl;
   if (FLAGS_use_async_libusb) {
     impl.reset(
-        new AsyncPluginImpl(m_plugin_adaptor, this, libusb_adaptor.get()));
+        new AsyncPluginImpl(m_plugin_adaptor, this, debug_level));
   } else {
     impl.reset(
-        new SyncPluginImpl(m_plugin_adaptor, this, libusb_adaptor.get()));
+        new SyncPluginImpl(m_plugin_adaptor, this, debug_level));
   }
 
   if (impl->Start()) {
-    m_libusb_adaptor.reset(libusb_adaptor.release());
     m_impl.reset(impl.release());
     return true;
   } else {

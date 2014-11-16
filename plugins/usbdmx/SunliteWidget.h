@@ -37,8 +37,12 @@ class SunliteThreadedSender;
 /**
  * @brief The interface for the Sunlite Widgets
  */
-class SunliteWidget : public Widget {
+class SunliteWidget : public BaseWidget {
  public:
+  explicit SunliteWidget(LibUsbAdaptor *adaptor)
+     : BaseWidget(adaptor) {
+  }
+
   /**
    * @brief The size of a Sunlite frame.
    */
@@ -55,9 +59,11 @@ class SynchronousSunliteWidget: public SunliteWidget {
  public:
   /**
    * @brief Create a new SynchronousSunliteWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  explicit SynchronousSunliteWidget(libusb_device *usb_device);
+  SynchronousSunliteWidget(LibUsbAdaptor *adaptor,
+                           libusb_device *usb_device);
 
   bool Init();
 
@@ -77,9 +83,11 @@ class AsynchronousSunliteWidget: public SunliteWidget {
  public:
   /**
    * @brief Create a new AsynchronousSunliteWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  explicit AsynchronousSunliteWidget(libusb_device *usb_device);
+  AsynchronousSunliteWidget(LibUsbAdaptor *adaptor,
+                            libusb_device *usb_device);
   ~AsynchronousSunliteWidget();
 
   bool Init();
