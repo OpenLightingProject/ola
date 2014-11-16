@@ -90,8 +90,14 @@ bool AsyncPluginImpl::Start() {
   m_use_hotplug = HotplugSupported();
   OLA_INFO << "HotplugSupported returned " << m_use_hotplug;
   if (m_use_hotplug) {
+#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
     m_usb_thread.reset(new LibUsbHotplugThread(
           m_context, hotplug_callback, this));
+#else
+    OLA_FATAL << "Mismatch between m_use_hotplug and "
+      " OLA_LIBUSB_HAS_HOTPLUG_API";
+    return false;
+#endif
   } else {
     m_usb_thread.reset(new LibUsbSimpleThread(m_context));
   }

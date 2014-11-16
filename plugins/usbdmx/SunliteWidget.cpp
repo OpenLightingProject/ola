@@ -20,6 +20,8 @@
 
 #include "plugins/usbdmx/SunliteWidget.h"
 
+#include <string.h>
+
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"

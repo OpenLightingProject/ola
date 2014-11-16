@@ -20,6 +20,7 @@
 
 #include "plugins/usbdmx/VellemanWidget.h"
 
+#include <string.h>
 #include <unistd.h>
 #include <algorithm>
 #include <string>

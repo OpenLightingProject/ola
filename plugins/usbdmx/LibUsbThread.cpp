@@ -58,6 +58,7 @@ void LibUsbThread::JoinThread() {
 // LibUsbHotplugThread
 // -----------------------------------------------------------------------------
 
+#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
 LibUsbHotplugThread::LibUsbHotplugThread(libusb_context *context,
                                          libusb_hotplug_callback_fn callback_fn,
                                          void *user_data)
@@ -99,6 +100,8 @@ void LibUsbHotplugThread::Shutdown() {
 void LibUsbHotplugThread::CloseHandle(libusb_device_handle *handle) {
   libusb_close(handle);
 }
+
+#endif
 
 // LibUsbSimpleThread
 // -----------------------------------------------------------------------------

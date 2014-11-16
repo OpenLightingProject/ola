@@ -20,6 +20,7 @@
 
 #include "plugins/usbdmx/EuroliteProWidget.h"
 
+#include <string.h>
 #include <string>
 
 #include "ola/Constants.h"
