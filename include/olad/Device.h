@@ -97,7 +97,10 @@ class Device: public AbstractDevice {
   AbstractPlugin *Owner() const { return m_owner; }
   std::string UniqueId() const;
 
-  // Returns an id which is unique within the plugin
+  /**
+   * @brief The device ID
+   * @returns an id which is unique within the plugin,
+   */
   virtual std::string DeviceId() const = 0;
 
   bool IsEnabled() const { return m_enabled; }
@@ -127,6 +130,11 @@ class Device: public AbstractDevice {
                          ConfigureCallback *done);
 
  protected:
+  /**
+   * @brief Called during Start().
+   *
+   * This allows the subclass to perform device initialization.
+   */
   virtual bool StartHook() { return true; }
   virtual void PrePortStop() {}
   virtual void PostPortStop() {}

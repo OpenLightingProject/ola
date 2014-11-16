@@ -121,7 +121,11 @@ class Plugin: public AbstractPlugin {
   virtual bool DefaultMode() const { return true; }
   virtual ola_plugin_id Id() const = 0;
 
-  // return the prefix used to identify this plugin
+  /**
+   * @brief The prefix to use for storing configuration files
+   * @returns A unique prefix used to identify the configuration file for this
+   *   plugin.
+   */
   virtual std::string PluginPrefix() const = 0;
 
   // by default we don't conflict with any other plugins
