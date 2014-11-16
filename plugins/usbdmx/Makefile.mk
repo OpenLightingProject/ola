@@ -22,6 +22,8 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
     plugins/usbdmx/LibUsbThread.h \
+    plugins/usbdmx/LibUsbUtils.cpp \
+    plugins/usbdmx/LibUsbUtils.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \

@@ -13,20 +13,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * LibUsbHelper.cpp
- * Helper methods for libusb device enumeration.
- * Copyright (C) 2014 Simon Newton
+ * LibUsbUtils.h
+ * libusb Util functions.
+ * Copyright (C) 2014 Peter Newman
  */
-#include "plugins/usbdmx/LibUsbHelper.h"
+
+#ifndef PLUGINS_USBDMX_LIBUSBUTILS_H_
+#define PLUGINS_USBDMX_LIBUSBUTILS_H_
 
 #include <libusb.h>
-#include "ola/Logging.h"
+
+#include <string>
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-
+bool GetDescriptorString(libusb_device_handle *usb_handle,
+                         uint8_t desc_index,
+                         std::string *data);
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
+#endif  // PLUGINS_USBDMX_LIBUSBUTILS_H_
