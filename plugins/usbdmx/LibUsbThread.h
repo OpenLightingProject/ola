@@ -185,7 +185,6 @@ class LibUsbSimpleThread : public LibUsbThread {
   /**
    * @brief Create a new LibUsbHotplugThread.o
    * @param context the libusb context to use.
-   * @param handle the callback handle for hotplug events.
    *
    * The thread is starts as soon as this object is created. When the object is
    * destroyed, the handle is de-registered as part of the thread shutdown

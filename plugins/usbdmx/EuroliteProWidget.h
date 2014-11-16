@@ -115,6 +115,7 @@ class AsynchronousEuroliteProWidget: public EuroliteProWidget {
  public:
   /**
    * @brief Create a new AsynchronousEuroliteProWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
