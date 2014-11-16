@@ -131,9 +131,11 @@ bool ScanlimeOutputPort::SendDMX(const DmxBuffer &buffer) {
 
   for (unsigned int entry = 0; entry < (512*3); entry++) {
     unsigned int packet_entry = ((entry % (21 * 3)) + 1);
-    OLA_DEBUG << "Working on entry " << entry << " with packet index " << index << ", packet entry " << packet_entry;
+    OLA_DEBUG << "Working on entry " << entry << " with packet index " << index
+              << ", packet entry " << packet_entry;
     if (entry < buffer.Size()) {
-      OLA_DEBUG << "Using channel " << entry << " with val " << static_cast<unsigned int>(buffer.Get(entry));
+      OLA_DEBUG << "Using channel " << entry << " with val "
+                << static_cast<unsigned int>(buffer.Get(entry));
       packet[packet_entry] = buffer.Get(entry);
     }
     if ((packet_entry == (21 * 3)) || (entry == ((512*3) - 1))) {

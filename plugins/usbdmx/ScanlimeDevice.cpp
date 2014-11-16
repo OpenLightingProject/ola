@@ -60,10 +60,10 @@ ScanlimeDevice::ScanlimeDevice(ola::AbstractPlugin *owner,
   packet[0] = 0x80;
   packet[1] |= (1 << 0);  // Disable dithering
   packet[1] |= (1 << 1);  // Disable interpolation
-  //packet[1] = (1 << 2);  // Manual control of LED
+  // packet[1] = (1 << 2);  // Manual control of LED
 
   if (true) {
-    //packet[1] |= (1 << 3);  // Manual LED state
+    // packet[1] |= (1 << 3);  // Manual LED state
   }
 
   int txed = 0;
@@ -125,14 +125,15 @@ ScanlimeDevice::ScanlimeDevice(ola::AbstractPlugin *owner,
         int lut_txed = 0;
 
         // TODO(Peter): Fix the calculations and transmit this
-        //libusb_bulk_transfer(usb_handle,
+        // libusb_bulk_transfer(usb_handle,
         //                     1,
         //                     packet,
         //                     sizeof(packet),
         //                     &lut_txed,
         //                     2000);
 
-        OLA_INFO << "LUT packet " << index << " transferred " << lut_txed << " bytes";
+        OLA_INFO << "LUT packet " << index << " transferred " << lut_txed
+                 << " bytes";
 
         // Get ready for the next packet
         index++;
