@@ -23,7 +23,6 @@
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "plugins/usbdmx/VellemanWidget.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
 
 DECLARE_bool(use_async_libusb);
 
