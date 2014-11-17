@@ -1,5 +1,6 @@
 x/y/2014 ola-0.9.4
  Features:
+ * Added support for the img Stage Line DMX-1USB - #398
  * 
 
  API:
@@ -16,7 +17,6 @@ x/y/2014 ola-0.9.4
 
 16/11/2014 ola-0.9.3
  Features:
- * Added support for the img Stage Line DMX-1USB - #398
  * Send the E1.31 Stream Terminated message on shutdown and/or port unpatching.
  * Add support for the draft E1.31 discovery protocol.
  * Switch the dummy responder which implements the E1.37-2 PIDs to their final
