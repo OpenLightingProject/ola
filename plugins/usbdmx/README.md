@@ -10,7 +10,7 @@ device present.
 The new version of the plugin uses the asynchronous mode of operation and a
 single thread for the libusb completion handling.
 
-You can opt-in to the new asynchronous mode by passing the --use\_async\_libusb
+You can opt-in to the new asynchronous mode by passing the --use-async-libusb
 flag to olad. Assuming we don't find any problems, at some point this will
 become the default and the synchronous implementation will be removed.
 
@@ -90,7 +90,7 @@ guide assumes the new USB Device has a single DMX512 Interface.
 2. Create the FooWidgetFactory.{h,cpp} files.
  - Write the DeviceAdded() method, to detect the new USB Device and create
    either a synchronous or asynchronous widget, depending on the
-   --use\_async\_libusb flag.
+   --use-async-libusb flag.
 3. Extend the WidgetObserver with new NewWidget() and WidgetRemoved() removed
    methods for the new FooWidget.
 4. Implement the new NewWidget() and WidgetRemoved() methods in both the
