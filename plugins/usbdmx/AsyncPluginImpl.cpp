@@ -309,7 +309,7 @@ bool AsyncPluginImpl::ScanUSBDevices() {
   std::set<USBDeviceID> current_device_ids;
 
   libusb_device **device_list;
-  size_t device_count = libusb_get_device_list(NULL, &device_list);
+  size_t device_count = libusb_get_device_list(m_context, &device_list);
 
   OLA_INFO << "Got " << device_count << " devices";
   for (unsigned int i = 0; i < device_count; i++) {

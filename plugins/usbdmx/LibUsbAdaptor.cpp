@@ -49,7 +49,8 @@ bool GetStringDescriptorAscii(libusb_device_handle *usb_handle,
       buffer_size);
 
   if (r <= 0) {
-    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
+    OLA_INFO << "libusb_get_string_descriptor_ascii failed: "
+             << libusb_error_name(r);
     return false;
   }
   data->assign(reinterpret_cast<char*>(buffer));
@@ -61,8 +62,10 @@ bool GetStringDescriptorAscii(libusb_device_handle *usb_handle,
  */
 bool Open(libusb_device *usb_device,
           libusb_device_handle **usb_handle) {
-  if (libusb_open(usb_device, usb_handle)) {
-    OLA_WARN << "Failed to open libusb device: " << usb_device;
+  int r = libusb_open(usb_device, usb_handle);
+  if (r) {
+    OLA_WARN << "Failed to open libusb device: " << usb_device << ": "
+             << libusb_error_name(r);;
     return false;
   }
   return true;
@@ -83,9 +86,11 @@ bool OpenHandleAndClaimInterface(
     return false;
   }
 
-  if (libusb_claim_interface(*usb_handle, 0)) {
+  int r = libusb_claim_interface(*usb_handle, 0);
+  if (r) {
     OLA_WARN << "Failed to claim interface " << interface
-             << " for libusb device: " << usb_device;
+             << " on device: " << usb_device << ": "
+             << libusb_error_name(r);
     Close(*usb_handle);
     return false;
   }
@@ -94,7 +99,7 @@ bool OpenHandleAndClaimInterface(
 }  // namespace
 
 // LibUsbAdaptor
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 bool LibUsbAdaptor::GetDeviceInfo(
     struct libusb_device *usb_device,

@@ -160,7 +160,6 @@ bool SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
   }
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
-  OLA_INFO << "Checking " << m_widget_factories.size() << " factories";
   for (; iter != m_widget_factories.end(); ++iter) {
     if ((*iter)->DeviceAdded(this, usb_device, device_descriptor)) {
       m_registered_devices.insert(bus_dev_id);
