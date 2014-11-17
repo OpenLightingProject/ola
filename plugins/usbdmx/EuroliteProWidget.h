@@ -59,16 +59,6 @@ class EuroliteProWidget : public BaseWidget {
   }
 
   /**
-   * @brief The expected manufacturer string for a EurolitePro widget.
-   */
-  static const char EXPECTED_MANUFACTURER[];
-
-  /**
-   * @brief The expected product string for a EurolitePro widget.
-   */
-  static const char EXPECTED_PRODUCT[];
-
-  /**
    * @brief The size of a EurolitePro frame.
    *
    * This consists of 513 bytes of DMX data + header + code + size(2) + footer

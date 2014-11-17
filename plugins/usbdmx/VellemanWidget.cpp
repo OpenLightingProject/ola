@@ -56,6 +56,9 @@ void AsyncCallback(struct libusb_transfer *transfer) {
 
 }  // namespace
 
+// VellemanThreadedSender
+// -----------------------------------------------------------------------------
+
 /*
  * Sends messages to a Velleman device in a separate thread.
  */
@@ -178,6 +181,8 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
   return ret == 0;
 }
 
+// SynchronousVellemanWidget
+// -----------------------------------------------------------------------------
 
 SynchronousVellemanWidget::SynchronousVellemanWidget(
     LibUsbAdaptor *adaptor,
@@ -254,6 +259,8 @@ bool SynchronousVellemanWidget::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
+// AsynchronousVellemanWidget
+// -----------------------------------------------------------------------------
 
 AsynchronousVellemanWidget::AsynchronousVellemanWidget(
     LibUsbAdaptor *adaptor,

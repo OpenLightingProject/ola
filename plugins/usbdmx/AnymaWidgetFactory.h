@@ -47,8 +47,10 @@ class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
   bool m_missing_serial_number;
   class LibUsbAdaptor *m_adaptor;
 
-  static const uint16_t VENDOR_ID;
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
   static const uint16_t PRODUCT_ID;
+  static const uint16_t VENDOR_ID;
 
   DISALLOW_COPY_AND_ASSIGN(AnymaWidgetFactory);
 };

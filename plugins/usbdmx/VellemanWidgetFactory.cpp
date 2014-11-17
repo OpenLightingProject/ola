@@ -46,7 +46,6 @@ bool VellemanWidgetFactory::DeviceAdded(
   VellemanWidget *widget = NULL;
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousVellemanWidget(m_adaptor, usb_device);
-
   } else {
     widget = new SynchronousVellemanWidget(m_adaptor, usb_device);
   }

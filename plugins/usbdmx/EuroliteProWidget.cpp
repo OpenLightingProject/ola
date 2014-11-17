@@ -32,9 +32,6 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char EuroliteProWidget::EXPECTED_MANUFACTURER[] = "Eurolite";
-const char EuroliteProWidget::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
-
 using std::string;
 
 namespace {
@@ -114,6 +111,9 @@ bool LocateInterface(libusb_device *usb_device,
 }
 }  // namespace
 
+// EuroliteProThreadedSender
+// -----------------------------------------------------------------------------
+
 /*
  * Sends messages to a EurolitePro device in a separate thread.
  */
@@ -153,6 +153,9 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   return r == 0;
 }
 
+// SynchronousEuroliteProWidget
+// -----------------------------------------------------------------------------
+
 SynchronousEuroliteProWidget::SynchronousEuroliteProWidget(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
@@ -187,6 +190,9 @@ bool SynchronousEuroliteProWidget::Init() {
 bool SynchronousEuroliteProWidget::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
+
+// AsynchronousEuroliteProWidget
+// -----------------------------------------------------------------------------
 
 AsynchronousEuroliteProWidget::AsynchronousEuroliteProWidget(
     class LibUsbAdaptor *adaptor,

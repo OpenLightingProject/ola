@@ -30,8 +30,11 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+const char EuroliteProWidgetFactory::EXPECTED_MANUFACTURER[] = "Eurolite";
+const char EuroliteProWidgetFactory::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
 const uint16_t EuroliteProWidgetFactory::PRODUCT_ID = 0xfa63;
 const uint16_t EuroliteProWidgetFactory::VENDOR_ID = 0x04d;
+
 
 bool EuroliteProWidgetFactory::DeviceAdded(
     WidgetObserver *observer,
@@ -48,13 +51,11 @@ bool EuroliteProWidgetFactory::DeviceAdded(
     return false;
   }
 
-  if (!m_adaptor->CheckManufacturer(
-        EuroliteProWidget::EXPECTED_MANUFACTURER, info.manufacturer)) {
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info.manufacturer)) {
     return false;
   }
 
-  if (!m_adaptor->CheckProduct(
-        EuroliteProWidget::EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info.product)) {
     return false;
   }
 
@@ -66,9 +67,6 @@ bool EuroliteProWidgetFactory::DeviceAdded(
   // There is no Serialnumber--> work around: bus+device number
   int bus_number = libusb_get_bus_number(usb_device);
   int device_address = libusb_get_device_address(usb_device);
-
-  OLA_INFO << "Bus_number: " <<  bus_number << ", Device_address: " <<
-    device_address;
 
   std::ostringstream serial_str;
   serial_str << bus_number << "-" << device_address;

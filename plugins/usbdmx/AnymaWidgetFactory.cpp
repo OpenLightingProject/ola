@@ -32,8 +32,11 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t AnymaWidgetFactory::VENDOR_ID = 0x16C0;
+const char AnymaWidgetFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
+const char AnymaWidgetFactory::EXPECTED_PRODUCT[] = "uDMX";
 const uint16_t AnymaWidgetFactory::PRODUCT_ID = 0x05DC;
+const uint16_t AnymaWidgetFactory::VENDOR_ID = 0x16C0;
+
 
 bool AnymaWidgetFactory::DeviceAdded(
     WidgetObserver *observer,
@@ -50,12 +53,11 @@ bool AnymaWidgetFactory::DeviceAdded(
     return false;
   }
 
-  if (!m_adaptor->CheckManufacturer(
-        AnymaWidget::EXPECTED_MANUFACTURER, info.manufacturer)) {
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info.manufacturer)) {
     return false;
   }
 
-  if (!m_adaptor->CheckProduct(AnymaWidget::EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info.product)) {
     return false;
   }
 
@@ -75,7 +77,7 @@ bool AnymaWidgetFactory::DeviceAdded(
     }
   }
 
-  AnymaWidget *widget;
+  AnymaWidget *widget = NULL;
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousAnymaWidget(m_adaptor, usb_device, info.serial);
   } else {

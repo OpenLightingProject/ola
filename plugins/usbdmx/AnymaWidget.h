@@ -59,16 +59,6 @@ class AnymaWidget: public BaseWidget {
     return m_serial;
   }
 
-  /**
-   * @brief The expected manufacturer string for an Anyma widget.
-   */
-  static const char EXPECTED_MANUFACTURER[];
-
-  /**
-   * @brief The expected product string for an Anyma widget.
-   */
-  static const char EXPECTED_PRODUCT[];
-
  private:
   std::string m_serial;
 };

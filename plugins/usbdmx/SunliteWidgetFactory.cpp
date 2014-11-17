@@ -49,7 +49,6 @@ bool SunliteWidgetFactory::DeviceAdded(
              descriptor.idProduct == FULL_PRODUCT_ID &&
              !HasDevice(usb_device)) {
     OLA_INFO << "Found a new Sunlite device";
-
     SunliteWidget *widget = NULL;
     if (FLAGS_use_async_libusb) {
       widget = new AsynchronousSunliteWidget(m_adaptor, usb_device);

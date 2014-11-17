@@ -94,6 +94,9 @@ void UpdatePacket(const DmxBuffer &buffer,
 
 }  // namespace
 
+// SunliteThreadedSender
+// -----------------------------------------------------------------------------
+
 /*
  * Sends messages to a Sunlite device in a separate thread.
  */
@@ -134,6 +137,8 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   return r == 0;
 }
 
+// SynchronousSunliteWidget
+// -----------------------------------------------------------------------------
 
 SynchronousSunliteWidget::SynchronousSunliteWidget(LibUsbAdaptor *adaptor,
                                                    libusb_device *usb_device)
@@ -162,6 +167,9 @@ bool SynchronousSunliteWidget::Init() {
 bool SynchronousSunliteWidget::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
+
+// AsynchronousSunliteWidget
+// -----------------------------------------------------------------------------
 
 AsynchronousSunliteWidget::AsynchronousSunliteWidget(
     LibUsbAdaptor *adaptor,

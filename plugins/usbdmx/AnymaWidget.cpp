@@ -32,9 +32,6 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char AnymaWidget::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
-const char AnymaWidget::EXPECTED_PRODUCT[] = "uDMX";
-
 using std::string;
 
 namespace {
@@ -52,6 +49,9 @@ void AsyncCallback(struct libusb_transfer *transfer) {
 }
 
 }  // namespace
+
+// AnymaThreadedSender
+// -----------------------------------------------------------------------------
 
 /*
  * Sends messages to a Anyma device in a separate thread.
@@ -89,6 +89,9 @@ bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 
+// SynchronousAnymaWidget
+// -----------------------------------------------------------------------------
+
 SynchronousAnymaWidget::SynchronousAnymaWidget(LibUsbAdaptor *adaptor,
                                                libusb_device *usb_device,
                                                const string &serial)
@@ -117,6 +120,9 @@ bool SynchronousAnymaWidget::Init() {
 bool SynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
+
+// AsynchronousAnymaWidget
+// -----------------------------------------------------------------------------
 
 AsynchronousAnymaWidget::AsynchronousAnymaWidget(
     LibUsbAdaptor *adaptor,

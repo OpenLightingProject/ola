@@ -48,6 +48,9 @@ class EuroliteProWidgetFactory
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
+
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProWidgetFactory);
 };
