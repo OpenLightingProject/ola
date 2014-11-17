@@ -33,16 +33,16 @@
  * @brief Code for supported devices and protocols.
  *
  * @namespace ola::plugin::artnet
- * @brief Code for the ArtNet protocol.
+ * @brief The ArtNet plugin.
  *
  * @namespace ola::plugin::dmx4linux
  * @brief Code for DMX4Linux devices.
  *
  * @namespace ola::plugin::dummy
- * @brief Code for the dummy device.
+ * @brief The Dummy plugin.
  *
  * @namespace ola::plugin::e131
- * @brief Code for the E1.31 (sACN) protocol.
+ * @brief The E1.31 (sACN) plugin.
  *
  * @namespace ola::plugin::espnet
  * @brief Code for the ESPNet protocol.
@@ -87,7 +87,7 @@
  * @brief Code for UART DMX devices.
  *
  * @namespace ola::plugin::usbdmx
- * @brief Code for USB DMX devices.
+ * @brief The plugin for hardware using libusb.
  *
  * @namespace ola::plugin::usbpro
  * @brief Code for Enttec USB Pro devices and others using the same protocol.

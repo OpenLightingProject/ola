@@ -71,7 +71,8 @@ bool ShowLoader::Load() {
   string line;
   ReadLine(&line);
   if (line != OLA_SHOW_HEADER) {
-    OLA_WARN << "Invalid show file";
+    OLA_WARN << "Invalid show file, expecting " << OLA_SHOW_HEADER << " got "
+             << line;
     return false;
   }
   return true;
@@ -140,5 +141,6 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
 
 void ShowLoader::ReadLine(string *line) {
   getline(m_show_file, *line);
+  ola::StripSuffix(line, "\r");
   m_line++;
 }
