@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AsyncUsbSender.h
- * 
+ * A Asynchronous DMX USB sender.
  * Copyright (C) 2014 Simon Newton
  */
 
