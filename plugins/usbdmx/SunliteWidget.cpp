@@ -24,6 +24,7 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
@@ -38,21 +39,13 @@ static const unsigned int CHANNELS_PER_CHUNK = 20;
 static const unsigned int CHUNK_SIZE = 32;
 static const uint8_t ENDPOINT = 1;
 static const unsigned int TIMEOUT = 50;  // 50ms is ok
-
-/*
- * Called by the AsynchronousSunliteWidget when the transfer completes.
- */
-void AsyncCallback(struct libusb_transfer *transfer) {
-  AsynchronousSunliteWidget *widget =
-      reinterpret_cast<AsynchronousSunliteWidget*>(transfer->user_data);
-  widget->TransferComplete(transfer);
-}
+enum {SUNLITE_PACKET_SIZE = 0x340};
 
 /*
  * Initialize a USBDMX2 packet
  */
-void InitPacket(uint8_t packet[SunliteWidget::SUNLITE_PACKET_SIZE]) {
-  memset(packet, 0, SunliteWidget::SUNLITE_PACKET_SIZE);
+void InitPacket(uint8_t packet[SUNLITE_PACKET_SIZE]) {
+  memset(packet, 0, SUNLITE_PACKET_SIZE);
 
   // The packet is divided into 26 chunks of 32 bytes each. Each chunk contains
   // the data for 20 channels (except the last one which has 12 channels of
@@ -85,7 +78,7 @@ void InitPacket(uint8_t packet[SunliteWidget::SUNLITE_PACKET_SIZE]) {
  * Update a USBDMX2 packet to match the supplied DmxBuffer.
  */
 void UpdatePacket(const DmxBuffer &buffer,
-                  uint8_t packet[SunliteWidget::SUNLITE_PACKET_SIZE]) {
+                  uint8_t packet[SUNLITE_PACKET_SIZE]) {
   for (unsigned int i = 0; i < buffer.Size(); i++) {
     packet[(i / CHANNELS_PER_CHUNK) * CHUNK_SIZE +
              ((i / 4) % 5) * 6 + 3 + (i % 4)] = buffer.Get(i);
@@ -106,7 +99,7 @@ class SunliteThreadedSender: public ThreadedUsbSender {
                         libusb_device_handle *handle);
 
  private:
-  uint8_t m_packet[SunliteWidget::SUNLITE_PACKET_SIZE];
+  uint8_t m_packet[SUNLITE_PACKET_SIZE];
 
   bool TransmitBuffer(libusb_device_handle *handle,
                       const DmxBuffer &buffer);
@@ -127,10 +120,10 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       handle,
       ENDPOINT,
       (unsigned char*) m_packet,
-      SunliteWidget::SUNLITE_PACKET_SIZE,
+      SUNLITE_PACKET_SIZE,
       &transferred,
       TIMEOUT);
-  if (transferred != SunliteWidget::SUNLITE_PACKET_SIZE) {
+  if (transferred != SUNLITE_PACKET_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "Sunlite driver failed to transfer all data";
   }
@@ -168,93 +161,54 @@ bool SynchronousSunliteWidget::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
+// SunliteAsyncUsbSender
+// -----------------------------------------------------------------------------
+class SunliteAsyncUsbSender : public AsyncUsbSender {
+ public:
+  SunliteAsyncUsbSender(LibUsbAdaptor *adaptor,
+                        libusb_device *usb_device)
+      : AsyncUsbSender(adaptor, usb_device) {
+  }
+
+  ~SunliteAsyncUsbSender() {
+    CancelTransfer();
+  }
+
+  libusb_device_handle* SetupHandle() {
+    libusb_device_handle *usb_handle;
+    bool ok = m_adaptor->OpenDeviceAndClaimInterface(
+        m_usb_device, 0, &usb_handle);
+    return ok ? usb_handle : NULL;
+  }
+
+  void PerformTransfer(const DmxBuffer &buffer) {
+    UpdatePacket(buffer, m_packet);
+    FillBulkTransfer(ENDPOINT, m_packet, SUNLITE_PACKET_SIZE, TIMEOUT);
+    SubmitTransfer();
+  }
+
+ private:
+  uint8_t m_packet[SUNLITE_PACKET_SIZE];
+
+  DISALLOW_COPY_AND_ASSIGN(SunliteAsyncUsbSender);
+};
+
 // AsynchronousSunliteWidget
 // -----------------------------------------------------------------------------
 
 AsynchronousSunliteWidget::AsynchronousSunliteWidget(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : SunliteWidget(adaptor),
-      m_usb_device(usb_device),
-      m_usb_handle(NULL),
-      m_transfer_state(IDLE) {
-  InitPacket(m_packet);
-  m_transfer = libusb_alloc_transfer(0);
-  libusb_ref_device(usb_device);
-}
-
-AsynchronousSunliteWidget::~AsynchronousSunliteWidget() {
-  bool canceled = false;
-  OLA_INFO << "AsynchronousSunliteWidget shutdown";
-  while (1) {
-    ola::thread::MutexLocker locker(&m_mutex);
-    if (m_transfer_state == IDLE) {
-      break;
-    }
-    if (!canceled) {
-      libusb_cancel_transfer(m_transfer);
-      canceled = true;
-    }
-  }
-
-  libusb_free_transfer(m_transfer);
-  libusb_close(m_usb_handle);
-  libusb_unref_device(m_usb_device);
+    : SunliteWidget(adaptor) {
+  m_sender.reset(new SunliteAsyncUsbSender(m_adaptor, usb_device));
 }
 
 bool AsynchronousSunliteWidget::Init() {
-  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
-      m_usb_device, 0, &m_usb_handle);
-  if (!ok) {
-    return false;
-  }
-  return true;
+  return m_sender->Init();
 }
 
 bool AsynchronousSunliteWidget::SendDMX(const DmxBuffer &buffer) {
-  OLA_INFO << "Call to AsynchronousSunliteWidget::SendDMX";
-  if (!m_usb_handle) {
-    OLA_WARN << "AsynchronousSunliteWidget hasn't been initialized";
-    return false;
-  }
-
-  ola::thread::MutexLocker locker(&m_mutex);
-  if (m_transfer_state != IDLE) {
-    return true;
-  }
-
-  UpdatePacket(buffer, m_packet);
-  libusb_fill_bulk_transfer(
-      m_transfer,
-      m_usb_handle,
-      ENDPOINT,
-      (unsigned char*) m_packet,
-      SUNLITE_PACKET_SIZE,
-      &AsyncCallback,
-      this,
-      TIMEOUT);
-
-  int ret = libusb_submit_transfer(m_transfer);
-  if (ret) {
-    OLA_WARN << "libusb_submit_transfer returned " << libusb_error_name(ret);
-    return false;
-  }
-  OLA_INFO << "submit ok";
-  m_transfer_state = IN_PROGRESS;
-  return true;
-}
-
-void AsynchronousSunliteWidget::TransferComplete(
-    struct libusb_transfer *transfer) {
-  if (transfer != m_transfer) {
-    OLA_WARN << "Mismatched libusb transfer: " << transfer << " != "
-             << m_transfer;
-    return;
-  }
-
-  OLA_INFO << "async transfer complete";
-  ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = IDLE;
+  return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx
 }  // namespace plugin

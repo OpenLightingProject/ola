@@ -25,6 +25,7 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
@@ -40,22 +41,14 @@ namespace {
 static const unsigned int URB_TIMEOUT_MS = 500;
 static const uint8_t DMX_LABEL = 6;
 static const unsigned char ENDPOINT = 0x02;
-
-/*
- * Called by the AsynchronousEuroliteProWidget when the transfer completes.
- */
-void AsyncCallback(struct libusb_transfer *transfer) {
-  AsynchronousEuroliteProWidget *widget =
-      reinterpret_cast<AsynchronousEuroliteProWidget*>(transfer->user_data);
-  widget->TransferComplete(transfer);
-}
+enum { EUROLITE_PRO_FRAME_SIZE = 518 };
 
 /*
  * Create a Eurolite Pro message to match the supplied DmxBuffer.
  */
 void CreateFrame(
     const DmxBuffer &buffer,
-    uint8_t frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE]) {
+    uint8_t frame[EUROLITE_PRO_FRAME_SIZE]) {
   unsigned int frame_size = buffer.Size();
 
   // header
@@ -68,7 +61,7 @@ void CreateFrame(
   memset(frame + 5 + frame_size, 0, DMX_UNIVERSE_SIZE - frame_size);
   // End message delimiter
 
-  frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE - 1] =  0xE7;
+  frame[EUROLITE_PRO_FRAME_SIZE - 1] =  0xE7;
 }
 
 /**
@@ -135,7 +128,7 @@ EuroliteProThreadedSender::EuroliteProThreadedSender(
 
 bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                                const DmxBuffer &buffer) {
-  uint8_t frame[EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE];
+  uint8_t frame[EUROLITE_PRO_FRAME_SIZE];
   CreateFrame(buffer, frame);
 
   int transferred;
@@ -143,10 +136,10 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       handle,
       ENDPOINT,
       frame,
-      EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE,
+      EUROLITE_PRO_FRAME_SIZE,
       &transferred,
       URB_TIMEOUT_MS);
-  if (transferred != EuroliteProWidget::EUROLITE_PRO_FRAME_SIZE) {
+  if (transferred != EUROLITE_PRO_FRAME_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "EurolitePro driver failed to transfer all data";
   }
@@ -191,99 +184,61 @@ bool SynchronousEuroliteProWidget::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
+// EuroliteProAsyncUsbSender
+// -----------------------------------------------------------------------------
+class EuroliteProAsyncUsbSender : public AsyncUsbSender {
+ public:
+  EuroliteProAsyncUsbSender(LibUsbAdaptor *adaptor,
+                            libusb_device *usb_device)
+      : AsyncUsbSender(adaptor, usb_device) {
+  }
+
+  ~EuroliteProAsyncUsbSender() {
+    CancelTransfer();
+  }
+
+  libusb_device_handle* SetupHandle() {
+    int interface_number;
+    if (!LocateInterface(m_usb_device, &interface_number)) {
+      return NULL;
+    }
+
+    libusb_device_handle *usb_handle;
+    bool ok = m_adaptor->OpenDeviceAndClaimInterface(
+        m_usb_device, 0, &usb_handle);
+    return ok ? usb_handle : NULL;
+  }
+
+  void PerformTransfer(const DmxBuffer &buffer) {
+    CreateFrame(buffer, m_tx_frame);
+    FillBulkTransfer(ENDPOINT, m_tx_frame, EUROLITE_PRO_FRAME_SIZE,
+                     URB_TIMEOUT_MS);
+    SubmitTransfer();
+  }
+
+ private:
+  uint8_t m_tx_frame[EUROLITE_PRO_FRAME_SIZE];
+
+  DISALLOW_COPY_AND_ASSIGN(EuroliteProAsyncUsbSender);
+};
+
 // AsynchronousEuroliteProWidget
 // -----------------------------------------------------------------------------
 
 AsynchronousEuroliteProWidget::AsynchronousEuroliteProWidget(
-    class LibUsbAdaptor *adaptor,
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : EuroliteProWidget(adaptor, serial),
-      m_usb_device(usb_device),
-      m_usb_handle(NULL),
-      m_transfer_state(IDLE) {
-  m_transfer = libusb_alloc_transfer(0);
-  libusb_ref_device(usb_device);
-}
-
-AsynchronousEuroliteProWidget::~AsynchronousEuroliteProWidget() {
-  bool canceled = false;
-  OLA_INFO << "AsynchronousEuroliteProWidget shutdown";
-  while (1) {
-    ola::thread::MutexLocker locker(&m_mutex);
-    if (m_transfer_state == IDLE) {
-      break;
-    }
-    if (!canceled) {
-      libusb_cancel_transfer(m_transfer);
-      canceled = true;
-    }
-  }
-
-  libusb_free_transfer(m_transfer);
-  libusb_close(m_usb_handle);
-  libusb_unref_device(m_usb_device);
+    : EuroliteProWidget(adaptor, serial) {
+  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device));
 }
 
 bool AsynchronousEuroliteProWidget::Init() {
-  int interface_number;
-  if (!LocateInterface(m_usb_device, &interface_number)) {
-    return false;
-  }
-
-  bool ok = m_adaptor->OpenDeviceAndClaimInterface(
-      m_usb_device, 0, &m_usb_handle);
-  if (!ok) {
-    return false;
-  }
-  return true;
+  return m_sender->Init();
 }
 
 bool AsynchronousEuroliteProWidget::SendDMX(const DmxBuffer &buffer) {
-  OLA_INFO << "Call to AsynchronousEuroliteProWidget::SendDMX";
-  if (!m_usb_handle) {
-    OLA_WARN << "AsynchronousEuroliteProWidget hasn't been initialized";
-    return false;
-  }
-
-  ola::thread::MutexLocker locker(&m_mutex);
-  if (m_transfer_state != IDLE) {
-    return true;
-  }
-
-  CreateFrame(buffer, m_tx_frame);
-
-  libusb_fill_bulk_transfer(
-      m_transfer,
-      m_usb_handle,
-      ENDPOINT,
-      m_tx_frame,
-      EUROLITE_PRO_FRAME_SIZE,
-      &AsyncCallback,
-      this,
-      URB_TIMEOUT_MS);
-
-  int ret = libusb_submit_transfer(m_transfer);
-  if (ret) {
-    OLA_WARN << "libusb_submit_transfer returned " << libusb_error_name(ret);
-    return false;
-  }
-  OLA_INFO << "submit ok";
-  m_transfer_state = IN_PROGRESS;
-  return true;
-}
-
-void AsynchronousEuroliteProWidget::TransferComplete(
-    struct libusb_transfer *transfer) {
-  if (transfer != m_transfer) {
-    OLA_WARN << "Mismatched libusb transfer: " << transfer << " != "
-             << m_transfer;
-    return;
-  }
-
-  OLA_INFO << "async transfer complete";
-  ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = IDLE;
+  return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx
 }  // namespace plugin

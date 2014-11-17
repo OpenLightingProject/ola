@@ -42,11 +42,6 @@ class SunliteWidget : public BaseWidget {
   explicit SunliteWidget(LibUsbAdaptor *adaptor)
      : BaseWidget(adaptor) {
   }
-
-  /**
-   * @brief The size of a Sunlite frame.
-   */
-  enum {SUNLITE_PACKET_SIZE = 0x340};
 };
 
 
@@ -88,34 +83,13 @@ class AsynchronousSunliteWidget: public SunliteWidget {
    */
   AsynchronousSunliteWidget(LibUsbAdaptor *adaptor,
                             libusb_device *usb_device);
-  ~AsynchronousSunliteWidget();
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
-  /**
-   * @brief Called from the libusb callback when the asynchronous transfer
-   *   completes.
-   * @param transfer the completed transfer.
-   */
-  void TransferComplete(struct libusb_transfer *transfer);
-
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-  };
-
-  libusb_device* const m_usb_device;
-  libusb_device_handle *m_usb_handle;
-
-  TransferState m_transfer_state;
-  ola::thread::Mutex m_mutex;
-
-  struct libusb_transfer *m_transfer;
-
-  uint8_t m_packet[SUNLITE_PACKET_SIZE];
+  std::auto_ptr<class SunliteAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousSunliteWidget);
 };

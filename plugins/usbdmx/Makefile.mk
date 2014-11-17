@@ -9,6 +9,8 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AnymaWidgetFactory.h \
     plugins/usbdmx/AsyncPluginImpl.cpp \
     plugins/usbdmx/AsyncPluginImpl.h \
+    plugins/usbdmx/AsyncUsbSender.cpp \
+    plugins/usbdmx/AsyncUsbSender.h \
     plugins/usbdmx/EuroliteProWidget.cpp \
     plugins/usbdmx/EuroliteProWidget.h \
     plugins/usbdmx/EuroliteProWidgetFactory.cpp \

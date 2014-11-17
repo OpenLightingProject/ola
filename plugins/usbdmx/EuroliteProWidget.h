@@ -58,13 +58,6 @@ class EuroliteProWidget : public BaseWidget {
     return m_serial;
   }
 
-  /**
-   * @brief The size of a EurolitePro frame.
-   *
-   * This consists of 513 bytes of DMX data + header + code + size(2) + footer
-   */
-  enum { EUROLITE_PRO_FRAME_SIZE = 518 };
-
  private:
   std::string m_serial;
 };
@@ -112,34 +105,13 @@ class AsynchronousEuroliteProWidget: public EuroliteProWidget {
   AsynchronousEuroliteProWidget(class LibUsbAdaptor *adaptor,
                                 libusb_device *usb_device,
                                 const std::string &serial);
-  ~AsynchronousEuroliteProWidget();
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
-  /**
-   * @brief Called from the libusb callback when the asynchronous transfer
-   *   completes.
-   * @param transfer the completed transfer.
-   */
-  void TransferComplete(struct libusb_transfer *transfer);
-
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-  };
-
-  libusb_device* const m_usb_device;
-  libusb_device_handle *m_usb_handle;
-
-  TransferState m_transfer_state;
-  ola::thread::Mutex m_mutex;
-
-  struct libusb_transfer *m_transfer;
-
-  uint8_t m_tx_frame[EUROLITE_PRO_FRAME_SIZE];
+  std::auto_ptr<class EuroliteProAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousEuroliteProWidget);
 };

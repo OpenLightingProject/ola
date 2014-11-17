@@ -105,34 +105,13 @@ class AsynchronousAnymaWidget : public AnymaWidget {
   AsynchronousAnymaWidget(LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
                           const std::string &serial);
-  ~AsynchronousAnymaWidget();
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
-  /**
-   * @brief Called from the libusb callback when the asynchronous transfer
-   *   completes.
-   * @param transfer the completed transfer.
-   */
-  void TransferComplete(struct libusb_transfer *transfer);
-
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-    DISCONNECTED,
-  };
-
-  libusb_device* const m_usb_device;
-  libusb_device_handle *m_usb_handle;
-  uint8_t *m_control_setup_buffer;
-
-  TransferState m_transfer_state;
-  ola::thread::Mutex m_mutex;
-
-  struct libusb_transfer *m_transfer;
+  std::auto_ptr<class AnymaAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousAnymaWidget);
 };
