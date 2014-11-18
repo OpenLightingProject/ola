@@ -209,11 +209,11 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
     return ok ? usb_handle : NULL;
   }
 
-  void PerformTransfer(const DmxBuffer &buffer) {
+  bool PerformTransfer(const DmxBuffer &buffer) {
     CreateFrame(buffer, m_tx_frame);
     FillBulkTransfer(ENDPOINT, m_tx_frame, EUROLITE_PRO_FRAME_SIZE,
                      URB_TIMEOUT_MS);
-    SubmitTransfer();
+    return SubmitTransfer() == 0;
   }
 
  private:

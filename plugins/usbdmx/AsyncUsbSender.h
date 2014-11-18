@@ -32,21 +32,37 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief 
+ * @brief A base class that send DMX data asynchronously.
+ *
+ * This encapsulates much of the asynchronous libusb logic. Subclasses should
+ * implement the SetupHandle() and PerformTransfer() methods.
  */
 class AsyncUsbSender {
  public:
   /**
    * @brief Create a new AsynchronousAnymaWidget.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
   AsyncUsbSender(class LibUsbAdaptor* const adaptor,
                  libusb_device *usb_device);
 
+  /**
+   * @brief Destructor
+   */
   virtual ~AsyncUsbSender();
 
+  /**
+   * @brief Initialize the sender.
+   * @returns true if SetupHandle() returned a valid handle, false otherwise.
+   */
   bool Init();
 
+  /**
+   * @brief Send on frame of DMX data.
+   * @param buffer the DMX data to send.
+   * @returns the value of PerformTransfer().
+   */
   bool SendDMX(const DmxBuffer &buffer);
 
   /**
@@ -57,18 +73,56 @@ class AsyncUsbSender {
   void TransferComplete(struct libusb_transfer *transfer);
 
  protected:
+  /**
+   * @brief The LibUsbAdaptor passed in the constructor.
+   */
   class LibUsbAdaptor* const m_adaptor;
+
+  /**
+   * @brief The libusb_device passed in the constructor.
+   */
   libusb_device* const m_usb_device;
 
+  /**
+   * @brief Open the device handle.
+   * @returns A valid libusb_device_handle or NULL if the device could not be
+   *   opened.
+   */
   virtual libusb_device_handle* SetupHandle() = 0;
 
-  virtual void PerformTransfer(const DmxBuffer &buffer) = 0;
+  /**
+   * @brief Perform the DMX transfer.
+   * @param buffer the DMX buffer to send.
+   * @returns true if the transfer was scheduled, false otherwise.
+   *
+   * This method is implemented by the subclass. The subclass should call
+   * FillControlTransfer() / FillBulkTransfer() as appropriate and then call
+   * SubmitTransfer().
+   */
+  virtual bool PerformTransfer(const DmxBuffer &buffer) = 0;
 
+  /**
+   * @brief Cancel any pending transfers.
+   */
   void CancelTransfer();
+
+  /**
+   * @brief Fill a control transfer.
+   * @param buffer passed to libusb_fill_control_transfer.
+   * @param timeout passed to libusb_fill_control_transfer.
+   */
   void FillControlTransfer(unsigned char *buffer, unsigned int timeout);
+
+  /**
+   * @brief Fill a bulk transfer.
+   */
   void FillBulkTransfer(unsigned char endpoint, unsigned char *buffer,
                         int length, unsigned int timeout);
 
+  /**
+   * @brief Submit the transfer for tx.
+   * @returns the result of libusb_submit_transfer().
+   */
   int SubmitTransfer();
 
  private:

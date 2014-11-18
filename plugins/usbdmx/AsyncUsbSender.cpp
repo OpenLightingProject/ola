@@ -37,7 +37,6 @@ void AsyncCallback(struct libusb_transfer *transfer) {
       transfer->user_data);
   widget->TransferComplete(transfer);
 }
-
 }  // namespace
 
 AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
@@ -62,8 +61,6 @@ bool AsyncUsbSender::Init() {
 }
 
 bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
-  OLA_INFO << "Call to AsyncUsbSender::SendDMX";
-
   if (!m_usb_handle) {
     OLA_WARN << "AsynchronousAnymaWidget hasn't been initialized";
     return false;
@@ -142,7 +139,7 @@ void AsyncUsbSender::TransferComplete(
 
   ola::thread::MutexLocker locker(&m_mutex);
   m_transfer_state = transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
-    DISCONNECTED : IDLE;
+      DISCONNECTED : IDLE;
 }
 }  // namespace usbdmx
 }  // namespace plugin

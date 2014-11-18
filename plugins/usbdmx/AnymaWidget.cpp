@@ -136,7 +136,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
     return ok ? usb_handle : NULL;
   }
 
-  void PerformTransfer(const DmxBuffer &buffer) {
+  bool PerformTransfer(const DmxBuffer &buffer) {
     libusb_fill_control_setup(
         m_control_setup_buffer,
         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
@@ -150,7 +150,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
     buffer.Get(m_control_setup_buffer + LIBUSB_CONTROL_SETUP_SIZE, &length);
 
     FillControlTransfer(m_control_setup_buffer, URB_TIMEOUT_MS);
-    SubmitTransfer();
+    return SubmitTransfer() == 0;
   }
 
  private:

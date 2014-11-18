@@ -205,13 +205,11 @@ bool BaseWidgetFactory<WidgetType>::AddWidget(WidgetObserver *observer,
                                               libusb_device *usb_device,
                                               WidgetType *widget) {
   if (!widget->Init()) {
-    OLA_INFO << "widget init failed";
     delete widget;
     return false;
   }
 
   if (!observer->NewWidget(widget)) {
-    OLA_INFO << "observer rejected widget";
     delete widget;
     return false;
   }

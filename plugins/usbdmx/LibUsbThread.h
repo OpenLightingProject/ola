@@ -149,11 +149,6 @@ class LibUsbHotplugThread : public LibUsbThread {
                       libusb_hotplug_callback_fn callback_fn,
                       void *user_data);
 
-  /**
-   * @brief Destructor.
-   */
-  ~LibUsbHotplugThread();
-
   bool Init();
 
   void Shutdown();

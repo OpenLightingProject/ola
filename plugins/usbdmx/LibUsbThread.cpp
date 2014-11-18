@@ -47,10 +47,12 @@ void *LibUsbThread::Run() {
 }
 
 void LibUsbThread::LaunchThread() {
+  OLA_INFO << "-- Starting libusb thread";
   Start();
 }
 
 void LibUsbThread::JoinThread() {
+  OLA_INFO << "-- Stopping libusb thread";
   Join();
   m_term = false;
 }
@@ -66,10 +68,6 @@ LibUsbHotplugThread::LibUsbHotplugThread(libusb_context *context,
       m_hotplug_handle(0),
       m_callback_fn(callback_fn),
       m_user_data(user_data) {
-  OLA_INFO << "-- Starting libusb thread";
-}
-
-LibUsbHotplugThread::~LibUsbHotplugThread() {
 }
 
 bool LibUsbHotplugThread::Init() {
@@ -85,13 +83,11 @@ bool LibUsbHotplugThread::Init() {
     OLA_WARN << "Error creating a hotplug callback";
     return false;
   }
-  OLA_INFO << "libusb_hotplug_register_callback passed";
   LaunchThread();
   return true;
 }
 
 void LibUsbHotplugThread::Shutdown() {
-  OLA_INFO << "-- Stopping libusb thread";
   SetTerminate();
   libusb_hotplug_deregister_callback(Context(), m_hotplug_handle);
   JoinThread();
@@ -109,24 +105,19 @@ void LibUsbHotplugThread::CloseHandle(libusb_device_handle *handle) {
 void LibUsbSimpleThread::OpenHandle() {
   m_device_count++;
   if (m_device_count == 1) {
-    OLA_INFO << "-- Starting libusb thread";
     LaunchThread();
   }
 }
 
 void LibUsbSimpleThread::CloseHandle(libusb_device_handle *handle) {
-  OLA_INFO << "LibUsbSimpleThread::CloseHandle, count is " << m_device_count;
   if (m_device_count == 1) {
     SetTerminate();
   }
   libusb_close(handle);
   if (m_device_count == 1) {
-    OLA_INFO << "-- Stopping libusb thread";
     JoinThread();
   }
   m_device_count--;
-  OLA_INFO << "exit LibUsbSimpleThread::CloseHandle, count is "
-           << m_device_count;
 }
 }  // namespace usbdmx
 }  // namespace plugin

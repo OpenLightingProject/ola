@@ -235,7 +235,6 @@ bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   libusb_get_device_descriptor(usb_device, &descriptor);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
-  OLA_INFO << "Checking " << m_widget_factories.size() << " factories";
   for (; iter != m_widget_factories.end(); ++iter) {
     if ((*iter)->DeviceAdded(&m_widget_observer, usb_device, descriptor)) {
       STLReplacePtr(&m_device_factory_map, usb_device, *iter);
