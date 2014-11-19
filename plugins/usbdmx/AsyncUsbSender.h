@@ -101,6 +101,9 @@ class AsyncUsbSender {
    */
   virtual bool PerformTransfer(const DmxBuffer &buffer) = 0;
 
+
+  virtual void PostTransferHook() {}
+
   /**
    * @brief Cancel any pending transfers.
    */
@@ -118,6 +121,12 @@ class AsyncUsbSender {
    */
   void FillBulkTransfer(unsigned char endpoint, unsigned char *buffer,
                         int length, unsigned int timeout);
+
+  /**
+   * @brief Fill a interrupt transfer.
+   */
+  void FillInterruptTransfer(unsigned char endpoint, unsigned char *buffer,
+                             int length, unsigned int timeout);
 
   /**
    * @brief Submit the transfer for tx.

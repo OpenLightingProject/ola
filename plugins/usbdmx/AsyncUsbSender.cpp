@@ -112,6 +112,16 @@ void AsyncUsbSender::FillBulkTransfer(unsigned char endpoint,
       this, timeout);
 }
 
+void AsyncUsbSender::FillInterruptTransfer(unsigned char endpoint,
+                                           unsigned char *buffer,
+                                           int length,
+                                           unsigned int timeout) {
+  libusb_fill_interrupt_transfer(
+      m_transfer, m_usb_handle, endpoint,
+      buffer, length, &AsyncCallback,
+      this, timeout);
+}
+
 int AsyncUsbSender::SubmitTransfer() {
   int ret = libusb_submit_transfer(m_transfer);
   if (ret) {
@@ -140,6 +150,7 @@ void AsyncUsbSender::TransferComplete(
   ola::thread::MutexLocker locker(&m_mutex);
   m_transfer_state = transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
       DISCONNECTED : IDLE;
+  PostTransferHook();
 }
 }  // namespace usbdmx
 }  // namespace plugin
