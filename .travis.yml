@@ -48,4 +48,4 @@ addons:
       name: "OpenLightingProject/ola"
       description: "Build submitted via Travis CI"
     build_command:   "bash -ex .travis-ci.sh"
-    branch_pattern: coverity_scan
+    branch_pattern: master
