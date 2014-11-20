@@ -32,7 +32,7 @@ elif [[ $TASK = 'doxygen' ]]; then
     echo "Found $warnings doxygen warnings"
   fi;
 else
-  if [ "$CXX" = "g++" ]; then
+  if [ "$CXX" = "g++-4.8" ]; then
     # Compile with coverage for coveralls
     autoreconf -i && ./configure --enable-gcov && make distcheck
   else
