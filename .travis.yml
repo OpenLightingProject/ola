@@ -35,3 +35,17 @@ notifications:
      - "chat.freenode.net#openlighting"
     on_success: change
     on_failure: change
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "fa0kF0GSMCeX6HL2xBjUkqqSh2xECVcTpGYREK1Syts8cKyUkmKY5hLdlChFq1Qq2PGPHlsGSMI4X4OtqaojjkBrrtP3vKnsBnOQ1R53VYiK168IDNMiXsEJF3Uxf/JUuLaZ9H4wm4RSLKf9VlT3YSA+ZHuWcHq4zejIJxEVENI="
+
+addons:
+  coverity_scan:
+    project:
+      name: "OpenLightingProject/ola"
+      description: "Build submitted via Travis CI"
+    build_command:   "bash -ex .travis-ci.sh"
+    branch_pattern: coverity_scan
