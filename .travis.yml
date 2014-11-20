@@ -26,8 +26,13 @@ before_install:
  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 #Remove the old g++/gcc to ensure we're using the latest ones
  - if [ "$CXX" = "g++" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
+#Install coveralls
+ - if [ "$CXX" = "g++" ]; then sudo pip install cpp-coveralls; fi
 #Install doxygen if required
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
+
+after_success:
+  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
 
 notifications:
   irc:
