@@ -463,9 +463,9 @@ AM_CONDITIONAL([FATAL_WARNINGS], [test "x$enable_fatal_warnings" != xno])
 AC_ARG_ENABLE(
   [gcov],
   [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
-AS_IF([test "x$enable_gov" = xyes],
+AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-       CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"])
+       CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
