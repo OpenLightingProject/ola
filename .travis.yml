@@ -32,7 +32,7 @@ before_install:
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
 
 after_success:
-  - coveralls --verbose --gcov-options '\-lp'
+  - coveralls --gcov-options '\-lp'
 
 notifications:
   irc:
