@@ -47,6 +47,6 @@ addons:
     project:
       name: "OpenLightingProject/ola"
       description: "Build submitted via Travis CI"
-    notification_email: ola-coverity@openlighting.org
+    notification_email: ola-coverity@pjnewman.co.uk
     build_command:   "bash -ex .travis-ci.sh"
     branch_pattern: master
