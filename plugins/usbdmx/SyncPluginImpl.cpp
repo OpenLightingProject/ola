@@ -37,6 +37,8 @@
 #include "plugins/usbdmx/AnymaWidgetFactory.h"
 #include "plugins/usbdmx/EuroliteProWidget.h"
 #include "plugins/usbdmx/EuroliteProWidgetFactory.h"
+#include "plugins/usbdmx/FadecandyWidget.h"
+#include "plugins/usbdmx/FadecandyWidgetFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/SunliteWidget.h"
 #include "plugins/usbdmx/SunliteWidgetFactory.h"
@@ -117,6 +119,13 @@ bool SyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
       widget,
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
+}
+
+bool SyncPluginImpl::NewWidget(FadecandyWidget *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "FadeCandy USB Device",
+                        "fadecandy-" + widget->SerialNumber()));
 }
 
 bool SyncPluginImpl::NewWidget(SunliteWidget *widget) {

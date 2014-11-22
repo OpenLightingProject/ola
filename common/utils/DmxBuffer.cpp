@@ -261,6 +261,11 @@ void DmxBuffer::Get(uint8_t *data, unsigned int *length) const {
 
 void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
                          unsigned int *length) const {
+  if (slot >= m_length) {
+    *length = 0;
+    return;
+  }
+
   if (m_data) {
     *length = min(*length, m_length - slot);
     memcpy(data, m_data + slot, *length);

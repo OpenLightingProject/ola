@@ -34,6 +34,8 @@
 #include "plugins/usbdmx/AnymaWidget.h"
 #include "plugins/usbdmx/AnymaWidgetFactory.h"
 #include "plugins/usbdmx/EuroliteProWidgetFactory.h"
+#include "plugins/usbdmx/FadecandyWidget.h"
+#include "plugins/usbdmx/FadecandyWidgetFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/LibUsbThread.h"
@@ -183,6 +185,13 @@ bool AsyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
+bool AsyncPluginImpl::NewWidget(FadecandyWidget *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "Fadecandy USB Device",
+                        "fadecandy-" + widget->SerialNumber()));
+}
+
 bool AsyncPluginImpl::NewWidget(SunliteWidget *widget) {
   return StartAndRegisterDevice(
       widget,
@@ -200,6 +209,10 @@ void AsyncPluginImpl::WidgetRemoved(AnymaWidget *widget) {
 }
 
 void AsyncPluginImpl::WidgetRemoved(EuroliteProWidget *widget) {
+  RemoveWidget(widget);
+}
+
+void AsyncPluginImpl::WidgetRemoved(FadecandyWidget *widget) {
   RemoveWidget(widget);
 }
 
@@ -287,7 +300,7 @@ bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
  *
  * This is run within the main thread.
  */
-void AsyncPluginImpl::RemoveWidget(class Widget *widget) {
+void AsyncPluginImpl::RemoveWidget(Widget *widget) {
   Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
   if (device) {
     m_plugin_adaptor->UnregisterDevice(device);
