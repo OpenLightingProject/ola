@@ -105,27 +105,27 @@ bool SyncPluginImpl::Stop() {
   return true;
 }
 
-bool SyncPluginImpl::NewWidget(class AnymaWidget *widget) {
+bool SyncPluginImpl::NewWidget(AnymaWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(class EuroliteProWidget *widget) {
+bool SyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(class SunliteWidget *widget) {
+bool SyncPluginImpl::NewWidget(SunliteWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
 }
 
-bool SyncPluginImpl::NewWidget(class VellemanWidget *widget) {
+bool SyncPluginImpl::NewWidget(VellemanWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));

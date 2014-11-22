@@ -15,6 +15,10 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/EuroliteProWidget.h \
     plugins/usbdmx/EuroliteProWidgetFactory.cpp \
     plugins/usbdmx/EuroliteProWidgetFactory.h \
+    plugins/usbdmx/FadecandyWidget.cpp \
+    plugins/usbdmx/FadecandyWidget.h \
+    plugins/usbdmx/FadecandyWidgetFactory.cpp \
+    plugins/usbdmx/FadecandyWidgetFactory.h \
     plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/GenericDevice.cpp \
     plugins/usbdmx/GenericDevice.h \

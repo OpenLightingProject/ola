@@ -55,6 +55,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class FadecandyWidget *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class SunliteWidget *widget) {
     return DispatchNewWidget(widget);
   }
@@ -68,6 +72,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
   }
 
   void WidgetRemoved(class EuroliteProWidget *widget) {
+    DispatchWidgetRemoved(widget);
+  }
+
+  void WidgetRemoved(class FadecandyWidget *widget) {
     DispatchWidgetRemoved(widget);
   }
 

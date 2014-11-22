@@ -20,10 +20,6 @@
 
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #include <string>
 
 #include "ola/Logging.h"
@@ -96,7 +92,7 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n"
+"Anyma uDMX, Eurolite, Sunlite USBDMX2 & Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"

@@ -169,45 +169,45 @@ void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
 }
 #endif
 
-bool AsyncPluginImpl::NewWidget(class AnymaWidget *widget) {
+bool AsyncPluginImpl::NewWidget(AnymaWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(class EuroliteProWidget *widget) {
+bool AsyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(class SunliteWidget *widget) {
+bool AsyncPluginImpl::NewWidget(SunliteWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
 }
 
-bool AsyncPluginImpl::NewWidget(class VellemanWidget *widget) {
+bool AsyncPluginImpl::NewWidget(VellemanWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));
 }
 
-void AsyncPluginImpl::WidgetRemoved(class AnymaWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(AnymaWidget *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(class EuroliteProWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(EuroliteProWidget *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(class SunliteWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(SunliteWidget *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(class VellemanWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(VellemanWidget *widget) {
   RemoveWidget(widget);
 }
 
