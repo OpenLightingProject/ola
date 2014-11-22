@@ -87,7 +87,7 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
                                          libusb_device *usb_device,
                                          unsigned int *chunk_size) {
   libusb_config_descriptor *config;
-  if (libusb_get_active_config_descriptor(usb_device, &config)) {
+  if (adaptor->GetActiveConfigDescriptor(usb_device, &config)) {
     OLA_WARN << "Could not get active config descriptor";
     return NULL;
   }
@@ -107,7 +107,7 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
       // this means the upgrade is present
       *chunk_size = max_packet_size;
   }
-  libusb_free_config_descriptor(config);
+  adaptor->FreeConfigDescriptor(config);
 
   libusb_device_handle *usb_handle;
   bool ok = adaptor->OpenDevice(usb_device, &usb_handle);
@@ -115,26 +115,25 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
     return NULL;
   }
 
-  if (libusb_kernel_driver_active(usb_handle, 0)) {
-    if (libusb_detach_kernel_driver(usb_handle, 0)) {
-      OLA_WARN << "Failed to detach kernel driver";
-      adaptor->CloseHandle(usb_handle);
-      return NULL;
-    }
-  }
-
-  // this device only has one configuration
-  int ret_code = libusb_set_configuration(usb_handle, CONFIGURATION);
-  if (ret_code) {
-    OLA_WARN << "Velleman set config failed, with libusb error code "
-             << ret_code;
-    adaptor->CloseHandle(usb_handle);
+  int ret_code = adaptor->DetachKernelDriver(usb_handle, INTERFACE);
+  if (ret_code != 0 && ret_code != LIBUSB_ERROR_NOT_FOUND) {
+    OLA_WARN << "Failed to detach kernel driver";
+    adaptor->Close(usb_handle);
     return NULL;
   }
 
-  if (libusb_claim_interface(usb_handle, INTERFACE)) {
+  // this device only has one configuration
+  ret_code = adaptor->SetConfiguration(usb_handle, CONFIGURATION);
+  if (ret_code) {
+    OLA_WARN << "Velleman set config failed, with libusb error code "
+             << ret_code;
+    adaptor->Close(usb_handle);
+    return NULL;
+  }
+
+  if (adaptor->ClaimInterface(usb_handle, INTERFACE)) {
     OLA_WARN << "Failed to claim Velleman usb device";
-    adaptor->CloseHandle(usb_handle);
+    adaptor->Close(usb_handle);
     return NULL;
   }
   return usb_handle;
@@ -173,14 +172,17 @@ unsigned int CountLeadingZeros(const uint8_t *data, unsigned int data_length,
  */
 class VellemanThreadedSender: public ThreadedUsbSender {
  public:
-  VellemanThreadedSender(libusb_device *usb_device,
+  VellemanThreadedSender(LibUsbAdaptor *adaptor,
+                         libusb_device *usb_device,
                          libusb_device_handle *handle,
                          unsigned int chunk_size)
       : ThreadedUsbSender(usb_device, handle),
+        m_adaptor(adaptor),
         m_chunk_size(chunk_size) {
   }
 
  private:
+  LibUsbAdaptor* const m_adaptor;
   const unsigned int m_chunk_size;
 
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -266,13 +268,9 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
                                            uint8_t *usb_data,
                                            unsigned int chunk_size) {
   int transferred;
-  int ret = libusb_interrupt_transfer(
-      handle,
-      ENDPOINT,
-      reinterpret_cast<unsigned char*>(usb_data),
-      chunk_size,
-      &transferred,
-      URB_TIMEOUT_MS);
+  int ret = m_adaptor->InterruptTransfer(handle,
+      ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
+      chunk_size, &transferred, URB_TIMEOUT_MS);
   if (ret) {
     OLA_INFO << "USB return code was " << ret << ", transferred "
              << transferred;
@@ -300,7 +298,8 @@ bool SynchronousVellemanWidget::Init() {
   }
 
   std::auto_ptr<VellemanThreadedSender> sender(
-      new VellemanThreadedSender(m_usb_device, usb_handle, chunk_size));
+      new VellemanThreadedSender(m_adaptor, m_usb_device, usb_handle,
+                                 chunk_size));
   if (!sender->Start()) {
     return false;
   }

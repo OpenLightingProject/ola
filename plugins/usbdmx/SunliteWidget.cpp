@@ -95,10 +95,12 @@ void UpdatePacket(const DmxBuffer &buffer,
  */
 class SunliteThreadedSender: public ThreadedUsbSender {
  public:
-  SunliteThreadedSender(libusb_device *usb_device,
+  SunliteThreadedSender(LibUsbAdaptor *adaptor,
+                        libusb_device *usb_device,
                         libusb_device_handle *handle);
 
  private:
+  LibUsbAdaptor* const m_adaptor;
   uint8_t m_packet[SUNLITE_PACKET_SIZE];
 
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -106,9 +108,11 @@ class SunliteThreadedSender: public ThreadedUsbSender {
 };
 
 SunliteThreadedSender::SunliteThreadedSender(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     libusb_device_handle *usb_handle)
-    : ThreadedUsbSender(usb_device, usb_handle) {
+    : ThreadedUsbSender(usb_device, usb_handle),
+      m_adaptor(adaptor) {
   InitPacket(m_packet);
 }
 
@@ -116,13 +120,8 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                            const DmxBuffer &buffer) {
   UpdatePacket(buffer, m_packet);
   int transferred;
-  int r = libusb_bulk_transfer(
-      handle,
-      ENDPOINT,
-      (unsigned char*) m_packet,
-      SUNLITE_PACKET_SIZE,
-      &transferred,
-      TIMEOUT);
+  int r = m_adaptor->BulkTransfer(handle, ENDPOINT, (unsigned char*) m_packet,
+                                  SUNLITE_PACKET_SIZE, &transferred, TIMEOUT);
   if (transferred != SUNLITE_PACKET_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "Sunlite driver failed to transfer all data";
@@ -149,7 +148,7 @@ bool SynchronousSunliteWidget::Init() {
   }
 
   std::auto_ptr<SunliteThreadedSender> sender(
-      new SunliteThreadedSender(m_usb_device, usb_handle));
+      new SunliteThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }

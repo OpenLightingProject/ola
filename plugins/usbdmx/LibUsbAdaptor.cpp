@@ -71,17 +71,9 @@ bool Open(libusb_device *usb_device,
   return true;
 }
 
-/**
- * @brief A wrapper around libusb_close.
- */
-void Close(libusb_device_handle *usb_handle) {
-  libusb_close(usb_handle);
-}
-
-bool OpenHandleAndClaimInterface(
-    libusb_device *usb_device,
-    int interface,
-    libusb_device_handle **usb_handle) {
+bool OpenHandleAndClaimInterface(libusb_device *usb_device,
+                                 int interface,
+                                 libusb_device_handle **usb_handle) {
   if (!Open(usb_device, usb_handle)) {
     return false;
   }
@@ -91,7 +83,7 @@ bool OpenHandleAndClaimInterface(
     OLA_WARN << "Failed to claim interface " << interface
              << " on device: " << usb_device << ": "
              << libusb_error_name(r);
-    Close(*usb_handle);
+    libusb_close(*usb_handle);
     return false;
   }
   return true;
@@ -128,7 +120,7 @@ bool LibUsbAdaptor::GetDeviceInfo(
              << "have one";
   }
 
-  Close(usb_handle);
+  libusb_close(usb_handle);
   return true;
 }
 
@@ -149,12 +141,148 @@ bool LibUsbAdaptor::CheckProduct(const string &expected, const string &actual) {
   return true;
 }
 
+// BaseLibUsbAdaptor
+// ----------------------------------------------------------------------------
+libusb_device* BaseLibUsbAdaptor::RefDevice(libusb_device *dev) {
+  return libusb_ref_device(dev);
+}
+
+void BaseLibUsbAdaptor::UnrefDevice(libusb_device *dev) {
+  libusb_unref_device(dev);
+}
+
+int BaseLibUsbAdaptor::SetConfiguration(libusb_device_handle *dev,
+                                        int configuration) {
+  return libusb_set_configuration(dev, configuration);
+}
+
+int BaseLibUsbAdaptor::ClaimInterface(libusb_device_handle *dev,
+                                      int interface_number) {
+  return libusb_claim_interface(dev, interface_number);
+}
+
+int BaseLibUsbAdaptor::DetachKernelDriver(libusb_device_handle *dev,
+                                          int interface_number) {
+  return libusb_detach_kernel_driver(dev, interface_number);
+}
+
+int BaseLibUsbAdaptor::GetActiveConfigDescriptor(
+      libusb_device *dev,
+      struct libusb_config_descriptor **config) {
+  return libusb_get_active_config_descriptor(dev, config);
+}
+
+int BaseLibUsbAdaptor::GetConfigDescriptor(
+    libusb_device *dev,
+    uint8_t config_index,
+    struct libusb_config_descriptor **config) {
+  return libusb_get_config_descriptor(dev, config_index, config);
+}
+
+void BaseLibUsbAdaptor::FreeConfigDescriptor(
+    struct libusb_config_descriptor *config) {
+  libusb_free_config_descriptor(config);
+}
+
+struct libusb_transfer* BaseLibUsbAdaptor::AllocTransfer(int iso_packets) {
+  return libusb_alloc_transfer(iso_packets);
+}
+
+void BaseLibUsbAdaptor::FreeTransfer(struct libusb_transfer *transfer) {
+  return libusb_free_transfer(transfer);
+}
+
+int BaseLibUsbAdaptor::SubmitTransfer(struct libusb_transfer *transfer) {
+  return libusb_submit_transfer(transfer);
+}
+
+int BaseLibUsbAdaptor::CancelTransfer(struct libusb_transfer *transfer) {
+  return libusb_cancel_transfer(transfer);
+}
+
+void BaseLibUsbAdaptor::FillControlSetup(unsigned char *buffer,
+                                         uint8_t bmRequestType,
+                                         uint8_t bRequest,
+                                         uint16_t wValue,
+                                         uint16_t wIndex,
+                                         uint16_t wLength) {
+  return libusb_fill_control_setup(buffer, bmRequestType, bRequest, wValue,
+                                   wIndex, wLength);
+}
+
+void BaseLibUsbAdaptor::FillControlTransfer(
+    struct libusb_transfer *transfer,
+    libusb_device_handle *dev_handle,
+    unsigned char *buffer,
+    libusb_transfer_cb_fn callback,
+    void *user_data,
+    unsigned int timeout) {
+  return libusb_fill_control_transfer(transfer, dev_handle, buffer, callback,
+                                      user_data, timeout);
+}
+
+void BaseLibUsbAdaptor::FillBulkTransfer(struct libusb_transfer *transfer,
+                                         libusb_device_handle *dev_handle,
+                                         unsigned char endpoint,
+                                         unsigned char *buffer,
+                                         int length,
+                                         libusb_transfer_cb_fn callback,
+                                         void *user_data,
+                                         unsigned int timeout) {
+  libusb_fill_bulk_transfer(transfer, dev_handle, endpoint, buffer,
+                            length, callback, user_data, timeout);
+}
+
+void BaseLibUsbAdaptor::FillInterruptTransfer(struct libusb_transfer *transfer,
+                                              libusb_device_handle *dev_handle,
+                                              unsigned char endpoint,
+                                              unsigned char *buffer,
+                                              int length,
+                                              libusb_transfer_cb_fn callback,
+                                              void *user_data,
+                                              unsigned int timeout) {
+  libusb_fill_interrupt_transfer(transfer, dev_handle, endpoint, buffer,
+                                 length, callback, user_data, timeout);
+}
+
+int BaseLibUsbAdaptor::ControlTransfer(
+    libusb_device_handle *dev_handle,
+    uint8_t bmRequestType,
+    uint8_t bRequest,
+    uint16_t wValue,
+    uint16_t wIndex,
+    unsigned char *data,
+    uint16_t wLength,
+    unsigned int timeout) {
+  return libusb_control_transfer(dev_handle, bmRequestType, bRequest, wValue,
+                                 wIndex, data, wLength, timeout);
+}
+
+int BaseLibUsbAdaptor::BulkTransfer(struct libusb_device_handle *dev_handle,
+                                    unsigned char endpoint,
+                                    unsigned char *data,
+                                    int length,
+                                    int *transferred,
+                                    unsigned int timeout) {
+  return libusb_bulk_transfer(dev_handle, endpoint, data, length, transferred,
+                              timeout);
+}
+
+int BaseLibUsbAdaptor::InterruptTransfer(libusb_device_handle *dev_handle,
+                                         unsigned char endpoint,
+                                         unsigned char *data,
+                                         int length,
+                                         int *actual_length,
+                                         unsigned int timeout) {
+  return libusb_interrupt_transfer(dev_handle, endpoint, data, length,
+                                   actual_length, timeout);
+}
+
+
 // SyncronousLibUsbAdaptor
 // -----------------------------------------------------------------------------
-
-bool SyncronousLibUsbAdaptor::OpenDevice(
-    libusb_device *usb_device,
-    libusb_device_handle **usb_handle) {
+bool SyncronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
+                                         libusb_device_handle **usb_handle) {
   return Open(usb_device, usb_handle);
 }
 
@@ -165,17 +293,12 @@ bool SyncronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
   return OpenHandleAndClaimInterface(usb_device, interface, usb_handle);
 }
 
-void SyncronousLibUsbAdaptor::CloseHandle(libusb_device_handle *usb_handle) {
-  Close(usb_handle);
+void SyncronousLibUsbAdaptor::Close(libusb_device_handle *usb_handle) {
+  libusb_close(usb_handle);
 }
 
 // AsyncronousLibUsbAdaptor
 // -----------------------------------------------------------------------------
-
-AsyncronousLibUsbAdaptor::AsyncronousLibUsbAdaptor(LibUsbThread *thread)
-    : m_thread(thread) {
-}
-
 bool AsyncronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
                                           libusb_device_handle **usb_handle) {
   bool ok = Open(usb_device, usb_handle);
@@ -196,8 +319,43 @@ bool AsyncronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
   return ok;
 }
 
-void AsyncronousLibUsbAdaptor::CloseHandle(libusb_device_handle *handle) {
+void AsyncronousLibUsbAdaptor::Close(libusb_device_handle *handle) {
   m_thread->CloseHandle(handle);
+}
+
+int AsyncronousLibUsbAdaptor::ControlTransfer(
+    OLA_UNUSED libusb_device_handle *dev_handle,
+    OLA_UNUSED uint8_t bmRequestType,
+    OLA_UNUSED uint8_t bRequest,
+    OLA_UNUSED uint16_t wValue,
+    OLA_UNUSED uint16_t wIndex,
+    OLA_UNUSED unsigned char *data,
+    OLA_UNUSED uint16_t wLength,
+    OLA_UNUSED unsigned int timeout) {
+  OLA_WARN << "libusb_control_transfer in an AsyncronousLibUsbAdaptor";
+  return LIBUSB_ERROR_NOT_SUPPORTED;
+}
+
+int AsyncronousLibUsbAdaptor::BulkTransfer(
+    OLA_UNUSED struct libusb_device_handle *dev_handle,
+    OLA_UNUSED unsigned char endpoint,
+    OLA_UNUSED unsigned char *data,
+    OLA_UNUSED int length,
+    OLA_UNUSED int *transferred,
+    OLA_UNUSED unsigned int timeout) {
+  OLA_WARN << "libusb_bulk_transfer in an AsyncronousLibUsbAdaptor";
+  return LIBUSB_ERROR_NOT_SUPPORTED;
+}
+
+int AsyncronousLibUsbAdaptor::InterruptTransfer(
+    OLA_UNUSED libusb_device_handle *dev_handle,
+    OLA_UNUSED unsigned char endpoint,
+    OLA_UNUSED unsigned char *data,
+    OLA_UNUSED int length,
+    OLA_UNUSED int *actual_length,
+    OLA_UNUSED unsigned int timeout) {
+  OLA_WARN << "libusb_interrupt_transfer in an AsyncronousLibUsbAdaptor";
+  return LIBUSB_ERROR_NOT_SUPPORTED;
 }
 }  // namespace usbdmx
 }  // namespace plugin

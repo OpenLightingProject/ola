@@ -50,23 +50,23 @@ static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
  */
 class AnymaThreadedSender: public ThreadedUsbSender {
  public:
-  AnymaThreadedSender(libusb_device *usb_device,
-                      libusb_device_handle *handle);
+  AnymaThreadedSender(LibUsbAdaptor *adaptor,
+                      libusb_device *usb_device,
+                      libusb_device_handle *handle)
+      : ThreadedUsbSender(usb_device, handle),
+        m_adaptor(adaptor) {
+  }
 
  private:
+  LibUsbAdaptor* const m_adaptor;
+
   bool TransmitBuffer(libusb_device_handle *handle,
                       const DmxBuffer &buffer);
 };
 
-AnymaThreadedSender::AnymaThreadedSender(
-    libusb_device *usb_device,
-    libusb_device_handle *usb_handle)
-    : ThreadedUsbSender(usb_device, usb_handle) {
-}
-
 bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                          const DmxBuffer &buffer) {
-  int r = libusb_control_transfer(
+  int r = m_adaptor->ControlTransfer(
       handle,
       LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
       LIBUSB_ENDPOINT_OUT,  // bmRequestType
@@ -101,7 +101,7 @@ bool SynchronousAnymaWidget::Init() {
   }
 
   std::auto_ptr<AnymaThreadedSender> sender(
-      new AnymaThreadedSender(m_usb_device, usb_handle));
+      new AnymaThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }
@@ -117,8 +117,7 @@ bool SynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
 // -----------------------------------------------------------------------------
 class AnymaAsyncUsbSender : public AsyncUsbSender {
  public:
-  AnymaAsyncUsbSender(LibUsbAdaptor *adaptor,
-                      libusb_device *usb_device)
+  AnymaAsyncUsbSender(LibUsbAdaptor *adaptor, libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device) {
     m_control_setup_buffer =
       new uint8_t[LIBUSB_CONTROL_SETUP_SIZE + DMX_UNIVERSE_SIZE];
@@ -137,7 +136,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
-    libusb_fill_control_setup(
+    m_adaptor->FillControlSetup(
         m_control_setup_buffer,
         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
         LIBUSB_ENDPOINT_OUT,  // bmRequestType

@@ -68,16 +68,17 @@ void CreateFrame(
  * Find the interface with the endpoint we're after. Usually this is interface
  * 1 but we check them all just in case.
  */
-bool LocateInterface(libusb_device *usb_device,
+bool LocateInterface(LibUsbAdaptor *adaptor,
+                     libusb_device *usb_device,
                      int *interface_number) {
   struct libusb_config_descriptor *device_config;
-  if (libusb_get_config_descriptor(usb_device, 0, &device_config) != 0) {
+  if (adaptor->GetConfigDescriptor(usb_device, 0, &device_config) != 0) {
     OLA_WARN << "Failed to get device config descriptor";
     return false;
   }
 
-  OLA_DEBUG << static_cast<int>(device_config->bNumInterfaces) <<
-    " interfaces found";
+  OLA_DEBUG << static_cast<int>(device_config->bNumInterfaces)
+            << " interfaces found";
   for (unsigned int i = 0; i < device_config->bNumInterfaces; i++) {
     const struct libusb_interface *interface = &device_config->interface[i];
     for (int j = 0; j < interface->num_altsetting; j++) {
@@ -87,19 +88,19 @@ bool LocateInterface(libusb_device *usb_device,
         const struct libusb_endpoint_descriptor *endpoint =
           &iface_descriptor->endpoint[k];
         OLA_DEBUG << "Interface " << i << ", altsetting " << j << ", endpoint "
-          << static_cast<int>(k) << ", endpoint address 0x" << std::hex <<
-          static_cast<int>(endpoint->bEndpointAddress);
+                  << static_cast<int>(k) << ", endpoint address 0x" << std::hex
+                  << static_cast<int>(endpoint->bEndpointAddress);
         if (endpoint->bEndpointAddress == ENDPOINT) {
           OLA_INFO << "Using interface " << i;
           *interface_number = i;
-          libusb_free_config_descriptor(device_config);
+          adaptor->FreeConfigDescriptor(device_config);
           return true;
         }
       }
     }
   }
   OLA_WARN << "Failed to locate endpoint for EurolitePro device.";
-  libusb_free_config_descriptor(device_config);
+  adaptor->FreeConfigDescriptor(device_config);
   return false;
 }
 }  // namespace
@@ -112,18 +113,23 @@ bool LocateInterface(libusb_device *usb_device,
  */
 class EuroliteProThreadedSender: public ThreadedUsbSender {
  public:
-  EuroliteProThreadedSender(libusb_device *usb_device,
+  EuroliteProThreadedSender(LibUsbAdaptor *adaptor,
+                            libusb_device *usb_device,
                             libusb_device_handle *handle);
 
  private:
+  LibUsbAdaptor* const m_adaptor;
+
   bool TransmitBuffer(libusb_device_handle *handle,
                       const DmxBuffer &buffer);
 };
 
 EuroliteProThreadedSender::EuroliteProThreadedSender(
+    LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     libusb_device_handle *usb_handle)
-    : ThreadedUsbSender(usb_device, usb_handle) {
+    : ThreadedUsbSender(usb_device, usb_handle),
+      m_adaptor(adaptor) {
 }
 
 bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
@@ -132,13 +138,9 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   CreateFrame(buffer, frame);
 
   int transferred;
-  int r = libusb_bulk_transfer(
-      handle,
-      ENDPOINT,
-      frame,
-      EUROLITE_PRO_FRAME_SIZE,
-      &transferred,
-      URB_TIMEOUT_MS);
+  int r = m_adaptor->BulkTransfer(handle, ENDPOINT, frame,
+                                  EUROLITE_PRO_FRAME_SIZE, &transferred,
+                                  URB_TIMEOUT_MS);
   if (transferred != EUROLITE_PRO_FRAME_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "EurolitePro driver failed to transfer all data";
@@ -161,7 +163,7 @@ bool SynchronousEuroliteProWidget::Init() {
   libusb_device_handle *usb_handle;
 
   int interface_number;
-  if (!LocateInterface(m_usb_device, &interface_number)) {
+  if (!LocateInterface(m_adaptor, m_usb_device, &interface_number)) {
     return false;
   }
 
@@ -172,7 +174,7 @@ bool SynchronousEuroliteProWidget::Init() {
   }
 
   std::auto_ptr<EuroliteProThreadedSender> sender(
-      new EuroliteProThreadedSender(m_usb_device, usb_handle));
+      new EuroliteProThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }
@@ -199,7 +201,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 
   libusb_device_handle* SetupHandle() {
     int interface_number;
-    if (!LocateInterface(m_usb_device, &interface_number)) {
+    if (!LocateInterface(m_adaptor, m_usb_device, &interface_number)) {
       return NULL;
     }
 
