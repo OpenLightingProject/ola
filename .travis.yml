@@ -37,7 +37,7 @@ before_install:
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls -e 'protoc/' -E 'Test.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
   irc:
