@@ -167,6 +167,7 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
   SunliteAsyncUsbSender(LibUsbAdaptor *adaptor,
                         libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device) {
+    InitPacket(m_packet);
   }
 
   ~SunliteAsyncUsbSender() {
