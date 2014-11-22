@@ -40,7 +40,7 @@ before_install:
  - which gcov
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls -e 'protoc/' -E 'Test.cpp$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov gcov-4.8 -E 'Test.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
   irc:
