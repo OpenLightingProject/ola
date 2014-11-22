@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "ola/Constants.h"
