@@ -37,7 +37,7 @@ before_install:
  - pwd
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then pwd; coveralls --gcov /usr/bin/gcov-4.8 -b . -E 'Test.cpp$' --gcov-options '\-lp' > /dev/null; pwd; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . --verbose -E 'Test.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
   irc:
