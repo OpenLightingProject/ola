@@ -31,12 +31,10 @@ elif [[ $TASK = 'doxygen' ]]; then
   else
     echo "Found $warnings doxygen warnings"
   fi;
+elif [[ $TASK = 'coverage' ]]; then
+  # Compile with coverage for coveralls
+  autoreconf -i && ./configure --enable-gcov && make && make check
 else
-  if [ "$CXX" = "g++-4.8" ]; then
-    # Compile with coverage for coveralls
-    autoreconf -i && ./configure --enable-gcov && make distcheck
-  else
-    # Otherwise compile and check as normal
-    autoreconf -i && ./configure && make distcheck
-  fi;
+  # Otherwise compile and check as normal
+  autoreconf -i && ./configure && make distcheck
 fi
