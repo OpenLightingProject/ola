@@ -212,7 +212,7 @@ bool FadecandyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   UpdatePacketsWithDMX(m_data_packets, buffer);
 
   int bytes_sent = 0;
-  // We do a single bulk transfer of the entire data, rather than on transfer
+  // We do a single bulk transfer of the entire data, rather than one transfer
   // for each 64 bytes.
   int r = m_adaptor->BulkTransfer(
       handle, ENDPOINT,
@@ -295,7 +295,7 @@ libusb_device_handle* FadecandyAsyncUsbSender::SetupHandle() {
 
 bool FadecandyAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer) {
   UpdatePacketsWithDMX(m_data_packets, buffer);
-  // We do a single bulk transfer of the entire data, rather than on transfer
+  // We do a single bulk transfer of the entire data, rather than one transfer
   // for each 64 bytes.
   FillBulkTransfer(ENDPOINT,
                    reinterpret_cast<unsigned char*>(&m_data_packets),
