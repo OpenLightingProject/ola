@@ -25,6 +25,7 @@
 #define PLUGINS_USBDMX_SUNLITEFIRMWARELOADER_H_
 
 #include <libusb.h>
+#include "ola/base/Macro.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
 
 namespace ola {
@@ -46,6 +47,8 @@ class SunliteFirmwareLoader: public FirmwareLoader {
   static const uint8_t UPLOAD_REQUEST_TYPE = 0x40;
   static const uint8_t UPLOAD_REQUEST = 0xa0;
   static const unsigned int UPLOAD_TIMEOUT = 300;  // ms
+
+  DISALLOW_COPY_AND_ASSIGN(SunliteFirmwareLoader);
 };
 }  // namespace usbdmx
 }  // namespace plugin

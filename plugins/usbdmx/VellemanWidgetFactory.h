@@ -13,43 +13,44 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * UsbDevice.h
- * Interface for the generic usb device
- * Copyright (C) 2010 Simon Newton
+ * VellemanWidgetFactory.h
+ * The WidgetFactory for Velleman widgets.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_USBDEVICE_H_
-#define PLUGINS_USBDMX_USBDEVICE_H_
+#ifndef PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
+#define PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
 
-#include <libusb.h>
-#include <string>
-#include "olad/Device.h"
+#include "ola/base/Macro.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Usb device, this is just like the generic Device class but it has a
- * Start() method as well to do the USB setup.
+/**
+ * @brief Creates Velleman widgets.
  */
-class UsbDevice: public ola::Device {
+class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
  public:
-  UsbDevice(ola::AbstractPlugin *owner,
-            const std::string &name,
-            libusb_device *device)
-      : Device(owner, name),
-        m_usb_device(device) {
-        libusb_ref_device(device);
-  }
-  virtual ~UsbDevice() {
-     libusb_unref_device(m_usb_device);
+  explicit VellemanWidgetFactory(class LibUsbAdaptor *adaptor)
+      : m_adaptor(adaptor) {
   }
 
- protected:
-  libusb_device *m_usb_device;
+  bool DeviceAdded(
+      WidgetObserver *observer,
+      libusb_device *usb_device,
+      const struct libusb_device_descriptor &descriptor);
+
+ private:
+  class LibUsbAdaptor* const m_adaptor;
+
+  static const uint16_t VENDOR_ID;
+  static const uint16_t PRODUCT_ID;
+
+  DISALLOW_COPY_AND_ASSIGN(VellemanWidgetFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_USBDEVICE_H_
+#endif  // PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
