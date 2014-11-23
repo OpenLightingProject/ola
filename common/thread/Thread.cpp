@@ -18,21 +18,42 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <pthread.h>
+
+#ifdef HAVE_PTHREAD_NP_H
+#include <pthread_np.h>
+#endif
+
+#include <string>
+
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
 
-namespace ola {
-namespace thread {
+namespace  {
 
 /*
  * Called by the new thread
  */
 void *StartThread(void *d) {
-  Thread *thread = static_cast<Thread*>(d);
+  ola::thread::Thread *thread = static_cast<ola::thread::Thread*>(d);
   return thread->_InternalRun();
 }
+}  // namespace
 
+namespace ola {
+namespace thread {
+
+using std::string;
+
+Thread::Thread(const string &name)
+    : m_thread_id(),
+      m_running(false),
+      m_name(name) {
+}
 
 /*
  * Start this thread. This only returns only the thread is running.
@@ -57,9 +78,7 @@ bool Thread::Start() {
  * you know what you're doing as it introduces a race condition with Join()
  */
 bool Thread::FastStart() {
-  int ret = pthread_create(&m_thread_id,
-                           NULL,
-                           ola::thread::StartThread,
+  int ret = pthread_create(&m_thread_id, NULL, StartThread,
                            static_cast<void*>(this));
   if (ret) {
     OLA_WARN << "pthread create failed";
@@ -94,6 +113,24 @@ bool Thread::IsRunning() {
  * Mark the thread as running and call the main Run method
  */
 void *Thread::_InternalRun() {
+  string truncated_name = m_name.substr(0, 15);
+
+// There are 4 different variants of pthread_setname_np !
+#ifdef HAVE_PTHREAD_SETNAME_NP_2
+  pthread_setname_np(pthread_self(), truncated_name.c_str());
+#endif
+
+#ifdef HAVE_PTHREAD_SET_NAME_NP_2
+  pthread_set_name_np(pthread_self(), truncated_name.c_str());
+#endif
+
+#ifdef HAVE_PTHREAD_SETNAME_NP_1
+  pthread_setname_np(truncated_name.c_str());
+#endif
+
+#ifdef HAVE_PTHREAD_SETNAME_NP_3
+  pthread_setname_np(pthread_self(), truncated_name.c_str(), NULL);
+#endif
   {
     MutexLocker locker(&m_mutex);
     m_running = true;

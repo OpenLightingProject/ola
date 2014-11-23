@@ -31,6 +31,8 @@
 #include <ola/base/Macro.h>
 #include <ola/thread/Mutex.h>
 
+#include <string>
+
 namespace ola {
 namespace thread {
 
@@ -41,32 +43,35 @@ typedef pthread_t ThreadId;
  */
 class Thread {
  public:
-    Thread(): m_thread_id(), m_running(false) {}
-    virtual ~Thread() {}
+  explicit Thread(const std::string &name = "");
+  virtual ~Thread() {}
 
-    virtual bool Start();
-    virtual bool FastStart();
-    virtual bool Join(void *ptr = NULL);
-    bool IsRunning();
+  virtual bool Start();
+  virtual bool FastStart();
+  virtual bool Join(void *ptr = NULL);
+  bool IsRunning();
 
-    ThreadId Id() const { return m_thread_id; }
+  ThreadId Id() const { return m_thread_id; }
 
-    // Called by pthread_create
-    void *_InternalRun();
+  std::string Name() const { return m_name; }
 
-    static inline ThreadId Self() { return pthread_self(); }
+  // Called by pthread_create
+  void *_InternalRun();
+
+  static inline ThreadId Self() { return pthread_self(); }
 
  protected:
-    // Sub classes implement this.
-    virtual void *Run() = 0;
+  // Sub classes implement this.
+  virtual void *Run() = 0;
 
  private:
-    pthread_t m_thread_id;
-    bool m_running;
-    Mutex m_mutex;  // protects m_running
-    ConditionVariable m_condition;  // use to wait for the thread to start
+  pthread_t m_thread_id;
+  bool m_running;
+  const std::string m_name;
+  Mutex m_mutex;  // protects m_running
+  ConditionVariable m_condition;  // use to wait for the thread to start
 
-    DISALLOW_COPY_AND_ASSIGN(Thread);
+  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 }  // namespace thread
 }  // namespace ola

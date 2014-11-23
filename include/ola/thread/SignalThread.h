@@ -49,7 +49,7 @@ class SignalThread : public ola::thread::Thread {
  public:
     typedef ola::Callback0<void> SignalHandler;
 
-    SignalThread() {}
+    SignalThread();
     ~SignalThread();
 
     // This has to be called before Start(). You can't add signal handlers once

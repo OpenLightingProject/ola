@@ -91,8 +91,9 @@ BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
 }
 
 BonjourDiscoveryAgent::BonjourDiscoveryAgent()
-    : m_thread(new ola::thread::CallbackThread(NewSingleCallback(
-          this, &BonjourDiscoveryAgent::RunThread))) {
+    : m_thread(new ola::thread::CallbackThread(
+          NewSingleCallback(this, &BonjourDiscoveryAgent::RunThread),
+          "bonjour")) {
 }
 
 BonjourDiscoveryAgent::~BonjourDiscoveryAgent() {

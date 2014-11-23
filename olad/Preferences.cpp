@@ -292,7 +292,8 @@ void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
 // FilePreferenceSaverThread
 //-----------------------------------------------------------------------------
 
-FilePreferenceSaverThread::FilePreferenceSaverThread() {
+FilePreferenceSaverThread::FilePreferenceSaverThread()
+    : Thread("pref-saver") {
   // set a long poll interval so we don't spin
   m_ss.SetDefaultInterval(TimeInterval(60, 0));
 }
