@@ -163,7 +163,11 @@ int BaseLibUsbAdaptor::ClaimInterface(libusb_device_handle *dev,
 
 int BaseLibUsbAdaptor::DetachKernelDriver(libusb_device_handle *dev,
                                           int interface_number) {
-  return libusb_detach_kernel_driver(dev, interface_number);
+  if (libusb_kernel_driver_active(dev, interface_number)) {
+    return libusb_detach_kernel_driver(dev, interface_number);
+  } else {
+    return 0;
+  }
 }
 
 int BaseLibUsbAdaptor::GetActiveConfigDescriptor(
