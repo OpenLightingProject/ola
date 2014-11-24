@@ -2,6 +2,7 @@
 *.dirstamp
 *.gcda
 *.gcno
+*.gcov
 *.la
 *.lo
 *.log
