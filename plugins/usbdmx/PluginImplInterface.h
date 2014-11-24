@@ -13,36 +13,47 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteDevice.cpp
- * The USBDMX2 device
- * Copyright (C) 2010 Simon Newton
+ * PluginImplInterface.h
+ * The interface for the various implementations of the USBDMX plugin.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#include <string.h>
-#include <sys/time.h>
+#ifndef PLUGINS_USBDMX_PLUGINIMPLINTERFACE_H_
+#define PLUGINS_USBDMX_PLUGINIMPLINTERFACE_H_
 
-#include "ola/Logging.h"
-#include "plugins/usbdmx/SunliteDevice.h"
-#include "plugins/usbdmx/SunliteOutputPort.h"
+#include <libusb.h>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+#include "ola/plugin_id.h"
+#include "olad/Plugin.h"
+#include "ola/io/Descriptor.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * Start this device.
+/**
+ * @brief The interface for an implementation of the USB DMX plugin.
  */
-bool SunliteDevice::StartHook() {
-  SunliteOutputPort *output_port = new SunliteOutputPort(this,
-                                                         0,
-                                                         m_usb_device);
-  if (!output_port->Start()) {
-    delete output_port;
-    return false;
-  }
-  AddPort(output_port);
-  return true;
-}
+class PluginImplInterface {
+ public:
+  virtual ~PluginImplInterface() {}
+
+  /**
+   * @brief Start the implementation.
+   * @returns true if successful, false otherwise.
+   */
+  virtual bool Start() = 0;
+
+  /**
+   * @brief Stop the implementation.
+   * @returns true if successful, false otherwise.
+   */
+  virtual bool Stop() = 0;
+};
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
+#endif  // PLUGINS_USBDMX_PLUGINIMPLINTERFACE_H_

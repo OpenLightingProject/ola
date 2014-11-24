@@ -13,45 +13,48 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaDevice.h
- * Interface for the Anyma device
- * Copyright (C) 2010 Simon Newton
+ * AnymaWidgetFactory.h
+ * The WidgetFactory for Anyma widgets.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_ANYMADEVICE_H_
-#define PLUGINS_USBDMX_ANYMADEVICE_H_
+#ifndef PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
+#define PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
 
-#include <libusb.h>
-#include <string>
-#include "plugins/usbdmx/UsbDevice.h"
-#include "plugins/usbdmx/AnymaOutputPort.h"
+#include "ola/base/Macro.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Anyma device
+/**
+ * @brief Creates Anyma widgets.
  */
-class AnymaDevice: public UsbDevice {
+class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
  public:
-  AnymaDevice(ola::AbstractPlugin *owner,
-              libusb_device *usb_device,
-              libusb_device_handle *usb_handle,
-              const std::string &serial);
+  explicit AnymaWidgetFactory(class LibUsbAdaptor *adaptor)
+      : m_missing_serial_number(false),
+        m_adaptor(adaptor) {
+  }
 
-  std::string DeviceId() const;
+  bool DeviceAdded(
+      WidgetObserver *observer,
+      libusb_device *usb_device,
+      const struct libusb_device_descriptor &descriptor);
+
+ private:
+  bool m_missing_serial_number;
+  class LibUsbAdaptor *m_adaptor;
 
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];
+  static const uint16_t PRODUCT_ID;
+  static const uint16_t VENDOR_ID;
 
- protected:
-  bool StartHook();
-
- private:
-  AnymaOutputPort *m_output_port;
+  DISALLOW_COPY_AND_ASSIGN(AnymaWidgetFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_ANYMADEVICE_H_
+#endif  // PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_

@@ -13,38 +13,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteDevice.h
- * Interface for the Sunlite device
- * Copyright (C) 2010 Simon Newton
+ * GenericOutputPort.cpp
+ * A Generic output port that uses a widget.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEDEVICE_H_
-#define PLUGINS_USBDMX_SUNLITEDEVICE_H_
+#include "plugins/usbdmx/GenericOutputPort.h"
 
-#include <libusb.h>
-#include <string>
-#include "plugins/usbdmx/UsbDevice.h"
+#include "ola/Logging.h"
+#include "olad/Device.h"
+#include "plugins/usbdmx/Widget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A Sunlite device
- */
-class SunliteDevice: public UsbDevice {
- public:
-  SunliteDevice(ola::AbstractPlugin *owner,
-                libusb_device *usb_device)
-      : UsbDevice(owner, "Sunlite USB Device", usb_device) {
-  }
+GenericOutputPort::GenericOutputPort(Device *parent,
+                                     unsigned int id,
+                                     Widget *widget)
+    : BasicOutputPort(parent, id),
+      m_widget(widget) {
+}
 
-  std::string DeviceId() const { return "usbdmx2"; }
-
- protected:
-  bool StartHook();
-};
+bool GenericOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                 OLA_UNUSED uint8_t priority) {
+  m_widget->SendDMX(buffer);
+  return true;
+}
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEDEVICE_H_

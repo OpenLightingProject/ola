@@ -13,57 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaOutputPort.cpp
- * Thread for the Anyma Output Port
- * Copyright (C) 2010 Simon Newton
+ * ThreadedUsbSender.cpp
+ * Send DMX data over USB from a dedicated thread.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#include <string.h>
-#include <sys/types.h>
-#include <string>
+#include "plugins/usbdmx/ThreadedUsbSender.h"
 
+#include <unistd.h>
 #include "ola/Logging.h"
-#include "plugins/usbdmx/AnymaOutputPort.h"
-#include "plugins/usbdmx/AnymaDevice.h"
-
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using std::string;
-
-
-/*
- * Create a new AnymaOutputPort object
- */
-AnymaOutputPort::AnymaOutputPort(AnymaDevice *parent,
-                                 unsigned int id,
-                                 libusb_device_handle *usb_handle,
-                                 const string &serial)
-    : BasicOutputPort(parent, id),
-      m_term(false),
-      m_serial(serial),
+ThreadedUsbSender::ThreadedUsbSender(libusb_device *usb_device,
+                                     libusb_device_handle *usb_handle)
+    : m_term(false),
+      m_usb_device(usb_device),
       m_usb_handle(usb_handle) {
+  libusb_ref_device(usb_device);
 }
 
-
-/*
- * Cleanup
- */
-AnymaOutputPort::~AnymaOutputPort() {
+ThreadedUsbSender::~ThreadedUsbSender() {
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
   }
   Join();
+  libusb_unref_device(m_usb_device);
 }
 
-
-/*
- * Start this thread
- */
-bool AnymaOutputPort::Start() {
+bool ThreadedUsbSender::Start() {
   bool ret = ola::thread::Thread::Start();
   if (!ret) {
     OLA_WARN << "Failed to start sender thread";
@@ -74,11 +55,7 @@ bool AnymaOutputPort::Start() {
   return true;
 }
 
-
-/*
- * Run this thread
- */
-void *AnymaOutputPort::Run() {
+void *ThreadedUsbSender::Run() {
   DmxBuffer buffer;
   if (!m_usb_handle)
     return NULL;
@@ -96,7 +73,7 @@ void *AnymaOutputPort::Run() {
     }
 
     if (buffer.Size()) {
-      if (!SendDMX(buffer)) {
+      if (!TransmitBuffer(m_usb_handle, buffer)) {
         OLA_WARN << "Send failed, stopping thread...";
         break;
       }
@@ -110,35 +87,11 @@ void *AnymaOutputPort::Run() {
   return NULL;
 }
 
-
-/*
- * Store the data in the shared buffer
- */
-bool AnymaOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+bool ThreadedUsbSender::SendDMX(const DmxBuffer &buffer) {
+  // Store the new data in the shared buffer.
   ola::thread::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
   return true;
-  (void) priority;
-}
-
-
-/*
- * Send the dmx out the widget
- * @return true on success, false on failure
- */
-bool AnymaOutputPort::SendDMX(const DmxBuffer &buffer) {
-  int r = libusb_control_transfer(m_usb_handle,
-          LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
-          LIBUSB_ENDPOINT_OUT,
-          UDMX_SET_CHANNEL_RANGE,
-          buffer.Size(),
-          0,
-          // the suck
-          const_cast<unsigned char*>(buffer.GetRaw()),
-          buffer.Size(),
-          URB_TIMEOUT_MS);
-  // Sometimes we get PIPE errors here, those are non-fatal
-  return r > 0 || r == LIBUSB_ERROR_PIPE;
 }
 }  // namespace usbdmx
 }  // namespace plugin

@@ -13,44 +13,34 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProDevice.h
- * Interface for the EurolitePro device
- * Copyright (C) 2011 Simon Newton & Harry F
- * Eurolite Pro USB DMX   ArtNo. 51860120
+ * GenericDevice.cpp
+ * A Generic device that creates a single port.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
-#define PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
+#include "plugins/usbdmx/GenericDevice.h"
 
-#include <libusb.h>
 #include <string>
-#include "plugins/usbdmx/UsbDevice.h"
-#include "plugins/usbdmx/EuroliteProOutputPort.h"
+#include "plugins/usbdmx/Widget.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * A EurolitePro device
- */
-class EuroliteProDevice: public UsbDevice {
- public:
-  EuroliteProDevice(ola::AbstractPlugin *owner,
-                    libusb_device *usb_device)
-      : UsbDevice(owner, "EurolitePro USB Device", usb_device),
-        m_output_port(NULL) {
-  }
+GenericDevice::GenericDevice(ola::AbstractPlugin *owner,
+                             Widget *widget,
+                             const std::string &device_name,
+                             const std::string &device_id)
+    : Device(owner, device_name),
+      m_device_id(device_id),
+      m_port(new GenericOutputPort(this, 0, widget)) {
+}
 
-  std::string DeviceId() const;
-
- protected:
-  bool StartHook();
-
- private:
-  EuroliteProOutputPort *m_output_port;
-};
+bool GenericDevice::StartHook() {
+  AddPort(m_port.release());
+  return true;
+}
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
