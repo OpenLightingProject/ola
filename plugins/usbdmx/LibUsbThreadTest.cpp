@@ -20,15 +20,10 @@
 
 #include <libusb.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/usbdmx/LibUsbThread.h"
-
-using std::auto_ptr;
 
 namespace {
 #if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
@@ -120,4 +115,3 @@ void LibUsbThreadTest::AttemptDeviceOpen(
     thread->CloseHandle(usb_handle);
   }
 }
-
