@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AsyncUsbSender.h
- * A Asynchronous DMX USB sender.
+ * An Asynchronous DMX USB sender.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -32,7 +32,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A base class that send DMX data asynchronously.
+ * @brief A base class that send DMX data asynchronously to a libusb_device.
  *
  * This encapsulates much of the asynchronous libusb logic. Subclasses should
  * implement the SetupHandle() and PerformTransfer() methods.
@@ -40,7 +40,7 @@ namespace usbdmx {
 class AsyncUsbSender {
  public:
   /**
-   * @brief Create a new AsynchronousAnymaWidget.
+   * @brief Create a new AsyncUsbSender.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
@@ -59,7 +59,7 @@ class AsyncUsbSender {
   bool Init();
 
   /**
-   * @brief Send on frame of DMX data.
+   * @brief Send one frame of DMX data.
    * @param buffer the DMX data to send.
    * @returns the value of PerformTransfer().
    */
@@ -101,7 +101,6 @@ class AsyncUsbSender {
    */
   virtual bool PerformTransfer(const DmxBuffer &buffer) = 0;
 
-
   virtual void PostTransferHook() {}
 
   /**
@@ -123,7 +122,7 @@ class AsyncUsbSender {
                         int length, unsigned int timeout);
 
   /**
-   * @brief Fill a interrupt transfer.
+   * @brief Fill an interrupt transfer.
    */
   void FillInterruptTransfer(unsigned char endpoint, unsigned char *buffer,
                              int length, unsigned int timeout);
