@@ -114,4 +114,5 @@ void LibUsbThreadTest::AttemptDeviceOpen(
   if (usb_handle) {
     thread->CloseHandle(usb_handle);
   }
+  libusb_free_device_list(device_list, 1);
 }
