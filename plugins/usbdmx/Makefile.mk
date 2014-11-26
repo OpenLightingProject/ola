@@ -3,10 +3,14 @@
 if USE_LIBUSB
 noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
 plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
+    plugins/usbdmx/AsyncUsbSender.cpp \
+    plugins/usbdmx/AsyncUsbSender.h \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
     plugins/usbdmx/LibUsbThread.h \
+    plugins/usbdmx/ThreadedUsbSender.cpp \
+    plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/Widget.h \
     plugins/usbdmx/WidgetFactory.h
 plugins_usbdmx_libolausbdmxwidget_la_CXXFLAGS = \
