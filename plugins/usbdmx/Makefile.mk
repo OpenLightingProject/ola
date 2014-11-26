@@ -1,6 +1,25 @@
 # LIBRARIES
 ##################################################
 if USE_LIBUSB
+noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
+plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
+    plugins/usbdmx/AsyncUsbSender.cpp \
+    plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/LibUsbAdaptor.cpp \
+    plugins/usbdmx/LibUsbAdaptor.h \
+    plugins/usbdmx/LibUsbThread.cpp \
+    plugins/usbdmx/LibUsbThread.h \
+    plugins/usbdmx/ThreadedUsbSender.cpp \
+    plugins/usbdmx/ThreadedUsbSender.h \
+    plugins/usbdmx/Widget.h \
+    plugins/usbdmx/WidgetFactory.h
+plugins_usbdmx_libolausbdmxwidget_la_CXXFLAGS = \
+    $(COMMON_CXXFLAGS) \
+    $(libusb_CFLAGS)
+plugins_usbdmx_libolausbdmxwidget_la_LIBADD = \
+    $(libusb_LIBS) \
+    common/libolacommon.la
+
 lib_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
 plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AnymaDevice.cpp \
@@ -33,6 +52,21 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/VellemanOutputPort.cpp \
     plugins/usbdmx/VellemanOutputPort.h
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
-plugins_usbdmx_libolausbdmx_la_LIBADD = $(libusb_LIBS) \
-                                        common/libolacommon.la
+plugins_usbdmx_libolausbdmx_la_LIBADD = \
+    plugins/usbdmx/libolausbdmxwidget.la
+
+# TESTS
+##################################################
+test_programs += \
+    plugins/usbdmx/LibUsbThreadTester
+
+COMMON_USBDMX_TEST_LDADD = $(COMMON_TESTING_LIBS) \
+                           $(libusb_LIBS) \
+                           plugins/usbdmx/libolausbdmxwidget.la
+
+plugins_usbdmx_LibUsbThreadTester_SOURCES = \
+    plugins/usbdmx/LibUsbThreadTest.cpp
+plugins_usbdmx_LibUsbThreadTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) \
+                                             $(libusb_CFLAGS)
+plugins_usbdmx_LibUsbThreadTester_LDADD = $(COMMON_USBDMX_TEST_LDADD)
 endif
