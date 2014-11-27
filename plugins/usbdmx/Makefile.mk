@@ -21,7 +21,6 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/LibUsbThread.h \
     plugins/usbdmx/ScanlimeFadecandy.cpp \
     plugins/usbdmx/ScanlimeFadecandy.h \
-    plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
     plugins/usbdmx/ScanlimeFadecandyFactory.h \
     plugins/usbdmx/Sunlite.cpp \
