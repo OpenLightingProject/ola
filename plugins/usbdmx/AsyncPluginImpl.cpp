@@ -107,6 +107,7 @@ bool AsyncPluginImpl::Start() {
 
   // Setup the factories.
   m_widget_factories.push_back(new AnymaWidgetFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new FadecandyWidgetFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(
       new EuroliteProWidgetFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(new SunliteWidgetFactory(m_usb_adaptor.get()));
@@ -185,7 +186,7 @@ bool AsyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(FadecandyWidget *widget) {
+bool AsyncPluginImpl::NewWidget(ScanlimeFadecandyWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Fadecandy USB Device",
@@ -212,7 +213,7 @@ void AsyncPluginImpl::WidgetRemoved(EuroliteProWidget *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(FadecandyWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(ScanlimeFadecandyWidget *widget) {
   RemoveWidget(widget);
 }
 

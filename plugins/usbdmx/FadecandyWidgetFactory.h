@@ -31,7 +31,8 @@ namespace usbdmx {
 /**
  * @brief Creates Fadecandy widgets.
  */
-class FadecandyWidgetFactory : public BaseWidgetFactory<class FadecandyWidget> {
+class FadecandyWidgetFactory
+    : public BaseWidgetFactory<class ScanlimeFadecandyWidget> {
  public:
   explicit FadecandyWidgetFactory(class LibUsbAdaptor *adaptor)
       : m_missing_serial_number(false),

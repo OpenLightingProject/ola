@@ -53,11 +53,11 @@ bool FadecandyWidgetFactory::DeviceAdded(
     return false;
   }
 
-  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info.manufacturer)) {
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info)) {
     return false;
   }
 
-  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info)) {
     return false;
   }
 
@@ -77,7 +77,7 @@ bool FadecandyWidgetFactory::DeviceAdded(
     }
   }
 
-  FadecandyWidget *widget = NULL;
+  ScanlimeFadecandyWidget *widget = NULL;
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousFadecandyWidget(m_adaptor, usb_device,
                                              info.serial);

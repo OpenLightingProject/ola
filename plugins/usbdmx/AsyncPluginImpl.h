@@ -84,13 +84,13 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   bool NewWidget(class AnymaWidget *widget);
   bool NewWidget(class EuroliteProWidget *widget);
-  bool NewWidget(class FadecandyWidget *widget);
+  bool NewWidget(class ScanlimeFadecandyWidget *widget);
   bool NewWidget(class SunliteWidget *widget);
   bool NewWidget(class VellemanWidget *widget);
 
   void WidgetRemoved(class AnymaWidget *widget);
   void WidgetRemoved(class EuroliteProWidget *widget);
-  void WidgetRemoved(class FadecandyWidget *widget);
+  void WidgetRemoved(class ScanlimeFadecandyWidget *widget);
   void WidgetRemoved(class SunliteWidget *widget);
   void WidgetRemoved(class VellemanWidget *widget);
 

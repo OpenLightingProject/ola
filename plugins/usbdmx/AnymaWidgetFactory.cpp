@@ -53,11 +53,11 @@ bool AnymaWidgetFactory::DeviceAdded(
     return false;
   }
 
-  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info.manufacturer)) {
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info)) {
     return false;
   }
 
-  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info)) {
     return false;
   }
 

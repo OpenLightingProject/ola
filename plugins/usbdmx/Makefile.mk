@@ -39,10 +39,6 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/GenericDevice.h \
     plugins/usbdmx/GenericOutputPort.cpp \
     plugins/usbdmx/GenericOutputPort.h \
-    plugins/usbdmx/LibUsbAdaptor.cpp \
-    plugins/usbdmx/LibUsbAdaptor.h \
-    plugins/usbdmx/LibUsbThread.cpp \
-    plugins/usbdmx/LibUsbThread.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \
@@ -62,9 +58,7 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/VellemanWidget.cpp \
     plugins/usbdmx/VellemanWidget.h \
     plugins/usbdmx/VellemanWidgetFactory.cpp \
-    plugins/usbdmx/VellemanWidgetFactory.h \
-    plugins/usbdmx/Widget.h \
-    plugins/usbdmx/WidgetFactory.h
+    plugins/usbdmx/VellemanWidgetFactory.h
 
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 plugins_usbdmx_libolausbdmx_la_LIBADD = \

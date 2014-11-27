@@ -45,10 +45,10 @@ namespace usbdmx {
  * See https://github.com/scanlime/fadecandy/blob/master/README.md for more
  * information on Fadecandy devices.
  */
-class FadecandyWidget: public BaseWidget {
+class ScanlimeFadecandyWidget: public BaseWidget {
  public:
-  FadecandyWidget(LibUsbAdaptor *adaptor,
-                  const std::string &serial)
+  ScanlimeFadecandyWidget(LibUsbAdaptor *adaptor,
+                          const std::string &serial)
       : BaseWidget(adaptor),
         m_serial(serial) {
   }
@@ -70,7 +70,7 @@ class FadecandyWidget: public BaseWidget {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousFadecandyWidget: public FadecandyWidget {
+class SynchronousFadecandyWidget: public ScanlimeFadecandyWidget {
  public:
   /**
    * @brief Create a new SynchronousFadecandyWidget.
@@ -96,7 +96,7 @@ class SynchronousFadecandyWidget: public FadecandyWidget {
 /**
  * @brief An Fadecandy widget that uses asynchronous libusb operations.
  */
-class AsynchronousFadecandyWidget : public FadecandyWidget {
+class AsynchronousFadecandyWidget : public ScanlimeFadecandyWidget {
  public:
   /**
    * @brief Create a new AsynchronousFadecandyWidget.

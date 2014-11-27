@@ -55,7 +55,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class FadecandyWidget *widget) {
+  bool NewWidget(class ScanlimeFadecandyWidget *widget) {
     return DispatchNewWidget(widget);
   }
 
@@ -75,7 +75,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     DispatchWidgetRemoved(widget);
   }
 
-  void WidgetRemoved(class FadecandyWidget *widget) {
+  void WidgetRemoved(class ScanlimeFadecandyWidget *widget) {
     DispatchWidgetRemoved(widget);
   }
 

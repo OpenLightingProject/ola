@@ -62,6 +62,7 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_context(NULL) {
   m_widget_factories.push_back(new AnymaWidgetFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new EuroliteProWidgetFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new FadecandyWidgetFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteWidgetFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new VellemanWidgetFactory(&m_usb_adaptor));
 }
@@ -121,7 +122,7 @@ bool SyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(FadecandyWidget *widget) {
+bool SyncPluginImpl::NewWidget(ScanlimeFadecandyWidget *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "FadeCandy USB Device",

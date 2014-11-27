@@ -229,7 +229,7 @@ SynchronousFadecandyWidget::SynchronousFadecandyWidget(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : FadecandyWidget(adaptor, serial),
+    : ScanlimeFadecandyWidget(adaptor, serial),
       m_usb_device(usb_device) {
 }
 
@@ -311,7 +311,7 @@ AsynchronousFadecandyWidget::AsynchronousFadecandyWidget(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : FadecandyWidget(adaptor, serial) {
+    : ScanlimeFadecandyWidget(adaptor, serial) {
   m_sender.reset(new FadecandyAsyncUsbSender(m_adaptor, usb_device));
 }
 
