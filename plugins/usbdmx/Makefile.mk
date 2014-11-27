@@ -3,12 +3,28 @@
 if USE_LIBUSB
 noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
 plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
+    plugins/usbdmx/AnymauDMX.cpp \
+    plugins/usbdmx/AnymauDMX.h \
+    plugins/usbdmx/AnymauDMXFactory.cpp \
+    plugins/usbdmx/AnymauDMXFactory.h \
     plugins/usbdmx/AsyncUsbSender.cpp \
     plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/EurolitePro.cpp \
+    plugins/usbdmx/EurolitePro.h \
+    plugins/usbdmx/EuroliteProFactory.cpp \
+    plugins/usbdmx/EuroliteProFactory.h \
+    plugins/usbdmx/Flags.cpp \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
     plugins/usbdmx/LibUsbThread.h \
+    plugins/usbdmx/ScanlimeFadecandy.cpp \
+    plugins/usbdmx/ScanlimeFadecandy.h \
+    plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
+    plugins/usbdmx/ScanlimeFadecandyFactory.h \
+    plugins/usbdmx/SyncronizedWidgetObserver.cpp \
+    plugins/usbdmx/SyncronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/Widget.h \
