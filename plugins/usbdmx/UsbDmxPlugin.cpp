@@ -37,6 +37,7 @@
 #include "plugins/usbdmx/EuroliteProDevice.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
 #include "plugins/usbdmx/LibUsbUtils.h"
+#include "plugins/usbdmx/ScanlimeDevice.h"
 #include "plugins/usbdmx/SunliteDevice.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
 #include "plugins/usbdmx/UsbDevice.h"
@@ -198,6 +199,10 @@ void UsbDmxPlugin::FindDevices() {
                device_descriptor.idProduct == 0xfa63) {
       OLA_INFO << "Found a EUROLITE device";
       device = new EuroliteProDevice(this, usb_device);
+    } else if (device_descriptor.idVendor == 0x1D50 &&
+               device_descriptor.idProduct == 0x607A) {
+      OLA_INFO << "Found a Scanlime device";
+      device = NewScanlimeDevice(usb_device, device_descriptor);
     } else {
       OLA_DEBUG << "Found an unknown device, skipping. VID: "
                 << device_descriptor.idVendor << ", PID: "
@@ -250,7 +255,7 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n"
+"Anyma uDMX, Scanlime Fadecandy, Sunlite USBDMX2 & Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"
@@ -336,7 +341,7 @@ UsbDevice* UsbDmxPlugin::NewAnymaDevice(
   GetDeviceInfo(usb_handle, device_descriptor, &info);
 
   if (!MatchManufacturer(AnymaDevice::EXPECTED_MANUFACTURER,
-                        info.manufacturer)) {
+                         info.manufacturer)) {
     libusb_close(usb_handle);
     return NULL;
   }
@@ -365,6 +370,47 @@ UsbDevice* UsbDmxPlugin::NewAnymaDevice(
     return NULL;
   }
   return new AnymaDevice(this, usb_device, usb_handle, info.serial);
+}
+
+
+/**
+ * Create a new ScanlimeDevice.
+ */
+UsbDevice* UsbDmxPlugin::NewScanlimeDevice(
+    libusb_device *usb_device,
+    const struct libusb_device_descriptor &device_descriptor) {
+  libusb_device_handle *usb_handle;
+  if (libusb_open(usb_device, &usb_handle)) {
+    OLA_WARN << "Failed to open Scanlime usb device";
+    return NULL;
+  }
+
+  USBDeviceInformation info;
+  GetDeviceInfo(usb_handle, device_descriptor, &info);
+
+  if (!MatchManufacturer(ScanlimeDevice::EXPECTED_MANUFACTURER,
+                         info.manufacturer)) {
+    libusb_close(usb_handle);
+    return NULL;
+  }
+
+  if (!MatchProduct(ScanlimeDevice::EXPECTED_PRODUCT, info.product)) {
+    libusb_close(usb_handle);
+    return NULL;
+  }
+
+  if (info.serial.empty()) {
+    OLA_WARN << "Failed to read serial number from " << info.manufacturer
+             << " : " << info.product
+             << " the device probably doesn't have one";
+  }
+
+  if (libusb_claim_interface(usb_handle, 0)) {
+    OLA_WARN << "Failed to claim Scanlime usb device";
+    libusb_close(usb_handle);
+    return NULL;
+  }
+  return new ScanlimeDevice(this, usb_device, usb_handle, info.serial);
 }
 
 
