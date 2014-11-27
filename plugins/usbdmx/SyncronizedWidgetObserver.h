@@ -59,7 +59,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class SunliteWidget *widget) {
+  bool NewWidget(class Sunlite *widget) {
     return DispatchNewWidget(widget);
   }
 
@@ -79,7 +79,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     DispatchWidgetRemoved(widget);
   }
 
-  void WidgetRemoved(class SunliteWidget *widget) {
+  void WidgetRemoved(class Sunlite *widget) {
     DispatchWidgetRemoved(widget);
   }
 
