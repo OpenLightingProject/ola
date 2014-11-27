@@ -25,6 +25,7 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/util/Utils.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
@@ -40,6 +41,8 @@ namespace {
 // Why is this so long?
 static const unsigned int URB_TIMEOUT_MS = 500;
 static const uint8_t DMX_LABEL = 6;
+static const uint8_t START_OF_MESSAGE = 0x7e;
+static const uint8_t END_OF_MESSAGE = 0xe7;
 static const unsigned char ENDPOINT = 0x02;
 enum { EUROLITE_PRO_FRAME_SIZE = 518 };
 
@@ -52,19 +55,19 @@ void CreateFrame(
   unsigned int frame_size = buffer.Size();
 
   // header
-  frame[0] = 0x7E;   // Start message delimiter
+  frame[0] = START_OF_MESSAGE;
   frame[1] = DMX_LABEL;      // Label
   frame[4] = DMX512_START_CODE;
   buffer.Get(frame + 5, &frame_size);
-  frame[2] = (DMX_UNIVERSE_SIZE + 1) & 0xff;  // Data length LSB.
-  frame[3] = ((DMX_UNIVERSE_SIZE + 1) >> 8);  // Data length MSB
+
+  // LSB first.
+  utils::SplitUInt16(DMX_UNIVERSE_SIZE, &frame[3], &frame[2]);
   memset(frame + 5 + frame_size, 0, DMX_UNIVERSE_SIZE - frame_size);
   // End message delimiter
-
-  frame[EUROLITE_PRO_FRAME_SIZE - 1] =  0xE7;
+  frame[EUROLITE_PRO_FRAME_SIZE - 1] =  END_OF_MESSAGE;
 }
 
-/**
+/*
  * Find the interface with the endpoint we're after. Usually this is interface
  * 1 but we check them all just in case.
  */
@@ -83,10 +86,10 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
     const struct libusb_interface *interface = &device_config->interface[i];
     for (int j = 0; j < interface->num_altsetting; j++) {
       const struct libusb_interface_descriptor *iface_descriptor =
-        &interface->altsetting[j];
+          &interface->altsetting[j];
       for (uint8_t k = 0; k < iface_descriptor->bNumEndpoints; k++) {
         const struct libusb_endpoint_descriptor *endpoint =
-          &iface_descriptor->endpoint[k];
+            &iface_descriptor->endpoint[k];
         OLA_DEBUG << "Interface " << i << ", altsetting " << j << ", endpoint "
                   << static_cast<int>(k) << ", endpoint address 0x" << std::hex
                   << static_cast<int>(endpoint->bEndpointAddress);

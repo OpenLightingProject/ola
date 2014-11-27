@@ -80,7 +80,7 @@ bool ScanlimeFadecandyFactory::DeviceAdded(
   ScanlimeFadecandy *widget = NULL;
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousScanlimeFadecandy(m_adaptor, usb_device,
-                                             info.serial);
+                                               info.serial);
   } else {
     widget = new SynchronousScanlimeFadecandy(m_adaptor, usb_device,
                                               info.serial);

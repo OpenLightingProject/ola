@@ -27,7 +27,6 @@
 
 DECLARE_bool(use_async_libusb);
 
-
 namespace ola {
 namespace plugin {
 namespace usbdmx {
@@ -36,7 +35,6 @@ const char AnymauDMXFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
 const char AnymauDMXFactory::EXPECTED_PRODUCT[] = "uDMX";
 const uint16_t AnymauDMXFactory::PRODUCT_ID = 0x05DC;
 const uint16_t AnymauDMXFactory::VENDOR_ID = 0x16C0;
-
 
 bool AnymauDMXFactory::DeviceAdded(
     WidgetObserver *observer,

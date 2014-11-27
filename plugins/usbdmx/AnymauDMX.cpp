@@ -120,7 +120,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
   AnymaAsyncUsbSender(LibUsbAdaptor *adaptor, libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device) {
     m_control_setup_buffer =
-      new uint8_t[LIBUSB_CONTROL_SETUP_SIZE + DMX_UNIVERSE_SIZE];
+        new uint8_t[LIBUSB_CONTROL_SETUP_SIZE + DMX_UNIVERSE_SIZE];
   }
 
   ~AnymaAsyncUsbSender() {
