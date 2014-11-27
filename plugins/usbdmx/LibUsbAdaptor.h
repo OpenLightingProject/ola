@@ -29,6 +29,7 @@
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
 /**
  * @brief Wraps calls to libusb so we can test the code.
  */
@@ -89,7 +90,8 @@ class LibUsbAdaptor {
    * @brief Wraps libusb_set_configuration.
    * @param dev a device handle
    * @param configuration the bConfigurationValue of the configuration you
-   * wish to activate, or -1 if you wish to put the device in unconfigured state
+   *   wish to activate, or -1 if you wish to put the device in an unconfigured
+   *   state.
    * @returns 0 on success
    * @returns LIBUSB_ERROR_NOT_FOUND if the requested configuration does not
    *   exist.
@@ -136,9 +138,9 @@ class LibUsbAdaptor {
   /**
    * @brief Wraps libusb_get_active_config_descriptor.
    * @param dev a device
-   * @param config output location for the USB configuration descriptor. Only
-   * valid if 0 was returned. Must be freed with libusb_free_config_descriptor()
-   * after use.
+   * @param[out] config output location for the USB configuration descriptor.
+   *   Only valid if 0 was returned. Must be freed with
+   *   libusb_free_config_descriptor() after use.
    * @returns 0 on success
    * @returns LIBUSB_ERROR_NOT_FOUND if the device is in unconfigured state
    * @returns another LIBUSB_ERROR code on error
@@ -151,9 +153,9 @@ class LibUsbAdaptor {
    * @brief Wraps libusb_get_config_descriptor.
    * @param dev a device
    * @param config_index the index of the configuration you wish to retrieve
-   * @param config output location for the USB configuration descriptor. Only
-   * valid if 0 was returned. Must be freed with libusb_free_config_descriptor()
-   * after use.
+   * @param[out] config output location for the USB configuration descriptor.
+   *   Only valid if 0 was returned. Must be freed with
+   *   libusb_free_config_descriptor() after use.
    * @returns 0 on success
    * @returns LIBUSB_ERROR_NOT_FOUND if the configuration does not exist
    * @returns another LIBUSB_ERROR code on error
@@ -208,7 +210,7 @@ class LibUsbAdaptor {
 
   /**
    * @brief Wraps libusb_fill_control_setup
-   * @param buffer buffer to output the setup packet into
+   * @param[out] buffer buffer to output the setup packet into
    *  This pointer must be aligned to at least 2 bytes boundary.
    * @param bmRequestType the request type field for the setup packet
    * @param bRequest the request field for the setup packet
@@ -226,7 +228,7 @@ class LibUsbAdaptor {
 
   /**
    * @brief Wraps libusb_fill_control_transfer
-   * @param transfer the transfer to populate
+   * @param[out] transfer the transfer to populate
    * @param dev_handle handle of the device that will handle the transfer
    * @param buffer data buffer. If provided, this function will interpret the
    *   first 8 bytes as a setup packet and infer the transfer length from that.
@@ -244,12 +246,12 @@ class LibUsbAdaptor {
 
   /**
    * @brief Wraps libusb_fill_bulk_transfer.
-   * @param transfer the transfer to populate
+   * @param[out] transfer the transfer to populate
    * @param dev_handle handle of the device that will handle the transfer
    * @param endpoint address of the endpoint where this transfer will be sent
    * @param buffer data buffer. If provided, this function will interpret the
-   * first 8 bytes as a setup packet and infer the transfer length from that.
-   * This pointer must be aligned to at least 2 bytes boundary.
+   *   first 8 bytes as a setup packet and infer the transfer length from that.
+   *   This pointer must be aligned to at least 2 bytes boundary.
    * @param length length of data buffer
    * @param callback callback function to be invoked on transfer completion
    * @param user_data user data to pass to callback function
@@ -266,7 +268,7 @@ class LibUsbAdaptor {
 
   /**
    * @brief Wraps libusb_fill_interrupt_transfer.
-   * @param transfer the transfer to populate
+   * @param[out] transfer the transfer to populate
    * @param dev_handle handle of the device that will handle the transfer
    * @param endpoint address of the endpoint where this transfer will be sent
    * @param buffer data buffer
@@ -293,13 +295,13 @@ class LibUsbAdaptor {
    * @param bRequest the request field for the setup packet
    * @param wValue the value field for the setup packet
    * @param wIndex the index field for the setup packet
-   * @param data a suitably-sized data buffer for either input or output
-   * (depending on direction bits within bmRequestType)
+   * @param [in,out] data a suitably-sized data buffer for either input or
+   *   output (depending on direction bits within bmRequestType)
    * @param wLength the length field for the setup packet. The data buffer
    *   should be at least this size.
    * @param timeout timeout (in millseconds) that this function should wait
-   * before giving up due to no response being received. For an unlimited
-   * timeout, use value 0.
+   *   before giving up due to no response being received. For an unlimited
+   *   timeout, use value 0.
    * @returns on success, the number of bytes actually transferred
    *
    */
@@ -314,9 +316,9 @@ class LibUsbAdaptor {
 
   /**
    * @brief Wraps libusb_bulk_transfer.
-   * @returns 0 on success (and populates <tt>transferred</tt>)
+   * @returns 0 on success and populates <tt>transferred</tt>
    * @returns LIBUSB_ERROR_TIMEOUT if the transfer timed out (and populates
-   * <tt>transferred</tt>)
+   *   <tt>transferred</tt>)
    * @returns LIBUSB_ERROR_PIPE if the endpoint halted
    * @returns LIBUSB_ERROR_OVERFLOW if the device offered more data, see
    * @returns LIBUSB_ERROR_NO_DEVICE if the device has been disconnected
@@ -331,7 +333,7 @@ class LibUsbAdaptor {
 
   /**
    * @brief Wraps libusb_interrupt_transfer
-   * @returns 0 on success (and populates <tt>transferred</tt>)
+   * @returns 0 on success and populates <tt>transferred</tt>
    * @returns LIBUSB_ERROR_TIMEOUT if the transfer timed out
    * @returns LIBUSB_ERROR_PIPE if the endpoint halted
    * @returns LIBUSB_ERROR_OVERFLOW if the device offered more data, see
@@ -362,24 +364,24 @@ class LibUsbAdaptor {
   /**
    * @brief Check if the manufacturer string matches the expected value.
    * @param expected The expected manufacturer string.
-   * @param actual The actual manufacturer string.
+   * @param device_info The DeviceInformation struct to check against.
    * @returns true if the strings matched, false otherwise.
    */
   static bool CheckManufacturer(const std::string &expected,
-                                const std::string &actual);
+                                const DeviceInformation &device_info);
 
   /**
    * @brief Check if the product string matches the expected value.
    * @param expected The expected product string.
-   * @param actual The actual product string.
+   * @param device_info The DeviceInformation struct to check against.
    * @returns true if the strings matched, false otherwise.
    */
   static bool CheckProduct(const std::string &expected,
-                           const std::string &actual);
+                           const DeviceInformation &device_info);
 };
 
 /**
- * @brief The base LibUsbAdaptor that passes most called through to libusb.
+ * @brief The base LibUsbAdaptor that passes most calls through to libusb.
  */
 class BaseLibUsbAdaptor : public LibUsbAdaptor {
  public:

@@ -67,13 +67,13 @@ class WidgetObserver {
   virtual bool NewWidget(class EuroliteProWidget *widget) = 0;
 
   /**
-   * @brief Called when a new FadecandyWidget is added.
+   * @brief Called when a new ScanlimeFadecandyWidget is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class FadecandyWidget *widget) = 0;
+  virtual bool NewWidget(class ScanlimeFadecandyWidget *widget) = 0;
 
   /**
    * @brief Called when a new SunliteWidget is added.
@@ -110,12 +110,12 @@ class WidgetObserver {
   virtual void WidgetRemoved(class EuroliteProWidget *widget) = 0;
 
   /**
-   * @brief Called when a FadecandyWidget is removed.
+   * @brief Called when a ScanlimeFadecandyWidget is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class FadecandyWidget *widget) = 0;
+  virtual void WidgetRemoved(class ScanlimeFadecandyWidget *widget) = 0;
 
   /**
    * @brief Called when a SunliteWidget is removed.
