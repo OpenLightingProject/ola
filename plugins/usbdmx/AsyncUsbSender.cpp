@@ -127,7 +127,6 @@ void AsyncUsbSender::FillInterruptTransfer(unsigned char endpoint,
 }
 
 int AsyncUsbSender::SubmitTransfer() {
-  OLA_INFO << "TX";
   int ret = m_adaptor->SubmitTransfer(m_transfer);
 
   if (ret) {
