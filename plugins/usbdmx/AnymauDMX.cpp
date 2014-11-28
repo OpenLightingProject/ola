@@ -149,7 +149,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
     buffer.Get(m_control_setup_buffer + LIBUSB_CONTROL_SETUP_SIZE, &length);
 
     FillControlTransfer(m_control_setup_buffer, URB_TIMEOUT_MS);
-    return SubmitTransfer() == 0;
+    return (SubmitTransfer() == 0);
   }
 
  private:

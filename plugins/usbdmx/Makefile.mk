@@ -23,10 +23,18 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
     plugins/usbdmx/ScanlimeFadecandyFactory.h \
+    plugins/usbdmx/Sunlite.cpp \
+    plugins/usbdmx/Sunlite.h \
+    plugins/usbdmx/SunliteFactory.cpp \
+    plugins/usbdmx/SunliteFactory.h \
     plugins/usbdmx/SyncronizedWidgetObserver.cpp \
     plugins/usbdmx/SyncronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
+    plugins/usbdmx/VellemanK8062.cpp \
+    plugins/usbdmx/VellemanK8062.h \
+    plugins/usbdmx/VellemanK8062Factory.cpp \
+    plugins/usbdmx/VellemanK8062Factory.h \
     plugins/usbdmx/Widget.h \
     plugins/usbdmx/WidgetFactory.h
 plugins_usbdmx_libolausbdmxwidget_la_CXXFLAGS = \
@@ -46,6 +54,10 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/EuroliteProDevice.h \
     plugins/usbdmx/EuroliteProOutputPort.cpp \
     plugins/usbdmx/EuroliteProOutputPort.h \
+    plugins/usbdmx/GenericDevice.cpp \
+    plugins/usbdmx/GenericDevice.h \
+    plugins/usbdmx/GenericOutputPort.cpp \
+    plugins/usbdmx/GenericOutputPort.h \
     plugins/usbdmx/LibUsbUtils.cpp \
     plugins/usbdmx/LibUsbUtils.h \
     plugins/usbdmx/FirmwareLoader.h \
