@@ -85,13 +85,13 @@ class WidgetObserver {
   virtual bool NewWidget(class Sunlite *widget) = 0;
 
   /**
-   * @brief Called when a new VellemanWidget is added.
+   * @brief Called when a new VellemanK8062 is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class VellemanWidget *widget) = 0;
+  virtual bool NewWidget(class VellemanK8062 *widget) = 0;
 
   /**
    * @brief Called when an AnymauDMX is removed.
@@ -126,12 +126,12 @@ class WidgetObserver {
   virtual void WidgetRemoved(class Sunlite *widget) = 0;
 
   /**
-   * @brief Called when a VellemanWidget is removed.
+   * @brief Called when a VellemanK8062 is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class VellemanWidget *widget) = 0;
+  virtual void WidgetRemoved(class VellemanK8062 *widget) = 0;
 };
 
 /**

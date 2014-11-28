@@ -63,7 +63,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class VellemanWidget *widget) {
+  bool NewWidget(class VellemanK8062 *widget) {
     return DispatchNewWidget(widget);
   }
 
@@ -83,7 +83,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     DispatchWidgetRemoved(widget);
   }
 
-  void WidgetRemoved(class VellemanWidget *widget) {
+  void WidgetRemoved(class VellemanK8062 *widget) {
     DispatchWidgetRemoved(widget);
   }
 

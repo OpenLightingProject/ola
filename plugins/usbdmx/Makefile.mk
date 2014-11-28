@@ -31,6 +31,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/SyncronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
+    plugins/usbdmx/VellemanK8062.cpp \
+    plugins/usbdmx/VellemanK8062.h \
+    plugins/usbdmx/VellemanK8062Factory.cpp \
+    plugins/usbdmx/VellemanK8062Factory.h \
     plugins/usbdmx/Widget.h \
     plugins/usbdmx/WidgetFactory.h
 plugins_usbdmx_libolausbdmxwidget_la_CXXFLAGS = \
