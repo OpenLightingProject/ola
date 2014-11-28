@@ -50,17 +50,20 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AnymaDevice.h \
     plugins/usbdmx/AnymaOutputPort.cpp \
     plugins/usbdmx/AnymaOutputPort.h \
+    plugins/usbdmx/AsyncPluginImpl.cpp \
+    plugins/usbdmx/AsyncPluginImpl.h \
     plugins/usbdmx/EuroliteProDevice.cpp \
     plugins/usbdmx/EuroliteProDevice.h \
     plugins/usbdmx/EuroliteProOutputPort.cpp \
     plugins/usbdmx/EuroliteProOutputPort.h \
+    plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/GenericDevice.cpp \
     plugins/usbdmx/GenericDevice.h \
     plugins/usbdmx/GenericOutputPort.cpp \
     plugins/usbdmx/GenericOutputPort.h \
     plugins/usbdmx/LibUsbUtils.cpp \
     plugins/usbdmx/LibUsbUtils.h \
-    plugins/usbdmx/FirmwareLoader.h \
+    plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SunliteDevice.cpp \
     plugins/usbdmx/SunliteDevice.h \
     plugins/usbdmx/SunliteFirmware.h \
@@ -68,6 +71,8 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/SunliteFirmwareLoader.h \
     plugins/usbdmx/SunliteOutputPort.cpp \
     plugins/usbdmx/SunliteOutputPort.h \
+    plugins/usbdmx/SyncPluginImpl.cpp \
+    plugins/usbdmx/SyncPluginImpl.h \
     plugins/usbdmx/UsbDevice.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
     plugins/usbdmx/UsbDmxPlugin.h \
