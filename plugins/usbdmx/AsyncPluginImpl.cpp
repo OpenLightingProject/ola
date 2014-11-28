@@ -73,6 +73,7 @@ AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_widget_observer(this, plugin_adaptor),
       m_context(NULL),
       m_use_hotplug(false),
+      m_suppress_hotplug_events(false),
       m_scan_timeout(ola::thread::INVALID_TIMEOUT) {
 }
 
@@ -142,13 +143,22 @@ bool AsyncPluginImpl::Stop() {
     m_scan_timeout = ola::thread::INVALID_TIMEOUT;
   }
 
-  m_usb_thread->Shutdown();
+  // The shutdown sequence is:
+  //  - suppress hotplug events so we don't add any new devices
+  //  - remove all existing devices
+  //  - stop the usb_thread (if using hotplug, otherwise this is a noop).
+  {
+    ola::thread::MutexLocker locker(&m_mutex);
+    m_suppress_hotplug_events = true;
+  }
 
   USBDeviceToFactoryMap::iterator iter = m_device_factory_map.begin();
   for (; iter != m_device_factory_map.end(); ++iter) {
     iter->second->DeviceRemoved(this, iter->first);
   }
   m_device_factory_map.clear();
+
+  m_usb_thread->Shutdown();
 
   m_usb_thread.reset();
   m_usb_adaptor.reset();
@@ -162,6 +172,11 @@ bool AsyncPluginImpl::Stop() {
 #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
                                    libusb_hotplug_event event) {
+  ola::thread::MutexLocker locker(&m_mutex);
+  if (m_suppress_hotplug_events) {
+    return;
+  }
+
   OLA_INFO << "Got USB hotplug event  for " << usb_device << " : "
            << (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED ? "add" : "del");
   if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED) {

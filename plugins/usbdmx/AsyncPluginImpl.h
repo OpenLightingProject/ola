@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "ola/base/Macro.h"
+#include "ola/thread/Mutex.h"
 #include "ola/thread/Thread.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncronizedWidgetObserver.h"
@@ -109,6 +110,8 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   libusb_context *m_context;
   bool m_use_hotplug;
+  ola::thread::Mutex m_mutex;
+  bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
   std::auto_ptr<class LibUsbThread> m_usb_thread;
   std::auto_ptr<class LibUsbAdaptor> m_usb_adaptor;
 
