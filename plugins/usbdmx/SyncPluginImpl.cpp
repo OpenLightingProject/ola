@@ -33,12 +33,12 @@
 #include "ola/stl/STLUtils.h"
 #include "olad/PluginAdaptor.h"
 
-#include "plugins/usbdmx/AnymaWidget.h"
-#include "plugins/usbdmx/AnymaWidgetFactory.h"
-#include "plugins/usbdmx/EuroliteProWidget.h"
-#include "plugins/usbdmx/EuroliteProWidgetFactory.h"
-#include "plugins/usbdmx/FadecandyWidget.h"
-#include "plugins/usbdmx/FadecandyWidgetFactory.h"
+#include "plugins/usbdmx/AnymauDMX.h"
+#include "plugins/usbdmx/AnymauDMXFactory.h"
+#include "plugins/usbdmx/EurolitePro.h"
+#include "plugins/usbdmx/EuroliteProFactory.h"
+#include "plugins/usbdmx/ScanlimeFadecandy.h"
+#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/SunliteWidget.h"
 #include "plugins/usbdmx/SunliteWidgetFactory.h"
@@ -60,9 +60,9 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_plugin(plugin),
       m_debug_level(debug_level),
       m_context(NULL) {
-  m_widget_factories.push_back(new AnymaWidgetFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(new EuroliteProWidgetFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(new FadecandyWidgetFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteWidgetFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new VellemanWidgetFactory(&m_usb_adaptor));
 }
@@ -108,21 +108,21 @@ bool SyncPluginImpl::Stop() {
   return true;
 }
 
-bool SyncPluginImpl::NewWidget(AnymaWidget *widget) {
+bool SyncPluginImpl::NewWidget(AnymauDMX *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(EuroliteProWidget *widget) {
+bool SyncPluginImpl::NewWidget(EurolitePro *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(ScanlimeFadecandyWidget *widget) {
+bool SyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "FadeCandy USB Device",

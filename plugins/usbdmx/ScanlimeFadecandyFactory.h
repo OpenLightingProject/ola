@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FadecandyWidgetFactory.h
- * The WidgetFactory for Fadecandy / FadeCandy widgets.
+ * ScanlimeFadecandyFactory.h
+ * The WidgetFactory for Scanlime FadeCandy widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_FADECANDYWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_FADECANDYWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_
+#define PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_
 
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -31,10 +31,10 @@ namespace usbdmx {
 /**
  * @brief Creates Fadecandy widgets.
  */
-class FadecandyWidgetFactory
-    : public BaseWidgetFactory<class ScanlimeFadecandyWidget> {
+class ScanlimeFadecandyFactory
+    : public BaseWidgetFactory<class ScanlimeFadecandy> {
  public:
-  explicit FadecandyWidgetFactory(class LibUsbAdaptor *adaptor)
+  explicit ScanlimeFadecandyFactory(class LibUsbAdaptor *adaptor)
       : m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }
@@ -53,9 +53,9 @@ class FadecandyWidgetFactory
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(FadecandyWidgetFactory);
+  DISALLOW_COPY_AND_ASSIGN(ScanlimeFadecandyFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_FADECANDYWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_

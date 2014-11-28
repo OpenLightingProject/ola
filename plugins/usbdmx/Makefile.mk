@@ -3,10 +3,30 @@
 if USE_LIBUSB
 noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
 plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
+    plugins/usbdmx/AnymauDMX.cpp \
+    plugins/usbdmx/AnymauDMX.h \
+    plugins/usbdmx/AnymauDMXFactory.cpp \
+    plugins/usbdmx/AnymauDMXFactory.h \
+    plugins/usbdmx/AsyncUsbSender.cpp \
+    plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/EurolitePro.cpp \
+    plugins/usbdmx/EurolitePro.h \
+    plugins/usbdmx/EuroliteProFactory.cpp \
+    plugins/usbdmx/EuroliteProFactory.h \
+    plugins/usbdmx/Flags.cpp \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
     plugins/usbdmx/LibUsbThread.h \
+    plugins/usbdmx/ScanlimeFadecandy.cpp \
+    plugins/usbdmx/ScanlimeFadecandy.h \
+    plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
+    plugins/usbdmx/ScanlimeFadecandyFactory.h \
+    plugins/usbdmx/SyncronizedWidgetObserver.cpp \
+    plugins/usbdmx/SyncronizedWidgetObserver.h \
+    plugins/usbdmx/ThreadedUsbSender.cpp \
+    plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/Widget.h \
     plugins/usbdmx/WidgetFactory.h
 plugins_usbdmx_libolausbdmxwidget_la_CXXFLAGS = \
@@ -18,22 +38,8 @@ plugins_usbdmx_libolausbdmxwidget_la_LIBADD = \
 
 lib_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
 plugins_usbdmx_libolausbdmx_la_SOURCES = \
-    plugins/usbdmx/AnymaWidget.cpp \
-    plugins/usbdmx/AnymaWidget.h \
-    plugins/usbdmx/AnymaWidgetFactory.cpp \
-    plugins/usbdmx/AnymaWidgetFactory.h \
     plugins/usbdmx/AsyncPluginImpl.cpp \
     plugins/usbdmx/AsyncPluginImpl.h \
-    plugins/usbdmx/AsyncUsbSender.cpp \
-    plugins/usbdmx/AsyncUsbSender.h \
-    plugins/usbdmx/EuroliteProWidget.cpp \
-    plugins/usbdmx/EuroliteProWidget.h \
-    plugins/usbdmx/EuroliteProWidgetFactory.cpp \
-    plugins/usbdmx/EuroliteProWidgetFactory.h \
-    plugins/usbdmx/FadecandyWidget.cpp \
-    plugins/usbdmx/FadecandyWidget.h \
-    plugins/usbdmx/FadecandyWidgetFactory.cpp \
-    plugins/usbdmx/FadecandyWidgetFactory.h \
     plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/GenericDevice.cpp \
     plugins/usbdmx/GenericDevice.h \
@@ -49,10 +55,6 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/SunliteWidgetFactory.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \
-    plugins/usbdmx/SyncronizedWidgetObserver.cpp \
-    plugins/usbdmx/SyncronizedWidgetObserver.h \
-    plugins/usbdmx/ThreadedUsbSender.cpp \
-    plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
     plugins/usbdmx/UsbDmxPlugin.h \
     plugins/usbdmx/VellemanWidget.cpp \

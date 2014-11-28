@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FadecandyWidget.h
- * The synchronous and asynchronous Fadecandy widgets.
+ * AnymauDMX.h
+ * The synchronous and asynchronous Anyma uDMX widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_FADECANDYWIDGET_H_
-#define PLUGINS_USBDMX_FADECANDYWIDGET_H_
+#ifndef PLUGINS_USBDMX_ANYMAUDMX_H_
+#define PLUGINS_USBDMX_ANYMAUDMX_H_
 
 #include <libusb.h>
 #include <memory>
@@ -35,23 +35,21 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief The interface for the Fadecandy Widgets.
- *
- * Fadecandy devices have 8 physical ports. Each port can drive 64 RGB pixels.
- * Ideally this means we'd model each Fadecandy port as an OLA port, but that
- * introduces syncronization issues, since the underlying protocol models all 8
- * ports as a flat pixel array. For now we just expose the first 170 pixels.
- *
- * See https://github.com/scanlime/fadecandy/blob/master/README.md for more
- * information on Fadecandy devices.
+ * @brief The base class for Anyma Widgets.
  */
-class ScanlimeFadecandyWidget: public BaseWidget {
+class AnymauDMX: public BaseWidget {
  public:
-  ScanlimeFadecandyWidget(LibUsbAdaptor *adaptor,
-                          const std::string &serial)
+  /**
+   * @brief Create a new AnymauDMX.
+   * @param adaptor the LibUsbAdaptor to use.
+   * @param serial the serial number of the widget.
+   */
+  AnymauDMX(LibUsbAdaptor *adaptor,
+            const std::string &serial)
       : BaseWidget(adaptor),
-        m_serial(serial) {
-  }
+        m_serial(serial) {}
+
+  virtual ~AnymauDMX() {}
 
   /**
    * @brief Get the serial number of this widget.
@@ -66,21 +64,21 @@ class ScanlimeFadecandyWidget: public BaseWidget {
 };
 
 /**
- * @brief An Fadecandy widget that uses synchronous libusb operations.
+ * @brief An Anyma widget that uses synchronous libusb operations.
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousFadecandyWidget: public ScanlimeFadecandyWidget {
+class SynchronousAnymauDMX: public AnymauDMX {
  public:
   /**
-   * @brief Create a new SynchronousFadecandyWidget.
+   * @brief Create a new SynchronousAnymauDMX.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousFadecandyWidget(LibUsbAdaptor *adaptor,
-                             libusb_device *usb_device,
-                             const std::string &serial);
+  SynchronousAnymauDMX(LibUsbAdaptor *adaptor,
+                       libusb_device *usb_device,
+                       const std::string &serial);
 
   bool Init();
 
@@ -88,36 +86,36 @@ class SynchronousFadecandyWidget: public ScanlimeFadecandyWidget {
 
  private:
   libusb_device* const m_usb_device;
-  std::auto_ptr<class FadecandyThreadedSender> m_sender;
+  std::auto_ptr<class AnymaThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousFadecandyWidget);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousAnymauDMX);
 };
 
 /**
- * @brief An Fadecandy widget that uses asynchronous libusb operations.
+ * @brief An Anyma widget that uses asynchronous libusb operations.
  */
-class AsynchronousFadecandyWidget : public ScanlimeFadecandyWidget {
+class AsynchronousAnymauDMX : public AnymauDMX {
  public:
   /**
-   * @brief Create a new AsynchronousFadecandyWidget.
+   * @brief Create a new AsynchronousAnymauDMX.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousFadecandyWidget(LibUsbAdaptor *adaptor,
-                              libusb_device *usb_device,
-                              const std::string &serial);
+  AsynchronousAnymauDMX(LibUsbAdaptor *adaptor,
+                        libusb_device *usb_device,
+                        const std::string &serial);
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class FadecandyAsyncUsbSender> m_sender;
+  std::auto_ptr<class AnymaAsyncUsbSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousFadecandyWidget);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousAnymauDMX);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_FADECANDYWIDGET_H_
+#endif  // PLUGINS_USBDMX_ANYMAUDMX_H_

@@ -13,16 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FadecandyWidgetFactory.cpp
+ * ScanlimeFadecandyFactory.cpp
  * The WidgetFactory for Fadecandy widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/FadecandyWidgetFactory.h"
+#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/FadecandyWidget.h"
+#include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
@@ -32,13 +32,13 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char FadecandyWidgetFactory::EXPECTED_MANUFACTURER[] = "scanlime";
-const char FadecandyWidgetFactory::EXPECTED_PRODUCT[] = "Fadecandy";
-const uint16_t FadecandyWidgetFactory::PRODUCT_ID = 0x1D50;
-const uint16_t FadecandyWidgetFactory::VENDOR_ID = 0x607A;
+const char ScanlimeFadecandyFactory::EXPECTED_MANUFACTURER[] = "scanlime";
+const char ScanlimeFadecandyFactory::EXPECTED_PRODUCT[] = "Fadecandy";
+const uint16_t ScanlimeFadecandyFactory::PRODUCT_ID = 0x1D50;
+const uint16_t ScanlimeFadecandyFactory::VENDOR_ID = 0x607A;
 
 
-bool FadecandyWidgetFactory::DeviceAdded(
+bool ScanlimeFadecandyFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -77,12 +77,13 @@ bool FadecandyWidgetFactory::DeviceAdded(
     }
   }
 
-  ScanlimeFadecandyWidget *widget = NULL;
+  ScanlimeFadecandy *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousFadecandyWidget(m_adaptor, usb_device,
-                                             info.serial);
+    widget = new AsynchronousScanlimeFadecandy(m_adaptor, usb_device,
+                                               info.serial);
   } else {
-    widget = new SynchronousFadecandyWidget(m_adaptor, usb_device, info.serial);
+    widget = new SynchronousScanlimeFadecandy(m_adaptor, usb_device,
+                                              info.serial);
   }
   return AddWidget(observer, usb_device, widget);
 }

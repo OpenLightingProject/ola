@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FadecandyWidget.cpp
+ * ScanlimeFadecandy.cpp
  * The synchronous and asynchronous Fadecandy widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/FadecandyWidget.h"
+#include "plugins/usbdmx/ScanlimeFadecandy.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -193,8 +193,8 @@ void UpdatePacketsWithDMX(fadecandy_packet packets[PACKETS_PER_UPDATE],
 class FadecandyThreadedSender: public ThreadedUsbSender {
  public:
   FadecandyThreadedSender(LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device,
-                         libusb_device_handle *handle)
+                          libusb_device *usb_device,
+                          libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
         m_adaptor(adaptor) {
   }
@@ -222,18 +222,18 @@ bool FadecandyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   return r == 0;
 }
 
-// SynchronousFadecandyWidget
+// SynchronousScanlimeFadecandy
 // -----------------------------------------------------------------------------
 
-SynchronousFadecandyWidget::SynchronousFadecandyWidget(
+SynchronousScanlimeFadecandy::SynchronousScanlimeFadecandy(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : ScanlimeFadecandyWidget(adaptor, serial),
+    : ScanlimeFadecandy(adaptor, serial),
       m_usb_device(usb_device) {
 }
 
-bool SynchronousFadecandyWidget::Init() {
+bool SynchronousScanlimeFadecandy::Init() {
   libusb_device_handle *usb_handle;
 
   bool ok = m_adaptor->OpenDeviceAndClaimInterface(
@@ -256,7 +256,7 @@ bool SynchronousFadecandyWidget::Init() {
   return true;
 }
 
-bool SynchronousFadecandyWidget::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -265,7 +265,7 @@ bool SynchronousFadecandyWidget::SendDMX(const DmxBuffer &buffer) {
 class FadecandyAsyncUsbSender : public AsyncUsbSender {
  public:
   FadecandyAsyncUsbSender(LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device)
+                          libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device) {
   }
 
@@ -304,22 +304,22 @@ bool FadecandyAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer) {
   return SubmitTransfer() == 0;
 }
 
-// AsynchronousFadecandyWidget
+// AsynchronousScanlimeFadecandy
 // -----------------------------------------------------------------------------
 
-AsynchronousFadecandyWidget::AsynchronousFadecandyWidget(
+AsynchronousScanlimeFadecandy::AsynchronousScanlimeFadecandy(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : ScanlimeFadecandyWidget(adaptor, serial) {
+    : ScanlimeFadecandy(adaptor, serial) {
   m_sender.reset(new FadecandyAsyncUsbSender(m_adaptor, usb_device));
 }
 
-bool AsynchronousFadecandyWidget::Init() {
+bool AsynchronousScanlimeFadecandy::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousFadecandyWidget::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

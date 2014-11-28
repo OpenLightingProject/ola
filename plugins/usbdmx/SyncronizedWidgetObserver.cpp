@@ -44,8 +44,8 @@ bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass*widget) {
     AddFuture f;
     m_ss->Execute(
         NewSingleCallback(
-          this, &SyncronizedWidgetObserver::HandleNewWidget<WidgetClass>,
-          widget, &f));
+            this, &SyncronizedWidgetObserver::HandleNewWidget<WidgetClass>,
+            widget, &f));
     return f.Get();
   }
 }
@@ -58,8 +58,8 @@ void SyncronizedWidgetObserver::DispatchWidgetRemoved(WidgetClass *widget) {
     RemoveFuture f;
     m_ss->Execute(
         NewSingleCallback(
-          this, &SyncronizedWidgetObserver::HandleWidgetRemoved<WidgetClass>,
-          widget, &f));
+            this, &SyncronizedWidgetObserver::HandleWidgetRemoved<WidgetClass>,
+            widget, &f));
     f.Get();
   }
 }

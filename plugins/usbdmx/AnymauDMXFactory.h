@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaWidgetFactory.h
- * The WidgetFactory for Anyma widgets.
+ * AnymauDMXFactory.h
+ * The factory for Anyma uDMX widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_
+#define PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_
 
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -31,9 +31,9 @@ namespace usbdmx {
 /**
  * @brief Creates Anyma widgets.
  */
-class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
+class AnymauDMXFactory : public BaseWidgetFactory<class AnymauDMX> {
  public:
-  explicit AnymaWidgetFactory(class LibUsbAdaptor *adaptor)
+  explicit AnymauDMXFactory(class LibUsbAdaptor *adaptor)
       : m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }
@@ -52,9 +52,9 @@ class AnymaWidgetFactory : public BaseWidgetFactory<class AnymaWidget> {
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(AnymaWidgetFactory);
+  DISALLOW_COPY_AND_ASSIGN(AnymauDMXFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_ANYMAWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_

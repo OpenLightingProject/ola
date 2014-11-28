@@ -83,15 +83,15 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
                     libusb_hotplug_event event);
   #endif
 
-  bool NewWidget(class AnymaWidget *widget);
-  bool NewWidget(class EuroliteProWidget *widget);
-  bool NewWidget(class ScanlimeFadecandyWidget *widget);
+  bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class EurolitePro *widget);
+  bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class SunliteWidget *widget);
   bool NewWidget(class VellemanWidget *widget);
 
-  void WidgetRemoved(class AnymaWidget *widget);
-  void WidgetRemoved(class EuroliteProWidget *widget);
-  void WidgetRemoved(class ScanlimeFadecandyWidget *widget);
+  void WidgetRemoved(class AnymauDMX *widget);
+  void WidgetRemoved(class EurolitePro *widget);
+  void WidgetRemoved(class ScanlimeFadecandy *widget);
   void WidgetRemoved(class SunliteWidget *widget);
   void WidgetRemoved(class VellemanWidget *widget);
 

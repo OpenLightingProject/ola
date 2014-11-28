@@ -13,32 +13,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaWidgetFactory.cpp
- * The WidgetFactory for Anyma widgets.
+ * EuroliteProFactory.cpp
+ * The WidgetFactory for EurolitePro widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/AnymaWidgetFactory.h"
+#include "plugins/usbdmx/EuroliteProFactory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/AnymaWidget.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
-
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char AnymaWidgetFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
-const char AnymaWidgetFactory::EXPECTED_PRODUCT[] = "uDMX";
-const uint16_t AnymaWidgetFactory::PRODUCT_ID = 0x05DC;
-const uint16_t AnymaWidgetFactory::VENDOR_ID = 0x16C0;
+const char EuroliteProFactory::EXPECTED_MANUFACTURER[] = "Eurolite";
+const char EuroliteProFactory::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
+const uint16_t EuroliteProFactory::PRODUCT_ID = 0xfa63;
+const uint16_t EuroliteProFactory::VENDOR_ID = 0x04d;
 
 
-bool AnymaWidgetFactory::DeviceAdded(
+bool EuroliteProFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -47,7 +45,7 @@ bool AnymaWidgetFactory::DeviceAdded(
     return false;
   }
 
-  OLA_INFO << "Found a new Anyma device";
+  OLA_INFO << "Found a new EurolitePro device";
   LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
@@ -61,27 +59,25 @@ bool AnymaWidgetFactory::DeviceAdded(
     return false;
   }
 
-  // Some Anyma devices don't have serial numbers. Since there isn't another
-  // good way to uniquely identify a USB device, we only support one of these
-  // types of devices per host.
-  if (info.serial.empty()) {
-    if (m_missing_serial_number) {
-      OLA_WARN << "Failed to read serial number or serial number empty. "
-               << "We can only support one device without a serial number.";
-      return false;
-    } else {
-      OLA_WARN << "Failed to read serial number from " << info.manufacturer
-               << " : " << info.product
-               << " the device probably doesn't have one";
-      m_missing_serial_number = true;
-    }
-  }
+  // The Eurolite doesn't have a serial number, so instead we use the device &
+  // bus number.
+  // TODO(simon): check if this supports the SERIAL NUMBER label and use that
+  // instead.
 
-  AnymaWidget *widget = NULL;
+  // There is no Serialnumber--> work around: bus+device number
+  int bus_number = libusb_get_bus_number(usb_device);
+  int device_address = libusb_get_device_address(usb_device);
+
+  std::ostringstream serial_str;
+  serial_str << bus_number << "-" << device_address;
+
+  EurolitePro *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousAnymaWidget(m_adaptor, usb_device, info.serial);
+    widget = new AsynchronousEurolitePro(m_adaptor, usb_device,
+                                         serial_str.str());
   } else {
-    widget = new SynchronousAnymaWidget(m_adaptor, usb_device, info.serial);
+    widget = new SynchronousEurolitePro(m_adaptor, usb_device,
+                                        serial_str.str());
   }
   return AddWidget(observer, usb_device, widget);
 }

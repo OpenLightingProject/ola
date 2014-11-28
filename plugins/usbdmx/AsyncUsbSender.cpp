@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AsyncUsbSender.cpp
- * A Asynchronous DMX USB sender.
+ * An Asynchronous DMX USB sender.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -65,7 +65,7 @@ bool AsyncUsbSender::Init() {
 
 bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
   if (!m_usb_handle) {
-    OLA_WARN << "AsynchronousAnymaWidget hasn't been initialized";
+    OLA_WARN << "AsyncUsbSender hasn't been initialized";
     return false;
   }
   ola::thread::MutexLocker locker(&m_mutex);
@@ -128,7 +128,6 @@ void AsyncUsbSender::FillInterruptTransfer(unsigned char endpoint,
 
 int AsyncUsbSender::SubmitTransfer() {
   int ret = m_adaptor->SubmitTransfer(m_transfer);
-
   if (ret) {
     OLA_WARN << "libusb_submit_transfer returned " << libusb_error_name(ret);
     if (ret == LIBUSB_ERROR_NO_DEVICE) {
@@ -148,12 +147,12 @@ void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
   }
 
   if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-    OLA_WARN << "Transfer returned " << libusb_error_name(transfer->status);
+    OLA_WARN << "Transfer returned " << transfer->status;
   }
 
   ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
-      DISCONNECTED : IDLE;
+  m_transfer_state = (transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
+      DISCONNECTED : IDLE);
 
   if (m_suppress_continuation) {
     return;
@@ -161,7 +160,7 @@ void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
 
   PostTransferHook();
 
-  if (m_transfer_state == IDLE && m_pending_tx) {
+  if ((m_transfer_state == IDLE) && m_pending_tx) {
     m_pending_tx = false;
     PerformTransfer(m_tx_buffer);
   }

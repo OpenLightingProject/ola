@@ -67,15 +67,15 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   bool Start();
   bool Stop();
 
-  bool NewWidget(class AnymaWidget *widget);
-  bool NewWidget(class EuroliteProWidget *widget);
-  bool NewWidget(class ScanlimeFadecandyWidget *widget);
+  bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class EurolitePro *widget);
+  bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class SunliteWidget *widget);
   bool NewWidget(class VellemanWidget *widget);
 
-  void WidgetRemoved(OLA_UNUSED class AnymaWidget *widget) {}
-  void WidgetRemoved(OLA_UNUSED class EuroliteProWidget *widget) {}
-  void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandyWidget *widget) {}
+  void WidgetRemoved(OLA_UNUSED class AnymauDMX *widget) {}
+  void WidgetRemoved(OLA_UNUSED class EurolitePro *widget) {}
+  void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandy *widget) {}
   void WidgetRemoved(OLA_UNUSED class SunliteWidget *widget) {}
   void WidgetRemoved(OLA_UNUSED class VellemanWidget *widget) {}
 

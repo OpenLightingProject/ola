@@ -13,15 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProWidgetFactory.cpp
- * The WidgetFactory for EurolitePro widgets.
+ * AnymauDMXFactory.cpp
+ * The factory for Anyma uDMX widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/EuroliteProWidgetFactory.h"
+#include "plugins/usbdmx/AnymauDMXFactory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
+#include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
@@ -30,13 +31,12 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char EuroliteProWidgetFactory::EXPECTED_MANUFACTURER[] = "Eurolite";
-const char EuroliteProWidgetFactory::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
-const uint16_t EuroliteProWidgetFactory::PRODUCT_ID = 0xfa63;
-const uint16_t EuroliteProWidgetFactory::VENDOR_ID = 0x04d;
+const char AnymauDMXFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
+const char AnymauDMXFactory::EXPECTED_PRODUCT[] = "uDMX";
+const uint16_t AnymauDMXFactory::PRODUCT_ID = 0x05DC;
+const uint16_t AnymauDMXFactory::VENDOR_ID = 0x16C0;
 
-
-bool EuroliteProWidgetFactory::DeviceAdded(
+bool AnymauDMXFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -45,7 +45,7 @@ bool EuroliteProWidgetFactory::DeviceAdded(
     return false;
   }
 
-  OLA_INFO << "Found a new EurolitePro device";
+  OLA_INFO << "Found a new Anyma device";
   LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
@@ -59,25 +59,27 @@ bool EuroliteProWidgetFactory::DeviceAdded(
     return false;
   }
 
-  // The Eurolite doesn't have a serial number, so instead we use the device &
-  // bus number.
-  // TODO(simon): check if this supports the SERIAL NUMBER label and use that
-  // instead.
+  // Some Anyma devices don't have serial numbers. Since there isn't another
+  // good way to uniquely identify a USB device, we only support one of these
+  // types of devices per host.
+  if (info.serial.empty()) {
+    if (m_missing_serial_number) {
+      OLA_WARN << "Failed to read serial number or serial number empty. "
+               << "We can only support one device without a serial number.";
+      return false;
+    } else {
+      OLA_WARN << "Failed to read serial number from " << info.manufacturer
+               << " : " << info.product
+               << " the device probably doesn't have one";
+      m_missing_serial_number = true;
+    }
+  }
 
-  // There is no Serialnumber--> work around: bus+device number
-  int bus_number = libusb_get_bus_number(usb_device);
-  int device_address = libusb_get_device_address(usb_device);
-
-  std::ostringstream serial_str;
-  serial_str << bus_number << "-" << device_address;
-
-  EuroliteProWidget *widget = NULL;
+  AnymauDMX *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousEuroliteProWidget(m_adaptor, usb_device,
-                                               serial_str.str());
+    widget = new AsynchronousAnymauDMX(m_adaptor, usb_device, info.serial);
   } else {
-    widget = new SynchronousEuroliteProWidget(m_adaptor, usb_device,
-                                              serial_str.str());
+    widget = new SynchronousAnymauDMX(m_adaptor, usb_device, info.serial);
   }
   return AddWidget(observer, usb_device, widget);
 }

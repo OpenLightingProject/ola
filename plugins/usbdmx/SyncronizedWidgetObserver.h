@@ -47,15 +47,15 @@ class SyncronizedWidgetObserver : public WidgetObserver {
   SyncronizedWidgetObserver(WidgetObserver *observer,
                             ola::io::SelectServerInterface *ss);
 
-  bool NewWidget(class AnymaWidget *widget) {
+  bool NewWidget(class AnymauDMX *widget) {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class EuroliteProWidget *widget) {
+  bool NewWidget(class EurolitePro *widget) {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class ScanlimeFadecandyWidget *widget) {
+  bool NewWidget(class ScanlimeFadecandy *widget) {
     return DispatchNewWidget(widget);
   }
 
@@ -67,15 +67,15 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  void WidgetRemoved(class AnymaWidget *widget) {
+  void WidgetRemoved(class AnymauDMX *widget) {
     DispatchWidgetRemoved(widget);
   }
 
-  void WidgetRemoved(class EuroliteProWidget *widget) {
+  void WidgetRemoved(class EurolitePro *widget) {
     DispatchWidgetRemoved(widget);
   }
 
-  void WidgetRemoved(class ScanlimeFadecandyWidget *widget) {
+  void WidgetRemoved(class ScanlimeFadecandy *widget) {
     DispatchWidgetRemoved(widget);
   }
 

@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaWidget.cpp
- * The synchronous and asynchronous Anyma widgets.
+ * AnymauDMX.cpp
+ * The synchronous and asynchronous Anyma uDMX widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/AnymaWidget.h"
+#include "plugins/usbdmx/AnymauDMX.h"
 
 #include <unistd.h>
 #include <string>
@@ -81,17 +81,17 @@ bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 
-// SynchronousAnymaWidget
+// SynchronousAnymauDMX
 // -----------------------------------------------------------------------------
 
-SynchronousAnymaWidget::SynchronousAnymaWidget(LibUsbAdaptor *adaptor,
-                                               libusb_device *usb_device,
-                                               const string &serial)
-    : AnymaWidget(adaptor, serial),
+SynchronousAnymauDMX::SynchronousAnymauDMX(LibUsbAdaptor *adaptor,
+                                           libusb_device *usb_device,
+                                           const string &serial)
+    : AnymauDMX(adaptor, serial),
       m_usb_device(usb_device) {
 }
 
-bool SynchronousAnymaWidget::Init() {
+bool SynchronousAnymauDMX::Init() {
   libusb_device_handle *usb_handle;
 
   bool ok = m_adaptor->OpenDeviceAndClaimInterface(
@@ -109,7 +109,7 @@ bool SynchronousAnymaWidget::Init() {
   return true;
 }
 
-bool SynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousAnymauDMX::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -120,7 +120,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
   AnymaAsyncUsbSender(LibUsbAdaptor *adaptor, libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device) {
     m_control_setup_buffer =
-      new uint8_t[LIBUSB_CONTROL_SETUP_SIZE + DMX_UNIVERSE_SIZE];
+        new uint8_t[LIBUSB_CONTROL_SETUP_SIZE + DMX_UNIVERSE_SIZE];
   }
 
   ~AnymaAsyncUsbSender() {
@@ -158,22 +158,22 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
   DISALLOW_COPY_AND_ASSIGN(AnymaAsyncUsbSender);
 };
 
-// AsynchronousAnymaWidget
+// AsynchronousAnymauDMX
 // -----------------------------------------------------------------------------
 
-AsynchronousAnymaWidget::AsynchronousAnymaWidget(
+AsynchronousAnymauDMX::AsynchronousAnymauDMX(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : AnymaWidget(adaptor, serial) {
+    : AnymauDMX(adaptor, serial) {
   m_sender.reset(new AnymaAsyncUsbSender(m_adaptor, usb_device));
 }
 
-bool AsynchronousAnymaWidget::Init() {
+bool AsynchronousAnymauDMX::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousAnymaWidget::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousAnymauDMX::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx
