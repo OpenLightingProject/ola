@@ -301,7 +301,7 @@ bool FadecandyAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer) {
                    reinterpret_cast<unsigned char*>(&m_data_packets),
                    sizeof(m_data_packets),
                    URB_TIMEOUT_MS);
-  return SubmitTransfer() == 0;
+  return (SubmitTransfer() == 0);
 }
 
 // AsynchronousScanlimeFadecandy

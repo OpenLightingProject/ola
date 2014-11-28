@@ -80,8 +80,9 @@ void InitPacket(uint8_t packet[SUNLITE_PACKET_SIZE]) {
 void UpdatePacket(const DmxBuffer &buffer,
                   uint8_t packet[SUNLITE_PACKET_SIZE]) {
   for (unsigned int i = 0; i < buffer.Size(); i++) {
-    packet[(i / CHANNELS_PER_CHUNK) * CHUNK_SIZE +
-             ((i / 4) % 5) * 6 + 3 + (i % 4)] = buffer.Get(i);
+    int index = ((i / CHANNELS_PER_CHUNK) * CHUNK_SIZE) +
+                (((i / 4) % 5) * 6) + 3 + (i % 4);
+    packet[index] = buffer.Get(i);
   }
 }
 
@@ -184,7 +185,7 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
   bool PerformTransfer(const DmxBuffer &buffer) {
     UpdatePacket(buffer, m_packet);
     FillBulkTransfer(ENDPOINT, m_packet, SUNLITE_PACKET_SIZE, TIMEOUT);
-    return SubmitTransfer() == 0;
+    return (SubmitTransfer() == 0);
   }
 
  private:
