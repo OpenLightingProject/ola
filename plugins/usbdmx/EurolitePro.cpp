@@ -56,12 +56,11 @@ void CreateFrame(
 
   // header
   frame[0] = START_OF_MESSAGE;
-  frame[1] = DMX_LABEL;      // Label
+  frame[1] = DMX_LABEL;  // Label
+  // LSB first.
+  utils::SplitUInt16(DMX_UNIVERSE_SIZE + 1, &frame[3], &frame[2]);
   frame[4] = DMX512_START_CODE;
   buffer.Get(frame + 5, &frame_size);
-
-  // LSB first.
-  utils::SplitUInt16(DMX_UNIVERSE_SIZE, &frame[3], &frame[2]);
   memset(frame + 5 + frame_size, 0, DMX_UNIVERSE_SIZE - frame_size);
   // End message delimiter
   frame[EUROLITE_PRO_FRAME_SIZE - 1] =  END_OF_MESSAGE;

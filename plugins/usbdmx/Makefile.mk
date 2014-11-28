@@ -49,10 +49,6 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AsyncPluginImpl.cpp \
     plugins/usbdmx/AsyncPluginImpl.h \
     plugins/usbdmx/FirmwareLoader.h \
-    plugins/usbdmx/GenericDevice.cpp \
-    plugins/usbdmx/GenericDevice.h \
-    plugins/usbdmx/GenericOutputPort.cpp \
-    plugins/usbdmx/GenericOutputPort.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \
