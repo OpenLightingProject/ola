@@ -218,7 +218,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
     CreateFrame(buffer, m_tx_frame);
     FillBulkTransfer(ENDPOINT, m_tx_frame, EUROLITE_PRO_FRAME_SIZE,
                      URB_TIMEOUT_MS);
-    return SubmitTransfer() == 0;
+    return (SubmitTransfer() == 0);
   }
 
  private:

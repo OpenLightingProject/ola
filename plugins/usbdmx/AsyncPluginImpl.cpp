@@ -39,9 +39,9 @@
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/LibUsbThread.h"
-#include "plugins/usbdmx/SunliteWidgetFactory.h"
-#include "plugins/usbdmx/VellemanWidget.h"
-#include "plugins/usbdmx/VellemanWidgetFactory.h"
+#include "plugins/usbdmx/SunliteFactory.h"
+#include "plugins/usbdmx/VellemanK8062.h"
+#include "plugins/usbdmx/VellemanK8062Factory.h"
 
 namespace ola {
 namespace plugin {
@@ -112,8 +112,8 @@ bool AsyncPluginImpl::Start() {
       new ScanlimeFadecandyFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor.get()));
-  m_widget_factories.push_back(new SunliteWidgetFactory(m_usb_adaptor.get()));
-  m_widget_factories.push_back(new VellemanWidgetFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new VellemanK8062Factory(m_usb_adaptor.get()));
 
   // If we're using hotplug, this starts the hotplug thread.
   if (!m_usb_thread->Init()) {
@@ -209,13 +209,13 @@ bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
                         "fadecandy-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(SunliteWidget *widget) {
+bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
 }
 
-bool AsyncPluginImpl::NewWidget(VellemanWidget *widget) {
+bool AsyncPluginImpl::NewWidget(VellemanK8062 *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));
@@ -233,11 +233,11 @@ void AsyncPluginImpl::WidgetRemoved(ScanlimeFadecandy *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(SunliteWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(Sunlite *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(VellemanWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(VellemanK8062 *widget) {
   RemoveWidget(widget);
 }
 

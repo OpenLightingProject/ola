@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteWidget.h
+ * Sunlite.h
  * The synchronous and asynchronous Sunlite widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEWIDGET_H_
-#define PLUGINS_USBDMX_SUNLITEWIDGET_H_
+#ifndef PLUGINS_USBDMX_SUNLITE_H_
+#define PLUGINS_USBDMX_SUNLITE_H_
 
 #include <libusb.h>
 #include <memory>
@@ -37,9 +37,9 @@ class SunliteThreadedSender;
 /**
  * @brief The interface for the Sunlite Widgets
  */
-class SunliteWidget : public BaseWidget {
+class Sunlite : public BaseWidget {
  public:
-  explicit SunliteWidget(LibUsbAdaptor *adaptor)
+  explicit Sunlite(LibUsbAdaptor *adaptor)
      : BaseWidget(adaptor) {
   }
 };
@@ -50,15 +50,15 @@ class SunliteWidget : public BaseWidget {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousSunliteWidget: public SunliteWidget {
+class SynchronousSunlite: public Sunlite {
  public:
   /**
-   * @brief Create a new SynchronousSunliteWidget.
+   * @brief Create a new SynchronousSunlite.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  SynchronousSunliteWidget(LibUsbAdaptor *adaptor,
-                           libusb_device *usb_device);
+  SynchronousSunlite(LibUsbAdaptor *adaptor,
+                     libusb_device *usb_device);
 
   bool Init();
 
@@ -68,21 +68,21 @@ class SynchronousSunliteWidget: public SunliteWidget {
   libusb_device* const m_usb_device;
   std::auto_ptr<class SunliteThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousSunliteWidget);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousSunlite);
 };
 
 /**
  * @brief An Sunlite widget that uses asynchronous libusb operations.
  */
-class AsynchronousSunliteWidget: public SunliteWidget {
+class AsynchronousSunlite: public Sunlite {
  public:
   /**
-   * @brief Create a new AsynchronousSunliteWidget.
+   * @brief Create a new AsynchronousSunlite.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsynchronousSunliteWidget(LibUsbAdaptor *adaptor,
-                            libusb_device *usb_device);
+  AsynchronousSunlite(LibUsbAdaptor *adaptor,
+                      libusb_device *usb_device);
 
   bool Init();
 
@@ -91,9 +91,9 @@ class AsynchronousSunliteWidget: public SunliteWidget {
  private:
   std::auto_ptr<class SunliteAsyncUsbSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousSunliteWidget);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousSunlite);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEWIDGET_H_
+#endif  // PLUGINS_USBDMX_SUNLITE_H_

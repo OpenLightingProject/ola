@@ -86,14 +86,14 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
-  bool NewWidget(class SunliteWidget *widget);
-  bool NewWidget(class VellemanWidget *widget);
+  bool NewWidget(class Sunlite *widget);
+  bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(class AnymauDMX *widget);
   void WidgetRemoved(class EurolitePro *widget);
   void WidgetRemoved(class ScanlimeFadecandy *widget);
-  void WidgetRemoved(class SunliteWidget *widget);
-  void WidgetRemoved(class VellemanWidget *widget);
+  void WidgetRemoved(class Sunlite *widget);
+  void WidgetRemoved(class VellemanK8062 *widget);
 
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;

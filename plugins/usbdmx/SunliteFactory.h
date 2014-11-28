@@ -13,16 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteWidgetFactory.h
+ * SunliteFactory.h
  * The WidgetFactory for SunLite widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_SUNLITEWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_SUNLITEFACTORY_H_
+#define PLUGINS_USBDMX_SUNLITEFACTORY_H_
 
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/SunliteWidget.h"
+#include "plugins/usbdmx/Sunlite.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
@@ -32,9 +32,9 @@ namespace usbdmx {
 /**
  * @brief Creates SunLite widgets.
  */
-class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
+class SunliteFactory : public BaseWidgetFactory<Sunlite> {
  public:
-  explicit SunliteWidgetFactory(class LibUsbAdaptor *adaptor)
+  explicit SunliteFactory(class LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {}
 
   bool DeviceAdded(
@@ -54,9 +54,9 @@ class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
   static const uint16_t FULL_PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(SunliteWidgetFactory);
+  DISALLOW_COPY_AND_ASSIGN(SunliteFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_SUNLITEFACTORY_H_

@@ -40,10 +40,10 @@
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
-#include "plugins/usbdmx/SunliteWidget.h"
-#include "plugins/usbdmx/SunliteWidgetFactory.h"
-#include "plugins/usbdmx/VellemanWidget.h"
-#include "plugins/usbdmx/VellemanWidgetFactory.h"
+#include "plugins/usbdmx/Sunlite.h"
+#include "plugins/usbdmx/SunliteFactory.h"
+#include "plugins/usbdmx/VellemanK8062.h"
+#include "plugins/usbdmx/VellemanK8062Factory.h"
 
 namespace ola {
 namespace plugin {
@@ -63,8 +63,8 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(new SunliteWidgetFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(new VellemanWidgetFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new VellemanK8062Factory(&m_usb_adaptor));
 }
 
 SyncPluginImpl::~SyncPluginImpl() {
@@ -129,13 +129,13 @@ bool SyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
                         "fadecandy-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(SunliteWidget *widget) {
+bool SyncPluginImpl::NewWidget(Sunlite *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
 }
 
-bool SyncPluginImpl::NewWidget(VellemanWidget *widget) {
+bool SyncPluginImpl::NewWidget(VellemanK8062 *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));

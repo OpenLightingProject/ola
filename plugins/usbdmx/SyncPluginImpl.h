@@ -70,14 +70,14 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
-  bool NewWidget(class SunliteWidget *widget);
-  bool NewWidget(class VellemanWidget *widget);
+  bool NewWidget(class Sunlite *widget);
+  bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(OLA_UNUSED class AnymauDMX *widget) {}
   void WidgetRemoved(OLA_UNUSED class EurolitePro *widget) {}
   void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandy *widget) {}
-  void WidgetRemoved(OLA_UNUSED class SunliteWidget *widget) {}
-  void WidgetRemoved(OLA_UNUSED class VellemanWidget *widget) {}
+  void WidgetRemoved(OLA_UNUSED class Sunlite *widget) {}
+  void WidgetRemoved(OLA_UNUSED class VellemanK8062 *widget) {}
 
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;

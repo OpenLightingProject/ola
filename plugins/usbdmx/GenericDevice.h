@@ -31,7 +31,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief An Generic device.
+ * @brief A Generic device.
  *
  * This simple generic device creates a single output port around a Widget.
  */

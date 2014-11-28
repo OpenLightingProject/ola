@@ -41,7 +41,7 @@ const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
 const char UsbDmxPlugin::LIBUSB_DEBUG_LEVEL_KEY[] = "libusb_debug_level";
 int UsbDmxPlugin::LIBUSB_DEFAULT_DEBUG_LEVEL = 0;
-int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
+int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 4;
 
 
 UsbDmxPlugin::UsbDmxPlugin(PluginAdaptor *plugin_adaptor)

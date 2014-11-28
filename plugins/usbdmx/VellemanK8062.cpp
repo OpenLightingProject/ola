@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanWidget.cpp
+ * VellemanK8062.cpp
  * The synchronous and asynchronous Velleman widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/VellemanWidget.h"
+#include "plugins/usbdmx/VellemanK8062.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -283,17 +283,17 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
   return ret == 0;
 }
 
-// SynchronousVellemanWidget
+// SynchronousVellemanK8062
 // -----------------------------------------------------------------------------
 
-SynchronousVellemanWidget::SynchronousVellemanWidget(
+SynchronousVellemanK8062::SynchronousVellemanK8062(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanWidget(adaptor),
+    : VellemanK8062(adaptor),
       m_usb_device(usb_device) {
 }
 
-bool SynchronousVellemanWidget::Init() {
+bool SynchronousVellemanK8062::Init() {
   unsigned int chunk_size = DEFAULT_CHUNK_SIZE;
   libusb_device_handle *usb_handle = OpenVellemenWidget(
       m_adaptor, m_usb_device, &chunk_size);
@@ -312,7 +312,7 @@ bool SynchronousVellemanWidget::Init() {
   return true;
 }
 
-bool SynchronousVellemanWidget::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -486,21 +486,21 @@ bool VellemanAsyncUsbSender::SendSingleSlotChunk() {
   return SendChunk() == 0;
 }
 
-// AsynchronousVellemanWidget
+// AsynchronousVellemanK8062
 // -----------------------------------------------------------------------------
 
-AsynchronousVellemanWidget::AsynchronousVellemanWidget(
+AsynchronousVellemanK8062::AsynchronousVellemanK8062(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanWidget(adaptor) {
+    : VellemanK8062(adaptor) {
   m_sender.reset(new VellemanAsyncUsbSender(m_adaptor, usb_device));
 }
 
-bool AsynchronousVellemanWidget::Init() {
+bool AsynchronousVellemanK8062::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousVellemanWidget::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

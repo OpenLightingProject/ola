@@ -23,10 +23,18 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
     plugins/usbdmx/ScanlimeFadecandyFactory.h \
+    plugins/usbdmx/Sunlite.cpp \
+    plugins/usbdmx/Sunlite.h \
+    plugins/usbdmx/SunliteFactory.cpp \
+    plugins/usbdmx/SunliteFactory.h \
     plugins/usbdmx/SyncronizedWidgetObserver.cpp \
     plugins/usbdmx/SyncronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
+    plugins/usbdmx/VellemanK8062.cpp \
+    plugins/usbdmx/VellemanK8062.h \
+    plugins/usbdmx/VellemanK8062Factory.cpp \
+    plugins/usbdmx/VellemanK8062Factory.h \
     plugins/usbdmx/Widget.h \
     plugins/usbdmx/WidgetFactory.h
 plugins_usbdmx_libolausbdmxwidget_la_CXXFLAGS = \
@@ -49,18 +57,10 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \
     plugins/usbdmx/SunliteFirmwareLoader.h \
-    plugins/usbdmx/SunliteWidget.cpp \
-    plugins/usbdmx/SunliteWidget.h \
-    plugins/usbdmx/SunliteWidgetFactory.cpp \
-    plugins/usbdmx/SunliteWidgetFactory.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
-    plugins/usbdmx/UsbDmxPlugin.h \
-    plugins/usbdmx/VellemanWidget.cpp \
-    plugins/usbdmx/VellemanWidget.h \
-    plugins/usbdmx/VellemanWidgetFactory.cpp \
-    plugins/usbdmx/VellemanWidgetFactory.h
+    plugins/usbdmx/UsbDmxPlugin.h
 
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 plugins_usbdmx_libolausbdmx_la_LIBADD = \
