@@ -14,6 +14,7 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/EurolitePro.h \
     plugins/usbdmx/EuroliteProFactory.cpp \
     plugins/usbdmx/EuroliteProFactory.h \
+    plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/Flags.cpp \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
@@ -27,6 +28,9 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/Sunlite.h \
     plugins/usbdmx/SunliteFactory.cpp \
     plugins/usbdmx/SunliteFactory.h \
+    plugins/usbdmx/SunliteFirmware.h \
+    plugins/usbdmx/SunliteFirmwareLoader.cpp \
+    plugins/usbdmx/SunliteFirmwareLoader.h \
     plugins/usbdmx/SyncronizedWidgetObserver.cpp \
     plugins/usbdmx/SyncronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
@@ -48,20 +52,15 @@ lib_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
 plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AsyncPluginImpl.cpp \
     plugins/usbdmx/AsyncPluginImpl.h \
-    plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/GenericDevice.cpp \
     plugins/usbdmx/GenericDevice.h \
     plugins/usbdmx/GenericOutputPort.cpp \
     plugins/usbdmx/GenericOutputPort.h \
     plugins/usbdmx/PluginImplInterface.h \
-    plugins/usbdmx/SunliteFirmware.h \
-    plugins/usbdmx/SunliteFirmwareLoader.cpp \
-    plugins/usbdmx/SunliteFirmwareLoader.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
     plugins/usbdmx/UsbDmxPlugin.h
-
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 plugins_usbdmx_libolausbdmx_la_LIBADD = \
     plugins/usbdmx/libolausbdmxwidget.la
