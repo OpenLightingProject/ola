@@ -48,7 +48,6 @@
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/UID.h>
-#include <ola/slp/URLEntry.h>
 #include <ola/stl/STLUtils.h>
 
 #include <algorithm>

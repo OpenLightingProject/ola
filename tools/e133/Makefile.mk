@@ -96,10 +96,7 @@ noinst_PROGRAMS += \
     tools/e133/basic_device \
     tools/e133/e133_controller \
     tools/e133/e133_monitor \
-    tools/e133/e133_receiver \
-    tools/e133/slp_locate \
-    tools/e133/slp_register \
-    tools/e133/slp_sa_test
+    tools/e133/e133_receiver
 
 tools_e133_e133_receiver_SOURCES = tools/e133/e133-receiver.cpp
 tools_e133_e133_receiver_LDADD = common/libolacommon.la \
@@ -126,25 +123,6 @@ tools_e133_e133_controller_LDADD = common/libolacommon.la \
                                    tools/e133/libolae133common.la \
                                    tools/e133/libolae133controller.la
 
-tools_e133_slp_locate_SOURCES = tools/e133/slp-locate.cpp
-tools_e133_slp_locate_LDADD = common/libolacommon.la \
-                              tools/e133/libolae133slp.la
-
-tools_e133_slp_register_SOURCES = tools/e133/slp-register.cpp
-tools_e133_slp_register_LDADD = common/libolacommon.la \
-                                tools/e133/libolae133slp.la
-
-tools_e133_slp_sa_test_SOURCES = \
-    tools/e133/slp-sa-test.cpp \
-    tools/e133/SLPSATestHelpers.cpp \
-    tools/e133/SLPSATestHelpers.h \
-    tools/e133/SLPSATestRunner.cpp \
-    tools/e133/SLPSATestRunner.h \
-    tools/e133/SLPSATest.cpp
-tools_e133_slp_sa_test_LDADD = common/libolacommon.la \
-                               slp/libolaslpserver.la \
-                               tools/e133/libolae133slp.la
-
 tools_e133_basic_controller_SOURCES = tools/e133/basic-controller.cpp
 tools_e133_basic_controller_LDADD = common/libolacommon.la \
                                     plugins/e131/e131/libolaacn.la \
@@ -154,12 +132,3 @@ tools_e133_basic_device_SOURCES = tools/e133/basic-device.cpp
 tools_e133_basic_device_LDADD = common/libolacommon.la \
                                 plugins/e131/e131/libolaacn.la \
                                 tools/e133/libolae133common.la
-
-# TESTS
-##################################################
-test_programs += tools/e133/E133SLPTester
-
-tools_e133_E133SLPTester_SOURCES = tools/e133/E133URLParserTest.cpp
-tools_e133_E133SLPTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-tools_e133_E133SLPTester_LDADD = $(COMMON_TESTING_LIBS) \
-                                 tools/e133/libolae133slp.la
