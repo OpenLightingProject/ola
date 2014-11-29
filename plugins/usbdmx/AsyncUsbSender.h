@@ -101,6 +101,12 @@ class AsyncUsbSender {
    */
   virtual bool PerformTransfer(const DmxBuffer &buffer) = 0;
 
+  /**
+   * @brief Called when the transfer completes.
+   *
+   * Some devices require multiple transfers per DMX frame. This provides a
+   * hook for continuation.
+   */
   virtual void PostTransferHook() {}
 
   /**
@@ -133,7 +139,10 @@ class AsyncUsbSender {
    */
   int SubmitTransfer();
 
- protected:
+  /**
+   * @brief Check if there is a pending transfer.
+   * @returns true if there is a transfer in progress, false otherwise.
+   */
   bool TransferPending() const { return m_pending_tx; }
 
  private:
@@ -144,6 +153,7 @@ class AsyncUsbSender {
   };
 
   libusb_device_handle *m_usb_handle;
+  bool m_suppress_continuation;
   struct libusb_transfer *m_transfer;
 
   TransferState m_transfer_state;  // GUARDED_BY(m_mutex);

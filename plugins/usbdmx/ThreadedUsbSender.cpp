@@ -57,9 +57,8 @@ bool ThreadedUsbSender::Start() {
 
 void *ThreadedUsbSender::Run() {
   DmxBuffer buffer;
-  if (!m_usb_handle) {
+  if (!m_usb_handle)
     return NULL;
-  }
 
   while (1) {
     {
