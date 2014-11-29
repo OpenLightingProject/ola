@@ -1,6 +1,6 @@
 x/y/2014 ola-0.9.4
  Features:
- * 
+ * Added support for hotplugging USB devices using the usbdmx plugin, #374.
 
  API:
  * 
