@@ -34,6 +34,7 @@
 namespace ola {
 
 using ola::network::HostToNetwork;
+using ola::thread::Thread;
 using std::auto_ptr;
 using std::string;
 
@@ -93,7 +94,7 @@ BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
 BonjourDiscoveryAgent::BonjourDiscoveryAgent()
     : m_thread(new ola::thread::CallbackThread(
           NewSingleCallback(this, &BonjourDiscoveryAgent::RunThread),
-          "bonjour")) {
+          Thread::Options("bonjour"))) {
 }
 
 BonjourDiscoveryAgent::~BonjourDiscoveryAgent() {

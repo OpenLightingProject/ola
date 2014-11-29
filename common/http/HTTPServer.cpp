@@ -425,7 +425,7 @@ int HTTPResponse::Send() {
  * @param options the configuration options for the server
  */
 HTTPServer::HTTPServer(const HTTPServerOptions &options)
-    : Thread("http"),
+    : Thread(Thread::Options("http")),
       m_httpd(NULL),
       m_default_handler(NULL),
       m_port(options.port),

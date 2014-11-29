@@ -40,11 +40,11 @@ class CallbackThread : public Thread {
     /**
      * Create a new CallbackThread.
      * @param callback the callback to run in the new thread.
-     * @param thread_name the name of the thread.
+     * @param options the thread's options.
      */
     explicit CallbackThread(VoidThreadCallback *callback,
-                            const std::string &thread_name = "")
-        : Thread(thread_name),
+                            const Options &options = Options())
+        : Thread(options),
           m_callback(callback) {
     }
 
