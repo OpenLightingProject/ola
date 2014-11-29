@@ -19,7 +19,10 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <errno.h>
+#include <string.h>
 #include <sys/resource.h>
+#include <algorithm>
 
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
@@ -53,7 +56,7 @@ bool SetCurrentParams(const SchedulingParams &new_params) {
   param.sched_priority = new_params.priority;
   int ret = pthread_setschedparam(pthread_self(), new_params.policy, &param);
   if (ret) {
-    OLA_WARN << "pthread_setschedparam failed";
+    OLA_WARN << "pthread_setschedparam failed: " << strerror(ret);
   }
   return ret == 0;
 }
@@ -132,15 +135,18 @@ void ThreadTest::testThread() {
  * Check that the scheduling options behave as expected.
  */
 void ThreadTest::testSchedulingOptions() {
-  /*
-  TODO(simon): add this in
-  struct rlimit limits;
+  struct rlimit rlim;
   int r = getrlimit(RLIMIT_RTPRIO, &rlim);
   OLA_ASSERT_EQ(0, r);
 
-  OLA_INFO << "RLIMIT_RTPRIO " << rlimt.rlim_cur;
-  OLA_INFO << "RLIMIT_RTPRIO " << rlimt.rlim_max;
-  */
+  if (rlim.rlim_cur == 0) {
+    // A value of 0 means the user can't change policies.
+    OLA_INFO << "Skipping testSchedulingOptions since RLIMIT_RTPRIO is 0";
+    return;
+  }
+
+  const int max_priority = rlim.rlim_cur - 1;
+  const int other_priority = std::min(1, max_priority - 1);
 
   SchedulingParams default_params = GetCurrentParams();
 
@@ -157,18 +163,18 @@ void ThreadTest::testSchedulingOptions() {
     // A thread that explicitly sets scheduling params.
     Thread::Options options;
     options.policy = SCHED_FIFO;
-    options.priority = 34;
+    options.priority = max_priority;
     MockThread thread(options);
     OLA_ASSERT_TRUE(RunThread(&thread));
     OLA_ASSERT_EQ(SCHED_FIFO, thread.GetSchedulingParams().policy);
-    OLA_ASSERT_EQ(34, thread.GetSchedulingParams().priority);
+    OLA_ASSERT_EQ(max_priority, thread.GetSchedulingParams().priority);
   }
 
   // Set the current thread to something other than the default.
   // This allows us to check inheritance.
   SchedulingParams override_params;
   override_params.policy = SCHED_FIFO;
-  override_params.priority = 0;
+  override_params.priority = other_priority;
   OLA_ASSERT_TRUE(SetCurrentParams(override_params));
 
   {
@@ -184,11 +190,11 @@ void ThreadTest::testSchedulingOptions() {
     // A thread that explicitly sets scheduling params.
     Thread::Options options;
     options.policy = SCHED_RR;
-    options.priority = 1;
+    options.priority = max_priority;
     MockThread thread(options);
     OLA_ASSERT_TRUE(RunThread(&thread));
     OLA_ASSERT_EQ(SCHED_RR, thread.GetSchedulingParams().policy);
-    OLA_ASSERT_EQ(1, thread.GetSchedulingParams().priority);
+    OLA_ASSERT_EQ(max_priority, thread.GetSchedulingParams().priority);
   }
 
   {

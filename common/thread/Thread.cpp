@@ -22,11 +22,14 @@
 #include <config.h>
 #endif
 
+#include <errno.h>
 #include <pthread.h>
+#include <string.h>
 
 #ifdef HAVE_PTHREAD_NP_H
 #include <pthread_np.h>
 #endif
+
 
 #include <string>
 
@@ -151,7 +154,7 @@ bool Thread::FastStart() {
   pthread_attr_destroy(&attrs);
 
   if (ret) {
-    OLA_WARN << "pthread create failed";
+    OLA_WARN << "pthread create failed: " << strerror(ret);
     return false;
   }
   return true;
