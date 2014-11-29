@@ -35,10 +35,11 @@ namespace usbdmx {
  * @brief A plugin that uses libusb to communicate with USB devices.
  *
  * This plugin supports a number of USB dongles including
- *   - Anyma
- *   - Eurolite
- *   - Sunlite
- *   - Velleman
+ *   - Anyma uDMX
+ *   - Eurolite DMX USB Pro.
+ *   - Scanlime's Fadecandy.
+ *   - Sunlite.
+ *   - Velleman K8062.
  */
 class UsbDmxPlugin: public ola::Plugin {
  public:

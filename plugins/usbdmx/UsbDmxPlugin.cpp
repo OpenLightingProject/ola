@@ -20,10 +20,6 @@
 
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #include <string>
 
 #include "ola/Logging.h"
@@ -33,8 +29,7 @@
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
 
-DEFINE_default_bool(use_async_libusb, true,
-                    "Use the asyncronous libusb calls.");
+DECLARE_bool(use_async_libusb);
 
 namespace ola {
 namespace plugin {
@@ -46,7 +41,7 @@ const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
 const char UsbDmxPlugin::LIBUSB_DEBUG_LEVEL_KEY[] = "libusb_debug_level";
 int UsbDmxPlugin::LIBUSB_DEFAULT_DEBUG_LEVEL = 0;
-int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
+int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 4;
 
 
 UsbDmxPlugin::UsbDmxPlugin(PluginAdaptor *plugin_adaptor)
@@ -96,7 +91,7 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n"
+"Anyma uDMX, Eurolite, Fadecandy, Sunlite USBDMX2 & Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"

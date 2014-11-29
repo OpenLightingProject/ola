@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanWidget.h
+ * VellemanK8062.h
  * The synchronous and asynchronous Velleman widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_VELLEMANWIDGET_H_
-#define PLUGINS_USBDMX_VELLEMANWIDGET_H_
+#ifndef PLUGINS_USBDMX_VELLEMANK8062_H_
+#define PLUGINS_USBDMX_VELLEMANK8062_H_
 
 #include <libusb.h>
 #include <memory>
@@ -37,9 +37,9 @@ namespace usbdmx {
 /**
  * @brief The interface for the Velleman Widgets
  */
-class VellemanWidget: public BaseWidget {
+class VellemanK8062: public BaseWidget {
  public:
-  explicit VellemanWidget(LibUsbAdaptor *adaptor)
+  explicit VellemanK8062(LibUsbAdaptor *adaptor)
       : BaseWidget(adaptor) {
   }
 };
@@ -49,15 +49,15 @@ class VellemanWidget: public BaseWidget {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousVellemanWidget: public VellemanWidget {
+class SynchronousVellemanK8062: public VellemanK8062 {
  public:
   /**
-   * @brief Create a new SynchronousVellemanWidget.
+   * @brief Create a new SynchronousVellemanK8062.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  SynchronousVellemanWidget(LibUsbAdaptor *adaptor,
-                            libusb_device *usb_device);
+  SynchronousVellemanK8062(LibUsbAdaptor *adaptor,
+                           libusb_device *usb_device);
 
   bool Init();
 
@@ -67,52 +67,32 @@ class SynchronousVellemanWidget: public VellemanWidget {
   libusb_device* const m_usb_device;
   std::auto_ptr<class VellemanThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousVellemanWidget);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousVellemanK8062);
 };
 
 /**
  * @brief An Velleman widget that uses asynchronous libusb operations.
  */
-class AsynchronousVellemanWidget : public VellemanWidget {
+class AsynchronousVellemanK8062 : public VellemanK8062 {
  public:
   /**
-   * @brief Create a new AsynchronousVellemanWidget.
+   * @brief Create a new AsynchronousVellemanK8062.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsynchronousVellemanWidget(LibUsbAdaptor *adaptor,
-                             libusb_device *usb_device);
-  ~AsynchronousVellemanWidget();
+  AsynchronousVellemanK8062(LibUsbAdaptor *adaptor,
+                            libusb_device *usb_device);
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
-  /**
-   * @brief Called from the libusb callback when the asynchronous transfer
-   *   completes.
-   * @param transfer the completed transfer.
-   */
-  void TransferComplete(struct libusb_transfer *transfer);
-
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-  };
+  std::auto_ptr<class VellemanAsyncUsbSender> m_sender;
 
-  libusb_device* const m_usb_device;
-  libusb_device_handle *m_usb_handle;
-  uint8_t *m_control_setup_buffer;
-
-  TransferState m_transfer_state;
-  ola::thread::Mutex m_mutex;
-
-  struct libusb_transfer *m_transfer;
-
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousVellemanWidget);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousVellemanK8062);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_VELLEMANWIDGET_H_
+#endif  // PLUGINS_USBDMX_VELLEMANK8062_H_

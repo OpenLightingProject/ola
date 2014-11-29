@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanWidgetFactory.h
+ * VellemanK8062Factory.h
  * The WidgetFactory for Velleman widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_VELLEMANK8062FACTORY_H_
+#define PLUGINS_USBDMX_VELLEMANK8062FACTORY_H_
 
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -31,9 +31,9 @@ namespace usbdmx {
 /**
  * @brief Creates Velleman widgets.
  */
-class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
+class VellemanK8062Factory : public BaseWidgetFactory<class VellemanK8062> {
  public:
-  explicit VellemanWidgetFactory(class LibUsbAdaptor *adaptor)
+  explicit VellemanK8062Factory(class LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {
   }
 
@@ -48,9 +48,9 @@ class VellemanWidgetFactory : public BaseWidgetFactory<class VellemanWidget> {
   static const uint16_t VENDOR_ID;
   static const uint16_t PRODUCT_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(VellemanWidgetFactory);
+  DISALLOW_COPY_AND_ASSIGN(VellemanK8062Factory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_VELLEMANWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_VELLEMANK8062FACTORY_H_

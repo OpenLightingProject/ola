@@ -13,26 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * LibUsbUtils.h
- * libusb Util functions.
- * Copyright (C) 2014 Peter Newman
+ * Flags.cpp
+ * Flags for the libusb plugin.
+ * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_LIBUSBUTILS_H_
-#define PLUGINS_USBDMX_LIBUSBUTILS_H_
+#include "ola/base/Flags.h"
 
-#include <libusb.h>
+DEFINE_default_bool(use_async_libusb, false,
+                    "Use the asyncronous libusb calls.");
 
-#include <string>
-
-namespace ola {
-namespace plugin {
-namespace usbdmx {
-
-bool GetDescriptorString(libusb_device_handle *usb_handle,
-                         uint8_t desc_index,
-                         std::string *data);
-}  // namespace usbdmx
-}  // namespace plugin
-}  // namespace ola
-#endif  // PLUGINS_USBDMX_LIBUSBUTILS_H_

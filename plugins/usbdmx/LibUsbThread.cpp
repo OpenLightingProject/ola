@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AsyncPluginImpl.cpp
- * The asynchronous libusb implementation.
+ * LibUsbThread.cpp
+ * The thread for asynchronous libusb communication.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -47,10 +47,12 @@ void *LibUsbThread::Run() {
 }
 
 void LibUsbThread::LaunchThread() {
+  OLA_INFO << "-- Starting libusb thread";
   Start();
 }
 
 void LibUsbThread::JoinThread() {
+  OLA_INFO << "-- Stopping libusb thread";
   Join();
   m_term = false;
 }
@@ -58,6 +60,7 @@ void LibUsbThread::JoinThread() {
 // LibUsbHotplugThread
 // -----------------------------------------------------------------------------
 
+#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
 LibUsbHotplugThread::LibUsbHotplugThread(libusb_context *context,
                                          libusb_hotplug_callback_fn callback_fn,
                                          void *user_data)
@@ -65,10 +68,6 @@ LibUsbHotplugThread::LibUsbHotplugThread(libusb_context *context,
       m_hotplug_handle(0),
       m_callback_fn(callback_fn),
       m_user_data(user_data) {
-  OLA_INFO << "-- Starting libusb thread";
-}
-
-LibUsbHotplugThread::~LibUsbHotplugThread() {
 }
 
 bool LibUsbHotplugThread::Init() {
@@ -84,13 +83,11 @@ bool LibUsbHotplugThread::Init() {
     OLA_WARN << "Error creating a hotplug callback";
     return false;
   }
-  OLA_INFO << "libusb_hotplug_register_callback passed";
   LaunchThread();
   return true;
 }
 
 void LibUsbHotplugThread::Shutdown() {
-  OLA_INFO << "-- Stopping libusb thread";
   SetTerminate();
   libusb_hotplug_deregister_callback(Context(), m_hotplug_handle);
   JoinThread();
@@ -100,30 +97,27 @@ void LibUsbHotplugThread::CloseHandle(libusb_device_handle *handle) {
   libusb_close(handle);
 }
 
+#endif
+
 // LibUsbSimpleThread
 // -----------------------------------------------------------------------------
 
 void LibUsbSimpleThread::OpenHandle() {
   m_device_count++;
   if (m_device_count == 1) {
-    OLA_INFO << "-- Starting libusb thread";
     LaunchThread();
   }
 }
 
 void LibUsbSimpleThread::CloseHandle(libusb_device_handle *handle) {
-  OLA_INFO << "LibUsbSimpleThread::CloseHandle, count is " << m_device_count;
   if (m_device_count == 1) {
     SetTerminate();
   }
   libusb_close(handle);
   if (m_device_count == 1) {
-    OLA_INFO << "-- Stopping libusb thread";
     JoinThread();
   }
   m_device_count--;
-  OLA_INFO << "exit LibUsbSimpleThread::CloseHandle, count is "
-           << m_device_count;
 }
 }  // namespace usbdmx
 }  // namespace plugin

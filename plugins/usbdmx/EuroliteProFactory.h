@@ -13,16 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProWidgetFactory.h
+ * EuroliteProFactory.h
  * The WidgetFactory for EurolitePro widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
+#define PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/EuroliteProWidget.h"
+#include "plugins/usbdmx/EurolitePro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
@@ -32,26 +32,28 @@ namespace usbdmx {
 /**
  * @brief Creates EurolitePro widgets.
  */
-class EuroliteProWidgetFactory
-    : public BaseWidgetFactory<class EuroliteProWidget> {
+class EuroliteProFactory
+    : public BaseWidgetFactory<class EurolitePro> {
  public:
-  explicit EuroliteProWidgetFactory(class LibUsbAdaptor *adaptor)
+  explicit EuroliteProFactory(class LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {}
 
-  bool DeviceAdded(
-      WidgetObserver *observer,
-      libusb_device *usb_device,
-      const struct libusb_device_descriptor &descriptor);
+  bool DeviceAdded(WidgetObserver *observer,
+                   libusb_device *usb_device,
+                   const struct libusb_device_descriptor &descriptor);
 
  private:
   class LibUsbAdaptor *m_adaptor;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
 
-  DISALLOW_COPY_AND_ASSIGN(EuroliteProWidgetFactory);
+
+  DISALLOW_COPY_AND_ASSIGN(EuroliteProFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_EUROLITEPROFACTORY_H_

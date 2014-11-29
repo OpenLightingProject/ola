@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AsyncPluginImpl.h
- * The asynchronous libusb implementation.
+ * LibUsbThread.h
+ * The thread for asynchronous libusb communication.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -136,7 +136,7 @@ class LibUsbThread : private ola::thread::Thread {
 class LibUsbHotplugThread : public LibUsbThread {
  public:
   /**
-   * @brief Create a new LibUsbHotplugThread.o
+   * @brief Create a new LibUsbHotplugThread
    * @param context the libusb context to use.
    * @param callback_fn The callback function to run when hotplug events occur.
    * @param user_data User data to pass to the callback function.
@@ -148,11 +148,6 @@ class LibUsbHotplugThread : public LibUsbThread {
   LibUsbHotplugThread(libusb_context *context,
                       libusb_hotplug_callback_fn callback_fn,
                       void *user_data);
-
-  /**
-   * @brief Destructor.
-   */
-  ~LibUsbHotplugThread();
 
   bool Init();
 
@@ -183,9 +178,8 @@ class LibUsbHotplugThread : public LibUsbThread {
 class LibUsbSimpleThread : public LibUsbThread {
  public:
   /**
-   * @brief Create a new LibUsbHotplugThread.o
+   * @brief Create a new LibUsbHotplugThread
    * @param context the libusb context to use.
-   * @param handle the callback handle for hotplug events.
    *
    * The thread is starts as soon as this object is created. When the object is
    * destroyed, the handle is de-registered as part of the thread shutdown

@@ -13,16 +13,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteWidgetFactory.h
- * The WidgetFactory for SunLite widgets.
+ * AnymauDMXFactory.h
+ * The factory for Anyma uDMX widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SUNLITEWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_SUNLITEWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_
+#define PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_
 
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/SunliteWidget.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
@@ -30,33 +29,32 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Creates SunLite widgets.
+ * @brief Creates Anyma widgets.
  */
-class SunliteWidgetFactory : public BaseWidgetFactory<SunliteWidget> {
+class AnymauDMXFactory : public BaseWidgetFactory<class AnymauDMX> {
  public:
-  explicit SunliteWidgetFactory(class LibUsbAdaptor *adaptor)
-      : m_adaptor(adaptor) {}
+  explicit AnymauDMXFactory(class LibUsbAdaptor *adaptor)
+      : m_missing_serial_number(false),
+        m_adaptor(adaptor) {
+  }
 
   bool DeviceAdded(
       WidgetObserver *observer,
       libusb_device *usb_device,
       const struct libusb_device_descriptor &descriptor);
 
-  void DeviceRemoved(WidgetObserver *observer,
-                     libusb_device *device);
-
  private:
-  class LibUsbAdaptor* const m_adaptor;
+  bool m_missing_serial_number;
+  class LibUsbAdaptor *m_adaptor;
 
-  // The product ID for widgets that are missing their firmware.
-  static const uint16_t EMPTY_PRODUCT_ID;
-  // The product ID for widgets with the firmware.
-  static const uint16_t FULL_PRODUCT_ID;
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
+  static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(SunliteWidgetFactory);
+  DISALLOW_COPY_AND_ASSIGN(AnymauDMXFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SUNLITEWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_

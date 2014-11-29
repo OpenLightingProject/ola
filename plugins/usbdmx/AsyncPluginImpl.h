@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "ola/base/Macro.h"
+#include "ola/thread/Mutex.h"
 #include "ola/thread/Thread.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncronizedWidgetObserver.h"
@@ -82,15 +83,17 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
                     libusb_hotplug_event event);
   #endif
 
-  bool NewWidget(class AnymaWidget *widget);
-  bool NewWidget(class EuroliteProWidget *widget);
-  bool NewWidget(class SunliteWidget *widget);
-  bool NewWidget(class VellemanWidget *widget);
+  bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class EurolitePro *widget);
+  bool NewWidget(class ScanlimeFadecandy *widget);
+  bool NewWidget(class Sunlite *widget);
+  bool NewWidget(class VellemanK8062 *widget);
 
-  void WidgetRemoved(class AnymaWidget *widget);
-  void WidgetRemoved(class EuroliteProWidget *widget);
-  void WidgetRemoved(class SunliteWidget *widget);
-  void WidgetRemoved(class VellemanWidget *widget);
+  void WidgetRemoved(class AnymauDMX *widget);
+  void WidgetRemoved(class EurolitePro *widget);
+  void WidgetRemoved(class ScanlimeFadecandy *widget);
+  void WidgetRemoved(class Sunlite *widget);
+  void WidgetRemoved(class VellemanK8062 *widget);
 
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;
@@ -107,6 +110,8 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   libusb_context *m_context;
   bool m_use_hotplug;
+  ola::thread::Mutex m_mutex;
+  bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
   std::auto_ptr<class LibUsbThread> m_usb_thread;
   std::auto_ptr<class LibUsbAdaptor> m_usb_adaptor;
 

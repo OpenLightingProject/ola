@@ -13,17 +13,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProWidget.h
- * The synchronous and asynchronous EurolitePro widgets.
+ * ScanlimeFadecandy.h
+ * The synchronous and asynchronous Fadecandy widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_EUROLITEPROWIDGET_H_
-#define PLUGINS_USBDMX_EUROLITEPROWIDGET_H_
+#ifndef PLUGINS_USBDMX_SCANLIMEFADECANDY_H_
+#define PLUGINS_USBDMX_SCANLIMEFADECANDY_H_
 
 #include <libusb.h>
 #include <memory>
 #include <string>
+
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -33,22 +34,24 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class EuroliteProThreadedSender;
-
 /**
- * @brief The EurolitePro Widget.
+ * @brief The interface for the Fadecandy Widgets.
+ *
+ * Fadecandy devices have 8 physical ports. Each port can drive 64 RGB pixels.
+ * Ideally this means we'd model each Fadecandy port as an OLA port, but that
+ * introduces syncronization issues, since the underlying protocol models all 8
+ * ports as a flat pixel array. For now we just expose the first 170 pixels.
+ *
+ * See https://github.com/scanlime/fadecandy/blob/master/README.md for more
+ * information on Fadecandy devices.
  */
-class EuroliteProWidget : public BaseWidget {
+class ScanlimeFadecandy: public BaseWidget {
  public:
-  /**
-   * @brief Create a new EuroliteProWidget.
-   * @param adaptor the LibUsbAdaptor to use.
-   * @param serial the serial number of the widget.
-   */
-  EuroliteProWidget(LibUsbAdaptor *adaptor,
+  ScanlimeFadecandy(LibUsbAdaptor *adaptor,
                     const std::string &serial)
       : BaseWidget(adaptor),
-        m_serial(serial) {}
+        m_serial(serial) {
+  }
 
   /**
    * @brief Get the serial number of this widget.
@@ -58,42 +61,24 @@ class EuroliteProWidget : public BaseWidget {
     return m_serial;
   }
 
-  /**
-   * @brief The expected manufacturer string for a EurolitePro widget.
-   */
-  static const char EXPECTED_MANUFACTURER[];
-
-  /**
-   * @brief The expected product string for a EurolitePro widget.
-   */
-  static const char EXPECTED_PRODUCT[];
-
-  /**
-   * @brief The size of a EurolitePro frame.
-   *
-   * This consists of 513 bytes of DMX data + header + code + size(2) + footer
-   */
-  enum { EUROLITE_PRO_FRAME_SIZE = 518 };
-
  private:
   std::string m_serial;
 };
 
-
 /**
- * @brief An EurolitePro widget that uses synchronous libusb operations.
+ * @brief An Fadecandy widget that uses synchronous libusb operations.
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousEuroliteProWidget: public EuroliteProWidget {
+class SynchronousScanlimeFadecandy: public ScanlimeFadecandy {
  public:
   /**
-   * @brief Create a new SynchronousEuroliteProWidget.
+   * @brief Create a new SynchronousScanlimeFadecandy.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousEuroliteProWidget(LibUsbAdaptor *adaptor,
+  SynchronousScanlimeFadecandy(LibUsbAdaptor *adaptor,
                                libusb_device *usb_device,
                                const std::string &serial);
 
@@ -103,56 +88,36 @@ class SynchronousEuroliteProWidget: public EuroliteProWidget {
 
  private:
   libusb_device* const m_usb_device;
-  std::auto_ptr<class EuroliteProThreadedSender> m_sender;
+  std::auto_ptr<class FadecandyThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousEuroliteProWidget);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousScanlimeFadecandy);
 };
 
 /**
- * @brief An EurolitePro widget that uses asynchronous libusb operations.
+ * @brief An Fadecandy widget that uses asynchronous libusb operations.
  */
-class AsynchronousEuroliteProWidget: public EuroliteProWidget {
+class AsynchronousScanlimeFadecandy : public ScanlimeFadecandy {
  public:
   /**
-   * @brief Create a new AsynchronousEuroliteProWidget.
+   * @brief Create a new AsynchronousScanlimeFadecandy.
+   * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousEuroliteProWidget(class LibUsbAdaptor *adaptor,
+  AsynchronousScanlimeFadecandy(LibUsbAdaptor *adaptor,
                                 libusb_device *usb_device,
                                 const std::string &serial);
-  ~AsynchronousEuroliteProWidget();
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
-  /**
-   * @brief Called from the libusb callback when the asynchronous transfer
-   *   completes.
-   * @param transfer the completed transfer.
-   */
-  void TransferComplete(struct libusb_transfer *transfer);
-
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-  };
+  std::auto_ptr<class FadecandyAsyncUsbSender> m_sender;
 
-  libusb_device* const m_usb_device;
-  libusb_device_handle *m_usb_handle;
-
-  TransferState m_transfer_state;
-  ola::thread::Mutex m_mutex;
-
-  struct libusb_transfer *m_transfer;
-
-  uint8_t m_tx_frame[EUROLITE_PRO_FRAME_SIZE];
-
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousEuroliteProWidget);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousScanlimeFadecandy);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_EUROLITEPROWIDGET_H_
+#endif  // PLUGINS_USBDMX_SCANLIMEFADECANDY_H_
