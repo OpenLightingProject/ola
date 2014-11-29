@@ -34,10 +34,9 @@ before_install:
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
 #Install doxygen if required
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
- - pwd
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E 'Test.cpp$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
   irc:

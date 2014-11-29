@@ -31,15 +31,17 @@
 #include "ola/stl/STLUtils.h"
 #include "olad/PluginAdaptor.h"
 
-#include "plugins/usbdmx/AnymaWidget.h"
-#include "plugins/usbdmx/AnymaWidgetFactory.h"
-#include "plugins/usbdmx/EuroliteProWidgetFactory.h"
+#include "plugins/usbdmx/AnymauDMX.h"
+#include "plugins/usbdmx/AnymauDMXFactory.h"
+#include "plugins/usbdmx/EuroliteProFactory.h"
+#include "plugins/usbdmx/ScanlimeFadecandy.h"
+#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/LibUsbThread.h"
-#include "plugins/usbdmx/SunliteWidgetFactory.h"
-#include "plugins/usbdmx/VellemanWidget.h"
-#include "plugins/usbdmx/VellemanWidgetFactory.h"
+#include "plugins/usbdmx/SunliteFactory.h"
+#include "plugins/usbdmx/VellemanK8062.h"
+#include "plugins/usbdmx/VellemanK8062Factory.h"
 
 namespace ola {
 namespace plugin {
@@ -71,6 +73,7 @@ AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_widget_observer(this, plugin_adaptor),
       m_context(NULL),
       m_use_hotplug(false),
+      m_suppress_hotplug_events(false),
       m_scan_timeout(ola::thread::INVALID_TIMEOUT) {
 }
 
@@ -90,19 +93,27 @@ bool AsyncPluginImpl::Start() {
   m_use_hotplug = HotplugSupported();
   OLA_INFO << "HotplugSupported returned " << m_use_hotplug;
   if (m_use_hotplug) {
+#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
     m_usb_thread.reset(new LibUsbHotplugThread(
           m_context, hotplug_callback, this));
+#else
+    OLA_FATAL << "Mismatch between m_use_hotplug and "
+      " OLA_LIBUSB_HAS_HOTPLUG_API";
+    return false;
+#endif
   } else {
     m_usb_thread.reset(new LibUsbSimpleThread(m_context));
   }
   m_usb_adaptor.reset(new AsyncronousLibUsbAdaptor(m_usb_thread.get()));
 
   // Setup the factories.
-  m_widget_factories.push_back(new AnymaWidgetFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(
-      new EuroliteProWidgetFactory(m_usb_adaptor.get()));
-  m_widget_factories.push_back(new SunliteWidgetFactory(m_usb_adaptor.get()));
-  m_widget_factories.push_back(new VellemanWidgetFactory(m_usb_adaptor.get()));
+      new EuroliteProFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(
+      new ScanlimeFadecandyFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(new VellemanK8062Factory(m_usb_adaptor.get()));
 
   // If we're using hotplug, this starts the hotplug thread.
   if (!m_usb_thread->Init()) {
@@ -133,13 +144,22 @@ bool AsyncPluginImpl::Stop() {
     m_scan_timeout = ola::thread::INVALID_TIMEOUT;
   }
 
-  m_usb_thread->Shutdown();
+  // The shutdown sequence is:
+  //  - suppress hotplug events so we don't add any new devices
+  //  - remove all existing devices
+  //  - stop the usb_thread (if using hotplug, otherwise this is a noop).
+  {
+    ola::thread::MutexLocker locker(&m_mutex);
+    m_suppress_hotplug_events = true;
+  }
 
   USBDeviceToFactoryMap::iterator iter = m_device_factory_map.begin();
   for (; iter != m_device_factory_map.end(); ++iter) {
     iter->second->DeviceRemoved(this, iter->first);
   }
   m_device_factory_map.clear();
+
+  m_usb_thread->Shutdown();
 
   m_usb_thread.reset();
   m_usb_adaptor.reset();
@@ -153,6 +173,11 @@ bool AsyncPluginImpl::Stop() {
 #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
                                    libusb_hotplug_event event) {
+  ola::thread::MutexLocker locker(&m_mutex);
+  if (m_suppress_hotplug_events) {
+    return;
+  }
+
   OLA_INFO << "Got USB hotplug event  for " << usb_device << " : "
            << (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED ? "add" : "del");
   if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED) {
@@ -163,45 +188,56 @@ void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
 }
 #endif
 
-bool AsyncPluginImpl::NewWidget(class AnymaWidget *widget) {
+bool AsyncPluginImpl::NewWidget(AnymauDMX *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(class EuroliteProWidget *widget) {
+bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(class SunliteWidget *widget) {
+bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "Fadecandy USB Device",
+                        "fadecandy-" + widget->SerialNumber()));
+}
+
+bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
 }
 
-bool AsyncPluginImpl::NewWidget(class VellemanWidget *widget) {
+bool AsyncPluginImpl::NewWidget(VellemanK8062 *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));
 }
 
-void AsyncPluginImpl::WidgetRemoved(class AnymaWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(AnymauDMX *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(class EuroliteProWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(EurolitePro *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(class SunliteWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(ScanlimeFadecandy *widget) {
   RemoveWidget(widget);
 }
 
-void AsyncPluginImpl::WidgetRemoved(class VellemanWidget *widget) {
+void AsyncPluginImpl::WidgetRemoved(Sunlite *widget) {
+  RemoveWidget(widget);
+}
+
+void AsyncPluginImpl::WidgetRemoved(VellemanK8062 *widget) {
   RemoveWidget(widget);
 }
 
@@ -229,7 +265,6 @@ bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   libusb_get_device_descriptor(usb_device, &descriptor);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
-  OLA_INFO << "Checking " << m_widget_factories.size() << " factories";
   for (; iter != m_widget_factories.end(); ++iter) {
     if ((*iter)->DeviceAdded(&m_widget_observer, usb_device, descriptor)) {
       STLReplacePtr(&m_device_factory_map, usb_device, *iter);
@@ -282,7 +317,7 @@ bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
  *
  * This is run within the main thread.
  */
-void AsyncPluginImpl::RemoveWidget(class Widget *widget) {
+void AsyncPluginImpl::RemoveWidget(Widget *widget) {
   Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
   if (device) {
     m_plugin_adaptor->UnregisterDevice(device);
@@ -303,7 +338,7 @@ bool AsyncPluginImpl::ScanUSBDevices() {
   std::set<USBDeviceID> current_device_ids;
 
   libusb_device **device_list;
-  size_t device_count = libusb_get_device_list(NULL, &device_list);
+  size_t device_count = libusb_get_device_list(m_context, &device_list);
 
   OLA_INFO << "Got " << device_count << " devices";
   for (unsigned int i = 0; i < device_count; i++) {

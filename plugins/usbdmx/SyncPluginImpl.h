@@ -22,13 +22,16 @@
 #define PLUGINS_USBDMX_SYNCPLUGINIMPL_H_
 
 #include <libusb.h>
+#include <map>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
+#include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 
@@ -45,7 +48,7 @@ namespace usbdmx {
  *
  * This does not support hotplug.
  */
-class SyncPluginImpl: public PluginImplInterface {
+class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
  public:
   /**
    * @brief Create a new SyncPluginImpl.
@@ -59,47 +62,43 @@ class SyncPluginImpl: public PluginImplInterface {
                  Plugin *plugin,
                  unsigned int debug_level);
 
+  ~SyncPluginImpl();
+
   bool Start();
   bool Stop();
 
+  bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class EurolitePro *widget);
+  bool NewWidget(class ScanlimeFadecandy *widget);
+  bool NewWidget(class Sunlite *widget);
+  bool NewWidget(class VellemanK8062 *widget);
+
+  void WidgetRemoved(OLA_UNUSED class AnymauDMX *widget) {}
+  void WidgetRemoved(OLA_UNUSED class EurolitePro *widget) {}
+  void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandy *widget) {}
+  void WidgetRemoved(OLA_UNUSED class Sunlite *widget) {}
+  void WidgetRemoved(OLA_UNUSED class VellemanK8062 *widget) {}
+
  private:
-  struct USBDeviceInformation {
-    std::string manufacturer;
-    std::string product;
-    std::string serial;
-  };
+  typedef std::vector<class WidgetFactory*> WidgetFactories;
+  typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
 
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
   SyncronousLibUsbAdaptor m_usb_adaptor;
+  WidgetFactories m_widget_factories;
 
   libusb_context *m_context;
 
-  bool m_anyma_devices_missing_serial_numbers;
-  std::vector<class Device*> m_devices;  // list of our devices
+  WidgetToDeviceMap m_devices;
   std::set<std::pair<uint8_t, uint8_t> > m_registered_devices;
 
-  bool LoadFirmware();
-  void FindDevices();
-  void CheckDevice(libusb_device *device);
+  unsigned int ScanForDevices();
+  void ReScanForDevices();
+  bool CheckDevice(libusb_device *device);
 
-  class Device* NewAnymaDevice(
-      struct libusb_device *usb_device,
-      const struct libusb_device_descriptor &device_descriptor);
-  class Device* NewEuroliteProDevice(
-      struct libusb_device *usb_device);
-
-  void GetDeviceInfo(
-      struct libusb_device_handle *usb_handle,
-      const struct libusb_device_descriptor &device_descriptor,
-      USBDeviceInformation *device_info);
-  bool MatchManufacturer(const std::string &expected,
-                         const std::string &actual);
-  bool MatchProduct(const std::string &expected, const std::string &actual);
-  bool GetDescriptorString(libusb_device_handle *usb_handle,
-                           uint8_t desc_index,
-                           std::string *data);
+  bool StartAndRegisterDevice(class Widget *widget, Device *device);
 
   DISALLOW_COPY_AND_ASSIGN(SyncPluginImpl);
 };

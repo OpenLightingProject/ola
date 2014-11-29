@@ -13,18 +13,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AnymaWidget.h
- * The synchronous and asynchronous Anyma widgets.
+ * EurolitePro.h
+ * The synchronous and asynchronous EurolitePro widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_ANYMAWIDGET_H_
-#define PLUGINS_USBDMX_ANYMAWIDGET_H_
+#ifndef PLUGINS_USBDMX_EUROLITEPRO_H_
+#define PLUGINS_USBDMX_EUROLITEPRO_H_
 
 #include <libusb.h>
 #include <memory>
 #include <string>
-
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -34,22 +33,22 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+class EuroliteProThreadedSender;
+
 /**
- * @brief The base class for Anyma Widgets.
+ * @brief The EurolitePro Widget.
  */
-class AnymaWidget: public BaseWidget {
+class EurolitePro : public BaseWidget {
  public:
   /**
-   * @brief Create a new AnymaWidget.
+   * @brief Create a new EurolitePro.
    * @param adaptor the LibUsbAdaptor to use.
    * @param serial the serial number of the widget.
    */
-  AnymaWidget(LibUsbAdaptor *adaptor,
+  EurolitePro(LibUsbAdaptor *adaptor,
               const std::string &serial)
       : BaseWidget(adaptor),
         m_serial(serial) {}
-
-  virtual ~AnymaWidget() {}
 
   /**
    * @brief Get the serial number of this widget.
@@ -59,34 +58,25 @@ class AnymaWidget: public BaseWidget {
     return m_serial;
   }
 
-  /**
-   * @brief The expected manufacturer string for an Anyma widget.
-   */
-  static const char EXPECTED_MANUFACTURER[];
-
-  /**
-   * @brief The expected product string for an Anyma widget.
-   */
-  static const char EXPECTED_PRODUCT[];
-
  private:
   std::string m_serial;
 };
 
+
 /**
- * @brief An Anyma widget that uses synchronous libusb operations.
+ * @brief An EurolitePro widget that uses synchronous libusb operations.
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousAnymaWidget: public AnymaWidget {
+class SynchronousEurolitePro: public EurolitePro {
  public:
   /**
-   * @brief Create a new SynchronousAnymaWidget.
+   * @brief Create a new SynchronousEurolitePro.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousAnymaWidget(LibUsbAdaptor *adaptor,
+  SynchronousEurolitePro(LibUsbAdaptor *adaptor,
                          libusb_device *usb_device,
                          const std::string &serial);
 
@@ -96,57 +86,36 @@ class SynchronousAnymaWidget: public AnymaWidget {
 
  private:
   libusb_device* const m_usb_device;
-  std::auto_ptr<class AnymaThreadedSender> m_sender;
+  std::auto_ptr<class EuroliteProThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousAnymaWidget);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousEurolitePro);
 };
 
 /**
- * @brief An Anyma widget that uses asynchronous libusb operations.
+ * @brief An EurolitePro widget that uses asynchronous libusb operations.
  */
-class AsynchronousAnymaWidget : public AnymaWidget {
+class AsynchronousEurolitePro: public EurolitePro {
  public:
   /**
-   * @brief Create a new AsynchronousAnymaWidget.
+   * @brief Create a new AsynchronousEurolitePro.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousAnymaWidget(LibUsbAdaptor *adaptor,
+  AsynchronousEurolitePro(class LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
                           const std::string &serial);
-  ~AsynchronousAnymaWidget();
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
-  /**
-   * @brief Called from the libusb callback when the asynchronous transfer
-   *   completes.
-   * @param transfer the completed transfer.
-   */
-  void TransferComplete(struct libusb_transfer *transfer);
-
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-    DISCONNECTED,
-  };
+  std::auto_ptr<class EuroliteProAsyncUsbSender> m_sender;
 
-  libusb_device* const m_usb_device;
-  libusb_device_handle *m_usb_handle;
-  uint8_t *m_control_setup_buffer;
-
-  TransferState m_transfer_state;
-  ola::thread::Mutex m_mutex;
-
-  struct libusb_transfer *m_transfer;
-
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousAnymaWidget);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousEurolitePro);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_ANYMAWIDGET_H_
+#endif  // PLUGINS_USBDMX_EUROLITEPRO_H_

@@ -13,17 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanWidgetFactory.cpp
+ * VellemanK8062Factory.cpp
  * The WidgetFactory for Velleman widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/VellemanWidgetFactory.h"
+#include "plugins/usbdmx/VellemanK8062Factory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/VellemanWidget.h"
-#include "plugins/usbdmx/LibUsbHelper.h"
+#include "plugins/usbdmx/VellemanK8062.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -31,10 +30,10 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t VellemanWidgetFactory::VENDOR_ID = 0x10cf;
-const uint16_t VellemanWidgetFactory::PRODUCT_ID = 0x8062;
+const uint16_t VellemanK8062Factory::VENDOR_ID = 0x10cf;
+const uint16_t VellemanK8062Factory::PRODUCT_ID = 0x8062;
 
-bool VellemanWidgetFactory::DeviceAdded(
+bool VellemanK8062Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -44,12 +43,11 @@ bool VellemanWidgetFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new Velleman device";
-  VellemanWidget *widget = NULL;
+  VellemanK8062 *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousVellemanWidget(m_adaptor, usb_device);
-
+    widget = new AsynchronousVellemanK8062(m_adaptor, usb_device);
   } else {
-    widget = new SynchronousVellemanWidget(m_adaptor, usb_device);
+    widget = new SynchronousVellemanK8062(m_adaptor, usb_device);
   }
   return AddWidget(observer, usb_device, widget);
 }

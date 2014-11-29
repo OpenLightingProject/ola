@@ -113,6 +113,7 @@ void InterfacePickerTest::testChooseInterface() {
   // now with one iface that doesn't match
   Interface iface1;
   iface1.name = "eth0";
+  iface1.index = 1;
   OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
 
@@ -123,6 +124,7 @@ void InterfacePickerTest::testChooseInterface() {
   // check that preferred works
   Interface iface2;
   iface2.name = "eth1";
+  iface2.index = 2;
   OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
   interfaces.push_back(iface2);
 
@@ -139,5 +141,13 @@ void InterfacePickerTest::testChooseInterface() {
 
   // a invalid address should return the first one
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo"));
+  OLA_ASSERT_TRUE(iface1 == iface);
+
+  // now check by iface index
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, 2));
+  OLA_ASSERT_TRUE(iface2 == iface);
+
+  // an invalid index should return the first one
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, 3));
   OLA_ASSERT_TRUE(iface1 == iface);
 }
