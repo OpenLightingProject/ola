@@ -18,6 +18,10 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <cppunit/extensions/HelperMacros.h>
 #include <errno.h>
 #include <string.h>
