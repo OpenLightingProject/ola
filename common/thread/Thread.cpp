@@ -18,25 +18,82 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <errno.h>
 #include <pthread.h>
+#include <string.h>
+
+#ifdef HAVE_PTHREAD_NP_H
+#include <pthread_np.h>
+#endif
+
+
+#include <string>
+
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
 
-namespace ola {
-namespace thread {
+namespace  {
 
 /*
  * Called by the new thread
  */
 void *StartThread(void *d) {
-  Thread *thread = static_cast<Thread*>(d);
+  ola::thread::Thread *thread = static_cast<ola::thread::Thread*>(d);
   return thread->_InternalRun();
 }
 
+// Convert a scheduling policy into a string.
+std::string PolicyToString(int policy) {
+  switch (policy) {
+    case SCHED_FIFO:
+      return "SCHED_FIFO";
+    case SCHED_RR:
+      return "SCHED_RR";
+    case SCHED_OTHER:
+      return "SCHED_OTHER";
+    default:
+      return "unknown";
+  }
+}
+}  // namespace
 
-/*
- * Start this thread. This only returns only the thread is running.
- */
+namespace ola {
+namespace thread {
+
+using std::string;
+
+Thread::Options::Options(const std::string &name)
+  : name(name),
+    inheritsched(PTHREAD_EXPLICIT_SCHED) {
+  // Default the scheduling options to the system-default values.
+  pthread_attr_t attrs;
+  pthread_attr_init(&attrs);
+  struct sched_param param;
+  pthread_attr_getschedpolicy(&attrs, &policy);
+  pthread_attr_getschedparam(&attrs, &param);
+  priority = param.sched_priority;
+  pthread_attr_destroy(&attrs);
+}
+
+Thread::Thread(const Options &options)
+    : m_thread_id(),
+      m_running(false),
+      m_options(options) {
+  // Mac has a bug where PTHREAD_INHERIT_SCHED doesn't work. We work around
+  // this by explicitly setting the policy and priority to match the current
+  // thread if PTHREAD_INHERIT_SCHED was requested.
+  if (m_options.inheritsched == PTHREAD_INHERIT_SCHED) {
+    struct sched_param param;
+    pthread_getschedparam(pthread_self(), &m_options.policy, &param);
+    m_options.priority = param.sched_priority;
+    m_options.inheritsched = PTHREAD_EXPLICIT_SCHED;
+  }
+}
+
 bool Thread::Start() {
   MutexLocker locker(&m_mutex);
   if (m_running) {
@@ -51,28 +108,58 @@ bool Thread::Start() {
   return false;
 }
 
-
-/**
- * This launches a new thread and returns immediately. Don't use this unless
- * you know what you're doing as it introduces a race condition with Join()
- */
 bool Thread::FastStart() {
-  int ret = pthread_create(&m_thread_id,
-                           NULL,
-                           ola::thread::StartThread,
-                           static_cast<void*>(this));
+  pthread_attr_t attrs;
+  pthread_attr_init(&attrs);
+
+  if (m_options.inheritsched != PTHREAD_EXPLICIT_SCHED) {
+    OLA_FATAL << "PTHREAD_EXPLICIT_SCHED not set, programming bug!";
+    return false;
+  }
+
+  // glibc 2.8 and onwards has a bug where PTHREAD_EXPLICIT_SCHED won't be
+  // honored unless the policy and priority are explicitly set. See
+  // man pthread_attr_setinheritsched.
+  // By fetching the default values in Thread::Options(), we avoid this bug.
+  int ret = pthread_attr_setschedpolicy(&attrs, m_options.policy);
   if (ret) {
-    OLA_WARN << "pthread create failed";
+    OLA_WARN << "pthread_attr_setschedpolicy failed for " << Name()
+             << ", policy " << m_options.policy << ": " << strerror(errno);
+    pthread_attr_destroy(&attrs);
+    return false;
+  }
+
+  struct sched_param param;
+  param.sched_priority = m_options.priority;
+  ret = pthread_attr_setschedparam(&attrs, &param);
+  if (ret) {
+    OLA_WARN << "pthread_attr_setschedparam failed for " << Name()
+             << ", priority " << param.sched_priority << ": "
+             << strerror(errno);
+    pthread_attr_destroy(&attrs);
+    return false;
+  }
+
+  ret = pthread_attr_setinheritsched(&attrs, PTHREAD_EXPLICIT_SCHED);
+  if (ret) {
+    OLA_WARN << "pthread_attr_setinheritsched to PTHREAD_EXPLICIT_SCHED "
+             << "failed for " << Name() << ": " << strerror(errno);
+    pthread_attr_destroy(&attrs);
+    return false;
+  }
+
+  ret = pthread_create(&m_thread_id, &attrs, StartThread,
+                       static_cast<void*>(this));
+
+  pthread_attr_destroy(&attrs);
+
+  if (ret) {
+    OLA_WARN << "pthread create failed: " << strerror(ret);
     return false;
   }
   return true;
 }
 
-
-/*
- * Join this thread
- * @returns false if the thread wasn't running or didn't stop, true otherwise.
- */
 bool Thread::Join(void *ptr) {
   {
     MutexLocker locker(&m_mutex);
@@ -89,11 +176,32 @@ bool Thread::IsRunning() {
   return m_running;
 }
 
-
-/**
- * Mark the thread as running and call the main Run method
- */
 void *Thread::_InternalRun() {
+  string truncated_name = m_options.name.substr(0, 15);
+
+// There are 4 different variants of pthread_setname_np !
+#ifdef HAVE_PTHREAD_SETNAME_NP_2
+  pthread_setname_np(pthread_self(), truncated_name.c_str());
+#endif
+
+#ifdef HAVE_PTHREAD_SET_NAME_NP_2
+  pthread_set_name_np(pthread_self(), truncated_name.c_str());
+#endif
+
+#ifdef HAVE_PTHREAD_SETNAME_NP_1
+  pthread_setname_np(truncated_name.c_str());
+#endif
+
+#ifdef HAVE_PTHREAD_SETNAME_NP_3
+  pthread_setname_np(pthread_self(), truncated_name.c_str(), NULL);
+#endif
+
+  int policy;
+  struct sched_param param;
+  pthread_getschedparam(pthread_self(), &policy, &param);
+
+  OLA_INFO << "Thread " << Name() << ", policy " << PolicyToString(policy)
+           << ", priority " << param.sched_priority;
   {
     MutexLocker locker(&m_mutex);
     m_running = true;

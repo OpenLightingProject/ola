@@ -51,6 +51,9 @@ static void Win32SignalHandler(int signo) {
 }
 #endif
 
+SignalThread::SignalThread()
+    : Thread(Thread::Options("signal-thread")) {}
+
 SignalThread::~SignalThread() {
   ola::STLDeleteValues(&m_signal_handlers);
 }

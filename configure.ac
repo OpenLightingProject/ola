@@ -228,6 +228,8 @@ AC_CHECK_DECLS(NET_RT_DUMP, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
+AC_CHECK_DECLS(RLIMIT_RTPRIO, , ,
+               [#include <sys/resource.h>])
 
 AC_CHECK_DECLS(SO_REUSEADDR, , ,
                [#include <sys/types.h>
@@ -307,6 +309,9 @@ ACX_PTHREAD([
              CC="$PTHREAD_CC"
              CXX="$PTHREAD_CXX"],
             [AC_MSG_ERROR([Missing pthread, please install it])])
+
+# pthread_setname_np can take either 1 or 2 arguments.
+PTHREAD_SET_NAME()
 
 # resolv
 AS_IF([test -z "${USING_WIN32_FALSE}"],
