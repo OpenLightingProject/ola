@@ -135,6 +135,7 @@ void ThreadTest::testThread() {
  * Check that the scheduling options behave as expected.
  */
 void ThreadTest::testSchedulingOptions() {
+#ifdef HAVE_DECL_RLIMIT_RTPRIO
   struct rlimit rlim;
   int r = getrlimit(RLIMIT_RTPRIO, &rlim);
   OLA_ASSERT_EQ(0, r);
@@ -147,6 +148,10 @@ void ThreadTest::testSchedulingOptions() {
 
   const int max_priority = rlim.rlim_cur - 1;
   const int other_priority = std::min(1, max_priority - 1);
+#else
+  const int max_priority = 31;
+  const int other_priority = 15;
+#endif
 
   SchedulingParams default_params = GetCurrentParams();
 

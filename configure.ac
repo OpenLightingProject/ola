@@ -228,6 +228,8 @@ AC_CHECK_DECLS(NET_RT_DUMP, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
+AC_CHECK_DECLS(RLIMIT_RTPRIO, , ,
+               [#include <sys/resource.h>])
 
 AC_CHECK_DECLS(SO_REUSEADDR, , ,
                [#include <sys/types.h>
