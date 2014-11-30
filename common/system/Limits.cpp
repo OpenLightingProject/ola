@@ -13,43 +13,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * Utils.cpp
- * Helper functions for threads.
+ * Limits.cpp
+ * Functions that deal with system limits (rlimits)
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "ola/thread/Utils.h"
+#include "ola/system/Limits.h"
 
-#include <pthread.h>
 #include <string.h>
-#include <string>
+#include <sys/resource.h>
+
 #include "ola/Logging.h"
 
 namespace ola {
-namespace thread {
+namespace system {
 
-std::string PolicyToString(int policy) {
-  switch (policy) {
-    case SCHED_FIFO:
-      return "SCHED_FIFO";
-    case SCHED_RR:
-      return "SCHED_RR";
-    case SCHED_OTHER:
-      return "SCHED_OTHER";
-    default:
-      return "unknown";
-  }
-}
-
-bool SetSchedParam(pthread_t thread, int policy,
-                   const struct sched_param &param) {
-  int r = pthread_setschedparam(thread, policy, &param);
-  if (r != 0) {
-    OLA_FATAL << "Unable to set thread scheduling parameters for thread "
-              << thread << ": " << strerror(r);
+bool GetRLimit(int resource, struct rlimit *lim) {
+  int r = getrlimit(resource, lim);
+  if (r) {
+    OLA_WARN << "getrlimit(" << resource << "): " << strerror(r);
     return false;
   }
   return true;
 }
-}  // namespace thread
+
+bool SetRLimit(int resource, const struct rlimit &lim) {
+  int r = setrlimit(resource, &lim);
+  if (r) {
+    OLA_WARN << "setrlimit(" << resource << "): " << strerror(r);
+    return false;
+  }
+  return true;
+}
+}  // namespace system
 }  // namespace ola

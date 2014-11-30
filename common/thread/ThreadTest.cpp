@@ -29,6 +29,7 @@
 #include <algorithm>
 
 #include "ola/Logging.h"
+#include "ola/system/Limits.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/thread/Thread.h"
 #include "ola/thread/Utils.h"
@@ -138,8 +139,7 @@ void ThreadTest::testThread() {
 void ThreadTest::testSchedulingOptions() {
 #if HAVE_DECL_RLIMIT_RTPRIO
   struct rlimit rlim;
-  int r = getrlimit(RLIMIT_RTPRIO, &rlim);
-  OLA_ASSERT_EQ(0, r);
+  OLA_ASSERT_TRUE(ola::system::GetRLimit(RLIMIT_RTPRIO, &rlim));
 
   if (rlim.rlim_cur == 0) {
     // A value of 0 means the user can't change policies.
