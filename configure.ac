@@ -731,7 +731,6 @@ AC_CONFIG_FILES([Doxyfile
                  slp/libolaslpserver.pc
                  tools/e133/libolae133common.pc
                  tools/e133/libolae133controller.pc
-                 tools/e133/libolae133slp.pc
                  ])
 # Makefiles
 AC_CONFIG_FILES([Makefile java/Makefile])
