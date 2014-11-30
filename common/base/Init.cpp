@@ -74,6 +74,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
+#if HAVE_DECL_RLIMIT_RTTIME
 /**
  * @private
  * Print a stack trace if we exceed CPU time.
@@ -89,7 +90,7 @@ static void _SIGXCPU_Handler(OLA_UNUSED int signal) {
   #endif
   exit(ola::EXIT_SOFTWARE);
 }
-
+#endif
 
 bool SetThreadScheduling() {
   string policy_str = FLAGS_scheduler_policy.str();
