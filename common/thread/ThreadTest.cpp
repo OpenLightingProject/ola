@@ -139,7 +139,7 @@ void ThreadTest::testThread() {
  * Check that the scheduling options behave as expected.
  */
 void ThreadTest::testSchedulingOptions() {
-#ifdef HAVE_DECL_RLIMIT_RTPRIO
+#if HAVE_DECL_RLIMIT_RTPRIO
   struct rlimit rlim;
   int r = getrlimit(RLIMIT_RTPRIO, &rlim);
   OLA_ASSERT_EQ(0, r);
