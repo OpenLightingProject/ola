@@ -152,7 +152,7 @@ TCPSocket* TCPSocket::Connect(const SocketAddress &endpoint) {
   int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
-    OLA_WARN << "connect to " << endpoint << " failed, " << strerror(errno);
+    OLA_WARN << "connect(" << endpoint << "): " << strerror(errno);
     return NULL;
   }
   TCPSocket *socket = new TCPSocket(sd);

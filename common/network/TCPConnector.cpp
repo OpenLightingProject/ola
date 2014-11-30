@@ -85,7 +85,8 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
     if (errno != EINPROGRESS) {
 #endif
       int error = errno;
-      OLA_WARN << "connect to " << endpoint << " failed, " << strerror(error);
+      OLA_WARN << "connect() to " << endpoint << " returned, "
+               << strerror(error);
       close(sd);
       callback->Run(-1, error);
       return 0;
@@ -169,11 +170,12 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
 #else
   int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, &error, &len);
 #endif
-  if (r < 0)
+  if (r < 0) {
     error = errno;
+  }
 
   if (error) {
-    OLA_WARN << "Failed to connect to " << connection->ip_address << " error "
+    OLA_WARN << "connect() to " << connection->ip_address << " returned: "
       << strerror(error);
     connection->Close();
     connection->callback->Run(-1, error);
