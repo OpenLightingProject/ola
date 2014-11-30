@@ -21,6 +21,7 @@
 #include "ola/thread/Utils.h"
 
 #include <pthread.h>
+#include <string.h>
 #include <string>
 #include "ola/Logging.h"
 
