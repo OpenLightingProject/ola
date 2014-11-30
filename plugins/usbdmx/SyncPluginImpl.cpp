@@ -125,8 +125,10 @@ bool SyncPluginImpl::NewWidget(EurolitePro *widget) {
 bool SyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
       widget,
-      new GenericDevice(m_plugin, widget, "FadeCandy USB Device",
-                        "fadecandy-" + widget->SerialNumber()));
+      new GenericDevice(
+          m_plugin, widget,
+          "Fadecandy USB Device (" + widget->SerialNumber() + ")",
+          "fadecandy-" + widget->SerialNumber()));
 }
 
 bool SyncPluginImpl::NewWidget(Sunlite *widget) {
