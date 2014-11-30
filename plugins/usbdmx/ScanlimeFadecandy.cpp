@@ -86,16 +86,21 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
   // Set the fadecandy configuration.
   fadecandy_packet packet;
   packet.type = CONFIG_MESSAGE;
-  packet.data[0] = OPTION_NO_DITHERING | OPTION_NO_INTERPOLATION;
+  packet.data[0] |= OPTION_NO_DITHERING;
+  packet.data[0] |= OPTION_NO_INTERPOLATION;
 
   // packet.data[0] = OPTION_NO_ACTIVITY_LED;  // Manual control of LED
   // packet.data[0] |= OPTION_LED_CONTROL;  // Manual LED state
 
   int bytes_sent = 0;
-  adaptor->BulkTransfer(usb_handle, ENDPOINT,
-                        reinterpret_cast<unsigned char*>(&packet),
-                        sizeof(packet), &bytes_sent, URB_TIMEOUT_MS);
-  OLA_INFO << "Config transferred " << bytes_sent << " bytes";
+  int r = adaptor->BulkTransfer(usb_handle, ENDPOINT,
+                                reinterpret_cast<unsigned char*>(&packet),
+                                sizeof(packet), &bytes_sent, URB_TIMEOUT_MS);
+  if (r == 0) {
+    OLA_INFO << "Config transferred " << bytes_sent << " bytes";
+  } else {
+    OLA_WARN << "Config transfer failed with error " << libusb_error_name(r);
+  }
 
   // Build the Look Up Table
   uint16_t lut[3][257];
@@ -145,12 +150,12 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
         int lut_txed = 0;
 
         // TODO(Peter): Fix the calculations and transmit this
-        // m_adaptor->BulkTransfer(usb_handle,
-        //                         ENDPOINT,
-        //                         packet,
-        //                         sizeof(packet),
-        //                         &lut_txed,
-        //                         URB_TIMEOUT_MS);
+        // int r = m_adaptor->BulkTransfer(usb_handle,
+        //                                 ENDPOINT,
+        //                                 packet,
+        //                                 sizeof(packet),
+        //                                 &lut_txed,
+        //                                 URB_TIMEOUT_MS);
 
         OLA_INFO << "LUT packet " << index << " transferred " << lut_txed
                  << " bytes";
@@ -219,6 +224,9 @@ bool FadecandyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       reinterpret_cast<unsigned char*>(&m_data_packets),
       sizeof(m_data_packets), &bytes_sent,
       URB_TIMEOUT_MS);
+  if (r != 0) {
+    OLA_WARN << "Data transfer failed with error " << libusb_error_name(r);
+  }
   return r == 0;
 }
 
