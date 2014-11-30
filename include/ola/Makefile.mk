@@ -11,7 +11,6 @@ include include/ola/messaging/Makefile.mk
 include include/ola/network/Makefile.mk
 include include/ola/rdm/Makefile.mk
 include include/ola/rpc/Makefile.mk
-include include/ola/slp/Makefile.mk
 include include/ola/stl/Makefile.mk
 include include/ola/system/Makefile.mk
 include include/ola/testing/Makefile.mk

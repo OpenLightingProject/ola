@@ -581,25 +581,6 @@ AS_IF([test "x$enable_root_check" = xno],
       [AC_DEFINE([OLAD_SKIP_ROOT_CHECK], [1],
                  [Defined if olad is allowed to run as root])])
 
-# OpenSLP is used for E1.33 support
-# This should be removed if we decide that E1.33 is going to use DNS-SD.
-# Openslp doesn't use pkg-config, so the users may need to pass CPPFLAGS
-# & LDFLAGS so we can find it.
-AC_ARG_ENABLE(
-  [slp],
-  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
-
-openslp_LIBS=""
-have_slp=no
-AS_IF([test "x$enable_slp" != xno],
-      [AC_CHECK_LIB([slp], [SLPOpen],
-                    [have_slp="yes" openslp_LIBS="-lslp"])])
-
-AM_CONDITIONAL([HAVE_SLP], [test "x$have_slp" = xyes])
-AS_IF([test "x$have_slp" = xyes],
-      [AC_DEFINE([HAVE_LIBSLP], [1], [define if libslp is installed])])
-AC_SUBST(openslp_LIBS)
-
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
@@ -727,8 +708,6 @@ AC_CONFIG_FILES([Doxyfile
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
                  plugins/usbpro/messages/libolausbproconf.pc
-                 slp/libolaslpclient.pc
-                 slp/libolaslpserver.pc
                  tools/e133/libolae133common.pc
                  tools/e133/libolae133controller.pc
                  ])
