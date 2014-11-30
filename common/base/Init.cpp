@@ -51,13 +51,51 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/math/Random.h>
+#include <ola/thread/Utils.h>
 
 #include <iostream>
 #include <string>
+
+// Scheduling options.
+DEFINE_string(scheduler_policy, "",
+              "The thread scheduling policy, one of {fifo, rr}.");
+DEFINE_uint16(scheduler_priority, 0,
+              "The thread priority, only used if --scheduler-policy is set.");
+
+namespace {
+
+using std::string;
+
+bool SetThreadSchduling() {
+  string policy_str = FLAGS_scheduler_policy.str();
+  ola::ToLower(&policy_str);
+  if (policy_str.empty()) {
+    return true;
+  }
+
+  int policy = 0;
+  if (policy_str == "fifo") {
+    policy = SCHED_FIFO;
+  } else if (policy_str == "rr") {
+    policy = SCHED_RR;
+  } else {
+    OLA_FATAL << "Unknown scheduling policy " << policy_str;
+    return false;
+  }
+
+  struct sched_param param;
+  param.sched_priority = FLAGS_scheduler_priority;
+
+  OLA_INFO << "Scheduling policy is " << ola::thread::PolicyToString(policy)
+           << ", priority " << param.sched_priority;
+  return ola::thread::SetSchedParam(pthread_self(), policy, param);
+}
+}  // namespace
 
 namespace ola {
 
@@ -94,7 +132,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 
   if (export_map)
     InitExportMap(argc, argv, export_map);
-  return NetworkInit();
+  return SetThreadSchduling() && NetworkInit();
 }
 
 
@@ -126,7 +164,7 @@ bool AppInit(int *argc,
   InitLoggingFromFlags();
   if (!InstallSEGVHandler())
     return false;
-  return NetworkInit();
+  return SetThreadSchduling() && NetworkInit();
 }
 
 #ifdef _WIN32

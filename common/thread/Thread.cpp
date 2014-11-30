@@ -35,6 +35,7 @@
 
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
+#include "ola/thread/Utils.h"
 
 namespace  {
 
@@ -44,20 +45,6 @@ namespace  {
 void *StartThread(void *d) {
   ola::thread::Thread *thread = static_cast<ola::thread::Thread*>(d);
   return thread->_InternalRun();
-}
-
-// Convert a scheduling policy into a string.
-std::string PolicyToString(int policy) {
-  switch (policy) {
-    case SCHED_FIFO:
-      return "SCHED_FIFO";
-    case SCHED_RR:
-      return "SCHED_RR";
-    case SCHED_OTHER:
-      return "SCHED_OTHER";
-    default:
-      return "unknown";
-  }
 }
 }  // namespace
 

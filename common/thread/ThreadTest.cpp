@@ -29,8 +29,9 @@
 #include <algorithm>
 
 #include "ola/Logging.h"
-#include "ola/thread/Thread.h"
 #include "ola/testing/TestUtils.h"
+#include "ola/thread/Thread.h"
+#include "ola/thread/Utils.h"
 
 
 using ola::thread::ConditionVariable;
@@ -58,11 +59,7 @@ SchedulingParams GetCurrentParams() {
 bool SetCurrentParams(const SchedulingParams &new_params) {
   struct sched_param param;
   param.sched_priority = new_params.priority;
-  int ret = pthread_setschedparam(pthread_self(), new_params.policy, &param);
-  if (ret) {
-    OLA_WARN << "pthread_setschedparam failed: " << strerror(ret);
-  }
-  return ret == 0;
+  return ola::thread::SetSchedParam(pthread_self(), new_params.policy, param);
 }
 
 
