@@ -35,6 +35,7 @@ namespace usbdmx {
  *
  * The synchronous libusb calls can sometimes take a while to complete, I've
  * seen cases of up to 21ms.
+ *
  * To avoid blocking the main thread, we need to perform the libusb transfer
  * calls in a separate thread. This class contains all the thread management
  * code, leaving the subclass to implement TransmitBuffer(), which performs the

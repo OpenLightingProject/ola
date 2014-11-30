@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteWidgetFactory.cpp
+ * SunliteFactory.cpp
  * The WidgetFactory for SunLite widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/SunliteWidgetFactory.h"
+#include "plugins/usbdmx/SunliteFactory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
@@ -30,11 +30,11 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t SunliteWidgetFactory::EMPTY_PRODUCT_ID = 0x2000;
-const uint16_t SunliteWidgetFactory::FULL_PRODUCT_ID = 0x2001;
-const uint16_t SunliteWidgetFactory::VENDOR_ID = 0x0962;
+const uint16_t SunliteFactory::EMPTY_PRODUCT_ID = 0x2000;
+const uint16_t SunliteFactory::FULL_PRODUCT_ID = 0x2001;
+const uint16_t SunliteFactory::VENDOR_ID = 0x0962;
 
-bool SunliteWidgetFactory::DeviceAdded(
+bool SunliteFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -49,21 +49,21 @@ bool SunliteWidgetFactory::DeviceAdded(
              descriptor.idProduct == FULL_PRODUCT_ID &&
              !HasDevice(usb_device)) {
     OLA_INFO << "Found a new Sunlite device";
-    SunliteWidget *widget = NULL;
+    Sunlite *widget = NULL;
     if (FLAGS_use_async_libusb) {
-      widget = new AsynchronousSunliteWidget(m_adaptor, usb_device);
+      widget = new AsynchronousSunlite(m_adaptor, usb_device);
     } else {
-      widget = new SynchronousSunliteWidget(m_adaptor, usb_device);
+      widget = new SynchronousSunlite(m_adaptor, usb_device);
     }
     return AddWidget(observer, usb_device, widget);
   }
   return false;
 }
 
-void SunliteWidgetFactory::DeviceRemoved(WidgetObserver *observer,
+void SunliteFactory::DeviceRemoved(WidgetObserver *observer,
                                          libusb_device *device) {
   // TODO(simon): once firmware loading is async, cancel the load here.
-  BaseWidgetFactory<SunliteWidget>::DeviceRemoved(observer, device);
+  BaseWidgetFactory<Sunlite>::DeviceRemoved(observer, device);
 }
 }  // namespace usbdmx
 }  // namespace plugin

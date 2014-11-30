@@ -125,17 +125,20 @@ bool LibUsbAdaptor::GetDeviceInfo(
 }
 
 bool LibUsbAdaptor::CheckManufacturer(const string &expected,
-                                      const string &actual) {
-  if (expected != actual) {
-    OLA_WARN << "Manufacturer mismatch: " << expected << " != " << actual;
+                                      const DeviceInformation &device_info) {
+  if (expected != device_info.manufacturer) {
+    OLA_WARN << "Manufacturer mismatch: " << expected << " != "
+             << device_info.manufacturer;
     return false;
   }
   return true;
 }
 
-bool LibUsbAdaptor::CheckProduct(const string &expected, const string &actual) {
-  if (expected != actual) {
-    OLA_WARN << "Product mismatch: " << expected << " != " << actual;
+bool LibUsbAdaptor::CheckProduct(const string &expected,
+                                 const DeviceInformation &device_info) {
+  if (expected != device_info.product) {
+    OLA_WARN << "Product mismatch: " << expected << " != "
+             << device_info.manufacturer;
     return false;
   }
   return true;

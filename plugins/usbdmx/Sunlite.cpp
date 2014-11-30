@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SunliteWidget.cpp
+ * Sunlite.cpp
  * The synchronous and asynchronous Sunlite widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/SunliteWidget.h"
+#include "plugins/usbdmx/Sunlite.h"
 
 #include <string.h>
 
@@ -80,8 +80,9 @@ void InitPacket(uint8_t packet[SUNLITE_PACKET_SIZE]) {
 void UpdatePacket(const DmxBuffer &buffer,
                   uint8_t packet[SUNLITE_PACKET_SIZE]) {
   for (unsigned int i = 0; i < buffer.Size(); i++) {
-    packet[(i / CHANNELS_PER_CHUNK) * CHUNK_SIZE +
-             ((i / 4) % 5) * 6 + 3 + (i % 4)] = buffer.Get(i);
+    int index = ((i / CHANNELS_PER_CHUNK) * CHUNK_SIZE) +
+                (((i / 4) % 5) * 6) + 3 + (i % 4);
+    packet[index] = buffer.Get(i);
   }
 }
 
@@ -129,16 +130,16 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   return r == 0;
 }
 
-// SynchronousSunliteWidget
+// SynchronousSunlite
 // -----------------------------------------------------------------------------
 
-SynchronousSunliteWidget::SynchronousSunliteWidget(LibUsbAdaptor *adaptor,
+SynchronousSunlite::SynchronousSunlite(LibUsbAdaptor *adaptor,
                                                    libusb_device *usb_device)
-    : SunliteWidget(adaptor),
+    : Sunlite(adaptor),
       m_usb_device(usb_device) {
 }
 
-bool SynchronousSunliteWidget::Init() {
+bool SynchronousSunlite::Init() {
   libusb_device_handle *usb_handle;
 
   bool ok = m_adaptor->OpenDeviceAndClaimInterface(
@@ -156,7 +157,7 @@ bool SynchronousSunliteWidget::Init() {
   return true;
 }
 
-bool SynchronousSunliteWidget::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousSunlite::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -184,7 +185,7 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
   bool PerformTransfer(const DmxBuffer &buffer) {
     UpdatePacket(buffer, m_packet);
     FillBulkTransfer(ENDPOINT, m_packet, SUNLITE_PACKET_SIZE, TIMEOUT);
-    return SubmitTransfer() == 0;
+    return (SubmitTransfer() == 0);
   }
 
  private:
@@ -193,21 +194,21 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
   DISALLOW_COPY_AND_ASSIGN(SunliteAsyncUsbSender);
 };
 
-// AsynchronousSunliteWidget
+// AsynchronousSunlite
 // -----------------------------------------------------------------------------
 
-AsynchronousSunliteWidget::AsynchronousSunliteWidget(
+AsynchronousSunlite::AsynchronousSunlite(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : SunliteWidget(adaptor) {
+    : Sunlite(adaptor) {
   m_sender.reset(new SunliteAsyncUsbSender(m_adaptor, usb_device));
 }
 
-bool AsynchronousSunliteWidget::Init() {
+bool AsynchronousSunlite::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousSunliteWidget::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousSunlite::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

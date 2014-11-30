@@ -49,89 +49,89 @@ class WidgetObserver {
   virtual ~WidgetObserver() {}
 
   /**
-   * @brief Called when a new AnymaWidget is added.
+   * @brief Called when a new AnymauDMX is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class AnymaWidget *widget) = 0;
+  virtual bool NewWidget(class AnymauDMX *widget) = 0;
 
   /**
-   * @brief Called when a new EuroliteProWidget is added.
+   * @brief Called when a new EurolitePro is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class EuroliteProWidget *widget) = 0;
+  virtual bool NewWidget(class EurolitePro *widget) = 0;
 
   /**
-   * @brief Called when a new FadecandyWidget is added.
+   * @brief Called when a new ScanlimeFadecandy is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class FadecandyWidget *widget) = 0;
+  virtual bool NewWidget(class ScanlimeFadecandy *widget) = 0;
 
   /**
-   * @brief Called when a new SunliteWidget is added.
+   * @brief Called when a new Sunlite is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class SunliteWidget *widget) = 0;
+  virtual bool NewWidget(class Sunlite *widget) = 0;
 
   /**
-   * @brief Called when a new VellemanWidget is added.
+   * @brief Called when a new VellemanK8062 is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class VellemanWidget *widget) = 0;
+  virtual bool NewWidget(class VellemanK8062 *widget) = 0;
 
   /**
-   * @brief Called when an AnymaWidget is removed.
+   * @brief Called when an AnymauDMX is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class AnymaWidget *widget) = 0;
+  virtual void WidgetRemoved(class AnymauDMX *widget) = 0;
 
   /**
-   * @brief Called when a EuroliteProWidget is removed.
+   * @brief Called when a EurolitePro is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class EuroliteProWidget *widget) = 0;
+  virtual void WidgetRemoved(class EurolitePro *widget) = 0;
 
   /**
-   * @brief Called when a FadecandyWidget is removed.
+   * @brief Called when a ScanlimeFadecandy is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class FadecandyWidget *widget) = 0;
+  virtual void WidgetRemoved(class ScanlimeFadecandy *widget) = 0;
 
   /**
-   * @brief Called when a SunliteWidget is removed.
+   * @brief Called when a Sunlite is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class SunliteWidget *widget) = 0;
+  virtual void WidgetRemoved(class Sunlite *widget) = 0;
 
   /**
-   * @brief Called when a VellemanWidget is removed.
+   * @brief Called when a VellemanK8062 is removed.
    * @param widget the Widget that has been removed.
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class VellemanWidget *widget) = 0;
+  virtual void WidgetRemoved(class VellemanK8062 *widget) = 0;
 };
 
 /**

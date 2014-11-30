@@ -13,16 +13,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProWidgetFactory.h
- * The WidgetFactory for EurolitePro widgets.
+ * ScanlimeFadecandyFactory.h
+ * The WidgetFactory for Scanlime FadeCandy widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
-#define PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
+#ifndef PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_
+#define PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_
 
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/EuroliteProWidget.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
@@ -30,13 +29,15 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Creates EurolitePro widgets.
+ * @brief Creates Fadecandy widgets.
  */
-class EuroliteProWidgetFactory
-    : public BaseWidgetFactory<class EuroliteProWidget> {
+class ScanlimeFadecandyFactory
+    : public BaseWidgetFactory<class ScanlimeFadecandy> {
  public:
-  explicit EuroliteProWidgetFactory(class LibUsbAdaptor *adaptor)
-      : m_adaptor(adaptor) {}
+  explicit ScanlimeFadecandyFactory(class LibUsbAdaptor *adaptor)
+      : m_missing_serial_number(false),
+        m_adaptor(adaptor) {
+  }
 
   bool DeviceAdded(
       WidgetObserver *observer,
@@ -44,17 +45,17 @@ class EuroliteProWidgetFactory
       const struct libusb_device_descriptor &descriptor);
 
  private:
+  bool m_missing_serial_number;
   class LibUsbAdaptor *m_adaptor;
 
-  static const uint16_t PRODUCT_ID;
-  static const uint16_t VENDOR_ID;
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];
+  static const uint16_t PRODUCT_ID;
+  static const uint16_t VENDOR_ID;
 
-
-  DISALLOW_COPY_AND_ASSIGN(EuroliteProWidgetFactory);
+  DISALLOW_COPY_AND_ASSIGN(ScanlimeFadecandyFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_EUROLITEPROWIDGETFACTORY_H_
+#endif  // PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_

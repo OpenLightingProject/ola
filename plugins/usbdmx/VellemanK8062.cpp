@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * VellemanWidget.cpp
+ * VellemanK8062.cpp
  * The synchronous and asynchronous Velleman widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/VellemanWidget.h"
+#include "plugins/usbdmx/VellemanK8062.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -51,7 +51,7 @@ static const unsigned int HEADER_SIZE = 2;
 
 // Message types
 // Length: 8 or 64 for the extended version.
-// Data: [2] [slot N] [slot N +1] [slot N + 2] ... [slot N + 6]
+// Data: [2] [slot N] [slot N + 1] [slot N + 2] ... [slot N + 6]
 static const uint8_t INTERMEDIATE_FRAME_MSG = 2;
 
 // Length: 8 or 64 for the extended version.
@@ -103,9 +103,10 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
     uint16_t max_packet_size =
       config->interface->altsetting->endpoint->wMaxPacketSize;
     OLA_DEBUG << "Velleman K8062 max packet size is " << max_packet_size;
-    if (max_packet_size == UPGRADED_CHUNK_SIZE)
+    if (max_packet_size == UPGRADED_CHUNK_SIZE) {
       // this means the upgrade is present
       *chunk_size = max_packet_size;
+    }
   }
   adaptor->FreeConfigDescriptor(config);
 
@@ -117,7 +118,8 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
 
   int ret_code = adaptor->DetachKernelDriver(usb_handle, INTERFACE);
   if (ret_code != 0 && ret_code != LIBUSB_ERROR_NOT_FOUND) {
-    OLA_WARN << "Failed to detach kernel driver";
+    OLA_WARN << "Failed to detach kernel driver: "
+             << libusb_error_name(ret_code);
     adaptor->Close(usb_handle);
     return NULL;
   }
@@ -139,9 +141,12 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
   return usb_handle;
 }
 
-/**
+/*
  * @brief Count the number of leading 0s in a block of data.
- * ma
+ * @params data the data to count the 0s in.
+ * @param data_length the length of the data.
+ * @param chunk_size the size of the chunks we send to the widget.
+ * @returns the number of leading 0s in the data.
  */
 unsigned int CountLeadingZeros(const uint8_t *data, unsigned int data_length,
                                unsigned int chunk_size) {
@@ -150,7 +155,7 @@ unsigned int CountLeadingZeros(const uint8_t *data, unsigned int data_length,
   // This could be up to 254 for the standard interface but then the shutdown
   // process gets wacky. Limit it to 100 for the standard and 255 for the
   // extended.
-  unsigned int max_leading_zeros = chunk_size == UPGRADED_CHUNK_SIZE ?
+  unsigned int max_leading_zeros = (chunk_size == UPGRADED_CHUNK_SIZE) ?
     254 : 100;
   unsigned int rest_of_chunk = chunk_size - 2;
 
@@ -179,10 +184,12 @@ class VellemanThreadedSender: public ThreadedUsbSender {
       : ThreadedUsbSender(usb_device, handle),
         m_adaptor(adaptor),
         m_chunk_size(chunk_size) {
+    m_tx_buffer.Blackout();
   }
 
  private:
   LibUsbAdaptor* const m_adaptor;
+  DmxBuffer m_tx_buffer;
   const unsigned int m_chunk_size;
 
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -194,9 +201,11 @@ class VellemanThreadedSender: public ThreadedUsbSender {
 
 bool VellemanThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                             const DmxBuffer &buffer) {
+  m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
+
   unsigned char usb_data[m_chunk_size];
-  const unsigned int size = buffer.Size();
-  const uint8_t *data = buffer.GetRaw();
+  const unsigned int size = m_tx_buffer.Size();
+  const uint8_t *data = m_tx_buffer.GetRaw();
   unsigned int i = 0;
 
   unsigned int compressed_channel_count = m_chunk_size - 2;
@@ -220,8 +229,9 @@ bool VellemanThreadedSender::TransmitBuffer(libusb_device_handle *handle,
     i += leading_zero_count + compressed_channel_count;
   }
 
-  if (!SendDataChunk(handle, usb_data, m_chunk_size))
+  if (!SendDataChunk(handle, usb_data, m_chunk_size)) {
     return false;
+  }
 
   while (i < size - channel_count) {
     unsigned int leading_zero_count = CountLeadingZeros(
@@ -238,8 +248,9 @@ bool VellemanThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       memcpy(usb_data + 1, data + i, channel_count);
       i += channel_count;
     }
-    if (!SendDataChunk(handle, usb_data, m_chunk_size))
+    if (!SendDataChunk(handle, usb_data, m_chunk_size)) {
       return false;
+    }
   }
 
   // send the last channels
@@ -249,16 +260,18 @@ bool VellemanThreadedSender::TransmitBuffer(libusb_device_handle *handle,
     usb_data[0] = VARIABLE_FRAME_CONTINUATION_MSG;
     usb_data[1] = size - i;
     memcpy(usb_data + HEADER_SIZE, data + i, size - i);
-    if (!SendDataChunk(handle, usb_data, m_chunk_size))
+    if (!SendDataChunk(handle, usb_data, m_chunk_size)) {
       return false;
+    }
 
   } else {
     // else we use the 3 message type to send one at a time
     for (; i != size; i++) {
       usb_data[0] = SINGLE_SLOT_MSG;
       usb_data[1] = data[i];
-      if (!SendDataChunk(handle, usb_data, m_chunk_size))
+      if (!SendDataChunk(handle, usb_data, m_chunk_size)) {
         return false;
+      }
     }
   }
   return true;
@@ -268,27 +281,27 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
                                            uint8_t *usb_data,
                                            unsigned int chunk_size) {
   int transferred;
-  int ret = m_adaptor->InterruptTransfer(handle,
-      ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
+  int ret = m_adaptor->InterruptTransfer(
+      handle, ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
       chunk_size, &transferred, URB_TIMEOUT_MS);
   if (ret) {
-    OLA_INFO << "USB return code was " << ret << ", transferred "
-             << transferred;
+    OLA_WARN << "InterruptTransfer():" << libusb_error_name(ret)
+             << ", transferred " << transferred << " / " << chunk_size;
   }
   return ret == 0;
 }
 
-// SynchronousVellemanWidget
+// SynchronousVellemanK8062
 // -----------------------------------------------------------------------------
 
-SynchronousVellemanWidget::SynchronousVellemanWidget(
+SynchronousVellemanK8062::SynchronousVellemanK8062(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanWidget(adaptor),
+    : VellemanK8062(adaptor),
       m_usb_device(usb_device) {
 }
 
-bool SynchronousVellemanWidget::Init() {
+bool SynchronousVellemanK8062::Init() {
   unsigned int chunk_size = DEFAULT_CHUNK_SIZE;
   libusb_device_handle *usb_handle = OpenVellemenWidget(
       m_adaptor, m_usb_device, &chunk_size);
@@ -307,7 +320,7 @@ bool SynchronousVellemanWidget::Init() {
   return true;
 }
 
-bool SynchronousVellemanWidget::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -319,27 +332,28 @@ class VellemanAsyncUsbSender : public AsyncUsbSender {
                          libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device),
         m_chunk_size(DEFAULT_CHUNK_SIZE),
-        m_buffer_offset(0) {
+        m_buffer_offset(0),
+        m_packet(NULL) {
+    m_tx_buffer.Blackout();
   }
 
   ~VellemanAsyncUsbSender() {
     CancelTransfer();
+    if (m_packet) {
+      delete[] m_packet;
+    }
   }
 
   libusb_device_handle* SetupHandle() {
-    return OpenVellemenWidget(m_adaptor, m_usb_device, &m_chunk_size);
+    libusb_device_handle *handle = OpenVellemenWidget(m_adaptor, m_usb_device,
+                                                      &m_chunk_size);
+    m_packet = new uint8_t[m_chunk_size];
+    return handle;
   }
 
   bool PerformTransfer(const DmxBuffer &buffer);
 
-  void PostTransferHook() {
-    if (m_buffer_offset < m_tx_buffer.Size()) {
-      ContinueTransfer();
-    } else if (m_buffer_offset >= m_tx_buffer.Size()) {
-      m_buffer_offset = 0;
-      m_tx_buffer.Reset();
-    }
-  }
+  void PostTransferHook();
 
  private:
   // These are set once we known the type of device we're talking to.
@@ -347,8 +361,9 @@ class VellemanAsyncUsbSender : public AsyncUsbSender {
 
   DmxBuffer m_tx_buffer;
   // This tracks where were are in m_tx_buffer. A value of 0 means we're at the
-  // state of a DMX frame.
+  // start of a DMX frame.
   unsigned int m_buffer_offset;
+  uint8_t *m_packet;
 
   bool ContinueTransfer();
 
@@ -356,10 +371,9 @@ class VellemanAsyncUsbSender : public AsyncUsbSender {
   bool SendIntermediateChunk();
   bool SendSingleSlotChunk();
 
-  bool SendChunk(uint8_t *usb_data, unsigned int data_length) {
-    FormatData(&std::cout, usb_data, data_length);
-    FillInterruptTransfer(ENDPOINT, usb_data, data_length, URB_TIMEOUT_MS);
-    return SubmitTransfer() == 0;
+  bool SendChunk() {
+    FillInterruptTransfer(ENDPOINT, m_packet, m_chunk_size, URB_TIMEOUT_MS);
+    return (SubmitTransfer() == 0);
   }
 
   DISALLOW_COPY_AND_ASSIGN(VellemanAsyncUsbSender);
@@ -369,46 +383,85 @@ bool VellemanAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer) {
   if (m_buffer_offset == 0) {
     return SendInitialChunk(buffer);
   }
-  // Otherwise we're part way through a transfer.
-  return ContinueTransfer();
+  // Otherwise we're part way through a transfer, do nothing.
+  return true;
+}
+
+void VellemanAsyncUsbSender::PostTransferHook() {
+  if (m_buffer_offset < m_tx_buffer.Size()) {
+    ContinueTransfer();
+  } else if (m_buffer_offset >= m_tx_buffer.Size()) {
+    // That was the last chunk.
+    m_buffer_offset = 0;
+
+    if (TransferPending()) {
+      // If we have a pending transfer, the next chunk is going to be sent
+      // once we return.
+      m_tx_buffer.Reset();
+    } else {
+      // No pending transfer. The widget only actually sends a frame once the
+      // next frame begins, so kick off the next frame here.
+      PerformTransfer(m_tx_buffer);
+    }
+  }
+}
+
+bool VellemanAsyncUsbSender::ContinueTransfer() {
+  if (m_buffer_offset + m_chunk_size < m_tx_buffer.Size()) {
+    return SendIntermediateChunk();
+  }
+
+  if (m_chunk_size == UPGRADED_CHUNK_SIZE) {
+    // If running in extended mode we can use the 6 message type to send
+    // everything at once.
+    unsigned int length = m_chunk_size - HEADER_SIZE;
+
+    m_packet[0] = VARIABLE_FRAME_CONTINUATION_MSG;
+    m_packet[1] = m_tx_buffer.Size() - m_buffer_offset;
+    m_tx_buffer.GetRange(m_buffer_offset, m_packet + HEADER_SIZE, &length);
+    memset(m_packet + HEADER_SIZE + length, 0,
+           m_chunk_size - length - HEADER_SIZE);
+    return (SendChunk() == 0);
+  } else {
+    // The trailing slots are sent individually.
+    return SendSingleSlotChunk();
+  }
 }
 
 bool VellemanAsyncUsbSender::SendInitialChunk(const DmxBuffer &buffer) {
-  unsigned char usb_data[m_chunk_size];
   unsigned int length = m_chunk_size - HEADER_SIZE;
 
   if (m_chunk_size == UPGRADED_CHUNK_SIZE &&
       buffer.Size() <= m_chunk_size - HEADER_SIZE) {
     // If the upgrade is present and we can fit the data in a single chunk
     // use the FULL_FRAME_MSG message type.
-    usb_data[0] = FULL_FRAME_MSG;
-    usb_data[1] = buffer.Size();  // number of slots in the frame.
-    buffer.Get(usb_data + HEADER_SIZE, &length);
-    memset(usb_data + HEADER_SIZE + length, 0,
+    m_packet[0] = FULL_FRAME_MSG;
+    m_packet[1] = m_tx_buffer.Size();  // number of slots in the frame.
+    buffer.Get(m_packet + HEADER_SIZE, &length);
+    memset(m_packet + HEADER_SIZE + length, 0,
            m_chunk_size - length - HEADER_SIZE);
   } else {
+    m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
+
     // Otherwise use BREAK_MSG to signal the start of frame.
     unsigned int leading_zero_count = CountLeadingZeros(
-        buffer.GetRaw(), buffer.Size(), m_chunk_size);
-    usb_data[0] = BREAK_MSG;
-    usb_data[1] = leading_zero_count + 1;  // include start code
-    buffer.GetRange(leading_zero_count, usb_data + HEADER_SIZE, &length);
-    memset(usb_data + HEADER_SIZE + length, 0,
+        m_tx_buffer.GetRaw(), m_tx_buffer.Size(), m_chunk_size);
+    m_packet[0] = BREAK_MSG;
+    m_packet[1] = leading_zero_count + 1;  // include start code
+    m_tx_buffer.GetRange(leading_zero_count, m_packet + HEADER_SIZE, &length);
+    memset(m_packet + HEADER_SIZE + length, 0,
            m_chunk_size - length - HEADER_SIZE);
 
     unsigned int slots_sent = leading_zero_count + length;
-    if (slots_sent < buffer.Size()) {
+    if (slots_sent < m_tx_buffer.Size()) {
       // There are more frames to send.
-      m_tx_buffer.Set(buffer);
       m_buffer_offset = slots_sent;
     }
   }
-  return SendChunk(usb_data, m_chunk_size) == 0;
+  return (SendChunk() == 0);
 }
 
 bool VellemanAsyncUsbSender::SendIntermediateChunk() {
-  unsigned char usb_data[m_chunk_size];
-
   // Intermediate frame.
   unsigned int zeros = CountLeadingZeros(
       m_tx_buffer.GetRaw() + m_buffer_offset,
@@ -418,69 +471,44 @@ bool VellemanAsyncUsbSender::SendIntermediateChunk() {
   unsigned int length = m_chunk_size - 1;
   if (zeros) {
     // we have leading zeros
-    usb_data[0] = INTERMEDIATE_COMPRESSED_FRAME_MSG;
-    usb_data[1] = zeros;
+    m_packet[0] = INTERMEDIATE_COMPRESSED_FRAME_MSG;
+    m_packet[1] = zeros;
     length--;
-    m_tx_buffer.GetRange(m_buffer_offset + zeros, usb_data + HEADER_SIZE,
+    m_tx_buffer.GetRange(m_buffer_offset + zeros, m_packet + HEADER_SIZE,
                          &length);
     m_buffer_offset += zeros + length;
   } else {
-    usb_data[0] = INTERMEDIATE_FRAME_MSG;
-    m_tx_buffer.GetRange(m_buffer_offset, usb_data + 1, &length);
-    memset(usb_data + 1 + length, 0, m_chunk_size - length - 1);
+    m_packet[0] = INTERMEDIATE_FRAME_MSG;
+    m_tx_buffer.GetRange(m_buffer_offset, m_packet + 1, &length);
+    memset(m_packet + 1 + length, 0, m_chunk_size - length - 1);
     m_buffer_offset += length;
   }
-  return SendChunk(usb_data, m_chunk_size) == 0;
+  return (SendChunk() == 0);
 }
 
 bool VellemanAsyncUsbSender::SendSingleSlotChunk() {
-  unsigned char usb_data[m_chunk_size];
-  memset(usb_data, 0, m_chunk_size);
-
-  usb_data[0] = SINGLE_SLOT_MSG;
-  usb_data[1] = m_tx_buffer.Get(m_buffer_offset);
+  memset(m_packet, 0, m_chunk_size);
+  m_packet[0] = SINGLE_SLOT_MSG;
+  m_packet[1] = m_tx_buffer.Get(m_buffer_offset);
   m_buffer_offset++;
-  return SendChunk(usb_data, m_chunk_size) == 0;
+  return (SendChunk() == 0);
 }
 
-bool VellemanAsyncUsbSender::ContinueTransfer() {
-  if (m_buffer_offset + m_chunk_size + 1 < m_tx_buffer.Size()) {
-    return SendIntermediateChunk();
-  }
-
-  if (m_chunk_size == UPGRADED_CHUNK_SIZE) {
-    // If running in extended mode we can use the 6 message type to send
-    // everything at once.
-    unsigned char usb_data[m_chunk_size];
-    unsigned int length = m_chunk_size - HEADER_SIZE;
-
-    usb_data[0] = VARIABLE_FRAME_CONTINUATION_MSG;
-    usb_data[1] = m_tx_buffer.Size() - m_buffer_offset;
-    m_tx_buffer.GetRange(m_buffer_offset, usb_data + HEADER_SIZE, &length);
-    memset(usb_data + HEADER_SIZE + length, 0,
-           m_chunk_size - length - HEADER_SIZE);
-    return SendChunk(usb_data, m_chunk_size) == 0;
-  } else {
-    // The trailing slots are sendt individually.
-    return SendSingleSlotChunk();
-  }
-}
-
-// AsynchronousVellemanWidget
+// AsynchronousVellemanK8062
 // -----------------------------------------------------------------------------
 
-AsynchronousVellemanWidget::AsynchronousVellemanWidget(
+AsynchronousVellemanK8062::AsynchronousVellemanK8062(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanWidget(adaptor) {
+    : VellemanK8062(adaptor) {
   m_sender.reset(new VellemanAsyncUsbSender(m_adaptor, usb_device));
 }
 
-bool AsynchronousVellemanWidget::Init() {
+bool AsynchronousVellemanK8062::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousVellemanWidget::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

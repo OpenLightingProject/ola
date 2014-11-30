@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AsyncUsbSender.h
- * A Asynchronous DMX USB sender.
+ * An Asynchronous DMX USB sender.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -32,7 +32,7 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A base class that send DMX data asynchronously.
+ * @brief A base class that send DMX data asynchronously to a libusb_device.
  *
  * This encapsulates much of the asynchronous libusb logic. Subclasses should
  * implement the SetupHandle() and PerformTransfer() methods.
@@ -40,7 +40,7 @@ namespace usbdmx {
 class AsyncUsbSender {
  public:
   /**
-   * @brief Create a new AsynchronousAnymaWidget.
+   * @brief Create a new AsyncUsbSender.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
@@ -59,7 +59,7 @@ class AsyncUsbSender {
   bool Init();
 
   /**
-   * @brief Send on frame of DMX data.
+   * @brief Send one frame of DMX data.
    * @param buffer the DMX data to send.
    * @returns the value of PerformTransfer().
    */
@@ -101,7 +101,12 @@ class AsyncUsbSender {
    */
   virtual bool PerformTransfer(const DmxBuffer &buffer) = 0;
 
-
+  /**
+   * @brief Called when the transfer completes.
+   *
+   * Some devices require multiple transfers per DMX frame. This provides a
+   * hook for continuation.
+   */
   virtual void PostTransferHook() {}
 
   /**
@@ -123,7 +128,7 @@ class AsyncUsbSender {
                         int length, unsigned int timeout);
 
   /**
-   * @brief Fill a interrupt transfer.
+   * @brief Fill an interrupt transfer.
    */
   void FillInterruptTransfer(unsigned char endpoint, unsigned char *buffer,
                              int length, unsigned int timeout);
@@ -134,6 +139,12 @@ class AsyncUsbSender {
    */
   int SubmitTransfer();
 
+  /**
+   * @brief Check if there is a pending transfer.
+   * @returns true if there is a transfer in progress, false otherwise.
+   */
+  bool TransferPending() const { return m_pending_tx; }
+
  private:
   enum TransferState {
     IDLE,
@@ -142,9 +153,12 @@ class AsyncUsbSender {
   };
 
   libusb_device_handle *m_usb_handle;
+  bool m_suppress_continuation;
   struct libusb_transfer *m_transfer;
 
   TransferState m_transfer_state;  // GUARDED_BY(m_mutex);
+  DmxBuffer m_tx_buffer;  // GUARDED_BY(m_mutex);
+  bool m_pending_tx;  // GUARDED_BY(m_mutex);
   ola::thread::Mutex m_mutex;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUsbSender);

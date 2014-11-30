@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AsyncUsbSender.cpp
- * A Asynchronous DMX USB sender.
+ * An Asynchronous DMX USB sender.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -44,7 +44,9 @@ AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
     : m_adaptor(adaptor),
       m_usb_device(usb_device),
       m_usb_handle(NULL),
-      m_transfer_state(IDLE) {
+      m_suppress_continuation(false),
+      m_transfer_state(IDLE),
+      m_pending_tx(false) {
   m_transfer = m_adaptor->AllocTransfer(0);
   m_adaptor->RefDevice(usb_device);
 }
@@ -53,6 +55,7 @@ AsyncUsbSender::~AsyncUsbSender() {
   CancelTransfer();
   m_adaptor->Close(m_usb_handle);
   m_adaptor->UnrefDevice(m_usb_device);
+  m_adaptor->FreeTransfer(m_transfer);
 }
 
 bool AsyncUsbSender::Init() {
@@ -62,15 +65,18 @@ bool AsyncUsbSender::Init() {
 
 bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
   if (!m_usb_handle) {
-    OLA_WARN << "AsynchronousAnymaWidget hasn't been initialized";
+    OLA_WARN << "AsyncUsbSender hasn't been initialized";
     return false;
   }
   ola::thread::MutexLocker locker(&m_mutex);
-  if (m_transfer_state != IDLE) {
-    return true;
+  if (m_transfer_state == IDLE) {
+    PerformTransfer(buffer);
+  } else {
+    // Buffer incoming data so we can send it when the outstanding transfers
+    // complete.
+    m_pending_tx = true;
+    m_tx_buffer.Set(buffer);
   }
-
-  PerformTransfer(buffer);
   return true;
 }
 
@@ -86,13 +92,16 @@ void AsyncUsbSender::CancelTransfer() {
       break;
     }
     if (!canceled) {
-      m_adaptor->CancelTransfer(m_transfer);
-      canceled = true;
+      m_suppress_continuation = true;
+      if (m_adaptor->CancelTransfer(m_transfer) == 0) {
+        canceled = true;
+      } else {
+        break;
+      }
     }
   }
 
-  m_adaptor->FreeTransfer(m_transfer);
-  m_transfer = NULL;
+  m_suppress_continuation = false;
 }
 
 void AsyncUsbSender::FillControlTransfer(unsigned char *buffer,
@@ -142,9 +151,19 @@ void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
   }
 
   ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
-      DISCONNECTED : IDLE;
+  m_transfer_state = (transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
+      DISCONNECTED : IDLE);
+
+  if (m_suppress_continuation) {
+    return;
+  }
+
   PostTransferHook();
+
+  if ((m_transfer_state == IDLE) && m_pending_tx) {
+    m_pending_tx = false;
+    PerformTransfer(m_tx_buffer);
+  }
 }
 }  // namespace usbdmx
 }  // namespace plugin

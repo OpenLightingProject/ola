@@ -35,7 +35,7 @@ using std::string;
 bool Open(const string &path, int oflag, int *fd) {
   *fd = open(path.c_str(), oflag);
   if (*fd < 0) {
-    OLA_WARN << "Failed to open " << path << ": " << strerror(errno);
+    OLA_WARN << "open(" << path << "): " << strerror(errno);
     return false;
   }
   return true;

@@ -42,7 +42,6 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
-#include <ola/slp/URLEntry.h>
 
 #include <iostream>
 #include <memory>

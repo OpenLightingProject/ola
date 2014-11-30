@@ -13,32 +13,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FadecandyWidgetFactory.cpp
- * The WidgetFactory for Fadecandy widgets.
+ * AnymauDMXFactory.cpp
+ * The factory for Anyma uDMX widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/FadecandyWidgetFactory.h"
+#include "plugins/usbdmx/AnymauDMXFactory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/FadecandyWidget.h"
+#include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
-
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char FadecandyWidgetFactory::EXPECTED_MANUFACTURER[] = "scanlime";
-const char FadecandyWidgetFactory::EXPECTED_PRODUCT[] = "Fadecandy";
-const uint16_t FadecandyWidgetFactory::PRODUCT_ID = 0x1D50;
-const uint16_t FadecandyWidgetFactory::VENDOR_ID = 0x607A;
+const char AnymauDMXFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
+const char AnymauDMXFactory::EXPECTED_PRODUCT[] = "uDMX";
+const uint16_t AnymauDMXFactory::PRODUCT_ID = 0x05DC;
+const uint16_t AnymauDMXFactory::VENDOR_ID = 0x16C0;
 
-
-bool FadecandyWidgetFactory::DeviceAdded(
+bool AnymauDMXFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -47,21 +45,21 @@ bool FadecandyWidgetFactory::DeviceAdded(
     return false;
   }
 
-  OLA_INFO << "Found a new Fadecandy device";
+  OLA_INFO << "Found a new Anyma device";
   LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
   }
 
-  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info.manufacturer)) {
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info)) {
     return false;
   }
 
-  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info)) {
     return false;
   }
 
-  // Fadecandy devices may be missing serial numbers. Since there isn't another
+  // Some Anyma devices don't have serial numbers. Since there isn't another
   // good way to uniquely identify a USB device, we only support one of these
   // types of devices per host.
   if (info.serial.empty()) {
@@ -77,12 +75,11 @@ bool FadecandyWidgetFactory::DeviceAdded(
     }
   }
 
-  FadecandyWidget *widget = NULL;
+  AnymauDMX *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousFadecandyWidget(m_adaptor, usb_device,
-                                             info.serial);
+    widget = new AsynchronousAnymauDMX(m_adaptor, usb_device, info.serial);
   } else {
-    widget = new SynchronousFadecandyWidget(m_adaptor, usb_device, info.serial);
+    widget = new SynchronousAnymauDMX(m_adaptor, usb_device, info.serial);
   }
   return AddWidget(observer, usb_device, widget);
 }

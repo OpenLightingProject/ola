@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * EuroliteProWidgetFactory.cpp
+ * EuroliteProFactory.cpp
  * The WidgetFactory for EurolitePro widgets.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/EuroliteProWidgetFactory.h"
+#include "plugins/usbdmx/EuroliteProFactory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
@@ -30,13 +30,13 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const char EuroliteProWidgetFactory::EXPECTED_MANUFACTURER[] = "Eurolite";
-const char EuroliteProWidgetFactory::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
-const uint16_t EuroliteProWidgetFactory::PRODUCT_ID = 0xfa63;
-const uint16_t EuroliteProWidgetFactory::VENDOR_ID = 0x04d;
+const char EuroliteProFactory::EXPECTED_MANUFACTURER[] = "Eurolite";
+const char EuroliteProFactory::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
+const uint16_t EuroliteProFactory::PRODUCT_ID = 0xfa63;
+const uint16_t EuroliteProFactory::VENDOR_ID = 0x04d;
 
 
-bool EuroliteProWidgetFactory::DeviceAdded(
+bool EuroliteProFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -51,11 +51,11 @@ bool EuroliteProWidgetFactory::DeviceAdded(
     return false;
   }
 
-  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info.manufacturer)) {
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info)) {
     return false;
   }
 
-  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info.product)) {
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info)) {
     return false;
   }
 
@@ -71,13 +71,13 @@ bool EuroliteProWidgetFactory::DeviceAdded(
   std::ostringstream serial_str;
   serial_str << bus_number << "-" << device_address;
 
-  EuroliteProWidget *widget = NULL;
+  EurolitePro *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousEuroliteProWidget(m_adaptor, usb_device,
-                                               serial_str.str());
+    widget = new AsynchronousEurolitePro(m_adaptor, usb_device,
+                                         serial_str.str());
   } else {
-    widget = new SynchronousEuroliteProWidget(m_adaptor, usb_device,
-                                              serial_str.str());
+    widget = new SynchronousEurolitePro(m_adaptor, usb_device,
+                                        serial_str.str());
   }
   return AddWidget(observer, usb_device, widget);
 }

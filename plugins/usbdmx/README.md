@@ -8,7 +8,8 @@ this plugin used the synchronous interface, and spawned a thread for every USB
 device present.
 
 The new version of the plugin uses the asynchronous mode of operation and a
-single thread for the libusb completion handling.
+single thread for the libusb completion handling. This allows us to support
+hotplug.
 
 You can opt-in to the new asynchronous mode by passing the --use-async-libusb
 flag to olad. Assuming we don't find any problems, at some point this will
@@ -23,7 +24,7 @@ Terminology
 
 *USB Device*, is the physical USB device attached to the host.
 
-*DMX512 Interface*, the physical socket on the USB Device the user plugins the
+*DMX512 Interface*, the physical socket on the USB Device the user plugs the
 DMX512 cable into. Currently all the USB Devices supported by the plugin
 contain a single DMX512 Interface.
 
@@ -43,17 +44,17 @@ Code Concepts & Structure
 
 USB Devices are represented as Widgets, this allows us to de-couple the Widget
 code from OLA's Port representation (remember, prefer composition over
-inheritance). Since all the USB devices we support so
-far have a single DMX512 interface, each specific Widget (e.g. AnymaWidget)
-derives from the Widget class. This isn't strictly necessary, it just means we
-can avoid code duplication by using the GenericDevice and GenericPort classes.
-If in the future, multi-interface USB devices are supported, they shouldn't
-inherit from the Widget class.
+inheritance). Since all the USB devices we support so far have a single DMX512
+interface, each specific Widget (e.g. AnymauDMX) derives from the Widget
+class. This isn't strictly necessary, it just means we can avoid code
+duplication by using the GenericDevice and GenericPort classes. If in the
+future, multi-interface USB devices are supported, they shouldn't inherit from
+the Widget class.
 
 GenericPort wraps a Widget into a Port object, so it can show up in olad.
 GenericDevice creates a Device with a single GenericPort.
 
-For each type of USB Device, we create a common base class, e.g. AnymaWidget.
+For each type of USB Device, we create a common base class, e.g. AnymauDMX.
 This enables the WidgetObserver class (see below) to know what
 name it should give the resultant Device.
 
@@ -61,10 +62,10 @@ Then for each type of USB Device, we create a synchronous and asynchronous
 version of the Widget. So you end up with something like:
 
 * Widget
-  * AnymaWidget
+  * AnymauDMX
     * SynchronousAnymaWidget
     * AsynchronousAnymaWidget
-  * SunliteWidget
+  * Sunlite
     * SynchronousSunliteWidget
     * AsynchronousSunliteWidget
 
