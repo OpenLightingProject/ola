@@ -75,9 +75,9 @@ using std::endl;
 using std::string;
 
 #if HAVE_DECL_RLIMIT_RTTIME
-/**
+/*
  * @private
- * Print a stack trace if we exceed CPU time.
+ * @brief Print a stack trace if we exceed CPU time.
  */
 static void _SIGXCPU_Handler(OLA_UNUSED int signal) {
   cout << "Received SIGXCPU" << endl;
@@ -96,6 +96,11 @@ bool SetThreadScheduling() {
   string policy_str = FLAGS_scheduler_policy.str();
   ola::ToLower(&policy_str);
   if (policy_str.empty()) {
+    if (FLAGS_scheduler_priority.present()) {
+      OLA_WARN << "Must provide both of --scheduler-policy & "
+                  "--scheduler-priority";
+      return false;
+    }
     return true;
   }
 
