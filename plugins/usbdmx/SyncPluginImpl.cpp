@@ -162,6 +162,10 @@ bool SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
   struct libusb_device_descriptor device_descriptor;
   libusb_get_device_descriptor(usb_device, &device_descriptor);
 
+  OLA_DEBUG << "USB device found, checking for widget support, vendor "
+            << IntToHexString(device_descriptor.idVendor) << ", product "
+            << IntToHexString(device_descriptor.idProduct);
+
   pair<uint8_t, uint8_t> bus_dev_id(libusb_get_bus_number(usb_device),
                                     libusb_get_device_address(usb_device));
 

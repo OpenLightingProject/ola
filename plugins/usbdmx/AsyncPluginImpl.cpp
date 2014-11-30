@@ -264,6 +264,10 @@ bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   struct libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(usb_device, &descriptor);
 
+  OLA_DEBUG << "USB device added, checking for widget support, vendor "
+            << IntToHexString(descriptor.idVendor) << ", product "
+            << IntToHexString(descriptor.idProduct);
+
   WidgetFactories::iterator iter = m_widget_factories.begin();
   for (; iter != m_widget_factories.end(); ++iter) {
     if ((*iter)->DeviceAdded(&m_widget_observer, usb_device, descriptor)) {
