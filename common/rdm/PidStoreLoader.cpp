@@ -340,11 +340,11 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
   }
 
   // we don't give these descriptors names
-  const Descriptor *descriptor =  new Descriptor("", fields);
+  const Descriptor *descriptor = new Descriptor("", fields);
 
   if (validate) {
     if (!m_checker.CheckConsistency(descriptor)) {
-      OLA_WARN << "Frame format failed consistency check!";
+      OLA_WARN << "Invalid frame format";
       delete descriptor;
       return NULL;
     }

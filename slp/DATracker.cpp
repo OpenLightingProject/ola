@@ -257,7 +257,7 @@ bool DATracker::AddressFromURL(const string &url, IPV4Address *address) {
     ok = IPV4Address::FromString(url.substr(m_da_service_prefix.size()),
                                  address);
     if (!ok)
-      OLA_WARN << "Failed to extract IP from "
+      OLA_WARN << "Unable to extract IP from "
                << url.substr(m_da_service_prefix.size());
   } else {
     OLA_WARN << url << " did not start with " << m_da_service_prefix;

@@ -189,7 +189,7 @@ void DiscoveryAgent::MaybeMuteNextDevice() {
 void DiscoveryAgent::IncrementalMuteComplete(bool status) {
   if (!status) {
     m_uids.RemoveUID(m_muting_uid);
-    OLA_WARN << "Mute of " << m_muting_uid << " failed, device has gone";
+    OLA_WARN << "Unable to mute " << m_muting_uid << ", device has gone";
   } else {
     OLA_DEBUG << "Muted " << m_muting_uid;
   }

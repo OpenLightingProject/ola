@@ -374,7 +374,7 @@ void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
   } else if (m_mute_callback) {
     MuteDeviceCallback *callback = m_mute_callback;
     m_mute_callback = NULL;
-    OLA_INFO << "Failed to mute device";
+    OLA_INFO << "Unable to mute device";
     callback->Run(false);
   } else if (m_branch_callback) {
     BranchCallback *callback = m_branch_callback;
