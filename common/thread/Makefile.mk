@@ -5,7 +5,8 @@ common_libolacommon_la_SOURCES += \
     common/thread/Mutex.cpp \
     common/thread/SignalThread.cpp \
     common/thread/Thread.cpp \
-    common/thread/ThreadPool.cpp
+    common/thread/ThreadPool.cpp \
+    common/thread/Utils.cpp
 
 # TESTS
 ##################################################

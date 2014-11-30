@@ -51,13 +51,122 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/math/Random.h>
+#include <ola/thread/Utils.h>
+#include <ola/system/Limits.h>
 
 #include <iostream>
 #include <string>
+
+// Scheduling options.
+DEFINE_string(scheduler_policy, "",
+              "The thread scheduling policy, one of {fifo, rr}.");
+DEFINE_uint16(scheduler_priority, 0,
+              "The thread priority, only used if --scheduler-policy is set.");
+
+namespace {
+
+using std::cout;
+using std::endl;
+using std::string;
+
+#if HAVE_DECL_RLIMIT_RTTIME
+/*
+ * @private
+ * @brief Print a stack trace if we exceed CPU time.
+ */
+static void _SIGXCPU_Handler(OLA_UNUSED int signal) {
+  cout << "Received SIGXCPU" << endl;
+  #ifdef HAVE_EXECINFO_H
+  enum {STACK_SIZE = 64};
+  void *array[STACK_SIZE];
+  size_t size = backtrace(array, STACK_SIZE);
+
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  #endif
+  exit(ola::EXIT_SOFTWARE);
+}
+#endif
+
+bool SetThreadScheduling() {
+  string policy_str = FLAGS_scheduler_policy.str();
+  ola::ToLower(&policy_str);
+  if (policy_str.empty()) {
+    if (FLAGS_scheduler_priority.present()) {
+      OLA_WARN << "Must provide both of --scheduler-policy & "
+                  "--scheduler-priority";
+      return false;
+    }
+    return true;
+  }
+
+  int policy = 0;
+  if (policy_str == "fifo") {
+    policy = SCHED_FIFO;
+  } else if (policy_str == "rr") {
+    policy = SCHED_RR;
+  } else {
+    OLA_FATAL << "Unknown scheduling policy " << policy_str;
+    return false;
+  }
+
+  if (!FLAGS_scheduler_priority.present()) {
+    OLA_WARN << "Must provide both of --scheduler-policy & "
+                "--scheduler-priority";
+    return false;
+  }
+
+  int requested_priority = FLAGS_scheduler_priority;
+#ifdef _POSIX_PRIORITY_SCHEDULING
+  int min = sched_get_priority_min(policy);
+  int max = sched_get_priority_max(policy);
+
+  if (requested_priority < min) {
+    OLA_WARN << "Minimum value for --scheduler-priority is " << min;
+    return false;
+  }
+
+  if (requested_priority > max) {
+    OLA_WARN << "Maximum value for --scheduler-priority is " << max;
+    return false;
+  }
+#endif
+
+  // Set the scheduling parameters.
+  struct sched_param param;
+  param.sched_priority = requested_priority;
+
+  OLA_INFO << "Scheduling policy is " << ola::thread::PolicyToString(policy)
+           << ", priority " << param.sched_priority;
+  ola::thread::SetSchedParam(pthread_self(), policy, param);
+
+  // If RLIMIT_RTTIME is available, set a bound on the length of uninterrupted
+  // CPU time we can consume.
+#if HAVE_DECL_RLIMIT_RTTIME
+  struct rlimit rlim;
+  if (!ola::system::GetRLimit(RLIMIT_RTTIME, &rlim)) {
+    return false;
+  }
+
+  // Cap CPU time at 1s.
+  rlim.rlim_cur = 1000000;
+  OLA_WARN << "set RLIMIT_RTTIME " << rlim.rlim_cur << " / " << rlim.rlim_max;
+  if (!ola::system::SetRLimit(RLIMIT_RTTIME, rlim)) {
+    return false;
+  }
+
+  if (!ola::InstallSignal(SIGXCPU, _SIGXCPU_Handler)) {
+    OLA_WARN << "Failed to install signal SIGXCPU";
+    return false;
+  }
+#endif
+  return true;
+}
+}  // namespace
 
 namespace ola {
 
@@ -74,7 +183,7 @@ using std::string;
  * @private
  * Print a stack trace on seg fault.
  */
-static void _SIGSEGV_Handler(int signal) {
+static void _SIGSEGV_Handler(OLA_UNUSED int signal) {
   cout << "Received SIGSEGV or SIGBUS" << endl;
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
@@ -84,7 +193,6 @@ static void _SIGSEGV_Handler(int signal) {
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
   exit(EXIT_SOFTWARE);
-  (void) signal;
 }
 
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
@@ -94,7 +202,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 
   if (export_map)
     InitExportMap(argc, argv, export_map);
-  return NetworkInit();
+  return SetThreadScheduling() && NetworkInit();
 }
 
 
@@ -126,7 +234,7 @@ bool AppInit(int *argc,
   InitLoggingFromFlags();
   if (!InstallSEGVHandler())
     return false;
-  return NetworkInit();
+  return SetThreadScheduling() && NetworkInit();
 }
 
 #ifdef _WIN32
@@ -170,7 +278,6 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
 #endif  // _WIN32
   return true;
 }
-
 
 bool InstallSEGVHandler() {
 #ifndef _WIN32

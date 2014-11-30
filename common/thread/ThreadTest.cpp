@@ -29,8 +29,10 @@
 #include <algorithm>
 
 #include "ola/Logging.h"
-#include "ola/thread/Thread.h"
+#include "ola/system/Limits.h"
 #include "ola/testing/TestUtils.h"
+#include "ola/thread/Thread.h"
+#include "ola/thread/Utils.h"
 
 
 using ola::thread::ConditionVariable;
@@ -58,11 +60,7 @@ SchedulingParams GetCurrentParams() {
 bool SetCurrentParams(const SchedulingParams &new_params) {
   struct sched_param param;
   param.sched_priority = new_params.priority;
-  int ret = pthread_setschedparam(pthread_self(), new_params.policy, &param);
-  if (ret) {
-    OLA_WARN << "pthread_setschedparam failed: " << strerror(ret);
-  }
-  return ret == 0;
+  return ola::thread::SetSchedParam(pthread_self(), new_params.policy, param);
 }
 
 
@@ -141,8 +139,7 @@ void ThreadTest::testThread() {
 void ThreadTest::testSchedulingOptions() {
 #if HAVE_DECL_RLIMIT_RTPRIO
   struct rlimit rlim;
-  int r = getrlimit(RLIMIT_RTPRIO, &rlim);
-  OLA_ASSERT_EQ(0, r);
+  OLA_ASSERT_TRUE(ola::system::GetRLimit(RLIMIT_RTPRIO, &rlim));
 
   if (rlim.rlim_cur == 0) {
     // A value of 0 means the user can't change policies.

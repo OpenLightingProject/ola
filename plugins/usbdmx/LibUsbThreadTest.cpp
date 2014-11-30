@@ -101,7 +101,7 @@ void LibUsbThreadTest::AttemptDeviceOpen(
     ola::plugin::usbdmx::LibUsbThread *thread) {
   libusb_device_handle *usb_handle = NULL;
   libusb_device **device_list;
-  size_t device_count = libusb_get_device_list(NULL, &device_list);
+  size_t device_count = libusb_get_device_list(m_context, &device_list);
 
   for (unsigned int i = 0; i < device_count; i++) {
     libusb_device *usb_device = device_list[i];
