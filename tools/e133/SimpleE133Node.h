@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * e133-receiver.cpp
+ * SimpleE133Node.h
  * Copyright (C) 2011 Simon Newton
  *
  * This creates a E1.33 receiver with one (emulated) RDM responder. The node's
