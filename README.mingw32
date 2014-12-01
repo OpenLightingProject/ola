@@ -55,28 +55,28 @@ msys-git
 libuuid
 -------
 - Download and extract the latest libuuid tarball from https://code.google.com/p/gnome-build-stage-1/downloads/list
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 protobuf
 --------
 - Download and extract the latest protobuf tarball from https://code.google.com/p/protobuf/downloads/list
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 - if you want to use the OLA Python api, install the protobuf Python bindings from the 'python' subdirectory
 
 cppunit
 -------
 - Download and extract the latest cppunit tarball from http://sourceforge.net/projects/cppunit/files/cppunit/
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 libmicrohttpd
 -------------
 - Download and extract the latest libmicrohttpd tarball from http://ftp.gnu.org/gnu/libmicrohttpd/
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW (and --disable-https if you don't want all the crypto stuff)
 
 liblo (optional)
 ----------------
 - Download and extract the latest version of liblo from http://liblo.sourceforge.net/
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 ============
 Building OLA
