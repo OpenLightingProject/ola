@@ -205,8 +205,10 @@ bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
       widget,
-      new GenericDevice(m_plugin, widget, "Fadecandy USB Device",
-                        "fadecandy-" + widget->SerialNumber()));
+      new GenericDevice(
+          m_plugin, widget,
+          "Fadecandy USB Device (" + widget->SerialNumber() + ")",
+          "fadecandy-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
@@ -263,6 +265,10 @@ bool AsyncPluginImpl::HotplugSupported() {
 bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   struct libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(usb_device, &descriptor);
+
+  OLA_DEBUG << "USB device added, checking for widget support, vendor "
+            << IntToHexString(descriptor.idVendor) << ", product "
+            << IntToHexString(descriptor.idProduct);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
   for (; iter != m_widget_factories.end(); ++iter) {
