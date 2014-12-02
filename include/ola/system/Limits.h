@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_SYSTEM_LIMITS_H_
 #define INCLUDE_OLA_SYSTEM_LIMITS_H_
 
+#ifndef _WIN32
 #include <sys/resource.h>
 
 namespace ola {
@@ -43,4 +44,5 @@ bool GetRLimit(int resource, struct rlimit *lim);
 bool SetRLimit(int resource, const struct rlimit &lim);
 }  // namespace system
 }  // namespace ola
+#endif  // _WIN32
 #endif  // INCLUDE_OLA_SYSTEM_LIMITS_H_

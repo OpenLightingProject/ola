@@ -18,6 +18,8 @@
  * Copyright (C) 2014 Simon Newton
  */
 
+
+#ifndef _WIN32
 #include "ola/system/Limits.h"
 
 #include <string.h>
@@ -45,5 +47,6 @@ bool SetRLimit(int resource, const struct rlimit &lim) {
   }
   return true;
 }
+#endif  // _WIN32
 }  // namespace system
 }  // namespace ola
