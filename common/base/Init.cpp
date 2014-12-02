@@ -142,7 +142,10 @@ bool SetThreadScheduling() {
 
   OLA_INFO << "Scheduling policy is " << ola::thread::PolicyToString(policy)
            << ", priority " << param.sched_priority;
-  ola::thread::SetSchedParam(pthread_self(), policy, param);
+  bool ok = ola::thread::SetSchedParam(pthread_self(), policy, param);
+  if (!ok) {
+    return false;
+  }
 
   // If RLIMIT_RTTIME is available, set a bound on the length of uninterrupted
   // CPU time we can consume.
@@ -154,7 +157,8 @@ bool SetThreadScheduling() {
 
   // Cap CPU time at 1s.
   rlim.rlim_cur = 1000000;
-  OLA_WARN << "set RLIMIT_RTTIME " << rlim.rlim_cur << " / " << rlim.rlim_max;
+  OLA_DEBUG << "Setting RLIMIT_RTTIME " << rlim.rlim_cur << " / "
+            << rlim.rlim_max;
   if (!ola::system::SetRLimit(RLIMIT_RTTIME, rlim)) {
     return false;
   }

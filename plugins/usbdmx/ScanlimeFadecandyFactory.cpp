@@ -34,8 +34,8 @@ namespace usbdmx {
 
 const char ScanlimeFadecandyFactory::EXPECTED_MANUFACTURER[] = "scanlime";
 const char ScanlimeFadecandyFactory::EXPECTED_PRODUCT[] = "Fadecandy";
-const uint16_t ScanlimeFadecandyFactory::PRODUCT_ID = 0x1D50;
-const uint16_t ScanlimeFadecandyFactory::VENDOR_ID = 0x607A;
+const uint16_t ScanlimeFadecandyFactory::VENDOR_ID = 0x1D50;
+const uint16_t ScanlimeFadecandyFactory::PRODUCT_ID = 0x607A;
 
 
 bool ScanlimeFadecandyFactory::DeviceAdded(
