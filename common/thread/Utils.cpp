@@ -24,6 +24,7 @@
 #include <string.h>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/thread/Thread.h"
 
 namespace ola {
 namespace thread {
@@ -46,7 +47,7 @@ bool SetSchedParam(pthread_t thread, int policy,
   int r = pthread_setschedparam(thread, policy, &param);
   if (r != 0) {
     OLA_FATAL << "Unable to set thread scheduling parameters for thread "
-              << thread.x << ": " << strerror(r);
+              << thread << ": " << strerror(r);
     return false;
   }
   return true;
