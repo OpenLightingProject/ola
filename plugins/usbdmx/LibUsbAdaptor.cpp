@@ -50,7 +50,7 @@ bool GetStringDescriptorAscii(libusb_device_handle *usb_handle,
 
   if (r <= 0) {
     OLA_INFO << "libusb_get_string_descriptor_ascii failed: "
-             << libusb_error_name(r);
+             << LibUsbAdaptor::ErrorCodeToString(r);
     return false;
   }
   data->assign(reinterpret_cast<char*>(buffer));
@@ -65,7 +65,7 @@ bool Open(libusb_device *usb_device,
   int r = libusb_open(usb_device, usb_handle);
   if (r) {
     OLA_WARN << "Failed to open libusb device: " << usb_device << ": "
-             << libusb_error_name(r);;
+             << LibUsbAdaptor::ErrorCodeToString(r);;
     return false;
   }
   return true;
@@ -82,7 +82,7 @@ bool OpenHandleAndClaimInterface(libusb_device *usb_device,
   if (r) {
     OLA_WARN << "Failed to claim interface " << interface
              << " on device: " << usb_device << ": "
-             << libusb_error_name(r);
+             << LibUsbAdaptor::ErrorCodeToString(r);
     libusb_close(*usb_handle);
     return false;
   }
@@ -142,6 +142,14 @@ bool LibUsbAdaptor::CheckProduct(const string &expected,
     return false;
   }
   return true;
+}
+
+string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
+#ifdef HAVE_LIBUSB_ERROR_NAME
+  return libusb_error_name(error_code);
+#else
+  return "Error code " + error_code;
+#endif
 }
 
 // BaseLibUsbAdaptor

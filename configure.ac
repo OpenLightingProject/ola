@@ -524,6 +524,14 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
 
+have_libusb_error_name="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_error_name], [libusb-1.0 >= 1.0.9],
+                         [have_libusb_error_name="yes"], [true])])
+AS_IF([test "x$have_libusb_error_name" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_ERROR_NAME], [1],
+                 [define if libusb is installed and has libusb_error_name])])
+
 # UART direct plugin
 AC_ARG_ENABLE(
   [uart],
