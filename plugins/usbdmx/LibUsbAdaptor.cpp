@@ -22,6 +22,7 @@
 
 #include <libusb.h>
 #include <ola/Logging.h>
+#include <sstream>
 #include <string>
 
 #include "plugins/usbdmx/LibUsbThread.h"
@@ -30,6 +31,7 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using std::ostringstream;
 using std::string;
 
 namespace {
@@ -149,7 +151,9 @@ string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
   return libusb_error_name(error_code);
 #else
   // TODO(Peter): Try and be more helpful here, switch case statement?
-  return "Error code " + error_code;
+  ostringstream str;
+  str << "Error code " << error_code;
+  return str.str();
 #endif
 }
 
