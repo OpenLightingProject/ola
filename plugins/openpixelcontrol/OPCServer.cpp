@@ -47,8 +47,9 @@ void CleanupSocket(TCPSocket *socket) {
 
 void OPCServer::RxState::CheckSize() {
   expected_size = utils::JoinUInt8(data[2], data[3]);
-  if (expected_size + OPC_HEADER_SIZE > buffer_size) {
-    uint8_t *new_buffer = new uint8_t[expected_size];
+  if (static_cast<unsigned int>(expected_size) + OPC_HEADER_SIZE >
+      buffer_size) {
+    uint8_t *new_buffer = new uint8_t[expected_size + OPC_HEADER_SIZE];
     memcpy(new_buffer, data, offset);
     delete[] data;
     data = new_buffer;
@@ -76,6 +77,8 @@ OPCServer::~OPCServer() {
     delete iter->first;
     delete iter->second;
   }
+
+  STLDeleteValues(&m_callbacks);
 }
 
 bool OPCServer::Init() {
@@ -120,7 +123,6 @@ void OPCServer::NewTCPConnection(TCPSocket *socket) {
 
 void OPCServer::SocketReady(TCPSocket *socket, RxState *rx_state) {
   unsigned int data_received = 0;
-
   if (socket->Receive(rx_state->data + rx_state->offset,
                       rx_state->buffer_size - rx_state->offset,
                       data_received) < 0) {
@@ -135,7 +137,8 @@ void OPCServer::SocketReady(TCPSocket *socket, RxState *rx_state) {
   }
 
   rx_state->CheckSize();
-  if (rx_state->offset < rx_state->expected_size + OPC_HEADER_SIZE) {
+  if (rx_state->offset <
+      static_cast<unsigned int>(rx_state->expected_size) + OPC_HEADER_SIZE) {
     return;
   }
 
