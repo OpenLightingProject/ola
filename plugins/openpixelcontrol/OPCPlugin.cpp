@@ -71,7 +71,7 @@ string OPCPlugin::Description() const {
 "OPC Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates devices with one output port.\n"
+"This plugin creates OPC Client and/or OPC Server Devices.\n"
 "\n"
 "--- Config file : ola-opc.conf ---\n"
 "\n"
