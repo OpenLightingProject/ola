@@ -119,7 +119,7 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
   int ret_code = adaptor->DetachKernelDriver(usb_handle, INTERFACE);
   if (ret_code != 0 && ret_code != LIBUSB_ERROR_NOT_FOUND) {
     OLA_WARN << "Failed to detach kernel driver: "
-             << libusb_error_name(ret_code);
+             << adaptor->ErrorCodeToString(ret_code);
     adaptor->Close(usb_handle);
     return NULL;
   }
@@ -285,7 +285,7 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
       handle, ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
       chunk_size, &transferred, URB_TIMEOUT_MS);
   if (ret) {
-    OLA_WARN << "InterruptTransfer():" << libusb_error_name(ret)
+    OLA_WARN << "InterruptTransfer():" << m_adaptor->ErrorCodeToString(ret)
              << ", transferred " << transferred << " / " << chunk_size;
   }
   return ret == 0;
