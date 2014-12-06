@@ -148,6 +148,7 @@ string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
 #ifdef HAVE_LIBUSB_ERROR_NAME
   return libusb_error_name(error_code);
 #else
+  // TODO(Peter): Try and be more helpful here, switch case statement?
   return "Error code " + error_code;
 #endif
 }
