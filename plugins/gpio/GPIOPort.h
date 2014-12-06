@@ -31,15 +31,32 @@ namespace ola {
 namespace plugin {
 namespace gpio {
 
+/**
+ * @brief The GPIO Output port.
+ */
 class GPIOOutputPort: public BasicOutputPort {
  public:
+  /**
+   * @brief Create a new GPIOOutputPort.
+   * @param parent The parent device.
+   * @param options the Options for the GPIODriver.
+   */
   GPIOOutputPort(GPIODevice *parent,
                  const GPIODriver::Options &options);
+
+  /**
+   * @brief Destructor.
+   */
   ~GPIOOutputPort() {}
 
+  /**
+   * @brief Initialize the port.
+   * @returns true is successful, false otherwise.
+   */
   bool Init();
 
   std::string Description() const;
+
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
  private:

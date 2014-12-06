@@ -36,23 +36,62 @@ namespace gpio {
  */
 class GPIODriver {
  public:
+  /**
+   * @brief The Options.
+   */
   struct Options {
    public:
     Options(): start_address(1), turn_on(128), turn_off(127) {}
 
+    /**
+     * @brief A list of I/O pins to map to slots.
+     */
     std::vector<uint8_t> gpio_pins;
+
+    /**
+     * @brief The DMX512 start address of the first pin
+     */
     uint16_t start_address;
+
+    /**
+     * @brief The value above which a pin will be turned on.
+     */
     uint8_t turn_on;
+
+    /**
+     * @brief The value below which a pin will be turned off.
+     */
     uint8_t turn_off;
   };
 
+  /**
+   * @brief Create a new GPIODriver.
+   * @param options the Options struct.
+   */
   explicit GPIODriver(const Options &options);
+
+  /**
+   * @brief Destructor.
+   */
   ~GPIODriver();
 
+  /**
+   * @brief Initialize the GPIODriver.
+   * @returns true is successful, false otherwise.
+   */
   bool Init();
 
+  /**
+   * @brief Get a list of the GPIO pins controlled by this driver.
+   * @returns A list of GPIO pin numbers.
+   */
   std::vector<uint8_t> PinList() const { return m_options.gpio_pins; }
 
+  /**
+   * @brief Set the values of the GPIO pins from the data in the DMXBuffer.
+   * @param dmx the DmxBuffer with the values to use.
+   * @returns true is the GPIO pins were updated.
+   */
   bool SendDmx(const DmxBuffer &dmx);
 
  private:
