@@ -99,7 +99,8 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
   if (r == 0) {
     OLA_INFO << "Config transferred " << bytes_sent << " bytes";
   } else {
-    OLA_WARN << "Config transfer failed with error " << libusb_error_name(r);
+    OLA_WARN << "Config transfer failed with error "
+             << adaptor->ErrorCodeToString(r);
   }
 
   // Build the Look Up Table
@@ -225,7 +226,8 @@ bool FadecandyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       sizeof(m_data_packets), &bytes_sent,
       URB_TIMEOUT_MS);
   if (r != 0) {
-    OLA_WARN << "Data transfer failed with error " << libusb_error_name(r);
+    OLA_WARN << "Data transfer failed with error "
+             << m_adaptor->ErrorCodeToString(r);
   }
   return r == 0;
 }

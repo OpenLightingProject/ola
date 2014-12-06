@@ -378,6 +378,13 @@ class LibUsbAdaptor {
    */
   static bool CheckProduct(const std::string &expected,
                            const DeviceInformation &device_info);
+
+  /**
+   * @brief Try and convert an error code to a string
+   * @param error_code The error code.
+   * @returns A string representing the error code.
+   */
+  static std::string ErrorCodeToString(const int error_code);
 };
 
 /**

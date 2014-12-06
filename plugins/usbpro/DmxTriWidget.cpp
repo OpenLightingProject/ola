@@ -587,7 +587,7 @@ void DmxTriWidgetImpl::HandleDiscoverStatResponse(uint8_t return_code,
         MaybeSendNextRequest();
       } else {
         RDMDiscoveryCallback *callback = m_discovery_callback;
-        m_discovery_callback= NULL;
+        m_discovery_callback = NULL;
         RunDiscoveryCallback(callback);
       }
     }
