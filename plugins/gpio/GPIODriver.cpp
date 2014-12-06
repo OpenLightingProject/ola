@@ -141,7 +141,7 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
     // Change the pin state if required.
     if (action != NO_CHANGE) {
       char data = action == TURN_ON ? '1' : '0';
-      if (write(m_gpio_pins[i].fd, &data, sizeof(data) < 0)) {
+      if (write(m_gpio_pins[i].fd, &data, sizeof(data)) < 0) {
         OLA_WARN << "Failed to toggle GPIO pin " << i << ", fd "
                  << static_cast<int>(m_gpio_pins[i].fd) << ": "
                  << strerror(errno);

@@ -39,6 +39,7 @@ class GPIODevice: public ola::Device {
  public:
   /**
    * @brief Create a new GPIODevice.
+   * @param owner The Plugin that owns this device.
    * @param options the options to use for the new device.
    */
   GPIODevice(class GPIOPlugin *owner,
