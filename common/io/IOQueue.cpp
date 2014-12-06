@@ -214,6 +214,14 @@ void IOQueue::AppendBlock(class MemoryBlock *block) {
   m_blocks.push_back(block);
 }
 
+void IOQueue::AppendMove(IOQueue *other) {
+  BlockVector::const_iterator iter = other->m_blocks.begin();
+  for (; iter != other->m_blocks.end(); ++iter) {
+    m_blocks.push_back(*iter);
+  }
+  other->m_blocks.clear();
+}
+
 
 /**
  * Remove all data from the IOQueue.

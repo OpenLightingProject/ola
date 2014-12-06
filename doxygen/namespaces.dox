@@ -65,6 +65,9 @@
  * @namespace ola::plugin::opendmx
  * @brief Code for the Enttec OpenDMX.
  *
+ * @namespace ola::plugin::openpixelcontrol
+ * @brief The Open Pixel Control (OPC) plugin.
+ *
  * @namespace ola::plugin::osc
  * @brief Code for the OSC protocol.
  *

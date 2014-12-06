@@ -63,6 +63,14 @@
 #include "plugins/opendmx/OpenDmxPlugin.h"
 #endif
 
+#ifdef USE_OPENPIXELCONTROL
+#include "plugins/openpixelcontrol/OPCPlugin.h"
+#endif
+
+#ifdef USE_OSC
+#include "plugins/osc/OSCPlugin.h"
+#endif
+
 #ifdef USE_PATHPORT
 #include "plugins/pathport/PathportPlugin.h"
 #endif
@@ -105,10 +113,6 @@
 
 #ifdef USE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
-#endif
-
-#ifdef USE_OSC
-#include "plugins/osc/OSCPlugin.h"
 #endif
 
 namespace ola {
@@ -172,6 +176,11 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_OPENDMX
   m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_OPENPIXELCONTROL
+  m_plugins.push_back(
+      new ola::plugin::openpixelcontrol::OPCPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_OSC

@@ -7,6 +7,7 @@ common_libolacommon_la_SOURCES += \
     common/io/IOQueue.cpp \
     common/io/IOStack.cpp \
     common/io/IOUtils.cpp \
+    common/io/NonBlockingSender.cpp \
     common/io/PollerInterface.cpp \
     common/io/PollerInterface.h \
     common/io/SelectServer.cpp \
