@@ -48,7 +48,7 @@ enum { HEX_BIT_WIDTH = 4 };
  */
 void StringSplit(const std::string &input,
                  std::vector<std::string> &tokens,  // NOLINT
-                 const std::string &delimiters=" ");
+                 const std::string &delimiters = " ");
 
 /**
  * @brief Trim leading and trailing whitespace from a string

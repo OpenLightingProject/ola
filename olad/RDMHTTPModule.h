@@ -590,7 +590,7 @@ class RDMHTTPModule {
     void AddSection(std::vector<section_info> *sections,
                     const std::string &section_id,
                     const std::string &section_name,
-                    const std::string &hint="");
+                    const std::string &hint = "");
 
     static const uint32_t INVALID_PERSONALITY = 0xffff;
     static const char BACKEND_DISCONNECTED_ERROR[];
