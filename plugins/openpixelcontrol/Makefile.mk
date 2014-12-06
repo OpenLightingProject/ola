@@ -7,6 +7,7 @@ noinst_LTLIBRARIES += plugins/openpixelcontrol/libolaopc.la
 plugins_openpixelcontrol_libolaopc_la_SOURCES = \
     plugins/openpixelcontrol/OPCClient.cpp \
     plugins/openpixelcontrol/OPCClient.h \
+    plugins/openpixelcontrol/OPCConstants.h \
     plugins/openpixelcontrol/OPCServer.cpp \
     plugins/openpixelcontrol/OPCServer.h
 plugins_openpixelcontrol_libolaopc_la_LIBADD = \

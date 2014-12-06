@@ -41,8 +41,8 @@ class OPCInputPort: public BasicInputPort {
    * @brief Create a new OPC Input Port.
    * @param parent the OPCDevice this port belongs to
    * @param channel the OPC channel for the port.
-   * @param widget the OPCNode to use for this port, ownership is not
-   *   transferred.
+   * @param plugin_adaptor the PluginAdaptor to use
+   * @param server the OPCServer to use, ownership is not transferred.
    */
   OPCInputPort(OPCServerDevice *parent,
                uint8_t channel,
@@ -50,7 +50,6 @@ class OPCInputPort: public BasicInputPort {
                class OPCServer *server);
 
   const DmxBuffer &ReadDMX() const { return m_buffer; }
-
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
@@ -75,7 +74,7 @@ class OPCOutputPort: public BasicOutputPort {
    * @brief Create a new OPC Output Port.
    * @param parent the OPCDevice this port belongs to
    * @param channel the OPC channel for the port.
-   * @param widget the OPCNode to use for this port, ownership is not
+   * @param client the OPCClient to use for this port, ownership is not
    *   transferred.
    */
   OPCOutputPort(OPCClientDevice *parent,

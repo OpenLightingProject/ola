@@ -23,6 +23,7 @@
 #include <string>
 #include "ola/base/Macro.h"
 #include "plugins/openpixelcontrol/OPCClient.h"
+#include "plugins/openpixelcontrol/OPCConstants.h"
 #include "plugins/openpixelcontrol/OPCDevice.h"
 #include "plugins/openpixelcontrol/OPCServer.h"
 
@@ -45,7 +46,7 @@ OPCInputPort::OPCInputPort(OPCServerDevice *parent,
 void OPCInputPort::NewData(uint8_t command,
                            const uint8_t *data,
                            unsigned int length) {
-  if (command) {
+  if (command != SET_PIXEL_COMMAND) {
     return;
   }
   m_buffer.Set(data, length);

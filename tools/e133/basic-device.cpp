@@ -29,6 +29,7 @@
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/e133/MessageBuilder.h>
+#include <ola/io/NonBlockingSender.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/TCPSocketFactory.h>
@@ -40,7 +41,6 @@
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/MessageQueue.h"
 
 DEFINE_string(controller_ip, "", "The IP Address of the Controller");
 DEFINE_uint16(controller_port, 5569, "The port on the controller");
@@ -52,6 +52,7 @@ DEFINE_uint16(tcp_retry_interval_ms, 5000,
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::TimeInterval;
+using ola::io::NonBlockingSender;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
@@ -92,7 +93,7 @@ class SimpleE133Device {
 
   // Once we have a connection these are filled in.
   auto_ptr<TCPSocket> m_socket;
-  auto_ptr<MessageQueue> m_message_queue;
+  auto_ptr<NonBlockingSender> m_message_queue;
   // The Health Checked connection
   auto_ptr<E133HealthCheckedConnection> m_health_checked_connection;
   auto_ptr<IncomingTCPTransport> m_in_transport;
@@ -135,7 +136,7 @@ void SimpleE133Device::OnTCPConnect(TCPSocket *socket) {
   m_in_transport.reset(new IncomingTCPTransport(&m_root_inflator, socket));
 
   m_message_queue.reset(
-      new MessageQueue(m_socket.get(), &m_ss, m_message_builder.pool()));
+      new NonBlockingSender(m_socket.get(), &m_ss, m_message_builder.pool()));
 
   m_health_checked_connection.reset(new E133HealthCheckedConnection(
       &m_message_builder,
