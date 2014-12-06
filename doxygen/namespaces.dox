@@ -50,6 +50,9 @@
  * @namespace ola::plugin::ftdidmx
  * @brief Code for FTDI devices.
  *
+ * @namespace ola::plugin::gpio
+ * @brief The General Purpose digital I/O Plugin.
+ *
  * @namespace ola::plugin::karate
  * @brief Code for Karate devices.
  *
