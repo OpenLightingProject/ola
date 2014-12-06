@@ -1,0 +1,165 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * GPIODriver.cpp
+ * Uses data in a DMXBuffer to drive GPIO pins.
+ * Copyright (C) 2014 Simon Newton
+ */
+
+#include "plugins/gpio/GPIODriver.h"
+
+#include <errno.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "ola/io/IOUtils.h"
+#include "ola/Logging.h"
+
+namespace ola {
+namespace plugin {
+namespace gpio {
+
+const char GPIODriver::GPIO_BASE_DIR[] = "/sys/class/gpio/gpio";
+
+using std::vector;
+
+using std::string;
+using std::vector;
+
+GPIODriver::GPIODriver(const Options &options)
+    : m_options(options) {
+}
+
+GPIODriver::~GPIODriver() {
+  CloseGPIOFDs();
+}
+
+bool GPIODriver::Init() {
+  return true;
+  if (!SetupGPIO()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool GPIODriver::SendDmx(const DmxBuffer &dmx) {
+  return UpdateGPIOPins(dmx);
+}
+
+bool GPIODriver::SetupGPIO() {
+  /**
+   * This relies on the pins being exported:
+   *   echo N > /sys/class/gpio/export
+   * That requires root access.
+   */
+  const string direction("out");
+  bool failed = false;
+  vector<uint8_t>::const_iterator iter = m_options.gpio_pins.begin();
+  for (; iter != m_options.gpio_pins.end(); ++iter) {
+    std::ostringstream str;
+    str << GPIO_BASE_DIR << static_cast<int>(*iter) << "/value";
+    int pin_fd;
+    if (ola::io::Open(str.str(), O_RDWR, &pin_fd)) {
+      failed = true;
+      break;
+    }
+
+    // Set dir
+    str.str("");
+    str << GPIO_BASE_DIR << static_cast<int>(*iter) << "/direction";
+    int fd;
+    if (!ola::io::Open(str.str(), O_RDWR, &fd)) {
+      failed = true;
+      break;
+    }
+    if (write(fd, direction.c_str(), direction.size()) < 0) {
+      OLA_WARN << "Failed to enable output on " << str.str() << " : "
+               << strerror(errno);
+      failed = true;
+    }
+    close(fd);
+
+    GPIOPin pin = {fd, UNDEFINED, false};
+    m_gpio_pins.push_back(pin);
+  }
+
+  if (failed) {
+    CloseGPIOFDs();
+    return false;
+  }
+  return true;
+}
+
+bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
+  enum Action {
+    TURN_ON,
+    TURN_OFF,
+    NO_CHANGE,
+  };
+
+  for (uint16_t i = 0;
+       i < m_gpio_pins.size() && i + m_options.start_address < dmx.Size();
+       i++) {
+    Action action = NO_CHANGE;
+    uint8_t slot_value = dmx.Get(i + m_options.start_address - 1);
+
+    switch (m_gpio_pins[i].state) {
+      case ON:
+        action = slot_value <= m_options.turn_off ? TURN_OFF : NO_CHANGE;
+        break;
+      case OFF:
+        action = slot_value >= m_options.turn_on ? TURN_ON : NO_CHANGE;
+        break;
+      case UNDEFINED:
+      default:
+        // If the state if undefined and the value is in the mid-range, then
+        // default to turning off.
+        action = slot_value >= m_options.turn_on ? TURN_ON : TURN_OFF;
+    }
+
+    // Change the pin state if required.
+    if (action != NO_CHANGE) {
+      char data = action == TURN_ON ? '1' : '0';
+      if (write(m_gpio_pins[i].fd, &data, sizeof(data) < 0)) {
+        OLA_WARN << "Failed to toggle GPIO pin " << i << ", fd "
+                 << static_cast<int>(m_gpio_pins[i].fd) << ": "
+                 << strerror(errno);
+        return false;
+      }
+      m_gpio_pins[i].state = action == TURN_ON ? ON : OFF;
+    }
+  }
+  return true;
+}
+
+void GPIODriver::CloseGPIOFDs() {
+  GPIOPins::iterator iter = m_gpio_pins.begin();
+  for (; iter != m_gpio_pins.end(); ++iter) {
+    close(iter->fd);
+  }
+  m_gpio_pins.clear();
+}
+}  // namespace gpio
+}  // namespace plugin
+}  // namespace ola

@@ -43,6 +43,10 @@
 #include "plugins/espnet/EspNetPlugin.h"
 #endif
 
+#ifdef USE_GPIO
+#include "plugins/gpio/GPIOPlugin.h"
+#endif
+
 #ifdef USE_KARATE
 #include "plugins/karate/KaratePlugin.h"
 #endif
@@ -145,6 +149,10 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_ESPNET
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_GPIO
+  m_plugins.push_back(new ola::plugin::gpio::GPIOPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_KARATE
