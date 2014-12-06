@@ -49,6 +49,11 @@ namespace openpixelcontrol {
 class OPCClient {
  public:
   /**
+   * @brief Called when the socket changes state.
+   */
+  typedef ola::Callback1<void, bool> SocketEventCallback;
+
+  /**
    * @brief Create a new OPCClient.
    * @param ss The SelectServer to use
    * @param target the remote ip:port to connect to.
@@ -74,6 +79,13 @@ class OPCClient {
    */
   bool SendDmx(uint8_t channel, const DmxBuffer &buffer);
 
+  /**
+   * @brief Set the callback to be run when the socket state changes.
+   * @param callback the callback to run when the socket state changes.
+   *   Ownership is transferred.
+   */
+  void SetSocketCallback(SocketEventCallback *callback);
+
  private:
   ola::io::SelectServerInterface *m_ss;
   const ola::network::IPV4SocketAddress m_target;
@@ -84,8 +96,11 @@ class OPCClient {
   ola::network::AdvancedTCPConnector m_tcp_connector;
   std::auto_ptr<ola::network::TCPSocket> m_client_socket;
   std::auto_ptr<ola::io::NonBlockingSender> m_sender;
+  std::auto_ptr<SocketEventCallback> m_socket_callback;
 
   void SocketConnected(ola::network::TCPSocket *socket);
+  void NewData();
+  void SocketClosed();
 
   DISALLOW_COPY_AND_ASSIGN(OPCClient);
 };

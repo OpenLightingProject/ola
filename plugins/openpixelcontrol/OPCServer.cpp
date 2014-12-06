@@ -70,7 +70,12 @@ OPCServer::~OPCServer() {
     m_listening_socket.reset();
   }
 
-  STLDeleteValues(&m_clients);
+  ClientMap::iterator iter = m_clients.begin();
+  for (; iter != m_clients.end(); ++iter) {
+    m_ss->RemoveReadDescriptor(iter->first);
+    delete iter->first;
+    delete iter->second;
+  }
 }
 
 bool OPCServer::Init() {

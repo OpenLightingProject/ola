@@ -61,8 +61,12 @@ bool NonBlockingSender::SendMessage(ola::io::IOStack *stack) {
 }
 
 bool NonBlockingSender::SendMessage(IOQueue *queue) {
-  (void) queue;
-  return false;
+  if (LimitReached())
+    return false;
+
+  m_output_buffer.AppendMove(queue);
+  AssociateIfRequired();
+  return true;
 }
 
 /*

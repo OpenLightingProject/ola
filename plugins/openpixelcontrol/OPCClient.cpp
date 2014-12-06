@@ -22,6 +22,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/NonBlockingSender.h"
@@ -48,6 +49,10 @@ OPCClient::OPCClient(ola::io::SelectServerInterface *ss,
 }
 
 OPCClient::~OPCClient() {
+  if (m_client_socket.get()) {
+    m_ss->RemoveReadDescriptor(m_client_socket.get());
+    m_tcp_connector.Disconnect(m_target, true);
+  }
 }
 
 bool OPCClient::SendDmx(uint8_t channel, const DmxBuffer &buffer) {
@@ -64,10 +69,42 @@ bool OPCClient::SendDmx(uint8_t channel, const DmxBuffer &buffer) {
   return m_sender->SendMessage(&queue);
 }
 
+void OPCClient::SetSocketCallback(SocketEventCallback *callback) {
+  m_socket_callback.reset(callback);
+}
+
 void OPCClient::SocketConnected(TCPSocket *socket) {
   m_client_socket.reset(socket);
+  m_client_socket->SetOnData(NewCallback(this, &OPCClient::NewData));
+  m_client_socket->SetOnClose(
+      NewSingleCallback(this, &OPCClient::SocketClosed));
+  m_ss->AddReadDescriptor(socket);
+
   m_sender.reset(
       new ola::io::NonBlockingSender(socket, m_ss, &m_pool, OPC_FRAME_SIZE));
+  if (m_socket_callback.get()) {
+    m_socket_callback->Run(true);
+  }
+}
+
+void OPCClient::NewData() {
+  // The OPC protocol seems to be unidirectional. The other clients don't even
+  // bother reading from the socket.
+  // Rather than letting the data buffer we read and discard any incoming data
+  // here.
+  OLA_WARN << "Received unexpected data from " << m_target;
+  uint8_t discard[512];
+  unsigned int data_received;
+  m_client_socket->Receive(discard, arraysize(discard), data_received);
+}
+
+void OPCClient::SocketClosed() {
+  m_sender.reset();
+  m_client_socket.reset();
+
+  if (m_socket_callback.get()) {
+    m_socket_callback->Run(false);
+  }
 }
 }  // namespace openpixelcontrol
 }  // namespace plugin

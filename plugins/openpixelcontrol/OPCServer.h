@@ -106,12 +106,14 @@ class OPCServer {
     void CheckSize();
   };
 
+  typedef std::map<ola::network::TCPSocket*, RxState*> ClientMap;
+
   ola::io::SelectServerInterface* const m_ss;
   const ola::network::IPV4SocketAddress m_listen_addr;
   ola::network::TCPSocketFactory m_tcp_socket_factory;
 
   std::auto_ptr<ola::network::TCPAcceptingSocket> m_listening_socket;
-  std::map<ola::network::TCPSocket*, RxState*> m_clients;
+  ClientMap m_clients;
   std::map<uint8_t, ChannelCallback*> m_callbacks;
 
   void NewTCPConnection(ola::network::TCPSocket *socket);

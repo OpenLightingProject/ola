@@ -28,7 +28,16 @@ plugins_openpixelcontrol_libolaopenpixelcontrol_la_LIBADD = \
 
 # TESTS
 ##################################################
-test_programs += plugins/openpixelcontrol/OPCServerTester
+test_programs += \
+    plugins/openpixelcontrol/OPCClientTester \
+    plugins/openpixelcontrol/OPCServerTester
+
+plugins_openpixelcontrol_OPCClientTester_SOURCES = \
+    plugins/openpixelcontrol/OPCClientTest.cpp
+plugins_openpixelcontrol_OPCClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+plugins_openpixelcontrol_OPCClientTester_LDADD = \
+    $(COMMON_TESTING_LIBS) \
+    plugins/openpixelcontrol/libolaopc.la
 
 plugins_openpixelcontrol_OPCServerTester_SOURCES = \
     plugins/openpixelcontrol/OPCServerTest.cpp
