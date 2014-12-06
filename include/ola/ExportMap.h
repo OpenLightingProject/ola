@@ -367,10 +367,10 @@ class ExportMap {
   StringVariable *GetStringVar(const std::string &name);
 
   StringMap *GetStringMapVar(const std::string &name,
-                             const std::string &label="");
-  IntMap *GetIntMapVar(const std::string &name, const std::string &label="");
+                             const std::string &label = "");
+  IntMap *GetIntMapVar(const std::string &name, const std::string &label = "");
   UIntMap *GetUIntMapVar(const std::string &name,
-                         const std::string &label="");
+                         const std::string &label = "");
 
   /**
    * @brief Fetch a list of all known variables.
