@@ -46,11 +46,12 @@ bool SetSchedParam(pthread_t thread, int policy,
                    const struct sched_param &param) {
   int r = pthread_setschedparam(thread, policy, &param);
   if (r != 0) {
-    OLA_FATAL << "Unable to set thread scheduling parameters for thread "
-              << thread << ": " << strerror(r);
+    OLA_FATAL << "Unable to set thread scheduling parameters for thread: "
+            << strerror(r);
     return false;
   }
   return true;
 }
+
 }  // namespace thread
 }  // namespace ola

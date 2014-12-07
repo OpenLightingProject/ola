@@ -39,20 +39,6 @@ namespace thread {
 typedef pthread_t ThreadId;
 
 /**
- * A helper function to output details of a thread across platforms.
- * @param out stream to output to
- * @param thread to print details of
- * @return stream
- */
-inline std::ostream& operator<<(std::ostream &out, pthread_t thread) {
-#ifdef WIN32
-    return out << thread.x;
-#else
-    return out << thread;
-#endif
-}
-
-/**
  * A thread object that can be subclassed.
  */
 class Thread {
