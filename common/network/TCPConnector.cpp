@@ -175,8 +175,9 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   }
 
   ConnectionSet::iterator iter = m_connections.find(connection);
-  if (iter != m_connections.end())
+  if (iter != m_connections.end()) {
     m_connections.erase(iter);
+  }
 
   // we're already within the PendingTCPConnection's call stack here
   // schedule the deletion to run later

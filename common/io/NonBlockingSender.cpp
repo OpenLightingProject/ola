@@ -52,8 +52,9 @@ bool NonBlockingSender::LimitReached() const {
 }
 
 bool NonBlockingSender::SendMessage(ola::io::IOStack *stack) {
-  if (LimitReached())
+  if (LimitReached()) {
     return false;
+  }
 
   stack->MoveToIOQueue(&m_output_buffer);
   AssociateIfRequired();
@@ -61,8 +62,9 @@ bool NonBlockingSender::SendMessage(ola::io::IOStack *stack) {
 }
 
 bool NonBlockingSender::SendMessage(IOQueue *queue) {
-  if (LimitReached())
+  if (LimitReached()) {
     return false;
+  }
 
   m_output_buffer.AppendMove(queue);
   AssociateIfRequired();
@@ -84,8 +86,9 @@ void NonBlockingSender::PerformWrite() {
  * Associate our descriptor with the SelectServer if we have data to send.
  */
 void NonBlockingSender::AssociateIfRequired() {
-  if (m_output_buffer.Empty())
+  if (m_output_buffer.Empty()) {
     return;
+  }
   m_ss->AddWriteDescriptor(m_descriptor);
   m_associated = true;
 }
