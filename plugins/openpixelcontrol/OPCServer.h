@@ -44,7 +44,7 @@ namespace openpixelcontrol {
 class OPCServer {
  public:
   /**
-   * @brief The callback executed when new DMX data arrives.
+   * @brief The callback executed when new OPC data arrives.
    */
   typedef Callback3<void, uint8_t, const uint8_t*, unsigned int>
       ChannelCallback;
@@ -52,7 +52,7 @@ class OPCServer {
   /**
    * @brief Create a new OPCServer.
    * @param ss The SelectServer to use
-   * @param listen_addr the ip:port to listen on.
+   * @param listen_addr the IP:port to listen on.
    */
   OPCServer(ola::io::SelectServerInterface *ss,
             const ola::network::IPV4SocketAddress &listen_addr);

@@ -213,8 +213,9 @@ void DesignatedControllerConnection::NewTCPConnection(
   }
 
   m_tcp_socket = socket.release();
-  if (m_message_queue)
+  if (m_message_queue) {
     OLA_WARN << "Already have a NonBlockingSender";
+  }
   m_message_queue = new ola::io::NonBlockingSender(m_tcp_socket, m_ss,
                                                    m_message_builder->pool());
 

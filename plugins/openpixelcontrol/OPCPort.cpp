@@ -14,8 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OPCPort.cpp
- * The OPC plugin for ola
- * Copyright (C) 2006 Simon Newton
+ * The OPC Port for ola
+ * Copyright (C) 2014 Simon Newton
  */
 
 #include "plugins/openpixelcontrol/OPCPort.h"

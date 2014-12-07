@@ -55,7 +55,6 @@ GPIODriver::~GPIODriver() {
 }
 
 bool GPIODriver::Init() {
-  return true;
   if (!SetupGPIO()) {
     return false;
   }
@@ -119,35 +118,35 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
   };
 
   for (uint16_t i = 0;
-       i < m_gpio_pins.size() && i + m_options.start_address < dmx.Size();
+       i < m_gpio_pins.size() && (i + m_options.start_address < dmx.Size());
        i++) {
     Action action = NO_CHANGE;
     uint8_t slot_value = dmx.Get(i + m_options.start_address - 1);
 
     switch (m_gpio_pins[i].state) {
       case ON:
-        action = slot_value <= m_options.turn_off ? TURN_OFF : NO_CHANGE;
+        action = (slot_value <= m_options.turn_off ? TURN_OFF : NO_CHANGE);
         break;
       case OFF:
-        action = slot_value >= m_options.turn_on ? TURN_ON : NO_CHANGE;
+        action = (slot_value >= m_options.turn_on ? TURN_ON : NO_CHANGE);
         break;
       case UNDEFINED:
       default:
         // If the state if undefined and the value is in the mid-range, then
         // default to turning off.
-        action = slot_value >= m_options.turn_on ? TURN_ON : TURN_OFF;
+        action = (slot_value >= m_options.turn_on ? TURN_ON : TURN_OFF);
     }
 
     // Change the pin state if required.
     if (action != NO_CHANGE) {
-      char data = action == TURN_ON ? '1' : '0';
+      char data = (action == TURN_ON ? '1' : '0');
       if (write(m_gpio_pins[i].fd, &data, sizeof(data)) < 0) {
         OLA_WARN << "Failed to toggle GPIO pin " << i << ", fd "
                  << static_cast<int>(m_gpio_pins[i].fd) << ": "
                  << strerror(errno);
         return false;
       }
-      m_gpio_pins[i].state = action == TURN_ON ? ON : OFF;
+      m_gpio_pins[i].state = (action == TURN_ON ? ON : OFF);
     }
   }
   return true;

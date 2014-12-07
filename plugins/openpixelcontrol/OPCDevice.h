@@ -40,7 +40,7 @@ class OPCServerDevice: public ola::Device {
    * @param owner the Plugin that owns this device
    * @param plugin_adaptor the PluginAdaptor to use
    * @param preferences the Preferences container.
-   * @param listen_addr the ip:port to listen on.
+   * @param listen_addr the IP:port to listen on.
    */
   OPCServerDevice(AbstractPlugin *owner,
                   PluginAdaptor *plugin_adaptor,
@@ -70,7 +70,7 @@ class OPCClientDevice: public ola::Device {
    * @param owner the Plugin that owns this device
    * @param plugin_adaptor the PluginAdaptor to use
    * @param preferences the Preferences container.
-   * @param target the ip:port to connect to.
+   * @param target the IP:port to connect to.
    */
   OPCClientDevice(AbstractPlugin *owner,
                   PluginAdaptor *plugin_adaptor,

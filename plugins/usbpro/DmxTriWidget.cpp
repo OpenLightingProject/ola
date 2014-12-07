@@ -399,7 +399,7 @@ void DmxTriWidgetImpl::SendRawRDMRequest() {
 
   // add two bytes for the command & option field
   unsigned int packet_size = RDMCommandSerializer::RequiredSize(*request);
-  uint8_t send_buffer[packet_size + 2];  // NOLINT(runtime/arrays)
+  uint8_t send_buffer[packet_size + 2];
   send_buffer[0] = RAW_RDM_COMMAND_ID;
   // a 2 means we don't wait for a break in the response.
   send_buffer[1] = IsDUBRequest(request) ? 2 : 0;

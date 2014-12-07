@@ -98,7 +98,7 @@ void OPCServerTest::setUp() {
 void OPCServerTest::SendDataAndCheck(uint8_t channel,
                                      const DmxBuffer &buffer) {
   unsigned int dmx_size = buffer.Size();
-  uint8_t data[dmx_size + 4];  // NOLINT(runtime/arrays)
+  uint8_t data[dmx_size + 4];
   data[0] = channel;
   data[1] = SET_PIXELS_COMMAND;
   ola::utils::SplitUInt16(static_cast<uint16_t>(dmx_size), &data[2], &data[3]);

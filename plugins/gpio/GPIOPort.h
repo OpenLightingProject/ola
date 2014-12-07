@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * GPIOPort.h
- * An OLA I/O Port.
+ * An OLA GPIO Port.
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -51,7 +51,7 @@ class GPIOOutputPort: public BasicOutputPort {
 
   /**
    * @brief Initialize the port.
-   * @returns true is successful, false otherwise.
+   * @returns true if successful, false otherwise.
    */
   bool Init();
 

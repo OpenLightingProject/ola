@@ -17,9 +17,9 @@
  * Copyright (C) 2013 Simon Newton
  *
  * Explaination:
- *  If we just write IOStacks dirrectly to TCPSockets, we may not be able to
- *  write the entire message. This can happen if the remote end is slow to ack
- *  and data builds up in the kernel socket buffer.
+ *  If we just write IOStacks directly to ConnectedDescriptors, we may not be
+ *  able to write the entire message. This can happen if the remote end is slow
+ *  to ack and data builds up in the kernel socket buffer.
  *
  *  This class abstracts the caller from having to deal with this situation. At
  *  construction time we specify the maximum number of message bytes we want to
@@ -54,12 +54,6 @@ namespace io {
  * limit however, a call to SendMessage() may cause the buffer to exceed the
  * internal limit, provided the limit has not already been reached.
  */
-
-/**
- * Returns true if we've reached the specified maximum buffer size. No new
- * messages will be sent until the buffer drains.
- */
-
 class NonBlockingSender {
  public:
   /**
@@ -79,7 +73,7 @@ class NonBlockingSender {
                     unsigned int max_buffer_size = DEFAULT_MAX_BUFFER_SIZE);
 
   /**
-   * @brief Desctructor
+   * @brief Destructor
    */
   ~NonBlockingSender();
 

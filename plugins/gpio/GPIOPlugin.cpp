@@ -65,7 +65,8 @@ bool GPIOPlugin::StartHook() {
   }
 
   if (options.turn_off >= options.turn_on) {
-    OLA_WARN << GPIO_TURN_OFF_KEY << " must be less than " << GPIO_TURN_ON_KEY;
+    OLA_WARN << GPIO_TURN_OFF_KEY << " must be strictly less than "
+             << GPIO_TURN_ON_KEY;
     return false;
   }
 
@@ -73,6 +74,10 @@ bool GPIOPlugin::StartHook() {
   StringSplit(m_preferences->GetValue(GPIO_PINS_KEY), pin_list, ",");
   vector<string>::const_iterator iter = pin_list.begin();
   for (; iter != pin_list.end(); ++iter) {
+    if (iter->empty()) {
+      continue;
+    }
+
     uint8_t pin;
     if (!StringToInt(*iter, &pin)) {
       OLA_WARN << "Invalid value for GPIO pin: " << *iter;
@@ -140,19 +145,23 @@ bool GPIOPlugin::SetDefaultPreferences() {
                                          StringValidator(),
                                          "");
   save |= m_preferences->SetDefaultValue(GPIO_SLOT_OFFSET_KEY,
-                                         UIntValidator(1, 1512),
+                                         UIntValidator(1, DMX_UNIVERSE_SIZE),
                                          "1");
   save |= m_preferences->SetDefaultValue(GPIO_TURN_ON_KEY,
-                                         UIntValidator(1, 1255),
+                                         UIntValidator(1, DMX_MAX_SLOT_VALUE),
                                          "128");
-  save |= m_preferences->SetDefaultValue(GPIO_TURN_OFF_KEY,
-                                         UIntValidator(1, 1255),
-                                         "127");
-  if (save)
-    m_preferences->Save();
+  save |= m_preferences->SetDefaultValue(
+      GPIO_TURN_OFF_KEY,
+      UIntValidator(DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE - 1),
+      "127");
 
-  if (m_preferences->GetValue(GPIO_SLOT_OFFSET_KEY).empty())
+  if (save) {
+    m_preferences->Save();
+  }
+
+  if (m_preferences->GetValue(GPIO_SLOT_OFFSET_KEY).empty()) {
     return false;
+  }
 
   return true;
 }

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * GPIOPort.cpp
- * An OLA I/O Port.
+ * An OLA GPIO Port.
  * Copyright (C) 2014 Simon Newton
  */
 

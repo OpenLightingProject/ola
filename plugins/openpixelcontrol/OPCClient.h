@@ -44,7 +44,7 @@ namespace openpixelcontrol {
 /**
  * @brief An Open Pixel Control client.
  *
- * The OPC client connects to a remote ip:port and sends OPC messages.
+ * The OPC client connects to a remote IP:port and sends OPC messages.
  */
 class OPCClient {
  public:
@@ -56,7 +56,7 @@ class OPCClient {
   /**
    * @brief Create a new OPCClient.
    * @param ss The SelectServer to use
-   * @param target the remote ip:port to connect to.
+   * @param target the remote IP:port to connect to.
    */
   OPCClient(ola::io::SelectServerInterface *ss,
             const ola::network::IPV4SocketAddress &target);
@@ -68,7 +68,7 @@ class OPCClient {
 
   /**
    * @brief Return the remote address for this Client.
-   * @returns An ip:port as a string.
+   * @returns An IP:port as a string.
    */
   std::string GetRemoteAddress() const { return m_target.ToString(); }
 

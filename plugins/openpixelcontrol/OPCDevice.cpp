@@ -64,7 +64,7 @@ OPCServerDevice::OPCServerDevice(
     PluginAdaptor *plugin_adaptor,
     Preferences *preferences,
     const ola::network::IPV4SocketAddress listen_addr)
-    : Device(owner, "OPC Server:" + listen_addr.ToString()),
+    : Device(owner, "OPC Server: " + listen_addr.ToString()),
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(preferences),
       m_listen_addr(listen_addr),
