@@ -33,12 +33,12 @@
 #include <ola/Clock.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/io/MemoryBlockPool.h>
+#include <ola/io/NonBlockingSender.h>
 #include <ola/network/HealthCheckedConnection.h>
 #include <ola/thread/SchedulingExecutorInterface.h>
 
 #include <memory>
 
-#include "tools/e133/MessageQueue.h"
 
 /**
  * An E1.33 health checked connection.
@@ -48,7 +48,7 @@ class E133HealthCheckedConnection
  public:
     E133HealthCheckedConnection(
         ola::e133::MessageBuilder *message_builder,
-        MessageQueue *message_queue,
+        ola::io::NonBlockingSender *message_queue,
         ola::SingleUseCallback0<void> *on_timeout,
         ola::thread::SchedulingExecutorInterface *scheduler,
         const ola::TimeInterval heartbeat_interval =
@@ -59,7 +59,7 @@ class E133HealthCheckedConnection
 
  private:
     ola::e133::MessageBuilder *m_message_builder;
-    MessageQueue *m_message_queue;
+    ola::io::NonBlockingSender *m_message_queue;
     std::auto_ptr<ola::SingleUseCallback0<void> > m_on_timeout;
     ola::thread::SchedulingExecutorInterface *m_executor;
 

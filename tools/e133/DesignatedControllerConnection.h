@@ -25,6 +25,7 @@
 #include <string>
 
 #include "ola/e133/MessageBuilder.h"
+#include "ola/io/NonBlockingSender.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
@@ -36,7 +37,6 @@
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/MessageQueue.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using std::string;
@@ -71,7 +71,7 @@ class DesignatedControllerConnection {
     // TCP connection classes
     ola::network::TCPSocket *m_tcp_socket;
     E133HealthCheckedConnection *m_health_checked_connection;
-    MessageQueue *m_message_queue;
+    ola::io::NonBlockingSender *m_message_queue;
     ola::plugin::e131::IncomingTCPTransport *m_incoming_tcp_transport;
 
     // Listening Socket
@@ -84,8 +84,8 @@ class DesignatedControllerConnection {
     ola::plugin::e131::E133StatusInflator m_e133_status_inflator;
 
     // The message state.
-    // Indicates if we have messages that haven't been sent on the MessageQueue
-    // yet.
+    // Indicates if we have messages that haven't been sent on the
+    // NonBlockingSender yet.
     typedef std::map<unsigned int, class OutstandingMessage*> PendingMessageMap;
     bool m_unsent_messages;
     PendingMessageMap m_unacked_messages;

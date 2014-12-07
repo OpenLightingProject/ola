@@ -174,6 +174,17 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     error = errno;
   }
 
+  ConnectionSet::iterator iter = m_connections.find(connection);
+  if (iter != m_connections.end()) {
+    m_connections.erase(iter);
+  }
+
+  // we're already within the PendingTCPConnection's call stack here
+  // schedule the deletion to run later
+  m_orphaned_connections.push_back(connection);
+  m_pending_callbacks++;
+  m_ss->Execute(ola::NewSingleCallback(this, &TCPConnector::CleanUpOrphans));
+
   if (error) {
     OLA_WARN << "connect() to " << connection->ip_address << " returned: "
       << strerror(error);
@@ -186,16 +197,6 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     connection->callback->Run(connection->WriteDescriptor(), 0);
 #endif
   }
-
-  ConnectionSet::iterator iter = m_connections.find(connection);
-  if (iter != m_connections.end())
-    m_connections.erase(iter);
-
-  // we're already within the PendingTCPConnection's call stack here
-  // schedule the deletion to run later
-  m_orphaned_connections.push_back(connection);
-  m_pending_callbacks++;
-  m_ss->Execute(ola::NewSingleCallback(this, &TCPConnector::CleanUpOrphans));
 }
 
 /**

@@ -30,6 +30,7 @@
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/e133/MessageBuilder.h>
+#include <ola/io/NonBlockingSender.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/TCPSocketFactory.h>
 #include <ola/stl/STLUtils.h>
@@ -43,7 +44,6 @@
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/MessageQueue.h"
 
 DEFINE_string(listen_ip, "", "The IP Address to listen on");
 DEFINE_uint16(listen_port, 5569, "The port to listen on");
@@ -59,6 +59,7 @@ using ola::NewSingleCallback;
 using ola::STLFindOrNull;
 using ola::TimeInterval;
 using ola::TimeStamp;
+using ola::io::NonBlockingSender;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -84,7 +85,7 @@ class DeviceState {
   // The following may be NULL.
   // The socket connected to the E1.33 device
   auto_ptr<TCPSocket> socket;
-  auto_ptr<MessageQueue> message_queue;
+  auto_ptr<NonBlockingSender> message_queue;
   // The Health Checked connection
   auto_ptr<E133HealthCheckedConnection> health_checked_connection;
   auto_ptr<IncomingTCPTransport> in_transport;
@@ -207,7 +208,7 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
       NewSingleCallback(this, &SimpleE133Controller::SocketClosed, peer));
 
   device_state->message_queue.reset(
-      new MessageQueue(socket.get(), &m_ss, m_message_builder.pool()));
+      new NonBlockingSender(socket.get(), &m_ss, m_message_builder.pool()));
 
   auto_ptr<E133HealthCheckedConnection> health_checked_connection(
       new E133HealthCheckedConnection(

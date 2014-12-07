@@ -43,6 +43,10 @@
 #include "plugins/espnet/EspNetPlugin.h"
 #endif
 
+#ifdef USE_GPIO
+#include "plugins/gpio/GPIOPlugin.h"
+#endif
+
 #ifdef USE_KARATE
 #include "plugins/karate/KaratePlugin.h"
 #endif
@@ -57,6 +61,14 @@
 
 #ifdef USE_OPENDMX
 #include "plugins/opendmx/OpenDmxPlugin.h"
+#endif
+
+#ifdef USE_OPENPIXELCONTROL
+#include "plugins/openpixelcontrol/OPCPlugin.h"
+#endif
+
+#ifdef USE_OSC
+#include "plugins/osc/OSCPlugin.h"
 #endif
 
 #ifdef USE_PATHPORT
@@ -103,10 +115,6 @@
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
 
-#ifdef USE_OSC
-#include "plugins/osc/OSCPlugin.h"
-#endif
-
 namespace ola {
 
 using std::vector;
@@ -147,6 +155,10 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
 #endif
 
+#ifdef USE_GPIO
+  m_plugins.push_back(new ola::plugin::gpio::GPIOPlugin(m_plugin_adaptor));
+#endif
+
 #ifdef USE_KARATE
   m_plugins.push_back(
       new ola::plugin::karate::KaratePlugin(m_plugin_adaptor));
@@ -164,6 +176,11 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_OPENDMX
   m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_OPENPIXELCONTROL
+  m_plugins.push_back(
+      new ola::plugin::openpixelcontrol::OPCPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_OSC
