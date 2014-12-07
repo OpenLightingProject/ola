@@ -147,9 +147,10 @@ bool GPIOPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(GPIO_SLOT_OFFSET_KEY,
                                          UIntValidator(1, DMX_UNIVERSE_SIZE),
                                          "1");
-  save |= m_preferences->SetDefaultValue(GPIO_TURN_ON_KEY,
-                                         UIntValidator(1, DMX_MAX_SLOT_VALUE),
-                                         "128");
+  save |= m_preferences->SetDefaultValue(
+      GPIO_TURN_ON_KEY,
+      UIntValidator(DMX_MIN_SLOT_VALUE + 1, DMX_MAX_SLOT_VALUE),
+      "128");
   save |= m_preferences->SetDefaultValue(
       GPIO_TURN_OFF_KEY,
       UIntValidator(DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE - 1),
