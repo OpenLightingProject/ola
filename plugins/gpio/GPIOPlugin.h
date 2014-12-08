@@ -39,7 +39,8 @@ class GPIOPlugin: public ola::Plugin {
    * @param plugin_adaptor the PluginAdaptor to use
    */
   explicit GPIOPlugin(class ola::PluginAdaptor *plugin_adaptor)
-      : Plugin(plugin_adaptor) {}
+      : Plugin(plugin_adaptor),
+        m_device(NULL) {}
 
   std::string Name() const { return PLUGIN_NAME; }
   std::string Description() const;

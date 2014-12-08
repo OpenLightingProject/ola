@@ -129,9 +129,6 @@ class RpcServer {
   void ChannelClosed(ola::io::ConnectedDescriptor *socket,
                      class RpcSession *session);
 
-  void CleanupChannel(class RpcChannel *channel,
-                      ola::io::ConnectedDescriptor *socket);
-
   static const char K_CLIENT_VAR[];
   static const char K_RPC_PORT_VAR[];
 };

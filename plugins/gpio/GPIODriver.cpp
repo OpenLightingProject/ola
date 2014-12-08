@@ -34,6 +34,7 @@
 
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
+#include "ola/thread/Mutex.h"
 
 namespace ola {
 namespace plugin {
@@ -41,16 +42,24 @@ namespace gpio {
 
 const char GPIODriver::GPIO_BASE_DIR[] = "/sys/class/gpio/gpio";
 
-using std::vector;
-
+using ola::thread::MutexLocker;
 using std::string;
 using std::vector;
 
 GPIODriver::GPIODriver(const Options &options)
-    : m_options(options) {
+    : m_options(options),
+      m_term(false),
+      m_dmx_changed(false) {
 }
 
 GPIODriver::~GPIODriver() {
+  {
+    MutexLocker locker(&m_mutex);
+    m_term = true;
+  }
+  m_cond.Signal();
+  Join();
+
   CloseGPIOFDs();
 }
 
@@ -59,11 +68,51 @@ bool GPIODriver::Init() {
     return false;
   }
 
-  return true;
+  return Start();
 }
 
 bool GPIODriver::SendDmx(const DmxBuffer &dmx) {
-  return UpdateGPIOPins(dmx);
+  {
+    MutexLocker locker(&m_mutex);
+    // avoid the reference counting
+    m_buffer.Set(dmx);
+    m_dmx_changed = true;
+  }
+  m_cond.Signal();
+  return true;
+}
+
+void *GPIODriver::Run() {
+  Clock clock;
+  DmxBuffer output;
+
+  while (true) {
+    bool update_pins = false;
+
+    TimeStamp wake_up;
+    clock.CurrentTime(&wake_up);
+    wake_up += TimeInterval(1, 0);
+
+    // Wait for one of: i) termination ii) DMX changed iii) timeout
+    m_mutex.Lock();
+    if (!m_term && !m_dmx_changed) {
+      m_cond.TimedWait(&m_mutex, wake_up);
+    }
+
+    if (m_term) {
+      m_mutex.Unlock();
+      break;
+    } else if (m_dmx_changed) {
+      output.Set(m_buffer);
+      m_dmx_changed = false;
+      update_pins = true;
+    }
+    m_mutex.Unlock();
+    if (update_pins) {
+      UpdateGPIOPins(output);
+    }
+  }
+  return NULL;
 }
 
 bool GPIODriver::SetupGPIO() {
@@ -79,10 +128,12 @@ bool GPIODriver::SetupGPIO() {
     std::ostringstream str;
     str << GPIO_BASE_DIR << static_cast<int>(*iter) << "/value";
     int pin_fd;
-    if (ola::io::Open(str.str(), O_RDWR, &pin_fd)) {
+    if (!ola::io::Open(str.str(), O_RDWR, &pin_fd)) {
       failed = true;
       break;
     }
+
+    GPIOPin pin = {pin_fd, UNDEFINED, false};
 
     // Set dir
     str.str("");
@@ -99,7 +150,6 @@ bool GPIODriver::SetupGPIO() {
     }
     close(fd);
 
-    GPIOPin pin = {fd, UNDEFINED, false};
     m_gpio_pins.push_back(pin);
   }
 
