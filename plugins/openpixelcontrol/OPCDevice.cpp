@@ -81,7 +81,7 @@ bool OPCServerDevice::StartHook() {
   }
 
   ostringstream str;
-  str << "listen_" << m_listen_addr.ToString() << "_channel";
+  str << "listen_" << m_listen_addr << "_channel";
   set<uint8_t> channels = DeDupChannels(
       m_preferences->GetMultipleValue(str.str()));
   set<uint8_t>::const_iterator iter = channels.begin();
