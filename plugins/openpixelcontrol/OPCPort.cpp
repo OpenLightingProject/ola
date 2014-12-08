@@ -47,6 +47,8 @@ void OPCInputPort::NewData(uint8_t command,
                            const uint8_t *data,
                            unsigned int length) {
   if (command != SET_PIXEL_COMMAND) {
+    OLA_DEBUG << "Received an unknown OPC command: "
+              << static_cast<int>(command);
     return;
   }
   m_buffer.Set(data, length);
