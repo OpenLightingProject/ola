@@ -50,6 +50,13 @@ const char StageProfiPlugin::PLUGIN_NAME[] = "StageProfi";
 const char StageProfiPlugin::PLUGIN_PREFIX[] = "stageprofi";
 const char StageProfiPlugin::DEVICE_KEY[] = "device";
 
+namespace {
+
+void DeleteStageProfiDevice(StageProfiDevice *device) {
+  delete device;
+}
+}  // namespace
+
 StageProfiPlugin::~StageProfiPlugin() {
 }
 
@@ -69,8 +76,6 @@ bool StageProfiPlugin::StopHook() {
   for (; iter != m_devices.end(); ++iter) {
     DeleteDevice(iter->second);
   }
-  // There may be devices pending in the callback queue. Take care of them now.
-  m_plugin_adaptor->DrainCallbacks();
   m_devices.clear();
   return true;
 }
@@ -143,8 +148,10 @@ void StageProfiPlugin::DeviceRemoved(std::string widget_path) {
   if (device) {
     // Since this is called within the call stack of the StageProfiWidget
     // itself, we need to schedule deletion for later.
+    m_plugin_adaptor->UnregisterDevice(device);
+    device->Stop();
     m_plugin_adaptor->Execute(
-        NewSingleCallback(this, &StageProfiPlugin::DeleteDevice, device));
+        NewSingleCallback(DeleteStageProfiDevice, device));
   }
   m_detector->ReleaseWidget(widget_path);
 }
