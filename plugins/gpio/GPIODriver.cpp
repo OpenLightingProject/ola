@@ -133,6 +133,8 @@ bool GPIODriver::SetupGPIO() {
       break;
     }
 
+    GPIOPin pin = {pin_fd, UNDEFINED, false};
+
     // Set dir
     str.str("");
     str << GPIO_BASE_DIR << static_cast<int>(*iter) << "/direction";
@@ -148,7 +150,6 @@ bool GPIODriver::SetupGPIO() {
     }
     close(fd);
 
-    GPIOPin pin = {fd, UNDEFINED, false};
     m_gpio_pins.push_back(pin);
   }
 
