@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Macro.h>
+#include <ola/thread/Thread.h>
 
 #include <vector>
 
@@ -34,7 +35,7 @@ namespace gpio {
 /**
  * @brief Uses data in a DMXBuffer to drive GPIO pins.
  */
-class GPIODriver {
+class GPIODriver : private ola::thread::Thread {
  public:
   /**
    * @brief The Options.
@@ -94,6 +95,8 @@ class GPIODriver {
    */
   bool SendDmx(const DmxBuffer &dmx);
 
+  void *Run();
+
  private:
   enum GPIOState {
     ON,
@@ -111,6 +114,12 @@ class GPIODriver {
 
   const Options m_options;
   GPIOPins m_gpio_pins;
+
+  DmxBuffer m_buffer;
+  bool m_term;  // GUARDED_BY(m_mutex);
+  bool m_dmx_changed;  // GUARDED_BY(m_mutex);
+  ola::thread::Mutex m_mutex;
+  ola::thread::ConditionVariable m_cond;
 
   bool SetupGPIO();
   bool UpdateGPIOPins(const DmxBuffer &dmx);

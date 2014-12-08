@@ -103,7 +103,7 @@ bool GPIOPlugin::StartHook() {
 bool GPIOPlugin::StopHook() {
   if (m_device) {
     m_plugin_adaptor->UnregisterDevice(m_device);
-    return m_device->Stop();
+    m_device->Stop();
     delete m_device;
     m_device = NULL;
   }
