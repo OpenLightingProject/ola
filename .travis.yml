@@ -1,18 +1,13 @@
 language: cpp
 
-script:
-  - "bash -ex .travis-ci.sh"
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "NCr/adkHKiiz8UY7C/4fOGuphC1ePJVXHjR6vP0D5gUs0TTaG570Zn4dFl+SV6h1fEkK3h48hF5UgYsqD9WVFkrAVbg26aKM7iwsEjPGTXNplC4mFZH7A5vORGLypixNhmW9i160UOqXjFVexUpyMaMQxlHU8snOpq3mLLmZ95k="
 
-matrix:
-  fast_finish: true
-  include:
-    - compiler: clang
-      env: TASK='compile'
-    - compiler: gcc
-      env: TASK='compile'
-    - env: TASK='doxygen'
-    - env: TASK='lint'
-    - env: TASK='check-licences'
+script:
+ - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then bash -ex .travis-ci.sh; fi
 
 cache: apt
 
@@ -35,3 +30,13 @@ notifications:
      - "chat.freenode.net#openlighting"
     on_success: change
     on_failure: change
+
+addons:
+  coverity_scan:
+    project:
+      name: "peternewman/ola"
+      description: "OLA Coverity test"
+    notification_email: ola-coverity@pjnewman.co.uk
+    build_command_prepend: "autoreconf -i && ./configure"
+    build_command:   "make"
+    branch_pattern: coverity_scan
