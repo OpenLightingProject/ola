@@ -35,15 +35,13 @@ class NullInflator : public InflatorInterface {
  public:
   uint32_t Id() const { return ola::acn::VECTOR_ROOT_NULL; }
 
-  unsigned int InflatePDUBlock(HeaderSet *headers,
-                               const uint8_t *data,
+  unsigned int InflatePDUBlock(OLA_UNUSED HeaderSet *headers,
+                               OLA_UNUSED const uint8_t *data,
                                unsigned int len) {
     if (len) {
       OLA_WARN << "VECTOR_ROOT_NULL contained data of size " << len;
     }
     return 0;
-    (void) data;
-    (void) headers;
   }
 };
 

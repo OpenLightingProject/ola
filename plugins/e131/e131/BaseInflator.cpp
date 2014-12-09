@@ -256,9 +256,9 @@ bool BaseInflator::InflatePDU(HeaderSet *headers,
  * before either the next inflator or handle_data is called.
  * @return false will cease processing this PDU
  */
-bool BaseInflator::PostHeader(uint32_t, const HeaderSet &headers) {
+bool BaseInflator::PostHeader(OLA_UNUSED uint32_t,
+                              OLA_UNUSED const HeaderSet &headers) {
   return true;
-  (void) headers;
 }
 
 
@@ -266,13 +266,12 @@ bool BaseInflator::PostHeader(uint32_t, const HeaderSet &headers) {
  * The base handle data method - does nothing
  */
 bool BaseInflator::HandlePDUData(uint32_t vector,
-                                 const HeaderSet &headers,
+                                 OLA_UNUSED const HeaderSet &headers,
                                  const uint8_t *,
                                  unsigned int) {
   OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add"
            << " a handler, vector id " << vector;
   return false;
-  (void) headers;
 }
 }  // namespace e131
 }  // namespace plugin

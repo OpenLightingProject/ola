@@ -48,6 +48,7 @@ void RunLengthDecoder::Decode(DmxBuffer *dst,
         break;
       case ESCAPE_VALUE:
         value++;
+        // fall through
       default:
         dst->SetChannel(i, *value);
         i++;
