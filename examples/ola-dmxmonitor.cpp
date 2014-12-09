@@ -580,23 +580,23 @@ void DmxMonitor::ChangePalette(int p) {
       goto color;
 
     color:
-      palette[CHANNEL]=COLOR_PAIR(CHANNEL);
-      palette[ZERO]=COLOR_PAIR(ZERO);
-      palette[NORM]=COLOR_PAIR(NORM);
-      palette[FULL]=COLOR_PAIR(FULL);
-      palette[HEADLINE]=COLOR_PAIR(HEADLINE);
-      palette[HEADEMPH]=COLOR_PAIR(HEADEMPH);
-      palette[HEADERROR]=COLOR_PAIR(HEADERROR);
+      palette[CHANNEL] = COLOR_PAIR(CHANNEL);
+      palette[ZERO] = COLOR_PAIR(ZERO);
+      palette[NORM] = COLOR_PAIR(NORM);
+      palette[FULL] = COLOR_PAIR(FULL);
+      palette[HEADLINE] = COLOR_PAIR(HEADLINE);
+      palette[HEADEMPH] = COLOR_PAIR(HEADEMPH);
+      palette[HEADERROR] = COLOR_PAIR(HEADERROR);
       break;
 
     case 1:
-      palette[CHANNEL]=A_REVERSE;
-      palette[ZERO]=A_NORMAL;
-      palette[NORM]=A_NORMAL;
-      palette[FULL]=A_BOLD;
-      palette[HEADLINE]=A_NORMAL;
-      palette[HEADEMPH]=A_NORMAL;
-      palette[HEADERROR]=A_BOLD;
+      palette[CHANNEL] = A_REVERSE;
+      palette[ZERO] = A_NORMAL;
+      palette[NORM] = A_NORMAL;
+      palette[FULL] = A_BOLD;
+      palette[HEADLINE] = A_NORMAL;
+      palette[HEADEMPH] = A_NORMAL;
+      palette[HEADERROR] = A_BOLD;
       break;
     }
 }

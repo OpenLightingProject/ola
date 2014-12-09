@@ -89,7 +89,6 @@ void *OpenDmxThread::Run() {
       m_term_cond.TimedWait(&m_term_mutex, wake_up);
       m_term_mutex.Unlock();
 
-
       ola::io::Open(m_path, O_WRONLY, &m_fd);
 
     } else {

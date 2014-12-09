@@ -67,6 +67,12 @@ class IOQueue: public InputBufferInterface,
     // Append a MemoryBlock to this IOQueue. Ownership of the block is taken.
     void AppendBlock(class MemoryBlock *block);
 
+    /**
+     * @brief Move the contents of one IOQueue to another.
+     * @param other The IOQueue with the data to append to this IOQueue.
+     */
+    void AppendMove(IOQueue *other);
+
     void Clear();
 
     // purge the underlying memory pool

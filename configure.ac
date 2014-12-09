@@ -527,6 +527,14 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
 
+have_libusb_error_name="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_error_name], [libusb-1.0 >= 1.0.9],
+                         [have_libusb_error_name="yes"], [true])])
+AS_IF([test "x$have_libusb_error_name" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_ERROR_NAME], [1],
+                 [define if libusb is installed and has libusb_error_name])])
+
 # UART direct plugin
 AC_ARG_ENABLE(
   [uart],
@@ -640,6 +648,7 @@ PLUGIN_SUPPORT(dummy, USE_DUMMY)
 PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
 PLUGIN_SUPPORT(ftdidmx, USE_FTDI, [$have_libftdi])
+PLUGIN_SUPPORT(gpio, USE_GPIO)
 PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
@@ -651,6 +660,7 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
 PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])

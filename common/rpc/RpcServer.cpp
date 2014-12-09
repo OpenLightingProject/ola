@@ -39,6 +39,14 @@ using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 
+namespace {
+void CleanupChannel(RpcChannel *channel,
+                    ConnectedDescriptor *descriptor) {
+  delete channel;
+  delete descriptor;
+}
+}  // namespace
+
 const char RpcServer::K_CLIENT_VAR[] = "clients-connected";
 const char RpcServer::K_RPC_PORT_VAR[] = "rpc-port";
 
@@ -58,10 +66,6 @@ RpcServer::RpcServer(ola::io::SelectServerInterface *ss,
 }
 
 RpcServer::~RpcServer() {
-  // Since we use ss->Execute() below, we need to ensure all pending callbacks
-  // are run.
-
-  m_ss->DrainCallbacks();
   // Take a copy since calling the close handler will cause the socket to be
   // removed from m_connected_sockets
   ClientDescriptors sockets = m_connected_sockets;
@@ -168,14 +172,8 @@ void RpcServer::ChannelClosed(ConnectedDescriptor *descriptor,
   // We're in the call stack of both the descriptor and the channel here.
   // We schedule deletion during the next run of the event loop to break out of
   // the stack.
-  m_ss->Execute(NewSingleCallback(this, &RpcServer::CleanupChannel,
-                                  session->Channel(), descriptor));
-}
-
-void RpcServer::CleanupChannel(RpcChannel *channel,
-                               ConnectedDescriptor *descriptor) {
-  delete channel;
-  delete descriptor;
+  m_ss->Execute(
+      NewSingleCallback(CleanupChannel, session->Channel(), descriptor));
 }
 }  // namespace rpc
 }  // namespace ola
