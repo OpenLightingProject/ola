@@ -71,14 +71,13 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
       return true;
     }
 
-    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, OLA_UNUSED const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_length) {
       OLA_ASSERT_EQ((uint32_t) 289, vector);
       OLA_ASSERT_EQ((unsigned int) sizeof(PDU_DATA), pdu_length);
       OLA_ASSERT_FALSE(memcmp(data, PDU_DATA, pdu_length));
       m_blocks_handled++;
       return true;
-      (void) headers;
     }
 
  private:

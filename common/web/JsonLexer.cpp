@@ -271,7 +271,7 @@ static bool ParseArray(const char **input, JsonParserInterface *parser) {
 
     bool result = ParseTrimmedInput(input, parser);
     if (!result) {
-      OLA_INFO << "input failed";
+      OLA_INFO << "Invalid input";
       return false;
     }
 

@@ -51,6 +51,30 @@ using std::pair;
 using std::string;
 using std::vector;
 
+namespace {
+void SavePreferencesToFile(
+    const string *filename_ptr,
+    const FilePreferenceSaverThread::PreferencesMap *pref_map_ptr) {
+  std::auto_ptr<const string> filename(filename_ptr);
+  std::auto_ptr<const FilePreferenceSaverThread::PreferencesMap> pref_map(
+      pref_map_ptr);
+
+  FilePreferenceSaverThread::PreferencesMap::const_iterator iter;
+  ofstream pref_file(filename->data());
+
+  if (!pref_file.is_open()) {
+    OLA_WARN << "Could not open " << *filename_ptr << ": " << strerror(errno);
+    return;
+  }
+
+  for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {
+    pref_file << iter->first << " = " << iter->second << std::endl;
+  }
+  pref_file.flush();
+  pref_file.close();
+}
+}  // namespace
+
 const char BoolValidator::ENABLED[] = "true";
 const char BoolValidator::DISABLED[] = "false";
 
@@ -292,7 +316,8 @@ void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
 // FilePreferenceSaverThread
 //-----------------------------------------------------------------------------
 
-FilePreferenceSaverThread::FilePreferenceSaverThread() {
+FilePreferenceSaverThread::FilePreferenceSaverThread()
+    : Thread(Thread::Options("pref-saver")) {
   // set a long poll interval so we don't spin
   m_ss.SetDefaultInterval(TimeInterval(60, 0));
 }
@@ -302,18 +327,14 @@ void FilePreferenceSaverThread::SavePreferences(
     const PreferencesMap &preferences) {
   const string *file_name_ptr = new string(file_name);
   const PreferencesMap *save_map = new PreferencesMap(preferences);
-  SingleUseCallback0<void> *cb = NewSingleCallback(
-                                 this,
-                                 &FilePreferenceSaverThread::SaveToFile,
-                                 file_name_ptr,
-                                 save_map);
+  SingleUseCallback0<void> *cb =
+      NewSingleCallback(SavePreferencesToFile, file_name_ptr, save_map);
   m_ss.Execute(cb);
 }
 
 
 void *FilePreferenceSaverThread::Run() {
   m_ss.Run();
-  m_ss.DrainCallbacks();
   return NULL;
 }
 
@@ -334,28 +355,6 @@ void FilePreferenceSaverThread::Syncronize() {
         &condition_var,
         &syncronize_mutex));
   condition_var.Wait(&syncronize_mutex);
-}
-
-
-void FilePreferenceSaverThread::SaveToFile(
-    const string *filename_ptr,
-    const PreferencesMap *pref_map_ptr) {
-  std::auto_ptr<const string> filename(filename_ptr);
-  std::auto_ptr<const PreferencesMap> pref_map(pref_map_ptr);
-
-  PreferencesMap::const_iterator iter;
-  ofstream pref_file(filename->data());
-
-  if (!pref_file.is_open()) {
-    OLA_WARN << "Could not open " << *filename_ptr << ": " << strerror(errno);
-    return;
-  }
-
-  for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {
-    pref_file << iter->first << " = " << iter->second << std::endl;
-  }
-  pref_file.flush();
-  pref_file.close();
 }
 
 

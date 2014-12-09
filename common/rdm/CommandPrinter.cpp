@@ -388,18 +388,20 @@ void CommandPrinter::DisplayParamData(
     bool is_get,
     const uint8_t *param_data,
     unsigned int data_length) {
-  if (!data_length)
+  if (!data_length) {
     return;
+  }
 
   *m_output << "  Param data:" << endl;
   if (unpack_param_data && pid_descriptor) {
     const Descriptor *descriptor = NULL;
-    if (is_request)
+    if (is_request) {
       descriptor = (is_get ?
-          pid_descriptor->GetRequest() : pid_descriptor->GetRequest());
-    else
+          pid_descriptor->GetRequest() : pid_descriptor->SetRequest());
+    } else {
       descriptor = (is_get ?
          pid_descriptor->GetResponse() : pid_descriptor->SetResponse());
+    }
 
     if (descriptor) {
       auto_ptr<const Message> message(

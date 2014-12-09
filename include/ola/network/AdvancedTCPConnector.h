@@ -41,7 +41,7 @@ namespace network {
  * the connection fails it will retry according to a given BackOffPolicy.
  *
  * Limitations:
- *  - This class only supports a single connection per IP:%Port.
+ *  - This class only supports a single connection per IP:Port.
  *  - This class should work fine for a small number of TCP connections (100 or
  *    so). It'll need to be re-written if we want to support 1000s.
  */

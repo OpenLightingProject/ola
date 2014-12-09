@@ -25,6 +25,8 @@
 #include <ola/base/Macro.h>
 #include <ola/thread/Thread.h>
 
+#include <string>
+
 namespace ola {
 namespace thread {
 
@@ -38,9 +40,12 @@ class CallbackThread : public Thread {
     /**
      * Create a new CallbackThread.
      * @param callback the callback to run in the new thread.
+     * @param options the thread's options.
      */
-    explicit CallbackThread(VoidThreadCallback *callback)
-        : m_callback(callback) {
+    explicit CallbackThread(VoidThreadCallback *callback,
+                            const Options &options = Options())
+        : Thread(options),
+          m_callback(callback) {
     }
 
  protected:

@@ -16,8 +16,7 @@
  * e133-monitor.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This locates all E1.33 devices using SLP and then opens a TCP connection to
- * each.  If --targets is used it skips the SLP step.
+ * This opens a TCP connection to each device in --targets.
  *
  * It then waits to receive E1.33 messages on the TCP connections.
  */
@@ -31,9 +30,7 @@
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/e133/DeviceManager.h>
-#include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
-#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
@@ -42,7 +39,6 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
-#include <ola/slp/URLEntry.h>
 
 #include <iostream>
 #include <memory>
@@ -55,7 +51,6 @@ using ola::network::IPV4SocketAddress;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
-using ola::slp::URLEntries;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -65,7 +60,7 @@ using std::vector;
 DEFINE_s_string(pid_location, p, "",
                 "The directory to read PID definitiions from");
 DEFINE_s_string(target_addresses, t, "",
-                "List of IPs to connect to, overrides SLP");
+                "List of IPs to connect to");
 
 
 /**
@@ -73,7 +68,7 @@ DEFINE_s_string(target_addresses, t, "",
  */
 class SimpleE133Monitor {
  public:
-    explicit SimpleE133Monitor(PidStoreHelper *pid_helper, bool enable_slp);
+    explicit SimpleE133Monitor(PidStoreHelper *pid_helper);
     ~SimpleE133Monitor();
 
     bool Init();
@@ -85,13 +80,11 @@ class SimpleE133Monitor {
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
     ola::io::StdinHandler m_stdin_handler;
-    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
 
     ola::e133::MessageBuilder m_message_builder;
     ola::e133::DeviceManager m_device_manager;
 
     void Input(char c);
-    void DiscoveryCallback(bool status, const URLEntries &urls);
 
     bool EndpointRequest(
         const IPV4Address &source,
@@ -103,44 +96,24 @@ class SimpleE133Monitor {
 /**
  * Setup a new Monitor
  */
-SimpleE133Monitor::SimpleE133Monitor(PidStoreHelper *pid_helper,
-                                     bool enable_slp)
+SimpleE133Monitor::SimpleE133Monitor(PidStoreHelper *pid_helper)
     : m_command_printer(&cout, pid_helper),
       m_stdin_handler(&m_ss,
                       ola::NewCallback(this, &SimpleE133Monitor::Input)),
       m_message_builder(ola::acn::CID::Generate(), "OLA Monitor"),
       m_device_manager(&m_ss, &m_message_builder) {
-  if (enable_slp) {
-    m_slp_thread.reset(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss));
-    m_slp_thread->SetNewDeviceCallback(
-      NewCallback(this, &SimpleE133Monitor::DiscoveryCallback));
-  }
-
   m_device_manager.SetRDMMessageCallback(
       NewCallback(this, &SimpleE133Monitor::EndpointRequest));
-
-  // TODO(simon): add a controller discovery callback here as well.
 }
 
 
 SimpleE133Monitor::~SimpleE133Monitor() {
-  if (m_slp_thread.get()) {
-    m_slp_thread->Join(NULL);
-    m_slp_thread->Cleanup();
-  }
+  // This used to stop the SLP thread.
 }
 
 
 bool SimpleE133Monitor::Init() {
-  if (!m_slp_thread.get())
-    return true;
-
-  if (!m_slp_thread->Init()) {
-    OLA_WARN << "SLPThread Init() failed";
-    return false;
-  }
-
-  m_slp_thread->Start();
+  // Previously this started the SLP thread.
   return true;
 }
 
@@ -148,7 +121,6 @@ bool SimpleE133Monitor::Init() {
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
   m_device_manager.AddDevice(ip_address);
 }
-
 
 void SimpleE133Monitor::Input(char c) {
   switch (c) {
@@ -159,32 +131,6 @@ void SimpleE133Monitor::Input(char c) {
       break;
   }
 }
-
-
-/**
- * Called when SLP completes discovery.
- */
-void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
-  if (ok) {
-    URLEntries::const_iterator iter;
-    UID uid(0, 0);
-    IPV4Address ip;
-    for (iter = urls.begin(); iter != urls.end(); ++iter) {
-      OLA_INFO << "Located " << *iter;
-      if (!ola::e133::ParseE133URL(iter->url(), &uid, &ip))
-        continue;
-
-      if (uid.IsBroadcast()) {
-        OLA_WARN << "UID " << uid << "@" << ip << " is broadcast";
-        continue;
-      }
-      AddIP(ip);
-    }
-  } else {
-    OLA_INFO << "SLP discovery failed";
-  }
-}
-
 
 /**
  * We received data to endpoint 0
@@ -220,7 +166,6 @@ int main(int argc, char *argv[]) {
 
   PidStoreHelper pid_helper(FLAGS_pid_location, 4);
 
-
   vector<IPV4Address> targets;
   if (!FLAGS_target_addresses.str().empty()) {
     vector<string> tokens;
@@ -240,15 +185,14 @@ int main(int argc, char *argv[]) {
   if (!pid_helper.Init())
     exit(ola::EXIT_OSFILE);
 
-  SimpleE133Monitor monitor(&pid_helper, targets.empty());
+  SimpleE133Monitor monitor(&pid_helper);
   if (!monitor.Init())
     exit(ola::EXIT_UNAVAILABLE);
 
-  if (!targets.empty()) {
-    // manually add the responder IPs
-    vector<IPV4Address>::const_iterator iter = targets.begin();
-    for (; iter != targets.end(); ++iter)
-      monitor.AddIP(*iter);
+  // manually add the responder IPs
+  vector<IPV4Address>::const_iterator iter = targets.begin();
+  for (; iter != targets.end(); ++iter) {
+    monitor.AddIP(*iter);
   }
   monitor.Run();
 }

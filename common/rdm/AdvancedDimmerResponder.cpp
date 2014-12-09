@@ -764,12 +764,12 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
 
   if (args.programmed == 1) {
     preset.fade_up_time = 0;
-    preset.fade_down_time= 0;
+    preset.fade_down_time = 0;
     preset.wait_time = 0;
     preset.programmed = PRESET_NOT_PROGRAMMED;
   } else {
     preset.fade_up_time = NetworkToHost(args.fade_up_time);
-    preset.fade_down_time= NetworkToHost(args.fade_down_time);
+    preset.fade_down_time = NetworkToHost(args.fade_down_time);
     preset.wait_time = NetworkToHost(args.wait_time);
     preset.programmed = PRESET_PROGRAMMED;
   }

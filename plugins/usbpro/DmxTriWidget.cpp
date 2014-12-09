@@ -333,7 +333,7 @@ void DmxTriWidgetImpl::SendDiscoveryAuto() {
   uint8_t command_id = DISCOVER_AUTO_COMMAND_ID;
   if (!SendCommandToTRI(EXTENDED_COMMAND_LABEL, &command_id,
                         sizeof(command_id))) {
-    OLA_WARN << "Failed to begin RDM discovery";
+    OLA_WARN << "Unable to begin RDM discovery";
     RDMDiscoveryCallback *callback = m_discovery_callback;
     m_discovery_callback = NULL;
     RunDiscoveryCallback(callback);
@@ -587,7 +587,7 @@ void DmxTriWidgetImpl::HandleDiscoverStatResponse(uint8_t return_code,
         MaybeSendNextRequest();
       } else {
         RDMDiscoveryCallback *callback = m_discovery_callback;
-        m_discovery_callback= NULL;
+        m_discovery_callback = NULL;
         RunDiscoveryCallback(callback);
       }
     }
@@ -595,7 +595,7 @@ void DmxTriWidgetImpl::HandleDiscoverStatResponse(uint8_t return_code,
     // These are all fatal
     switch (return_code) {
       case EC_RESPONSE_MUTE:
-        OLA_WARN << "Failed to mute device, aborting discovery";
+        OLA_WARN << "Unable to mute device, aborting discovery";
         break;
       case EC_RESPONSE_DISCOVERY:
         OLA_WARN <<

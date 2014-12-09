@@ -424,12 +424,6 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   ola::io::SelectServer m_ss;
 
   /**
-   * Perform the save
-   */
-  void SaveToFile(const std::string *filename,
-                  const PreferencesMap *preferences);
-
-  /**
    * Notify the blocked thread we're done
    */
   void CompleteSyncronization(ola::thread::ConditionVariable *condition,

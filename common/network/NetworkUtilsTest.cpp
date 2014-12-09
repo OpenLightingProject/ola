@@ -117,6 +117,16 @@ void NetworkUtilsTest::testToFromLittleEndian() {
 
   uint32_t v3 = 0x01020304;
   OLA_ASSERT_EQ(v3, LittleEndianToHost(HostToLittleEndian(v3)));
+
+  int8_t v4 = -10;
+  OLA_ASSERT_EQ(v4, HostToLittleEndian(v4));
+  OLA_ASSERT_EQ(v4, LittleEndianToHost(HostToLittleEndian(v4)));
+
+  int16_t v5 = -0x0102;
+  OLA_ASSERT_EQ(v5, LittleEndianToHost(HostToLittleEndian(v5)));
+
+  int32_t v6 = -0x01020304;
+  OLA_ASSERT_EQ(v6, LittleEndianToHost(HostToLittleEndian(v6)));
 }
 
 

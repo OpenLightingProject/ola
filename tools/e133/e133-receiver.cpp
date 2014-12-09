@@ -16,8 +16,8 @@
  * e133-receiver.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This creates a E1.33 receiver with one (emulated) RDM responder. The node is
- * registered in slp and the RDM responder responds to E1.33 commands.
+ * This creates a E1.33 receiver with one (emulated) RDM responder. The node's
+ * RDM responder responds to E1.33 commands.
  */
 
 #if HAVE_CONFIG_H

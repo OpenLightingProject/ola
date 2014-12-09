@@ -124,7 +124,7 @@ bool SetUID(uid_t new_uid) {
   return false;
 #else
   if (setuid(new_uid)) {
-    OLA_WARN << "setuid failed with " << strerror(errno);
+    OLA_WARN << "setuid(" << new_uid << "): " << strerror(errno);
     return false;
   }
   return true;
@@ -138,7 +138,7 @@ bool SetGID(gid_t new_gid) {
   return false;
 #else
   if (setgid(new_gid)) {
-    OLA_WARN << "setgid failed with " << strerror(errno);
+    OLA_WARN << "setgid(" << new_gid << "): " << strerror(errno);
     return false;
   }
   return true;

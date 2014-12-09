@@ -228,6 +228,11 @@ AC_CHECK_DECLS(NET_RT_DUMP, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
+AC_CHECK_DECLS(RLIMIT_RTPRIO, , ,
+               [#include <sys/resource.h>])
+
+AC_CHECK_DECLS(RLIMIT_RTTIME, , ,
+               [#include <sys/resource.h>])
 
 AC_CHECK_DECLS(SO_REUSEADDR, , ,
                [#include <sys/types.h>
@@ -307,6 +312,9 @@ ACX_PTHREAD([
              CC="$PTHREAD_CC"
              CXX="$PTHREAD_CXX"],
             [AC_MSG_ERROR([Missing pthread, please install it])])
+
+# pthread_setname_np can take either 1 or 2 arguments.
+PTHREAD_SET_NAME()
 
 # resolv
 AS_IF([test -z "${USING_WIN32_FALSE}"],
@@ -463,9 +471,10 @@ AM_CONDITIONAL([FATAL_WARNINGS], [test "x$enable_fatal_warnings" != xno])
 AC_ARG_ENABLE(
   [gcov],
   [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
-AS_IF([test "x$enable_gov" = xyes],
+AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-       CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"])
+       CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
+       LIBS="$LIBS -lgcov"])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
@@ -517,6 +526,14 @@ AS_IF([test "x$enable_libusb" != xno],
                          [true])])
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
+
+have_libusb_error_name="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_error_name], [libusb-1.0 >= 1.0.9],
+                         [have_libusb_error_name="yes"], [true])])
+AS_IF([test "x$have_libusb_error_name" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_ERROR_NAME], [1],
+                 [define if libusb is installed and has libusb_error_name])])
 
 # UART direct plugin
 AC_ARG_ENABLE(
@@ -571,25 +588,6 @@ AC_ARG_ENABLE(
 AS_IF([test "x$enable_root_check" = xno],
       [AC_DEFINE([OLAD_SKIP_ROOT_CHECK], [1],
                  [Defined if olad is allowed to run as root])])
-
-# OpenSLP is used for E1.33 support
-# This should be removed if we decide that E1.33 is going to use DNS-SD.
-# Openslp doesn't use pkg-config, so the users may need to pass CPPFLAGS
-# & LDFLAGS so we can find it.
-AC_ARG_ENABLE(
-  [slp],
-  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
-
-openslp_LIBS=""
-have_slp=no
-AS_IF([test "x$enable_slp" != xno],
-      [AC_CHECK_LIB([slp], [SLPOpen],
-                    [have_slp="yes" openslp_LIBS="-lslp"])])
-
-AM_CONDITIONAL([HAVE_SLP], [test "x$have_slp" = xyes])
-AS_IF([test "x$have_slp" = xyes],
-      [AC_DEFINE([HAVE_LIBSLP], [1], [define if libslp is installed])])
-AC_SUBST(openslp_LIBS)
 
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
@@ -650,6 +648,7 @@ PLUGIN_SUPPORT(dummy, USE_DUMMY)
 PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
 PLUGIN_SUPPORT(ftdidmx, USE_FTDI, [$have_libftdi])
+PLUGIN_SUPPORT(gpio, USE_GPIO)
 PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
@@ -661,6 +660,7 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
 PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
@@ -718,11 +718,8 @@ AC_CONFIG_FILES([Doxyfile
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
                  plugins/usbpro/messages/libolausbproconf.pc
-                 slp/libolaslpclient.pc
-                 slp/libolaslpserver.pc
                  tools/e133/libolae133common.pc
                  tools/e133/libolae133controller.pc
-                 tools/e133/libolae133slp.pc
                  ])
 # Makefiles
 AC_CONFIG_FILES([Makefile java/Makefile])
