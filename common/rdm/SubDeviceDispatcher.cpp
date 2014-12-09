@@ -77,15 +77,20 @@ void SubDeviceDispatcher::FanOutToSubDevices(
   }
 
   // Fan out to all sub devices but don't include the root device
-  SubDeviceMap::iterator iter = m_subdevices.begin();
-  FanOutTracker *tracker = new FanOutTracker(m_subdevices.size(), callback);
+  if (m_subdevices.empty()) {
+    vector<string> packets;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  } else {
+    SubDeviceMap::iterator iter = m_subdevices.begin();
+    FanOutTracker *tracker = new FanOutTracker(m_subdevices.size(), callback);
 
-  for (; iter != m_subdevices.end(); ++iter) {
-    iter->second->SendRDMRequest(
-        request->Duplicate(),
-        NewSingleCallback(this,
-                          &SubDeviceDispatcher::HandleSubDeviceResponse,
-                          tracker));
+    for (; iter != m_subdevices.end(); ++iter) {
+      iter->second->SendRDMRequest(
+          request->Duplicate(),
+          NewSingleCallback(this,
+                            &SubDeviceDispatcher::HandleSubDeviceResponse,
+                            tracker));
+    }
   }
 }
 
