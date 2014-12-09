@@ -901,6 +901,18 @@ void StringUtilsTest::testStringJoin() {
   ints.push_back(3);
   OLA_ASSERT_EQ(string("1,2,3"), StringJoin(",", ints));
 
+  vector<uint8_t> bytes;
+  bytes.push_back(65);
+  bytes.push_back(66);
+  bytes.push_back(67);
+  OLA_ASSERT_EQ(string("65,66,67"), StringJoin(",", bytes));
+
+  vector<char> chars;
+  chars.push_back('a');
+  chars.push_back('b');
+  chars.push_back('c');
+  OLA_ASSERT_EQ(string("a,b,c"), StringJoin(",", chars));
+
   vector<string> strings;
   strings.push_back("one");
   strings.push_back("two");

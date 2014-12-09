@@ -184,10 +184,10 @@ class GenericSocketAddress: public SocketAddress {
       return *this;
     }
 
-    bool ToSockAddr(struct sockaddr *addr, unsigned int size) const {
+    bool ToSockAddr(struct sockaddr *addr,
+                    OLA_UNUSED unsigned int size) const {
       *addr = m_addr;
       return true;
-      (void) size;
     }
 
     std::string ToString() const;

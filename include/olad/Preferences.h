@@ -267,7 +267,7 @@ class Preferences {
   virtual std::string GetValue(const std::string &key) const = 0;
 
   /**
-   * @brief Returns all preference values corrosponding to this key
+   * @brief Returns all preference values corresponding to this key
    * @param key the key to fetch
    * @return a vector of strings.
    */

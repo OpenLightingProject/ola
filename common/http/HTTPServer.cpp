@@ -83,14 +83,13 @@ const char HTTPServer::CONTENT_TYPE_JS[] = "text/javascript";
  * @param key the header name
  * @param value the header value
  */
-static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
-                      const char *value) {
+static int AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
+                      const char *key, const char *value) {
   HTTPRequest *request = static_cast<HTTPRequest*>(cls);
   string key_string = key;
   string value_string = value;
   request->AddHeader(key, value);
   return MHD_YES;
-  (void) kind;
 }
 
 
@@ -106,21 +105,16 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
  * @param off the offset of the data
  * @param size the number of bytes available
  */
-int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
-                const char *filename, const char *content_type,
-                const char *transfer_encoding, const char *data, uint64_t off,
-                size_t size) {
+int IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
+                const char *key, OLA_UNUSED const char *filename,
+                OLA_UNUSED const char *content_type,
+                OLA_UNUSED const char *transfer_encoding, const char *data,
+                OLA_UNUSED uint64_t off, OLA_UNUSED size_t size) {
   // libmicrohttpd has a bug where the size isn't set correctly.
   HTTPRequest *request = static_cast<HTTPRequest*>(request_cls);
   string value(data);
   request->AddPostParameter(key, value);
   return MHD_YES;
-  (void) content_type;
-  (void) filename;
-  (void) kind;
-  (void) transfer_encoding;
-  (void) off;
-  (void) size;
 }
 
 
