@@ -466,8 +466,7 @@ void E131Node::NewDiscoveryPage(
 void E131Node::SendDiscoveryPage(const std::vector<uint16_t> &universes,
                                  uint8_t this_page,
                                  uint8_t last_page,
-                                 uint32_t sequence_number) {
-  (void) sequence_number;  // not used yet
+                                 OLA_UNUSED uint32_t sequence_number) {
   uint16_t in_this_page = static_cast<uint16_t>(this_page == last_page ?
       universes.size() % DISCOVERY_PAGE_SIZE : DISCOVERY_PAGE_SIZE);
 
