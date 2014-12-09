@@ -50,16 +50,14 @@ class FakePDU: public PDU {
       return true;
     }
 
-    bool PackHeader(uint8_t *data, unsigned int *length) const {
+    bool PackHeader(OLA_UNUSED uint8_t *data,
+                    OLA_UNUSED unsigned int *length) const {
       return true;
-      (void) data;
-      (void) length;
     }
 
-    bool PackData(uint8_t *data, unsigned int *length) const {
+    bool PackData(OLA_UNUSED uint8_t *data,
+                  OLA_UNUSED unsigned int *length) const {
       return true;
-      (void) data;
-      (void) length;
     }
 
     void Write(ola::io::OutputStream *stream) const {

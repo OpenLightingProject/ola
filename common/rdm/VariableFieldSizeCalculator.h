@@ -52,7 +52,7 @@ class VariableFieldSizeCalculator
       MISMATCHED_SIZE,
     } calculator_state;
 
-    VariableFieldSizeCalculator() {}
+    VariableFieldSizeCalculator() : m_fixed_size_sum(0) {}
     ~VariableFieldSizeCalculator() {}
 
     bool Descend() const { return false; }
