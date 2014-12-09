@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 
 #include <ola/network/IPV4Address.h>
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
