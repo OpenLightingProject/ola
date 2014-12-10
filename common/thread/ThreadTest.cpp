@@ -218,7 +218,7 @@ void ThreadTest::testSchedulingOptions() {
                   thread.GetSchedulingParams().priority);
   }
 #else
-  OLA_INFO << "Scheduling options are not supported on windows..";
+  OLA_WARN << "Scheduling options are not supported on windows..";
 #endif  // #ifndef _WIN32
 }
 
