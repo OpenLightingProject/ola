@@ -33,8 +33,9 @@ namespace pathport {
 using std::string;
 
 string PathportPortHelper::Description(const Universe *universe) const {
-  if (!universe)
+  if (!universe) {
     return "";
+  }
 
   std::ostringstream str;
   str << "Pathport xDMX " << DMX_UNIVERSE_SIZE * universe->UniverseId() <<
@@ -65,17 +66,17 @@ void PathportInputPort::PostSetUniverse(Universe *old_universe,
         new_universe->UniverseId(),
         &m_buffer,
         NewCallback<PathportInputPort, void>(this,
-                                            &PathportInputPort::DmxChanged));
+                                             &PathportInputPort::DmxChanged));
   }
 }
 
 
 bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                  uint8_t priority) {
-  if (GetUniverse())
+                                  OLA_UNUSED uint8_t priority) {
+  if (GetUniverse()) {
     return m_node->SendDMX(GetUniverse()->UniverseId(), buffer);
+  }
   return true;
-  (void) priority;
 }
 }  // namespace pathport
 }  // namespace plugin

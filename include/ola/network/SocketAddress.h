@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 
 #include <ola/network/IPV4Address.h>
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
@@ -184,10 +185,10 @@ class GenericSocketAddress: public SocketAddress {
       return *this;
     }
 
-    bool ToSockAddr(struct sockaddr *addr, unsigned int size) const {
+    bool ToSockAddr(struct sockaddr *addr,
+                    OLA_UNUSED unsigned int size) const {
       *addr = m_addr;
       return true;
-      (void) size;
     }
 
     std::string ToString() const;

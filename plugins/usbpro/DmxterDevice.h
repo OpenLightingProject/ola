@@ -57,11 +57,10 @@ class DmxterOutputPort: public BasicOutputPort {
         : BasicOutputPort(parent, 0, true, true),
           m_widget(widget) {}
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    bool WriteDMX(OLA_UNUSED const DmxBuffer &buffer,
+                  OLA_UNUSED uint8_t priority) {
       // this device can't output DMX
       return true;
-      (void) priority;
-      (void) buffer;
     }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,

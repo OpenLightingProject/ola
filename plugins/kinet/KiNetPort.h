@@ -33,27 +33,26 @@ namespace kinet {
 
 class KiNetOutputPort: public BasicOutputPort {
  public:
-    KiNetOutputPort(KiNetDevice *device,
-                    const ola::network::IPV4Address &target,
-                    KiNetNode *node,
-                    unsigned int port_id)
-        : BasicOutputPort(device, port_id),
-          m_node(node),
-          m_target(target) {
-    }
+  KiNetOutputPort(KiNetDevice *device,
+                  const ola::network::IPV4Address &target,
+                  KiNetNode *node,
+                  unsigned int port_id)
+      : BasicOutputPort(device, port_id),
+        m_node(node),
+        m_target(target) {
+  }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_node->SendDMX(m_target, buffer);
-      (void) priority;
-    }
+  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+    return m_node->SendDMX(m_target, buffer);
+  }
 
-    std::string Description() const {
-      return "Power Supply: " + m_target.ToString();
-    }
+  std::string Description() const {
+    return "Power Supply: " + m_target.ToString();
+  }
 
  private:
-    KiNetNode *m_node;
-    const ola::network::IPV4Address m_target;
+  KiNetNode *m_node;
+  const ola::network::IPV4Address m_target;
 };
 }  // namespace kinet
 }  // namespace plugin
