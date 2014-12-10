@@ -254,7 +254,7 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
+int OladHTTPServer::JsonUniverseInfo(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "?id=[universe]");
@@ -270,7 +270,6 @@ int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
                         response));
 
   return MHD_YES;
-  (void) request;
 }
 
 
@@ -457,7 +456,7 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
+int OladHTTPServer::DisplayQuit(OLA_UNUSED const HTTPRequest *request,
                                 HTTPResponse *response) {
   if (m_enable_quit) {
     response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
@@ -472,7 +471,6 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
   int r = response->Send();
   delete response;
   return r;
-  (void) request;
 }
 
 
@@ -496,7 +494,7 @@ int OladHTTPServer::ReloadPlugins(const HTTPRequest*,
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::ReloadPidStore(const HTTPRequest *request,
+int OladHTTPServer::ReloadPidStore(OLA_UNUSED const HTTPRequest *request,
                                    HTTPResponse *response) {
   m_ola_server->ReloadPidStore();
   response->SetNoCache();
@@ -505,7 +503,6 @@ int OladHTTPServer::ReloadPidStore(const HTTPRequest *request,
   int r = response->Send();
   delete response;
   return r;
-  (void) request;
 }
 
 

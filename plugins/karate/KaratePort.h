@@ -33,29 +33,28 @@ namespace karate {
 
 class KarateOutputPort: public BasicOutputPort {
  public:
-    KarateOutputPort(KarateDevice *parent,
-                     unsigned int id,
-                     const std::string &path)
-        : BasicOutputPort(parent, id),
-          m_thread(path),
-          m_path(path) {
-      m_thread.Start();
-    }
+  KarateOutputPort(KarateDevice *parent,
+                   unsigned int id,
+                   const std::string &path)
+      : BasicOutputPort(parent, id),
+        m_thread(path),
+        m_path(path) {
+    m_thread.Start();
+  }
 
-    ~KarateOutputPort() {
-      m_thread.Stop();
-    }
+  ~KarateOutputPort() {
+    m_thread.Stop();
+  }
 
-    std::string Description() const { return "KarateLight at " + m_path; }
+  std::string Description() const { return "KarateLight at " + m_path; }
 
-    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority) {
-      return m_thread.WriteDmx(buffer);
-      (void) priority;
-    }
+  bool WriteDMX(const ola::DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+    return m_thread.WriteDmx(buffer);
+  }
 
  private:
-    KarateThread m_thread;
-    std::string m_path;
+  KarateThread m_thread;
+  std::string m_path;
 };
 }  // namespace karate
 }  // namespace plugin

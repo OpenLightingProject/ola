@@ -52,9 +52,9 @@ class PathportInputPort: public BasicInputPort {
       return m_helper.Description(GetUniverse());
     }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    bool PreSetUniverse(OLA_UNUSED Universe *old_universe,
+                        Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
-      (void) old_universe;
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);

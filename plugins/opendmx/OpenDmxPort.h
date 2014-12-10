@@ -33,29 +33,28 @@ namespace opendmx {
 
 class OpenDmxOutputPort: public BasicOutputPort {
  public:
-    OpenDmxOutputPort(OpenDmxDevice *parent,
-                      unsigned int id,
-                      const std::string &path)
-        : BasicOutputPort(parent, id),
-          m_thread(path),
-          m_path(path) {
-      m_thread.Start();
-    }
+  OpenDmxOutputPort(OpenDmxDevice *parent,
+                    unsigned int id,
+                    const std::string &path)
+      : BasicOutputPort(parent, id),
+        m_thread(path),
+        m_path(path) {
+    m_thread.Start();
+  }
 
-    ~OpenDmxOutputPort() {
-      m_thread.Stop();
-    }
+  ~OpenDmxOutputPort() {
+    m_thread.Stop();
+  }
 
-    std::string Description() const { return "Open Dmx at " + m_path; }
+  std::string Description() const { return "Open DMX at " + m_path; }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_thread.WriteDmx(buffer);
-      (void) priority;
-    }
+  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+    return m_thread.WriteDmx(buffer);
+  }
 
  private:
-    OpenDmxThread m_thread;
-    std::string m_path;
+  OpenDmxThread m_thread;
+  std::string m_path;
 };
 }  // namespace opendmx
 }  // namespace plugin

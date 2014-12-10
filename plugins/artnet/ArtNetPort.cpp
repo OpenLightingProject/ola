@@ -100,14 +100,13 @@ void ArtNetInputPort::TriggerDiscovery() {
 }
 
 bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                uint8_t priority) {
+                                OLA_UNUSED uint8_t priority) {
   if (PortId() >= ARTNET_MAX_PORTS) {
     OLA_WARN << "Invalid artnet port id " << PortId();
     return false;
   }
 
   return m_node->SendDMX(PortId(), buffer);
-  (void) priority;
 }
 
 void ArtNetOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
