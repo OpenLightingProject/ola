@@ -55,6 +55,7 @@
 #include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
+#include "ola/network/SocketCloser.h"
 #include "ola/network/TCPSocketFactory.h"
 
 namespace ola {
@@ -149,13 +150,15 @@ TCPSocket* TCPSocket::Connect(const SocketAddress &endpoint) {
     return NULL;
   }
 
+  SocketCloser closer(sd);
+
   int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
     OLA_WARN << "connect(" << endpoint << "): " << strerror(errno);
     return NULL;
   }
-  TCPSocket *socket = new TCPSocket(sd);
+  TCPSocket *socket = new TCPSocket(closer.Release());
   socket->SetReadNonBlocking();
   return socket;
 }
@@ -204,6 +207,8 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
     return false;
   }
 
+  SocketCloser closer(sd);
+
 #ifdef _WIN32
   ola::io::DescriptorHandle temp_handle;
   temp_handle.m_handle.m_fd = sd;
@@ -213,7 +218,6 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
   if (!ola::io::ConnectedDescriptor::SetNonBlocking(sd)) {
 #endif
     OLA_WARN << "Failed to mark TCP accept socket as non-blocking";
-    close(sd);
     return false;
   }
 
@@ -224,21 +228,11 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
                       sizeof(reuse_flag));
   if (ok < 0) {
     OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
-#ifdef _WIN32
-    closesocket(sd);
-#else
-    close(sd);
-#endif
     return false;
   }
 
   if (bind(sd, &server_address, sizeof(server_address)) == -1) {
     OLA_WARN << "bind to " << endpoint << " failed, " << strerror(errno);
-#ifdef _WIN32
-    closesocket(sd);
-#else
-    close(sd);
-#endif
     return false;
   }
 
@@ -247,10 +241,10 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
     return false;
   }
 #ifdef _WIN32
-  m_handle.m_handle.m_fd = sd;
+  m_handle.m_handle.m_fd = closer.Release();
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
 #else
-  m_handle = sd;
+  m_handle = closer.Release();
 #endif
   return true;
 }

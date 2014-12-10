@@ -59,10 +59,7 @@ class SocketCloser {
   /**
    * @brief Destructor.
    */
-  ~SocketCloser() {
-    if (m_fd >= 0)
-      close(m_fd);
-  }
+  ~SocketCloser();
 
   /**
    * @brief Release the file descriptor.
