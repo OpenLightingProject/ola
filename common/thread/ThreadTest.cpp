@@ -25,7 +25,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <errno.h>
 #include <string.h>
+#ifndef _WIN32
 #include <sys/resource.h>
+#endif
 #include <algorithm>
 
 #include "ola/Logging.h"
@@ -137,6 +139,7 @@ void ThreadTest::testThread() {
  * Check that the scheduling options behave as expected.
  */
 void ThreadTest::testSchedulingOptions() {
+#ifndef _WIN32
 #if HAVE_DECL_RLIMIT_RTPRIO
   struct rlimit rlim;
   OLA_ASSERT_TRUE(ola::system::GetRLimit(RLIMIT_RTPRIO, &rlim));
@@ -213,6 +216,9 @@ void ThreadTest::testSchedulingOptions() {
     OLA_ASSERT_EQ(override_params.priority,
                   thread.GetSchedulingParams().priority);
   }
+#else
+  OLA_WARN << "Scheduling options are not supported on windows..";
+#endif  // #ifndef _WIN32
 }
 
 class MockConditionThread: public Thread {
