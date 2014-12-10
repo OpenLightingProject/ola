@@ -56,6 +56,5 @@ bool SetSchedParam(pthread_t thread, int policy,
   }
   return true;
 }
-
 }  // namespace thread
 }  // namespace ola
