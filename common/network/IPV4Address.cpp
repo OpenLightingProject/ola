@@ -23,7 +23,7 @@
 #endif
 
 #ifdef HAVE_WINSOCK2_H
-#include <winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
 #endif
