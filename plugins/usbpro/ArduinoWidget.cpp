@@ -127,11 +127,6 @@ void ArduinoWidgetImpl::SendRDMRequest(
     data_size++;
     m_rdm_request_callback = on_complete;
     m_pending_request = request;
-    /*
-#ifdef SendMessage  // Test, winuser.h defines a SendMessage Macro :(
-#undef SendMessage  // Test
-#endif // Test
-     */
     if ((this->SendMessage)(RDM_REQUEST_LABEL, data, data_size)) {
       delete[] data;
       return;
