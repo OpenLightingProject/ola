@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 #ifdef _WIN32
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
 #endif

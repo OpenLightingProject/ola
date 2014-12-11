@@ -30,7 +30,7 @@
 #endif
 
 #ifdef _WIN32
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Winioctl.h>
 #else
 #include <sys/ioctl.h>

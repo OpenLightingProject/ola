@@ -29,7 +29,7 @@
 typedef uint32_t in_addr_t;
 // Iphlpapi.h depends on Winsock2.h
 #define WIN_32_LEAN_AND_MEAN
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Iphlpapi.h>
 #else
 #include <netinet/in.h>

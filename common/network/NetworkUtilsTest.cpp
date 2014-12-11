@@ -21,7 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #ifdef _WIN32
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #endif
 
 #include <string>

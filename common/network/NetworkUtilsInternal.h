@@ -27,7 +27,7 @@
 
 #ifdef HAVE_WINSOCK2_H
 #define VC_EXTRALEAN
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #endif
 
 #ifdef HAVE_ARPA_INET_H

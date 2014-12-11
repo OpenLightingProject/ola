@@ -25,7 +25,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
-#include <ola/CleanWindows.h>
+#include <ola/win/CleanWindows.h>
 #endif
 
 #include "ola/Clock.h"

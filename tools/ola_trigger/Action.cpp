@@ -26,7 +26,7 @@
 
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <ola/CleanWindows.h>
+#include <ola/win/CleanWindows.h>
 #include <tchar.h>
 #endif
 

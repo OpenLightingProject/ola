@@ -19,7 +19,7 @@
  */
 
 typedef int socklen_t;
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Lm.h>
 #include <iphlpapi.h>
 #include <unistd.h>

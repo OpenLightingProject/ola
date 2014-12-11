@@ -25,7 +25,7 @@
 #include <string.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <ola/CleanWindows.h>
+#include <ola/win/CleanWindows.h>
 #endif
 
 #if HAVE_CONFIG_H

@@ -32,7 +32,7 @@
 #endif
 
 #ifdef _WIN32
-#include <ola/CleanWinSock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Ws2tcpip.h>
 #include <winioctl.h>
 #include <Mswsock.h>
