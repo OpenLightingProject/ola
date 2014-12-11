@@ -21,7 +21,7 @@
  */
 
 #ifndef INCLUDE_OLA_CLEANWINSOCK2_H_
-#define	INCLUDE_OLA_CLEANWINSOCK2_H_
+#define INCLUDE_OLA_CLEANWINSOCK2_H_
 
 #ifdef _WIN32
 #include <Winsock2.h>

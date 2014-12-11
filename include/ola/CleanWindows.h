@@ -20,7 +20,7 @@
  */
 
 #ifndef INCLUDE_OLA_CLEANWINDOWS_H_
-#define	INCLUDE_OLA_CLEANWINDOWS_H_
+#define INCLUDE_OLA_CLEANWINDOWS_H_
 
 #ifdef _WIN32
 #include <windows.h>
