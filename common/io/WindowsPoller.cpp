@@ -25,7 +25,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
-#include <Winsock2.h>
+#include <ola/CleanWinSock2.h>
 
 
 #include <algorithm>

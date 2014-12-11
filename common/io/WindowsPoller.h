@@ -27,7 +27,7 @@
 #include <ola/io/Descriptor.h>
 
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <ola/CleanWindows.h>
 
 #include <map>
 #include <utility>

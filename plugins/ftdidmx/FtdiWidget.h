@@ -31,7 +31,7 @@
 
 #ifdef FTD2XX
 #  ifdef WIN32
-#    include <windows.h>
+#    include <ola/CleanWindows.h>
 #  endif
 #  include <ftd2xx.h>
 #else
