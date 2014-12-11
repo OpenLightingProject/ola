@@ -127,7 +127,7 @@ void ArduinoWidgetImpl::SendRDMRequest(
     data_size++;
     m_rdm_request_callback = on_complete;
     m_pending_request = request;
-    if ((this->SendMessage)(RDM_REQUEST_LABEL, data, data_size)) {
+    if (SendMessage(RDM_REQUEST_LABEL, data, data_size)) {
       delete[] data;
       return;
     }
