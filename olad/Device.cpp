@@ -197,8 +197,8 @@ bool Device::GenericAddPort(PortClass *port,
     return false;
 
   if (!STLInsertIfNotPresent(port_map, port->PortId(), port)) {
-    OLA_WARN << "Attempt to insert a port but this port id is already " <<
-      "associated with a different port.";
+    OLA_WARN << "Attempt to insert a port but this port id is already "
+      << "associated with a different port.";
   }
   return true;
 }

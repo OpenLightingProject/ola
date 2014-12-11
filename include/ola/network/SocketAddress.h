@@ -35,10 +35,6 @@
 #ifdef _WIN32
 #define VC_EXTRALEAN
 #include <ola/CleanWinSock2.h>
-#  ifdef SendMessage
-     // SendMessage interferes with many sections of code, undefine it here.
-#    undef SendMessage
-#  endif
 #else
 #include <sys/socket.h>
 #endif
