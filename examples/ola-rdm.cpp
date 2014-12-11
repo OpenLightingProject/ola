@@ -136,7 +136,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help for get_pid
  */
 void DisplayGetPidHelp(const options &opts) {
-  cout << "usage: " << opts.cmd <<
+  cout << "Usage: " << opts.cmd <<
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Get the value of a pid for a device.\n"
@@ -156,7 +156,7 @@ void DisplayGetPidHelp(const options &opts) {
  * Display the help for set_pid
  */
 void DisplaySetPidHelp(const options &opts) {
-  cout << "usage: " << opts.cmd <<
+  cout << "Usage: " << opts.cmd <<
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Set the value of a pid for a device.\n"
