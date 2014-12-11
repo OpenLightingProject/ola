@@ -26,6 +26,7 @@ before_install:
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
 
 after_success:
+  - cat /home/travis/build/${PROJECT_NAME}/cov-int/scm_log.txt
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
