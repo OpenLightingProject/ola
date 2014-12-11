@@ -44,7 +44,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <ola/CleanWinSock2.h>
-#endif
 #else
 #include <sys/resource.h>
 #endif
