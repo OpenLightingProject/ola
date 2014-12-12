@@ -293,10 +293,10 @@ void SimpleE133Controller::SocketClosed(IPV4SocketAddress peer) {
 /**
  * Interupt handler
  */
-static void InteruptSignal(int unused) {
-  if (controller)
+static void InteruptSignal(OLA_UNUSED int unused) {
+  if (controller) {
     controller->Stop();
-  (void) unused;
+  }
 }
 
 int main(int argc, char *argv[]) {

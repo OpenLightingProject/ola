@@ -185,10 +185,10 @@ SimpleE133Device *device = NULL;
 /**
  * Interupt handler
  */
-static void InteruptSignal(int unused) {
-  if (device)
+static void InteruptSignal(OLA_UNUSED int unused) {
+  if (device) {
     device->Stop();
-  (void) unused;
+  }
 }
 
 int main(int argc, char *argv[]) {

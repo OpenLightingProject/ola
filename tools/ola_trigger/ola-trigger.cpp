@@ -78,9 +78,11 @@ typedef vector<Slot*> SlotList;
 #ifndef _WIN32
 static void CatchSIGCHLD(OLA_UNUSED int signo) {
   pid_t pid;
+  int old_errno = errno;
   do {
     pid = waitpid(-1, NULL, WNOHANG);
   } while (pid > 0);
+  errno = old_errno;
 }
 #endif
 
@@ -101,39 +103,14 @@ static void CatchSIGINT(OLA_UNUSED int signo) {
  * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
-#ifdef WIN32
+#ifndef WIN32
   // There's no SIGCHILD on Windows
-  if (signal(SIGINT, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
-  if (signal(SIGTERM, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
-    OLA_WARN << "Failed to install signal SIGTERM";
-    return false;
-  }
-#else
-  struct sigaction act, oact;
-
-  act.sa_handler = CatchSIGCHLD;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGCHLD, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGCHLD";
-    return false;
-  }
-
-  act.sa_handler = CatchSIGINT;
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
-  if (sigaction(SIGTERM, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGTERM";
+  if (!ola::InstallSignal(SIGCHLD, CatchSIGCHLD)) {
     return false;
   }
 #endif
-  return true;
+  return ola::InstallSignal(SIGINT, CatchSIGINT) &&
+         ola::InstallSignal(SIGTERM, CatchSIGINT);
 }
 
 

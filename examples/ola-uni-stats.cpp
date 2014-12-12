@@ -234,10 +234,10 @@ void UniverseTracker::RegisterComplete(const string &error) {
 
 SelectServer *ss = NULL;
 
-static void InteruptSignal(int unused) {
-  if (ss)
+static void InteruptSignal(OLA_UNUSED int sig) {
+  if (ss) {
     ss->Terminate();
-  (void) unused;
+  }
 }
 
 

@@ -83,10 +83,10 @@ SimpleE133Node *simple_node;
 /*
  * Terminate cleanly on interrupt.
  */
-static void InteruptSignal(int signo) {
-  if (simple_node)
+static void InteruptSignal(OLA_UNUSED int signo) {
+  if (simple_node) {
     simple_node->Stop();
-  (void) signo;
+  }
 }
 
 void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
