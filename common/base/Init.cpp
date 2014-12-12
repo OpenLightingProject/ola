@@ -36,6 +36,7 @@
 #include <execinfo.h>
 #endif
 
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -74,13 +75,12 @@ using std::cout;
 using std::endl;
 using std::string;
 
-#if HAVE_DECL_RLIMIT_RTTIME
 /*
  * @private
- * @brief Print a stack trace if we exceed CPU time.
+ * @brief Print a stack trace.
  */
-static void _SIGXCPU_Handler(OLA_UNUSED int signal) {
-  cout << "Received SIGXCPU" << endl;
+static void _DumpStackAndExit(int sig) {
+  cout << "Received " << strsignal(sig)  << endl;
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
   void *array[STACK_SIZE];
@@ -90,7 +90,6 @@ static void _SIGXCPU_Handler(OLA_UNUSED int signal) {
   #endif
   exit(ola::EXIT_SOFTWARE);
 }
-#endif
 
 bool SetThreadScheduling() {
   string policy_str = FLAGS_scheduler_policy.str();
@@ -163,8 +162,7 @@ bool SetThreadScheduling() {
     return false;
   }
 
-  if (!ola::InstallSignal(SIGXCPU, _SIGXCPU_Handler)) {
-    OLA_WARN << "Failed to install signal SIGXCPU";
+  if (!ola::InstallSignal(SIGXCPU, _DumpStackAndExit)) {
     return false;
   }
 #endif
@@ -183,22 +181,6 @@ using std::cout;
 using std::endl;
 using std::string;
 
-/**
- * @private
- * Print a stack trace on seg fault.
- */
-static void _SIGSEGV_Handler(OLA_UNUSED int signal) {
-  cout << "Received SIGSEGV or SIGBUS" << endl;
-  #ifdef HAVE_EXECINFO_H
-  enum {STACK_SIZE = 64};
-  void *array[STACK_SIZE];
-  size_t size = backtrace(array, STACK_SIZE);
-
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
-  #endif
-  exit(EXIT_SOFTWARE);
-}
-
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
@@ -208,7 +190,6 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
     InitExportMap(argc, argv, export_map);
   return SetThreadScheduling() && NetworkInit();
 }
-
 
 bool ServerInit(int *argc,
                 char *argv[],
@@ -263,10 +244,10 @@ bool NetworkInit() {
 #endif
 }
 
-bool InstallSignal(int signal, void(*fp)(int signo)) {
+bool InstallSignal(int sig, void(*fp)(int signo)) {
 #ifdef _WIN32
-  if (::signal(signal, fp) == SIG_ERR) {
-    OLA_WARN << "Failed to install signal for " << signal;
+  if (::signal(sig, fp) == SIG_ERR) {
+    OLA_WARN << "signal(" << strsignal(sig) << ": " << strerror(errno);
     return false;
   }
 #else
@@ -275,8 +256,8 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
   sigemptyset(&action.sa_mask);
   action.sa_flags = 0;
 
-  if (sigaction(signal, &action, NULL) < 0) {
-    OLA_WARN << "Failed to install signal for " << signal;
+  if (sigaction(sig, &action, NULL) < 0) {
+    OLA_WARN << "sigaction(" << strsignal(sig) << ": " << strerror(errno);
     return false;
   }
 #endif  // _WIN32
@@ -285,13 +266,11 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
 
 bool InstallSEGVHandler() {
 #ifndef _WIN32
-  if (!InstallSignal(SIGBUS, _SIGSEGV_Handler)) {
-    OLA_WARN << "Failed to install signal SIGBUS";
+  if (!InstallSignal(SIGBUS, _DumpStackAndExit)) {
     return false;
   }
 #endif  // !_WIN32
-  if (!InstallSignal(SIGSEGV, _SIGSEGV_Handler)) {
-    OLA_WARN << "Failed to install signal SIGSEGV";
+  if (!InstallSignal(SIGSEGV, _DumpStackAndExit)) {
     return false;
   }
   return true;

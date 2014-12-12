@@ -20,6 +20,7 @@
  * I'm using this for scale testing.
  */
 
+#include <errno.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Constants.h>
@@ -185,10 +186,12 @@ SimpleE133Device *device = NULL;
 /**
  * Interupt handler
  */
-static void InteruptSignal(int unused) {
-  if (device)
+static void InteruptSignal(OLA_UNUSED int signo) {
+  int old_errno = errno;
+  if (device) {
     device->Stop();
-  (void) unused;
+  }
+  errno = old_errno;
 }
 
 int main(int argc, char *argv[]) {
