@@ -576,10 +576,10 @@ class WindowsSerialDescriptor : public ConnectedDescriptor {
   DescriptorHandle ReadDescriptor() const { return m_handle; }
   DescriptorHandle WriteDescriptor() const { return m_handle; }
 
-protected:
+ protected:
   bool IsSocket() const { return false; }
 
-private:
+ private:
   DescriptorHandle m_handle;
   DISALLOW_COPY_AND_ASSIGN(WindowsSerialDescriptor);
 };

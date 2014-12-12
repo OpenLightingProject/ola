@@ -322,7 +322,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     EventHolder* event_holder;
 
     switch (descriptor->type) {
-      case SERIAL_DESCRIPTOR:
+      case SERIAL_DESCRIPTOR: // Fall through to PIPE descriptor
       case PIPE_DESCRIPTOR:
         if (descriptor->connected_descriptor) {
           descriptor_handle =
@@ -517,7 +517,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       continue;
     }
     if (descriptor->type != PIPE_DESCRIPTOR &&
-            descriptor->type != SERIAL_DESCRIPTOR) {
+        descriptor->type != SERIAL_DESCRIPTOR) {
       continue;
     }
     DescriptorHandle handle =

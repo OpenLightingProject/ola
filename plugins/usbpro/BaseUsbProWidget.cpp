@@ -125,18 +125,18 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
  * Open a path and apply the settings required for talking to widgets.
  */
 ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
-    const string &path) {
+  const string &path) {
 #ifdef _WIN32
-    ola::io::WindowsSerialDescriptor *sd =
+  ola::io::WindowsSerialDescriptor *sd =
       new ola::io::WindowsSerialDescriptor();
 
-    if(!sd->Init(path)) {
-        delete sd;
-        return NULL;
-    }
+  if (!sd->Init(path)) {
+    delete sd;
+    return NULL;
+  }
 
-    // Set serial parameters
-    return sd;
+  // TODO(Sean) Add serial parameters
+  return sd;
 #else
   struct termios newtio;
   int fd;
