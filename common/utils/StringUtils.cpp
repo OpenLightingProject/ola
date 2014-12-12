@@ -397,6 +397,7 @@ void CapitalizeLabel(string *s) {
   for (string::iterator iter = s->begin(); iter != s->end(); ++iter) {
     switch (*iter) {
       case '-':
+        // fall through, also convert to space
       case '_':
         *iter = ' ';
       case ' ':
