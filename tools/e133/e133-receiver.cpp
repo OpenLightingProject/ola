@@ -24,6 +24,7 @@
 #include <config.h>
 #endif
 
+#include <errno.h>
 #include <signal.h>
 
 #include <ola/acn/ACNPort.h>
@@ -84,9 +85,11 @@ SimpleE133Node *simple_node;
  * Terminate cleanly on interrupt.
  */
 static void InteruptSignal(OLA_UNUSED int signo) {
+  int old_errno = errno;
   if (simple_node) {
     simple_node->Stop();
   }
+  errno = old_errno;
 }
 
 void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {

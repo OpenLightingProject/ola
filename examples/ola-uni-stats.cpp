@@ -234,10 +234,12 @@ void UniverseTracker::RegisterComplete(const string &error) {
 
 SelectServer *ss = NULL;
 
-static void InteruptSignal(OLA_UNUSED int sig) {
+static void InteruptSignal(OLA_UNUSED int signo) {
+  int old_errno = errno;
   if (ss) {
     ss->Terminate();
   }
+  errno = old_errno;
 }
 
 

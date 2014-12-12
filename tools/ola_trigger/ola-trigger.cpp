@@ -93,9 +93,11 @@ static void CatchSIGCHLD(OLA_UNUSED int signo) {
 static void CatchSIGINT(OLA_UNUSED int signo) {
   // there is a race condition here if you send the signal before we call Run()
   // it's not a huge deal though.
+  int old_errno = errno;
   if (ss) {
     ss->Terminate();
   }
+  errno = old_errno;
 }
 
 
