@@ -127,7 +127,16 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
 ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
 #ifdef _WIN32
-    return NULL;
+    ola::io::WindowsSerialDescriptor *sd =
+      new ola::io::WindowsSerialDescriptor();
+
+    if(!sd->Init(path)) {
+        delete sd;
+        return NULL;
+    }
+
+    // Set serial parameters
+    return sd;
 #else
   struct termios newtio;
   int fd;

@@ -136,9 +136,9 @@ int ToFD(const DescriptorHandle &handle) {
 }
 
 /**
- * Helper function to create a annonymous pipe
+ * Helper function to create a anonymous pipe
  * @param handle_pair a 2 element array which is updated with the handles
- * @return true if successfull, false otherwise.
+ * @return true if successful, false otherwise.
  */
 bool CreatePipe(DescriptorHandle handle_pair[2]) {
 #ifdef _WIN32
@@ -205,7 +205,6 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
 #endif
   return true;
 }
-
 
 
 // BidirectionalFileDescriptor
@@ -323,7 +322,8 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
 
   ssize_t bytes_sent;
 #ifdef _WIN32
-  if (WriteDescriptor().m_type == PIPE_DESCRIPTOR) {
+  if (WriteDescriptor().m_type == PIPE_DESCRIPTOR ||
+          WriteDescriptor().m_type == SERIAL_DESCRIPTOR) {
     DWORD bytes_written = 0;
     if (!WriteFile(ToHandle(WriteDescriptor()),
                    buffer,
@@ -431,7 +431,8 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
 
   while (data_read < size) {
 #ifdef _WIN32
-    if (ReadDescriptor().m_type == PIPE_DESCRIPTOR) {
+    if (ReadDescriptor().m_type == PIPE_DESCRIPTOR ||
+            ReadDescriptor().m_type == SERIAL_DESCRIPTOR) {
       if (!ReadDescriptor().m_async_data_size) {
         OLA_WARN << "No async data buffer for descriptor " << ReadDescriptor();
         return -1;
@@ -730,5 +731,34 @@ bool DeviceDescriptor::Close() {
   m_handle = INVALID_DESCRIPTOR;
   return ret == 0;
 }
+
+
+#ifdef _WIN32
+bool WindowsSerialDescriptor::Init(const std::string &path) {
+    if (m_handle != INVALID_DESCRIPTOR) {
+        return false;
+    }
+
+    HANDLE serial_file = CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+        0, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+
+    if (!serial_file) {
+      // error opening port; abort
+      OLA_WARN << "Could not open device: " << path;
+      return false;
+    }
+
+    m_handle.m_type = SERIAL_DESCRIPTOR;
+    m_handle.m_handle.m_handle = serial_file;
+    return true;
+}
+
+bool WindowsSerialDescriptor::Close() {
+  if (m_handle != INVALID_DESCRIPTOR) {
+    CloseHandle(ToHandle(m_handle));
+  }
+  return true;
+}
+#endif  // _WIN32
 }  // namespace io
 }  // namespace ola

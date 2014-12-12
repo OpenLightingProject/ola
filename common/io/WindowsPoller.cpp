@@ -185,7 +185,8 @@ bool WindowsPoller::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
   }
 
   if ((descriptor->WriteDescriptor().m_type != SOCKET_DESCRIPTOR) &&
-      (descriptor->WriteDescriptor().m_type != PIPE_DESCRIPTOR)) {
+      (descriptor->WriteDescriptor().m_type != PIPE_DESCRIPTOR) &&
+      (descriptor->WriteDescriptor().m_type != SERIAL_DESCRIPTOR)) {
     OLA_WARN << "Cannot add descriptor " << descriptor << " for writing.";
     return false;
   }
@@ -321,6 +322,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     EventHolder* event_holder;
 
     switch (descriptor->type) {
+      case SERIAL_DESCRIPTOR:
       case PIPE_DESCRIPTOR:
         if (descriptor->connected_descriptor) {
           descriptor_handle =
@@ -514,7 +516,8 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     if (!descriptor->connected_descriptor) {
       continue;
     }
-    if (descriptor->type != PIPE_DESCRIPTOR) {
+    if (descriptor->type != PIPE_DESCRIPTOR &&
+            descriptor->type != SERIAL_DESCRIPTOR) {
       continue;
     }
     DescriptorHandle handle =
