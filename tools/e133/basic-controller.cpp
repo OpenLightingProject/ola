@@ -20,6 +20,7 @@
  * I'm using this for scale testing.
  */
 
+#include <errno.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Constants.h>
@@ -293,10 +294,12 @@ void SimpleE133Controller::SocketClosed(IPV4SocketAddress peer) {
 /**
  * Interupt handler
  */
-static void InteruptSignal(int unused) {
-  if (controller)
+static void InteruptSignal(OLA_UNUSED int signo) {
+  int old_errno = errno;
+  if (controller) {
     controller->Stop();
-  (void) unused;
+  }
+  errno = old_errno;
 }
 
 int main(int argc, char *argv[]) {
