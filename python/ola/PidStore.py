@@ -116,6 +116,16 @@ class Pid(object):
     """Check if this PID allows a command class."""
     return self._requests.get(command_class) is not None
 
+  def GetRequest(self, command_class):
+    return self._requests.get(command_class)
+
+  def ResponseSupported(self, command_class):
+    """Check if this PID responds to a command class."""
+    return self._requests.get(command_class) is not None
+
+  def GetResponse(self, command_class):
+    return self._responses.get(command_class)
+
   def ValidateAddressing(self, args, command_class):
     """Run the validators."""
     validators = self._validators.get(command_class)
@@ -601,6 +611,12 @@ class Group(Atom):
 
     # None for variable sized groups
     self._group_size = self._VerifyStructure()
+
+  def HasAtoms(self):
+    return (len(self._atoms) > 0)
+
+  def GetAtoms(self):
+    return self._atoms
 
   @property
   def min(self):
