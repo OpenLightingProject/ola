@@ -25,7 +25,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <errno.h>
 #include <string.h>
+#ifndef _WIN32
 #include <sys/resource.h>
+#endif
 #include <algorithm>
 
 #include "ola/Logging.h"
@@ -172,7 +174,8 @@ void ThreadTest::testSchedulingOptions() {
     options.priority = max_priority;
     MockThread thread(options);
     OLA_ASSERT_TRUE(RunThread(&thread));
-    OLA_ASSERT_EQ(SCHED_FIFO, thread.GetSchedulingParams().policy);
+    OLA_ASSERT_EQ(static_cast<int>(SCHED_FIFO),
+                  thread.GetSchedulingParams().policy);
     OLA_ASSERT_EQ(max_priority, thread.GetSchedulingParams().priority);
   }
 
@@ -199,7 +202,8 @@ void ThreadTest::testSchedulingOptions() {
     options.priority = max_priority;
     MockThread thread(options);
     OLA_ASSERT_TRUE(RunThread(&thread));
-    OLA_ASSERT_EQ(SCHED_RR, thread.GetSchedulingParams().policy);
+    OLA_ASSERT_EQ(static_cast<int>(SCHED_RR),
+                  thread.GetSchedulingParams().policy);
     OLA_ASSERT_EQ(max_priority, thread.GetSchedulingParams().priority);
   }
 

@@ -45,8 +45,13 @@ bool SetSchedParam(pthread_t thread, int policy,
                    const struct sched_param &param) {
   int r = pthread_setschedparam(thread, policy, &param);
   if (r != 0) {
+#ifdef _WIN32
+    OLA_FATAL << "Unable to set thread scheduling parameters for thread "
+              << thread.p << ": " << strerror(r);
+#else
     OLA_FATAL << "Unable to set thread scheduling parameters for thread "
               << thread << ": " << strerror(r);
+#endif
     return false;
   }
   return true;
