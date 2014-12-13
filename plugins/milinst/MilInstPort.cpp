@@ -25,9 +25,8 @@ namespace plugin {
 namespace milinst {
 
 bool MilInstOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                 uint8_t priority) {
+                                 OLA_UNUSED uint8_t priority) {
   return m_widget->SendDmx(buffer);
-  (void) priority;
 }
 }  // namespace milinst
 }  // namespace plugin

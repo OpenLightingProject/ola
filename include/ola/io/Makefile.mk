@@ -12,6 +12,7 @@ olaioinclude_HEADERS = \
     include/ola/io/MemoryBlock.h \
     include/ola/io/MemoryBlockPool.h \
     include/ola/io/MemoryBuffer.h \
+    include/ola/io/NonBlockingSender.h \
     include/ola/io/OutputBuffer.h \
     include/ola/io/OutputStream.h \
     include/ola/io/SelectServer.h \

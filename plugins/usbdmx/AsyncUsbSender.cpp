@@ -129,7 +129,8 @@ void AsyncUsbSender::FillInterruptTransfer(unsigned char endpoint,
 int AsyncUsbSender::SubmitTransfer() {
   int ret = m_adaptor->SubmitTransfer(m_transfer);
   if (ret) {
-    OLA_WARN << "libusb_submit_transfer returned " << libusb_error_name(ret);
+    OLA_WARN << "libusb_submit_transfer returned "
+             << m_adaptor->ErrorCodeToString(ret);
     if (ret == LIBUSB_ERROR_NO_DEVICE) {
       m_transfer_state = DISCONNECTED;
     }

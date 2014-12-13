@@ -653,7 +653,7 @@ void stdin_ready() {
     case KEY_IC:
       undoprep();
       for (n = ola::DMX_UNIVERSE_SIZE - 1; n > current_channel && n > 0; n--)
-        dmx[n]=dmx[n - 1];
+        dmx[n] = dmx[n - 1];
       setall();
       break;
 

@@ -448,6 +448,15 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
         request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
         request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 
+    if (m_output_ports.empty()) {
+      vector<string> packets;
+      callback->Run(
+          is_dub ? ola::rdm::RDM_TIMEOUT : ola::rdm::RDM_WAS_BROADCAST,
+          NULL, packets);
+      delete request;
+      return;
+    }
+
     // send this request to all ports
     broadcast_request_tracker *tracker = new broadcast_request_tracker;
     tracker->expected_count = m_output_ports.size();

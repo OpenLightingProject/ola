@@ -437,11 +437,15 @@ uint8_t ArtNetNodeImpl::GetOutputPortUniverse(uint8_t port_id) {
 
 void ArtNetNodeImpl::DisableOutputPort(uint8_t port_id) {
   OutputPort *port = GetOutputPort(port_id);
+  if (!port) {
+    return;
+  }
+
   bool was_enabled = port->enabled;
-  if (port)
-    port->enabled = false;
-  if (was_enabled)
+  port->enabled = false;
+  if (was_enabled) {
     SendPollReplyIfRequired();
+  }
 }
 
 bool ArtNetNodeImpl::OutputPortState(uint8_t port_id) const {

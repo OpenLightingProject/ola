@@ -91,6 +91,7 @@ void LibUsbThreadTest::testHotplug() {
                                                   NULL);
   OLA_ASSERT_TRUE(thread.Init());
   AttemptDeviceOpen(&thread);
+  thread.Shutdown();
 }
 #endif
 

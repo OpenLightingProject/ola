@@ -19,24 +19,24 @@
 
 #include <ola/Logging.h>
 #include <ola/io/IOStack.h>
+#include <ola/io/NonBlockingSender.h>
 
 #include "plugins/e131/e131/RootSender.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/MessageQueue.h"
 
 using ola::io::IOStack;
 
 /**
  * Create a new E1.33 Health Checked Connection.
  * @param message_builder the MessageBuilder to use to create packets.
- * @param message_queue the MessageQueue to use to send packets.
+ * @param message_queue the NonBlockingSender to use to send packets.
  * @param on_timeout the callback to run when the heartbeats don't arrive
  * @param scheduler A SchedulerInterface used to control the timers
  * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
   ola::e133::MessageBuilder *message_builder,
-  MessageQueue *message_queue,
+  ola::io::NonBlockingSender *message_queue,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulingExecutorInterface *scheduler,
   const ola::TimeInterval heartbeat_interval)

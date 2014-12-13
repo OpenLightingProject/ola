@@ -193,10 +193,12 @@ class Flag<bool> : public BaseFlag {
         m_has_arg(has_arg) {
       if (!has_arg && default_value) {
         // prefix the long option with 'no'
-        size_t total_size = strlen(NO_PREFIX) + strlen(name) + 1;
-        char* new_name = new char[total_size];
-        strncpy(new_name, NO_PREFIX, strlen(NO_PREFIX) + 1);
-        strncat(new_name, name, total_size);
+        size_t prefix_size = strlen(NO_PREFIX);
+        size_t name_size = strlen(name);
+        char* new_name = new char[prefix_size + name_size + 1];
+        memcpy(new_name, NO_PREFIX, prefix_size);
+        memcpy(new_name + prefix_size, name, name_size);
+        new_name[prefix_size + name_size] = 0;
         ReplaceUnderscoreWithHyphen(new_name);
         m_name = new_name;
       } else {

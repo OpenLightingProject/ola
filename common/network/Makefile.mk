@@ -12,6 +12,7 @@ common_libolacommon_la_SOURCES += \
     common/network/NetworkUtilsInternal.h \
     common/network/Socket.cpp \
     common/network/SocketAddress.cpp \
+    common/network/SocketCloser.cpp \
     common/network/SocketHelper.cpp \
     common/network/SocketHelper.h \
     common/network/TCPConnector.cpp \

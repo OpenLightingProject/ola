@@ -50,6 +50,9 @@
  * @namespace ola::plugin::ftdidmx
  * @brief Code for FTDI devices.
  *
+ * @namespace ola::plugin::gpio
+ * @brief The General Purpose digital I/O Plugin.
+ *
  * @namespace ola::plugin::karate
  * @brief Code for Karate devices.
  *
@@ -61,6 +64,9 @@
  *
  * @namespace ola::plugin::opendmx
  * @brief Code for the Enttec OpenDMX.
+ *
+ * @namespace ola::plugin::openpixelcontrol
+ * @brief The Open Pixel Control (OPC) plugin.
  *
  * @namespace ola::plugin::osc
  * @brief Code for the OSC protocol.
