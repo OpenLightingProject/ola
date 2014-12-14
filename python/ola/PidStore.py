@@ -119,6 +119,10 @@ class Pid(object):
   def GetRequest(self, command_class):
     return self._requests.get(command_class)
 
+  def GetRequestField(self, command_class, field_name):
+    return filter(lambda field: field.name == field_name,
+                  self._requests.get(command_class).GetAtoms())[0]
+
   def ResponseSupported(self, command_class):
     """Check if this PID responds to a command class."""
     return self._requests.get(command_class) is not None
@@ -328,33 +332,8 @@ class IntAtom(FixedSizeAtom):
     value = self._labels.get(arg)
 
     # not a labeled value
-    if value is None and self._multiplier >= 0:
-      try:
-        value = int(args[0])
-      except ValueError, e:
-        raise ArgsValidationError(e)
-
-      multiplier = 10 ** self._multiplier
-      if value % multiplier:
-        raise ArgsValidationError('Conversion will lose data: %d -> %d' %
-                                  (value, (value / multiplier * multiplier)))
-      value = value / multiplier
-
-    elif value is None:
-      try:
-        value = float(args[0])
-      except ValueError, e:
-        raise ArgsValidationError(e)
-
-      scaled_value = value * 10 ** abs(self._multiplier)
-
-      fraction, int_value = math.modf(scaled_value)
-
-      if fraction:
-        raise ArgsValidationError(
-            'Conversion will lose data: %s -> %s' %
-            (value, int_value * (10.0 ** self._multiplier)))
-      value = int(int_value)
+    if value is None:
+      value = self._AccountForMultiplierPack(args[0])
 
     for range in self._ranges:
       if range.Matches(value):
@@ -366,7 +345,7 @@ class IntAtom(FixedSizeAtom):
     return super(IntAtom, self).Pack([value])
 
   def Unpack(self, data):
-    return self._AccountForMultiplier(super(IntAtom, self).Unpack(data))
+    return self._AccountForMultiplierUnpack(super(IntAtom, self).Unpack(data))
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -377,8 +356,11 @@ class IntAtom(FixedSizeAtom):
     return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
                                increment))
 
-  def ConvertRawValue(self, value):
-    return self._AccountForMultiplier(value)
+  def ConvertFromRawValue(self, value):
+    return self._AccountForMultiplierUnpack(value)
+
+  def ConvertToRawValue(self, value):
+    return self._AccountForMultiplierPack(value)
 
   def _GetAllowedRanges(self):
     values = self._labels.keys()
@@ -394,12 +376,42 @@ class IntAtom(FixedSizeAtom):
     return ('%s' % ', '.join(values))
 
 
-  def _AccountForMultiplier(self, value):
+  def _AccountForMultiplierUnpack(self, value):
     new_value = value * (10 ** self._multiplier)
     if self._multiplier < 0:
       new_value = round(new_value, abs(self._multiplier))
     return new_value
 
+  def _AccountForMultiplierPack(self, value):
+    if self._multiplier >= 0:
+      try:
+        new_value = int(value)
+      except ValueError, e:
+        raise ArgsValidationError(e)
+
+      multiplier = 10 ** self._multiplier
+      if new_value % multiplier:
+        raise ArgsValidationError(
+            'Conversion will lose data: %d -> %d' %
+            (new_value, (new_value / multiplier * multiplier)))
+      new_value = new_value / multiplier
+
+    else:
+      try:
+        new_value = float(value)
+      except ValueError, e:
+        raise ArgsValidationError(e)
+
+      scaled_value = new_value * 10 ** abs(self._multiplier)
+
+      fraction, int_value = math.modf(scaled_value)
+
+      if fraction:
+        raise ArgsValidationError(
+            'Conversion will lose data: %s -> %s' %
+            (new_value, int_value * (10.0 ** self._multiplier)))
+      new_value = int(int_value)
+    return new_value
 
 class Int8(IntAtom):
   """A single signed byte field."""
