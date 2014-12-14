@@ -488,8 +488,14 @@ void *HTTPServer::Run() {
 
   OLA_INFO << "HTTP Server started on port " << m_port;
 
+#ifdef _WIN32
+  // set a short poll interval since we'd block too long otherwise.
+  // TODO investigate why the WindowsPoller does not wake up on HTTP requests.
+  m_select_server.SetDefaultInterval(TimeInterval(1, 0));
+#else
   // set a long poll interval so we don't spin
   m_select_server.SetDefaultInterval(TimeInterval(60, 0));
+#endif
   m_select_server.Run();
 
   // clean up any remaining sockets
