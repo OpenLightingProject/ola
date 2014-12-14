@@ -126,6 +126,10 @@ class Pid(object):
   def GetResponse(self, command_class):
     return self._responses.get(command_class)
 
+  def GetResponseField(self, command_class, field_name):
+    return filter(lambda field: field.name == field_name,
+                  self._responses.get(command_class).GetAtoms())[0]
+
   def ValidateAddressing(self, args, command_class):
     """Run the validators."""
     validators = self._validators.get(command_class)
@@ -372,6 +376,9 @@ class IntAtom(FixedSizeAtom):
 
     return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
                                increment))
+
+  def ConvertRawValue(self, value):
+    return self._AccountForMultiplier(value)
 
   def _GetAllowedRanges(self):
     values = self._labels.keys()

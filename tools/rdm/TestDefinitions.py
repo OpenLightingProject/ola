@@ -5940,7 +5940,7 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
   def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
     for key in ['min_%s' % key, 'max_%s' % key]:
       if not (self.IsSupported(pid_name) or
-              fields[key] == filter(lambda field: field.name == key, self.pid.GetResponse(RDM_GET).GetAtoms())[0]._AccountForMultiplier(0xffff)):
+              fields[key] == self.pid.GetResponseField(RDM_GET, key).ConvertRawValue(0xffff)):
         self.AddWarning(
             '%s not supported, but %s in PRESET_INFO is not 0xffff' %
             (pid_name, key))
