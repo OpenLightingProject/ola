@@ -80,7 +80,11 @@ using std::string;
  * @brief Print a stack trace.
  */
 static void _DumpStackAndExit(int sig) {
-  cout << "Received " << strsignal(sig)  << endl;
+#ifdef _WIN32
+  cout << "Received " << sig << endl;
+#else
+  cout << "Received " << strsignal(sig) << endl;
+#endif
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
   void *array[STACK_SIZE];
@@ -247,7 +251,7 @@ bool NetworkInit() {
 bool InstallSignal(int sig, void(*fp)(int signo)) {
 #ifdef _WIN32
   if (::signal(sig, fp) == SIG_ERR) {
-    OLA_WARN << "signal(" << strsignal(sig) << ": " << strerror(errno);
+    OLA_WARN << "signal(" << sig << ": " << strerror(errno);
     return false;
   }
 #else
