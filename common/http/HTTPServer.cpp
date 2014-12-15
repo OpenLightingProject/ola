@@ -490,7 +490,7 @@ void *HTTPServer::Run() {
 
 #ifdef _WIN32
   // set a short poll interval since we'd block too long otherwise.
-  // TODO(LE) investigate why the poller does not wake up on HTTP requests.
+  // TODO(Lukas) investigate why the poller does not wake up on HTTP requests.
   m_select_server.SetDefaultInterval(TimeInterval(1, 0));
 #else
   // set a long poll interval so we don't spin
