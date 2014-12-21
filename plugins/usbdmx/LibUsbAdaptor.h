@@ -533,13 +533,6 @@ class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
                       uint16_t wLength,
                       unsigned int timeout);
 
-  int BulkTransfer(struct libusb_device_handle *dev_handle,
-                   unsigned char endpoint,
-                   unsigned char *data,
-                   int length,
-                   int *transferred,
-                   unsigned int timeout);
-
   int InterruptTransfer(libusb_device_handle *dev_handle,
                         unsigned char endpoint,
                         unsigned char *data,

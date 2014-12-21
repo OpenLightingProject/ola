@@ -355,17 +355,6 @@ int AsyncronousLibUsbAdaptor::ControlTransfer(
   return LIBUSB_ERROR_NOT_SUPPORTED;
 }
 
-int AsyncronousLibUsbAdaptor::BulkTransfer(
-    OLA_UNUSED struct libusb_device_handle *dev_handle,
-    OLA_UNUSED unsigned char endpoint,
-    OLA_UNUSED unsigned char *data,
-    OLA_UNUSED int length,
-    OLA_UNUSED int *transferred,
-    OLA_UNUSED unsigned int timeout) {
-  OLA_WARN << "libusb_bulk_transfer in an AsyncronousLibUsbAdaptor";
-  return LIBUSB_ERROR_NOT_SUPPORTED;
-}
-
 int AsyncronousLibUsbAdaptor::InterruptTransfer(
     OLA_UNUSED libusb_device_handle *dev_handle,
     OLA_UNUSED unsigned char endpoint,
