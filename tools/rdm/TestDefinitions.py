@@ -725,7 +725,8 @@ class GetSupportedParameters(ResponderTestFixture):
         continue
 
       supported_parameters.append(param_id)
-      if param_id >= RDM_MANUFACTURER_PID_MIN and param_id <= RDM_MANUFACTURER_PID_MAX:
+      if (param_id >= RDM_MANUFACTURER_PID_MIN and
+          param_id <= RDM_MANUFACTURER_PID_MAX):
         manufacturer_parameters.append(param_id)
 
     pid_store = PidStore.GetStore()
@@ -4645,13 +4646,15 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
     delay_time_field = self.pid.GetRequestField(RDM_SET, 'startup_delay')
     # 0xffff means 'startup mode not supported'
     if delay_time_field.RawValue(self.max_delay_time) < (0xffff - 1):
-      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
+      delay_time = delay_time_field.DisplayValue(
+          delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
 
     hold_time = self.max_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'startup mode not supported'
     if hold_time_field.RawValue(self.max_hold_time) < (0xffff - 1):
-      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
+      hold_time = hold_time_field.DisplayValue(
+          hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
@@ -4687,14 +4690,18 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     delay_time = self.min_delay_time
     delay_time_field = self.pid.GetRequestField(RDM_SET, 'startup_delay')
     # 0xffff means 'startup mode not supported'
-    if delay_time_field.RawValue(self.min_delay_time) > 1 and delay_time_field.RawValue(self.min_delay_time) < 0xffff:
-      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
+    if (delay_time_field.RawValue(self.min_delay_time) > 1 and
+        delay_time_field.RawValue(self.min_delay_time) < 0xffff):
+      delay_time = delay_time_field.DisplayValue(
+          delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
 
     hold_time = self.min_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'startup mode not supported'
-    if hold_time_field.RawValue(self.min_hold_time) > 1 and hold_time_field.RawValue(self.min_hold_time) < 0xffff:
-      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
+    if (hold_time_field.RawValue(self.min_hold_time) > 1 and
+        hold_time_field.RawValue(self.min_hold_time) < 0xffff):
+      hold_time = hold_time_field.DisplayValue(
+          hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
