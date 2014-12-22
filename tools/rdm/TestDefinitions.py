@@ -4386,14 +4386,14 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
     delay_time = self.max_delay_time
     delay_time_field = self.pid.GetRequestField(RDM_SET, 'loss_of_signal_delay')
     # 0xffff means 'fail mode not supported'
-    if delay_time_field.ConvertToRawValue(self.max_delay_time) < (0xffff - 1):
-      delay_time = delay_time_field.ConvertFromRawValue(delay_time_field.ConvertToRawValue(self.max_delay_time) + 1)  # increment by 1
+    if delay_time_field.RawValue(self.max_delay_time) < (0xffff - 1):
+      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
 
     hold_time = self.max_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'fail mode not supported'
-    if hold_time_field.ConvertToRawValue(self.max_hold_time) < (0xffff - 1):
-      hold_time = hold_time_field.ConvertFromRawValue(hold_time_field.ConvertToRawValue(self.max_hold_time) + 1)  # increment by 1
+    if hold_time_field.RawValue(self.max_hold_time) < (0xffff - 1):
+      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
@@ -4429,14 +4429,14 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
     delay_time = self.min_delay_time
     delay_time_field = self.pid.GetRequestField(RDM_SET, 'loss_of_signal_delay')
     # 0xffff means 'fail mode not supported'
-    if delay_time_field.ConvertToRawValue(self.min_delay_time) > 1 and delay_time_field.ConvertToRawValue(self.min_delay_time) < 0xffff:
-      delay_time = delay_time_field.ConvertFromRawValue(delay_time_field.ConvertToRawValue(self.min_delay_time) - 1)  # decrement by 1
+    if delay_time_field.RawValue(self.min_delay_time) > 1 and delay_time_field.RawValue(self.min_delay_time) < 0xffff:
+      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
 
     hold_time = self.min_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'fail mode not supported'
-    if hold_time_field.ConvertToRawValue(self.min_hold_time) > 1 and hold_time_field.ConvertToRawValue(self.min_hold_time) < 0xffff:
-      hold_time = hold_time_field.ConvertFromRawValue(hold_time_field.ConvertToRawValue(self.min_hold_time) - 1)  # decrement by 1
+    if hold_time_field.RawValue(self.min_hold_time) > 1 and hold_time_field.RawValue(self.min_hold_time) < 0xffff:
+      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
@@ -4644,14 +4644,14 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
     delay_time = self.max_delay_time
     delay_time_field = self.pid.GetRequestField(RDM_SET, 'startup_delay')
     # 0xffff means 'startup mode not supported'
-    if delay_time_field.ConvertToRawValue(self.max_delay_time) < (0xffff - 1):
-      delay_time = delay_time_field.ConvertFromRawValue(delay_time_field.ConvertToRawValue(self.max_delay_time) + 1)  # increment by 1
+    if delay_time_field.RawValue(self.max_delay_time) < (0xffff - 1):
+      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
 
     hold_time = self.max_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'startup mode not supported'
-    if hold_time_field.ConvertToRawValue(self.max_hold_time) < (0xffff - 1):
-      hold_time = hold_time_field.ConvertFromRawValue(hold_time_field.ConvertToRawValue(self.max_hold_time) + 1)  # increment by 1
+    if hold_time_field.RawValue(self.max_hold_time) < (0xffff - 1):
+      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
@@ -4687,14 +4687,14 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     delay_time = self.min_delay_time
     delay_time_field = self.pid.GetRequestField(RDM_SET, 'startup_delay')
     # 0xffff means 'startup mode not supported'
-    if delay_time_field.ConvertToRawValue(self.min_delay_time) > 1 and delay_time_field.ConvertToRawValue(self.min_delay_time) < 0xffff:
-      delay_time = delay_time_field.ConvertFromRawValue(delay_time_field.ConvertToRawValue(self.min_delay_time) - 1)  # decrement by 1
+    if delay_time_field.RawValue(self.min_delay_time) > 1 and delay_time_field.RawValue(self.min_delay_time) < 0xffff:
+      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
 
     hold_time = self.min_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'startup mode not supported'
-    if hold_time_field.ConvertToRawValue(self.min_hold_time) > 1 and hold_time_field.ConvertToRawValue(self.min_hold_time) < 0xffff:
-      hold_time = hold_time_field.ConvertFromRawValue(hold_time_field.ConvertToRawValue(self.min_hold_time) - 1)  # decrement by 1
+    if hold_time_field.RawValue(self.min_hold_time) > 1 and hold_time_field.RawValue(self.min_hold_time) < 0xffff:
+      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
@@ -5948,7 +5948,7 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
   def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
     for key in ['min_%s' % key, 'max_%s' % key]:
       if not (self.IsSupported(pid_name) or
-              fields[key] == self.pid.GetResponseField(RDM_GET, key).ConvertFromRawValue(0xffff)):
+              fields[key] == self.pid.GetResponseField(RDM_GET, key).DisplayValue(0xffff)):
         self.AddWarning(
             '%s not supported, but %s in PRESET_INFO is not 0xffff' %
             (pid_name, key))
@@ -6041,13 +6041,11 @@ class GetPresetStatus(OptionalParameterTestFixture):
     self.min_fade = preset_info.get('min_preset_fade_time', 0)
     self.max_fade = preset_info.get(
         'max_preset_fade_time',
-        self.pid.GetResponseField(RDM_GET,
-                                  'up_fade_time').ConvertToRawValue(0xffff))
+        self.pid.GetResponseField(RDM_GET, 'up_fade_time').RawValue(0xffff))
     self.min_wait = preset_info.get('min_preset_wait_time', 0)
     self.max_wait = preset_info.get(
         'max_preset_wait_time',
-        self.pid.GetResponseField(RDM_GET,
-                                  'wait_time').ConvertToRawValue(0xffff))
+        self.pid.GetResponseField(RDM_GET, 'wait_time').RawValue(0xffff))
 
     if self.max_scene is None or self.max_scene == 0:
       self.SetNotRun('No scenes supported')
@@ -6216,11 +6214,9 @@ class SetPresetStatus(OptionalParameterTestFixture):
       return
 
     self.max_fade = round(self.pid.GetRequestField(
-        RDM_SET,
-        'up_fade_time').ConvertToRawValue(0xffff), 1)
+        RDM_SET, 'up_fade_time').RawValue(0xffff), 1)
     self.max_wait = round(self.pid.GetRequestField(
-        RDM_SET,
-        'wait_time').ConvertToRawValue(0xffff), 1)
+        RDM_SET, 'wait_time').RawValue(0xffff), 1)
     preset_info = self.Property('preset_info')
     if preset_info is not None:
       self.max_fade = round(preset_info['max_preset_fade_time'], 1)

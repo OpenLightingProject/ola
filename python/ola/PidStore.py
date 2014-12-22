@@ -356,10 +356,20 @@ class IntAtom(FixedSizeAtom):
     return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
                                increment))
 
-  def ConvertFromRawValue(self, value):
+  def DisplayValue(self, value):
+    """Converts a raw value, e.g. UInt16 (as opposed to an array of bytes) into
+    the value it would be displayed as, e.g. float to 1 D.P.
+
+    This takes into account any multipliers set for the field.
+    """
     return self._AccountForMultiplierUnpack(value)
 
-  def ConvertToRawValue(self, value):
+  def RawValue(self, value):
+    """Converts a display value, e.g. float to 1 D.P. into a raw value UInt16
+    (as opposed to an array of bytes) it would be transmitted as.
+
+    This takes into account any multipliers set for the field.
+    """
     return self._AccountForMultiplierPack(value)
 
   def _GetAllowedRanges(self):
