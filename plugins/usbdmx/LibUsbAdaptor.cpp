@@ -351,19 +351,22 @@ int AsyncronousLibUsbAdaptor::ControlTransfer(
     OLA_UNUSED unsigned char *data,
     OLA_UNUSED uint16_t wLength,
     OLA_UNUSED unsigned int timeout) {
-  OLA_WARN << "libusb_control_transfer in an AsyncronousLibUsbAdaptor";
-  return LIBUSB_ERROR_NOT_SUPPORTED;
+  OLA_DEBUG << "libusb_control_transfer in an AsyncronousLibUsbAdaptor";
+  return BaseLibUsbAdaptor::ControlTransfer(dev_handle, bmRequestType,
+                                            bRequest, wValue, wIndex, data,
+                                            wLength, timeout);
 }
 
 int AsyncronousLibUsbAdaptor::BulkTransfer(
-    OLA_UNUSED struct libusb_device_handle *dev_handle,
-    OLA_UNUSED unsigned char endpoint,
-    OLA_UNUSED unsigned char *data,
-    OLA_UNUSED int length,
-    OLA_UNUSED int *transferred,
-    OLA_UNUSED unsigned int timeout) {
-  OLA_WARN << "libusb_bulk_transfer in an AsyncronousLibUsbAdaptor";
-  return LIBUSB_ERROR_NOT_SUPPORTED;
+    struct libusb_device_handle *dev_handle,
+    unsigned char endpoint,
+    unsigned char *data,
+    int length,
+    int *transferred,
+    unsigned int timeout) {
+  OLA_DEBUG << "libusb_bulk_transfer in an AsyncronousLibUsbAdaptor";
+  return BaseLibUsbAdaptor::BulkTransfer(dev_handle, endpoint, data, length,
+                                         transferred, timeout);
 }
 
 int AsyncronousLibUsbAdaptor::InterruptTransfer(
@@ -373,8 +376,9 @@ int AsyncronousLibUsbAdaptor::InterruptTransfer(
     OLA_UNUSED int length,
     OLA_UNUSED int *actual_length,
     OLA_UNUSED unsigned int timeout) {
-  OLA_WARN << "libusb_interrupt_transfer in an AsyncronousLibUsbAdaptor";
-  return LIBUSB_ERROR_NOT_SUPPORTED;
+  OLA_DEBUG << "libusb_interrupt_transfer in an AsyncronousLibUsbAdaptor";
+  return BaseLibUsbAdaptor::InterruptTransfer(dev_handle, endpoint, data,
+                                              length, actual_length, timeout);
 }
 }  // namespace usbdmx
 }  // namespace plugin
