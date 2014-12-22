@@ -33,7 +33,7 @@ namespace usbdmx {
 const char EuroliteProFactory::EXPECTED_MANUFACTURER[] = "Eurolite";
 const char EuroliteProFactory::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
 const uint16_t EuroliteProFactory::PRODUCT_ID = 0xfa63;
-const uint16_t EuroliteProFactory::VENDOR_ID = 0x04d;
+const uint16_t EuroliteProFactory::VENDOR_ID = 0x04d8;
 
 
 bool EuroliteProFactory::DeviceAdded(

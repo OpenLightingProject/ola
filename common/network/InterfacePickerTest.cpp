@@ -109,6 +109,8 @@ void InterfacePickerTest::testChooseInterface() {
   // no interfaces
   Interface iface;
   OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, ""));
+  // no interfaces, by index
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, 0));
 
   // now with one iface that doesn't match
   Interface iface1;
