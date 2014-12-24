@@ -211,7 +211,7 @@ void DmxBufferTest::testAssign() {
   size = result_length;
   assignment_buffer2.Get(result, &result_length);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA),
-                       assignment_buffer2.Size());
+                assignment_buffer2.Size());
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), result_length);
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, result_length));
   OLA_ASSERT_TRUE(assignment_buffer2 == buffer);
@@ -439,16 +439,17 @@ void DmxBufferTest::testSetRange() {
   unsigned int offset = 2;
   OLA_ASSERT_TRUE(buffer.SetRange(offset, TEST_DATA, data_size));
   OLA_ASSERT_EQ((unsigned int) data_size + offset,
-                       buffer.Size());
+                buffer.Size());
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), offset));
-  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw() + offset,
-                         buffer.Size() - offset));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA,
+                          buffer.GetRaw() + offset,
+                          buffer.Size() - offset));
 
   // now try writing 1 channel past the valid data
   buffer.Reset();
   OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
   OLA_ASSERT_TRUE(buffer.SetRange(data_size, TEST_DATA,
-                                 data_size));
+                                  data_size));
   OLA_ASSERT_EQ((unsigned int) data_size * 2, buffer.Size());
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
