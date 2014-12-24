@@ -70,8 +70,9 @@ bool FindMatchingFiles(const string &directory,
 bool FindMatchingFiles(const string &directory,
                        const vector<string> &prefixes,
                        vector<string> *files) {
-  if (directory.empty() || prefixes.empty())
+  if (directory.empty() || prefixes.empty()) {
     return true;
+  }
 
 #ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
