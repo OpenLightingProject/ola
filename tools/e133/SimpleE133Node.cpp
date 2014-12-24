@@ -106,7 +106,7 @@ void SimpleE133Node::RemoveEndpoint(uint16_t endpoint_id) {
 /**
  * Called when there is data on stdin.
  */
-void SimpleE133Node::Input(char c) {
+void SimpleE133Node::Input(int c) {
   switch (c) {
     case 'c':
       m_e133_device.CloseTCPConnection();

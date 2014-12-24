@@ -143,6 +143,7 @@ SubDeviceDispatcher::FanOutTracker::FanOutTracker(
     : m_number_of_subdevices(number_of_subdevices),
       m_responses_so_far(0),
       m_callback(callback),
+      m_response_code(RDM_COMPLETED_OK),
       m_response(NULL) {
 }
 
