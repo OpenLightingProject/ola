@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -97,9 +98,13 @@ bool OSCPlugin::StartHook() {
   }
 
   // Finally create the new OSCDevice, start it and register the device.
-  m_device = new OSCDevice(this, m_plugin_adaptor, udp_port,
-                           port_addresses, port_configs);
-  m_device->Start();
+  std::auto_ptr<OSCDevice> device(
+    new OSCDevice(this, m_plugin_adaptor, udp_port, port_addresses,
+                  port_configs));
+  if (!device->Start()) {
+    return false;
+  }
+  m_device = device.release();
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
 }

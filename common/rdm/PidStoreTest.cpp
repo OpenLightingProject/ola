@@ -400,8 +400,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
       GetTestDataFile("pids")));
   OLA_ASSERT_NOT_NULL(root_store.get());
   // check version
-  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774),
-                       root_store->Version());
+  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774), root_store->Version());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();

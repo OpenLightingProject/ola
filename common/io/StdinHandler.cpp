@@ -65,7 +65,7 @@ StdinHandler::~StdinHandler() {
 
 
 void StdinHandler::HandleData() {
-  char c = getchar();
+  int c = getchar();
   if (m_callback.get())
     m_callback->Run(c);
 }

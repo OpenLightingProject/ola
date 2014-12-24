@@ -260,8 +260,15 @@ void SPIDevice::PopulateHardwareBackendOptions(
 
 void SPIDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
-  StringToInt(m_preferences->GetValue(PortCountKey()), &options->outputs);
-  StringToInt(m_preferences->GetValue(SyncPortKey()), &options->sync_output);
+  if (!StringToInt(m_preferences->GetValue(PortCountKey()),
+                                           &options->outputs)) {
+    OLA_WARN << "Invalid integer value for " << PortCountKey();
+  }
+
+  if (!StringToInt(m_preferences->GetValue(SyncPortKey()),
+                                           &options->sync_output)) {
+    OLA_WARN << "Invalid integer value for " << SyncPortKey();
+  }
   if (options->sync_output == -2) {
     options->sync_output = options->outputs - 1;
   }

@@ -35,8 +35,9 @@ extern const char PATH_SEPARATOR;
  * @param[in] prefix the prefix to match on
  * @param[out] files a pointer to a vector with the absolute path of the
  * matching files.
+ * @returns false if there was an error, true otherwise.
  */
-void FindMatchingFiles(const std::string &directory,
+bool FindMatchingFiles(const std::string &directory,
                        const std::string &prefix,
                        std::vector<std::string> *files);
 
@@ -46,8 +47,9 @@ void FindMatchingFiles(const std::string &directory,
  * @param[in] prefixes the prefixes to match on
  * @param[out] files a pointer to a vector with the absolute path of the
  * matching files.
+ * @returns false if there was an error, true otherwise.
  */
-void FindMatchingFiles(const std::string &directory,
+bool FindMatchingFiles(const std::string &directory,
                        const std::vector<std::string> &prefixes,
                        std::vector<std::string> *files);
 
@@ -56,8 +58,9 @@ void FindMatchingFiles(const std::string &directory,
  * the full path to the file.
  * @param[in] directory the directory to list
  * @param[out] files a pointer to a string vector that will receive file paths
+ * @returns false if there was an error, true otherwise.
  */
-void ListDirectory(const std::string& directory,
+bool ListDirectory(const std::string& directory,
                    std::vector<std::string> *files);
 
 /**
