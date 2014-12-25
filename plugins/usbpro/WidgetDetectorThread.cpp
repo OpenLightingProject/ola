@@ -192,7 +192,10 @@ void WidgetDetectorThread::WaitUntilRunning() {
  */
 bool WidgetDetectorThread::RunScan() {
   vector<string> device_paths;
-  ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths);
+  if (!ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths)) {
+    // We want to run the scan next time in case the problem is resolved.
+    return true;
+  }
 
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {

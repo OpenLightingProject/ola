@@ -226,6 +226,10 @@ void DmxBufferTest::testAssign() {
   assignment_buffer3.Get(result, &result_length);
   OLA_ASSERT_EQ(0u, result_length);
   OLA_ASSERT_TRUE(assignment_buffer3 == uninitialized_buffer);
+
+  // Check two buffers differ
+  OLA_ASSERT_TRUE(assignment_buffer3 != assignment_buffer2);
+  OLA_ASSERT_TRUE(buffer != assignment_buffer3);
   delete[] result;
 }
 

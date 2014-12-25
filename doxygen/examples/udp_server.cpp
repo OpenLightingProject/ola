@@ -47,8 +47,12 @@ int main() {
   IPV4SocketAddress listen_address(IPV4Address::WildCard(), PORT);
 
   UDPSocket udp_socket;
-  udp_socket.Init();
-  udp_socket.Bind(listen_address);
+  if (!udp_socket.Init()) {
+    return -1;
+  }
+  if (!udp_socket.Bind(listen_address)) {
+    return -1;
+  }
   udp_socket.SetOnData(ola::NewCallback(&ReceiveMessage, &udp_socket));
 
   ola::io::SelectServer ss;

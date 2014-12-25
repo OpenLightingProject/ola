@@ -159,6 +159,10 @@ class Flag : public BaseFlag {
       m_name = NewCanonicalName(name);
     }
 
+    ~Flag() {
+      delete[] m_name;
+    }
+
     const char *name() const { return m_name; }
     bool has_arg() const { return true; }
     bool default_value() const { return m_default; }
@@ -206,6 +210,10 @@ class Flag<bool> : public BaseFlag {
       }
     }
 
+    ~Flag() {
+      delete[] m_name;
+    }
+
     const char *name() const { return m_name; }
     bool has_arg() const { return m_has_arg; }
     bool default_value() const { return m_default; }
@@ -250,6 +258,10 @@ class Flag<std::string> : public BaseFlag {
         m_default(default_value),
         m_value(default_value) {
       m_name = NewCanonicalName(name);
+    }
+
+    ~Flag() {
+      delete[] m_name;
     }
 
     const char *name() const { return m_name; }
