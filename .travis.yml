@@ -12,6 +12,8 @@ matrix:
       env: TASK='compile'
     - compiler: gcc
       env: TASK='coverage'
+    - compiler: gcc
+      env: TASK='coverity'
     - env: TASK='doxygen'
     - env: TASK='lint'
     - env: TASK='check-licences'
