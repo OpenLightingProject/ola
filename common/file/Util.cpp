@@ -59,19 +59,20 @@ static string ConvertPathSeparators(const string &path) {
   return result;
 }
 
-void FindMatchingFiles(const string &directory,
+bool FindMatchingFiles(const string &directory,
                        const string &prefix,
                        vector<string> *files) {
   vector<string> prefixes;
   prefixes.push_back(prefix);
-  FindMatchingFiles(directory, prefixes, files);
+  return FindMatchingFiles(directory, prefixes, files);
 }
 
-void FindMatchingFiles(const string &directory,
+bool FindMatchingFiles(const string &directory,
                        const vector<string> &prefixes,
                        vector<string> *files) {
-  if (directory.empty() || prefixes.empty())
-    return;
+  if (directory.empty() || prefixes.empty()) {
+    return true;
+  }
 
 #ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
@@ -89,7 +90,7 @@ void FindMatchingFiles(const string &directory,
   if (h_find == INVALID_HANDLE_VALUE) {
     OLA_WARN << "Find first file failed: " << GetLastError() << " for "
              << search_pattern;
-    return;
+    return false;
   }
 
   do {
@@ -110,10 +111,14 @@ void FindMatchingFiles(const string &directory,
   struct dirent *dir_ent_p;
   if ((dp  = opendir(directory.data())) == NULL) {
     OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
-    return;
+    return false;
   }
 
-  readdir_r(dp, &dir_ent, &dir_ent_p);
+  if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
+    OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+    return false;
+  }
+
   while (dir_ent_p != NULL) {
     vector<string>::const_iterator iter;
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
@@ -123,15 +128,22 @@ void FindMatchingFiles(const string &directory,
         files->push_back(str.str());
       }
     }
-    readdir_r(dp, &dir_ent, &dir_ent_p);
+    if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
+      OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+      return false;
+    }
   }
-  closedir(dp);
+  if (closedir(dp)) {
+    OLA_WARN << "closedir(" << directory << "): " << strerror(errno);
+    return false;
+  }
 #endif
+  return true;
 }
 
-void ListDirectory(const string& directory,
+bool ListDirectory(const string& directory,
                    vector<string> *files) {
-  FindMatchingFiles(directory, "", files);
+  return FindMatchingFiles(directory, "", files);
 }
 
 string FilenameFromPathOrDefault(const string &path,
