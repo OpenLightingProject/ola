@@ -1,13 +1,46 @@
 language: cpp
 
+script:
+ - bash -ex .travis-ci.sh
+
+matrix:
+  fast_finish: true
+  include:
+    - compiler: clang
+      env: TASK='compile'
+    - compiler: gcc
+      env: TASK='compile'
+    - compiler: gcc
+      env: TASK='coverage'
+    - env: TASK='doxygen'
+    - env: TASK='lint'
+    - env: TASK='check-licences'
+  allow_failures:
+    - compiler: gcc
+      env: TASK='coverage'
+    - compiler: gcc
+      env: TASK='coverity'
+
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
+   # -- BEGIN Coverity Scan ENV
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="autoreconf -i && ./configure"
+   # The build command with all of the arguments that you would apply to a manual `cov-build`
+   # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
+   - COVERITY_SCAN_BUILD_COMMAND="make"
+   # Name of the project
+   #- COVERITY_SCAN_PROJECT_NAME="peternewman/ola"
+   - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
+   # Email address for notifications related to this build
+   - COVERITY_SCAN_NOTIFICATION_EMAIL="ola-coverity@pjnewman.co.uk"
+   # Regular expression selects on which branches to run analysis
+   # Be aware of quotas. Do not run on every branch/commit
+   - COVERITY_SCAN_BRANCH_PATTERN="coverity_scan"
+   # COVERITY_SCAN_TOKEN via "travis encrypt" using the repo's public key
    - secure: "NCr/adkHKiiz8UY7C/4fOGuphC1ePJVXHjR6vP0D5gUs0TTaG570Zn4dFl+SV6h1fEkK3h48hF5UgYsqD9WVFkrAVbg26aKM7iwsEjPGTXNplC4mFZH7A5vORGLypixNhmW9i160UOqXjFVexUpyMaMQxlHU8snOpq3mLLmZ95k="
-
-script:
- - if [ "${COVERITY_SCAN_BRANCH}" != "1" ]; then bash -ex .travis-ci.sh; fi
+   - COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
+   - COVERITY_SCAN_BUILD="curl -s $COVERITY_SCAN_BUILD_URL | bash"
+   # -- END Coverity Scan ENV
 
 cache: apt
 
@@ -17,17 +50,17 @@ before_install:
  - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
 #g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
 #Coverity doesn't work with g++ 4.8, so don't bother with the upgrades for that
- - if [ "${COVERITY_SCAN_BRANCH}" != "1" ] && [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
- - if [ "${COVERITY_SCAN_BRANCH}" != "1" ] && [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+ - if [ "$TASK" != "coverity" ] && [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+ - if [ "$TASK" != "coverity" ] && [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 #Remove the old g++/gcc to ensure we're using the latest ones
- - if [ "${COVERITY_SCAN_BRANCH}" != "1" ] && [ "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
+ - if [ "$TASK" != "coverity" ] && [ "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
 #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
 #Install doxygen if required
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
 
 after_success:
-  - cat /home/travis/build/${PROJECT_NAME}/cov-int/scm_log.txt
+  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${PROJECT_NAME}/cov-int/scm_log.txt; fi
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
@@ -36,13 +69,3 @@ notifications:
      - "chat.freenode.net#openlighting"
     on_success: change
     on_failure: change
-
-addons:
-  coverity_scan:
-    project:
-      name: "peternewman/ola"
-      description: "OLA Coverity test"
-    notification_email: ola-coverity@pjnewman.co.uk
-    build_command_prepend: "autoreconf -i && ./configure"
-    build_command:   "make"
-    branch_pattern: coverity_scan

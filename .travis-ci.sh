@@ -34,6 +34,9 @@ elif [[ $TASK = 'doxygen' ]]; then
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i && ./configure --enable-gcov && make && make check
+elif [[ $TASK = 'coverity' ]]; then
+  # Run coverity scan
+  eval "$COVERITY_SCAN_BUILD"
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make distcheck
