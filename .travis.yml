@@ -1,7 +1,7 @@
 language: cpp
 
 script:
- - bash -ex .travis-ci.sh
+ - "bash -ex .travis-ci.sh"
 
 matrix:
   fast_finish: true
@@ -62,7 +62,7 @@ before_install:
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
 
 after_success:
-  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${PROJECT_NAME}/cov-int/scm_log.txt; fi
+  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
