@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is triggered from the script section of .travis.yml
+# It runs the appropriate commands depending on the task requested.
+
 CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
 
 if [[ $TASK = 'lint' ]]; then
