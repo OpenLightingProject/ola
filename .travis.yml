@@ -38,7 +38,7 @@ env:
    # Be aware of quotas. Do not run on every branch/commit
    - COVERITY_SCAN_BRANCH_PATTERN=".*"
    # COVERITY_SCAN_TOKEN via "travis encrypt" using the repo's public key
-   - secure: "QdVcdQHXo8nJ4H68XuwFF2unYOqcyHoHWV1UcF4JQrLdqh/OoiI8WGB0I6VhJsERCkzg2q+1IYhNA9GqSBZ4exR9KLTi/3o+SmMQ40bkrvUmdCciwTlAUG/76NrGhepyZPnW72AAbrVpp4M9cg8eltUFK+GX+X7sA6XLMopIfTU="
+   - secure: "U+NmPtScHZ1NLmkDrzpqApHmJvELV44cXgjQsxA8N8xIATckbs+DrmWSNeECENyvuOPz+nPzglSgBvJtejf97jYJIIwAExq5TJMUAIPFS6KU3mohODW2PZSoVoUyJPzFIlhzcELQgONI+ILLm29lNdQNb7GFUVtO6+jS10AFtWY="
    # -- END Coverity Scan ENV
 
 cache: apt
