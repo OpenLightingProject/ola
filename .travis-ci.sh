@@ -5,6 +5,8 @@
 
 CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
 
+COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   wget -O cpplint.py $CPP_LINT_URL;
@@ -40,7 +42,7 @@ elif [[ $TASK = 'coverage' ]]; then
 elif [[ $TASK = 'coverity' ]]; then
   # Run coverity scan
   if [[ $COVERITY_SCAN_TOKEN != "" ]]; then
-    eval "$COVERITY_SCAN_BUILD"
+    curl -s $COVERITY_SCAN_BUILD_URL | bash
   else
     echo "Skipping Coverity Scan as no token found, probably a Pull Request"
   fi;

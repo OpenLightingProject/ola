@@ -31,7 +31,6 @@ env:
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
    # Name of the project
-   #- COVERITY_SCAN_PROJECT_NAME="peternewman/ola"
    - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
    # Email address for notifications related to this build
    - COVERITY_SCAN_NOTIFICATION_EMAIL="ola-coverity@pjnewman.co.uk"
@@ -40,8 +39,6 @@ env:
    - COVERITY_SCAN_BRANCH_PATTERN=".*"
    # COVERITY_SCAN_TOKEN via "travis encrypt" using the repo's public key
    - secure: "QdVcdQHXo8nJ4H68XuwFF2unYOqcyHoHWV1UcF4JQrLdqh/OoiI8WGB0I6VhJsERCkzg2q+1IYhNA9GqSBZ4exR9KLTi/3o+SmMQ40bkrvUmdCciwTlAUG/76NrGhepyZPnW72AAbrVpp4M9cg8eltUFK+GX+X7sA6XLMopIfTU="
-   - COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
-   - COVERITY_SCAN_BUILD="curl -s $COVERITY_SCAN_BUILD_URL | bash"
    # -- END Coverity Scan ENV
 
 cache: apt
