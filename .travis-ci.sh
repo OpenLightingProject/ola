@@ -1,6 +1,11 @@
 #!/bin/bash
 
+# This script is triggered from the script section of .travis.yml
+# It runs the appropriate commands depending on the task requested.
+
 CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
+
+COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
@@ -34,6 +39,13 @@ elif [[ $TASK = 'doxygen' ]]; then
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i && ./configure --enable-gcov && make && make check
+elif [[ $TASK = 'coverity' ]]; then
+  # Run coverity scan
+  if [[ $COVERITY_SCAN_TOKEN != "" ]]; then
+    curl -s $COVERITY_SCAN_BUILD_URL | bash
+  else
+    echo "Skipping Coverity Scan as no token found, probably a Pull Request"
+  fi;
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make distcheck
