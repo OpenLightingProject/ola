@@ -40,8 +40,10 @@ elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i && ./configure --enable-gcov && make && make check
 elif [[ $TASK = 'coverity' ]]; then
-  # Run coverity scan
-  if [[ $COVERITY_SCAN_TOKEN != "" ]]; then
+  # Run Coverity Scan unless token is zero length
+  # The Coverity Scan script also relies on a number of other COVERITY_SCAN_
+  # variables set in .travis.yml
+  if [[ ${#COVERITY_SCAN_TOKEN} -ne 0 ]]; then
     curl -s $COVERITY_SCAN_BUILD_URL | bash
   else
     echo "Skipping Coverity Scan as no token found, probably a Pull Request"
