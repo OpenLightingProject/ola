@@ -39,7 +39,11 @@ elif [[ $TASK = 'coverage' ]]; then
   autoreconf -i && ./configure --enable-gcov && make && make check
 elif [[ $TASK = 'coverity' ]]; then
   # Run coverity scan
-  eval "$COVERITY_SCAN_BUILD"
+  if [[ $COVERITY_SCAN_TOKEN != "" ]]; then
+    eval "$COVERITY_SCAN_BUILD"
+  else
+    echo "Skipping Coverity Scan as no token found, probably a Pull Request"
+  fi;
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make distcheck
