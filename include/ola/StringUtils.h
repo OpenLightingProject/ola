@@ -27,7 +27,10 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -107,6 +110,34 @@ std::string IntToString(int i);
  * @return The string representation of the unsigned int
  */
 std::string IntToString(unsigned int i);
+
+template<typename T>
+struct _ToHex {
+  unsigned int width;
+  T value;
+};
+
+template<typename T>
+_ToHex<T> GenericToHex(T v, unsigned int width) {
+  _ToHex<T> x;
+  x.width = width;
+  x.value = v;
+  return x;
+}
+
+template<typename T>
+_ToHex<T> ToHex(T v) {
+  // TODO(Peter): This may break if we get a type that doesn't have digits
+  return GenericToHex(v, (std::numeric_limits<T>::digits / HEX_BIT_WIDTH));
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream &out, const _ToHex<T> &i) {
+  // In C++, you only get the 0x on non-zero values, so we have to explicitly
+  // add it for all values
+  return out << "0x" << std::setw(i.width) << std::hex << std::setfill('0')
+             << static_cast<int>(i.value) << std::dec;
+}
 
 /**
  * Convert an unsigned int to a hex string.
