@@ -137,7 +137,8 @@ _ToHex<T> GenericToHex(T v, unsigned int width, bool prefix) {
  * Convert a value to a hex string.
  *
  * Automatic constructor for _ToHex that deals with widths
- * @tparam v the value to convert
+ * @tparam T the type of value to convert
+ * @param v the value to convert
  * @param prefix show the 0x prefix
  * @return A _ToHex struct representing the value, output it to an ostream to
  *     use it.
@@ -147,7 +148,9 @@ _ToHex<T> GenericToHex(T v, unsigned int width, bool prefix) {
 template<typename T>
 _ToHex<T> ToHex(T v, bool prefix = true) {
   // TODO(Peter): This may break if we get a type that doesn't have digits
-  return GenericToHex(v, (std::numeric_limits<T>::digits / HEX_BIT_WIDTH), prefix);
+  return GenericToHex(v,
+                      (std::numeric_limits<T>::digits / HEX_BIT_WIDTH),
+                      prefix);
 }
 
 /**
