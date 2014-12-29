@@ -356,6 +356,15 @@ void StringUtilsTest::testIntToHexString() {
   str << ToHex(i);
   OLA_ASSERT_EQ(string("0x00000042"), str.str());
   str.str("");
+
+  // Without prefix
+  str << ToHex((uint8_t)0x42, false);
+  OLA_ASSERT_EQ(string("42"), str.str());
+  str.str("");
+
+  str << ToHex((uint16_t)0xABCD, false);
+  OLA_ASSERT_EQ(string("abcd"), str.str());
+  str.str("");
 }
 
 

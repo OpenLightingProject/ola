@@ -111,31 +111,56 @@ std::string IntToString(int i);
  */
 std::string IntToString(unsigned int i);
 
+/**
+ * Internal type used by ToHex
+ */
 template<typename T>
 struct _ToHex {
   unsigned int width;
   T value;
+  bool prefix;
 };
 
+/**
+ * Constructor for the _ToHex type
+ */
 template<typename T>
-_ToHex<T> GenericToHex(T v, unsigned int width) {
+_ToHex<T> GenericToHex(T v, unsigned int width, bool prefix) {
   _ToHex<T> x;
   x.width = width;
   x.value = v;
+  x.prefix = prefix
   return x;
 }
 
+/**
+ * Convert a value to a hex string.
+ *
+ * Automatic constructor for _ToHex that deals with widths
+ * @tparam v the value to convert
+ * @param prefix show the 0x prefix
+ * @return A _ToHex struct representing the value, output it to an ostream to
+ *     use it.
+ * @note We only currently support unsigned ints due to a lack of requirement
+ * for anything else and issues with negative handling and hex in C++
+ */
 template<typename T>
-_ToHex<T> ToHex(T v) {
+_ToHex<T> ToHex(T v, bool prefix = true) {
   // TODO(Peter): This may break if we get a type that doesn't have digits
-  return GenericToHex(v, (std::numeric_limits<T>::digits / HEX_BIT_WIDTH));
+  return GenericToHex(v, (std::numeric_limits<T>::digits / HEX_BIT_WIDTH), prefix);
 }
 
+/**
+ * Output the _ToHex type to an ostream
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream &out, const _ToHex<T> &i) {
   // In C++, you only get the 0x on non-zero values, so we have to explicitly
-  // add it for all values
-  return out << "0x" << std::setw(i.width) << std::hex << std::setfill('0')
+  // add it for all values if we want it
+  if (prefix) {
+    out << "0x";
+  }
+  return out << std::setw(i.width) << std::hex << std::setfill('0')
              << static_cast<int>(i.value) << std::dec;
 }
 
