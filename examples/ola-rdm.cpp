@@ -310,7 +310,7 @@ void RDMController::HandleResponse(
       ola::rdm::NackReasonToString(response_status.NackReason()) << endl;
   } else {
     cout << "Unknown RDM response type "
-         << ola::IntToHexString(response_status.response_type) << endl;
+         << ola::ToHex(response_status.response_type) << endl;
   }
   PrintRemainingMessages(response_status.message_count);
   m_ola_client.GetSelectServer()->Terminate();

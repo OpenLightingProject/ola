@@ -53,7 +53,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-using ola::IntToHexString;
+using ola::ToHex;
 using ola::io::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::messaging::Descriptor;
@@ -239,8 +239,8 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
         break;
       default:
         OLA_WARN << "Unknown transition from state " << m_state
-                 << ", with data " << IntToHexString(control_byte) << " "
-                 << IntToHexString(data_byte);
+                 << ", with data " << ToHex(control_byte) << " "
+                 << ToHex(data_byte);
     }
   } else {
     // control byte
@@ -251,8 +251,8 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
           break;
         default:
           OLA_WARN << "Unknown transition from state " << m_state
-                   << ", with data " << IntToHexString(control_byte) << " "
-                   << IntToHexString(data_byte);
+                   << ", with data " << ToHex(control_byte) << " "
+                   << ToHex(data_byte);
       }
     } else if (data_byte == 1) {
       switch (m_state) {
@@ -265,8 +265,8 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
           break;
         default:
           OLA_WARN << "Unknown transition from state " << m_state
-                   << ", with data " << IntToHexString(control_byte) << " "
-                   << IntToHexString(data_byte);
+                   << ", with data " << ToHex(control_byte) << " "
+                   << ToHex(data_byte);
       }
     } else if (data_byte == 2) {
       switch (m_state) {
@@ -280,8 +280,8 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
       }
     } else {
       OLA_WARN << "Unknown transition from state " << m_state
-               << ", with data " << IntToHexString(control_byte) << " "
-               << IntToHexString(data_byte);
+               << ", with data " << ToHex(control_byte) << " "
+               << ToHex(data_byte);
     }
   }
 }
@@ -318,7 +318,7 @@ void RDMSniffer::DisplayDmxFrame() {
   if (m_options.dmx_slot_limit < dmx_slot_count) {
     cout << m_options.dmx_slot_limit << "/";
   }
-  cout << dmx_slot_count << ":" << std::hex;
+  cout << dmx_slot_count << ":";
   unsigned int slots_to_display = std::min(
       dmx_slot_count,
       static_cast<unsigned int>(m_options.dmx_slot_limit));
@@ -333,8 +333,7 @@ void RDMSniffer::DisplayDmxFrame() {
 void RDMSniffer::DisplayAlternateFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
   MaybePrintTimestamp();
-  cout << "SC " << IntToHexString(m_frame[0])
-       << " " << slot_count << ":" << std::hex;
+  cout << "SC " << ToHex(m_frame[0]) << " " << slot_count << ":";
   unsigned int slots_to_display = std::min(
       slot_count,
       static_cast<unsigned int>(m_options.dmx_slot_limit));
@@ -376,7 +375,7 @@ void RDMSniffer::DisplayRDMFrame() {
  */
 void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
   for (unsigned int i = start; i <= end; i++) {
-    cout << std::hex << std::setw(2) << static_cast<int>(m_frame[i]) << " ";
+    cout << ToHex(m_frame[i], false) << " ";
   }
   cout << endl;
 }
