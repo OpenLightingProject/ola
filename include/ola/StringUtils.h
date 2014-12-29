@@ -129,7 +129,7 @@ _ToHex<T> GenericToHex(T v, unsigned int width, bool prefix) {
   _ToHex<T> x;
   x.width = width;
   x.value = v;
-  x.prefix = prefix
+  x.prefix = prefix;
   return x;
 }
 
@@ -157,7 +157,7 @@ template <typename T>
 std::ostream& operator<<(std::ostream &out, const _ToHex<T> &i) {
   // In C++, you only get the 0x on non-zero values, so we have to explicitly
   // add it for all values if we want it
-  if (prefix) {
+  if (i.prefix) {
     out << "0x";
   }
   return out << std::setw(i.width) << std::hex << std::setfill('0')
