@@ -185,7 +185,7 @@ std::string IntToHexString(unsigned int i, unsigned int width);
  *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint8_t i) {
-  ostringstream str;
+  std::ostringstream str;
   str << ToHex(i);
   return str.str();
 }
@@ -198,7 +198,7 @@ inline std::string IntToHexString(uint8_t i) {
  *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint16_t i) {
-  ostringstream str;
+  std::ostringstream str;
   str << ToHex(i);
   return str.str();
 }
@@ -211,7 +211,7 @@ inline std::string IntToHexString(uint16_t i) {
  *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint32_t i) {
-  ostringstream str;
+  std::ostringstream str;
   str << ToHex(i);
   return str.str();
 }
