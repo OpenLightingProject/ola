@@ -117,7 +117,7 @@ std::string IntToString(unsigned int i);
 template<typename T>
 struct _ToHex {
  public:
-  _ToHex(T v, unsigned int width, bool prefix)
+  _ToHex(T v, int width, bool prefix)
       : width(width),
         value(v),
         prefix(prefix) {

@@ -122,7 +122,9 @@ string IntToString(unsigned int i) {
 }
 
 string IntToHexString(unsigned int i, unsigned int width) {
-  _ToHex<unsigned int> v = _ToHex<unsigned int>(i, width, true);
+  _ToHex<unsigned int> v = _ToHex<unsigned int>(i,
+                                                static_cast<int>(width),
+                                                true);
   ostringstream str;
   str << v;
   return str.str();
