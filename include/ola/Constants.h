@@ -58,6 +58,11 @@ static const uint8_t DMX512_START_CODE = 0;
 static const int OLA_DEFAULT_PORT = 9010;
 
 /**
+ * @brief The default instance name for olad.
+ */
+static const char OLA_DEFAULT_INSTANCE_NAME[] = "OLA Server";
+
+/**
  * @brief The ESTA manufacturer code for the Open Lighting Project.
  */
 static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;

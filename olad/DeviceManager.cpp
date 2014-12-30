@@ -19,6 +19,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include "olad/DeviceManager.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <map>
@@ -29,7 +31,6 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
-#include "olad/DeviceManager.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
 
@@ -52,10 +53,6 @@ bool operator <(const device_alias_pair& left,
   return false;
 }
 
-
-/*
- * Constructor
- */
 DeviceManager::DeviceManager(PreferencesFactory *prefs_factory,
                              PortManager *port_manager)
     : m_port_preferences(NULL),
@@ -67,24 +64,16 @@ DeviceManager::DeviceManager(PreferencesFactory *prefs_factory,
   }
 }
 
-
-/*
- * Cleanup
- */
 DeviceManager::~DeviceManager() {
-  if (m_port_preferences)
+  if (m_port_preferences) {
     m_port_preferences->Save();
+  }
 }
 
-
-/*
- * Register a device
- * @param device pointer to the device to register
- * @return true on success, false on failure
- */
 bool DeviceManager::RegisterDevice(AbstractDevice *device) {
-  if (!device)
+  if (!device) {
     return false;
+  }
 
   const string device_id = device->UniqueId();
 
@@ -95,7 +84,7 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
 
   // See if we already have an alias for this device.
   unsigned int alias;
-  map<string, device_alias_pair>::iterator iter = m_devices.find(device_id);
+  DeviceIdMap::iterator iter = m_devices.find(device_id);
   if (iter != m_devices.end()) {
     if (iter->second.device) {
       // already registered
@@ -108,7 +97,7 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
     }
   } else {
     alias = m_next_device_alias++;
-    device_alias_pair pair = {alias, device};
+    device_alias_pair pair(alias, device);
     STLReplace(&m_devices, device_id, pair);
   }
 
@@ -126,20 +115,16 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
 
   // look for timecode ports and add them to the set
   vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
-  for (; output_iter != output_ports.end(); ++output_iter)
-    if ((*output_iter)->SupportsTimeCode())
+  for (; output_iter != output_ports.end(); ++output_iter) {
+    if ((*output_iter)->SupportsTimeCode()) {
       m_timecode_ports.insert(*output_iter);
+    }
+  }
 
   return true;
 }
 
-
-/*
- * Unregister a device
- * @param device_id the id of the device to remove
- * @return true on sucess, false on failure
- */
-bool DeviceManager::UnregisterDevice(const std::string &device_id) {
+bool DeviceManager::UnregisterDevice(const string &device_id) {
   device_alias_pair *pair = STLFind(&m_devices, device_id);
   if (!pair || !pair->device) {
     OLA_WARN << "Device " << device_id << "not found";
@@ -153,36 +138,23 @@ bool DeviceManager::UnregisterDevice(const std::string &device_id) {
   return true;
 }
 
-/*
- * Unregister a Device
- * @param device a pointer to the device
- * @return true on sucess, false on failure
- */
 bool DeviceManager::UnregisterDevice(const AbstractDevice *device) {
-  if (!device)
+  if (!device) {
     return false;
+  }
 
   string device_id = device->UniqueId();
-  if (device_id.empty())
+  if (device_id.empty()) {
     return false;
+  }
 
   return UnregisterDevice(device_id);
 }
 
-
-/*
- * Return the number of active devices
- * @return the number of active devices
- */
 unsigned int DeviceManager::DeviceCount() const {
   return m_alias_map.size();
 }
 
-
-/*
- * Return a list of all the devices
- * @return a vector of device_alias_pairs
- */
 vector<device_alias_pair> DeviceManager::Devices() const {
   vector<device_alias_pair> result;
   map<string, device_alias_pair>::const_iterator iter;
@@ -194,42 +166,21 @@ vector<device_alias_pair> DeviceManager::Devices() const {
   return result;
 }
 
-
-/*
- * Find the device with the given alias.
- * @return a pointer to the device or NULL if the device wasn't found.
- */
 AbstractDevice *DeviceManager::GetDevice(unsigned int alias) const {
   return STLFindOrNull(m_alias_map, alias);
 }
 
-
-/*
- * Return the device_alias_pair corresponding to the device with the given ID.
- * @param unique_id the unique id of the device
- * @return a device_alias_pair, if the device isn't found the alias is set to
- * MISSING_DEVICE_ALIAS and the device pointer is NULL.
- */
-device_alias_pair DeviceManager::GetDevice(
-    const std::string &unique_id) const {
-  device_alias_pair result;
-  map<string, device_alias_pair>::const_iterator iter =
-    m_devices.find(unique_id);
-
-  if (iter != m_devices.end() && iter->second.device)
-      return iter->second;
-
-  result.alias = MISSING_DEVICE_ALIAS;
-  result.device = NULL;
-  return result;
+device_alias_pair DeviceManager::GetDevice(const string &unique_id) const {
+  const device_alias_pair *result = STLFind(&m_devices, unique_id);
+  if (result) {
+    return *result;
+  } else {
+    return device_alias_pair(MISSING_DEVICE_ALIAS, NULL);
+  }
 }
 
-
-/*
- * Remove all devices and reset the device counter
- */
 void DeviceManager::UnregisterAllDevices() {
-  map<string, device_alias_pair>::iterator iter;
+  DeviceIdMap::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     ReleaseDevice(iter->second.device);
     iter->second.device = NULL;
@@ -237,25 +188,21 @@ void DeviceManager::UnregisterAllDevices() {
   m_alias_map.clear();
 }
 
-
-/**
- * Send timecode to all ports that support it. This is a bit of a hack right
- * now.
- */
 void DeviceManager::SendTimeCode(const ola::timecode::TimeCode &timecode) {
   set<OutputPort*>::iterator iter = m_timecode_ports.begin();
-  for (; iter != m_timecode_ports.end(); iter++)
+  for (; iter != m_timecode_ports.end(); iter++) {
     (*iter)->SendTimeCode(timecode);
+  }
 }
-
 
 /*
  * Save the port universe patchings for a device
  * @param device the device to save the settings for
  */
 void DeviceManager::ReleaseDevice(const AbstractDevice *device) {
-  if (!m_port_preferences || !device)
+  if (!m_port_preferences || !device) {
     return;
+  }
 
   vector<InputPort*> input_ports;
   vector<OutputPort*> output_ports;
@@ -265,8 +212,9 @@ void DeviceManager::ReleaseDevice(const AbstractDevice *device) {
   SavePortPatchings(output_ports);
 
   vector<InputPort*>::const_iterator input_iter = input_ports.begin();
-  for (; input_iter != input_ports.end(); ++input_iter)
+  for (; input_iter != input_ports.end(); ++input_iter) {
     SavePortPriority(**input_iter);
+  }
 
   vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
   for (; output_iter != output_ports.end(); ++output_iter) {
@@ -286,8 +234,9 @@ void DeviceManager::SavePortPatchings(const vector<PortClass*> &ports) const {
   typename vector<PortClass*>::const_iterator iter = ports.begin();
   while (iter != ports.end()) {
     string port_id = (*iter)->UniqueId();
-    if (port_id.empty())
+    if (port_id.empty()) {
       return;
+    }
 
     if ((*iter)->GetUniverse()) {
       m_port_preferences->SetValue(
@@ -305,19 +254,22 @@ void DeviceManager::SavePortPatchings(const vector<PortClass*> &ports) const {
  * Save the priorities for all ports on this device
  */
 void DeviceManager::SavePortPriority(const Port &port) const {
-  if (port.PriorityCapability() == CAPABILITY_NONE)
+  if (port.PriorityCapability() == CAPABILITY_NONE) {
     return;
+  }
 
   string port_id = port.UniqueId();
-  if (port_id.empty())
+  if (port_id.empty()) {
     return;
+  }
 
   m_port_preferences->SetValue(port_id + PRIORITY_VALUE_SUFFIX,
                                IntToString(port.GetPriority()));
 
-  if (port.PriorityCapability() == CAPABILITY_FULL)
+  if (port.PriorityCapability() == CAPABILITY_FULL) {
     m_port_preferences->SetValue(port_id + PRIORITY_MODE_SUFFIX,
                                  IntToString(port.GetPriorityMode()));
+  }
 }
 
 
@@ -325,30 +277,35 @@ void DeviceManager::SavePortPriority(const Port &port) const {
  * Restore the priority settings for a port
  */
 void DeviceManager::RestorePortPriority(Port *port) const {
-  if (port->PriorityCapability() == CAPABILITY_NONE)
+  if (port->PriorityCapability() == CAPABILITY_NONE) {
     return;
+  }
 
   string port_id = port->UniqueId();
-  if (port_id.empty())
+  if (port_id.empty()) {
     return;
+  }
 
   string priority_str = m_port_preferences->GetValue(
       port_id + PRIORITY_VALUE_SUFFIX);
   string priority_mode_str = m_port_preferences->GetValue(
       port_id + PRIORITY_MODE_SUFFIX);
 
-  if (priority_str.empty() && priority_mode_str.empty())
+  if (priority_str.empty() && priority_mode_str.empty()) {
     return;
+  }
 
   uint8_t priority, priority_mode;
   // setting the priority to overide mode first means we remember the over
   // value even if it's in inherit mode
-  if (StringToInt(priority_str, &priority))
+  if (StringToInt(priority_str, &priority)) {
     m_port_manager->SetPriorityStatic(port, priority);
+  }
 
   if (StringToInt(priority_mode_str, &priority_mode)) {
-    if (priority_mode == PRIORITY_MODE_INHERIT)
+    if (priority_mode == PRIORITY_MODE_INHERIT) {
       m_port_manager->SetPriorityInherit(port);
+    }
   }
 }
 
@@ -357,10 +314,10 @@ void DeviceManager::RestorePortPriority(Port *port) const {
  * Restore the patching information for a port.
  */
 template <class PortClass>
-void DeviceManager::RestorePortSettings(
-    const vector<PortClass*> &ports) const {
-  if (!m_port_preferences)
+void DeviceManager::RestorePortSettings(const vector<PortClass*> &ports) const {
+  if (!m_port_preferences) {
     return;
+  }
 
   typename vector<PortClass*>::const_iterator iter = ports.begin();
   while (iter != ports.end()) {

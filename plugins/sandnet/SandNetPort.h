@@ -33,61 +33,75 @@ namespace sandnet {
 
 class SandNetPortHelper {
  public:
-    SandNetPortHelper() {}
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
-    std::string Description(const Universe *universe) const;
-    uint8_t SandnetGroup(const Universe* universe) const;
-    uint8_t SandnetUniverse(const Universe *universe) const;
+  SandNetPortHelper() {}
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+  std::string Description(const Universe *universe) const;
+
+  /**
+   * @brief Return the SandNet group that corresponds to a OLA Universe.
+   * @param universe the OLA universe
+   * @return the SandNet group number
+   */
+  uint8_t SandnetGroup(const Universe* universe) const;
+
+  /**
+   * @brief Return the SandNet universe that corresponds to a OLA Universe.
+   *
+   * Sandnet universes range from 0 to 255 (represented as 1 to 256 in the packets).
+   * @param universe the OLA universe
+   * @return the sandnet universe number
+   */
+  uint8_t SandnetUniverse(const Universe *universe) const;
 };
 
 
 class SandNetInputPort: public BasicInputPort {
  public:
-    SandNetInputPort(SandNetDevice *parent,
-                     unsigned int id,
-                     class PluginAdaptor *plugin_adaptor,
-                     SandNetNode *node):
-      BasicInputPort(parent, id, plugin_adaptor),
+  SandNetInputPort(SandNetDevice *parent,
+                   unsigned int id,
+                   class PluginAdaptor *plugin_adaptor,
+                   SandNetNode *node)
+    : BasicInputPort(parent, id, plugin_adaptor),
       m_node(node) {}
-    ~SandNetInputPort() {}
+  ~SandNetInputPort() {}
 
-    std::string Description() const {
-      return m_helper.Description(GetUniverse());
-    }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
-      return m_helper.PreSetUniverse(old_universe, new_universe);
-    }
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+  std::string Description() const {
+    return m_helper.Description(GetUniverse());
+  }
+  const DmxBuffer &ReadDMX() const { return m_buffer; }
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    return m_helper.PreSetUniverse(old_universe, new_universe);
+  }
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
  private:
-    SandNetPortHelper m_helper;
-    SandNetNode *m_node;
-    DmxBuffer m_buffer;
+  SandNetPortHelper m_helper;
+  SandNetNode *m_node;
+  DmxBuffer m_buffer;
 };
 
 
 class SandNetOutputPort: public BasicOutputPort {
  public:
-    SandNetOutputPort(SandNetDevice *parent,
-                      unsigned int id,
-                      SandNetNode *node):
-      BasicOutputPort(parent, id),
+  SandNetOutputPort(SandNetDevice *parent,
+                    unsigned int id,
+                    SandNetNode *node)
+    : BasicOutputPort(parent, id),
       m_node(node) {}
-    ~SandNetOutputPort() {}
+  ~SandNetOutputPort() {}
 
-    std::string Description() const {
-      return m_helper.Description(GetUniverse());
-    }
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
-      return m_helper.PreSetUniverse(old_universe, new_universe);
-    }
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+  std::string Description() const {
+    return m_helper.Description(GetUniverse());
+  }
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    return m_helper.PreSetUniverse(old_universe, new_universe);
+  }
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
  private:
-    SandNetPortHelper m_helper;
-    SandNetNode *m_node;
+  SandNetPortHelper m_helper;
+  SandNetNode *m_node;
 };
 }  // namespace sandnet
 }  // namespace plugin

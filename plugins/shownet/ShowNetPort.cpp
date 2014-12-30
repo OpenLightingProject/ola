@@ -20,8 +20,8 @@
 #include <sstream>
 #include <string>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/shownet/ShowNetDevice.h"
 #include "plugins/shownet/ShowNetPort.h"
@@ -43,10 +43,8 @@ string ShowNetInputPort::Description() const {
 /*
  * Check for loops.
  */
-bool ShowNetInputPort::PreSetUniverse(Universe *old_universe,
-                                      Universe *new_universe) {
-  (void) old_universe;
-  (void) new_universe;
+bool ShowNetInputPort::PreSetUniverse(OLA_UNUSED Universe *old_universe,
+                                      OLA_UNUSED Universe *new_universe) {
   AbstractDevice *device = GetDevice();
   OutputPort *output_port = device->GetOutputPort(PortId());
   if (output_port && output_port->GetUniverse()) {
@@ -85,10 +83,8 @@ string ShowNetOutputPort::Description() const {
 /*
  * Check for loops.
  */
-bool ShowNetOutputPort::PreSetUniverse(Universe *old_universe,
-                                       Universe *new_universe) {
-  (void) old_universe;
-  (void) new_universe;
+bool ShowNetOutputPort::PreSetUniverse(OLA_UNUSED Universe *old_universe,
+                                       OLA_UNUSED Universe *new_universe) {
   AbstractDevice *device = GetDevice();
   InputPort *input_port = device->GetInputPort(PortId());
   if (input_port && input_port->GetUniverse()) {
@@ -100,9 +96,8 @@ bool ShowNetOutputPort::PreSetUniverse(Universe *old_universe,
 
 
 bool ShowNetOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                 uint8_t priority) {
+                                 OLA_UNUSED uint8_t priority) {
   return !m_node->SendDMX(PortId(), buffer);
-  (void) priority;
 }
 }  // namespace shownet
 }  // namespace plugin

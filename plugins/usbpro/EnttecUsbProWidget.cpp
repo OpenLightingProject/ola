@@ -24,8 +24,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
@@ -228,7 +228,7 @@ void EnttecPortImpl::SendRDMRequest(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *on_complete) {
   auto_ptr<const ola::rdm::RDMRequest> request_ptr(request);
-  std::vector<string> packets;
+  vector<string> packets;
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -374,7 +374,7 @@ void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
   } else if (m_mute_callback) {
     MuteDeviceCallback *callback = m_mute_callback;
     m_mute_callback = NULL;
-    OLA_INFO << "Failed to mute device";
+    OLA_INFO << "Unable to mute device";
     callback->Run(false);
   } else if (m_branch_callback) {
     BranchCallback *callback = m_branch_callback;
@@ -399,7 +399,7 @@ void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
     m_rdm_request_callback = NULL;
     delete m_pending_request;
     m_pending_request = NULL;
-    std::vector<std::string> packets;
+    vector<string> packets;
     callback->Run(code, NULL, packets);
   }
 }
@@ -495,7 +495,7 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
     const ola::rdm::RDMRequest *request = m_pending_request;
     m_pending_request = NULL;
 
-    std::vector<std::string> packets;
+    vector<string> packets;
     ola::rdm::rdm_response_code response_code;
     ola::rdm::RDMResponse *response = NULL;
 
@@ -676,7 +676,7 @@ void EnttecPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   if (m_enable_rdm) {
     m_controller->SendRDMRequest(request, on_complete);
   } else {
-    std::vector<std::string> packets;
+    vector<string> packets;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   }

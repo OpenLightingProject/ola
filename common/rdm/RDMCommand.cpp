@@ -88,7 +88,7 @@ bool RDMCommand::operator==(const RDMCommand &other) const {
 }
 
 
-std::string RDMCommand::ToString() const {
+string RDMCommand::ToString() const {
   std::ostringstream str;
   str << m_source << " -> " << m_destination << ", Trans # " <<
     static_cast<int>(m_transaction_number) << ", Port ID " <<
@@ -351,7 +351,7 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
 /**
  * Inflate from some data
  */
-RDMRequest* RDMRequest::InflateFromData(const std::string &data) {
+RDMRequest* RDMRequest::InflateFromData(const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -519,7 +519,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 /**
  * Inflate from some data
  */
-RDMResponse* RDMResponse::InflateFromData(const std::string &data,
+RDMResponse* RDMResponse::InflateFromData(const string &data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
@@ -532,7 +532,7 @@ RDMResponse* RDMResponse::InflateFromData(const std::string &data,
 /**
  * Inflate from some data
  */
-RDMResponse* RDMResponse::InflateFromData(const std::string &data,
+RDMResponse* RDMResponse::InflateFromData(const string &data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request,
                                           uint8_t transaction_number) {
@@ -608,12 +608,15 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 // Helper functions follow
 
 /**
- * Guess the type of an RDM message, so we know whether we should unpack it as
- * a request or response. This doesn't perform any data checking (that's left
- * to the Inflate* methods).
- * @param type_arg a pointer to a rdm_message_type variable which is set to
- * RDM_REQUEST or RDM_RESPONSE.
- * @param data a pointer to the rdm message (excluding the start code)
+ * @brief Guess the type of an RDM message
+ *
+ * Used so we know whether we should unpack it as a request or response. This
+ * doesn't perform any data checking (that's left to the Inflate* methods).
+ * @param[out] type_arg a pointer to a rdm_message_type variable which is set
+ * to RDM_REQUEST or RDM_RESPONSE.
+ * @param[out] command_class_arg a pointer to a RDMCommandClass variable which
+ * is set to the command class type
+ * @param data a pointer to the RDM message (excluding the start code)
  * @param length length of the rdm data
  * @returns true if we could determine the type, false otherwise
  */
@@ -810,7 +813,7 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
  * Inflate a discovery request from some data.
  */
 RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
-    const std::string &data) {
+    const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -920,7 +923,7 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
  * Inflate a discovery response from some data.
  */
 RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
-    const std::string &data) {
+    const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }

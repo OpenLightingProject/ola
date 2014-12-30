@@ -125,7 +125,7 @@ void JsonWriter::Visit(const JsonDouble &value) {
   *m_output << value.ToString();
 }
 
-void JsonWriter::VisitProperty(const std::string &property,
+void JsonWriter::VisitProperty(const string &property,
                                const JsonValue &value) {
   *m_output << m_separator << string(m_indent, ' ') << "\""
             << EscapeString(property) << "\": ";

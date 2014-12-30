@@ -27,10 +27,10 @@ namespace usbdmx {
 
 class FirmwareLoader {
  public:
-    FirmwareLoader() {}
-    virtual ~FirmwareLoader() {}
+  FirmwareLoader() {}
+  virtual ~FirmwareLoader() {}
 
-    virtual bool LoadFirmware() = 0;
+  virtual bool LoadFirmware() = 0;
 };
 }  // namespace usbdmx
 }  // namespace plugin

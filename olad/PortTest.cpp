@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "olad/PluginAdaptor.h"
 #include "olad/PortBroker.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
@@ -31,6 +32,7 @@
 
 using ola::Clock;
 using ola::TimeStamp;
+using std::string;
 
 class PortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PortTest);
@@ -89,7 +91,7 @@ void PortTest::testInputPortPriorities() {
   MockDevice device(NULL, "foo");
   TimeStamp time_stamp;
   MockSelectServer ss(&time_stamp);
-  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL);
   // This port operates in static priority mode
   TestMockInputPort input_port(&device, 1, &plugin_adaptor);
   port_manager.PatchPort(&input_port, universe_id);

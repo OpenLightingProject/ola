@@ -18,21 +18,23 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
 #ifndef _WIN32
 #include <sys/wait.h>
 #endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
+#include <ola/stl/STLUtils.h>
 
 #include <iostream>
 #include <map>
@@ -45,9 +47,18 @@
 #include "tools/ola_trigger/ParserGlobals.h"
 
 using ola::DmxBuffer;
+using ola::STLDeleteElements;
+using ola::STLDeleteValues;
 using std::map;
 using std::string;
 using std::vector;
+
+DEFINE_s_uint16(offset, o, 0,
+                "Apply an offset to the slot numbers. Valid offsets are 0 to "
+                "512, default is 0.");
+DEFINE_s_uint32(universe, u, 0, "The universe to use, defaults to 0.");
+DEFINE_default_bool(validate, false,
+                    "Validate the config file, rather than running it.");
 
 // prototype of bison-generated parser function
 int yyparse();
@@ -59,114 +70,19 @@ SlotActionMap global_slots;
 // The SelectServer to kill when we catch SIGINT
 ola::io::SelectServer *ss = NULL;
 
-// The options struct
-typedef struct {
-  bool help;
-  ola::log_level log_level;
-  unsigned int universe;
-  unsigned int offset;
-  vector<string> args;  // extra args
-} options;
-
-
 typedef vector<Slot*> SlotList;
-
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"offset", required_argument, 0, 'o'},
-      {"universe", required_argument, 0, 'u'},
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "hl:o:u:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 'o':
-        opts->offset = atoi(optarg);
-        break;
-      case 'u':
-        opts->universe = atoi(optarg);
-        break;
-      case '?':
-        break;
-      default:
-       break;
-    }
-  }
-
-  int index = optind;
-  for (; index < argc; index++)
-    opts->args.push_back(argv[index]);
-  return;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  std::cout << "Usage: " << argv[0] << " [options] <config_file>\n"
-  "\n"
-  "Run programs based on the values in a DMX stream.\n"
-  "\n"
-  "  -h, --help                 Display this help message and exit.\n"
-  "  -l, --log-level <level>    Set the logging level 0 .. 4.\n"
-  "  -o, --offset <slot_offset> Apply an offset to the slot numbers. Valid\n"
-  "                             offsets are 0 to 512, default is 0.\n"
-  "  -u, --universe <universe>  The universe to use, defaults to 1"
-  << std::endl;
-  exit(0);
-}
-
 
 /*
  * Catch SIGCHLD.
  */
 #ifndef _WIN32
-static void CatchSIGCHLD(int signo) {
+static void CatchSIGCHLD(OLA_UNUSED int signo) {
   pid_t pid;
+  int old_errno = errno;
   do {
     pid = waitpid(-1, NULL, WNOHANG);
   } while (pid > 0);
-  (void) signo;
+  errno = old_errno;
 }
 #endif
 
@@ -174,12 +90,14 @@ static void CatchSIGCHLD(int signo) {
 /*
  * Terminate cleanly on interrupt
  */
-static void CatchSIGINT(int signo) {
+static void CatchSIGINT(OLA_UNUSED int signo) {
   // there is a race condition here if you send the signal before we call Run()
   // it's not a huge deal though.
-  if (ss)
+  int old_errno = errno;
+  if (ss) {
     ss->Terminate();
-  (void) signo;
+  }
+  errno = old_errno;
 }
 
 
@@ -187,39 +105,14 @@ static void CatchSIGINT(int signo) {
  * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
-#ifdef WIN32
+#ifndef WIN32
   // There's no SIGCHILD on Windows
-  if (signal(SIGINT, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
-  if (signal(SIGTERM, CatchSIGINT) == reinterpret_cast<void(*)(int)>(EINVAL)) {
-    OLA_WARN << "Failed to install signal SIGTERM";
-    return false;
-  }
-#else
-  struct sigaction act, oact;
-
-  act.sa_handler = CatchSIGCHLD;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGCHLD, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGCHLD";
-    return false;
-  }
-
-  act.sa_handler = CatchSIGINT;
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
-  if (sigaction(SIGTERM, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGTERM";
+  if (!ola::InstallSignal(SIGCHLD, CatchSIGCHLD)) {
     return false;
   }
 #endif
-  return true;
+  return ola::InstallSignal(SIGINT, CatchSIGINT) &&
+         ola::InstallSignal(SIGTERM, CatchSIGINT);
 }
 
 
@@ -230,25 +123,11 @@ void NewDmx(unsigned int our_universe,
             DMXTrigger *trigger,
             unsigned int universe,
             const DmxBuffer &data,
-            const std::string &error) {
-  if (universe == our_universe) {
-    if (error.empty())
-      trigger->NewDMX(data);
+            OLA_UNUSED const string &error) {
+  if (universe == our_universe && error.empty()) {
+    trigger->NewDMX(data);
   }
-  (void) error;
 }
-
-
-/**
- * Delete all the slot actions in the vector.
- */
-void FreeSlot(SlotList *slots) {
-  SlotList::iterator action_iter = slots->begin();
-  for (; action_iter != slots->end(); ++action_iter)
-    delete *action_iter;
-  slots->clear();
-}
-
 
 /**
  * Build a vector of Slot from the global_slots map with the
@@ -263,9 +142,9 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
   SlotActionMap::const_iterator iter = global_slots.begin();
   for (; iter != global_slots.end(); ++iter) {
     Slot *slots = iter->second;
-    if (slots->SlotOffset() + offset >= DMX_UNIVERSE_SIZE) {
+    if (slots->SlotOffset() + offset >= ola::DMX_UNIVERSE_SIZE) {
       OLA_FATAL << "Slot " << slots->SlotOffset() << " + offset " <<
-        offset << " is greater than " << DMX_UNIVERSE_SIZE - 1;
+        offset << " is greater than " << ola::DMX_UNIVERSE_SIZE - 1;
       ok = false;
       break;
     }
@@ -275,9 +154,7 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
 
   if (!ok) {
     all_slots->clear();
-    for (iter = global_slots.begin(); iter != global_slots.end();
-         ++iter)
-      delete iter->second;
+    STLDeleteValues(&global_slots);
   }
 
   global_slots.clear();
@@ -289,39 +166,40 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  opts.log_level = ola::OLA_LOG_INFO;
-  opts.universe = 1;
-  opts.offset = 0;
-  opts.help = false;
-  ParseOptions(argc, argv, &opts);
+  ola::AppInit(&argc,
+               argv,
+               "[options] <config_file>",
+               "Run programs based on the values in a DMX stream.");
 
-  if (opts.help)
-    DisplayHelpAndExit(argv);
-
-  if (opts.offset >= DMX_UNIVERSE_SIZE) {
-    std::cerr << "Invalid slot offset: " << opts.offset << std::endl;
-    DisplayHelpAndExit(argv);
+  if (FLAGS_offset >= ola::DMX_UNIVERSE_SIZE) {
+    std::cerr << "Invalid slot offset: " << FLAGS_offset << std::endl;
+    exit(ola::EXIT_USAGE);
   }
 
-  if (opts.args.size() != 1)
-    DisplayHelpAndExit(argv);
+  if (argc != 2)
+    ola::DisplayUsageAndExit();
 
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
-
-  // setup the defaut context
+  // setup the default context
   global_context = new Context();
-  OLA_INFO << "Loading config from " << opts.args[0];
+  OLA_INFO << "Loading config from " << argv[1];
 
   // open the config file
-  if (freopen(opts.args[0].c_str(), "r", stdin) == NULL) {
-    OLA_FATAL << "File " << opts.args[0] << " cannot be opened.\n";
+  if (freopen(argv[1], "r", stdin) == NULL) {
+    OLA_FATAL << "File " << argv[1] << " cannot be opened.\n";
     exit(ola::EXIT_DATAERR);
   }
 
   yyparse();
 
-  // if we got to this stage the config is ok, setup the client
+  if (FLAGS_validate) {
+    std::cout << "File " << argv[1] << " is valid." << std::endl;
+    // TODO(Peter): Print some stats here, validate the offset if supplied
+    STLDeleteValues(&global_slots);
+    exit(ola::EXIT_OK);
+  }
+
+  // if we got to this stage the config is ok and we want to run it, setup the
+  // client
   ola::OlaCallbackClientWrapper wrapper;
 
   if (!wrapper.Setup())
@@ -334,20 +212,22 @@ int main(int argc, char *argv[]) {
 
   // create the vector of Slot
   SlotList slots;
-  if (ApplyOffset(opts.offset, &slots)) {
+  if (ApplyOffset(FLAGS_offset, &slots)) {
     // setup the trigger
     DMXTrigger trigger(global_context, slots);
 
     // register for DMX
     ola::OlaCallbackClient *client = wrapper.GetClient();
     client->SetDmxCallback(
-        ola::NewCallback(&NewDmx, opts.universe, &trigger));
-    client->RegisterUniverse(opts.universe, ola::REGISTER, NULL);
+        ola::NewCallback(&NewDmx,
+                         static_cast<unsigned int>(FLAGS_universe),
+                         &trigger));
+    client->RegisterUniverse(FLAGS_universe, ola::REGISTER, NULL);
 
     // start the client
     wrapper.GetSelectServer()->Run();
   }
 
   // cleanup
-  FreeSlot(&slots);
+  STLDeleteElements(&slots);
 }

@@ -449,6 +449,22 @@ void StringUtilsTest::testStringToBoolTolerant() {
   OLA_ASSERT_EQ(value, true);
   OLA_ASSERT_TRUE(StringToBoolTolerant("oFf", &value));
   OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("enable", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("disable", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("EnAblE", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("dISaBle", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("enabled", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("disabled", &value));
+  OLA_ASSERT_EQ(value, false);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("eNabLED", &value));
+  OLA_ASSERT_EQ(value, true);
+  OLA_ASSERT_TRUE(StringToBoolTolerant("DisaBLED", &value));
+  OLA_ASSERT_EQ(value, false);
 }
 
 
@@ -884,6 +900,12 @@ void StringUtilsTest::testStringJoin() {
   ints.push_back(2);
   ints.push_back(3);
   OLA_ASSERT_EQ(string("1,2,3"), StringJoin(",", ints));
+
+  vector<char> chars;
+  chars.push_back('a');
+  chars.push_back('b');
+  chars.push_back('c');
+  OLA_ASSERT_EQ(string("a,b,c"), StringJoin(",", chars));
 
   vector<string> strings;
   strings.push_back("one");

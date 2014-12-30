@@ -254,7 +254,7 @@ void TCPConnectorTest::testEarlyDestruction() {
   OLA_ASSERT_NE(0, port);
   IPV4SocketAddress target(m_localhost, port);
 
-  // attempt a non-blocking connect, hopefully nothing is running on port 9010
+  // attempt a non-blocking connect.
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   {
     TCPConnector connector(m_ss);

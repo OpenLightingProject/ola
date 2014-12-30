@@ -21,7 +21,7 @@
 #ifndef PLUGINS_ARTNET_ARTNETPACKETS_H_
 #define PLUGINS_ARTNET_ARTNETPACKETS_H_
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/rdm/UID.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
@@ -40,7 +40,7 @@ namespace artnet {
 enum { ARTNET_LONG_NAME_LENGTH = 64 };
 enum { ARTNET_MAX_PORTS = ARTNET_PORT_COUNT };
 enum { ARTNET_MAX_RDM_ADDRESS_COUNT = 32 };
-// According to the rdm spec, this should be 256 bytes
+// According to the RDM spec, this should be 256 bytes
 // We'll set to 512 here just to be safe
 enum { ARTNET_MAX_RDM_DATA = 512 };
 enum { ARTNET_MAX_UID_COUNT = 200 };

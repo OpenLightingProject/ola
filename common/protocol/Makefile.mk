@@ -9,14 +9,17 @@ built_sources += \
 
 # LIBRARIES
 ##################################################
-common_libolacommon_la_SOURCES += \
+
+# We build the .cc files as a separate unit because they aren't warning-clean.
+noinst_LTLIBRARIES += common/protocol/libolaproto.la
+common_protocol_libolaproto_la_SOURCES = \
     common/protocol/Ola.pb.cc \
     common/protocol/OlaService.pb.cpp
-common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
+common_protocol_libolaproto_la_LIBADD = $(libprotobuf_LIBS)
 # required, otherwise we get build errors
-# TODO(simonn): this disables warnings for the entire libolacommon. That sucks.
-# Find a better way to do this.
-# common_libolaproto_la_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
+common_protocol_libolaproto_la_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
+
+common_libolacommon_la_LIBADD += common/protocol/libolaproto.la
 
 common/protocol/Ola.pb.cc common/protocol/Ola.pb.h: common/protocol/Ola.proto
 	$(PROTOC) --cpp_out common/protocol --proto_path $(srcdir)/common/protocol $(srcdir)/common/protocol/Ola.proto

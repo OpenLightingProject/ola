@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
@@ -33,11 +33,12 @@
 namespace ola {
 namespace rdm {
 
-using std::string;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::string;
+using std::vector;
 
 
 /*
@@ -62,7 +63,7 @@ QueueingRDMController::QueueingRDMController(
  */
 QueueingRDMController::~QueueingRDMController() {
   // delete all outstanding requests
-  std::vector<string> packets;
+  vector<string> packets;
   while (!m_pending_requests.empty()) {
     outstanding_rdm_request outstanding_request = m_pending_requests.front();
     if (outstanding_request.on_complete)
@@ -104,7 +105,7 @@ void QueueingRDMController::SendRDMRequest(const RDMRequest *request,
   if (m_pending_requests.size() >= m_max_queue_size) {
     OLA_WARN << "RDM Queue is full, dropping request";
     if (on_complete) {
-      std::vector<string> packets;
+      vector<string> packets;
       on_complete->Run(RDM_FAILED_TO_SEND, NULL, packets);
     }
     delete request;
@@ -173,7 +174,7 @@ void QueueingRDMController::DispatchNextRequest() {
 void QueueingRDMController::HandleRDMResponse(
     rdm_response_code status,
     const ola::rdm::RDMResponse *response,
-    const std::vector<std::string> &packets) {
+    const vector<string> &packets) {
   m_rdm_request_pending = false;
 
   if (m_pending_requests.empty()) {

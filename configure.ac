@@ -2,14 +2,25 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
-        [open-lighting@googlegroups.com])
+m4_include([config/ola_version.m4])
+AC_INIT([OLA], [ola_version], [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR([config])
 AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE([subdir-objects])
+
+# OLA version variables
+AC_SUBST([ola_major_version])
+OLA_MAJOR_VERSION=ola_major_version
+AC_SUBST(OLA_MAJOR_VERSION)
+AC_SUBST([ola_minor_version])
+OLA_MINOR_VERSION=ola_minor_version
+AC_SUBST(OLA_MINOR_VERSION)
+AC_SUBST([ola_revision_version])
+OLA_REVISION_VERSION=ola_revision_version
+AC_SUBST(OLA_REVISION_VERSION)
 
 # Checks for programs.
 AC_LANG([C++])
@@ -217,6 +228,11 @@ AC_CHECK_DECLS(NET_RT_DUMP, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
+AC_CHECK_DECLS(RLIMIT_RTPRIO, , ,
+               [#include <sys/resource.h>])
+
+AC_CHECK_DECLS(RLIMIT_RTTIME, , ,
+               [#include <sys/resource.h>])
 
 AC_CHECK_DECLS(SO_REUSEADDR, , ,
                [#include <sys/types.h>
@@ -296,6 +312,9 @@ ACX_PTHREAD([
              CC="$PTHREAD_CC"
              CXX="$PTHREAD_CXX"],
             [AC_MSG_ERROR([Missing pthread, please install it])])
+
+# pthread_setname_np can take either 1 or 2 arguments.
+PTHREAD_SET_NAME()
 
 # resolv
 AS_IF([test -z "${USING_WIN32_FALSE}"],
@@ -428,7 +447,7 @@ AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 # Optionally install the E1.33 library.
 AC_ARG_ENABLE(
   [e133],
-  [AS_HELP_STRING([--install-e133], [Install the E1.33 library])])
+  [AS_HELP_STRING([--enable-e133], [Install the E1.33 library])])
 # For now we install the ACN lib if the E1.33 lib is requested
 AM_CONDITIONAL([INSTALL_ACN], [test "x$enable_e133" = xyes])
 AM_CONDITIONAL([INSTALL_E133], [test "x$enable_e133" = xyes])
@@ -452,9 +471,10 @@ AM_CONDITIONAL([FATAL_WARNINGS], [test "x$enable_fatal_warnings" != xno])
 AC_ARG_ENABLE(
   [gcov],
   [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
-AS_IF([test "x$enable_gov" = xyes],
+AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-       CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"])
+       CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
+       LIBS="$LIBS -lgcov"])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
@@ -507,15 +527,25 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
 
+have_libusb_error_name="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_error_name], [libusb-1.0 >= 1.0.9],
+                         [have_libusb_error_name="yes"], [true])])
+AS_IF([test "x$have_libusb_error_name" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_ERROR_NAME], [1],
+                 [define if libusb is installed and has libusb_error_name])])
+
 # UART direct plugin
 AC_ARG_ENABLE(
   [uart],
   [AS_HELP_STRING([--disable-uart],
-                  [Avoid using native uart support])])
+                  [Avoid using native uart support even if it exists])])
 
-AC_CHECK_HEADERS([asm/termios.h], [have_asm_termios="yes"], [have_asm_termios="no"])
-AS_IF([test "x$have_asm_termios" = xyes],
-      [AC_DEFINE([USE_UART], [1], [define if asm/termios.h is available and direct UART support should be enabled])])
+have_uart="no"
+AS_IF([test "x$enable_uart" != xno],
+      [AC_CHECK_HEADERS([asm/termios.h], [have_uart="yes"], [true])])
+AS_IF([test "x$have_uart" = xyes],
+      [AC_DEFINE([HAVE_UART], [1], [define if native UART support exists])])
 
 
 # OSC Support.
@@ -558,25 +588,6 @@ AC_ARG_ENABLE(
 AS_IF([test "x$enable_root_check" = xno],
       [AC_DEFINE([OLAD_SKIP_ROOT_CHECK], [1],
                  [Defined if olad is allowed to run as root])])
-
-# OpenSLP is used for E1.33 support
-# This should be removed if we decide that E1.33 is going to use DNS-SD.
-# Openslp doesn't use pkg-config, so the users may need to pass CPPFLAGS
-# & LDFLAGS so we can find it.
-AC_ARG_ENABLE(
-  [slp],
-  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
-
-openslp_LIBS=""
-have_slp=no
-AS_IF([test "x$enable_slp" != xno],
-      [AC_CHECK_LIB([slp], [SLPOpen],
-                    [have_slp="yes" openslp_LIBS="-lslp"])])
-
-AM_CONDITIONAL([HAVE_SLP], [test "x$have_slp" = xyes])
-AS_IF([test "x$have_slp" = xyes],
-      [AC_DEFINE([HAVE_LIBSLP], [1], [define if libslp is installed])])
-AC_SUBST(openslp_LIBS)
 
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
@@ -621,6 +632,12 @@ AS_IF([test "x$build_java_libs" = xyes],
 # Plugins
 #####################################################
 
+AC_ARG_ENABLE(
+  [all-plugins],
+  AS_HELP_STRING(
+      [--disable-all-plugins],
+      [Disable all plugins, then enable the specific ones you want]))
+
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
 PLUGINS=""
@@ -631,6 +648,7 @@ PLUGIN_SUPPORT(dummy, USE_DUMMY)
 PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
 PLUGIN_SUPPORT(ftdidmx, USE_FTDI, [$have_libftdi])
+PLUGIN_SUPPORT(gpio, USE_GPIO)
 PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
@@ -642,7 +660,8 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
-PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_asm_termios])
+PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 
@@ -692,17 +711,15 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
 
 # Non-makefile generted files.
 AC_CONFIG_FILES([Doxyfile
+                 include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
                  plugins/usbpro/messages/libolausbproconf.pc
-                 slp/libolaslpclient.pc
-                 slp/libolaslpserver.pc
                  tools/e133/libolae133common.pc
                  tools/e133/libolae133controller.pc
-                 tools/e133/libolae133slp.pc
                  ])
 # Makefiles
 AC_CONFIG_FILES([Makefile java/Makefile])
@@ -721,6 +738,7 @@ Python API: ${enable_python_libs}
 Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
+Enabled Plugins: ${PLUGINS}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:

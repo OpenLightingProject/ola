@@ -68,7 +68,9 @@ bool SPIPlugin::StartHook() {
   vector<string> spi_files;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
       SPI_DEVICE_PREFIX_KEY);
-  ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files);
+  if (!ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files)) {
+    return false;
+  }
 
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
@@ -166,6 +168,9 @@ string SPIPlugin::Description() const {
 "\n"
 "<device>-<port>-dmx-address = <int>\n"
 "The DMX address to use. e.g. spidev0.1-0-dmx-address = 1\n"
+"\n"
+"<device>-<port>-device-label = <string>\n"
+"The RDM device label to use.\n"
 "\n"
 "<device>-<port>-personality = <int>\n"
 "The RDM personality to use.\n"

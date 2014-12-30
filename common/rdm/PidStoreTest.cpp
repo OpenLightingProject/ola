@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "common/rdm/PidStoreLoader.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/SchemaPrinter.h"
@@ -45,6 +45,7 @@ using ola::rdm::RootPidStore;
 using std::auto_ptr;
 using std::endl;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 
@@ -186,7 +187,7 @@ void PidStoreTest::testPidStoreLoad() {
   PidStoreLoader loader;
   // This is a stringstream not a ostringstream as the other end needs an
   // istream
-  std::stringstream str;
+  stringstream str;
 
   // check that this fails to load
   const RootPidStore *empty_root_store = loader.LoadFromStream(&str);
@@ -230,23 +231,23 @@ void PidStoreTest::testPidStoreLoad() {
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
-    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+    root_store->ManufacturerStore(ola::OPEN_LIGHTING_ESTA_CODE);
   OLA_ASSERT_TRUE(open_lighting_store);
   OLA_ASSERT_EQ(0u, open_lighting_store->PidCount());
 
   // lookup by value
   OLA_ASSERT_TRUE(root_store->GetDescriptor(16));
   OLA_ASSERT_FALSE(root_store->GetDescriptor(17));
-  OLA_ASSERT_TRUE(root_store->GetDescriptor(16, OPEN_LIGHTING_ESTA_CODE));
-  OLA_ASSERT_FALSE(root_store->GetDescriptor(17, OPEN_LIGHTING_ESTA_CODE));
+  OLA_ASSERT_TRUE(root_store->GetDescriptor(16, ola::OPEN_LIGHTING_ESTA_CODE));
+  OLA_ASSERT_FALSE(root_store->GetDescriptor(17, ola::OPEN_LIGHTING_ESTA_CODE));
 
   // lookup by name
   OLA_ASSERT_TRUE(root_store->GetDescriptor("PROXIED_DEVICES"));
   OLA_ASSERT_FALSE(root_store->GetDescriptor("DEVICE_INFO"));
   OLA_ASSERT_TRUE(root_store->GetDescriptor("PROXIED_DEVICES",
-                                            OPEN_LIGHTING_ESTA_CODE));
+                                            ola::OPEN_LIGHTING_ESTA_CODE));
   OLA_ASSERT_FALSE(root_store->GetDescriptor("DEVICE_INFO",
-                                             OPEN_LIGHTING_ESTA_CODE));
+                                             ola::OPEN_LIGHTING_ESTA_CODE));
 
   // check lookups
   const PidStore *esta_store = root_store->EstaStore();
@@ -364,7 +365,7 @@ void PidStoreTest::testPidStoreFileLoad() {
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
-    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+    root_store->ManufacturerStore(ola::OPEN_LIGHTING_ESTA_CODE);
   OLA_ASSERT_NOT_NULL(open_lighting_store);
   OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 
@@ -399,8 +400,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
       GetTestDataFile("pids")));
   OLA_ASSERT_NOT_NULL(root_store.get());
   // check version
-  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774),
-                       root_store->Version());
+  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774), root_store->Version());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();
@@ -412,7 +412,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
-    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+    root_store->ManufacturerStore(ola::OPEN_LIGHTING_ESTA_CODE);
   OLA_ASSERT_NOT_NULL(open_lighting_store);
   OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 

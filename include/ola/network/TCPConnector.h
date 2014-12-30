@@ -100,42 +100,21 @@ class TCPConnector {
    */
   unsigned int ConnectionsPending() const { return m_connections.size(); }
 
- private:
   /**
-   * A TCP socket waiting to connect.
+   * @brief Called when the TCP socket connects.
+   * @param connection the connection that is now connected.
    */
-  class PendingTCPConnection: public ola::io::WriteFileDescriptor {
-   public:
-    PendingTCPConnection(TCPConnector *connector,
-                         const IPV4Address &ip,
-                         int fd,
-                         TCPConnectCallback *callback);
+  void SocketWritable(class PendingTCPConnection *connection);
 
-    ola::io::DescriptorHandle WriteDescriptor() const { return m_handle; }
-
-    void PerformWrite();
-    void Close();
-
-    const IPV4Address ip_address;
-    TCPConnectCallback *callback;
-    ola::thread::timeout_id timeout_id;
-
-   private:
-    TCPConnector *m_connector;
-    ola::io::DescriptorHandle m_handle;
-  };
-
-  typedef std::set<PendingTCPConnection*> ConnectionSet;
-  typedef std::vector<PendingTCPConnection*> ConnectionList;
+ private:
+  typedef std::set<class PendingTCPConnection*> ConnectionSet;
 
   ola::io::SelectServerInterface *m_ss;
   ConnectionSet m_connections;
-  ConnectionList m_orphaned_connections;
 
-  void SocketWritable(PendingTCPConnection *connection);
-  void FreePendingConnection(PendingTCPConnection *connection);
+  void FreePendingConnection(class PendingTCPConnection *connection);
   void Timeout(const ConnectionSet::iterator &iter);
-  void TimeoutEvent(PendingTCPConnection *connection);
+  void TimeoutEvent(class PendingTCPConnection *connection);
   void CleanUpOrphans();
 
   DISALLOW_COPY_AND_ASSIGN(TCPConnector);

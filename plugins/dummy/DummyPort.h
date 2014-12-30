@@ -25,7 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
@@ -61,6 +61,14 @@ class DummyPort: public BasicOutputPort {
     uint8_t number_of_network_responders;
   };
 
+
+  /**
+   * Create a new DummyPort
+   * @param parent the parent device for this port
+   * @param options the config for the DummyPort such as the number of fake RDM
+   * devices to create
+   * @param id the ID of this port
+   */
   DummyPort(class DummyDevice *parent,
             const Options &options,
             unsigned int id);
@@ -69,6 +77,10 @@ class DummyPort: public BasicOutputPort {
   std::string Description() const { return "Dummy Port"; }
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+
+  /*
+   * Handle an RDM Request
+   */
   void SendRDMRequest(const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 

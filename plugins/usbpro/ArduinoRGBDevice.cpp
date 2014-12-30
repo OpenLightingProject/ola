@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/io/SelectServerInterface.h"

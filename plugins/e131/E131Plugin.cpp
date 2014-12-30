@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/StringUtils.h"
 #include "ola/acn/CID.h"
 #include "olad/PluginAdaptor.h"
@@ -39,6 +40,7 @@ using std::string;
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
 const char E131Plugin::DSCP_KEY[] = "dscp";
+const char E131Plugin::DRAFT_DISCOVERY_KEY[] = "draft_discovery";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
 const char E131Plugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
 const char E131Plugin::IP_KEY[] = "ip";
@@ -61,10 +63,17 @@ bool E131Plugin::StartHook() {
 
   E131Device::E131DeviceOptions options;
   options.use_rev2 = (m_preferences->GetValue(REVISION_KEY) == REVISION_0_2);
-  options.prepend_hostname = m_preferences->GetValueAsBool(
-      PREPEND_HOSTNAME_KEY);
   options.ignore_preview = m_preferences->GetValueAsBool(
       IGNORE_PREVIEW_DATA_KEY);
+  options.enable_draft_discovery = m_preferences->GetValueAsBool(
+      DRAFT_DISCOVERY_KEY);
+  if (m_preferences->GetValueAsBool(PREPEND_HOSTNAME_KEY)) {
+    std::ostringstream str;
+    str << ola::network::Hostname() << "-" << m_plugin_adaptor->InstanceName();
+    options.source_name = str.str();
+  } else {
+    options.source_name = m_plugin_adaptor->InstanceName();
+  }
 
   unsigned int dscp;
   if (!StringToInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
@@ -132,6 +141,9 @@ string E131Plugin::Description() const {
 "dscp = [int]\n"
 "The DSCP value to tag the packets with, range is 0 to 63.\n"
 "\n"
+"draft_discovery = [bool]\n"
+"Enable the draft (2014) E1.31 discovery protocol.\n"
+"\n"
 "ignore_preview = [true|false]\n"
 "Ignore preview data.\n"
 "\n"
@@ -176,6 +188,11 @@ bool E131Plugin::SetDefaultPreferences() {
       DSCP_KEY,
       UIntValidator(0, 63),
       DEFAULT_DSCP_VALUE);
+
+  save |= m_preferences->SetDefaultValue(
+      DRAFT_DISCOVERY_KEY,
+      BoolValidator(),
+      BoolValidator::DISABLED);
 
   save |= m_preferences->SetDefaultValue(
       IGNORE_PREVIEW_DATA_KEY,

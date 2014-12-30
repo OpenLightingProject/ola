@@ -43,11 +43,11 @@ class DMPE131Inflator: public DMPInflator {
     }
     ~DMPE131Inflator();
 
-    bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
+    bool SetHandler(uint16_t universe, ola::DmxBuffer *buffer,
                     uint8_t *priority, ola::Callback0<void> *handler);
-    bool RemoveHandler(unsigned int universe);
+    bool RemoveHandler(uint16_t universe);
 
-    void RegisteredUniverses(std::vector<unsigned int> *universes);
+    void RegisteredUniverses(std::vector<uint16_t> *universes);
 
  protected:
     virtual bool HandlePDUData(uint32_t vector,
@@ -71,7 +71,9 @@ class DMPE131Inflator: public DMPInflator {
       std::vector<dmx_source> sources;
     } universe_handler;
 
-    std::map<unsigned int, universe_handler> m_handlers;
+    typedef std::map<uint16_t, universe_handler> UniverseHandlers;
+
+    UniverseHandlers m_handlers;
     bool m_ignore_preview;
     ola::Clock m_clock;
 
@@ -81,7 +83,8 @@ class DMPE131Inflator: public DMPInflator {
 
     // The max number of sources we'll track per universe.
     static const uint8_t MAX_MERGE_SOURCES = 6;
-    static const uint8_t MAX_PRIORITY = 200;
+    // The max merge priority.
+    static const uint8_t MAX_E131_PRIORITY = 200;
     // ignore packets that differ by less than this amount from the last one
     static const int8_t SEQUENCE_DIFF_THRESHOLD = -20;
     // expire sources after 2.5s

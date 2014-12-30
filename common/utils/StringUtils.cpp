@@ -56,7 +56,7 @@ void StringSplit(const string &input,
   }
 }
 
-void StringTrim(std::string *input) {
+void StringTrim(string *input) {
   string characters_to_trim = " \n\r\t";
   string::size_type start = input->find_first_not_of(characters_to_trim);
   string::size_type end = input->find_last_not_of(characters_to_trim);
@@ -148,10 +148,12 @@ bool StringToBoolTolerant(const string &value, bool *output) {
   } else {
     string lc_value(value);
     ToLower(&lc_value);
-    if (lc_value == "on") {
+    if ((lc_value == "on") || (lc_value == "enable") ||
+        (lc_value == "enabled")) {
       *output = true;
       return true;
-    } else if (lc_value == "off") {
+    } else if ((lc_value == "off") || (lc_value == "disable") ||
+               (lc_value == "disabled")) {
       *output = false;
       return true;
     }

@@ -16,15 +16,14 @@
  * e133-controller.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This locates all E1.33 devices using SLP and then searches for one that
- * matches the specified UID. If --target is used it skips the SLP skip.
+ * This connects to the device specified in --target.
  *
  * It then sends some RDM commands to the E1.33 node and waits for the
  * response.
  */
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
@@ -34,9 +33,7 @@
 #include <ola/acn/CID.h>
 #include <ola/e133/E133StatusHelper.h>
 #include <ola/e133/E133Receiver.h>
-#include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
-#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/IOStack.h>
 #include <ola/network/IPV4Address.h>
@@ -48,7 +45,6 @@
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/UID.h>
-#include <ola/slp/URLEntry.h>
 #include <ola/stl/STLUtils.h>
 
 #include <algorithm>
@@ -61,12 +57,12 @@
 #include "plugins/e131/e131/RDMPDU.h"
 
 DEFINE_s_uint16(endpoint, e, 0, "The endpoint to use");
-DEFINE_s_string(target, t, "", "List of IPs to connect to, overrides SLP");
+DEFINE_s_string(target, t, "", "List of IPs to connect to");
 DEFINE_string(listen_ip, "", "The IP address to listen on");
 DEFINE_s_string(pid_location, p, "",
                 "The directory to read PID definitiions from");
-DEFINE_s_bool(set, s, false, "Perform a SET (default is GET)");
-DEFINE_bool(list_pids, false, "Display a list of pids");
+DEFINE_s_default_bool(set, s, false, "Perform a SET (default is GET)");
+DEFINE_default_bool(list_pids, false, "Display a list of pids");
 DEFINE_s_string(uid, u, "", "The UID of the device to control.");
 
 using ola::NewCallback;
@@ -81,7 +77,6 @@ using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using ola::slp::URLEntries;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -111,10 +106,9 @@ class SimpleE133Controller {
  public:
     struct Options {
       IPV4Address controller_ip;
-      bool use_slp;
 
-      Options(const IPV4Address &ip, bool use_slp)
-          : controller_ip(ip), use_slp(use_slp) {
+      explicit Options(const IPV4Address &ip)
+          : controller_ip(ip) {
       }
     };
 
@@ -123,7 +117,6 @@ class SimpleE133Controller {
     ~SimpleE133Controller();
 
     bool Init();
-    void PopulateResponderList();
     void AddUID(const UID &uid, const IPV4Address &ip);
     void Run();
     void Stop() { m_ss.Terminate(); }
@@ -155,12 +148,9 @@ class SimpleE133Controller {
     uid_to_ip_map m_uid_to_ip;
 
     UID m_src_uid;
-    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
     PidStoreHelper *m_pid_helper;
     ola::rdm::CommandPrinter m_command_printer;
-    bool m_uid_list_updated;
 
-    void DiscoveryCallback(bool status, const URLEntries &urls);
     bool SendRequest(const UID &uid, uint16_t endpoint, RDMRequest *request);
     void HandlePacket(const ola::e133::E133RDMMessage &rdm_message);
     void HandleNack(const RDMResponse *response);
@@ -182,15 +172,9 @@ SimpleE133Controller::SimpleE133Controller(
           &m_udp_socket,
           NewCallback(this, &SimpleE133Controller::HandleStatusMessage),
           NewCallback(this, &SimpleE133Controller::HandlePacket)),
-      m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
+      m_src_uid(ola::OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),
-      m_command_printer(&cout, m_pid_helper),
-      m_uid_list_updated(false) {
-  if (options.use_slp) {
-    m_slp_thread.reset(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss));
-    m_slp_thread->SetNewDeviceCallback(
-        ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
-  }
+      m_command_printer(&cout, m_pid_helper) {
 }
 
 
@@ -198,10 +182,7 @@ SimpleE133Controller::SimpleE133Controller(
  * Tear down
  */
 SimpleE133Controller::~SimpleE133Controller() {
-  if (m_slp_thread.get()) {
-    m_slp_thread->Join(NULL);
-    m_slp_thread->Cleanup();
-  }
+  // This used to stop the SLP thread.
 }
 
 
@@ -219,28 +200,9 @@ bool SimpleE133Controller::Init() {
 
   m_ss.AddReadDescriptor(&m_udp_socket);
 
-  if (m_slp_thread.get()) {
-    if (!m_slp_thread->Init()) {
-      OLA_WARN << "SLPThread Init() failed";
-      return false;
-    }
-
-    m_slp_thread->Start();
-  }
+  // Previously this started the SLP thread.
   return true;
 }
-
-
-/**
- * Locate the responder
- */
-void SimpleE133Controller::PopulateResponderList() {
-  if (!m_uid_list_updated) {
-    // if we don't have a up to date list wait for slp to return
-    m_ss.Run();
-  }
-}
-
 
 void SimpleE133Controller::AddUID(const UID &uid, const IPV4Address &ip) {
   OLA_INFO << "Adding UID " << uid << " @ " << ip;
@@ -313,31 +275,6 @@ void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
   } else {
     OLA_INFO << "Request sent";
   }
-}
-
-
-/**
- * Called when SLP discovery completes.
- */
-void SimpleE133Controller::DiscoveryCallback(bool ok, const URLEntries &urls) {
-  if (ok) {
-    URLEntries::const_iterator iter;
-    UID uid(0, 0);
-    IPV4Address ip;
-    for (iter = urls.begin(); iter != urls.end(); ++iter) {
-      OLA_INFO << "Located " << *iter;
-      if (!ola::e133::ParseE133URL(iter->url(), &uid, &ip))
-        continue;
-
-      if (uid.IsBroadcast()) {
-        OLA_WARN << "UID " << uid << "@" << ip << " is broadcast";
-        continue;
-      }
-      AddUID(uid, ip);
-    }
-  }
-  m_uid_list_updated = true;
-  m_ss.Terminate();
 }
 
 
@@ -489,8 +426,7 @@ int main(int argc, char *argv[]) {
 
   // convert the node's IP address if specified
   IPV4Address target_ip;
-  if (!FLAGS_target.str().empty() &&
-      !IPV4Address::FromString(FLAGS_target, &target_ip)) {
+  if (!IPV4Address::FromString(FLAGS_target, &target_ip)) {
     ola::DisplayUsage();
     exit(ola::EXIT_USAGE);
   }
@@ -551,7 +487,7 @@ int main(int argc, char *argv[]) {
   }
 
   SimpleE133Controller controller(
-      SimpleE133Controller::Options(controller_ip, target_ip.AsInt() == 0),
+      SimpleE133Controller::Options(controller_ip),
       &pid_helper);
 
   if (!controller.Init()) {
@@ -559,12 +495,8 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_UNAVAILABLE);
   }
 
-  if (target_ip.AsInt())
-    // manually add the responder address
-    controller.AddUID(*uid, target_ip);
-  else
-    // this blocks while the slp thread does it's thing
-    controller.PopulateResponderList();
+  // manually add the responder address
+  controller.AddUID(*uid, target_ip);
 
   // convert the message to binary form
   unsigned int param_data_length;

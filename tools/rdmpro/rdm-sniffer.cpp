@@ -21,8 +21,8 @@
 #include <string.h>
 #include <time.h>
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
@@ -61,17 +61,17 @@ using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
 
-DEFINE_s_bool(display_dmx, d, false,
-              "Display DMX frames. Defaults to false.");
-DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
-DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_default_bool(display_dmx, d, false,
+                      "Display DMX frames. Defaults to false.");
+DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
 DEFINE_s_string(readfile, p, "",
                 "Display data from a previously captured file.");
 DEFINE_s_string(savefile, w, "",
                 "Also write the captured data to a file.");
-DEFINE_bool(display_asc, false,
-              "Display non-RDM alternate start code frames.");
-DEFINE_int16(dmx_slot_limit, 512,
+DEFINE_default_bool(display_asc, false,
+                    "Display non-RDM alternate start code frames.");
+DEFINE_int16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
              "Only display the first N slots of DMX data.");
 
 /**
@@ -120,7 +120,7 @@ class RDMSniffer {
 
     static void InitOptions(RDMSnifferOptions *options) {
       options->display_dmx_frames = false;
-      options->dmx_slot_limit = DMX_UNIVERSE_SIZE;
+      options->dmx_slot_limit = ola::DMX_UNIVERSE_SIZE;
       options->display_rdm_frames = true;
       options->summarize_rdm_frames = true;
       options->unpack_param_data = true;
@@ -289,7 +289,7 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
  */
 void RDMSniffer::ProcessFrame() {
   switch (m_frame[0]) {
-    case DMX512_START_CODE:
+    case ola::DMX512_START_CODE:
       if (m_options.display_dmx_frames)
         DisplayDmxFrame();
       break;

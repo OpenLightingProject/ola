@@ -32,187 +32,108 @@ using ola::io::SelectServerInterface;
 using ola::thread::timeout_id;
 using std::string;
 
-/*
- * Create a new PluginAdaptor
- * @param device_manager  pointer to a DeviceManager object
- * @param select_server pointer to the SelectServer object
- * @param preferences_factory pointer to the PreferencesFactory object
- */
 PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              SelectServerInterface *select_server,
                              ExportMap *export_map,
                              PreferencesFactory *preferences_factory,
-                             PortBrokerInterface *port_broker):
+                             PortBrokerInterface *port_broker,
+                             const std::string *instance_name):
   m_device_manager(device_manager),
   m_ss(select_server),
   m_export_map(export_map),
   m_preferences_factory(preferences_factory),
-  m_port_broker(port_broker) {
+  m_port_broker(port_broker),
+  m_instance_name(instance_name) {
 }
 
-
-/*
- * Register a descriptor with the select server.
- * @param descriptor the descriptor to register
- * @return true on sucess, false on failure.
- */
 bool PluginAdaptor::AddReadDescriptor(
     ola::io::ReadFileDescriptor *descriptor) {
   return m_ss->AddReadDescriptor(descriptor);
 }
 
-/*
- * Register a connected descriptor with the select server.
- * @param descriptor the descriptor to register
- * @return true on sucess, false on failure.
- */
 bool PluginAdaptor::AddReadDescriptor(
     ola::io::ConnectedDescriptor *descriptor,
     bool delete_on_close) {
   return m_ss->AddReadDescriptor(descriptor, delete_on_close);
 }
 
-
-/*
- * Remove a descriptor from the select server
- */
 void PluginAdaptor::RemoveReadDescriptor(
     ola::io::ReadFileDescriptor *descriptor) {
   m_ss->RemoveReadDescriptor(descriptor);
 }
 
-
-/*
- * Remove a descriptor from the select server
- */
 void PluginAdaptor::RemoveReadDescriptor(
     ola::io::ConnectedDescriptor *descriptor) {
   m_ss->RemoveReadDescriptor(descriptor);
 }
 
-
-/**
- * Register a WriteFileDescriptor with the SelectServer
- */
 bool PluginAdaptor::AddWriteDescriptor(
     ola::io::WriteFileDescriptor *descriptor) {
   return m_ss->AddWriteDescriptor(descriptor);
 }
 
-
-/*
- * Remove a descriptor from the select server
- */
 void PluginAdaptor::RemoveWriteDescriptor(
     ola::io::WriteFileDescriptor *descriptor) {
   m_ss->RemoveWriteDescriptor(descriptor);
 }
 
-
-/*
- * Register a repeating timeout
- * @param ms the time between function calls
- * @param closure the OlaClosure to call when the timeout expires
- * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
- */
 timeout_id PluginAdaptor::RegisterRepeatingTimeout(
     unsigned int ms,
     Callback0<bool> *closure) {
   return m_ss->RegisterRepeatingTimeout(ms, closure);
 }
 
-
-/*
- * Register a repeating timeout
- * @param interval the time between function calls
- * @param closure the OlaClosure to call when the timeout expires
- * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
- */
 timeout_id PluginAdaptor::RegisterRepeatingTimeout(
     const TimeInterval &interval,
     Callback0<bool> *closure) {
   return m_ss->RegisterRepeatingTimeout(interval, closure);
 }
 
-
-/*
- * Register a single timeout
- * @param ms the time between function calls
- * @param closure the OlaClosure to call when the timeout expires
- * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
- */
 timeout_id PluginAdaptor::RegisterSingleTimeout(
     unsigned int ms,
     SingleUseCallback0<void> *closure) {
   return m_ss->RegisterSingleTimeout(ms, closure);
 }
 
-
-/*
- * Register a single timeout
- * @param interval the time between function calls
- * @param closure the OlaClosure to call when the timeout expires
- * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
- */
 timeout_id PluginAdaptor::RegisterSingleTimeout(
     const TimeInterval &interval,
     SingleUseCallback0<void> *closure) {
   return m_ss->RegisterSingleTimeout(interval, closure);
 }
 
-
-/*
- * Remove a timeout
- * @param id the id of the timeout to remove
- */
 void PluginAdaptor::RemoveTimeout(timeout_id id) {
   m_ss->RemoveTimeout(id);
 }
 
-
-/*
- * Execute a closure in the main thread.
- * @param closure the closure to execute.
- */
 void PluginAdaptor::Execute(ola::BaseCallback0<void> *closure) {
   m_ss->Execute(closure);
 }
 
+void PluginAdaptor::DrainCallbacks() {
+  m_ss->DrainCallbacks();
+}
 
-/*
- * Register a device
- * @param dev  the device to register
- * @return true on success, false on error
- */
 bool PluginAdaptor::RegisterDevice(AbstractDevice *device) const {
   return m_device_manager->RegisterDevice(device);
 }
 
-
-/*
- * Unregister a device
- * @param dev  the device to unregister
- * @return true on success, false on error
- */
 bool PluginAdaptor::UnregisterDevice(AbstractDevice *device) const {
   return m_device_manager->UnregisterDevice(device);
 }
 
-
-/*
- * Create a new preferences container
- * @return a Preferences object
- */
 Preferences *PluginAdaptor::NewPreference(const string &name) const {
   return m_preferences_factory->NewPreference(name);
 }
 
-
-/*
- * Return the wake up time for the select server
- * @return a TimeStamp object
- */
 const TimeStamp *PluginAdaptor::WakeUpTime() const {
   return m_ss->WakeUpTime();
+}
+
+const std::string PluginAdaptor::InstanceName() {
+  if (m_instance_name) {
+    return *m_instance_name;
+  } else {
+    return "";
+  }
 }
 }  // namespace ola

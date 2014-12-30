@@ -34,13 +34,76 @@
 namespace ola {
 namespace network {
 
+/*
+ * A TCP socket waiting to connect.
+ */
+class PendingTCPConnection: public ola::io::WriteFileDescriptor {
+ public:
+  PendingTCPConnection(TCPConnector *connector,
+                       const IPV4Address &ip,
+                       int fd,
+                       TCPConnector::TCPConnectCallback *callback);
+
+  ola::io::DescriptorHandle WriteDescriptor() const { return m_handle; }
+
+  void PerformWrite();
+  void Close();
+
+  const IPV4Address ip_address;
+  TCPConnector::TCPConnectCallback *callback;
+  ola::thread::timeout_id timeout_id;
+
+ private:
+  TCPConnector *m_connector;
+  ola::io::DescriptorHandle m_handle;
+};
+
+PendingTCPConnection::PendingTCPConnection(
+    TCPConnector *connector,
+    const IPV4Address &ip,
+    int fd,
+    TCPConnector::TCPConnectCallback *callback)
+    : WriteFileDescriptor(),
+      ip_address(ip),
+      callback(callback),
+      timeout_id(ola::thread::INVALID_TIMEOUT),
+      m_connector(connector) {
+#ifdef _WIN32
+  m_handle.m_handle.m_fd = fd;
+  m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+#else
+  m_handle = fd;
+#endif
+}
+
+/*
+ * Close this connection
+ */
+void PendingTCPConnection::Close() {
+#ifdef _WIN32
+  close(m_handle.m_handle.m_fd);
+#else
+  close(m_handle);
+#endif
+}
+
+/*
+ * Called when the socket becomes writeable
+ */
+void PendingTCPConnection::PerformWrite() {
+  m_connector->SocketWritable(this);
+}
+
+void DeleteConnection(PendingTCPConnection *connection) {
+  delete connection;
+}
+
 TCPConnector::TCPConnector(ola::io::SelectServerInterface *ss)
     : m_ss(ss) {
 }
 
 TCPConnector::~TCPConnector() {
   CancelAll();
-  CleanUpOrphans();
 }
 
 
@@ -80,7 +143,8 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
     if (errno != EINPROGRESS) {
 #endif
       int error = errno;
-      OLA_WARN << "connect to " << endpoint << " failed, " << strerror(error);
+      OLA_WARN << "connect() to " << endpoint << " returned, "
+               << strerror(error);
       close(sd);
       callback->Run(-1, error);
       return 0;
@@ -164,11 +228,21 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
 #else
   int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, &error, &len);
 #endif
-  if (r < 0)
+  if (r < 0) {
     error = errno;
+  }
+
+  ConnectionSet::iterator iter = m_connections.find(connection);
+  if (iter != m_connections.end()) {
+    m_connections.erase(iter);
+  }
+
+  // we're already within the PendingTCPConnection's call stack here
+  // schedule the deletion to run later
+  m_ss->Execute(ola::NewSingleCallback(DeleteConnection, connection));
 
   if (error) {
-    OLA_WARN << "Failed to connect to " << connection->ip_address << " error "
+    OLA_WARN << "connect() to " << connection->ip_address << " returned: "
       << strerror(error);
     connection->Close();
     connection->callback->Run(-1, error);
@@ -179,15 +253,6 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     connection->callback->Run(connection->WriteDescriptor(), 0);
 #endif
   }
-
-  ConnectionSet::iterator iter = m_connections.find(connection);
-  if (iter != m_connections.end())
-    m_connections.erase(iter);
-
-  // we're already within the PendingTCPConnection's call stack here
-  // schedule the deletion to run later
-  m_orphaned_connections.push_back(connection);
-  m_ss->Execute(ola::NewSingleCallback(this, &TCPConnector::CleanUpOrphans));
 }
 
 /**
@@ -220,49 +285,6 @@ void TCPConnector::TimeoutEvent(PendingTCPConnection *connection) {
   connection->timeout_id = ola::thread::INVALID_TIMEOUT;
   Timeout(iter);
   m_connections.erase(iter);
-}
-
-
-TCPConnector::PendingTCPConnection::PendingTCPConnection(
-    TCPConnector *connector,
-    const IPV4Address &ip,
-    int fd,
-    TCPConnectCallback *callback)
-        : WriteFileDescriptor(),
-          ip_address(ip),
-          callback(callback),
-          timeout_id(ola::thread::INVALID_TIMEOUT),
-          m_connector(connector) {
-#ifdef _WIN32
-  m_handle.m_handle.m_fd = fd;
-  m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
-#else
-  m_handle = fd;
-#endif
-}
-
-
-/**
- * Close this connection
- */
-void TCPConnector::PendingTCPConnection::Close() {
-#ifdef _WIN32
-  close(m_handle.m_handle.m_fd);
-#else
-  close(m_handle);
-#endif
-}
-
-
-/**
- * Called when the socket becomes writeable
- */
-void TCPConnector::PendingTCPConnection::PerformWrite() {
-  m_connector->SocketWritable(this);
-}
-
-void TCPConnector::CleanUpOrphans() {
-  STLDeleteElements(&m_orphaned_connections);
 }
 }  // namespace network
 }  // namespace ola

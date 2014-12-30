@@ -117,6 +117,14 @@ AC_DEFUN([PLUGIN_SUPPORT],
     enable_plugin="no";
   fi
 
+  # If we've disabled all plugins, disable this one unless it has been
+  # explicitly enabled
+  if test "${enable_all_plugins}" == "no"; then
+    if test "${enable_plugin}" != "yes"; then
+      enable_plugin="no";
+    fi
+  fi
+
   if test "${enable_plugin}" != "no"; then
     PLUGINS="${PLUGINS} ${plugin_key}";
     AC_DEFINE_UNQUOTED($2, [1], [define if $1 is to be used])

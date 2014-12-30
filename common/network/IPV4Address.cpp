@@ -52,10 +52,25 @@ namespace network {
 
 using std::string;
 
+bool IPV4Address::operator<(const IPV4Address &other) const {
+  // Stored in network byte order, so convert to sort appropriately
+  return NetworkToHost(m_address) < NetworkToHost(other.m_address);
+}
+
+bool IPV4Address::operator>(const IPV4Address &other) const {
+  // Stored in network byte order, so convert to sort appropriately
+  return NetworkToHost(m_address) > NetworkToHost(other.m_address);
+}
+
 bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
 // TODO(Peter): This currently allows some rather quirky values as per
 // inet_aton, we may want to restrict that in future to match IPV4Validator
+
+  if (address.length() == 0) {
+    // Don't bother trying to extract an address if we weren't given one
+    return false;
+  }
 
 #ifdef HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), addr));
@@ -75,13 +90,13 @@ bool IPV4Address::IsWildcard() const {
   return m_address == INADDR_ANY;
 }
 
-std::string IPV4Address::ToString() const {
+string IPV4Address::ToString() const {
   struct in_addr addr;
   addr.s_addr = m_address;
   return inet_ntoa(addr);
 }
 
-IPV4Address* IPV4Address::FromString(const std::string &address) {
+IPV4Address* IPV4Address::FromString(const string &address) {
   struct in_addr addr;
   if (!IPV4StringToAddress(address, &addr))
     return NULL;
@@ -89,7 +104,7 @@ IPV4Address* IPV4Address::FromString(const std::string &address) {
   return new IPV4Address(addr.s_addr);
 }
 
-bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
+bool IPV4Address::FromString(const string &address, IPV4Address *target) {
   struct in_addr addr;
   if (!IPV4StringToAddress(address, &addr))
     return false;
@@ -97,7 +112,7 @@ bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   return true;
 }
 
-IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
+IPV4Address IPV4Address::FromStringOrDie(const string &address) {
   struct in_addr addr;
   assert(IPV4StringToAddress(address, &addr));
   return IPV4Address(addr.s_addr);

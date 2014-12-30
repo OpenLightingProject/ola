@@ -21,7 +21,7 @@
 #ifndef OLA_AUTOSTART_H_
 #define OLA_AUTOSTART_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/network/TCPSocket.h>
 
 namespace ola {

@@ -25,23 +25,29 @@
 #include <config.h>
 #endif
 
+#include <ola/Constants.h>
+#include <ola/ExportMap.h>
+#include <ola/base/Macro.h>
+#include <ola/io/SelectServer.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/network/Socket.h>
+#include <ola/network/TCPSocketFactory.h>
+#include <ola/plugin_id.h>
+#include <ola/rdm/PidStore.h>
+#include <ola/rdm/UID.h>
+#include <ola/rpc/RpcSessionHandler.h>
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "ola/ExportMap.h"
-#include "ola/base/Macro.h"
-#include "ola/io/SelectServer.h"
-#include "ola/network/InterfacePicker.h"
-#include "ola/network/Socket.h"
-#include "ola/network/TCPSocketFactory.h"
-#include "ola/plugin_id.h"
-#include "ola/rdm/PidStore.h"
-#include "ola/rdm/UID.h"
-
 namespace ola {
 
+namespace rpc {
+class RpcSession;
+class RpcServer;
+}
 
 #ifdef HAVE_LIBMICROHTTPD
 typedef class OladHTTPServer OladHTTPServer_t;
@@ -49,43 +55,104 @@ typedef class OladHTTPServer OladHTTPServer_t;
 typedef int OladHTTPServer_t;
 #endif
 
-/*
- * The main OlaServer class
+/**
+ * @brief The main OlaServer class.
  */
-class OlaServer {
+class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
  public:
+  /**
+   * @brief Options for the OlaServer.
+   */
   struct Options {
-    bool http_enable;  // run the http server
-    bool http_localhost_only;  // restrict access to localhost only
-    bool http_enable_quit;  // enable /quit
-    unsigned int http_port;  // port to run the http server on
-    std::string http_data_dir;  // directory that contains the static content
+    bool http_enable;  /** @brief Run the HTTP server */
+    bool http_localhost_only;  /** @brief Restrict access to localhost only */
+    bool http_enable_quit;  /** @brief Enable /quit URL */
+    unsigned int http_port;  /** @brief Port to run the HTTP server on */
+    /** @brief Directory that contains the static content */
+    std::string http_data_dir;
     std::string network_interface;
-    std::string pid_data_dir;  // directory with the pid definitions.
+    std::string pid_data_dir;  /** @brief Directory with the PID definitions */
   };
 
-  OlaServer(class OlaClientServiceFactory *factory,
-            const std::vector<class PluginLoader*> &plugin_loaders,
+  /**
+   * @brief Create a new instance of the OlaServer.
+   * @param plugin_loaders A list of PluginLoaders to use to find plugins.
+   * @param preferences_factory The factory to use when creating Preference
+   *   objects.
+   * @param ss The SelectServer.
+   * @param ola_options The OlaServer options.
+   * @param socket An optional TCPAcceptingSocket in the listen state to use
+   *   for client RPC calls. Ownership is transferred.
+   * @param export_map An optional ExportMap. If set to NULL a new ExportMap
+   *   will be created.
+   */
+  OlaServer(const std::vector<class PluginLoader*> &plugin_loaders,
             class PreferencesFactory *preferences_factory,
             ola::io::SelectServer *ss,
             const Options &ola_options,
             ola::network::TCPAcceptingSocket *socket = NULL,
             ExportMap *export_map = NULL);
+
+  /**
+   * @brief Shutdown the server
+   */
   ~OlaServer();
 
+  /**
+   * @brief Initialize the OlaServer.
+   * @returns true if initialization succeeded, false if it failed.
+   */
   bool Init();
 
-  // Thread safe.
+  /**
+   * @brief Reload all plugins.
+   *
+   * This method is thread safe.
+   */
   void ReloadPlugins();
+
+  /**
+   * @brief Reload the pid store.
+   *
+   * This method is thread safe.
+   */
   void ReloadPidStore();
 
+  /**
+   * @brief Stop the OLA Server.
+   *
+   * This terminates the underlying SelectServer.
+   */
   void StopServer() { m_ss->Terminate(); }
+
+  /**
+   * @brief Add a new ConnectedDescriptor to this Server.
+   * @param descriptor the new ConnectedDescriptor, ownership is transferred.
+   */
   void NewConnection(ola::io::ConnectedDescriptor *descriptor);
-  void NewTCPConnection(ola::network::TCPSocket *socket);
-  void ChannelClosed(ola::io::DescriptorHandle read_descriptor);
-  bool RunHousekeeping();
+
+  /**
+   * @brief Return the socket address the RPC server is listening on.
+   * @returns A socket address, which is empty if the server hasn't been
+   *   initialized.
+   */
+  ola::network::GenericSocketAddress LocalRPCAddress() const;
+
+  // Called by the RpcServer when clients connect or disconnect.
+  void NewClient(ola::rpc::RpcSession *session);
+  void ClientRemoved(ola::rpc::RpcSession *session);
+
+  /**
+   * @brief Get the instance name
+   * @return a string which is the instance name
+   */
+  const std::string InstanceName() {
+    return m_instance_name;
+  }
 
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
+
+  static const unsigned int DEFAULT_RPC_PORT = OLA_DEFAULT_PORT;
 
  private :
   struct ClientEntry {
@@ -95,17 +162,18 @@ class OlaServer {
 
   typedef std::map<ola::io::DescriptorHandle, ClientEntry> ClientMap;
 
-  class OlaClientServiceFactory *m_service_factory;
+  // These are all passed to the constructor.
+  const Options m_options;
   std::vector<class PluginLoader*> m_plugin_loaders;
+  class PreferencesFactory *m_preferences_factory;
   ola::io::SelectServer *m_ss;
-  ola::network::TCPSocketFactory m_tcp_socket_factory;
   ola::network::TCPAcceptingSocket *m_accepting_socket;
+  class ExportMap *m_export_map;
 
   std::auto_ptr<class ExportMap> m_our_export_map;
-  class ExportMap *m_export_map;
-  class PreferencesFactory *m_preferences_factory;
-  class Preferences *m_universe_preferences;
+  ola::rdm::UID m_default_uid;
 
+  // These are all populated in Init.
   std::auto_ptr<class DeviceManager> m_device_manager;
   std::auto_ptr<class PluginManager> m_plugin_manager;
   std::auto_ptr<class PluginAdaptor> m_plugin_adaptor;
@@ -115,27 +183,39 @@ class OlaServer {
   std::auto_ptr<class ClientBroker> m_broker;
   std::auto_ptr<class PortBroker> m_port_broker;
   std::auto_ptr<const ola::rdm::RootPidStore> m_pid_store;
+  std::auto_ptr<class DiscoveryAgentInterface> m_discovery_agent;
+  std::auto_ptr<ola::rpc::RpcServer> m_rpc_server;
+  class Preferences *m_server_preferences;
+  class Preferences *m_universe_preferences;
+  std::string m_instance_name;
 
   ola::thread::timeout_id m_housekeeping_timeout;
-  ClientMap m_sd_to_service;
   std::auto_ptr<OladHTTPServer_t> m_httpd;
-  std::auto_ptr<class DiscoveryAgentInterface> m_discovery_agent;
-  const Options m_options;
-  ola::rdm::UID m_default_uid;
+
+  bool RunHousekeeping();
 
 #ifdef HAVE_LIBMICROHTTPD
-  bool StartHttpServer(const ola::network::Interface &iface);
+  bool StartHttpServer(ola::rpc::RpcServer *server,
+                       const ola::network::Interface &iface);
 #endif
+  /**
+   * @brief Stop and unload all the plugins
+   */
   void StopPlugins();
-  void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
-  void CleanupConnection(ClientEntry client);
+  bool InternalNewConnection(ola::rpc::RpcServer *server,
+                             ola::io::ConnectedDescriptor *descriptor);
   void ReloadPluginsInternal();
+  /**
+   * @brief Update the Pid store with the new values.
+   */
   void UpdatePidStore(const ola::rdm::RootPidStore *pid_store);
 
-  static const char UNIVERSE_PREFERENCES[];
-  static const char K_CLIENT_VAR[];
-  static const char K_UID_VAR[];
+  static const char INSTANCE_NAME_KEY[];
+  static const char K_INSTANCE_NAME_VAR[];
   static const char K_DISCOVERY_SERVICE_TYPE[];
+  static const char K_UID_VAR[];
+  static const char SERVER_PREFERENCES[];
+  static const char UNIVERSE_PREFERENCES[];
   static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;
 
   DISALLOW_COPY_AND_ASSIGN(OlaServer);

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * KarateThread.h
+ * KarateThread.cpp
  * Thread for the karate device
  * Copyright (C) 2005 Simon Newton
  */
@@ -32,8 +32,8 @@
 #include <unistd.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/karate/KarateLight.h"
 #include "plugins/karate/KarateThread.h"
@@ -46,8 +46,8 @@ using ola::thread::Mutex;
 using ola::thread::MutexLocker;
 using std::string;
 
-/*
- * Create a new KarateThread object
+/**
+ * @brief Create a new KarateThread object
  */
 KarateThread::KarateThread(const string &path)
     : ola::thread::Thread(),
@@ -56,8 +56,8 @@ KarateThread::KarateThread(const string &path)
 }
 
 
-/*
- * Run this thread
+/**
+ * @brief Run this thread
  */
 void *KarateThread::Run() {
   bool write_success;
@@ -77,7 +77,7 @@ void *KarateThread::Run() {
       // try to reopen the device...
       TimeStamp wake_up;
       clock.CurrentTime(&wake_up);
-      wake_up += TimeInterval(1, 0);
+      wake_up += TimeInterval(2, 0);
 
       // wait for either a signal that we should terminate, or ts seconds
       m_term_mutex.Lock();
@@ -105,8 +105,8 @@ void *KarateThread::Run() {
 }
 
 
-/*
- * Stop the thread
+/**
+ * @brief Stop the thread
  */
 bool KarateThread::Stop() {
   {
@@ -118,8 +118,8 @@ bool KarateThread::Stop() {
 }
 
 
-/*
- * Store the data in the shared buffer.
+/**
+ * @brief Store the data in the shared buffer.
  */
 bool KarateThread::WriteDmx(const DmxBuffer &buffer) {
   MutexLocker locker(&m_mutex);

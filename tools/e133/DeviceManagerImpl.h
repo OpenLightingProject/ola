@@ -25,9 +25,9 @@
 #include <config.h>
 #endif
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/AdvancedTCPConnector.h>

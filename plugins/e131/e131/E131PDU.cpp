@@ -18,7 +18,6 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-
 #include <string.h>
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
@@ -49,6 +48,8 @@ unsigned int E131PDU::HeaderSize() const {
 unsigned int E131PDU::DataSize() const {
   if (m_dmp_pdu)
     return m_dmp_pdu->Size();
+  if (m_data)
+    return m_data_size;
   return 0;
 }
 
@@ -99,6 +100,11 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int *length) const {
 bool E131PDU::PackData(uint8_t *data, unsigned int *length) const {
   if (m_dmp_pdu)
     return m_dmp_pdu->Pack(data, length);
+  if (m_data) {
+    memcpy(data, m_data, m_data_size);
+    *length = m_data_size;
+    return true;
+  }
   *length = 0;
   return true;
 }
@@ -138,8 +144,11 @@ void E131PDU::PackHeader(OutputStream *stream) const {
  * Pack the data into a buffer
  */
 void E131PDU::PackData(OutputStream *stream) const {
-  if (m_dmp_pdu)
+  if (m_dmp_pdu) {
     m_dmp_pdu->Write(stream);
+  } else if (m_data) {
+    stream->Write(m_data, m_data_size);
+  }
 }
 }  // namespace e131
 }  // namespace plugin

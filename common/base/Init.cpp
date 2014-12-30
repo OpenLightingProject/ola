@@ -36,6 +36,7 @@
 #include <execinfo.h>
 #endif
 
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -51,13 +52,127 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/math/Random.h>
+#include <ola/thread/Utils.h>
+#include <ola/system/Limits.h>
 
 #include <iostream>
 #include <string>
+
+// Scheduling options.
+DEFINE_string(scheduler_policy, "",
+              "The thread scheduling policy, one of {fifo, rr}.");
+DEFINE_uint16(scheduler_priority, 0,
+              "The thread priority, only used if --scheduler-policy is set.");
+
+namespace {
+
+using std::cout;
+using std::endl;
+using std::string;
+
+/*
+ * @private
+ * @brief Print a stack trace.
+ */
+static void _DumpStackAndExit(int sig) {
+#ifdef _WIN32
+  cout << "Received " << sig << endl;
+#else
+  cout << "Received " << strsignal(sig) << endl;
+#endif
+  #ifdef HAVE_EXECINFO_H
+  enum {STACK_SIZE = 64};
+  void *array[STACK_SIZE];
+  size_t size = backtrace(array, STACK_SIZE);
+
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  #endif
+  exit(ola::EXIT_SOFTWARE);
+}
+
+bool SetThreadScheduling() {
+  string policy_str = FLAGS_scheduler_policy.str();
+  ola::ToLower(&policy_str);
+  if (policy_str.empty()) {
+    if (FLAGS_scheduler_priority.present()) {
+      OLA_WARN << "Must provide both of --scheduler-policy & "
+                  "--scheduler-priority";
+      return false;
+    }
+    return true;
+  }
+
+  int policy = 0;
+  if (policy_str == "fifo") {
+    policy = SCHED_FIFO;
+  } else if (policy_str == "rr") {
+    policy = SCHED_RR;
+  } else {
+    OLA_FATAL << "Unknown scheduling policy " << policy_str;
+    return false;
+  }
+
+  if (!FLAGS_scheduler_priority.present()) {
+    OLA_WARN << "Must provide both of --scheduler-policy & "
+                "--scheduler-priority";
+    return false;
+  }
+
+  int requested_priority = FLAGS_scheduler_priority;
+#ifdef _POSIX_PRIORITY_SCHEDULING
+  int min = sched_get_priority_min(policy);
+  int max = sched_get_priority_max(policy);
+
+  if (requested_priority < min) {
+    OLA_WARN << "Minimum value for --scheduler-priority is " << min;
+    return false;
+  }
+
+  if (requested_priority > max) {
+    OLA_WARN << "Maximum value for --scheduler-priority is " << max;
+    return false;
+  }
+#endif
+
+  // Set the scheduling parameters.
+  struct sched_param param;
+  param.sched_priority = requested_priority;
+
+  OLA_INFO << "Scheduling policy is " << ola::thread::PolicyToString(policy)
+           << ", priority " << param.sched_priority;
+  bool ok = ola::thread::SetSchedParam(pthread_self(), policy, param);
+  if (!ok) {
+    return false;
+  }
+
+  // If RLIMIT_RTTIME is available, set a bound on the length of uninterrupted
+  // CPU time we can consume.
+#if HAVE_DECL_RLIMIT_RTTIME
+  struct rlimit rlim;
+  if (!ola::system::GetRLimit(RLIMIT_RTTIME, &rlim)) {
+    return false;
+  }
+
+  // Cap CPU time at 1s.
+  rlim.rlim_cur = 1000000;
+  OLA_DEBUG << "Setting RLIMIT_RTTIME " << rlim.rlim_cur << " / "
+            << rlim.rlim_max;
+  if (!ola::system::SetRLimit(RLIMIT_RTTIME, rlim)) {
+    return false;
+  }
+
+  if (!ola::InstallSignal(SIGXCPU, _DumpStackAndExit)) {
+    return false;
+  }
+#endif
+  return true;
+}
+}  // namespace
 
 namespace ola {
 
@@ -68,24 +183,7 @@ namespace ola {
 
 using std::cout;
 using std::endl;
-
-
-/**
- * @private
- * Print a stack trace on seg fault.
- */
-static void _SIGSEGV_Handler(int signal) {
-  cout << "Received SIGSEGV or SIGBUS" << endl;
-  #ifdef HAVE_EXECINFO_H
-  enum {STACK_SIZE = 64};
-  void *array[STACK_SIZE];
-  size_t size = backtrace(array, STACK_SIZE);
-
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
-  #endif
-  exit(EXIT_SOFTWARE);
-  (void) signal;
-}
+using std::string;
 
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
   ola::math::InitRandom();
@@ -94,33 +192,38 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 
   if (export_map)
     InitExportMap(argc, argv, export_map);
-  return NetworkInit();
+  return SetThreadScheduling() && NetworkInit();
 }
-
 
 bool ServerInit(int *argc,
                 char *argv[],
                 ExportMap *export_map,
-                const std::string &first_line,
-                const std::string &description) {
+                const string &first_line,
+                const string &description) {
+  // Take a copy of the arguments otherwise the export map is incorrect.
+  int original_argc = *argc;
+  char *original_argv[original_argc];
+  for (int i = 0; i < original_argc; i++) {
+    original_argv[i] = argv[i];
+  }
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
   InitLoggingFromFlags();
-  return ServerInit(*argc, argv, export_map);
+  return ServerInit(original_argc, original_argv, export_map);
 }
 
 
 bool AppInit(int *argc,
              char *argv[],
-             const std::string &first_line,
-             const std::string &description) {
+             const string &first_line,
+             const string &description) {
   ola::math::InitRandom();
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
   InitLoggingFromFlags();
   if (!InstallSEGVHandler())
     return false;
-  return NetworkInit();
+  return SetThreadScheduling() && NetworkInit();
 }
 
 #ifdef _WIN32
@@ -145,10 +248,10 @@ bool NetworkInit() {
 #endif
 }
 
-bool InstallSignal(int signal, void(*fp)(int signo)) {
+bool InstallSignal(int sig, void(*fp)(int signo)) {
 #ifdef _WIN32
-  if (::signal(signal, fp) == SIG_ERR) {
-    OLA_WARN << "Failed to install signal for " << signal;
+  if (::signal(sig, fp) == SIG_ERR) {
+    OLA_WARN << "signal(" << sig << ": " << strerror(errno);
     return false;
   }
 #else
@@ -157,24 +260,21 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
   sigemptyset(&action.sa_mask);
   action.sa_flags = 0;
 
-  if (sigaction(signal, &action, NULL) < 0) {
-    OLA_WARN << "Failed to install signal for " << signal;
+  if (sigaction(sig, &action, NULL) < 0) {
+    OLA_WARN << "sigaction(" << strsignal(sig) << ": " << strerror(errno);
     return false;
   }
 #endif  // _WIN32
   return true;
 }
 
-
 bool InstallSEGVHandler() {
 #ifndef _WIN32
-  if (!InstallSignal(SIGBUS, _SIGSEGV_Handler)) {
-    OLA_WARN << "Failed to install signal SIGBUS";
+  if (!InstallSignal(SIGBUS, _DumpStackAndExit)) {
     return false;
   }
 #endif  // !_WIN32
-  if (!InstallSignal(SIGSEGV, _SIGSEGV_Handler)) {
-    OLA_WARN << "Failed to install signal SIGSEGV";
+  if (!InstallSignal(SIGSEGV, _DumpStackAndExit)) {
     return false;
   }
   return true;

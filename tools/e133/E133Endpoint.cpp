@@ -26,15 +26,16 @@
 #include "tools/e133/E133Endpoint.h"
 
 using ola::rdm::RDMCallback;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using std::auto_ptr;
 using std::string;
-using ola::rdm::RDMDiscoveryCallback;
+using std::vector;
 
 const uint16_t E133EndpointInterface::UNPATCHED_UNIVERSE = 0;
 const uint16_t E133EndpointInterface::COMPOSITE_UNIVERSE = 0xffff;
 
-typedef std::vector<std::string> RDMPackets;
+typedef vector<string> RDMPackets;
 
 E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller,
                            const EndpointProperties &properties)

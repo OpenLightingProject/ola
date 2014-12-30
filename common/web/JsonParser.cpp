@@ -141,7 +141,7 @@ void JsonParser::OpenObject() {
   m_container_stack.push(OBJECT);
 }
 
-void JsonParser::ObjectKey(const std::string &key) {
+void JsonParser::ObjectKey(const string &key) {
   if (!m_key.empty()) {
     OLA_WARN << "Json Key should be empty, was " << key;
   }
@@ -208,7 +208,7 @@ void JsonParser::AddValue(JsonValue *value) {
   }
 }
 
-JsonValue* JsonParser::Parse(const std::string &input, std::string *error) {
+JsonValue* JsonParser::Parse(const string &input, string *error) {
   JsonParser parser;
   if (JsonLexer::Parse(input, &parser)) {
     return parser.ClaimRoot();

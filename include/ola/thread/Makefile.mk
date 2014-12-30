@@ -10,4 +10,5 @@ olathreadinclude_HEADERS = \
     include/ola/thread/SchedulingExecutorInterface.h \
     include/ola/thread/SignalThread.h \
     include/ola/thread/Thread.h \
-    include/ola/thread/ThreadPool.h
+    include/ola/thread/ThreadPool.h \
+    include/ola/thread/Utils.h

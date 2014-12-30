@@ -11,8 +11,8 @@
  * @par Serialization Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~
-   #include <ola/web/Json.h>
-   #include <ola/web/JsonWriter.h>
+   \#include <ola/web/Json.h>
+   \#include <ola/web/JsonWriter.h>
 
    JsonObject obj;
    obj.Add("name", "simon");
@@ -23,14 +23,14 @@
    friends->Add("Bob");
    friends->Add("Jane");
 
-   const string output = JsonWriter::AsString(json);
+   const std::string output = JsonWriter::AsString(json);
    ~~~~~~~~~~~~~~~~~~~~~
  *
  * @par Parsing Example
  *
  * ~~~~~~~~~~~~~~~~~~~~~
-   #include <ola/web/Json.h>
-   #include <ola/web/JsonParser.h>
+   \#include <ola/web/Json.h>
+   \#include <ola/web/JsonParser.h>
 
    std::string error;
    JsonValue *value = JsonParser::Parse(json_string, &error);

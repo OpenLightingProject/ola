@@ -25,6 +25,8 @@
 namespace ola {
 namespace acn {
 
+using std::string;
+
 CID::CID() : m_impl(new CIDImpl()) {}
 
 CID::CID(const CID& other) : m_impl(new CIDImpl(*other.m_impl)) {}
@@ -56,7 +58,11 @@ bool CID::operator!=(const CID& c1) const {
   return !(*this == c1);
 }
 
-std::string CID::ToString() const {
+bool CID::operator<(const CID& c1) const {
+  return *m_impl < *c1.m_impl;
+}
+
+string CID::ToString() const {
   return m_impl->ToString();
 }
 
@@ -75,7 +81,7 @@ CID CID::FromData(const uint8_t *data) {
 }
 
 
-CID CID::FromString(const std::string &cid) {
+CID CID::FromString(const string &cid) {
   return CID(CIDImpl::FromString(cid));
 }
 }  // namespace acn

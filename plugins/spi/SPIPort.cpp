@@ -19,7 +19,7 @@
  */
 
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 
@@ -43,6 +43,14 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackendInterface *backend,
       m_spi_output(uid, backend, options) {
 }
 
+
+string SPIOutputPort::GetDeviceLabel() const {
+  return m_spi_output.GetDeviceLabel();
+}
+
+bool SPIOutputPort::SetDeviceLabel(const string &device_label) {
+  return m_spi_output.SetDeviceLabel(device_label);
+}
 
 uint8_t SPIOutputPort::GetPersonality() const {
   return m_spi_output.GetPersonality();

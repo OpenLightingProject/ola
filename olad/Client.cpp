@@ -24,28 +24,29 @@
 #include "common/protocol/OlaService.pb.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/Client.h"
 
 namespace ola {
 
+using ola::rdm::UID;
 using ola::rpc::RpcController;
 using std::map;
+
+Client::Client(ola::proto::OlaClientService_Stub *client_stub,
+               const ola::rdm::UID &uid)
+    : m_client_stub(client_stub),
+      m_uid(uid) {
+}
 
 Client::~Client() {
   m_data_map.clear();
 }
 
-
-/*
- * Send a DMX Update to this client
- * @param universe the universe_id for this data
- * @param buffer the DmxBuffer with the data
- * @return true if the update was sent, false otherwise
- */
 bool Client::SendDMX(unsigned int universe, uint8_t priority,
                      const DmxBuffer &buffer) {
-  if (!m_client_stub) {
+  if (!m_client_stub.get()) {
     OLA_FATAL << "client_stub is null";
     return false;
   }
@@ -67,31 +68,10 @@ bool Client::SendDMX(unsigned int universe, uint8_t priority,
   return true;
 }
 
-
-/*
- * Called when UpdateDmxData completes
- */
-void Client::SendDMXCallback(RpcController *controller,
-                             ola::proto::Ack *reply) {
-  delete controller;
-  delete reply;
-}
-
-
-/*
- * Called when this client sends us new data
- * @param universe the id of the universe for the new data
- * @param buffer the new data
- */
 void Client::DMXReceived(unsigned int universe, const DmxSource &source) {
   STLReplace(&m_data_map, universe, source);
 }
 
-
-/*
- * Return the last dmx data sent by this client
- * @param universe the id of the universe we're interested in
- */
 const DmxSource Client::SourceData(unsigned int universe) const {
   map<unsigned int, DmxSource>::const_iterator iter =
     m_data_map.find(universe);
@@ -103,4 +83,23 @@ const DmxSource Client::SourceData(unsigned int universe) const {
     return source;
   }
 }
+
+ola::rdm::UID Client::GetUID() const {
+  return m_uid;
+}
+
+void Client::SetUID(const ola::rdm::UID &uid) {
+  m_uid = uid;
+}
+
+/*
+ * Called when UpdateDmxData completes.
+ */
+void Client::SendDMXCallback(RpcController *controller,
+                             ola::proto::Ack *reply) {
+  delete controller;
+  delete reply;
+}
+
+
 }  // namespace ola

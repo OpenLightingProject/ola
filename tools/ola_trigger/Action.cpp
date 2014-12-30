@@ -63,7 +63,7 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
 void CommandAction::Execute(Context *context, uint8_t) {
   char **args = BuildArgList(context);
 
-  if (ola::LogLevel() == ola::OLA_LOG_INFO) {
+  if (ola::LogLevel() >= ola::OLA_LOG_INFO) {
     std::ostringstream str;
     char **ptr = args;
     str << "Executing: " << m_command << " : [";
@@ -112,6 +112,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
                      &startup_info,
                      &process_information)) {
     OLA_WARN << "Could not launch " << args[0] << ":" << GetLastError();
+    FreeArgList(args);
   } else {
     // Don't leak the handles
     CloseHandle(process_information.hProcess);
@@ -123,6 +124,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
   pid_t pid;
   if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork to exec " << m_command;
+    FreeArgList(args);
     return;
   } else if (pid) {
     // parent

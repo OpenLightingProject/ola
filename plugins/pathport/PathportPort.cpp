@@ -22,7 +22,7 @@
 #include <sstream>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 
 #include "plugins/pathport/PathportPort.h"
 
@@ -33,8 +33,9 @@ namespace pathport {
 using std::string;
 
 string PathportPortHelper::Description(const Universe *universe) const {
-  if (!universe)
+  if (!universe) {
     return "";
+  }
 
   std::ostringstream str;
   str << "Pathport xDMX " << DMX_UNIVERSE_SIZE * universe->UniverseId() <<
@@ -42,10 +43,7 @@ string PathportPortHelper::Description(const Universe *universe) const {
   return str.str();
 }
 
-
-/*
- * Don't allow us to patch ports out of range
- */
+// Don't allow us to patch ports out of range
 bool PathportPortHelper::PreSetUniverse(Universe *new_universe) {
   if (new_universe &&
       new_universe->UniverseId() > PathportNode::MAX_UNIVERSES) {
@@ -68,20 +66,17 @@ void PathportInputPort::PostSetUniverse(Universe *old_universe,
         new_universe->UniverseId(),
         &m_buffer,
         NewCallback<PathportInputPort, void>(this,
-                                            &PathportInputPort::DmxChanged));
+                                             &PathportInputPort::DmxChanged));
   }
 }
 
 
-/*
- * Write operation
- */
 bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                  uint8_t priority) {
-  if (GetUniverse())
+                                  OLA_UNUSED uint8_t priority) {
+  if (GetUniverse()) {
     return m_node->SendDMX(GetUniverse()->UniverseId(), buffer);
+  }
   return true;
-  (void) priority;
 }
 }  // namespace pathport
 }  // namespace plugin

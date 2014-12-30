@@ -22,8 +22,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include <ola/BaseTypes.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
@@ -66,7 +66,7 @@ class UniverseTracker {
     void ResetStats();
 
  protected:
-    void Input(char c);
+    void Input(int c);
 
  private:
     struct UniverseStats {
@@ -80,7 +80,7 @@ class UniverseTracker {
       UniverseStats() { Reset(); }
 
       void Reset() {
-        shortest_frame = DMX_UNIVERSE_SIZE + 1,
+        shortest_frame = ola::DMX_UNIVERSE_SIZE + 1,
         longest_frame = 0;
         frame_count = 0;
         frame_changes = 0;
@@ -150,7 +150,7 @@ void UniverseTracker::PrintStats() {
       ", Frames/sec: " << fps << endl;
     cout << "  Frame changes: " << stats.frame_changes << endl;
     cout << "  Smallest Frame: ";
-    if (stats.shortest_frame == DMX_UNIVERSE_SIZE + 1)
+    if (stats.shortest_frame == ola::DMX_UNIVERSE_SIZE + 1)
       cout << "N/A";
     else
       cout << stats.shortest_frame;
@@ -175,7 +175,7 @@ void UniverseTracker::ResetStats() {
   cout << "Reset counters" << endl;
 }
 
-void UniverseTracker::Input(char c) {
+void UniverseTracker::Input(int c) {
   switch (c) {
     case 'q':
       m_wrapper->GetSelectServer()->Terminate();
@@ -234,10 +234,12 @@ void UniverseTracker::RegisterComplete(const string &error) {
 
 SelectServer *ss = NULL;
 
-static void InteruptSignal(int unused) {
-  if (ss)
+static void InteruptSignal(OLA_UNUSED int signo) {
+  int old_errno = errno;
+  if (ss) {
     ss->Terminate();
-  (void) unused;
+  }
+  errno = old_errno;
 }
 
 

@@ -25,7 +25,7 @@
 #ifndef INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 #define INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Macro.h>
 #include <ola/dmx/SourcePriorities.h>
@@ -35,7 +35,10 @@ namespace ola {
 namespace io { class SelectServer; }
 namespace network { class TCPSocket; }
 namespace proto { class OlaServerService_Stub; }
-namespace rpc { class RpcChannel; }
+namespace rpc {
+class RpcChannel;
+class RpcSession;
+}
 
 namespace client {
 
@@ -161,7 +164,7 @@ class StreamingClient : public StreamingClientInterface {
                const DmxBuffer &data,
                const SendArgs &args);
 
-  void ChannelClosed();
+  void ChannelClosed(ola::rpc::RpcSession *session);
 
  private:
   bool m_auto_start;

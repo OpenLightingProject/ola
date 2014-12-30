@@ -19,19 +19,26 @@
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
-#include <stdint.h>
 
+#include "plugins/stageprofi/StageProfiWidget.h"
+
+#include <stdint.h>
 #include <string.h>
 #include <algorithm>
+#include <string>
 #include "ola/Callback.h"
+#include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/util/Utils.h"
-#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-using ola::io::SelectServer;
+using ola::io::ConnectedDescriptor;
+using ola::TimeInterval;
+using ola::thread::INVALID_TIMEOUT;
+using std::string;
 
 enum stageprofi_packet_type_e {
   ID_GETDMX =  0xFE,
@@ -43,111 +50,92 @@ enum stageprofi_packet_type_e {
 typedef enum stageprofi_packet_type_e stageprofi_packet_type;
 
 
-/*
- * New widget
- */
+StageProfiWidget::StageProfiWidget(io::SelectServerInterface *ss,
+                                   ConnectedDescriptor *descriptor,
+                                   const string &widget_path,
+                                   DisconnectCallback *disconnect_cb)
+    : m_ss(ss),
+      m_descriptor(descriptor),
+      m_widget_path(widget_path),
+      m_disconnect_cb(disconnect_cb),
+      m_timeout_id(INVALID_TIMEOUT),
+      m_got_response(false) {
+  m_descriptor->SetOnData(
+      NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
+  m_ss->AddReadDescriptor(m_descriptor.get());
+  m_timeout_id = m_ss->RegisterSingleTimeout(
+      TimeInterval(1, 0),
+      ola::NewSingleCallback(this, &StageProfiWidget::DiscoveryTimeout));
+  SendQueryPacket();
+}
+
 StageProfiWidget::~StageProfiWidget() {
-  if (m_socket) {
-    m_socket->Close();
-    delete m_socket;
+  if (m_timeout_id != INVALID_TIMEOUT) {
+    m_ss->RemoveTimeout(m_timeout_id);
+  }
+
+  if (m_descriptor.get()) {
+    m_ss->RemoveReadDescriptor(m_descriptor.get());
+  }
+
+  if (m_disconnect_cb) {
+    delete m_disconnect_cb;
   }
 }
 
+bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) {
+  if (!m_got_response) {
+    return false;
+  }
 
-/*
- * Disconnect from the widget
- */
-int StageProfiWidget::Disconnect() {
-  m_socket->Close();
-  return 0;
-}
-
-
-/*
- * Send a dmx msg.
- * This has the nasty property of blocking if we remove the device
- * TODO: fix this
- */
-bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) const {
   uint16_t index = 0;
   while (index < buffer.Size()) {
     unsigned int size = std::min((unsigned int) DMX_MSG_LEN,
                                  buffer.Size() - index);
-    Send255(index, buffer.GetRaw() + index, size);
+    bool ok = Send255(index, buffer.GetRaw() + index, size);
+    if (!ok) {
+      OLA_INFO << "Failed to send StageProfi message, closing socket";
+      RunDisconnectHandler();
+    }
     index += size;
   }
   return true;
 }
 
-
 /*
- * Called when there is adata to read
+ * Called when there is data to read.
  */
 void StageProfiWidget::SocketReady() {
-  while (m_socket->DataRemaining() > 0) {
-    DoRecv();
+  while (m_descriptor->DataRemaining() > 0) {
+    uint8_t byte = 0x00;
+    unsigned int data_read;
+    while (byte != 'G') {
+      int ret = m_descriptor->Receive(&byte, 1, data_read);
+
+      if (ret == -1 || data_read != 1) {
+        return;
+      }
+    }
+    m_got_response = true;
   }
 }
 
-
-void StageProfiWidget::Timeout() {
-  if (m_ss)
-    m_ss->Terminate();
+void StageProfiWidget::DiscoveryTimeout() {
+  if (!m_got_response) {
+    OLA_INFO << "No response from StageProfiWidget";
+    RunDisconnectHandler();
+  }
 }
 
 /*
- * Check if this is actually a StageProfi device
- * @return true if this is a stageprofi,  false otherwise
- */
-bool StageProfiWidget::DetectDevice() {
-  if (m_ss)
-    delete m_ss;
-
-  m_got_response = false;
-  m_ss = new SelectServer();
-  m_ss->AddReadDescriptor(m_socket, false);
-  m_ss->RegisterSingleTimeout(
-      100,
-      ola::NewSingleCallback(this, &StageProfiWidget::Timeout));
-
-  // try a command, we should get a response
-  SetChannel(0, 0);
-
-  m_ss->Run();
-  delete m_ss;
-  m_ss = NULL;
-  if (m_got_response)
-    return true;
-
-  m_socket->Close();
-  return false;
-}
-
-
-//-----------------------------------------------------------------------------
-// Private methods used for communicating with the widget
-
-/*
- * Set a single channel
- */
-int StageProfiWidget::SetChannel(uint16_t chan, uint8_t val) const {
-  uint8_t msg[3];
-
-  msg[0] = chan > DMX_MSG_LEN ? ID_SETHI : ID_SETLO;
-  msg[1] = chan & UINT8_MAX;
-  msg[2] = val;
-  return m_socket->Send(msg, sizeof(msg));
-}
-
-
-/*
- * Send 255 channels worth of data
+ * @brief Send 255 channels worth of data
  * @param start the start channel for the data
  * @param buf a pointer to the data
  * @param len the length of the data
  */
-int StageProfiWidget::Send255(uint16_t start, const uint8_t *buf,
-                              unsigned int length) const {
+bool StageProfiWidget::Send255(uint16_t start,
+                               const uint8_t *buf,
+                               unsigned int length) const {
   uint8_t msg[DMX_MSG_LEN + DMX_HEADER_SIZE];
   unsigned int len = std::min((unsigned int) DMX_MSG_LEN, length);
 
@@ -155,26 +143,23 @@ int StageProfiWidget::Send255(uint16_t start, const uint8_t *buf,
   ola::utils::SplitUInt16(start, &msg[2], &msg[1]);
   msg[3] = len;
   memcpy(msg + DMX_HEADER_SIZE, buf, len);
-  return m_socket->Send(msg, len + DMX_HEADER_SIZE);
+
+  // This needs to be an int, as m_descriptor->Send() below returns an int
+  const int bytes_to_send = len + DMX_HEADER_SIZE;
+  return m_descriptor->Send(msg, bytes_to_send) == bytes_to_send;
 }
 
+void StageProfiWidget::SendQueryPacket() {
+  uint8_t query[] = {'C', '?'};
+  ssize_t bytes_sent = m_descriptor->Send(query, arraysize(query));
+  OLA_DEBUG << "Sending StageprofiWidget query: C? returned " << bytes_sent;
+}
 
-/*
- *
- */
-int StageProfiWidget::DoRecv() {
-  uint8_t byte = 0x00;
-  unsigned int data_read;
-
-  while (byte != 'G') {
-    int ret = m_socket->Receive(&byte, 1, data_read);
-
-    if (ret == -1 || data_read != 1) {
-      return -1;
-    }
+void StageProfiWidget::RunDisconnectHandler() {
+  if (m_disconnect_cb) {
+    m_disconnect_cb->Run();
+    m_disconnect_cb = NULL;
   }
-  m_got_response = true;
-  return 0;
 }
 }  // namespace stageprofi
 }  // namespace plugin

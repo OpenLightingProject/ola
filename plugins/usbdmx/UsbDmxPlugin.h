@@ -14,79 +14,62 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbDmxPlugin.h
- * Interface for the usbdmx plugin class
+ * A plugin that uses libusb to communicate with USB devices.
  * Copyright (C) 2010 Simon Newton
  */
 
 #ifndef PLUGINS_USBDMX_USBDMXPLUGIN_H_
 #define PLUGINS_USBDMX_USBDMXPLUGIN_H_
 
-#include <set>
+#include <memory>
 #include <string>
-#include <utility>
-#include <vector>
+#include "ola/base/Macro.h"
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
-#include "ola/io/Descriptor.h"
 
 namespace ola {
 namespace plugin {
-
 namespace usbdmx {
 
+/**
+ * @brief A plugin that uses libusb to communicate with USB devices.
+ *
+ * This plugin supports a number of USB dongles including
+ *   - Anyma uDMX
+ *   - Eurolite DMX USB Pro.
+ *   - Scanlime's Fadecandy.
+ *   - Sunlite.
+ *   - Velleman K8062.
+ */
 class UsbDmxPlugin: public ola::Plugin {
  public:
-    explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor),
-      m_anyma_devices_missing_serial_numbers(false) {
-    }
+  /**
+   * @brief Create a new UsbDmxPlugin.
+   * @param plugin_adaptor The PluginAdaptor to use, ownership is not
+   *   transferred.
+   */
+  explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor);
+  ~UsbDmxPlugin();
 
-    std::string Name() const { return PLUGIN_NAME; }
-    std::string Description() const;
-    ola_plugin_id Id() const { return OLA_PLUGIN_USBDMX; }
-    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
-
-    bool AddDeviceDescriptor(int fd);
-    bool RemoveDeviceDescriptor(int fd);
-    void SocketReady();
+  std::string Name() const { return PLUGIN_NAME; }
+  std::string Description() const;
+  ola_plugin_id Id() const { return OLA_PLUGIN_USBDMX; }
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    struct USBDeviceInformation {
-      std::string manufacturer;
-      std::string product;
-      std::string serial;
-    };
+  std::auto_ptr<class PluginImplInterface> m_impl;
 
-    bool m_anyma_devices_missing_serial_numbers;
-    std::vector<class UsbDevice*> m_devices;  // list of our devices
-    std::vector<ola::io::DeviceDescriptor*> m_descriptors;
-    std::set<std::pair<uint8_t, uint8_t> > m_registered_devices;
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
 
-    bool StartHook();
-    bool LoadFirmware();
-    void FindDevices();
-    bool StopHook();
-    bool SetDefaultPreferences();
-    class UsbDevice* NewAnymaDevice(
-        struct libusb_device *usb_device,
-        const struct libusb_device_descriptor &device_descriptor);
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
+  static const char LIBUSB_DEBUG_LEVEL_KEY[];
+  static int LIBUSB_DEFAULT_DEBUG_LEVEL;
+  static int LIBUSB_MAX_DEBUG_LEVEL;
 
-    void GetDeviceInfo(
-        struct libusb_device_handle *usb_handle,
-        const struct libusb_device_descriptor &device_descriptor,
-        USBDeviceInformation *device_info);
-    bool MatchManufacturer(const std::string &expected,
-                           const std::string &actual);
-    bool MatchProduct(const std::string &expected, const std::string &actual);
-    bool GetDescriptorString(libusb_device_handle *usb_handle,
-                             uint8_t desc_index,
-                             std::string *data);
-
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
-    static const char LIBUSB_DEBUG_LEVEL_KEY[];
-    static int LIBUSB_DEFAULT_DEBUG_LEVEL;
-    static int LIBUSB_MAX_DEBUG_LEVEL;
+  DISALLOW_COPY_AND_ASSIGN(UsbDmxPlugin);
 };
 }  // namespace usbdmx
 }  // namespace plugin

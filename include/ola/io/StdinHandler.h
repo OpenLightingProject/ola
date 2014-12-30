@@ -36,7 +36,7 @@ namespace io {
 
 class StdinHandler {
  public :
-  typedef ola::Callback1<void, char> InputCallback;
+  typedef ola::Callback1<void, int> InputCallback;
 
   explicit StdinHandler(SelectServerInterface *ss, InputCallback *callback);
   ~StdinHandler();

@@ -74,14 +74,13 @@ void EspNetInputPort::PostSetUniverse(Universe *old_universe,
  * Write data to this port.
  */
 bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                uint8_t priority) {
+                                OLA_UNUSED uint8_t priority) {
   if (!GetUniverse())
     return false;
 
   if (!m_node->SendDMX(m_helper.EspNetUniverseId(GetUniverse()), buffer))
     return false;
   return true;
-  (void) priority;
 }
 }  // namespace espnet
 }  // namespace plugin

@@ -98,8 +98,11 @@ void STLEmptyStackAndDelete(T *stack) {
 template<typename T>
 void STLDeleteElements(T *sequence) {
   typename T::iterator iter = sequence->begin();
-  for (; iter != sequence->end(); ++iter)
-    delete *iter;
+  for (; iter != sequence->end(); ++iter) {
+    if (*iter) {
+      delete *iter;
+    }
+  }
   sequence->clear();
 }
 
@@ -130,11 +133,13 @@ void STLDeleteElements(T *sequence) {
 template<typename T>
 void STLDeleteValues(T *container) {
   typename T::iterator iter = container->begin();
-  for (; iter != container->end(); ++iter)
-    delete iter->second;
+  for (; iter != container->end(); ++iter) {
+    if (iter->second) {
+      delete iter->second;
+    }
+  }
   container->clear();
 }
-
 
 /**
  * Returns true if the container contains the value.
@@ -188,6 +193,24 @@ template<typename T1>
 typename T1::mapped_type* STLFind(T1 *container,
                                   const typename T1::key_type &key) {
   typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    return &iter->second;
+  }
+}
+
+/**
+ * @brief Lookup a value by key in a associative container.
+ * @tparam T1 A container.
+ * @param container the container to search in.
+ * @param key the key to search for.
+ * @returns A pointer to the value, or NULL if the value isn't found.
+ */
+template<typename T1>
+typename T1::mapped_type const* STLFind(const T1 *container,
+                                        const typename T1::key_type &key) {
+  typename T1::const_iterator iter = container->find(key);
   if (iter == container->end()) {
     return NULL;
   } else {
@@ -384,6 +407,24 @@ bool STLLookupAndRemove(T1 *container,
 }
 
 /**
+ * @brief Lookup or insert a NULL value into a pair associative container.
+ * @tparam T1 A container.
+ * @param[in] container the container to lookup from or insert into.
+ * @param[in] key the key to lookup.
+ * @returns An iterator pointing to the value.
+ *
+ * Lookup a value by key in a pair associative container or insert NULL if it
+ * doesn't already exist.
+ */
+template<typename T1>
+typename T1::iterator STLLookupOrInsertNull(T1 *container,
+                                            const typename T1::key_type &key) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, NULL));
+  return p.first;
+}
+
+/**
  * @brief Remove a value from a pair associative container and delete it.
  * @tparam T1 A container.
  * @param[in] container the container to remove the key from.
@@ -424,6 +465,30 @@ typename T1::mapped_type STLLookupAndRemovePtr(
     typename T1::mapped_type value = iter->second;
     container->erase(iter);
     return value;
+  }
+}
+
+/**
+ * Add elements of a sequence to an associative container.
+ * @param output The associative container to add to.
+ * @param input The sequence containing the elements to add.
+ * @param value The value to use for each key in input.
+ * @tparam T1 A pair associative container.
+ * @tparam T2 A sequence.
+ *
+ * Any existing elements that conflict with the values in the sequence will be
+ * replaced.
+ */
+template<typename T1, typename T2>
+void STLMapFromKeys(T1 *output, const T2 input,
+                    typename T1::mapped_type value) {
+  typename T2::const_iterator iter = input.begin();
+  for (; iter != input.end(); ++iter) {
+    std::pair<typename T1::iterator, bool> p = output->insert(
+        typename T1::value_type(*iter, value));
+    if (!p.second) {
+      p.first->second = value;
+    }
   }
 }
 }  // namespace ola

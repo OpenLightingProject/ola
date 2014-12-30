@@ -42,8 +42,8 @@
 #include <time.h>
 #include <math.h>
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
@@ -151,7 +151,7 @@ uint64_t timeGetTime() {
 
 /* set all DMX channels */
 void setall() {
-  ola::DmxBuffer buffer(dmx, DMX_UNIVERSE_SIZE);
+  ola::DmxBuffer buffer(dmx, ola::DMX_UNIVERSE_SIZE);
   client->SendDmx(universe, buffer);
 }
 
@@ -177,12 +177,13 @@ void mask() {
 
   /* write channel numbers */
   (void) attrset(palette[CHANNEL]);
-  for (y = 1; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
+  for (y = 1;
+       y < LINES && z < ola::DMX_UNIVERSE_SIZE && i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          x < channels_per_line &&
-         z < DMX_UNIVERSE_SIZE &&
+         z < ola::DMX_UNIVERSE_SIZE &&
          i < channels_per_screen;
          x++, i++, z++) {
       switch (display_mode) {
@@ -228,7 +229,7 @@ void values() {
   }
   width_total += (5 + universe_length);
   if (COLS >= width_total) {
-    /* Max universe 4294967295 - see MAX_UNIVERSE in include/ola/BaseTypes.h */
+    /* Max universe 4294967295 - see MAX_UNIVERSE in include/ola/Constants.h */
     attrset(palette[HEADLINE]);
     printw(" uni:");
     attrset(palette[HEADEMPH]);
@@ -270,20 +271,20 @@ void values() {
 
   /* values */
   for (y = ROWS_PER_CHANNEL_ROW;
-       y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
+       y < LINES && z < ola::DMX_UNIVERSE_SIZE && i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          x < channels_per_line &&
-         z < DMX_UNIVERSE_SIZE &&
+         z < ola::DMX_UNIVERSE_SIZE &&
          i < channels_per_screen;
          x++, z++, i++) {
       const int d = dmx[z];
       switch (d) {
-        case DMX_MIN_CHANNEL_VALUE:
+        case ola::DMX_MIN_SLOT_VALUE:
           attrset(palette[ZERO]);
           break;
-        case DMX_MAX_CHANNEL_VALUE:
+        case ola::DMX_MAX_SLOT_VALUE:
           attrset(palette[FULL]);
           break;
         default:
@@ -309,14 +310,14 @@ void values() {
         case DISP_MODE_DMX:
         default:
           switch (d) {
-            case DMX_MIN_CHANNEL_VALUE:
+            case ola::DMX_MIN_SLOT_VALUE:
               addstr("    ");
               break;
-            case DMX_MAX_CHANNEL_VALUE:
+            case ola::DMX_MAX_SLOT_VALUE:
               addstr(" FL ");
               break;
             default:
-              printw(" %02d ", (d * 100) / DMX_MAX_CHANNEL_VALUE);
+              printw(" %02d ", (d * 100) / ola::DMX_MAX_SLOT_VALUE);
           }
       }
     }
@@ -325,12 +326,16 @@ void values() {
 
 /* save current cue into cuebuffer */
 void savecue() {
-  memcpy(&dmxsave[current_cue * DMX_UNIVERSE_SIZE], dmx, DMX_UNIVERSE_SIZE);
+  memcpy(&dmxsave[current_cue * ola::DMX_UNIVERSE_SIZE],
+         dmx,
+         ola::DMX_UNIVERSE_SIZE);
 }
 
 /* get new cue from cuebuffer */
 void loadcue() {
-  memcpy(dmx, &dmxsave[current_cue * DMX_UNIVERSE_SIZE], DMX_UNIVERSE_SIZE);
+  memcpy(dmx,
+         &dmxsave[current_cue * ola::DMX_UNIVERSE_SIZE],
+         ola::DMX_UNIVERSE_SIZE);
 }
 
 /* fade cue "new_cue" into current cue */
@@ -338,7 +343,7 @@ void crossfade(unsigned int new_cue) {
   dmx_t *dmxold;
   dmx_t *dmxnew;
   int i;
-  int max = DMX_UNIVERSE_SIZE;
+  int max = ola::DMX_UNIVERSE_SIZE;
 
   /* check parameter */
   if (new_cue > MAXFKEY)
@@ -356,12 +361,12 @@ void crossfade(unsigned int new_cue) {
   }
 
   savecue();
-  dmxold = &dmxsave[current_cue * DMX_UNIVERSE_SIZE];
-  dmxnew = &dmxsave[new_cue * DMX_UNIVERSE_SIZE];
+  dmxold = &dmxsave[current_cue * ola::DMX_UNIVERSE_SIZE];
+  dmxnew = &dmxsave[new_cue * ola::DMX_UNIVERSE_SIZE];
 
   /* try to find the last channel value > 0, so we don't have to
      crossfade large blocks of 0s */
-  for (i = DMX_UNIVERSE_SIZE - 1; i >= 0; max = i, i--)
+  for (i = ola::DMX_UNIVERSE_SIZE - 1; i >= 0; max = i, i--)
     if (dmxold[i] || dmxnew[i])
       break;
 
@@ -403,13 +408,13 @@ void crossfade(unsigned int new_cue) {
 
 void undo() {
   if (undo_possible) {
-    memcpy(dmx, dmxundo, DMX_UNIVERSE_SIZE);
+    memcpy(dmx, dmxundo, ola::DMX_UNIVERSE_SIZE);
     undo_possible = 0;
   }
 }
 
 void undoprep() {
-  memcpy(dmxundo, dmx, DMX_UNIVERSE_SIZE);
+  memcpy(dmxundo, dmx, ola::DMX_UNIVERSE_SIZE);
   undo_possible = 1;
 }
 
@@ -535,15 +540,15 @@ void stdin_ready() {
   switch (c) {
     case KEY_PPAGE:
       undoprep();
-      if (dmx[current_channel] < DMX_MAX_CHANNEL_VALUE - CHANNEL_NUDGE_VALUE)
+      if (dmx[current_channel] < ola::DMX_MAX_SLOT_VALUE - CHANNEL_NUDGE_VALUE)
         dmx[current_channel] += CHANNEL_NUDGE_VALUE;
       else
-        dmx[current_channel] = DMX_MAX_CHANNEL_VALUE;
+        dmx[current_channel] = ola::DMX_MAX_SLOT_VALUE;
       set();
       break;
 
     case '+':
-      if (dmx[current_channel] < DMX_MAX_CHANNEL_VALUE) {
+      if (dmx[current_channel] < ola::DMX_MAX_SLOT_VALUE) {
         undoprep();
         dmx[current_channel]++;
       }
@@ -552,20 +557,20 @@ void stdin_ready() {
 
     case KEY_NPAGE:
       undoprep();
-      if (dmx[current_channel] == DMX_MAX_CHANNEL_VALUE) {
+      if (dmx[current_channel] == ola::DMX_MAX_SLOT_VALUE) {
         // Smooth out the fade down
-        dmx[current_channel] = (DMX_MAX_CHANNEL_VALUE + 1) -
+        dmx[current_channel] = (ola::DMX_MAX_SLOT_VALUE + 1) -
             CHANNEL_NUDGE_VALUE;
       } else if (dmx[current_channel] > CHANNEL_NUDGE_VALUE) {
         dmx[current_channel] -= CHANNEL_NUDGE_VALUE;
       } else {
-        dmx[current_channel] = DMX_MIN_CHANNEL_VALUE;
+        dmx[current_channel] = ola::DMX_MIN_SLOT_VALUE;
       }
       set();
       break;
 
     case '-':
-      if (dmx[current_channel] > DMX_MIN_CHANNEL_VALUE) {
+      if (dmx[current_channel] > ola::DMX_MIN_SLOT_VALUE) {
         undoprep();
         dmx[current_channel]--;
       }
@@ -574,10 +579,10 @@ void stdin_ready() {
 
     case ' ':
       undoprep();
-      if (dmx[current_channel] < ((DMX_MAX_CHANNEL_VALUE + 1) / 2))
-        dmx[current_channel] = DMX_MAX_CHANNEL_VALUE;
+      if (dmx[current_channel] < ((ola::DMX_MAX_SLOT_VALUE + 1) / 2))
+        dmx[current_channel] = ola::DMX_MAX_SLOT_VALUE;
       else
-        dmx[current_channel] = DMX_MIN_CHANNEL_VALUE;
+        dmx[current_channel] = ola::DMX_MIN_SLOT_VALUE;
       set();
       break;
 
@@ -592,8 +597,8 @@ void stdin_ready() {
       break;
 
     case KEY_END:
-      current_channel = DMX_UNIVERSE_SIZE - 1;
-      if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
+      current_channel = ola::DMX_UNIVERSE_SIZE - 1;
+      if (channels_per_screen >= ola::DMX_UNIVERSE_SIZE) {
         first_channel = 0;
       } else {
         first_channel = current_channel - (channels_per_screen - 1);
@@ -602,7 +607,7 @@ void stdin_ready() {
       break;
 
     case KEY_RIGHT:
-      if (current_channel < DMX_UNIVERSE_SIZE - 1) {
+      if (current_channel < ola::DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
         if (current_channel >= first_channel + channels_per_screen) {
           first_channel += channels_per_line;
@@ -625,8 +630,8 @@ void stdin_ready() {
 
     case KEY_DOWN:
       current_channel += channels_per_line;
-      if (current_channel >= DMX_UNIVERSE_SIZE)
-        current_channel = DMX_UNIVERSE_SIZE - 1;
+      if (current_channel >= ola::DMX_UNIVERSE_SIZE)
+        current_channel = ola::DMX_UNIVERSE_SIZE - 1;
       if (current_channel >= first_channel + channels_per_screen) {
         first_channel += channels_per_line;
         mask();
@@ -647,14 +652,14 @@ void stdin_ready() {
 
     case KEY_IC:
       undoprep();
-      for (n = DMX_UNIVERSE_SIZE - 1; n > current_channel && n > 0; n--)
-        dmx[n]=dmx[n - 1];
+      for (n = ola::DMX_UNIVERSE_SIZE - 1; n > current_channel && n > 0; n--)
+        dmx[n] = dmx[n - 1];
       setall();
       break;
 
     case KEY_DC:
       undoprep();
-      for (n = current_channel; n < DMX_UNIVERSE_SIZE - 1; n++)
+      for (n = current_channel; n < ola::DMX_UNIVERSE_SIZE - 1; n++)
         dmx[n] = dmx[n + 1];
       setall();
       break;
@@ -662,14 +667,14 @@ void stdin_ready() {
     case 'B':
     case 'b':
       undoprep();
-      memset(dmx, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
+      memset(dmx, ola::DMX_MIN_SLOT_VALUE, ola::DMX_UNIVERSE_SIZE);
       setall();
       break;
 
     case 'F':
     case 'f':
       undoprep();
-      memset(dmx, DMX_MAX_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
+      memset(dmx, ola::DMX_MAX_SLOT_VALUE, ola::DMX_UNIVERSE_SIZE);
       setall();
       break;
 
@@ -778,15 +783,16 @@ int main(int argc, char *argv[]) {
 
   // 10 bytes security, for file IO routines, will be optimized and checked
   // later
-  dmx = reinterpret_cast<dmx_t*>(calloc(DMX_UNIVERSE_SIZE + 10,
+  dmx = reinterpret_cast<dmx_t*>(calloc(ola::DMX_UNIVERSE_SIZE + 10,
                                  sizeof(dmx_t)));
   CHECK(dmx);
 
   dmxsave = reinterpret_cast<dmx_t*>(
-      calloc(DMX_UNIVERSE_SIZE * MAXFKEY, sizeof(dmx_t)));
+      calloc(ola::DMX_UNIVERSE_SIZE * MAXFKEY, sizeof(dmx_t)));
   CHECK(dmxsave);
 
-  dmxundo = reinterpret_cast<dmx_t*>(calloc(DMX_UNIVERSE_SIZE, sizeof(dmx_t)));
+  dmxundo = reinterpret_cast<dmx_t*>(
+      calloc(ola::DMX_UNIVERSE_SIZE, sizeof(dmx_t)));
   CHECK(dmxundo);
 
   options opts;

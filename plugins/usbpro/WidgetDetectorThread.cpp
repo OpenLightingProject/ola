@@ -24,8 +24,8 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
 #include "ola/Logging.h"
@@ -57,6 +57,8 @@ using std::vector;
  * @param ss the SelectServer to use when calling the handler object. This is
  * also used by some of the widgets so it should be the same SelectServer that
  * you intend to use the Widgets with.
+ * @param usb_pro_timeout the time in ms between each USB Pro discovery message.
+ * @param robe_timeout the time in ms between each Robe discovery message.
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,
@@ -132,6 +134,7 @@ void *WidgetDetectorThread::Run() {
   m_ss.Execute(
       ola::NewSingleCallback(this, &WidgetDetectorThread::MarkAsRunning));
   m_ss.Run();
+  m_ss.DrainCallbacks();
 
   // This will trigger a call to InternalFreeWidget for any remaining widgets
   STLDeleteElements(&m_widget_detectors);
@@ -189,7 +192,10 @@ void WidgetDetectorThread::WaitUntilRunning() {
  */
 bool WidgetDetectorThread::RunScan() {
   vector<string> device_paths;
-  ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths);
+  if (!ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths)) {
+    // We want to run the scan next time in case the problem is resolved.
+    return true;
+  }
 
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {

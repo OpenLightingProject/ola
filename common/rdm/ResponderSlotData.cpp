@@ -41,7 +41,7 @@ SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
 
 SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
                                uint8_t default_slot_value,
-                               const std::string &description) {
+                               const string &description) {
   if (slot_definition == SD_UNDEFINED && description.empty()) {
     OLA_WARN << "Undefined slot definition and no slot description!";
   }
@@ -60,7 +60,7 @@ SlotData SlotData::SecondarySlot(rdm_slot_type slot_type,
 SlotData SlotData::SecondarySlot(rdm_slot_type slot_type,
                                  uint16_t primary_slot,
                                  uint8_t default_slot_value,
-                                 const std::string &description) {
+                                 const string &description) {
   if (slot_type == ST_PRIMARY) {
     OLA_WARN << "Secondary slot created with slot_type == ST_PRIMARY: "
              << description;
@@ -80,7 +80,7 @@ SlotData::SlotData(rdm_slot_type slot_type,
 SlotData::SlotData(rdm_slot_type slot_type,
                    uint16_t slot_id,
                    uint8_t default_slot_value,
-                   const std::string &description)
+                   const string &description)
     : m_slot_type(slot_type),
       m_slot_id(slot_id),
       m_default_slot_value(default_slot_value),

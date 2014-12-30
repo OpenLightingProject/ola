@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
@@ -256,7 +256,6 @@ void DummyPortTest::testSupportedParams() {
 #endif
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
-    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
     ola::rdm::PID_LIST_INTERFACES,
     ola::rdm::PID_INTERFACE_LABEL,
     ola::rdm::PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
@@ -265,6 +264,7 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_DNS_NAME_SERVER,
     ola::rdm::PID_DNS_HOSTNAME,
     ola::rdm::PID_DNS_DOMAIN_NAME,
+    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)

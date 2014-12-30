@@ -12,6 +12,7 @@ common_libolacommon_la_SOURCES += \
     common/network/NetworkUtilsInternal.h \
     common/network/Socket.cpp \
     common/network/SocketAddress.cpp \
+    common/network/SocketCloser.cpp \
     common/network/SocketHelper.cpp \
     common/network/SocketHelper.h \
     common/network/TCPConnector.cpp \
@@ -42,7 +43,7 @@ common_network_HealthCheckedConnectionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_network_HealthCheckedConnectionTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_network_NetworkTester_SOURCES = \
-    common/network/IPAddressTest.cpp \
+    common/network/IPV4AddressTest.cpp \
     common/network/InterfacePickerTest.cpp \
     common/network/InterfaceTest.cpp \
     common/network/MACAddressTest.cpp \

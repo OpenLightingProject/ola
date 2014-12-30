@@ -24,8 +24,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"

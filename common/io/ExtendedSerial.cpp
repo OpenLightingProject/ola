@@ -45,7 +45,7 @@ namespace ola {
 namespace io {
 
 bool LinuxHelper::SetDmxBaud(int fd) {
-#if defined(HAVE_STROPTS_H) && defined(AVE_ASM_TERMIOS_H)
+#if defined(HAVE_STROPTS_H) && defined(HAVE_ASM_TERMIOS_H)
   static const int rate = 250000;
 
   struct termios2 tio;  // linux-specific terminal stuff

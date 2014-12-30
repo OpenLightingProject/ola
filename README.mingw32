@@ -9,6 +9,7 @@ To build OLA on Windows with MinGW, you need an up-to-date MinGW installation. T
 You need to select:
 - mingw-developer-toolkit
 - mingw32-base
+- mingw32-gcc-g++
 - mingw32-pthreads-w32
 - msys-base
 - msys-coreutils
@@ -39,7 +40,7 @@ Additional tools and libraries
 pkg-config
 ----------
 - Download pkg-config-lite from http://sourceforge.net/projects/pkgconfiglite/files/
-- Extract to MinGW directory
+- Extract to MinGW directory (bin-win32 package) or build it from the tarball
 
 Python (optional)
 -----------------
@@ -54,28 +55,28 @@ msys-git
 libuuid
 -------
 - Download and extract the latest libuuid tarball from https://code.google.com/p/gnome-build-stage-1/downloads/list
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 protobuf
 --------
 - Download and extract the latest protobuf tarball from https://code.google.com/p/protobuf/downloads/list
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 - if you want to use the OLA Python api, install the protobuf Python bindings from the 'python' subdirectory
 
 cppunit
 -------
 - Download and extract the latest cppunit tarball from http://sourceforge.net/projects/cppunit/files/cppunit/
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 libmicrohttpd
 -------------
 - Download and extract the latest libmicrohttpd tarball from http://ftp.gnu.org/gnu/libmicrohttpd/
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW (and --disable-https if you don't want all the crypto stuff)
 
 liblo (optional)
 ----------------
 - Download and extract the latest version of liblo from http://liblo.sourceforge.net/
-- Configure, compile and install it using the MinGW MSYS shell
+- Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 ============
 Building OLA
@@ -85,7 +86,7 @@ Building OLA
 * git clone https://github.com/OpenLightingProject/ola.git ola
 * cd ola
 * autoreconf -i -f
-* ./configure --enable-python-libs --disable-e131 --disable-karate --disable-milinst --disable-renard --disable-spi --disable-stageprofi --disable-usbpro --disable-usbdmx --disable-uart
+* ./configure --enable-python-libs --disable-all-plugins --enable-artnet --enable-dummy --enable-espnet --enable-kinet --enable-opendmx --enable-osc --enable-pathport --enable-sandnet --enable-shownet
 * make
 * make install
 

@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 #include "ola/base/Array.h"
-#include "ola/BaseTypes.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DummyResponder.h"
@@ -262,7 +262,7 @@ const RDMResponse *DummyResponder::SetFactoryDefaults(
 
 const RDMResponse *DummyResponder::GetProductDetailList(
     const RDMRequest *request) {
-  std::vector<rdm_product_detail> product_details;
+  vector<rdm_product_detail> product_details;
   product_details.push_back(PRODUCT_DETAIL_TEST);
   product_details.push_back(PRODUCT_DETAIL_OTHER);
   return ResponderHelper::GetProductDetailList(request, product_details);

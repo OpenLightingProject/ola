@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"
@@ -41,6 +41,7 @@ using ola::client::SendRDMArgs;
 using ola::io::ConnectedDescriptor;
 using ola::rdm::RDMAPIImplInterface;
 using std::string;
+using std::vector;
 
 OlaCallbackClient::OlaCallbackClient(ConnectedDescriptor *descriptor)
     : m_core(new client::OlaClientCore(descriptor)) {
@@ -63,7 +64,7 @@ void OlaCallbackClient::SetCloseHandler(
 }
 
 bool OlaCallbackClient::FetchPluginList(
-    SingleUseCallback2<void, const std::vector<OlaPlugin>&,
+    SingleUseCallback2<void, const vector<OlaPlugin>&,
                        const string&> *callback) {
   m_core->FetchPluginList(
       NewSingleCallback(this, &OlaCallbackClient::HandlePluginList, callback));
@@ -92,7 +93,7 @@ bool OlaCallbackClient::FetchPluginState(ola_plugin_id plugin_id,
 bool OlaCallbackClient::FetchDeviceInfo(
         ola_plugin_id filter,
         SingleUseCallback2<void,
-                           const std::vector<OlaDevice>&,
+                           const vector<OlaDevice>&,
                            const string&> *callback) {
   m_core->FetchDeviceInfo(
       filter,
@@ -104,8 +105,8 @@ bool OlaCallbackClient::FetchDeviceInfo(
 bool OlaCallbackClient::FetchCandidatePorts(
         unsigned int universe_id,
         SingleUseCallback2<void,
-                           const std::vector<OlaDevice>&,
-                           const std::string&> *callback) {
+                           const vector<OlaDevice>&,
+                           const string&> *callback) {
   m_core->FetchCandidatePorts(
       universe_id,
       NewSingleCallback(this, &OlaCallbackClient::HandleDeviceInfo,
@@ -115,8 +116,8 @@ bool OlaCallbackClient::FetchCandidatePorts(
 
 bool OlaCallbackClient::FetchCandidatePorts(
         SingleUseCallback2<void,
-                           const std::vector<OlaDevice>&,
-                           const std::string&> *callback) {
+                           const vector<OlaDevice>&,
+                           const string&> *callback) {
   m_core->FetchCandidatePorts(
       NewSingleCallback(this, &OlaCallbackClient::HandleDeviceInfo,
                         callback));
@@ -161,7 +162,7 @@ bool OlaCallbackClient::SetPortPriorityOverride(
 }
 
 bool OlaCallbackClient::FetchUniverseList(
-    SingleUseCallback2<void, const std::vector<OlaUniverse>&, const string&>
+    SingleUseCallback2<void, const vector<OlaUniverse>&, const string&>
         *callback) {
   m_core->FetchUniverseList(
       NewSingleCallback(this, &OlaCallbackClient::HandleUniverseList,
@@ -205,7 +206,7 @@ bool OlaCallbackClient::Patch(
     ola::PortDirection port_direction,
     ola::PatchAction action,
     unsigned int universe,
-    ola::SingleUseCallback1<void, const std::string&> *callback) {
+    ola::SingleUseCallback1<void, const string&> *callback) {
   m_core->Patch(
       device_alias, port,
       port_direction == INPUT_PORT ? client::INPUT_PORT: client::OUTPUT_PORT,
@@ -219,7 +220,7 @@ void OlaCallbackClient::SetDmxCallback(
     ola::Callback3<void,
                    unsigned int,
                    const ola::DmxBuffer&,
-                   const std::string&> *callback) {
+                   const string&> *callback) {
   m_dmx_callback.reset(callback);
 }
 
@@ -228,7 +229,7 @@ void OlaCallbackClient::SetDmxCallback(
                    unsigned int,
                    uint8_t,
                    const ola::DmxBuffer&,
-                   const std::string&> *callback) {
+                   const string&> *callback) {
   m_priority_dmx_callback.reset(callback);
 }
 
@@ -246,7 +247,7 @@ bool OlaCallbackClient::RegisterUniverse(
 bool OlaCallbackClient::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
-    SingleUseCallback1<void, const std::string&> *callback) {
+    SingleUseCallback1<void, const string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleSetCallback, callback));
   m_core->SendDMX(universe, data, args);
@@ -256,7 +257,7 @@ bool OlaCallbackClient::SendDmx(
 bool OlaCallbackClient::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
-    Callback1<void, const std::string&> *callback) {
+    Callback1<void, const string&> *callback) {
   client::SendDMXArgs args(
       NewSingleCallback(this, &OlaCallbackClient::HandleRepeatableSetCallback,
         callback));
@@ -381,17 +382,17 @@ bool OlaCallbackClient::SendTimeCode(
 // -------------------------------------------------------
 
 void OlaCallbackClient::HandlePluginList(
-    SingleUseCallback2<void, const std::vector<OlaPlugin>&,
+    SingleUseCallback2<void, const vector<OlaPlugin>&,
                        const string&> *callback,
     const client::Result &result,
-    const std::vector<OlaPlugin> &plugins) {
+    const vector<OlaPlugin> &plugins) {
   callback->Run(plugins, result.Error());
 }
 
 void OlaCallbackClient::HandlePluginDescription(
     SingleUseCallback2<void, const string&, const string&> *callback,
     const client::Result &result,
-    const std::string &description) {
+    const string &description) {
   callback->Run(description, result.Error());
 }
 
@@ -410,25 +411,25 @@ void OlaCallbackClient::HandlePluginState(
 }
 
 void OlaCallbackClient::HandleDeviceInfo(
-    SingleUseCallback2<void, const std::vector<OlaDevice>&, const string&>
+    SingleUseCallback2<void, const vector<OlaDevice>&, const string&>
         *callback,
     const client::Result &result,
-    const std::vector<OlaDevice> &devices) {
+    const vector<OlaDevice> &devices) {
   callback->Run(devices, result.Error());
 }
 
 void OlaCallbackClient::HandleConfigureDevice(
     SingleUseCallback2<void, const string&, const string&> *callback,
     const client::Result &result,
-    const std::string &reply) {
+    const string &reply) {
   callback->Run(reply, result.Error());
 }
 
 void OlaCallbackClient::HandleUniverseList(
-    SingleUseCallback2<void, const std::vector<OlaUniverse>&,
+    SingleUseCallback2<void, const vector<OlaUniverse>&,
                        const string &> *callback,
     const client::Result &result,
-    const std::vector<OlaUniverse> &universes) {
+    const vector<OlaUniverse> &universes) {
   callback->Run(universes, result.Error());
 }
 

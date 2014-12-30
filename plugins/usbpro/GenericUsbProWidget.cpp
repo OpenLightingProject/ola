@@ -20,7 +20,7 @@
  */
 
 #include <string.h>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"

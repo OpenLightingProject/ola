@@ -17,9 +17,9 @@
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  *
- * Additional modifications to enable support for multiple outputs and 
+ * Additional modifications to enable support for multiple outputs and
  * additional device ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
 */
 
@@ -73,6 +73,7 @@ class FtdiDmxPlugin : public Plugin {
   static const char K_FREQUENCY[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
+  static std::vector< std::pair<int, int> > supportedIDS;
 };
 }  // namespace ftdidmx
 }  // namespace plugin

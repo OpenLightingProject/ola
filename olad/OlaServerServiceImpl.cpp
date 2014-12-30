@@ -16,23 +16,24 @@
  * OlaServerServiceImpl.cpp
  * Implementation of the OlaServerService interface. This is the class that
  * handles all the RPCs on the server side.
- * Copyright (C) 2005 - 2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <algorithm>
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
+#include "common/rpc/RpcSession.h"
 #include "ola/Callback.h"
 #include "ola/CallbackRunner.h"
 #include "ola/DmxBuffer.h"
-#include "ola/ExportMap.h"
 #include "ola/Logging.h"
-#include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/UIDSet.h"
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
 #include "olad/Client.h"
+#include "olad/ClientBroker.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/DmxSource.h"
@@ -77,10 +78,23 @@ using std::vector;
 
 typedef CallbackRunner<ola::rpc::RpcService::CompletionCallback> ClosureRunner;
 
+OlaServerServiceImpl::OlaServerServiceImpl(
+    UniverseStore *universe_store,
+    DeviceManager *device_manager,
+    PluginManager *plugin_manager,
+    PortManager *port_manager,
+    ClientBroker *broker,
+    const TimeStamp *wake_up_time,
+    ReloadPluginsCallback *reload_plugins_callback)
+    : m_universe_store(universe_store),
+      m_device_manager(device_manager),
+      m_plugin_manager(plugin_manager),
+      m_port_manager(port_manager),
+      m_broker(broker),
+      m_wake_up_time(wake_up_time),
+      m_reload_plugins_callback(reload_plugins_callback) {
+}
 
-/*
- * Returns the current DMX values for a particular universe
- */
 void OlaServerServiceImpl::GetDmx(
     RpcController* controller,
     const UniverseRequest* request,
@@ -96,23 +110,18 @@ void OlaServerServiceImpl::GetDmx(
   response->set_universe(request->universe());
 }
 
-
-
-/*
- * Register a client to receive DMX data.
- */
 void OlaServerServiceImpl::RegisterForDmx(
     RpcController* controller,
     const RegisterDmxRequest* request,
     Ack*,
-    ola::rpc::RpcService::CompletionCallback* done,
-    Client *client) {
+    ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverseOrCreate(
       request->universe());
   if (!universe)
     return MissingUniverseError(controller);
 
+  Client *client = GetClient(controller);
   if (request->action() == ola::proto::REGISTER) {
     universe->AddSinkClient(client);
   } else {
@@ -120,77 +129,60 @@ void OlaServerServiceImpl::RegisterForDmx(
   }
 }
 
-
-/*
- * Update the DMX values for a particular universe
- */
 void OlaServerServiceImpl::UpdateDmxData(
     RpcController* controller,
     const DmxData* request,
     Ack*,
-    ola::rpc::RpcService::CompletionCallback* done,
-    Client *client) {
+    ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
     return MissingUniverseError(controller);
 
-  if (client) {
-    DmxBuffer buffer;
-    buffer.Set(request->data());
+  Client *client = GetClient(controller);
+  DmxBuffer buffer;
+  buffer.Set(request->data());
 
-    uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
-    if (request->has_priority()) {
-      priority = request->priority();
-      priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
-                          priority);
-      priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
-                          priority);
-    }
-    DmxSource source(buffer, *m_wake_up_time, priority);
-    client->DMXReceived(request->universe(), source);
-    universe->SourceClientDataChanged(client);
+  uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
+  if (request->has_priority()) {
+    priority = request->priority();
+    priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
+                        priority);
+    priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
+                        priority);
   }
+  DmxSource source(buffer, *m_wake_up_time, priority);
+  client->DMXReceived(request->universe(), source);
+  universe->SourceClientDataChanged(client);
 }
 
-
-/*
- * Handle a streaming DMX update, we don't send responses for this
- */
 void OlaServerServiceImpl::StreamDmxData(
-    RpcController*,
+    RpcController *controller,
     const ola::proto::DmxData* request,
     ola::proto::STREAMING_NO_RESPONSE*,
-    ola::rpc::RpcService::CompletionCallback*,
-    Client *client) {
-
+    ola::rpc::RpcService::CompletionCallback*) {
   Universe *universe = m_universe_store->GetUniverse(request->universe());
 
   if (!universe)
     return;
 
-  if (client) {
-    DmxBuffer buffer;
-    buffer.Set(request->data());
+  Client *client = GetClient(controller);
+  DmxBuffer buffer;
+  buffer.Set(request->data());
 
-    uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
-    if (request->has_priority()) {
-      priority = request->priority();
-      priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
-                          priority);
-      priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
-                          priority);
-    }
-    DmxSource source(buffer, *m_wake_up_time, priority);
-    client->DMXReceived(request->universe(), source);
-    universe->SourceClientDataChanged(client);
+  uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT;
+  if (request->has_priority()) {
+    priority = request->priority();
+    priority = std::max(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MIN),
+                        priority);
+    priority = std::min(static_cast<uint8_t>(ola::dmx::SOURCE_PRIORITY_MAX),
+                        priority);
   }
+  DmxSource source(buffer, *m_wake_up_time, priority);
+  client->DMXReceived(request->universe(), source);
+  universe->SourceClientDataChanged(client);
 }
 
-
-/*
- * Sets the name of a universe
- */
 void OlaServerServiceImpl::SetUniverseName(
     RpcController* controller,
     const UniverseNameRequest* request,
@@ -204,10 +196,6 @@ void OlaServerServiceImpl::SetUniverseName(
   universe->SetName(request->name());
 }
 
-
-/*
- * Set the merge mode for a universe
- */
 void OlaServerServiceImpl::SetMergeMode(
     RpcController* controller,
     const MergeModeRequest* request,
@@ -223,10 +211,6 @@ void OlaServerServiceImpl::SetMergeMode(
   universe->SetMergeMode(mode);
 }
 
-
-/*
- * Patch a port to a universe
- */
 void OlaServerServiceImpl::PatchPort(
     RpcController* controller,
     const PatchPortRequest* request,
@@ -264,10 +248,6 @@ void OlaServerServiceImpl::PatchPort(
     controller->SetFailed("Patch port request failed");
 }
 
-
-/*
- * Set the priority of a set of ports
- */
 void OlaServerServiceImpl::SetPortPriority(
     RpcController* controller,
     const ola::proto::PortPriorityRequest* request,
@@ -322,10 +302,6 @@ void OlaServerServiceImpl::SetPortPriority(
         "Invalid SetPortPriority request, see logs for more info");
 }
 
-
-/*
- * Returns information on the active universes.
- */
 void OlaServerServiceImpl::GetUniverseInfo(
     RpcController* controller,
     const OptionalUniverseRequest* request,
@@ -367,10 +343,6 @@ void OlaServerServiceImpl::GetUniverseInfo(
   }
 }
 
-
-/*
- * Return info on available plugins
- */
 void OlaServerServiceImpl::GetPlugins(
     RpcController*,
     const PluginListRequest*,
@@ -400,10 +372,6 @@ void OlaServerServiceImpl::ReloadPlugins(
   }
 }
 
-
-/*
- * Return the description for a plugin.
- */
 void OlaServerServiceImpl::GetPluginDescription(
     RpcController* controller,
     const ola::proto::PluginDescriptionRequest* request,
@@ -421,10 +389,6 @@ void OlaServerServiceImpl::GetPluginDescription(
   }
 }
 
-
-/*
- * Return the state for a plugin.
- */
 void OlaServerServiceImpl::GetPluginState(
     RpcController* controller,
     const ola::proto::PluginStateRequest* request,
@@ -451,10 +415,6 @@ void OlaServerServiceImpl::GetPluginState(
   }
 }
 
-
-/*
- * Return information on available devices
- */
 void OlaServerServiceImpl::GetDeviceInfo(
     RpcController*,
     const DeviceInfoRequest* request,
@@ -475,10 +435,6 @@ void OlaServerServiceImpl::GetDeviceInfo(
   }
 }
 
-
-/*
- * Handle a GetCandidatePorts request
- */
 void OlaServerServiceImpl::GetCandidatePorts(
     RpcController* controller,
     const ola::proto::OptionalUniverseRequest* request,
@@ -586,10 +542,6 @@ void OlaServerServiceImpl::GetCandidatePorts(
   }
 }
 
-
-/*
- * Handle a ConfigureDevice request
- */
 void OlaServerServiceImpl::ConfigureDevice(
     RpcController* controller,
     const DeviceConfigRequest* request,
@@ -607,10 +559,6 @@ void OlaServerServiceImpl::ConfigureDevice(
                     response->mutable_data(), done);
 }
 
-
-/*
- * Fetch the UID list for a universe
- */
 void OlaServerServiceImpl::GetUIDs(
     RpcController* controller,
     const ola::proto::UniverseRequest* request,
@@ -632,10 +580,6 @@ void OlaServerServiceImpl::GetUIDs(
   }
 }
 
-
-/*
- * Force RDM discovery for a universe
- */
 void OlaServerServiceImpl::ForceDiscovery(
     RpcController* controller,
     const ola::proto::DiscoveryRequest* request,
@@ -658,17 +602,11 @@ void OlaServerServiceImpl::ForceDiscovery(
   }
 }
 
-
-/*
- * Handle an RDM Command
- */
 void OlaServerServiceImpl::RDMCommand(
     RpcController* controller,
     const ola::proto::RDMRequest* request,
     ola::proto::RDMResponse* response,
-    ola::rpc::RpcService::CompletionCallback* done,
-    const UID *uid,
-    class Client *client) {
+    ola::rpc::RpcService::CompletionCallback* done) {
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe) {
     MissingUniverseError(controller);
@@ -676,7 +614,9 @@ void OlaServerServiceImpl::RDMCommand(
     return;
   }
 
-  UID source_uid = uid ? *uid : m_uid;
+  Client *client = GetClient(controller);
+  UID source_uid = client->GetUID();
+
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
@@ -716,18 +656,11 @@ void OlaServerServiceImpl::RDMCommand(
   m_broker->SendRDMRequest(client, universe, rdm_request, callback);
 }
 
-
-/*
- * Handle an RDM Discovery Command. This should only be used for the RDM
- * responder tests.
- */
 void OlaServerServiceImpl::RDMDiscoveryCommand(
     RpcController* controller,
     const ola::proto::RDMDiscoveryRequest* request,
     ola::proto::RDMResponse* response,
-    ola::rpc::RpcService::CompletionCallback* done,
-    const UID *uid,
-    class Client *client) {
+    ola::rpc::RpcService::CompletionCallback* done) {
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe) {
     MissingUniverseError(controller);
@@ -735,7 +668,9 @@ void OlaServerServiceImpl::RDMDiscoveryCommand(
     return;
   }
 
-  UID source_uid = uid ? *uid : m_uid;
+  Client *client = GetClient(controller);
+  UID source_uid = client->GetUID();
+
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
@@ -761,24 +696,17 @@ void OlaServerServiceImpl::RDMDiscoveryCommand(
   m_broker->SendRDMRequest(client, universe, rdm_request, callback);
 }
 
-
-/*
- * Set this client's source UID
- */
 void OlaServerServiceImpl::SetSourceUID(
-    RpcController*,
+    RpcController *controller,
     const ola::proto::UID* request,
     ola::proto::Ack*,
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
+
   UID source_uid(request->esta_id(), request->device_id());
-  m_uid = source_uid;
+  GetClient(controller)->SetUID(source_uid);
 }
 
-
-/**
- * Send Timecode
- */
 void OlaServerServiceImpl::SendTimeCode(
     RpcController* controller,
     const ola::proto::TimeCode* request,
@@ -995,39 +923,17 @@ void OlaServerServiceImpl::SetProtoUID(const ola::rdm::UID &uid,
   pb_uid->set_device_id(uid.DeviceId());
 }
 
-// OlaClientService
-// ----------------------------------------------------------------------------
-OlaClientService::~OlaClientService() {
-  if (m_uid)
-    delete m_uid;
+Client* OlaServerServiceImpl::GetClient(ola::rpc::RpcController *controller) {
+  return reinterpret_cast<Client*>(controller->Session()->GetData());
 }
-
-
-/*
- * Set this client's source UID
- */
-void OlaClientService::SetSourceUID(
-    RpcController* controller,
-    const ola::proto::UID* request,
-    ola::proto::Ack* response,
-    ola::rpc::RpcService::CompletionCallback* done) {
-
-  UID source_uid(request->esta_id(), request->device_id());
-  if (!m_uid)
-    m_uid = new UID(source_uid);
-  else
-    *m_uid = source_uid;
-  done->Run();
-  (void) controller;
-  (void) response;
-}
-
 
 // OlaServerServiceImplFactory
 // ----------------------------------------------------------------------------
+/*
 OlaClientService *OlaClientServiceFactory::New(
     Client *client,
     OlaServerServiceImpl *impl) {
   return new OlaClientService(client, impl);
 }
+*/
 }  // namespace ola

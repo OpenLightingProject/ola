@@ -21,11 +21,13 @@
 #ifndef PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
 #define PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
 
-#include <vector>
+#include <memory>
+#include <map>
 #include <string>
 #include "olad/Plugin.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
+#include "plugins/stageprofi/StageProfiDetector.h"
 
 namespace ola {
 namespace plugin {
@@ -35,29 +37,35 @@ class StageProfiDevice;
 
 class StageProfiPlugin: public Plugin {
  public:
-    explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
-    ~StageProfiPlugin() {}
+  explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor) {}
+  ~StageProfiPlugin();
 
-    std::string Name() const { return PLUGIN_NAME; }
-    ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
-    std::string Description() const;
-    int SocketClosed(ola::io::ConnectedDescriptor *socket);
-    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
+  std::string Description() const;
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    bool StartHook();
-    bool StopHook();
-    bool SetDefaultPreferences();
-    void DeleteDevice(StageProfiDevice *device);
+  typedef std::map<std::string, StageProfiDevice*> DeviceMap;
 
-    std::vector<StageProfiDevice*> m_devices;  // list of our devices
+  DeviceMap m_devices;
+  std::auto_ptr<class StageProfiDetector> m_detector;
 
-    static const char STAGEPROFI_DEVICE_PATH[];
-    static const char STAGEPROFI_DEVICE_NAME[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
-    static const char DEVICE_KEY[];
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
+  void NewWidget(const std::string &widget_path,
+                 ola::io::ConnectedDescriptor *descriptor);
+
+  void DeviceRemoved(std::string widget_path);
+  void DeleteDevice(StageProfiDevice *device);
+
+  static const char STAGEPROFI_DEVICE_PATH[];
+  static const char STAGEPROFI_DEVICE_NAME[];
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
+  static const char DEVICE_KEY[];
 };
 }  // namespace stageprofi
 }  // namespace plugin

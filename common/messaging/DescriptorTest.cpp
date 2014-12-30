@@ -160,7 +160,7 @@ void DescriptorTest::testFieldDescriptorGroup() {
       "uint8", false, 10);
 
   // group with a variable number of repeats
-  std::vector<const FieldDescriptor*> fields;
+  vector<const FieldDescriptor*> fields;
   fields.push_back(bool_descriptor);
   fields.push_back(uint8_descriptor);
 
@@ -190,7 +190,7 @@ void DescriptorTest::testFieldDescriptorGroup() {
   UInt16FieldDescriptor *uint16_descriptor2 = new UInt16FieldDescriptor(
       "uint16", false, 10);
 
-  std::vector<const FieldDescriptor*> fields2;
+  vector<const FieldDescriptor*> fields2;
   fields2.push_back(bool_descriptor2);
   fields2.push_back(uint8_descriptor2);
   fields2.push_back(uint16_descriptor2);
@@ -220,7 +220,7 @@ void DescriptorTest::testFieldDescriptorGroup() {
   BoolFieldDescriptor *bool_descriptor3 = new BoolFieldDescriptor("bool");
   StringFieldDescriptor *string_descriptor2 =
     new StringFieldDescriptor("string", 0, 32);
-  std::vector<const FieldDescriptor*> fields3;
+  vector<const FieldDescriptor*> fields3;
   fields3.push_back(bool_descriptor3);
   fields3.push_back(string_descriptor2);
 
@@ -246,7 +246,7 @@ void DescriptorTest::testFieldDescriptorGroup() {
   BoolFieldDescriptor *bool_descriptor4 = new BoolFieldDescriptor("bool");
   StringFieldDescriptor *string_descriptor3 =
     new StringFieldDescriptor("string", 0, 32);
-  std::vector<const FieldDescriptor*> fields4;
+  vector<const FieldDescriptor*> fields4;
   fields4.push_back(bool_descriptor4);
   fields4.push_back(string_descriptor3);
 
@@ -270,7 +270,7 @@ void DescriptorTest::testFieldDescriptorGroup() {
 
   // now check a group with an unlimited block count
   BoolFieldDescriptor *bool_descriptor5 = new BoolFieldDescriptor("bool");
-  std::vector<const FieldDescriptor*> fields5;
+  vector<const FieldDescriptor*> fields5;
   fields5.push_back(bool_descriptor5);
 
   FieldDescriptorGroup group_descriptor5(

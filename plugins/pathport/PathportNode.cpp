@@ -24,7 +24,7 @@
 #include <map>
 #include <vector>
 #include "ola/Logging.h"
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/pathport/PathportNode.h"
@@ -91,7 +91,7 @@ bool PathportNode::Start() {
   delete picker;
 
   m_config_addr = IPV4Address(HostToNetwork(PATHPORT_CONFIG_GROUP));
-  m_status_addr= IPV4Address(HostToNetwork(PATHPORT_STATUS_GROUP));
+  m_status_addr = IPV4Address(HostToNetwork(PATHPORT_STATUS_GROUP));
   m_data_addr = IPV4Address(HostToNetwork(PATHPORT_DATA_GROUP));
 
   if (!InitNetwork())

@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/StreamingClient.h>
+#include <ola/client/StreamingClient.h>
 
 #include <iostream>
 
@@ -37,7 +37,8 @@ int main(int, char *[]) {
   buffer.Blackout();  // Set all channels to 0
 
   // Create a new client.
-  ola::StreamingClient ola_client((ola::StreamingClient::Options()));
+  ola::client::StreamingClient ola_client(
+      (ola::client::StreamingClient::Options()));
 
   // Setup the client, this connects to the server
   if (!ola_client.Setup()) {
@@ -53,7 +54,7 @@ int main(int, char *[]) {
       cout << "Send DMX failed" << endl;
       exit(1);
     }
-    usleep(20000);   // sleep for 25ms between frames.
+    usleep(25000);   // sleep for 25ms between frames.
   }
   return 0;
 }

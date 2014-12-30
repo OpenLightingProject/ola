@@ -23,10 +23,10 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Macro.h"
+#include "ola/Clock.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
@@ -152,7 +152,7 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
 
 const RDMResponse *ResponderHelper::GetProductDetailList(
     const RDMRequest *request,
-    const std::vector<rdm_product_detail> &product_details,
+    const vector<rdm_product_detail> &product_details,
     uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
@@ -639,7 +639,7 @@ const RDMResponse *ResponderHelper::GetListInterfaces(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
-  std::vector<Interface> interfaces =
+  vector<Interface> interfaces =
       network_manager->GetInterfacePicker()->GetInterfaces(false);
 
   if (interfaces.size() == 0) {
@@ -823,7 +823,10 @@ const RDMResponse *ResponderHelper::GetDNSHostname(
     // Hostname outside of the allowed parameters for RDM, return an error
     return NackWithReason(request, NR_HARDWARE_FAULT);
   } else {
-    return GetString(request, hostname, queued_message_count);
+    return GetString(request,
+                     hostname,
+                     queued_message_count,
+                     MAX_RDM_HOSTNAME_LENGTH);
   }
 }
 
@@ -837,7 +840,10 @@ const RDMResponse *ResponderHelper::GetDNSDomainName(
     // Domain name outside of the allowed parameters for RDM, return an error
     return NackWithReason(request, NR_HARDWARE_FAULT);
   } else {
-    return GetString(request, domain_name, queued_message_count);
+    return GetString(request,
+                     domain_name,
+                     queued_message_count,
+                     MAX_RDM_DOMAIN_NAME_LENGTH);
   }
 }
 
@@ -998,21 +1004,27 @@ const RDMResponse *ResponderHelper::GetIPV4Address(
                         queued_message_count);
 }
 
-/*
- * Handle a request that returns a string
+/**
+ * @brief Handle a request that returns a string
+ * @note this truncates the string to max_length
  */
 const RDMResponse *ResponderHelper::GetString(
     const RDMRequest *request,
-    const std::string &value,
-    uint8_t queued_message_count) {
+    const string &value,
+    uint8_t queued_message_count,
+    uint8_t max_length) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  return GetResponseFromData(request,
-                             reinterpret_cast<const uint8_t*>(value.data()),
-                             value.size(),
-                             RDM_ACK,
-                             queued_message_count);
+  string sanitised_value = value.substr(
+      0,
+      min(static_cast<uint8_t>(value.length()), max_length));
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<const uint8_t*>(sanitised_value.data()),
+      sanitised_value.size(),
+      RDM_ACK,
+      queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::EmptyGetResponse(
@@ -1042,9 +1054,10 @@ const RDMResponse *ResponderHelper::EmptySetResponse(
 
 const RDMResponse *ResponderHelper::SetString(
     const RDMRequest *request,
-    std::string *value,
-    uint8_t queued_message_count) {
-  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    string *value,
+    uint8_t queued_message_count,
+    uint8_t max_length) {
+  if (request->ParamDataSize() > max_length) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   const string new_label(reinterpret_cast<const char*>(request->ParamData()),

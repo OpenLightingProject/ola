@@ -41,7 +41,7 @@ using std::endl;
 using std::string;
 
 DEFINE_s_uint32(universe, u, 1, "The universe to receive data for");
-DEFINE_bool(send_dmx, false, "Use SendDmx messages, default is GetDmx");
+DEFINE_default_bool(send_dmx, false, "Use SendDmx messages, default is GetDmx");
 DEFINE_s_uint32(count, c, 0,
     "Exit after this many RPCs, default: infinite (0)");
 

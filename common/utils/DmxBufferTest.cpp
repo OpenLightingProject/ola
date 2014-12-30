@@ -22,10 +22,11 @@
 #include <string.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/testing/TestUtils.h"
 
+using std::ostringstream;
 using std::string;
 using ola::DmxBuffer;
 
@@ -84,12 +85,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DmxBufferTest);
 void DmxBufferTest::testBlackout() {
   DmxBuffer buffer;
   OLA_ASSERT_TRUE(buffer.Blackout());
-  uint8_t *result = new uint8_t[DMX_UNIVERSE_SIZE];
-  uint8_t *zero = new uint8_t[DMX_UNIVERSE_SIZE];
-  unsigned int result_length = DMX_UNIVERSE_SIZE;
-  memset(zero, 0, DMX_UNIVERSE_SIZE);
+  uint8_t *result = new uint8_t[ola::DMX_UNIVERSE_SIZE];
+  uint8_t *zero = new uint8_t[ola::DMX_UNIVERSE_SIZE];
+  unsigned int result_length = ola::DMX_UNIVERSE_SIZE;
+  memset(zero, 0, ola::DMX_UNIVERSE_SIZE);
   buffer.Get(result, &result_length);
-  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, result_length);
+  OLA_ASSERT_EQ((unsigned int) ola::DMX_UNIVERSE_SIZE, result_length);
   OLA_ASSERT_EQ(0, memcmp(zero, result, result_length));
   delete[] result;
   delete[] zero;
@@ -225,6 +226,10 @@ void DmxBufferTest::testAssign() {
   assignment_buffer3.Get(result, &result_length);
   OLA_ASSERT_EQ(0u, result_length);
   OLA_ASSERT_TRUE(assignment_buffer3 == uninitialized_buffer);
+
+  // Check two buffers differ
+  OLA_ASSERT_TRUE(assignment_buffer3 != assignment_buffer2);
+  OLA_ASSERT_TRUE(buffer != assignment_buffer3);
   delete[] result;
 }
 
@@ -407,14 +412,17 @@ void DmxBufferTest::testSetRange() {
 
   // Setting an uninitialized buffer calls blackout first
   OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
-  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) ola::DMX_UNIVERSE_SIZE, buffer.Size());
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
 
   // try overrunning the buffer
-  OLA_ASSERT_TRUE(buffer.SetRange(DMX_UNIVERSE_SIZE - 2, TEST_DATA, data_size));
-  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw() + DMX_UNIVERSE_SIZE - 2,
-                         2));
+  OLA_ASSERT_TRUE(buffer.SetRange(ola::DMX_UNIVERSE_SIZE - 2,
+                                  TEST_DATA,
+                                  data_size));
+  OLA_ASSERT_EQ((unsigned int) ola::DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA,
+                          buffer.GetRaw() + ola::DMX_UNIVERSE_SIZE - 2,
+                          2));
 
   // reset the buffer so that the valid data is 0, and try again
   buffer.Reset();
@@ -457,7 +465,7 @@ void DmxBufferTest::testSetRangeToValue() {
 
   unsigned int range_size = 5;
   OLA_ASSERT_TRUE(buffer.SetRangeToValue(0, 50, range_size));
-  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) ola::DMX_UNIVERSE_SIZE, buffer.Size());
   OLA_ASSERT_EQ(0, memcmp(RANGE_DATA, buffer.GetRaw(), range_size));
 
   // setting outside the value range should fail
@@ -474,16 +482,16 @@ void DmxBufferTest::testSetChannel() {
   buffer.SetChannel(1, 10);
   buffer.SetChannel(10, 50);
 
-  uint8_t expected[DMX_UNIVERSE_SIZE];
-  memset(expected, 0, DMX_UNIVERSE_SIZE);
+  uint8_t expected[ola::DMX_UNIVERSE_SIZE];
+  memset(expected, 0, ola::DMX_UNIVERSE_SIZE);
   expected[1] = 10;
   expected[10] = 50;
-  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) ola::DMX_UNIVERSE_SIZE, buffer.Size());
   OLA_ASSERT_EQ(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values greater than the buffer size
   buffer.SetChannel(999, 50);
-  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) ola::DMX_UNIVERSE_SIZE, buffer.Size());
   OLA_ASSERT_EQ(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values outside the current valida data range
@@ -509,4 +517,9 @@ void DmxBufferTest::testToString() {
 
   buffer.SetRangeToValue(0, 255, 5);
   OLA_ASSERT_EQ(string("255,255,255,255,255"), buffer.ToString());
+
+  buffer.SetFromString("1,2,3,4");
+  ostringstream str;
+  str << buffer;
+  OLA_ASSERT_EQ(string("1,2,3,4"), str.str());
 }

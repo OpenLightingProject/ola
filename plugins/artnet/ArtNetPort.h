@@ -42,7 +42,14 @@ class ArtNetInputPort: public BasicInputPort {
 
   const DmxBuffer &ReadDMX() const { return m_buffer; }
 
+  /**
+   * Set the DMX Handlers as needed
+   */
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+
+  /*
+   * Respond With Tod
+   */
   void RespondWithTod();
 
   std::string Description() const;
@@ -51,7 +58,14 @@ class ArtNetInputPort: public BasicInputPort {
   DmxBuffer m_buffer;
   ArtNetNode *m_node;
 
+  /**
+   * Send a list of UIDs in a TOD
+   */
   void SendTODWithUIDs(const ola::rdm::UIDSet &uids);
+
+  /**
+   * Run the RDM discovery routine
+   */
   void TriggerDiscovery();
 };
 
@@ -64,11 +78,26 @@ class ArtNetOutputPort: public BasicOutputPort {
         m_node(node) {}
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+
+  /*
+   * Handle an RDMRequest
+   */
   void SendRDMRequest(const ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
+
+  /*
+   * Run the full RDM discovery process
+   */
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+
+  /*
+   * Run the incremental RDM discovery process
+   */
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+  /*
+   * Set the RDM handlers as appropriate
+   */
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
   std::string Description() const;

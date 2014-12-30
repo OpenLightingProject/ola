@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "olad/PluginAdaptor.h"

@@ -31,8 +31,8 @@
 #include <unistd.h>
 #include <string>
 
-#include "ola/BaseTypes.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
 #include "plugins/opendmx/OpenDmxThread.h"
@@ -88,7 +88,6 @@ void *OpenDmxThread::Run() {
         break;
       m_term_cond.TimedWait(&m_term_mutex, wake_up);
       m_term_mutex.Unlock();
-
 
       ola::io::Open(m_path, O_WRONLY, &m_fd);
 

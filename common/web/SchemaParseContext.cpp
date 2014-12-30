@@ -67,10 +67,9 @@ using std::vector;
 // DefinitionsParseContext
 // Used for parsing an object with key : json schema pairs, within 'definitions'
 SchemaParseContextInterface* DefinitionsParseContext::OpenObject(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   m_current_schema.reset(new SchemaParseContext(m_schema_defs));
   return m_current_schema.get();
-  (void) logger;
 }
 
 void DefinitionsParseContext::CloseObject(SchemaErrorLogger *logger) {
@@ -124,8 +123,8 @@ SchemaParseContextInterface* StrictTypedParseContext::OpenArray(
   return NULL;
 }
 
-void StrictTypedParseContext::CloseArray(SchemaErrorLogger *logger) {
-  (void) logger;
+void StrictTypedParseContext::CloseArray(
+    OLA_UNUSED SchemaErrorLogger *logger) {
 }
 
 SchemaParseContextInterface* StrictTypedParseContext::OpenObject(
@@ -134,8 +133,8 @@ SchemaParseContextInterface* StrictTypedParseContext::OpenObject(
   return NULL;
 }
 
-void StrictTypedParseContext::CloseObject(SchemaErrorLogger *logger) {
-  (void) logger;
+void StrictTypedParseContext::CloseObject(
+    OLA_UNUSED SchemaErrorLogger *logger) {
 }
 
 void StrictTypedParseContext::ReportErrorForType(
@@ -261,10 +260,9 @@ ValidatorInterface* SchemaParseContext::GetValidator(
 }
 
 
-void SchemaParseContext::ObjectKey(SchemaErrorLogger *logger,
+void SchemaParseContext::ObjectKey(OLA_UNUSED SchemaErrorLogger *logger,
                                    const string &keyword) {
   m_keyword = LookupKeyword(keyword);
-  (void) logger;
 }
 
 void SchemaParseContext::String(SchemaErrorLogger *logger,
@@ -485,8 +483,9 @@ void SchemaParseContext::CloseObject(SchemaErrorLogger *logger) {
   }
 }
 
-void SchemaParseContext::ProcessPositiveInt(SchemaErrorLogger *logger,
-                                            uint64_t value) {
+void SchemaParseContext::ProcessPositiveInt(
+    OLA_UNUSED SchemaErrorLogger *logger,
+    uint64_t value) {
   switch (m_keyword) {
     case SCHEMA_MULTIPLEOF:
       m_multiple_of.reset(JsonValue::NewNumberValue(value));
@@ -512,7 +511,6 @@ void SchemaParseContext::ProcessPositiveInt(SchemaErrorLogger *logger,
     default:
       {}
   }
-  (void) logger;
 }
 
 template <typename T>
@@ -664,7 +662,7 @@ BaseValidator* SchemaParseContext::BuildObjectValidator(
 }
 
 BaseValidator* SchemaParseContext::BuildStringValidator(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   StringValidator::Options options;
 
   if (m_max_length.IsSet()) {
@@ -676,7 +674,6 @@ BaseValidator* SchemaParseContext::BuildStringValidator(
   }
 
   return new StringValidator(options);
-  (void) logger;
 }
 
 /*
@@ -837,10 +834,9 @@ void ArrayOfSchemaContext::GetValidators(
 }
 
 SchemaParseContextInterface* ArrayOfSchemaContext::OpenObject(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   m_item_schemas.push_back(new SchemaParseContext(m_schema_defs));
   return m_item_schemas.back();
-  (void) logger;
 }
 
 // ArrayOfStringsContext
@@ -899,9 +895,8 @@ void JsonValueContext::Bool(SchemaErrorLogger *, bool value) {
   m_parser.Bool(value);
 }
 
-void JsonValueContext::Null(SchemaErrorLogger *logger) {
+void JsonValueContext::Null(OLA_UNUSED SchemaErrorLogger *logger) {
   m_parser.Null();
-  (void) logger;
 }
 
 SchemaParseContextInterface* JsonValueContext::OpenArray(
@@ -910,9 +905,8 @@ SchemaParseContextInterface* JsonValueContext::OpenArray(
   return this;
 }
 
-void JsonValueContext::CloseArray(SchemaErrorLogger *logger) {
+void JsonValueContext::CloseArray(OLA_UNUSED SchemaErrorLogger *logger) {
   m_parser.CloseArray();
-  (void) logger;
 }
 
 SchemaParseContextInterface* JsonValueContext::OpenObject(
@@ -925,9 +919,8 @@ void JsonValueContext::ObjectKey(SchemaErrorLogger *, const string &key) {
   m_parser.ObjectKey(key);
 }
 
-void JsonValueContext::CloseObject(SchemaErrorLogger *logger) {
+void JsonValueContext::CloseObject(OLA_UNUSED SchemaErrorLogger *logger) {
   m_parser.CloseObject();
-  (void) logger;
 }
 
 // ArrayOfJsonValuesContext
@@ -983,10 +976,9 @@ void ArrayOfJsonValuesContext::Null(SchemaErrorLogger *logger) {
 }
 
 SchemaParseContextInterface* ArrayOfJsonValuesContext::OpenArray(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   m_value_context.reset(new JsonValueContext());
   return m_value_context.get();
-  (void) logger;
 }
 
 void ArrayOfJsonValuesContext::CloseArray(SchemaErrorLogger *logger) {
@@ -994,10 +986,9 @@ void ArrayOfJsonValuesContext::CloseArray(SchemaErrorLogger *logger) {
 }
 
 SchemaParseContextInterface* ArrayOfJsonValuesContext::OpenObject(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   m_value_context.reset(new JsonValueContext());
   return m_value_context.get();
-  (void) logger;
 }
 
 void ArrayOfJsonValuesContext::CloseObject(SchemaErrorLogger *logger) {
@@ -1043,10 +1034,9 @@ void DependencyParseContext::AddDependenciesToValidator(
 }
 
 SchemaParseContextInterface* DependencyParseContext::OpenArray(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   m_property_context.reset(new ArrayOfStringsContext());
   return m_property_context.get();
-  (void) logger;
 }
 
 void DependencyParseContext::CloseArray(SchemaErrorLogger *logger) {
@@ -1061,10 +1051,9 @@ void DependencyParseContext::CloseArray(SchemaErrorLogger *logger) {
 }
 
 SchemaParseContextInterface* DependencyParseContext::OpenObject(
-    SchemaErrorLogger *logger) {
+    OLA_UNUSED SchemaErrorLogger *logger) {
   m_schema_context.reset(new SchemaParseContext(m_schema_defs));
   return m_schema_context.get();
-  (void) logger;
 }
 
 void DependencyParseContext::CloseObject(SchemaErrorLogger *logger) {

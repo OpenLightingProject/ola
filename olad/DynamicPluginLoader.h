@@ -27,20 +27,24 @@
 
 namespace ola {
 
+/**
+ * @brief A PluginLoader which loads from shared (dynamic) libraries.
+ */
 class DynamicPluginLoader: public PluginLoader {
  public:
-    DynamicPluginLoader() {}
-    ~DynamicPluginLoader();
+  DynamicPluginLoader() {}
+  ~DynamicPluginLoader();
 
-    std::vector<class AbstractPlugin*> LoadPlugins();
-    void UnloadPlugins() {}
+  std::vector<class AbstractPlugin*> LoadPlugins();
+
+  void UnloadPlugins();
 
  private:
-    void PopulatePlugins();
+  void PopulatePlugins();
 
-    std::vector<class AbstractPlugin*> m_plugins;
+  std::vector<class AbstractPlugin*> m_plugins;
 
-    DISALLOW_COPY_AND_ASSIGN(DynamicPluginLoader);
+  DISALLOW_COPY_AND_ASSIGN(DynamicPluginLoader);
 };
 }  // namespace ola
 #endif  // OLAD_DYNAMICPLUGINLOADER_H_

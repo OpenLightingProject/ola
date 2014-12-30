@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 
 #include <ola/network/IPV4Address.h>
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
@@ -110,11 +111,28 @@ class IPV4SocketAddress: public SocketAddress {
       return !(*this == other);
     }
 
+    /**
+     * @brief Less than operator for partial ordering.
+     *
+     * Sorts by host, then port.
+     */
     bool operator<(const IPV4SocketAddress &other) const {
       if (m_host == other.m_host)
         return m_port < other.m_port;
       else
         return m_host < other.m_host;
+    }
+
+    /**
+     * @brief Greater than operator.
+     *
+     * Sorts by host, then port.
+     */
+    bool operator>(const IPV4SocketAddress &other) const {
+      if (m_host == other.m_host)
+        return m_port > other.m_port;
+      else
+        return m_host > other.m_host;
     }
 
     uint16_t Family() const { return AF_INET; }
@@ -167,10 +185,10 @@ class GenericSocketAddress: public SocketAddress {
       return *this;
     }
 
-    bool ToSockAddr(struct sockaddr *addr, unsigned int size) const {
+    bool ToSockAddr(struct sockaddr *addr,
+                    OLA_UNUSED unsigned int size) const {
       *addr = m_addr;
       return true;
-      (void) size;
     }
 
     std::string ToString() const;

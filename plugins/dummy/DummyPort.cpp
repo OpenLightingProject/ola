@@ -70,13 +70,6 @@ void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
   }
 }
 
-/**
- * Create a new DummyPort
- * @param parent the parent device for this port
- * @param options the config for the DummyPort such as the number of fake RDM
- * devices to create
- * @param id the ID of this port
- */
 DummyPort::DummyPort(DummyDevice *parent,
                      const Options &options,
                      unsigned int id)
@@ -117,11 +110,6 @@ DummyPort::DummyPort(DummyDevice *parent,
 }
 
 
-/*
- * Write operation
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- */
 bool DummyPort::WriteDMX(const DmxBuffer &buffer,
                          uint8_t priority) {
   (void) priority;
@@ -136,40 +124,33 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
   return true;
 }
 
-
-/*
- * This returns a single device
- */
 void DummyPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-
-/*
- * This returns a single device
- */
 void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-
-/*
- * Handle an RDM Request
- */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
   UID dest = request->DestinationUID();
   if (dest.IsBroadcast()) {
-    broadcast_request_tracker *tracker = new broadcast_request_tracker;
-    tracker->expected_count = m_responders.size();
-    tracker->current_count = 0;
-    tracker->failed = false;
-    tracker->callback = callback;
-    for (ResponderMap::iterator i = m_responders.begin();
-         i != m_responders.end(); i++) {
-      i->second->SendRDMRequest(
-        request->Duplicate(),
-        NewSingleCallback(this, &DummyPort::HandleBroadcastAck, tracker));
+    if (m_responders.empty()) {
+      vector<string> packets;
+      callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    } else {
+      broadcast_request_tracker *tracker = new broadcast_request_tracker;
+      tracker->expected_count = m_responders.size();
+      tracker->current_count = 0;
+      tracker->failed = false;
+      tracker->callback = callback;
+      for (ResponderMap::iterator i = m_responders.begin();
+           i != m_responders.end(); i++) {
+        i->second->SendRDMRequest(
+          request->Duplicate(),
+          NewSingleCallback(this, &DummyPort::HandleBroadcastAck, tracker));
+      }
     }
     delete request;
   } else {
@@ -177,7 +158,7 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
       if (i != m_responders.end()) {
         i->second->SendRDMRequest(request, callback);
       } else {
-          std::vector<string> packets;
+          vector<string> packets;
           callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
           delete request;
       }

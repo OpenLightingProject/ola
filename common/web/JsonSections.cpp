@@ -63,13 +63,13 @@ void UIntItem::SetExtraProperties(JsonObject *item) const {
 }
 
 
-void SelectItem::AddItem(const std::string &label, const std::string &value) {
+void SelectItem::AddItem(const string &label, const string &value) {
   pair<string, string> p(label, value);
   m_values.push_back(p);
 }
 
 
-void SelectItem::AddItem(const std::string &label, unsigned int value) {
+void SelectItem::AddItem(const string &label, unsigned int value) {
   AddItem(label, IntToString(value));
 }
 

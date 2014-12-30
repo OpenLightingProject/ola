@@ -267,7 +267,7 @@ class Preferences {
   virtual std::string GetValue(const std::string &key) const = 0;
 
   /**
-   * @brief Returns all preference values corrosponding to this key
+   * @brief Returns all preference values corresponding to this key
    * @param key the key to fetch
    * @return a vector of strings.
    */
@@ -422,12 +422,6 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
 
  private:
   ola::io::SelectServer m_ss;
-
-  /**
-   * Perform the save
-   */
-  void SaveToFile(const std::string *filename,
-                  const PreferencesMap *preferences);
 
   /**
    * Notify the blocked thread we're done

@@ -15,7 +15,7 @@
  *
  * TestService.proto
  * Defines a simple service for testing the RpcChannel
- * Copyright (C) 2005 - 2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 package ola.rpc;
@@ -25,6 +25,7 @@ option py_generic_services = true;
 
 message EchoRequest {
   required string data = 1;
+  optional int64 session_ptr = 2;
 }
 
 message EchoReply {

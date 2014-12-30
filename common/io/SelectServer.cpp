@@ -34,7 +34,6 @@
 #include <errno.h>
 
 #include <algorithm>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -55,12 +54,12 @@
 
 #ifdef HAVE_EPOLL
 #include "common/io/EPoller.h"
-DEFINE_bool(use_epoll, false, "Use epoll() if available");
+DEFINE_default_bool(use_epoll, false, "Use epoll() if available");
 #endif
 
 #ifdef HAVE_KQUEUE
 #include "common/io/KQueuePoller.h"
-DEFINE_bool(use_kqueue, false, "Use kqueue() if available");
+DEFINE_default_bool(use_kqueue, false, "Use kqueue() if available");
 #endif
 
 namespace ola {
@@ -131,10 +130,7 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
 }
 
 SelectServer::~SelectServer() {
-  while (!m_incoming_queue.empty()) {
-    delete m_incoming_queue.front();
-    m_incoming_queue.pop();
-  }
+  DrainCallbacks();
 
   STLDeleteElements(&m_loop_callbacks);
   if (m_free_clock)
@@ -287,7 +283,7 @@ void SelectServer::RunInLoop(Callback0<void> *callback) {
 void SelectServer::Execute(ola::BaseCallback0<void> *callback) {
   {
     ola::thread::MutexLocker locker(&m_incoming_mutex);
-    m_incoming_queue.push(callback);
+    m_incoming_callbacks.push_back(callback);
   }
 
   // kick select(), we do this even if we're in the same thread as select() is
@@ -296,6 +292,21 @@ void SelectServer::Execute(ola::BaseCallback0<void> *callback) {
   // sleep for the poll_interval before executing the callback.
   uint8_t wake_up = 'a';
   m_incoming_descriptor.Send(&wake_up, sizeof(wake_up));
+}
+
+
+void SelectServer::DrainCallbacks() {
+  Callbacks callbacks_to_run;
+  while (true) {
+    {
+      ola::thread::MutexLocker locker(&m_incoming_mutex);
+      if (m_incoming_callbacks.empty()) {
+        return;
+      }
+      callbacks_to_run.swap(m_incoming_callbacks);
+    }
+    RunCallbacks(&callbacks_to_run);
+  }
 }
 
 /*
@@ -327,18 +338,26 @@ void SelectServer::DrainAndExecute() {
                                   sizeof(message), size);
   }
 
-  while (true) {
-    ola::BaseCallback0<void> *callback = NULL;
-    {
-      thread::MutexLocker lock(&m_incoming_mutex);
-      if (m_incoming_queue.empty())
-        break;
-      callback = m_incoming_queue.front();
-      m_incoming_queue.pop();
-    }
-    if (callback)
-      callback->Run();
+  // We can't hold the mutex while we execute the callback, so instead we swap
+  // out the vector under a lock, release the lock and then run all the
+  // callbacks.
+  Callbacks callbacks_to_run;
+  {
+    thread::MutexLocker lock(&m_incoming_mutex);
+    callbacks_to_run.swap(m_incoming_callbacks);
   }
+
+  RunCallbacks(&callbacks_to_run);
+}
+
+void SelectServer::RunCallbacks(Callbacks *callbacks) {
+  Callbacks::iterator iter = callbacks->begin();
+  for (; iter != callbacks->end(); ++iter) {
+    if (*iter) {
+      (*iter)->Run();
+    }
+  }
+  callbacks->clear();
 }
 }  // namespace io
 }  // namespace ola
