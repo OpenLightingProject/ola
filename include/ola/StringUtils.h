@@ -147,7 +147,6 @@ _ToHex<T> GenericToHex(T v, unsigned int width, bool prefix) {
  */
 template<typename T>
 _ToHex<T> ToHex(T v, bool prefix = true) {
-  // TODO(Peter): This may break if we get a type that doesn't have digits
   return GenericToHex(v,
                       (std::numeric_limits<T>::digits / HEX_BIT_WIDTH),
                       prefix);
