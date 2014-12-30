@@ -52,6 +52,8 @@ using ola::StripPrefix;
 using ola::StripSuffix;
 using ola::ToLower;
 using ola::ToUpper;
+using ola::ToHex;
+using std::ostringstream;
 using std::string;
 using std::vector;
 
@@ -313,6 +315,7 @@ void StringUtilsTest::testIntToString() {
  * test the IntToHexString function.
  */
 void StringUtilsTest::testIntToHexString() {
+  // Using the old IntToHexString
   OLA_ASSERT_EQ(string("0x00"), IntToHexString((uint8_t)0));
 
   OLA_ASSERT_EQ(string("0x01"), IntToHexString((uint8_t)1));
@@ -323,6 +326,45 @@ void StringUtilsTest::testIntToHexString() {
 
   unsigned int i = 0x42;
   OLA_ASSERT_EQ(string("0x00000042"), IntToHexString(i));
+
+  // Using the inline string concatenation
+  ostringstream str;
+  str << ToHex((uint8_t)0);
+  OLA_ASSERT_EQ(string("0x00"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)1);
+  OLA_ASSERT_EQ(string("0x01"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)0x42);
+  OLA_ASSERT_EQ(string("0x42"), str.str());
+  str.str("");
+
+  str << ToHex((uint16_t)0x0001);
+  OLA_ASSERT_EQ(string("0x0001"), str.str());
+  str.str("");
+
+  str << ToHex((uint16_t)0xABCD);
+  OLA_ASSERT_EQ(string("0xabcd"), str.str());
+  str.str("");
+
+  str << ToHex((uint32_t)0xDEADBEEF);
+  OLA_ASSERT_EQ(string("0xdeadbeef"), str.str());
+  str.str("");
+
+  str << ToHex(i);
+  OLA_ASSERT_EQ(string("0x00000042"), str.str());
+  str.str("");
+
+  // Without prefix
+  str << ToHex((uint8_t)0x42, false);
+  OLA_ASSERT_EQ(string("42"), str.str());
+  str.str("");
+
+  str << ToHex((uint16_t)0xABCD, false);
+  OLA_ASSERT_EQ(string("abcd"), str.str());
+  str.str("");
 }
 
 

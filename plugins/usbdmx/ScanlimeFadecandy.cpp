@@ -132,9 +132,9 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
       unsigned int entry = (channel * 257) + value;
       unsigned int packet_entry = entry % 31;
       OLA_DEBUG << "Working on channel " << channel << " value " << value
-                << " (" << IntToHexString(value) << ") with entry " << entry
+                << " (" << ToHex(value) << ") with entry " << entry
                 << ", packet entry " << packet_entry << " with val "
-                << IntToHexString(lut[channel][value]);
+                << ToHex(lut[channel][value]);
       ola::utils::SplitUInt16(lut[channel][value],
                               &packet.data[packet_entry + 1],
                               &packet.data[packet_entry]);

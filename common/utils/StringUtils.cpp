@@ -122,10 +122,11 @@ string IntToString(unsigned int i) {
 }
 
 string IntToHexString(unsigned int i, unsigned int width) {
+  _ToHex<unsigned int> v = _ToHex<unsigned int>(i,
+                                                static_cast<int>(width),
+                                                true);
   ostringstream str;
-  // In C++, you only get the 0x on non-zero values, so we have to explicitly
-  // add it for all values
-  str << "0x" << std::setw(width) << std::hex << std::setfill('0') << i;
+  str << v;
   return str.str();
 }
 
@@ -397,6 +398,7 @@ void CapitalizeLabel(string *s) {
   for (string::iterator iter = s->begin(); iter != s->end(); ++iter) {
     switch (*iter) {
       case '-':
+        // fall through, also convert to space
       case '_':
         *iter = ' ';
       case ' ':
