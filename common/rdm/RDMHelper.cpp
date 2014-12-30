@@ -994,15 +994,15 @@ string StatusMessageIdToString(uint16_t message_id,
       // Data Value shall be a signed integer." but I'm sure it's what was
       // intended. The same thing is technically true with the slots too.
       str << "Proxy Drop: PID "
-          << IntToHexString(reinterpret_cast<uint16_t&>(data1)) << " at TN "
+          << ToHex(reinterpret_cast<uint16_t&>(data1)) << " at TN "
           << data2;
       break;
     case STS_ASC_RXOK:
-      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+      str << "DMX ASC " << ToHex(reinterpret_cast<uint16_t&>(data1))
           << " received OK";
       break;
     case STS_ASC_DROPPED:
-      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+      str << "DMX ASC " << ToHex(reinterpret_cast<uint16_t&>(data1))
           << " now dropped";
       break;
     case STS_DMXNSCNONE:

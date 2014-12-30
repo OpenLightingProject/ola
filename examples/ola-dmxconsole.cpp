@@ -445,6 +445,7 @@ void changepalette(int p) {
   switch (p) {
     default:
       palette_number = 0;
+      // fall through, use 0 as default palette
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);

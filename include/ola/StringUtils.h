@@ -27,7 +27,10 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -109,12 +112,68 @@ std::string IntToString(int i);
 std::string IntToString(unsigned int i);
 
 /**
+ * Internal type used by ToHex
+ */
+template<typename T>
+struct _ToHex {
+ public:
+  _ToHex(T v, int width, bool prefix)
+      : width(width),
+        value(v),
+        prefix(prefix) {
+  }
+
+  int width;  // setw takes an int
+  T value;
+  bool prefix;
+};
+
+inline uint32_t _HexCast(uint8_t v) { return v; }
+inline uint16_t _HexCast(uint16_t v) { return v; }
+inline uint32_t _HexCast(uint32_t v) { return v; }
+
+/**
+ * Convert a value to a hex string.
+ *
+ * Automatic constructor for _ToHex that deals with widths
+ * @tparam T the type of value to convert
+ * @param v the value to convert
+ * @param prefix show the 0x prefix
+ * @return A _ToHex struct representing the value, output it to an ostream to
+ *     use it.
+ * @note We only currently support unsigned ints due to a lack of requirement
+ * for anything else
+ */
+template<typename T>
+_ToHex<T> ToHex(T v, bool prefix = true) {
+  return _ToHex<T>(v,
+                   (std::numeric_limits<T>::digits / HEX_BIT_WIDTH),
+                   prefix);
+}
+
+/**
+ * Output the _ToHex type to an ostream
+ */
+template <typename T>
+std::ostream& operator<<(std::ostream &out, const _ToHex<T> &i) {
+  // In C++, you only get the 0x on non-zero values, so we have to explicitly
+  // add it for all values if we want it
+  if (i.prefix) {
+    out << "0x";
+  }
+  return out << std::setw(i.width) << std::hex << std::setfill('0')
+             << _HexCast(i.value) << std::dec;
+}
+
+/**
  * Convert an unsigned int to a hex string.
  * @param i the unsigned int to convert
  * @param width the width to zero pad to
  * @return The hex string representation of the unsigned int
  * @note We don't currently support signed ints due to a lack of requirement
  * for it and issues with negative handling and hex in C++
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 std::string IntToHexString(unsigned int i, unsigned int width);
 
@@ -122,30 +181,39 @@ std::string IntToHexString(unsigned int i, unsigned int width);
  * Convert a uint8_t to a hex string.
  * @param i the number to convert
  * @return The string representation of the number
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint8_t i) {
-  return IntToHexString(i, (std::numeric_limits<uint8_t>::digits /
-                            HEX_BIT_WIDTH));
+  std::ostringstream str;
+  str << ToHex(i);
+  return str.str();
 }
 
 /**
  * Convert a uint16_t to a hex string.
  * @param i the number to convert
  * @return The string representation of the number
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint16_t i) {
-  return IntToHexString(i, (std::numeric_limits<uint16_t>::digits /
-                            HEX_BIT_WIDTH));
+  std::ostringstream str;
+  str << ToHex(i);
+  return str.str();
 }
 
 /**
  * Convert a uint32_t to a hex string.
  * @param i the number to convert
  * @return The string representation of the number
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint32_t i) {
-  return IntToHexString(i, (std::numeric_limits<uint32_t>::digits /
-                            HEX_BIT_WIDTH));
+  std::ostringstream str;
+  str << ToHex(i);
+  return str.str();
 }
 
 /**
