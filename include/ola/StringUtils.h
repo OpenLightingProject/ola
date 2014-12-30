@@ -123,7 +123,7 @@ struct _ToHex {
         prefix(prefix) {
   }
 
-  unsigned int width;
+  int width;  // setw takes an int
   T value;
   bool prefix;
 };
