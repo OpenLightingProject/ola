@@ -747,53 +747,52 @@ void OlaServerServiceImpl::HandleRDMResponse(
 
   if (code == ola::rdm::RDM_COMPLETED_OK) {
     if (!rdm_response) {
+      // No response returned.
       OLA_WARN << "RDM code was ok but response was NULL";
       response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
             ola::rdm::RDM_INVALID_RESPONSE));
-    } else {
-      uint8_t response_type = rdm_response->ResponseType();
-      if (response_type <= ola::rdm::RDM_NACK_REASON) {
-        SetProtoUID(rdm_response->SourceUID(), response->mutable_source_uid());
-        SetProtoUID(rdm_response->DestinationUID(),
-                    response->mutable_dest_uid());
-        response->set_transaction_number(rdm_response->TransactionNumber());
-        response->set_response_type(
-            static_cast<ola::proto::RDMResponseType>(response_type));
-        response->set_message_count(rdm_response->MessageCount());
-        response->set_sub_device(rdm_response->SubDevice());
+    } else if (rdm_response->ResponseType() <= ola::rdm::RDM_NACK_REASON) {
+      // Valid RDM Response code.
+      SetProtoUID(rdm_response->SourceUID(), response->mutable_source_uid());
+      SetProtoUID(rdm_response->DestinationUID(),
+                  response->mutable_dest_uid());
+      response->set_transaction_number(rdm_response->TransactionNumber());
+      response->set_response_type(static_cast<ola::proto::RDMResponseType>(
+          rdm_response->ResponseType()));
+      response->set_message_count(rdm_response->MessageCount());
+      response->set_sub_device(rdm_response->SubDevice());
 
-        switch (rdm_response->CommandClass()) {
-          case ola::rdm::RDMCommand::DISCOVER_COMMAND_RESPONSE:
-            response->set_command_class(ola::proto::RDM_DISCOVERY_RESPONSE);
-            break;
-          case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
-            response->set_command_class(ola::proto::RDM_GET_RESPONSE);
-            break;
-          case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
-            response->set_command_class(ola::proto::RDM_SET_RESPONSE);
-            break;
-          default:
-            OLA_WARN << "Unknown command class 0x" << std::hex <<
-              rdm_response->CommandClass();
-        }
-
-        response->set_param_id(rdm_response->ParamId());
-
-        if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
-          const string data(
-              reinterpret_cast<const char*>(rdm_response->ParamData()),
-              rdm_response->ParamDataSize());
-          response->set_data(data);
-        } else {
-          response->set_data("");
-        }
-      } else if (response) {
-        OLA_WARN <<
-          "RDM response present, but response type is invalid, was 0x" <<
-          std::hex << static_cast<int>(response_type);
-        response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
-              ola::rdm::RDM_INVALID_RESPONSE));
+      switch (rdm_response->CommandClass()) {
+        case ola::rdm::RDMCommand::DISCOVER_COMMAND_RESPONSE:
+          response->set_command_class(ola::proto::RDM_DISCOVERY_RESPONSE);
+          break;
+        case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
+          response->set_command_class(ola::proto::RDM_GET_RESPONSE);
+          break;
+        case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
+          response->set_command_class(ola::proto::RDM_SET_RESPONSE);
+          break;
+        default:
+          OLA_WARN << "Unknown command class 0x" << std::hex <<
+            rdm_response->CommandClass();
       }
+
+      response->set_param_id(rdm_response->ParamId());
+
+      if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
+        const string data(
+            reinterpret_cast<const char*>(rdm_response->ParamData()),
+            rdm_response->ParamDataSize());
+        response->set_data(data);
+      } else {
+        response->set_data("");
+      }
+    } else {
+      // Invalid RDM Response code.
+      OLA_WARN << "RDM response present, but response type is invalid, was 0x"
+               << std::hex << static_cast<int>(rdm_response->ResponseType());
+      response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
+            ola::rdm::RDM_INVALID_RESPONSE));
     }
   }
 
