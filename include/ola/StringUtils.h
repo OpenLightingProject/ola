@@ -156,13 +156,16 @@ _ToHex<T> ToHex(T v, bool prefix = true) {
  */
 template <typename T>
 std::ostream& operator<<(std::ostream &out, const _ToHex<T> &i) {
+  std::ios::fmtflags flags(out.flags());  // Store the current format flags
   // In C++, you only get the 0x on non-zero values, so we have to explicitly
   // add it for all values if we want it
   if (i.prefix) {
     out << "0x";
   }
-  return out << std::setw(i.width) << std::hex << std::setfill('0')
-             << _HexCast(i.value) << std::dec;
+  out << std::setw(i.width) << std::hex << std::setfill('0')
+      << _HexCast(i.value);
+  out.flags(flags);  // Put the format flags back to normal
+  return out;
 }
 
 /**
