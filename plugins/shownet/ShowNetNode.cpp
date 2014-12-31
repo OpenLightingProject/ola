@@ -54,7 +54,8 @@ ShowNetNode::ShowNetNode(const std::string &ip_address)
     : m_running(false),
       m_packet_count(0),
       m_node_name(),
-      m_preferred_ip(ip_address) {
+      m_preferred_ip(ip_address),
+      m_socket(NULL) {
 }
 
 
