@@ -22,7 +22,7 @@ cat << 'EOF' > $index_file
 <title>Man pages for the Open Lighting Project</title>
 </head>
 <body>
-<h1>Man pages for the <a href="http://openlighting.org">Open Lighting Project</a></h1>
+<h1>Man pages for the <a href="https://openlighting.org">Open Lighting Project</a></h1>
 <ul>
 EOF
 
