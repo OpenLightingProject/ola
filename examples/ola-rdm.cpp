@@ -33,6 +33,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/strings/Format.h>
 
 #include <algorithm>
 #include <iomanip>
@@ -310,7 +311,7 @@ void RDMController::HandleResponse(
       ola::rdm::NackReasonToString(response_status.NackReason()) << endl;
   } else {
     cout << "Unknown RDM response type "
-         << ola::ToHex(response_status.response_type) << endl;
+         << ola::strings::ToHex(response_status.response_type) << endl;
   }
   PrintRemainingMessages(response_status.message_count);
   m_ola_client.GetSelectServer()->Terminate();

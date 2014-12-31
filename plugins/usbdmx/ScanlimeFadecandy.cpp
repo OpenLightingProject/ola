@@ -29,6 +29,7 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/strings/Format.h"
 #include "ola/util/Utils.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
@@ -132,9 +133,9 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
       unsigned int entry = (channel * 257) + value;
       unsigned int packet_entry = entry % 31;
       OLA_DEBUG << "Working on channel " << channel << " value " << value
-                << " (" << ToHex(value) << ") with entry " << entry
+                << " (" << strings::ToHex(value) << ") with entry " << entry
                 << ", packet entry " << packet_entry << " with val "
-                << ToHex(lut[channel][value]);
+                << strings::ToHex(lut[channel][value]);
       ola::utils::SplitUInt16(lut[channel][value],
                               &packet.data[packet_entry + 1],
                               &packet.data[packet_entry]);

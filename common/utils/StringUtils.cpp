@@ -75,8 +75,7 @@ void ShortenString(string *input) {
 
 bool StringBeginsWith(const string &s, const string &prefix) {
   if (s.length() >= prefix.length()) {
-    return
-      0 == s.compare(0, prefix.length(), prefix);
+    return 0 == s.compare(0, prefix.length(), prefix);
   } else {
     return false;
   }
@@ -109,22 +108,9 @@ bool StripSuffix(string *s, const string &suffix) {
   }
 }
 
-string IntToString(int i) {
-  ostringstream str;
-  str << i;
-  return str.str();
-}
-
-string IntToString(unsigned int i) {
-  ostringstream str;
-  str << i;
-  return str.str();
-}
-
 string IntToHexString(unsigned int i, unsigned int width) {
-  _ToHex<unsigned int> v = _ToHex<unsigned int>(i,
-                                                static_cast<int>(width),
-                                                true);
+  strings::_ToHex<unsigned int> v = strings::_ToHex<unsigned int>(
+      i, static_cast<int>(width), true);
   ostringstream str;
   str << v;
   return str.str();
@@ -450,33 +436,5 @@ void CustomCapitalizeLabel(string *s) {
   }
 
   CapitalizeLabel(s);
-}
-
-void FormatData(std::ostream *out,
-                const uint8_t *data,
-                unsigned int length,
-                unsigned int indent,
-                unsigned int byte_per_line) {
-  ostringstream raw, ascii;
-  raw << std::setw(2) << std::hex;
-  for (unsigned int i = 0; i != length; i++) {
-    raw << std::setfill('0') << std::setw(2) <<
-        static_cast<unsigned int>(data[i]) << " ";
-    if (isprint(data[i]))
-      ascii << data[i];
-    else
-      ascii << ".";
-
-    if (i % byte_per_line == byte_per_line - 1) {
-      *out << string(indent, ' ') << raw.str() << " " << ascii.str() << endl;
-      raw.str("");
-      ascii.str("");
-    }
-  }
-  if (length % byte_per_line != 0) {
-    // pad if needed
-    raw << string(3 * (byte_per_line - (length % byte_per_line)), ' ');
-    *out << string(indent, ' ') << raw.str() << " " << ascii.str() << endl;
-  }
 }
 }  // namespace ola

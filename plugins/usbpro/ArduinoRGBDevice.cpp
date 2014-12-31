@@ -25,6 +25,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/io/SelectServerInterface.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 
 namespace ola {
@@ -71,7 +72,7 @@ ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
       m_bucket(initial_count, rate, rate, *wake_time),
       m_wake_time(wake_time) {
   std::ostringstream str;
-  str << "Serial #: " << ola::ToHex(serial);
+  str << "Serial #: " << strings::ToHex(serial);
   m_description = str.str();
 }
 }  // namespace usbpro

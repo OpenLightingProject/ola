@@ -31,6 +31,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 #include "olad/PluginAdaptor.h"
 
 #include "plugins/usbdmx/AnymauDMX.h"
@@ -165,8 +166,8 @@ bool SyncPluginImpl::CheckDevice(libusb_device *usb_device) {
   libusb_get_device_descriptor(usb_device, &device_descriptor);
 
   OLA_DEBUG << "USB device found, checking for widget support, vendor "
-            << ToHex(device_descriptor.idVendor) << ", product "
-            << ToHex(device_descriptor.idProduct);
+            << strings::ToHex(device_descriptor.idVendor) << ", product "
+            << strings::ToHex(device_descriptor.idProduct);
 
   pair<uint8_t, uint8_t> bus_dev_id(libusb_get_bus_number(usb_device),
                                     libusb_get_device_address(usb_device));
