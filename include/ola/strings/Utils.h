@@ -19,7 +19,7 @@
  */
 
 /**
- * @file Utils.h
+ * @file ola/strings/Utils.h
  * @brief Miscellaneous string functions
  */
 
