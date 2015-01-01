@@ -42,8 +42,9 @@ namespace strings {
  * @param input The string to copy to the buffer.
  * @param buffer The memory location to copy the contents of the string to.
  * @param size The size of the memory buffer.
- * @note This the buffer may not be NULL terminated, it's not safe to use
- *   functions like strlen(), printf() etc. on the result.
+ * @note The buffer may not be NULL terminated, it's not safe to use
+ *   functions like strlen(), printf() etc. on the result. This is typically
+ *   used in RDM code.
  */
 void CopyToFixedLengthBuffer(const std::string &input,
                              char *buffer,

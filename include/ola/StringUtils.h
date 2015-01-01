@@ -99,7 +99,7 @@ bool StripSuffix(std::string *s, const std::string &suffix);
  * @brief Convert an int to a string.
  * @param i the int to convert
  * @return the string representation of the int
- * @deprecated Use ola::strings::IntToString instead.
+ * @deprecated Use ola::strings::IntToString instead (30 Dec 2014).
  */
 inline std::string IntToString(int i) {
   return ola::strings::IntToString(i);
@@ -109,7 +109,7 @@ inline std::string IntToString(int i) {
  * Convert an unsigned int to a string.
  * @param i the unsigned int to convert
  * @return The string representation of the unsigned int
- * @deprecated Use ola::strings::IntToString instead.
+ * @deprecated Use ola::strings::IntToString instead (30 Dec 2014).
  */
 inline std::string IntToString(unsigned int i) {
   return ola::strings::IntToString(i);
@@ -423,7 +423,7 @@ void CustomCapitalizeLabel(std::string *s);
  *
  * The data is printed in two columns, hex on the left, ascii on the right.
  * Non ascii values are printed as .
- * @deprecated Use ola::strings::FormatData instead.
+ * @deprecated Use ola::strings::FormatData instead (30 Dec 2014).
  */
 inline void FormatData(std::ostream *out,
                        const uint8_t *data,

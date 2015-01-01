@@ -49,14 +49,15 @@ void FormatData(std::ostream *out,
                 unsigned int indent,
                 unsigned int byte_per_line) {
   ostringstream raw, ascii;
-  raw << std::setw(2) << std::hex;
+  raw << std::hex;
   for (unsigned int i = 0; i != length; i++) {
-    raw << std::setfill('0') << std::setw(2) <<
-        static_cast<unsigned int>(data[i]) << " ";
-    if (isprint(data[i]))
+    raw << std::setfill('0') << std::setw(2)
+        << static_cast<unsigned int>(data[i]) << " ";
+    if (isprint(data[i])) {
       ascii << data[i];
-    else
+    } else {
       ascii << ".";
+    }
 
     if (i % byte_per_line == byte_per_line - 1) {
       *out << string(indent, ' ') << raw.str() << " " << ascii.str() << endl;

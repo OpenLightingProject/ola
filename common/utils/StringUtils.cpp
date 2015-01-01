@@ -75,7 +75,7 @@ void ShortenString(string *input) {
 
 bool StringBeginsWith(const string &s, const string &prefix) {
   if (s.length() >= prefix.length()) {
-    return 0 == s.compare(0, prefix.length(), prefix);
+    return (0 == s.compare(0, prefix.length(), prefix));
   } else {
     return false;
   }

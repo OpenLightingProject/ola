@@ -30,6 +30,7 @@
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/strings/Format.h"
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
 #include "olad/Client.h"
@@ -773,8 +774,9 @@ void OlaServerServiceImpl::HandleRDMResponse(
           response->set_command_class(ola::proto::RDM_SET_RESPONSE);
           break;
         default:
-          OLA_WARN << "Unknown command class 0x" << std::hex <<
-            rdm_response->CommandClass();
+          OLA_WARN << "Unknown command class "
+                   << strings::ToHex(static_cast<unsigned int>(
+                         rdm_response->CommandClass()));
       }
 
       response->set_param_id(rdm_response->ParamId());
@@ -789,8 +791,8 @@ void OlaServerServiceImpl::HandleRDMResponse(
       }
     } else {
       // Invalid RDM Response code.
-      OLA_WARN << "RDM response present, but response type is invalid, was 0x"
-               << std::hex << static_cast<int>(rdm_response->ResponseType());
+      OLA_WARN << "RDM response present, but response type is invalid, was "
+               << strings::ToHex(rdm_response->ResponseType());
       response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
             ola::rdm::RDM_INVALID_RESPONSE));
     }

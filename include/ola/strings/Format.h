@@ -19,7 +19,7 @@
  */
 
 /**
- * @file StringUtils.h
+ * @file Format.h
  * @brief Formatting functions for basic types.
  */
 
@@ -46,14 +46,14 @@ namespace strings {
 std::string IntToString(int i);
 
 /**
- * Convert an unsigned int to a string.
+ * @brief Convert an unsigned int to a string.
  * @param i the unsigned int to convert
  * @return The string representation of the unsigned int
  */
 std::string IntToString(unsigned int i);
 
 /**
- * Convert a value to a hex string.
+ * @brief Convert a value to a hex string.
  *
  * Automatic constructor for _ToHex that deals with widths
  * @tparam T the type of value to convert
@@ -70,7 +70,7 @@ _ToHex<T> ToHex(T v, bool prefix = true) {
 }
 
 /**
- * Output the _ToHex type to an ostream
+ * @brief Output the _ToHex type to an ostream
  */
 template <typename T>
 std::ostream& operator<<(std::ostream &out, const ola::strings::_ToHex<T> &i) {
@@ -95,8 +95,8 @@ std::ostream& operator<<(std::ostream &out, const ola::strings::_ToHex<T> &i) {
  * @param indent the number of spaces to prefix each line with
  * @param byte_per_line the number of bytes to display per line
  *
- * The data is printed in two columns, hex on the left, ascii on the right.
- * Non ascii values are printed as .
+ * @note The data is printed in two columns, hex on the left, ascii on the
+ * right. Non ascii values are printed as `.'
  */
 void FormatData(std::ostream *out,
                 const uint8_t *data,
