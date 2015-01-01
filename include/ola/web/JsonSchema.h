@@ -403,7 +403,8 @@ class MaximumConstraint : public NumberConstraint {
    */
   explicit MaximumConstraint(const JsonNumber *limit)
       : m_limit(limit),
-        m_has_exclusive(false) {
+        m_has_exclusive(false),
+        m_is_exclusive(false) {
   }
 
   bool IsValid(const JsonNumber &value) {
@@ -445,7 +446,8 @@ class MinimumConstraint : public NumberConstraint {
    */
   explicit MinimumConstraint(const JsonNumber *limit)
       : m_limit(limit),
-        m_has_exclusive(false) {
+        m_has_exclusive(false),
+        m_is_exclusive(false) {
   }
 
   bool IsValid(const JsonNumber &value) {

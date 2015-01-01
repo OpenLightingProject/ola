@@ -32,7 +32,7 @@ namespace ola {
  */
 class PluginLoader {
  public:
-  PluginLoader() {}
+  PluginLoader() : m_plugin_adaptor(NULL) {}
   virtual ~PluginLoader() {}
 
   /**

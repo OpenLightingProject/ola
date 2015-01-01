@@ -17,12 +17,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include "ola/rdm/ResponderSettings.h"
 
-#include <ola/network/NetworkUtils.h>
-#include <ola/rdm/RDMCommand.h>
-#include <ola/rdm/ResponderSettings.h>
 #include <algorithm>
 #include <string>
+
+#include "ola/base/Array.h"
+#include "ola/network/NetworkUtils.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/strings/Utils.h"
 
 namespace ola {
 namespace rdm {
@@ -37,10 +40,11 @@ unsigned int BasicSetting::GenerateDescriptionResponse(uint8_t index,
                                                        uint8_t *data) const {
   description_s *output = reinterpret_cast<description_s*>(data);
   output->setting = index;
-  strncpy(output->description, m_description.c_str(), MAX_RDM_STRING_LENGTH);
+  strings::CopyToFixedLengthBuffer(m_description, output->description,
+                                   arraysize(output->description));
   return (sizeof(description_s) - MAX_RDM_STRING_LENGTH +
           std::min(static_cast<size_t>(MAX_RDM_STRING_LENGTH),
-                   strlen(output->description)));
+                   m_description.size()));
 }
 
 FrequencyModulationSetting::FrequencyModulationSetting(const ArgType &arg)
@@ -54,9 +58,9 @@ unsigned int FrequencyModulationSetting::GenerateDescriptionResponse(
   description_s *output = reinterpret_cast<description_s*>(data);
   output->setting = index;
   output->frequency = ola::network::HostToNetwork(m_frequency);
-  strncpy(output->description, m_description.c_str(), MAX_RDM_STRING_LENGTH);
-  return (sizeof(description_s) - MAX_RDM_STRING_LENGTH +
-          strlen(output->description));
+  strings::CopyToFixedLengthBuffer(m_description, output->description,
+                                   arraysize(output->description));
+  return (sizeof(description_s) - MAX_RDM_STRING_LENGTH + m_description.size());
 }
 }  // namespace rdm
 }  // namespace ola

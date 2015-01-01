@@ -658,6 +658,7 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
 
 /*
  * Handle the response to a raw RDM command
+ * data will be NULL, if length is 0.
  */
 void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
                                             const uint8_t *data,
@@ -686,7 +687,9 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
   }
 
   vector<string> packets;
-  packets.push_back(string(reinterpret_cast<const char*>(data), length));
+  if (data) {
+    packets.push_back(string(reinterpret_cast<const char*>(data), length));
+  }
 
   // handle responses to DUB commands
   if (IsDUBRequest(request.get())) {

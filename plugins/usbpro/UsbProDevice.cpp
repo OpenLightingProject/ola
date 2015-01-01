@@ -89,7 +89,6 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
     enttec_port->GetParameters(
       NewSingleCallback(this, &UsbProDevice::UpdateParams, i));
   }
-  Start();  // this does nothing but set IsEnabled() to true
 }
 
 

@@ -29,6 +29,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 #include "olad/PluginAdaptor.h"
 
 #include "plugins/usbdmx/AnymauDMX.h"
@@ -267,8 +268,8 @@ bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   libusb_get_device_descriptor(usb_device, &descriptor);
 
   OLA_DEBUG << "USB device added, checking for widget support, vendor "
-            << ToHex(descriptor.idVendor) << ", product "
-            << ToHex(descriptor.idProduct);
+            << strings::ToHex(descriptor.idVendor) << ", product "
+            << strings::ToHex(descriptor.idProduct);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
   for (; iter != m_widget_factories.end(); ++iter) {

@@ -27,16 +27,15 @@
 #include "ola/StringUtils.h"
 #include "ola/testing/TestUtils.h"
 
-
 using ola::CapitalizeLabel;
 using ola::CustomCapitalizeLabel;
+using ola::EncodeString;
 using ola::Escape;
 using ola::EscapeString;
-using ola::EncodeString;
 using ola::FormatData;
 using ola::HexStringToInt;
-using ola::IntToString;
 using ola::IntToHexString;
+using ola::IntToString;
 using ola::PrefixedHexStringToInt;
 using ola::ReplaceAll;
 using ola::ShortenString;
@@ -52,7 +51,7 @@ using ola::StripPrefix;
 using ola::StripSuffix;
 using ola::ToLower;
 using ola::ToUpper;
-using ola::ToHex;
+using ola::strings::ToHex;
 using std::ostringstream;
 using std::string;
 using std::vector;

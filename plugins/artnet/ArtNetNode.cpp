@@ -29,12 +29,14 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Utils.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 
@@ -51,14 +53,15 @@ using ola::network::IPV4SocketAddress;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
-using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::strings::CopyToFixedLengthBuffer;
 using std::auto_ptr;
 using std::map;
 using std::pair;
@@ -862,8 +865,8 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
 
   std::ostringstream str;
   str << "#0001 [" << m_unsolicited_replies << "] OLA";
-  strncpy(packet.data.reply.node_report, str.str().data(),
-          ARTNET_REPORT_LENGTH);
+  CopyToFixedLengthBuffer(str.str(), packet.data.reply.node_report,
+                          arraysize(packet.data.reply.node_report));
   packet.data.reply.number_ports[1] = ARTNET_MAX_PORTS;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort *iport = GetInputPort(i, false);
@@ -1372,7 +1375,8 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
 
 void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
                                           uint16_t op_code) {
-  strncpy(reinterpret_cast<char*>(packet->id), ARTNET_ID, sizeof(packet->id));
+  CopyToFixedLengthBuffer(ARTNET_ID, reinterpret_cast<char*>(packet->id),
+                          arraysize(packet->id));
   packet->op_code = HostToLittleEndian(op_code);
 }
 

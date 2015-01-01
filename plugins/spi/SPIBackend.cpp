@@ -301,6 +301,7 @@ SoftwareBackend::SoftwareBackend(const Options &options,
                                  SPIWriterInterface *writer,
                                  ExportMap *export_map)
     : m_spi_writer(writer),
+      m_drop_map(NULL),
       m_write_pending(false),
       m_exit(false),
       m_sync_output(options.sync_output),

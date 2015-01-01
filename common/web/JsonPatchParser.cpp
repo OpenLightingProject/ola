@@ -73,15 +73,16 @@ void JsonPatchParser::String(const string &value) {
   switch (m_state) {
     case TOP:
       SetError(kPatchListError);
-      return;
+      break;
     case PATCH_LIST:
       SetError(kPatchElementError);
-      return;
+      break;
     case PATCH:
       HandlePatchString(value);
-      return;
-    default:
+      break;
+    case VALUE:
       m_parser.String(value);
+      break;
   }
 }
 
@@ -113,18 +114,18 @@ void JsonPatchParser::Bool(bool value) {
   switch (m_state) {
     case TOP:
       SetError(kPatchListError);
-      return;
+      break;
     case PATCH_LIST:
       SetError(kPatchElementError);
-      return;
+      break;
     case PATCH:
       if (m_key == kValueKey) {
         m_value.reset(new JsonBool(value));
       }
+      break;
     case VALUE:
       m_parser.Bool(value);
-    default:
-      {}
+      break;
   }
 }
 
@@ -132,18 +133,18 @@ void JsonPatchParser::Null() {
   switch (m_state) {
     case TOP:
       SetError(kPatchListError);
-      return;
+      break;
     case PATCH_LIST:
       SetError(kPatchElementError);
-      return;
+      break;
     case PATCH:
       if (m_key == kValueKey) {
         m_value.reset(new JsonNull());
       }
+      break;
     case VALUE:
       m_parser.Null();
-    default:
-      {}
+      break;
   }
 }
 
@@ -151,29 +152,30 @@ void JsonPatchParser::OpenArray() {
   switch (m_state) {
     case TOP:
       m_state = PATCH_LIST;
-      return;
+      break;
     case PATCH_LIST:
       SetError(kPatchElementError);
-      return;
+      break;
     case PATCH:
       m_parser_depth = 0;
       m_state = VALUE;
+      // fall through
     case VALUE:
       m_parser_depth++;
       m_parser.OpenArray();
-      return;
+      break;
   }
 }
 
 void JsonPatchParser::CloseArray() {
   switch (m_state) {
     case TOP:
-      return;
+      break;
     case PATCH_LIST:
       m_state = TOP;
-      return;
+      break;
     case PATCH:
-      return;
+      break;
     case VALUE:
       m_parser.CloseArray();
       m_parser_depth--;
@@ -190,21 +192,22 @@ void JsonPatchParser::OpenObject() {
   switch (m_state) {
     case TOP:
       SetError(kPatchListError);
-      return;
+      break;
     case PATCH_LIST:
       m_state = PATCH;
       m_value.reset();
       m_path.Reset();
       m_op = "";
       m_from.Reset();
-      return;
+      break;
     case PATCH:
       m_parser_depth = 0;
       m_state = VALUE;
+      // fall through
     case VALUE:
       m_parser_depth++;
       m_parser.OpenObject();
-      return;
+      break;
   }
 }
 
@@ -219,13 +222,13 @@ void JsonPatchParser::ObjectKey(const std::string &key) {
 void JsonPatchParser::CloseObject() {
   switch (m_state) {
     case TOP:
-      return;
+      break;
     case PATCH_LIST:
-      return;
+      break;
     case PATCH:
       m_state = PATCH_LIST;
       HandlePatch();
-      return;
+      break;
     case VALUE:
       m_parser.CloseObject();
       m_parser_depth--;
@@ -235,6 +238,7 @@ void JsonPatchParser::CloseObject() {
         }
         m_state = PATCH;
       }
+      break;
   }
 }
 
@@ -257,18 +261,18 @@ void JsonPatchParser::HandleNumber(const T &value) {
   switch (m_state) {
     case TOP:
       SetError(kPatchListError);
-      return;
+      break;
     case PATCH_LIST:
       SetError(kPatchElementError);
-      return;
+      break;
     case PATCH:
       if (m_key == kValueKey) {
         m_value.reset(JsonValue::NewValue(value));
       }
+      break;
     case VALUE:
       m_parser.Number(value);
-    default:
-      {}
+      break;
   }
 }
 
