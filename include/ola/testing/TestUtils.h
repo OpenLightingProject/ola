@@ -34,7 +34,7 @@ namespace ola {
 namespace testing {
 
 // Assert that two data blocks are the same.
-// Use OLA_ASSERT_DATA_EQUALS below.
+// Private, use OLA_ASSERT_DATA_EQUALS below.
 void ASSERT_DATA_EQUALS(unsigned int line,
                         const uint8_t *expected,
                         unsigned int expected_length,

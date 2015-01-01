@@ -41,7 +41,6 @@ using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::UID;
-using ola::testing::ASSERT_DATA_EQUALS;
 
 class RDMPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMPDUTest);
@@ -88,8 +87,7 @@ void RDMPDUTest::testEmptyPDU() {
   OLA_ASSERT(pdu.Pack(buffer, &length));
 
   const uint8_t expected_data[] = {0x70, 3, TEST_VECTOR};
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     buffer, length);
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
   delete[] buffer;
 }
 
@@ -114,9 +112,7 @@ void RDMPDUTest::testEmptyPDUToOutputStream() {
   OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   const uint8_t EXPECTED[] = {0x70, 3, TEST_VECTOR};
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     pdu_data, pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
 }
@@ -159,8 +155,7 @@ void RDMPDUTest::testSimpleRDMPDU() {
     0x20, 1, 40, 0,  // command, param id, param data length
     1, 0x43  // checksum
   };
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     buffer, length);
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
   delete[] buffer;
 }
 
@@ -207,9 +202,7 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
     0x20, 1, 40, 0,  // command, param id, param data length
     1, 0x43  // checksum
   };
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     pdu_data, pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
 }
@@ -254,8 +247,7 @@ void RDMPDUTest::testRDMPDUWithData() {
     0xa5, 0xa5, 0xa5, 0xa5,  // data
     3, 0xdf  // checksum
   };
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     buffer, length);
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
   delete[] buffer;
 }
 
@@ -305,9 +297,7 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
     0xa5, 0xa5, 0xa5, 0xa5,  // data
     3, 0xdf  // checksum
   };
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     pdu_data, pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
 }

@@ -52,7 +52,6 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 
@@ -275,11 +274,8 @@ void RDMCommandTest::testOutputStream() {
   unsigned int raw_command_size = output.Peek(raw_command, output.Size());
   OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command));
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_GET_BUFFER,
-                     sizeof(EXPECTED_GET_BUFFER),
-                     raw_command,
-                     raw_command_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER),
+                         raw_command, raw_command_size);
   output.Pop(raw_command_size);
   OLA_ASSERT_EQ(0u, output.Size());
   delete[] raw_command;
@@ -305,11 +301,8 @@ void RDMCommandTest::testOutputStream() {
   raw_command_size = output.Peek(raw_command, output.Size());
   OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command2));
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_SET_BUFFER,
-                     sizeof(EXPECTED_SET_BUFFER),
-                     raw_command,
-                     raw_command_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER),
+                         raw_command, raw_command_size);
   output.Pop(raw_command_size);
   OLA_ASSERT_EQ(0u, output.Size());
   delete[] raw_command;
@@ -342,11 +335,8 @@ void RDMCommandTest::testIOStack() {
   OLA_ASSERT_EQ(raw_command_size, stack.Read(raw_command, raw_command_size));
   OLA_ASSERT_EQ(0u, stack.Size());
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_GET_BUFFER,
-                     sizeof(EXPECTED_GET_BUFFER),
-                     raw_command,
-                     raw_command_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER),
+                         raw_command, raw_command_size);
 
   // now try a command with data
   uint32_t data_value = 0xa5a5a5a5;
@@ -369,11 +359,8 @@ void RDMCommandTest::testIOStack() {
   OLA_ASSERT_EQ(raw_command_size, stack.Read(raw_command2, raw_command_size));
   OLA_ASSERT_EQ(0u, stack.Size());
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_SET_BUFFER,
-                     sizeof(EXPECTED_SET_BUFFER),
-                     raw_command2,
-                     raw_command_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER),
+                         raw_command2, raw_command_size);
 }
 
 
@@ -492,8 +479,8 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
   uint8_t *buffer = new uint8_t[buffer_size];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(command, buffer, &buffer_size));
 
-  ASSERT_DATA_EQUALS(__LINE__, expected, expected_length,
-                     buffer, buffer_size);
+  OLA_ASSERT_DATA_EQUALS(expected, expected_length,
+                         buffer, buffer_size);
   delete[] buffer;
 }
 
@@ -948,10 +935,10 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ((uint16_t) 10, combined_response->SubDevice());
   OLA_ASSERT_EQ(param_id, combined_response->ParamId());
   OLA_ASSERT_EQ(300u, combined_response->ParamDataSize());
-  ASSERT_DATA_EQUALS(__LINE__, expected_combined_data,
-                     first_block_size + second_block_size,
-                     combined_response->ParamData(),
-                     combined_response->ParamDataSize());
+  OLA_ASSERT_DATA_EQUALS(expected_combined_data,
+                         first_block_size + second_block_size,
+                         combined_response->ParamData(),
+                         combined_response->ParamDataSize());
   delete combined_response;
 }
 
@@ -1060,11 +1047,10 @@ void RDMCommandTest::testDiscoveryCommand() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_DISCOVERY_REQUEST,
-                     sizeof(EXPECTED_DISCOVERY_REQUEST),
-                     data,
-                     length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_DISCOVERY_REQUEST,
+                         sizeof(EXPECTED_DISCOVERY_REQUEST),
+                         data,
+                         length);
   delete[] data;
 }
 
@@ -1087,11 +1073,8 @@ void RDMCommandTest::testMuteRequest() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_MUTE_REQUEST,
-                     sizeof(EXPECTED_MUTE_REQUEST),
-                     data,
-                     length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_MUTE_REQUEST, sizeof(EXPECTED_MUTE_REQUEST),
+                         data, length);
   delete[] data;
 }
 
@@ -1114,11 +1097,10 @@ void RDMCommandTest::testUnMuteRequest() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED_UNMUTE_REQUEST,
-                     sizeof(EXPECTED_UNMUTE_REQUEST),
-                     data,
-                     length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_UNMUTE_REQUEST,
+                         sizeof(EXPECTED_UNMUTE_REQUEST),
+                         data,
+                         length);
   delete[] data;
 }
 

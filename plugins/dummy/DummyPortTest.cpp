@@ -54,7 +54,6 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::min;
 using std::string;
 using std::vector;
@@ -164,11 +163,10 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response) {
-    ASSERT_DATA_EQUALS(__LINE__,
-                       m_expected_response->ParamData(),
-                       m_expected_response->ParamDataSize(),
-                       response->ParamData(),
-                       response->ParamDataSize());
+    OLA_ASSERT_DATA_EQUALS(m_expected_response->ParamData(),
+                           m_expected_response->ParamDataSize(),
+                           response->ParamData(),
+                           response->ParamDataSize());
     OLA_ASSERT(*m_expected_response == *response);
   } else {
     OLA_ASSERT_NULL(response);
