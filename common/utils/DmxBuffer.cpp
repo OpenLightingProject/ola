@@ -238,7 +238,7 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   }
 
   if (channel > m_length) {
-    OLA_WARN << "attempting to set channel " << channel << " when length is "
+    OLA_WARN << "Attempting to set channel " << channel << " when length is "
              << m_length;
     return;
   }

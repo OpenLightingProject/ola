@@ -71,7 +71,7 @@ ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
       m_bucket(initial_count, rate, rate, *wake_time),
       m_wake_time(wake_time) {
   std::ostringstream str;
-  str << "Serial #: " << ola::IntToHexString(serial);
+  str << "Serial #: " << ola::ToHex(serial);
   m_description = str.str();
 }
 }  // namespace usbpro

@@ -218,17 +218,21 @@ void IOStack::Purge() {
  * Dump this IOStack as a human readable string
  */
 void IOStack::Dump(std::ostream *output) {
+  unsigned int length = 0;
+  BlockVector::const_iterator iter = m_blocks.begin();
+  for (; iter != m_blocks.end(); ++iter) {
+    length += (*iter)->Size();
+  }
+
   // For now just alloc memory for the entire thing
-  unsigned int length = Size();
   uint8_t *tmp = new uint8_t[length];
 
   unsigned int offset = 0;
-  BlockVector::const_iterator iter = m_blocks.begin();
-  for (; iter != m_blocks.end(); ++iter) {
+  for (iter = m_blocks.begin(); iter != m_blocks.end(); ++iter) {
     offset += (*iter)->Copy(tmp + offset, length - offset);
   }
 
-  ola::FormatData(output, tmp, length);
+  ola::FormatData(output, tmp, offset);
   delete[] tmp;
 }
 

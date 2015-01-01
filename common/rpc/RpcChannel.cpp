@@ -560,7 +560,10 @@ void RpcChannel::HandleResponse(RpcMessage *msg) {
   auto_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
-    response->reply->ParseFromString(msg->buffer());
+    if (!response->reply->ParseFromString(msg->buffer())) {
+      OLA_WARN << "Failed to parse response proto for "
+               << response->reply->GetTypeName();
+    }
     response->callback->Run();
   }
 }
