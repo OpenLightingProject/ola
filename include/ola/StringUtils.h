@@ -26,16 +26,17 @@
 #ifndef INCLUDE_OLA_STRINGUTILS_H_
 #define INCLUDE_OLA_STRINGUTILS_H_
 
+#include <ola/strings/Format.h>
 #include <stdint.h>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace ola {
-
-/** @brief the width of a hex character in bits */
-enum { HEX_BIT_WIDTH = 4 };
 
 /**
  * @brief Split a string into pieces.
@@ -98,15 +99,21 @@ bool StripSuffix(std::string *s, const std::string &suffix);
  * @brief Convert an int to a string.
  * @param i the int to convert
  * @return the string representation of the int
+ * @deprecated Use ola::strings::IntToString instead (30 Dec 2014).
  */
-std::string IntToString(int i);
+inline std::string IntToString(int i) {
+  return ola::strings::IntToString(i);
+}
 
 /**
  * Convert an unsigned int to a string.
  * @param i the unsigned int to convert
  * @return The string representation of the unsigned int
+ * @deprecated Use ola::strings::IntToString instead (30 Dec 2014).
  */
-std::string IntToString(unsigned int i);
+inline std::string IntToString(unsigned int i) {
+  return ola::strings::IntToString(i);
+}
 
 /**
  * Convert an unsigned int to a hex string.
@@ -115,6 +122,8 @@ std::string IntToString(unsigned int i);
  * @return The hex string representation of the unsigned int
  * @note We don't currently support signed ints due to a lack of requirement
  * for it and issues with negative handling and hex in C++
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 std::string IntToHexString(unsigned int i, unsigned int width);
 
@@ -122,30 +131,39 @@ std::string IntToHexString(unsigned int i, unsigned int width);
  * Convert a uint8_t to a hex string.
  * @param i the number to convert
  * @return The string representation of the number
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint8_t i) {
-  return IntToHexString(i, (std::numeric_limits<uint8_t>::digits /
-                            HEX_BIT_WIDTH));
+  std::ostringstream str;
+  str << ola::strings::ToHex(i);
+  return str.str();
 }
 
 /**
  * Convert a uint16_t to a hex string.
  * @param i the number to convert
  * @return The string representation of the number
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint16_t i) {
-  return IntToHexString(i, (std::numeric_limits<uint16_t>::digits /
-                            HEX_BIT_WIDTH));
+  std::ostringstream str;
+  str << ola::strings::ToHex(i);
+  return str.str();
 }
 
 /**
  * Convert a uint32_t to a hex string.
  * @param i the number to convert
  * @return The string representation of the number
+ * @deprecated ola::ToHex() instead, unless you really want a string rather
+ *   than use in an ostream (30 Dec 2014)
  */
 inline std::string IntToHexString(uint32_t i) {
-  return IntToHexString(i, (std::numeric_limits<uint32_t>::digits /
-                            HEX_BIT_WIDTH));
+  std::ostringstream str;
+  str << ola::strings::ToHex(i);
+  return str.str();
 }
 
 /**
@@ -405,12 +423,15 @@ void CustomCapitalizeLabel(std::string *s);
  *
  * The data is printed in two columns, hex on the left, ascii on the right.
  * Non ascii values are printed as .
+ * @deprecated Use ola::strings::FormatData instead (30 Dec 2014).
  */
-void FormatData(std::ostream *out,
-                const uint8_t *data,
-                unsigned int length,
-                unsigned int indent = 0,
-                unsigned int byte_per_line = 8);
+inline void FormatData(std::ostream *out,
+                       const uint8_t *data,
+                       unsigned int length,
+                       unsigned int indent = 0,
+                       unsigned int byte_per_line = 8) {
+  return ola::strings::FormatData(out, data, length, indent, byte_per_line);
+}
 
 /**
  * Convert a hex string, prefixed with 0x or 0X to an int type.

@@ -1,4 +1,4 @@
-x/y/2014 ola-0.9.4
+x/y/2015 ola-0.9.4
  Features:
  * Added support for hotplugging USB devices using the usbdmx plugin, #374.
  * Added support for setting the thread scheduling options, #399.

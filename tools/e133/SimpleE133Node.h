@@ -89,7 +89,7 @@ class SimpleE133Node {
     const UID m_uid;
     const IPV4Address m_ip_address;
 
-    void Input(char c);
+    void Input(int c);
     void DumpTCPStats();
     void SendUnsolicited();
 

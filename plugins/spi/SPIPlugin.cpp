@@ -68,7 +68,9 @@ bool SPIPlugin::StartHook() {
   vector<string> spi_files;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
       SPI_DEVICE_PREFIX_KEY);
-  ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files);
+  if (!ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files)) {
+    return false;
+  }
 
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();

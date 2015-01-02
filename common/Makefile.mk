@@ -24,6 +24,7 @@ include common/network/Makefile.mk
 include common/protocol/Makefile.mk
 include common/rdm/Makefile.mk
 include common/rpc/Makefile.mk
+include common/strings/Makefile.mk
 include common/system/Makefile.mk
 include common/testing/Makefile.mk
 include common/thread/Makefile.mk

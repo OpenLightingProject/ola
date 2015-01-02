@@ -24,6 +24,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/StringUtils.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/file/Util.h>
@@ -32,6 +33,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/strings/Format.h>
 
 #include <algorithm>
 #include <iomanip>
@@ -308,8 +310,8 @@ void RDMController::HandleResponse(
     cout << "Request NACKed: " <<
       ola::rdm::NackReasonToString(response_status.NackReason()) << endl;
   } else {
-    cout << "Unknown RDM response type " << std::hex <<
-        static_cast<int>(response_status.response_type) << endl;
+    cout << "Unknown RDM response type "
+         << ola::strings::ToHex(response_status.response_type) << endl;
   }
   PrintRemainingMessages(response_status.message_count);
   m_ola_client.GetSelectServer()->Terminate();

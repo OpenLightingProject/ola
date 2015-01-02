@@ -24,8 +24,10 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/strings/Utils.h"
 #include "plugins/shownet/ShowNetNode.h"
 
 
@@ -52,7 +54,8 @@ ShowNetNode::ShowNetNode(const std::string &ip_address)
     : m_running(false),
       m_packet_count(0),
       m_node_name(),
-      m_preferred_ip(ip_address) {
+      m_preferred_ip(ip_address),
+      m_socket(NULL) {
 }
 
 
@@ -322,7 +325,8 @@ unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
 
   compressed_dmx->sequence = HostToNetwork(m_packet_count);
 
-  strncpy(compressed_dmx->name, m_node_name.data(), SHOWNET_NAME_LENGTH);
+  strings::CopyToFixedLengthBuffer(m_node_name, compressed_dmx->name,
+                                   arraysize(compressed_dmx->name));
   return (sizeof(*packet) - sizeof(packet->data)) +
          (sizeof(*compressed_dmx) - SHOWNET_COMPRESSED_DATA_LENGTH + enc_len);
 }

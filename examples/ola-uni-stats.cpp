@@ -66,7 +66,7 @@ class UniverseTracker {
     void ResetStats();
 
  protected:
-    void Input(char c);
+    void Input(int c);
 
  private:
     struct UniverseStats {
@@ -175,7 +175,7 @@ void UniverseTracker::ResetStats() {
   cout << "Reset counters" << endl;
 }
 
-void UniverseTracker::Input(char c) {
+void UniverseTracker::Input(int c) {
   switch (c) {
     case 'q':
       m_wrapper->GetSelectServer()->Terminate();
