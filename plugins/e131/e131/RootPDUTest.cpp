@@ -40,7 +40,6 @@ using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
-using ola::testing::ASSERT_DATA_EQUALS;
 
 class RootPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RootPDUTest);
@@ -160,9 +159,7 @@ void RootPDUTest::testSimpleRootPDUToOutputStream() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   };
   cid.Pack(EXPECTED + 6);
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     raw_pdu, raw_pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), raw_pdu, raw_pdu_size);
 
   output.Pop(output.Size());
   delete[] raw_pdu;
@@ -235,9 +232,7 @@ void RootPDUTest::testNestedRootPDUToOutputStream() {
     0, 0, 0, 42
   };
   cid.Pack(EXPECTED + 6);
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     raw_pdu, raw_pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), raw_pdu, raw_pdu_size);
 
   output.Pop(output.Size());
   delete[] raw_pdu;

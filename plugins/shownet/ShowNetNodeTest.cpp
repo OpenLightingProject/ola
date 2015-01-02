@@ -39,7 +39,6 @@ namespace shownet {
 using ola::DmxBuffer;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
 
 class ShowNetNodeTest: public CppUnit::TestFixture {
@@ -219,8 +218,8 @@ void ShowNetNodeTest::testExtractPacket() {
   OLA_ASSERT_TRUE(m_node->HandlePacket(
       reinterpret_cast<const shownet_packet*>(packet1), sizeof(packet1)));
   OLA_ASSERT_EQ(1, m_handler_called);
-  ASSERT_DATA_EQUALS(__LINE__, expected_data1.GetRaw(), expected_data1.Size(),
-                     received_data.GetRaw(), received_data.Size());
+  OLA_ASSERT_DATA_EQUALS(expected_data1.GetRaw(), expected_data1.Size(),
+                         received_data.GetRaw(), received_data.Size());
 }
 
 /*
@@ -236,14 +235,14 @@ void ShowNetNodeTest::testPopulatePacket() {
   m_node->SetName(NAME);
 
   unsigned int size = m_node->BuildCompressedPacket(&packet, universe, buffer);
-  ASSERT_DATA_EQUALS(__LINE__, EXPECTED_PACKET, sizeof(EXPECTED_PACKET),
-                     reinterpret_cast<const uint8_t*>(&packet), size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_PACKET, sizeof(EXPECTED_PACKET),
+                         reinterpret_cast<const uint8_t*>(&packet), size);
 
   // now send for a different universe
   universe = 1;
   size = m_node->BuildCompressedPacket(&packet, universe, buffer);
-  ASSERT_DATA_EQUALS(__LINE__, EXPECTED_PACKET2, sizeof(EXPECTED_PACKET2),
-                     reinterpret_cast<const uint8_t*>(&packet), size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_PACKET2, sizeof(EXPECTED_PACKET2),
+                         reinterpret_cast<const uint8_t*>(&packet), size);
 }
 
 

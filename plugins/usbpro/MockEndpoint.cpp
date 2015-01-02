@@ -29,8 +29,6 @@
 #include "plugins/usbpro/MockEndpoint.h"
 
 
-using ola::testing::ASSERT_DATA_EQUALS;
-
 MockEndpoint::MockEndpoint(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor) {
   m_descriptor->SetOnData(
@@ -302,9 +300,10 @@ void MockEndpoint::DescriptorReady() {
       data_received += offset;
     }
 
-    ASSERT_DATA_EQUALS(__LINE__, call.expected_data_frame.data,
-                       call.expected_data_frame.length,
-                       data, data_received);
+    OLA_ASSERT_DATA_EQUALS(call.expected_data_frame.data,
+                           call.expected_data_frame.length,
+                           data,
+                           data_received);
 
     if (call.free_request)
       delete[] call.expected_data_frame.data;
