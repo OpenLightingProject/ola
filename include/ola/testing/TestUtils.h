@@ -34,7 +34,7 @@ namespace ola {
 namespace testing {
 
 // Assert that two data blocks are the same.
-// Use OLA_ASSERT_DATA_EQUALS below.
+// Private, use OLA_ASSERT_DATA_EQUALS below.
 void ASSERT_DATA_EQUALS(unsigned int line,
                         const uint8_t *expected,
                         unsigned int expected_length,
@@ -57,9 +57,10 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
 
   typename std::vector<T>::const_iterator iter1 = t1.begin();
   typename std::vector<T>::const_iterator iter2 = t2.begin();
-  while (iter1 != t1.end())
+  while (iter1 != t1.end()) {
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Vector elements not equal");
+  }
 }
 
 // Private, use OLA_ASSERT_SET_EQ below
@@ -72,9 +73,10 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
   typename std::set<T>::const_iterator iter1 = t1.begin();
   typename std::set<T>::const_iterator iter2 = t2.begin();
-  while (iter1 != t1.end())
+  while (iter1 != t1.end()) {
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Set elements not equal");
+  }
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in

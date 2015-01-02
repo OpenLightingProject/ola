@@ -64,8 +64,9 @@ void ASSERT_DATA_EQUALS(unsigned int line,
               static_cast<char>(actual[i]) : ' ');
       str << ")";
 
-      if (expected[i] != actual[i])
+      if (expected[i] != actual[i]) {
         str << "  ## MISMATCH";
+      }
       OLA_INFO << str.str();
     }
   }
