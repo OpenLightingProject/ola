@@ -331,6 +331,18 @@ bool StringToInt(const std::string &value,
 bool StringToInt(const std::string &value, int8_t *output, bool strict = false);
 
 /**
+ * @brief Convert a string to a unsigned int or return a default if it failed.
+ * @param value the string to convert
+ * @param alternative the default value to return if conversion failed.
+ * @param[in] strict this controls if trailing characters produce an error.
+ * @returns the value if it converted successfully or the default if the string
+ * was not an int or the value was too large / small for the type.
+ */
+unsigned int StringToIntOrDefault(const std::string &value,
+                                  unsigned int alternative,
+                                  bool strict = false);
+
+/**
  * @brief Convert a hex string to a uint8_t.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.

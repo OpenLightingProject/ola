@@ -245,6 +245,16 @@ bool StringToInt(const string &value, int8_t *output, bool strict) {
   return true;
 }
 
+unsigned int StringToIntOrDefault(const string &value,
+                                  unsigned int alternative,
+                                  bool strict = false) {
+  unsigned int output;
+  if (StringToInt(value, &output, strict)) {
+    return output;
+  }
+  return alternative;
+}
+
 void Escape(string *original) {
   for (string::iterator iter = original->begin(); iter != original->end();
       ++iter) {
