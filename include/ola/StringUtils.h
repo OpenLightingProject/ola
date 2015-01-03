@@ -44,12 +44,29 @@ namespace ola {
  * If two delimiters appear next to each other an empty string is added to the
  *   output vector.
  * @param[in] input the string to split
- * @param[out] tokens the parts of the string
+ * @param[out] tokens pointer to a vector with the parts of the string
  * @param delimiters the delimiiter to use for splitting. Defaults to ' '
  */
 void StringSplit(const std::string &input,
-                 std::vector<std::string> &tokens,  // NOLINT
+                 std::vector<std::string> *tokens,
                  const std::string &delimiters = " ");
+
+/**
+ * @brief Split a string into pieces.
+ *
+ * If two delimiters appear next to each other an empty string is added to the
+ *   output vector.
+ * @param[in] input the string to split
+ * @param[out] tokens the parts of the string
+ * @param delimiters the delimiiter to use for splitting. Defaults to ' '
+ * @deprecated Use the version with a vector pointer instead (3 Jan 2015).
+ */
+inline void StringSplit(
+    const std::string &input,
+    std::vector<std::string> &tokens,  // NOLINT(runtime/references)
+    const std::string &delimiters = " ") {
+  StringSplit(input, &tokens, delimiters);
+}
 
 /**
  * @brief Trim leading and trailing whitespace from a string

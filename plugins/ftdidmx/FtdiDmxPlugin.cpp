@@ -35,7 +35,6 @@ namespace ftdidmx {
 using std::string;
 using std::vector;
 
-const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";
 const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB DMX";
 const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
@@ -139,8 +138,9 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
 int unsigned FtdiDmxPlugin::GetFrequency() {
   unsigned int frequency;
 
-  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY), &frequency))
-    StringToInt(DEFAULT_FREQUENCY, &frequency);
+  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY), &frequency)) {
+    return DEFAULT_FREQUENCY;
+  }
   return frequency;
 }
 }  // namespace ftdidmx

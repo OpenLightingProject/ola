@@ -17,10 +17,13 @@
  * This class stores preferences in files
  * Copyright (C) 2005 Simon Newton
  */
+
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <dirent.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -36,6 +39,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/file/Util.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/thread/Thread.h"
 #include "olad/Preferences.h"
@@ -96,8 +100,9 @@ bool BoolValidator::IsValid(const string &value) const {
 
 bool UIntValidator::IsValid(const string &value) const {
   unsigned int output;
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return (output >= m_gt && output <= m_lt);
 }
@@ -105,8 +110,9 @@ bool UIntValidator::IsValid(const string &value) const {
 
 bool IntValidator::IsValid(const string &value) const {
   int output;
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return (output >= m_gt && output <= m_lt);
 }
@@ -123,8 +129,9 @@ bool SetValidator<unsigned int>::IsValid(const string &value) const {
   unsigned int output;
   // It's an integer based set validator, so if we can't parse it to an
   // integer, it can't possibly match an integer and be valid
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return STLContains(m_values, output);
 }
@@ -135,28 +142,33 @@ bool SetValidator<int>::IsValid(const string &value) const {
   int output;
   // It's an integer based set validator, so if we can't parse it to an
   // integer, it can't possibly match an integer and be valid
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return STLContains(m_values, output);
 }
 
 
 bool IPv4Validator::IsValid(const string &value) const {
-  if (value.empty())
+  if (value.empty()) {
     return m_empty_ok;
+  }
 
   vector<string> tokens;
-  StringSplit(value, tokens, ".");
-  if (tokens.size() != 4)
+  StringSplit(value, &tokens, ".");
+  if (tokens.size() != ola::network::IPV4Address::LENGTH) {
     return false;
+  }
 
   for (unsigned int i = 0 ; i < 4; i++) {
     unsigned int octet;
-    if (!StringToInt(tokens[i], &octet))
+    if (!StringToInt(tokens[i], &octet)) {
       return false;
-    if (octet > 255)
+    }
+    if (octet > UINT8_MAX) {
       return false;
+    }
   }
   return true;
 }
@@ -403,11 +415,12 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
   while (getline(pref_file, line)) {
     StringTrim(&line);
 
-    if (line.empty() || line.at(0) == '#')
+    if (line.empty() || line.at(0) == '#') {
       continue;
+    }
 
     vector<string> tokens;
-    StringSplit(line, tokens, "=");
+    StringSplit(line, &tokens, "=");
 
     if (tokens.size() != 2) {
       OLA_INFO << "Skipping line: " << line;

@@ -71,7 +71,7 @@ bool GPIOPlugin::StartHook() {
   }
 
   vector<string> pin_list;
-  StringSplit(m_preferences->GetValue(GPIO_PINS_KEY), pin_list, ",");
+  StringSplit(m_preferences->GetValue(GPIO_PINS_KEY), &pin_list, ",");
   vector<string>::const_iterator iter = pin_list.begin();
   for (; iter != pin_list.end(); ++iter) {
     if (iter->empty()) {

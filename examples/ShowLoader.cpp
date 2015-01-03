@@ -123,7 +123,7 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
     return END_OF_FILE;
 
   vector<string> inputs;
-  ola::StringSplit(line, inputs);
+  ola::StringSplit(line, &inputs);
 
   if (inputs.size() != 2) {
     OLA_WARN << "Line " << m_line << " invalid: " << line;
