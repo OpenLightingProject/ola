@@ -51,8 +51,6 @@ using std::string;
 using std::vector;
 
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
-const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
-const char UsbSerialPlugin::DEFAULT_ULTRA_FPS_LIMIT[] = "40";
 const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 const char UsbSerialPlugin::IGNORED_DEVICES_KEY[] = "ignore_device";
@@ -361,8 +359,9 @@ string UsbSerialPlugin::GetDeviceName(
 unsigned int UsbSerialPlugin::GetProFrameLimit() {
   unsigned int fps_limit;
   if (!StringToInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
-                   &fps_limit))
-    StringToInt(DEFAULT_PRO_FPS_LIMIT, &fps_limit);
+                   &fps_limit)) {
+    return DEFAULT_PRO_FPS_LIMIT;
+  }
   return fps_limit;
 }
 
@@ -373,8 +372,9 @@ unsigned int UsbSerialPlugin::GetProFrameLimit() {
 unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
   unsigned int fps_limit;
   if (!StringToInt(m_preferences->GetValue(ULTRA_FPS_LIMIT_KEY) ,
-                   &fps_limit))
-    StringToInt(DEFAULT_ULTRA_FPS_LIMIT, &fps_limit);
+                   &fps_limit)) {
+    return DEFAULT_ULTRA_FPS_LIMIT;
+  }
   return fps_limit;
 }
 }  // namespace usbpro

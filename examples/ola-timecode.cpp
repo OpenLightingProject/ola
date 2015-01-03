@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   }
 
   vector<string> tokens;
-  ola::StringSplit(argv[1], tokens, ":");
+  ola::StringSplit(argv[1], &tokens, ":");
   if (tokens.size() != 4) {
     cerr << "Invalid TimeCode value " << argv[1] << endl;
     exit(ola::EXIT_USAGE);
