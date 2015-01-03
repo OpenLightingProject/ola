@@ -249,7 +249,7 @@ unsigned int StringToIntOrDefault(const string &value,
                                   unsigned int alternative,
                                   bool strict) {
   unsigned int output;
-  return StringToInt(value, &output, strict)) ? output : alternative;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
 }
 
 void Escape(string *original) {
