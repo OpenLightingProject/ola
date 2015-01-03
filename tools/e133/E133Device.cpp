@@ -98,6 +98,7 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
       m_message_builder(cid, "OLA Device"),
       m_endpoint_manager(endpoint_manager),
       m_root_endpoint(NULL),
+      m_root_rdm_device(NULL),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);

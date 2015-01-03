@@ -199,6 +199,8 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
       m_always_broadcast(options.always_broadcast),
       m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_in_configuration_mode(false),
+      m_artpoll_required(false),
+      m_artpollreply_required(false),
       m_interface(iface),
       m_socket(socket) {
 
