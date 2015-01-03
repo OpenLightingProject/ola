@@ -86,6 +86,7 @@ ola::e133::E133StatusCode RDMResponseCodeToE133Status(
     case ola::rdm::RDM_DUB_RESPONSE:
       return ola::e133::SC_E133_RDM_INVALID_RESPONSE;
   }
+  return ola::e133::SC_E133_RDM_INVALID_RESPONSE;
 }
 
 E133Device::E133Device(ola::io::SelectServerInterface *ss,
