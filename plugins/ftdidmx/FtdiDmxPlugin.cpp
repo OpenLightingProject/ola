@@ -137,7 +137,8 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
  * invalid
  */
 int unsigned FtdiDmxPlugin::GetFrequency() {
-  return StringToIntOrDefault(m_preferences->GetValue(K_FREQUENCY), DEFAULT_FREQUENCY);
+  return StringToIntOrDefault(m_preferences->GetValue(K_FREQUENCY),
+                              DEFAULT_FREQUENCY);
 }
 }  // namespace ftdidmx
 }  // namespace plugin
