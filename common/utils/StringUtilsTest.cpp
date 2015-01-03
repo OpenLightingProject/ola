@@ -187,6 +187,19 @@ void StringUtilsTest::testSplit() {
 
   OLA_ASSERT_EQ((size_t) 1, tokens.size());
   OLA_ASSERT_EQ(string("1"), tokens[0]);
+
+  // And the old non-pointer version
+  input = ",1,2,345,,";
+  tokens.clear();
+  StringSplit(input, tokens, ",");
+
+  OLA_ASSERT_EQ((size_t) 6, tokens.size());
+  OLA_ASSERT_EQ(string(""), tokens[0]);
+  OLA_ASSERT_EQ(string("1"), tokens[1]);
+  OLA_ASSERT_EQ(string("2"), tokens[2]);
+  OLA_ASSERT_EQ(string("345"), tokens[3]);
+  OLA_ASSERT_EQ(string(""), tokens[4]);
+  OLA_ASSERT_EQ(string(""), tokens[5]);
 }
 
 
