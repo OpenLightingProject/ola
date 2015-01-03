@@ -18,6 +18,8 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
