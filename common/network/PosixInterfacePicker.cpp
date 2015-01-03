@@ -160,6 +160,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       }
     }
 
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    // The only way hwaddr is non-null is if HAVE_SOCKADDR_DL_STRUCT is defined.
     if ((interface.name == last_dl_iface_name) && hwaddr) {
       if (hwlen == MACAddress::LENGTH) {
         interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
@@ -169,6 +171,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
                  << ", expecting " << MACAddress::LENGTH;
       }
     }
+#endif
+
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = IPV4Address(sin->sin_addr.s_addr);
 

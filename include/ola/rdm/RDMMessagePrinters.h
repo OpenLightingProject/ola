@@ -273,7 +273,10 @@ class LanguageCapabilityPrinter: public ola::messaging::MessagePrinter {
  */
 class ClockPrinter: public ola::messaging::MessagePrinter {
  public:
-  ClockPrinter() : ola::messaging::MessagePrinter(), m_offset(0) {}
+  ClockPrinter()
+      : ola::messaging::MessagePrinter(),
+        m_year(0),
+        m_offset(0) {}
   void Visit(const ola::messaging::UInt16MessageField *message) {
     m_year = message->Value();
   }

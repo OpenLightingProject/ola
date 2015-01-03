@@ -405,9 +405,11 @@ uint8_t ArtNetNodeImpl::GetInputPortUniverse(uint8_t port_id) const {
 
 void ArtNetNodeImpl::DisableInputPort(uint8_t port_id) {
   InputPort *port = GetInputPort(port_id);
-  bool was_enabled = port->enabled;
-  if (port)
+  bool was_enabled = false;
+  if (port) {
+    was_enabled = port->enabled;
     port->enabled = false;
+  }
 
   if (was_enabled)
     SendPollReplyIfRequired();
