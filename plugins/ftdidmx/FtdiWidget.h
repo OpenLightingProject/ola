@@ -34,14 +34,7 @@
 #ifndef PLUGINS_FTDIDMX_FTDIWIDGET_H_
 #define PLUGINS_FTDIDMX_FTDIWIDGET_H_
 
-#ifdef FTD2XX
-#  ifdef WIN32
-#    include <windows.h>
-#  endif
-#  include <ftd2xx.h>
-#else
-#  include <ftdi.h>
-#endif
+#include <ftdi.h>
 
 #include <string.h>
 
