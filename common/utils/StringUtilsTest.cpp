@@ -46,6 +46,7 @@ using ola::StringSplit;
 using ola::StringToBool;
 using ola::StringToBoolTolerant;
 using ola::StringToInt;
+using ola::StringToIntOrDefault;
 using ola::StringTrim;
 using ola::StripPrefix;
 using ola::StripSuffix;
@@ -72,11 +73,17 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringToBool);
   CPPUNIT_TEST(testStringToBoolTolerant);
   CPPUNIT_TEST(testStringToUInt);
+  CPPUNIT_TEST(testStringToUIntOrDefault);
   CPPUNIT_TEST(testStringToUInt16);
+  CPPUNIT_TEST(testStringToUInt16OrDefault);
   CPPUNIT_TEST(testStringToUInt8);
+  CPPUNIT_TEST(testStringToUInt8OrDefault);
   CPPUNIT_TEST(testStringToInt);
+  CPPUNIT_TEST(testStringToIntOrDefault);
   CPPUNIT_TEST(testStringToInt16);
+  CPPUNIT_TEST(testStringToInt16OrDefault);
   CPPUNIT_TEST(testStringToInt8);
+  CPPUNIT_TEST(testStringToInt8OrDefault);
   CPPUNIT_TEST(testHexStringToInt);
   CPPUNIT_TEST(testPrefixedHexStringToInt);
   CPPUNIT_TEST(testToLower);
@@ -103,11 +110,17 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testStringToBool();
     void testStringToBoolTolerant();
     void testStringToUInt();
+    void testStringToUIntOrDefault();
     void testStringToUInt16();
+    void testStringToUInt16OrDefault();
     void testStringToUInt8();
+    void testStringToUInt8OrDefault();
     void testStringToInt();
+    void testStringToIntOrDefault();
     void testStringToInt16();
+    void testStringToInt16OrDefault();
     void testStringToInt8();
+    void testStringToInt8OrDefault();
     void testHexStringToInt();
     void testPrefixedHexStringToInt();
     void testToLower();
@@ -545,6 +558,23 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_FALSE(StringToInt("4294967295bat bar", &value, true));
 }
 
+void StringUtilsTest::testStringToUIntOrDefault() {
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("", 42u));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("-1", 42u));
+  OLA_ASSERT_EQ(0u, StringToIntOrDefault("0", 42u));
+  OLA_ASSERT_EQ(1u, StringToIntOrDefault("1", 42u));
+  OLA_ASSERT_EQ(65537u, StringToIntOrDefault("65537", 42u));
+  OLA_ASSERT_EQ(4294967295U, StringToIntOrDefault("4294967295", 42u));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("4294967296", 42u));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("foo", 42u));
+
+  // same tests with strict mode on
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("-1 foo", 42u, true));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("0 ", 42u, true));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("1 bar baz", 42u, true));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("65537cat", 42u, true));
+  OLA_ASSERT_EQ(42u, StringToIntOrDefault("4294967295bat bar", 42u, true));
+}
 
 void StringUtilsTest::testHexStringToInt() {
   unsigned int value;
@@ -751,6 +781,18 @@ void StringUtilsTest::testStringToUInt16() {
 }
 
 
+void StringUtilsTest::testStringToUInt16OrDefault() {
+  OLA_ASSERT_EQ((uint16_t) 42, StringToIntOrDefault("", (uint16_t) 42));
+  OLA_ASSERT_EQ((uint16_t) 42, StringToIntOrDefault("-1", (uint16_t) 42));
+  OLA_ASSERT_EQ((uint16_t) 42, StringToIntOrDefault("65536", (uint16_t) 42));
+
+  OLA_ASSERT_EQ((uint16_t) 0, StringToIntOrDefault("0", (uint16_t) 42));
+  OLA_ASSERT_EQ((uint16_t) 1, StringToIntOrDefault("1", (uint16_t) 42));
+  OLA_ASSERT_EQ((uint16_t) 143, StringToIntOrDefault("143", (uint16_t) 42));
+  OLA_ASSERT_EQ((uint16_t) 65535, StringToIntOrDefault("65535", (uint16_t) 42));
+}
+
+
 void StringUtilsTest::testStringToUInt8() {
   uint8_t value;
 
@@ -766,6 +808,18 @@ void StringUtilsTest::testStringToUInt8() {
   OLA_ASSERT_EQ((uint8_t) 143, value);
   OLA_ASSERT_TRUE(StringToInt("255", &value));
   OLA_ASSERT_EQ((uint8_t) 255, value);
+}
+
+
+void StringUtilsTest::testStringToUInt8OrDefault() {
+  OLA_ASSERT_EQ((uint8_t) 42, StringToIntOrDefault("", (uint8_t) 42));
+  OLA_ASSERT_EQ((uint8_t) 42, StringToIntOrDefault("-1", (uint8_t) 42));
+  OLA_ASSERT_EQ((uint8_t) 42, StringToIntOrDefault("256", (uint8_t) 42));
+
+  OLA_ASSERT_EQ((uint8_t) 0, StringToIntOrDefault("0", (uint8_t) 42));
+  OLA_ASSERT_EQ((uint8_t) 1, StringToIntOrDefault("1", (uint8_t) 42));
+  OLA_ASSERT_EQ((uint8_t) 143, StringToIntOrDefault("143", (uint8_t) 42));
+  OLA_ASSERT_EQ((uint8_t) 255, StringToIntOrDefault("255", (uint8_t) 42));
 }
 
 
@@ -805,6 +859,35 @@ void StringUtilsTest::testStringToInt() {
 }
 
 
+void StringUtilsTest::testStringToIntOrDefault() {
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("", 42));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("a", 42));
+
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("2147483649", 42));
+  OLA_ASSERT_EQ(static_cast<int>(-2147483647 - 1),
+                StringToIntOrDefault("-2147483648", 42));
+  OLA_ASSERT_EQ(-2147483647, StringToIntOrDefault("-2147483647", 42));
+  OLA_ASSERT_EQ(-1, StringToIntOrDefault("-1", 42));
+
+  OLA_ASSERT_EQ(0, StringToIntOrDefault("0", 42));
+  OLA_ASSERT_EQ(1, StringToIntOrDefault("1", 42));
+  OLA_ASSERT_EQ(143, StringToIntOrDefault("143", 42));
+  OLA_ASSERT_EQ(2147483647, StringToIntOrDefault("2147483647", 42));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("2147483648", 42));
+
+  // strict mode on
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("2147483649 ", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("-2147483648bar", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("-2147483647 baz", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("-1.", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("0!", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("1 this is a test", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("143car", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("2147483647 !@#", 42, true));
+  OLA_ASSERT_EQ(42, StringToIntOrDefault("2147483648mm", 42, true));
+}
+
+
 void StringUtilsTest::testStringToInt16() {
   int16_t value;
 
@@ -831,6 +914,23 @@ void StringUtilsTest::testStringToInt16() {
 }
 
 
+void StringUtilsTest::testStringToInt16OrDefault() {
+  OLA_ASSERT_EQ((int16_t) 42, StringToIntOrDefault("", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) 42, StringToIntOrDefault("a", (int16_t) 42));
+
+  OLA_ASSERT_EQ((int16_t) 42, StringToIntOrDefault("-32769", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) -32768, StringToIntOrDefault("-32768", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) -32767, StringToIntOrDefault("-32767", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) -1, StringToIntOrDefault("-1", (int16_t) 42));
+
+  OLA_ASSERT_EQ((int16_t) 0, StringToIntOrDefault("0", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) 1, StringToIntOrDefault("1", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) 143, StringToIntOrDefault("143", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) 32767, StringToIntOrDefault("32767", (int16_t) 42));
+  OLA_ASSERT_EQ((int16_t) 42, StringToIntOrDefault("32768", (int16_t) 42));
+}
+
+
 void StringUtilsTest::testStringToInt8() {
   int8_t value;
 
@@ -854,6 +954,23 @@ void StringUtilsTest::testStringToInt8() {
   OLA_ASSERT_EQ((int8_t) 127, value);
   OLA_ASSERT_FALSE(StringToInt("128", &value));
   OLA_ASSERT_FALSE(StringToInt("129", &value));
+}
+
+
+void StringUtilsTest::testStringToInt8OrDefault() {
+  OLA_ASSERT_EQ((int8_t) 42, StringToIntOrDefault("", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) 42, StringToIntOrDefault("a", (int8_t) 42));
+
+  OLA_ASSERT_EQ((int8_t) 42, StringToIntOrDefault("-129", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) -128, StringToIntOrDefault("-128", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) -127, StringToIntOrDefault("-127", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) -127, StringToIntOrDefault("-127", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) -1, StringToIntOrDefault("-1", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) 0, StringToIntOrDefault("0", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) 1, StringToIntOrDefault("1", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) 127, StringToIntOrDefault("127", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) 42, StringToIntOrDefault("128", (int8_t) 42));
+  OLA_ASSERT_EQ((int8_t) 42, StringToIntOrDefault("129", (int8_t) 42));
 }
 
 

@@ -252,6 +252,41 @@ unsigned int StringToIntOrDefault(const string &value,
   return (StringToInt(value, &output, strict)) ? output : alternative;
 }
 
+uint16_t StringToIntOrDefault(const string &value,
+                              uint16_t alternative,
+                              bool strict) {
+  uint16_t output;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
+}
+
+uint8_t StringToIntOrDefault(const string &value,
+                             uint8_t alternative,
+                             bool strict) {
+  uint8_t output;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
+}
+
+int StringToIntOrDefault(const string &value,
+                         int alternative,
+                         bool strict) {
+  int output;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
+}
+
+int16_t StringToIntOrDefault(const string &value,
+                             int16_t alternative,
+                             bool strict) {
+  int16_t output;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
+}
+
+int8_t StringToIntOrDefault(const string &value,
+                            int8_t alternative,
+                            bool strict) {
+  int8_t output;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
+}
+
 void Escape(string *original) {
   for (string::iterator iter = original->begin(); iter != original->end();
       ++iter) {
