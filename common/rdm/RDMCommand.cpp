@@ -671,10 +671,6 @@ bool GuessMessageType(rdm_message_type *type_arg,
   return false;
 }
 
-
-/*
- * Generate a NACK response with a reason code
- */
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason_enum,
                             uint8_t outstanding_messages) {
@@ -705,9 +701,6 @@ RDMResponse *NackWithReason(const RDMRequest *request,
   }
 }
 
-/*
- * Generate a ACK Response with some data
- */
 RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,
@@ -722,10 +715,6 @@ RDMResponse *GetResponseFromData(const RDMRequest *request,
                             outstanding_messages);
 }
 
-
-/**
- * Construct a RDM response from a RDMRequest object.
- */
 RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint16_t pid,
                                 const uint8_t *data,
@@ -773,7 +762,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
 
 
 /**
- * Inflate a discovery request.
+ * @brief Inflate a discovery request.
  */
 RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
     const uint8_t *data,

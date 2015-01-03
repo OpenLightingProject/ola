@@ -508,15 +508,24 @@ bool GuessMessageType(rdm_message_type *type,
                       RDMCommand::RDMCommandClass *command_class,
                       const uint8_t *data,
                       unsigned int length);
+/**
+ * @brief Generate a NACK response with a reason code
+ */
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason,
                             uint8_t outstanding_messages = 0);
+/**
+ * @brief Generate an ACK Response with some data
+ */
 RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data = NULL,
                                  unsigned int length = 0,
                                  rdm_response_type type = RDM_ACK,
                                  uint8_t outstanding_messages = 0);
 
+/**
+ * @brief Construct an RDM response from a RDMRequest object.
+ */
 RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint16_t pid,
                                 const uint8_t *data,
