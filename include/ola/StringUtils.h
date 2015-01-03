@@ -61,9 +61,10 @@ void StringSplit(const std::string &input,
  * @param delimiters the delimiiter to use for splitting. Defaults to ' '
  * @deprecated Use the version with a vector pointer instead (3 Jan 2015).
  */
-inline void StringSplit(const std::string &input,
-                        std::vector<std::string> &tokens,
-                        const std::string &delimiters = " ") {
+inline void StringSplit(
+    const std::string &input,
+    std::vector<std::string> &tokens,  // NOLINT(runtime/references)
+    const std::string &delimiters = " ") {
   StringSplit(input, &tokens, delimiters);
 }
 
