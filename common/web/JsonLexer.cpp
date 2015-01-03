@@ -196,6 +196,7 @@ static bool ParseNumber(const char **input, JsonParserInterface *parser) {
     switch (**input) {
       case '-':
         negative_exponent = true;
+        // fall through
       case '+':
         (*input)++;
         break;
