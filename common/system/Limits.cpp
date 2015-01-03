@@ -22,6 +22,7 @@
 #ifndef _WIN32
 #include "ola/system/Limits.h"
 
+#include <errno.h>
 #include <string.h>
 #include <sys/resource.h>
 
