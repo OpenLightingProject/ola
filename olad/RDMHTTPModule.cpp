@@ -157,7 +157,8 @@ RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
     : m_server(http_server),
       m_client(client),
       m_shim(client),
-      m_rdm_api(&m_shim) {
+      m_rdm_api(&m_shim),
+      m_pid_store(NULL) {
 
   m_server->RegisterHandler(
       "/rdm/run_discovery",

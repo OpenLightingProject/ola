@@ -52,7 +52,9 @@ SPIWriter::SPIWriter(const string &spi_device,
     : m_device_path(spi_device),
       m_spi_speed(options.spi_speed),
       m_cs_enable_high(options.cs_enable_high),
-      m_fd(-1) {
+      m_fd(-1),
+      m_error_map_var(NULL),
+      m_write_map_var(NULL) {
   OLA_INFO << "Created SPI Writer " << spi_device << " with speed "
            << options.spi_speed << ", CE is " << m_cs_enable_high;
   if (export_map) {

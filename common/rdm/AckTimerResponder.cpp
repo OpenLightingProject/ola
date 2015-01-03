@@ -220,6 +220,7 @@ const RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
           queued_response->ParamDataSize());
       break;
     case RDMCommand::SET_COMMAND_RESPONSE:
+      // coverity(SWAPPED_ARGUMENTS)
       return new RDMSetResponse(
           request->DestinationUID(),
           request->SourceUID(),
@@ -352,6 +353,7 @@ const RDMResponse *AckTimerResponder::SetDmxStartAddress(
 
   uint16_t ack_time = 1 + ACK_TIMER_MS / 100;
   ack_time = HostToNetwork(ack_time);
+  // coverity(SWAPPED_ARGUMENTS)
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
@@ -402,6 +404,7 @@ const RDMResponse *AckTimerResponder::SetIdentify(
 
   uint16_t ack_time = 1 + ACK_TIMER_MS / 100;
   ack_time = HostToNetwork(ack_time);
+  // coverity(SWAPPED_ARGUMENTS)
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),

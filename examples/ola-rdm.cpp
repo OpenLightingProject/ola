@@ -223,16 +223,24 @@ class RDMController {
                         const string &rdm_data);
 
  private:
-    typedef struct {
+    struct PendingRequest {
+     public:
+      PendingRequest()
+          : universe(0),
+            uid(NULL),
+            sub_device(0),
+            pid_value(0) {
+      }
+
       unsigned int universe;
       const UID *uid;
       uint16_t sub_device;
       uint16_t pid_value;
-    } pending_request_t;
+    };
 
     ola::OlaCallbackClientWrapper m_ola_client;
     PidStoreHelper m_pid_helper;
-    pending_request_t m_pending_request;
+    PendingRequest m_pending_request;
 
     void FetchQueuedMessage();
     void PrintRemainingMessages(uint8_t message_count);

@@ -232,6 +232,7 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
     // this is an actual byte of data
     switch (m_state) {
       case IDLE:
+        // fall through
       case MAB:
         m_state = DATA;
         m_frame.Reset();

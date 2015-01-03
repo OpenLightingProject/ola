@@ -327,6 +327,7 @@ const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
     'f', 'r',
     'd', 'e',
   };
+  // coverity(SWAPPED_ARGUMENTS)
   return new RDMGetResponse(
     request->DestinationUID(),
     request->SourceUID(),
@@ -345,6 +346,7 @@ const RDMResponse *MovingLightResponder::GetLanguage(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  // coverity(SWAPPED_ARGUMENTS)
   return new RDMGetResponse(
     request->DestinationUID(),
     request->SourceUID(),

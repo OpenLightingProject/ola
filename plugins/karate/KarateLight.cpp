@@ -34,6 +34,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
+#include "ola/strings/Format.h"
 #include "plugins/karate/KarateLight.h"
 
 namespace ola {
@@ -48,6 +49,7 @@ using std::string;
  */
 KarateLight::KarateLight(const string &dev)
     : m_devname(dev),
+      m_fd(-1),
       m_fw_version(0),
       m_hw_version(0),
       m_nChannels(0),
@@ -67,9 +69,11 @@ KarateLight::~KarateLight() {
 
 void KarateLight::Close() {
   // remove lock and close file
-  flock(m_fd, LOCK_UN);
-  tcflush(m_fd, TCIOFLUSH);
-  close(m_fd);
+  if (m_fd >= 0) {
+    flock(m_fd, LOCK_UN);
+    tcflush(m_fd, TCIOFLUSH);
+    close(m_fd);
+  }
   m_active = false;
 }
 
@@ -123,9 +127,9 @@ bool KarateLight::Init() {
   }
 
   // clear possible junk data still in the systems fifo
-  int bytesread = 1;
-  while (bytesread > 0) {
-    bytesread = read(m_fd, rd_buffer, CMD_MAX_LENGTH);
+  int bytes_read = 1;
+  while (bytes_read > 0) {
+    bytes_read = read(m_fd, rd_buffer, CMD_MAX_LENGTH);
   }
 
   // read firmware version
@@ -187,10 +191,10 @@ bool KarateLight::Init() {
 
   OLA_INFO << "successfully initalized device " << m_devname
            << " with firmware version 0x"
-           << std::hex << static_cast<int>(m_fw_version)
+           << strings::ToHex(m_fw_version)
            << ", hardware-revision = 0x"
-           << std::hex << static_cast<int>(m_hw_version)
-           << ", channel_count = " << std::dec << m_nChannels
+           << strings::ToHex(m_hw_version)
+           << ", channel_count = " << m_nChannels
            << ", dmx_offset = " << m_dmx_offset;
 
   // set channels to black
@@ -228,17 +232,16 @@ bool KarateLight::SetColors(const DmxBuffer &da) {
  * @brief Tries to read an answer from the device
  * @param rd_data buffer for the received data (excluding the header)
  * @param rd_len number of bytes to read (excluding the header), will be
- *              overwritten with the number of bytes received in the case
- *              of a mismatch
+ *     overwritten with the number of bytes received in the case
+ *     of a mismatch
  * @return true on success
  */
 bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
-  int bytesread = 0;
   uint8_t rd_buffer[CMD_MAX_LENGTH];
 
   // read header (4 bytes)
-  bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
-  if (bytesread != CMD_DATA_START) {
+  int bytes_read = read(m_fd, rd_buffer, CMD_DATA_START);
+  if (bytes_read != CMD_DATA_START) {
     if (errno != EINTR) {  // this is also true for EAGAIN
       OLA_WARN << "Could not read 4 bytes (header) from " << m_devname
                << " ErrorCode: " << strerror(errno);
@@ -246,15 +249,16 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
       return false;
     }
   }
-  bytesread = 0;
+  bytes_read = 0;
 
   // read payload-data (if there is any)
-  if (rd_buffer[CMD_HD_LEN] > 0) {
-    // we wont enter this loop if there are no bytes to receive
-    bytesread = read(m_fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN]);
-    if (bytesread != rd_buffer[CMD_HD_LEN]) {
+  uint8_t payload_size = rd_buffer[CMD_HD_LEN];
+  if (payload_size > 0u) {
+    // we won't enter this loop if there are no bytes to receive
+    bytes_read = read(m_fd, &rd_buffer[CMD_DATA_START], payload_size);
+    if (bytes_read != payload_size) {
       if (errno != EINTR) {  // this is also true for EAGAIN (timeout)
-        OLA_WARN << "Reading > " << static_cast<int>(rd_buffer[CMD_HD_LEN])
+        OLA_WARN << "Reading > " << static_cast<int>(payload_size)
                  << " < bytes payload from " << m_devname
                  << " ErrorCode: " << strerror(errno);
         KarateLight::Close();
@@ -264,11 +268,10 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
   }
 
   // verify data-length
-  if ((*rd_len != rd_buffer[CMD_HD_LEN]) ||
-      (bytesread != rd_buffer[CMD_HD_LEN])) {
-    OLA_WARN << "Number of bytes read > " << bytesread
+  if (*rd_len != payload_size) {
+    OLA_WARN << "Number of bytes read > " << bytes_read
              << " < does not match number of bytes expected > "
-             << static_cast<int>(rd_buffer[CMD_HD_LEN])
+             << static_cast<int>(payload_size)
              << " <";
     KarateLight::Close();
     return false;
@@ -276,15 +279,14 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
 
   // verify checksum
   int checksum = 0;
-  for (int i = 0; i < (bytesread + CMD_DATA_START); i++) {
+  for (int i = 0; i < bytes_read + CMD_DATA_START; i++) {
     if (i != CMD_HD_CHECK) {
       checksum ^= rd_buffer[i];
     }
   }
   if (checksum != rd_buffer[CMD_HD_CHECK]) {
     OLA_WARN << "Checkum verification of incoming data failed. "
-             << "Data-checkum is: 0x" << std::hex
-             << static_cast<int>(checksum)
+             << "Data-checkum is: " << strings::ToHex(checksum)
              << " but the device said it would be 0x"
              << static_cast<int>(rd_buffer[CMD_HD_CHECK]);
     KarateLight::Close();
@@ -293,7 +295,7 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
   }
 
   // prepare data
-  *rd_len = static_cast<uint8_t>(bytesread);
+  *rd_len = static_cast<uint8_t>(bytes_read);
   memcpy(rd_data, &rd_buffer[CMD_DATA_START], *rd_len);
 
   return true;

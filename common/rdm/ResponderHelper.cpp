@@ -1042,6 +1042,7 @@ const RDMResponse *ResponderHelper::EmptyGetResponse(
 const RDMResponse *ResponderHelper::EmptySetResponse(
     const RDMRequest *request,
     uint8_t queued_message_count) {
+  // coverity(SWAPPED_ARGUMENTS)
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
