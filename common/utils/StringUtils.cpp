@@ -247,12 +247,9 @@ bool StringToInt(const string &value, int8_t *output, bool strict) {
 
 unsigned int StringToIntOrDefault(const string &value,
                                   unsigned int alternative,
-                                  bool strict = false) {
+                                  bool strict) {
   unsigned int output;
-  if (StringToInt(value, &output, strict)) {
-    return output;
-  }
-  return alternative;
+  return StringToInt(value, &output, strict)) ? output : alternative;
 }
 
 void Escape(string *original) {
