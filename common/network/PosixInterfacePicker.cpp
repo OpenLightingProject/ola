@@ -72,9 +72,12 @@ using std::vector;
 vector<Interface> PosixInterfacePicker::GetInterfaces(
     bool include_loopback) const {
   vector<Interface> interfaces;
+
+#ifdef HAVE_SOCKADDR_DL_STRUCT
   string last_dl_iface_name;
   uint8_t hwlen = 0;
   char *hwaddr = NULL;
+#endif
 
   // create socket to get iface config
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
