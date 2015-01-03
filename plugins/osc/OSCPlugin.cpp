@@ -84,7 +84,7 @@ bool OSCPlugin::StartHook() {
 
     const string key = ExpandTemplate(PORT_TARGETS_TEMPLATE, i);
     vector<string> tokens;
-    StringSplit(m_preferences->GetValue(key), tokens, ",");
+    StringSplit(m_preferences->GetValue(key), &tokens, ",");
 
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
