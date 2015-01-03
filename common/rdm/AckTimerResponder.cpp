@@ -208,29 +208,12 @@ const RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
     const class QueuedResponse *queued_response) {
   switch (queued_response->CommandClass()) {
     case RDMCommand::GET_COMMAND_RESPONSE:
-      return new RDMGetResponse(
-          request->DestinationUID(),
-          request->SourceUID(),
-          request->TransactionNumber(),
-          RDM_ACK,
-          QueuedMessageCount(),
-          ROOT_RDM_DEVICE,
-          queued_response->Pid(),
-          queued_response->ParamData(),
-          queued_response->ParamDataSize());
-      break;
     case RDMCommand::SET_COMMAND_RESPONSE:
-      // coverity(SWAPPED_ARGUMENTS)
-      return new RDMSetResponse(
-          request->DestinationUID(),
-          request->SourceUID(),
-          request->TransactionNumber(),
-          RDM_ACK,
-          QueuedMessageCount(),
-          ROOT_RDM_DEVICE,
-          queued_response->Pid(),
-          queued_response->ParamData(),
-          queued_response->ParamDataSize());
+      return GetResponseFromData(request,
+                                 queued_response->ParamData(),
+                                 queued_response->ParamDataSize(),
+                                 RDM_ACK,
+                                 QueuedMessageCount());
       break;
     default:
       OLA_WARN << "Queued message returning NULL, CC was "
@@ -353,17 +336,11 @@ const RDMResponse *AckTimerResponder::SetDmxStartAddress(
 
   uint16_t ack_time = 1 + ACK_TIMER_MS / 100;
   ack_time = HostToNetwork(ack_time);
-  // coverity(SWAPPED_ARGUMENTS)
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK_TIMER,
-    QueuedMessageCount(),
-    request->SubDevice(),
-    request->ParamId(),
-    reinterpret_cast<uint8_t*>(&ack_time),
-    sizeof(ack_time));
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&ack_time),
+                             sizeof(ack_time),
+                             RDM_ACK_TIMER,
+                             QueuedMessageCount());
 }
 
 /**
@@ -404,17 +381,11 @@ const RDMResponse *AckTimerResponder::SetIdentify(
 
   uint16_t ack_time = 1 + ACK_TIMER_MS / 100;
   ack_time = HostToNetwork(ack_time);
-  // coverity(SWAPPED_ARGUMENTS)
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK_TIMER,
-    QueuedMessageCount(),
-    request->SubDevice(),
-    request->ParamId(),
-    reinterpret_cast<uint8_t*>(&ack_time),
-    sizeof(ack_time));
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&ack_time),
+                             sizeof(ack_time),
+                             RDM_ACK_TIMER,
+                             QueuedMessageCount());
 }
 
 const RDMResponse *AckTimerResponder::GetDeviceModelDescription(

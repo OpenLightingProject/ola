@@ -133,15 +133,11 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
 
 
 /**
- * Return the frequency as specified in the config file.
+ * @brief Return the frequency as specified in the config file or the default if
+ * invalid
  */
 int unsigned FtdiDmxPlugin::GetFrequency() {
-  unsigned int frequency;
-
-  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY), &frequency)) {
-    return DEFAULT_FREQUENCY;
-  }
-  return frequency;
+  return StringToIntOrDefault(m_preferences->GetValue(K_FREQUENCY), DEFAULT_FREQUENCY);
 }
 }  // namespace ftdidmx
 }  // namespace plugin

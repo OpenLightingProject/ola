@@ -676,31 +676,11 @@ RDMResponse *NackWithReason(const RDMRequest *request,
                             uint8_t outstanding_messages) {
   uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
     reason_enum));
-  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
-    // coverity(SWAPPED_ARGUMENTS)
-    return new ola::rdm::RDMGetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_NACK_REASON,
-      outstanding_messages,
-      request->SubDevice(),
-      request->ParamId(),
-      reinterpret_cast<uint8_t*>(&reason),
-      sizeof(reason));
-  } else  {
-    // coverity(SWAPPED_ARGUMENTS)
-    return new ola::rdm::RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_NACK_REASON,
-      outstanding_messages,
-      request->SubDevice(),
-      request->ParamId(),
-      reinterpret_cast<uint8_t*>(&reason),
-      sizeof(reason));
-  }
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&reason),
+                             sizeof(reason),
+                             RDM_NACK_REASON,
+                             outstanding_messages);
 }
 
 RDMResponse *GetResponseFromData(const RDMRequest *request,
@@ -708,7 +688,7 @@ RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  unsigned int length,
                                  rdm_response_type type,
                                  uint8_t outstanding_messages) {
-  // we can reuse GetResponseWithPid
+  // We can reuse GetResponseWithPid
   return GetResponseWithPid(request,
                             request->ParamId(),
                             data,

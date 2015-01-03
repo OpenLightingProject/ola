@@ -63,10 +63,9 @@ const char OSCPlugin::INT_INDIVIDUAL_FORMAT[] = "individual_int";
  */
 bool OSCPlugin::StartHook() {
   // Get the value of UDP_PORT_KEY or use the default value if it isn't valid.
-  uint16_t udp_port;
-  if (!StringToInt(m_preferences->GetValue(UDP_PORT_KEY), &udp_port)) {
-    udp_port = DEFAULT_UDP_PORT;
-  }
+  uint16_t udp_port = StringToIntOrDefault(
+      m_preferences->GetValue(UDP_PORT_KEY),
+      DEFAULT_UDP_PORT);
 
   // For each input port, add the address to the vector
   vector<string> port_addresses;
