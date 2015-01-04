@@ -34,21 +34,20 @@ namespace dummy {
 
 class DummyDevice: public Device {
  public:
-    DummyDevice(
-        AbstractPlugin *owner,
-        const std::string &name,
-        const DummyPort::Options &port_options)
-        : Device(owner, name),
-          m_port_options(port_options) {
-    }
-    std::string DeviceId() const { return "1"; }
+  DummyDevice(
+      AbstractPlugin *owner,
+      const std::string &name,
+      const DummyPort::Options &port_options)
+      : Device(owner, name),
+        m_port_options(port_options) {
+  }
+
+  std::string DeviceId() const { return "1"; }
 
  protected:
-    uint16_t m_number_of_devices;
-    uint16_t m_number_of_subdevices;
-    const DummyPort::Options m_port_options;
+  const DummyPort::Options m_port_options;
 
-    bool StartHook();
+  bool StartHook();
 };
 }  // namespace dummy
 }  // namespace plugin

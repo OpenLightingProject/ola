@@ -199,6 +199,8 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
       m_always_broadcast(options.always_broadcast),
       m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_in_configuration_mode(false),
+      m_artpoll_required(false),
+      m_artpollreply_required(false),
       m_interface(iface),
       m_socket(socket) {
 
@@ -405,12 +407,15 @@ uint8_t ArtNetNodeImpl::GetInputPortUniverse(uint8_t port_id) const {
 
 void ArtNetNodeImpl::DisableInputPort(uint8_t port_id) {
   InputPort *port = GetInputPort(port_id);
-  bool was_enabled = port->enabled;
-  if (port)
+  bool was_enabled = false;
+  if (port) {
+    was_enabled = port->enabled;
     port->enabled = false;
+  }
 
-  if (was_enabled)
+  if (was_enabled) {
     SendPollReplyIfRequired();
+  }
 }
 
 bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
@@ -421,11 +426,13 @@ bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
 bool ArtNetNodeImpl::SetOutputPortUniverse(uint8_t port_id,
                                            uint8_t universe_id) {
   OutputPort *port = GetOutputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
-  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf))
+  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf)) {
     return true;
+  }
 
   port->universe_address = (
       (universe_id & 0x0f) | (port->universe_address & 0xf0));

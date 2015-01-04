@@ -35,7 +35,6 @@ namespace ftdidmx {
 using std::string;
 using std::vector;
 
-const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";
 const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB DMX";
 const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
@@ -71,9 +70,13 @@ bool FtdiDmxPlugin::StartHook() {
   FtdiWidgetInfoVector widgets;
   FtdiWidget::Widgets(&widgets);
 
+  unsigned int frequency = StringToIntOrDefault(
+      m_preferences->GetValue(K_FREQUENCY),
+      DEFAULT_FREQUENCY);
+
   FtdiWidgetInfoVector::const_iterator iter;
   for (iter = widgets.begin(); iter != widgets.end(); ++iter) {
-    AddDevice(new FtdiDmxDevice(this, *iter, GetFrequency()));
+    AddDevice(new FtdiDmxDevice(this, *iter, frequency));
   }
   return true;
 }
@@ -130,18 +133,6 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
     return false;
 
   return true;
-}
-
-
-/**
- * Return the frequency as specified in the config file.
- */
-int unsigned FtdiDmxPlugin::GetFrequency() {
-  unsigned int frequency;
-
-  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY), &frequency))
-    StringToInt(DEFAULT_FREQUENCY, &frequency);
-  return frequency;
 }
 }  // namespace ftdidmx
 }  // namespace plugin

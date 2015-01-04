@@ -46,6 +46,7 @@ using std::vector;
 StringMessageBuilder::StringMessageBuilder()
     : m_offset(0),
       m_input_size(0),
+      m_group_instance_count(0),
       m_error(false) {
 }
 

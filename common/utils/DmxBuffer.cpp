@@ -175,7 +175,7 @@ bool DmxBuffer::SetFromString(const string &input) {
     m_length = 0;
     return true;
   }
-  StringSplit(input, dmx_values, ",");
+  StringSplit(input, &dmx_values, ",");
   for (iter = dmx_values.begin();
       iter != dmx_values.end() && i < DMX_UNIVERSE_SIZE; ++iter, ++i) {
     m_data[i] = atoi(iter->data());

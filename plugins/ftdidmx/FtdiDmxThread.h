@@ -43,7 +43,7 @@ class FtdiDmxThread : public ola::thread::Thread {
     TimerGranularity m_granularity;
     FtdiWidget *m_widget;
     bool m_term;
-    int unsigned m_frequency;
+    unsigned int m_frequency;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;

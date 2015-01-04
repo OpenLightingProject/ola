@@ -1042,16 +1042,11 @@ const RDMResponse *ResponderHelper::EmptyGetResponse(
 const RDMResponse *ResponderHelper::EmptySetResponse(
     const RDMRequest *request,
     uint8_t queued_message_count) {
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    queued_message_count,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return GetResponseFromData(request,
+                             NULL,
+                             0,
+                             RDM_ACK,
+                             queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::SetString(
