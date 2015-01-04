@@ -70,9 +70,13 @@ bool FtdiDmxPlugin::StartHook() {
   FtdiWidgetInfoVector widgets;
   FtdiWidget::Widgets(&widgets);
 
+  unsigned int frequency = StringToIntOrDefault(
+      m_preferences->GetValue(K_FREQUENCY),
+      DEFAULT_FREQUENCY);
+
   FtdiWidgetInfoVector::const_iterator iter;
   for (iter = widgets.begin(); iter != widgets.end(); ++iter) {
-    AddDevice(new FtdiDmxDevice(this, *iter, GetFrequency()));
+    AddDevice(new FtdiDmxDevice(this, *iter, frequency));
   }
   return true;
 }
@@ -129,16 +133,6 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
     return false;
 
   return true;
-}
-
-
-/**
- * @brief Return the frequency as specified in the config file or the default if
- * invalid
- */
-int unsigned FtdiDmxPlugin::GetFrequency() {
-  return StringToIntOrDefault(m_preferences->GetValue(K_FREQUENCY),
-                              DEFAULT_FREQUENCY);
 }
 }  // namespace ftdidmx
 }  // namespace plugin
