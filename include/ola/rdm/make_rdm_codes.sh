@@ -47,12 +47,18 @@ cat <<EOM
 namespace ola {
 namespace rdm {
 
+/**
+ * @brief RDM response codes
+ */
 typedef enum {
 EOM
 sed -ne  '/^enum RDMResponseCode/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
 } rdm_response_code;
 
+/**
+ * @brief RDM response types
+ */
 typedef enum {
 EOM
 sed -ne  '/^enum RDMResponseType/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
