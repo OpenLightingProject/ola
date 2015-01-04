@@ -73,7 +73,6 @@ class FtdiDmxPlugin : public Plugin {
   static const char K_FREQUENCY[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
-  static std::vector< std::pair<int, int> > supportedIDS;
 };
 }  // namespace ftdidmx
 }  // namespace plugin
