@@ -54,7 +54,7 @@ class FtdiWidgetInfo {
  public:
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
-                   int unsigned id)
+                   unsigned int id)
       : m_name(name),
         m_serial(serial),
         m_id(id) {
@@ -70,7 +70,7 @@ class FtdiWidgetInfo {
 
     std::string Name() const { return m_name; }
     std::string Serial() const { return m_serial; }
-    int unsigned Id() const { return m_id; }
+    unsigned int Id() const { return m_id; }
 
     std::string Description() const {
       return m_name + " with serial number : " + m_serial + " ";
@@ -88,7 +88,7 @@ class FtdiWidgetInfo {
  private:
     std::string m_name;
     std::string m_serial;
-    int unsigned m_id;
+    unsigned int m_id;
 };
 
 
