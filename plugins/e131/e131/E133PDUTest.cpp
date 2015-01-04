@@ -38,7 +38,6 @@ namespace e131 {
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
 
 class E133PDUTest: public CppUnit::TestFixture {
@@ -149,9 +148,7 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
     0, 2,  // endpoint
     0,
   };
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     pdu_data, pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
 }

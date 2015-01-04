@@ -34,10 +34,17 @@ namespace ola {
 namespace testing {
 
 // Assert that two data blocks are the same.
+// Private, use OLA_ASSERT_DATA_EQUALS below.
 void ASSERT_DATA_EQUALS(unsigned int line,
                         const uint8_t *expected,
                         unsigned int expected_length,
                         const uint8_t *actual,
+                        unsigned int actual_length);
+
+void ASSERT_DATA_EQUALS(unsigned int line,
+                        const char *expected,
+                        unsigned int expected_length,
+                        const char *actual,
                         unsigned int actual_length);
 
 // Private, use OLA_ASSERT_VECTOR_EQ below
@@ -50,9 +57,10 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
 
   typename std::vector<T>::const_iterator iter1 = t1.begin();
   typename std::vector<T>::const_iterator iter2 = t2.begin();
-  while (iter1 != t1.end())
+  while (iter1 != t1.end()) {
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Vector elements not equal");
+  }
 }
 
 // Private, use OLA_ASSERT_SET_EQ below
@@ -65,9 +73,10 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
   typename std::set<T>::const_iterator iter1 = t1.begin();
   typename std::set<T>::const_iterator iter2 = t2.begin();
-  while (iter1 != t1.end())
+  while (iter1 != t1.end()) {
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Set elements not equal");
+  }
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in
@@ -113,6 +122,11 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
 #define OLA_ASSERT_SET_EQ(expected, output)  \
   ola::testing::_AssertSetEq(CPPUNIT_SOURCELINE(), (expected), (output))
+
+#define OLA_ASSERT_DATA_EQUALS(expected, expected_length, actual, \
+                               actual_length)  \
+ola::testing::ASSERT_DATA_EQUALS(__LINE__, (expected), (expected_length), \
+                                 (actual), (actual_length))
 
 #define OLA_ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \

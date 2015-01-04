@@ -407,9 +407,6 @@ class ArtNetNodeImpl {
   ola::network::Interface m_interface;
   std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
-  ArtNetNodeImpl(const ArtNetNodeImpl&);
-  ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
-
   /**
    * @brief Called when there is data on this socket
    */
@@ -655,6 +652,8 @@ class ArtNetNodeImpl {
   static const unsigned int RDM_REQUEST_QUEUE_LIMIT = 100;
   // How long to wait for a response to an RDM Request
   static const unsigned int RDM_REQUEST_TIMEOUT_MS = 2000;
+
+  DISALLOW_COPY_AND_ASSIGN(ArtNetNodeImpl);
 };
 
 
@@ -687,6 +686,8 @@ class ArtNetNodeImplRDMWrapper
  private:
   ArtNetNodeImpl *m_impl;
   uint8_t m_port_id;
+
+  DISALLOW_COPY_AND_ASSIGN(ArtNetNodeImplRDMWrapper);
 };
 
 
@@ -853,6 +854,8 @@ class ArtNetNode {
    * @return true if the port id is valid, false otherwise
    */
   bool CheckInputPortId(uint8_t port_id);
+
+  DISALLOW_COPY_AND_ASSIGN(ArtNetNode);
 };
 }  // namespace artnet
 }  // namespace plugin

@@ -18,6 +18,8 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
@@ -40,9 +42,7 @@ using std::string;
 using std::vector;
 
 const char OSCPlugin::DEFAULT_ADDRESS_TEMPLATE[] = "/dmx/universe/%d";
-const char OSCPlugin::DEFAULT_PORT_COUNT[] = "5";
 const char OSCPlugin::DEFAULT_TARGETS_TEMPLATE[] = "";
-const char OSCPlugin::DEFAULT_UDP_PORT[] = "7770";
 const char OSCPlugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
 const char OSCPlugin::OUTPUT_PORT_COUNT_KEY[] = "output_ports";
 const char OSCPlugin::PLUGIN_NAME[] = "OSC";
@@ -64,8 +64,9 @@ const char OSCPlugin::INT_INDIVIDUAL_FORMAT[] = "individual_int";
 bool OSCPlugin::StartHook() {
   // Get the value of UDP_PORT_KEY or use the default value if it isn't valid.
   uint16_t udp_port;
-  if (!StringToInt(m_preferences->GetValue(UDP_PORT_KEY), &udp_port))
-    StringToInt(DEFAULT_UDP_PORT, &udp_port);
+  if (!StringToInt(m_preferences->GetValue(UDP_PORT_KEY), &udp_port)) {
+    udp_port = DEFAULT_UDP_PORT;
+  }
 
   // For each input port, add the address to the vector
   vector<string> port_addresses;
@@ -85,7 +86,7 @@ bool OSCPlugin::StartHook() {
 
     const string key = ExpandTemplate(PORT_TARGETS_TEMPLATE, i);
     vector<string> tokens;
-    StringSplit(m_preferences->GetValue(key), tokens, ",");
+    StringSplit(m_preferences->GetValue(key), &tokens, ",");
 
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
@@ -183,7 +184,7 @@ bool OSCPlugin::SetDefaultPreferences() {
                                          DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(UDP_PORT_KEY,
-                                         UIntValidator(1, 0xffff),
+                                         UIntValidator(1, UINT16_MAX),
                                          DEFAULT_UDP_PORT);
 
   for (unsigned int i = 0; i < GetPortCount(INPUT_PORT_COUNT_KEY); i++) {
@@ -211,13 +212,15 @@ bool OSCPlugin::SetDefaultPreferences() {
 
 
 /**
- * Given a key, return the port count from the preferences. Defaults to
- * DEFAULT_PORT_COUNT if the value was invalid.
+ * @brief Given a key, return the port count from the preferences.
+ *
+ * Defaults to DEFAULT_PORT_COUNT if the value was invalid.
  */
 unsigned int OSCPlugin::GetPortCount(const string& key) const {
   unsigned int port_count;
-  if (!StringToInt(m_preferences->GetValue(key), &port_count))
-    StringToInt(DEFAULT_PORT_COUNT, &port_count);
+  if (!StringToInt(m_preferences->GetValue(key), &port_count)) {
+    return DEFAULT_PORT_COUNT;
+  }
   return port_count;
 }
 
@@ -228,12 +231,14 @@ unsigned int OSCPlugin::GetPortCount(const string& key) const {
 bool OSCPlugin::ExtractOSCTarget(const string &str,
                                  OSCTarget *target) {
   size_t pos = str.find_first_of("/");
-  if (pos == string::npos)
+  if (pos == string::npos) {
     return false;
+  }
 
   if (!IPV4SocketAddress::FromString(str.substr(0, pos),
-                                     &target->socket_address))
+                                     &target->socket_address)) {
     return false;
+  }
   target->osc_address = str.substr(pos);
   return true;
 }

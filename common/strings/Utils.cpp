@@ -13,40 +13,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * UID.cpp
- * The UID class.
- * Copyright (C) 2011 Simon Newton
+ * Utils.cpp
+ * Miscellaneous string functions.
+ * Copyright (C) 2014 Simon Newton
  */
 
+#include "ola/strings/Utils.h"
+
+#include <string.h>
 #include <string>
-#include <vector>
-#include "ola/StringUtils.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
-namespace rdm {
+namespace strings {
 
 using std::string;
-using std::vector;
 
-UID* UID::FromString(const string &uid) {
-  vector<string> tokens;
-  ola::StringSplit(uid, &tokens, ":");
-
-  if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8) {
-    return NULL;
-  }
-
-  uint16_t esta_id;
-  unsigned int device_id;
-  if (!ola::HexStringToInt(tokens[0], &esta_id)) {
-    return NULL;
-  }
-  if (!ola::HexStringToInt(tokens[1], &device_id)) {
-    return NULL;
-  }
-
-  return new UID(esta_id, device_id);
+void CopyToFixedLengthBuffer(const std::string &input,
+                             char *buffer,
+                             unsigned int size) {
+  // buffer may not be NULL terminated.
+  // coverity(BUFFER_SIZE_WARNING)
+  strncpy(buffer, input.c_str(), size);
 }
-}  // namespace rdm
+}  // namespace strings
 }  // namespace ola

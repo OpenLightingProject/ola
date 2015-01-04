@@ -244,9 +244,10 @@ void IOStack::PrependBlock() {
   MemoryBlock *block = m_pool->Allocate();
   if (!block) {
     OLA_FATAL << "Failed to allocate block, we're out of memory!";
+  } else {
+    block->SeekBack();  // put the block into prepend mode
+    m_blocks.push_front(block);
   }
-  block->SeekBack();  // put the block into prepend mode
-  m_blocks.push_front(block);
 }
 }  // namespace io
 }  // namespace ola

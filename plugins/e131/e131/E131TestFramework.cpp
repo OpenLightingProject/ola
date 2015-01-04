@@ -46,6 +46,20 @@ using std::endl;
 using std::string;
 using std::vector;
 
+StateManager::StateManager(const std::vector<TestState*> &states,
+                           bool interactive_mode)
+    : m_interactive(interactive_mode),
+      m_count(0),
+      m_ticker(0),
+      m_local_node(NULL),
+      m_node1(NULL),
+      m_node2(NULL),
+      m_ss(NULL),
+      m_states(states),
+      m_stdin_descriptor(STDIN_FILENO) {
+  memset(&m_old_tc, 0, sizeof(m_old_tc));
+}
+
 bool StateManager::Init() {
   m_cid1 = CID::Generate();
   m_cid2 = CID::Generate();

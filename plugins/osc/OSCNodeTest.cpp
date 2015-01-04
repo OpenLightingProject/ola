@@ -41,7 +41,6 @@ using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using ola::plugin::osc::OSCNode;
 using ola::plugin::osc::OSCTarget;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 
 
@@ -200,8 +199,7 @@ void OSCNodeTest::UDPSocketReady() {
   // Read the received packet into 'data'.
   OLA_ASSERT_TRUE(m_udp_socket.RecvFrom(data, &data_read));
   // Verify it matches the expected packet
-  ASSERT_DATA_EQUALS(__LINE__, OSC_BLOB_DATA,
-                     sizeof(OSC_BLOB_DATA), data, data_read);
+  OLA_ASSERT_DATA_EQUALS(OSC_BLOB_DATA, sizeof(OSC_BLOB_DATA), data, data_read);
   // Stop the SelectServer
   m_ss.Terminate();
 }

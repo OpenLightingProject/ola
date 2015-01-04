@@ -681,6 +681,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
   uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
     reason_enum));
   if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
+    // coverity(SWAPPED_ARGUMENTS)
     return new ola::rdm::RDMGetResponse(
       request->DestinationUID(),
       request->SourceUID(),
@@ -692,6 +693,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
       reinterpret_cast<uint8_t*>(&reason),
       sizeof(reason));
   } else  {
+    // coverity(SWAPPED_ARGUMENTS)
     return new ola::rdm::RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
@@ -734,6 +736,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint8_t outstanding_messages) {
   switch (request->CommandClass()) {
     case RDMCommand::GET_COMMAND:
+      // coverity(SWAPPED_ARGUMENTS)
       return new RDMGetResponse(
         request->DestinationUID(),
         request->SourceUID(),
@@ -745,6 +748,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
         data,
         length);
     case RDMCommand::SET_COMMAND:
+      // coverity(SWAPPED_ARGUMENTS)
       return new RDMSetResponse(
         request->DestinationUID(),
         request->SourceUID(),
@@ -756,6 +760,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
         data,
         length);
     case RDMCommand::DISCOVER_COMMAND:
+      // coverity(SWAPPED_ARGUMENTS)
       return new RDMDiscoveryResponse(
         request->DestinationUID(),
         request->SourceUID(),

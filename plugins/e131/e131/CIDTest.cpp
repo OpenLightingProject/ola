@@ -31,7 +31,6 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::acn::CID;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
 
 class CIDTest: public CppUnit::TestFixture {
@@ -140,6 +139,5 @@ void CIDTest::testToOutputBuffer() {
   uint8_t cid_data[size];
   OLA_ASSERT_EQ(size, output.Read(cid_data, size));
 
-  ASSERT_DATA_EQUALS(__LINE__, TEST_DATA, sizeof(TEST_DATA),
-                     cid_data, size);
+  OLA_ASSERT_DATA_EQUALS(TEST_DATA, sizeof(TEST_DATA), cid_data, size);
 }

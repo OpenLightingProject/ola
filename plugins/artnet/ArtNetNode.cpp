@@ -29,12 +29,14 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Utils.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 
@@ -51,14 +53,15 @@ using ola::network::IPV4SocketAddress;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
-using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::strings::CopyToFixedLengthBuffer;
 using std::auto_ptr;
 using std::map;
 using std::pair;
@@ -196,6 +199,8 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
       m_always_broadcast(options.always_broadcast),
       m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_in_configuration_mode(false),
+      m_artpoll_required(false),
+      m_artpollreply_required(false),
       m_interface(iface),
       m_socket(socket) {
 
@@ -402,12 +407,15 @@ uint8_t ArtNetNodeImpl::GetInputPortUniverse(uint8_t port_id) const {
 
 void ArtNetNodeImpl::DisableInputPort(uint8_t port_id) {
   InputPort *port = GetInputPort(port_id);
-  bool was_enabled = port->enabled;
-  if (port)
+  bool was_enabled = false;
+  if (port) {
+    was_enabled = port->enabled;
     port->enabled = false;
+  }
 
-  if (was_enabled)
+  if (was_enabled) {
     SendPollReplyIfRequired();
+  }
 }
 
 bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
@@ -418,11 +426,13 @@ bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
 bool ArtNetNodeImpl::SetOutputPortUniverse(uint8_t port_id,
                                            uint8_t universe_id) {
   OutputPort *port = GetOutputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
-  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf))
+  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf)) {
     return true;
+  }
 
   port->universe_address = (
       (universe_id & 0x0f) | (port->universe_address & 0xf0));
@@ -862,8 +872,8 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
 
   std::ostringstream str;
   str << "#0001 [" << m_unsolicited_replies << "] OLA";
-  strncpy(packet.data.reply.node_report, str.str().data(),
-          ARTNET_REPORT_LENGTH);
+  CopyToFixedLengthBuffer(str.str(), packet.data.reply.node_report,
+                          arraysize(packet.data.reply.node_report));
   packet.data.reply.number_ports[1] = ARTNET_MAX_PORTS;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort *iport = GetInputPort(i, false);
@@ -1372,7 +1382,8 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
 
 void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
                                           uint16_t op_code) {
-  strncpy(reinterpret_cast<char*>(packet->id), ARTNET_ID, sizeof(packet->id));
+  CopyToFixedLengthBuffer(ARTNET_ID, reinterpret_cast<char*>(packet->id),
+                          arraysize(packet->id));
   packet->op_code = HostToLittleEndian(op_code);
 }
 

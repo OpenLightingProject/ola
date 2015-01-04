@@ -1007,16 +1007,17 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
 void OladHTTPServer::DecodePortIds(const string &port_ids,
                                    vector<port_identifier> *ports) {
   vector<string> port_strings;
-  StringSplit(port_ids, port_strings, ",");
+  StringSplit(port_ids, &port_strings, ",");
   vector<string>::const_iterator iter;
   vector<string> tokens;
 
   for (iter = port_strings.begin(); iter != port_strings.end(); ++iter) {
-    if (iter->empty())
+    if (iter->empty()) {
       continue;
+    }
 
     tokens.clear();
-    StringSplit(*iter, tokens, "-");
+    StringSplit(*iter, &tokens, "-");
 
     if (tokens.size() != 3 || (tokens[1] != "I" && tokens[1] != "O")) {
       OLA_INFO << "Not a valid port id " << *iter;

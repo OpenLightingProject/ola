@@ -32,7 +32,6 @@
 using ola::io::IOQueue;
 using ola::io::BigEndianOutputStream;
 using ola::network::HostToNetwork;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 
@@ -99,6 +98,6 @@ void OutputStreamTest::testWritePrimatives() {
 
   uint8_t data1[] = {0, 0, 0, 4, 0x80, 0, 0, 0, 0xa, 0x9, 0x60};
   unsigned int output_size = m_buffer.Peek(output_data, m_buffer.Size());
-  ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, sizeof(data1), output_data, output_size);
   delete[] output_data;
 }

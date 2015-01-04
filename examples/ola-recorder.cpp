@@ -70,7 +70,7 @@ int RecordShow() {
 
   vector<string> universe_strs;
   vector<unsigned int> universes;
-  ola::StringSplit(FLAGS_universes.str(), universe_strs, ",");
+  ola::StringSplit(FLAGS_universes.str(), &universe_strs, ",");
   vector<string>::const_iterator iter = universe_strs.begin();
   for (; iter != universe_strs.end(); ++iter) {
     unsigned int universe;

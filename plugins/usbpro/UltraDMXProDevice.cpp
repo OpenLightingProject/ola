@@ -50,15 +50,18 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
                                      ola::AbstractPlugin *owner,
                                      const string &name,
                                      UltraDMXProWidget *widget,
-                                     uint16_t esta_id,
-                                     uint16_t device_id,
+                                     OLA_UNUSED uint16_t esta_id,
+                                     OLA_UNUSED uint16_t device_id,
                                      uint32_t serial,
                                      uint16_t firmware_version,
                                      unsigned int fps_limit):
     UsbSerialDevice(owner, name, widget),
     m_ultra_widget(widget),
     m_serial(),
-    m_got_parameters(false) {
+    m_got_parameters(false),
+    m_break_time(0),
+    m_mab_time(0),
+    m_rate(0) {
   std::ostringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
@@ -112,10 +115,6 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
       fps_limit,
       false);
   AddPort(output_port);
-
-  Start();  // this does nothing but set IsEnabled() to true
-  (void) esta_id;
-  (void) device_id;
 }
 
 

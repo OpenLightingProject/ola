@@ -23,18 +23,20 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "ola/base/Macro.h"
 #include "ola/Clock.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
+#include "ola/base/Macro.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
-#include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderSensor.h"
-#include "ola/rdm/RDMEnums.h"
+#include "ola/strings/Utils.h"
 
 namespace ola {
 namespace rdm {
@@ -484,9 +486,9 @@ const RDMResponse *ResponderHelper::GetSensorDefinition(
   sensor_definition.normal_min = HostToNetwork(sensor->NormalMin());
   sensor_definition.normal_max = HostToNetwork(sensor->NormalMax());
   sensor_definition.recorded_support = sensor->RecordedSupportBitMask();
-  strncpy(sensor_definition.description, sensor->Description().c_str(),
-          sizeof(sensor_definition.description));
-
+  strings::CopyToFixedLengthBuffer(sensor->Description(),
+                                   sensor_definition.description,
+                                   arraysize(sensor_definition.description));
   return GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(&sensor_definition),
@@ -1040,6 +1042,7 @@ const RDMResponse *ResponderHelper::EmptyGetResponse(
 const RDMResponse *ResponderHelper::EmptySetResponse(
     const RDMRequest *request,
     uint8_t queued_message_count) {
+  // coverity(SWAPPED_ARGUMENTS)
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),

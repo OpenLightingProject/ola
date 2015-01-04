@@ -38,7 +38,9 @@ using std::vector;
 MessageDeserializer::MessageDeserializer()
     : m_data(NULL),
       m_length(0),
-      m_offset(0) {
+      m_offset(0),
+      m_variable_field_size(0),
+      m_insufficient_data(false) {
 }
 
 

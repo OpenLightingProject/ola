@@ -64,12 +64,24 @@ void ASSERT_DATA_EQUALS(unsigned int line,
               static_cast<char>(actual[i]) : ' ');
       str << ")";
 
-      if (expected[i] != actual[i])
+      if (expected[i] != actual[i]) {
         str << "  ## MISMATCH";
+      }
       OLA_INFO << str.str();
     }
   }
   CPPUNIT_ASSERT_MESSAGE(message, data_matches);
+}
+
+void ASSERT_DATA_EQUALS(unsigned int line,
+                        const char *expected,
+                        unsigned int expected_length,
+                        const char *actual,
+                        unsigned int actual_length) {
+  ASSERT_DATA_EQUALS(line, reinterpret_cast<const uint8_t*>(expected),
+                     expected_length,
+                     reinterpret_cast<const uint8_t*>(actual),
+                     actual_length);
 }
 }  // namespace testing
 }  // namespace ola

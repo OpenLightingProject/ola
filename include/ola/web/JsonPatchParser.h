@@ -54,7 +54,10 @@ class JsonPatchParser : public JsonParserInterface {
  public:
   explicit JsonPatchParser(JsonPatchSet *patch_set)
       : JsonParserInterface(),
-        m_patch_set(patch_set) {}
+        m_patch_set(patch_set),
+        m_parser_depth(0),
+        m_state(TOP) {
+  }
 
   void Begin();
   void End();

@@ -69,7 +69,8 @@ class FtdiDmxPlugin : public Plugin {
   bool SetDefaultPreferences();
   unsigned int GetFrequency();
 
-  static const char DEFAULT_FREQUENCY[];
+  static const uint8_t DEFAULT_FREQUENCY = 30;
+
   static const char K_FREQUENCY[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];

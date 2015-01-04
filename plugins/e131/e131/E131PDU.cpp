@@ -19,10 +19,12 @@
  */
 
 #include <string.h>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "plugins/e131/e131/E131PDU.h"
+#include "ola/Logging.h"
+#include "ola/base/Array.h"
+#include "ola/network/NetworkUtils.h"
+#include "ola/strings/Utils.h"
 #include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/E131PDU.h"
 
 namespace ola {
 namespace plugin {
@@ -69,8 +71,8 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int *length) const {
 
   if (m_header.UsingRev2()) {
     E131Rev2Header::e131_rev2_pdu_header header;
-    strncpy(header.source, m_header.Source().data(),
-            E131Rev2Header::REV2_SOURCE_NAME_LEN);
+    strings::CopyToFixedLengthBuffer(m_header.Source(), header.source,
+                                     arraysize(header.source));
     header.priority = m_header.Priority();
     header.sequence = m_header.Sequence();
     header.universe = HostToNetwork(m_header.Universe());
@@ -78,8 +80,8 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int *length) const {
     memcpy(data, &header, *length);
   } else {
     E131Header::e131_pdu_header header;
-    strncpy(header.source, m_header.Source().data(),
-            E131Header::SOURCE_NAME_LEN);
+    strings::CopyToFixedLengthBuffer(m_header.Source(), header.source,
+                                     arraysize(header.source));
     header.priority = m_header.Priority();
     header.reserved = 0;
     header.sequence = m_header.Sequence();
@@ -116,8 +118,8 @@ bool E131PDU::PackData(uint8_t *data, unsigned int *length) const {
 void E131PDU::PackHeader(OutputStream *stream) const {
   if (m_header.UsingRev2()) {
     E131Rev2Header::e131_rev2_pdu_header header;
-    strncpy(header.source, m_header.Source().data(),
-            E131Rev2Header::REV2_SOURCE_NAME_LEN);
+    strings::CopyToFixedLengthBuffer(m_header.Source(), header.source,
+                                     arraysize(header.source));
     header.priority = m_header.Priority();
     header.sequence = m_header.Sequence();
     header.universe = HostToNetwork(m_header.Universe());
@@ -125,8 +127,8 @@ void E131PDU::PackHeader(OutputStream *stream) const {
                   sizeof(E131Rev2Header::e131_rev2_pdu_header));
   } else {
     E131Header::e131_pdu_header header;
-    strncpy(header.source, m_header.Source().data(),
-            E131Header::SOURCE_NAME_LEN);
+    strings::CopyToFixedLengthBuffer(m_header.Source(), header.source,
+                                     arraysize(header.source));
     header.priority = m_header.Priority();
     header.reserved = 0;
     header.sequence = m_header.Sequence();

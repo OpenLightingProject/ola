@@ -110,7 +110,7 @@ AvahiDiscoveryAgent::ServiceEntry::ServiceEntry(
       params(NULL),
       m_type_spec(type_spec) {
   vector<string> tokens;
-  StringSplit(type_spec, tokens, ",");
+  StringSplit(type_spec, &tokens, ",");
   m_type = tokens[0];
   if (tokens.size() > 1) {
     copy(tokens.begin() + 1, tokens.end(), std::back_inserter(m_sub_types));
