@@ -62,7 +62,6 @@ class FtdiDmxPlugin : public Plugin {
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
-  unsigned int GetFrequency();
 
   static const uint8_t DEFAULT_FREQUENCY = 30;
 

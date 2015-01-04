@@ -65,8 +65,9 @@ static FT_STATUS qlcftdi_get_strings(DWORD deviceIndex,
   FT_HANDLE handle;
 
   FT_STATUS status = FT_Open(deviceIndex, &handle);
-  if (status != FT_OK)
+  if (status != FT_OK) {
     return status;
+  }
 
   FT_PROGRAM_DATA pData;
   pData.Signature1 = 0;
@@ -237,8 +238,8 @@ bool FtdiWidget::SetBreak(bool on) {
 bool FtdiWidget::Write(const DmxBuffer& data) {
   DWORD written = 0;
   unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
-  int unsigned length = DMX_UNIVERSE_SIZE;
-  buffer[0] = 0x00;
+  unsigned int length = DMX_UNIVERSE_SIZE;
+  buffer[0] = DMX512_START_CODE;
 
   data.Get(buffer+1, &length);
 
