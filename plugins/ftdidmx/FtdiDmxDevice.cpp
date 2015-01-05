@@ -57,7 +57,7 @@ bool FtdiDmxDevice::StartHook() {
   int interfaceCount = m_widget->GetInterfaceCount();
   OLA_INFO << "there are " << interfaceCount << " interfaces.";
   for (int i = 1; i <= interfaceCount; i++) {
-    FtdiInterface* port = new FtdiInterface(m_widget,
+    FtdiInterface *port = new FtdiInterface(m_widget,
                                             static_cast<ftdi_interface>(i));
     if (port->SetupOutput()) {
       AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));

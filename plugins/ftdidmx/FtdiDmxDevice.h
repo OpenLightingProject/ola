@@ -52,7 +52,7 @@ class FtdiDmxDevice : public Device {
   bool StartHook();
 
  private:
-  FtdiWidget* m_widget;
+  FtdiWidget *m_widget;
   const FtdiWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };

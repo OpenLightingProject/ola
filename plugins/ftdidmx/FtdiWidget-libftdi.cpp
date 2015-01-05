@@ -68,6 +68,7 @@ FtdiWidget::~FtdiWidget() {
 }
 
 /**
+ * @brief
  * Get the number of physical interfaces our widgit has to offer.
  *
  * This does not deal with product names being named in a different way.
@@ -99,21 +100,25 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     return;
   }
 
-  const int pids[2] = { 0x6001, 0x6011 };
+  vector<int> pids;
+  pids.push_back(0x6001);
+  pids.push_back(0x6011);
   const int vid = 0x0403;
-  const unsigned int pidCount = 2;
 
-  for (unsigned int cur_pid = 0; cur_pid < pidCount; cur_pid++) {
+  for (vector<int>::iterator current_pid = pids.begin(); 
+       current_pid != pids.end();
+       ++current_pid) {
     struct ftdi_device_list* list = NULL;
 
-    int devices_found = ftdi_usb_find_all(ftdi, &list, vid, pids[cur_pid]);
+    int devices_found = ftdi_usb_find_all(ftdi, &list, vid, *current_pid);
 
     if (devices_found < 0) {
       OLA_WARN << "Failed to get FTDI devices: "
-               << ftdi_get_error_string(ftdi);
+               << ftdi_get_error_string(ftdi)
+	       << " with PID: " << *current_pid;
     } else {
       OLA_INFO << "Found " << devices_found << " FTDI devices with PID: "
-               << pids[cur_pid] << ".";
+               << *current_pid << ".";
 
       ftdi_device_list* current_device = list;
 
@@ -161,7 +166,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
                                             sserial,
                                             i,
                                             vid,
-                                            pids[cur_pid]));
+                                            *current_pid));
         } else {
           OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
         }

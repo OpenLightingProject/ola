@@ -17,9 +17,9 @@
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  *
- * Additional modifications to enable support for multiple outputs and 
+ * Additional modifications to enable support for multiple outputs and
  * additional device ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
@@ -87,14 +87,16 @@ void *FtdiDmxThread::Run() {
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
   // Setup the interface
-  if (!m_interface->IsOpen())
+  if (!m_interface->IsOpen()) {
     m_interface->SetupOutput();
+  }
 
   while (1) {
     {
       ola::thread::MutexLocker locker(&m_term_mutex);
-      if (m_term)
+      if (m_term) {
         break;
+      }
     }
 
     {
@@ -104,20 +106,25 @@ void *FtdiDmxThread::Run() {
 
     clock.CurrentTime(&ts1);
 
-    if (!m_interface->SetBreak(true))
+    if (!m_interface->SetBreak(true)) {
       goto framesleep;
+    }
 
-    if (m_granularity == GOOD)
+    if (m_granularity == GOOD) {
       usleep(DMX_BREAK);
+    }
 
-    if (!m_interface->SetBreak(false))
+    if (!m_interface->SetBreak(false)) {
       goto framesleep;
+    }
 
-    if (m_granularity == GOOD)
+    if (m_granularity == GOOD) {
       usleep(DMX_MAB);
+    }
 
-    if (!m_interface->Write(buffer))
+    if (!m_interface->Write(buffer)) {
       goto framesleep;
+    }
 
   framesleep:
     // Sleep for the remainder of the DMX frame time

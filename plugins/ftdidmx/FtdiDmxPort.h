@@ -17,9 +17,9 @@
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  *
- * Additional modifications to enable support for multiple outputs and 
+ * Additional modifications to enable support for multiple outputs and
  * additional device ids did change the original structure.
- * 
+ *
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
@@ -50,7 +50,10 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
           m_thread(interface, freq) {
       m_thread.Start();
     }
-    ~FtdiDmxOutputPort() { m_thread.Stop(); delete m_interface; }
+    ~FtdiDmxOutputPort() {
+      m_thread.Stop();
+      delete m_interface; 
+    }
 
     bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
       return m_thread.WriteDMX(buffer);
