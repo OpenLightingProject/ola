@@ -88,6 +88,8 @@ class Sensor {
         m_range_max(options.range_max),
         m_normal_min(options.normal_min),
         m_normal_max(options.normal_max),
+        m_lowest(0),
+        m_highest(0),
         m_recorded(0) {
   }
   virtual ~Sensor() {}

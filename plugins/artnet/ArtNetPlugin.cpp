@@ -167,9 +167,10 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
                                          UIntValidator(0, 15),
                                          ARTNET_SUBNET);
-  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_OUTPUT_PORT_KEY,
-                                         UIntValidator(0, 16),
-                                         "4");
+  save |= m_preferences->SetDefaultValue(
+      ArtNetDevice::K_OUTPUT_PORT_KEY,
+      UIntValidator(0, 16),
+      ArtNetDevice::K_DEFAULT_OUTPUT_PORT_COUNT);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);

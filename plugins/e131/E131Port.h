@@ -44,7 +44,8 @@ class E131InputPort: public BasicInputPort {
   E131InputPort(E131Device *parent, int id, E131Node *node,
                 class PluginAdaptor *plugin_adaptor)
       : BasicInputPort(parent, id, plugin_adaptor),
-        m_node(node) {
+        m_node(node),
+        m_priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {
     SetPriorityMode(PRIORITY_MODE_INHERIT);
   }
 

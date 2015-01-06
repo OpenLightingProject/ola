@@ -863,10 +863,10 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
   packet.data.reply.oem = HostToNetwork(OEM_CODE);
   packet.data.reply.status1 = 0xd2;  // normal indicators, rdm enabled
   packet.data.reply.esta_id = HostToLittleEndian(OPEN_LIGHTING_ESTA_CODE);
-  strncpy(packet.data.reply.short_name,
+  strlcpy(packet.data.reply.short_name,
           m_short_name.data(),
           ARTNET_SHORT_NAME_LENGTH);
-  strncpy(packet.data.reply.long_name,
+  strlcpy(packet.data.reply.long_name,
           m_long_name.data(),
           ARTNET_LONG_NAME_LENGTH);
 

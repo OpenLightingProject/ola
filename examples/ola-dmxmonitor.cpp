@@ -43,6 +43,7 @@
 #include <sys/timeb.h>
 #endif
 #include <ola/Callback.h>
+#include <ola/Clock.h>
 #include <ola/Constants.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
@@ -54,9 +55,12 @@
 #include <string>
 #include <iostream>
 
+using ola::Clock;
 using ola::DmxBuffer;
 using ola::OlaCallbackClient;
 using ola::OlaCallbackClientWrapper;
+using ola::TimeInterval;
+using ola::TimeStamp;
 using ola::io::SelectServer;
 using std::string;
 
@@ -139,7 +143,7 @@ class DmxMonitor {
     unsigned int m_counter;
     int m_palette_number;
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
-    struct timeval m_last_data;
+    TimeStamp m_last_data;
     WINDOW *m_window;
     WINDOW *m_data_loss_window;
     bool m_channels_offset;  // start from channel 1 rather than 0;
@@ -194,7 +198,6 @@ bool DmxMonitor::Init() {
   ChangePalette(m_palette_number);
 
   m_buffer.Blackout();
-  timerclear(&m_last_data);
   DrawScreen();
   return true;
 }
@@ -232,7 +235,9 @@ void DmxMonitor::NewDmx(unsigned int universe,
       break;
   }
   m_counter++;
-  gettimeofday(&m_last_data, NULL);
+
+  Clock clock;
+  clock.CurrentTime(&m_last_data);
   Values();
   refresh();
   (void) universe;
@@ -359,12 +364,12 @@ void DmxMonitor::StdinReady() {
  * TODO(simon): move to the ola server
  */
 bool DmxMonitor::CheckDataLoss() {
-  struct timeval now, diff;
-
-  if (timerisset(&m_last_data)) {
-    gettimeofday(&now, NULL);
-    timersub(&now, &m_last_data, &diff);
-    if (diff.tv_sec > 2 || (diff.tv_sec == 2 && diff.tv_usec > 500000)) {
+  if (m_last_data.IsSet()) {
+    TimeStamp now;
+    Clock clock;
+    clock.CurrentTime(&now);
+    TimeInterval diff = now - m_last_data;
+    if (diff > TimeInterval(2, 5000000)) {
       // loss of data
       DrawDataLossWindow();
     }

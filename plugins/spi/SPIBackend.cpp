@@ -98,6 +98,7 @@ HardwareBackend::HardwareBackend(const Options &options,
                                  SPIWriterInterface *writer,
                                  ExportMap *export_map)
     : m_spi_writer(writer),
+      m_drop_map(NULL),
       m_output_count(1 << options.gpio_pins.size()),
       m_exit(false),
       m_gpio_pins(options.gpio_pins) {

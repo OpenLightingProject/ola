@@ -78,11 +78,11 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
 }
 
 bool ArtNetDevice::StartHook() {
-  unsigned int subnet = 0;
-  StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet);
+  unsigned int subnet = StringToIntOrDefault(
+      m_preferences->GetValue(K_SUBNET_KEY), 0);
 
-  unsigned int net;
-  StringToInt(m_preferences->GetValue(K_NET_KEY), &net);
+  unsigned int net = StringToIntOrDefault(
+      m_preferences->GetValue(K_NET_KEY), 0);
 
   ola::network::Interface iface;
   auto_ptr<ola::network::InterfacePicker> picker(
@@ -103,8 +103,9 @@ bool ArtNetDevice::StartHook() {
   node_options.use_limited_broadcast_address = m_preferences->GetValueAsBool(
       K_LIMITED_BROADCAST_KEY);
   // OLA Output ports are ArtNet input ports
-  StringToInt(m_preferences->GetValue(K_OUTPUT_PORT_KEY),
-              &node_options.input_port_count);
+  node_options.input_port_count = StringToIntOrDefault(
+      m_preferences->GetValue(K_OUTPUT_PORT_KEY),
+      K_DEFAULT_OUTPUT_PORT_COUNT);
 
   m_node = new ArtNetNode(iface, m_plugin_adaptor, node_options);
   m_node->SetNetAddress(net);

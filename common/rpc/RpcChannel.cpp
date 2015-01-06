@@ -77,8 +77,15 @@ class OutstandingResponse {
    * These are Requests on the client end that haven't completed yet.
    */
  public:
-    OutstandingResponse() {}
-    ~OutstandingResponse() {}
+    OutstandingResponse(int id,
+                        RpcController *controller,
+                        SingleUseCallback0<void> *callback,
+                        Message *reply)
+        : id(id),
+          controller(controller),
+          callback(callback),
+          reply(reply) {
+    }
 
     int id;
     RpcController *controller;
@@ -221,11 +228,8 @@ void RpcChannel::CallMethod(const MethodDescriptor *method,
     return;
   }
 
-  OutstandingResponse *response = new OutstandingResponse();
-  response->id = message.id();
-  response->controller = controller;
-  response->callback = done;
-  response->reply = reply;
+  OutstandingResponse *response = new OutstandingResponse(
+      message.id(), controller, done, reply);
 
   auto_ptr<OutstandingResponse> old_response(
       STLReplacePtr(&m_responses, message.id(), response));

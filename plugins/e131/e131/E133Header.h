@@ -35,7 +35,11 @@ namespace e131 {
  */
 class E133Header {
  public:
-    E133Header() {}
+    E133Header()
+        : m_sequence(0),
+          m_endpoint(0) {
+    }
+
     E133Header(const std::string &source,
                uint32_t sequence,
                uint16_t endpoint)

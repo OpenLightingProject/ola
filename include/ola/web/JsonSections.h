@@ -103,13 +103,16 @@ class UIntItem: public GenericItem {
       GenericItem(description, id),
       m_value(value),
       m_min_set(false),
-      m_max_set(false) {
+      m_max_set(false),
+      m_min(0),
+      m_max(0) {
     }
 
     void SetMin(unsigned int min) {
       m_min_set = true;
       m_min = min;
     }
+
     void SetMax(unsigned int max) {
       m_max_set = true;
       m_max = max;
