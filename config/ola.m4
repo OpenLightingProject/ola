@@ -76,7 +76,7 @@ AC_ARG_WITH([ola-protoc],
     [use the given ola_protoc command instead of building one (useful for cross-compiling)])],
   [],[with_ola_protoc=no])
 
-OLA_PROTOC="protoc --plugin=protoc-gen-cppservice=\$(top_builddir)/protoc/ola_protoc_plugin";
+OLA_PROTOC="\$(PROTOC) --plugin=protoc-gen-cppservice=\$(top_builddir)/protoc/ola_protoc_plugin";
 
 if test "$with_ola_protoc" != "no"; then
   OLA_PROTOC=$with_ola_protoc;
