@@ -17,7 +17,6 @@ protoc_ola_protoc_plugin_SOURCES = \
 	protoc/ola-protoc-generator-plugin.cpp
 protoc_ola_protoc_plugin_LDADD = $(libprotobuf_LIBS) -lprotoc
 
-
 else
 
 # If we're using a different ola_protoc, we need to provide a rule to create
@@ -26,4 +25,3 @@ protoc/ola_protoc$(EXEEXT):
 	touch protoc/ola_protoc$(EXEEXT)
 
 endif
-

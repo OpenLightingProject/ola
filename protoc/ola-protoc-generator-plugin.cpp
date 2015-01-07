@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ola-protoc.cpp
+ * ola-protoc-generator-plugin.cpp
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -36,9 +36,6 @@
  * google::protobuf::RpcController has no method to determine the peer so it
  * has to be worked around with another layer of indirection on the server
  * side.
- *
- * Ideally this would be a protoc code generator plugin, instead of it's own
- * binary but that's more work than I'm willing to do right now.
  *
  * This code should not depend on anything in libola*, since we need the
  * generated service & stub code to build libolacommon. Maybe one day someone
