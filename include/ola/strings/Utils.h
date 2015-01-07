@@ -26,12 +26,7 @@
 #ifndef INCLUDE_OLA_STRINGS_UTILS_H_
 #define INCLUDE_OLA_STRINGS_UTILS_H_
 
-#include <stdint.h>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <ostream>
-#include <sstream>
+#include <string.h>
 #include <string>
 
 namespace ola {
@@ -50,6 +45,16 @@ void CopyToFixedLengthBuffer(const std::string &input,
                              char *buffer,
                              unsigned int size);
 
+/**
+ * @brief A safe version of strncpy that null-terminates the output string.
+ * @param output The output array
+ * @param input The input string.
+ */
+template <size_t size>
+inline void StrNCopy(char (&output)[size], const char* input) {
+  strncpy(output, input, size);
+  output[size - 1] = 0;
+}
 }  // namespace strings
 }  // namespace ola
 #endif  // INCLUDE_OLA_STRINGS_UTILS_H_

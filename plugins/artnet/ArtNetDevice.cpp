@@ -66,6 +66,9 @@ const char ArtNetDevice::K_NET_KEY[] = "net";
 const char ArtNetDevice::K_OUTPUT_PORT_KEY[] = "output_ports";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
+const unsigned int ArtNetDevice::K_ARTNET_NET = 0;
+const unsigned int ArtNetDevice::K_ARTNET_SUBNET = 0;
+const unsigned int ArtNetDevice::K_DEFAULT_OUTPUT_PORT_COUNT = 4;
 
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            ola::Preferences *preferences,
@@ -79,10 +82,10 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
 
 bool ArtNetDevice::StartHook() {
   unsigned int subnet = StringToIntOrDefault(
-      m_preferences->GetValue(K_SUBNET_KEY), 0);
+      m_preferences->GetValue(K_SUBNET_KEY), K_ARTNET_SUBNET);
 
   unsigned int net = StringToIntOrDefault(
-      m_preferences->GetValue(K_NET_KEY), 0);
+      m_preferences->GetValue(K_NET_KEY), K_ARTNET_NET);
 
   ola::network::Interface iface;
   auto_ptr<ola::network::InterfacePicker> picker(
