@@ -131,8 +131,8 @@ class FtdiWidget {
 
     /** Get the widget's USB name */
     std::string Name() const { return m_name; }
-    int unsigned Vid() const { return m_vid; }
-    int unsigned Pid() const { return m_pid; }
+    unsigned int Vid() const { return m_vid; }
+    unsigned int Pid() const { return m_pid; }
 
     /** Get the widget's FTD2XX ID number */
     uint32_t Id() const { return m_id; }
@@ -141,10 +141,11 @@ class FtdiWidget {
       return m_name + " with serial number : " + m_serial +" ";
     }
 
-    /** Get Widget available interface count **/
+    /** @brief Get Widget available interface count **/
     int GetInterfaceCount();
 
     /**
+     * @brief
      * Build a list of available ftdi widgets.
      * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
      */

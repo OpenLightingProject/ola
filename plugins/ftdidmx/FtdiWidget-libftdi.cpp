@@ -108,6 +108,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   for (vector<int>::iterator current_pid = pids.begin(); 
        current_pid != pids.end();
        ++current_pid) {
+
     struct ftdi_device_list* list = NULL;
 
     int devices_found = ftdi_usb_find_all(ftdi, &list, vid, *current_pid);
@@ -137,9 +138,9 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         char vendor[256];
 
         int r = ftdi_usb_get_strings(ftdi, dev,
-                                    vendor, sizeof(vendor),
-                                    name, sizeof(name),
-                                    serial, sizeof(serial));
+				     vendor, sizeof(vendor),
+				     name, sizeof(name),
+				     serial, sizeof(serial));
 
         // libftdi doesn't enumerate error codes,
         // -9 is 'get serial number failed', not ideal but workable.
@@ -239,7 +240,7 @@ bool FtdiInterface::Close() {
 }
 
 bool FtdiInterface::IsOpen() const {
-  return (m_handle.usb_dev != NULL) ? true : false;
+  return (m_handle.usb_dev != NULL);
 }
 
 bool FtdiInterface::Reset() {
