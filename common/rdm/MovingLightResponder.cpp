@@ -297,10 +297,9 @@ const RDMResponse *MovingLightResponder::GetFactoryDefaults(
       m_start_address == 1 &&
       m_personality_manager.ActivePersonalityNumber() == 1 &&
       m_identify_mode == false);
-  return GetResponseFromData(
-    request,
-    &using_defaults,
-    sizeof(using_defaults));
+  return GetResponseFromData(request,
+                             &using_defaults,
+                             sizeof(using_defaults));
 }
 
 const RDMResponse *MovingLightResponder::SetFactoryDefaults(
@@ -327,17 +326,10 @@ const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
     'f', 'r',
     'd', 'e',
   };
-  // coverity(SWAPPED_ARGUMENTS)
-  return new RDMGetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    reinterpret_cast<const uint8_t*>(languages),
-    arraysize(languages));
+
+  return GetResponseFromData(request,
+                             reinterpret_cast<const uint8_t*>(languages),
+                             arraysize(languages));
 }
 
 const RDMResponse *MovingLightResponder::GetLanguage(
@@ -346,17 +338,10 @@ const RDMResponse *MovingLightResponder::GetLanguage(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  // coverity(SWAPPED_ARGUMENTS)
-  return new RDMGetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    reinterpret_cast<const uint8_t*>(m_language.c_str()),
-    m_language.size());
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<const uint8_t*>(m_language.c_str()),
+      m_language.size());
 }
 
 const RDMResponse *MovingLightResponder::SetLanguage(

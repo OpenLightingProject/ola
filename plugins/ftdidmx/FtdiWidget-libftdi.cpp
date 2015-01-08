@@ -314,8 +314,8 @@ bool FtdiInterface::SetBreak(bool on) {
 
 bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
-  int unsigned length = DMX_UNIVERSE_SIZE;
-  buffer[0] = 0x00;
+  unsigned int length = DMX_UNIVERSE_SIZE;
+  buffer[0] = DMX512_START_CODE;
 
   data.Get(buffer + 1, &length);
 

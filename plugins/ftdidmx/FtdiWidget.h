@@ -35,7 +35,6 @@
 #define PLUGINS_FTDIDMX_FTDIWIDGET_H_
 
 #include <ftdi.h>
-
 #include <string.h>
 
 #include <string>
@@ -54,7 +53,7 @@ class FtdiWidgetInfo {
  public:
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
-                   int unsigned id,
+                   unsigned int id,
                    const int vid = 0x0403,
                    const int pid = 0x6001
                   )
@@ -77,9 +76,10 @@ class FtdiWidgetInfo {
 
     std::string Name() const { return m_name; }
     std::string Serial() const { return m_serial; }
-    int unsigned Id() const { return m_id; }
-    int unsigned Vid() const { return m_vid; }
-    int unsigned Pid() const { return m_pid; }
+
+    unsigned int Id() const { return m_id; }
+    unsigned int Vid() const { return m_vid; }
+    unsigned int Pid() const { return m_pid; }
 
     std::string Description() const {
       return m_name + " with serial number : " + m_serial + " ";
@@ -99,7 +99,8 @@ class FtdiWidgetInfo {
  private:
     std::string m_name;
     std::string m_serial;
-    int unsigned m_id;
+
+    unsigned int m_id;
     int m_vid;
     int m_pid;
 };

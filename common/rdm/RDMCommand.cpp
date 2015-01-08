@@ -671,51 +671,24 @@ bool GuessMessageType(rdm_message_type *type_arg,
   return false;
 }
 
-
-/*
- * Generate a NACK response with a reason code
- */
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason_enum,
                             uint8_t outstanding_messages) {
   uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
     reason_enum));
-  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
-    // coverity(SWAPPED_ARGUMENTS)
-    return new ola::rdm::RDMGetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_NACK_REASON,
-      outstanding_messages,
-      request->SubDevice(),
-      request->ParamId(),
-      reinterpret_cast<uint8_t*>(&reason),
-      sizeof(reason));
-  } else  {
-    // coverity(SWAPPED_ARGUMENTS)
-    return new ola::rdm::RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_NACK_REASON,
-      outstanding_messages,
-      request->SubDevice(),
-      request->ParamId(),
-      reinterpret_cast<uint8_t*>(&reason),
-      sizeof(reason));
-  }
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&reason),
+                             sizeof(reason),
+                             RDM_NACK_REASON,
+                             outstanding_messages);
 }
 
-/*
- * Generate a ACK Response with some data
- */
 RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,
                                  rdm_response_type type,
                                  uint8_t outstanding_messages) {
-  // we can reuse GetResponseWithPid
+  // We can reuse GetResponseWithPid
   return GetResponseWithPid(request,
                             request->ParamId(),
                             data,
@@ -724,10 +697,6 @@ RDMResponse *GetResponseFromData(const RDMRequest *request,
                             outstanding_messages);
 }
 
-
-/**
- * Construct a RDM response from a RDMRequest object.
- */
 RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint16_t pid,
                                 const uint8_t *data,
@@ -778,7 +747,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
 
 
 /**
- * Inflate a discovery request.
+ * @brief Inflate a discovery request.
  */
 RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
     const uint8_t *data,
