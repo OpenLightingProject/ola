@@ -52,7 +52,7 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
     }
     ~FtdiDmxOutputPort() {
       m_thread.Stop();
-      delete m_interface; 
+      delete m_interface;
     }
 
     bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
