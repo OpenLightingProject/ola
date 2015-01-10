@@ -54,8 +54,8 @@ class FtdiWidgetInfo {
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
                    unsigned int id,
-                   const int vid = 0x0403,
-                   const int pid = 0x6001
+                   const uint16_t vid = 0x0403,
+                   const uint16_t pid = 0x6001
                   )
       : m_name(name),
         m_serial(serial),
@@ -78,8 +78,8 @@ class FtdiWidgetInfo {
     std::string Serial() const { return m_serial; }
 
     unsigned int Id() const { return m_id; }
-    unsigned int Vid() const { return m_vid; }
-    unsigned int Pid() const { return m_pid; }
+    uint16_t Vid() const { return m_vid; }
+    uint16_t Pid() const { return m_pid; }
 
     std::string Description() const {
       return m_name + " with serial number : " + m_serial + " ";
@@ -101,8 +101,8 @@ class FtdiWidgetInfo {
     std::string m_serial;
 
     unsigned int m_id;
-    int m_vid;
-    int m_pid;
+    uint16_t m_vid;
+    uint16_t m_pid;
 };
 
 /**
@@ -121,8 +121,8 @@ class FtdiWidget {
     FtdiWidget(const std::string &serial,
                const std::string &name,
                uint32_t id = 0,
-               const int vid = 0x0403,
-               const int pid = 0x6001);
+               const uint16_t vid = 0x0403,
+               const uint16_t pid = 0x6001);
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -132,8 +132,8 @@ class FtdiWidget {
 
     /** Get the widget's USB name */
     std::string Name() const { return m_name; }
-    unsigned int Vid() const { return m_vid; }
-    unsigned int Pid() const { return m_pid; }
+    uint16_t Vid() const { return m_vid; }
+    uint16_t Pid() const { return m_pid; }
 
     /** Get the widget's FTD2XX ID number */
     uint32_t Id() const { return m_id; }
@@ -145,8 +145,7 @@ class FtdiWidget {
     /** @brief Get Widget available interface count **/
     int GetInterfaceCount();
 
-    /**
-     * @brief
+    /* @brief
      * Build a list of available ftdi widgets.
      * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
      */
@@ -156,8 +155,8 @@ class FtdiWidget {
     std::string m_serial;
     std::string m_name;
     uint32_t m_id;
-    const int m_vid;
-    const int m_pid;
+    const uint16_t m_vid;
+    const uint16_t m_pid;
 };
 
 class FtdiInterface {

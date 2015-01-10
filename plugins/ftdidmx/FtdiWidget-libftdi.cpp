@@ -55,8 +55,8 @@ using std::vector;
 FtdiWidget::FtdiWidget(const string& serial,
                        const string& name,
                        uint32_t id,
-                       const int vid,
-                       const int pid
+                       const uint16_t vid,
+                       const uint16_t pid
                       )
     : m_serial(serial),
       m_name(name),
@@ -99,7 +99,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   vector<uint16_t> pids;
   pids.push_back(0x6001);
   pids.push_back(0x6011);
-  const int vid = 0x0403;
+  const uint16_t vid = 0x0403;
 
   for (vector<uint16_t>::iterator current_pid = pids.begin();
        current_pid != pids.end();
