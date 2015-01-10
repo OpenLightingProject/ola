@@ -37,8 +37,6 @@ using std::string;
 
 const char ArtNetPlugin::ARTNET_LONG_NAME[] = "OLA - ArtNet node";
 const char ArtNetPlugin::ARTNET_SHORT_NAME[] = "OLA - ArtNet node";
-const char ArtNetPlugin::ARTNET_NET[] = "0";
-const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
 const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet";
 const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
 
@@ -163,13 +161,14 @@ bool ArtNetPlugin::SetDefaultPreferences() {
                                          ARTNET_LONG_NAME);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_NET_KEY,
                                          UIntValidator(0, 127),
-                                         ARTNET_NET);
+                                         ArtNetDevice::K_ARTNET_NET);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
                                          UIntValidator(0, 15),
-                                         ARTNET_SUBNET);
-  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_OUTPUT_PORT_KEY,
-                                         UIntValidator(0, 16),
-                                         "4");
+                                         ArtNetDevice::K_ARTNET_SUBNET);
+  save |= m_preferences->SetDefaultValue(
+      ArtNetDevice::K_OUTPUT_PORT_KEY,
+      UIntValidator(0, 16),
+      ArtNetDevice::K_DEFAULT_OUTPUT_PORT_COUNT);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);

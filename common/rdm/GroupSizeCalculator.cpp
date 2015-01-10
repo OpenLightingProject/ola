@@ -19,6 +19,7 @@
 
 
 #include <ola/Logging.h>
+#include <ola/base/Macro.h>
 #include <ola/messaging/Descriptor.h>
 #include <vector>
 #include "common/rdm/GroupSizeCalculator.h"
@@ -212,18 +213,21 @@ void GroupSizeCalculator::PostVisit(
 bool StaticGroupTokenCalculator::CalculateTokensRequired(
     const class ola::messaging::FieldDescriptorGroup *descriptor,
     unsigned int *token_count) {
-
   // reset the stack
-  while (!m_token_count.empty())
+  while (!m_token_count.empty()) {
     m_token_count.pop();
+  }
+
   m_token_count.push(0);
   m_variable_sized_group_encountered = false;
 
-  for (unsigned int i = 0; i < descriptor->FieldCount(); ++i)
+  for (unsigned int i = 0; i < descriptor->FieldCount(); ++i) {
     descriptor->GetField(i)->Accept(this);
+  }
 
-  if (m_variable_sized_group_encountered)
+  if (m_variable_sized_group_encountered) {
     return false;
+  }
 
   *token_count = m_token_count.top();
   m_token_count.pop();
@@ -231,87 +235,77 @@ bool StaticGroupTokenCalculator::CalculateTokensRequired(
 }
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::BoolFieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::BoolFieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::IPV4FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::IPV4FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::MACFieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::MACFieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::UIDFieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::UIDFieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::StringFieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::StringFieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::UInt8FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::UInt8FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::UInt16FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::UInt16FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::UInt32FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::UInt32FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::Int8FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::Int8FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::Int16FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::Int16FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
-    const ola::messaging::Int32FieldDescriptor *descriptor) {
+    OLA_UNUSED const ola::messaging::Int32FieldDescriptor *descriptor) {
   m_token_count.top()++;
-  (void) descriptor;
 }
 
 
 void StaticGroupTokenCalculator::Visit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
   m_token_count.push(0);
-  if (!descriptor->FixedSize())
+  if (!descriptor->FixedSize()) {
     m_variable_sized_group_encountered = true;
+  }
 }
 
 

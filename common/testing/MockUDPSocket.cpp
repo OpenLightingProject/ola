@@ -51,6 +51,7 @@ MockUDPSocket::MockUDPSocket()
       m_bound_to_port(false),
       m_broadcast_set(false),
       m_port(0),
+      m_tos(0),
       m_discard_mode(false) {
 }
 
