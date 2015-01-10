@@ -64,11 +64,9 @@ FtdiWidget::FtdiWidget(const string& serial,
       m_vid(vid),
       m_pid(pid) {}
 
-FtdiWidget::~FtdiWidget() {
-}
+FtdiWidget::~FtdiWidget() {}
 
-/**
- * @brief
+/* @brief
  * Get the number of physical interfaces our widgit has to offer.
  *
  * This does not deal with product names being named in a different way.
@@ -88,9 +86,7 @@ int FtdiWidget::GetInterfaceCount() {
   }
 }
 
-/**
- * Build a list of all attached ftdi devices
- */
+// @brief Build a list of all attached ftdi devices
 void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   int i = -1;
   widgets->clear();
@@ -100,12 +96,12 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     return;
   }
 
-  vector<int> pids;
+  vector<uint16_t> pids;
   pids.push_back(0x6001);
   pids.push_back(0x6011);
   const int vid = 0x0403;
 
-  for (vector<int>::iterator current_pid = pids.begin();
+  for (vector<uint16_t>::iterator current_pid = pids.begin();
        current_pid != pids.end();
        ++current_pid) {
     struct ftdi_device_list* list = NULL;
