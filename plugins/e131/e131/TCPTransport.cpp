@@ -65,7 +65,8 @@ IncomingStreamTransport::IncomingStreamTransport(
       m_block_size(0),
       m_consumed_block_size(0),
       m_stream_valid(true),
-      m_pdu_length_size(TWO_BYTES) {
+      m_pdu_length_size(TWO_BYTES),
+      m_pdu_size(0) {
   EnterWaitingForPreamble();
 }
 

@@ -35,7 +35,14 @@ namespace e131 {
  */
 class E131Header {
  public:
-    E131Header() {}
+    E131Header()
+        : m_priority(0),
+          m_sequence(0),
+          m_universe(0),
+          m_is_preview(false),
+          m_has_terminated(false),
+          m_is_rev2(false) {
+    }
     E131Header(const std::string &source,
                uint8_t priority,
                uint8_t sequence,

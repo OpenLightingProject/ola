@@ -22,6 +22,7 @@
 #define COMMON_WEB_OPTIONALITEM_H_
 
 #include <ola/base/Macro.h>
+#include <string>
 
 namespace ola {
 namespace web {
@@ -29,7 +30,7 @@ namespace web {
 template <typename T>
 class OptionalItem {
  public:
-  OptionalItem() : m_is_set(false) {}
+  OptionalItem();
 
   void Reset() { m_is_set = false; }
 
@@ -47,6 +48,18 @@ class OptionalItem {
 
   DISALLOW_COPY_AND_ASSIGN(OptionalItem);
 };
+
+template <>
+inline OptionalItem<std::string>::OptionalItem()
+    : m_is_set(false) {
+}
+
+template <typename T>
+OptionalItem<T>::OptionalItem()
+    : m_is_set(false),
+      m_value(0) {
+}
+
 
 }  // namespace web
 }  // namespace ola
