@@ -71,7 +71,7 @@ bool FtdiDmxDevice::StartHook() {
       delete port;
     }
   }
-  if (succesFullyAdded > 0) {
+  if (succesfullyAdded > 0) {
     OLA_INFO << "Succesfully added " << succesfullyAdded << "/"
              << interfaceCount << " interfaces.";
   } else {
