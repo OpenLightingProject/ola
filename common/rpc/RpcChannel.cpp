@@ -70,7 +70,14 @@ class OutstandingRequest {
         controller(new RpcController(session)),
         response(response) {
   }
-  ~OutstandingRequest() {}
+  ~OutstandingRequest() {
+    if (controller) {
+      delete controller;
+    }
+    if (response) {
+      delete response;
+    }
+  }
 
   int id;
   RpcController *controller;
@@ -553,10 +560,7 @@ void RpcChannel::SendNotImplemented(int msg_id) {
  * Cleanup an outstanding request after the response has been returned
  */
 void RpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
-  m_requests.erase(request->id);
-  delete request->controller;
-  delete request->response;
-  delete request;
+  STLRemoveAndDelete(&m_requests, request->id);
 }
 
 
