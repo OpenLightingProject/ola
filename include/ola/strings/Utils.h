@@ -47,8 +47,8 @@ void CopyToFixedLengthBuffer(const std::string &input,
 
 /**
  * @brief A safe version of strncpy that null-terminates the output string.
- * @param output The output array
- * @param input The input string.
+ * @param[out] output The output array
+ * @param[in] input The input string.
  */
 template <size_t size>
 inline void StrNCopy(char (&output)[size], const char* input) {
