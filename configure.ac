@@ -717,8 +717,7 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/__init__.py:python/ola/__init__.py])
 
 # Non-makefile generted files.
-AC_CONFIG_FILES([Doxyfile
-                 include/ola/base/Version.h
+AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
