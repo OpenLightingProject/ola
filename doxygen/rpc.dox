@@ -87,7 +87,8 @@
  *
  * We can generate the C++ code by running:
  *
- *     protoc/ola_protoc --cppservice_out ./ Dictionary.proto
+ *     protoc --plugin=protoc-gen-cppservice=protoc/ola_protoc_plugin" \
+ *     --cppservice_out ./ Dictionary.proto
  *
  * The generated C++ stub class definition in Dictionary.pb.h looks something
  * like:
