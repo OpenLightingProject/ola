@@ -149,6 +149,8 @@ uint8_t *HardwareBackend::Checkout(uint8_t output_id,
     m_mutex.Unlock();
   }
   m_output_data[output_id]->SetLatchBytes(latch_bytes);
+  // We return with the Mutex locked, the caller must then call Commit()
+  // coverity[LOCK]
   return output;
 }
 

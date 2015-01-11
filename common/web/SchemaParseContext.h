@@ -176,6 +176,7 @@ class SchemaParseContext : public SchemaParseContextInterface {
    */
   explicit SchemaParseContext(SchemaDefinitions *definitions)
       : m_schema_defs(definitions),
+        m_keyword(SCHEMA_UNKNOWN),
         m_type(JSON_UNDEFINED) {
   }
 

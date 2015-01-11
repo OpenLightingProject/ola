@@ -253,6 +253,12 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
 
   // read payload-data (if there is any)
   uint8_t payload_size = rd_buffer[CMD_HD_LEN];
+  if (payload_size > CMD_MAX_LENGTH - CMD_HD_LEN) {
+    OLA_WARN << "KarateLight returned " << static_cast<int>(payload_size)
+             << " bytes of data. This execeeds our buffer size";
+    return false;
+  }
+
   if (payload_size > 0u) {
     // we won't enter this loop if there are no bytes to receive
     bytes_read = read(m_fd, &rd_buffer[CMD_DATA_START], payload_size);
@@ -340,7 +346,7 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
   uint8_t wr_buffer[CMD_MAX_LENGTH];
   uint8_t n_bytes_read;
 
-  // maximum command lenght
+  // maximum command length
   uint8_t cmd_length = n_bytes_to_write + CMD_DATA_START;
   if (cmd_length > CMD_MAX_LENGTH) {
     OLA_WARN << "Error: Command is to long (" << std::dec

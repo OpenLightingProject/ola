@@ -46,7 +46,10 @@ const uint8_t BaseRobeWidget::SOM;
 BaseRobeWidget::BaseRobeWidget(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
-      m_bytes_received(0) {
+      m_bytes_received(0),
+      m_data_size(0),
+      m_crc(0) {
+  memset(&m_header, 0, sizeof(m_header));
   m_descriptor->SetOnData(NewCallback(this, &BaseRobeWidget::DescriptorReady));
 }
 
