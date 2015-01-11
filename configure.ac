@@ -131,11 +131,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 LT_INIT
 AC_PROG_LIBTOOL
 
-# Doxygen
-DX_PDF_FEATURE(OFF)
-DX_PS_FEATURE(OFF)
-DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
-
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
 
@@ -596,14 +591,10 @@ AS_IF([test "x$enable_tcmalloc" = xyes],
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
-DOXYGEN_VERSION=$PACKAGE_VERSION
 AC_ARG_ENABLE(
   [doxygen-version],
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
-AS_IF([test "x$enable_doxygen_version" = xno],
-      [DOXYGEN_VERSION="\"Latest Git\""])
-AC_SUBST(DOXYGEN_VERSION)
 
 # Python wrappers & RDM Responder tests.
 #####################################################
@@ -628,6 +619,22 @@ AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
 
+
+# Doxygen
+#####################################################
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+
+DX_ARG_ABLE(verbose, [Verbose doxygen output],
+            [], [], [],
+            [DX_ENV_APPEND(QUIET, NO)],
+            [DX_ENV_APPEND(QUIET, YES)])
+doxygen_project_number=$PACKAGE_VERSION
+AS_IF([test "x$enable_doxygen_version" = xno],
+      [doxygen_project_number="Latest Git"])
+DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
+
+DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
 # Plugins
 #####################################################
