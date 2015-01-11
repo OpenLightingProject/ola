@@ -236,6 +236,7 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
       case MAB:
         m_state = DATA;
         m_frame.Reset();
+        // fall through
       case DATA:
         m_frame.AddByte(data_byte);
         break;
