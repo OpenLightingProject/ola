@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/StringUtils.h"
+#include "ola/strings/Format.h"
 #include "common/web/PointerTracker.h"
 
 namespace ola {
@@ -101,7 +101,7 @@ void PointerTracker::IncrementIndex() {
     m_pointer->Pop();
   }
   token.index++;
-  m_pointer->Push(IntToString(token.index));
+  m_pointer->Push(ola::strings::IntToString(token.index));
 }
 }  // namespace web
 }  // namespace ola
