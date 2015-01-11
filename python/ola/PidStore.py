@@ -120,9 +120,9 @@ class Pid(object):
     return self._requests.get(command_class)
 
   def GetRequestField(self, command_class, field_name):
-    field = filter(lambda field: field.name == field_name,
-                   self._requests.get(command_class).GetAtoms())
-    return field[0] if (len(field) > 0) else None
+    fields = filter(lambda field: field.name == field_name,
+                    self.GetRequest(command_class).GetAtoms())
+    return fields[0] if fields else None
 
   def ResponseSupported(self, command_class):
     """Check if this PID responds to a command class."""
@@ -132,9 +132,9 @@ class Pid(object):
     return self._responses.get(command_class)
 
   def GetResponseField(self, command_class, field_name):
-    field = filter(lambda field: field.name == field_name,
-                   self._responses.get(command_class).GetAtoms())
-    return field[0] if (len(field) > 0) else None
+    fields = filter(lambda field: field.name == field_name,
+                    self.GetResponse(command_class).GetAtoms())
+    return fields[0] if fields else None
 
   def ValidateAddressing(self, args, command_class):
     """Run the validators."""

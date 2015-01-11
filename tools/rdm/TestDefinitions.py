@@ -4385,16 +4385,19 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
       return
 
     delay_time = self.max_delay_time
-    delay_time_field = self.pid.GetRequestField(RDM_SET, 'loss_of_signal_delay')
+    delay_time_field = self.pid.GetRequestField(RDM_SET,
+                                                'loss_of_signal_delay')
     # 0xffff means 'fail mode not supported'
-    if delay_time_field.RawValue(self.max_delay_time) < (0xffff - 1):
-      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
+    if delay_time_field.RawValue(self.max_delay_time) < 0xffff - 1:
+      delay_time = delay_time_field.DisplayValue(
+          delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
 
     hold_time = self.max_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'fail mode not supported'
-    if hold_time_field.RawValue(self.max_hold_time) < (0xffff - 1):
-      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
+    if hold_time_field.RawValue(self.max_hold_time) < 0xffff - 1:
+      hold_time = hold_time_field.DisplayValue(
+          hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
@@ -4428,16 +4431,21 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
       return
 
     delay_time = self.min_delay_time
-    delay_time_field = self.pid.GetRequestField(RDM_SET, 'loss_of_signal_delay')
+    delay_time_field = self.pid.GetRequestField(RDM_SET,
+                                                'loss_of_signal_delay')
     # 0xffff means 'fail mode not supported'
-    if delay_time_field.RawValue(self.min_delay_time) > 1 and delay_time_field.RawValue(self.min_delay_time) < 0xffff:
-      delay_time = delay_time_field.DisplayValue(delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
+    if (delay_time_field.RawValue(self.min_delay_time) > 1 and
+        delay_time_field.RawValue(self.min_delay_time) < 0xffff):
+      delay_time = delay_time_field.DisplayValue(
+          delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
 
     hold_time = self.min_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'fail mode not supported'
-    if hold_time_field.RawValue(self.min_hold_time) > 1 and hold_time_field.RawValue(self.min_hold_time) < 0xffff:
-      hold_time = hold_time_field.DisplayValue(hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
+    if (hold_time_field.RawValue(self.min_hold_time) > 1 and
+        hold_time_field.RawValue(self.min_hold_time) < 0xffff):
+      hold_time = hold_time_field.DisplayValue(
+          hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
@@ -5955,7 +5963,8 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
   def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
     for key in ['min_%s' % key, 'max_%s' % key]:
       if not (self.IsSupported(pid_name) or
-              fields[key] == self.pid.GetResponseField(RDM_GET, key).DisplayValue(0xffff)):
+              fields[key] == self.pid.GetResponseField(
+                  RDM_GET, key).DisplayValue(0xffff)):
         self.AddWarning(
             '%s not supported, but %s in PRESET_INFO is not 0xffff' %
             (pid_name, key))
