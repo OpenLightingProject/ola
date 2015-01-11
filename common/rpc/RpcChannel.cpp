@@ -63,12 +63,18 @@ class OutstandingRequest {
    * These are requests on the server end that haven't completed yet.
    */
  public:
-    OutstandingRequest() {}
-    ~OutstandingRequest() {}
+  OutstandingRequest(int id,
+                     RpcSession *session,
+                     google::protobuf::Message *response)
+      : id(id),
+        controller(new RpcController(session)),
+        response(response) {
+  }
+  ~OutstandingRequest() {}
 
-    int id;
-    RpcController *controller;
-    google::protobuf::Message *response;
+  int id;
+  RpcController *controller;
+  google::protobuf::Message *response;
 };
 
 
@@ -77,20 +83,20 @@ class OutstandingResponse {
    * These are Requests on the client end that haven't completed yet.
    */
  public:
-    OutstandingResponse(int id,
-                        RpcController *controller,
-                        SingleUseCallback0<void> *callback,
-                        Message *reply)
-        : id(id),
-          controller(controller),
-          callback(callback),
-          reply(reply) {
-    }
+  OutstandingResponse(int id,
+                      RpcController *controller,
+                      SingleUseCallback0<void> *callback,
+                      Message *reply)
+      : id(id),
+        controller(controller),
+        callback(callback),
+        reply(reply) {
+  }
 
-    int id;
-    RpcController *controller;
-    SingleUseCallback0<void> *callback;
-    Message *reply;
+  int id;
+  RpcController *controller;
+  SingleUseCallback0<void> *callback;
+  Message *reply;
 };
 
 RpcChannel::RpcChannel(
@@ -456,10 +462,8 @@ void RpcChannel::HandleRequest(RpcMessage *msg) {
     return;
   }
 
-  OutstandingRequest *request = new OutstandingRequest();
-  request->id = msg->id();
-  request->controller = new RpcController(m_session.get());
-  request->response = response_pb;
+  OutstandingRequest *request = new OutstandingRequest(
+      msg->id(), m_session.get(), response_pb);
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
     OLA_WARN << "dup sequence number for request " << msg->id();

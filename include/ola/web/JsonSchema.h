@@ -530,7 +530,8 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
       : max_properties(-1),
         min_properties(0),
         has_required_properties(false),
-        has_allow_additional_properties(false) {
+        has_allow_additional_properties(false),
+        allow_additional_properties(false) {
     }
 
     void SetRequiredProperties(

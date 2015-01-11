@@ -32,7 +32,7 @@ void CopyToFixedLengthBuffer(const std::string &input,
                              char *buffer,
                              unsigned int size) {
   // buffer may not be NULL terminated.
-  // coverity(BUFFER_SIZE_WARNING)
+  // coverity[BUFFER_SIZE_WARNING]
   strncpy(buffer, input.c_str(), size);
 }
 }  // namespace strings

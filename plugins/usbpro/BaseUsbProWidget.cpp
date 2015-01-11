@@ -50,6 +50,7 @@ BaseUsbProWidget::BaseUsbProWidget(
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
       m_bytes_received(0) {
+  memset(&m_header, 0, sizeof(m_header));
   m_descriptor->SetOnData(
       NewCallback(this, &BaseUsbProWidget::DescriptorReady));
 }

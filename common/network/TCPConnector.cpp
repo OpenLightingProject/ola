@@ -152,7 +152,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   } else {
     // Connect returned immediately
     // The callback takes ownership of the socket descriptor.
-    // coverity(RESOURCE_LEAK)
+    // coverity[RESOURCE_LEAK]
     callback->Run(sd, 0);
     return 0;
   }
