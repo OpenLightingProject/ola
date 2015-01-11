@@ -116,6 +116,26 @@ class Pid(object):
     """Check if this PID allows a command class."""
     return self._requests.get(command_class) is not None
 
+  def GetRequest(self, command_class):
+    return self._requests.get(command_class)
+
+  def GetRequestField(self, command_class, field_name):
+    fields = filter(lambda field: field.name == field_name,
+                    self.GetRequest(command_class).GetAtoms())
+    return fields[0] if fields else None
+
+  def ResponseSupported(self, command_class):
+    """Check if this PID responds to a command class."""
+    return self._requests.get(command_class) is not None
+
+  def GetResponse(self, command_class):
+    return self._responses.get(command_class)
+
+  def GetResponseField(self, command_class, field_name):
+    fields = filter(lambda field: field.name == field_name,
+                    self.GetResponse(command_class).GetAtoms())
+    return fields[0] if fields else None
+
   def ValidateAddressing(self, args, command_class):
     """Run the validators."""
     validators = self._validators.get(command_class)
@@ -314,33 +334,8 @@ class IntAtom(FixedSizeAtom):
     value = self._labels.get(arg)
 
     # not a labeled value
-    if value is None and self._multiplier >= 0:
-      try:
-        value = int(args[0])
-      except ValueError, e:
-        raise ArgsValidationError(e)
-
-      multiplier = 10 ** self._multiplier
-      if value % multiplier:
-        raise ArgsValidationError('Conversion will lose data: %d -> %d' %
-                                  (value, (value / multiplier * multiplier)))
-      value = value / multiplier
-
-    elif value is None:
-      try:
-        value = float(args[0])
-      except ValueError, e:
-        raise ArgsValidationError(e)
-
-      scaled_value = value * 10 ** abs(self._multiplier)
-
-      fraction, int_value = math.modf(scaled_value)
-
-      if fraction:
-        raise ArgsValidationError(
-            'Conversion will lose data: %s -> %s' %
-            (value, int_value * (10.0 ** self._multiplier)))
-      value = int(int_value)
+    if value is None:
+      value = self._AccountForMultiplierPack(args[0])
 
     for range in self._ranges:
       if range.Matches(value):
@@ -352,7 +347,7 @@ class IntAtom(FixedSizeAtom):
     return super(IntAtom, self).Pack([value])
 
   def Unpack(self, data):
-    return self._AccountForMultiplier(super(IntAtom, self).Unpack(data))
+    return self._AccountForMultiplierUnpack(super(IntAtom, self).Unpack(data))
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -362,6 +357,22 @@ class IntAtom(FixedSizeAtom):
 
     return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
                                increment))
+
+  def DisplayValue(self, value):
+    """Converts a raw value, e.g. UInt16 (as opposed to an array of bytes) into
+    the value it would be displayed as, e.g. float to 1 D.P.
+
+    This takes into account any multipliers set for the field.
+    """
+    return self._AccountForMultiplierUnpack(value)
+
+  def RawValue(self, value):
+    """Converts a display value, e.g. float to 1 D.P. into a raw value UInt16
+    (as opposed to an array of bytes) it would be transmitted as.
+
+    This takes into account any multipliers set for the field.
+    """
+    return self._AccountForMultiplierPack(value)
 
   def _GetAllowedRanges(self):
     values = self._labels.keys()
@@ -377,12 +388,42 @@ class IntAtom(FixedSizeAtom):
     return ('%s' % ', '.join(values))
 
 
-  def _AccountForMultiplier(self, value):
+  def _AccountForMultiplierUnpack(self, value):
     new_value = value * (10 ** self._multiplier)
     if self._multiplier < 0:
       new_value = round(new_value, abs(self._multiplier))
     return new_value
 
+  def _AccountForMultiplierPack(self, value):
+    if self._multiplier >= 0:
+      try:
+        new_value = int(value)
+      except ValueError, e:
+        raise ArgsValidationError(e)
+
+      multiplier = 10 ** self._multiplier
+      if new_value % multiplier:
+        raise ArgsValidationError(
+            'Conversion will lose data: %d -> %d' %
+            (new_value, (new_value / multiplier * multiplier)))
+      new_value = new_value / multiplier
+
+    else:
+      try:
+        new_value = float(value)
+      except ValueError, e:
+        raise ArgsValidationError(e)
+
+      scaled_value = new_value * 10 ** abs(self._multiplier)
+
+      fraction, int_value = math.modf(scaled_value)
+
+      if fraction:
+        raise ArgsValidationError(
+            'Conversion will lose data: %s -> %s' %
+            (new_value, int_value * (10.0 ** self._multiplier)))
+      new_value = int(int_value)
+    return new_value
 
 class Int8(IntAtom):
   """A single signed byte field."""
@@ -601,6 +642,12 @@ class Group(Atom):
 
     # None for variable sized groups
     self._group_size = self._VerifyStructure()
+
+  def HasAtoms(self):
+    return (len(self._atoms) > 0)
+
+  def GetAtoms(self):
+    return self._atoms
 
   @property
   def min(self):
