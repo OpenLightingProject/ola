@@ -32,5 +32,5 @@
 #    undef SendMessage
 #  endif
 #endif  // _WIN32
-#endif	/* INCLUDE_OLA_WIN_CLEANWINSOCK2_H_ */
+#endif  // INCLUDE_OLA_WIN_CLEANWINSOCK2_H_
 
