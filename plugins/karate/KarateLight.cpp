@@ -253,9 +253,9 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
 
   // read payload-data (if there is any)
   uint8_t payload_size = rd_buffer[CMD_HD_LEN];
-  if (payload_size > CMD_MAX_LENGTH - CMD_HD_LEN) {
+  if (payload_size > CMD_MAX_LENGTH - CMD_DATA_START) {
     OLA_WARN << "KarateLight returned " << static_cast<int>(payload_size)
-             << " bytes of data. This execeeds our buffer size";
+             << " bytes of data, this exceeds our buffer size";
     return false;
   }
 

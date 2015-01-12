@@ -64,8 +64,8 @@ void ConsumerThread::EmptyQueue() {
     action->Run();
 
     // reacquire the lock
-    // coverity[LOCK]
     m_mutex->Lock();
+    // coverity[LOCK]
   }
 }
 }  // namespace thread
