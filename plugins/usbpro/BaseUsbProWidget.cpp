@@ -26,7 +26,9 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef _WIN32
 #include <termios.h>
+#endif
 #include <unistd.h>
 #include <string>
 #include "ola/Constants.h"
@@ -124,7 +126,19 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
  * Open a path and apply the settings required for talking to widgets.
  */
 ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
-    const string &path) {
+  const string &path) {
+#ifdef _WIN32
+  ola::io::WindowsSerialDescriptor *sd =
+      new ola::io::WindowsSerialDescriptor();
+
+  if (!sd->Init(path)) {
+    delete sd;
+    return NULL;
+  }
+
+  // TODO(Sean) Add serial parameters
+  return sd;
+#else
   struct termios newtio;
   int fd;
   if (!ola::io::Open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
@@ -139,6 +153,7 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
   tcsetattr(fd, TCSANOW, &newtio);
 
   return new ola::io::DeviceDescriptor(fd);
+#endif
 }
 
 

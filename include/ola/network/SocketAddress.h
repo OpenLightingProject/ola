@@ -34,7 +34,7 @@
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/socket.h>
 #endif

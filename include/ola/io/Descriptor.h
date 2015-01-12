@@ -78,7 +78,8 @@ namespace io {
 enum DescriptorType {
   GENERIC_DESCRIPTOR = 0,  // Catch-all type without special handling
   SOCKET_DESCRIPTOR,  // WinSock socket
-  PIPE_DESCRIPTOR  // Named Pipe handle
+  PIPE_DESCRIPTOR,  // Named Pipe handle
+  SERIAL_DESCRIPTOR  // Windows Serial Descriptor
 };
 
 // Consider this to be an opaque type.
@@ -560,6 +561,29 @@ class DeviceDescriptor: public ConnectedDescriptor {
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDescriptor);
 };
+
+
+#ifdef _WIN32
+class WindowsSerialDescriptor : public ConnectedDescriptor {
+
+ public:
+  explicit WindowsSerialDescriptor() : m_handle(INVALID_DESCRIPTOR) {}
+  ~WindowsSerialDescriptor() { Close(); }
+
+  bool Init(const std::string &path);
+  bool Close();
+
+  DescriptorHandle ReadDescriptor() const { return m_handle; }
+  DescriptorHandle WriteDescriptor() const { return m_handle; }
+
+ protected:
+  bool IsSocket() const { return false; }
+
+ private:
+  DescriptorHandle m_handle;
+  DISALLOW_COPY_AND_ASSIGN(WindowsSerialDescriptor);
+};
+#endif
 
 /**@}*/
 }  // namespace io

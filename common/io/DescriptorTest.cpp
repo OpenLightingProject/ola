@@ -24,7 +24,7 @@
 #include <string>
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #endif
 
 #include "ola/Callback.h"

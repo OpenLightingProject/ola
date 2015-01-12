@@ -13,37 +13,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * NetworkUtilsInternal.h
- * Abstract various network functions.
- * Copyright (C) 2005 Simon Newton
+ * CleanWinSock2.h
+ * A common header that removes many of the name-space clutter that windows.h
+ * and WinSock2.h creates
+ * Copyright (C) 2014 Sean Sill
  */
 
-#ifndef COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
-#define COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
+#ifndef INCLUDE_OLA_CLEANWINSOCK2_H_
+#define INCLUDE_OLA_CLEANWINSOCK2_H_
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+#ifdef _WIN32
+#include <Winsock2.h>
+// Some preprocessor magic to reduce Windows.h namespace pollution
+#  ifdef AddPort
+#    undef AddPort
+#  endif
+#  ifdef SendMessage
+#    undef SendMessage
+#  endif
+#endif  // _WIN32
+#endif	/* INCLUDE_OLA_CLEANWINSOCK2_H_ */
 
-#ifdef HAVE_WINSOCK2_H
-#define VC_EXTRALEAN
-#include <ola/win/CleanWinSock2.h>
-#endif
-
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
-#include <string>
-
-namespace ola {
-namespace network {
-
-/**
- * Return the length of a sockaddr
- */
-unsigned int SockAddrLen(const struct sockaddr &sa);
-
-}  // namespace network
-}  // namespace ola
-#endif  // COMMON_NETWORK_NETWORKUTILSINTERNAL_H_

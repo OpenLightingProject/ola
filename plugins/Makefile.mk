@@ -16,9 +16,9 @@ include plugins/shownet/Makefile.mk
 include plugins/spi/Makefile.mk
 include plugins/stageprofi/Makefile.mk
 include plugins/usbdmx/Makefile.mk
+include plugins/usbpro/Makefile.mk
 
 if !USING_WIN32
-include plugins/usbpro/Makefile.mk
 include plugins/dmx4linux/Makefile.mk
 include plugins/e131/Makefile.mk
 include plugins/uartdmx/Makefile.mk
