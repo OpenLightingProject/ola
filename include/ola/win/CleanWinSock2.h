@@ -19,8 +19,8 @@
  * Copyright (C) 2014 Sean Sill
  */
 
-#ifndef INCLUDE_OLA_CLEANWINSOCK2_H_
-#define INCLUDE_OLA_CLEANWINSOCK2_H_
+#ifndef INCLUDE_OLA_WIN_CLEANWINSOCK2_H_
+#define INCLUDE_OLA_WIN_CLEANWINSOCK2_H_
 
 #ifdef _WIN32
 #include <Winsock2.h>
@@ -32,5 +32,5 @@
 #    undef SendMessage
 #  endif
 #endif  // _WIN32
-#endif	/* INCLUDE_OLA_CLEANWINSOCK2_H_ */
+#endif	/* INCLUDE_OLA_WIN_CLEANWINSOCK2_H_ */
 
