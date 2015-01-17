@@ -58,8 +58,9 @@ before_install:
  - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq clang-3.5; fi
  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
 #Remove the old clang to ensure we're using the latest ones
- - if [ "$CXX" = "clang++-3.5" ]; then sudo rm /usr/bin/clang; fi
+ - if [ "$CXX" = "clang++-3.5" ]; then sudo rm /usr/bin/clang++; fi
 #Report the compiler version
+ - ls /usr/bin/clang*
  - $CXX --version
 #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
