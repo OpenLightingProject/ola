@@ -130,7 +130,7 @@ class InteractiveModeController(cmd.Cmd):
     pass
 
   def do_exit(self, s):
-    """Exit the intrepreter."""
+    """Exit the interpreter."""
     return True
 
   def do_EOF(self, s):
