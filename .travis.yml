@@ -60,8 +60,6 @@ before_install:
 #Remove the old clang to ensure we're using the latest ones
  - if [ "$CXX" = "clang++-3.5" ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
 #Report the compiler version
- - which clang
- - which clang++
  - $CXX --version
 #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
