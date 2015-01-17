@@ -290,10 +290,6 @@ string DmxBuffer::Get() const {
 }
 
 
-/*
- * Set the buffer to all zeros.
- * @post Size() == DMX_UNIVERSE_SIZE
- */
 bool DmxBuffer::Blackout() {
   if (m_copy_on_write)
     CleanupMemory();
