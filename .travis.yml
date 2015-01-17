@@ -56,10 +56,10 @@ before_install:
 #Remove the old g++/gcc to ensure we're using the latest ones
  - if [ "$TASK" != "coverity" -a "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
 #Install latest clang if we're compiling with clang
- - if [ "$CXX" = "clang" ]; then sudo apt-get install -qq clang-3.5; fi
- - if [ "$CXX" = "clang" ]; then export CXX="clang-3.5" CC="clang-3.5"; fi
+ - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq clang-3.5; fi
+ - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
 #Remove the old clang to ensure we're using the latest ones
- - if [ "$CXX" = "clang-3.5" ]; then sudo rm /usr/bin/clang; fi
+ - if [ "$CXX" = "clang++-3.5" ]; then sudo rm /usr/bin/clang; fi
 #Report the compiler version
  - $CXX --version
 #Install coveralls if required
