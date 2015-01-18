@@ -22,7 +22,6 @@
 #include <math.h>
 #include <string>
 #include <limits>
-#include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
 
