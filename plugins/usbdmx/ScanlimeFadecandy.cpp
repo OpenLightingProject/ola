@@ -95,7 +95,7 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
   // Set the fadecandy configuration.
   fadecandy_packet packet;
   packet.control = TYPE_CONFIG;
-  packet.data[0] |= OPTION_NO_DITHERING; // Default to no processing
+  packet.data[0] |= OPTION_NO_DITHERING;  // Default to no processing
   packet.data[0] |= OPTION_NO_INTERPOLATION;
 
   // packet.data[0] = OPTION_NO_ACTIVITY_LED;  // Manual control of LED
@@ -152,9 +152,10 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
 
     for (unsigned int row = 0; row < LUT_ROWS_PER_PACKET; row++) {
       unsigned int row_data_offset = (row * 2) + LUT_DATA_OFFSET;
-      ola::utils::SplitUInt16(lut[lut_offset + row],
-                              &lut_packets[packet_index].data[(row_data_offset + 1)],
-                              &lut_packets[packet_index].data[row_data_offset]);
+      ola::utils::SplitUInt16(
+          lut[lut_offset + row],
+          &lut_packets[packet_index].data[(row_data_offset + 1)],
+          &lut_packets[packet_index].data[row_data_offset]);
     }
   }
 
