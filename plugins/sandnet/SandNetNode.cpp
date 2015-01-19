@@ -399,7 +399,7 @@ bool SandNetNode::HandleCompressedDMX(const sandnet_compressed_dmx &dmx_packet,
 
 
 /*
- * Handle a uncompressed DMX packet
+ * Handle an uncompressed DMX packet
  */
 bool SandNetNode::HandleDMX(const sandnet_dmx &dmx_packet,
                             unsigned int size) {

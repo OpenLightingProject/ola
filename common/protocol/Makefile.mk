@@ -25,4 +25,4 @@ common/protocol/Ola.pb.cc common/protocol/Ola.pb.h: common/protocol/Makefile.mk 
 	$(PROTOC) --cpp_out common/protocol --proto_path $(srcdir)/common/protocol $(srcdir)/common/protocol/Ola.proto
 
 common/protocol/OlaService.pb.cpp common/protocol/OlaService.pb.h: common/protocol/Makefile.mk common/protocol/Ola.proto protoc/ola_protoc_plugin$(EXEEXT)
-	$(OLA_PROTOC)  --cppservice_out common/protocol --proto_path $(srcdir)/common/protocol $(srcdir)/common/protocol/Ola.proto
+	$(OLA_PROTOC) --cppservice_out common/protocol --proto_path $(srcdir)/common/protocol $(srcdir)/common/protocol/Ola.proto

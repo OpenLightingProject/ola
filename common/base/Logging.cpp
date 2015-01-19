@@ -31,7 +31,7 @@
 
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <Windows.h>
+#include <ola/win/CleanWindows.h>
 #include <io.h>
 #else
 #include <syslog.h>
