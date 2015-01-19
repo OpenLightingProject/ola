@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
 #include "ola/web/JsonLexer.h"

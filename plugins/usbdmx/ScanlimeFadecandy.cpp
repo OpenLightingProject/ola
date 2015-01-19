@@ -26,6 +26,7 @@
 #include <limits>
 #include <string>
 
+#include "ola/base/Array.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -53,7 +54,7 @@ static const uint8_t TYPE_FRAMEBUFFER = 0x00;
 // The color lookup table
 static const uint8_t TYPE_LUT = 0x40;
 // The initial setup message.
-static const uint8_t CONFIG_MESSAGE = 0x80;
+static const uint8_t TYPE_CONFIG = 0x80;
 // The final packet in a set.
 static const uint8_t FINAL = 0x20;
 
@@ -63,17 +64,24 @@ static const uint8_t OPTION_NO_INTERPOLATION = 0x02;
 // static const uint8_t OPTION_NO_ACTIVITY_LED  = 0x03;
 // static const uint8_t OPTION_LED_CONTROL = 0x04;
 
+static const unsigned int NUM_CHANNELS = 3;  // RGB
+static const unsigned int LUT_ROWS_PER_CHANNEL = 257;
+
 // Each 'packet' is 63 bytes, or 21 RGB pixels.
 enum { SLOTS_PER_PACKET = 63 };
 static const uint8_t PACKETS_PER_UPDATE = 25;
+// Each LUT 'packet' is 31 LUT rows, 62 bytes, plus a padding byte
+static const uint8_t LUT_ROWS_PER_PACKET = 31;
+// The padding byte offset
+static const uint8_t LUT_DATA_OFFSET = 1;
 
 PACK(
 struct fadecandy_packet {
-  uint8_t type;
+  uint8_t control;
   uint8_t data[SLOTS_PER_PACKET];
 
   void Reset() {
-    type = 0;
+    control = 0;
     memset(data, 0, sizeof(data));
   }
 
@@ -86,8 +94,8 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
                       libusb_device_handle *usb_handle) {
   // Set the fadecandy configuration.
   fadecandy_packet packet;
-  packet.type = CONFIG_MESSAGE;
-  packet.data[0] |= OPTION_NO_DITHERING;
+  packet.control = TYPE_CONFIG;
+  packet.data[0] |= OPTION_NO_DITHERING;  // Default to no processing
   packet.data[0] |= OPTION_NO_INTERPOLATION;
 
   // packet.data[0] = OPTION_NO_ACTIVITY_LED;  // Manual control of LED
@@ -102,72 +110,72 @@ bool InitializeWidget(LibUsbAdaptor *adaptor,
   } else {
     OLA_WARN << "Config transfer failed with error "
              << adaptor->ErrorCodeToString(r);
+    return false;
   }
 
   // Build the Look Up Table
-  uint16_t lut[3][257];
+  uint16_t lut[NUM_CHANNELS * LUT_ROWS_PER_CHANNEL];
   memset(&lut, 0, sizeof(lut));
-  for (unsigned int channel = 0; channel < 3; channel++) {
-    for (unsigned int value = 0; value < 257; value++) {
-      // Fadecandy Python Example
+  for (unsigned int channel = 0; channel < NUM_CHANNELS; channel++) {
+    for (unsigned int value = 0; value < LUT_ROWS_PER_CHANNEL; value++) {
+      // Fadecandy Python Example as C++
       // lut[channel][value] = std::min(
       //     static_cast<int>(std::numeric_limits<uint16_t>::max()),
       //     int(pow(value / 256.0, 2.2) *
       //         (std::numeric_limits<uint16_t>::max() + 1)));
-      // 1:1
-      lut[channel][value] = std::min(
+
+      // 1:1 for now
+      // TODO(Peter): Add support for more built in or custom LUTs
+      unsigned int overall_lut_row = (channel * LUT_ROWS_PER_CHANNEL) + value;
+      lut[overall_lut_row] = std::min(
           static_cast<unsigned int>(std::numeric_limits<uint16_t>::max()),
           (value << 8));
       OLA_DEBUG << "Generated LUT for channel " << channel << " value "
-                << value << " with val " << lut[channel][value];
+                << value << " with val " << lut[overall_lut_row];
     }
   }
 
-  OLA_INFO << "LUT size " << (sizeof(lut) / 2);
-  unsigned int index = 0;
-  packet.Reset();
+  OLA_DEBUG << "LUT size " << arraysize(lut);
 
-  // Transfer the lookup table.
-  for (unsigned int channel = 0; channel < 3; channel++) {
-    for (unsigned int value = 0; value < 257; value++) {
-      unsigned int entry = (channel * 257) + value;
-      unsigned int packet_entry = entry % 31;
-      OLA_DEBUG << "Working on channel " << channel << " value " << value
-                << " (" << strings::ToHex(value) << ") with entry " << entry
-                << ", packet entry " << packet_entry << " with val "
-                << strings::ToHex(lut[channel][value]);
-      ola::utils::SplitUInt16(lut[channel][value],
-                              &packet.data[packet_entry + 1],
-                              &packet.data[packet_entry]);
-      if ((packet_entry == 30) || (entry == ((3*257) - 1))) {
-        packet.type = TYPE_LUT | index;
-        if (entry == ((3*257) - 1)) {
-          OLA_DEBUG << "Setting final flag on packet";
-          packet.type = FINAL;
-        }
-        packet.type = TYPE_LUT | index;
-        packet.data[0] = 0;  // Reserved
+  fadecandy_packet lut_packets[PACKETS_PER_UPDATE];
 
-        // Send the data
-        int lut_txed = 0;
+  for (unsigned int packet_index = 0; packet_index < PACKETS_PER_UPDATE;
+       packet_index++) {
+    lut_packets[packet_index].Reset();
 
-        // TODO(Peter): Fix the calculations and transmit this
-        // int r = m_adaptor->BulkTransfer(usb_handle,
-        //                                 ENDPOINT,
-        //                                 packet,
-        //                                 sizeof(packet),
-        //                                 &lut_txed,
-        //                                 URB_TIMEOUT_MS);
+    lut_packets[packet_index].control = TYPE_LUT | packet_index;
+    if (packet_index == (PACKETS_PER_UPDATE - 1)) {
+      lut_packets[packet_index].control |= FINAL;
+    }
 
-        OLA_INFO << "LUT packet " << index << " transferred " << lut_txed
-                 << " bytes";
+    unsigned int lut_offset = packet_index * LUT_ROWS_PER_PACKET;
 
-        // Get ready for the next packet
-        index++;
-        packet.Reset();
-      }
+    for (unsigned int row = 0; row < LUT_ROWS_PER_PACKET; row++) {
+      unsigned int row_data_offset = (row * 2) + LUT_DATA_OFFSET;
+      ola::utils::SplitUInt16(
+          lut[lut_offset + row],
+          &lut_packets[packet_index].data[(row_data_offset + 1)],
+          &lut_packets[packet_index].data[row_data_offset]);
     }
   }
+
+  bytes_sent = 0;
+
+  // We do a single bulk transfer of the entire data, rather than one transfer
+  // for each 64 bytes.
+  r = adaptor->BulkTransfer(
+      usb_handle, ENDPOINT,
+      reinterpret_cast<unsigned char*>(&lut_packets),
+      sizeof(lut_packets), &bytes_sent,
+      URB_TIMEOUT_MS);
+  if (r == 0) {
+    OLA_INFO << "Successfully transfer LUT of " << bytes_sent << " bytes";
+  } else {
+    OLA_WARN << "Data transfer failed with error "
+             << adaptor->ErrorCodeToString(r);
+    return false;
+  }
+
   return true;
 }
 
@@ -182,9 +190,9 @@ void UpdatePacketsWithDMX(fadecandy_packet packets[PACKETS_PER_UPDATE],
     buffer.GetRange(dmx_offset, packets[packet_index].data,
                     &slots_in_packet);
 
-    packets[packet_index].type = TYPE_FRAMEBUFFER | packet_index;
-    if (packet_index == PACKETS_PER_UPDATE - 1) {
-      packets[packet_index].type |= FINAL;
+    packets[packet_index].control = TYPE_FRAMEBUFFER | packet_index;
+    if (packet_index == (PACKETS_PER_UPDATE - 1)) {
+      packets[packet_index].control |= FINAL;
     }
   }
 }
