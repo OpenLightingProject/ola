@@ -30,7 +30,6 @@
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
 #include "ola/web/Json.h"
 
 namespace ola {

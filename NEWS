@@ -3,19 +3,23 @@ x/y/2015 ola-0.9.4
  * Added support for hotplugging USB devices using the usbdmx plugin, #374.
  * Added support for setting the thread scheduling options, #399.
  * Added support for the Open Pixel Control protocol, #502.
+ * Added support for the Scanlime Fadecandy device, #503.
  * Added a GPIO Plugin, closes #299.
+ * Added support for the Open DMX clone from KWMATIK.
 
  API:
- * 
+ * Plugin libraries that were previously installed under $PREFIX/lib/olad/ are
+   now in $PREFIX/lib/
 
  RDM Tests:
- * 
+ * Fix a bug with the GetPresetInfo test around display multipliers.
 
  Bugs:
- * 
+ * Add a workaround to make the Windows HTTP server more responsive.
+ * Fixed defects detected by Coverity Scan.
 
  Internal:
- * 
+ * Remove the SLP code since it's no longer required for E1.33.
 
 16/11/2014 ola-0.9.3
  Features:
@@ -30,10 +34,10 @@ x/y/2015 ola-0.9.4
  * Make the ola_trigger config syntax more flexible, including dots in program
    names and quoted program names #507
  * Add an instance name to OLA server and use it within E1.31 and the DNS-SD
-   code to make multiple instances of OLA easier to track.
+   code to make multiple instances of OLA easier to track. #473
 
  Bugs:
- * Fix some build issues on OS X 10.5.8
+ * Fix some build issues on OS X 10.5.8 #493
  * Fix some build issues on Windows XP
  * Use the correct ifdefs within plugin loading so we only load stuff if we
    asked for it
