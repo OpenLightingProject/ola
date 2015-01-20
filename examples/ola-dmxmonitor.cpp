@@ -45,11 +45,11 @@
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Constants.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
 
 #include <string>
@@ -57,8 +57,9 @@
 
 using ola::Clock;
 using ola::DmxBuffer;
-using ola::OlaCallbackClient;
-using ola::OlaCallbackClientWrapper;
+using ola::client::OlaClient;
+using ola::client::OlaClientWrapper;
+using ola::client::Result;
 using ola::TimeInterval;
 using ola::TimeStamp;
 using ola::io::SelectServer;
@@ -129,10 +130,9 @@ class DmxMonitor {
 
     bool Init();
     void Run() { m_client.GetSelectServer()->Run(); }
-    void NewDmx(unsigned int universe,
-                const DmxBuffer &buffer,
-                const string &error);
-    void RegisterComplete(const string &error);
+    void NewDmx(const ola::client::DMXMetadata &meta,
+                const DmxBuffer &buffer);
+    void RegisterComplete(const Result &result);
     void StdinReady();
     bool CheckDataLoss();
     void DrawDataLossWindow();
@@ -147,7 +147,7 @@ class DmxMonitor {
     WINDOW *m_window;
     WINDOW *m_data_loss_window;
     bool m_channels_offset;  // start from channel 1 rather than 0;
-    OlaCallbackClientWrapper m_client;
+    OlaClientWrapper m_client;
     DmxBuffer m_buffer;
 
     void DrawScreen(bool include_values = true);
@@ -168,11 +168,11 @@ bool DmxMonitor::Init() {
     return false;
   }
 
-  OlaCallbackClient *client = m_client.GetClient();
-  client->SetDmxCallback(ola::NewCallback(this, &DmxMonitor::NewDmx));
+  OlaClient *client = m_client.GetClient();
+  client->SetDMXCallback(ola::NewCallback(this, &DmxMonitor::NewDmx));
   client->RegisterUniverse(
       m_universe,
-      ola::REGISTER,
+      ola::client::REGISTER,
       ola::NewSingleCallback(this, &DmxMonitor::RegisterComplete));
 
   /* init curses */
@@ -206,9 +206,8 @@ bool DmxMonitor::Init() {
 /*
  * Called when there is new DMX data
  */
-void DmxMonitor::NewDmx(unsigned int universe,
-                        const DmxBuffer &buffer,
-                        const string &error) {
+void DmxMonitor::NewDmx(const ola::client::DMXMetadata &meta,
+                        const DmxBuffer &buffer) {
   m_buffer.Set(buffer);
 
   if (m_data_loss_window) {
@@ -240,14 +239,13 @@ void DmxMonitor::NewDmx(unsigned int universe,
   clock.CurrentTime(&m_last_data);
   Values();
   refresh();
-  (void) universe;
-  (void) error;
+  (void) meta;
 }
 
 
-void DmxMonitor::RegisterComplete(const string &error) {
-  if (!error.empty()) {
-    std::cerr << "Register command failed with " << errno <<
+void DmxMonitor::RegisterComplete(const Result &result) {
+  if (!result.Success()) {
+    std::cerr << "Register command failed with " << result.Error() <<
       std::endl;
     m_client.GetSelectServer()->Terminate();
   }
