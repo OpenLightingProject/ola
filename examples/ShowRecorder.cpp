@@ -118,6 +118,6 @@ void ShowRecorder::RegisterComplete(const Result &result) {
   if (!result.Success()) {
     OLA_WARN << "Register failed: " << result.Error();
   } else {
-    OLA_INFO << "register complete";
+    OLA_INFO << "Register completed";
   }
 }

@@ -30,6 +30,7 @@ namespace io {
 
 /**
  * @brief Wrapper around open().
+ *
  * This logs a message if the open fails.
  * @param path the path to open
  * @param oflag flags passed to open
@@ -40,12 +41,13 @@ bool Open(const std::string &path, int oflag, int *fd);
 
 /**
  * @brief Wrapper around open().
+ *
+ * This is similar to Open(), but doesn't log a warning if open() fails.
  * @param path the path to open
  * @param oflag flags passed to open
  * @param[out] fd a pointer to the fd which is returned.
  * @returns true if the open succeeded, false otherwise.
- *
- * This is similar to Open(), but doesn't log a warning if open() fails.
+ * @sa Open
  */
 bool TryOpen(const std::string &path, int oflag, int *fd);
 }  // namespace io

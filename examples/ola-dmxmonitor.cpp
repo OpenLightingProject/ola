@@ -47,6 +47,7 @@
 #include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Init.h>
+#include <ola/base/Macro.h>
 #include <ola/base/SysExits.h>
 #include <ola/client/ClientWrapper.h>
 #include <ola/client/OlaClient.h>
@@ -206,7 +207,7 @@ bool DmxMonitor::Init() {
 /*
  * Called when there is new DMX data
  */
-void DmxMonitor::NewDmx(const ola::client::DMXMetadata &meta,
+void DmxMonitor::NewDmx(OLA_UNUSED const ola::client::DMXMetadata &meta,
                         const DmxBuffer &buffer) {
   m_buffer.Set(buffer);
 
@@ -239,7 +240,6 @@ void DmxMonitor::NewDmx(const ola::client::DMXMetadata &meta,
   clock.CurrentTime(&m_last_data);
   Values();
   refresh();
-  (void) meta;
 }
 
 
