@@ -19,7 +19,7 @@
  */
 
 #include <ola/DmxBuffer.h>
-#include <ola/OlaClientWrapper.h>
+#include <ola/client/ClientWrapper.h>
 
 #include <string>
 #include <fstream>
@@ -59,7 +59,7 @@ class ShowPlayer {
                  unsigned int delay);
 
  private:
-    ola::OlaCallbackClientWrapper m_client;
+    ola::client::OlaClientWrapper m_client;
     ShowLoader m_loader;
     bool m_infinite_loop;
     unsigned int m_iteration_remaining;

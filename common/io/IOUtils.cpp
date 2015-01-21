@@ -40,5 +40,10 @@ bool Open(const string &path, int oflag, int *fd) {
   }
   return true;
 }
+
+bool TryOpen(const string &path, int oflag, int *fd) {
+  *fd = open(path.c_str(), oflag);
+  return *fd >= 0;
+}
 }  // namespace io
 }  // namespace ola
