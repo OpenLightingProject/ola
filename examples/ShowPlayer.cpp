@@ -28,10 +28,10 @@
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -102,7 +102,8 @@ void ShowPlayer::SendNextFrame() {
   state = RegisterNextTimeout();
 
   OLA_INFO << "Universe: " << universe << ": " << buffer.ToString();
-  m_client.GetClient()->SendDmx(universe, buffer);
+  ola::client::SendDMXArgs args;
+  m_client.GetClient()->SendDMX(universe, buffer, args);
 
   switch (state) {
     case ShowLoader::END_OF_FILE:
