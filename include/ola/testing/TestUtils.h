@@ -53,14 +53,14 @@ template <typename T>
 void _AssertVectorEq(const SourceLine &source_line,
                      const std::vector<T> &t1,
                      const std::vector<T> &t2) {
-  CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
-                           "Vector sizes not equal");
+  _AssertEquals(t1.size(), t2.size(), source_line,
+                "Vector sizes not equal");
 
   typename std::vector<T>::const_iterator iter1 = t1.begin();
   typename std::vector<T>::const_iterator iter2 = t2.begin();
   while (iter1 != t1.end()) {
-    CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
-                             "Vector elements not equal");
+    _AssertEquals(*iter1++, *iter2++, source_line,
+                  "Vector elements not equal");
   }
 }
 
@@ -69,15 +69,34 @@ template <typename T>
 void _AssertSetEq(const SourceLine &source_line,
                   const std::set<T> &t1,
                   const std::set<T> &t2) {
-  CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
-                           "Set sizes not equal");
+  _AssertEquals(t1.size(), t2.size(), source_line,
+                "Set sizes not equal");
 
   typename std::set<T>::const_iterator iter1 = t1.begin();
   typename std::set<T>::const_iterator iter2 = t2.begin();
   while (iter1 != t1.end()) {
-    CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
-                             "Set elements not equal");
+    _AssertEquals(*iter1++, *iter2++, source_line,
+                  "Set elements not equal");
   }
+}
+
+// Useful methods. This allows us to switch between unit testing frameworks in
+// the future. You should generally use the macros below instead
+template <typename T>
+inline void _AssertEquals(const SourceLine &source_line,
+                          const T &expected,
+                          const T &actual,
+                          const std::string &message = "") {
+  CPPUNIT_NS::assertEquals(expected,
+                           actual,
+                           source_line,
+                           message);
+}
+
+inline void _Fail(const SourceLine &source_line,
+                  const std::string &message) {
+  CPPUNIT_NS::Asserter::fail(message,
+                             source_line);
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in

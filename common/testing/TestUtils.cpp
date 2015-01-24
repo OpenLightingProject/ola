@@ -43,8 +43,8 @@ void ASSERT_DATA_EQUALS(const SourceLine &source_line,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length) {
-  CPPUNIT_NS::assertEquals(expected_length, actual_length, source_line,
-                           "Data lengths differ");
+  _AssertEquals(source_line, expected_length, actual_length,
+                "Data lengths differ");
 
   bool data_matches = (0 == memcmp(expected, actual, expected_length));
   if (!data_matches) {
