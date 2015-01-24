@@ -59,15 +59,19 @@ class PluginManagerTest: public CppUnit::TestFixture {
                             size_t loaded_plugins,
                             size_t active_plugins,
                             const ola::testing::SourceLine &source_line) {
-      std::ostringstream str;
-      str << "Line " << line;
       vector<AbstractPlugin*> plugins;
       manager->Plugins(&plugins);
-      OLA_ASSERT_EQ_MSG(loaded_plugins, plugins.size(), str.str());
+      ola::testing::_AssertEquals(source_line,
+                                  loaded_plugins,
+                                  plugins.size(),
+                                  "Loaded plugin count differs");
 
       plugins.clear();
       manager->ActivePlugins(&plugins);
-      OLA_ASSERT_EQ_MSG(active_plugins, plugins.size(), str.str());
+      ola::testing::_AssertEquals(source_line,
+                                  active_plugins,
+                                  plugins.size(),
+                                  "Active plugin count differs");
     }
 };
 
