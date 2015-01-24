@@ -55,8 +55,10 @@ class PluginManagerTest: public CppUnit::TestFixture {
     }
 
  private:
-    void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
-                            size_t active_plugins, unsigned int line) {
+    void VerifyPluginCounts(PluginManager *manager,
+                            size_t loaded_plugins,
+                            size_t active_plugins,
+                            const ola::testing::SourceLine &source_line) {
       std::ostringstream str;
       str << "Line " << line;
       vector<AbstractPlugin*> plugins;
@@ -112,13 +114,13 @@ void PluginManagerTest::testPluginManager() {
   PluginManager manager(loaders, &adaptor);
   manager.LoadAll();
 
-  VerifyPluginCounts(&manager, 2, 1, __LINE__);
+  VerifyPluginCounts(&manager, 2, 1, OLA_SOURCELINE());
 
   OLA_ASSERT(plugin1.WasStarted());
   OLA_ASSERT_FALSE(plugin2.WasStarted());
 
   manager.UnloadAll();
-  VerifyPluginCounts(&manager, 0, 0, __LINE__);
+  VerifyPluginCounts(&manager, 0, 0, OLA_SOURCELINE());
 }
 
 
@@ -150,12 +152,12 @@ void PluginManagerTest::testConflictingPlugins() {
   OLA_INFO << "start";
   manager.LoadAll();
 
-  VerifyPluginCounts(&manager, 3, 1, __LINE__);
+  VerifyPluginCounts(&manager, 3, 1, OLA_SOURCELINE());
 
   OLA_ASSERT_FALSE(plugin1.WasStarted());
   OLA_ASSERT(plugin2.WasStarted());
   OLA_ASSERT_FALSE(plugin3.WasStarted());
 
   manager.UnloadAll();
-  VerifyPluginCounts(&manager, 0, 0, __LINE__);
+  VerifyPluginCounts(&manager, 0, 0, OLA_SOURCELINE());
 }
