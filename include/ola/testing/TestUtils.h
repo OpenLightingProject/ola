@@ -27,6 +27,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <sstream>
+#include <string>
 #include <vector>
 
 namespace ola {
