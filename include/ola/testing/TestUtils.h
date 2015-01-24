@@ -29,19 +29,20 @@
 #include <sstream>
 #include <vector>
 
-
 namespace ola {
 namespace testing {
 
+typedef CPPUNIT_NS::SourceLine SourceLine;
+
 // Assert that two data blocks are the same.
 // Private, use OLA_ASSERT_DATA_EQUALS below.
-void ASSERT_DATA_EQUALS(unsigned int line,
+void ASSERT_DATA_EQUALS(const SourceLine &source_line,
                         const uint8_t *expected,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length);
 
-void ASSERT_DATA_EQUALS(unsigned int line,
+void ASSERT_DATA_EQUALS(const SourceLine &source_line,
                         const char *expected,
                         unsigned int expected_length,
                         const char *actual,
@@ -49,7 +50,7 @@ void ASSERT_DATA_EQUALS(unsigned int line,
 
 // Private, use OLA_ASSERT_VECTOR_EQ below
 template <typename T>
-void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
+void _AssertVectorEq(const SourceLine &source_line,
                      const std::vector<T> &t1,
                      const std::vector<T> &t2) {
   CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
@@ -65,7 +66,7 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
 
 // Private, use OLA_ASSERT_SET_EQ below
 template <typename T>
-void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
+void _AssertSetEq(const SourceLine &source_line,
                   const std::set<T> &t1,
                   const std::set<T> &t2) {
   CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
@@ -81,6 +82,9 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
 // Useful macros. This allows us to switch between unit testing frameworks in
 // the future.
+#define OLA_SOURCELINE() \
+  CPPUNIT_SOURCELINE()
+
 #define OLA_ASSERT(condition)  \
   CPPUNIT_ASSERT(condition)
 
@@ -125,8 +129,8 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
 #define OLA_ASSERT_DATA_EQUALS(expected, expected_length, actual, \
                                actual_length)  \
-ola::testing::ASSERT_DATA_EQUALS(__LINE__, (expected), (expected_length), \
-                                 (actual), (actual_length))
+ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), (expected), \
+                                 (expected_length), (actual), (actual_length))
 
 #define OLA_ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \
