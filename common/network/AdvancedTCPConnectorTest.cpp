@@ -96,7 +96,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
   ola::thread::timeout_id m_timeout_id;
   TCPSocket *m_connected_socket;
 
-  void ConfirmState(unsigned int line,
+  void ConfirmState(const ola::testing::SourceLine &source_line,
                     const AdvancedTCPConnector &connector,
                     const IPV4SocketAddress &endpoint,
                     AdvancedTCPConnector::ConnectionState state,
@@ -174,7 +174,7 @@ void AdvancedTCPConnectorTest::testConnect() {
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
 
   // confirm the status is correct
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(OLA_SOURCELINE(), connector, m_server_address,
                AdvancedTCPConnector::CONNECTED, 0);
 
   // check our socket exists
@@ -184,7 +184,7 @@ void AdvancedTCPConnectorTest::testConnect() {
   connector.Disconnect(m_server_address, true);
 
   // state should be updated
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(OLA_SOURCELINE(), connector, m_server_address,
                AdvancedTCPConnector::PAUSED, 0);
 
   // remove & shutdown
@@ -214,7 +214,7 @@ void AdvancedTCPConnectorTest::testPause() {
   connector.AddEndpoint(m_server_address, &policy, true);
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
 
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(OLA_SOURCELINE(), connector, m_server_address,
                AdvancedTCPConnector::PAUSED, 0);
 
   m_ss->RunOnce(TimeInterval(0, 500000));
@@ -229,7 +229,7 @@ void AdvancedTCPConnectorTest::testPause() {
     m_ss->Run();
   }
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(OLA_SOURCELINE(), connector, m_server_address,
                AdvancedTCPConnector::CONNECTED, 0);
 
   // check our socket exists
@@ -239,7 +239,7 @@ void AdvancedTCPConnectorTest::testPause() {
   connector.Disconnect(m_server_address, true);
 
   // state should be updated
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(OLA_SOURCELINE(), connector, m_server_address,
                AdvancedTCPConnector::PAUSED, 0);
 
   // clean up
@@ -286,7 +286,7 @@ void AdvancedTCPConnectorTest::testBackoff() {
   m_ss->RunOnce(TimeInterval(0, 200000));
 
   // should have one failure at this point
-  ConfirmState(__LINE__, connector, target,
+  ConfirmState(OLA_SOURCELINE(), connector, target,
                AdvancedTCPConnector::DISCONNECTED, 1);
 
   // the next attempt should be in 5 seconds
@@ -297,7 +297,7 @@ void AdvancedTCPConnectorTest::testBackoff() {
   m_clock.AdvanceTime(0, 490000);
   m_ss->RunOnce(TimeInterval(0, 200000));
 
-  ConfirmState(__LINE__, connector, target,
+  ConfirmState(OLA_SOURCELINE(), connector, target,
                AdvancedTCPConnector::DISCONNECTED, 2);
 
   // run once more to clean up
@@ -336,21 +336,25 @@ void AdvancedTCPConnectorTest::testEarlyDestruction() {
  * Confirm the state & failed attempts matches what we expected
  */
 void AdvancedTCPConnectorTest::ConfirmState(
-    unsigned int line,
+    const ola::testing::SourceLine &source_line,
     const AdvancedTCPConnector &connector,
     const IPV4SocketAddress &endpoint,
     AdvancedTCPConnector::ConnectionState expected_state,
     unsigned int expected_attempts) {
-  std::ostringstream str;
-  str << "Line " << line;
-
   AdvancedTCPConnector::ConnectionState state;
   unsigned int failed_attempts;
-  OLA_ASSERT_TRUE_MSG(
-      connector.GetEndpointState(endpoint, &state, &failed_attempts),
-      str.str());
-  OLA_ASSERT_EQ_MSG(expected_state, state, str.str());
-  OLA_ASSERT_EQ_MSG(expected_attempts, failed_attempts, str.str());
+  ola::testing::_FailIf(
+      source_line,
+      !connector.GetEndpointState(endpoint, &state, &failed_attempts),
+      "Incorrect endpoint state");
+  ola::testing::_AssertEquals(source_line,
+                              expected_state,
+                              state,
+                              "States differ");
+  ola::testing::_AssertEquals(source_line,
+                              expected_attempts,
+                              failed_attempts,
+                              "Attempts differ");
 }
 
 /**

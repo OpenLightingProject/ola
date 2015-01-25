@@ -77,7 +77,7 @@ void DMXTriggerTest::testRisingEdgeTrigger() {
   // trigger rising edge
   buffer.SetFromString("0,0,10");
   trigger.NewDMX(buffer);
-  action->CheckForValue(__LINE__, 10);
+  action->CheckForValue(OLA_SOURCELINE(), 10);
 
   // now send the same again
   OLA_ASSERT(action->NoCalls());
@@ -121,14 +121,14 @@ void DMXTriggerTest::testFallingEdgeTrigger() {
   // trigger
   buffer.SetFromString("0,0,20");
   trigger.NewDMX(buffer);
-  rising_action->CheckForValue(__LINE__, 20);
+  rising_action->CheckForValue(OLA_SOURCELINE(), 20);
   OLA_ASSERT(falling_action->NoCalls());
 
   // trigger a falling edge
   buffer.SetFromString("0,0,19");
   trigger.NewDMX(buffer);
   OLA_ASSERT(rising_action->NoCalls());
-  falling_action->CheckForValue(__LINE__, 19);
+  falling_action->CheckForValue(OLA_SOURCELINE(), 19);
 
   // now send the same again
   trigger.NewDMX(buffer);
@@ -156,6 +156,6 @@ void DMXTriggerTest::testFallingEdgeTrigger() {
   // change once more
   buffer.SetFromString("10,100,20,20");
   trigger.NewDMX(buffer);
-  rising_action->CheckForValue(__LINE__, 20);
+  rising_action->CheckForValue(OLA_SOURCELINE(), 20);
   OLA_ASSERT(falling_action->NoCalls());
 }

@@ -64,7 +64,8 @@ class MockCommandAction: CommandAction {
     }
 
     void Execute(Context *context, uint8_t slot_value);
-    void CheckArgs(int32_t line, const char* args[]);
+    void CheckArgs(const ola::testing::SourceLine &source_line,
+                   const char* args[]);
 
  private:
     vector<string> m_interpolated_args;
@@ -88,31 +89,34 @@ void MockCommandAction::Execute(Context *context, uint8_t) {
 /**
  * Check what we got matches what we expected
  */
-void MockCommandAction::CheckArgs(int32_t line, const char* args[]) {
-  std::ostringstream str;
-  str << "From ActionTest.cpp:" << line;
+void MockCommandAction::CheckArgs(const ola::testing::SourceLine &source_line,
+                                  const char* args[]) {
   const char **ptr = args;
   vector<string>::const_iterator iter = m_interpolated_args.begin();
-  while (*ptr && iter != m_interpolated_args.end())
-    OLA_ASSERT_EQ_MSG(string(*ptr++), *iter++, str.str());
+  while (*ptr && iter != m_interpolated_args.end()) {
+    ola::testing::_AssertEquals(source_line, string(*ptr++), *iter++);
+  }
 
+  std::ostringstream str;
   if (iter != m_interpolated_args.end()) {
     str << ", got extra args: ";
     while (iter != m_interpolated_args.end()) {
       str << *iter;
       iter++;
-      if (iter != m_interpolated_args.end())
+      if (iter != m_interpolated_args.end()) {
         str << ", ";
+      }
     }
-    OLA_FAIL(str.str());
+    ola::testing::_Fail(source_line, str.str());
   } else if (*ptr) {
     str << ", missing args: ";
     while (*ptr) {
       str << *ptr++;
-      if (*ptr)
+      if (*ptr) {
         str << ", ";
+      }
     }
-    OLA_FAIL(str.str());
+    ola::testing::_Fail(source_line, str.str());
   }
   m_interpolated_args.clear();
 }
@@ -179,7 +183,7 @@ void ActionTest::testCommandAction() {
   action.Execute(&context, 0);
 
   const char *expected_args[] = {"echo", "one", "two", NULL};
-  action.CheckArgs(__LINE__, expected_args);
+  action.CheckArgs(OLA_SOURCELINE(), expected_args);
 
   // now check interpolated variables
   args.push_back("_${slot_offset}_");
@@ -191,5 +195,5 @@ void ActionTest::testCommandAction() {
   action2.Execute(&context, 0);
 
   const char *expected_args2[] = {"echo", "one", "two", "_1_", "_100_", NULL};
-  action2.CheckArgs(__LINE__, expected_args2);
+  action2.CheckArgs(OLA_SOURCELINE(), expected_args2);
 }
