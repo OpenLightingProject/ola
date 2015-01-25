@@ -100,6 +100,14 @@ inline void _Fail(const SourceLine &source_line,
                              source_line);
 }
 
+inline void _FailIf(const SourceLine &source_line,
+                    bool shouldFail,
+                    const std::string &message) {
+  CPPUNIT_NS::Asserter::failIf(shouldFail,
+                               message,
+                               source_line);
+}
+
 // Useful macros. This allows us to switch between unit testing frameworks in
 // the future.
 #define OLA_SOURCELINE() \

@@ -83,10 +83,11 @@ class TCPTransportTest: public CppUnit::TestFixture {
     auto_ptr<MockInflator> m_inflator;
     auto_ptr<IncomingStreamTransport> m_transport;
 
-    void SendEmptyPDUBLock(unsigned int line);
-    void SendPDU(unsigned int line);
-    void SendPDUBlock(unsigned int line);
-    void SendPacket(const string &message, IOStack *packet);
+    void SendEmptyPDUBLock(const ola::testing::SourceLine &source_line);
+    void SendPDU(const ola::testing::SourceLine &source_line);
+    void SendPDUBlock(const ola::testing::SourceLine &source_line);
+    void SendPacket(const ola::testing::SourceLine &source_line,
+                    IOStack *packet);
 
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };
@@ -154,7 +155,7 @@ void TCPTransportTest::Receive() {
  */
 void TCPTransportTest::testSinglePDU() {
   OLA_ASSERT_EQ(0u, m_pdus_received);
-  SendPDU(__LINE__);
+  SendPDU(OLA_SOURCELINE());
   m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
   m_ss->RunOnce(TimeInterval(1, 0));
@@ -204,8 +205,8 @@ void TCPTransportTest::testBadPreamble() {
  * Test a 0-length PDU block
  */
 void TCPTransportTest::testZeroLengthPDUBlock() {
-  SendEmptyPDUBLock(__LINE__);
-  SendPDU(__LINE__);
+  SendEmptyPDUBLock(OLA_SOURCELINE());
+  SendPDU(OLA_SOURCELINE());
 
   m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
@@ -219,9 +220,9 @@ void TCPTransportTest::testZeroLengthPDUBlock() {
  * Send multiple PDUs.
  */
 void TCPTransportTest::testMultiplePDUs() {
-  SendPDU(__LINE__);
-  SendPDU(__LINE__);
-  SendPDU(__LINE__);
+  SendPDU(OLA_SOURCELINE());
+  SendPDU(OLA_SOURCELINE());
+  SendPDU(OLA_SOURCELINE());
 
   m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
@@ -235,7 +236,7 @@ void TCPTransportTest::testMultiplePDUs() {
  * Send a block of PDUs
  */
 void TCPTransportTest::testSinglePDUBlock() {
-  SendPDUBlock(__LINE__);
+  SendPDUBlock(OLA_SOURCELINE());
 
   m_ss->RunOnce(TimeInterval(1, 0));
   m_loopback.CloseClient();
@@ -248,48 +249,47 @@ void TCPTransportTest::testSinglePDUBlock() {
 /**
  * Send empty PDU block.
  */
-void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
-  std::ostringstream str;
-  str << "Line " << line;
-
+void TCPTransportTest::SendEmptyPDUBLock(
+    const ola::testing::SourceLine &source_line) {
   IOStack packet;
   PreamblePacker::AddTCPPreamble(&packet);
-  SendPacket(str.str(), &packet);
+  SendPacket(source_line, &packet);
 }
 
 
 /**
  * Send a PDU
  */
-void TCPTransportTest::SendPDU(unsigned int line) {
-  std::ostringstream str;
-  str << "Line " << line;
+void TCPTransportTest::SendPDU(const ola::testing::SourceLine &source_line) {
   IOStack packet;
   MockPDU::PrependPDU(&packet, 4, 8);
   PreamblePacker::AddTCPPreamble(&packet);
-  SendPacket(str.str(), &packet);
+  SendPacket(source_line, &packet);
 }
 
 
 /**
  * Send a block of PDUs
  */
-void TCPTransportTest::SendPDUBlock(unsigned int line) {
-  std::ostringstream str;
-  str << "Line " << line;
+void TCPTransportTest::SendPDUBlock(
+    const ola::testing::SourceLine &source_line) {
   IOStack packet;
   MockPDU::PrependPDU(&packet, 1, 2);
   MockPDU::PrependPDU(&packet, 2, 4);
   MockPDU::PrependPDU(&packet, 3, 6);
   PreamblePacker::AddTCPPreamble(&packet);
-  SendPacket(str.str(), &packet);
+  SendPacket(source_line, &packet);
 }
 
 
-void TCPTransportTest::SendPacket(const string &message, IOStack *packet) {
+void TCPTransportTest::SendPacket(const ola::testing::SourceLine &source_line,
+                                  IOStack *packet) {
   IOQueue output;
   packet->MoveToIOQueue(&output);
-  OLA_ASSERT_TRUE_MSG(m_loopback.Send(&output), message);
+  ola::testing::_FailIf(
+      source_line,
+      !m_loopback.Send(&output),
+      "Loopback send failed");
 }
 }  // namespace e131
 }  // namespace plugin
