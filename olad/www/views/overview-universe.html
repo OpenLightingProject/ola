@@ -1,0 +1,16 @@
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active"><a ng-href="/#/universe/{{Universe}}/">Overview</a></li>
+    <li role="presentation"><a ng-href="/#/universe/{{Universe}}/sliders">Sliders</a></li>
+    <li role="presentation"><a ng-href="/#/universe/{{Universe}}/keypad">Keypad</a></li>
+    <li role="presentation"><a ng-href="/#/universe/{{Universe}}/rdm">RDM</a></li>
+    <li role="presentation"><a ng-href="/#/universe/{{Universe}}/patch">RDM Patcher</a></li>
+    <li role="presentation"><a ng-href="/#/universe/{{Universe}}/settings">Settings</a></li>
+</ul>
+<div class="row">
+    <div class="col-xs-1 channel" ng-repeat="c in dmx track by $index">
+        <div class="row">
+            <div class="col-xs-12">{{$index + 1}}</div>
+            <div class="col-xs-12">{{c}}</div>
+        </div>
+    </div>
+</div>

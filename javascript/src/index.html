@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="olaApp">
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ola</title>
+    <!-- ref:css /libs/bootstrap/css/bootstrap.min.css -->
+    <link rel="stylesheet" href="/libs/bootstrap/css/bootstrap.css"/>
+    <!-- endref -->
+    <!-- ref:css /css/style.min.css -->
+    <link rel="stylesheet" href="/css/style.css" />
+    <!-- endref -->
+</head>
+<body>
+<nav class="navbar navbar-default" ng-controller="menuCtrl" >
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/#/"><img height="22" width="51" src="img/logo-mini.png" /></a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Universes<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="/#/universes/">overview</a></li>
+                        <li class="divider"></li>
+                        <div ng-repeat="universe in Items.universes">
+                            <li><a href="/#/universe/{{universe.id}}">{{universe.name}}</a></li>
+                        </div>
+                        <li class="divider"></li>
+                        <li><a href="/#/universe/add">add Universe</a></li>
+                    </ul>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Plugins<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu" ng-repeat="plugin in Items.plugins">
+                        <li><a href="/#/plugin/{{plugin.id}}">{{plugin.name}}</a></li>
+                    </ul>
+                </li>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+<div id="ngView" class="container-fluid" ng-view></div>
+<!-- ref:js /libs/angular/js/angular.min.js -->
+<script type="text/javascript" src="/libs/angular/js/angular.js"></script>
+<!-- endref -->
+<!-- ref:js /libs/angular-route/js/angular-route.min.js -->
+<script type="text/javascript" src="/libs/angular-route/js/angular-route.js"></script>
+<!-- endref -->
+<!-- ref:js /libs/jquery/js/jquery.min.js -->
+<script type="text/javascript" src="/libs/jquery/js/jquery.js"></script>
+<!-- endref -->
+<!-- ref:js /libs/bootstrap/js/bootstrap.min.js -->
+<script type="text/javascript" src="/libs/bootstrap/js/bootstrap.js"></script>
+<!-- endref -->
+<!-- ref:js /js/app.min.js -->
+<script type="text/javascript" src="/js/app.js"></script>
+<!-- endref -->
+</body>
+</html>

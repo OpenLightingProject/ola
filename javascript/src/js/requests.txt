@@ -1,0 +1,22 @@
+/get_dmx $ola.get.Dmx(id)
+/json/get_ports $ola.get.Ports() $ola.getPortsId(id)
+/json/plugin_info $ola.get.InfoPlugin(id)
+/json/server_stats $ola.get.ServerInfo()
+/json/universe_plugin_list $ola.get.ItemList(id)
+/json/universe_info $ola.get.UniverseInfo(id)
+/modify_universe $ola.post.ModifyUniverse(data)
+/new_universe $ola.post.AddUniverse(data)
+/quit $ola.action.Shutdown()
+/json/rdm/section_info
+/json/rdm/set_section_info
+/json/rdm/supported_pids
+/json/rdm/supported_sections
+/json/rdm/uid_identify
+/json/rdm/uid_info
+/json/rdm/uid_personalities
+/json/rdm/uids
+/rdm/run_discovery
+/reload
+/reload_pids
+/set_dmx $ola.post.Dmx(universe, data)
+/debug

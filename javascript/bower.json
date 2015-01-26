@@ -1,0 +1,45 @@
+{
+  "name": "ola",
+  "version": "0.0.1",
+  "authors": [
+    "Dave Olsthoorn <dave.olsthoorn@gmail.com>"
+  ],
+  "description": "a alternative ola web panel",
+  "keywords": [
+    "dmx",
+    "ola",
+    "open",
+    "lighting",
+    "architecture"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.28",
+    "bootstrap": "~3.3.1",
+    "angular-route": "~1.2.x"
+  },
+  "exportsOverride": {
+    "angular": {
+      "js": ["*.js","*.js.map"]
+    },
+    "jquery": {
+      "js": "dist/"
+    },
+    "bootstrap": {
+      "js": "dist/js/bootstrap.*",
+      "css": "dist/css/bootstrap.*",
+      "fonts": "dist/fonts/"
+    },
+    "angular-route": {
+      "js": ["*.js", "*.map"]
+    }
+  }
+}
