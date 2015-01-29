@@ -1,6 +1,6 @@
 # Programs
 #########################
-if BUILD_OLA_PROTOC
+if BUILD_OLA_PROTOC_PLUGIN
 noinst_PROGRAMS += protoc/ola_protoc_plugin
 
 protoc_ola_protoc_plugin_SOURCES = \
@@ -19,9 +19,9 @@ protoc_ola_protoc_plugin_LDADD = $(libprotobuf_LIBS) -lprotoc
 
 else
 
-# If we're using a different ola_protoc, we need to provide a rule to create
-# this file since the generated service configs depend on it.
-protoc/ola_protoc$(EXEEXT):
-	touch protoc/ola_protoc$(EXEEXT)
+# If we're using a different ola_protoc_plugin, we need to provide a rule to
+# create this file since the generated service configs depend on it.
+protoc/ola_protoc_plugin$(EXEEXT):
+	touch protoc/ola_protoc_plugin$(EXEEXT)
 
 endif
