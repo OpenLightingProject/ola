@@ -11,6 +11,18 @@ angular
     }
     return PostData.join('&');
   };
+  var dmxConvert = function(dmx){
+    var length = 0, ints = [];
+    for(var i = 0; i<512; i++){
+      ints[i] = parseInt(dmx[i]);
+      if(ints[i] > 0){
+        length = (i+1);
+      }
+    }
+    ints.length = length;
+    return '['+ints.join(',')+']';
+  };
+
   var $ola = {
     get: {
       ItemList: function () {
@@ -82,21 +94,8 @@ angular
       Dmx: function(universe, dmx){
         var data = {
           u: universe,
-          d: ''
+          d: dmxConvert(dmx)
         };
-        var length = 0;
-        for(var i = 0; i<512; i++){
-          dmx[i] = parseInt(dmx[i]);
-          if(dmx[i] !== 0){
-            length = i;
-          }
-        }
-        dmx.length = length;
-        if(dmx.length === 0){
-          data.d = '[]';
-        }else{
-          data.d = '['+dmx.join(',')+']';
-        }
         var promise = $http({
           method: "POST",
           url: '/set_dmx',
@@ -121,7 +120,7 @@ angular
         });
         return promise;
       },
-      ReloadPlugins: function() {
+      ReloadPids: function() {
         var promise = $http.get('/reload_pids').then(function (response){
           return response.data;
         });
@@ -163,12 +162,26 @@ angular
     $scope.Ports = data;
   });
 }])
-.controller('universeCtrl', ['$scope', '$ola', '$routeParams', function ($scope, $ola, $routeParams) {
+.controller('universeCtrl', ['$scope', '$ola', '$routeParams', '$interval', function ($scope, $ola, $routeParams, $interval) {
   $scope.dmx = [];
   $scope.Universe = $routeParams.id;
-  $ola.get.Dmx($scope.Universe).then(function (data) {
-    $scope.dmx = data.dmx;
+  var dmxGet = $interval(function(){
+    $ola.get.Dmx($scope.Universe).then(function (data) {
+      for(var i = 0; i<512;i++){
+        $scope.dmx[i] = (typeof(data.dmx[i]) === "number") ? data.dmx[i] : 0;
+      }
+    });
+  }, 100);
+  $scope.$on('$destroy', function() {
+    $interval.cancel(dmxGet);
   });
+  $scope.getColor = function(i){
+    if(i>140){
+      return 'black';
+    }else{
+      return 'white';
+    }
+  };
 }])
 .controller('sliderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', function ($scope, $ola, $routeParams, $window, $interval) {
   $scope.get = [];
@@ -184,13 +197,11 @@ angular
       $scope.get[i] = j;
     }
   };
-  $scope.light(0);
   var dmxGet = $interval(function(){
     $ola.get.Dmx($scope.Universe).then(function (data) {
-      for(var i = 0; i<data.dmx.length;i++){
-        $scope.get[i] = (typeof(data.dmx[i]) === 'number') ? parseInt(data.dmx[i]) : 0;
+      for(var i = 0; i<512;i++){
+        $scope.get[i] = (typeof(data.dmx[i]) === "number") ? data.dmx[i] : 0;
       }
-      $window.console.log(data);
     });
   }, 1000);
   $scope.getColor = function(i){
@@ -316,7 +327,8 @@ angular
   otherwise({
     redirectTo: '/'
   });
-}]).filter('startFrom', function () {
+}])
+.filter('startFrom', function () {
   return function (input, start) {
     start = parseInt(start); //parse to int
     return input.slice(start);

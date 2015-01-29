@@ -1,8 +1,3 @@
-.channel{
-    width: 40px;
-    text-align: center;
-    display: inline-block;
-}
 .slider-slider{
     writing-mode: vertical-rl; /* IE */
     -webkit-appearance: slider-vertical;
@@ -73,4 +68,16 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus{
 .row{
     padding: 5px;
     text-align: center;
+}
+.index, .value{
+  text-align: center;
+  width: 100%;
+  height: 50%;
+}
+.channel{
+  width: 40px;
+  text-align: center;
+  display: inline-block;
+  border: solid #337ab7 1px;
+  border-radius: 4px;
 }

@@ -1,6 +1,5 @@
 /*jslint node: true */
 "use strict";
-var saveLicense = require('uglify-save-license');
 module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -25,7 +24,13 @@ module.exports = function (grunt) {
                         dest: '../olad/www/views/',
                         flatten: true,
                         filter: 'isFile'
-                    }
+                    },
+                  {
+                    expand: true,
+                    src: 'src/libs/*',
+                    dest: '../olad/www/libs/',
+                    flatten: true
+                  }
                 ]
             }
         },
@@ -46,15 +51,6 @@ module.exports = function (grunt) {
                     cleanup: true,
                     layout: 'byComponent'
                 }
-            },
-            build: {
-                options: {
-                    targetDir: '../olad/www//libs',
-                    install: true,
-                    copy: true,
-                    cleanup: true,
-                    layout: 'byComponent'
-                }
             }
         },
 
@@ -67,7 +63,6 @@ module.exports = function (grunt) {
                     mangle: true,
                     sourceMap: true,
                     sourceMapName: '../olad/www/js/app.min.js.map',
-                    preserveComments: saveLicense
                 }
             },
             libInclude:{
@@ -124,7 +119,7 @@ module.exports = function (grunt) {
             },
             build: {
                 files: ['Gruntfile.js', 'src/js/*.js', 'src/*.html', 'src/css/*.css', 'src/views/*.html'],
-                tasks: ['jshint:dev', 'htmlrefs:index', 'bower:build', 'copy:build', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default'],
+                tasks: ['jshint:dev', 'htmlrefs:index', 'copy:build', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default'],
                 options: {
                     atBegin: true
                 }
@@ -153,5 +148,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dev-server', ['bower:dev', 'connect:dev', 'watch:dev']);
     grunt.registerTask('build-server', ['connect:build', 'watch:build']);
-    grunt.registerTask('build', ['clean:build', 'htmlrefs:index', 'bower:build', 'copy:build', 'jshint:dev', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default']);
+    grunt.registerTask('build', ['clean:build', 'htmlrefs:index', 'copy:build', 'jshint:dev', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default']);
 };
