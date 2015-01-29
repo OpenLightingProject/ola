@@ -389,7 +389,7 @@ bool EspNetNode::SendEspPollReply(const IPV4Address &dst) {
   packet.reply.name[ESPNET_NAME_LENGTH - 1] = 0;
 
   packet.reply.option = m_options;
-  packet.reply.option = 0x01;
+  packet.reply.option |= 0x01;  // We're always configured
   packet.reply.tos = m_tos;
   packet.reply.ttl = m_ttl;
   packet.reply.config.listen = 0x04;

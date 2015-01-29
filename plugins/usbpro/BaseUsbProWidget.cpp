@@ -127,7 +127,7 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
   int fd;
-  if (!ola::io::Open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
+  if (!ola::io::TryOpen(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
     return NULL;
   }
 

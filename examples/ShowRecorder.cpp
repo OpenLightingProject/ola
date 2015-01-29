@@ -28,11 +28,11 @@
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
 #include <ola/OlaDevice.h>
 #include <ola/StringUtils.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -40,9 +40,10 @@
 
 #include "examples/ShowRecorder.h"
 
-using std::vector;
-using std::string;
 using ola::DmxBuffer;
+using ola::client::Result;
+using std::string;
+using std::vector;
 
 
 ShowRecorder::ShowRecorder(const string &filename,
@@ -69,14 +70,14 @@ int ShowRecorder::Init() {
   if (!m_saver.Open())
     return ola::EXIT_CANTCREAT;
 
-  m_client.GetClient()->SetDmxCallback(
+  m_client.GetClient()->SetDMXCallback(
       ola::NewCallback(this, &ShowRecorder::NewFrame));
 
   vector<unsigned int>::const_iterator iter = m_universes.begin();
   for (; iter != m_universes.end(); ++iter) {
     m_client.GetClient()->RegisterUniverse(
         *iter,
-        ola::REGISTER,
+        ola::client::REGISTER,
         ola::NewSingleCallback(this, &ShowRecorder::RegisterComplete));
   }
 
@@ -104,22 +105,19 @@ void ShowRecorder::Stop() {
 /**
  * Record the new frame
  */
-void ShowRecorder::NewFrame(unsigned int universe,
-                            const DmxBuffer &data,
-                            const string &error) {
-  if (!error.empty()) {
-    OLA_WARN << error;
-    return;
-  }
-
+void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
+                            const ola::DmxBuffer &data) {
   ola::TimeStamp now;
   m_clock.CurrentTime(&now);
-  m_saver.NewFrame(now, universe, data);
+  m_saver.NewFrame(now, meta.universe, data);
   m_frame_count++;
 }
 
 
-void ShowRecorder::RegisterComplete(const string &error) {
-  OLA_INFO << "register complete";
-  (void) error;
+void ShowRecorder::RegisterComplete(const Result &result) {
+  if (!result.Success()) {
+    OLA_WARN << "Register failed: " << result.Error();
+  } else {
+    OLA_INFO << "Register completed";
+  }
 }

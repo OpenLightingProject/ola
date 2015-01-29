@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FakeSPIWriter.h
+ * FakeSPIWriter.cpp
  * The SPIWriter used for testing.
  * Copyright (C) 2013 Simon Newton
  */
@@ -81,11 +81,12 @@ unsigned int FakeSPIWriter::LastWriteSize() const {
   return m_last_write_size;
 }
 
-void FakeSPIWriter::CheckDataMatches(unsigned int line,
-                                     const uint8_t *expected,
-                                     unsigned int length) {
+void FakeSPIWriter::CheckDataMatches(
+    const ola::testing::SourceLine &source_line,
+    const uint8_t *expected,
+    unsigned int length) {
   MutexLocker lock(&m_mutex);
-  ola::testing::ASSERT_DATA_EQUALS(line, expected, length, m_data,
+  ola::testing::ASSERT_DATA_EQUALS(source_line, expected, length, m_data,
                                    m_last_write_size);
 }
 }  // namespace spi

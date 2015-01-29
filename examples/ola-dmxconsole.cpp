@@ -45,16 +45,16 @@
 #include <ola/Callback.h>
 #include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
 
 #include <string>
 
-using ola::OlaCallbackClient;
-using ola::OlaCallbackClientWrapper;
+using ola::client::OlaClient;
+using ola::client::OlaClientWrapper;
 using ola::io::SelectServer;
 using std::string;
 
@@ -115,7 +115,7 @@ static int palette[MAXCOLOR];
 static bool screen_to_small = false;
 static int channels_offset = 1;
 
-OlaCallbackClient *client;
+OlaClient *client;
 SelectServer *ss;
 
 
@@ -152,7 +152,7 @@ uint64_t timeGetTime() {
 /* set all DMX channels */
 void setall() {
   ola::DmxBuffer buffer(dmx, ola::DMX_UNIVERSE_SIZE);
-  client->SendDmx(universe, buffer);
+  client->SendDMX(universe, buffer, ola::client::SendDMXArgs());
 }
 
 /* set current DMX channel */
@@ -807,7 +807,7 @@ int main(int argc, char *argv[]) {
   universe = opts.universe;
 
   /* set up ola connection */
-  OlaCallbackClientWrapper ola_client;
+  OlaClientWrapper ola_client;
   ola::io::UnmanagedFileDescriptor stdin_descriptor(0);
   stdin_descriptor.SetOnData(ola::NewCallback(&stdin_ready));
 
