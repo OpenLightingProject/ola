@@ -107,6 +107,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/views/overview-universe.html", HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/views/add-universe.html", HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/views/info-plugins.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/info-plugin.html", HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/views/overview.html", HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/views/keypad-universe.html", HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/views/patch-universe.html", HTTPServer::CONTENT_TYPE_HTML);

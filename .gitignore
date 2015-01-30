@@ -197,3 +197,4 @@ javascript/node_modules
 .project
 .autotools
 .cproject
+.settings

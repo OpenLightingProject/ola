@@ -188,22 +188,28 @@ angular
   $scope.list = [];
   $scope.last = 0;
   $scope.offset = 0;
+  $scope.send = false;
   $scope.Universe = $routeParams.id;
   for (var i = 0; i < 512; i++) {
     $scope.list[i] = i;
+    $scope.get[i] = 0;
   }
+
   $scope.light = function (j) {
     for (i in $scope.get) {
       $scope.get[i] = j;
     }
   };
+
   var dmxGet = $interval(function(){
     $ola.get.Dmx($scope.Universe).then(function (data) {
-      for(var i = 0; i<512;i++){
-        $scope.get[i] = (typeof(data.dmx[i]) === "number") ? data.dmx[i] : 0;
+      for(var i = 0; i<data.dmx.length;i++){
+        $scope.get[i] = data.dmx[i];
       }
+      $scope.send = true;
     });
   }, 1000);
+
   $scope.getColor = function(i){
     if(i>140){
       return 'black';
@@ -215,18 +221,22 @@ angular
     return $window.Math.ceil(i);
   };
   $scope.$watchCollection("get", function () {
-    $ola.post.Dmx($scope.Universe, $scope.get);
+    if($scope.send){
+      $ola.post.Dmx($scope.Universe, $scope.get);
+    }
   });
-  $scope.up = function () {
-    if (($scope.offset + 1) != $window.Math.ceil(512 / $scope.limit)) {
-      $scope.offset++;
+  $scope.page = function (d) {
+    if(d === 1){
+      if (($scope.offset + 1) != $window.Math.ceil(512 / $scope.limit)) {
+        $scope.offset++;
+      }
+    }else if(d === 0){
+      if ($scope.offset !== 0) {
+        $scope.offset--;
+      }
     }
   };
-  $scope.down = function () {
-    if ($scope.offset !== 0) {
-      $scope.offset--;
-    }
-  };
+
   $scope.limit = ($window.Math.floor(($window.innerWidth * 0.99 )/ 66));
   $scope.width = {'width': ($window.Math.floor(($window.innerWidth * 0.99 ) / $scope.limit) - (52 / $scope.limit)) + 'px'};
 
@@ -270,10 +280,26 @@ angular
 
 }])
 .controller('infoPlugin', ['$scope', '$routeParams', '$ola', function ($scope, $routeParams, $ola) {
-  $scope.InfoPlugin = {};
   $ola.get.InfoPlugin($routeParams.id).then(function (data) {
-    $scope.InfoPlugin = data;
+    $scope.active = data.active;
+    $scope.enabled = data.enabled;
+    $scope.name = data.name;
+    document.getElementById('description').innerHTML = '';
+    data.description.split('\\n').forEach(function (line){
+      document.getElementById('description').innerText += line;
+      document.getElementById('description').innerHTML += '<br />';
+    });
+    console.log(data);
   });
+
+  $scope.stateColor = function(val){
+    if(val){
+      return{'background-color': 'green'};
+    }else{
+      return{'background-color': 'red'};
+    }
+  };
+
 }])
 .controller('infoPlugins', ['$scope', '$ola', function ($scope, $ola) {
 

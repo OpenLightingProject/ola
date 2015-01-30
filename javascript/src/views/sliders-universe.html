@@ -8,7 +8,7 @@
 </ul>
 <div class="row">
     <div class="col-xs-12 navigate">
-        <button ng-click="down()" class="col-xs-3 left-col">
+        <button ng-click="page(0)" class="col-xs-3 left-col">
             <span class="glyphicon glyphicon-arrow-left"></span>
         </button>
         <button ng-click="light(0)" class="col-xs-2 off">
@@ -20,7 +20,7 @@
         <button ng-click="light(255)" class="col-xs-2 on">
             <img height="16" width="16" src="/img/light_bulb.png">
         </button>
-        <button ng-click="up()" class="col-xs-3 right-col">
+        <button ng-click="page(1)" class="col-xs-3 right-col">
             <span class="glyphicon glyphicon-arrow-right"></span>
         </button>
     </div>
@@ -38,4 +38,3 @@
         <span class="value-span" ng-style="{'background-color': 'rgb('+c+','+c+','+c+')', 'color': getColor(c)}">{{c}}</span>
     </div>
 </div>
-
