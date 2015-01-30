@@ -104,44 +104,79 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
 
   // these are the static files for the new UI
   m_server.RegisterFile("/", "/index.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/overview-universe.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/add-universe.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/info-plugins.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/info-plugin.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/overview-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/add-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/info-plugins.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/info-plugin.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/views/overview.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/keypad-universe.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/patch-universe.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/settings-universe.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/sliders-universe.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/overview-universes.html", HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/views/rdm-universe.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/keypad-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/patch-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/settings-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/sliders-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/overview-universes.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/views/rdm-universe.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/js/app.js", HTTPServer::CONTENT_TYPE_JS);
   m_server.RegisterFile("/js/app.min.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/jquery/js/jquery.min.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/jquery/js/jquery.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/angular-route/js/angular-route.min.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/angular-route/js/angular-route.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/angular/js/angular.min.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/angular/js/angular.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/bootstrap/js/bootstrap.min.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/bootstrap/js/bootstrap.js", HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile("/libs/bootstrap/fonts/glyphicons-halflings-regular.woff", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/bootstrap/fonts/glyphicons-halflings-regular.svg", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/bootstrap/fonts/glyphicons-halflings-regular.eot", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/bootstrap/css/bootstrap.css.map", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/jquery/js/jquery.min.map", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/angular-route/js/angular-route.min.js.map", HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile("/libs/jquery/js/jquery.min.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/jquery/js/jquery.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/angular-route/js/angular-route.min.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/angular-route/js/angular-route.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/angular/js/angular.min.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/angular/js/angular.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/bootstrap/js/bootstrap.min.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/libs/bootstrap/js/bootstrap.js",
+                        HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/libs/bootstrap/fonts/glyphicons-halflings-regular.woff",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/libs/bootstrap/fonts/glyphicons-halflings-regular.svg",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/libs/bootstrap/fonts/glyphicons-halflings-regular.eot",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile("/libs/bootstrap/css/bootstrap.css.map",
+                        HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile("/libs/jquery/js/jquery.min.map",
+                        HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile("/libs/angular-route/js/angular-route.min.js.map",
+                        HTTPServer::CONTENT_TYPE_OCT);
   m_server.RegisterFile("/js/app.min.js.map", HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/libs/angular/js/angular.min.js.map", HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile("/libs/angular/js/angular.min.js.map",
+                        HTTPServer::CONTENT_TYPE_OCT);
   m_server.RegisterFile("/css/style.css", HTTPServer::CONTENT_TYPE_CSS);
   m_server.RegisterFile("/css/style.min.css", HTTPServer::CONTENT_TYPE_CSS);
-  m_server.RegisterFile("/libs/bootstrap/css/bootstrap.min.css", HTTPServer::CONTENT_TYPE_CSS);
-  m_server.RegisterFile("/libs/bootstrap/css/bootstrap.css", HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile("/libs/bootstrap/css/bootstrap.min.css",
+                        HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile("/libs/bootstrap/css/bootstrap.css",
+                        HTTPServer::CONTENT_TYPE_CSS);
   m_server.RegisterFile("/img/light_bulb.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/img/logo.png", HTTPServer::CONTENT_TYPE_PNG);
-  m_server.RegisterFile("/img/light_bulb_off.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/img/light_bulb_off.png",
+                        HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/img/logo-mini.png", HTTPServer::CONTENT_TYPE_PNG);
 
   m_start_time_t = time(NULL);
