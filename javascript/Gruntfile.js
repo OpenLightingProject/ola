@@ -27,9 +27,10 @@ module.exports = function (grunt) {
                     },
                   {
                     expand: true,
-                    src: 'src/libs/*',
-                    dest: '../olad/www/libs/',
-                    flatten: true
+                    cwd: 'src/libs',
+                    src: '**',
+                    dest: '../olad/www/libs',
+                    flatten: false
                   }
                 ]
             }

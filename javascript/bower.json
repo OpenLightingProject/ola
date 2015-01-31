@@ -31,7 +31,7 @@
       "js": ["*.min.js"]
     },
     "jquery": {
-      "js": "dist/"
+      "js": "dist/*.min.js"
     },
     "bootstrap": {
       "js": "dist/js/bootstrap.min.js",
