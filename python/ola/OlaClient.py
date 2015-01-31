@@ -515,11 +515,11 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def PluginDescription(self, callback, plugin_id):
-    """Fetch the list of plugins.
+    """Fetch the description of a plugin.
 
     Args:
       callback: the function to call once complete, takes two arguments, a
-        RequestStatus object and a list of Plugin objects
+        RequestStatus object and the plugin description text.
       plugin_id: the id of the plugin
 
     Returns:
@@ -585,7 +585,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def FetchDmx(self, universe, callback):
-    """Fetch a list of universes from the server
+    """Fetch DMX data from the server
 
     Args:
       universe: the universe to fetch the data for
@@ -612,7 +612,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Send DMX data to the server
 
     Args:
-      universe: the universe to fetch the data for
+      universe: the universe to send the data for
       data: An array object with the DMX data
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
@@ -661,10 +661,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def SetUniverseMergeMode(self, universe, merge_mode, callback=None):
-    """Set the merge_mode of a universe.
+    """Set the merge mode of a universe.
 
     Args:
-      universe: the universe to set the name of
+      universe: the universe to set the merge mode of
       merge_mode: either Universe.HTP or Universe.LTP
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
@@ -690,7 +690,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Register to receive dmx updates for a universe.
 
     Args:
-      universe: the universe to set the name of
+      universe: the universe to register to
       action: OlaClient.REGISTER or OlaClient.UNREGISTER
       data_callback: the function to be called when there is new data, passed
         a single argument of type array.
@@ -723,7 +723,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Patch a port to a universe.
 
     Args:
-      device_alias: the alias of the device to configure
+      device_alias: the alias of the device of which to patch a port
       port: the id of the port
       is_output: select the input or output port
       action: OlaClient.PATCH or OlcClient.UNPATCH
