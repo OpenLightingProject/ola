@@ -188,28 +188,18 @@ EXTRA_DIST += \
   javascript/README.md \
   javascript/bower.json \
   javascript/src/js/app.js \
-  javascript/src/js/requests.txt \
   javascript/src/index.html \
   javascript/src/css/style.css \
   javascript/src/libs/jquery/js/jquery.min.js \
-  javascript/src/libs/jquery/js/jquery.min.map \
-  javascript/src/libs/jquery/js/jquery.js \
-  javascript/src/libs/angular-route/js/angular-route.min.js.map \
   javascript/src/libs/angular-route/js/angular-route.min.js \
-  javascript/src/libs/angular-route/js/angular-route.js \
   javascript/src/libs/angular/js/angular.min.js \
-  javascript/src/libs/angular/js/angular.min.js.map \
-  javascript/src/libs/angular/js/angular.js \
   javascript/src/libs/bootstrap/js/bootstrap.min.js \
-  javascript/src/libs/bootstrap/js/bootstrap.js \
   javascript/src/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
   javascript/src/libs/bootstrap/fonts/glyphicons-halflings-regular.svg \
   javascript/src/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf \
   javascript/src/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
   javascript/src/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2 \
   javascript/src/libs/bootstrap/css/bootstrap.min.css \
-  javascript/src/libs/bootstrap/css/bootstrap.css \
-  javascript/src/libs/bootstrap/css/bootstrap.css.map \
   javascript/src/img/light_bulb.png \
   javascript/src/img/logo.png \
   javascript/src/img/light_bulb_off.png \
