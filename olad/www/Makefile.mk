@@ -26,11 +26,8 @@ dist_views_DATA = \
     olad/www/views/overview-universes.html \
     olad/www/views/rdm-universe.html
 dist_js_DATA = \
-    olad/www/js/app.js \
-    olad/www/js/app.min.js \
-    olad/www/js/app.min.js.map
+    olad/www/js/app.min.js 
 dist_css_DATA = \
-    olad/www/css/style.css \
     olad/www/css/style.min.css
 dist_img_DATA = \
     olad/www/img/light_bulb.png \
@@ -38,20 +35,13 @@ dist_img_DATA = \
     olad/www/img/light_bulb_off.png \
     olad/www/img/logo-mini.png
 dist_jquery_DATA = \
-    olad/www/libs/jquery/js/jquery.min.map \
-    olad/www/libs/jquery/js/jquery.min.js \
-    olad/www/libs/jquery/js/jquery.js
+    olad/www/libs/jquery/js/jquery.min.js
 dist_angularroute_DATA = \
-    olad/www/libs/angular-route/js/angular-route.min.js.map \
-    olad/www/libs/angular-route/js/angular-route.min.js \
-    olad/www/libs/angular-route/js/angular-route.js
+    olad/www/libs/angular-route/js/angular-route.min.js
 dist_angular_DATA = \
-    olad/www/libs/angular/js/angular.min.js.map \
-    olad/www/libs/angular/js/angular.min.js \
-    olad/www/libs/angular/js/angular.js
+    olad/www/libs/angular/js/angular.min.js
 dist_bootjs_DATA = \
-    olad/www/libs/bootstrap/js/bootstrap.min.js \
-    olad/www/libs/bootstrap/js/bootstrap.js
+    olad/www/libs/bootstrap/js/bootstrap.min.js
 dist_bootfonts_DATA = \
     olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
     olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.svg \
@@ -59,6 +49,4 @@ dist_bootfonts_DATA = \
     olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
     olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2
 dist_bootcss_DATA = \
-    olad/www/libs/bootstrap/css/bootstrap.css.map \
-    olad/www/libs/bootstrap/css/bootstrap.min.css \
-    olad/www/libs/bootstrap/css/bootstrap.css
+    olad/www/libs/bootstrap/css/bootstrap.min.css

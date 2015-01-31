@@ -28,18 +28,18 @@
   },
   "exportsOverride": {
     "angular": {
-      "js": ["*.js","*.js.map"]
+      "js": ["*.min.js"]
     },
     "jquery": {
       "js": "dist/"
     },
     "bootstrap": {
-      "js": "dist/js/bootstrap.*",
-      "css": "dist/css/bootstrap.*",
+      "js": "dist/js/bootstrap.min.js",
+      "css": "dist/css/bootstrap.min.css",
       "fonts": "dist/fonts/"
     },
     "angular-route": {
-      "js": ["*.js", "*.map"]
+      "js": ["*.min.js"]
     }
   }
 }
