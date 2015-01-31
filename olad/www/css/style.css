@@ -93,3 +93,9 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus{
   display: inline-block;
   border-radius: 20px;
 }
+.plugins{
+  width: 100%;
+  border-radius: 20px;
+  border: solid black 1px;
+  text-align: center;
+}

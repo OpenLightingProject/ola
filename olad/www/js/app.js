@@ -301,7 +301,40 @@ angular
   };
 
 }])
-.controller('infoPlugins', ['$scope', '$ola', function ($scope, $ola) {
+.controller('infoPlugins', ['$scope', '$ola', '$location', function ($scope, $ola, $location) {
+  $scope.Items = {};
+  $scope.active = [];
+  $scope.enabled = [];
+
+  $ola.get.ItemList().then(function (data) {
+    $scope.Items = data;
+    data.plugins.forEach(function(plugin){
+      $ola.get.InfoPlugin(plugin.id).then(function(data) {
+        $scope.getStyleActive(data.active, plugin.id);
+        $scope.getStyleEnabled(data.enabled, plugin.id);
+      });
+    });
+  });
+
+  $scope.go = function(id){
+    $location.path("/plugin/" + id);
+  };
+
+  $scope.getStyleActive = function(bool, id){
+    if(bool){
+      $scope.active[id] = {'background-color': 'green'};
+    }else{
+      $scope.active[id] = {'background-color': 'red'};
+    }
+  };
+
+  $scope.getStyleEnabled = function(bool, id){
+    if(bool){
+      $scope.enabled[id] = {'background-color': 'green'};
+    }else{
+      $scope.enabled[id] = {'background-color': 'red'};
+    }
+  };
 
 }])
 .config(['$routeProvider', function ($routeProvider) {
@@ -342,7 +375,7 @@ angular
     templateUrl: '/views/settings-universe.html',
     controller: 'settingUniverseCtrl'
   }).
-  when('/plugin/status', {
+  when('/plugins', {
     templateUrl: '/views/info-plugins.html',
     controller: 'infoPlugins'
   }).
