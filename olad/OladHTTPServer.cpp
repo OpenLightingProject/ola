@@ -37,7 +37,6 @@
 #include "olad/OladHTTPServer.h"
 #include "olad/OlaServer.h"
 
-
 namespace ola {
 
 using ola::client::OlaDevice;
@@ -61,7 +60,7 @@ using std::vector;
 const char OladHTTPServer::HELP_PARAMETER[] = "help";
 const char OladHTTPServer::HELP_REDIRECTION[] = "?help=1";
 const char OladHTTPServer::K_BACKEND_DISCONNECTED_ERROR[] =
-  "Failed to send request, client isn't connected";
+    "Failed to send request, client isn't connected";
 const char OladHTTPServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
 const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
@@ -129,7 +128,6 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_start_time_t = time(NULL);
 }
 
-
 /*
  * @brief Teardown
  */
@@ -140,7 +138,6 @@ OladHTTPServer::~OladHTTPServer() {
   if (m_client_socket)
     delete m_client_socket;
 }
-
 
 /**
  * @brief Setup the OLA HTTP server
@@ -154,14 +151,13 @@ bool OladHTTPServer::Init() {
     return false;
   }
   /*
-  Setup disconnect notifications.
-  m_socket->SetOnClose(
-    ola::NewSingleCallback(this, &SimpleClient::SocketClosed));
-  */
+   Setup disconnect notifications.
+   m_socket->SetOnClose(
+   ola::NewSingleCallback(this, &SimpleClient::SocketClosed));
+   */
   m_server.SelectServer()->AddReadDescriptor(m_client_socket);
   return true;
 }
-
 
 /**
  * @brief Can be called while the HTTP server is running
@@ -169,7 +165,6 @@ bool OladHTTPServer::Init() {
 void OladHTTPServer::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
   m_rdm_module.SetPidStore(pid_store);
 }
-
 
 /**
  * @brief Print the server stats JSON
@@ -207,7 +202,6 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   return r;
 }
 
-
 /**
  * Print the list of universes / plugins as a json string
  * @param request the HTTPRequest
@@ -217,12 +211,9 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
                                            HTTPResponse *response) {
   m_client.FetchPluginList(
-      NewSingleCallback(this,
-                        &OladHTTPServer::HandlePluginList,
-                        response));
+      NewSingleCallback(this, &OladHTTPServer::HandlePluginList, response));
   return MHD_YES;
 }
-
 
 /**
  * @brief Print the plugin info as a JSON string
@@ -241,12 +232,10 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
 
   m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
-      NewSingleCallback(this,
-                        &OladHTTPServer::HandlePartialPluginInfo,
+      NewSingleCallback(this, &OladHTTPServer::HandlePartialPluginInfo,
                         response, plugin_id));
   return MHD_YES;
 }
-
 
 /**
  * @brief Return information about a universe
@@ -265,13 +254,10 @@ int OladHTTPServer::JsonUniverseInfo(OLA_UNUSED const HTTPRequest *request,
 
   m_client.FetchUniverseInfo(
       universe_id,
-      NewSingleCallback(this,
-                        &OladHTTPServer::HandleUniverseInfo,
-                        response));
+      NewSingleCallback(this, &OladHTTPServer::HandleUniverseInfo, response));
 
   return MHD_YES;
 }
-
 
 /**
  * @brief Return a list of unbound ports
@@ -288,8 +274,7 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
   if (uni_id.empty()) {
     // get all available ports
     m_client.FetchCandidatePorts(
-        NewSingleCallback(this,
-                          &OladHTTPServer::HandleCandidatePorts,
+        NewSingleCallback(this, &OladHTTPServer::HandleCandidatePorts,
                           response));
   } else {
     unsigned int universe_id;
@@ -298,13 +283,11 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
 
     m_client.FetchCandidatePorts(
         universe_id,
-        NewSingleCallback(this,
-                          &OladHTTPServer::HandleCandidatePorts,
+        NewSingleCallback(this, &OladHTTPServer::HandleCandidatePorts,
                           response));
   }
   return MHD_YES;
 }
-
 
 /**
  * @brief Create a new universe by binding one or more ports.
@@ -327,11 +310,8 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
     return ServeHelpRedirect(response);
 
   ActionQueue *action_queue = new ActionQueue(
-      NewSingleCallback(this,
-                        &OladHTTPServer::CreateUniverseComplete,
-                        response,
-                        universe_id,
-                        !name.empty()));
+      NewSingleCallback(this, &OladHTTPServer::CreateUniverseComplete, response,
+                        universe_id, !name.empty()));
 
   // add patch actions here
   string add_port_ids = request->GetPostParameter("add_ports");
@@ -344,7 +324,6 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
   action_queue->NextAction();
   return MHD_YES;
 }
-
 
 /**
  * @brief Modify an existing universe.
@@ -372,8 +351,7 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
 
   ActionQueue *action_queue = new ActionQueue(
-      NewSingleCallback(this,
-                        &OladHTTPServer::ModifyUniverseComplete,
+      NewSingleCallback(this, &OladHTTPServer::ModifyUniverseComplete,
                         response));
 
   action_queue->AddAction(
@@ -381,9 +359,9 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
 
   if (merge_mode == "LTP" || merge_mode == "HTP") {
     OlaUniverse::merge_mode mode = (
-      merge_mode == "LTP" ? OlaUniverse::MERGE_LTP : OlaUniverse::MERGE_HTP);
+        merge_mode == "LTP" ? OlaUniverse::MERGE_LTP : OlaUniverse::MERGE_HTP);
     action_queue->AddAction(
-      new SetMergeModeAction(&m_client, universe_id, mode));
+        new SetMergeModeAction(&m_client, universe_id, mode));
   }
 
   string remove_port_ids = request->GetPostParameter("remove_ports");
@@ -398,15 +376,13 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
   return MHD_YES;
 }
 
-
 /**
  * @brief Handle the get DMX command
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::GetDmx(const HTTPRequest *request,
-                           HTTPResponse *response) {
+int OladHTTPServer::GetDmx(const HTTPRequest *request, HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "?u=[universe]");
   string uni_id = request->GetParameter("u");
@@ -420,7 +396,6 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
   return MHD_YES;
 }
 
-
 /**
  * @brief Handle the set DMX command
  * @param request the HTTPRequest
@@ -430,7 +405,8 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
                                  HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
-    return ServeUsage(response,
+    return ServeUsage(
+        response,
         "POST u=[universe], d=[DMX data (a comma separated list of values)]");
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
@@ -448,7 +424,6 @@ int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
   m_client.SendDMX(universe_id, buffer, args);
   return MHD_YES;
 }
-
 
 /**
  * @brief Cause the server to shutdown
@@ -473,20 +448,17 @@ int OladHTTPServer::DisplayQuit(OLA_UNUSED const HTTPRequest *request,
   return r;
 }
 
-
 /**
  * @brief Reload all plugins
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OladHTTPServer::ReloadPlugins(const HTTPRequest*,
-                                  HTTPResponse *response) {
+int OladHTTPServer::ReloadPlugins(const HTTPRequest*, HTTPResponse *response) {
   m_client.ReloadPlugins(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
   return MHD_YES;
 }
-
 
 /**
  * @brief Reload the PID Store.
@@ -504,7 +476,6 @@ int OladHTTPServer::ReloadPidStore(OLA_UNUSED const HTTPRequest *request,
   delete response;
   return r;
 }
-
 
 /**
  * @brief Handle the plugin list callback
@@ -525,9 +496,7 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
   // fire off the universe request now. the main server is running in a
   // separate thread.
   m_client.FetchUniverseList(
-      NewSingleCallback(this,
-                        &OladHTTPServer::HandleUniverseList,
-                        response,
+      NewSingleCallback(this, &OladHTTPServer::HandleUniverseList, response,
                         json));
 
   JsonArray *plugins_json = json->AddArray("plugins");
@@ -538,7 +507,6 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
     plugin->Add("id", iter->Id());
   }
 }
-
 
 /**
  * @brief Handle the universe list callback
@@ -572,7 +540,6 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
   delete json;
 }
 
-
 /**
  * @brief Handle the plugin description response.
  * @param response the HTTPResponse that is associated with the request.
@@ -590,9 +557,8 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
   }
   m_client.FetchPluginState(
       (ola_plugin_id) plugin_id,
-      NewSingleCallback(this,
-                        &OladHTTPServer::HandlePluginInfo,
-                        response, description));
+      NewSingleCallback(this, &OladHTTPServer::HandlePluginInfo, response,
+                        description));
 }
 
 /**
@@ -636,7 +602,6 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
   delete response;
 }
 
-
 /**
  * @brief Handle the universe info
  * @param response the HTTPResponse that is associated with the request.
@@ -657,25 +622,20 @@ void OladHTTPServer::HandleUniverseInfo(HTTPResponse *response,
   // separate thread.
   m_client.FetchDeviceInfo(
       ola::OLA_PLUGIN_ALL,
-      NewSingleCallback(this,
-                        &OladHTTPServer::HandlePortsForUniverse,
-                        response,
-                        json,
-                        universe.Id()));
+      NewSingleCallback(this, &OladHTTPServer::HandlePortsForUniverse, response,
+                        json, universe.Id()));
 
   json->Add("id", universe.Id());
   json->Add("name", universe.Name());
   json->Add("merge_mode",
-           (universe.MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP"));
+            (universe.MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP"));
 }
 
-
-void OladHTTPServer::HandlePortsForUniverse(
-    HTTPResponse *response,
-    JsonObject *json,
-    unsigned int universe_id,
-    const client::Result &result,
-    const vector<OlaDevice> &devices) {
+void OladHTTPServer::HandlePortsForUniverse(HTTPResponse *response,
+                                            JsonObject *json,
+                                            unsigned int universe_id,
+                                            const client::Result &result,
+                                            const vector<OlaDevice> &devices) {
   if (result.Success()) {
     vector<OlaDevice>::const_iterator iter = devices.begin();
     vector<OlaInputPort>::const_iterator input_iter;
@@ -687,7 +647,7 @@ void OladHTTPServer::HandlePortsForUniverse(
     for (; iter != devices.end(); ++iter) {
       const vector<OlaInputPort> &input_ports = iter->InputPorts();
       for (input_iter = input_ports.begin(); input_iter != input_ports.end();
-           ++input_iter) {
+          ++input_iter) {
         if (input_iter->IsActive() && input_iter->Universe() == universe_id) {
           JsonObject *obj = input_ports_json->AppendObject();
           PortToJson(obj, *iter, *input_iter, false);
@@ -696,9 +656,8 @@ void OladHTTPServer::HandlePortsForUniverse(
 
       const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
       for (output_iter = output_ports.begin();
-           output_iter != output_ports.end(); ++output_iter) {
-        if (output_iter->IsActive() &&
-            output_iter->Universe() == universe_id) {
+          output_iter != output_ports.end(); ++output_iter) {
+        if (output_iter->IsActive() && output_iter->Universe() == universe_id) {
           JsonObject *obj = output_ports_json->AppendObject();
           PortToJson(obj, *iter, *output_iter, true);
         }
@@ -713,17 +672,15 @@ void OladHTTPServer::HandlePortsForUniverse(
   delete response;
 }
 
-
 /**
  * @brief Handle the list of candidate ports
  * @param response the HTTPResponse that is associated with the request.
  * @param result the result of the API call
  * @param devices the possbile devices & ports
  */
-void OladHTTPServer::HandleCandidatePorts(
-    HTTPResponse *response,
-    const client::Result &result,
-    const vector<OlaDevice> &devices) {
+void OladHTTPServer::HandleCandidatePorts(HTTPResponse *response,
+                                          const client::Result &result,
+                                          const vector<OlaDevice> &devices) {
   if (!result.Success()) {
     m_server.ServeError(response, result.Error());
     return;
@@ -737,14 +694,14 @@ void OladHTTPServer::HandleCandidatePorts(
   for (; iter != devices.end(); ++iter) {
     const vector<OlaInputPort> &input_ports = iter->InputPorts();
     for (input_iter = input_ports.begin(); input_iter != input_ports.end();
-         ++input_iter) {
+        ++input_iter) {
       JsonObject *obj = json.AppendObject();
       PortToJson(obj, *iter, *input_iter, false);
     }
 
     const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
-    for (output_iter = output_ports.begin();
-         output_iter != output_ports.end(); ++output_iter) {
+    for (output_iter = output_ports.begin(); output_iter != output_ports.end();
+        ++output_iter) {
       JsonObject *obj = json.AppendObject();
       PortToJson(obj, *iter, *output_iter, true);
     }
@@ -756,7 +713,6 @@ void OladHTTPServer::HandleCandidatePorts(
   delete response;
 }
 
-
 /*
  * @brief Schedule a callback to send the new universe response to the client
  */
@@ -767,20 +723,16 @@ void OladHTTPServer::CreateUniverseComplete(HTTPResponse *response,
   // this is a trick to unwind the stack and return control to a method outside
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
-    0,
-    NewSingleCallback(this, &OladHTTPServer::SendCreateUniverseResponse,
-                      response, universe_id, included_name, action_queue));
+      0,
+      NewSingleCallback(this, &OladHTTPServer::SendCreateUniverseResponse,
+                        response, universe_id, included_name, action_queue));
 }
-
-
 
 /*
  * @brief Send the response to a new universe request
  */
 void OladHTTPServer::SendCreateUniverseResponse(
-    HTTPResponse *response,
-    unsigned int universe_id,
-    bool included_name,
+    HTTPResponse *response, unsigned int universe_id, bool included_name,
     class ActionQueue *action_queue) {
   unsigned int action_count = action_queue->ActionCount();
   if (included_name)
@@ -803,7 +755,6 @@ void OladHTTPServer::SendCreateUniverseResponse(
   delete response;
 }
 
-
 /*
  * @brief Schedule a callback to send the modify universe response to the client
  */
@@ -812,11 +763,10 @@ void OladHTTPServer::ModifyUniverseComplete(HTTPResponse *response,
   // this is a trick to unwind the stack and return control to a method outside
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
-    0,
-    NewSingleCallback(this, &OladHTTPServer::SendModifyUniverseResponse,
-                     response, action_queue));
+      0,
+      NewSingleCallback(this, &OladHTTPServer::SendModifyUniverseResponse,
+                        response, action_queue));
 }
-
 
 /*
  * @brief Send the response to a modify universe request.
@@ -876,7 +826,6 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
   delete response;
 }
 
-
 /**
  * @brief Handle the set DMX response.
  * @param response the HTTPResponse that is associated with the request.
@@ -894,14 +843,11 @@ void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
   delete response;
 }
 
-
 /**
  * @brief Add the json representation of this port to the ostringstream
  */
-void OladHTTPServer::PortToJson(JsonObject *json,
-                                const OlaDevice &device,
-                                const OlaPort &port,
-                                bool is_output) {
+void OladHTTPServer::PortToJson(JsonObject *json, const OlaDevice &device,
+                                const OlaPort &port, bool is_output) {
   ostringstream str;
   str << device.Alias() << "-" << (is_output ? "O" : "I") << "-" << port.Id();
 
@@ -922,13 +868,13 @@ void OladHTTPServer::PortToJson(JsonObject *json,
     }
     priority_json->Add("value", static_cast<int>(priority));
     priority_json->Add(
-      "current_mode",
-      (port.PriorityMode() == PRIORITY_MODE_INHERIT ?  "inherit" : "static"));
-    priority_json->Add("priority_capability",
-      (port.PriorityCapability() == CAPABILITY_STATIC ? "static" : "full"));
+        "current_mode",
+        (port.PriorityMode() == PRIORITY_MODE_INHERIT ? "inherit" : "static"));
+    priority_json->Add(
+        "priority_capability",
+        (port.PriorityCapability() == CAPABILITY_STATIC ? "static" : "full"));
   }
 }
-
 
 /**
  * @brief Add the Patch Actions to the ActionQueue.
@@ -946,16 +892,11 @@ void OladHTTPServer::AddPatchActions(ActionQueue *action_queue,
   DecodePortIds(port_id_string, &ports);
 
   for (iter = ports.begin(); iter != ports.end(); ++iter) {
-    action_queue->AddAction(new PatchPortAction(
-      &m_client,
-      iter->device_alias,
-      iter->port,
-      iter->direction,
-      universe,
-      port_action));
+    action_queue->AddAction(
+        new PatchPortAction(&m_client, iter->device_alias, iter->port,
+                            iter->direction, universe, port_action));
   }
 }
-
 
 /**
  * @brief Add the Priority Actions to the ActionQueue.
@@ -975,27 +916,22 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
     string mode = request->GetPostParameter(priority_mode_id);
 
     if (mode == "inherit") {
-      action_queue->AddAction(new PortPriorityInheritAction(
-        &m_client,
-        iter->device_alias,
-        iter->port,
-        iter->direction));
+      action_queue->AddAction(
+          new PortPriorityInheritAction(&m_client, iter->device_alias,
+                                        iter->port, iter->direction));
     } else if (mode == "static" || mode == "") {
       // an empty mode param means this is a static port
       string value = request->GetPostParameter(priority_id);
       uint8_t priority_value;
       if (StringToInt(value, &priority_value)) {
-        action_queue->AddAction(new PortPriorityStaticAction(
-          &m_client,
-          iter->device_alias,
-          iter->port,
-          iter->direction,
-          priority_value));
+        action_queue->AddAction(
+            new PortPriorityStaticAction(&m_client, iter->device_alias,
+                                         iter->port, iter->direction,
+                                         priority_value));
       }
     }
   }
 }
-
 
 /**
  * @brief Decode port ids in a string.
@@ -1006,10 +942,10 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
  */
 void OladHTTPServer::DecodePortIds(const string &port_ids,
                                    vector<port_identifier> *ports) {
-  vector<string> port_strings;
+  vector < string > port_strings;
   StringSplit(port_ids, &port_strings, ",");
   vector<string>::const_iterator iter;
-  vector<string> tokens;
+  vector < string > tokens;
 
   for (iter = port_strings.begin(); iter != port_strings.end(); ++iter) {
     if (iter->empty()) {
@@ -1025,19 +961,18 @@ void OladHTTPServer::DecodePortIds(const string &port_ids,
     }
 
     unsigned int device_alias, port;
-    if (!StringToInt(tokens[0], &device_alias) ||
-        !StringToInt(tokens[2], &port)) {
+    if (!StringToInt(tokens[0], &device_alias)
+        || !StringToInt(tokens[2], &port)) {
       OLA_INFO << "Not a valid port id " << *iter;
       continue;
     }
 
     client::PortDirection direction = (
-        tokens[1] == "I" ?  client::INPUT_PORT : client::OUTPUT_PORT);
-    port_identifier port_id = {device_alias, port, direction, *iter};
+        tokens[1] == "I" ? client::INPUT_PORT : client::OUTPUT_PORT);
+    port_identifier port_id = { device_alias, port, direction, *iter };
     ports->push_back(port_id);
   }
 }
-
 
 /**
  * @brief Register a handler
@@ -1048,7 +983,6 @@ inline void OladHTTPServer::RegisterHandler(
   m_server.RegisterHandler(
       path,
       NewCallback<OladHTTPServer, int, const HTTPRequest*, HTTPResponse*>(
-        this,
-        method));
+          this, method));
 }
 }  // namespace ola
