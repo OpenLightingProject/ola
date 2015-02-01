@@ -942,10 +942,10 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
  */
 void OladHTTPServer::DecodePortIds(const string &port_ids,
                                    vector<port_identifier> *ports) {
-  vector < string > port_strings;
+  vector<string> port_strings;
   StringSplit(port_ids, &port_strings, ",");
   vector<string>::const_iterator iter;
-  vector < string > tokens;
+  vector<string> tokens;
 
   for (iter = port_strings.begin(); iter != port_strings.end(); ++iter) {
     if (iter->empty()) {
