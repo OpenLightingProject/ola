@@ -4,7 +4,6 @@ dist_www_DATA = \
     olad/www/back.png \
     olad/www/blank.gif \
     olad/www/button-bg.png \
-    olad/www/console_values.html \
     olad/www/custombutton.css \
     olad/www/discovery.png \
     olad/www/editortoolbar.png \
