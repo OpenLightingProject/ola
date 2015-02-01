@@ -93,9 +93,47 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus{
   display: inline-block;
   border-radius: 20px;
 }
-.plugins{
-  width: 100%;
-  border-radius: 20px;
-  border: solid black 1px;
+th.top-table, tr.special-mouse>td{
   text-align: center;
+  padding: 8px;
+}
+.plugin-table{
+  text-align: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.round-corners{
+  border: solid black 1px;
+  border-radius: 10px;
+}
+.top-table{
+  border-bottom: solid black 1px;
+}
+tr.special-mouse:nth-of-type(even){
+  background-color: #F8F8F8;
+  border-top: solid lightgrey 1px;
+  border-bottom: solid lightgrey 1px;
+}
+.special-mouse{
+  cursor: pointer;
+}
+.mobile-info{
+  width: 60%;
+  text-align: center;
+  font-size: 10px;
+}
+.desktop-info {
+  font-size: 12px;
+}
+.desktop-info, .mobile-info{
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+table.info>tbody>tr>td{
+  border-bottom: solid grey 1px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+table.table>tbody>tr>td{
+  text-align: left;
 }

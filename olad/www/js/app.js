@@ -135,12 +135,16 @@ angular
 }])
 .controller('menuCtrl', ['$scope', '$ola', function ($scope, $ola) {
   $scope.Items = {};
+  $scope.Info = {};
 
   $ola.get.ItemList().then(function (data) {
     $scope.Items = data;
   });
+  $ola.get.ServerInfo().then(function(data) {
+    $scope.Info = data;
+  });
 }])
-.controller('overviewCtrl', ['$scope', '$ola', function ($scope, $ola) {
+.controller('overviewCtrl', ['$scope', '$ola', '$location', function ($scope, $ola, $location) {
   $scope.Info = {};
   $scope.Universes = {};
 
@@ -150,6 +154,14 @@ angular
   $ola.get.ServerInfo().then(function (data) {
     $scope.Info = data;
   });
+  $scope.Shutdown = function(){
+    $ola.action.Shutdown().then(function(data) {
+      console.log(data);
+    });
+  };
+  $scope.goUniverse = function(id){
+    $location.path('/universe/'+id);
+  };
 }])
 .controller('addUniverseCtrl', ['$scope', '$ola', function ($scope, $ola) {
   //post : /new_universe

@@ -1,20 +1,20 @@
-<table style="text-align : center" class="table">
-  <tr>
-    <th style="text-align : center">name</th>
-    <th style="text-align : center">active</th>
-    <th style="text-align : center">enabled</th>
-  </tr>
-  <tr ng-repeat="plugin in Items.plugins">
-    <td ng-click="go(plugin.id)">
-      <a ng-href="/#/plugin/{{plugin.id}}">
-        {{plugin.name}}
-      </a>
-    </td>
-    <td ng-click="go(plugin.id)">
-      <div class="status-light" ng-style="active[plugin.id]">&nbsp;</div>
-    </td>
-    <td ng-click="go(plugin.id)">
-      <div class="status-light" ng-style="enabled[plugin.id]">&nbsp;</div>
-    </td>
-  </tr>
-</table>
+<div class="round-corners">
+  <table class="plugin-table">
+    <tr>
+      <th class="top-table">Name</th>
+      <th class="top-table">Enabled</th>
+      <th class="top-table">Active</th>
+    </tr>
+    <tr class="special-mouse" ng-repeat="plugin in Items.plugins">
+      <td ng-click="go(plugin.id)">
+          {{plugin.name}}
+      </td>
+      <td ng-click="go(plugin.id)">
+        <div class="status-light" ng-style="enabled[plugin.id]">&nbsp;</div>
+      </td>
+      <td ng-click="go(plugin.id)">
+        <div class="status-light" ng-style="active[plugin.id]">&nbsp;</div>
+      </td>
+    </tr>
+  </table>
+</div>
