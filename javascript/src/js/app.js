@@ -406,7 +406,7 @@ angular
 }])
 .filter('startFrom', function () {
   return function (input, start) {
-    start = parseInt(start); //parse to int
+    start = parseInt(start);
     return input.slice(start);
   };
 });
