@@ -62,6 +62,10 @@ bool ExecutorThread::Start() {
 }
 
 bool ExecutorThread::Stop() {
+  if (!m_thread.IsRunning()) {
+    return false;
+  }
+
   {
     MutexLocker locker(&m_mutex);
     m_shutdown = true;

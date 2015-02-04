@@ -35,7 +35,7 @@ void Deleter(T* t) {
 }
 
 /**
- * @brief Create a callack that deletes the object.
+ * @brief Create a callback that deletes the object.
  * @tparam T any type.
  * @param t The pointer to delete. Ownership is transferred.
  * @returns A SingleUseCallback which will delete the pointer when run.

@@ -61,8 +61,12 @@ void ExecutorThreadTest::test() {
 
     OLA_ASSERT_TRUE(thread.Stop());
 
+    // Try stop a second time.
+    OLA_ASSERT_FALSE(thread.Stop());
+
     // Confirm that all callbacks are run when the thread is destroyed.
     thread.Execute(NewSingleCallback(SetFuture, &f1));
   }
   f1.Get();
+
 }
