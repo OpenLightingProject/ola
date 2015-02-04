@@ -80,7 +80,7 @@ class ExecutorThread : public ola::thread::ExecutorInterface {
    * @returns true if the thread started, false if the thread was already
    *   running.
    *
-   * Not thread safe.
+   * Not thread safe, should only be called once.
    */
   bool Start();
 
@@ -88,7 +88,11 @@ class ExecutorThread : public ola::thread::ExecutorInterface {
    * @brief Stop this Executor thread.
    * @returns true if the Executor was stopped, false if it wasn't running.
    *
-   * Once stopped, no further callbacks are processed.
+   * Stop() will halt the executor thread, and process any pending callbacks in
+   * the current thread. Stop() will return once there is no pending
+   * callbacks.
+   *
+   * Not thread safe, should only be called once.
    */
   bool Stop();
 

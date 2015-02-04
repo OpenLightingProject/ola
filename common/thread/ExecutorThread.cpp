@@ -39,16 +39,16 @@ void SetFuture(Future<void>* f) {
 }
 }  // namespace
 
+ExecutorThread::~ExecutorThread() {
+  RunRemaining();
+}
+
 void ExecutorThread::Execute(ola::BaseCallback0<void> *callback) {
   {
     MutexLocker locker(&m_mutex);
     m_callback_queue.push(callback);
   }
   m_condition_var.Signal();
-}
-
-ExecutorThread::~ExecutorThread() {
-  RunRemaining();
 }
 
 void ExecutorThread::DrainCallbacks() {
@@ -78,6 +78,7 @@ bool ExecutorThread::Stop() {
 }
 
 void ExecutorThread::RunRemaining() {
+  MutexLocker locker(&m_mutex);
   while (!m_callback_queue.empty()) {
     BaseCallback0<void>* cb = m_callback_queue.front();
     m_callback_queue.pop();
