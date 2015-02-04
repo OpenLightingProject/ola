@@ -1,9 +1,0 @@
-/json/rdm/section_info
-/json/rdm/set_section_info
-/json/rdm/supported_pids
-/json/rdm/supported_sections
-/json/rdm/uid_identify
-/json/rdm/uid_info
-/json/rdm/uid_personalities
-/json/rdm/uids
-/rdm/run_discovery
