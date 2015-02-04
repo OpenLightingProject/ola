@@ -43,6 +43,7 @@ class ConsumerThread: public ola::thread::Thread {
    *   variable.
    * @param condition_var the ConditionVariable to wait on. This signals when
    *   the queue is non-empty, or shutdown changes to true.
+   * @param options The thread options.
    */
   ConsumerThread(std::queue<Action> *callback_queue,
                  const bool *shutdown,
