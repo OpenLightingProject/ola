@@ -47,8 +47,9 @@ class ConsumerThread: public ola::thread::Thread {
   ConsumerThread(std::queue<Action> *callback_queue,
                  const bool *shutdown,
                  Mutex *mutex,
-                 ConditionVariable *condition_var)
-      : Thread(),
+                 ConditionVariable *condition_var,
+                 const Thread::Options& options = Thread::Options())
+      : Thread(options),
         m_callback_queue(callback_queue),
         m_shutdown(shutdown),
         m_mutex(mutex),
