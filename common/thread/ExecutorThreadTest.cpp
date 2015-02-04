@@ -68,5 +68,4 @@ void ExecutorThreadTest::test() {
     thread.Execute(NewSingleCallback(SetFuture, &f1));
   }
   f1.Get();
-
 }
