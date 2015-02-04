@@ -36,7 +36,7 @@ namespace thread {
  * @brief Enables callbacks to be executed in a separate thread.
  * @param callback the callback to run.
  *
- * This can be used to provide deferred deletion of objects. e.g.
+ * This can be used to deferred deletion of objects. e.g.
  *
  * ~~~~~~~~~~~~~~~~~~~~~
 
@@ -70,7 +70,8 @@ class ExecutorThread : public ola::thread::ExecutorInterface {
   /**
    * @brief Block until all pending callbacks have been processed.
    *
-   * This only works while the thread is running.
+   * The callbacks continue to be run in the ExecutorThread, so if the thread
+   * has been stopped this will block indefinitely.
    */
   void DrainCallbacks();
 
