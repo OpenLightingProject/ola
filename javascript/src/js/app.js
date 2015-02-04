@@ -205,7 +205,8 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
   }
  };
 }])
-.controller('sliderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', function ($scope, $ola, $routeParams, $window, $interval) {
+.controller('sliderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', 'nul', 'Channels',
+function ($scope, $ola, $routeParams, $window, $interval, nul, Channels) {
  "use strict";
  $scope.get = [];
  $scope.list = [];
@@ -213,7 +214,7 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
  $scope.offset = 0;
  $scope.send = false;
  $scope.Universe = $routeParams.id;
- for (var i = 0; i < 512; i++) {
+ for (var i = 0; i < Channels; i++) {
   $scope.list[i] = i;
   $scope.get[i] = 0;
  }

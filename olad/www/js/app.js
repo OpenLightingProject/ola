@@ -29,10 +29,10 @@ angular
   return PostData.join('&');
  };
  var dmxConvert = function (dmx) {
-  var length = nul, integers = [];
-  for (var i = nul; i < Channels; i++) {
+  var length = 0, integers = [];
+  for (var i = 0; i < Channels; i++) {
    integers[i] = parseInt(dmx[i]);
-   if (integers[i] > 0) {
+   if (integers[i] > nul) {
     length = (i + 1);
    }
   }
@@ -189,7 +189,7 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
  $scope.Universe = $routeParams.id;
  $interval(function () {
   $ola.get.Dmx($scope.Universe).then(function (data) {
-   for (var i = nul; i < Channels; i++) {
+   for (var i = 0; i < Channels; i++) {
     $scope.dmx[i] = (typeof(data.dmx[i]) === "number") ? data.dmx[i] : 0;
    }
   });
@@ -205,7 +205,8 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
   }
  };
 }])
-.controller('sliderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', function ($scope, $ola, $routeParams, $window, $interval) {
+.controller('sliderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', 'nul', 'Channels',
+function ($scope, $ola, $routeParams, $window, $interval, nul, Channels) {
  "use strict";
  $scope.get = [];
  $scope.list = [];
@@ -213,7 +214,7 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
  $scope.offset = 0;
  $scope.send = false;
  $scope.Universe = $routeParams.id;
- for (var i = 0; i < 512; i++) {
+ for (var i = 0; i < Channels; i++) {
   $scope.list[i] = i;
   $scope.get[i] = 0;
  }
@@ -224,7 +225,7 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
  };
  var dmxGet = $interval(function () {
   $ola.get.Dmx($scope.Universe).then(function (data) {
-   for (var i = nul; i < data.dmx.length; i++) {
+   for (var i = 0; i < data.dmx.length; i++) {
     $scope.get[i] = data.dmx[i];
    }
    $scope.send = true;
