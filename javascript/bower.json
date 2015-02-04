@@ -1,10 +1,10 @@
 {
-  "name": "ola",
-  "version": "0.0.1",
+  "name": "OLA",
+  "version": "9.4.0",
   "authors": [
     "Dave Olsthoorn <dave.olsthoorn@gmail.com>"
   ],
-  "description": "a alternative ola web panel",
+  "description": "the OLA web-ui",
   "keywords": [
     "dmx",
     "ola",

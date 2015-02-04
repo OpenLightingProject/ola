@@ -1,4 +1,4 @@
-/*jslint node: true */
+/* jslint node: true */
 "use strict";
 module.exports = function (grunt) {
  grunt.initConfig({
@@ -97,7 +97,13 @@ module.exports = function (grunt) {
   },
 
   jshint: {
-   dev: ['Gruntfile.js', 'src/js/*.js']
+   dev: ['Gruntfile.js', 'src/js/*.js'],
+   options: {
+    globalstrict: true,
+    globals:{
+     angular: true
+    }
+   }
   },
 
   watch: {
@@ -128,7 +134,6 @@ module.exports = function (grunt) {
  grunt.loadNpmTasks('grunt-contrib-copy');
  grunt.loadNpmTasks('grunt-bower-task');
 
- grunt.registerTask('dev-server', ['bower:dev', 'watch:dev']);
- grunt.registerTask('build-server', ['watch:build']);
+ grunt.registerTask('dev', ['watch:build']);
  grunt.registerTask('build', ['clean:build', 'copy:build', 'jshint:dev', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default']);
 };
