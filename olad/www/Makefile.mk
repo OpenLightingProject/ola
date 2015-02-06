@@ -45,41 +45,41 @@ dist_www_DATA = \
 				olad/www/wand.png \
 				olad/www/warning.png
 dist_new_DATA = \
-    olad/www/index.html
+    olad/www/new/index.html
 dist_views_DATA = \
-    olad/www/views/overview-universe.html \
-    olad/www/views/add-universe.html \
-    olad/www/views/info-plugins.html \
-		olad/www/views/info-plugin.html \
-    olad/www/views/overview.html \
-    olad/www/views/keypad-universe.html \
-    olad/www/views/patch-universe.html \
-    olad/www/views/settings-universe.html \
-    olad/www/views/sliders-universe.html \
-    olad/www/views/overview-universes.html \
-    olad/www/views/rdm-universe.html
+    olad/www/new/views/overview-universe.html \
+    olad/www/new/views/add-universe.html \
+    olad/www/new/views/info-plugins.html \
+				olad/www/new/views/info-plugin.html \
+    olad/www/new/views/overview.html \
+    olad/www/new/views/keypad-universe.html \
+    olad/www/new/views/patch-universe.html \
+    olad/www/new/views/settings-universe.html \
+    olad/www/new/views/sliders-universe.html \
+    olad/www/new/views/overview-universes.html \
+    olad/www/new/views/rdm-universe.html
 dist_js_DATA = \
-    olad/www/js/app.min.js
+    olad/www/new/js/app.min.js
 dist_css_DATA = \
-    olad/www/css/style.min.css
+    olad/www/new/css/style.min.css
 dist_img_DATA = \
-    olad/www/img/light_bulb.png \
-    olad/www/img/logo.png \
-    olad/www/img/light_bulb_off.png \
-    olad/www/img/logo-mini.png
+    olad/www/new/img/light_bulb.png \
+    olad/www/new/img/logo.png \
+    olad/www/new/img/light_bulb_off.png \
+    olad/www/new/img/logo-mini.png
 dist_jquery_DATA = \
-    olad/www/libs/jquery/js/jquery.min.js
+    olad/www/new/libs/jquery/js/jquery.min.js
 dist_angularroute_DATA = \
-    olad/www/libs/angular-route/js/angular-route.min.js
+    olad/www/new/libs/angular-route/js/angular-route.min.js
 dist_angular_DATA = \
-    olad/www/libs/angular/js/angular.min.js
+    olad/www/new/libs/angular/js/angular.min.js
 dist_bootjs_DATA = \
-    olad/www/libs/bootstrap/js/bootstrap.min.js
+    olad/www/new/libs/bootstrap/js/bootstrap.min.js
 dist_bootfonts_DATA = \
-    olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
-    olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.svg \
-    olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf \
-    olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
-    olad/www/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.svg \
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf \
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2
 dist_bootcss_DATA = \
-    olad/www/libs/bootstrap/css/bootstrap.min.css
+    olad/www/new/libs/bootstrap/css/bootstrap.min.css
