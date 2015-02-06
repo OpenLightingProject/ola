@@ -11,7 +11,13 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0962", GROUP="plug
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="8062", GROUP="plugdev"
 
 # udev rules for the Eurolite
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="fa63", GROUP="plugdev" MODE="660" 
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="fa63", GROUP="plugdev" MODE="660"
+
+# udev rules file for the karate-device
+KERNEL=="ttyACM?", ATTRS{product}=="DMX2USB simple", SYMLINK+="kldmx0"
 
 # udev rules file for the Scanlime Fadecandy device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="607a", GROUP="plugdev"
+
+# udev rules for SPI
+SUBSYSTEM=="spidev", MODE="0666"
