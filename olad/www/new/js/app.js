@@ -357,47 +357,47 @@ angular
   "use strict";
   $routeProvider.
    when('/', {
-    templateUrl: '/views/overview.html',
+    templateUrl: '/new/views/overview.html',
     controller: 'overviewCtrl'
    }).
    when('/universes/', {
-    templateUrl: '/views/overview-universes.html',
+    templateUrl: '/new/views/overview-universes.html',
     controller: 'overviewCtrl'
    }).
    when('/universe/add', {
-    templateUrl: '/views/add-universe.html',
+    templateUrl: '/new/views/add-universe.html',
     controller: 'addUniverseCtrl'
    }).
    when('/universe/:id', {
-    templateUrl: '/views/overview-universe.html',
+    templateUrl: '/new/views/overview-universe.html',
     controller: 'universeCtrl'
    }).
    when('/universe/:id/keypad', {
-    templateUrl: '/views/keypad-universe.html',
+    templateUrl: '/new/views/keypad-universe.html',
     controller: 'keypadUniverseCtrl'
    }).
    when('/universe/:id/sliders', {
-    templateUrl: '/views/sliders-universe.html',
+    templateUrl: '/new/views/sliders-universe.html',
     controller: 'sliderUniverseCtrl'
    }).
    when('/universe/:id/rdm', {
-    templateUrl: '/views/rdm-universe.html',
+    templateUrl: '/new/views/rdm-universe.html',
     controller: 'rdmUniverseCtrl'
    }).
    when('/universe/:id/patch', {
-    templateUrl: '/views/patch-universe.html',
+    templateUrl: '/new/views/patch-universe.html',
     controller: 'patchUniverseCtrl'
    }).
    when('/universe/:id/settings', {
-    templateUrl: '/views/settings-universe.html',
+    templateUrl: '/new/views/settings-universe.html',
     controller: 'settingUniverseCtrl'
    }).
    when('/plugins', {
-    templateUrl: '/views/info-plugins.html',
+    templateUrl: '/new/views/info-plugins.html',
     controller: 'infoPlugins'
    }).
    when('/plugin/:id', {
-    templateUrl: '/views/info-plugin.html',
+    templateUrl: '/new/views/info-plugin.html',
     controller: 'infoPlugin'
    }).
    otherwise({

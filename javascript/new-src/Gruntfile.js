@@ -4,7 +4,7 @@ module.exports = function (grunt) {
  grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
   clean: {
-   build: ['../olad/www/index.html', '../olad/www/js', '../olad/www/css', '../olad/www/img', '../olad/www/libs', '../olad/www/views']
+   build: ['../../olad/www/new/index.html', '../../olad/www/new/js', '../../olad/www/new/css', '../../olad/www/new/img', '../../olad/www/new/libs', '../../olad/www/new/views']
   },
   copy: {
    build: {
@@ -12,14 +12,14 @@ module.exports = function (grunt) {
      {
       expand: true,
       src: 'src/img/*',
-      dest: '../olad/www/img/',
+      dest: '../../olad/www/new/img/',
       flatten: true,
       filter: 'isFile'
      },
      {
       expand: true,
       src: 'src/views/*',
-      dest: '../olad/www/views/',
+      dest: '../../olad/www/new/views/',
       flatten: true,
       filter: 'isFile'
      },
@@ -27,13 +27,13 @@ module.exports = function (grunt) {
       expand: true,
       cwd: 'src/libs',
       src: '**',
-      dest: '../olad/www/libs',
+      dest: '../../olad/www/new/libs',
       flatten: false
      },
      {
       expand: false,
       src: 'src/index.html',
-      dest: '../olad/www/index.html',
+      dest: '../../olad/www/new/index.html',
       flatten: true
      }
     ]
@@ -53,12 +53,12 @@ module.exports = function (grunt) {
   uglify: {
    default: {
     files: {
-     '../olad/www/js/app.min.js': ['../olad/www/js/app.js']
+     '../../olad/www/new/js/app.min.js': ['../../olad/www/new/js/app.js']
     },
     options: {
      mangle: true,
      sourceMap: true,
-     sourceMapName: '../olad/www/js/app.min.js.map',
+     sourceMapName: '../../olad/www/new/js/app.min.js.map',
      banner: "/**\n" +
      "* This program is free software; you can redistribute it and/or modify\n" +
      "* it under the terms of the GNU General Public License as published by\n" +
@@ -83,11 +83,11 @@ module.exports = function (grunt) {
    },
    js: {
     src: ['src/js/*.js'],
-    dest: '../olad/www/js/app.js'
+    dest: '../../olad/www/new/js/app.js'
    },
    css: {
     src: ['src/css/*.css'],
-    dest: '../olad/www/css/style.css'
+    dest: '../../olad/www/new/css/style.css'
    }
   },
   jshint: {
@@ -111,7 +111,7 @@ module.exports = function (grunt) {
   cssmin: {
    default: {
     files: {
-     '../olad/www/css/style.min.css': ['../olad/www/css/style.css']
+     '../../olad/www/new/css/style.min.css': ['../../olad/www/new/css/style.css']
     }
    }
   }

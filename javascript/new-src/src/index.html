@@ -5,8 +5,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OLA</title>
-  <link rel="stylesheet" href="/libs/bootstrap/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="/css/style.min.css" />
+  <link rel="stylesheet" href="/new/libs/bootstrap/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="/new/css/style.min.css" />
 </head>
 <body>
   <nav class="navbar navbar-default" ng-controller="menuCtrl" >
@@ -19,7 +19,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/#/"><img height="22" width="51" src="img/logo-mini.png" /></a>
+      <a class="navbar-brand" href="/new/#/"><img height="22" width="51" src="img/logo-mini.png" /></a>
       <p class="navbar-text navbar-right visible-xs-inline-block mobile-info">{{Info.instance_name}}<br />{{Info.ip}}</p>
     </div>
 
@@ -29,14 +29,14 @@
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Universes<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="/#/universes/">overview</a></li>
+            <li><a href="/new/#/universes/">overview</a></li>
             <li class="divider"></li>
-            <li ng-repeat="universe in Items.universes"><a href="/#/universe/{{universe.id}}">{{universe.name}}</a></li>
+            <li ng-repeat="universe in Items.universes"><a href="/new/#/universe/{{universe.id}}">{{universe.name}}</a></li>
             <li class="divider"></li>
-            <li><a href="/#/universe/add">Add Universe</a></li>
+            <li><a href="/new/#/universe/add">Add Universe</a></li>
           </ul>
         </li>
-        <li><a href="/#/plugins">Plugins</a></li>
+        <li><a href="/new/#/plugins">Plugins</a></li>
       </ul>
       <p class="navbar-text navbar-right desktop-info">{{Info.instance_name}}<br />{{Info.ip}}</p>
     </div>
@@ -46,11 +46,11 @@
 </nav>
 <div id="ngView" class="container-fluid" ng-view></div>
 <div id="javascript">
-  <script type="text/javascript" src="/libs/angular/js/angular.min.js"></script>
-  <script type="text/javascript" src="/libs/angular-route/js/angular-route.min.js"></script>
-  <script type="text/javascript" src="/libs/jquery/js/jquery.min.js"></script>
-  <script type="text/javascript" src="/libs/bootstrap/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="/js/app.min.js"></script>
+  <script type="text/javascript" src="/new/libs/angular/js/angular.min.js"></script>
+  <script type="text/javascript" src="/new/libs/angular-route/js/angular-route.min.js"></script>
+  <script type="text/javascript" src="/new/libs/jquery/js/jquery.min.js"></script>
+  <script type="text/javascript" src="/new/libs/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/new/js/app.min.js"></script>
 </div>
 </body>
 </html>
