@@ -1,1 +1,10 @@
-<div></div>
+<table>
+    <tr>
+        <th>device</th>
+        <th>output</th>
+    </tr>
+    <tr ng-repeat="plugin in Ports">
+        <td>{{plugin.device}}</td>
+        <td>{{plugin.is_output}}</td>
+    </tr>
+</table>
