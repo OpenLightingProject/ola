@@ -716,7 +716,7 @@ manufacturer {
     set_request {
       field {
         type: UINT8
-        name: "mintes"
+        name: "minutes"
         range {
           min: 0
           max: 120
@@ -4917,6 +4917,632 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 22355
+  manufacturer_name: "Wireless Solution Sweden AB"
+  pid {
+    name: "WDMX_LOGIN"
+    value: 32768
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_LOGOUT"
+    value: 32784
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_POWER_24"
+    value: 32817
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Output Power 2.4GHz"
+        label {
+          value: 0
+          label: "25mW"
+        }
+        label {
+          value: 1
+          label: "100mW"
+        }
+        label {
+          value: 2
+          label: "375mW"
+        }
+        label {
+          value: 3
+          label: "500mW"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Output Power 2.4GHz"
+        label {
+          value: 0
+          label: "25mW"
+        }
+        label {
+          value: 1
+          label: "100mW"
+        }
+        label {
+          value: 2
+          label: "375mW"
+        }
+        label {
+          value: 3
+          label: "500mW"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_POWER_58"
+    value: 32818
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Output Power 5.8GHz"
+        label {
+          value: 0
+          label: "TBA (Low)"
+        }
+        label {
+          value: 1
+          label: "TBA"
+        }
+        label {
+          value: 2
+          label: "TBA"
+        }
+        label {
+          value: 3
+          label: "TBA (High)"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Output Power 5.8GHz"
+        label {
+          value: 0
+          label: "TBA (Low)"
+        }
+        label {
+          value: 1
+          label: "TBA"
+        }
+        label {
+          value: 2
+          label: "TBA"
+        }
+        label {
+          value: 3
+          label: "TBA (High)"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_MASK_24"
+    value: 32819
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_MASK_58"
+    value: 32820
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_MODE"
+    value: 32821
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Radio Mode"
+        label {
+          value: 0
+          label: "Receiver"
+        }
+        label {
+          value: 1
+          label: "Transmitter G3"
+        }
+        label {
+          value: 2
+          label: "Not used"
+        }
+        label {
+          value: 3
+          label: "Transmitter G4 Compatibility mode"
+        }
+        label {
+          value: 4
+          label: "Not used"
+        }
+        label {
+          value: 5
+          label: "Transmitter G4S 2.4Ghz"
+        }
+        label {
+          value: 6
+          label: "Transmitter G4S 5.8Ghz"
+        }
+        label {
+          value: 7
+          label: "Transmitter G4S 2.4Ghz Repeater mode"
+        }
+        label {
+          value: 8
+          label: "Transmitter G4S 5.8Ghz Repeater mode"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Radio Mode"
+        label {
+          value: 0
+          label: "Receiver"
+        }
+        label {
+          value: 1
+          label: "Transmitter G3"
+        }
+        label {
+          value: 2
+          label: "Not used"
+        }
+        label {
+          value: 3
+          label: "Transmitter G4 Compatibility mode"
+        }
+        label {
+          value: 4
+          label: "Not used"
+        }
+        label {
+          value: 5
+          label: "Transmitter G4S 2.4Ghz"
+        }
+        label {
+          value: 6
+          label: "Transmitter G4S 5.8Ghz"
+        }
+        label {
+          value: 7
+          label: "Transmitter G4S 2.4Ghz Repeater mode"
+        }
+        label {
+          value: 8
+          label: "Transmitter G4S 5.8Ghz Repeater mode"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_AHFSS"
+    value: 32822
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "AFHSS_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "AFHSS_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_AFHSS_MASK_24"
+    value: 32823
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_AFHSS_MASK_54"
+    value: 32824
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_SIGNAL_STRENGTH"
+    value: 32832
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Signal Strength"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_DMX_TO_RDM_RATIO"
+    value: 33536
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "DMX to RDM ratio"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "DMX to RDM ratio"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_DOWNSTREAM_RDM"
+    value: 33537
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Downstream RDM enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Downstream RDM enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_IDENTIFY_PROXIES"
+    value: 33792
+    set_request {
+      field {
+        type: BOOL
+        name: "Identify Proxies enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 25972
   manufacturer_name: "Electronic Theatre Controls, Inc."
   pid {
@@ -5673,4 +6299,4 @@ manufacturer {
     get_sub_device_range: ROOT_OR_SUBDEVICE
   }
 }
-version: 1393127518
+version: 1402763401
