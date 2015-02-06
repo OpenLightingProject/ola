@@ -40,18 +40,18 @@
    Shutdown
   </button>
  </div>
- <div class="col-md-8">
-  <table class="table table-striped">
-   <tr>
-    <th>Id</th>
-    <th>Name<th>
-    </tr>
-    <tr style="cursor: pointer;" ng-repeat="u in Universes track by $index">
-     <td ng-click="goUniverse(u.id)">{{u.id}}</td>
-     <td ng-click="goUniverse(u.id)">{{u.name}}</td>
-    </tr>
-   </table>
-  </div>
+    <div class="col-md-8">
+        <table class="table table-striped">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+            <tr style="cursor: pointer;" ng-repeat="u in Universes track by $index">
+                <td ng-click="goUniverse(u.id)">{{u.id}}</td>
+                <td ng-click="goUniverse(u.id)">{{u.name}}</td>
+            </tr>
+        </table>
+    </div>
  </div>
  <div class="modal fade" id="ShutdownAlert" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">

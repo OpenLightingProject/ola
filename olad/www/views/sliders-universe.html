@@ -28,7 +28,7 @@
         <div ng-style="width" class="slider-group"
              ng-repeat="c in list | startFrom:offset*limit | limitTo:limit track by $index">
             <div class="channel-slider">{{c + 1}}</div>
-            <input class="slider-slider" min="0" max="255" type="range" ng-model="get[c]">
+            <input ng-change="change()" class="slider-slider" min="0" max="255" type="range" ng-model="get[c]">
             <div class="value-slider">{{get[c]}}</div>
         </div>
     </div>

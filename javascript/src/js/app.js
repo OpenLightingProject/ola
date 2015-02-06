@@ -19,12 +19,12 @@ angular
 .constant('Channels', 512)
 .constant('TopValue', 255)
 .constant('nul', 0)
-.factory('$ola', ['$http', 'nul', 'Channels', function ($http, nul, Channels) {
+.factory('$ola', ['$http', '$window', 'nul', 'Channels', function ($http, $window, nul, Channels) {
  "use strict";
  var postEncode = function (data) {
   var PostData = [];
   for (var key in data) {
-   PostData.push(key + '=' + data[key]);
+   PostData.push(key + '=' + $window.encodeURIComponent(data[key]));
   }
   return PostData.join('&');
  };
@@ -187,7 +187,7 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
  "use strict";
  $scope.dmx = [];
  $scope.Universe = $routeParams.id;
- $interval(function () {
+ var interval = $interval(function () {
   $ola.get.Dmx($scope.Universe).then(function (data) {
    for (var i = 0; i < Channels; i++) {
     $scope.dmx[i] = (typeof(data.dmx[i]) === "number") ? data.dmx[i] : 0;
@@ -195,7 +195,7 @@ function ($scope, $ola, $routeParams, $interval, nul, Channels) {
   });
  }, 100);
  $scope.$on('$destroy', function () {
-  $interval.cancel();
+  $interval.cancel(interval);
  });
  $scope.getColor = function (i) {
   if (i > 140) {
@@ -241,11 +241,9 @@ function ($scope, $ola, $routeParams, $window, $interval, nul, Channels) {
  $scope.ceil = function (i) {
   return $window.Math.ceil(i);
  };
- $scope.$watchCollection("get", function () {
-  if ($scope.send) {
+ $scope.change = function () {
    $ola.post.Dmx($scope.Universe, $scope.get);
-  }
- });
+ };
  $scope.page = function (d) {
   if (d === 1) {
    if (($scope.offset + 1) != $window.Math.ceil(Channels / $scope.limit)) {
@@ -266,7 +264,7 @@ function ($scope, $ola, $routeParams, $window, $interval, nul, Channels) {
   });
  });
  $scope.$on('$destroy', function () {
-  $interval.cancel();
+  $interval.cancel(dmxGet);
  });
 }])
 .controller('keypadUniverseCtrl', ['$scope', '$ola', '$routeParams', function ($scope, $ola, $routeParams) {
@@ -299,16 +297,18 @@ function ($scope, $ola, $routeParams, $window, $interval, nul, Channels) {
   $scope.PortsId = data;
  });
 }])
-.controller('infoPlugin', ['$scope', '$routeParams', '$ola', '$document', '$window', function ($scope, $routeParams, $ola, $document, $window) {
+.controller('infoPlugin', ['$scope', '$routeParams', '$ola', '$window',
+  function ($scope, $routeParams, $ola, $window) {
  "use strict";
  $ola.get.InfoPlugin($routeParams.id).then(function (data) {
   $scope.active = data.active;
   $scope.enabled = data.enabled;
   $scope.name = data.name;
-  $document.getElementById('description').innerHTML = '';
-  data.description.split('\\n').forEach(function (line) {
-   $document.getElementById('description').innerText += line;
-   $document.getElementById('description').innerHTML += '<br />';
+  document.getElementById('description').innerHTML = '';
+  var description = data.description.split('\\n');
+  description.forEach(function (line) {
+   document.getElementById('description').innerText += line;
+   document.getElementById('description').innerHTML += '<br />';
   });
   $window.console.log(data);
  });
