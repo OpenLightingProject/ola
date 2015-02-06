@@ -49,10 +49,10 @@ python/ola/Pids_pb2.py: $(pids_proto)
 python/ola/UsbProConfigMessages_pb2.py: $(usbpro_proto)
 	$(PROTOC) --python_out python/ola/ -I $(usbpro_path) $(usbpro_proto)
 
-python/ola/PidStoreLocation.py: configure.ac
+python/ola/PidStoreLocation.py: python/ola/Makefile.mk configure.ac
 	echo "location = '${piddatadir}'" > python/ola/PidStoreLocation.py
 
-python/ola/Version.py: configure.ac
+python/ola/Version.py: python/ola/Makefile.mk configure.ac config/ola_version.m4
 	echo "version = '${VERSION}'" > python/ola/Version.py
 
 # TESTS
