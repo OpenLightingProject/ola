@@ -136,7 +136,8 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
                         HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/new/views/info-plugin.html",
                         HTTPServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/new/views/overview.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/new/views/overview.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/new/views/keypad-universe.html",
                         HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/new/views/patch-universe.html",
@@ -175,14 +176,18 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile(
       "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2",
       HTTPServer::CONTENT_TYPE_OCT);
-  m_server.RegisterFile("/new/css/style.min.css", HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile("/new/css/style.min.css",
+                        HTTPServer::CONTENT_TYPE_CSS);
   m_server.RegisterFile("/new/libs/bootstrap/css/bootstrap.min.css",
                         HTTPServer::CONTENT_TYPE_CSS);
-  m_server.RegisterFile("/new/img/logo.png", HTTPServer::CONTENT_TYPE_PNG);
-  m_server.RegisterFile("/new/img/light_bulb.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/new/img/logo.png",
+                        HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/new/img/light_bulb.png",
+                        HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/new/img/light_bulb_off.png",
                         HTTPServer::CONTENT_TYPE_PNG);
-  m_server.RegisterFile("/new/img/logo-mini.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/new/img/logo-mini.png",
+                        HTTPServer::CONTENT_TYPE_PNG);
 
   m_start_time_t = time(NULL);
 }
