@@ -127,7 +127,8 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
 
   // these are the static files for the new UI
-  m_server.RegisterFile("/new/", "/index.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/new/", "/new/index.html",
+                        HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/new/views/overview-universe.html",
                         HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile("/new/views/add-universe.html",
