@@ -7,7 +7,7 @@ the web interface for ola is build using
 which are all under the MIT license and thus can be included.
 
 ## Compile web-interface
-[grunt](http://gruntjs.com/) is used for the compilation process but first [node](http://nodejs.org/) must be installed for grunt and its plug-ins to be able to work and be downloaded so when nod is installed first open a terminal and navigate to this directory then run
+[grunt](http://gruntjs.com/) is used for the compilation process but first [node](http://nodejs.org/) must be installed for grunt and its plug-ins to be able to work and be downloaded so when node is installed first open a terminal and navigate to this directory then run
 ```bash
 npm install
 ```
