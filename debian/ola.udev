@@ -12,3 +12,6 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idPro
 
 # udev rules for the Eurolite
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="fa63", GROUP="plugdev" MODE="660" 
+
+# udev rules file for the Scanlime Fadecandy device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="607a", GROUP="plugdev"
