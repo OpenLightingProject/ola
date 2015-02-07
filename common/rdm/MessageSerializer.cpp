@@ -35,8 +35,9 @@ MessageSerializer::MessageSerializer(unsigned int initial_size)
 }
 
 MessageSerializer::~MessageSerializer() {
-  if (m_data)
+  if (m_data) {
     delete[] m_data;
+  }
 }
 
 
@@ -62,14 +63,14 @@ const uint8_t *MessageSerializer::SerializeMessage(
 
 void MessageSerializer::Visit(
     const ola::messaging::BoolMessageField *message) {
-  CheckForFreeSpace(1);
+  CheckForFreeSpace(message->GetDescriptor()->MaxSize());
   m_data[m_offset++] = message->Value();
 }
 
 
 void MessageSerializer::Visit(
     const ola::messaging::IPV4MessageField *message) {
-  CheckForFreeSpace(4);
+  CheckForFreeSpace(message->GetDescriptor()->MaxSize());
   uint32_t data = message->Value().AsInt();
   memcpy(m_data + m_offset, reinterpret_cast<uint8_t*>(&data), sizeof(data));
   m_offset += sizeof(data);
@@ -163,8 +164,9 @@ void MessageSerializer::PostVisit(
  * expand the memory so the new data can fit.
  */
 void MessageSerializer::CheckForFreeSpace(unsigned int required_size) {
-  if (m_buffer_size - m_offset > required_size)
+  if (m_buffer_size - m_offset > required_size) {
     return;
+  }
 
   uint8_t *old_buffer = m_data;
   m_data = new uint8_t[2 * m_buffer_size];
@@ -181,12 +183,13 @@ void MessageSerializer::IntVisit(
     const ola::messaging::BasicMessageField<int_type> *message) {
   CheckForFreeSpace(sizeof(int_type));
   int_type value;
-  if (message->GetDescriptor()->IsLittleEndian())
+  if (message->GetDescriptor()->IsLittleEndian()) {
     value = ola::network::HostToLittleEndian(
         static_cast<int_type>(message->Value()));
-  else
+  } else {
     value = ola::network::HostToNetwork(
         static_cast<int_type>(message->Value()));
+  }
 
 
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&value);
