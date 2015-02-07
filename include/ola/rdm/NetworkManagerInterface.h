@@ -64,6 +64,8 @@ class NetworkManagerInterface {
 
   /**
    * Get the IPv4 default route
+   * @param[out] if_index the index of the interface the machine's default
+   *   is on
    * @param[out] default_route the machine's default route as an IPV4Address
    *   object
    * @return true if we managed to fetch the default route, false otherwise
@@ -72,6 +74,7 @@ class NetworkManagerInterface {
    * IsWildcard().
    */
   virtual bool GetIPV4DefaultRoute(
+      int32_t *if_index,
       ola::network::IPV4Address *default_route) const = 0;
 
   /**

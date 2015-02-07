@@ -50,6 +50,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
    */
   FakeNetworkManager(
       const std::vector<ola::network::Interface> &interfaces,
+      const int32_t ipv4_default_route_if_index,
       const ola::network::IPV4Address ipv4_default_route,
       const std::string &hostname,
       const std::string &domain_name,
@@ -61,6 +62,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
   rdm_dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
 
   bool GetIPV4DefaultRoute(
+      int32_t *if_index,
       ola::network::IPV4Address *default_route) const;
 
   const std::string GetHostname() const;
@@ -72,6 +74,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
 
  private:
   ola::network::FakeInterfacePicker m_interface_picker;
+  int32_t m_ipv4_default_route_if_index;
   ola::network::IPV4Address m_ipv4_default_route;
   std::string m_hostname;
   std::string m_domain_name;

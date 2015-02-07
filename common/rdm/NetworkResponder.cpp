@@ -139,6 +139,7 @@ NetworkResponder::NetworkResponder(const UID &uid)
 
   m_network_manager.reset(new FakeNetworkManager(
       interfaces,
+      1,
       IPV4Address::FromStringOrDie("10.0.0.254"),
       "foo",
       "bar.com",
