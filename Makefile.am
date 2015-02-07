@@ -228,6 +228,8 @@ EXTRA_DIST += \
   javascript/new-src/README.md \
   javascript/new-src/bower.json \
   javascript/new-src/src/js/app.js \
+  javascript/new-src/src/js/app.min.js \
+  javascript/new-src/src/js/app.min.js.map \
   javascript/new-src/src/index.html \
   javascript/new-src/src/css/style.css \
   javascript/new-src/src/libs/jquery/js/jquery.min.js \
@@ -244,17 +246,17 @@ EXTRA_DIST += \
   javascript/new-src/src/img/logo.png \
   javascript/new-src/src/img/light_bulb_off.png \
   javascript/new-src/src/img/logo-mini.png \
-  javascript/new-src/src/views/overview-universe.html \
-  javascript/new-src/src/views/add-universe.html \
-  javascript/new-src/src/views/info-plugins.html \
+  javascript/new-src/src/views/universe-overview.html \
+  javascript/new-src/src/views/universe-add.html \
+  javascript/new-src/src/views/plugins.html \
   javascript/new-src/src/views/overview.html \
-  javascript/new-src/src/views/keypad-universe.html \
-  javascript/new-src/src/views/info-plugin.html \
-  javascript/new-src/src/views/patch-universe.html \
-  javascript/new-src/src/views/settings-universe.html \
-  javascript/new-src/src/views/sliders-universe.html \
-  javascript/new-src/src/views/overview-universes.html \
-  javascript/new-src/src/views/rdm-universe.html \
+  javascript/new-src/src/views/universe-keypad.html \
+  javascript/new-src/src/views/plugin-info.html \
+  javascript/new-src/src/views/universe-patch.html \
+  javascript/new-src/src/views/universe-settings.html \
+  javascript/new-src/src/views/universe-sliders.html \
+  javascript/new-src/src/views/universes.html \
+  javascript/new-src/src/views/universe-rdm.html \
   javascript/new-src/Gruntfile.js \
   javascript/new-src/package.json \
   mac_build.sh \
