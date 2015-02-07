@@ -134,11 +134,13 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
  * @brief Teardown
  */
 OladHTTPServer::~OladHTTPServer() {
-  if (m_client_socket)
+  if (m_client_socket) {
     m_server.SelectServer()->RemoveReadDescriptor(m_client_socket);
+  }
   m_client.Stop();
-  if (m_client_socket)
+  if (m_client_socket) {
     delete m_client_socket;
+  }
 }
 
 
@@ -147,8 +149,9 @@ OladHTTPServer::~OladHTTPServer() {
  * @return true if this worked, false otherwise.
  */
 bool OladHTTPServer::Init() {
-  if (!OlaHTTPServer::Init())
+  if (!OlaHTTPServer::Init()) {
     return false;
+  }
 
   if (!m_client.Setup()) {
     return false;
@@ -232,12 +235,14 @@ int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
  */
 int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
                                    HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "?id=[plugin]");
+  }
   string val = request->GetParameter("id");
   int plugin_id;
-  if (!StringToInt(val, &plugin_id))
+  if (!StringToInt(val, &plugin_id)) {
     return ServeHelpRedirect(response);
+  }
 
   m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
@@ -256,12 +261,14 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
  */
 int OladHTTPServer::JsonUniverseInfo(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "?id=[universe]");
+  }
   string uni_id = request->GetParameter("id");
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   m_client.FetchUniverseInfo(
       universe_id,
@@ -281,8 +288,9 @@ int OladHTTPServer::JsonUniverseInfo(OLA_UNUSED const HTTPRequest *request,
  */
 int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
                                        HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "? or ?id=[universe]");
+  }
   string uni_id = request->GetParameter("id");
 
   if (uni_id.empty()) {
@@ -293,8 +301,9 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
                           response));
   } else {
     unsigned int universe_id;
-    if (!StringToInt(uni_id, &universe_id))
+    if (!StringToInt(uni_id, &universe_id)) {
       return ServeHelpRedirect(response);
+    }
 
     m_client.FetchCandidatePorts(
         universe_id,
@@ -314,17 +323,20 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
  */
 int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
                                       HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "POST id=[universe], name=[name]");
+  }
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
 
-  if (name.size() > K_UNIVERSE_NAME_LIMIT)
+  if (name.size() > K_UNIVERSE_NAME_LIMIT) {
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
+  }
 
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
@@ -337,9 +349,10 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
   string add_port_ids = request->GetPostParameter("add_ports");
   AddPatchActions(action_queue, add_port_ids, universe_id, ola::client::PATCH);
 
-  if (!name.empty())
+  if (!name.empty()) {
     action_queue->AddAction(
         new SetNameAction(&m_client, universe_id, name, false));
+  }
 
   action_queue->NextAction();
   return MHD_YES;
@@ -354,22 +367,27 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
                                    HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response,
                       "POST id=[universe], name=[name], merge_mode=[HTP|LTP]");
+  }
+
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
   string merge_mode = request->GetPostParameter("merge_mode");
 
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
-  if (name.empty())
+  if (name.empty()) {
     return m_server.ServeError(response, "No name supplied");
+  }
 
-  if (name.size() > K_UNIVERSE_NAME_LIMIT)
+  if (name.size() > K_UNIVERSE_NAME_LIMIT) {
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
+  }
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
@@ -407,12 +425,14 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::GetDmx(const HTTPRequest *request,
                            HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "?u=[universe]");
+  }
   string uni_id = request->GetParameter("u");
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   m_client.FetchDMX(
       universe_id,
@@ -429,19 +449,22 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
                                  HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response,
         "POST u=[universe], d=[DMX data (a comma separated list of values)]");
+  }
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   DmxBuffer buffer;
   buffer.SetFromString(dmx_data_str);
-  if (!buffer.Size())
+  if (!buffer.Size()) {
     return m_server.ServeError(response, "Invalid DMX string");
+  }
 
   ola::client::SendDMXArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
@@ -783,8 +806,9 @@ void OladHTTPServer::SendCreateUniverseResponse(
     bool included_name,
     class ActionQueue *action_queue) {
   unsigned int action_count = action_queue->ActionCount();
-  if (included_name)
+  if (included_name) {
     action_count--;
+  }
   bool failed = true;
   // it only takes one port patch to pass
   for (unsigned int i = 0; i < action_count; i++) {
