@@ -43,6 +43,8 @@ class FakeNetworkManager : public NetworkManagerInterface {
   /**
    * @brief Create a new FakeNetworkManager
    * @param interfaces the interfaces to return
+   * @param ipv4_default_route_if_index the interface that has the default
+       gateway
    * @param ipv4_default_route the default gateway
    * @param hostname the hostname
    * @param domain_name the domain name
