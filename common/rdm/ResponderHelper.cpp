@@ -803,16 +803,42 @@ const RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
+  int32_t if_index = Interface::DEFAULT_INDEX;
   IPV4Address default_route;
-  if (!network_manager->GetIPV4DefaultRoute(&default_route)) {
+  if (!network_manager->GetIPV4DefaultRoute(&if_index, &default_route)) {
     return NackWithReason(request, NR_HARDWARE_FAULT);
   }
+
+  PACK(
+  struct ipv4_default_route_s {
+    uint32_t if_index;
+    uint32_t default_route;
+  });
+  STATIC_ASSERT(sizeof(ipv4_default_route_s) == 8);
+
+  struct ipv4_default_route_s ipv4_default_route;
+
+  if (if_index == Interface::DEFAULT_INDEX) {
+    // No default route interface index set, return special value
+    ipv4_default_route.if_index = HostToNetwork(NO_DEFAULT_ROUTE);
+  } else {
+    ipv4_default_route.if_index = HostToNetwork(if_index);
+  }
+
   if (default_route.IsWildcard()) {
     // No default route set, return special value
-    return GetUInt32Value(request, NO_DEFAULT_ROUTE, queued_message_count);
+    ipv4_default_route.default_route = HostToNetwork(NO_DEFAULT_ROUTE);
   } else {
-    return GetIPV4Address(request, default_route, queued_message_count);
+    // Already in correct byte order
+    ipv4_default_route.default_route = default_route.AsInt();
   }
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&ipv4_default_route),
+      sizeof(ipv4_default_route),
+      RDM_ACK,
+      queued_message_count);
 }
 
 
