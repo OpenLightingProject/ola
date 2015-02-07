@@ -66,7 +66,7 @@ const char OladHTTPServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
 const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
 /**
- * Create a new OLA HTTP server
+ * @brief Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
  * @param options the OladHTTPServerOptions for the OLA HTTP server
  * @param client_socket A ConnectedDescriptor which is used to communicate with
@@ -212,7 +212,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 
 
 /**
- * Print the list of universes / plugins as a json string
+ * @brief Print the list of universes / plugins as a json string
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
