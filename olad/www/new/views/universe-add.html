@@ -1,0 +1,14 @@
+<div class="round-corners">
+ <table class="plugin-table">
+  <tr>
+   <th class="top-table">enable</th>
+   <th class="top-table">device</th>
+   <th class="top-table">output</th>
+  </tr>
+  <tr class="striped-table" ng-repeat="plugin in Ports">
+   <td><input type="checkbox" /></td>
+   <td>{{plugin.device}}</td>
+   <td>{{plugin.is_output}}</td>
+  </tr>
+ </table>
+</div>

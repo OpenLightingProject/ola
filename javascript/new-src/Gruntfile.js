@@ -3,42 +3,7 @@
 module.exports = function (grunt) {
  grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
-  clean: {
-   build: ['../../olad/www/new/index.html', '../../olad/www/new/js', '../../olad/www/new/css', '../../olad/www/new/img', '../../olad/www/new/libs', '../../olad/www/new/views']
-  },
-  copy: {
-   build: {
-    files: [
-     {
-      expand: true,
-      src: 'src/img/*',
-      dest: '../../olad/www/new/img/',
-      flatten: true,
-      filter: 'isFile'
-     },
-     {
-      expand: true,
-      src: 'src/views/*',
-      dest: '../../olad/www/new/views/',
-      flatten: true,
-      filter: 'isFile'
-     },
-     {
-      expand: true,
-      cwd: 'src/libs',
-      src: '**',
-      dest: '../../olad/www/new/libs',
-      flatten: false
-     },
-     {
-      expand: false,
-      src: 'src/index.html',
-      dest: '../../olad/www/new/index.html',
-      flatten: true
-     }
-    ]
-   }
-  },
+
   bower: {
    dev: {
     options: {
@@ -50,15 +15,16 @@ module.exports = function (grunt) {
     }
    }
   },
+
   uglify: {
    default: {
     files: {
-     '../../olad/www/new/js/app.min.js': ['../../olad/www/new/js/app.js']
+     'src/js/app.min.js': ['src/js/app.js']
     },
     options: {
      mangle: true,
      sourceMap: true,
-     sourceMapName: '../../olad/www/new/js/app.min.js.map',
+     sourceMapName: 'src/js/app.min.js.map',
      banner: "/**\n" +
      "* This program is free software; you can redistribute it and/or modify\n" +
      "* it under the terms of the GNU General Public License as published by\n" +
@@ -77,21 +43,8 @@ module.exports = function (grunt) {
     }
    }
   },
-  concat: {
-   options: {
-    separator: '\n'
-   },
-   js: {
-    src: ['src/js/*.js'],
-    dest: '../../olad/www/new/js/app.js'
-   },
-   css: {
-    src: ['src/css/*.css'],
-    dest: '../../olad/www/new/css/style.css'
-   }
-  },
   jshint: {
-   dev: ['Gruntfile.js', 'src/js/*.js'],
+   dev: ['Gruntfile.js', 'src/js/app.js'],
    options: {
     globalstrict: true,
     globals: {
@@ -101,8 +54,8 @@ module.exports = function (grunt) {
   },
   watch: {
    build: {
-    files: ['Gruntfile.js', 'src/js/*.js', 'src/*.html', 'src/css/*.css', 'src/views/*.html'],
-    tasks: ['jshint:dev', 'copy:build', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default'],
+    files: ['Gruntfile.js', 'src/js/app.js', 'src/index.html', 'src/css/style.css', 'src/views/*.html'],
+    tasks: ['jshint:dev', 'uglify:default', 'cssmin:default'],
     options: {
      atBegin: true
     }
@@ -111,7 +64,7 @@ module.exports = function (grunt) {
   cssmin: {
    default: {
     files: {
-     '../../olad/www/new/css/style.min.css': ['../../olad/www/new/css/style.css']
+     'src/css/style.min.css': ['src/css/style.css']
     }
    }
   }
@@ -125,5 +78,5 @@ module.exports = function (grunt) {
  grunt.loadNpmTasks('grunt-contrib-copy');
  grunt.loadNpmTasks('grunt-bower-task');
  grunt.registerTask('dev', ['watch:build']);
- grunt.registerTask('build', ['clean:build', 'copy:build', 'jshint:dev', 'concat:js', 'uglify:default', 'concat:css', 'cssmin:default']);
+ grunt.registerTask('build', ['jshint:dev', 'uglify:default', 'cssmin:default']);
 };

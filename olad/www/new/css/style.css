@@ -109,7 +109,7 @@ th.top-table, tr.special-mouse>td{
 .top-table{
   border-bottom: solid black 1px;
 }
-tr.special-mouse:nth-of-type(even){
+tr.striped-table:nth-of-type(even){
   background-color: #F8F8F8;
   border-top: solid lightgrey 1px;
   border-bottom: solid lightgrey 1px;
