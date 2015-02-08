@@ -145,12 +145,17 @@ class FtdiWidget {
     /** @brief Get Widget available interface count **/
     int GetInterfaceCount();
 
-    /* @brief
-     * Build a list of available ftdi widgets.
+    /**
+     * @brief Build a list of available ftdi widgets.
      * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
-     */
+     **/
     static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
+    /**
+     * From reading libftdi docs it seems they may reuse error codes, which is
+     * why I chose to name this const lib_function_error.
+     **/
+    static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
  private:
     std::string m_serial;
     std::string m_name;

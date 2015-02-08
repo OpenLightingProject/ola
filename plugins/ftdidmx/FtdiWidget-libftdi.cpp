@@ -141,7 +141,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 
         // libftdi doesn't enumerate error codes,
         // -9 is 'get serial number failed', not ideal but workable.
-        if (r < 0 && r != -9) {
+        if (r < 0 &&
+            r != FtdiWidget::libftdi_ftdi_usb_get_strings_get_serial_failed) {
           OLA_WARN << "Unable to fetch string information from USB device: "
                    << ftdi_get_error_string(ftdi);
           continue;
