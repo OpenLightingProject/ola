@@ -113,61 +113,61 @@ class FtdiWidgetInfo {
  */
 class FtdiWidget {
  public:
-    /**
-     * Construct a new FtdiWidget instance for one widget.
-     * @param serial The widget's USB serial number
-     * @param name The widget's USB name (description)
-     * @param id id based on order of adding it seems from code.
-     * @param vid The VendorID of the device, def = FtdiWidgetInfo::default_vid
-     * @param pid The ProductID of the device, def =FtdiWidgetInfo::default_pid
-     */
-    FtdiWidget(const std::string &serial,
-               const std::string &name,
-               uint32_t id = 0,
-               const uint16_t vid = FtdiWidgetInfo::default_vid,
-               const uint16_t pid = FtdiWidgetInfo::default_pid);
+   /**
+    * Construct a new FtdiWidget instance for one widget.
+    * @param serial The widget's USB serial number
+    * @param name The widget's USB name (description)
+    * @param id id based on order of adding it seems from the code
+    * @param vid The VendorID of the device, def = FtdiWidgetInfo::default_vid
+    * @param pid The ProductID of the device, def = FtdiWidgetInfo::default_pid
+    */
+   FtdiWidget(const std::string &serial,
+              const std::string &name,
+              uint32_t id = 0,
+              const uint16_t vid = FtdiWidgetInfo::default_vid,
+              const uint16_t pid = FtdiWidgetInfo::default_pid);
 
-    /** Destructor */
-    virtual ~FtdiWidget();
+   /** Destructor */
+   virtual ~FtdiWidget();
 
-    /** Get the widget's USB serial number */
-    std::string Serial() const { return m_serial; }
+   /** Get the widget's USB serial number */
+   std::string Serial() const { return m_serial; }
 
-    /** Get the widget's USB name */
-    std::string Name() const { return m_name; }
-    uint16_t Vid() const { return m_vid; }
-    uint16_t Pid() const { return m_pid; }
+   /** Get the widget's USB name */
+   std::string Name() const { return m_name; }
+   uint16_t Vid() const { return m_vid; }
+   uint16_t Pid() const { return m_pid; }
 
-    /** Get the widget's FTD2XX ID number */
-    uint32_t Id() const { return m_id; }
+   /** Get the widget's FTD2XX ID number */
+   uint32_t Id() const { return m_id; }
 
-    std::string Description() const {
-      return m_name + " with serial number : " + m_serial +" ";
-    }
+   std::string Description() const {
+     return m_name + " with serial number : " + m_serial +" ";
+   }
 
-    /** @brief Get Widget available interface count **/
-    int GetInterfaceCount();
+   /** @brief Get Widget available interface count **/
+   int GetInterfaceCount();
 
-    /**
-     * @brief Build a list of available ftdi widgets.
-     * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
-     **/
-    static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
+   /**
+    * @brief Build a list of available ftdi widgets.
+    * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
+    **/
+   static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
-    /**
-     * From reading libftdi docs it seems they may reuse error codes, which is
-     * why I chose to name this const lib_function_error.
-     **/
-    static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
+   /**
+    * From reading libftdi docs it seems they may reuse error codes, which is
+    * why I chose to name this const lib_function_error.
+    **/
+   static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
 
-    static bool m_missing_serial;
+   static bool m_missing_serial;
 
  private:
-    std::string m_serial;
-    std::string m_name;
-    uint32_t m_id;
-    const uint16_t m_vid;
-    const uint16_t m_pid;
+   std::string m_serial;
+   std::string m_name;
+   uint32_t m_id;
+   const uint16_t m_vid;
+   const uint16_t m_pid;
 };
 
 class FtdiInterface {
