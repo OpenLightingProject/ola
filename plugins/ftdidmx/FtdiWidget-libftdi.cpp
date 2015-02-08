@@ -354,42 +354,42 @@ bool FtdiInterface::Read(unsigned char *buff, int size) {
 
 bool FtdiInterface::SetupOutput() {
   // Setup the widget
-  if (SetInterface() == false) {
+  if (!SetInterface()) {
     OLA_WARN << "Error setting the device interface.";
     return false;
   }
 
-  if (Open() == false) {
+  if (!Open()) {
     OLA_WARN << "Error Opening widget";
     return false;
   }
 
-  if (Reset() == false) {
+  if (!Reset()) {
     OLA_WARN << "Error Resetting widget";
     return false;
   }
 
-  if (SetBaudRate() == false) {
+  if (!SetBaudRate()) {
     OLA_WARN << "Error Setting baudrate";
     return false;
   }
 
-  if (SetLineProperties() == false) {
+  if (!SetLineProperties()) {
     OLA_WARN << "Error setting line properties";
     return false;
   }
 
-  if (SetFlowControl() == false) {
+  if (!SetFlowControl()) {
     OLA_WARN << "Error setting flow control";
     return false;
   }
 
-  if (PurgeBuffers() == false) {
+  if (!PurgeBuffers()) {
     OLA_WARN << "Error purging buffers";
     return false;
   }
 
-  if (ClearRts() == false) {
+  if (!ClearRts()) {
     OLA_WARN << "Error clearing rts";
     return false;
   }
