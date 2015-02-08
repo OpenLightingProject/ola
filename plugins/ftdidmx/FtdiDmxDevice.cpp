@@ -50,6 +50,7 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
+  DeleteAllPorts();
   delete m_widget;
 }
 
