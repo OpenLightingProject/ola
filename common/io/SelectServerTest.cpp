@@ -582,7 +582,7 @@ void SelectServerTest::testTimeout() {
       10,
       ola::NewSingleCallback(this, &SelectServerTest::ReentrantTimeout, m_ss));
   m_ss->RegisterSingleTimeout(
-      20,
+      40,
       ola::NewSingleCallback(this, &SelectServerTest::Terminate));
   m_ss->Run();
   OLA_ASSERT_EQ(2u, m_timeout_counter);
