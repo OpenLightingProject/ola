@@ -2927,7 +2927,7 @@ pid {
         type: UINT32
         name: "interface_identifier"
         range {
-          min: 0
+          min: 1
           max: 4294967040
         }
       }
@@ -2955,7 +2955,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -2981,7 +2981,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3006,7 +3006,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3026,6 +3026,10 @@ pid {
     field {
       type: UINT32
       name: "interface_identifier"
+      range {
+        min: 1
+        max: 4294967040
+      }
     }
     field {
       type: BOOL
@@ -3044,7 +3048,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3064,6 +3068,10 @@ pid {
     field {
       type: UINT32
       name: "interface_identifier"
+      range {
+        min: 1
+        max: 4294967040
+      }
     }
     field {
       type: BOOL
@@ -3082,7 +3090,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3135,7 +3143,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3168,7 +3176,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3201,7 +3209,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3218,7 +3226,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3235,7 +3243,7 @@ pid {
       type: UINT32
       name: "interface_identifier"
       range {
-        min: 0
+        min: 1
         max: 4294967040
       }
     }
@@ -3251,6 +3259,10 @@ pid {
   }
   get_response {
     field {
+      type: UINT32
+      name: "interface_identifier"
+    }
+    field {
       type: IPV4
       name: "ipv4_address"
       label {
@@ -3261,6 +3273,18 @@ pid {
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
+    field {
+      type: UINT32
+      name: "interface_identifier"
+      label {
+        value: 0
+        label: "No Default Route"
+      }
+      range {
+        min: 0
+        max: 4294967040
+      }
+    }
     field {
       type: IPV4
       name: "ipv4_address"
@@ -3912,4 +3936,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-version: 1423241786
+version: 1423356691
