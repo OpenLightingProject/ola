@@ -50,6 +50,7 @@ BaseUsbProWidget::BaseUsbProWidget(
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
       m_bytes_received(0) {
+  memset(&m_header, 0, sizeof(m_header));
   m_descriptor->SetOnData(
       NewCallback(this, &BaseUsbProWidget::DescriptorReady));
 }
@@ -126,7 +127,7 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
   int fd;
-  if (!ola::io::Open(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
+  if (!ola::io::TryOpen(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
     return NULL;
   }
 

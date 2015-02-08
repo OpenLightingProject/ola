@@ -27,21 +27,23 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <sstream>
+#include <string>
 #include <vector>
-
 
 namespace ola {
 namespace testing {
 
+typedef CPPUNIT_NS::SourceLine SourceLine;
+
 // Assert that two data blocks are the same.
 // Private, use OLA_ASSERT_DATA_EQUALS below.
-void ASSERT_DATA_EQUALS(unsigned int line,
+void ASSERT_DATA_EQUALS(const SourceLine &source_line,
                         const uint8_t *expected,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length);
 
-void ASSERT_DATA_EQUALS(unsigned int line,
+void ASSERT_DATA_EQUALS(const SourceLine &source_line,
                         const char *expected,
                         unsigned int expected_length,
                         const char *actual,
@@ -49,38 +51,68 @@ void ASSERT_DATA_EQUALS(unsigned int line,
 
 // Private, use OLA_ASSERT_VECTOR_EQ below
 template <typename T>
-void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
+void _AssertVectorEq(const SourceLine &source_line,
                      const std::vector<T> &t1,
                      const std::vector<T> &t2) {
-  CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
-                           "Vector sizes not equal");
+  _AssertEquals(t1.size(), t2.size(), source_line,
+                "Vector sizes not equal");
 
   typename std::vector<T>::const_iterator iter1 = t1.begin();
   typename std::vector<T>::const_iterator iter2 = t2.begin();
   while (iter1 != t1.end()) {
-    CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
-                             "Vector elements not equal");
+    _AssertEquals(*iter1++, *iter2++, source_line,
+                  "Vector elements not equal");
   }
 }
 
 // Private, use OLA_ASSERT_SET_EQ below
 template <typename T>
-void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
+void _AssertSetEq(const SourceLine &source_line,
                   const std::set<T> &t1,
                   const std::set<T> &t2) {
-  CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
-                           "Set sizes not equal");
+  _AssertEquals(t1.size(), t2.size(), source_line,
+                "Set sizes not equal");
 
   typename std::set<T>::const_iterator iter1 = t1.begin();
   typename std::set<T>::const_iterator iter2 = t2.begin();
   while (iter1 != t1.end()) {
-    CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
-                             "Set elements not equal");
+    _AssertEquals(*iter1++, *iter2++, source_line,
+                  "Set elements not equal");
   }
+}
+
+// Useful methods. This allows us to switch between unit testing frameworks in
+// the future. You should generally use the macros below instead
+template <typename T>
+inline void _AssertEquals(const SourceLine &source_line,
+                          const T &expected,
+                          const T &actual,
+                          const std::string &message = "") {
+  CPPUNIT_NS::assertEquals(expected,
+                           actual,
+                           source_line,
+                           message);
+}
+
+inline void _Fail(const SourceLine &source_line,
+                  const std::string &message) {
+  CPPUNIT_NS::Asserter::fail(message,
+                             source_line);
+}
+
+inline void _FailIf(const SourceLine &source_line,
+                    bool shouldFail,
+                    const std::string &message) {
+  CPPUNIT_NS::Asserter::failIf(shouldFail,
+                               message,
+                               source_line);
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in
 // the future.
+#define OLA_SOURCELINE() \
+  CPPUNIT_SOURCELINE()
+
 #define OLA_ASSERT(condition)  \
   CPPUNIT_ASSERT(condition)
 
@@ -125,8 +157,8 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
 #define OLA_ASSERT_DATA_EQUALS(expected, expected_length, actual, \
                                actual_length)  \
-ola::testing::ASSERT_DATA_EQUALS(__LINE__, (expected), (expected_length), \
-                                 (actual), (actual_length))
+ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), (expected), \
+                                 (expected_length), (actual), (actual_length))
 
 #define OLA_ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \

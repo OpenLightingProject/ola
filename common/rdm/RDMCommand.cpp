@@ -705,7 +705,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint8_t outstanding_messages) {
   switch (request->CommandClass()) {
     case RDMCommand::GET_COMMAND:
-      // coverity(SWAPPED_ARGUMENTS)
+      // coverity[SWAPPED_ARGUMENTS]
       return new RDMGetResponse(
         request->DestinationUID(),
         request->SourceUID(),
@@ -717,7 +717,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
         data,
         length);
     case RDMCommand::SET_COMMAND:
-      // coverity(SWAPPED_ARGUMENTS)
+      // coverity[SWAPPED_ARGUMENTS]
       return new RDMSetResponse(
         request->DestinationUID(),
         request->SourceUID(),
@@ -729,7 +729,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
         data,
         length);
     case RDMCommand::DISCOVER_COMMAND:
-      // coverity(SWAPPED_ARGUMENTS)
+      // coverity[SWAPPED_ARGUMENTS]
       return new RDMDiscoveryResponse(
         request->DestinationUID(),
         request->SourceUID(),

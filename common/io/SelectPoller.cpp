@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 // Pull in fd_set and related definitions.
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #endif
 
 #include "common/io/SelectPoller.h"

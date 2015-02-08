@@ -1,4 +1,3 @@
-
 include plugins/artnet/Makefile.mk
 include plugins/dummy/Makefile.mk
 include plugins/espnet/Makefile.mk

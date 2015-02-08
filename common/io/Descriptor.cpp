@@ -30,7 +30,7 @@
 #endif
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Winioctl.h>
 #else
 #include <sys/ioctl.h>
@@ -136,9 +136,9 @@ int ToFD(const DescriptorHandle &handle) {
 }
 
 /**
- * Helper function to create a annonymous pipe
+ * Helper function to create a anonymous pipe
  * @param handle_pair a 2 element array which is updated with the handles
- * @return true if successfull, false otherwise.
+ * @return true if successful, false otherwise.
  */
 bool CreatePipe(DescriptorHandle handle_pair[2]) {
 #ifdef _WIN32
@@ -205,7 +205,6 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
 #endif
   return true;
 }
-
 
 
 // BidirectionalFileDescriptor

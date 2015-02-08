@@ -41,7 +41,9 @@ namespace rdm {
 class StaticGroupTokenCalculator
     : public ola::messaging::FieldDescriptorVisitor {
  public:
-    StaticGroupTokenCalculator() {}
+    StaticGroupTokenCalculator()
+        : m_variable_sized_group_encountered(false) {
+    }
     ~StaticGroupTokenCalculator() {}
 
     bool Descend() const { return true; }

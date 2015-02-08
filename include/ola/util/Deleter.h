@@ -13,37 +13,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * NetworkUtilsInternal.h
- * Abstract various network functions.
- * Copyright (C) 2005 Simon Newton
+ * Deleter.h
+ * Asynchronous deletion of pointers.
  */
 
-#ifndef COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
-#define COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
+#ifndef INCLUDE_OLA_UTIL_DELETER_H_
+#define INCLUDE_OLA_UTIL_DELETER_H_
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#ifdef HAVE_WINSOCK2_H
-#define VC_EXTRALEAN
-#include <ola/win/CleanWinSock2.h>
-#endif
-
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
-#include <string>
+#include <ola/Callback.h>
 
 namespace ola {
-namespace network {
 
 /**
- * Return the length of a sockaddr
+ * @brief Delete a pointer.
+ * @tparam T any type.
+ * @param t The pointer to delete. Ownership is transferred.
  */
-unsigned int SockAddrLen(const struct sockaddr &sa);
+template <typename T>
+void Deleter(T* t) {
+  delete t;
+}
 
-}  // namespace network
+/**
+ * @brief Create a callback that deletes the object.
+ * @tparam T any type.
+ * @param t The pointer to delete. Ownership is transferred.
+ * @returns A SingleUseCallback which will delete the pointer when run.
+ * @sa ExecutorThread
+ */
+template <typename T>
+SingleUseCallback0<void>* DeletePointerCallback(T* t) {
+  return NewSingleCallback<void>(Deleter, t);
+}
+
 }  // namespace ola
-#endif  // COMMON_NETWORK_NETWORKUTILSINTERNAL_H_
+#endif  // INCLUDE_OLA_UTIL_DELETER_H_

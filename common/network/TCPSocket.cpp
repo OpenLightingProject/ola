@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Ws2tcpip.h>
 #include <winioctl.h>
 #else
@@ -304,7 +304,7 @@ void TCPAcceptingSocket::PerformRead() {
 
     if (m_factory) {
       // The callback takes ownership of the new socket descriptor
-      // coverity(RESOURCE_LEAK)
+      // coverity[RESOURCE_LEAK]
       m_factory->NewTCPSocket(sd);
     } else {
       OLA_WARN << "Accepted new TCP Connection but no factory registered";

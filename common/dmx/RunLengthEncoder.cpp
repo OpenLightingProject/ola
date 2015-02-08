@@ -72,7 +72,7 @@ bool RunLengthEncoder::Encode(const DmxBuffer &src,
       if (j >= src_size - 2)
         j = src_size;
 
-       // if we have enough room left for all the values
+      // if we have enough room left for all the values
       if (dst_index + j - i < dst_size) {
         data[dst_index++] = j - i;
         memcpy(&data[dst_index], src.GetRaw() + i, j-i);

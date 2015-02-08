@@ -3,6 +3,7 @@ olathreadinclude_HEADERS = \
     include/ola/thread/CallbackThread.h \
     include/ola/thread/ConsumerThread.h \
     include/ola/thread/ExecutorInterface.h \
+    include/ola/thread/ExecutorThread.h \
     include/ola/thread/Future.h \
     include/ola/thread/FuturePrivate.h \
     include/ola/thread/Mutex.h \
