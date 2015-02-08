@@ -47,15 +47,18 @@ namespace plugin {
 namespace ftdidmx {
 
 /**
- * This class holds information about an attached ftdi chip
+ * This class holds information about an attached ftdi chips
  */
 class FtdiWidgetInfo {
  public:
+    static const int default_vid = 0x0403;
+    static const int default_pid = 0x6001;
+
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
                    unsigned int id,
-                   const uint16_t vid = FtdiWidget::default_vid,
-                   const uint16_t pid = FtdiWidget::default_pid
+                   const uint16_t vid = default_vid,
+                   const uint16_t pid = default_pid
                   )
       : m_name(name),
         m_serial(serial),
@@ -114,15 +117,15 @@ class FtdiWidget {
      * Construct a new FtdiWidget instance for one widget.
      * @param serial The widget's USB serial number
      * @param name The widget's USB name (description)
-     * @param id The ID of the device (used only when FTD2XX is the backend)
-     * @param vid The VendorID of the device, defaults to old value of FtdiWidget::VID
-     * @param pid The ProductID of the device, defaults to old value of FtdiWidget::PID
+     * @param id id based on order of adding it seems from code.
+     * @param vid The VendorID of the device, def = FtdiWidgetInfo::default_vid
+     * @param pid The ProductID of the device, def =FtdiWidgetInfo::default_pid
      */
     FtdiWidget(const std::string &serial,
                const std::string &name,
                uint32_t id = 0,
-               const uint16_t vid = FtdiWidget::default_vid,
-               const uint16_t pid = FtdiWidget::default_pid);
+               const uint16_t vid = FtdiWidgetInfo::default_vid,
+               const uint16_t pid = FtdiWidgetInfo::default_pid);
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -158,9 +161,6 @@ class FtdiWidget {
     static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
 
     static bool m_missing_serial;
-
-    static const int default_vid = 0x0403;
-    static const int default_pid = 0x6001;
 
  private:
     std::string m_serial;

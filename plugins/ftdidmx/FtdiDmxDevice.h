@@ -46,7 +46,7 @@ class FtdiDmxDevice : public Device {
 
   std::string DeviceId() const { return m_widget->Serial(); }
   std::string Description() const { return m_widget_info.Description(); }
-  FtdiWidget* GetDevice() {return m_widget; }
+  FtdiWidget* GetDevice() { return m_widget; }
 
  protected:
   bool StartHook();
