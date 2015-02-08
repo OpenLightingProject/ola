@@ -54,8 +54,8 @@ class FtdiWidgetInfo {
     FtdiWidgetInfo(const std::string &name,
                    const std::string &serial,
                    unsigned int id,
-                   const uint16_t vid = 0x0403,
-                   const uint16_t pid = 0x6001
+                   const uint16_t vid = FtdiWidget::default_vid,
+                   const uint16_t pid = FtdiWidget::default_pid
                   )
       : m_name(name),
         m_serial(serial),
@@ -121,8 +121,8 @@ class FtdiWidget {
     FtdiWidget(const std::string &serial,
                const std::string &name,
                uint32_t id = 0,
-               const uint16_t vid = 0x0403,
-               const uint16_t pid = 0x6001);
+               const uint16_t vid = FtdiWidget::default_vid,
+               const uint16_t pid = FtdiWidget::default_pid);
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -158,6 +158,9 @@ class FtdiWidget {
     static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
 
     static bool m_missing_serial;
+
+    static const int default_vid = 0x0403;
+    static const int default_pid = 0x6001;
 
  private:
     std::string m_serial;

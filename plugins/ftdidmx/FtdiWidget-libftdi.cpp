@@ -101,9 +101,9 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   }
 
   vector<uint16_t> pids;
-  pids.push_back(0x6001);
+  pids.push_back(FtdiWidget::default_pid);
   pids.push_back(0x6011);
-  const uint16_t vid = 0x0403;
+  const uint16_t vid = FtdiWidget::default_vid;
 
   for (vector<uint16_t>::iterator current_pid = pids.begin();
        current_pid != pids.end();
