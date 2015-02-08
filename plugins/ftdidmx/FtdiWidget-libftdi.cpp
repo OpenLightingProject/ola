@@ -165,8 +165,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
                      << "We can only support one device without a serial "
                      << "number.";
             continue;
-          }
-          else {
+          } else {
             OLA_WARN << "Failed to read serial number for " << sname;
             FtdiWidget::m_missing_serial = true;
           }

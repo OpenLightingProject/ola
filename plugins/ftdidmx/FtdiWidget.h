@@ -51,61 +51,61 @@ namespace ftdidmx {
  */
 class FtdiWidgetInfo {
  public:
-    static const int default_vid = 0x0403;
-    static const int default_pid = 0x6001;
+  static const int default_vid = 0x0403;
+  static const int default_pid = 0x6001;
 
-    FtdiWidgetInfo(const std::string &name,
-                   const std::string &serial,
-                   unsigned int id,
-                   const uint16_t vid = default_vid,
-                   const uint16_t pid = default_pid
-                  )
-      : m_name(name),
-        m_serial(serial),
-        m_id(id),
-        m_vid(vid),
-        m_pid(pid) {
+  FtdiWidgetInfo(const std::string &name,
+                  const std::string &serial,
+                  unsigned int id,
+                  const uint16_t vid = default_vid,
+                  const uint16_t pid = default_pid
+                )
+    : m_name(name),
+      m_serial(serial),
+      m_id(id),
+      m_vid(vid),
+      m_pid(pid) {
+  }
+
+  FtdiWidgetInfo(const FtdiWidgetInfo &info)
+    : m_name(info.Name()),
+      m_serial(info.Serial()),
+      m_id(info.Id()),
+      m_vid(info.Vid()),
+      m_pid(info.Pid()) {
+  }
+
+  ~FtdiWidgetInfo() {}
+
+  std::string Name() const { return m_name; }
+  std::string Serial() const { return m_serial; }
+
+  unsigned int Id() const { return m_id; }
+  uint16_t Vid() const { return m_vid; }
+  uint16_t Pid() const { return m_pid; }
+
+  std::string Description() const {
+    return m_name + " with serial number : " + m_serial + " ";
+  }
+
+  FtdiWidgetInfo& operator=(const FtdiWidgetInfo &other) {
+    if (this != &other) {
+      m_name = other.Name();
+      m_serial = other.Serial();
+      m_id = other.Id();
+      m_vid = other.Vid();
+      m_pid = other.Pid();
     }
-
-    FtdiWidgetInfo(const FtdiWidgetInfo &info)
-      : m_name(info.Name()),
-        m_serial(info.Serial()),
-        m_id(info.Id()),
-        m_vid(info.Vid()),
-        m_pid(info.Pid()) {
-    }
-
-    ~FtdiWidgetInfo() {}
-
-    std::string Name() const { return m_name; }
-    std::string Serial() const { return m_serial; }
-
-    unsigned int Id() const { return m_id; }
-    uint16_t Vid() const { return m_vid; }
-    uint16_t Pid() const { return m_pid; }
-
-    std::string Description() const {
-      return m_name + " with serial number : " + m_serial + " ";
-    }
-
-    FtdiWidgetInfo& operator=(const FtdiWidgetInfo &other) {
-      if (this != &other) {
-        m_name = other.Name();
-        m_serial = other.Serial();
-        m_id = other.Id();
-        m_vid = other.Vid();
-        m_pid = other.Pid();
-      }
-      return *this;
-    }
+    return *this;
+  }
 
  private:
-    std::string m_name;
-    std::string m_serial;
+  std::string m_name;
+  std::string m_serial;
 
-    unsigned int m_id;
-    uint16_t m_vid;
-    uint16_t m_pid;
+  unsigned int m_id;
+  uint16_t m_vid;
+  uint16_t m_pid;
 };
 
 /**
@@ -113,119 +113,119 @@ class FtdiWidgetInfo {
  */
 class FtdiWidget {
  public:
-   /**
-    * Construct a new FtdiWidget instance for one widget.
-    * @param serial The widget's USB serial number
-    * @param name The widget's USB name (description)
-    * @param id id based on order of adding it seems from the code
-    * @param vid The VendorID of the device, def = FtdiWidgetInfo::default_vid
-    * @param pid The ProductID of the device, def = FtdiWidgetInfo::default_pid
-    */
-   FtdiWidget(const std::string &serial,
-              const std::string &name,
-              uint32_t id = 0,
-              const uint16_t vid = FtdiWidgetInfo::default_vid,
-              const uint16_t pid = FtdiWidgetInfo::default_pid);
+  /**
+  * Construct a new FtdiWidget instance for one widget.
+  * @param serial The widget's USB serial number
+  * @param name The widget's USB name (description)
+  * @param id id based on order of adding it seems from the code
+  * @param vid The VendorID of the device, def = FtdiWidgetInfo::default_vid
+  * @param pid The ProductID of the device, def = FtdiWidgetInfo::default_pid
+  */
+  FtdiWidget(const std::string &serial,
+            const std::string &name,
+            uint32_t id = 0,
+            const uint16_t vid = FtdiWidgetInfo::default_vid,
+            const uint16_t pid = FtdiWidgetInfo::default_pid);
 
-   /** Destructor */
-   virtual ~FtdiWidget();
+  /** Destructor */
+  virtual ~FtdiWidget();
 
-   /** Get the widget's USB serial number */
-   std::string Serial() const { return m_serial; }
+  /** Get the widget's USB serial number */
+  std::string Serial() const { return m_serial; }
 
-   /** Get the widget's USB name */
-   std::string Name() const { return m_name; }
-   uint16_t Vid() const { return m_vid; }
-   uint16_t Pid() const { return m_pid; }
+  /** Get the widget's USB name */
+  std::string Name() const { return m_name; }
+  uint16_t Vid() const { return m_vid; }
+  uint16_t Pid() const { return m_pid; }
 
-   /** Get the widget's FTD2XX ID number */
-   uint32_t Id() const { return m_id; }
+  /** Get the widget's FTD2XX ID number */
+  uint32_t Id() const { return m_id; }
 
-   std::string Description() const {
-     return m_name + " with serial number : " + m_serial +" ";
-   }
+  std::string Description() const {
+    return m_name + " with serial number : " + m_serial +" ";
+  }
 
-   /** @brief Get Widget available interface count **/
-   int GetInterfaceCount();
+  /** @brief Get Widget available interface count **/
+  int GetInterfaceCount();
 
-   /**
-    * @brief Build a list of available ftdi widgets.
-    * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
-    **/
-   static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
+  /**
+  * @brief Build a list of available ftdi widgets.
+  * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
+  **/
+  static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
-   /**
-    * From reading libftdi docs it seems they may reuse error codes, which is
-    * why I chose to name this const lib_function_error.
-    **/
-   static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
+  /**
+  * From reading libftdi docs it seems they may reuse error codes, which is
+  * why I chose to name this const lib_function_error.
+  **/
+  static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
 
-   static bool m_missing_serial;
+  static bool m_missing_serial;
 
  private:
-   std::string m_serial;
-   std::string m_name;
-   uint32_t m_id;
-   const uint16_t m_vid;
-   const uint16_t m_pid;
+  std::string m_serial;
+  std::string m_name;
+  uint32_t m_id;
+  const uint16_t m_vid;
+  const uint16_t m_pid;
 };
 
 class FtdiInterface {
  public:
-    FtdiInterface(const FtdiWidget * parent,
-                  const ftdi_interface interface);
+  FtdiInterface(const FtdiWidget * parent,
+                const ftdi_interface interface);
 
-    virtual ~FtdiInterface();
+  virtual ~FtdiInterface();
 
-    std::string Description() const {
-      return m_parent->Description();
-    }
+  std::string Description() const {
+    return m_parent->Description();
+  }
 
-    /** Set interface on the widget */
-    bool SetInterface();
-    /** Open the widget */
-    bool Open();
+  /** Set interface on the widget */
+  bool SetInterface();
+  /** Open the widget */
+  bool Open();
 
-    /** Close the widget */
-    bool Close();
+  /** Close the widget */
+  bool Close();
 
-    /** Check if the widget is open */
-    bool IsOpen() const;
+  /** Check if the widget is open */
+  bool IsOpen() const;
 
-    /** Reset the communications line */
-    bool Reset();
+  /** Reset the communications line */
+  bool Reset();
 
-    /** Setup communications line for 8N2 traffic */
-    bool SetLineProperties();
+  /** Setup communications line for 8N2 traffic */
+  bool SetLineProperties();
 
-    /** Set 250kbps baud rate */
-    bool SetBaudRate();
+  /** Set 250kbps baud rate */
+  bool SetBaudRate();
 
-    /** Disable flow control */
-    bool SetFlowControl();
+  /** Disable flow control */
+  bool SetFlowControl();
 
-    /** Clear the RTS bit */
-    bool ClearRts();
+  /** Clear the RTS bit */
+  bool ClearRts();
 
-    /** Purge TX & RX buffers */
-    bool PurgeBuffers();
+  /** Purge TX & RX buffers */
+  bool PurgeBuffers();
 
-    /** Toggle communications line BREAK condition on/off */
-    bool SetBreak(bool on);
+  /** Toggle communications line BREAK condition on/off */
+  bool SetBreak(bool on);
 
-    /** Write data to a previously-opened line */
-    bool Write(const ola::DmxBuffer &data);
+  /** Write data to a previously-opened line */
+  bool Write(const ola::DmxBuffer &data);
 
-    /** Read data from a previously-opened line */
-    bool Read(unsigned char* buff, int size);
+  /** Read data from a previously-opened line */
+  bool Read(unsigned char* buff, int size);
 
-    /** Setup device for DMX Output **/
-    bool SetupOutput();
+  /** Setup device for DMX Output **/
+  bool SetupOutput();
 
  private:
-    const FtdiWidget * m_parent;
-    struct ftdi_context m_handle;
-    const ftdi_interface m_interface;
+  const FtdiWidget * m_parent;
+  struct ftdi_context m_handle;
+  const ftdi_interface m_interface;
 };  // FtdiInterface
 }  // namespace ftdidmx
 }  // namespace plugin
