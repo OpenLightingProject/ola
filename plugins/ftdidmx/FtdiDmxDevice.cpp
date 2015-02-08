@@ -73,7 +73,7 @@ bool FtdiDmxDevice::StartHook() {
     }
   }
   if (successfullyAdded > 0) {
-    OLA_INFO << "Succesfully added " << successfullyAdded << "/"
+    OLA_INFO << "Successfully added " << successfullyAdded << "/"
              << interfaceCount << " interfaces.";
   } else {
     OLA_INFO << "Removing widget since no ports were added.";
