@@ -156,6 +156,9 @@ class FtdiWidget {
      * why I chose to name this const lib_function_error.
      **/
     static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
+
+    static bool m_missing_serial;
+
  private:
     std::string m_serial;
     std::string m_name;

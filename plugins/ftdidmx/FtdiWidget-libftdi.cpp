@@ -86,6 +86,8 @@ int FtdiWidget::GetInterfaceCount() {
   }
 }
 
+bool FtdiWidget::m_missing_serial = false;
+
 /**
  * @brief Build a list of all attached ftdi devices
  **/
@@ -151,10 +153,25 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         string v = string(vendor);
         string sname = string(name);
         string sserial = string(serial);
-        if (sserial == "?" || r == -9) {
+        if (sserial == "?" ||
+            r == FtdiWidget::libftdi_ftdi_usb_get_strings_get_serial_failed) {
           // this means there wasn't a serial number
           sserial.clear();
         }
+
+        if (r == FtdiWidget::libftdi_ftdi_usb_get_strings_get_serial_failed) {
+          if (FtdiWidget::m_missing_serial) {
+            OLA_WARN << "Failed to read serial number or serial number empty. "
+                     << "We can only support one device without a serial "
+                     << "number.";
+            continue;
+          }
+          else {
+            OLA_WARN << "Failed to read serial number for " << sname;
+            FtdiWidget::m_missing_serial = true;
+          }
+        }
+
         OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '"
                  << sname << "', Serial: '" << sserial << "'";
         ToUpper(&v);
