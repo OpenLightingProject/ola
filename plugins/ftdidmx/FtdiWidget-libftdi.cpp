@@ -66,8 +66,8 @@ FtdiWidget::FtdiWidget(const string& serial,
 
 FtdiWidget::~FtdiWidget() {}
 
-/* @brief
- * Get the number of physical interfaces our widgit has to offer.
+/**
+ * @brief Get the number of physical interfaces our widgit has to offer.
  *
  * This does not deal with product names being named in a different way.
  *
@@ -86,7 +86,9 @@ int FtdiWidget::GetInterfaceCount() {
   }
 }
 
-// @brief Build a list of all attached ftdi devices
+/**
+ * @brief Build a list of all attached ftdi devices
+ **/
 void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   int i = -1;
   widgets->clear();

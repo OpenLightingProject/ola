@@ -55,7 +55,7 @@ FtdiDmxDevice::~FtdiDmxDevice() {
 
 bool FtdiDmxDevice::StartHook() {
   unsigned int interfaceCount = m_widget->GetInterfaceCount();
-  unsigned int succesfullyAdded = 0;
+  unsigned int successfullyAdded = 0;
 
   OLA_INFO << "Widget " << m_widget->Name() << " has " << interfaceCount
            << " interfaces.";
@@ -65,19 +65,18 @@ bool FtdiDmxDevice::StartHook() {
                                             static_cast<ftdi_interface>(i));
     if (port->SetupOutput()) {
       AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
-      succesfullyAdded += 1;
+      successfullyAdded += 1;
     } else {
       OLA_WARN << "Failed to add interface: " << i;
       delete port;
     }
   }
-  if (succesfullyAdded > 0) {
-    OLA_INFO << "Succesfully added " << succesfullyAdded << "/"
+  if (successfullyAdded > 0) {
+    OLA_INFO << "Succesfully added " << successfullyAdded << "/"
              << interfaceCount << " interfaces.";
   } else {
-    // I have not been able to simulate this case so far...
-    // Which is why there is no removal code.
     OLA_INFO << "Removing widget since no ports were added.";
+    return false;
   }
 
   return true;
