@@ -34,11 +34,13 @@
 #include <string>
 
 #if defined(_WIN32) && defined(__GNUC__)
-inline bool operator==(const ptw32_handle_t &left, const ptw32_handle_t &right) {
+inline bool operator==(const ptw32_handle_t &left,
+                       const ptw32_handle_t &right) {
   return (left.p == right.p) && (left.x == right.x);
 }
 
-inline std::ostream& operator<<(std::ostream &stream, const ptw32_handle_t &handle) {
+inline std::ostream& operator<<(std::ostream &stream,
+                                 const ptw32_handle_t &handle) {
   stream << handle.p;
   return stream;
 }
