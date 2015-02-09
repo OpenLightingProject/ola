@@ -1,4 +1,31 @@
 <ul id="ola-nav-tabs" class="nav nav-tabs">
 
 </ul>
-<div></div>
+<div>Id: {{Info.id}}</div>
+<div>Mode: {{Info.merge_mode}}</div>
+<div>Name: {{Info.name}}</div>
+<br/>
+<div>Input Ports:
+ <table>
+  <tr>
+   <th class="top-table">Data</th>
+  </tr>
+  <tr class="striped-table" ng-repeat="port in Info.input_ports">
+   <td>{{port}}</td>
+  </tr>
+ </table>
+</div>
+<br/>
+<div>Output Ports:
+ <table>
+  <tr>
+   <th class="top-table">Data</th>
+  </tr>
+  <tr class="striped-table" ng-repeat="port in Info.output_ports">
+   <td>{{port}}</td>
+  </tr>
+ </table>
+</div>
+<br/>
+<br/>
+<div>{{Info}}</div>
