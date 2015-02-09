@@ -33,17 +33,6 @@ using ola::io::SelectServer;
 using ola::network::UDPSocket;
 using ola::thread::ThreadId;
 
-#if defined(_WIN32) && defined(__GNUC__)
-bool operator==(const ptw32_handle_t &left, const ptw32_handle_t &right) {
-  return (left.p == right.p) && (left.x == right.x);
-}
-
-std::ostream& operator<<(std::ostream &stream, const ptw32_handle_t &handle) {
-  stream << handle.p;
-  return stream;
-}
-#endif
-
 class TestThread: public ola::thread::Thread {
  public:
     TestThread(SelectServer *ss,
