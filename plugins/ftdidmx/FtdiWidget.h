@@ -51,14 +51,14 @@ namespace ftdidmx {
  */
 class FtdiWidgetInfo {
  public:
-  static const int default_vid = 0x0403;
-  static const int default_pid = 0x6001;
+  static const int ftdi_vid = 0x0403;
+  static const int ft232_pid = 0x6001;
 
   FtdiWidgetInfo(const std::string &name,
                   const std::string &serial,
                   unsigned int id,
-                  const uint16_t vid = default_vid,
-                  const uint16_t pid = default_pid
+                  const uint16_t vid = ftdi_vid,
+                  const uint16_t pid = ft232_pid
                 )
     : m_name(name),
       m_serial(serial),
@@ -118,14 +118,14 @@ class FtdiWidget {
   * @param serial The widget's USB serial number
   * @param name The widget's USB name (description)
   * @param id id based on order of adding it seems from the code
-  * @param vid The VendorID of the device, def = FtdiWidgetInfo::default_vid
-  * @param pid The ProductID of the device, def = FtdiWidgetInfo::default_pid
+  * @param vid The VendorID of the device, def = FtdiWidgetInfo::ftdi_vid
+  * @param pid The ProductID of the device, def = FtdiWidgetInfo::ft232_pid
   */
   FtdiWidget(const std::string &serial,
             const std::string &name,
             uint32_t id = 0,
-            const uint16_t vid = FtdiWidgetInfo::default_vid,
-            const uint16_t pid = FtdiWidgetInfo::default_pid);
+            const uint16_t vid = FtdiWidgetInfo::ftdi_vid,
+            const uint16_t pid = FtdiWidgetInfo::ft232_pid);
 
   /** Destructor */
   virtual ~FtdiWidget();
