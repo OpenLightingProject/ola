@@ -496,6 +496,12 @@ AS_IF([test "x$enable_java_libs" = xyes],
        MAVEN_SUPPORT([2.2.1])])
 AM_CONDITIONAL([BUILD_JAVA_LIBS], [test "x$enable_java_libs" = xyes])
 
+# Optionally build the Ja Rule tool
+AC_ARG_ENABLE(
+  [ja-rule],
+  [AS_HELP_STRING([--enable-ja-rule], [Build the Ja Rule test tool])])
+AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
+
 # libftdi: this requires libusb-0.1.4+ don't know if I should also
 # check for it, since the libusb check above is not for 0.1.4 but for libusb-1
 AC_ARG_ENABLE(

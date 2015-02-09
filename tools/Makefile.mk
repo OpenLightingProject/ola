@@ -1,5 +1,6 @@
-include tools/ola_trigger/Makefile.mk
+include tools/ja-rule/Makefile.mk
 include tools/logic/Makefile.mk
+include tools/ola_trigger/Makefile.mk
 include tools/rdm/Makefile.mk
 
 if !USING_WIN32
