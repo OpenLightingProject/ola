@@ -70,7 +70,8 @@ void Mutex::Unlock() {
  * Create a new MutexLocker and lock the mutex.
  */
 MutexLocker::MutexLocker(Mutex *mutex)
-    : m_mutex(mutex) {
+    : m_mutex(mutex),
+      m_requires_unlock(true) {
   m_mutex->Lock();
 }
 
@@ -78,9 +79,15 @@ MutexLocker::MutexLocker(Mutex *mutex)
  * Destroy this MutexLocker and unlock the mutex
  */
 MutexLocker::~MutexLocker() {
-  m_mutex->Unlock();
+  Release();
 }
 
+void MutexLocker::Release() {
+  if (m_requires_unlock) {
+    m_mutex->Unlock();
+    m_requires_unlock = false;
+  }
+}
 
 /**
  * New ConditionVariable
