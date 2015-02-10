@@ -101,6 +101,11 @@ Style / Coding Standards
 We use the Google C++ Style Guide:
   http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
+We provide formatting configuration files for some IDEs at
+https://github.com/OpenLightingProject/editor-configs . If you use an IDE
+which isn't listed there please consider submitting the formatting
+configuration files.
+
 Please run the cpplint.py script on all files before requesting a review.
 
 cpplint.py can be downloaded here:
