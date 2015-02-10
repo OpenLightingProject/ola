@@ -66,6 +66,7 @@ class OlaClient {
 
   /**
    * @brief Set the callback to be run when new DMX data arrives.
+   *
    * The DMX callback will be run when new data arrives for universes that
    * have been registered with RegisterUniverse().
    * @param callback the callback to run upon receiving new DMX data.
@@ -94,8 +95,9 @@ class OlaClient {
                               PluginDescriptionCallback *callback);
 
   /**
-   * @brief Fetch the state of a plugin. This returns the state and the list
-   * of plugins this plugin conflicts with.
+   * @brief Fetch the state of a plugin.
+   *
+   * This returns the state and the list of plugins this plugin conflicts with.
    * @param plugin_id the id of the plugin to fetch the state for.
    * @param callback the PluginStateCallback to be invoked upon completion.
    */
@@ -112,7 +114,7 @@ class OlaClient {
                        DeviceInfoCallback *callback);
 
   /**
-   * Request a list of ports that could be patched to new universe.
+   * @brief Request a list of ports that could be patched to new universe.
    * @param callback the CandidatePortsCallback invoked upon completion.
    */
   void FetchCandidatePorts(CandidatePortsCallback *callback);
@@ -214,8 +216,10 @@ class OlaClient {
              SetCallback *callback);
 
   /**
-   * @brief Register our interest in a universe. The callback set by
-   * SetDMXCallback() will be called when new DMX data arrives.
+   * @brief Register our interest in a universe.
+   *
+   * The callback set by SetDMXCallback() will be called when new DMX data
+   * arrives.
    * @param universe the id of the universe to register for.
    * @param register_action the action (register or unregister)
    * @param callback the SetCallback to invoke upon completion.
