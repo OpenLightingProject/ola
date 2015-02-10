@@ -61,7 +61,7 @@ class USBDeviceManager {
   /**
    * @brief Create a new USBDeviceManager.
    * @param ss The executor to run the notification_cb on.
-   * @param notification_cb the callback to run when the device is added or
+   * @param notification_cb The callback to run when the device is added or
    *   removed. Ownership is transferred.
    */
   USBDeviceManager(ola::io::SelectServer* ss,

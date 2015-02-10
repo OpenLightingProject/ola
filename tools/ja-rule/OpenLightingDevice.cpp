@@ -33,13 +33,12 @@
 #include <ola/io/SelectServer.h>
 #include <ola/strings/Format.h>
 #include <ola/thread/Mutex.h>
+#include <ola/util/Utils.h>
 
 #include <memory>
 #include <string>
 
-using std::auto_ptr;
-using std::cout;
-using std::string;
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 using ola::Clock;
 using ola::NewCallback;
@@ -47,8 +46,14 @@ using ola::NewSingleCallback;
 using ola::TimeInterval;
 using ola::TimeStamp;
 using ola::io::SelectServer;
+using ola::plugin::usbdmx::LibUsbAdaptor;
 using ola::thread::Mutex;
 using ola::thread::MutexLocker;
+using ola::utils::JoinUInt8;
+using ola::utils::SplitUInt16;
+using std::auto_ptr;
+using std::cout;
+using std::string;
 
 static const uint8_t kInEndpoint = 0x81;
 static const uint8_t kOutEndpoint = 0x01;
@@ -84,7 +89,7 @@ OpenLightingDevice::~OpenLightingDevice() {
   {
     MutexLocker locker(&m_out_mutex);
     if (m_out_in_progress) {
-      OLA_INFO << "cancel m_out_transfer";
+      OLA_DEBUG << "Cancel m_out_transfer";
       libusb_cancel_transfer(m_out_transfer);
     }
   }
@@ -92,12 +97,12 @@ OpenLightingDevice::~OpenLightingDevice() {
   {
     MutexLocker locker(&m_in_mutex);
     if (m_in_in_progress) {
-      OLA_INFO << "cancel m_in_transfer";
+      OLA_DEBUG << "Cancel m_in_transfer";
       libusb_cancel_transfer(m_in_transfer);
     }
   }
 
-  OLA_INFO << "Waiting for out to complete";
+  OLA_DEBUG << "Waiting for out to complete";
   while (true) {
     MutexLocker locker(&m_out_mutex);
     if (!m_out_in_progress) {
@@ -105,7 +110,7 @@ OpenLightingDevice::~OpenLightingDevice() {
     }
   }
 
-  OLA_INFO << "Waiting for in to complete";
+  OLA_DEBUG << "Waiting for in to complete";
   while (true) {
     MutexLocker locker(&m_in_mutex);
     if (!m_in_in_progress) {
@@ -130,7 +135,8 @@ OpenLightingDevice::~OpenLightingDevice() {
 bool OpenLightingDevice::Init() {
   int r = libusb_open(m_device, &m_handle);
   if (r != 0) {
-    OLA_WARN << "Failed to open device: " << libusb_error_name(r);
+    OLA_WARN << "Failed to open device: "
+             << LibUsbAdaptor::ErrorCodeToString(r);
     return false;
   }
 
@@ -159,10 +165,8 @@ bool OpenLightingDevice::SendMessage(Command command,
 
   unsigned int offset = 0;
   m_out_buffer[0] = SOF_IDENTIFIER;
-  m_out_buffer[1] = static_cast<uint8_t>(command & 0xff);
-  m_out_buffer[2] = static_cast<uint8_t>(command >> 8);
-  m_out_buffer[3] = static_cast<uint8_t>(size & 0xff);
-  m_out_buffer[4] = static_cast<uint8_t>(size >> 8);
+  SplitUInt16(command, &m_out_buffer[2], &m_out_buffer[1]);
+  SplitUInt16(size, &m_out_buffer[4], &m_out_buffer[3]);
   offset += 5;
 
   if (size > 0) {
@@ -191,7 +195,8 @@ bool OpenLightingDevice::SendMessage(Command command,
   int r = libusb_submit_transfer(m_out_transfer);
 
   if (r) {
-    OLA_WARN << "Failed to submit out transfer: " << libusb_error_name(r);
+    OLA_WARN << "Failed to submit out transfer: "
+             << LibUsbAdaptor::ErrorCodeToString(r);
     return false;
   }
 
@@ -220,7 +225,8 @@ void OpenLightingDevice::_InTransferComplete() {
   Clock clock;
   clock.CurrentTime(&now);
   OLA_INFO << "Command completed in " << (now - m_out_sent_time)
-           << ", status is " << libusb_error_name(m_in_transfer->status);
+           << ", status is "
+           << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
 
   if (m_in_transfer->status == LIBUSB_TRANSFER_COMPLETED) {
     // Ownership of the buffer is transferred to the HandleData method,
@@ -243,7 +249,7 @@ void OpenLightingDevice::_InTransferComplete() {
 bool OpenLightingDevice::SubmitInTransfer() {
   MutexLocker locker(&m_in_mutex);
   if (m_in_in_progress) {
-    OLA_WARN << "Reading already pending";
+    OLA_WARN << "Read already pending";
     return true;
   }
 
@@ -259,7 +265,8 @@ bool OpenLightingDevice::SubmitInTransfer() {
   clock.CurrentTime(&m_send_in_time);
   int r = libusb_submit_transfer(m_in_transfer);
   if (r) {
-    OLA_WARN << "Failed to submit input transfer: " << libusb_error_name(r);
+    OLA_WARN << "Failed to submit input transfer: "
+             << LibUsbAdaptor::ErrorCodeToString(r);
     return false;
   }
 
@@ -279,7 +286,7 @@ void OpenLightingDevice::HandleData(const uint8_t* data, unsigned int size) {
   ArrayDeleter deleter(data);
 
   // Right now we assume that the device only sends a single message at a time.
-  // If this ever change from a message model to more of a stream model we'll
+  // If this ever changes from a message model to more of a stream model we'll
   // need to fix this.
   if (!m_message_handler) {
     return;
@@ -292,12 +299,12 @@ void OpenLightingDevice::HandleData(const uint8_t* data, unsigned int size) {
   }
 
   if (data[0] != SOF_IDENTIFIER) {
-    OLA_WARN << "SOF mismatch, was 0x" << ola::strings::ToHex(data[0]);
+    OLA_WARN << "SOF mismatch, was " << ola::strings::ToHex(data[0]);
     return;
   }
 
-  uint16_t command = data[1] + (data[2] << 8);
-  uint16_t payload_size = data[3] + (data[4] << 8);
+  uint16_t command = JoinUInt8(data[2], data[1]);
+  uint16_t payload_size = JoinUInt8(data[4], data[3]);
   uint8_t return_code = data[5];
   uint8_t flags = data[6];
 
@@ -307,6 +314,7 @@ void OpenLightingDevice::HandleData(const uint8_t* data, unsigned int size) {
     return;
   }
 
+  // TODO(simon): Remove this.
   ola::strings::FormatData(&std::cout, data, size);
 
   if (data[MIN_RESPONSE_SIZE + payload_size - 1] != EOF_IDENTIFIER) {

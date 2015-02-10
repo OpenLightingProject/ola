@@ -72,7 +72,7 @@ class OpenLightingDevice {
 
   /**
    * @brief Create a new OpenLightingDevice.
-   * @param ss
+   * @param ss The SelectServer to execute the Message callbacks on.
    * @param device the underlying libusb device.
    */
   OpenLightingDevice(ola::io::SelectServer* ss, libusb_device* device);

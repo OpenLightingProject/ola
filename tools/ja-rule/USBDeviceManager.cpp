@@ -34,10 +34,12 @@
 
 #include <memory>
 
+#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/LibUsbThread.h"
 
 using ola::NewSingleCallback;
 using ola::io::SelectServer;
+using ola::plugin::usbdmx::LibUsbAdaptor;
 using ola::plugin::usbdmx::LibUsbHotplugThread;
 using ola::thread::Future;
 using ola::thread::MutexLocker;
@@ -78,7 +80,7 @@ bool USBDeviceManager::Start() {
   int r = libusb_init(&m_context);
 
   if (r < 0) {
-    OLA_WARN << "libusb_init() failed: " << libusb_error_name(r);
+    OLA_WARN << "libusb_init() failed: " << LibUsbAdaptor::ErrorCodeToString(r);
     m_cleanup_thread.Stop();
     return false;
   }
@@ -145,6 +147,9 @@ void USBDeviceManager::HotPlugEvent(struct libusb_device *usb_device,
   // documentation. There are a number of caveats.
   struct libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(usb_device, &descriptor);
+
+  OLA_DEBUG << "idProduct: " << descriptor.idProduct << ", idVendor: "
+            << descriptor.idVendor;
 
   if (descriptor.idVendor != kVendorId || descriptor.idProduct != kProductId) {
     return;
