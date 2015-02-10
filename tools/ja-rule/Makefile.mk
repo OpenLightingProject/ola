@@ -1,5 +1,7 @@
 if BUILD_JA_RULE
+if USING_WIN32
 bin_PROGRAMS += tools/ja-rule/ja-rule
+endif
 endif
 
 tools_ja_rule_ja_rule_SOURCES = \
