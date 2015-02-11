@@ -53,5 +53,5 @@ elif [[ $TASK = 'coverity' ]]; then
   fi;
 else
   # Otherwise compile and check as normal
-  autoreconf -i && ./configure && make distcheck
+  autoreconf -i && ./configure --enable-ja-rule && make distcheck
 fi
