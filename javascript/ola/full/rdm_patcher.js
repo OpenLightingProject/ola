@@ -971,7 +971,7 @@ ola.RDMPatcher.prototype.toggleIdentify_ = function(e) {
   server.rdmSetSectionInfo(
       this.universe_id,
       this.active_device.uid,
-      'identify',
+      'identify_device',
       '',
       'bool=' + (e.target.isChecked() ? '1' : '0'),
       function(e) { patcher.identifyComplete_(e); });
