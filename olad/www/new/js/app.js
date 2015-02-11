@@ -159,6 +159,12 @@ angular
     "use strict";
     $scope.Items = {};
     $scope.Info = {};
+    $ola.get.ItemList().then(function (data) {
+      $scope.Items = data;
+    });
+    $ola.get.ServerInfo().then(function (data) {
+      $scope.Info = data;
+    });
     $interval(function () {
       $ola.get.ItemList().then(function (data) {
         $scope.Items = data;
@@ -362,11 +368,18 @@ angular
     $scope.Universe = $routeParams.id;
     $scope.Info = {};
     $scope.PortsId = {};
+    $scope.ActivePorts = {};
+    $scope.Remove = [];
+    $scope.Data = {};
     $ola.get.PortsId($routeParams.id).then(function (data) {
       $scope.PortsId = data;
     });
-    $ola.get.UniverseInfo($routeParams.id).then(function(data) {
+    $ola.get.UniverseInfo($routeParams.id).then(function (data) {
       $scope.Info = data;
+      $scope.ActivePorts = data.output_ports.concat(data.input_ports);
+      for(var i = 0; i<$scope.ActivePorts.length; i++){
+        $scope.Remove[i] = "";
+      }
     });
   }])
   .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola', '$window',

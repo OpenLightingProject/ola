@@ -225,40 +225,6 @@ EXTRA_DIST += \
   javascript/ola/port_table.js \
   javascript/ola/universe_control.js \
   javascript/ola/universe_item.js \
-  javascript/new-src/README.md \
-  javascript/new-src/bower.json \
-  javascript/new-src/src/js/app.js \
-  javascript/new-src/src/js/app.min.js \
-  javascript/new-src/src/js/app.min.js.map \
-  javascript/new-src/src/index.html \
-  javascript/new-src/src/css/style.css \
-  javascript/new-src/src/libs/jquery/js/jquery.min.js \
-  javascript/new-src/src/libs/angular-route/js/angular-route.min.js \
-  javascript/new-src/src/libs/angular/js/angular.min.js \
-  javascript/new-src/src/libs/bootstrap/js/bootstrap.min.js \
-  javascript/new-src/src/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
-  javascript/new-src/src/libs/bootstrap/fonts/glyphicons-halflings-regular.svg \
-  javascript/new-src/src/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf \
-  javascript/new-src/src/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
-  javascript/new-src/src/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2 \
-  javascript/new-src/src/libs/bootstrap/css/bootstrap.min.css \
-  javascript/new-src/src/img/light_bulb.png \
-  javascript/new-src/src/img/logo.png \
-  javascript/new-src/src/img/light_bulb_off.png \
-  javascript/new-src/src/img/logo-mini.png \
-  javascript/new-src/src/views/universe-overview.html \
-  javascript/new-src/src/views/universe-add.html \
-  javascript/new-src/src/views/plugins.html \
-  javascript/new-src/src/views/overview.html \
-  javascript/new-src/src/views/universe-keypad.html \
-  javascript/new-src/src/views/plugin-info.html \
-  javascript/new-src/src/views/universe-patch.html \
-  javascript/new-src/src/views/universe-settings.html \
-  javascript/new-src/src/views/universe-sliders.html \
-  javascript/new-src/src/views/universes.html \
-  javascript/new-src/src/views/universe-rdm.html \
-  javascript/new-src/Gruntfile.js \
-  javascript/new-src/package.json \
   mac_build.sh \
   tests/recvdmx.py \
   tests/regression.py

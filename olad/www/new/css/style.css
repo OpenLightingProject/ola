@@ -129,11 +129,27 @@ tr.striped-table:nth-of-type(even){
   margin-top: 8px;
   margin-bottom: 8px;
 }
+div.checkbox-tr{
+    text-align: center;
+    vertical-align: middle;
+}
 table.info>tbody>tr>td{
   border-bottom: solid grey 1px;
   padding-left: 5px;
   padding-right: 5px;
 }
-table.table>tbody>tr>td{
+table.table>tbody>tr>td.left-table{
   text-align: left;
+}
+.settings-table{
+    text-align: left;
+}
+.settings-table>table{
+    width: 100%;
+}
+input.priority{
+    width: 70px;
+}
+select.priority{
+    width: 90px;
 }
