@@ -7,7 +7,7 @@ module.exports = function (grunt) {
   bower: {
    dev: {
     options: {
-     targetDir: 'src/libs',
+     targetDir: 'javascript/new-src/src/libs',
      install: true,
      copy: true,
      cleanup: true,
@@ -19,12 +19,12 @@ module.exports = function (grunt) {
   uglify: {
    default: {
     files: {
-     'src/js/app.min.js': ['src/js/app.js']
+     'olad/www/new/js/app.min.js': ['javascript/new-src/src/js/app.js']
     },
     options: {
      mangle: true,
      sourceMap: true,
-     sourceMapName: 'src/js/app.min.js.map',
+     sourceMapName: 'olad/www/new/js/app.min.js.map',
      banner: "/**\n" +
      "* This program is free software; you can redistribute it and/or modify\n" +
      "* it under the terms of the GNU General Public License as published by\n" +
@@ -44,7 +44,7 @@ module.exports = function (grunt) {
    }
   },
   jshint: {
-   dev: ['Gruntfile.js', 'src/js/app.js'],
+   dev: ['javascript/new-src/Gruntfile.js', 'javascript/new-src/src/js/app.js'],
    options: {
     globalstrict: true,
     globals: {
@@ -54,7 +54,7 @@ module.exports = function (grunt) {
   },
   watch: {
    build: {
-    files: ['Gruntfile.js', 'src/js/app.js', 'src/index.html', 'src/css/style.css', 'src/views/*.html'],
+    files: ['javascript/new-src/Gruntfile.js', 'javascript/new-src/src/js/app.js', 'javascript/new-src/src/index.html', 'javascript/new-src/src/css/style.css', 'javascript/new-src/src/views/*.html'],
     tasks: ['jshint:dev', 'uglify:default', 'cssmin:default'],
     options: {
      atBegin: true
@@ -64,7 +64,7 @@ module.exports = function (grunt) {
   cssmin: {
    default: {
     files: {
-     'src/css/style.min.css': ['src/css/style.css']
+     'olad/www/new/css/style.min.css': ['javascript/new-src/src/css/style.css']
     }
    }
   }
@@ -77,6 +77,9 @@ module.exports = function (grunt) {
  grunt.loadNpmTasks('grunt-contrib-cssmin');
  grunt.loadNpmTasks('grunt-contrib-copy');
  grunt.loadNpmTasks('grunt-bower-task');
+
+ grunt.file.setBase('../../');
+
  grunt.registerTask('dev', ['watch:build']);
  grunt.registerTask('build', ['jshint:dev', 'uglify:default', 'cssmin:default']);
 };
