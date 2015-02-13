@@ -1,26 +1,11 @@
 {
   "name": "OLA",
-  "version": "0.9.4",
   "authors": [
     "Dave Olsthoorn <dave.olsthoorn@gmail.com>"
   ],
-  "description": "the OLA web-ui",
-  "keywords": [
-    "dmx",
-    "ola",
-    "open",
-    "lighting",
-    "architecture"
-  ],
-  "license": "MIT",
+  "description": "The new OLA web-ui",
+  "license": "GPL",
   "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
   "dependencies": {
     "angular": "~1.2.28",
     "bootstrap": "~3.3.1",

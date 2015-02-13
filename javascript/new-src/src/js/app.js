@@ -15,10 +15,12 @@
  */
 angular
   .module('olaApp', ['ngRoute'])
-  .constant('Channels', 512)
-  .constant('TopValue', 255)
-  .constant('nul', 0)
-  .factory('$ola', ['$http', '$window', 'nul', 'Channels', function ($http, $window, nul, Channels) {
+  .constant('MAX_CHANNEL_NUMBER', 512)
+  .constant('MIN_CHANNEL_NUMBER', 1)
+  .constant('MIN_CHANNEL_VALUE', 0)
+  .constant('MAX_CHANNEL_VALUE', 255)
+  .factory('$ola', ['$http', '$window', 'MIN_CHANNEL_VALUE', 'MAX_CHANNEL_NUMBER',
+  function ($http, $window, MIN_CHANNEL_VALUE, MAX_CHANNEL_NUMBER) {
     "use strict";
     // once olad supports json post data postEncode can go away and the header in post requests too.
     var postEncode = function (data) {
@@ -30,9 +32,9 @@ angular
     };
     var dmxConvert = function (dmx) {
       var length = 1, integers = [];
-      for (var i = 0; i < Channels; i++) {
+      for (var i = 0; i < MAX_CHANNEL_NUMBER; i++) {
         integers[i] = parseInt(dmx[i], 10);
-        if (integers[i] > nul) {
+        if (integers[i] > MIN_CHANNEL_VALUE) {
           length = (i + 1);
         }
       }
@@ -146,7 +148,7 @@ angular
       tabs: function (tab, id) {
         $window.$("ul#ola-nav-tabs").html("" +
         "<li id=\"overview\" role=\"presentation\"><a href=\"/new/#/universe/" + id + "/\">Overview</a></li>" +
-        "<li id=\"sliders\" role=\"presentation\"><a href=\"/new/#/universe/" + id + "/sliders\">Sliders</a></li>" +
+        "<li id=\"faders\" role=\"presentation\"><a href=\"/new/#/universe/" + id + "/faders\">Faders</a></li>" +
         "<li id=\"keypad\" role=\"presentation\"><a href=\"/new/#/universe/" + id + "/keypad\">Keypad</a></li>" +
         "<li id=\"rdm\" role=\"presentation\"><a href=\"/new/#/universe/" + id + "/rdm\">RDM</a></li>" +
         "<li id=\"patch\" role=\"presentation\"><a href=\"/new/#/universe/" + id + "/patch\">RDM Patcher</a></li>" +
@@ -249,15 +251,15 @@ angular
     };
 
   }])
-  .controller('universeCtrl', ['$scope', '$ola', '$routeParams', '$interval', 'nul', 'Channels',
-    function ($scope, $ola, $routeParams, $interval, nul, Channels) {
+  .controller('universeCtrl', ['$scope', '$ola', '$routeParams', '$interval', 'MIN_CHANNEL_VALUE', 'MAX_CHANNEL_NUMBER',
+    function ($scope, $ola, $routeParams, $interval, MIN_CHANNEL_VALUE, MAX_CHANNEL_NUMBER) {
       "use strict";
       $ola.tabs('overview', $routeParams.id);
       $scope.dmx = [];
       $scope.Universe = $routeParams.id;
       var interval = $interval(function () {
         $ola.get.Dmx($scope.Universe).then(function (data) {
-          for (var i = 0; i < Channels; i++) {
+          for (var i = 0; i < MAX_CHANNEL_NUMBER; i++) {
             $scope.dmx[i] = (typeof(data.dmx[i]) === "number") ? data.dmx[i] : 0;
           }
         });
@@ -273,22 +275,25 @@ angular
         }
       };
     }])
-  .controller('sliderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', 'nul', 'Channels',
-    function ($scope, $ola, $routeParams, $window, $interval, nul, Channels) {
+  .controller('faderUniverseCtrl', ['$scope', '$ola', '$routeParams', '$window', '$interval', 'MIN_CHANNEL_VALUE', 'MAX_CHANNEL_NUMBER', 'MAX_CHANNEL_VALUE',
+    function ($scope, $ola, $routeParams, $window, $interval, MIN_CHANNEL_VALUE, MAX_CHANNEL_NUMBER, MAX_CHANNEL_VALUE) {
       "use strict";
-      $ola.tabs('sliders', $routeParams.id);
+      $ola.tabs('faders', $routeParams.id);
       $scope.get = [];
       $scope.list = [];
       $scope.last = 0;
       $scope.offset = 0;
       $scope.send = false;
+      $scope.MIN_CHANNEL_VALUE = MIN_CHANNEL_VALUE;
+      $scope.MAX_CHANNEL_VALUE = MAX_CHANNEL_VALUE;
+      $scope.MAX_CHANNEL_NUMBER = MAX_CHANNEL_NUMBER;
       $scope.Universe = $routeParams.id;
-      for (var i = 0; i < Channels; i++) {
+      for (var i = 0; i < MAX_CHANNEL_NUMBER; i++) {
         $scope.list[i] = i;
         $scope.get[i] = 0;
       }
       $scope.light = function (j) {
-        for (var i = 0; i < Channels; i++) {
+        for (var i = 0; i < MAX_CHANNEL_NUMBER; i++) {
           $scope.get[i] = j;
         }
         $scope.change();
@@ -316,11 +321,11 @@ angular
       };
       $scope.page = function (d) {
         if (d === 1) {
-          if (($scope.offset + 1) !== $window.Math.ceil(Channels / $scope.limit)) {
+          if (($scope.offset + 1) !== $window.Math.ceil(MAX_CHANNEL_NUMBER / $scope.limit)) {
             $scope.offset++;
           }
-        } else if (d === nul) {
-          if ($scope.offset !== nul) {
+        } else if (d === MIN_CHANNEL_VALUE) {
+          if ($scope.offset !== MIN_CHANNEL_VALUE) {
             $scope.offset--;
           }
         }
@@ -460,9 +465,9 @@ angular
         templateUrl: '/new/views/universe-keypad.html',
         controller: 'keypadUniverseCtrl'
       }).
-      when('/universe/:id/sliders', {
-        templateUrl: '/new/views/universe-sliders.html',
-        controller: 'sliderUniverseCtrl'
+      when('/universe/:id/faders', {
+        templateUrl: '/new/views/universe-faders.html',
+        controller: 'faderUniverseCtrl'
       }).
       when('/universe/:id/rdm', {
         templateUrl: '/new/views/universe-rdm.html',

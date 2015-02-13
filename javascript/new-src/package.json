@@ -1,6 +1,4 @@
 {
-  "name": "OLA",
-  "version": "0.9.4",
   "devDependencies": {
     "grunt": "~0.4.5",
     "grunt-bower-task": "^0.4.0",

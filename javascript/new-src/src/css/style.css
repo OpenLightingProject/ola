@@ -1,8 +1,9 @@
-.slider-slider{
-  writing-mode: vertical-rl; /* IE */
-  -webkit-appearance: slider-vertical;
+.fader-fader{
+   writing-mode: bt-lr; /* IE */
+   writing-mode: vertical-rl;
+   -webkit-appearance: slider-vertical; /* WebKit */
 }
-.slider-group{
+.fader-group{
   display: inline-block;
   text-align: center;
   border: solid #67a7e3 1px;
@@ -10,7 +11,7 @@
   height: 171px;
   margin: 1px;
 }
-.sliders{
+.faders{
   text-align: center;
   padding: 1px;
 }

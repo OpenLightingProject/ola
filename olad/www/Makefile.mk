@@ -56,7 +56,7 @@ dist_views_DATA = \
     olad/www/new/views/universe-keypad.html \
     olad/www/new/views/universe-patch.html \
     olad/www/new/views/universe-settings.html \
-    olad/www/new/views/universe-sliders.html \
+    olad/www/new/views/universe-faders.html \
     olad/www/new/views/universe-rdm.html
 dist_js_DATA = \
     olad/www/new/js/app.min.js

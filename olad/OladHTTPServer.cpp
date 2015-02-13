@@ -156,7 +156,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       "/new/views/universe-settings.html",
       HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile(
-      "/new/views/universe-sliders.html",
+      "/new/views/universe-faders.html",
       HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile(
       "/new/views/universes.html",
@@ -166,9 +166,6 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile(
       "/new/js/app.min.js",
-      HTTPServer::CONTENT_TYPE_JS);
-  m_server.RegisterFile(
-      "/new/js/app.js",
       HTTPServer::CONTENT_TYPE_JS);
   m_server.RegisterFile(
       "/new/js/app.min.js.map",
