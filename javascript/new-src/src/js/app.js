@@ -16,8 +16,8 @@
 angular
  .module('olaApp', ['ngRoute'])
  .constant('OLA', {
-  'MAX_CHANNEL_NUMBER': 512,
   'MIN_CHANNEL_NUMBER': 1,
+  'MAX_CHANNEL_NUMBER': 512,
   'MIN_CHANNEL_VALUE': 0,
   'MAX_CHANNEL_VALUE': 255
  })
@@ -143,16 +143,16 @@ angular
     },
     rdm: {
      /*
-      /json/rdm/section_info
-      /json/rdm/set_section_info
-      /json/rdm/supported_pids
-      /json/rdm/supported_sections
-      /json/rdm/uid_identify
-      /json/rdm/uid_info
-      /json/rdm/uid_personalities
-      /json/rdm/uids
-      /rdm/run_discovery
-      */
+     /json/rdm/section_info
+     /json/rdm/set_section_info
+     /json/rdm/supported_pids
+     /json/rdm/supported_sections
+     /json/rdm/uid_identify
+     /json/rdm/uid_info
+     /json/rdm/uid_personalities
+     /json/rdm/uids
+     /rdm/run_discovery
+     */
     },
     tabs: function (tab, id) {
      $window.$("ul#ola-nav-tabs").html("" +
@@ -273,7 +273,7 @@ angular
    var interval = $interval(function () {
     $ola.get.Dmx($scope.Universe).then(function (data) {
      for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
-      $scope.dmx[i] = (typeof (data.dmx[i]) === "number") ? data.dmx[i] : 0;
+      $scope.dmx[i] = (typeof (data.dmx[i]) === "number") ? data.dmx[i] : OLA.MIN_CHANNEL_VALUE;
      }
     });
    }, 100);
@@ -302,7 +302,7 @@ angular
    $scope.Universe = $routeParams.id;
    for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
     $scope.list[i] = i;
-    $scope.get[i] = 0;
+    $scope.get[i] = OLA.MIN_CHANNEL_VALUE;
    }
    $scope.light = function (j) {
     for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
