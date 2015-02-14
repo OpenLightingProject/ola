@@ -28,7 +28,11 @@ function ($http, $window, OLA) {
  var postEncode = function (data) {
   var PostData = [];
   for (var key in data) {
-   PostData.push(key + '=' + data[key]);
+   if(key == 'd'){
+    PostData.push(key + '=' + data[key]);
+   }else{
+    PostData.push(key + '=' + encodeURIComponent(data[key]));
+   }
   }
   return PostData.join('&');
  };
