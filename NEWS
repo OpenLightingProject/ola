@@ -1,15 +1,15 @@
 x/y/2015 ola-0.9.5
  Features:
- * 
+ * Work on a new web-ui which is build with angularjs
 
  API:
- * 
+ *
 
  RDM Tests:
- * 
+ *
 
  Bugs:
- * 
+ *
 
  Internal:
  *
@@ -231,7 +231,7 @@ Documentation:
 
 29/9/2013 ola-0.8.32
  * Added more RDM responder tests to cover E1.37-1
- * Print the UID, manufacturer, model description, software version and 
+ * Print the UID, manufacturer, model description, software version and
    timestamp in the RDM test logs
  * Added pretty printing of slot info messages
  * Added support for new OSC formats
@@ -653,5 +653,3 @@ Documentation:
 17/4/2006 lla-0.1.2
   Support for multiple Enttec Pro devices
   Logging levels can be changed with -USR1 signals
-
-
