@@ -49,11 +49,10 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
 #g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
-#Coverity doesn't work with g++ 4.8, so don't bother with the upgrades for that
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+ - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+ - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 #Remove the old g++/gcc to ensure we're using the latest ones
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
+ - if [ "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
 #Install latest clang if we're compiling with clang
  - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq clang-3.5; fi
  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
@@ -68,7 +67,7 @@ before_install:
 
 after_success:
   - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' --gcov-options '\-lp' > /dev/null; fi
 
 notifications:
   irc:

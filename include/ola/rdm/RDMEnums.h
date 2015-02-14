@@ -615,6 +615,7 @@ typedef enum {
   DISPLAY_INVERT_OFF = 0x00,
   DISPLAY_INVERT_ON = 0x01,
   DISPLAY_INVERT_AUTO = 0x02,
+  DISPLAY_INVERT_MAX,
 } rdm_display_invert;
 
 // The identify modes from E1.37-1

@@ -226,7 +226,7 @@ typename T1::mapped_type const* STLFind(const T1 *container,
  * @returns The value matching the key, or NULL if the value isn't found.
  *
  * This assumes that NULL can be co-erced to the mapped_type of the container.
- * It's most sutiable for containers with pointers.
+ * It's most suitable for containers with pointers.
  */
 template<typename T1>
 typename T1::mapped_type STLFindOrNull(const T1 &container,
@@ -249,10 +249,9 @@ typename T1::mapped_type STLFindOrNull(const T1 &container,
  * @param value the value to insert / replace.
  * @returns true if the value was replaced, false if the value was inserted.
  *
- * @note
- * Note if the value type is a pointer, and the container has ownership of the
- * pointer, replacing a value will leak memory. Use STLReplaceAndDelete to
- * avoid this.
+ * @note Note if the value type is a pointer, and the container has ownership
+ * of the pointer, replacing a value will leak memory. Use STLReplaceAndDelete
+ * to avoid this.
  * @sa STLReplaceAndDelete.
  */
 template<typename T1>
@@ -276,9 +275,8 @@ bool STLReplace(T1 *container, const typename T1::key_type &key,
  * @param value the value to insert / replace.
  * @returns The value matching the key, or NULL if the value isn't found.
  *
- * @note
- * This assumes that NULL can be co-erced to the mapped_type of the container.
- * It's most sutiable for containers with pointers.
+ * @note This assumes that NULL can be co-erced to the mapped_type of the
+ * container. It's most suitable for containers with pointers.
  * @sa STLReplaceAndDelete.
  */
 template<typename T1>
@@ -358,8 +356,7 @@ bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
  * @param container the container to insert the value in.
  * @param key the key to insert.
  * @param value the value to insert.
- * @note
- * This should only be used in unit-testing code.
+ * @note This should only be used in unit-testing code.
  */
 template<typename T1>
 void STLInsertOrDie(T1 *container, const typename T1::key_type &key,
@@ -451,8 +448,8 @@ bool STLRemoveAndDelete(T1 *container, const typename T1::key_type &key) {
  * @param[in] key the key to remove.
  * @returns The value matching the key, or NULL if the value isn't found.
  *
- * This assumes that NULL can be co-erced to the mapped_type of the container.
- * It's most sutiable for containers with pointers.
+ * @note This assumes that NULL can be co-erced to the mapped_type of the
+ * container. It's most suitable for containers with pointers.
  */
 template<typename T1>
 typename T1::mapped_type STLLookupAndRemovePtr(
