@@ -8,7 +8,6 @@
   text-align: center;
   border: solid #67a7e3 1px;
   border-radius: 4px;
-  height: 171px;
   margin: 1px;
 }
 .faders{
@@ -50,6 +49,10 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus{
   padding-left: 0px;
   padding-right: 0px;
   padding-bottom: 15px;
+  height: 41px;
+}
+.navigate>.col-xs-3, .navigate>.col-xs-2{
+  height: 100%;
 }
 .value-div{
   display: inline-block;
