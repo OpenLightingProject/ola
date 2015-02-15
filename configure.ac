@@ -500,7 +500,6 @@ AM_CONDITIONAL([BUILD_JAVA_LIBS], [test "x$enable_java_libs" = xyes])
 AC_ARG_ENABLE(
   [ja-rule],
   [AS_HELP_STRING([--enable-ja-rule], [Build the Ja Rule test tool])])
-AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
 
 # libftdi: this requires libusb-0.1.4+ don't know if I should also
 # check for it, since the libusb check above is not for 0.1.4 but for libusb-1
@@ -706,6 +705,11 @@ if test -z "${USING_WIN32_TRUE}"; then
   OLA_CLIENT_LIBS="-lWs2_32 -lIphlpapi -lpthread"
 fi
 AC_SUBST(OLA_CLIENT_LIBS)
+
+# Extra tools
+#####################################################
+AM_CONDITIONAL([BUILD_JA_RULE],
+               [test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xyes])
 
 # Output
 #####################################################
