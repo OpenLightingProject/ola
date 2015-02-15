@@ -183,8 +183,11 @@ angular
      '<li id="settings"role="presentation"><a href="/new/#/universe/' +
      id +
      '/settings">Settings</a></li>');
-     $window.$('ul#ola-nav-tabs > li#' +
-     tab).addClass('active');
+     $window.$('ul#ola-nav-tabs > li#' + tab).addClass('active');
+    },
+    header: function (name, id) {
+     $('div#header-universe').html('<h4>' + name + '</h4><div>id: ' +
+     id + '</div>');
     }
    };
   }
@@ -308,6 +311,9 @@ angular
   function ($scope, $ola, $routeParams, $interval, OLA) {
    'use strict';
    $ola.tabs('overview', $routeParams.id);
+   $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+    $ola.header(data.name, $routeParams.id);
+   });
    $scope.dmx = [];
    $scope.Universe = $routeParams.id;
    var interval = $interval(function () {
@@ -336,6 +342,9 @@ angular
   function ($scope, $ola, $routeParams, $window, $interval, OLA) {
    'use strict';
    $ola.tabs('faders', $routeParams.id);
+   $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+    $ola.header(data.name, $routeParams.id);
+   });
    $scope.get = [];
    $scope.list = [];
    $scope.last = 0;
@@ -414,6 +423,9 @@ angular
    'use strict';
    $ola.tabs('keypad', $routeParams.id);
    $scope.Universe = $routeParams.id;
+   $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+    $ola.header(data.name, $routeParams.id);
+   });
   }])
  .controller('rdmUniverseCtrl', ['$scope', '$ola', '$routeParams',
   function ($scope, $ola, $routeParams) {
@@ -422,12 +434,18 @@ angular
    //get:
    // /json/rdm/set_section_info?id={{id}}&uid={{uid}}&section={{section}}&hint={{hint}}&address={{address}}
    $scope.Universe = $routeParams.id;
+   $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+    $ola.header(data.name, $routeParams.id);
+   });
   }])
  .controller('patchUniverseCtrl', ['$scope', '$ola', '$routeParams',
   function ($scope, $ola, $routeParams) {
    'use strict';
    $ola.tabs('patch', $routeParams.id);
    $scope.Universe = $routeParams.id;
+   $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+    $ola.header(data.name, $routeParams.id);
+   });
   }])
  .controller('settingUniverseCtrl', ['$scope', '$ola', '$routeParams',
   function ($scope, $ola, $routeParams) {
@@ -452,11 +470,10 @@ angular
     $scope.PortsId = data;
    });
    $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+    $ola.header(data.name, $routeParams.id);
     $scope.Info = data;
-    $scope.ActivePorts =
-     data.output_ports.concat(data.input_ports);
-    for (var i = 0; i <
-    $scope.ActivePorts.length; i++) {
+    $scope.ActivePorts = data.output_ports.concat(data.input_ports);
+    for (var i = 0; i < $scope.ActivePorts.length; i++) {
      $scope.Remove[i] = '';
     }
    });

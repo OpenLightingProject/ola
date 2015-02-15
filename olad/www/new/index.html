@@ -30,11 +30,9 @@
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Universes<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="/new/#/universes/">Overview</a></li>
-            <li class="divider"></li>
-            <li ng-repeat="universe in Items.universes"><a href="/new/#/universe/{{universe.id}}">{{universe.name}}</a></li>
-            <li class="divider"></li>
-            <li><a href="/new/#/universe/add">Add Universe</a></li>
+           <li><a href="/new/#/universe/add">Add Universe</a></li>
+           <li class="divider"></li>
+           <li ng-repeat="universe in Items.universes"><a href="/new/#/universe/{{universe.id}}">{{universe.name}}</a></li>
           </ul>
         </li>
         <li><a href="/new/#/plugins">Plugins</a></li>
