@@ -415,12 +415,9 @@ function ($scope, $routeParams, $ola, $window) {
   $scope.active = data.active;
   $scope.enabled = data.enabled;
   $scope.name = data.name;
-  document.getElementById('description').innerHTML = '';
-  var description = data.description.split('\\n');
-  description.forEach(function (line) {
-   document.getElementById('description').innerText += line;
-   document.getElementById('description').innerHTML += '<br />';
-  });
+  var description = document.getElementById('description');
+  description.textContent = data.description;
+  description.innerHTML = description.innerHTML.replace(/\\n/g, '<br />');
   $window.console.log(data);
  });
  $scope.stateColor = function (val) {

@@ -22,7 +22,7 @@
  <div class="col-xs-12 faders">
   <div ng-style="width" class="fader-group" ng-repeat="c in list | startFrom:offset*limit | limitTo:limit track by $index">
    <div class="channel-fader">{{c + 1}}</div>
-   <input ng-change="change()" class="fader-fader" min="{{OLA.MIN_CHANNEL_VALUE}}" max="{{OLA.MAX_CHANNEL_VALUE}}" type="range" ng-model="get[c]">
+   <input ng-change="change()" class="fader-fader" orient="vertical" min="{{OLA.MIN_CHANNEL_VALUE}}" max="{{OLA.MAX_CHANNEL_VALUE}}" type="range" ng-model="get[c]">
    <div class="value-fader">{{get[c]}}</div>
   </div>
  </div>
