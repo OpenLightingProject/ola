@@ -1,9 +1,7 @@
-/* jslint node: true */
-"use strict";
 module.exports = function (grunt) {
+ 'use strict';
  grunt.initConfig({
   pkg: grunt.file.readJSON('package.json'),
-
   bower: {
    dev: {
     options: {
@@ -15,9 +13,8 @@ module.exports = function (grunt) {
     }
    }
   },
-
   uglify: {
-   default: {
+   build: {
     files: {
      'olad/www/new/js/app.min.js': ['javascript/new-src/src/js/app.js']
     },
@@ -36,15 +33,18 @@ module.exports = function (grunt) {
   },
   watch: {
    build: {
-    files: ['javascript/new-src/Gruntfile.js', 'javascript/new-src/src/js/app.js', 'javascript/new-src/src/index.html', 'javascript/new-src/src/css/style.css', 'javascript/new-src/src/views/*.html'],
-    tasks: ['jshint:dev', 'uglify:default', 'cssmin:default'],
+    files: ['javascript/new-src/Gruntfile.js',
+     'javascript/new-src/src/js/app.js', 'javascript/new-src/src/index.html',
+     'javascript/new-src/src/css/style.css',
+     'javascript/new-src/src/views/*.html'],
+    tasks: ['jshint:dev', 'uglify:build', 'cssmin:build'],
     options: {
      atBegin: true
     }
    }
   },
   cssmin: {
-   default: {
+   build: {
     files: {
      'olad/www/new/css/style.min.css': ['javascript/new-src/src/css/style.css']
     }
@@ -59,9 +59,7 @@ module.exports = function (grunt) {
  grunt.loadNpmTasks('grunt-contrib-cssmin');
  grunt.loadNpmTasks('grunt-contrib-copy');
  grunt.loadNpmTasks('grunt-bower-task');
-
  grunt.file.setBase('../../');
-
  grunt.registerTask('dev', ['watch:build']);
- grunt.registerTask('build', ['jshint:dev', 'uglify:default', 'cssmin:default']);
+ grunt.registerTask('build', ['jshint:dev', 'uglify:build', 'cssmin:build']);
 };
