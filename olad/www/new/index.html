@@ -30,7 +30,7 @@
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Universes<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="/new/#/universes/">overview</a></li>
+            <li><a href="/new/#/universes/">Overview</a></li>
             <li class="divider"></li>
             <li ng-repeat="universe in Items.universes"><a href="/new/#/universe/{{universe.id}}">{{universe.name}}</a></li>
             <li class="divider"></li>
@@ -38,6 +38,7 @@
           </ul>
         </li>
         <li><a href="/new/#/plugins">Plugins</a></li>
+        <li><a href="/ola.html">Old UI</a></li>
       </ul>
       <p class="navbar-text navbar-right desktop-info">{{Info.instance_name}}<br />{{Info.ip}}</p>
     </div>
