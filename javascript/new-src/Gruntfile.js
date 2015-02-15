@@ -31,10 +31,7 @@ module.exports = function (grunt) {
   jshint: {
    dev: ['javascript/new-src/Gruntfile.js', 'javascript/new-src/src/js/app.js'],
    options: {
-    globalstrict: true,
-    globals: {
-     angular: true
-    }
+    jshintrc: true
    }
   },
   watch: {

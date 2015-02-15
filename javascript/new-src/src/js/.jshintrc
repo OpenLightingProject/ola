@@ -1,0 +1,13 @@
+{
+  "curly": true,
+  "eqnull": true,
+  "eqeqeq": true,
+  "undef": true,
+  "indent": 1,
+  "noempty": true,
+  "asi": false,
+  "globals": {
+   "angular": true,
+   "document": true
+  }
+}

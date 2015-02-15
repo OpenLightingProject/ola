@@ -28,7 +28,7 @@ function ($http, $window, OLA) {
  var postEncode = function (data) {
   var PostData = [];
   for (var key in data) {
-   if(key == 'd'){
+   if(key === 'd'){
     PostData.push(key + '=' + data[key]);
    }else{
     PostData.push(key + '=' + encodeURIComponent(data[key]));
@@ -180,6 +180,7 @@ function ($http, $window, OLA) {
  });
  $ola.get.ServerInfo().then(function (data) {
   $scope.Info = data;
+  document.title = data.instance_name + ' - ' + data.ip;
  });
  $interval(function () {
   $ola.get.ItemList().then(function (data) {
