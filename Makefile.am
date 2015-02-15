@@ -225,6 +225,8 @@ EXTRA_DIST += \
   javascript/ola/port_table.js \
   javascript/ola/universe_control.js \
   javascript/ola/universe_item.js \
+  javascript/new-src/src/css/style.css \
+  javascript/new-src/src/js/app.js \
   mac_build.sh \
   tests/recvdmx.py \
   tests/regression.py
