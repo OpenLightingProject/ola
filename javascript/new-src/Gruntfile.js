@@ -34,9 +34,10 @@ module.exports = function (grunt) {
   watch: {
    build: {
     files: ['javascript/new-src/Gruntfile.js',
-     'javascript/new-src/src/js/app.js', 'javascript/new-src/src/index.html',
-     'javascript/new-src/src/css/style.css',
-     'javascript/new-src/src/views/*.html'],
+            'javascript/new-src/src/js/app.js',
+            'javascript/new-src/src/index.html',
+            'javascript/new-src/src/css/style.css',
+            'javascript/new-src/src/views/*.html'],
     tasks: ['jshint:dev', 'uglify:build', 'cssmin:build'],
     options: {
      atBegin: true

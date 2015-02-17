@@ -7,7 +7,7 @@
     </tr>
     <tr class="special-mouse striped-table" ng-repeat="plugin in Items.plugins">
       <td ng-click="go(plugin.id)">
-          {{plugin.name}}
+          {{plugin.name}}&nbsp;<span class="glyphicon glyphicon-info-sign plugin-icon"></span>
       </td>
       <td ng-click="go(plugin.id)">
         <div class="status-light" ng-style="enabled[plugin.id]">&nbsp;</div>

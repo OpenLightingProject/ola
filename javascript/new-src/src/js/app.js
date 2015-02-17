@@ -30,6 +30,7 @@ angular
     var PostData = [];
     for (var key in data) {
      if (key === 'd') {
+      // this is here so dmx posts dont get broken because of removed comma's
       PostData.push(key + '=' + data[key]);
      } else {
       PostData.push(key + '=' + encodeURIComponent(data[key]));
@@ -188,6 +189,17 @@ angular
     header: function (name, id) {
      $('div#header-universe').html('<h4>' + name + '</h4><div>id: ' +
      id + '</div>');
+    },
+    error: {
+     modal: function (body, title) {
+      if (typeof body !== 'undefined') {
+       $('#errorModalBody').text(body);
+      }
+      if (typeof title !== 'undefined') {
+       $('#errorModalLabel').text(title);
+      }
+      $('#errorModal').modal('show');
+     }
     }
    };
   }
@@ -202,8 +214,7 @@ angular
    });
    $ola.get.ServerInfo().then(function (data) {
     $scope.Info = data;
-    document.title =
-     data.instance_name + ' - ' + data.ip;
+    document.title = data.instance_name + ' - ' + data.ip;
    });
    $interval(function () {
     $ola.get.ItemList().then(function (data) {
@@ -248,21 +259,20 @@ angular
    };
    $scope.$watchCollection('Data', function () {
     if ($scope.Universes.indexOf($scope.Data.id) !== -1 ||
-     $scope.Data.name === '' ||
-     $scope.Data.add_ports === '') {
+        $scope.Data.name === '' ||
+        $scope.Data.add_ports === '') {
      $scope.buttonState = true;
      return;
     }
     if ($scope.Data.id === null ||
-     $scope.Data.name === null ||
-     $scope.Data.add_ports === null) {
+        $scope.Data.name === null ||
+        $scope.Data.add_ports === null) {
      $scope.buttonState = true;
      return;
     }
     if (typeof ($scope.Data.id) !== 'number' ||
-     typeof ($scope.Data.name) !== 'string' ||
-     typeof ($scope.Data.add_ports) !==
-     'string') {
+        typeof ($scope.Data.name) !== 'string' ||
+        typeof ($scope.Data.add_ports) !== 'string') {
      $scope.buttonState = true;
      return;
     }
@@ -270,18 +280,15 @@ angular
    });
    $ola.get.ItemList().then(function (data) {
     for (var u in data.universes) {
-     if ($scope.Data.id ===
-      parseInt(data.universes[u].id, 10)) {
+     if ($scope.Data.id === parseInt(data.universes[u].id, 10)) {
       $scope.Data.id++;
      }
-     $scope.Universes.push(parseInt(data.universes[u].id,
-      10));
+     $scope.Universes.push(parseInt(data.universes[u].id, 10));
     }
    });
    $scope.Submit = function () {
     $ola.post.AddUniverse($scope.Data);
-    $location.path('/universe/' +
-    $scope.Data.id);
+    $location.path('/universe/' + $scope.Data.id);
    };
    $ola.get.Ports().then(function (data) {
     $scope.Ports = data;
@@ -302,8 +309,7 @@ angular
    };
    $scope.TogglePort = function () {
     $scope.Data.add_ports =
-     $window.$.grep($scope.addPorts,
-      Boolean).join(',');
+     $window.$.grep($scope.addPorts, Boolean).join(',');
    };
   }])
  .controller('universeCtrl',
@@ -320,8 +326,7 @@ angular
     $ola.get.Dmx($scope.Universe).then(function (data) {
      for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
       $scope.dmx[i] =
-       (typeof (data.dmx[i]) === 'number') ? data.dmx[i] :
-        OLA.MIN_CHANNEL_VALUE;
+       (typeof data.dmx[i] === 'number') ? data.dmx[i] : OLA.MIN_CHANNEL_VALUE;
      }
     });
    }, 100);
@@ -385,8 +390,8 @@ angular
    };
    $scope.page = function (d) {
     if (d === 1) {
-     if (($scope.offset + 1) !==
-      $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit)) {
+     var offsetLimit = $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
+     if (($scope.offset + 1) !== offsetLimit) {
       $scope.offset++;
      }
     } else if (d === OLA.MIN_CHANNEL_VALUE) {
@@ -395,21 +400,26 @@ angular
      }
     }
    };
-   $scope.limit =
-    ($window.Math.floor(($window.innerWidth * 0.99) / 66));
+   $scope.getWidth = function () {
+    var Width = ($window.innerWidth * 0.99) / $scope.limit;
+    var floor = $window.Math.floor(Width);
+    var amount = floor - (52 / $scope.limit);
+    return amount + 'px';
+   };
+   $scope.getLimit = function () {
+    var windowWidth = $window.innerWidth * 0.99;
+    var devided = windowWidth / 66;
+    return $window.Math.floor(devided);
+   };
+   $scope.limit = $scope.getLimit();
    $scope.width = {
-    'width': ($window.Math.floor(
-     ($window.innerWidth * 0.99) / $scope.limit) -
-    (52 / $scope.limit)) + 'px'
+    'width': $scope.getWidth()
    };
    $window.$($window).resize(function () {
     $scope.$apply(function () {
-     $scope.limit =
-      $window.Math.floor(($window.innerWidth * 0.99) / 66);
+     $scope.limit = $scope.getLimit();
      $scope.width = {
-      width: (($window.Math.floor(
-       ($window.innerWidth * 0.99) / $scope.limit) -
-      (52 / $scope.limit))) + 'px'
+      width: $scope.getWidth()
      };
     });
    });
@@ -550,41 +560,41 @@ angular
  .config(['$routeProvider', function ($routeProvider) {
   'use strict';
   $routeProvider.when('/', {
-    templateUrl: '/new/views/overview.html',
-    controller: 'overviewCtrl'
-   }).when('/universes/', {
-    templateUrl: '/new/views/universes.html',
-    controller: 'overviewCtrl'
-   }).when('/universe/add', {
-    templateUrl: '/new/views/universe-add.html',
-    controller: 'addUniverseCtrl'
-   }).when('/universe/:id', {
-    templateUrl: '/new/views/universe-overview.html',
-    controller: 'universeCtrl'
-   }).when('/universe/:id/keypad', {
-    templateUrl: '/new/views/universe-keypad.html',
-    controller: 'keypadUniverseCtrl'
-   }).when('/universe/:id/faders', {
-    templateUrl: '/new/views/universe-faders.html',
-    controller: 'faderUniverseCtrl'
-   }).when('/universe/:id/rdm', {
-    templateUrl: '/new/views/universe-rdm.html',
-    controller: 'rdmUniverseCtrl'
-   }).when('/universe/:id/patch', {
-    templateUrl: '/new/views/universe-patch.html',
-    controller: 'patchUniverseCtrl'
-   }).when('/universe/:id/settings', {
-    templateUrl: '/new/views/universe-settings.html',
-    controller: 'settingUniverseCtrl'
-   }).when('/plugins', {
-    templateUrl: '/new/views/plugins.html',
-    controller: 'pluginsCtrl'
-   }).when('/plugin/:id', {
-    templateUrl: '/new/views/plugin-info.html',
-    controller: 'pluginInfoCtrl'
-   }).otherwise({
-    redirectTo: '/'
-   });
+   templateUrl: '/new/views/overview.html',
+   controller: 'overviewCtrl'
+  }).when('/universes/', {
+   templateUrl: '/new/views/universes.html',
+   controller: 'overviewCtrl'
+  }).when('/universe/add', {
+   templateUrl: '/new/views/universe-add.html',
+   controller: 'addUniverseCtrl'
+  }).when('/universe/:id', {
+   templateUrl: '/new/views/universe-overview.html',
+   controller: 'universeCtrl'
+  }).when('/universe/:id/keypad', {
+   templateUrl: '/new/views/universe-keypad.html',
+   controller: 'keypadUniverseCtrl'
+  }).when('/universe/:id/faders', {
+   templateUrl: '/new/views/universe-faders.html',
+   controller: 'faderUniverseCtrl'
+  }).when('/universe/:id/rdm', {
+   templateUrl: '/new/views/universe-rdm.html',
+   controller: 'rdmUniverseCtrl'
+  }).when('/universe/:id/patch', {
+   templateUrl: '/new/views/universe-patch.html',
+   controller: 'patchUniverseCtrl'
+  }).when('/universe/:id/settings', {
+   templateUrl: '/new/views/universe-settings.html',
+   controller: 'settingUniverseCtrl'
+  }).when('/plugins', {
+   templateUrl: '/new/views/plugins.html',
+   controller: 'pluginsCtrl'
+  }).when('/plugin/:id', {
+   templateUrl: '/new/views/plugin-info.html',
+   controller: 'pluginInfoCtrl'
+  }).otherwise({
+   redirectTo: '/'
+  });
  }])
  .filter('startFrom', function () {
   'use strict';

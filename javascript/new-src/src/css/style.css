@@ -1,5 +1,4 @@
 .fader-fader {
- writing-mode: bt-lr;
  writing-mode: vertical-rl;
  -webkit-appearance: slider-vertical;
 }
@@ -46,12 +45,12 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus {
  border-top-left-radius: 4px;
 }
 .navigate {
- padding-left: 0px;
- padding-right: 0px;
+ padding-left: 0;
+ padding-right: 0;
  padding-bottom: 15px;
  height: 41px;
 }
-.navigate>.col-xs-3, .navigate>.col-xs-2 {
+.navigate > .col-xs-3, .navigate > .col-xs-2 {
  height: 100%;
 }
 .value-div {
@@ -97,7 +96,7 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus {
  display: inline-block;
  border-radius: 20px;
 }
-th.top-table, tr.special-mouse>td {
+th.top-table, tr.special-mouse > td {
  text-align: center;
  padding: 8px;
 }
@@ -122,7 +121,9 @@ tr.striped-table:nth-of-type(even) {
  cursor: pointer;
 }
 .mobile-info {
- width: 60%;
+ position: absolute;
+ right: 0;
+ width: 100%;
  text-align: center;
  font-size: 10px;
 }
@@ -137,18 +138,18 @@ div.checkbox-tr {
  text-align: center;
  vertical-align: middle;
 }
-table.info>tbody>tr>td {
+table.info > tbody > tr > td {
  border-bottom: solid grey 1px;
  padding-left: 5px;
  padding-right: 5px;
 }
-table.table>tbody>tr>td.left-table {
+table.table > tbody > tr > td.left-table {
  text-align: left;
 }
 .settings-table {
  text-align: left;
 }
-.settings-table>table {
+.settings-table > table {
  width: 100%;
 }
 input.priority {
@@ -164,8 +165,14 @@ select.priority {
 .button-caption {
  text-align: right;
 }
-.btn-grey{
+.btn-grey {
  background-color: #d3d3d3;
  color: #333;
- border-color: #BABABA; 
+ border-color: #BABABA;
+}
+td.align{
+ text-align: left;
+}
+.plugin-icon{
+ color: #898989;
 }
