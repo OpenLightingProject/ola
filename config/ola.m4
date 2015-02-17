@@ -78,10 +78,10 @@ AC_ARG_WITH([ola-protoc-plugin],
 
 
 if test "$with_ola_protoc_plugin" != "no"; then
-  OLA_PROTOC="\$(PROTOC) --plugin=protoc-gen-cppservice=${with_ola_protoc_plugin}${EXEEXT}";
-  echo "set ola_protoc to $with_ola_protoc_plugin"
+  OLA_PROTOC="$PROTOC --plugin=protoc-gen-cppservice=${with_ola_protoc_plugin}";
+  echo "set ola_protoc to $OLA_PROTOC"
 else
-  OLA_PROTOC="\$(PROTOC) --plugin=protoc-gen-cppservice=\$(top_builddir)/protoc/ola_protoc_plugin${EXEEXT}";
+  OLA_PROTOC="$PROTOC --plugin=protoc-gen-cppservice=\$(top_builddir)/protoc/ola_protoc_plugin${EXEEXT}";
   AC_CHECK_HEADER(
       [google/protobuf/compiler/command_line_interface.h],
       [],
