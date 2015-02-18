@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="olaApp">
 <head lang="en">
- <meta charset="utf-8">
- <meta http-equiv="X-UA-Compatible" content="IE=edge">
- <meta name="viewport" content="width=device-width, initial-scale=1">
- <title>OLA</title>
- <link rel="stylesheet" href="/new/libs/bootstrap/css/bootstrap.min.css"/>
- <link rel="stylesheet" href="/new/css/style.min.css"/>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OLA</title>
+  <link rel="stylesheet" href="/new/libs/bootstrap/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="/new/css/style.min.css"/>
 </head>
 <body>
 <nav class="navbar navbar-default" ng-controller="menuCtrl">
  <div class="container-fluid">
   <div class="navbar-header">
-   <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-           data-target="#bs-example-navbar-collapse-1">
-    <span class="sr-only">Toggle navigation</span> <span
-    class="icon-bar"></span> <span class="icon-bar"></span> <span
-    class="icon-bar"></span>
+   <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+    <span class="sr-only">Toggle navigation</span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
    </button>
-   <a class="navbar-brand" href="/new/#/"><img height="22" width="51"
-                                               src="img/logo-mini.png"/></a>
-
+   <a class="navbar-brand" href="/new/#/">
+    <img height="22" width="51" src="img/logo-mini.png"/>
+   </a>
    <center class="navbar-text navbar-right visible-xs-inline-block mobile-info">
     {{Info.instance_name}}<br/>{{Info.ip}}
    </center>
@@ -31,8 +31,9 @@
    <ul class="nav navbar-nav">
     <li><a href="/new/">Home</a></li>
     <li class="dropdown">
-     <a class="dropdown-toggle" data-toggle="dropdown" role="button"
-        aria-expanded="false">Universes<span class="caret"></span></a>
+     <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+      Universes<span class="caret"></span>
+     </a>
      <ul class="dropdown-menu" role="menu">
       <li><a href="/new/#/universe/add">Add Universe</a></li>
       <li class="divider"></li>
@@ -74,15 +75,11 @@
  </div>
 </div>
 <div id="javascript">
- <script type="text/javascript"
-         src="/new/libs/angular/js/angular.min.js"></script>
- <script type="text/javascript"
-         src="/new/libs/angular-route/js/angular-route.min.js"></script>
- <script type="text/javascript"
-         src="/new/libs/jquery/js/jquery.min.js"></script>
- <script type="text/javascript"
-         src="/new/libs/bootstrap/js/bootstrap.min.js"></script>
- <script type="text/javascript" src="/new/js/app.min.js"></script>
+  <script type="text/javascript" src="/new/libs/angular/js/angular.min.js"></script>
+  <script type="text/javascript" src="/new/libs/angular-route/js/angular-route.min.js"></script>
+  <script type="text/javascript" src="/new/libs/jquery/js/jquery.min.js"></script>
+  <script type="text/javascript" src="/new/libs/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/new/js/app.min.js"></script>
 </div>
 </body>
 </html>

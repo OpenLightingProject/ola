@@ -401,15 +401,13 @@ angular
     }
    };
    $scope.getWidth = function () {
-    var Width = ($window.innerWidth * 0.99) / $scope.limit;
-    var floor = $window.Math.floor(Width);
-    var amount = floor - (52 / $scope.limit);
+    var width = $window.Math.floor(($window.innerWidth * 0.99) / $scope.limit);
+    var amount = width - (52 / $scope.limit);
     return amount + 'px';
    };
    $scope.getLimit = function () {
-    var windowWidth = $window.innerWidth * 0.99;
-    var devided = windowWidth / 66;
-    return $window.Math.floor(devided);
+    var width = ($window.innerWidth * 0.99) / 66;
+    return $window.Math.floor(width);
    };
    $scope.limit = $scope.getLimit();
    $scope.width = {
