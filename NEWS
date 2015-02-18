@@ -1,6 +1,7 @@
 x/y/2015 ola-0.9.5
  Features:
- * Work on a new web-ui which is built with AngularJS
+ * Work on a new Web-UI which is built with AngularJS
+ * Added E1.37-2 support to the SPI plugin RDM responder
 
  API:
  *
@@ -9,7 +10,8 @@ x/y/2015 ola-0.9.5
  *
 
  Bugs:
- *
+ * Fix finding ola_protoc_plugin when cross-compiling.
+ * Fix ncurses flags issues between configure and the Makefile.
 
  Internal:
  *

@@ -25,7 +25,7 @@ elif [[ $TASK = 'check-licences' ]]; then
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
-  autoreconf -i && ./configure --enable-ja-rule
+  autoreconf -i && ./configure
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -41,7 +41,7 @@ elif [[ $TASK = 'doxygen' ]]; then
   fi;
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
-  autoreconf -i && ./configure --enable-ja-rule --enable-gcov && make && make check
+  autoreconf -i && ./configure --enable-gcov && make && make check
 elif [[ $TASK = 'coverity' ]]; then
   # Run Coverity Scan unless token is zero length
   # The Coverity Scan script also relies on a number of other COVERITY_SCAN_
@@ -53,5 +53,5 @@ elif [[ $TASK = 'coverity' ]]; then
   fi;
 else
   # Otherwise compile and check as normal
-  autoreconf -i && ./configure --enable-ja-rule && make distcheck
+  autoreconf -i && ./configure && make distcheck
 fi

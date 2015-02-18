@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include "common/rdm/NetworkManager.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
@@ -99,6 +100,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   std::auto_ptr<ola::rdm::PersonalityCollection> m_personality_collection;
   std::auto_ptr<ola::rdm::PersonalityManager> m_personality_manager;
   ola::rdm::Sensors m_sensors;
+  std::auto_ptr<ola::rdm::NetworkManagerInterface> m_network_manager;
 
   // DMX methods
   bool InternalWriteDMX(const DmxBuffer &buffer);
@@ -148,7 +150,22 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
       const ola::rdm::RDMRequest *request);
   const ola::rdm::RDMResponse *RecordSensor(
       const ola::rdm::RDMRequest *request);
-
+  const ola::rdm::RDMResponse *GetListInterfaces(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetInterfaceLabel(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetInterfaceHardwareAddressType1(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetIPV4CurrentAddress(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetIPV4DefaultRoute(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDNSHostname(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDNSDomainName(
+      const ola::rdm::RDMRequest *request);
+  const ola::rdm::RDMResponse *GetDNSNameServer(
+      const ola::rdm::RDMRequest *request);
 
   // Helpers
   uint8_t P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue);
