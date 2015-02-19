@@ -36,37 +36,47 @@
    </tr>
   </table>
   <br/>
-  <button ng-show="Info.quit_enabled" type="button" class="btn btn-primary btn-md" data-toggle="modal" data-target="#ShutdownAlert">
+  <button ng-show="Info.quit_enabled" type="button" class="btn btn-default btn-md btn-grey" data-toggle="modal" data-target="#ShutdownAlert">
    Shutdown
   </button>
  </div>
-    <div class="col-md-8">
-        <table class="table table-striped">
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-            </tr>
-            <tr style="cursor: pointer;" ng-repeat="u in Universes track by $index">
-                <td ng-click="goUniverse(u.id)">{{u.id}}</td>
-                <td ng-click="goUniverse(u.id)">{{u.name}}</td>
-            </tr>
-        </table>
+ <div class="col-md-8">
+  <table class="table table-striped">
+   <caption>
+    <div class="caption-overview">
+     <a href="/new/#/universes/">
+      <h2>Universes</h2>
+     </a>
     </div>
+    <div class="caption-overview button-caption">
+     <button type="button" class="btn btn-primary btn-md" ng-click="goUniverse('add')">Add New Universe</button>
+    </div>
+   </caption>
+   <tr>
+    <th>Id</th>
+    <th>Name</th>
+   </tr>
+   <tr style="cursor: pointer;" ng-repeat="u in Universes track by $index">
+    <td class="align" ng-click="goUniverse(u.id)">{{u.id}}</td>
+    <td class="align" ng-click="goUniverse(u.id)">{{u.name}}</td>
+   </tr>
+  </table>
  </div>
- <div class="modal fade" id="ShutdownAlert" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-   <div class="modal-content">
-    <div class="modal-header">
-     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-     <h4 class="modal-title" id="myModalLabel">Are you sure?</h4>
-    </div>
-    <div class="modal-body">
-     Do you really want to shutdown?
-    </div>
-    <div class="modal-footer">
-     <button ng-click="Shutdown()" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
-     <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-    </div>
+</div>
+<div class="modal fade" id="ShutdownAlert" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ <div class="modal-dialog">
+  <div class="modal-content">
+   <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">Are you sure?</h4>
+   </div>
+   <div class="modal-body">
+    Do you really want to shutdown?<br/>OLA may not be configured to restart automatically.
+   </div>
+   <div class="modal-footer">
+    <button ng-click="Shutdown()" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
    </div>
   </div>
  </div>
+</div>

@@ -19,7 +19,7 @@
   </tr>
   <tr class="striped-table" ng-repeat="plugin in Ports">
    <td><input type="checkbox" ng-change="TogglePort()" ng-model="addPorts[$index]" ng-true-value="{{plugin.id}}" ng-false-value=""/></td>
-   <td>{{Direction(plugin.is_output)}}</td>
+   <td>{{getDirection(plugin.is_output)}}</td>
    <td>{{plugin.device}}</td>
    <td>{{plugin.description}}</td>
   </tr>
