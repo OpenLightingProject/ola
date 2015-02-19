@@ -121,14 +121,19 @@ class SelectServerTest: public CppUnit::TestFixture {
   }
 
   void Terminate() {
+    OLA_WARN << "Terminate called";
     if (m_ss) { m_ss->Terminate(); }
   }
 
   void SingleIncrementTimeout() {
+    OLA_WARN << "Single increment timeout called";
     m_timeout_counter++;
+    OLA_WARN << "Timeout counter is now " << m_timeout_counter;
   }
 
   void ReentrantTimeout(SelectServer *ss) {
+    OLA_WARN << "Re-entrant timeout called, adding two single increment "
+                "timeouts";
     ss->RegisterSingleTimeout(
         0,
         ola::NewSingleCallback(this,
@@ -576,7 +581,9 @@ void SelectServerTest::testTimeout() {
   OLA_ASSERT_EQ(1u, m_timeout_counter);
 
   // Now check a timeout that adds another timeout
+  OLA_WARN << "Checking re-entrant timeouts";
   m_timeout_counter = 0;
+  OLA_WARN << "Timeout counter is now " << m_timeout_counter;
 
   m_ss->RegisterSingleTimeout(
       10,
@@ -584,7 +591,9 @@ void SelectServerTest::testTimeout() {
   m_ss->RegisterSingleTimeout(
       40,
       ola::NewSingleCallback(this, &SelectServerTest::Terminate));
+  OLA_WARN << "Timeout counter is now " << m_timeout_counter;
   m_ss->Run();
+  OLA_WARN << "Timeout counter is now " << m_timeout_counter;
   OLA_ASSERT_EQ(2u, m_timeout_counter);
 
   // Check repeating timeouts
