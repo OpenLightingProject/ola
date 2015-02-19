@@ -1,0 +1,27 @@
+<div style="padding-bottom: 20px" class="form-inline ">
+ <div ng-class="Class" class="form-group">
+  <label for="UniverseId" class="control-label">Id:</label>
+  <input ng-change="updateId()" id="UniverseId" class="form-control" type="number" ng-model="Data.id" min="0" max="4294967295"/>
+ </div>
+ <div class="form-group">
+  <label for="UniverseName" class="control-label">Name:</label>
+  <input id="UniverseName" class="form-control" type="text" ng-model="Data.name"/>
+ </div>
+ <button ng-disabled="buttonState" ng-click="Submit()" class="btn btn-default">Add Universe</button>
+</div>
+<div class="round-corners">
+ <table class="plugin-table">
+  <tr>
+   <th class="top-table">Enable</th>
+   <th class="top-table">Direction</th>
+   <th class="top-table">Device</th>
+   <th class="top-table">Description</th>
+  </tr>
+  <tr class="striped-table" ng-repeat="plugin in Ports">
+   <td><input type="checkbox" ng-change="TogglePort()" ng-model="addPorts[$index]" ng-true-value="{{plugin.id}}" ng-false-value=""/></td>
+   <td>{{getDirection(plugin.is_output)}}</td>
+   <td>{{plugin.device}}</td>
+   <td>{{plugin.description}}</td>
+  </tr>
+ </table>
+</div>

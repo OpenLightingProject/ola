@@ -51,6 +51,10 @@ elif [[ $TASK = 'coverity' ]]; then
   else
     echo "Skipping Coverity Scan as no token found, probably a Pull Request"
   fi;
+elif [[ $TASK = 'jshint' ]]; then
+  cd ./javascript/new-src;
+  npm install;
+  grunt jshint:dev
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make distcheck

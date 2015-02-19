@@ -50,15 +50,16 @@ MessageDeserializer::~MessageDeserializer() {
 
 
 /**
- * DeSerialize a memory location and return a message
+ * @brief Deserialize a memory location and return a message
  */
 const ola::messaging::Message *MessageDeserializer::InflateMessage(
     const ola::messaging::Descriptor *descriptor,
     const uint8_t *data,
     unsigned int length) {
 
-  if (!data && length)
+  if (!data && length) {
     return NULL;
+  }
 
   m_data = data;
   m_length = length;
@@ -95,8 +96,9 @@ const ola::messaging::Message *MessageDeserializer::InflateMessage(
 
   // this should never trigger because we check the length in the
   // VariableFieldSizeCalculator
-  if (m_insufficient_data)
+  if (m_insufficient_data) {
     return NULL;
+  }
 
   const ola::messaging::Message *message =  new ola::messaging::Message(
       m_message_stack.top());
@@ -107,8 +109,9 @@ const ola::messaging::Message *MessageDeserializer::InflateMessage(
 
 void MessageDeserializer::Visit(
     const ola::messaging::BoolFieldDescriptor *descriptor) {
-  if (!CheckForData(1))
+  if (!CheckForData(descriptor->MaxSize())) {
     return;
+  }
 
   m_message_stack.top().push_back(
     new ola::messaging::BoolMessageField(descriptor, m_data[m_offset++]));
@@ -117,8 +120,9 @@ void MessageDeserializer::Visit(
 
 void MessageDeserializer::Visit(
     const ola::messaging::IPV4FieldDescriptor *descriptor) {
-  if (!CheckForData(descriptor->MaxSize()))
+  if (!CheckForData(descriptor->MaxSize())) {
     return;
+  }
 
   uint32_t data;
   memcpy(&data, m_data + m_offset, sizeof(data));
@@ -132,8 +136,9 @@ void MessageDeserializer::Visit(
 
 void MessageDeserializer::Visit(
     const ola::messaging::MACFieldDescriptor *descriptor) {
-  if (!CheckForData(descriptor->MaxSize()))
+  if (!CheckForData(descriptor->MaxSize())) {
     return;
+  }
 
   ola::network::MACAddress mac_address(m_data + m_offset);
   m_offset += descriptor->MaxSize();
@@ -144,8 +149,9 @@ void MessageDeserializer::Visit(
 
 void MessageDeserializer::Visit(
     const ola::messaging::UIDFieldDescriptor *descriptor) {
-  if (!CheckForData(descriptor->MaxSize()))
+  if (!CheckForData(descriptor->MaxSize())) {
     return;
+  }
 
   ola::rdm::UID uid(m_data + m_offset);
   m_offset += descriptor->MaxSize();
@@ -158,14 +164,16 @@ void MessageDeserializer::Visit(
     const ola::messaging::StringFieldDescriptor *descriptor) {
   unsigned int string_size;
 
-  if (descriptor->FixedSize())
+  if (descriptor->FixedSize()) {
     string_size = descriptor->MaxSize();
-  else
+  } else {
     // variable sized string, the length is in m_variable_field_size
     string_size = m_variable_field_size;
+  }
 
-  if (!CheckForData(string_size))
+  if (!CheckForData(string_size)) {
     return;
+  }
 
   string value(reinterpret_cast<const char *>(m_data + m_offset), string_size);
   ShortenString(&value);
@@ -212,7 +220,7 @@ void MessageDeserializer::Visit(
 
 
 /**
- * Visit a group field
+ * @brief Visit a group field
  */
 void MessageDeserializer::Visit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
@@ -239,11 +247,12 @@ void MessageDeserializer::Visit(
 
 
 /**
- * Check that there is at least required_size bytes of data left.
+ * @brief Check that there is at least required_size bytes of data left.
  */
 bool MessageDeserializer::CheckForData(unsigned int required_size) {
-  if (required_size <= m_length - m_offset)
+  if (required_size <= m_length - m_offset) {
     return true;
+  }
   m_insufficient_data = true;
   return false;
 }
@@ -251,7 +260,7 @@ bool MessageDeserializer::CheckForData(unsigned int required_size) {
 
 
 /**
- * Remove any old messages from the stack.
+ * @brief Remove any old messages from the stack.
  */
 void MessageDeserializer::CleanUpVector() {
   while (!m_message_stack.empty()) {
@@ -266,13 +275,14 @@ void MessageDeserializer::CleanUpVector() {
 
 
 /**
- * Serialize an integer value, converting to little endian if needed
+ * @brief Deserialize an integer value, converting from little endian if needed
  */
 template <typename int_type>
 void MessageDeserializer::IntVisit(
     const ola::messaging::IntegerFieldDescriptor<int_type> *descriptor) {
-  if (!CheckForData(sizeof(int_type)))
+  if (!CheckForData(sizeof(int_type))) {
     return;
+  }
 
   int_type value;
 
@@ -281,10 +291,11 @@ void MessageDeserializer::IntVisit(
          sizeof(int_type));
   m_offset += sizeof(int_type);
 
-  if (descriptor->IsLittleEndian())
+  if (descriptor->IsLittleEndian()) {
     value = ola::network::LittleEndianToHost(value);
-  else
+  } else {
     value = ola::network::NetworkToHost(value);
+  }
 
   m_message_stack.top().push_back(
     new ola::messaging::BasicMessageField<int_type>(descriptor, value));

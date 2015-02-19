@@ -135,6 +135,30 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
     NULL,
     &SPIOutput::RecordSensor},
 #endif
+  { ola::rdm::PID_LIST_INTERFACES,
+    &SPIOutput::GetListInterfaces,
+    NULL},
+  { ola::rdm::PID_INTERFACE_LABEL,
+    &SPIOutput::GetInterfaceLabel,
+    NULL},
+  { ola::rdm::PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
+    &SPIOutput::GetInterfaceHardwareAddressType1,
+    NULL},
+  { ola::rdm::PID_IPV4_CURRENT_ADDRESS,
+    &SPIOutput::GetIPV4CurrentAddress,
+    NULL},
+  { ola::rdm::PID_IPV4_DEFAULT_ROUTE,
+    &SPIOutput::GetIPV4DefaultRoute,
+    NULL},
+  { ola::rdm::PID_DNS_HOSTNAME,
+    &SPIOutput::GetDNSHostname,
+    NULL},
+  { ola::rdm::PID_DNS_DOMAIN_NAME,
+    &SPIOutput::GetDNSDomainName,
+    NULL},
+  { ola::rdm::PID_DNS_NAME_SERVER,
+    &SPIOutput::GetDNSNameServer,
+    NULL},
   { 0, NULL, NULL},
 };
 
@@ -176,6 +200,8 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
                                      "Load Average 15 minutes"));
 #endif
+
+  m_network_manager.reset(new ola::rdm::NetworkManager());
 }
 
 SPIOutput::~SPIOutput() {
@@ -463,7 +489,7 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
-      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 3,
+      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 4,
       m_personality_manager.get(),
       m_start_address,
       0, m_sensors.size());
@@ -574,6 +600,58 @@ const RDMResponse *SPIOutput::SetSensorValue(const RDMRequest *request) {
  */
 const RDMResponse *SPIOutput::RecordSensor(const RDMRequest *request) {
   return ResponderHelper::RecordSensor(request, m_sensors);
+}
+
+/**
+ * E1.37-2 PIDs
+ */
+const RDMResponse *SPIOutput::GetListInterfaces(
+    const RDMRequest *request) {
+  return ResponderHelper::GetListInterfaces(request,
+                                            m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetInterfaceLabel(
+    const RDMRequest *request) {
+  return ResponderHelper::GetInterfaceLabel(request,
+                                            m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetInterfaceHardwareAddressType1(
+    const RDMRequest *request) {
+  return ResponderHelper::GetInterfaceHardwareAddressType1(
+      request,
+      m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetIPV4CurrentAddress(
+    const RDMRequest *request) {
+  return ResponderHelper::GetIPV4CurrentAddress(request,
+                                                m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetIPV4DefaultRoute(
+    const RDMRequest *request) {
+  return ResponderHelper::GetIPV4DefaultRoute(request,
+                                              m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetDNSHostname(
+    const RDMRequest *request) {
+  return ResponderHelper::GetDNSHostname(request,
+                                         m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetDNSDomainName(
+    const RDMRequest *request) {
+  return ResponderHelper::GetDNSDomainName(request,
+                                           m_network_manager.get());
+}
+
+const RDMResponse *SPIOutput::GetDNSNameServer(
+    const RDMRequest *request) {
+  return ResponderHelper::GetDNSNameServer(request,
+                                           m_network_manager.get());
 }
 }  // namespace spi
 }  // namespace plugin

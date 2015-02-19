@@ -7,6 +7,7 @@ Primary author:
 Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
   Carsten Presser, Karate USB plugin
+  Dave Olsthoorn, working on a new web-ui
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
@@ -14,10 +15,9 @@ Contributors:
   Joshua Moyerman, ArtNet fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
-  Peter Newman, various fixes
+  Peter Newman, MilInst Plugin, Scanlime Fadecandy support and numerous fixes
   Ravindra Nath Kakarla, RDM Test Server (Google Summer of Code 2012)
   Rowan Maclachlan (hippy) for various changes
   Rui Barreiros, ftdidmx plugin
   Sean Sill, various fixes.
   Tobi Schäfer, for the MacPort files
-

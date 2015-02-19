@@ -103,7 +103,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   RegisterHandler("/json/get_ports", &OladHTTPServer::JsonAvailablePorts);
   RegisterHandler("/json/universe_info", &OladHTTPServer::JsonUniverseInfo);
 
-  // these are the static files for the new UI
+  // these are the static files for the old UI
   m_server.RegisterFile("/blank.gif", HTTPServer::CONTENT_TYPE_GIF);
   m_server.RegisterFile("/button-bg.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/custombutton.css", HTTPServer::CONTENT_TYPE_CSS);
@@ -125,6 +125,96 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/vertical.gif", HTTPServer::CONTENT_TYPE_GIF);
   m_server.RegisterFile("/warning.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
+
+  // these are the static files for the new UI
+  m_server.RegisterFile(
+      "/new/",
+      "/new/index.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/overview.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/plugins.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/plugin-info.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-overview.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-add.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-keypad.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-patch.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-settings.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-faders.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universes.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-rdm.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/js/app.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/js/app.min.js.map",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/jquery/js/jquery.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/angular-route/js/angular-route.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/angular/js/angular.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/js/bootstrap.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.svg",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.eot",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/css/style.min.css",
+      HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/css/bootstrap.min.css",
+      HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile(
+      "/new/img/logo.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile(
+      "/new/img/light_bulb.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile(
+      "/new/img/light_bulb_off.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile(
+      "/new/img/logo-mini.png",
+      HTTPServer::CONTENT_TYPE_PNG);
 
   m_start_time_t = time(NULL);
 }
