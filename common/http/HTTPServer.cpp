@@ -424,7 +424,7 @@ HTTPServer::HTTPServer(const HTTPServerOptions &options)
       m_httpd(NULL),
       m_default_handler(NULL),
       m_port(options.port),
-      m_data_dir(ola::file::ConvertPathSeparators(options.data_dir)) {
+      m_data_dir(options.data_dir) {
 }
 
 
@@ -780,8 +780,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   unsigned int length;
   string file_path = m_data_dir;
   file_path.push_back(ola::file::PATH_SEPARATOR);
-  // Swap the path if necessary (we've already done m_data_dir)
-  file_path.append(ola::file::ConvertPathSeparators(file_info->file_path));
+  file_path.append(file_info->file_path);
   ifstream i_stream(file_path.data(), ifstream::binary);
 
   if (!i_stream.is_open()) {
