@@ -237,8 +237,7 @@ angular
     $scope.Info = data;
    });
    $scope.Shutdown = function () {
-    $ola.action.Shutdown().then(function () {
-    });
+    $ola.action.Shutdown().then();
    };
    $scope.goUniverse = function (id) {
     $location.path('/universe/' + id);
@@ -524,11 +523,13 @@ angular
     data.plugins.forEach(function (plugin) {
      $ola.get.InfoPlugin(plugin.id).then(function (data) {
       $scope.getStyleActive(data.active, plugin.id);
-      $scope.getStyleEnabled(data.enabled,
-       plugin.id);
+      $scope.getStyleEnabled(data.enabled, plugin.id);
      });
     });
    });
+   $scope.Reload = function () {
+    $ola.action.Reload().then();
+   };
    $scope.go = function (id) {
     $location.path('/plugin/' + id);
    };
