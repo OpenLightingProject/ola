@@ -49,7 +49,7 @@ const char PATH_SEPARATOR = '\\';
 const char PATH_SEPARATOR = '/';
 #endif
 
-static string ConvertPathSeparators(const string &path) {
+string ConvertPathSeparators(const string &path) {
   string result = path;
 #ifdef _WIN32
   std::replace(result.begin(), result.end(), '/', PATH_SEPARATOR);

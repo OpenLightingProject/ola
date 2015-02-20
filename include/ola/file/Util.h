@@ -30,6 +30,13 @@ namespace file {
 extern const char PATH_SEPARATOR;
 
 /**
+ * @brief Convert all seperators in a path to the OS's version.
+ * @param path the path to convert
+ * @returns the path with all path seperators switched to the OS's version
+ */
+std::string ConvertPathSeparators(const std::string &path);
+
+/**
  * @brief Find all files in a directory that match the given prefix.
  * @param[in] directory the directory to look in
  * @param[in] prefix the prefix to match on
