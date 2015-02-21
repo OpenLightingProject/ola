@@ -152,17 +152,75 @@ angular
      }
     },
     rdm: {
-     /*
-      /json/rdm/section_info
-      /json/rdm/set_section_info
-      /json/rdm/supported_pids
-      /json/rdm/supported_sections
-      /json/rdm/uid_identify
-      /json/rdm/uid_info
-      /json/rdm/uid_personalities
-      /json/rdm/uids
-      /rdm/run_discovery
-      */
+     // /json/rdm/section_info?id=[universe]&uid=[uid]&section=[section]
+     GetSectionInfo: function (universe, uid, section) {
+      var url = '/json/rdm/section_info?id=' + universe +
+                '&uid=' +  uid + '&section=' + section;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/set_section_info?id=[universe]&uid=[uid]&section=[section]
+     SetSection: function (universe, uid, section, hint, option) {
+      var url = '/json/rdm/set_section_info?id=' + universe +
+                '&uid=' + uid + '&section=' + section +
+                '&hint=' + hint + '&int=' + option;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/supported_pids?id=[universe]&uid=[uid]
+     GetSupportedPids: function (universe, uid) {
+      var url = '/json/rdm/supported_pids?id=' + universe + '&uid=' + uid;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/supported_sections?id=[universe]&uid=[uid]
+     GetSupportedSections: function (universe, uid) {
+      var url = '/json/rdm/supported_sections?id=' + universe + '&uid=' + uid;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/uid_identify?id=[universe]&uid=[uid]
+     UidIdentify: function (universe, uid) {
+      var url = '/json/rdm/uid_identify?id=' + universe + '&uid=' + uid;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/uid_info?id=[universe]&uid=[uid]
+     UidInfo: function (universe, uid) {
+      var url = '/json/rdm/uid_info?id=' + universe + '&uid=' + uid;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/uid_personalities?id=[universe]&uid=[uid]
+     UidPersonalities: function (universe, uid) {
+      var url = '/json/rdm/uid_personalities?id=' + universe + '&uid=' + uid;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /json/rdm/uids?id=[universe]
+     Uids: function (universe) {
+      var url = '/json/rdm/uids?id=' + universe;
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     },
+     // /rdm/run_discovery?id=[universe]&incremental=true
+     RunDiscovery: function (universe, incremental) {
+      var url = '/rdm/run_discovery?id=' + universe;
+      if (incremental === true) {
+       url = url + '&incremental=true';
+      }
+      return $http.get(url).then(function (response) {
+       return response.data;
+      });
+     }
     },
     tabs: function (tab, id) {
      $window.$('ul#ola-nav-tabs').html('' +
