@@ -588,6 +588,8 @@ void SelectServerTest::testTimeout() {
   m_ss->RegisterSingleTimeout(
       10,
       ola::NewSingleCallback(this, &SelectServerTest::ReentrantTimeout, m_ss));
+  // The terminate timeout is 40ms to allow the check to pass on Win XP. See
+  // https://github.com/OpenLightingProject/ola/pull/626 for more info
   m_ss->RegisterSingleTimeout(
       40,
       ola::NewSingleCallback(this, &SelectServerTest::Terminate));
