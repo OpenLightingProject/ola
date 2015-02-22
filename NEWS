@@ -2,6 +2,8 @@ x/y/2015 ola-0.9.5
  Features:
  * Work on a new Web-UI which is built with AngularJS
  * Added E1.37-2 support to the SPI plugin RDM responder
+ * USB DMX plug now works on Windows (Scanlime Fadcandy tested working)
+ * Update the deb package's udev rules
 
  API:
  *
@@ -12,6 +14,9 @@ x/y/2015 ola-0.9.5
  Bugs:
  * Fix finding ola_protoc_plugin when cross-compiling.
  * Fix ncurses flags issues between configure and the Makefile.
+ * Fix some more build issues on Windows XP
+ * Fix our E1.37-2 implementation to match the E1.37-2 standard.
+ * Fix the old website's RDM patcher identify function
 
  Internal:
  *
