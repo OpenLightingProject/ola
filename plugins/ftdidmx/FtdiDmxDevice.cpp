@@ -16,6 +16,11 @@
  * FtdiDmxDevice.cpp
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #include <string>
@@ -36,22 +41,45 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
       m_frequency(frequency) {
-  m_widget.reset(
+  m_widget =
       new FtdiWidget(widget_info.Serial(),
                      widget_info.Name(),
-                     widget_info.Id()));
+                     widget_info.Id(),
+                     widget_info.Vid(),
+                     widget_info.Pid());
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
-  if (m_widget->IsOpen())
-    m_widget->Close();
+  DeleteAllPorts();
+  delete m_widget;
 }
 
 bool FtdiDmxDevice::StartHook() {
-  AddPort(new FtdiDmxOutputPort(this,
-                                m_widget.get(),
-                                m_widget_info.Id(),
-                                m_frequency));
+  unsigned int interfaceCount = m_widget->GetInterfaceCount();
+  unsigned int successfullyAdded = 0;
+
+  OLA_INFO << "Widget " << m_widget->Name() << " has " << interfaceCount
+           << " interfaces.";
+
+  for (unsigned int i = 1; i <= interfaceCount; i++) {
+    FtdiInterface *port = new FtdiInterface(m_widget,
+                                            static_cast<ftdi_interface>(i));
+    if (port->SetupOutput()) {
+      AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
+      successfullyAdded += 1;
+    } else {
+      OLA_WARN << "Failed to add interface: " << i;
+      delete port;
+    }
+  }
+  if (successfullyAdded > 0) {
+    OLA_INFO << "Successfully added " << successfullyAdded << "/"
+             << interfaceCount << " interfaces.";
+  } else {
+    OLA_INFO << "Removing widget since no ports were added.";
+    return false;
+  }
+
   return true;
 }
 }  // namespace ftdidmx

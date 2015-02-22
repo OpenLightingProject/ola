@@ -16,6 +16,11 @@
  * FtdiDmxPort.h
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #ifndef PLUGINS_FTDIDMX_FTDIDMXPORT_H_
@@ -37,24 +42,27 @@ namespace ftdidmx {
 class FtdiDmxOutputPort : public ola::BasicOutputPort {
  public:
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
-                      FtdiWidget *device,
+                      FtdiInterface *interface,
                       unsigned int id,
                       unsigned int freq)
         : BasicOutputPort(parent, id),
-          m_device(device),
-          m_thread(device, freq) {
+          m_interface(interface),
+          m_thread(interface, freq) {
       m_thread.Start();
     }
-    ~FtdiDmxOutputPort() { m_thread.Stop(); }
+    ~FtdiDmxOutputPort() {
+      m_thread.Stop();
+      delete m_interface;
+    }
 
     bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
       return m_thread.WriteDMX(buffer);
     }
 
-    std::string Description() const { return m_device->Description(); }
+    std::string Description() const { return m_interface->Description(); }
 
  private:
-    FtdiWidget *m_device;
+    FtdiInterface *m_interface;
     FtdiDmxThread m_thread;
 };
 }  // namespace ftdidmx
