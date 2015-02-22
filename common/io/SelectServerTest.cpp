@@ -121,14 +121,19 @@ class SelectServerTest: public CppUnit::TestFixture {
   }
 
   void Terminate() {
+    OLA_DEBUG << "Terminate called";
     if (m_ss) { m_ss->Terminate(); }
   }
 
   void SingleIncrementTimeout() {
+    OLA_DEBUG << "Single increment timeout called";
     m_timeout_counter++;
+    OLA_DEBUG << "Timeout counter is now " << m_timeout_counter;
   }
 
   void ReentrantTimeout(SelectServer *ss) {
+    OLA_DEBUG << "Re-entrant timeout called, adding two single increment "
+                 "timeouts";
     ss->RegisterSingleTimeout(
         0,
         ola::NewSingleCallback(this,
@@ -576,15 +581,21 @@ void SelectServerTest::testTimeout() {
   OLA_ASSERT_EQ(1u, m_timeout_counter);
 
   // Now check a timeout that adds another timeout
+  OLA_DEBUG << "Checking re-entrant timeouts";
   m_timeout_counter = 0;
+  OLA_DEBUG << "Timeout counter is now " << m_timeout_counter;
 
   m_ss->RegisterSingleTimeout(
       10,
       ola::NewSingleCallback(this, &SelectServerTest::ReentrantTimeout, m_ss));
+  // The terminate timeout is 40ms to allow the check to pass on Win XP. See
+  // https://github.com/OpenLightingProject/ola/pull/626 for more info
   m_ss->RegisterSingleTimeout(
-      20,
+      40,
       ola::NewSingleCallback(this, &SelectServerTest::Terminate));
+  OLA_DEBUG << "Timeout counter is now " << m_timeout_counter;
   m_ss->Run();
+  OLA_DEBUG << "Timeout counter is now " << m_timeout_counter;
   OLA_ASSERT_EQ(2u, m_timeout_counter);
 
   // Check repeating timeouts
