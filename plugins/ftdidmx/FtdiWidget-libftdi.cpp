@@ -56,8 +56,7 @@ FtdiWidget::FtdiWidget(const string& serial,
                        const string& name,
                        uint32_t id,
                        const uint16_t vid,
-                       const uint16_t pid
-                      )
+                       const uint16_t pid)
     : m_serial(serial),
       m_name(name),
       m_id(id),
@@ -67,7 +66,7 @@ FtdiWidget::FtdiWidget(const string& serial,
 FtdiWidget::~FtdiWidget() {}
 
 /**
- * @brief Get the number of physical interfaces our widgit has to offer.
+ * @brief Get the number of physical interfaces our widget has to offer.
  *
  * This does not deal with product names being named in a different way.
  *
@@ -90,7 +89,7 @@ bool FtdiWidget::m_missing_serial = false;
 
 /**
  * @brief Build a list of all attached ftdi devices
- **/
+ */
 void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   int i = -1;
   widgets->clear();
@@ -141,8 +140,6 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
                                      name, sizeof(name),
                                      serial, sizeof(serial));
 
-        // libftdi doesn't enumerate error codes,
-        // -9 is 'get serial number failed', not ideal but workable.
         if (r < 0 &&
             r != FtdiWidget::libftdi_ftdi_usb_get_strings_get_serial_failed) {
           OLA_WARN << "Unable to fetch string information from USB device: "
@@ -155,7 +152,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         string sserial = string(serial);
         if (sserial == "?" ||
             r == FtdiWidget::libftdi_ftdi_usb_get_strings_get_serial_failed) {
-          // this means there wasn't a serial number
+          // This means there wasn't a serial number
           sserial.clear();
         }
 
@@ -221,8 +218,8 @@ bool FtdiInterface::SetInterface() {
 
 bool FtdiInterface::Open() {
   if (m_parent->Serial().empty()) {
-    OLA_WARN << m_parent->Name() << " has no serial number, "
-      "might cause issues with multiple devices";
+    OLA_WARN << m_parent->Name() << " has no serial number, which might cause "
+             << "issues with multiple devices";
     if (ftdi_usb_open(&m_handle, m_parent->Vid(), m_parent->Pid()) < 0) {
       OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
@@ -267,7 +264,7 @@ bool FtdiInterface::Reset() {
 }
 
 bool FtdiInterface::SetLineProperties() {
-    if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)) {
+  if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)) {
     OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -275,9 +272,10 @@ bool FtdiInterface::SetLineProperties() {
   }
 }
 
-bool FtdiInterface::SetBaudRate() {
-  if (ftdi_set_baudrate(&m_handle, 250000) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+bool FtdiInterface::SetBaudRate(int speed) {
+  if (ftdi_set_baudrate(&m_handle, speed) < 0) {
+    OLA_WARN << "Error setting " << m_parent->Name() << " to baud rate of "
+             << speed << " - " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -312,13 +310,8 @@ bool FtdiInterface::PurgeBuffers() {
 }
 
 bool FtdiInterface::SetBreak(bool on) {
-  ftdi_break_type type;
-  if (on == true)
-    type = BREAK_ON;
-  else
-    type = BREAK_OFF;
-
-  if (ftdi_set_line_property2(&m_handle, BITS_8, STOP_BIT_2, NONE, type) < 0) {
+  if (ftdi_set_line_property2(&m_handle, BITS_8, STOP_BIT_2, NONE,
+                              (on ? BREAK_ON : BREAK_OFF)) < 0) {
     OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
   } else {

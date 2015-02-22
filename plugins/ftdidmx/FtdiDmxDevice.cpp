@@ -41,12 +41,11 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
       m_frequency(frequency) {
-  m_widget =
-      new FtdiWidget(widget_info.Serial(),
-                     widget_info.Name(),
-                     widget_info.Id(),
-                     widget_info.Vid(),
-                     widget_info.Pid());
+  m_widget = new FtdiWidget(widget_info.Serial(),
+                            widget_info.Name(),
+                            widget_info.Id(),
+                            widget_info.Vid(),
+                            widget_info.Pid());
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {

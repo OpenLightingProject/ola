@@ -47,7 +47,7 @@ namespace plugin {
 namespace ftdidmx {
 
 /**
- * This class holds information about an attached ftdi chips
+ * @brief This class holds information about an attached FTDI chip
  */
 class FtdiWidgetInfo {
  public:
@@ -109,36 +109,37 @@ class FtdiWidgetInfo {
 };
 
 /**
- * An FTDI widget
+ * @brief An FTDI widget
  */
 class FtdiWidget {
  public:
   /**
-  * Construct a new FtdiWidget instance for one widget.
-  * @param serial The widget's USB serial number
-  * @param name The widget's USB name (description)
-  * @param id id based on order of adding it seems from the code
-  * @param vid The VendorID of the device, def = FtdiWidgetInfo::ftdi_vid
-  * @param pid The ProductID of the device, def = FtdiWidgetInfo::ft232_pid
-  */
+   * @brief Construct a new FtdiWidget instance for one widget.
+   * @param serial The widget's USB serial number
+   * @param name The widget's USB name (description)
+   * @param id id based on order of adding it seems from the code
+   * @param vid The VendorID of the device, def = FtdiWidgetInfo::ftdi_vid
+   * @param pid The ProductID of the device, def = FtdiWidgetInfo::ft232_pid
+   */
   FtdiWidget(const std::string &serial,
             const std::string &name,
             uint32_t id = 0,
             const uint16_t vid = FtdiWidgetInfo::ftdi_vid,
             const uint16_t pid = FtdiWidgetInfo::ft232_pid);
 
-  /** Destructor */
+  /** @brief Destructor */
   virtual ~FtdiWidget();
 
-  /** Get the widget's USB serial number */
+  /** @brief Get the widget's USB serial number */
   std::string Serial() const { return m_serial; }
 
-  /** Get the widget's USB name */
+  /** @brief Get the widget's USB name */
   std::string Name() const { return m_name; }
+
   uint16_t Vid() const { return m_vid; }
   uint16_t Pid() const { return m_pid; }
 
-  /** Get the widget's FTD2XX ID number */
+  /** @brief Get the widget's FTD2XX ID number */
   uint32_t Id() const { return m_id; }
 
   std::string Description() const {
@@ -149,15 +150,13 @@ class FtdiWidget {
   int GetInterfaceCount();
 
   /**
-  * @brief Build a list of available ftdi widgets.
-  * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
-  **/
+   * @brief Build a list of available ftdi widgets.
+   * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
+   */
   static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
-  /**
-  * From reading libftdi docs it seems they may reuse error codes, which is
-  * why I chose to name this const lib_function_error.
-  **/
+  // From reading libftdi docs it seems they may reuse error codes, which is
+  // why I chose to name this const <lib>_<function>_<error>.
   static const int libftdi_ftdi_usb_get_strings_get_serial_failed = -9;
 
   static bool m_missing_serial;
@@ -181,45 +180,46 @@ class FtdiInterface {
     return m_parent->Description();
   }
 
-  /** Set interface on the widget */
+  /** @brief Set interface on the widget */
   bool SetInterface();
-  /** Open the widget */
+
+  /** @brief Open the widget */
   bool Open();
 
-  /** Close the widget */
+  /** @brief Close the widget */
   bool Close();
 
-  /** Check if the widget is open */
+  /** @brief Check if the widget is open */
   bool IsOpen() const;
 
-  /** Reset the communications line */
+  /** @brief Reset the communications line */
   bool Reset();
 
-  /** Setup communications line for 8N2 traffic */
+  /** @brief Setup communications line for 8N2 traffic */
   bool SetLineProperties();
 
-  /** Set 250kbps baud rate */
-  bool SetBaudRate();
+  /** @brief Set 250kbps baud rate */
+  bool SetBaudRate(int speed = 250000);
 
-  /** Disable flow control */
+  /** @brief Disable flow control */
   bool SetFlowControl();
 
-  /** Clear the RTS bit */
+  /** @brief Clear the RTS bit */
   bool ClearRts();
 
-  /** Purge TX & RX buffers */
+  /** @brief Purge TX & RX buffers */
   bool PurgeBuffers();
 
-  /** Toggle communications line BREAK condition on/off */
+  /** @brief Toggle communications line BREAK condition on/off */
   bool SetBreak(bool on);
 
-  /** Write data to a previously-opened line */
+  /** @brief Write data to a previously-opened line */
   bool Write(const ola::DmxBuffer &data);
 
-  /** Read data from a previously-opened line */
+  /** @brief Read data from a previously-opened line */
   bool Read(unsigned char* buff, int size);
 
-  /** Setup device for DMX Output **/
+  /** @brief Setup device for DMX Output **/
   bool SetupOutput();
 
  private:
