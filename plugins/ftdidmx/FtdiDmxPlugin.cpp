@@ -16,6 +16,11 @@
  * FtdiDmxPlugin.cpp
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #include <vector>
@@ -44,14 +49,6 @@ const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
  * Ownership of the FtdiDmxDevice is transfered to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
-  // Check if device is working before adding
-  if (device->GetDevice()->SetupOutput() == false) {
-    OLA_WARN << "Unable to setup device for output, device ignored "
-             << device->Description();
-    delete device;
-    return;
-  }
-
   if (device->Start()) {
       m_devices.push_back(device);
       m_plugin_adaptor->RegisterDevice(device);
@@ -90,6 +87,7 @@ bool FtdiDmxPlugin::StopHook() {
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
+    delete (*iter);
   }
   m_devices.clear();
   return true;
