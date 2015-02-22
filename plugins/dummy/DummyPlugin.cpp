@@ -155,6 +155,7 @@ string DummyPlugin::Description() const {
 "\n"
 "sensor_device_count = 1\n"
 "The number of sensor-only devices to create.\n"
+"\n"
 "network_device_count = 1\n"
 "The number of network E1.37-2 devices to create.\n"
 "\n";
