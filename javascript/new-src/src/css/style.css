@@ -78,10 +78,11 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus {
  height: 50%;
 }
 .channel {
- width: 40px;
+ width: 30px;
+ font-size: 10px;
  text-align: center;
  display: inline-block;
- border: solid #337ab7 1px;
+ border: 1px solid #337ab7;
  border-radius: 4px;
 }
 .status {
@@ -120,19 +121,24 @@ tr.striped-table:nth-of-type(even) {
 .special-mouse {
  cursor: pointer;
 }
-.mobile-info {
- position: absolute;
- right: 0;
- width: 100%;
- text-align: center;
- font-size: 10px;
-}
-.desktop-info {
- font-size: 12px;
-}
-.desktop-info, .mobile-info {
+.navbar-info {
  margin-top: 8px;
  margin-bottom: 8px;
+ font-size: 12px;
+ text-align: center;
+}
+.navbar-desktop{
+ float: right!important;
+}
+@media (min-width: 768px) {
+ .navbar-mobile{
+  display: none;
+ }
+}
+@media (max-width: 768px) {
+ .navbar-desktop{
+  display: none;
+ }
 }
 div.checkbox-tr {
  text-align: center;
@@ -175,4 +181,25 @@ td.align{
 }
 .plugin-icon{
  color: #898989;
+}
+div#header-universe{
+ padding-bottom: 10px;
+}
+div#header-universe > h4{
+ display: inline;
+ padding-right: 10px;
+}
+div#header-universe > div{
+ color: lightgray;
+ display: inline;
+}
+.static-fake{
+ height: 34px;
+ padding: 6px 12px;
+ background-color: #fff;
+ border: 1px solid #ccc;
+ border-radius: 4px;
+ -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+ box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+ -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
 }

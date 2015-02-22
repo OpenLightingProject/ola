@@ -7,13 +7,13 @@
   <button ng-click="page(0)" class="col-xs-3 left-col">
    <span class="glyphicon glyphicon-arrow-left"></span>
   </button>
-  <button ng-click="light(OLA.MIN_CHANNEL_VALUE)" class="col-xs-2 off">
+  <button title="all off" ng-click="light(OLA.MIN_CHANNEL_VALUE)" class="col-xs-2 off">
    <img height="16" width="16" src="/new/img/light_bulb_off.png">
   </button>
   <div class="col-xs-2">
    {{offset + 1}}/{{ceil(OLA.MAX_CHANNEL_NUMBER/limit)}}
   </div>
-  <button ng-click="light(OLA.MAX_CHANNEL_VALUE)" class="col-xs-2 on">
+  <button title="all on full" ng-click="light(OLA.MAX_CHANNEL_VALUE)" class="col-xs-2 on">
    <img height="16" width="16" src="/new/img/light_bulb.png">
   </button>
   <button ng-click="page(1)" class="col-xs-3 right-col">
