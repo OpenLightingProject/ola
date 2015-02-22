@@ -334,7 +334,7 @@ angular
      $ola.post.AddUniverse($scope.Data);
      $location.path('/universe/' + $scope.Data.id);
     } else if ($scope.Universes.indexOf($scope.Data.id) !== -1) {
-     $ola.error.modal('Universe id already exists.');
+     $ola.error.modal('Universe Id already exists.');
     } else if ($scope.Data.add_ports === '') {
      $ola.error.modal('There are no ports selected for the universe.' +
                       ' This is required.');
@@ -423,7 +423,7 @@ angular
       if (i < data.dmx.length) {
        $scope.get[i] = data.dmx[i];
       } else {
-       $scope.get[i] = 0;
+       $scope.get[i] = OLA.MIN_CHANNEL_VALUE;
       }
      }
      $scope.send = true;

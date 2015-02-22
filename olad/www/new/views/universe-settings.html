@@ -18,7 +18,11 @@
     <th>Priority</th>
    </tr>
    <tr class="striped-table" ng-repeat="port in ActivePorts" ng-if="!port.is_output">
-    <td><div class="checkbox-tr"><input type="checkbox" ng-model="Remove[$index]" ng-true-value="" ng-false-value="{{port.id}}"></div></td>
+    <td>
+     <div class="checkbox-tr">
+      <input type="checkbox" ng-model="Remove[$index]" ng-true-value="" ng-false-value="{{port.id}}">
+     </div>
+    </td>
     <td>{{port.device}}</td>
     <td>{{port.description}}</td>
     <td>
@@ -33,11 +37,7 @@
      </div>
     </td>
     <td>
-     <input class="form-control priority"
-            ng-if="port.priority.current_mode"
-            ng-model="port.priority.value"
-            type="number"
-            ng-disabled="port.priority.current_mode == 'inherit'"/>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode == 'inherit'"/>
     </td>
    </tr>
   </table>
@@ -53,7 +53,11 @@
     <th>Priority</th>
    </tr>
    <tr class="striped-table" ng-repeat="port in ActivePorts" ng-if="port.is_output">
-    <td><div class="checkbox-tr"><input type="checkbox" ng-model="Remove[$index]" ng-true-value="" ng-false-value="{{port.id}}"></div></td>
+    <td>
+     <div class="checkbox-tr">
+      <input type="checkbox" ng-model="Remove[$index]" ng-true-value="" ng-false-value="{{port.id}}">
+     </div>
+    </td>
     <td>{{port.device}}</td>
     <td>{{port.description}}</td>
     <td>
@@ -68,11 +72,7 @@
      </div>
     </td>
     <td>
-      <input class="form-control priority"
-             ng-if="port.priority.current_mode"
-             ng-model="port.priority.value"
-             type="number"
-             ng-disabled="port.priority.current_mode == 'inherit'"/>
+      <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode == 'inherit'"/>
     </td>
    </tr>
   </table>
