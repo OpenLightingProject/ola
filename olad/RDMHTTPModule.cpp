@@ -171,8 +171,12 @@ RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
   m_server->RegisterHandler(
       "/json/rdm/uid_info",
       NewCallback(this, &RDMHTTPModule::JsonUIDInfo));
+  // Deprecated for clarity, use uid_identify_device instead
   m_server->RegisterHandler(
       "/json/rdm/uid_identify",
+      NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyDevice));
+  m_server->RegisterHandler(
+      "/json/rdm/uid_identify_device",
       NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyDevice));
   m_server->RegisterHandler(
       "/json/rdm/uid_personalities",
