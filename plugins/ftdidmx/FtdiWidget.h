@@ -35,6 +35,7 @@
 #define PLUGINS_FTDIDMX_FTDIWIDGET_H_
 
 #include <ftdi.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <string>
@@ -51,15 +52,15 @@ namespace ftdidmx {
  */
 class FtdiWidgetInfo {
  public:
-  static const uint16_t ftdi_vid = 0x0403;
-  static const uint16_t ft232_pid = 0x6001;
-  static const uint16_t ft4232_pid = 0x6011;
+  static const uint16_t FTDI_VID;
+  static const uint16_t FT232_PID;
+  static const uint16_t FT4232_PID;
 
   FtdiWidgetInfo(const std::string &name,
                  const std::string &serial,
                  unsigned int id,
-                 const uint16_t vid = ftdi_vid,
-                 const uint16_t pid = ft232_pid)
+                 const uint16_t vid = FTDI_VID,
+                 const uint16_t pid = FT232_PID)
     : m_name(name),
       m_serial(serial),
       m_id(id),
@@ -124,8 +125,8 @@ class FtdiWidget {
   FtdiWidget(const std::string &serial,
              const std::string &name,
              uint32_t id = 0,
-             const uint16_t vid = FtdiWidgetInfo::ftdi_vid,
-             const uint16_t pid = FtdiWidgetInfo::ft232_pid);
+             const uint16_t vid = FtdiWidgetInfo::FTDI_VID,
+             const uint16_t pid = FtdiWidgetInfo::FT232_PID);
 
   /** @brief Destructor */
   virtual ~FtdiWidget();

@@ -52,6 +52,10 @@ namespace ftdidmx {
 using std::string;
 using std::vector;
 
+const uint16_t FtdiWidgetInfo::FTDI_VID = 0x0403;
+const uint16_t FtdiWidgetInfo::FT232_PID = 0x6001;
+const uint16_t FtdiWidgetInfo::FT4232_PID = 0x6011;
+
 FtdiWidget::FtdiWidget(const string& serial,
                        const string& name,
                        uint32_t id,
@@ -100,9 +104,9 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   }
 
   vector<uint16_t> pids;
-  pids.push_back(FtdiWidgetInfo::ft232_pid);
-  pids.push_back(FtdiWidgetInfo::ft4232_pid);
-  const uint16_t vid = FtdiWidgetInfo::ftdi_vid;
+  pids.push_back(FtdiWidgetInfo::FT232_PID);
+  pids.push_back(FtdiWidgetInfo::FT4232_PID);
+  const uint16_t vid = FtdiWidgetInfo::FTDI_VID;
 
   for (vector<uint16_t>::iterator current_pid = pids.begin();
        current_pid != pids.end();
