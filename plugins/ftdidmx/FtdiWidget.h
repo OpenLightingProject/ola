@@ -51,15 +51,15 @@ namespace ftdidmx {
  */
 class FtdiWidgetInfo {
  public:
-  static const int ftdi_vid = 0x0403;
-  static const int ft232_pid = 0x6001;
+  static const uint16_t ftdi_vid = 0x0403;
+  static const uint16_t ft232_pid = 0x6001;
+  static const uint16_t ft4232_pid = 0x6011;
 
   FtdiWidgetInfo(const std::string &name,
-                  const std::string &serial,
-                  unsigned int id,
-                  const uint16_t vid = ftdi_vid,
-                  const uint16_t pid = ft232_pid
-                )
+                 const std::string &serial,
+                 unsigned int id,
+                 const uint16_t vid = ftdi_vid,
+                 const uint16_t pid = ft232_pid)
     : m_name(name),
       m_serial(serial),
       m_id(id),
@@ -122,10 +122,10 @@ class FtdiWidget {
    * @param pid The ProductID of the device, def = FtdiWidgetInfo::ft232_pid
    */
   FtdiWidget(const std::string &serial,
-            const std::string &name,
-            uint32_t id = 0,
-            const uint16_t vid = FtdiWidgetInfo::ftdi_vid,
-            const uint16_t pid = FtdiWidgetInfo::ft232_pid);
+             const std::string &name,
+             uint32_t id = 0,
+             const uint16_t vid = FtdiWidgetInfo::ftdi_vid,
+             const uint16_t pid = FtdiWidgetInfo::ft232_pid);
 
   /** @brief Destructor */
   virtual ~FtdiWidget();

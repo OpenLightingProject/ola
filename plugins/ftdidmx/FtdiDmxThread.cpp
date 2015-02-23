@@ -51,7 +51,7 @@ FtdiDmxThread::~FtdiDmxThread() {
 
 
 /**
- * Stop this thread
+ * @brief Stop this thread
  */
 bool FtdiDmxThread::Stop() {
   {
@@ -63,7 +63,7 @@ bool FtdiDmxThread::Stop() {
 
 
 /**
- * Copy a DMXBuffer to the output thread
+ * @brief Copy a DMXBuffer to the output thread
  */
 bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   {
@@ -75,7 +75,7 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 
 
 /**
- * The method called by the thread
+ * @brief The method called by the thread
  */
 void *FtdiDmxThread::Run() {
   TimeStamp ts1, ts2, ts3;
@@ -159,7 +159,7 @@ void *FtdiDmxThread::Run() {
 
 
 /**
- * Check the granularity of usleep.
+ * @brief Check the granularity of usleep.
  */
 void FtdiDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
@@ -170,10 +170,10 @@ void FtdiDmxThread::CheckTimeGranularity() {
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT ? BAD :
-      GOOD;
-  OLA_INFO << "Granularity for ftdi thread is " <<
-    (m_granularity == GOOD ? "GOOD" : "BAD");
+  m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ?
+      BAD : GOOD;
+  OLA_INFO << "Granularity for FTDI thread is "
+           << ((m_granularity == GOOD) ? "GOOD" : "BAD");
 }
 }  // namespace ftdidmx
 }  // namespace plugin

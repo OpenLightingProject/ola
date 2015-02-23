@@ -45,7 +45,8 @@ const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB DMX";
 const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
 
 /**
- * Attempt to start a device and, if successfull, register it
+ * @brief Attempt to start a device and, if successful, register it
+ *
  * Ownership of the FtdiDmxDevice is transfered to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
@@ -60,7 +61,7 @@ void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
 
 
 /**
- * Fetch a list of all FTDI widgets and create a new device for each of them.
+ * @brief Fetch a list of all FTDI widgets and create a new device for each of them.
  */
 bool FtdiDmxPlugin::StartHook() {
   typedef vector<FtdiWidgetInfo> FtdiWidgetInfoVector;
@@ -80,7 +81,7 @@ bool FtdiDmxPlugin::StartHook() {
 
 
 /**
- * Stop all the devices.
+ * @brief Stop all the devices.
  */
 bool FtdiDmxPlugin::StopHook() {
   FtdiDeviceVector::iterator iter;
@@ -95,7 +96,7 @@ bool FtdiDmxPlugin::StopHook() {
 
 
 /**
- * Return a description for this plugin.
+ * @brief Return a description for this plugin.
  */
 string FtdiDmxPlugin::Description() const {
   return
@@ -116,19 +117,22 @@ string FtdiDmxPlugin::Description() const {
 
 
 /**
- * Set the default preferences
+ * @brief Set the default preferences
  */
 bool FtdiDmxPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   if (m_preferences->SetDefaultValue(FtdiDmxPlugin::K_FREQUENCY,
                                      UIntValidator(1, 44),
-                                     DEFAULT_FREQUENCY))
+                                     DEFAULT_FREQUENCY)) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY).empty())
+  if (m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY).empty()) {
     return false;
+  }
 
   return true;
 }

@@ -101,7 +101,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 
   vector<uint16_t> pids;
   pids.push_back(FtdiWidgetInfo::ft232_pid);
-  pids.push_back(0x6011);
+  pids.push_back(FtdiWidgetInfo::ft4232_pid);
   const uint16_t vid = FtdiWidgetInfo::ftdi_vid;
 
   for (vector<uint16_t>::iterator current_pid = pids.begin();

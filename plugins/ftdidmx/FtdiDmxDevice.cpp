@@ -54,26 +54,26 @@ FtdiDmxDevice::~FtdiDmxDevice() {
 }
 
 bool FtdiDmxDevice::StartHook() {
-  unsigned int interfaceCount = m_widget->GetInterfaceCount();
-  unsigned int successfullyAdded = 0;
+  unsigned int interface_count = m_widget->GetInterfaceCount();
+  unsigned int successfully_added = 0;
 
-  OLA_INFO << "Widget " << m_widget->Name() << " has " << interfaceCount
+  OLA_INFO << "Widget " << m_widget->Name() << " has " << interface_count
            << " interfaces.";
 
-  for (unsigned int i = 1; i <= interfaceCount; i++) {
+  for (unsigned int i = 1; i <= interface_count; i++) {
     FtdiInterface *port = new FtdiInterface(m_widget,
                                             static_cast<ftdi_interface>(i));
     if (port->SetupOutput()) {
       AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
-      successfullyAdded += 1;
+      successfully_added += 1;
     } else {
       OLA_WARN << "Failed to add interface: " << i;
       delete port;
     }
   }
-  if (successfullyAdded > 0) {
-    OLA_INFO << "Successfully added " << successfullyAdded << "/"
-             << interfaceCount << " interfaces.";
+  if (successfully_added > 0) {
+    OLA_INFO << "Successfully added " << successfully_added << "/"
+             << interface_count << " interfaces.";
   } else {
     OLA_INFO << "Removing widget since no ports were added.";
     return false;
