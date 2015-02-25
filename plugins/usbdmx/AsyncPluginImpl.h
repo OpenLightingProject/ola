@@ -43,10 +43,6 @@ class Device;
 namespace plugin {
 namespace usbdmx {
 
-#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
-#define OLA_LIBUSB_HAS_HOTPLUG_API
-#endif
-
 /**
  * @brief The asynchronous libusb implementation.
  */
@@ -68,7 +64,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool Start();
   bool Stop();
 
-  #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+  #ifdef HAVE_LIBUSB_HOTPLUG_API
   /**
    * @brief Called when a USB hotplug event occurs.
    * @param dev the libusb_device the event occurred for.

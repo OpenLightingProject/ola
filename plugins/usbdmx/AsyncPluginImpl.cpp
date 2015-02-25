@@ -50,10 +50,10 @@ namespace usbdmx {
 
 namespace {
 
+#ifdef HAVE_LIBUSB_HOTPLUG_API
 /**
  * @brief Called by libusb when a USB device is added / removed.
  */
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
 int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
                      struct libusb_device *dev,
                      libusb_hotplug_event event,
@@ -94,12 +94,12 @@ bool AsyncPluginImpl::Start() {
   m_use_hotplug = HotplugSupported();
   OLA_INFO << "HotplugSupported returned " << m_use_hotplug;
   if (m_use_hotplug) {
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef HAVE_LIBUSB_HOTPLUG_API
     m_usb_thread.reset(new LibUsbHotplugThread(
           m_context, hotplug_callback, this));
 #else
     OLA_FATAL << "Mismatch between m_use_hotplug and "
-      " OLA_LIBUSB_HAS_HOTPLUG_API";
+      " HAVE_LIBUSB_HOTPLUG_API";
     return false;
 #endif
   } else {
@@ -171,7 +171,7 @@ bool AsyncPluginImpl::Stop() {
   return true;
 }
 
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef HAVE_LIBUSB_HOTPLUG_API
 void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
                                    libusb_hotplug_event event) {
   ola::thread::MutexLocker locker(&m_mutex);
@@ -250,7 +250,7 @@ void AsyncPluginImpl::WidgetRemoved(VellemanK8062 *widget) {
  *   otherwise.
  */
 bool AsyncPluginImpl::HotplugSupported() {
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef HAVE_LIBUSB_HOTPLUG_API
   return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
 #else
   return false;
