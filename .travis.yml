@@ -27,7 +27,7 @@ matrix:
 env:
   global:
    # -- BEGIN Coverity Scan ENV
-   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="autoreconf -i && ./configure"
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="autoreconf -i && ./configure --enable-ja-rule"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
