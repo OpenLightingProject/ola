@@ -52,6 +52,10 @@ namespace ftdidmx {
 using std::string;
 using std::vector;
 
+const uint16_t FtdiWidgetInfo::FTDI_VID = 0x0403;
+const uint16_t FtdiWidgetInfo::FT232_PID = 0x6001;
+const uint16_t FtdiWidgetInfo::FT4232_PID = 0x6011;
+
 FtdiWidget::FtdiWidget(const string& serial,
                        const string& name,
                        uint32_t id,
@@ -100,9 +104,9 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   }
 
   vector<uint16_t> pids;
-  pids.push_back(FtdiWidgetInfo::ft232_pid);
-  pids.push_back(0x6011);
-  const uint16_t vid = FtdiWidgetInfo::ftdi_vid;
+  pids.push_back(FtdiWidgetInfo::FT232_PID);
+  pids.push_back(FtdiWidgetInfo::FT4232_PID);
+  const uint16_t vid = FtdiWidgetInfo::FTDI_VID;
 
   for (vector<uint16_t>::iterator current_pid = pids.begin();
        current_pid != pids.end();
@@ -173,6 +177,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
         ToUpper(&v);
         if (std::string::npos != v.find("FTDI") ||
             std::string::npos != v.find("KMTRONIC") ||
+            std::string::npos != v.find("KWMATIK") ||
             std::string::npos != v.find("WWW.SOH.CZ")) {
           widgets->push_back(FtdiWidgetInfo(sname,
                                             sserial,
@@ -209,7 +214,8 @@ FtdiInterface::~FtdiInterface() {
 bool FtdiInterface::SetInterface() {
   OLA_INFO << "Setting interface to: " << m_interface;
   if (ftdi_set_interface(&m_handle, m_interface) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -221,7 +227,8 @@ bool FtdiInterface::Open() {
     OLA_WARN << m_parent->Name() << " has no serial number, which might cause "
              << "issues with multiple devices";
     if (ftdi_usb_open(&m_handle, m_parent->Vid(), m_parent->Pid()) < 0) {
-      OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+      OLA_WARN << m_parent->Description() << " "
+               << ftdi_get_error_string(&m_handle);
       return false;
     } else {
       return true;
@@ -233,7 +240,8 @@ bool FtdiInterface::Open() {
     if (ftdi_usb_open_desc(&m_handle, m_parent->Vid(), m_parent->Pid(),
                            m_parent->Name().c_str(),
                            m_parent->Serial().c_str()) < 0) {
-      OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+      OLA_WARN << m_parent->Description() << " "
+               << ftdi_get_error_string(&m_handle);
       return false;
     } else {
       return true;
@@ -243,7 +251,8 @@ bool FtdiInterface::Open() {
 
 bool FtdiInterface::Close() {
   if (ftdi_usb_close(&m_handle) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -256,7 +265,8 @@ bool FtdiInterface::IsOpen() const {
 
 bool FtdiInterface::Reset() {
   if (ftdi_usb_reset(&m_handle) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -265,7 +275,8 @@ bool FtdiInterface::Reset() {
 
 bool FtdiInterface::SetLineProperties() {
   if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -274,8 +285,8 @@ bool FtdiInterface::SetLineProperties() {
 
 bool FtdiInterface::SetBaudRate(int speed) {
   if (ftdi_set_baudrate(&m_handle, speed) < 0) {
-    OLA_WARN << "Error setting " << m_parent->Name() << " to baud rate of "
-             << speed << " - " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << "Error setting " << m_parent->Description() << " to baud rate "
+             << "of " << speed << " - " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -284,7 +295,8 @@ bool FtdiInterface::SetBaudRate(int speed) {
 
 bool FtdiInterface::SetFlowControl() {
   if (ftdi_setflowctrl(&m_handle, SIO_DISABLE_FLOW_CTRL) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -293,7 +305,8 @@ bool FtdiInterface::SetFlowControl() {
 
 bool FtdiInterface::ClearRts() {
   if (ftdi_setrts(&m_handle, 0) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -302,7 +315,8 @@ bool FtdiInterface::ClearRts() {
 
 bool FtdiInterface::PurgeBuffers() {
   if (ftdi_usb_purge_buffers(&m_handle) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -312,7 +326,8 @@ bool FtdiInterface::PurgeBuffers() {
 bool FtdiInterface::SetBreak(bool on) {
   if (ftdi_set_line_property2(&m_handle, BITS_8, STOP_BIT_2, NONE,
                               (on ? BREAK_ON : BREAK_OFF)) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -327,7 +342,8 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   data.Get(buffer + 1, &length);
 
   if (ftdi_write_data(&m_handle, buffer, length + 1) < 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
@@ -337,7 +353,8 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
 bool FtdiInterface::Read(unsigned char *buff, int size) {
   int read = ftdi_read_data(&m_handle, buff, size);
   if (read <= 0) {
-    OLA_WARN << m_parent->Name() << " " << ftdi_get_error_string(&m_handle);
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
