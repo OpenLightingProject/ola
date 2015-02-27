@@ -24,10 +24,6 @@
 #include <stdio.h>
 #include <libusb.h>
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <set>
 
 #include "ola/Logging.h"
