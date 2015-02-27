@@ -22,6 +22,11 @@
 #define PLUGINS_USBDMX_ASYNCPLUGINIMPL_H_
 
 #include <libusb.h>
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <map>
 #include <memory>
 #include <set>
