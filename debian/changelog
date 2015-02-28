@@ -1,6 +1,7 @@
 ola (0.9.5-1) unstable; urgency=low
 
   * New upstream release
+  * Update udev rules
 
  -- RenZO <renzo@imaginux.com>  Sat, 28 Feb 2015 19:22:09 +0100
 
