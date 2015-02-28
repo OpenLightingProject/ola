@@ -60,7 +60,7 @@ void LibUsbThread::JoinThread() {
 // LibUsbHotplugThread
 // -----------------------------------------------------------------------------
 
-#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
+#if HAVE_LIBUSB_HOTPLUG_API
 LibUsbHotplugThread::LibUsbHotplugThread(libusb_context *context,
                                          libusb_hotplug_callback_fn callback_fn,
                                          void *user_data)
