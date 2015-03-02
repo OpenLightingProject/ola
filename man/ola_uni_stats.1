@@ -16,5 +16,8 @@ Set the logging level 0 .. 4.
 Display version information
 .IP "--syslog"
 Send to syslog rather than stderr.
-.IP "--use-epoll"
-Use epoll() if available
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+

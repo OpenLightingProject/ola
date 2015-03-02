@@ -1,6 +1,7 @@
 x/y/2015 ola-0.9.6
  Features:
- * 
+ * Default to using epoll() and kqueue() rather than select() if they exist.
+ * Default to the async libusb implementation in the usbdmx plugin.
 
  API:
  * 

@@ -52,9 +52,10 @@ namespace io {
  * @snippet udp_server.cpp UDP Server
  *
  * The SelectServer has a number of different implementations depending on the
- * platform. On systems with epoll, the flag --use-epoll will use epoll()
- * rather than select(). The PollerInterface defines the contract between the
- * SelectServer and the lower level, platform dependant Poller classes.
+ * platform. On systems with epoll, the flag --no-use-epoll will disable the
+ * use of epoll(), reverting to select(). The PollerInterface defines the
+ * contract between the SelectServer and the lower level, platform dependant
+ * Poller classes.
  *
  * All methods except Execute() and Terminate() must be called from the thread
  * that Run() was called in.

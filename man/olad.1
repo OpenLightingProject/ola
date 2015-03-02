@@ -37,6 +37,12 @@ Disable the HTTP /quit handler.
 The directory containing the PID definitions
 .IP "--syslog"
 Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--no-use-async-libusb"
+Disable the use of the asyncronous libusb calls, revert to syncronous
 .SH LOGGING
 .B olad
 can either log to

@@ -28,8 +28,10 @@ Display version information
 Set the long name of the ArtNet device.
 .IP "--syslog"
 Send to syslog rather than stderr.
-.IP "--use-epoll"
-Use epoll() if available
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
 .SH SEE ALSO
 .BR olad(1) ,
 .

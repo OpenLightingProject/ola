@@ -11,9 +11,9 @@ The new version of the plugin uses the asynchronous mode of operation and a
 single thread for the libusb completion handling. This allows us to support
 hotplug.
 
-You can opt-in to the new asynchronous mode by passing the --use-async-libusb
-flag to olad. Assuming we don't find any problems, at some point this will
-become the default and the synchronous implementation will be removed.
+You can opt-out of the new asynchronous mode by passing the
+--no-use-async-libusb flag to olad. Assuming we don't find any problems, at
+some point the synchronous implementation will be removed.
 
 The rest of this file explains how the plugin is constructed and is aimed at
 developers wishing to add support for a new USB Device. It assumes the reader
