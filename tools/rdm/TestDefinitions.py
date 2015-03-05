@@ -3513,7 +3513,7 @@ class GetRealTimeClock(OptionalParameterTestFixture):
     for field, range in self.ALLOWED_RANGES.iteritems():
       value = fields[field]
       if value < range[0] or value > range[1]:
-        self.AddWarning('%s in GET %s is out of range, was %d, expeced %s' %
+        self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
                         (field, self.PID, value, range))
 
 
