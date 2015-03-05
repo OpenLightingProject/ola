@@ -36,6 +36,10 @@ Send to syslog rather than stderr.
 Disable the use of epoll(), revert to select()
 .IP "--no-use-kqueue"
 Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
 .SH EXAMPLES
 .SS See the current parameters of port 0 of device 9:
 ola_usbpro -d 9 -p 0 --get-params

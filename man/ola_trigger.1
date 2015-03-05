@@ -16,12 +16,20 @@ Set the logging level 0 .. 4.
 Apply an offset to the slot numbers. Valid offsets are 0 to 512, default is 0.
 .IP "-u, --universe <uint32_t>"
 The universe to use, defaults to 0.
+.IP "--validate"
+Validate the config file, rather than running it.
 .IP "-v, --version"
 Display version information
 .IP "--syslog"
 Send to syslog rather than stderr.
-.IP "--use-kqueue"
-Use kqueue() if available
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
 .SH SEE ALSO
 .BR olad(1)
 .
