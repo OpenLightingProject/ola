@@ -79,6 +79,8 @@ OpenLightingDevice::OpenLightingDevice(SelectServer* ss, libusb_device* device)
   : m_ss(ss),
     m_device(device),
     m_handle(NULL),
+    m_in_flight_requests(0),
+    m_out_flight_requests(0),
     m_out_transfer(libusb_alloc_transfer(0)),
     m_out_in_progress(false),
     m_in_transfer(libusb_alloc_transfer(0)),
@@ -140,10 +142,11 @@ bool OpenLightingDevice::Init() {
     return false;
   }
 
-  r = libusb_claim_interface(m_handle, 0);
+  r = libusb_claim_interface(m_handle, 2);
   if (r) {
-    OLA_WARN << "Failed to claim interface: 0";
+    OLA_WARN << "Failed to claim interface: 2";
     libusb_close(m_handle);
+    m_handle = NULL;
     return false;
   }
   return true;
@@ -157,57 +160,30 @@ bool OpenLightingDevice::SendMessage(Command command,
     return false;
   }
 
-  MutexLocker locker(&m_out_mutex);
-  if (m_out_in_progress) {
-    OLA_WARN << "TX in progress, dropping message";
+  if (size != 0 && data == NULL) {
+    OLA_WARN << "Data is NULL";
     return false;
   }
 
-  unsigned int offset = 0;
-  m_out_buffer[0] = SOF_IDENTIFIER;
-  SplitUInt16(command, &m_out_buffer[2], &m_out_buffer[1]);
-  SplitUInt16(size, &m_out_buffer[4], &m_out_buffer[3]);
-  offset += 5;
-
-  if (size > 0) {
-    memcpy(m_out_buffer + offset, data, size);
-    offset += size;
+  {
+    MutexLocker locker(&m_transaction_mutex);
+    PendingRequest request = {
+      command,
+      string(reinterpret_cast<const char*>(data), size)
+    };
+    m_queued_requests.push(request);
   }
-  m_out_buffer[offset++] = EOF_IDENTIFIER;
-
-  if (offset % USB_PACKET_SIZE == 0)  {
-    // We need to pad the message so that the transfer completes on the
-    // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
-    // that isn't avaiable on all platforms.
-    m_out_buffer[offset++] = 0;
-  }
-
-  libusb_fill_bulk_transfer(m_out_transfer, m_handle, kOutEndpoint,
-                            m_out_buffer, offset,
-                            OutTransferCompleteHandler,
-                            static_cast<void*>(this),
-                            kTimeout);
-
-  Clock clock;
-  clock.CurrentTime(&m_out_sent_time);
-  OLA_INFO << "TX: Sending " << offset << " bytes";
-
-  int r = libusb_submit_transfer(m_out_transfer);
-
-  if (r) {
-    OLA_WARN << "Failed to submit out transfer: "
-             << LibUsbAdaptor::ErrorCodeToString(r);
-    return false;
-  }
-
-  m_out_in_progress = true;
-  locker.Release();
-  // Submit the In transfer here to reduce the latency.
-  SubmitInTransfer();
+  MaybeSendRequest();
   return true;
 }
 
 void OpenLightingDevice::_OutTransferComplete() {
+  TimeStamp now;
+  Clock clock;
+  clock.CurrentTime(&now);
+  OLA_INFO << "Out Command completed in " << (now - m_out_sent_time)
+           << ", status is "
+           << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
   if (m_out_transfer->status == LIBUSB_TRANSFER_COMPLETED) {
     if (m_out_transfer->actual_length != m_out_transfer->length) {
       OLA_WARN << "Only sent " << m_out_transfer->actual_length << " / "
@@ -218,6 +194,10 @@ void OpenLightingDevice::_OutTransferComplete() {
     MutexLocker locker(&m_out_mutex);
     m_out_in_progress = false;
   }
+
+  // TODO(simon): need locking here
+  m_in_flight_requests--;
+  MaybeSendRequest();
 }
 
 void OpenLightingDevice::_InTransferComplete() {
@@ -244,7 +224,79 @@ void OpenLightingDevice::_InTransferComplete() {
     MutexLocker locker(&m_out_mutex);
     m_in_in_progress = false;
   }
+
+
+
 }
+
+void OpenLightingDevice::MaybeSendRequest() {
+  // TODO(simon): acquire m_transaction_mutex here as well!!!
+  MutexLocker locker(&m_out_mutex);
+  if (m_out_in_progress) {
+    return ;
+  }
+
+  if (m_in_flight_requests > MAX_IN_FLIGHT) {
+    return;
+  }
+
+  if (m_queued_requests.empty()) {
+    return ;
+  }
+
+  OLA_INFO << "Sending request";
+  PendingRequest request = m_queued_requests.front();
+  m_queued_requests.pop();
+
+  unsigned int offset = 0;
+  m_out_buffer[0] = SOF_IDENTIFIER;
+  SplitUInt16(request.command, &m_out_buffer[2], &m_out_buffer[1]);
+  SplitUInt16(request.payload.size(), &m_out_buffer[4], &m_out_buffer[3]);
+  offset += 5;
+
+  if (request.payload.size() > 0) {
+    memcpy(m_out_buffer + offset, request.payload.data(),
+           request.payload.size());
+    offset += request.payload.size();
+  }
+  m_out_buffer[offset++] = EOF_IDENTIFIER;
+
+  if (offset % USB_PACKET_SIZE == 0)  {
+    // We need to pad the message so that the transfer completes on the
+    // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
+    // that isn't avaiable on all platforms.
+    m_out_buffer[offset++] = 0;
+  }
+
+  libusb_fill_bulk_transfer(m_out_transfer, m_handle, kOutEndpoint,
+                            m_out_buffer, offset,
+                            OutTransferCompleteHandler,
+                            static_cast<void*>(this),
+                            kTimeout);
+
+  Clock clock;
+  clock.CurrentTime(&m_out_sent_time);
+  OLA_INFO << "TX: Sending " << offset << " bytes";
+
+  int r = libusb_submit_transfer(m_out_transfer);
+
+  if (r) {
+    OLA_WARN << "Failed to submit out transfer: "
+             << LibUsbAdaptor::ErrorCodeToString(r);
+    // TODO(simon): fix this.
+    return;
+  }
+
+  m_out_in_progress = true;
+  // TODO(simon): need locking here
+  m_in_flight_requests++;
+  m_out_flight_requests++;
+  locker.Release();
+  // Submit the In transfer here to reduce the latency.
+  SubmitInTransfer();
+  return;
+}
+
 
 bool OpenLightingDevice::SubmitInTransfer() {
   MutexLocker locker(&m_in_mutex);

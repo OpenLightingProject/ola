@@ -19,12 +19,16 @@
  */
 
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/Array.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
+#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMCommandSerializer.h>
+#include <ola/rdm/UID.h>
 #include <ola/strings/Format.h>
 #include <ola/thread/Thread.h>
 
@@ -38,6 +42,10 @@
 using ola::NewCallback;
 using ola::io::SelectServer;
 using ola::io::StdinHandler;
+using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMDiscoveryResponse;
+using ola::rdm::RDMRequest;
+using ola::rdm::UID;
 using ola::strings::ToHex;
 using ola::thread::Thread;
 using std::auto_ptr;
@@ -58,7 +66,7 @@ class MessageHandler : public MessageHandlerInterface {
         PrintEcho(message);
         break;
       case OpenLightingDevice::TX_DMX:
-        PrintAck(message);
+        PrintResponse(message);
         break;
       case OpenLightingDevice::GET_LOG:
         PrintLog(message.payload, message.payload_size);
@@ -68,6 +76,15 @@ class MessageHandler : public MessageHandlerInterface {
         break;
       case OpenLightingDevice::WRITE_LOG:
         PrintAck(message);
+        break;
+      case OpenLightingDevice::RESET_DEVICE:
+        PrintAck(message);
+        break;
+      case OpenLightingDevice::RDM_DUB:
+        PrintDUBResponse(message);
+        break;
+      case OpenLightingDevice::RDM_REQUEST:
+        PrintResponse(message);
         break;
       default:
         OLA_WARN << "Unknown command: " << ToHex(message.command);
@@ -145,6 +162,20 @@ class MessageHandler : public MessageHandlerInterface {
              << "): payload_size: " << message.payload_size;
   }
 
+
+  void PrintDUBResponse(const Message& message) {
+    OLA_INFO << "Got response of size " << message.payload_size;
+  }
+
+  void PrintResponse(const Message& message) {
+    OLA_INFO << "RC (" << static_cast<int>(message.return_code)
+             << "): payload_size: " << message.payload_size;
+    if (message.payload && message.payload_size) {
+      ola::strings::FormatData(&std::cout, message.payload,
+                               message.payload_size);
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MessageHandler);
 };
 
@@ -159,7 +190,9 @@ class InputHandler {
         m_stdin_handler(
             new StdinHandler(ss, ola::NewCallback(this, &InputHandler::Input))),
         m_device(NULL),
-        m_log_count(0) {
+        m_log_count(0),
+        m_dmx_slot_data(0),
+        m_our_uid(ola::OPEN_LIGHTING_ESTA_CODE, 10) {
   }
 
   ~InputHandler() {
@@ -180,8 +213,14 @@ class InputHandler {
 
   void Input(int c) {
     switch (c) {
+      case '0':
+        SendZeroDMX();
+        break;
+      case '2':
+        SendDoubleDMX();
+        break;
       case 'd':
-        SendDMX();
+        SendDUB();
         break;
       case 'e':
         SendEcho();
@@ -194,6 +233,15 @@ class InputHandler {
         break;
       case 'l':
         GetLogs();
+        break;
+      case 'r':
+        ResetDevice();
+        break;
+      case 't':
+        SendDMX();
+        break;
+      case 'u':
+        SendUnMute();
         break;
       case 'q':
         m_ss->Terminate();
@@ -208,13 +256,18 @@ class InputHandler {
 
   void PrintCommands() {
     cout << "Commands:" << endl;
-    cout << " d - Send DMX frame" << endl;
+    cout << " 0 - Send a 0 length DMX frame" << endl;
+    cout << " 2 - Send 2 DMX frames back to back" << endl;
+    cout << " d - Send a DUB frame" << endl;
     cout << " e - Send Echo command" << endl;
     cout << " f - Fetch Flags State" << endl;
     cout << " h - Print this help message" << endl;
     cout << " l - Fetch Logs" << endl;
-    cout << " w - Write Log" << endl;
     cout << " q - Quit" << endl;
+    cout << " r - Reset" << endl;
+    cout << " t - Send DMX frame" << endl;
+    cout << " u - Send an UnMute-all frame" << endl;
+    cout << " w - Write Log" << endl;
   }
 
  private:
@@ -223,6 +276,8 @@ class InputHandler {
   MessageHandler m_handler;
   OpenLightingDevice* m_device;
   unsigned int m_log_count;
+  uint8_t m_dmx_slot_data;
+  UID m_our_uid;
 
   bool CheckForDevice() const {
     if (!m_device) {
@@ -240,6 +295,14 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::GET_LOG, NULL, 0);
   }
 
+  void ResetDevice() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    m_device->SendMessage(OpenLightingDevice::RESET_DEVICE, NULL, 0);
+  }
+
   void GetFlags() {
     if (!CheckForDevice()) {
       return;
@@ -248,14 +311,38 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::GET_FLAGS, NULL, 0);
   }
 
+  void _SendDMX(const uint8_t *data, unsigned int size) {
+    if (!CheckForDevice()) {
+      return;
+    }
+    m_device->SendMessage(OpenLightingDevice::TX_DMX, data, size);
+  }
+
+  void SendZeroDMX() {
+    _SendDMX(NULL, 0);
+  }
+
+  void SendDoubleDMX() {
+    uint8_t payload[512];
+    memset(payload, 0, 512);
+    payload[0] = m_dmx_slot_data;
+    _SendDMX(payload, arraysize(payload));
+    m_dmx_slot_data += 16;
+    payload[0] = m_dmx_slot_data;
+    _SendDMX(payload, arraysize(payload));
+    m_dmx_slot_data += 16;
+  }
+
   void SendDMX() {
     if (!CheckForDevice()) {
       return;
     }
 
-    const uint8_t payload[] = {255, 1, 2, 3, 4, 5, 6};
-    m_device->SendMessage(OpenLightingDevice::TX_DMX, payload,
-                          arraysize(payload));
+    uint8_t payload[512];
+    memset(payload, 0, 512);
+    payload[0] = m_dmx_slot_data;
+    _SendDMX(payload, arraysize(payload));
+    m_dmx_slot_data += 16;
   }
 
   void SendEcho() {
@@ -266,6 +353,35 @@ class InputHandler {
     const uint8_t payload[] = {'e', 'c', 'h', 'o', ' ', 't', 'e', 's', 't'};
     m_device->SendMessage(OpenLightingDevice::ECHO_COMMAND, payload,
                           arraysize(payload));
+  }
+
+  void SendDUB() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    auto_ptr<RDMRequest> request(
+        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, UID(0,0),
+                                                  UID::AllDevices(), 0));
+    unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
+    uint8_t data[rdm_length];
+    RDMCommandSerializer::Pack(*request, data, &rdm_length);
+    OLA_INFO << "Sending " << rdm_length << " RDM command.";
+    m_device->SendMessage(OpenLightingDevice::RDM_DUB, data, rdm_length);
+  }
+
+  void SendUnMute() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    auto_ptr<RDMRequest> request(
+        ola::rdm::NewUnMuteRequest(m_our_uid, UID::AllDevices(), 0));
+
+    unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
+    uint8_t data[rdm_length];
+    RDMCommandSerializer::Pack(*request, data, &rdm_length);
+    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
   }
 
   void WriteLog() {

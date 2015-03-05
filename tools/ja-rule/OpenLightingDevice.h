@@ -22,6 +22,7 @@
 #define TOOLS_JA_RULE_OPENLIGHTINGDEVICE_H_
 
 #include <libusb.h>
+#include <queue>
 
 #include <ola/io/SelectServer.h>
 #include <ola/thread/Mutex.h>
@@ -67,7 +68,10 @@ class OpenLightingDevice {
     TX_DMX = 0x81,
     GET_LOG = 0x82,
     GET_FLAGS = 0x83,
-    WRITE_LOG = 0x84
+    WRITE_LOG = 0x84,
+    RESET_DEVICE = 0x85,
+    RDM_DUB = 0x86,
+    RDM_REQUEST = 0x87
   } Command;
 
   /**
@@ -135,10 +139,20 @@ class OpenLightingDevice {
     OUT_BUFFER_SIZE = 1024
   };
 
+  typedef struct {
+    Command command;
+    std::string payload;
+  } PendingRequest;
+
   ola::io::SelectServer* m_ss;
   libusb_device* m_device;
   libusb_device_handle* m_handle;
   MessageHandlerInterface* m_message_handler;
+
+  ola::thread::Mutex m_transaction_mutex;
+  std::queue<PendingRequest> m_queued_requests;  // GUARDED_BY(m_transaction_mutex);
+  unsigned int m_in_flight_requests;
+  unsigned int m_out_flight_requests;
 
   ola::thread::Mutex m_out_mutex;
   uint8_t m_out_buffer[OUT_BUFFER_SIZE];  // GUARDED_BY(m_out_mutex);
@@ -152,6 +166,7 @@ class OpenLightingDevice {
   bool m_in_in_progress;  // GUARDED_BY(m_in_mutex);
   ola::TimeStamp m_send_in_time;
 
+  void MaybeSendRequest();
   bool SubmitInTransfer();
 
   void HandleData(const uint8_t *data, unsigned int size);
@@ -161,6 +176,7 @@ class OpenLightingDevice {
   static const unsigned int MAX_PAYLOAD_SIZE = 513;
   static const unsigned int MIN_RESPONSE_SIZE = 8;
   static const unsigned int USB_PACKET_SIZE = 64;
+  static const unsigned int MAX_IN_FLIGHT = 2;
 
   DISALLOW_COPY_AND_ASSIGN(OpenLightingDevice);
 };
