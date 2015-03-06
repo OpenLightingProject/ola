@@ -361,7 +361,7 @@ class InputHandler {
     }
 
     auto_ptr<RDMRequest> request(
-        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, UID(0,0),
+        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, UID(0, 0),
                                                   UID::AllDevices(), 0));
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
