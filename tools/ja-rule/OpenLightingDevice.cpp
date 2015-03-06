@@ -79,8 +79,7 @@ OpenLightingDevice::OpenLightingDevice(SelectServer* ss, libusb_device* device)
   : m_ss(ss),
     m_device(device),
     m_handle(NULL),
-    m_in_flight_requests(0),
-    m_out_flight_requests(0),
+    m_pending_requests(0),
     m_out_transfer(libusb_alloc_transfer(0)),
     m_out_in_progress(false),
     m_in_transfer(libusb_alloc_transfer(0)),
@@ -89,15 +88,13 @@ OpenLightingDevice::OpenLightingDevice(SelectServer* ss, libusb_device* device)
 
 OpenLightingDevice::~OpenLightingDevice() {
   {
-    MutexLocker locker(&m_out_mutex);
+    MutexLocker locker(&m_mutex);
+
     if (m_out_in_progress) {
       OLA_DEBUG << "Cancel m_out_transfer";
       libusb_cancel_transfer(m_out_transfer);
     }
-  }
 
-  {
-    MutexLocker locker(&m_in_mutex);
     if (m_in_in_progress) {
       OLA_DEBUG << "Cancel m_in_transfer";
       libusb_cancel_transfer(m_in_transfer);
@@ -105,19 +102,11 @@ OpenLightingDevice::~OpenLightingDevice() {
   }
 
   OLA_DEBUG << "Waiting for out to complete";
-  while (true) {
-    MutexLocker locker(&m_out_mutex);
-    if (!m_out_in_progress) {
-      break;
-    }
-  }
-
-  OLA_DEBUG << "Waiting for in to complete";
-  while (true) {
-    MutexLocker locker(&m_in_mutex);
-    if (!m_in_in_progress) {
-      break;
-    }
+  bool transfers_pending = true;
+  while (transfers_pending) {
+    // Spin waiting for the transfers to complete.
+    MutexLocker locker(&m_mutex);
+    transfers_pending = m_out_in_progress || m_in_in_progress;
   }
 
   if (m_out_transfer) {
@@ -165,14 +154,12 @@ bool OpenLightingDevice::SendMessage(Command command,
     return false;
   }
 
-  {
-    MutexLocker locker(&m_transaction_mutex);
-    PendingRequest request = {
-      command,
-      string(reinterpret_cast<const char*>(data), size)
-    };
-    m_queued_requests.push(request);
-  }
+  MutexLocker locker(&m_mutex);
+  PendingRequest request = {
+    command,
+    string(reinterpret_cast<const char*>(data), size)
+  };
+  m_queued_requests.push(request);
   MaybeSendRequest();
   return true;
 }
@@ -190,13 +177,9 @@ void OpenLightingDevice::_OutTransferComplete() {
                << m_out_transfer->length << " bytes";
     }
   }
-  {
-    MutexLocker locker(&m_out_mutex);
-    m_out_in_progress = false;
-  }
 
-  // TODO(simon): need locking here
-  m_in_flight_requests--;
+  MutexLocker locker(&m_mutex);
+  m_out_in_progress = false;
   MaybeSendRequest();
 }
 
@@ -204,7 +187,7 @@ void OpenLightingDevice::_InTransferComplete() {
   TimeStamp now;
   Clock clock;
   clock.CurrentTime(&now);
-  OLA_INFO << "Command completed in " << (now - m_out_sent_time)
+  OLA_INFO << "In transfer completed in " << (now - m_out_sent_time)
            << ", status is "
            << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
 
@@ -220,31 +203,21 @@ void OpenLightingDevice::_InTransferComplete() {
     delete[] m_in_transfer->buffer;
   }
 
-  {
-    MutexLocker locker(&m_out_mutex);
-    m_in_in_progress = false;
+  MutexLocker locker(&m_mutex);
+  m_in_in_progress = false;
+  m_pending_requests--;
+  if (m_pending_requests) {
+    SubmitInTransfer();
   }
-
-
-
 }
 
 void OpenLightingDevice::MaybeSendRequest() {
-  // TODO(simon): acquire m_transaction_mutex here as well!!!
-  MutexLocker locker(&m_out_mutex);
-  if (m_out_in_progress) {
-    return ;
-  }
-
-  if (m_in_flight_requests > MAX_IN_FLIGHT) {
+  if (m_out_in_progress || m_pending_requests > MAX_IN_FLIGHT ||
+      m_queued_requests.empty()) {
     return;
   }
 
-  if (m_queued_requests.empty()) {
-    return ;
-  }
-
-  OLA_INFO << "Sending request";
+  OLA_INFO << "Sending out transfer";
   PendingRequest request = m_queued_requests.front();
   m_queued_requests.pop();
 
@@ -283,28 +256,22 @@ void OpenLightingDevice::MaybeSendRequest() {
   if (r) {
     OLA_WARN << "Failed to submit out transfer: "
              << LibUsbAdaptor::ErrorCodeToString(r);
-    // TODO(simon): fix this.
     return;
   }
 
   m_out_in_progress = true;
-  // TODO(simon): need locking here
-  m_in_flight_requests++;
-  m_out_flight_requests++;
-  locker.Release();
-  // Submit the In transfer here to reduce the latency.
-  SubmitInTransfer();
+  m_pending_requests++;
+  if (!m_in_in_progress) {
+    SubmitInTransfer();
+  }
   return;
 }
 
-
 bool OpenLightingDevice::SubmitInTransfer() {
-  MutexLocker locker(&m_in_mutex);
   if (m_in_in_progress) {
     OLA_WARN << "Read already pending";
     return true;
   }
-
 
   uint8_t* rx_buffer = new uint8_t[IN_BUFFER_SIZE];
   libusb_fill_bulk_transfer(m_in_transfer, m_handle, kInEndpoint,

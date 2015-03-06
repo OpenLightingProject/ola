@@ -22,10 +22,11 @@
 #define TOOLS_JA_RULE_OPENLIGHTINGDEVICE_H_
 
 #include <libusb.h>
-#include <queue>
-
 #include <ola/io/SelectServer.h>
 #include <ola/thread/Mutex.h>
+
+#include <queue>
+#include <string>
 
 typedef enum {
   LOGS_PENDING_FLAG = 0x01,  //!< Log messages are pending
@@ -109,11 +110,10 @@ class OpenLightingDevice {
    * @param command the Command
    * @param data the payload data
    * @param size the payload size.
-   * @returns true if the message was sent, false otherwise.
+   * @returns false if the message was malformed, true if it was queued
+   *   correctly.
    *
-   * SendMessage can be called from any thread, but right now only a single
-   * message can be in-flight at once. If the existing message has not
-   * completed, further calls to SendMessage will return false.
+   * SendMessage can be called from any thread, and messages will be queued.
    */
   bool SendMessage(Command command, const uint8_t *data, unsigned int size);
 
@@ -149,25 +149,24 @@ class OpenLightingDevice {
   libusb_device_handle* m_handle;
   MessageHandlerInterface* m_message_handler;
 
-  ola::thread::Mutex m_transaction_mutex;
-  std::queue<PendingRequest> m_queued_requests;  // GUARDED_BY(m_transaction_mutex);
-  unsigned int m_in_flight_requests;
-  unsigned int m_out_flight_requests;
+  ola::thread::Mutex m_mutex;
+  std::queue<PendingRequest> m_queued_requests;  // GUARDED_BY(m_mutex);
+  // The number of request frames we've already sent to the device. We limit
+  // the number of outstanding requests is limited to MAX_IN_FLIGHT.
+  unsigned int m_pending_requests;
 
-  ola::thread::Mutex m_out_mutex;
-  uint8_t m_out_buffer[OUT_BUFFER_SIZE];  // GUARDED_BY(m_out_mutex);
-  libusb_transfer *m_out_transfer;  // GUARDED_BY(m_out_mutex);
-  bool m_out_in_progress;  // GUARDED_BY(m_out_mutex);
+  uint8_t m_out_buffer[OUT_BUFFER_SIZE];  // GUARDED_BY(m_mutex);
+  libusb_transfer *m_out_transfer;  // GUARDED_BY(m_mutex);
+  bool m_out_in_progress;  // GUARDED_BY(m_mutex);
   ola::TimeStamp m_out_sent_time;
 
-  ola::thread::Mutex m_in_mutex;
-  uint8_t m_in_buffer[IN_BUFFER_SIZE];  // GUARDED_BY(m_in_mutex);
-  libusb_transfer *m_in_transfer;  // GUARDED_BY(m_in_mutex);
-  bool m_in_in_progress;  // GUARDED_BY(m_in_mutex);
+  uint8_t m_in_buffer[IN_BUFFER_SIZE];  // GUARDED_BY(m_mutex);
+  libusb_transfer *m_in_transfer;  // GUARDED_BY(m_mutex);
+  bool m_in_in_progress;  // GUARDED_BY(m_mutex);
   ola::TimeStamp m_send_in_time;
 
-  void MaybeSendRequest();
-  bool SubmitInTransfer();
+  void MaybeSendRequest();  // LOCK_REQUIRED(m_mutex);
+  bool SubmitInTransfer();  // LOCK_REQUIRED(m_mutex);
 
   void HandleData(const uint8_t *data, unsigned int size);
 
