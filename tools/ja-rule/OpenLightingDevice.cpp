@@ -131,9 +131,9 @@ bool OpenLightingDevice::Init() {
     return false;
   }
 
-  r = libusb_claim_interface(m_handle, 2);
+  r = libusb_claim_interface(m_handle, INTERFACE_OFFSET);
   if (r) {
-    OLA_WARN << "Failed to claim interface: 2";
+    OLA_WARN << "Failed to claim interface: " << INTERFACE_OFFSET;
     libusb_close(m_handle);
     m_handle = NULL;
     return false;

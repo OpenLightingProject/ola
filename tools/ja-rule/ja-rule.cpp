@@ -192,6 +192,7 @@ class InputHandler {
         m_device(NULL),
         m_log_count(0),
         m_dmx_slot_data(0),
+        // TODO(simon): set this from flags etc.
         m_our_uid(ola::OPEN_LIGHTING_ESTA_CODE, 10) {
   }
 

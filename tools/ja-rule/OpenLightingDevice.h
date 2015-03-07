@@ -152,7 +152,7 @@ class OpenLightingDevice {
   ola::thread::Mutex m_mutex;
   std::queue<PendingRequest> m_queued_requests;  // GUARDED_BY(m_mutex);
   // The number of request frames we've already sent to the device. We limit
-  // the number of outstanding requests is limited to MAX_IN_FLIGHT.
+  // the number of outstanding requests to MAX_IN_FLIGHT.
   unsigned int m_pending_requests;
 
   uint8_t m_out_buffer[OUT_BUFFER_SIZE];  // GUARDED_BY(m_mutex);
@@ -176,6 +176,7 @@ class OpenLightingDevice {
   static const unsigned int MIN_RESPONSE_SIZE = 8;
   static const unsigned int USB_PACKET_SIZE = 64;
   static const unsigned int MAX_IN_FLIGHT = 2;
+  static const unsigned int INTERFACE_OFFSET = 2;
 
   DISALLOW_COPY_AND_ASSIGN(OpenLightingDevice);
 };
