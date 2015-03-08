@@ -23,6 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/base/Array.h>
 #include <ola/base/Init.h>
+#include <ola/base/Flags.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
@@ -46,7 +47,10 @@ using ola::io::StdinHandler;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryResponse;
 using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
+using ola::rdm::rdm_response_code;
 using ola::strings::ToHex;
 using ola::thread::Thread;
 using ola::utils::JoinUInt8;
@@ -55,6 +59,9 @@ using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
+
+DEFINE_string(target_uid, "7a70:00000001", "The UID of the responder.");
+DEFINE_string(controller_uid, "7a70:00000001", "The UID of the controller.");
 
 /**
  * @brief Print messages received from the device.
@@ -202,9 +209,22 @@ class MessageHandler : public MessageHandlerInterface {
   void PrintResponse(const Message& message) {
     OLA_INFO << "RC (" << static_cast<int>(message.return_code)
              << "): payload_size: " << message.payload_size;
-    if (message.payload && message.payload_size) {
-      ola::strings::FormatData(&std::cout, message.payload,
-                               message.payload_size);
+
+    if (message.payload_size && message.payload) {
+      rdm_response_code response_code;
+      // Ignore the start code.
+      auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
+          message.payload + 1, message.payload_size - 1, &response_code));
+
+      if (!response.get()) {
+        OLA_WARN << "Failed to inflate RDM response";
+        if (message.payload == NULL || message.payload_size == 0) {
+          ola::strings::FormatData(&std::cout, message.payload,
+                                   message.payload_size);
+        }
+      } else {
+        OLA_INFO << *response;
+      }
     }
   }
 
@@ -238,15 +258,17 @@ class MessageHandler : public MessageHandlerInterface {
  */
 class InputHandler {
  public:
-  explicit InputHandler(SelectServer* ss)
+  explicit InputHandler(SelectServer* ss,
+                        const UID &controller_uid,
+                        const UID &target_uid)
       : m_ss(ss),
+        m_our_uid(controller_uid),
+        m_target_uid(target_uid),
         m_stdin_handler(
             new StdinHandler(ss, ola::NewCallback(this, &InputHandler::Input))),
         m_device(NULL),
         m_log_count(0),
         m_dmx_slot_data(0),
-        // TODO(simon): set this from flags etc.
-        m_our_uid(ola::OPEN_LIGHTING_ESTA_CODE, 10),
         m_mode(DEFAULT),
         m_break(176),
         m_mab(12),
@@ -313,11 +335,20 @@ class InputHandler {
       case 'h':
         PrintCommands();
         break;
+      case 'i':
+        SendIdentify(true);
+        break;
+      case 'I':
+        SendIdentify(false);
+        break;
       case 'l':
         GetLogs();
         break;
       case 'm':
-        SendMute();
+        SendMute(UID::AllDevices());
+        break;
+      case 'M':
+        SendMute(m_target_uid);
         break;
       case 'r':
         ResetDevice();
@@ -326,7 +357,10 @@ class InputHandler {
         SendDMX();
         break;
       case 'u':
-        SendUnMute();
+        SendUnMute(UID::AllDevices());
+        break;
+      case 'U':
+        SendUnMute(m_target_uid);
         break;
       case 'q':
         m_ss->Terminate();
@@ -373,11 +407,17 @@ class InputHandler {
     cout << " e - Send Echo command" << endl;
     cout << " f - Fetch Flags State" << endl;
     cout << " h - Print this help message" << endl;
+    cout << " i - Identify On to --target-uid" << endl;
+    cout << " I - Identify Off to --target-uid" << endl;
     cout << " l - Fetch Logs" << endl;
+    cout << " m - Send a broadcast mute" << endl;
+    cout << " M - Send a mute to the device specified in --target-uid" << endl;
     cout << " q - Quit" << endl;
     cout << " r - Reset" << endl;
     cout << " t - Send DMX frame" << endl;
-    cout << " u - Send an UnMute-all frame" << endl;
+    cout << " u - Send an broadcast unmute" << endl;
+    cout << " M - Send an unmute to the device specified in --target-uid"
+         << endl;
     cout << " w - Write Log" << endl;
     cout << " x - Get RDM Wait time" << endl;
     cout << " X - Set RDM Wait time" << endl;
@@ -397,12 +437,13 @@ class InputHandler {
   };
 
   SelectServer* m_ss;
+  UID m_our_uid;
+  UID m_target_uid;
   auto_ptr<StdinHandler> m_stdin_handler;
   MessageHandler m_handler;
   OpenLightingDevice* m_device;
   unsigned int m_log_count;
   uint8_t m_dmx_slot_data;
-  UID m_our_uid;
   Mode m_mode;
   uint16_t m_break;
   uint16_t m_mab;
@@ -595,13 +636,29 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::RDM_DUB, data, rdm_length);
   }
 
-  void SendMute() {
+  void SendIdentify(bool identify_on) {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    uint8_t param_data = identify_on;
+    RDMSetRequest request(m_our_uid, m_target_uid, 0, 0, 0, 0,
+                          ola::rdm::PID_IDENTIFY_DEVICE, &param_data,
+                          sizeof(param_data));
+
+    unsigned int rdm_length = RDMCommandSerializer::RequiredSize(request);
+    uint8_t data[rdm_length];
+    RDMCommandSerializer::Pack(request, data, &rdm_length);
+    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+  }
+
+  void SendMute(const UID &target) {
     if (!CheckForDevice()) {
       return;
     }
 
     auto_ptr<RDMRequest> request(
-        ola::rdm::NewMuteRequest(m_our_uid, UID::AllDevices(), 0));
+        ola::rdm::NewMuteRequest(m_our_uid, target, 0));
 
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
@@ -609,13 +666,13 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
   }
 
-  void SendUnMute() {
+  void SendUnMute(const UID &target) {
     if (!CheckForDevice()) {
       return;
     }
 
     auto_ptr<RDMRequest> request(
-        ola::rdm::NewUnMuteRequest(m_our_uid, UID::AllDevices(), 0));
+        ola::rdm::NewUnMuteRequest(m_our_uid, target, 0));
 
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
@@ -645,8 +702,20 @@ class InputHandler {
 int main(int argc, char **argv) {
   ola::AppInit(&argc, argv, "[ options ]", "Ja Rule Admin Tool");
 
+  auto_ptr<UID> target_uid(UID::FromString(FLAGS_target_uid));
+  if (!target_uid.get()) {
+    OLA_WARN << "Invalid Target UID: " << FLAGS_target_uid;
+    exit(ola::EXIT_USAGE);
+  }
+
+  auto_ptr<UID> controller_uid(UID::FromString(FLAGS_controller_uid));
+  if (!controller_uid.get()) {
+    OLA_WARN << "Invalid Target UID: " << FLAGS_controller_uid;
+    exit(ola::EXIT_USAGE);
+  }
+
   SelectServer ss;
-  InputHandler input_handler(&ss);
+  InputHandler input_handler(&ss, *controller_uid, *target_uid);
 
   USBDeviceManager manager(
     &ss, NewCallback(&input_handler, &InputHandler::DeviceEvent));
