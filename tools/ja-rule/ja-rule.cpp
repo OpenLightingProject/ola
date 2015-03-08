@@ -31,6 +31,7 @@
 #include <ola/rdm/UID.h>
 #include <ola/strings/Format.h>
 #include <ola/thread/Thread.h>
+#include <ola/util/Utils.h>
 
 #include <iostream>
 #include <memory>
@@ -48,6 +49,8 @@ using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::strings::ToHex;
 using ola::thread::Thread;
+using ola::utils::JoinUInt8;
+using ola::utils::SplitUInt16;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -85,6 +88,18 @@ class MessageHandler : public MessageHandlerInterface {
         break;
       case OpenLightingDevice::RDM_REQUEST:
         PrintResponse(message);
+        break;
+      case OpenLightingDevice::GET_BREAK_TIME:
+        PrintTime(message);
+        break;
+      case OpenLightingDevice::SET_BREAK_TIME:
+        PrintAck(message);
+        break;
+      case OpenLightingDevice::GET_MAB_TIME:
+        PrintTime(message);
+        break;
+      case OpenLightingDevice::SET_MAB_TIME:
+        PrintAck(message);
         break;
       default:
         OLA_WARN << "Unknown command: " << ToHex(message.command);
@@ -176,6 +191,23 @@ class MessageHandler : public MessageHandlerInterface {
     }
   }
 
+  void PrintTime(const Message& message) {
+    uint16_t time = 0;
+    if (message.return_code != 0) {
+      OLA_INFO << "Failed (" << static_cast<int>(message.return_code)
+               << "): payload_size: " << message.payload_size;
+      return;
+    }
+
+    if (message.payload_size != sizeof(time)) {
+      OLA_WARN << "Payload size mismatch";
+      return;
+    }
+
+    time = JoinUInt8(message.payload[1], message.payload[0]);
+    OLA_INFO << "Time: " << time << " uS";
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MessageHandler);
 };
 
@@ -193,7 +225,10 @@ class InputHandler {
         m_log_count(0),
         m_dmx_slot_data(0),
         // TODO(simon): set this from flags etc.
-        m_our_uid(ola::OPEN_LIGHTING_ESTA_CODE, 10) {
+        m_our_uid(ola::OPEN_LIGHTING_ESTA_CODE, 10),
+        m_mode(DEFAULT),
+        m_break(176),
+        m_mab(12) {
   }
 
   ~InputHandler() {
@@ -214,11 +249,34 @@ class InputHandler {
 
   void Input(int c) {
     switch (c) {
+      case 10:  // Enter
+        Commit();
+        break;
+      case 27:  // Escape
+        if (m_mode != DEFAULT) {
+          cout << "Edit Aborted" << endl;
+          m_mode = DEFAULT;
+        }
+        break;
+      case '+':
+        Adjust(true);
+        break;
+      case '-':
+        Adjust(false);
+        break;
       case '0':
         SendZeroDMX();
         break;
       case '2':
         SendDoubleDMX();
+        break;
+      case 'b':
+        GetBreakTime();
+        break;
+      case 'B':
+        cout << "Editing Break, use +/- to adjust, Enter commits, Esc to abort"
+             << endl;
+        m_mode = EDIT_BREAK;
         break;
       case 'd':
         SendDUB();
@@ -234,6 +292,14 @@ class InputHandler {
         break;
       case 'l':
         GetLogs();
+        break;
+      case 'm':
+        GetMABTime();
+        break;
+      case 'M':
+        cout << "Editing MAB, use +/- to adjust, Enter commits, Esc to abort"
+             << endl;
+        m_mode = EDIT_MAB;
         break;
       case 'r':
         ResetDevice();
@@ -259,10 +325,14 @@ class InputHandler {
     cout << "Commands:" << endl;
     cout << " 0 - Send a 0 length DMX frame" << endl;
     cout << " 2 - Send 2 DMX frames back to back" << endl;
+    cout << " b - Get Break time" << endl;
+    cout << " B - Set Break time" << endl;
     cout << " d - Send a DUB frame" << endl;
     cout << " e - Send Echo command" << endl;
     cout << " f - Fetch Flags State" << endl;
     cout << " h - Print this help message" << endl;
+    cout << " m - Get MAB time" << endl;
+    cout << " M - Set MAB time" << endl;
     cout << " l - Fetch Logs" << endl;
     cout << " q - Quit" << endl;
     cout << " r - Reset" << endl;
@@ -272,6 +342,12 @@ class InputHandler {
   }
 
  private:
+  enum Mode {
+    DEFAULT,
+    EDIT_BREAK,
+    EDIT_MAB,
+  };
+
   SelectServer* m_ss;
   auto_ptr<StdinHandler> m_stdin_handler;
   MessageHandler m_handler;
@@ -279,6 +355,9 @@ class InputHandler {
   unsigned int m_log_count;
   uint8_t m_dmx_slot_data;
   UID m_our_uid;
+  Mode m_mode;
+  uint16_t m_break;
+  uint16_t m_mab;
 
   bool CheckForDevice() const {
     if (!m_device) {
@@ -319,6 +398,44 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::TX_DMX, data, size);
   }
 
+  void Adjust(bool increase) {
+    if (m_mode == EDIT_BREAK) {
+      if (increase) {
+        m_break++;
+      } else {
+        m_break--;
+      }
+      cout << "Break is now " << m_break << endl;
+    } else if (m_mode == EDIT_MAB) {
+      if (increase) {
+        m_mab++;
+      } else {
+        m_mab--;
+      }
+      cout << "MAB is now " << m_mab << endl;
+    }
+  }
+
+  void Commit() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    if (m_mode == EDIT_BREAK) {
+      uint8_t payload[2];
+      SplitUInt16(m_break, &payload[1], &payload[0]);
+      m_device->SendMessage(OpenLightingDevice::SET_BREAK_TIME, payload,
+                            arraysize(payload));
+    } else if (m_mode == EDIT_MAB) {
+      uint8_t payload[2];
+      SplitUInt16(m_mab, &payload[1], &payload[0]);
+      OLA_INFO << (int) payload[0] << ", " << (int) payload[1];
+      m_device->SendMessage(OpenLightingDevice::SET_MAB_TIME, payload,
+                            arraysize(payload));
+    }
+    m_mode = DEFAULT;
+  }
+
   void SendZeroDMX() {
     _SendDMX(NULL, 0);
   }
@@ -355,6 +472,23 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::ECHO_COMMAND, payload,
                           arraysize(payload));
   }
+
+  void GetBreakTime() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    m_device->SendMessage(OpenLightingDevice::GET_BREAK_TIME, NULL, 0);
+  }
+
+  void GetMABTime() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    m_device->SendMessage(OpenLightingDevice::GET_MAB_TIME, NULL, 0);
+  }
+
 
   void SendDUB() {
     if (!CheckForDevice()) {

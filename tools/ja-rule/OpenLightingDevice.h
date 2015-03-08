@@ -72,7 +72,11 @@ class OpenLightingDevice {
     WRITE_LOG = 0x84,
     RESET_DEVICE = 0x85,
     RDM_DUB = 0x86,
-    RDM_REQUEST = 0x87
+    RDM_REQUEST = 0x87,
+    SET_BREAK_TIME = 0x88,
+    GET_BREAK_TIME = 0x89,
+    SET_MAB_TIME = 0x90,
+    GET_MAB_TIME = 0x91
   } Command;
 
   /**
