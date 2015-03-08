@@ -317,12 +317,7 @@ class InputHandler {
         GetLogs();
         break;
       case 'm':
-        GetMABTime();
-        break;
-      case 'M':
-        cout << "Editing MAB, use +/- to adjust, Enter commits, Esc to abort"
-             << endl;
-        m_mode = EDIT_MAB;
+        SendMute();
         break;
       case 'r':
         ResetDevice();
@@ -347,6 +342,14 @@ class InputHandler {
              << " Esc to abort" << endl;
         m_mode = EDIT_RDM_WAIT_TIME;
         break;
+      case 'y':
+        GetMABTime();
+        break;
+      case 'Y':
+        cout << "Editing MAB, use +/- to adjust, Enter commits, Esc to abort"
+             << endl;
+        m_mode = EDIT_MAB;
+        break;
       case 'z':
         GetRDMBroadcastListen();
         break;
@@ -370,8 +373,6 @@ class InputHandler {
     cout << " e - Send Echo command" << endl;
     cout << " f - Fetch Flags State" << endl;
     cout << " h - Print this help message" << endl;
-    cout << " m - Get MAB time" << endl;
-    cout << " M - Set MAB time" << endl;
     cout << " l - Fetch Logs" << endl;
     cout << " q - Quit" << endl;
     cout << " r - Reset" << endl;
@@ -380,6 +381,8 @@ class InputHandler {
     cout << " w - Write Log" << endl;
     cout << " x - Get RDM Wait time" << endl;
     cout << " X - Set RDM Wait time" << endl;
+    cout << " y - Get MAB time" << endl;
+    cout << " Y - Set MAB time" << endl;
     cout << " z - Get RDM Broadcast Listen time" << endl;
     cout << " Z - Set RDM Broadcast Listen time" << endl;
   }
@@ -590,6 +593,20 @@ class InputHandler {
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
     OLA_INFO << "Sending " << rdm_length << " RDM command.";
     m_device->SendMessage(OpenLightingDevice::RDM_DUB, data, rdm_length);
+  }
+
+  void SendMute() {
+    if (!CheckForDevice()) {
+      return;
+    }
+
+    auto_ptr<RDMRequest> request(
+        ola::rdm::NewMuteRequest(m_our_uid, UID::AllDevices(), 0));
+
+    unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
+    uint8_t data[rdm_length];
+    RDMCommandSerializer::Pack(*request, data, &rdm_length);
+    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
   }
 
   void SendUnMute() {
