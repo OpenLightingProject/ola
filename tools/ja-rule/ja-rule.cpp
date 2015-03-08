@@ -90,15 +90,27 @@ class MessageHandler : public MessageHandlerInterface {
         PrintResponse(message);
         break;
       case OpenLightingDevice::GET_BREAK_TIME:
-        PrintTime(message);
+        PrintTime(message, MICRO_SECONDS);
         break;
       case OpenLightingDevice::SET_BREAK_TIME:
         PrintAck(message);
         break;
       case OpenLightingDevice::GET_MAB_TIME:
-        PrintTime(message);
+        PrintTime(message, MICRO_SECONDS);
         break;
       case OpenLightingDevice::SET_MAB_TIME:
+        PrintAck(message);
+        break;
+      case OpenLightingDevice::GET_RDM_WAIT_TIME:
+        PrintTime(message, TENTHS_OF_MILLI_SECONDS);
+        break;
+      case OpenLightingDevice::SET_RDM_WAIT_TIME:
+        PrintAck(message);
+        break;
+      case OpenLightingDevice::GET_RDM_BROADCAST_LISTEN:
+        PrintTime(message, TENTHS_OF_MILLI_SECONDS);
+        break;
+      case OpenLightingDevice::SET_RDM_BROADCAST_LISTEN:
         PrintAck(message);
         break;
       default:
@@ -117,6 +129,11 @@ class MessageHandler : public MessageHandlerInterface {
   }
 
  private:
+  enum TimeFormat {
+    MICRO_SECONDS,
+    TENTHS_OF_MILLI_SECONDS
+  };
+
   string m_log_buffer;
 
   void PrintEcho(const Message& message) {
@@ -191,7 +208,7 @@ class MessageHandler : public MessageHandlerInterface {
     }
   }
 
-  void PrintTime(const Message& message) {
+  void PrintTime(const Message& message, TimeFormat format) {
     uint16_t time = 0;
     if (message.return_code != 0) {
       OLA_INFO << "Failed (" << static_cast<int>(message.return_code)
@@ -199,13 +216,17 @@ class MessageHandler : public MessageHandlerInterface {
       return;
     }
 
-    if (message.payload_size != sizeof(time)) {
+    if (message.payload_size == sizeof(time)) {
+      time = JoinUInt8(message.payload[1], message.payload[0]);
+      if (format == MICRO_SECONDS) {
+        OLA_INFO << "Time: " << time << " uS";
+      } else if (format == TENTHS_OF_MILLI_SECONDS) {
+        float adjusted_time = time / 10.0;
+        OLA_INFO << "Time: " << adjusted_time << " uS";
+      }
+    } else {
       OLA_WARN << "Payload size mismatch";
-      return;
     }
-
-    time = JoinUInt8(message.payload[1], message.payload[0]);
-    OLA_INFO << "Time: " << time << " uS";
   }
 
   DISALLOW_COPY_AND_ASSIGN(MessageHandler);
@@ -228,7 +249,9 @@ class InputHandler {
         m_our_uid(ola::OPEN_LIGHTING_ESTA_CODE, 10),
         m_mode(DEFAULT),
         m_break(176),
-        m_mab(12) {
+        m_mab(12),
+        m_rdm_wait_time(28),
+        m_rdm_broadcast_listen(28) {
   }
 
   ~InputHandler() {
@@ -316,6 +339,22 @@ class InputHandler {
       case 'w':
         WriteLog();
         break;
+      case 'x':
+        GetRDMWaitTime();
+        break;
+      case 'X':
+        cout << "Editing RDM Wait time, use +/- to adjust, Enter commits, "
+             << " Esc to abort" << endl;
+        m_mode = EDIT_RDM_WAIT_TIME;
+        break;
+      case 'z':
+        GetRDMBroadcastListen();
+        break;
+      case 'Z':
+        cout << "Editing RDM Broadcast Listen Time, use +/- to adjust, Enter "
+             << " commits, Esc to abort" << endl;
+        m_mode = EDIT_RDM_BROADCAST_LISTEN;
+        break;
       default:
         {}
     }
@@ -339,6 +378,10 @@ class InputHandler {
     cout << " t - Send DMX frame" << endl;
     cout << " u - Send an UnMute-all frame" << endl;
     cout << " w - Write Log" << endl;
+    cout << " x - Get RDM Wait time" << endl;
+    cout << " X - Set RDM Wait time" << endl;
+    cout << " z - Get RDM Broadcast Listen time" << endl;
+    cout << " Z - Set RDM Broadcast Listen time" << endl;
   }
 
  private:
@@ -346,6 +389,8 @@ class InputHandler {
     DEFAULT,
     EDIT_BREAK,
     EDIT_MAB,
+    EDIT_RDM_BROADCAST_LISTEN,
+    EDIT_RDM_WAIT_TIME
   };
 
   SelectServer* m_ss;
@@ -358,6 +403,8 @@ class InputHandler {
   Mode m_mode;
   uint16_t m_break;
   uint16_t m_mab;
+  uint16_t m_rdm_wait_time;  // in 0.1ms increments.
+  uint16_t m_rdm_broadcast_listen;  // in 0.1ms increments.
 
   bool CheckForDevice() const {
     if (!m_device) {
@@ -405,14 +452,31 @@ class InputHandler {
       } else {
         m_break--;
       }
-      cout << "Break is now " << m_break << endl;
+      cout << "Break is now " << m_break << " uS" << endl;
     } else if (m_mode == EDIT_MAB) {
       if (increase) {
         m_mab++;
       } else {
         m_mab--;
       }
-      cout << "MAB is now " << m_mab << endl;
+      cout << "MAB is now " << m_mab << " uS" << endl;
+    } else if (m_mode == EDIT_RDM_WAIT_TIME) {
+      if (increase) {
+        m_rdm_wait_time++;
+      } else {
+        m_rdm_wait_time--;
+      }
+      float wait_time = m_rdm_wait_time / 10.0;
+      cout << "RDM Wait time is now " << wait_time << " mS" << endl;
+    } else if (m_mode == EDIT_RDM_BROADCAST_LISTEN) {
+      if (increase) {
+        m_rdm_broadcast_listen++;
+      } else {
+        m_rdm_broadcast_listen--;
+      }
+      float listen_time = m_rdm_broadcast_listen / 10.0;
+      cout << "RDM Broadcast listen is now " << listen_time << " mS"
+           << endl;
     }
   }
 
@@ -429,9 +493,18 @@ class InputHandler {
     } else if (m_mode == EDIT_MAB) {
       uint8_t payload[2];
       SplitUInt16(m_mab, &payload[1], &payload[0]);
-      OLA_INFO << (int) payload[0] << ", " << (int) payload[1];
       m_device->SendMessage(OpenLightingDevice::SET_MAB_TIME, payload,
                             arraysize(payload));
+    } else if (m_mode == EDIT_RDM_WAIT_TIME) {
+      uint8_t payload[2];
+      SplitUInt16(m_rdm_wait_time, &payload[1], &payload[0]);
+      m_device->SendMessage(OpenLightingDevice::SET_RDM_WAIT_TIME,
+                            payload, arraysize(payload));
+    } else if (m_mode == EDIT_RDM_BROADCAST_LISTEN) {
+      uint8_t payload[2];
+      SplitUInt16(m_rdm_broadcast_listen, &payload[1], &payload[0]);
+      m_device->SendMessage(OpenLightingDevice::SET_RDM_BROADCAST_LISTEN,
+                            payload, arraysize(payload));
     }
     m_mode = DEFAULT;
   }
@@ -489,6 +562,20 @@ class InputHandler {
     m_device->SendMessage(OpenLightingDevice::GET_MAB_TIME, NULL, 0);
   }
 
+  void GetRDMWaitTime() {
+    if (!CheckForDevice()) {
+      return;
+    }
+    m_device->SendMessage(OpenLightingDevice::GET_RDM_WAIT_TIME, NULL, 0);
+  }
+
+  void GetRDMBroadcastListen() {
+    if (!CheckForDevice()) {
+      return;
+    }
+    m_device->SendMessage(OpenLightingDevice::GET_RDM_BROADCAST_LISTEN, NULL,
+                          0);
+  }
 
   void SendDUB() {
     if (!CheckForDevice()) {
