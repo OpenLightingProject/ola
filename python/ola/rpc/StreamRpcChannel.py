@@ -228,7 +228,7 @@ class StreamRpcChannel(service.RpcChannel):
         data.append(chunk)
         size_left -= len(chunk)
 
-    return ''.join(data)
+    return b''.join(data)
 
   def _ProcessIncomingData(self):
     """Process the received data."""
