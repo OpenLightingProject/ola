@@ -74,8 +74,7 @@ class ResponsePrinter(object):
         self.Default(uid, response_data)
 
   def SupportedParameters(self, uid, response_data):
-    params = [p['param_id'] for p in response_data['params']]
-    params.sort()
+    params = sorted([p['param_id'] for p in response_data['params']])
     for pid_value in params:
       pid = self.pid_store.GetPid(pid_value, uid.manufacturer_id)
       if pid:
@@ -269,10 +268,9 @@ class InteractiveModeController(cmd.Cmd):
           pids.append(pid)
 
     # now check if this type of request is supported
-    pid_names = [pid.name.lower() for pid in pids
-                 if pid.RequestSupported(request_type)]
+    pid_names = sorted([pid.name.lower() for pid in pids
+                 if pid.RequestSupported(request_type)])
 
-    pid_names.sort()
     return pid_names
 
   def GetOrSet(self, request_type, line):

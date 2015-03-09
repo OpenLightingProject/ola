@@ -62,8 +62,7 @@ class UIDTest(unittest.TestCase):
     u2 = UID(0x4845, 0x0000022e)
     u3 = UID(0x4844, 0x0000022e)
     u4 = UID(0x4846, 0x0000022e)
-    uids = [u1, u2, u3, u4]
-    uids.sort()
+    uids = sorted([u1, u2, u3, u4])
     self.assertEquals([u3, u2, u1, u4], uids)
 
   def testNextAndPrevious(self):

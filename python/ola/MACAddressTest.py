@@ -60,8 +60,7 @@ class MACAddressTest(unittest.TestCase):
     m2 = MACAddress(bytearray([0x48, 0x45, 0x00, 0x00, 0x02, 0x2e]))
     m3 = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
     m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
-    macs = [m1, m2, m3, m4]
-    macs.sort()
+    macs = sorted([m1, m2, m3, m4])
     self.assertEquals([m3, m2, m1, m4], macs)
 
 if __name__ == '__main__':
