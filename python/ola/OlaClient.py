@@ -23,6 +23,7 @@ import array
 import logging
 import socket
 import struct
+from functools import total_ordering
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
@@ -41,7 +42,7 @@ class Error(Exception):
 class OLADNotRunningException(Error):
   """Thrown if we try to connect and olad isn't running."""
 
-
+@total_ordering
 class Plugin(object):
   """Represents a plugin.
 
@@ -73,9 +74,6 @@ class Plugin(object):
   def enabled(self):
     return self._enabled
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
-
   def __repr__(self):
     s = 'Plugin(id={id}, name="{name}", active={active}, enabled={enabled})'
     return s.format(id=self.id,
@@ -83,12 +81,19 @@ class Plugin(object):
                     active=self.active,
                     enabled=self.enabled)
 
+  def __lt__(self, other):
+      return self._id < other._id
+
+  def __eq__(self, other):
+      return self._id == other._id
+
 
 # Populate the Plugin class attributes from the protobuf
 for value in Ola_pb2._PLUGINIDS.values:
   setattr(Plugin, value.name, value.number)
 
 
+@total_ordering
 class Device(object):
   """Represents a device.
 
@@ -133,8 +138,11 @@ class Device(object):
   def output_ports(self):
     return self._output_ports
 
-  def __cmp__(self, other):
-    return cmp(self._alias, other._alias)
+  def __lt__(self, other):
+      return self._alias < other._alias
+
+  def __eq__(self, other):
+      return self._alias == other._alias
 
   def __repr__(self):
     s = 'Device(id="{id}", alias={alias}, name="{name}", ' \
@@ -147,6 +155,7 @@ class Device(object):
                     nr_outputs=len(self.output_ports))
 
 
+@total_ordering
 class Port(object):
   """Represents a port.
 
@@ -184,9 +193,6 @@ class Port(object):
   def supports_rdm(self):
     return self._supports_rdm
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
-
   def __repr__(self):
     s = 'Port(id={id}, universe={universe}, active={active}, ' \
         'description="{desc}", supports_rdm={supports_rdm})'
@@ -196,7 +202,14 @@ class Port(object):
                     desc=self.description,
                     supports_rdm=self.supports_rdm)
 
+  def __lt__(self, other):
+      return self._id < other._id
 
+  def __eq__(self, other):
+      return self._id == other._id
+
+
+@total_ordering
 class Universe(object):
   """Represents a universe.
 
@@ -226,8 +239,11 @@ class Universe(object):
   def merge_mode(self):
     return self._merge_mode
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
+  def __lt__(self, other):
+      return self._id < other._id
+
+  def __eq__(self, other):
+      return self._id == other._id
 
   def __repr__(self):
     merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
@@ -270,6 +286,7 @@ class RequestStatus(object):
     return self._message
 
 
+@total_ordering
 class RDMNack(object):
   NACK_SYMBOLS_TO_VALUES = {
     'NR_UNKNOWN_PID': (0, 'Unknown PID'),
@@ -305,8 +322,11 @@ class RDMNack(object):
     return s.format(value=self.value,
                     desc=self.description)
 
-  def __cmp__(self, other):
-    return cmp(self.value, other.value)
+  def __lt__(self, other):
+      return self.value < other.value
+
+  def __eq__(self, other):
+      return self.value == other.value
 
   @classmethod
   def LookupCode(cls, code):
