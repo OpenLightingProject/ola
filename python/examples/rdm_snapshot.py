@@ -335,7 +335,7 @@ class ConfigWriter(object):
       found_uids.add(uid)
       logging.debug(uid)
 
-    for uid in list(self.configuration.keys()):
+    for uid in self.configuration.keys():
       if uid not in found_uids:
         print('Device %s has been removed' % uid)
     self._SetNextUID()
