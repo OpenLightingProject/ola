@@ -27,8 +27,8 @@ class MACAddressTest(unittest.TestCase):
 
   def testBasic(self):
     mac = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xab]))
-    self.assertEquals(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
-    self.assertEquals('01:23:45:67:89:ab', str(mac))
+    self.assertEqual(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
+    self.assertEqual('01:23:45:67:89:ab', str(mac))
 
     self.assertTrue(mac > None)
     mac2 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xcd]))
@@ -36,24 +36,24 @@ class MACAddressTest(unittest.TestCase):
     mac3 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x88, 0xab]))
     self.assertTrue(mac > mac3)
     macs = [mac, mac2, mac3]
-    self.assertEquals([mac3, mac, mac2], sorted(macs))
+    self.assertEqual([mac3, mac, mac2], sorted(macs))
 
   def testFromString(self):
-    self.assertEquals(None, MACAddress.FromString(''))
-    self.assertEquals(None, MACAddress.FromString('abc'))
-    self.assertEquals(None, MACAddress.FromString(':'))
-    self.assertEquals(None, MACAddress.FromString('0:1:2'))
-    self.assertEquals(None, MACAddress.FromString('12345:1234'))
+    self.assertEqual(None, MACAddress.FromString(''))
+    self.assertEqual(None, MACAddress.FromString('abc'))
+    self.assertEqual(None, MACAddress.FromString(':'))
+    self.assertEqual(None, MACAddress.FromString('0:1:2'))
+    self.assertEqual(None, MACAddress.FromString('12345:1234'))
 
     mac = MACAddress.FromString('01:23:45:67:89:ab')
     self.assertTrue(mac)
-    self.assertEquals(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
-    self.assertEquals('01:23:45:67:89:ab', str(mac))
+    self.assertEqual(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
+    self.assertEqual('01:23:45:67:89:ab', str(mac))
 
     mac2 = MACAddress.FromString('98.76.54.fe.dc.ba')
     self.assertTrue(mac2)
-    self.assertEquals(b'\x98\x76\x54\xfe\xdc\xba', bytes(mac2.mac_address))
-    self.assertEquals('98:76:54:fe:dc:ba', str(mac2))
+    self.assertEqual(b'\x98\x76\x54\xfe\xdc\xba', bytes(mac2.mac_address))
+    self.assertEqual('98:76:54:fe:dc:ba', str(mac2))
 
   def testSorting(self):
     m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
@@ -61,7 +61,7 @@ class MACAddressTest(unittest.TestCase):
     m3 = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
     m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
     macs = sorted([m1, m2, m3, m4])
-    self.assertEquals([m3, m2, m1, m4], macs)
+    self.assertEqual([m3, m2, m1, m4], macs)
 
 if __name__ == '__main__':
   unittest.main()
