@@ -968,6 +968,41 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
+  def GetCandidatePorts(self, callback, universe=None):
+    """Send a GetCandidatePorts request. The result is similar to FetchDevices
+    (GetDeviceInfo), except that returned devices will only contain ports
+    available for patching to the given universe. If universe is None, then the
+    devices will list their ports available for patching to a potential new
+    universe.
+
+    Args:
+      callback: The function to call once complete, takes a RequestStatus
+        object and a list of Device objects.
+      universe: The universe to get the candidate ports for. If unspecified,
+        return the candidate ports for a new universe.
+
+    Returns:
+      True if the request was sent, False otherwise.
+    """
+    if self._socket is None:
+      return False
+
+    controller = SimpleRpcController()
+    request = Ola_pb2.OptionalUniverseRequest()
+
+    if universe is not None:
+      request.universe = universe
+
+    # GetCandidatePorts works very much like GetDeviceInfo, so we can re-use
+    # its complete method.
+    done = lambda x, y: self._DeviceInfoComplete(callback, x, y)
+    try:
+      self._stub.GetCandidatePorts(controller, request, done)
+    except socket.error:
+      raise OLADNotRunningException()
+
+    return True
+
   def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
                   set = False):
     controller = SimpleRpcController()
