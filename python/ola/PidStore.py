@@ -18,6 +18,8 @@
 
 """The PID Store."""
 
+from __future__ import print_function
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import binascii
@@ -868,8 +870,7 @@ class Group(Atom):
 def RootDeviceValidator(args):
   """Ensure the sub device is the root device."""
   if args.get('sub_device') != ROOT_DEVICE:
-    print >> sys.stderr, (
-        "Can't send GET %s to non root sub devices" % args['pid'].name)
+    print("Can't send GET %s to non root sub devices" % args['pid'].name, file=sys.stderr)
     return False
   return True
 
@@ -879,8 +880,7 @@ def SubDeviceValidator(args):
   sub_device = args.get('sub_device')
   if (sub_device is None or
       (sub_device > MAX_VALID_SUB_DEVICE and sub_device != ALL_SUB_DEVICES)):
-    print >> sys.stderr, (
-        "%s isn't a valid sub device" % sub_device)
+    print("%s isn't a valid sub device" % sub_device, file=sys.stderr)
     return False
   return True
 
@@ -889,8 +889,7 @@ def NonBroadcastSubDeviceValidator(args):
   """Ensure the sub device is in the range 0 - 512."""
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device > MAX_VALID_SUB_DEVICE):
-    print >> sys.stderr, (
-        "Sub device %s needs to be between 0 and 512" % sub_device)
+    print("Sub device %s needs to be between 0 and 512" % sub_device, file=sys.stderr)
     return False
   return True
 
@@ -900,8 +899,7 @@ def SpecificSubDeviceValidator(args):
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device == ROOT_DEVICE or
       sub_device > MAX_VALID_SUB_DEVICE):
-    print >> sys.stderr, (
-        "Sub device %s needs to be between 1 and 512" % sub_device)
+    print("Sub device %s needs to be between 1 and 512" % sub_device, file=sys.stderr)
     return False
   return True
 

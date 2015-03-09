@@ -226,10 +226,10 @@ class ConfigReader(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % response.nack_reason
+      print('Got nack with reason: %s' % response.nack_reason)
       self._NextState()
     elif unpack_exception:
-      print unpack_exception
+      print(unpack_exception)
       self.wrapper.Stop()
     else:
       self._HandleResponse(unpacked_data)
@@ -244,7 +244,7 @@ class ConfigReader(object):
           response.command_class == OlaClient.RDM_GET_RESPONSE and
           response.pid == self.outstanding_pid.value):
         # we found what we were looking for
-        print "found, but nacked"
+        print("found, but nacked")
         self.outstanding_pid = None
         self._NextState()
 
@@ -253,11 +253,11 @@ class ConfigReader(object):
         logging.debug('Device doesn\'t support queued messages')
         self._NextState()
       else:
-        print 'Got nack for 0x%04hx with reason: %s' % (
-            response.pid, response.nack_reason)
+        print('Got nack for 0x%04hx with reason: %s' % (
+            response.pid, response.nack_reason))
 
     elif unpack_exception:
-      print 'Invalid Param data: %s' % unpack_exception
+      print('Invalid Param data: %s' % unpack_exception)
     else:
       status_messages_pid = self.pid_store.GetName('STATUS_MESSAGES')
       queued_message_pid = self.pid_store.GetName('QUEUED_MESSAGE')
@@ -284,12 +284,12 @@ class ConfigReader(object):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print response.status.message
+      print(response.status.message)
       self.wrapper.Stop()
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print response.ResponseCodeAsString()
+      print(response.ResponseCodeAsString())
       self.wrapper.Stop()
       return False
 
@@ -337,7 +337,7 @@ class ConfigWriter(object):
 
     for uid in self.configuration.keys():
       if uid not in found_uids:
-        print 'Device %s has been removed' % uid
+        print('Device %s has been removed' % uid)
     self._SetNextUID()
 
   def _SetNextUID(self):
@@ -347,7 +347,7 @@ class ConfigWriter(object):
       return
 
     self.uid = self.uids.pop()
-    print 'Doing %s' % self.uid
+    print('Doing %s' % self.uid)
     self.work_state = self.DMX_START_ADDRESS
     self._NextState()
 
@@ -392,12 +392,12 @@ class ConfigWriter(object):
 
   def _RDMRequestComplete(self, response, unpacked_data, unpack_exception):
     if not response.status.Succeeded():
-      print response.status.message
+      print(response.status.message)
       self.wrapper.Stop()
       return
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print response.ResponseCodeAsString()
+      print(response.ResponseCodeAsString())
       self.wrapper.Stop()
       return
 
@@ -409,12 +409,12 @@ class ConfigWriter(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % response.nack_reason
+      print('Got nack with reason: %s' % response.nack_reason)
     self._NextState()
 
 
 def Usage():
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: rdm_snapshot.py --universe <universe> [--input <file>] [--output <file>]
 
   Save and restore RDM settings for a universe. This includes the start address,
@@ -433,7 +433,7 @@ def Usage():
     -o, --output              File to save configuration to.
     --skip-queued-messages    Don't attempt to fetch queued messages for the
                               device.
-    -u, --universe <universe> Universe number.""")
+    -u, --universe <universe> Universe number."""))
 
 
 def WriteToFile(filename, output):
@@ -502,7 +502,7 @@ def main():
     sys.exit()
 
   if input_file and output_file:
-    print 'Only one of --input and --output can be provided.'
+    print('Only one of --input and --output can be provided.')
     sys.exit()
 
   logging.basicConfig(
