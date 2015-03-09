@@ -316,7 +316,7 @@ class RDMNack(object):
     return obj
 
 
-for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.iteritems():
+for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.items():
   nack = RDMNack(value, description)
   setattr(RDMNack, symbol, nack)
   RDMNack._CODE_TO_OBJECT[value] = nack

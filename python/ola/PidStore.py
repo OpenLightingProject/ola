@@ -377,7 +377,7 @@ class IntAtom(FixedSizeAtom):
     return self._AccountForMultiplierPack(value)
 
   def _GetAllowedRanges(self):
-    values = self._labels.keys()
+    values = list(self._labels.keys())
 
     for range in self._ranges:
       if range.min == range.max:
@@ -997,7 +997,7 @@ class PidStore(object):
     Returns:
       A list of Pid objects.
     """
-    return self._pids.values()
+    return list(self._pids.values())
 
   def ManufacturerPids(self, esta_id):
     """Return a list of all Manufacturer PIDs for a given esta_id.
@@ -1008,7 +1008,7 @@ class PidStore(object):
     Returns:
       A list of Pid objects.
     """
-    return self._manufacturer_pids.get(esta_id, {}).values()
+    return list(self._manufacturer_pids.get(esta_id, {}).values())
 
   def GetPid(self, pid_value, esta_id=None):
     """Look up a PIDs by the 2-byte PID value.

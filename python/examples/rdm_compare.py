@@ -56,7 +56,7 @@ def ReadFile(filename):
   raw_data = pickle.load(f)
   f.close()
   data = {}
-  for uid, settings in raw_data.iteritems():
+  for uid, settings in raw_data.items():
     data[UID.FromString(uid)] = settings
   return data
 
@@ -77,7 +77,7 @@ def Diff(configuration1, configuration2):
   added = set()
   changed = []
   removed = set()
-  for uid, config1 in configuration1.iteritems():
+  for uid, config1 in configuration1.items():
     config2 = configuration2.get(uid)
     if config2 is None:
       removed.add(uid)

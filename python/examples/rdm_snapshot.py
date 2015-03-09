@@ -320,7 +320,7 @@ class ConfigWriter(object):
     """
     self.universe = universe
     self.configuration = configuration
-    self.uids = configuration.keys()
+    self.uids = list(configuration.keys())
 
     self.client.RunRDMDiscovery(self.universe, True, self._HandleUIDList)
     self.wrapper.Run()
@@ -335,7 +335,7 @@ class ConfigWriter(object):
       found_uids.add(uid)
       logging.debug(uid)
 
-    for uid in self.configuration.keys():
+    for uid in list(self.configuration.keys()):
       if uid not in found_uids:
         print('Device %s has been removed' % uid)
     self._SetNextUID()
@@ -457,7 +457,7 @@ def ReadFile(filename):
   raw_data = pickle.load(f)
   f.close()
   data = {}
-  for uid, settings in raw_data.iteritems():
+  for uid, settings in raw_data.items():
     data[UID.FromString(uid)] = settings
   return data
 

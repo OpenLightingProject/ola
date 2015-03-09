@@ -92,7 +92,7 @@ class ResponsePrinter(object):
 
   def Default(self, uid, response_data):
     if isinstance(response_data, dict):
-      for key, value in response_data.iteritems():
+      for key, value in response_data.items():
         print('%s: %r' % (key, value))
     else:
       print(response_data)
