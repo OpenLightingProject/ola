@@ -19,7 +19,7 @@
     <th>Description</th>
    </tr>
    <tr class="striped-table" ng-repeat="plugin in Ports" ng-if="!plugin.is_output">
-    <td><input type="checkbox" ng-change="TogglePort()" ng-model="addPorts[$index]" ng-true-value="{{plugin.id}}" ng-false-value=""/></td>
+    <td><input type="checkbox" ng-change="TogglePort()" ng-model="addPorts[$index]" ng-true-value="'{{plugin.id}}'" ng-false-value="''"/></td>
     <td>{{plugin.device}}</td>
     <td>{{plugin.description}}</td>
    </tr>
@@ -34,7 +34,7 @@
     <th>Description</th>
    </tr>
    <tr class="striped-table" ng-repeat="plugin in Ports" ng-if="plugin.is_output">
-    <td><input type="checkbox" ng-change="TogglePort()" ng-model="addPorts[$index]" ng-true-value="{{plugin.id}}" ng-false-value=""/></td>
+    <td><input type="checkbox" ng-change="TogglePort()" ng-model="addPorts[$index]" ng-true-value="'{{plugin.id}}'" ng-false-value="''"/></td>
     <td>{{plugin.device}}</td>
     <td>{{plugin.description}}</td>
    </tr>
