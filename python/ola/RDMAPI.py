@@ -239,7 +239,7 @@ class RDMAPI(object):
       if pid_descriptor:
         try:
           obj = pid_descriptor.Unpack(response.data, request_type)
-        except PidStore.UnpackException, e:
+        except PidStore.UnpackException as e:
           obj = None
           unpack_exception = e
       else:

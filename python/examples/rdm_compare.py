@@ -178,8 +178,8 @@ def main():
         sys.argv[1:],
         'hb',
         ['help', 'browser'])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

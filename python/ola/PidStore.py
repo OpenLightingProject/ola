@@ -247,7 +247,7 @@ class FixedSizeAtom(Atom):
     format_string = self._FormatString()
     try:
       data = struct.pack(format_string, args[0])
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
 
@@ -398,7 +398,7 @@ class IntAtom(FixedSizeAtom):
     if self._multiplier >= 0:
       try:
         new_value = int(value)
-      except ValueError, e:
+      except ValueError as e:
         raise ArgsValidationError(e)
 
       multiplier = 10 ** self._multiplier
@@ -411,7 +411,7 @@ class IntAtom(FixedSizeAtom):
     else:
       try:
         new_value = float(value)
-      except ValueError, e:
+      except ValueError as e:
         raise ArgsValidationError(e)
 
       scaled_value = new_value * 10 ** abs(self._multiplier)
@@ -469,7 +469,7 @@ class IPV4(IntAtom):
   def Unpack(self, data):
     try:
       return socket.inet_ntoa(data)
-    except socket.error, e:
+    except socket.error as e:
       raise ArgsValidationError("Can't unpack data: %s" % e)
 
   def Pack(self, args):
@@ -477,7 +477,7 @@ class IPV4(IntAtom):
     #inet_aton, we may want to restrict that in future
     try:
       value = struct.unpack("!I", socket.inet_aton(args[0]))
-    except socket.error, e:
+    except socket.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return super(IntAtom, self).Pack(value)
 
@@ -519,7 +519,7 @@ class MACAtom(FixedSizeAtom):
                          mac.mac_address[3],
                          mac.mac_address[4],
                          mac.mac_address[5])
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
 
@@ -550,7 +550,7 @@ class UIDAtom(FixedSizeAtom):
     format_string = self._FormatString()
     try:
       data = struct.pack(format_string, uid.manufacturer_id, uid.device_id)
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
 
@@ -593,7 +593,7 @@ class String(Atom):
 
     try:
       data = struct.unpack('%ds' % arg_size, arg)
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
 
@@ -609,7 +609,7 @@ class String(Atom):
 
     try:
       value = struct.unpack('%ds' % data_size, data)
-    except struct.error, e:
+    except struct.error as e:
       raise UnpackException(e)
 
     return value[0].rstrip('\x00')
@@ -935,7 +935,7 @@ class PidStore(object):
 
     try:
       text_format.Merge('\n'.join(lines), self._pid_store)
-    except text_format.ParseError, e:
+    except text_format.ParseError as e:
       raise InvalidPidFormat(str(e))
 
     for pid_pb in self._pid_store.pid:
@@ -1074,7 +1074,7 @@ class PidStore(object):
 
       try:
         group = self._FrameFormatToGroup(getattr(pid_pb, field_name))
-      except PidStructureException, e:
+      except PidStructureException as e:
         raise PidStructureException(
             "The structure for the %s in %s isn't valid: %s" %
             (field_name, pid_pb.name, e))

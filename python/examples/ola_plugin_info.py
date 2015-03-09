@@ -47,8 +47,8 @@ def main():
 
   try:
       opts, args = getopt.getopt(sys.argv[1:], "hp:", ["help", "plugin="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

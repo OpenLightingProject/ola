@@ -316,7 +316,7 @@ class InteractiveModeController(cmd.Cmd):
                 args[1:]):
         self._outstanding_request = (self._sub_device, request_type, pid)
         self.wrapper.Run()
-    except PidStore.ArgsValidationError, e:
+    except PidStore.ArgsValidationError as e:
       args, help_string = pid.GetRequestDescription(request_type)
       print 'Usage: %s %s %s' % (command, pid.name.lower(), args)
       print help_string
@@ -423,8 +423,8 @@ def main():
                                ['sub-device=', 'help', 'interactive',
                                  'list-pids', 'pid-location=', 'uid=',
                                  'universe='])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

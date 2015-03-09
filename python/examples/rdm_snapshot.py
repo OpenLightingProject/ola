@@ -469,8 +469,8 @@ def main():
         'dhi:o:p:u:',
         ['debug', 'help', 'input=', 'skip-queued-messages', 'output=',
          'pid-location=', 'universe='])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 
