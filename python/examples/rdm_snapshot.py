@@ -49,7 +49,7 @@ class LoadException(Error):
 class ConfigReader(object):
   """A controller that fetches data for responders."""
 
-  (EMPTYING_QUEUE, DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY) = xrange(4)
+  (EMPTYING_QUEUE, DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY) = range(4)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -303,7 +303,7 @@ class ConfigReader(object):
 
 class ConfigWriter(object):
   """A controller that applies configuration to a universe."""
-  (DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY, COMPLETE) = xrange(4)
+  (DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY, COMPLETE) = range(4)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
