@@ -122,8 +122,8 @@ class Pid(object):
     return self._requests.get(command_class)
 
   def GetRequestField(self, command_class, field_name):
-    fields = filter(lambda field: field.name == field_name,
-                    self.GetRequest(command_class).GetAtoms())
+    fields = self.GetRequest(command_class).GetAtoms()
+    fields = [f for f in fields if f.name == field_name]
     return fields[0] if fields else None
 
   def ResponseSupported(self, command_class):
@@ -134,8 +134,8 @@ class Pid(object):
     return self._responses.get(command_class)
 
   def GetResponseField(self, command_class, field_name):
-    fields = filter(lambda field: field.name == field_name,
-                    self.GetResponse(command_class).GetAtoms())
+    fields = self.GetResponse(command_class).GetAtoms()
+    fields = [f for f in fields if f.name == field_name]
     return fields[0] if fields else None
 
   def ValidateAddressing(self, args, command_class):
