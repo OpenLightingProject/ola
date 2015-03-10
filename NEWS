@@ -12,6 +12,8 @@ x/y/2015 ola-0.9.6
  Bugs:
  * Fix port with unset universe appearing as bound to universe 0 in the Python
    client.
+ * Ensure universe names and LTP priorities are always written to the config
+   file #661
 
  Internal:
  *
