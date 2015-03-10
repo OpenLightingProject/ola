@@ -55,7 +55,6 @@ module.exports = function (grunt) {
  grunt.loadNpmTasks('grunt-contrib-watch');
  grunt.loadNpmTasks('grunt-contrib-cssmin');
  grunt.loadNpmTasks('grunt-bower-task');
- //grunt.file.setBase('../../');
  grunt.registerTask('dev', ['watch:build']);
  grunt.registerTask('build', ['jshint:dev', 'uglify:build', 'cssmin:build']);
 };
