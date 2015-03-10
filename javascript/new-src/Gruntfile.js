@@ -5,7 +5,7 @@ module.exports = function (grunt) {
   bower: {
    dev: {
     options: {
-     targetDir: 'javascript/new-src/src/libs',
+     targetDir: '../../olad/www/new/libs',
      install: true,
      copy: true,
      cleanup: true,
@@ -15,29 +15,26 @@ module.exports = function (grunt) {
   },
   uglify: {
    build: {
-    files: {
-     'olad/www/new/js/app.min.js': ['javascript/new-src/src/js/app.js']
-    },
+    files: [{
+     dest: '../../olad/www/new/js/app.min.js',
+     src: 'src/js/app.js'
+    }],
     options: {
      mangle: true,
      sourceMap: true,
-     sourceMapName: 'olad/www/new/js/app.min.js.map'
+     sourceMapName: '../../olad/www/new/js/app.min.js.map'
     }
    }
   },
   jshint: {
-   dev: ['javascript/new-src/Gruntfile.js', 'javascript/new-src/src/js/app.js'],
+   dev: ['Gruntfile.js', 'src/js/app.js'],
    options: {
     jshintrc: true
    }
   },
   watch: {
    build: {
-    files: ['javascript/new-src/Gruntfile.js',
-            'javascript/new-src/src/js/app.js',
-            'javascript/new-src/src/index.html',
-            'javascript/new-src/src/css/style.css',
-            'javascript/new-src/src/views/*.html'],
+    files: ['Gruntfile.js', 'src/js/app.js', 'src/css/style.css'],
     tasks: ['jshint:dev', 'uglify:build', 'cssmin:build'],
     options: {
      atBegin: true
@@ -46,9 +43,10 @@ module.exports = function (grunt) {
   },
   cssmin: {
    build: {
-    files: {
-     'olad/www/new/css/style.min.css': ['javascript/new-src/src/css/style.css']
-    }
+    files: [{
+     src: 'src/css/style.css',
+     dest: '../../olad/www/new/css/style.min.css'
+    }]
    }
   }
  });
@@ -57,7 +55,6 @@ module.exports = function (grunt) {
  grunt.loadNpmTasks('grunt-contrib-watch');
  grunt.loadNpmTasks('grunt-contrib-cssmin');
  grunt.loadNpmTasks('grunt-bower-task');
- grunt.file.setBase('../../');
  grunt.registerTask('dev', ['watch:build']);
  grunt.registerTask('build', ['jshint:dev', 'uglify:build', 'cssmin:build']);
 };
