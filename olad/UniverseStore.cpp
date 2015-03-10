@@ -210,6 +210,8 @@ bool UniverseStore::SaveUniverseSettings(Universe *universe) const {
   // We don't save the RDM Discovery interval since it can only be set in the
   // config files for now.
 
+  m_preferences->Save();
+
   return 0;
 }
 }  // namespace ola

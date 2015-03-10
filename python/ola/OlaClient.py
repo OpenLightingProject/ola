@@ -996,12 +996,14 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
 
-    plugins = [Plugin(p.plugin_id, p.name) for p in response.plugin]
-    plugins.sort(key=lambda x: x.id)
+    status = RequestStatus(controller)
+    plugins = None
+
+    if status.Succeeded():
+      plugins = [Plugin(p.plugin_id, p.name) for p in response.plugin]
+      plugins.sort(key=lambda x: x.id)
+
     callback(status, plugins)
 
   def _PluginDescriptionComplete(self, callback, controller, response):
@@ -1014,10 +1016,14 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
-    callback(status, response.description)
+    description = None
+
+    if status.Succeeded():
+      description = response.description
+
+    callback(status, description)
 
   def _DeviceInfoComplete(self, callback, controller, response):
     """Called when the Device info request returns.
@@ -1030,37 +1036,37 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
+    devices = None
 
-    devices = []
-    for device in response.device:
-      input_ports = []
-      output_ports = []
-      for port in device.input_port:
-        universe = port.universe if port.HasField('universe') else None
+    if status.Succeeded():
+      devices = []
+      for device in response.device:
+        input_ports = []
+        output_ports = []
+        for port in device.input_port:
+          universe = port.universe if port.HasField('universe') else None
 
-        input_ports.append(Port(port.port_id,
-                                universe,
-                                port.active,
-                                port.description,
-                                port.supports_rdm))
+          input_ports.append(Port(port.port_id,
+                                  universe,
+                                  port.active,
+                                  port.description,
+                                  port.supports_rdm))
 
-      for port in device.output_port:
-        universe = port.universe if port.HasField('universe') else None
+        for port in device.output_port:
+          universe = port.universe if port.HasField('universe') else None
 
-        output_ports.append(Port(port.port_id,
-                                 universe,
-                                 port.active,
-                                 port.description,
-                                port.supports_rdm))
+          output_ports.append(Port(port.port_id,
+                                   universe,
+                                   port.active,
+                                   port.description,
+                                   port.supports_rdm))
 
-      devices.append(Device(device.device_id,
-                            device.device_alias,
-                            device.device_name,
-                            device.plugin_id,
-                            input_ports,
-                            output_ports))
+        devices.append(Device(device.device_id,
+                              device.device_alias,
+                              device.device_name,
+                              device.plugin_id,
+                              input_ports,
+                              output_ports))
     callback(status, devices)
 
   def _UniverseInfoComplete(self, callback, controller, response):
@@ -1074,11 +1080,12 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
+    universes = None
 
-    universes = [Universe(u.universe, u.name, u.merge_mode) for u in
-        response.universe]
+    if status.Succeeded():
+      universes = [Universe(u.universe, u.name, u.merge_mode) for u in
+          response.universe]
+
     callback(status, universes)
 
   def _GetDmxComplete(self, callback, controller, response):
@@ -1092,12 +1099,15 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
+    data = None
+    universe = None
 
-    data = array.array('B')
-    data.fromstring(response.data)
-    callback(status, response.universe, data)
+    if status.Succeeded():
+      data = array.array('B')
+      data.fromstring(response.data)
+      universe = response.universe
+
+    callback(status, universe, data)
 
   def _AckMessageComplete(self, callback, controller, response):
     """Called when an rpc that returns an Ack completes.
@@ -1122,10 +1132,14 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
-    callback(status, response.data)
+    data = None
+
+    if status.Succeeded():
+      data = response.data
+
+    callback(status, data)
 
   def _FetchUIDsComplete(self, callback, controller, response):
     """Called when a FetchUIDList request completes.
@@ -1137,12 +1151,16 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+
     status = RequestStatus(controller)
-    uids = []
-    if response:
+    uids = None
+
+    if status.Succeeded():
+      uids = []
       for uid in response.uid:
         uids.append(UID(uid.esta_id, uid.device_id))
-    uids.sort()
+      uids.sort()
+
     callback(status, uids)
 
   def _RDMCommandComplete(self, callback, controller, response):
