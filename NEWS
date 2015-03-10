@@ -4,7 +4,7 @@ x/y/2015 ola-0.9.6
  * Default to the async libusb implementation in the usbdmx plugin.
 
  API:
- * 
+ * Python: callbacks are now also systematically called when the RPC calls fail.
 
  RDM Tests:
  * 
