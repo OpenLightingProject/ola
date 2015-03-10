@@ -1038,15 +1038,19 @@ class OlaClient(Ola_pb2.OlaClientService):
       input_ports = []
       output_ports = []
       for port in device.input_port:
+        universe = port.universe if port.HasField('universe') else None
+
         input_ports.append(Port(port.port_id,
-                                port.universe,
+                                universe,
                                 port.active,
                                 port.description,
                                 port.supports_rdm))
 
       for port in device.output_port:
+        universe = port.universe if port.HasField('universe') else None
+
         output_ports.append(Port(port.port_id,
-                                 port.universe,
+                                 universe,
                                  port.active,
                                  port.description,
                                 port.supports_rdm))
