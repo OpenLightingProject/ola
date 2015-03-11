@@ -726,7 +726,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       device_alias: the alias of the device of which to patch a port
       port: the id of the port
       is_output: select the input or output port
-      action: OlaClient.PATCH or OlcClient.UNPATCH
+      action: OlaClient.PATCH or OlaClient.UNPATCH
       universe: the universe to set the name of
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
