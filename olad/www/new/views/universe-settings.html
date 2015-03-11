@@ -2,10 +2,24 @@
 <ul id="ola-nav-tabs" class="nav nav-tabs">
 
 </ul>
-<div>Id: {{Data.old.id}}</div>
-<div>Mode: {{Data.old.merge_mode}}</div>
-<div>Name: {{Data.old.name}}</div>
-<button class="btn btn-primary btn-md" ng-click="Save()" >Save</button>
+<div class="form-inline settings">
+ <div class="input-group">
+  <div class="input-group-addon">Id:</div>
+  <input type="text" class="form-control number" ng-model="Data.old.id" disabled>
+ </div>
+ <div class="input-group">
+  <div class="input-group-addon">Mode:</div>
+  <select class="form-control priority" ng-model="Data.model.merge_mode" >
+   <option>HTP</option>
+   <option>LTP</option>
+  </select>
+ </div>
+ <div class="input-group">
+  <div class="input-group-addon">Name:</div>
+  <input type="text" class="form-control" ng-model="Data.model.name">
+ </div>
+ <button class="btn btn-primary btn-md save-settings" ng-click="Save()" >Save</button>
+</div>
 <br/>
 <div class="row">
  <div class="col-md-6 settings-table">

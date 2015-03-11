@@ -515,9 +515,9 @@ angular
   function ($scope, $ola, $routeParams) {
    'use strict';
    $ola.tabs('settings', $routeParams.id);
-   $scope.Data = {old: {}, model: {}, Remove: [], Add: []};
-   $scope.Data.old.id = $scope.Data.model.id = $routeParams.id;
    $scope.loadData = function () {
+    $scope.Data = {old: {}, model: {}, Remove: [], Add: []};
+    $scope.Data.old.id = $scope.Data.model.id = $routeParams.id;
     $ola.get.PortsId($routeParams.id).then(function (data) {
      $scope.DeactivePorts = data;
     });
@@ -537,7 +537,7 @@ angular
    $scope.loadData();
    $scope.Save = function () {
     var a = {};
-    a.id = $scope.Data.old.id;
+    a.id = $scope.Data.model.id;
     a.name = $scope.Data.model.name;
     a.merge_mode = $scope.Data.model.merge_mode;
     a.add_ports = $.grep($scope.Data.Add, Boolean).join(',');
