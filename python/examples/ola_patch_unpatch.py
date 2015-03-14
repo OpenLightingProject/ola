@@ -51,7 +51,7 @@ def ParseArgs():
     return argparser.parse_args()
 
 
-def PathPortCallback(status):
+def PatchPortCallback(status):
     if status.Succeeded():
         print('Success!')
     else:
@@ -68,5 +68,5 @@ universe = args.universe
 
 wrapper = ClientWrapper()
 client = wrapper.Client()
-client.PatchPort(device, port, is_output, action, universe, PathPortCallback)
+client.PatchPort(device, port, is_output, action, universe, PatchPortCallback)
 wrapper.Run()
