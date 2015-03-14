@@ -27,31 +27,31 @@ __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
 
 
 def ParseArgs():
-    desc = 'Show the candidate ports to patch to a universe.'
-    argparser = argparse.ArgumentParser(description=desc)
-    argparser.add_argument('--universe', '-u',
-                           type=int,
-                           help='Universe for which to get the candidates.')
-    return argparser.parse_args()
+  desc = 'Show the candidate ports to patch to a universe.'
+  argparser = argparse.ArgumentParser(description=desc)
+  argparser.add_argument('--universe', '-u',
+                         type=int,
+                         help='Universe for which to get the candidates.')
+  return argparser.parse_args()
 
 
 def GetCandidatePortsCallback(status, devices):
-    if status.Succeeded():
-        for device in devices:
-            print('Device {d.alias}: {d.name}'.format(d=device))
-            print('Candidate input ports:')
-            for port in device.input_ports:
-                s = '  port {p.id}, {p.description}, supports RDM: ' \
-                    '{p.supports_rdm}'
-                print(s.format(p=port))
-            print('Candidate output ports:')
-            for port in device.output_ports:
-                s = '  port {p.id}, {p.description}, supports RDM: ' \
-                    '{p.supports_rdm}'
-                print(s.format(p=port))
-    else:
-        print('Error: {}'.format(status.message), file=sys.stderr)
-    wrapper.Stop()
+  if status.Succeeded():
+    for device in devices:
+      print('Device {d.alias}: {d.name}'.format(d=device))
+      print('Candidate input ports:')
+      for port in device.input_ports:
+        s = '  port {p.id}, {p.description}, supports RDM: ' \
+            '{p.supports_rdm}'
+        print(s.format(p=port))
+      print('Candidate output ports:')
+      for port in device.output_ports:
+        s = '  port {p.id}, {p.description}, supports RDM: ' \
+            '{p.supports_rdm}'
+        print(s.format(p=port))
+  else:
+    print('Error: {}'.format(status.message), file=sys.stderr)
+  wrapper.Stop()
 
 
 args = ParseArgs()
