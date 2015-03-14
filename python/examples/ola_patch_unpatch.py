@@ -27,36 +27,36 @@ __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
 
 
 def ParseArgs():
-    description='Patch or unpatch an OLA port.'
-    argparser = argparse.ArgumentParser(description=description)
-    argparser.add_argument('--device', '-d',
-                           metavar='DEV',
-                           type=int,
-                           required=True)
-    argparser.add_argument('--port', '-p',
-                           metavar='PORT',
-                           type=int,
-                           required=True)
-    argparser.add_argument('--universe', '-u',
-                           metavar='UNI',
-                           type=int,
-                           required=True)
-    argparser.add_argument('--mode', '-m',
-                           choices=['input', 'output'],
-                           required=True)
-    argparser.add_argument('--action', '-a',
-                           choices=['patch', 'unpatch'],
-                           required=True)
+  description = 'Patch or unpatch an OLA port.'
+  argparser = argparse.ArgumentParser(description=description)
+  argparser.add_argument('--device', '-d',
+                         metavar='DEV',
+                         type=int,
+                         required=True)
+  argparser.add_argument('--port', '-p',
+                         metavar='PORT',
+                         type=int,
+                         required=True)
+  argparser.add_argument('--universe', '-u',
+                         metavar='UNI',
+                         type=int,
+                         required=True)
+  argparser.add_argument('--mode', '-m',
+                         choices=['input', 'output'],
+                         required=True)
+  argparser.add_argument('--action', '-a',
+                         choices=['patch', 'unpatch'],
+                         required=True)
 
-    return argparser.parse_args()
+  return argparser.parse_args()
 
 
 def PatchPortCallback(status):
-    if status.Succeeded():
-        print('Success!')
-    else:
-        print('Oops: {}'.format(status.message))
-    wrapper.Stop()
+  if status.Succeeded():
+    print('Success!')
+  else:
+    print('Oops: {}'.format(status.message))
+  wrapper.Stop()
 
 args = ParseArgs()
 
