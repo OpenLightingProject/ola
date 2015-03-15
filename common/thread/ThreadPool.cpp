@@ -51,8 +51,8 @@ bool ThreadPool::Init() {
         &m_mutex,
         &m_condition_var);
     if (!thread->Start()) {
-      OLA_WARN << "Failed to start thread " << i <<
-        ", aborting ThreadPool::Init()";
+      OLA_WARN << "Failed to start thread " << i
+               << ", aborting ThreadPool::Init()";
       JoinAllThreads();
       return false;
     }
@@ -78,9 +78,8 @@ void ThreadPool::JoinAll() {
 void ThreadPool::Execute(ola::BaseCallback0<void> *closure) {
   MutexLocker locker(&m_mutex);
   if (m_shutdown) {
-    OLA_WARN <<
-      "Adding actions to a ThreadPool while it's shutting down, this "
-      "will leak!";
+    OLA_WARN << "Adding actions to a ThreadPool while it's shutting down, "
+                "this will leak!";
   }
   m_callback_queue.push(closure);
   m_condition_var.Signal();

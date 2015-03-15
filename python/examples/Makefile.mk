@@ -1,7 +1,9 @@
 # example python scripts
 dist_noinst_SCRIPTS += \
     python/examples/ola_artnet_params.py \
+    python/examples/ola_candidate_ports.py \
     python/examples/ola_devices.py \
+    python/examples/ola_patch_unpatch.py \
     python/examples/ola_plugin_info.py \
     python/examples/ola_rdm_discover.py \
     python/examples/ola_rdm_get.py \
