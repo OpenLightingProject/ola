@@ -42,17 +42,17 @@
     <td>{{port.description}}</td>
     <td>
      <div ng-if="port.priority.priority_capability">
-      <div ng-if="port.priority.priority_capability == 'full'">
+      <div ng-if="port.priority.priority_capability === 'full'">
        <select class="form-control priority" ng-model="port.priority.current_mode">
         <option value="inherit">Inherit</option>
         <option value="static">Static</option>
        </select>
       </div>
-      <div class="static-fake" ng-if="port.priority.priority_capability == 'static'">static</div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
      </div>
     </td>
     <td>
-     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode == 'inherit'"/>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
     </td>
    </tr>
    <tr class="striped-table" ng-repeat="port in DeactivePorts" ng-if="!port.is_output">
@@ -65,17 +65,17 @@
     <td>{{port.description}}</td>
     <td>
      <div ng-if="port.priority.priority_capability">
-      <div ng-if="port.priority.priority_capability == 'full'">
+      <div ng-if="port.priority.priority_capability === 'full'">
        <select class="form-control priority" ng-model="port.priority.current_mode">
         <option value="inherit">Inherit</option>
         <option value="static">Static</option>
        </select>
       </div>
-      <div class="static-fake" ng-if="port.priority.priority_capability == 'static'">static</div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
      </div>
     </td>
     <td>
-     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode == 'inherit'"/>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
     </td>
    </tr>
   </table>
@@ -100,17 +100,17 @@
     <td>{{port.description}}</td>
     <td>
      <div ng-if="port.priority.priority_capability">
-      <div ng-if="port.priority.priority_capability == 'full'">
+      <div ng-if="port.priority.priority_capability === 'full'">
        <select class="form-control priority" ng-model="port.priority.current_mode">
         <option value="inherit">Inherit</option>
         <option value="static">Static</option>
        </select>
       </div>
-      <div class="static-fake" ng-if="port.priority.priority_capability == 'static'">static</div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
      </div>
     </td>
     <td>
-      <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode == 'inherit'"/>
+      <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
     </td>
    </tr>
    <tr class="striped-table" ng-repeat="port in DeactivePorts" ng-if="port.is_output">
@@ -123,17 +123,17 @@
     <td>{{port.description}}</td>
     <td>
      <div ng-if="port.priority.priority_capability">
-      <div ng-if="port.priority.priority_capability == 'full'">
+      <div ng-if="port.priority.priority_capability === 'full'">
        <select class="form-control priority" ng-model="port.priority.current_mode">
         <option value="inherit">Inherit</option>
         <option value="static">Static</option>
        </select>
       </div>
-      <div class="static-fake" ng-if="port.priority.priority_capability == 'static'">static</div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
      </div>
     </td>
     <td>
-     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode == 'inherit'"/>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
     </td>
    </tr>
   </table>
