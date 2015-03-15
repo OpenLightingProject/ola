@@ -69,7 +69,7 @@ bool SetCurrentParams(const SchedulingParams &new_params) {
 // A simple thread that runs, captures the scheduling parameters and exits.
 class MockThread: public Thread {
  public:
-  explicit MockThread(const Options &options = Options())
+  explicit MockThread(const Options &options = Options("MockThread"))
       : Thread(options),
         m_thread_ran(false),
         m_mutex() {
@@ -171,6 +171,7 @@ void ThreadTest::testSchedulingOptions() {
   {
     // A thread that explicitly sets scheduling params.
     Thread::Options options;
+    options.name = "ExplicitSchedParamsFIFO";
     options.policy = SCHED_FIFO;
     options.priority = max_priority;
     MockThread thread(options);
@@ -199,6 +200,7 @@ void ThreadTest::testSchedulingOptions() {
   {
     // A thread that explicitly sets scheduling params.
     Thread::Options options;
+    options.name = "ExplicitSchedParamsRR";
     options.policy = SCHED_RR;
     options.priority = max_priority;
     MockThread thread(options);
@@ -211,6 +213,7 @@ void ThreadTest::testSchedulingOptions() {
   {
     // A thread that inherits scheduling params.
     Thread::Options options;
+    options.name = "InheritSchedParams";
     options.inheritsched = PTHREAD_INHERIT_SCHED;
     MockThread thread(options);
     OLA_ASSERT_TRUE(RunThread(&thread));
@@ -219,7 +222,7 @@ void ThreadTest::testSchedulingOptions() {
                   thread.GetSchedulingParams().priority);
   }
 #else
-  OLA_WARN << "Scheduling options are not supported on windows..";
+  OLA_WARN << "Scheduling options are not supported on Windows..";
 #endif  // #ifndef _WIN32
 }
 
@@ -258,8 +261,9 @@ void ThreadTest::testConditionVariable() {
   thread.Start();
 
   mutex.Lock();
-  if (thread.i != MockConditionThread::EXPECTED)
+  if (thread.i != MockConditionThread::EXPECTED) {
     condition.Wait(&mutex);
+  }
   OLA_ASSERT_EQ(10, thread.i);
   mutex.Unlock();
 

@@ -84,7 +84,7 @@ Thread::Thread(const Options &options)
 bool Thread::Start() {
   MutexLocker locker(&m_mutex);
   if (m_running) {
-    OLA_WARN << "Attempt to start already running thread";
+    OLA_WARN << "Attempt to start already running thread " << Name();
     return false;
   }
 
@@ -100,7 +100,8 @@ bool Thread::FastStart() {
   pthread_attr_init(&attrs);
 
   if (m_options.inheritsched != PTHREAD_EXPLICIT_SCHED) {
-    OLA_FATAL << "PTHREAD_EXPLICIT_SCHED not set, programming bug!";
+    OLA_FATAL << "PTHREAD_EXPLICIT_SCHED not set, programming bug for "
+              << Name() << "!";
     return false;
   }
 
@@ -141,7 +142,8 @@ bool Thread::FastStart() {
   pthread_attr_destroy(&attrs);
 
   if (ret) {
-    OLA_WARN << "pthread create failed: " << strerror(ret);
+    OLA_WARN << "pthread create failed for " << Name() << ": "
+             << strerror(ret);
     return false;
   }
   return true;
