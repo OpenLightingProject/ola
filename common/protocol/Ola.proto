@@ -166,6 +166,7 @@ message PluginInfo {
   required int32 plugin_id = 1;
   required string name = 2;
   required bool active = 3;
+  optional bool enabled = 4;
 }
 
 message PluginListReply {

@@ -42,10 +42,14 @@ namespace client {
  */
 class OlaPlugin {
  public:
-  OlaPlugin(unsigned int id, const std::string &name, bool active)
+  OlaPlugin(unsigned int id,
+            const std::string &name,
+            bool active,
+            bool enabled = true)
       : m_id(id),
         m_name(name),
-        m_active(active) {}
+        m_active(active),
+        m_enabled(enabled) {}
   ~OlaPlugin() {}
 
   /**
@@ -64,6 +68,12 @@ class OlaPlugin {
    */
   bool IsActive() const { return m_active; }
 
+  /**
+   * @brief Indicates if the plugin is enabled or not
+   * @return true if the plugin is enabled, false otherwise.
+   */
+  bool IsEnabled() const { return m_enabled; }
+
   bool operator<(const OlaPlugin &other) const {
     return m_id < other.m_id;
   }
@@ -72,6 +82,7 @@ class OlaPlugin {
   unsigned int m_id;  // id of this plugin
   std::string m_name;  // plugin name
   bool m_active;
+  bool m_enabled;
 };
 
 /**
