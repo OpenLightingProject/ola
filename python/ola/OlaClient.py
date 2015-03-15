@@ -51,7 +51,7 @@ class Plugin(object):
     active: whether this plugin is active
     enabled: whether this plugin is enabled
   """
-  def __init__(self, plugin_id, name, active, enabled=true):
+  def __init__(self, plugin_id, name, active=True, enabled=True):
     self._id = plugin_id
     self._name = name
     self._active = active
@@ -1093,7 +1093,8 @@ class OlaClient(Ola_pb2.OlaClientService):
     plugins = None
 
     if status.Succeeded():
-      plugins = [Plugin(p.plugin_id, p.name) for p in response.plugin]
+      plugins = [Plugin(p.plugin_id, p.name, p.active, p.enabled)
+                 for p in response.plugin]
       plugins.sort(key=lambda x: x.id)
 
     callback(status, plugins)
