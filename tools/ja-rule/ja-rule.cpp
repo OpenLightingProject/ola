@@ -44,6 +44,7 @@
 using ola::NewCallback;
 using ola::io::SelectServer;
 using ola::io::StdinHandler;
+using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryResponse;
 using ola::rdm::RDMRequest;
@@ -61,7 +62,7 @@ using std::endl;
 using std::string;
 
 DEFINE_string(target_uid, "7a70:00000001", "The UID of the responder.");
-DEFINE_string(controller_uid, "7a70:00000001", "The UID of the controller.");
+DEFINE_string(controller_uid, "7a70:fffffe00", "The UID of the controller.");
 
 /**
  * @brief Print messages received from the device.
@@ -210,7 +211,11 @@ class MessageHandler : public MessageHandlerInterface {
     OLA_INFO << "RC (" << static_cast<int>(message.return_code)
              << "): payload_size: " << message.payload_size;
 
-    if (message.payload_size && message.payload) {
+    if (message.payload_size == 0 || message.payload == NULL) {
+      return;
+    }
+
+    if (message.payload[0] == RDMCommand::START_CODE) {
       rdm_response_code response_code;
       // Ignore the start code.
       auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
@@ -222,27 +227,26 @@ class MessageHandler : public MessageHandlerInterface {
           ola::strings::FormatData(&std::cout, message.payload,
                                    message.payload_size);
         }
-      } else {
-        OLA_INFO << *response;
       }
+      OLA_INFO << *response;
     }
   }
 
   void PrintTime(const Message& message, TimeFormat format) {
-    uint16_t time = 0;
+    uint16_t value = 0;
     if (message.return_code != 0) {
       OLA_INFO << "Failed (" << static_cast<int>(message.return_code)
                << "): payload_size: " << message.payload_size;
       return;
     }
 
-    if (message.payload_size == sizeof(time)) {
-      time = JoinUInt8(message.payload[1], message.payload[0]);
+    if (message.payload_size == sizeof(value)) {
+      value = JoinUInt8(message.payload[1], message.payload[0]);
       if (format == MICRO_SECONDS) {
-        OLA_INFO << "Time: " << time << " uS";
+        OLA_INFO << "Time: " << value << " uS";
       } else if (format == TENTHS_OF_MILLI_SECONDS) {
-        float adjusted_time = time / 10.0;
-        OLA_INFO << "Time: " << adjusted_time << " uS";
+        float adjusted_time = value / 10.0;
+        OLA_INFO << "Time: " << adjusted_time << " mS";
       }
     } else {
       OLA_WARN << "Payload size mismatch";
@@ -294,7 +298,7 @@ class InputHandler {
 
   void Input(int c) {
     switch (c) {
-      case 10:  // Enter
+      case '\n':
         Commit();
         break;
       case 27:  // Escape
@@ -373,7 +377,7 @@ class InputHandler {
         break;
       case 'X':
         cout << "Editing RDM Wait time, use +/- to adjust, Enter commits, "
-             << " Esc to abort" << endl;
+             << "Esc to abort" << endl;
         m_mode = EDIT_RDM_WAIT_TIME;
         break;
       case 'y':
@@ -389,7 +393,7 @@ class InputHandler {
         break;
       case 'Z':
         cout << "Editing RDM Broadcast Listen Time, use +/- to adjust, Enter "
-             << " commits, Esc to abort" << endl;
+             << "commits, Esc to abort" << endl;
         m_mode = EDIT_RDM_BROADCAST_LISTEN;
         break;
       default:
@@ -407,17 +411,16 @@ class InputHandler {
     cout << " e - Send Echo command" << endl;
     cout << " f - Fetch Flags State" << endl;
     cout << " h - Print this help message" << endl;
-    cout << " i - Identify On to --target-uid" << endl;
-    cout << " I - Identify Off to --target-uid" << endl;
+    cout << " i - Identify On to " << m_target_uid << endl;
+    cout << " I - Identify Off to " << m_target_uid << endl;
     cout << " l - Fetch Logs" << endl;
     cout << " m - Send a broadcast mute" << endl;
-    cout << " M - Send a mute to the device specified in --target-uid" << endl;
+    cout << " M - Send a mute to " << m_target_uid << endl;
     cout << " q - Quit" << endl;
     cout << " r - Reset" << endl;
     cout << " t - Send DMX frame" << endl;
-    cout << " u - Send an broadcast unmute" << endl;
-    cout << " M - Send an unmute to the device specified in --target-uid"
-         << endl;
+    cout << " u - Send a broadcast unmute" << endl;
+    cout << " M - Send an unmute to " << m_target_uid << endl;
     cout << " w - Write Log" << endl;
     cout << " x - Get RDM Wait time" << endl;
     cout << " X - Set RDM Wait time" << endl;
@@ -529,26 +532,30 @@ class InputHandler {
       return;
     }
 
-    if (m_mode == EDIT_BREAK) {
-      uint8_t payload[2];
-      SplitUInt16(m_break, &payload[1], &payload[0]);
-      m_device->SendMessage(OpenLightingDevice::SET_BREAK_TIME, payload,
-                            arraysize(payload));
-    } else if (m_mode == EDIT_MAB) {
-      uint8_t payload[2];
-      SplitUInt16(m_mab, &payload[1], &payload[0]);
-      m_device->SendMessage(OpenLightingDevice::SET_MAB_TIME, payload,
-                            arraysize(payload));
-    } else if (m_mode == EDIT_RDM_WAIT_TIME) {
-      uint8_t payload[2];
-      SplitUInt16(m_rdm_wait_time, &payload[1], &payload[0]);
-      m_device->SendMessage(OpenLightingDevice::SET_RDM_WAIT_TIME,
-                            payload, arraysize(payload));
-    } else if (m_mode == EDIT_RDM_BROADCAST_LISTEN) {
-      uint8_t payload[2];
-      SplitUInt16(m_rdm_broadcast_listen, &payload[1], &payload[0]);
-      m_device->SendMessage(OpenLightingDevice::SET_RDM_BROADCAST_LISTEN,
-                            payload, arraysize(payload));
+    uint8_t payload[2];
+    switch (m_mode) {
+      case EDIT_BREAK:
+        SplitUInt16(m_break, &payload[1], &payload[0]);
+        m_device->SendMessage(OpenLightingDevice::SET_BREAK_TIME, payload,
+                              arraysize(payload));
+        break;
+      case EDIT_MAB:
+        SplitUInt16(m_mab, &payload[1], &payload[0]);
+        m_device->SendMessage(OpenLightingDevice::SET_MAB_TIME, payload,
+                              arraysize(payload));
+        break;
+      case EDIT_RDM_WAIT_TIME:
+        SplitUInt16(m_rdm_wait_time, &payload[1], &payload[0]);
+        m_device->SendMessage(OpenLightingDevice::SET_RDM_WAIT_TIME,
+                              payload, arraysize(payload));
+        break;
+      case EDIT_RDM_BROADCAST_LISTEN:
+        SplitUInt16(m_rdm_broadcast_listen, &payload[1], &payload[0]);
+        m_device->SendMessage(OpenLightingDevice::SET_RDM_BROADCAST_LISTEN,
+                              payload, arraysize(payload));
+        break;
+      default:
+        OLA_WARN << "Unknown mode " << m_mode;
     }
     m_mode = DEFAULT;
   }
@@ -704,13 +711,13 @@ int main(int argc, char **argv) {
 
   auto_ptr<UID> target_uid(UID::FromString(FLAGS_target_uid));
   if (!target_uid.get()) {
-    OLA_WARN << "Invalid Target UID: " << FLAGS_target_uid;
+    OLA_WARN << "Invalid Target UID: '" << FLAGS_target_uid << "'";
     exit(ola::EXIT_USAGE);
   }
 
   auto_ptr<UID> controller_uid(UID::FromString(FLAGS_controller_uid));
   if (!controller_uid.get()) {
-    OLA_WARN << "Invalid Target UID: " << FLAGS_controller_uid;
+    OLA_WARN << "Invalid Controller UID: '" << FLAGS_controller_uid << "'";
     exit(ola::EXIT_USAGE);
   }
 
