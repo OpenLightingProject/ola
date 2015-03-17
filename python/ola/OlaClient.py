@@ -48,10 +48,14 @@ class Plugin(object):
   Attributes:
     id: the id of this plugin
     name: the name of this plugin
+    active: whether this plugin is active
+    enabled: whether this plugin is enabled
   """
-  def __init__(self, plugin_id, name):
+  def __init__(self, plugin_id, name, active, enabled):
     self._id = plugin_id
     self._name = name
+    self._active = active
+    self._enabled = enabled
 
   @property
   def id(self):
@@ -61,12 +65,23 @@ class Plugin(object):
   def name(self):
     return self._name
 
+  @property
+  def active(self):
+    return self._active
+
+  @property
+  def enabled(self):
+    return self._enabled
+
   def __cmp__(self, other):
     return cmp(self._id, other._id)
 
   def __repr__(self):
-    s = 'Plugin(id={id}, name="{name}")'
-    return s.format(id=self.id, name=self.name)
+    s = 'Plugin(id={id}, name="{name}", active={active}, enabled={enabled})'
+    return s.format(id=self.id,
+                    name=self.name,
+                    active=self.active,
+                    enabled=self.enabled)
 
 
 # Populate the Plugin class attributes from the protobuf
@@ -1078,7 +1093,8 @@ class OlaClient(Ola_pb2.OlaClientService):
     plugins = None
 
     if status.Succeeded():
-      plugins = [Plugin(p.plugin_id, p.name) for p in response.plugin]
+      plugins = [Plugin(p.plugin_id, p.name, p.active, p.enabled)
+                 for p in response.plugin]
       plugins.sort(key=lambda x: x.id)
 
     callback(status, plugins)

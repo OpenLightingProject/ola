@@ -649,6 +649,8 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
     JsonObject *plugin = plugins_json->AppendObject();
     plugin->Add("name", iter->Name());
     plugin->Add("id", iter->Id());
+    plugin->Add("active", iter->IsActive());
+    plugin->Add("enabled", iter->IsEnabled());
   }
 }
 

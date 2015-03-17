@@ -855,6 +855,7 @@ void OlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
   plugin_info->set_plugin_id(plugin->Id());
   plugin_info->set_name(plugin->Name());
   plugin_info->set_active(m_plugin_manager->IsActive(plugin->Id()));
+  plugin_info->set_enabled(m_plugin_manager->IsEnabled(plugin->Id()));
 }
 
 
