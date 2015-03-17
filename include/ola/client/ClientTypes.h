@@ -45,7 +45,7 @@ class OlaPlugin {
   OlaPlugin(unsigned int id,
             const std::string &name,
             bool active,
-            bool enabled = true)
+            bool enabled)
       : m_id(id),
         m_name(name),
         m_active(active),

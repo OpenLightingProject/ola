@@ -51,7 +51,7 @@ class Plugin(object):
     active: whether this plugin is active
     enabled: whether this plugin is enabled
   """
-  def __init__(self, plugin_id, name, active=True, enabled=True):
+  def __init__(self, plugin_id, name, active, enabled):
     self._id = plugin_id
     self._name = name
     self._active = active
