@@ -61,7 +61,8 @@ using std::cout;
 using std::endl;
 using std::string;
 
-DEFINE_string(target_uid, "7a70:00000001", "The UID of the responder.");
+DEFINE_string(target_uid, "7a70:00000001",
+              "The UID of the responder to control.");
 DEFINE_string(controller_uid, "7a70:fffffe00", "The UID of the controller.");
 
 /**
@@ -217,7 +218,7 @@ class MessageHandler : public MessageHandlerInterface {
 
     if (message.payload[0] == RDMCommand::START_CODE) {
       rdm_response_code response_code;
-      // Ignore the start code.
+      // SKip over the start code.
       auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
           message.payload + 1, message.payload_size - 1, &response_code));
 
@@ -243,10 +244,10 @@ class MessageHandler : public MessageHandlerInterface {
     if (message.payload_size == sizeof(value)) {
       value = JoinUInt8(message.payload[1], message.payload[0]);
       if (format == MICRO_SECONDS) {
-        OLA_INFO << "Time: " << value << " uS";
+        OLA_INFO << "Time: " << value << " us";
       } else if (format == TENTHS_OF_MILLI_SECONDS) {
         float adjusted_time = value / 10.0;
-        OLA_INFO << "Time: " << adjusted_time << " mS";
+        OLA_INFO << "Time: " << adjusted_time << " ms";
       }
     } else {
       OLA_WARN << "Payload size mismatch";
@@ -499,14 +500,14 @@ class InputHandler {
       } else {
         m_break--;
       }
-      cout << "Break is now " << m_break << " uS" << endl;
+      cout << "Break is now " << m_break << " us" << endl;
     } else if (m_mode == EDIT_MAB) {
       if (increase) {
         m_mab++;
       } else {
         m_mab--;
       }
-      cout << "MAB is now " << m_mab << " uS" << endl;
+      cout << "MAB is now " << m_mab << " us" << endl;
     } else if (m_mode == EDIT_RDM_WAIT_TIME) {
       if (increase) {
         m_rdm_wait_time++;
@@ -514,7 +515,7 @@ class InputHandler {
         m_rdm_wait_time--;
       }
       float wait_time = m_rdm_wait_time / 10.0;
-      cout << "RDM Wait time is now " << wait_time << " mS" << endl;
+      cout << "RDM Wait time is now " << wait_time << " ms" << endl;
     } else if (m_mode == EDIT_RDM_BROADCAST_LISTEN) {
       if (increase) {
         m_rdm_broadcast_listen++;
@@ -522,7 +523,7 @@ class InputHandler {
         m_rdm_broadcast_listen--;
       }
       float listen_time = m_rdm_broadcast_listen / 10.0;
-      cout << "RDM Broadcast listen is now " << listen_time << " mS"
+      cout << "RDM Broadcast listen is now " << listen_time << " ms"
            << endl;
     }
   }
@@ -718,6 +719,11 @@ int main(int argc, char **argv) {
   auto_ptr<UID> controller_uid(UID::FromString(FLAGS_controller_uid));
   if (!controller_uid.get()) {
     OLA_WARN << "Invalid Controller UID: '" << FLAGS_controller_uid << "'";
+    exit(ola::EXIT_USAGE);
+  }
+
+  if (controller_uid->IsBroadcast()) {
+    OLA_WARN << "The controller UID should not be a broadcast UID";
     exit(ola::EXIT_USAGE);
   }
 
