@@ -18,10 +18,10 @@
           {{plugin.name}}&nbsp;<span class="glyphicon glyphicon-info-sign plugin-icon"></span>
       </td>
       <td ng-click="go(plugin.id)">
-        <div class="status-light" ng-style="enabled[plugin.id]">&nbsp;</div>
+        <div class="status-light" ng-style="getStyle(plugin.enabled)">&nbsp;</div>
       </td>
       <td ng-click="go(plugin.id)">
-        <div class="status-light" ng-style="active[plugin.id]">&nbsp;</div>
+        <div class="status-light" ng-style="getStyle(plugin.active)">&nbsp;</div>
       </td>
     </tr>
   </table>

@@ -605,12 +605,6 @@ angular
    $scope.getInfo = function () {
     $ola.get.ItemList().then(function (data) {
      $scope.Items = data;
-     data.plugins.forEach(function (plugin) {
-      $ola.get.InfoPlugin(plugin.id).then(function (data) {
-       $scope.getStyleActive(data.active, plugin.id);
-       $scope.getStyleEnabled(data.enabled, plugin.id);
-      });
-     });
     });
    };
    $scope.getInfo();
@@ -621,24 +615,13 @@ angular
    $scope.go = function (id) {
     $location.path('/plugin/' + id);
    };
-   $scope.getStyleActive = function (bool, id) {
+   $scope.getStyle = function (bool) {
     if (bool) {
-     $scope.active[id] = {
+     return {
       'background-color': 'green'
      };
     } else {
-     $scope.active[id] = {
-      'background-color': 'red'
-     };
-    }
-   };
-   $scope.getStyleEnabled = function (bool, id) {
-    if (bool) {
-     $scope.enabled[id] = {
-      'background-color': 'green'
-     };
-    } else {
-     $scope.enabled[id] = {
+     return {
       'background-color': 'red'
      };
     }
