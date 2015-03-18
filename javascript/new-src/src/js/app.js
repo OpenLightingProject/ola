@@ -29,7 +29,8 @@ angular
    var postEncode = function (data) {
     var PostData = [];
     for (var key in data) {
-     if (key === 'd') {
+     if (key === 'd' || key === 'remove_ports' || key === 'modify_ports' ||
+         key === 'add_ports') {
       // this is here so dmx posts dont get broken because of removed comma's
       PostData.push(key + '=' + data[key]);
      } else {
@@ -511,39 +512,63 @@ angular
    });
   }])
  .controller('settingUniverseCtrl', ['$scope', '$ola', '$routeParams',
-                                     '$window',
-  function ($scope, $ola, $routeParams, $window) {
+  function ($scope, $ola, $routeParams) {
    'use strict';
    $ola.tabs('settings', $routeParams.id);
-   //post: /modify_universe
-   //id:{{id}}
-   //name:{{name}}
-   //merge_mode:(LTP|HTP)
-   //add_ports:{{port}}
-   //remove_ports:{{port}}
-   //{{port}}_priority_value:100
-   //{{port}}_priority_mode:(inherit|static)
-   //modify_ports:{{port}}
-   $scope.Universe = $routeParams.id;
-   $scope.Info = {};
-   $scope.PortsId = {};
-   $scope.ActivePorts = {};
-   $scope.Remove = [];
-   $scope.Data = {};
-   $scope.indexOffset = 0;
-   $ola.get.PortsId($routeParams.id).then(function (data) {
-    $window.console.log(data);
-    $scope.PortsId = data;
-   });
-   $ola.get.UniverseInfo($routeParams.id).then(function (data) {
-    $window.console.log(data);
-    $ola.header(data.name, $routeParams.id);
-    $scope.Info = data;
-    $scope.ActivePorts = data.output_ports.concat(data.input_ports);
-    for (var i = 0; i < $scope.ActivePorts.length; i++) {
-     $scope.Remove[i] = '';
-    }
-   });
+   $scope.loadData = function () {
+    $scope.Data = {old: {}, model: {}, Remove: [], Add: []};
+    $scope.Data.old.id = $scope.Data.model.id = $routeParams.id;
+    $ola.get.PortsId($routeParams.id).then(function (data) {
+     $scope.DeactivePorts = data;
+    });
+    $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+     window.console.log(data);
+     $ola.header(data.name, $routeParams.id);
+     $scope.Data.old.name = $scope.Data.model.name = data.name;
+     $scope.Data.old.merge_mode = data.merge_mode;
+     $scope.Data.model.merge_mode = data.merge_mode;
+     $scope.ActivePorts = data.output_ports.concat(data.input_ports);
+     $scope.Data.old.ActivePorts = data.output_ports.concat(data.input_ports);
+     for (var i = 0; i < $scope.ActivePorts.length; ++i) {
+      $scope.Data.Remove[i] = '';
+     }
+    });
+   };
+   $scope.loadData();
+   $scope.Save = function () {
+    var a = {};
+    a.id = $scope.Data.model.id;
+    a.name = $scope.Data.model.name;
+    a.merge_mode = $scope.Data.model.merge_mode;
+    a.add_ports = $.grep($scope.Data.Add, Boolean).join(',');
+    a.remove_ports = $.grep($scope.Data.Remove, Boolean).join(',');
+    var modified = [];
+    $scope.ActivePorts.forEach(function (element, index) {
+     if ($scope.Data.Remove.indexOf($scope.ActivePorts[index].id) === -1) {
+      var mode = $scope.ActivePorts[index].priority.current_mode;
+      var id = $scope.ActivePorts[index].id;
+      if (mode === 'static') {
+       if (0 < $scope.ActivePorts[index].priority.value < 100) {
+        a[id + '_priority_value'] = $scope.ActivePorts[index].priority.value;
+        if (modified.indexOf(id) === -1) {
+         modified.push(id);
+        }
+       }
+      }
+      if ($scope.Data.old.ActivePorts[index].priority.current_mode !== mode) {
+       a[id + '_priority_mode'] = mode;
+       if (modified.indexOf(id) === -1) {
+        modified.push(id);
+       }
+      }
+     }
+    });
+    a.modify_ports = $.grep(modified, Boolean).join(',');
+    $ola.post.ModifyUniverse(a).then(function (data) {
+     window.console.log(data);
+    });
+    $scope.loadData();
+   };
   }])
  .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola', '$window',
   function ($scope, $routeParams, $ola, $window) {
@@ -580,12 +605,6 @@ angular
    $scope.getInfo = function () {
     $ola.get.ItemList().then(function (data) {
      $scope.Items = data;
-     data.plugins.forEach(function (plugin) {
-      $ola.get.InfoPlugin(plugin.id).then(function (data) {
-       $scope.getStyleActive(data.active, plugin.id);
-       $scope.getStyleEnabled(data.enabled, plugin.id);
-      });
-     });
     });
    };
    $scope.getInfo();
@@ -596,24 +615,13 @@ angular
    $scope.go = function (id) {
     $location.path('/plugin/' + id);
    };
-   $scope.getStyleActive = function (bool, id) {
+   $scope.getStyle = function (bool) {
     if (bool) {
-     $scope.active[id] = {
+     return {
       'background-color': 'green'
      };
     } else {
-     $scope.active[id] = {
-      'background-color': 'red'
-     };
-    }
-   };
-   $scope.getStyleEnabled = function (bool, id) {
-    if (bool) {
-     $scope.enabled[id] = {
-      'background-color': 'green'
-     };
-    } else {
-     $scope.enabled[id] = {
+     return {
       'background-color': 'red'
      };
     }
