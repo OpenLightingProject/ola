@@ -642,7 +642,8 @@ void OlaClientCore::HandlePluginList(RpcController *controller_ptr,
       ola::proto::PluginInfo plugin_info = reply->plugin(i);
       OlaPlugin plugin(plugin_info.plugin_id(),
                        plugin_info.name(),
-                       plugin_info.active());
+                       plugin_info.active(),
+                       plugin_info.enabled());
       ola_plugins.push_back(plugin);
     }
   }
@@ -701,7 +702,8 @@ void OlaClientCore::HandlePluginState(
       ola::proto::PluginInfo plugin_info = reply->conflicts_with(i);
       OlaPlugin plugin(plugin_info.plugin_id(),
                        plugin_info.name(),
-                       plugin_info.active());
+                       plugin_info.active(),
+                       plugin_info.enabled());
       plugin_state.conflicting_plugins.push_back(plugin);
     }
   }
