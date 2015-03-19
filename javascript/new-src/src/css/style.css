@@ -134,10 +134,16 @@ tr.striped-table:nth-of-type(even) {
  .navbar-mobile{
   display: none;
  }
+ .number {
+  width: 50px !important;
+ }
 }
 @media (max-width: 768px) {
  .navbar-desktop{
   display: none;
+ }
+ .save-settings{
+  width: 100%;
  }
 }
 div.checkbox-tr {
@@ -163,6 +169,7 @@ input.priority {
 }
 select.priority {
  width: 90px;
+ display: inline;
 }
 .caption-overview {
  width: 49%;
@@ -202,4 +209,15 @@ div#header-universe > div{
  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
  -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+}
+.table-condensed>tbody>tr>td, .table-condensed>tbody>tr>th,
+.table-condensed>tfoot>tr>td, .table-condensed>tfoot>tr>th,
+.table-condensed>thead>tr>td, .table-condensed>thead>tr>th{
+ padding: 3px;
+}
+.number{
+ cursor: text!important;
+}
+.settings, .input-group, .save-settings {
+ margin-top: 5px;
 }
