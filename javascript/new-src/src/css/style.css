@@ -26,12 +26,7 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus {
  line-height: 2;
  font-weight: bold;
 }
-.on {
- color: #ffffff;
- background-color: #67a7e3;
- border-color: transparent;
-}
-.off {
+.on , .off {
  color: #ffffff;
  background-color: #67a7e3;
  border-color: transparent;
@@ -52,6 +47,7 @@ button.col-xs-3, button.col-xs-3:active, button.col-xs-3:focus {
 }
 .navigate > .col-xs-3, .navigate > .col-xs-2 {
  height: 100%;
+ outline: none!important;
 }
 .value-div {
  display: inline-block;
