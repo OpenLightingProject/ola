@@ -159,16 +159,17 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 bool MockUDPSocket::RecvFrom(
     uint8_t *buffer,
     ssize_t *data_read,
-    ola::network::IPV4Address &source) const {  // NOLINT
+    ola::network::IPV4Address &source) const {  // NOLINT(runtime/references)
   uint16_t port;
   return RecvFrom(buffer, data_read, source, port);
 }
 
 
-bool MockUDPSocket::RecvFrom(uint8_t *buffer,
-                             ssize_t *data_read,
-                             ola::network::IPV4Address &source,  // NOLINT
-                             uint16_t &port) const {  // NOLINT
+bool MockUDPSocket::RecvFrom(
+    uint8_t *buffer,
+    ssize_t *data_read,
+    ola::network::IPV4Address &source,  // NOLINT(runtime/references)
+    uint16_t &port) const {  // NOLINT(runtime/references)
   OLA_ASSERT_FALSE(m_received_data.empty());
   const received_data &new_data = m_received_data.front();
 
@@ -189,7 +190,7 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer,
 bool MockUDPSocket::RecvFrom(
     uint8_t *buffer,
     ssize_t *data_read,
-    ola::network::IPV4SocketAddress *source) {  // NOLINT
+    ola::network::IPV4SocketAddress *source) {
   IPV4Address source_ip;
   uint16_t port;
 

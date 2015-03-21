@@ -81,13 +81,15 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     }
 
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
-    bool RecvFrom(uint8_t *buffer,
-                  ssize_t *data_read,
-                  ola::network::IPV4Address &source) const;  // NOLINT
-    bool RecvFrom(uint8_t *buffer,
-                  ssize_t *data_read,
-                  ola::network::IPV4Address &source,  // NOLINT
-                  uint16_t &port) const;  // NOLINT
+    bool RecvFrom(
+        uint8_t *buffer,
+        ssize_t *data_read,
+        ola::network::IPV4Address &source) const;  // NOLINT(runtime/references)
+    bool RecvFrom(
+        uint8_t *buffer,
+        ssize_t *data_read,
+        ola::network::IPV4Address &source,  // NOLINT(runtime/references)
+        uint16_t &port) const;  // NOLINT(runtime/references)
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
                   ola::network::IPV4SocketAddress *source);
