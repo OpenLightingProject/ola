@@ -103,8 +103,9 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
                               const ola::network::IPV4Address &ip_address,
                               unsigned short port) const {
-  if (m_discard_mode)
+  if (m_discard_mode) {
     return size;
+  }
 
   OLA_ASSERT_FALSE(m_expected_calls.empty());
   expected_call call = m_expected_calls.front();
@@ -112,8 +113,9 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
   OLA_ASSERT_DATA_EQUALS(call.data, call.size, buffer, size);
   OLA_ASSERT_EQ(call.address, ip_address);
   OLA_ASSERT_EQ(call.port, port);
-  if (call.free_data)
+  if (call.free_data) {
     delete[] call.data;
+  }
 
   m_expected_calls.pop();
   return size;
@@ -127,8 +129,9 @@ ssize_t MockUDPSocket::SendTo(IOVecInterface *data,
 
   int io_len;
   const struct IOVec *iov = data->AsIOVec(&io_len);
-  if (iov == NULL)
+  if (iov == NULL) {
     return 0;
+  }
 
   unsigned int data_size = 0;
   for (int i = 0; i < io_len; i++) {
@@ -181,8 +184,9 @@ bool MockUDPSocket::RecvFrom(
   source = new_data.address;
   port = new_data.port;
 
-  if (new_data.free_data)
+  if (new_data.free_data) {
     delete[] new_data.data;
+  }
   m_received_data.pop();
   return true;
 }
@@ -215,19 +219,16 @@ bool MockUDPSocket::SetMulticastInterface(const IPV4Address &iface) {
 
 
 bool MockUDPSocket::JoinMulticast(const IPV4Address &iface,
-                                  const IPV4Address &group,
-                                  bool loop) {
+                                  OLA_UNUSED const IPV4Address &group,
+                                  OLA_UNUSED bool loop) {
   OLA_ASSERT_EQ(m_interface, iface);
-  (void) group;
-  (void) loop;
   return true;
 }
 
 
 bool MockUDPSocket::LeaveMulticast(const IPV4Address &iface,
-                                   const IPV4Address &group) {
+                                   OLA_UNUSED const IPV4Address &group) {
   OLA_ASSERT_EQ(m_interface, iface);
-  (void) group;
   return true;
 }
 
