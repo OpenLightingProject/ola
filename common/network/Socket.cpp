@@ -291,7 +291,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 bool UDPSocket::RecvFrom(
     uint8_t *buffer,
     ssize_t *data_read,
-    IPV4Address &source) const {  // NOLINT(runtime/references)
+    IPV4Address &source) const {  // NOLINT
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
 #ifdef _WIN32
