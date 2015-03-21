@@ -9,10 +9,16 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
-  # first check we've not got any generic NOLINT's
-  grep -IR NOLINT * | grep -v "NOLINT("
-  if [[ $? -eq 0 ]]; then
+  # first check we've not got any generic NOLINTs
+  # count the number of generic NOLINTs
+  nolints=$(grep -IR NOLINT * | grep -v "NOLINT(" | wc -l)
+  if [[ $nolints -ne 0 ]]; then
+    # print the output for info
+    echo $(grep -IR NOLINT * | grep -v "NOLINT(")
+    echo "Found $nolints generic NOLINTs"
     exit 1;
+  else
+    echo "Found $nolints generic NOLINTs"
   fi;
   # then fetch and run the main cpplint tool
   wget -O cpplint.py $CPP_LINT_URL;
