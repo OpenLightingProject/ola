@@ -156,9 +156,10 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
    *
    * @deprecated Use the IPV4SocketAddress version instead.
    */
-  virtual bool RecvFrom(uint8_t *buffer,
-                        ssize_t *data_read,
-                        IPV4Address &source) const = 0;  // NOLINT
+  virtual bool RecvFrom(
+      uint8_t *buffer,
+      ssize_t *data_read,
+      IPV4Address &source) const = 0;  // NOLINT(runtime/references)
 
   /**
    * @brief Receive data and record the src address & port
@@ -171,10 +172,11 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
    *
    * @deprecated Use the IPV4SocketAddress version instead.
    */
-  virtual bool RecvFrom(uint8_t *buffer,
-                        ssize_t *data_read,
-                        IPV4Address &source,  // NOLINT
-                        uint16_t &port) const = 0;  // NOLINT
+  virtual bool RecvFrom(
+      uint8_t *buffer,
+      ssize_t *data_read,
+      IPV4Address &source,  // NOLINT(runtime/references)
+      uint16_t &port) const = 0;  // NOLINT(runtime/references)
 
   /**
    * @brief Receive a datagram on the UDP Socket.
@@ -266,11 +268,11 @@ class UDPSocket: public UDPSocketInterface {
   bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
   bool RecvFrom(uint8_t *buffer,
                 ssize_t *data_read,
-                IPV4Address &source) const;  // NOLINT
+                IPV4Address &source) const;  // NOLINT(runtime/references)
   bool RecvFrom(uint8_t *buffer,
                 ssize_t *data_read,
-                IPV4Address &source,  // NOLINT
-                uint16_t &port) const;  // NOLINT
+                IPV4Address &source,  // NOLINT(runtime/references)
+                uint16_t &port) const;  // NOLINT(runtime/references)
 
   bool RecvFrom(uint8_t *buffer,
                 ssize_t *data_read,

@@ -151,7 +151,7 @@ void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
     return;
   }
 
-  LogicInterface *logic = dynamic_cast<LogicInterface*>(interface);  // NOLINT
+  LogicInterface *logic = dynamic_cast<LogicInterface*>(interface);
   if (logic == NULL) {
     OLA_WARN << "Only the Logic is supported for now";
     return;
@@ -314,7 +314,8 @@ void OnConnect(U64 device_id, GenericInterface* device_interface,
   if (!user_data)
     return;
 
-  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  LogicReader *reader =
+      (LogicReader*) user_data;  // NOLINT(readability/casting)
   reader->DeviceConnected(device_id, device_interface);
 }
 
@@ -322,7 +323,8 @@ void OnDisconnect(U64 device_id, void *user_data) {
   if (!user_data)
     return;
 
-  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  LogicReader *reader =
+      (LogicReader*) user_data;  // NOLINT(readability/casting)
   reader->DeviceDisconnected(device_id);
 }
 
@@ -332,7 +334,8 @@ void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
     DevicesManagerInterface::DeleteU8ArrayPtr(data);
     return;
   }
-  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  LogicReader *reader =
+      (LogicReader*) user_data;  // NOLINT(readability/casting)
   reader->DataReceived(device_id, data, data_length);
 }
 
