@@ -18,7 +18,7 @@ sudo npm install --global grunt-cli
 to give you a nicer way to run the grunt task runner from the command-line
 
 ```bash
-grunt build --force
+grunt build
 ```
 grunt is not happy with moving outside of its parent directory but it works with --force
 
