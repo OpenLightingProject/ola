@@ -23,7 +23,6 @@ import array
 import logging
 import socket
 import struct
-from functools import total_ordering
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
@@ -42,7 +41,7 @@ class Error(Exception):
 class OLADNotRunningException(Error):
   """Thrown if we try to connect and olad isn't running."""
 
-@total_ordering
+
 class Plugin(object):
   """Represents a plugin.
 
@@ -82,10 +81,24 @@ class Plugin(object):
                     enabled=self.enabled)
 
   def __lt__(self, other):
-      return self._id < other._id
+    return self.id < other.id
 
   def __eq__(self, other):
-      return self._id == other._id
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 # Populate the Plugin class attributes from the protobuf
@@ -93,7 +106,6 @@ for value in Ola_pb2._PLUGINIDS.values:
   setattr(Plugin, value.name, value.number)
 
 
-@total_ordering
 class Device(object):
   """Represents a device.
 
@@ -138,12 +150,6 @@ class Device(object):
   def output_ports(self):
     return self._output_ports
 
-  def __lt__(self, other):
-      return self._alias < other._alias
-
-  def __eq__(self, other):
-      return self._alias == other._alias
-
   def __repr__(self):
     s = 'Device(id="{id}", alias={alias}, name="{name}", ' \
         'plugin_id={plugin_id}, {nr_inputs} inputs, {nr_outputs} outputs)'
@@ -154,8 +160,27 @@ class Device(object):
                     nr_inputs=len(self.input_ports),
                     nr_outputs=len(self.output_ports))
 
+  def __lt__(self, other):
+    return self.alias < other.alias
 
-@total_ordering
+  def __eq__(self, other):
+    return self.alias == other.alias
+
+  # These 3 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.alias <= other.alias
+
+  def __gt__(self, other):
+    return self.alias > other.alias
+
+  def __ge__(self, other):
+    return self.alias >= other.alias
+
+  def __ne__(self, other):
+    return self.alias != other.alias
+
+
 class Port(object):
   """Represents a port.
 
@@ -203,13 +228,26 @@ class Port(object):
                     supports_rdm=self.supports_rdm)
 
   def __lt__(self, other):
-      return self._id < other._id
+    return self.id < other.id
 
   def __eq__(self, other):
-      return self._id == other._id
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
-@total_ordering
 class Universe(object):
   """Represents a universe.
 
@@ -239,18 +277,32 @@ class Universe(object):
   def merge_mode(self):
     return self._merge_mode
 
-  def __lt__(self, other):
-      return self._id < other._id
-
-  def __eq__(self, other):
-      return self._id == other._id
-
   def __repr__(self):
     merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
     s = 'Universe(id={id}, name="{name}", merge_mode={merge_mode})'
     return s.format(id=self.id,
                     name=self.name,
                     merge_mode=merge_mode)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 class RequestStatus(object):
@@ -286,7 +338,6 @@ class RequestStatus(object):
     return self._message
 
 
-@total_ordering
 class RDMNack(object):
   NACK_SYMBOLS_TO_VALUES = {
     'NR_UNKNOWN_PID': (0, 'Unknown PID'),
@@ -323,10 +374,24 @@ class RDMNack(object):
                     desc=self.description)
 
   def __lt__(self, other):
-      return self.value < other.value
+    return self.value < other.value
 
   def __eq__(self, other):
-      return self.value == other.value
+    return self.value == other.value
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.value <= other.value
+
+  def __gt__(self, other):
+    return self.value > other.value
+
+  def __ge__(self, other):
+    return self.value >= other.value
+
+  def __ne__(self, other):
+    return self.value != other.value
 
   @classmethod
   def LookupCode(cls, code):
