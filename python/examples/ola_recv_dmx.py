@@ -26,22 +26,22 @@ import sys
 from ola.ClientWrapper import ClientWrapper
 
 def NewData(data):
-  print data
+  print(data)
 
 def Usage():
-  print textwrap.dedent("""
+  print(textwrap.dedent("""
   Usage: ola_recv_dmx.py --universe <universe>
 
   Display the DXM512 data for the universe.
 
   -h, --help                Display this help message and exit.
-  -u, --universe <universe> Universe number.""")
+  -u, --universe <universe> Universe number."""))
 
 def main():
   try:
       opts, args = getopt.getopt(sys.argv[1:], "hu:", ["help", "universe="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

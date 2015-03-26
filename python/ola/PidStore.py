@@ -18,6 +18,8 @@
 
 """The PID Store."""
 
+from __future__ import print_function
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import binascii
@@ -120,8 +122,8 @@ class Pid(object):
     return self._requests.get(command_class)
 
   def GetRequestField(self, command_class, field_name):
-    fields = filter(lambda field: field.name == field_name,
-                    self.GetRequest(command_class).GetAtoms())
+    fields = self.GetRequest(command_class).GetAtoms()
+    fields = [f for f in fields if f.name == field_name]
     return fields[0] if fields else None
 
   def ResponseSupported(self, command_class):
@@ -132,8 +134,8 @@ class Pid(object):
     return self._responses.get(command_class)
 
   def GetResponseField(self, command_class, field_name):
-    fields = filter(lambda field: field.name == field_name,
-                    self.GetResponse(command_class).GetAtoms())
+    fields = self.GetResponse(command_class).GetAtoms()
+    fields = [f for f in fields if f.name == field_name]
     return fields[0] if fields else None
 
   def ValidateAddressing(self, args, command_class):
@@ -247,7 +249,7 @@ class FixedSizeAtom(Atom):
     format_string = self._FormatString()
     try:
       data = struct.pack(format_string, args[0])
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
 
@@ -375,7 +377,7 @@ class IntAtom(FixedSizeAtom):
     return self._AccountForMultiplierPack(value)
 
   def _GetAllowedRanges(self):
-    values = self._labels.keys()
+    values = list(self._labels.keys())
 
     for range in self._ranges:
       if range.min == range.max:
@@ -398,7 +400,7 @@ class IntAtom(FixedSizeAtom):
     if self._multiplier >= 0:
       try:
         new_value = int(value)
-      except ValueError, e:
+      except ValueError as e:
         raise ArgsValidationError(e)
 
       multiplier = 10 ** self._multiplier
@@ -411,7 +413,7 @@ class IntAtom(FixedSizeAtom):
     else:
       try:
         new_value = float(value)
-      except ValueError, e:
+      except ValueError as e:
         raise ArgsValidationError(e)
 
       scaled_value = new_value * 10 ** abs(self._multiplier)
@@ -469,7 +471,7 @@ class IPV4(IntAtom):
   def Unpack(self, data):
     try:
       return socket.inet_ntoa(data)
-    except socket.error, e:
+    except socket.error as e:
       raise ArgsValidationError("Can't unpack data: %s" % e)
 
   def Pack(self, args):
@@ -477,7 +479,7 @@ class IPV4(IntAtom):
     #inet_aton, we may want to restrict that in future
     try:
       value = struct.unpack("!I", socket.inet_aton(args[0]))
-    except socket.error, e:
+    except socket.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return super(IntAtom, self).Pack(value)
 
@@ -519,7 +521,7 @@ class MACAtom(FixedSizeAtom):
                          mac.mac_address[3],
                          mac.mac_address[4],
                          mac.mac_address[5])
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
 
@@ -550,7 +552,7 @@ class UIDAtom(FixedSizeAtom):
     format_string = self._FormatString()
     try:
       data = struct.pack(format_string, uid.manufacturer_id, uid.device_id)
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
 
@@ -593,7 +595,7 @@ class String(Atom):
 
     try:
       data = struct.unpack('%ds' % arg_size, arg)
-    except struct.error, e:
+    except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
 
@@ -609,7 +611,7 @@ class String(Atom):
 
     try:
       value = struct.unpack('%ds' % data_size, data)
-    except struct.error, e:
+    except struct.error as e:
       raise UnpackException(e)
 
     return value[0].rstrip('\x00')
@@ -868,8 +870,7 @@ class Group(Atom):
 def RootDeviceValidator(args):
   """Ensure the sub device is the root device."""
   if args.get('sub_device') != ROOT_DEVICE:
-    print >> sys.stderr, (
-        "Can't send GET %s to non root sub devices" % args['pid'].name)
+    print("Can't send GET %s to non root sub devices" % args['pid'].name, file=sys.stderr)
     return False
   return True
 
@@ -879,8 +880,7 @@ def SubDeviceValidator(args):
   sub_device = args.get('sub_device')
   if (sub_device is None or
       (sub_device > MAX_VALID_SUB_DEVICE and sub_device != ALL_SUB_DEVICES)):
-    print >> sys.stderr, (
-        "%s isn't a valid sub device" % sub_device)
+    print("%s isn't a valid sub device" % sub_device, file=sys.stderr)
     return False
   return True
 
@@ -889,8 +889,7 @@ def NonBroadcastSubDeviceValidator(args):
   """Ensure the sub device is in the range 0 - 512."""
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device > MAX_VALID_SUB_DEVICE):
-    print >> sys.stderr, (
-        "Sub device %s needs to be between 0 and 512" % sub_device)
+    print("Sub device %s needs to be between 0 and 512" % sub_device, file=sys.stderr)
     return False
   return True
 
@@ -900,8 +899,7 @@ def SpecificSubDeviceValidator(args):
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device == ROOT_DEVICE or
       sub_device > MAX_VALID_SUB_DEVICE):
-    print >> sys.stderr, (
-        "Sub device %s needs to be between 1 and 512" % sub_device)
+    print("Sub device %s needs to be between 1 and 512" % sub_device, file=sys.stderr)
     return False
   return True
 
@@ -935,7 +933,7 @@ class PidStore(object):
 
     try:
       text_format.Merge('\n'.join(lines), self._pid_store)
-    except text_format.ParseError, e:
+    except text_format.ParseError as e:
       raise InvalidPidFormat(str(e))
 
     for pid_pb in self._pid_store.pid:
@@ -999,7 +997,7 @@ class PidStore(object):
     Returns:
       A list of Pid objects.
     """
-    return self._pids.values()
+    return list(self._pids.values())
 
   def ManufacturerPids(self, esta_id):
     """Return a list of all Manufacturer PIDs for a given esta_id.
@@ -1010,7 +1008,7 @@ class PidStore(object):
     Returns:
       A list of Pid objects.
     """
-    return self._manufacturer_pids.get(esta_id, {}).values()
+    return list(self._manufacturer_pids.get(esta_id, {}).values())
 
   def GetPid(self, pid_value, esta_id=None):
     """Look up a PIDs by the 2-byte PID value.
@@ -1074,7 +1072,7 @@ class PidStore(object):
 
       try:
         group = self._FrameFormatToGroup(getattr(pid_pb, field_name))
-      except PidStructureException, e:
+      except PidStructureException as e:
         raise PidStructureException(
             "The structure for the %s in %s isn't valid: %s" %
             (field_name, pid_pb.name, e))
