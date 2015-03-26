@@ -25,7 +25,7 @@ from ola.OlaClient import Universe
 
 def Universes(state, universes):
   for uni in universes:
-    print '%d %s %r' % (uni.id, uni.name, uni.merge_mode == Universe.LTP)
+    print('%d %s %r' % (uni.id, uni.name, uni.merge_mode == Universe.LTP))
   wrapper.Stop()
 
 wrapper = ClientWrapper()

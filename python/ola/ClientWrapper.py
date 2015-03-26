@@ -228,7 +228,7 @@ class SelectServer(object):
 
   def _CheckDescriptors(self, ready_set, all_descriptors):
     runnables = []
-    for fd, runnable in all_descriptors.iteritems():
+    for fd, runnable in all_descriptors.items():
       if fd in ready_set:
         runnables.append(runnable)
     for runnable in runnables:
