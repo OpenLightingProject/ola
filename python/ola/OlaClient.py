@@ -73,15 +73,32 @@ class Plugin(object):
   def enabled(self):
     return self._enabled
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
-
   def __repr__(self):
     s = 'Plugin(id={id}, name="{name}", active={active}, enabled={enabled})'
     return s.format(id=self.id,
                     name=self.name,
                     active=self.active,
                     enabled=self.enabled)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 # Populate the Plugin class attributes from the protobuf
@@ -133,9 +150,6 @@ class Device(object):
   def output_ports(self):
     return self._output_ports
 
-  def __cmp__(self, other):
-    return cmp(self._alias, other._alias)
-
   def __repr__(self):
     s = 'Device(id="{id}", alias={alias}, name="{name}", ' \
         'plugin_id={plugin_id}, {nr_inputs} inputs, {nr_outputs} outputs)'
@@ -145,6 +159,26 @@ class Device(object):
                     plugin_id=self.plugin_id,
                     nr_inputs=len(self.input_ports),
                     nr_outputs=len(self.output_ports))
+
+  def __lt__(self, other):
+    return self.alias < other.alias
+
+  def __eq__(self, other):
+    return self.alias == other.alias
+
+  # These 3 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.alias <= other.alias
+
+  def __gt__(self, other):
+    return self.alias > other.alias
+
+  def __ge__(self, other):
+    return self.alias >= other.alias
+
+  def __ne__(self, other):
+    return self.alias != other.alias
 
 
 class Port(object):
@@ -184,9 +218,6 @@ class Port(object):
   def supports_rdm(self):
     return self._supports_rdm
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
-
   def __repr__(self):
     s = 'Port(id={id}, universe={universe}, active={active}, ' \
         'description="{desc}", supports_rdm={supports_rdm})'
@@ -195,6 +226,26 @@ class Port(object):
                     active=self.active,
                     desc=self.description,
                     supports_rdm=self.supports_rdm)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 class Universe(object):
@@ -226,15 +277,32 @@ class Universe(object):
   def merge_mode(self):
     return self._merge_mode
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
-
   def __repr__(self):
     merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
     s = 'Universe(id={id}, name="{name}", merge_mode={merge_mode})'
     return s.format(id=self.id,
                     name=self.name,
                     merge_mode=merge_mode)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 class RequestStatus(object):
@@ -305,8 +373,25 @@ class RDMNack(object):
     return s.format(value=self.value,
                     desc=self.description)
 
-  def __cmp__(self, other):
-    return cmp(self.value, other.value)
+  def __lt__(self, other):
+    return self.value < other.value
+
+  def __eq__(self, other):
+    return self.value == other.value
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.value <= other.value
+
+  def __gt__(self, other):
+    return self.value > other.value
+
+  def __ge__(self, other):
+    return self.value >= other.value
+
+  def __ne__(self, other):
+    return self.value != other.value
 
   @classmethod
   def LookupCode(cls, code):
@@ -316,7 +401,7 @@ class RDMNack(object):
     return obj
 
 
-for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.iteritems():
+for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.items():
   nack = RDMNack(value, description)
   setattr(RDMNack, symbol, nack)
   RDMNack._CODE_TO_OBJECT[value] = nack
