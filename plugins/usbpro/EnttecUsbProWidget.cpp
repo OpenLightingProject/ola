@@ -303,9 +303,10 @@ void EnttecPortImpl::RunIncrementalDiscovery(
  */
 void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
                                 MuteDeviceCallback *mute_complete) {
+  OLA_INFO << "Muting " << target << ", TN: "
+           << static_cast<int>(m_transaction_number);
   auto_ptr<RDMRequest> mute_request(
       ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number++));
-  OLA_INFO << "Muting " << target;
   if (PackAndSendRDMRequest(m_ops.send_rdm, mute_request.get()))
     m_mute_callback = mute_complete;
   else
@@ -319,10 +320,11 @@ void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
  * completes.
  */
 void EnttecPortImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
+  OLA_INFO << "Un-muting all devices, TN: "
+           << static_cast<int>(m_transaction_number);
   auto_ptr<RDMRequest> unmute_request(
       ola::rdm::NewUnMuteRequest(m_uid, ola::rdm::UID::AllDevices(),
                                  m_transaction_number++));
-  OLA_INFO << "Un-muting all devices";
   if (PackAndSendRDMRequest(m_ops.send_rdm, unmute_request.get())) {
     m_unmute_callback = unmute_complete;
   } else {
