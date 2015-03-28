@@ -73,6 +73,13 @@ class Plugin(object):
   def enabled(self):
     return self._enabled
 
+  @staticmethod
+  def FromProtobuf(plugin_pb):
+    return Plugin(plugin_pb.plugin_id,
+                  plugin_pb.name,
+                  plugin_pb.active,
+                  plugin_pb.enabled)
+
   def __repr__(self):
     s = 'Plugin(id={id}, name="{name}", active={active}, enabled={enabled})'
     return s.format(id=self.id,
@@ -150,6 +157,18 @@ class Device(object):
   def output_ports(self):
     return self._output_ports
 
+  @staticmethod
+  def FromProtobuf(device_pb):
+    input_ports = [Port.FromProtobuf(x) for x in device_pb.input_port]
+    output_ports = [Port.FromProtobuf(x) for x in device_pb.output_port]
+
+    return Device(device_pb.device_id,
+                  device_pb.device_alias,
+                  device_pb.device_name,
+                  device_pb.plugin_id,
+                  input_ports,
+                  output_ports)
+
   def __repr__(self):
     s = 'Device(id="{id}", alias={alias}, name="{name}", ' \
         'plugin_id={plugin_id}, {nr_inputs} inputs, {nr_outputs} outputs)'
@@ -218,6 +237,15 @@ class Port(object):
   def supports_rdm(self):
     return self._supports_rdm
 
+  @staticmethod
+  def FromProtobuf(port_pb):
+    universe = port_pb.universe if port_pb.HasField('universe') else None
+    return Port(port_pb.port_id,
+                universe,
+                port_pb.active,
+                port_pb.description,
+                port_pb.supports_rdm)
+
   def __repr__(self):
     s = 'Port(id={id}, universe={universe}, active={active}, ' \
         'description="{desc}", supports_rdm={supports_rdm})'
@@ -276,6 +304,12 @@ class Universe(object):
   @property
   def merge_mode(self):
     return self._merge_mode
+
+  @staticmethod
+  def FromProtobuf(universe_pb):
+    return Universe(universe_pb.universe,
+                    universe_pb.name,
+                    universe_pb.merge_mode)
 
   def __repr__(self):
     merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
@@ -1178,9 +1212,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     plugins = None
 
     if status.Succeeded():
-      plugins = [Plugin(p.plugin_id, p.name, p.active, p.enabled)
-                 for p in response.plugin]
-      plugins.sort(key=lambda x: x.id)
+      plugins = sorted([Plugin.FromProtobuf(p) for p in response.plugin])
 
     callback(status, plugins)
 
@@ -1222,22 +1254,10 @@ class OlaClient(Ola_pb2.OlaClientService):
         input_ports = []
         output_ports = []
         for port in device.input_port:
-          universe = port.universe if port.HasField('universe') else None
-
-          input_ports.append(Port(port.port_id,
-                                  universe,
-                                  port.active,
-                                  port.description,
-                                  port.supports_rdm))
+          input_ports.append(Port.FromProtobuf(port))
 
         for port in device.output_port:
-          universe = port.universe if port.HasField('universe') else None
-
-          output_ports.append(Port(port.port_id,
-                                   universe,
-                                   port.active,
-                                   port.description,
-                                   port.supports_rdm))
+          output_ports.append(Port.FromProtobuf(port))
 
         devices.append(Device(device.device_id,
                               device.device_alias,
@@ -1261,8 +1281,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     universes = None
 
     if status.Succeeded():
-      universes = [Universe(u.universe, u.name, u.merge_mode) for u in
-          response.universe]
+      universes = [Universe.FromProtobuf(u) for u in response.universe]
 
     callback(status, universes)
 
