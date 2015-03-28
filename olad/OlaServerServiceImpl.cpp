@@ -314,6 +314,26 @@ void OlaServerServiceImpl::AddUniverse(
   universe_info->set_input_port_count(universe->InputPortCount());
   universe_info->set_output_port_count(universe->OutputPortCount());
   universe_info->set_rdm_devices(universe->UIDCount());
+
+  std::vector<InputPort*> input_ports;
+  std::vector<InputPort*>::const_iterator input_it;
+  universe->InputPorts(&input_ports);
+  for (input_it = input_ports.begin();
+       input_it != input_ports.end();
+       input_it++) {
+    PortInfo *pi = universe_info->add_input_ports();
+    PopulatePort(**input_it, pi);
+  }
+
+  std::vector<OutputPort*> output_ports;
+  std::vector<OutputPort*>::const_iterator output_it;
+  universe->OutputPorts(&output_ports);
+  for (output_it = output_ports.begin();
+       output_it != output_ports.end();
+       output_it++) {
+    PortInfo *pi = universe_info->add_output_ports();
+    PopulatePort(**output_it, pi);
+  }
 }
 
 void OlaServerServiceImpl::GetUniverseInfo(
