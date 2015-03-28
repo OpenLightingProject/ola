@@ -101,8 +101,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool ContainsPort(OutputPort *port) const;
     unsigned int InputPortCount() const { return m_input_ports.size(); }
     unsigned int OutputPortCount() const { return m_output_ports.size(); }
-    void InputPorts(std::vector<InputPort*> *ports);
-    void OutputPorts(std::vector<OutputPort*> *ports);
+    void InputPorts(std::vector<InputPort*> *ports) const;
+    void OutputPorts(std::vector<OutputPort*> *ports) const;
 
     // Source clients are those that provide us with data
     bool AddSourceClient(Client *client);
