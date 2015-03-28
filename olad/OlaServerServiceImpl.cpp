@@ -303,13 +303,25 @@ void OlaServerServiceImpl::SetPortPriority(
         "Invalid SetPortPriority request, see logs for more info");
 }
 
+void OlaServerServiceImpl::AddUniverse(
+    const Universe * universe,
+    ola::proto::UniverseInfoReply *universe_info_reply) const {
+  UniverseInfo *universe_info = universe_info_reply->add_universe();
+  universe_info->set_universe(universe->UniverseId());
+  universe_info->set_name(universe->Name());
+  universe_info->set_merge_mode(universe->MergeMode() == Universe::MERGE_HTP
+      ? ola::proto::HTP : ola::proto::LTP);
+  universe_info->set_input_port_count(universe->InputPortCount());
+  universe_info->set_output_port_count(universe->OutputPortCount());
+  universe_info->set_rdm_devices(universe->UIDCount());
+}
+
 void OlaServerServiceImpl::GetUniverseInfo(
     RpcController* controller,
     const OptionalUniverseRequest* request,
     UniverseInfoReply* response,
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
-  UniverseInfo *universe_info;
 
   if (request->has_universe()) {
     // return info for a single universe
@@ -317,14 +329,7 @@ void OlaServerServiceImpl::GetUniverseInfo(
     if (!universe)
       return MissingUniverseError(controller);
 
-    universe_info = response->add_universe();
-    universe_info->set_universe(universe->UniverseId());
-    universe_info->set_name(universe->Name());
-    universe_info->set_merge_mode(universe->MergeMode() == Universe::MERGE_HTP
-        ? ola::proto::HTP: ola::proto::LTP);
-    universe_info->set_input_port_count(universe->InputPortCount());
-    universe_info->set_output_port_count(universe->OutputPortCount());
-    universe_info->set_rdm_devices(universe->UIDCount());
+    AddUniverse(universe, response);
   } else {
     // return all
     vector<Universe*> uni_list;
@@ -332,14 +337,7 @@ void OlaServerServiceImpl::GetUniverseInfo(
     vector<Universe*>::const_iterator iter;
 
     for (iter = uni_list.begin(); iter != uni_list.end(); ++iter) {
-      universe_info = response->add_universe();
-      universe_info->set_universe((*iter)->UniverseId());
-      universe_info->set_name((*iter)->Name());
-      universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP
-          ? ola::proto::HTP: ola::proto::LTP);
-      universe_info->set_input_port_count((*iter)->InputPortCount());
-      universe_info->set_output_port_count((*iter)->OutputPortCount());
-      universe_info->set_rdm_devices((*iter)->UIDCount());
+      AddUniverse(*iter, response);
     }
   }
 }

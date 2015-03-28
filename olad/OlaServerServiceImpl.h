@@ -33,6 +33,8 @@
 
 namespace ola {
 
+class Universe;
+
 /**
  * @brief The OLA Server RPC methods.
  *
@@ -269,6 +271,8 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   void AddDevice(class AbstractDevice *device,
                  unsigned int alias,
                  ola::proto::DeviceInfoReply* response) const;
+  void AddUniverse(const Universe *universe,
+                   ola::proto::UniverseInfoReply *universe_info_reply) const;
 
   template <class PortClass>
   void PopulatePort(const PortClass &port,
