@@ -20,14 +20,12 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
-import logging
 import socket
 import struct
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
 from ola.UID import UID
-from ola.RDMConstants import MERGE_MODE
 
 
 """The port that the OLA server listens on."""
@@ -527,7 +525,7 @@ class RDMResponse(object):
 
   def __init__(self, controller, response):
     self.status = RequestStatus(controller)
-    if (self.status.Succeeded() and (response != None)):
+    if self.status.Succeeded() and response is not None:
       self._response_code = response.response_code
       self._response_type = response.response_type
       self._queued_messages = response.message_count
@@ -631,7 +629,7 @@ class RDMResponse(object):
   def _command_class(self):
     if self.command_class == OlaClient.RDM_GET_RESPONSE:
       return 'GET'
-    elif self.command_class == OlaClient.RDM_SET_RESPONSE :
+    elif self.command_class == OlaClient.RDM_SET_RESPONSE:
       return 'SET'
     elif self.command_class == OlaClient.RDM_DISCOVERY_RESPONSE:
       return 'DISCOVERY'
@@ -641,7 +639,7 @@ class RDMResponse(object):
 
 class OlaClient(Ola_pb2.OlaClientService):
   """The client used to communicate with olad."""
-  def __init__(self, our_socket = None, close_callback = None):
+  def __init__(self, our_socket=None, close_callback=None):
     """Create a new client.
 
     Args:
@@ -1079,7 +1077,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data = ''):
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=''):
     """Send an RDM get command.
 
     Args:
@@ -1097,9 +1095,9 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data);
+                            data)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data = ''):
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=''):
     """Send an RDM set command.
 
     Args:
@@ -1117,7 +1115,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data, set = True);
+                            data, set=True)
 
   def SendRawRDMDiscovery(self,
                           universe,
@@ -1125,7 +1123,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data = ''):
+                          data=''):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
 
@@ -1195,7 +1193,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
-                  set = False):
+                  set=False):
     controller = SimpleRpcController()
     request = Ola_pb2.RDMRequest()
     request.universe = universe
