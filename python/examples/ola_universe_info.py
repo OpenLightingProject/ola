@@ -25,7 +25,21 @@ from ola.OlaClient import Universe
 
 def Universes(state, universes):
   for uni in universes:
-    print('%d %s %r' % (uni.id, uni.name, uni.merge_mode == Universe.LTP))
+    print('Universe {}'.format(uni.id))
+    print('  - Name: {}'.format(uni.name))
+    print('  - Merge mode: {}'.format(
+      'LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
+
+    if len(uni.input_ports) > 0:
+      print('  - Input ports:')
+      for p in uni.input_ports:
+        print('    - {}'.format(p))
+
+    if len(uni.output_ports) > 0:
+      print('  - Output ports:')
+      for p in uni.output_ports:
+        print('    - {}'.format(p))
+
   wrapper.Stop()
 
 wrapper = ClientWrapper()

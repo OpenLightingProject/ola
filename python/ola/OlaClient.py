@@ -288,10 +288,12 @@ class Universe(object):
   LTP = Ola_pb2.LTP
   HTP = Ola_pb2.HTP
 
-  def __init__(self, universe_id, name, merge_mode):
+  def __init__(self, universe_id, name, merge_mode, input_ports, output_ports):
     self._id = universe_id
     self._name = name
     self._merge_mode = merge_mode
+    self._input_ports = sorted(input_ports)
+    self._output_ports = sorted(output_ports)
 
   @property
   def id(self):
@@ -305,11 +307,24 @@ class Universe(object):
   def merge_mode(self):
     return self._merge_mode
 
+  @property
+  def input_ports(self):
+    return self._input_ports
+
+  @property
+  def output_ports(self):
+    return self._output_ports
+
   @staticmethod
   def FromProtobuf(universe_pb):
+    input_ports = [Port.FromProtobuf(x) for x in universe_pb.input_ports]
+    output_ports = [Port.FromProtobuf(x) for x in universe_pb.output_ports]
+
     return Universe(universe_pb.universe,
                     universe_pb.name,
-                    universe_pb.merge_mode)
+                    universe_pb.merge_mode,
+                    input_ports,
+                    output_ports)
 
   def __repr__(self):
     merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
