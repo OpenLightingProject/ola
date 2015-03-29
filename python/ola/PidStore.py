@@ -245,7 +245,7 @@ class FixedSizeAtom(Atom):
     format_string = self._FormatString()
     try:
       values = struct.unpack(format_string, data)
-    except struct.error:
+    except struct.error as e:
       raise UnpackException(e)
     return values[0]
 
@@ -499,7 +499,7 @@ class MACAtom(FixedSizeAtom):
     format_string = self._FormatString()
     try:
       values = struct.unpack(format_string, data)
-    except struct.error:
+    except struct.error as e:
       raise UnpackException(e)
     return MACAddress(bytearray([values[0],
                                  values[1],
@@ -516,7 +516,7 @@ class MACAtom(FixedSizeAtom):
       mac = MACAddress.FromString(args[0])
 
     if mac is None:
-      raise ArgsValidationError("Invalid MAC Address: %s" % e)
+      raise ArgsValidationError("Invalid MAC Address: %s" % args)
 
     format_string = self._FormatString()
     try:
@@ -541,7 +541,7 @@ class UIDAtom(FixedSizeAtom):
     format_string = self._FormatString()
     try:
       values = struct.unpack(format_string, data)
-    except struct.error:
+    except struct.error as e:
       raise UnpackException(e)
     return UID(values[0], values[1])
 
@@ -553,7 +553,7 @@ class UIDAtom(FixedSizeAtom):
       uid = UID.FromString(args[0])
 
     if uid is None:
-      raise ArgsValidationError("Invalid UID: %s" % e)
+      raise ArgsValidationError("Invalid UID: %s" % args)
 
     format_string = self._FormatString()
     try:
@@ -954,13 +954,13 @@ class PidStore(object):
                                  (pid_pb.value,
                                   ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
                                   ola.RDMConstants.RDM_MANUFACTURER_PID_MAX,
-                                  file))
+                                  pid_file_name))
         if pid_pb.value in self._pids:
           raise InvalidPidFormat('0x%04hx listed more than once in %s' %
-                                 (pid_pb.value, file))
+                                 (pid_pb.value, pid_file_name))
         if pid_pb.name in self._name_to_pid:
           raise InvalidPidFormat('%s listed more than once in %s' %
-                                 (pid_pb.name, file))
+                                 (pid_pb.name, pid_file_name))
 
       pid = self._PidProtoToObject(pid_pb)
       self._pids[pid.value] = pid
@@ -989,11 +989,11 @@ class PidStore(object):
           if pid_pb.value in pid_dict:
             raise InvalidPidFormat(
                 '0x%04hx listed more than once for 0x%04hx in %s' % (
-                  pid_pb.value, manufacturer.manufacturer_id, file))
+                  pid_pb.value, manufacturer.manufacturer_id, pid_file_name))
           if pid_pb.name in name_dict:
             raise InvalidPidFormat(
                 '%s listed more than once for %s in %s' % (
-                  pid_pb.name, manufacturer, file))
+                  pid_pb.name, manufacturer, pid_file_name))
         pid = self._PidProtoToObject(pid_pb)
         pid_dict[pid.value] = pid
         name_dict[pid.name] = pid
