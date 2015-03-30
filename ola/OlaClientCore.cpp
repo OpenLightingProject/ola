@@ -812,7 +812,10 @@ void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
 
   string error_str(controller->Failed() ? controller->ErrorText() : "");
 
-  OlaUniverse null_universe(0, OlaUniverse::MERGE_LTP, "", 0, 0, 0);
+  OlaUniverse null_universe(0, OlaUniverse::MERGE_LTP, "",
+                            std::vector<OlaInputPort>(),
+                            std::vector<OlaOutputPort>(),
+                            0);
 
   if (!controller->Failed()) {
     if (reply->universe_size() == 1) {

@@ -101,11 +101,23 @@ OlaUniverse OlaUniverse::FromProtobuf(
     universe_info.merge_mode() == ola::proto::HTP ?
     OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP;
 
+  vector<OlaInputPort> input_ports;
+  for (int j = 0; j < universe_info.input_ports_size(); ++j) {
+    ola::proto::PortInfo port_info = universe_info.input_ports(j);
+    input_ports.push_back(OlaInputPort::FromProtobuf(port_info));
+  }
+
+  vector<OlaOutputPort> output_ports;
+  for (int j = 0; j < universe_info.output_ports_size(); ++j) {
+    ola::proto::PortInfo port_info = universe_info.output_ports(j);
+    output_ports.push_back(OlaOutputPort::FromProtobuf(port_info));
+  }
+
   return OlaUniverse(universe_info.universe(),
                      merge_mode,
                      universe_info.name(),
-                     universe_info.input_port_count(),
-                     universe_info.output_port_count(),
+                     input_ports,
+                     output_ports,
                      universe_info.rdm_devices());
 }
 
