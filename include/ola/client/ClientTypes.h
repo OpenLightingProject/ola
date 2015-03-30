@@ -29,6 +29,8 @@
 #include <string>
 #include <vector>
 
+#include "common/protocol/Ola.pb.h"
+
 /**
  * @file
  * @brief Types used as return values from the OLA Client.
@@ -77,6 +79,8 @@ class OlaPlugin {
   bool operator<(const OlaPlugin &other) const {
     return m_id < other.m_id;
   }
+
+  static OlaPlugin FromProtobuf(ola::proto::PluginInfo plugin_info);
 
  private:
   unsigned int m_id;  // id of this plugin
@@ -191,6 +195,8 @@ class OlaInputPort: public OlaPort {
       OlaPort(port_id, universe, active, description,
               capability, mode, priority, supports_rdm) {
   }
+
+  static OlaInputPort FromProtobuf(ola::proto::PortInfo port_info);
 };
 
 /**
@@ -209,6 +215,8 @@ class OlaOutputPort: public OlaPort {
       OlaPort(port_id, universe, active, description,
               capability, mode, priority, supports_rdm) {
   }
+
+  static OlaOutputPort FromProtobuf(ola::proto::PortInfo port_info);
 };
 
 
@@ -246,6 +254,8 @@ class OlaDevice {
   bool operator<(const OlaDevice &other) const {
     return m_alias < other.m_alias;
   }
+
+  static OlaDevice FromProtobuf(ola::proto::DeviceInfo device_info);
 
  private:
   std::string m_id;            // device id
@@ -287,6 +297,8 @@ class OlaUniverse {
   unsigned int InputPortCount() const { return m_input_port_count; }
   unsigned int OutputPortCount() const { return m_output_port_count; }
   unsigned int RDMDeviceCount() const { return m_rdm_device_count; }
+
+  static OlaUniverse FromProtobuf(ola::proto::UniverseInfo universe_info);
 
  private:
   unsigned int m_id;

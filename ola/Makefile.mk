@@ -18,6 +18,7 @@ lib_LTLIBRARIES += ola/libola.la
 ola_libola_la_SOURCES = \
     ola/AutoStart.cpp \
     ola/ClientRDMAPIShim.cpp \
+    ola/ClientTypes.cpp \
     ola/Module.cpp \
     ola/OlaCallbackClient.cpp \
     ola/OlaClient.cpp \
