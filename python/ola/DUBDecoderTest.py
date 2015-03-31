@@ -54,8 +54,8 @@ class UIDTest(unittest.TestCase):
   def testValidResponse(self):
     uid = DecodeResponse(self.TEST_DATA)
     self.assertNotEqual(None, uid)
-    self.assertEquals(0x00a1, uid.manufacturer_id)
-    self.assertEquals(0x00020020, uid.device_id)
+    self.assertEqual(0x00a1, uid.manufacturer_id)
+    self.assertEqual(0x00020020, uid.device_id)
 
 if __name__ == '__main__':
   unittest.main()

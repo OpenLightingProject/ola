@@ -838,6 +838,8 @@ bool EnttecUsbProWidgetImpl::SendCommand(uint8_t label, const uint8_t *data,
 void EnttecUsbProWidgetImpl::HandleMessage(uint8_t label,
                                            const uint8_t *data,
                                            unsigned int length) {
+  OLA_DEBUG << "Enttec received label " << static_cast<uint32_t>(label)
+            << ", length " << length;
   if (label == PORT_ASSIGNMENT_LABEL) {
     HandlePortAssignment(data, length);
   } else if (label > 128 && m_ports.size() > 1) {

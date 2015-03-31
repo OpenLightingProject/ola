@@ -17,6 +17,8 @@
 
 """The Python RDM API."""
 
+from __future__ import print_function
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import sys
@@ -96,7 +98,7 @@ class RDMAPI(object):
       True if sent ok, False otherwise.
     """
     if self._strict_checks and uid.IsBroadcast():
-      print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
+      print("Can't send GET to broadcast address %s" % uid, file=sys.stderr)
       return False
 
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
@@ -117,7 +119,7 @@ class RDMAPI(object):
       True if sent ok, False otherwise.
     """
     if self._strict_checks and uid.IsBroadcast():
-      print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
+      print("Can't send GET to broadcast address %s" % uid, file=sys.stderr)
       return False
 
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
@@ -176,7 +178,7 @@ class RDMAPI(object):
     """
     data = pid.Pack(args, request_type)
     if data is None:
-      print >> sys.stderr, 'Could not pack data'
+      print('Could not pack data', file=sys.stderr)
       return False
 
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
@@ -239,7 +241,7 @@ class RDMAPI(object):
       if pid_descriptor:
         try:
           obj = pid_descriptor.Unpack(response.data, request_type)
-        except PidStore.UnpackException, e:
+        except PidStore.UnpackException as e:
           obj = None
           unpack_exception = e
       else:

@@ -18,9 +18,9 @@ sudo npm install --global grunt-cli
 to give you a nicer way to run the grunt task runner from the command-line
 
 ```bash
-grunt build --force
+grunt build
 ```
-grunt is not happy with moving outside of its parent directory but it works with --force
+to generate the minified versions of app.js and style.css
 
 ## Karma and Coveralls.io
 in the future there is the ability to do coverage tests with grunt plug-ins such as [grunt-karma-coveralls](https://github.com/mattjmorrison/grunt-karma-coveralls) which is a plugin for [karma](http://karma-runner.github.io/)
