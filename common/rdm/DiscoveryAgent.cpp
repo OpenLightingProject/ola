@@ -40,6 +40,7 @@ DiscoveryAgent::DiscoveryAgent(DiscoveryTargetInterface *target)
       m_branch_callback(
         ola::NewCallback(this, &DiscoveryAgent::BranchComplete)),
       m_muting_uid(0, 0),
+      m_unmute_count(0),
       m_mute_attempts(0),
       m_tree_corrupt(false) {
 }
