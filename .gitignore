@@ -63,6 +63,7 @@ config/lt~obsolete.m4
 config/missing
 config/py-compile
 config/test-driver
+conftest.dir/
 *Tester
 *Tester.exe
 data/rdm/PidDataTest.sh
@@ -197,6 +198,8 @@ tools/slp/slp_server
 tools/slp/slp_server.exe
 tools/usbpro/usbpro_firmware
 tools/usbpro/usbpro_firmware.exe
+tools/ja-rule/ja-rule
+tools/ja-rule/ja-rule.exe
 javascript/new-src/node_modules
 javascript/new-src/.idea
 .project
