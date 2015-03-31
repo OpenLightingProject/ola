@@ -334,7 +334,7 @@ void DeviceManager::RestorePortSettings(const vector<PortClass*> &ports) const {
       continue;
 
     errno = 0;
-    int id = static_cast<int>(strtol(uni_id.data(), NULL, 10));
+    int id = static_cast<int>(strtol(uni_id.c_str(), NULL, 10));
     if ((id == 0 && errno) || id < 0)
       continue;
 
