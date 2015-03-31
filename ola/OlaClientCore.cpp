@@ -30,6 +30,7 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "ola/Callback.h"
+#include "ola/ClientTypesFactory.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
@@ -640,7 +641,8 @@ void OlaClientCore::HandlePluginList(RpcController *controller_ptr,
   if (!controller->Failed()) {
     for (int i = 0; i < reply->plugin_size(); ++i) {
       ola::proto::PluginInfo plugin_info = reply->plugin(i);
-      ola_plugins.push_back(OlaPlugin::FromProtobuf(plugin_info));
+      ola_plugins.push_back(
+          ClientTypesFactory::PluginFromProtobuf(plugin_info));
     }
   }
   std::sort(ola_plugins.begin(), ola_plugins.end());
@@ -697,7 +699,7 @@ void OlaClientCore::HandlePluginState(
     for (int i = 0; i < reply->conflicts_with_size(); ++i) {
       ola::proto::PluginInfo plugin_info = reply->conflicts_with(i);
       plugin_state.conflicting_plugins.push_back(
-          OlaPlugin::FromProtobuf(plugin_info));
+          ClientTypesFactory::PluginFromProtobuf(plugin_info));
     }
   }
 
@@ -724,7 +726,8 @@ void OlaClientCore::HandleDeviceInfo(RpcController *controller_ptr,
   if (!controller->Failed()) {
     for (int i = 0; i < reply->device_size(); ++i) {
       ola::proto::DeviceInfo device_info = reply->device(i);
-      ola_devices.push_back(OlaDevice::FromProtobuf(device_info));
+      ola_devices.push_back(
+          ClientTypesFactory::DeviceFromProtobuf(device_info));
     }
   }
   std::sort(ola_devices.begin(), ola_devices.end());
@@ -794,7 +797,8 @@ void OlaClientCore::HandleUniverseList(RpcController *controller_ptr,
   if (!controller->Failed()) {
     for (int i = 0; i < reply->universe_size(); ++i) {
       ola::proto::UniverseInfo universe_info = reply->universe(i);
-      ola_universes.push_back(OlaUniverse::FromProtobuf(universe_info));
+      ola_universes.push_back(
+          ClientTypesFactory::UniverseFromProtobuf(universe_info));
     }
   }
   callback->Run(result, ola_universes);
@@ -820,7 +824,8 @@ void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
   if (!controller->Failed()) {
     if (reply->universe_size() == 1) {
       ola::proto::UniverseInfo universe_info = reply->universe(0);
-      OlaUniverse universe = OlaUniverse::FromProtobuf(universe_info);
+      OlaUniverse universe =
+          ClientTypesFactory::UniverseFromProtobuf(universe_info);
       Result result(error_str);
       callback->Run(result, universe);
       return;

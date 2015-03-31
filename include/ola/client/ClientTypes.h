@@ -29,8 +29,6 @@
 #include <string>
 #include <vector>
 
-#include "common/protocol/Ola.pb.h"
-
 /**
  * @file
  * @brief Types used as return values from the OLA Client.
@@ -79,8 +77,6 @@ class OlaPlugin {
   bool operator<(const OlaPlugin &other) const {
     return m_id < other.m_id;
   }
-
-  static OlaPlugin FromProtobuf(ola::proto::PluginInfo plugin_info);
 
  private:
   unsigned int m_id;  // id of this plugin
@@ -195,8 +191,6 @@ class OlaInputPort: public OlaPort {
       OlaPort(port_id, universe, active, description,
               capability, mode, priority, supports_rdm) {
   }
-
-  static OlaInputPort FromProtobuf(ola::proto::PortInfo port_info);
 };
 
 /**
@@ -215,8 +209,6 @@ class OlaOutputPort: public OlaPort {
       OlaPort(port_id, universe, active, description,
               capability, mode, priority, supports_rdm) {
   }
-
-  static OlaOutputPort FromProtobuf(ola::proto::PortInfo port_info);
 };
 
 
@@ -255,8 +247,6 @@ class OlaDevice {
     return m_alias < other.m_alias;
   }
 
-  static OlaDevice FromProtobuf(ola::proto::DeviceInfo device_info);
-
  private:
   std::string m_id;            // device id
   unsigned int m_alias;   // device alias
@@ -280,8 +270,8 @@ class OlaUniverse {
   OlaUniverse(unsigned int id,
               merge_mode m,
               const std::string &name,
-              std::vector<OlaInputPort> input_ports,
-              std::vector<OlaOutputPort> output_ports,
+              const std::vector<OlaInputPort> &input_ports,
+              const std::vector<OlaOutputPort> &output_ports,
               unsigned int rdm_device_count):
     m_id(id),
     m_merge_mode(m),
@@ -304,8 +294,6 @@ class OlaUniverse {
   const std::vector<OlaOutputPort> &OutputPorts() const {
     return m_output_ports;
   }
-
-  static OlaUniverse FromProtobuf(ola::proto::UniverseInfo universe_info);
 
  private:
   unsigned int m_id;
