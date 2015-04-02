@@ -29,9 +29,11 @@ angular
    var postEncode = function (data) {
     var PostData = [];
     for (var key in data) {
-     if (key === 'd' || key === 'remove_ports' || key === 'modify_ports' ||
+     if (key === 'd' ||
+         key === 'remove_ports' ||
+         key === 'modify_ports' ||
          key === 'add_ports') {
-      // this is here so dmx posts dont get broken because of removed comma's
+      // this is here so dmx posts don't get broken because of removed comma's
       PostData.push(key + '=' + data[key]);
      } else {
       PostData.push(key + '=' + encodeURIComponent(data[key]));
@@ -223,7 +225,7 @@ angular
       });
      }
     },
-    tabs: function (tab, id) {
+    tabs: function (tab, id) { // TODO(Dave_o): use a directive instead of this
      $window.$('ul#ola-nav-tabs').html('' +
      '<li id="overview" role="presentation"><a href="/new/#/universe/' +
      id +
@@ -246,8 +248,9 @@ angular
      $window.$('ul#ola-nav-tabs > li#' + tab).addClass('active');
     },
     header: function (name, id) {
-     $('div#header-universe').html('<h4>' + name + '</h4><div>(id: ' +
-     id + ')</div>');
+     $('div#header-universe').html(
+      '<h4>' + name + '</h4><div>(id: ' + id + ')</div>'
+     );  // TODO(Dave_o): use a directive instead of this
     },
     error: {
      modal: function (body, title) {

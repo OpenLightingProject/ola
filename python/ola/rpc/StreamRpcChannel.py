@@ -22,8 +22,8 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import logging
 import struct
 from google.protobuf import service
-import Rpc_pb2
-from SimpleRpcController import SimpleRpcController
+from ola.rpc import Rpc_pb2
+from ola.rpc.SimpleRpcController import SimpleRpcController
 
 
 class OutstandingRequest(object):
@@ -228,7 +228,7 @@ class StreamRpcChannel(service.RpcChannel):
         data.append(chunk)
         size_left -= len(chunk)
 
-    return ''.join(data)
+    return b''.join(data)
 
   def _ProcessIncomingData(self):
     """Process the received data."""
