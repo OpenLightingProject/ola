@@ -169,7 +169,7 @@ class DiscoveryAgent {
 
  private:
   /**
-   * Represents a range of UIDs (a branch of the UID tree)
+   * @brief Represents a range of UIDs (a branch of the UID tree)
    */
   struct UIDRange {
     UIDRange(const UID &lower, const UID &upper, UIDRange *parent)
@@ -248,6 +248,9 @@ class DiscoveryAgent {
   // The number of times we'll send a broadcast unmute command
   // This should be more than 1 to ensure that all devices are unmuted.
   static const unsigned int BROADCAST_UNMUTE_REPEATS = 3;
+
+  static const uint8_t PREAMBLE = 0xfe;
+  static const uint8_t PREAMBLE_SEPARATOR = 0xaa;
 };
 }  // namespace rdm
 }  // namespace ola
