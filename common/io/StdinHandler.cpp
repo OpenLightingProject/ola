@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * StdinHandler.h
+ * StdinHandler.cpp
  * Enables reading input from stdin one character at a time. Useful if you want
  * to create a simple interactive interface for programs.
  * Copyright (C) 2012 Simon Newton
@@ -66,8 +66,9 @@ StdinHandler::~StdinHandler() {
 
 void StdinHandler::HandleData() {
   int c = getchar();
-  if (m_callback.get())
+  if (m_callback.get()) {
     m_callback->Run(c);
+  }
 }
 }  // namespace io
 }  // namespace ola
