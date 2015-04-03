@@ -218,16 +218,16 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
   }
 
   unsigned int offset = 0;
-  while (data[offset] != 0xaa && offset < PREAMBLE_SIZE - 1) {
-    if (data[offset] != 0xfe) {
-      OLA_INFO << "preamble " << offset << " " << strings::ToHex(data[offset]);
+  while (data[offset] != PREAMBLE_SEPARATOR && offset < PREAMBLE_SIZE - 1) {
+    if (data[offset] != PREAMBLE) {
+      OLA_INFO << "Preamble " << offset << " " << strings::ToHex(data[offset]);
       HandleCollision();
       return;
     }
     offset++;
   }
 
-  if (data[offset] != 0xaa) {
+  if (data[offset] != PREAMBLE_SEPARATOR) {
     OLA_INFO << "Preamble separator" << offset << " "
              << strings::ToHex(data[offset]);
     HandleCollision();
@@ -236,8 +236,6 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
 
   offset++;
   unsigned int remaining = length - offset;
-  OLA_INFO << "length was " << length << ", offset " << offset
-           << ", remaining " << remaining;
   if (remaining < EUID_SIZE + CHECKSUM_SIZE) {
     OLA_INFO << "Insufficient data remaining, was " << remaining;
     HandleCollision();
