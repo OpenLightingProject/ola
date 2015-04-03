@@ -22,7 +22,6 @@ from __future__ import print_function
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import sys
-from ola.UID import UID
 from ola.OlaClient import OlaClient
 from ola import PidStore
 
@@ -37,7 +36,7 @@ class RDMAPI(object):
       OlaClient.RDM_SET_RESPONSE: PidStore.RDM_SET,
   }
 
-  def __init__(self, client, pid_store, strict_checks = True):
+  def __init__(self, client, pid_store, strict_checks=True):
     """Create a new RDM API.
 
     Args:
@@ -83,7 +82,7 @@ class RDMAPI(object):
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
                                 PidStore.RDM_DISCOVERY)
 
-  def Get(self, universe, uid, sub_device, pid, callback, args = []):
+  def Get(self, universe, uid, sub_device, pid, callback, args=[]):
     """Send a RDM Get message, packing the arguments into a message.
 
     Args:
@@ -125,7 +124,7 @@ class RDMAPI(object):
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
                                 PidStore.RDM_GET)
 
-  def Set(self, universe, uid, sub_device, pid, callback, args = []):
+  def Set(self, universe, uid, sub_device, pid, callback, args=[]):
     """Send a RDM Set message.
 
     Args:
@@ -142,7 +141,7 @@ class RDMAPI(object):
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
                              PidStore.RDM_SET)
 
-  def RawSet(self, universe, uid, sub_device, pid, callback, args = []):
+  def RawSet(self, universe, uid, sub_device, pid, callback, args=[]):
     """Send a RDM Set message with the raw data supplied.
 
     Args:
@@ -157,7 +156,7 @@ class RDMAPI(object):
       True if sent ok, False otherwise.
     """
     return self._SendRawRequest(universe, uid, sub_device, pid, callback,
-                                    args, PidStore.RDM_SET)
+                                args, PidStore.RDM_SET)
 
   def _SendRequest(self, universe, uid, sub_device, pid, callback, args,
                    request_type):
