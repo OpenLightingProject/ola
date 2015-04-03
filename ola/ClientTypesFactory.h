@@ -13,10 +13,10 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * OlaClientWrapper.h
- * This provides a helpful wrapper for the OlaClient & OlaCallbackClient
- * classes.
- * Copyright (C) 2005 Simon Newton
+ * OlaClientTypesFactory.h
+ * This provides convenience functions to create data objects from
+ * corresponding protocol buffer objects.
+ * Copyright (C) 2015 Simon Marchi
  */
 
 #ifndef OLA_CLIENTTYPESFACTORY_H_
