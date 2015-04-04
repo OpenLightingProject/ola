@@ -181,7 +181,7 @@ void USBDeviceManager::DeviceAdded(struct libusb_device* usb_device,
   }
 
   OLA_INFO << "Open Lighting Device connected";
-  auto_ptr<OpenLightingDevice> device(new OpenLightingDevice(m_ss, usb_device));
+  auto_ptr<JaRuleEndpoint> device(new JaRuleEndpoint(m_ss, usb_device));
   if (!device->Init()) {
     m_devices.erase(iter);
     return;
@@ -201,7 +201,7 @@ void USBDeviceManager::DeviceRemoved(const USBDeviceID& device_id) {
     return;
   }
 
-  OpenLightingDevice *device = NULL;
+  JaRuleEndpoint *device = NULL;
   if (!ola::STLLookupAndRemove(&m_devices, device_id, &device) ||
       device == NULL) {
     return;
@@ -213,7 +213,7 @@ void USBDeviceManager::DeviceRemoved(const USBDeviceID& device_id) {
 }
 
 void USBDeviceManager::SignalEvent(EventType event,
-                                   OpenLightingDevice* device,
+                                   JaRuleEndpoint* device,
                                    MutexLocker* locker) {
   // We hold the lock at this point.
   if (!m_notification_cb.get()) {
@@ -237,7 +237,7 @@ void USBDeviceManager::SignalEvent(EventType event,
   }
 }
 
-void USBDeviceManager::DeviceEvent(EventType event, OpenLightingDevice* device,
+void USBDeviceManager::DeviceEvent(EventType event, JaRuleEndpoint* device,
                                    Future<void>* f) {
   m_notification_cb->Run(event, device);
   f->Set();
@@ -252,13 +252,13 @@ void USBDeviceManager::DeviceEvent(EventType event, OpenLightingDevice* device,
  *    thread)
  *  - close the libusb device
  *
- *  These all take place in the destructor of the OpenLightingDevice.
+ *  These all take place in the destructor of the JaRuleEndpoint.
  *
  * To avoid deadlocks, we perform the deletion in a separate thread. That
- * way ~OpenLightingDevice() can block waiting for the transfer callbacks to
+ * way ~JaRuleEndpoint() can block waiting for the transfer callbacks to
  * run, without having to worry about blocking the main thread.
  */
-void USBDeviceManager::DeleteDevice(OpenLightingDevice* device) {
+void USBDeviceManager::DeleteDevice(JaRuleEndpoint* device) {
   m_cleanup_thread.Execute(ola::DeletePointerCallback(device));
 }
 
