@@ -66,6 +66,7 @@ template <typename T, size_t N>
 
 /**
  * @brief Deletes an array when it goes out of scope.
+ *
  * This is similar to unique_ptr<T[]>, which we should switch to once we start
  * introducing C++11 syntax.
  */
@@ -79,6 +80,7 @@ class ArrayDeleter {
 
   /**
    * @brief Destructor.
+   *
    * This calls delete[] on the data.
    */
   ~ArrayDeleter() {
