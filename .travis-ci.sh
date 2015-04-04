@@ -69,5 +69,5 @@ elif [[ $TASK = 'jshint' ]]; then
   grunt jshint:dev
 else
   # Otherwise compile and check as normal
-  autoreconf -i && ./configure --enable-rdm-tests --enable-e133 --enable-ja-rule --enable-java-libs && make distcheck
+  autoreconf -i && ./configure --enable-rdm-tests --enable-ja-rule --enable-java-libs && make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-java-libs'
 fi
