@@ -25,6 +25,8 @@
 #ifndef INCLUDE_OLA_BASE_ARRAY_H_
 #define INCLUDE_OLA_BASE_ARRAY_H_
 
+#include <stdint.h>
+
 namespace ola {
 
 /**
