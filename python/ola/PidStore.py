@@ -38,7 +38,7 @@ from ola.UID import UID
 
 # Various sub device enums
 ROOT_DEVICE = 0
-MAX_VALID_SUB_DEVICE = 0x0200;
+MAX_VALID_SUB_DEVICE = 0x0200
 ALL_SUB_DEVICES = 0xffff
 
 # The two types of commands classes
@@ -48,14 +48,18 @@ RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 class Error(Exception):
   """Base error class."""
 
+
 class InvalidPidFormat(Error):
   "Indicates the PID data file was invalid."""
+
 
 class PidStructureException(Error):
   """Raised if the PID structure isn't vaild."""
 
+
 class ArgsValidationError(Error):
   """Raised if the arguments don't match the expected frame format."""
+
 
 class UnpackException(Error):
   """Raised if we can't unpack the data corectly."""
@@ -64,15 +68,15 @@ class UnpackException(Error):
 class Pid(object):
   """A class that describes everything about a PID."""
   def __init__(self, name, value,
-               discovery_request = None,
-               discovery_response = None,
-               get_request = None,
-               get_response = None,
-               set_request = None,
-               set_response = None,
-               discovery_validators = [],
-               get_validators = [],
-               set_validators = []):
+               discovery_request=None,
+               discovery_response=None,
+               get_request=None,
+               get_response=None,
+               set_request=None,
+               set_response=None,
+               discovery_validators=[],
+               get_validators=[],
+               set_validators=[]):
     """Create a new PID.
 
     Args:
@@ -142,7 +146,7 @@ class Pid(object):
     """Run the validators."""
     validators = self._validators.get(command_class)
     if validators is None:
-      return false
+      return False
 
     args['pid'] = self
     for validator in validators:
@@ -241,7 +245,7 @@ class FixedSizeAtom(Atom):
     format_string = self._FormatString()
     try:
       values = struct.unpack(format_string, data)
-    except struct.error:
+    except struct.error as e:
       raise UnpackException(e)
     return values[0]
 
@@ -306,12 +310,14 @@ class IntAtom(FixedSizeAtom):
     super(IntAtom, self).__init__(name, char)
 
     # About Labels & Ranges:
-    # If neither labels nor ranges are specified, the valid values is the range of
-    #   the data type.
-    # If labels are specified, and ranges aren't, the valid values are the labels
-    # If ranges are specified, the valid values are those which fall into the range
-    #   (inclusive).
-    # If both are specified, the enum values must fall into the specified ranges.
+    # If neither labels nor ranges are specified, the valid values is the range
+    #   of the data type.
+    # If labels are specified, and ranges aren't, the valid values are the
+    #   labels
+    # If ranges are specified, the valid values are those which fall into the
+    #   range (inclusive).
+    # If both are specified, the enum values must fall into the specified
+    #   ranges.
 
     # ranges limit the allowed values for a field
     self._ranges = kwargs.get('ranges', [])[:]
@@ -384,11 +390,10 @@ class IntAtom(FixedSizeAtom):
         values.append(str(self._AccountForMultiplier(range.min)))
       else:
         values.append('[%s, %s]' %
-                     (self._AccountForMultiplier(range.min),
-                      self._AccountForMultiplier(range.max)))
+                      (self._AccountForMultiplier(range.min),
+                       self._AccountForMultiplier(range.max)))
 
     return ('%s' % ', '.join(values))
-
 
   def _AccountForMultiplierUnpack(self, value):
     new_value = value * (10 ** self._multiplier)
@@ -426,6 +431,7 @@ class IntAtom(FixedSizeAtom):
             (new_value, int_value * (10.0 ** self._multiplier)))
       new_value = int(int_value)
     return new_value
+
 
 class Int8(IntAtom):
   """A single signed byte field."""
@@ -475,8 +481,8 @@ class IPV4(IntAtom):
       raise ArgsValidationError("Can't unpack data: %s" % e)
 
   def Pack(self, args):
-    #TODO(Peter): This currently allows some rather quirky values as per
-    #inet_aton, we may want to restrict that in future
+    # TODO(Peter): This currently allows some rather quirky values as per
+    # inet_aton, we may want to restrict that in future
     try:
       value = struct.unpack("!I", socket.inet_aton(args[0]))
     except socket.error as e:
@@ -493,7 +499,7 @@ class MACAtom(FixedSizeAtom):
     format_string = self._FormatString()
     try:
       values = struct.unpack(format_string, data)
-    except struct.error:
+    except struct.error as e:
       raise UnpackException(e)
     return MACAddress(bytearray([values[0],
                                  values[1],
@@ -510,7 +516,7 @@ class MACAtom(FixedSizeAtom):
       mac = MACAddress.FromString(args[0])
 
     if mac is None:
-      raise ArgsValidationError("Invalid MAC Address: %s" % e)
+      raise ArgsValidationError("Invalid MAC Address: %s" % args)
 
     format_string = self._FormatString()
     try:
@@ -535,7 +541,7 @@ class UIDAtom(FixedSizeAtom):
     format_string = self._FormatString()
     try:
       values = struct.unpack(format_string, data)
-    except struct.error:
+    except struct.error as e:
       raise UnpackException(e)
     return UID(values[0], values[1])
 
@@ -547,7 +553,7 @@ class UIDAtom(FixedSizeAtom):
       uid = UID.FromString(args[0])
 
     if uid is None:
-      raise ArgsValidationError("Invalid UID: %s" % e)
+      raise ArgsValidationError("Invalid UID: %s" % args)
 
     format_string = self._FormatString()
     try:
@@ -618,8 +624,8 @@ class String(Atom):
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
-    return ('%s%s: <string, [%d, %d] bytes>' %
-        (indent, self.name, self.min, self.max))
+    return ('%s%s: <string, [%d, %d] bytes>' % (
+      indent, self.name, self.min, self.max))
 
   def __str__(self):
     return 'String(%s, min=%s, max=%s)' % (self.name, self.min, self.max)
@@ -688,8 +694,8 @@ class Group(Atom):
         variable_sized_atoms.append(atom)
 
     if len(variable_sized_atoms) > 1:
-      raise PidStore('More than one variable size field in %s: %s' %
-                            (self.name, variable_sized_atoms))
+      raise PidStore('More than one variable size field in %s: %s' % (
+        self.name, variable_sized_atoms))
 
     if not variable_sized_atoms:
       # The group is of a fixed size, this means we don't care how many times
@@ -706,7 +712,8 @@ class Group(Atom):
     # It's impossible to unpack groups of variable length data without more
     # information.
     if self.min != 1 and self.max != 1:
-      raise PidStructureException("Repeated groups can't contain variable length data")
+      raise PidStructureException(
+        "Repeated groups can't contain variable length data")
     return None
 
   def FixedSize(self):
@@ -790,8 +797,9 @@ class Group(Atom):
         total_size += atom.size
 
       if data_size < total_size:
-          raise UnpackException('Response too small, required %d, only got %d' %
-                                (total_size, data_size))
+          raise UnpackException(
+            'Response too small, required %d, only got %d' % (
+              total_size, data_size))
 
       output, used = self._UnpackFixedLength(self._atoms[0:-1], data)
 
@@ -842,7 +850,6 @@ class Group(Atom):
 
     return ' '.join(names), '\n'.join(output)
 
-
   def _UnpackFixedLength(self, atoms, data):
     """Unpack a list of atoms of a known, fixed size.
 
@@ -870,7 +877,8 @@ class Group(Atom):
 def RootDeviceValidator(args):
   """Ensure the sub device is the root device."""
   if args.get('sub_device') != ROOT_DEVICE:
-    print("Can't send GET %s to non root sub devices" % args['pid'].name, file=sys.stderr)
+    print("Can't send GET %s to non root sub devices" % args['pid'].name,
+          file=sys.stderr)
     return False
   return True
 
@@ -889,7 +897,8 @@ def NonBroadcastSubDeviceValidator(args):
   """Ensure the sub device is in the range 0 - 512."""
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device > MAX_VALID_SUB_DEVICE):
-    print("Sub device %s needs to be between 0 and 512" % sub_device, file=sys.stderr)
+    print("Sub device %s needs to be between 0 and 512" % sub_device,
+          file=sys.stderr)
     return False
   return True
 
@@ -899,7 +908,8 @@ def SpecificSubDeviceValidator(args):
   sub_device = args.get('sub_device')
   if (sub_device is None or sub_device == ROOT_DEVICE or
       sub_device > MAX_VALID_SUB_DEVICE):
-    print("Sub device %s needs to be between 1 and 512" % sub_device, file=sys.stderr)
+    print("Sub device %s needs to be between 1 and 512" % sub_device,
+          file=sys.stderr)
     return False
   return True
 
@@ -914,7 +924,7 @@ class PidStore(object):
     self._manufacturer_names_to_pids = {}
     self._manufacturer_id_to_name = {}
 
-  def Load(self, pid_files, validate = True):
+  def Load(self, pid_files, validate=True):
     """Load a PidStore from a file.
 
     Args:
@@ -944,13 +954,13 @@ class PidStore(object):
                                  (pid_pb.value,
                                   ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
                                   ola.RDMConstants.RDM_MANUFACTURER_PID_MAX,
-                                  file))
+                                  pid_file_name))
         if pid_pb.value in self._pids:
           raise InvalidPidFormat('0x%04hx listed more than once in %s' %
-                                 (pid_pb.value, file))
+                                 (pid_pb.value, pid_file_name))
         if pid_pb.name in self._name_to_pid:
           raise InvalidPidFormat('%s listed more than once in %s' %
-                                 (pid_pb.name, file))
+                                 (pid_pb.name, pid_file_name))
 
       pid = self._PidProtoToObject(pid_pb)
       self._pids[pid.value] = pid
@@ -979,11 +989,11 @@ class PidStore(object):
           if pid_pb.value in pid_dict:
             raise InvalidPidFormat(
                 '0x%04hx listed more than once for 0x%04hx in %s' % (
-                pid_pb.value, manufacturer.manufacturer_id, file))
+                  pid_pb.value, manufacturer.manufacturer_id, pid_file_name))
           if pid_pb.name in name_dict:
             raise InvalidPidFormat(
                 '%s listed more than once for %s in %s' % (
-                pid_pb.name, manufacturer, file))
+                  pid_pb.name, manufacturer, pid_file_name))
         pid = self._PidProtoToObject(pid_pb)
         pid_dict[pid.value] = pid
         name_dict[pid.name] = pid
@@ -1139,23 +1149,23 @@ class PidStore(object):
     if field.type == Pids_pb2.BOOL:
       return Bool(field_name)
     elif field.type == Pids_pb2.INT8:
-      return Int8(field_name, **args);
+      return Int8(field_name, **args)
     elif field.type == Pids_pb2.UINT8:
-      return UInt8(field_name, **args);
+      return UInt8(field_name, **args)
     elif field.type == Pids_pb2.INT16:
-      return Int16(field_name, **args);
+      return Int16(field_name, **args)
     elif field.type == Pids_pb2.UINT16:
-      return UInt16(field_name, **args);
+      return UInt16(field_name, **args)
     elif field.type == Pids_pb2.INT32:
-      return Int32(field_name, **args);
+      return Int32(field_name, **args)
     elif field.type == Pids_pb2.UINT32:
-      return UInt32(field_name, **args);
+      return UInt32(field_name, **args)
     elif field.type == Pids_pb2.IPV4:
-      return IPV4(field_name, **args);
+      return IPV4(field_name, **args)
     elif field.type == Pids_pb2.MAC:
-      return MACAtom(field_name, **args);
+      return MACAtom(field_name, **args)
     elif field.type == Pids_pb2.UID:
-      return UIDAtom(field_name, **args);
+      return UIDAtom(field_name, **args)
     elif field.type == Pids_pb2.GROUP:
       if not field.field:
         raise InvalidPidFormat('Missing child fields for %s' % field_name)
@@ -1181,7 +1191,7 @@ class PidStore(object):
 _pid_store = None
 
 
-def GetStore(location = None, only_files = ()):
+def GetStore(location=None, only_files=()):
   """Get the instance of the PIDStore.
 
   Args:
@@ -1206,4 +1216,3 @@ def GetStore(location = None, only_files = ()):
       pid_files.append(os.path.join(location, file_name))
     _pid_store.Load(pid_files)
   return _pid_store
-
