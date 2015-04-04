@@ -5,6 +5,7 @@
   <version>0.0.1</version>
   <description>Java implementation of OLA RPC</description>
   <build>
+   <directory>@top_builddir@/java/target</directory>
    <plugins>
      <plugin>
        <groupId>org.apache.maven.plugins</groupId>
