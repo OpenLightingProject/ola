@@ -3,7 +3,7 @@
   <groupId>ola</groupId>
   <artifactId>ola-java-client</artifactId>
   <version>0.0.1</version>
-  <description>Java implementation of OLA RPC </description>
+  <description>Java implementation of OLA RPC</description>
   <build>
    <plugins>
      <plugin>
