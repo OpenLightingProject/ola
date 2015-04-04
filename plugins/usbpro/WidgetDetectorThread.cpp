@@ -261,7 +261,7 @@ void WidgetDetectorThread::UsbProWidgetReady(
           options.enable_rdm = true;
         }
         DispatchWidget(
-            new EnttecUsbProWidget(descriptor, options),
+            new EnttecUsbProWidget(m_other_ss, descriptor, options),
             information);
         return;
       }
@@ -320,7 +320,8 @@ void WidgetDetectorThread::UsbProWidgetReady(
                << "." << (information->firmware_version & 0xff);
     }
   }
-  DispatchWidget(new EnttecUsbProWidget(descriptor, options), information);
+  DispatchWidget(
+      new EnttecUsbProWidget(m_other_ss, descriptor, options), information);
 }
 
 
