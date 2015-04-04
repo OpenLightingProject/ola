@@ -7,15 +7,19 @@ EXTRA_DIST = pom.xml \
              src/test/java/ola/OlaClientTest.java
 
 src/main/java/ola/proto/Ola.java: ${top_srcdir}/common/protocol/Ola.proto
-	mkdir -p $(top_builddir)/src/main/java
-	$(PROTOC) --java_out=$(top_builddir)/src/main/java --proto_path=${top_srcdir}/common/protocol ${top_srcdir}/common/protocol/Ola.proto
+	mkdir -p $(top_builddir)/java/src/main/java
+	$(PROTOC) --java_out=$(top_builddir)/java/src/main/java --proto_path=${top_srcdir}/common/protocol ${top_srcdir}/common/protocol/Ola.proto
 
 src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
-	mkdir -p $(top_builddir)/src/main/java
-	$(PROTOC) --java_out=$(top_builddir)/src/main/java --proto_path=${top_srcdir}/common/rpc ${top_srcdir}/common/rpc/Rpc.proto
+	mkdir -p $(top_builddir)/java/src/main/java
+	$(PROTOC) --java_out=$(top_builddir)/java/src/main/java --proto_path=${top_srcdir}/common/rpc ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
+	echo `pwd`
+	cd ${top_srcdir}/java
+	echo `pwd`
 	mvn package
+	echo `pwd`
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
              src/main/java/ola/rpc/Rpc.java
