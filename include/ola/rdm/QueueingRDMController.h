@@ -84,7 +84,7 @@ class QueueingRDMController: public RDMControllerInterface {
  * The DiscoverableQueueingRDMController also handles discovery, and ensures
  * that only a single discovery or RDM request sequence occurs at once.
  *
- * In this model discovery has a higher precedence than RDM messages.
+ * In this model, discovery has a higher precedence than RDM messages.
  */
 class DiscoverableQueueingRDMController: public QueueingRDMController {
  public:

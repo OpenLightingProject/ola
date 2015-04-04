@@ -28,6 +28,7 @@
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/rdm/DiscoveryAgent.h>
+#include <ola/rdm/QueueingRDMController.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMControllerInterface.h>
@@ -55,6 +56,7 @@ using ola::rdm::RDMDiscoveryResponse;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
+using ola::rdm::DiscoverableQueueingRDMController;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rdm::rdm_response_code;
@@ -68,11 +70,13 @@ using std::string;
 DEFINE_string(controller_uid, "7a70:fffffe00", "The UID of the controller.");
 
 class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
+                       public ola::rdm::DiscoverableRDMControllerInterface,
                        public MessageHandlerInterface {
  public:
   ControllerImpl(OpenLightingDevice *device,
                  const UID &controller_uid)
       : m_device(device),
+        m_discovery_agent(this),
         m_our_uid(controller_uid),
         m_rdm_callback(NULL),
         m_mute_callback(NULL),
@@ -82,12 +86,28 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
   }
 
   ~ControllerImpl() {
+    m_discovery_agent.Abort();
     m_device->SetHandler(NULL);
   }
 
   void UpdateDevice(OpenLightingDevice* device) {
     m_device = device;
   }
+
+  void RunFullDiscovery(RDMDiscoveryCallback *callback) {
+    OLA_INFO << "Full discovery triggered";
+    m_discovery_agent.StartFullDiscovery(
+        NewSingleCallback(this, &ControllerImpl::DiscoveryComplete,
+        callback));
+  }
+
+  void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+    OLA_INFO << "Incremental discovery triggered";
+    m_discovery_agent.StartIncrementalDiscovery(
+        NewSingleCallback(this, &ControllerImpl::DiscoveryComplete,
+        callback));
+  }
+
 
   void SendRDMRequest(const RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete) {
@@ -198,12 +218,14 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
 
  private:
   OpenLightingDevice *m_device;
+  DiscoveryAgent m_discovery_agent;
   const UID m_our_uid;
   ola::SequenceNumber<uint8_t> m_transaction_number;
   ola::rdm::RDMCallback *m_rdm_callback;
   MuteDeviceCallback *m_mute_callback;
   UnMuteDeviceCallback *m_unmute_callback;
   BranchCallback *m_branch_callback;
+  UIDSet m_uids;
 
   bool CheckForDevice() const {
     if (!m_device) {
@@ -249,6 +271,16 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
     }
   }
 
+  void DiscoveryComplete(RDMDiscoveryCallback *callback,
+                         OLA_UNUSED bool ok,
+                         const UIDSet& uids) {
+    OLA_DEBUG << "Discovery complete: " << uids;
+    m_uids = uids;
+    if (callback) {
+      callback->Run(m_uids);
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ControllerImpl);
 };
 
@@ -256,12 +288,10 @@ class Controller : public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   Controller(OpenLightingDevice *device, const UID &controller_uid)
     : m_controller_impl(device, controller_uid),
-      m_discovery_agent(&m_controller_impl) {
+      m_queueing_controller(&m_controller_impl, 50) {
   }
 
-  ~Controller() {
-    m_discovery_agent.Abort();
-  }
+  ~Controller() {}
 
   void UpdateDevice(OpenLightingDevice* device) {
     m_controller_impl.UpdateDevice(device);
@@ -269,21 +299,15 @@ class Controller : public ola::rdm::DiscoverableRDMControllerInterface {
 
   void SendRDMRequest(const RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete) {
-    m_controller_impl.SendRDMRequest(request, on_complete);
+    m_queueing_controller.SendRDMRequest(request, on_complete);
   }
 
   void RunFullDiscovery(RDMDiscoveryCallback *callback) {
-    OLA_INFO << "Full discovery triggered";
-    m_discovery_agent.StartFullDiscovery(
-        NewSingleCallback(this, &Controller::DiscoveryComplete,
-        callback));
+    m_queueing_controller.RunFullDiscovery(callback);
   }
 
   void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
-    OLA_INFO << "Incremental discovery triggered";
-    m_discovery_agent.StartIncrementalDiscovery(
-        NewSingleCallback(this, &Controller::DiscoveryComplete,
-        callback));
+    m_queueing_controller.RunIncrementalDiscovery(callback);
   }
 
   void ResetDevice() {
@@ -292,18 +316,7 @@ class Controller : public ola::rdm::DiscoverableRDMControllerInterface {
 
  private:
   ControllerImpl m_controller_impl;
-  DiscoveryAgent m_discovery_agent;
-  UIDSet m_uids;
-
-  void DiscoveryComplete(RDMDiscoveryCallback *callback,
-                         bool ok, const UIDSet& uids) {
-    OLA_DEBUG << "Discovery complete: " << uids;
-    m_uids = uids;
-    if (callback) {
-      callback->Run(m_uids);
-    }
-    (void) ok;
-  }
+  DiscoverableQueueingRDMController m_queueing_controller;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
