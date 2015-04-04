@@ -62,7 +62,7 @@ built_sources += tools/rdm/DataLocation.py
 
 # Create DataLocation.py with the directory of the static files.
 tools/rdm/DataLocation.py: tools/rdm/Makefile.mk
-	echo "location = '${datadir}/ola/rdm-server'" > $(srcdir)/tools/rdm/DataLocation.py
+	echo "location = '${datadir}/ola/rdm-server'" > $(top_builddir)/tools/rdm/DataLocation.py
 
 # RDM Test modules
 rdmtestsdir = $(pkgpythondir)/testing/rdm
