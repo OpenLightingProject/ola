@@ -227,7 +227,6 @@ void EnttecPortImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
     return;
   }
 
@@ -240,7 +239,6 @@ void EnttecPortImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
       IsDUBRequest(request) ? m_ops.rdm_discovery : m_ops.send_rdm,
       m_pending_request);
 
-  delete request;
   if (!ok) {
     delete m_pending_request;
     m_pending_request = NULL;
