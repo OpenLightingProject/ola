@@ -97,7 +97,8 @@ class Watchdog {
   /**
    * @brief Check if the process has stalled due to a lack of Kick() calls.
    *
-   * This should be called regularly. If it's been
+   * This should be called regularly. If it's been more than the specified
+   * number of clock cycles since a kick, the callback is run.
    */
   void Clock();
 
