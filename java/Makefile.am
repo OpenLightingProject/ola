@@ -15,7 +15,9 @@ src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
 	$(PROTOC) --java_out=$(top_builddir)/java/src/main/java --proto_path=${top_srcdir}/common/rpc ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
+	ls -al ${top_srcdir}/java
 	cd ${top_srcdir}/java && mvn package
+	ls -al ${top_srcdir}/java
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
              src/main/java/ola/rpc/Rpc.java
