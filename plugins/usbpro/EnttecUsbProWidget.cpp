@@ -91,7 +91,8 @@ EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
     : m_send_cb(send_cb),
       m_ops(ops),
       m_active(true),
-      m_watchdog(2, NewCallback(this, &EnttecPortImpl::WatchdogFired)),
+      m_watchdog(WATCHDOG_LIMIT,
+                 NewCallback(this, &EnttecPortImpl::WatchdogFired)),
       m_discovery_agent(this),
       m_uid(uid),
       m_transaction_number(0),
@@ -230,7 +231,7 @@ void EnttecPortImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
     return;
   }
 
-  // re-write the request so it appears to originate from this widget.
+  // Re-write the request so it appears to originate from this widget.
   m_pending_request = request->DuplicateWithControllerParams(
       m_uid, m_transaction_number++, PORT_ID);
   m_rdm_request_callback = on_complete;

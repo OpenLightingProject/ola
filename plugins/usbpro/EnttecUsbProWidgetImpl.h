@@ -158,6 +158,8 @@ class EnttecPortImpl
   bool IsDUBRequest(const ola::rdm::RDMRequest *request);
 
   static const unsigned int PORT_ID = 1;
+  // This gives a limit between 1 and 2s.
+  static const unsigned int WATCHDOG_LIMIT = 2;
 };
 }  // namespace usbpro
 }  // namespace plugin
