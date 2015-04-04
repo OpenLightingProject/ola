@@ -64,6 +64,8 @@ using std::string;
 DEFINE_string(target_uid, "7a70:00000001",
               "The UID of the responder to control.");
 DEFINE_string(controller_uid, "7a70:fffffe00", "The UID of the controller.");
+DEFINE_string(lower_uid, "0000:00000000", "The lower UID for the DUB.");
+DEFINE_string(upper_uid, "ffff:ffffffff", "The upper UID for the DUB.");
 
 /**
  * @brief Print messages received from the device.
@@ -265,10 +267,14 @@ class InputHandler {
  public:
   explicit InputHandler(SelectServer* ss,
                         const UID &controller_uid,
-                        const UID &target_uid)
+                        const UID &target_uid,
+                        const UID &lower_uid,
+                        const UID &upper_uid)
       : m_ss(ss),
         m_our_uid(controller_uid),
         m_target_uid(target_uid),
+        m_lower_uid(lower_uid),
+        m_upper_uid(upper_uid),
         m_stdin_handler(
             new StdinHandler(ss, ola::NewCallback(this, &InputHandler::Input))),
         m_device(NULL),
@@ -329,7 +335,10 @@ class InputHandler {
         m_mode = EDIT_BREAK;
         break;
       case 'd':
-        SendDUB();
+        SendDUB(UID(0, 0), UID::AllDevices());
+        break;
+      case 'D':
+        SendDUB(m_lower_uid, m_upper_uid);
         break;
       case 'e':
         SendEcho();
@@ -441,8 +450,7 @@ class InputHandler {
   };
 
   SelectServer* m_ss;
-  UID m_our_uid;
-  UID m_target_uid;
+  UID m_our_uid, m_target_uid, m_lower_uid, m_upper_uid;
   auto_ptr<StdinHandler> m_stdin_handler;
   MessageHandler m_handler;
   OpenLightingDevice* m_device;
@@ -629,14 +637,13 @@ class InputHandler {
                           0);
   }
 
-  void SendDUB() {
+  void SendDUB(const UID &lower, const UID &upper) {
     if (!CheckForDevice()) {
       return;
     }
 
     auto_ptr<RDMRequest> request(
-        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, UID(0, 0),
-                                                  UID::AllDevices(), 0));
+        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, lower, upper, 0));
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
@@ -704,31 +711,35 @@ class InputHandler {
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
 
+void ParseUID(const string &uid_str, UID *uid) {
+  auto_ptr<UID> target_uid(UID::FromString(uid_str));
+  if (!target_uid.get()) {
+    OLA_WARN << "Invalid UID: '" << uid_str << "'";
+    exit(ola::EXIT_USAGE);
+  }
+  *uid = *target_uid;
+}
+
 /*
  * Main.
  */
 int main(int argc, char **argv) {
   ola::AppInit(&argc, argv, "[ options ]", "Ja Rule Admin Tool");
 
-  auto_ptr<UID> target_uid(UID::FromString(FLAGS_target_uid));
-  if (!target_uid.get()) {
-    OLA_WARN << "Invalid Target UID: '" << FLAGS_target_uid << "'";
-    exit(ola::EXIT_USAGE);
-  }
+  UID target_uid(0, 0), controller_uid(0, 0), lower_uid(0, 0), upper_uid(0, 0);
+  ParseUID(FLAGS_target_uid.str(), &target_uid);
+  ParseUID(FLAGS_controller_uid.str(), &controller_uid);
+  ParseUID(FLAGS_lower_uid.str(), &lower_uid);
+  ParseUID(FLAGS_upper_uid.str(), &upper_uid);
 
-  auto_ptr<UID> controller_uid(UID::FromString(FLAGS_controller_uid));
-  if (!controller_uid.get()) {
-    OLA_WARN << "Invalid Controller UID: '" << FLAGS_controller_uid << "'";
-    exit(ola::EXIT_USAGE);
-  }
-
-  if (controller_uid->IsBroadcast()) {
+  if (controller_uid.IsBroadcast()) {
     OLA_WARN << "The controller UID should not be a broadcast UID";
     exit(ola::EXIT_USAGE);
   }
 
   SelectServer ss;
-  InputHandler input_handler(&ss, *controller_uid, *target_uid);
+  InputHandler input_handler(&ss, controller_uid, target_uid, lower_uid,
+                             upper_uid);
 
   USBDeviceManager manager(
     &ss, NewCallback(&input_handler, &InputHandler::DeviceEvent));

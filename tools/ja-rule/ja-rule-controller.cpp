@@ -38,6 +38,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "tools/ja-rule/OpenLightingDevice.h"
 #include "tools/ja-rule/USBDeviceManager.h"
@@ -59,6 +60,7 @@ using ola::rdm::UIDSet;
 using ola::rdm::rdm_response_code;
 using ola::strings::ToHex;
 using std::auto_ptr;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -72,6 +74,7 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
                  const UID &controller_uid)
       : m_device(device),
         m_our_uid(controller_uid),
+        m_rdm_callback(NULL),
         m_mute_callback(NULL),
         m_unmute_callback(NULL),
         m_branch_callback(NULL) {
@@ -84,6 +87,22 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
 
   void UpdateDevice(OpenLightingDevice* device) {
     m_device = device;
+  }
+
+  void SendRDMRequest(const RDMRequest *request,
+                      ola::rdm::RDMCallback *on_complete) {
+    if (!CheckForDevice()) {
+      const std::vector<std::string> packets;
+      on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+      return;
+    }
+
+    m_rdm_callback = on_complete;
+
+    unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
+    uint8_t data[rdm_length];
+    RDMCommandSerializer::Pack(*request, data, &rdm_length);
+    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
   }
 
   void MuteDevice(const UID &target,
@@ -102,7 +121,6 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
     m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
 
-    // TODO(simon): do we need to check there isn't already one in-flight?
     m_mute_callback = mute_complete;
   }
 
@@ -121,7 +139,6 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
     m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
 
-    // TODO(simon): do we need to check there isn't already one in-flight?
     m_unmute_callback = unmute_complete;
   }
 
@@ -143,7 +160,6 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
              << upper;
     m_device->SendMessage(OpenLightingDevice::RDM_DUB, data, rdm_length);
 
-    // TODO(simon): do we need to check there isn't already one in-flight?
     m_branch_callback = branch_complete;
   }
 
@@ -161,6 +177,9 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
         break;
       case OpenLightingDevice::RDM_REQUEST:
         HandleRDM(message);
+        break;
+      case OpenLightingDevice::RESET_DEVICE:
+        PrintAck(message);
         break;
       default:
         OLA_WARN << "Unknown command: " << ToHex(message.command);
@@ -181,6 +200,7 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
   OpenLightingDevice *m_device;
   const UID m_our_uid;
   ola::SequenceNumber<uint8_t> m_transaction_number;
+  ola::rdm::RDMCallback *m_rdm_callback;
   MuteDeviceCallback *m_mute_callback;
   UnMuteDeviceCallback *m_unmute_callback;
   BranchCallback *m_branch_callback;
@@ -190,6 +210,11 @@ class ControllerImpl : public ola::rdm::DiscoveryTargetInterface,
       OLA_INFO << "Device not present";
     }
     return m_device != NULL;
+  }
+
+  void PrintAck(const Message& message) {
+    OLA_INFO << "ACK (" << static_cast<int>(message.return_code)
+             << "): payload_size: " << message.payload_size;
   }
 
   void HandleDUBResponse(const Message& message) {
@@ -235,6 +260,7 @@ class Controller : public ola::rdm::DiscoverableRDMControllerInterface {
   }
 
   ~Controller() {
+    m_discovery_agent.Abort();
   }
 
   void UpdateDevice(OpenLightingDevice* device) {
@@ -243,9 +269,7 @@ class Controller : public ola::rdm::DiscoverableRDMControllerInterface {
 
   void SendRDMRequest(const RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete) {
-    // TODO(simon): implement me!
-    (void) request;
-    (void) on_complete;
+    m_controller_impl.SendRDMRequest(request, on_complete);
   }
 
   void RunFullDiscovery(RDMDiscoveryCallback *callback) {
@@ -274,12 +298,11 @@ class Controller : public ola::rdm::DiscoverableRDMControllerInterface {
   void DiscoveryComplete(RDMDiscoveryCallback *callback,
                          bool ok, const UIDSet& uids) {
     OLA_DEBUG << "Discovery complete: " << uids;
-    if (ok) {
-      m_uids = uids;
-    }
+    m_uids = uids;
     if (callback) {
       callback->Run(m_uids);
     }
+    (void) ok;
   }
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
@@ -333,12 +356,16 @@ class DeviceManager {
 class InputHandler {
  public:
   InputHandler(SelectServer* ss,
+               const UID &controller_uid,
                DeviceManager *device_manager)
       : m_ss(ss),
         m_device_manager(device_manager),
+        m_controller_uid(controller_uid),
         m_stdin_handler(
             new StdinHandler(ss,
-                             ola::NewCallback(this, &InputHandler::Input))) {
+                             ola::NewCallback(this, &InputHandler::Input))),
+        m_mode(NORMAL),
+        m_selected_uid(0, 0) {
   }
 
   ~InputHandler() {
@@ -346,18 +373,49 @@ class InputHandler {
   }
 
   void Input(int c) {
+    if (m_mode == SELECT_UID) {
+      UIDSet::Iterator iter = m_uids.Begin();
+      char index = 'A';
+      for (; iter != m_uids.End() && index <= 'Z'; ++iter, index++) {
+        if (c == index) {
+          m_selected_uid = *iter;
+          cout << "Selected " << *iter << endl;
+          m_mode = NORMAL;
+          return;
+        }
+      }
+      cerr << "Unknown selection, try again" << endl;
+      return;
+    }
+
     switch (c) {
+      case 'i':
+        SetIdentify(true);
+        break;
+      case 'I':
+        SetIdentify(false);
+        break;
       case 'd':
-        RunDiscovery();
+        RunDiscovery(false);
         break;
       case 'h':
         PrintCommands();
         break;
-      case 'r':
-        ResetDevice();
+      case 'p':
+        RunDiscovery(true);
         break;
       case 'q':
         m_ss->Terminate();
+        break;
+      case 'r':
+        ResetDevice();
+        break;
+      case 's':
+        cout << "Enter a letter for the UID" << endl;
+        m_mode = SELECT_UID;
+        break;
+      case 'u':
+        ShowUIDs();
         break;
       default:
         {}
@@ -366,26 +424,64 @@ class InputHandler {
 
   void PrintCommands() {
     cout << "Commands:" << endl;
-    cout << " d - Run Discovery" << endl;
+    cout << " i - Identify On" << endl;
+    cout << " I - Identify Off" << endl;
+    cout << " d - Run Full Discovery" << endl;
     cout << " h - Print this help message" << endl;
+    cout << " p - Run Incremental Discovery" << endl;
     cout << " q - Quit" << endl;
     cout << " r - Reset" << endl;
+    cout << " s - Select UID" << endl;
+    cout << " u - Show UIDs" << endl;
   }
 
  private:
+  typedef enum {
+    NORMAL,
+    SELECT_UID,
+  } Mode;
+
   SelectServer* m_ss;
   DeviceManager *m_device_manager;
+  const UID m_controller_uid;
   auto_ptr<StdinHandler> m_stdin_handler;
+  UIDSet m_uids;
+  Mode m_mode;
+  UID m_selected_uid;
 
   unsigned int m_log_count;
 
-  void RunDiscovery() {
+  void SetIdentify(bool identify_on) {
     Controller *controller = m_device_manager->GetController();
     if (!controller) {
       return;
     }
-    controller->RunFullDiscovery(
-        NewSingleCallback(this, &InputHandler::DiscoveryComplete));
+
+    if (m_uids.Size() == 0) {
+      OLA_WARN << "No UIDs";
+      return;
+    }
+
+    uint8_t param_data = identify_on;
+    RDMSetRequest *request = new RDMSetRequest(
+        m_controller_uid, m_selected_uid, 0, 0, 0, 0,
+        ola::rdm::PID_IDENTIFY_DEVICE, &param_data,
+        sizeof(param_data));
+    controller->SendRDMRequest(request, NULL);
+  }
+
+  void RunDiscovery(bool incremental) {
+    Controller *controller = m_device_manager->GetController();
+    if (!controller) {
+      return;
+    }
+    if (incremental) {
+      controller->RunIncrementalDiscovery(
+          NewSingleCallback(this, &InputHandler::DiscoveryComplete));
+    } else {
+      controller->RunFullDiscovery(
+          NewSingleCallback(this, &InputHandler::DiscoveryComplete));
+    }
   }
 
   void ResetDevice() {
@@ -398,12 +494,22 @@ class InputHandler {
   }
 
   void DiscoveryComplete(const UIDSet& uids) {
-    UIDSet::Iterator iter = uids.Begin();
-    cout << "------------" << endl;
-    for (; iter != uids.End(); ++iter) {
-      cout << *iter << endl;
+    m_uids = uids;
+    ShowUIDs();
+  }
+
+  void ShowUIDs() {
+    UIDSet::Iterator iter = m_uids.Begin();
+    cout << "---------- " << m_uids.Size() << " UIDs -------" << endl;
+    char c = 'A';
+    for (; iter != m_uids.End(); ++iter) {
+      if (c <= 'Z') {
+        cout << *iter << " (" << c++ << ")" << endl;
+      } else {
+        cout << *iter << endl;
+      }
     }
-    cout << "------------" << endl;
+    cout << "-------------------------" << endl;
   }
 
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
@@ -428,7 +534,7 @@ int main(int argc, char **argv) {
 
   SelectServer ss;
   DeviceManager device_manager(*controller_uid);
-  InputHandler input_handler(&ss, &device_manager);
+  InputHandler input_handler(&ss, *controller_uid, &device_manager);
 
   USBDeviceManager manager(
     &ss, NewCallback(&device_manager, &DeviceManager::DeviceEvent));
