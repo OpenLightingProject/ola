@@ -16,7 +16,9 @@ src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
 	ls -al ${top_srcdir}/java
+	ls -al ${abs_top_srcdir}/java
 	ls -al ${top_builddir}/java
+	ls -al ${abs_top_builddir}/java
 	cd ${top_srcdir}/java && mvn package
 	ls -al ${top_srcdir}/java
 	ls -al ${top_builddir}/java
