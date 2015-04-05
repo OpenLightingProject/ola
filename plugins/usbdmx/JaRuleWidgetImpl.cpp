@@ -290,7 +290,6 @@ void JaRuleWidgetImpl::HandleRDMResponse(const Message &message) {
   }
 
   uint8_t rc = message.return_code;
-  OLA_INFO << "RC is " << (int) rc;
 
   ola::rdm::rdm_response_code response_code = rdm::RDM_INVALID_RESPONSE;
   ola::rdm::RDMResponse *response = NULL;
