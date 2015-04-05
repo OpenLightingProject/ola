@@ -115,7 +115,8 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       }
     };
 
-    EnttecUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
+    EnttecUsbProWidget(ola::thread::SchedulerInterface *ss,
+                       ola::io::ConnectedDescriptor *descriptor,
                        const EnttecUsbProWidgetOptions &options);
     ~EnttecUsbProWidget();
 

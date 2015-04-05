@@ -392,7 +392,7 @@ bool KQueuePoller::ApplyChange(int fd, int16_t filter, uint16_t flags,
     int r = kevent(m_kqueue_fd, m_change_set, m_next_change_entry, NULL, 0,
                    NULL);
     if (r < 0) {
-      OLA_WARN << "Failed to apply kqueue changes:" << strerror(errno);
+      OLA_WARN << "Failed to apply kqueue changes: " << strerror(errno);
     }
     m_next_change_entry = 0;
   }
