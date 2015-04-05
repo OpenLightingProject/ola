@@ -241,7 +241,7 @@ bool Universe::ContainsPort(OutputPort *port) const {
  * Get a list of input ports associated with this universe
  * @param ports, the vector to be populated
  */
-void Universe::InputPorts(vector<InputPort*> *ports) {
+void Universe::InputPorts(vector<InputPort*> *ports) const {
   ports->clear();
   std::copy(m_input_ports.begin(), m_input_ports.end(),
       std::back_inserter(*ports));
@@ -252,7 +252,7 @@ void Universe::InputPorts(vector<InputPort*> *ports) {
  * Get a list of output ports associated with this universe
  * @param ports, the vector to be populated
  */
-void Universe::OutputPorts(vector<OutputPort*> *ports) {
+void Universe::OutputPorts(vector<OutputPort*> *ports) const {
   ports->clear();
   std::copy(m_output_ports.begin(), m_output_ports.end(),
       std::back_inserter(*ports));

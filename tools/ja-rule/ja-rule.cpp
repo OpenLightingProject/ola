@@ -38,7 +38,7 @@
 #include <memory>
 #include <string>
 
-#include "tools/ja-rule/OpenLightingDevice.h"
+#include "tools/ja-rule/JaRuleEndpoint.h"
 #include "tools/ja-rule/USBDeviceManager.h"
 
 using ola::NewCallback;
@@ -64,62 +64,64 @@ using std::string;
 DEFINE_string(target_uid, "7a70:00000001",
               "The UID of the responder to control.");
 DEFINE_string(controller_uid, "7a70:fffffe00", "The UID of the controller.");
+DEFINE_string(lower_uid, "0000:00000000", "The lower UID for the DUB.");
+DEFINE_string(upper_uid, "ffff:ffffffff", "The upper UID for the DUB.");
 
 /**
  * @brief Print messages received from the device.
  */
-class MessageHandler : public MessageHandlerInterface {
+class MessageHandler : public JaRuleEndpoint::MessageHandlerInterface {
  public:
   MessageHandler() {}
 
   void NewMessage(const Message& message) {
     switch (message.command) {
-      case OpenLightingDevice::ECHO_COMMAND:
+      case JaRuleEndpoint::ECHO_COMMAND:
         PrintEcho(message);
         break;
-      case OpenLightingDevice::TX_DMX:
+      case JaRuleEndpoint::TX_DMX:
         PrintResponse(message);
         break;
-      case OpenLightingDevice::GET_LOG:
+      case JaRuleEndpoint::GET_LOG:
         PrintLog(message.payload, message.payload_size);
         break;
-      case OpenLightingDevice::GET_FLAGS:
+      case JaRuleEndpoint::GET_FLAGS:
         PrintFlags(message);
         break;
-      case OpenLightingDevice::WRITE_LOG:
+      case JaRuleEndpoint::WRITE_LOG:
         PrintAck(message);
         break;
-      case OpenLightingDevice::RESET_DEVICE:
+      case JaRuleEndpoint::RESET_DEVICE:
         PrintAck(message);
         break;
-      case OpenLightingDevice::RDM_DUB:
+      case JaRuleEndpoint::RDM_DUB:
         PrintDUBResponse(message);
         break;
-      case OpenLightingDevice::RDM_REQUEST:
+      case JaRuleEndpoint::RDM_REQUEST:
         PrintResponse(message);
         break;
-      case OpenLightingDevice::GET_BREAK_TIME:
+      case JaRuleEndpoint::GET_BREAK_TIME:
         PrintTime(message, MICRO_SECONDS);
         break;
-      case OpenLightingDevice::SET_BREAK_TIME:
+      case JaRuleEndpoint::SET_BREAK_TIME:
         PrintAck(message);
         break;
-      case OpenLightingDevice::GET_MAB_TIME:
+      case JaRuleEndpoint::GET_MAB_TIME:
         PrintTime(message, MICRO_SECONDS);
         break;
-      case OpenLightingDevice::SET_MAB_TIME:
+      case JaRuleEndpoint::SET_MAB_TIME:
         PrintAck(message);
         break;
-      case OpenLightingDevice::GET_RDM_WAIT_TIME:
+      case JaRuleEndpoint::GET_RDM_WAIT_TIME:
         PrintTime(message, TENTHS_OF_MILLI_SECONDS);
         break;
-      case OpenLightingDevice::SET_RDM_WAIT_TIME:
+      case JaRuleEndpoint::SET_RDM_WAIT_TIME:
         PrintAck(message);
         break;
-      case OpenLightingDevice::GET_RDM_BROADCAST_LISTEN:
+      case JaRuleEndpoint::GET_RDM_BROADCAST_LISTEN:
         PrintTime(message, TENTHS_OF_MILLI_SECONDS);
         break;
-      case OpenLightingDevice::SET_RDM_BROADCAST_LISTEN:
+      case JaRuleEndpoint::SET_RDM_BROADCAST_LISTEN:
         PrintAck(message);
         break;
       default:
@@ -265,10 +267,14 @@ class InputHandler {
  public:
   explicit InputHandler(SelectServer* ss,
                         const UID &controller_uid,
-                        const UID &target_uid)
+                        const UID &target_uid,
+                        const UID &lower_uid,
+                        const UID &upper_uid)
       : m_ss(ss),
         m_our_uid(controller_uid),
         m_target_uid(target_uid),
+        m_lower_uid(lower_uid),
+        m_upper_uid(upper_uid),
         m_stdin_handler(
             new StdinHandler(ss, ola::NewCallback(this, &InputHandler::Input))),
         m_device(NULL),
@@ -286,7 +292,7 @@ class InputHandler {
   }
 
   void DeviceEvent(USBDeviceManager::EventType event,
-                   OpenLightingDevice* device) {
+                   JaRuleEndpoint* device) {
     if (event == USBDeviceManager::DEVICE_ADDED) {
       OLA_INFO << "Open Lighting Device added";
       m_device = device;
@@ -329,7 +335,10 @@ class InputHandler {
         m_mode = EDIT_BREAK;
         break;
       case 'd':
-        SendDUB();
+        SendDUB(UID(0, 0), UID::AllDevices());
+        break;
+      case 'D':
+        SendDUB(m_lower_uid, m_upper_uid);
         break;
       case 'e':
         SendEcho();
@@ -441,11 +450,10 @@ class InputHandler {
   };
 
   SelectServer* m_ss;
-  UID m_our_uid;
-  UID m_target_uid;
+  UID m_our_uid, m_target_uid, m_lower_uid, m_upper_uid;
   auto_ptr<StdinHandler> m_stdin_handler;
   MessageHandler m_handler;
-  OpenLightingDevice* m_device;
+  JaRuleEndpoint* m_device;
   unsigned int m_log_count;
   uint8_t m_dmx_slot_data;
   Mode m_mode;
@@ -467,7 +475,7 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_LOG, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_LOG, NULL, 0);
   }
 
   void ResetDevice() {
@@ -475,7 +483,7 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::RESET_DEVICE, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::RESET_DEVICE, NULL, 0);
   }
 
   void GetFlags() {
@@ -483,14 +491,14 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_FLAGS, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_FLAGS, NULL, 0);
   }
 
   void _SendDMX(const uint8_t *data, unsigned int size) {
     if (!CheckForDevice()) {
       return;
     }
-    m_device->SendMessage(OpenLightingDevice::TX_DMX, data, size);
+    m_device->SendMessage(JaRuleEndpoint::TX_DMX, data, size);
   }
 
   void Adjust(bool increase) {
@@ -537,22 +545,22 @@ class InputHandler {
     switch (m_mode) {
       case EDIT_BREAK:
         SplitUInt16(m_break, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_BREAK_TIME, payload,
+        m_device->SendMessage(JaRuleEndpoint::SET_BREAK_TIME, payload,
                               arraysize(payload));
         break;
       case EDIT_MAB:
         SplitUInt16(m_mab, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_MAB_TIME, payload,
+        m_device->SendMessage(JaRuleEndpoint::SET_MAB_TIME, payload,
                               arraysize(payload));
         break;
       case EDIT_RDM_WAIT_TIME:
         SplitUInt16(m_rdm_wait_time, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_RDM_WAIT_TIME,
+        m_device->SendMessage(JaRuleEndpoint::SET_RDM_WAIT_TIME,
                               payload, arraysize(payload));
         break;
       case EDIT_RDM_BROADCAST_LISTEN:
         SplitUInt16(m_rdm_broadcast_listen, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_RDM_BROADCAST_LISTEN,
+        m_device->SendMessage(JaRuleEndpoint::SET_RDM_BROADCAST_LISTEN,
                               payload, arraysize(payload));
         break;
       default:
@@ -594,7 +602,7 @@ class InputHandler {
     }
 
     const uint8_t payload[] = {'e', 'c', 'h', 'o', ' ', 't', 'e', 's', 't'};
-    m_device->SendMessage(OpenLightingDevice::ECHO_COMMAND, payload,
+    m_device->SendMessage(JaRuleEndpoint::ECHO_COMMAND, payload,
                           arraysize(payload));
   }
 
@@ -603,7 +611,7 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_BREAK_TIME, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_BREAK_TIME, NULL, 0);
   }
 
   void GetMABTime() {
@@ -611,37 +619,36 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_MAB_TIME, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_MAB_TIME, NULL, 0);
   }
 
   void GetRDMWaitTime() {
     if (!CheckForDevice()) {
       return;
     }
-    m_device->SendMessage(OpenLightingDevice::GET_RDM_WAIT_TIME, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_RDM_WAIT_TIME, NULL, 0);
   }
 
   void GetRDMBroadcastListen() {
     if (!CheckForDevice()) {
       return;
     }
-    m_device->SendMessage(OpenLightingDevice::GET_RDM_BROADCAST_LISTEN, NULL,
+    m_device->SendMessage(JaRuleEndpoint::GET_RDM_BROADCAST_LISTEN, NULL,
                           0);
   }
 
-  void SendDUB() {
+  void SendDUB(const UID &lower, const UID &upper) {
     if (!CheckForDevice()) {
       return;
     }
 
     auto_ptr<RDMRequest> request(
-        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, UID(0, 0),
-                                                  UID::AllDevices(), 0));
+        ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, lower, upper, 0));
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
     OLA_INFO << "Sending " << rdm_length << " RDM command.";
-    m_device->SendMessage(OpenLightingDevice::RDM_DUB, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_DUB, data, rdm_length);
   }
 
   void SendIdentify(bool identify_on) {
@@ -657,7 +664,7 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(request, data, &rdm_length);
-    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_REQUEST, data, rdm_length);
   }
 
   void SendMute(const UID &target) {
@@ -671,7 +678,7 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
-    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_REQUEST, data, rdm_length);
   }
 
   void SendUnMute(const UID &target) {
@@ -685,7 +692,7 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
-    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_REQUEST, data, rdm_length);
   }
 
   void WriteLog() {
@@ -696,7 +703,7 @@ class InputHandler {
     std::ostringstream str;
     str << "Log Test " << m_log_count++ << ", this is quite long";
     const string payload = str.str();
-    m_device->SendMessage(OpenLightingDevice::WRITE_LOG,
+    m_device->SendMessage(JaRuleEndpoint::WRITE_LOG,
                           reinterpret_cast<const uint8_t*>(payload.c_str()),
                           payload.size());
   }
@@ -704,31 +711,35 @@ class InputHandler {
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
 
+void ParseUID(const string &uid_str, UID *uid) {
+  auto_ptr<UID> target_uid(UID::FromString(uid_str));
+  if (!target_uid.get()) {
+    OLA_WARN << "Invalid UID: '" << uid_str << "'";
+    exit(ola::EXIT_USAGE);
+  }
+  *uid = *target_uid;
+}
+
 /*
  * Main.
  */
 int main(int argc, char **argv) {
   ola::AppInit(&argc, argv, "[ options ]", "Ja Rule Admin Tool");
 
-  auto_ptr<UID> target_uid(UID::FromString(FLAGS_target_uid));
-  if (!target_uid.get()) {
-    OLA_WARN << "Invalid Target UID: '" << FLAGS_target_uid << "'";
-    exit(ola::EXIT_USAGE);
-  }
+  UID target_uid(0, 0), controller_uid(0, 0), lower_uid(0, 0), upper_uid(0, 0);
+  ParseUID(FLAGS_target_uid.str(), &target_uid);
+  ParseUID(FLAGS_controller_uid.str(), &controller_uid);
+  ParseUID(FLAGS_lower_uid.str(), &lower_uid);
+  ParseUID(FLAGS_upper_uid.str(), &upper_uid);
 
-  auto_ptr<UID> controller_uid(UID::FromString(FLAGS_controller_uid));
-  if (!controller_uid.get()) {
-    OLA_WARN << "Invalid Controller UID: '" << FLAGS_controller_uid << "'";
-    exit(ola::EXIT_USAGE);
-  }
-
-  if (controller_uid->IsBroadcast()) {
+  if (controller_uid.IsBroadcast()) {
     OLA_WARN << "The controller UID should not be a broadcast UID";
     exit(ola::EXIT_USAGE);
   }
 
   SelectServer ss;
-  InputHandler input_handler(&ss, *controller_uid, *target_uid);
+  InputHandler input_handler(&ss, controller_uid, target_uid, lower_uid,
+                             upper_uid);
 
   USBDeviceManager manager(
     &ss, NewCallback(&input_handler, &InputHandler::DeviceEvent));

@@ -23,6 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import itertools
 from ola.UID import UID
 
+
 def DecodeResponse(data):
   """Decode a DUB response.
 
