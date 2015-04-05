@@ -35,11 +35,14 @@
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
-#include "plugins/usbdmx/ScanlimeFadecandy.h"
-#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
+#include "plugins/usbdmx/JaRuleDevice.h"
+#include "plugins/usbdmx/JaRuleFactory.h"
+#include "plugins/usbdmx/JaRuleWidget.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/LibUsbThread.h"
+#include "plugins/usbdmx/ScanlimeFadecandy.h"
+#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
 #include "plugins/usbdmx/VellemanK8062.h"
 #include "plugins/usbdmx/VellemanK8062Factory.h"
@@ -111,6 +114,8 @@ bool AsyncPluginImpl::Start() {
   m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(
+      new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor.get()));
   m_widget_factories.push_back(
       new ScanlimeFadecandyFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor.get()));
@@ -203,6 +208,12 @@ bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
+bool AsyncPluginImpl::NewWidget(class JaRuleWidget *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new JaRuleDevice(m_plugin, widget, "Ja Rule USB Device", "0"));
+}
+
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
       widget,
@@ -229,6 +240,10 @@ void AsyncPluginImpl::WidgetRemoved(AnymauDMX *widget) {
 }
 
 void AsyncPluginImpl::WidgetRemoved(EurolitePro *widget) {
+  RemoveWidget(widget);
+}
+
+void AsyncPluginImpl::WidgetRemoved(JaRuleWidget *widget) {
   RemoveWidget(widget);
 }
 
