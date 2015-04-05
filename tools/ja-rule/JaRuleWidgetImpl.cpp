@@ -155,8 +155,7 @@ void JaRuleWidgetImpl::Branch(const UID &lower,
   unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
   uint8_t data[rdm_length];
   RDMCommandSerializer::Pack(*request, data, &rdm_length);
-  OLA_INFO << "Sending " << rdm_length << " RDM command: " << lower << " - "
-           << upper;
+  OLA_INFO << "Sending DUB (" << lower << ", " << upper << ")";
   m_device->SendMessage(JaRuleEndpoint::RDM_DUB, data, rdm_length);
 
   m_branch_callback = branch_complete;

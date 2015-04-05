@@ -67,7 +67,7 @@ void OutTransferCompleteHandler(struct libusb_transfer *transfer) {
 }  // namespace
 
 
-JaRuleEndpoint::JaRuleEndpoint(SelectServer *ss, libusb_device* device)
+JaRuleEndpoint::JaRuleEndpoint(SelectServer *ss, libusb_device *device)
   : m_ss(ss),
     m_device(device),
     m_handle(NULL),
