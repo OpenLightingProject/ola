@@ -62,7 +62,11 @@ built_sources += tools/rdm/DataLocation.py
 
 # Create DataLocation.py with the directory of the static files.
 tools/rdm/DataLocation.py: tools/rdm/Makefile.mk
+<<<<<<< HEAD
 	echo "location = '${datadir}/ola/rdm-server'" > $(srcdir)tools/rdm/DataLocation.py
+=======
+	echo "location = '${datadir}/ola/rdm-server'" > $(top_builddir)/tools/rdm/DataLocation.py
+>>>>>>> ccf9c43... Really really fix the RDM test server makedist config
 
 # RDM Test modules
 rdmtestsdir = $(pkgpythondir)/testing/rdm
