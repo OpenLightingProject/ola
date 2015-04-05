@@ -542,9 +542,9 @@ class GetUniversesHandler(OLAServerRequestHandler):
   def GetJson(self, request, response):
     def UniverseToJson(u):
       return {
-        'id': u.id,
-        'name': u.name,
-        'merge_mode': u.merge_mode,
+        '_id': u.id,
+        '_name': u.name,
+        '_merge_mode': u.merge_mode,
       }
 
     status, universes = self.GetThread().FetchUniverses()
