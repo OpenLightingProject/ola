@@ -735,7 +735,7 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/UID.py:python/ola/UID.py
                  python/ola/__init__.py:python/ola/__init__.py])
 
-# Non-makefile generted files.
+# Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
