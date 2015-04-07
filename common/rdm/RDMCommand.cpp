@@ -289,6 +289,11 @@ RDMCommand::RDMCommandClass RDMCommand::ConvertCommandClass(
 }
 
 
+bool RDMRequest::IsDUB() const {
+  return (CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
+          ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
+}
+
 /*
  * Inflate a request from some data
  */

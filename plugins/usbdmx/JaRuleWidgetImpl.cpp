@@ -64,14 +64,6 @@ using std::auto_ptr;
 using std::string;
 using std::vector;
 
-namespace {
-
-bool IsDUBRequest(const ola::rdm::RDMRequest *request) {
-  return (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND
-          && request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
-}
-}  // namespace
-
 JaRuleWidgetImpl::JaRuleWidgetImpl(ola::io::SelectServerInterface *ss,
                                    AsyncronousLibUsbAdaptor *adaptor,
                                    libusb_device *device,
@@ -121,7 +113,7 @@ void JaRuleWidgetImpl::SendRDMRequest(const RDMRequest *request,
   RDMCommandSerializer::Pack(*request, data, &rdm_length);
 
   JaRuleEndpoint::Command command;
-  if (IsDUBRequest(request)) {
+  if (request->IsDUB()) {
     command = JaRuleEndpoint::RDM_DUB;
   } else {
     command = request->DestinationUID().IsBroadcast() ?
@@ -168,8 +160,7 @@ void JaRuleWidgetImpl::Branch(const UID &lower,
   unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
   uint8_t data[rdm_length];
   RDMCommandSerializer::Pack(*request, data, &rdm_length);
-  OLA_INFO << "Sending " << rdm_length << " RDM command: " << lower << " - "
-           << upper;
+  OLA_INFO << "Sending RDM DUB: " << lower << " - " << upper;
   m_endpoint.SendMessage(JaRuleEndpoint::RDM_DUB, data, rdm_length);
 
   m_branch_callback = branch_complete;
@@ -187,11 +178,12 @@ void JaRuleWidgetImpl::ResetDevice() {
 }
 
 void JaRuleWidgetImpl::NewMessage(const Message &message) {
-  OLA_INFO << "Got message " << ToHex(message.command) << ", RC"
+  OLA_INFO << "Got message " << ToHex(message.command) << ", RC "
            << ToHex(message.return_code);
   switch (message.command) {
     case JaRuleEndpoint::TX_DMX:
       // Ignore for now.
+      // TODO(simon): handle this.
       break;
     case JaRuleEndpoint::RDM_DUB:
       HandleDUBResponse(message);
@@ -307,7 +299,7 @@ void JaRuleWidgetImpl::HandleRDMResponse(const Message &message) {
         response_code = rdm::RDM_FAILED_TO_SEND;
         break;
       default:
-        OLA_WARN << "Unknown Ja Rule RDM RC: " << static_cast<int>(rc);
+        OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(rc);
         response_code = rdm::RDM_FAILED_TO_SEND;
         break;
     }
@@ -325,7 +317,7 @@ void JaRuleWidgetImpl::HandleRDMResponse(const Message &message) {
         response_code = rdm::RDM_TIMEOUT;
         break;
       default:
-        OLA_WARN << "Unknown Ja Rule RDM RC: " << static_cast<int>(rc);
+        OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(rc);
         response_code = rdm::RDM_FAILED_TO_SEND;
         break;
     }
@@ -339,7 +331,9 @@ ola::rdm::RDMResponse* JaRuleWidgetImpl::UnpackRDMResponse(
     unsigned int length,
     ola::rdm::rdm_response_code *response_code) {
 
+  // TODO(simon): remove this.
   ola::strings::FormatData(&std::cout, data, length);
+
   if (length <= 1 || data[0] != RDMCommand::START_CODE) {
     *response_code = rdm::RDM_INVALID_RESPONSE;
     return NULL;

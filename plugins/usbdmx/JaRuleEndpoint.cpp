@@ -124,12 +124,12 @@ bool JaRuleEndpoint::SendMessage(Command command,
                                  const uint8_t *data,
                                  unsigned int size) {
   if (size > MAX_PAYLOAD_SIZE) {
-    OLA_WARN << "JaRule Message exceeds max payload size";
+    OLA_WARN << "JaRule message exceeds max payload size";
     return false;
   }
 
   if (size != 0 && data == NULL) {
-    OLA_WARN << "JaRule Data is NULL, size was " << size;
+    OLA_WARN << "JaRule data is NULL, size was " << size;
     return false;
   }
 
@@ -184,7 +184,8 @@ void JaRuleEndpoint::_InTransferComplete() {
 }
 
 void JaRuleEndpoint::MaybeSendRequest() {
-  if (m_out_in_progress || m_pending_requests > MAX_IN_FLIGHT ||
+  if (m_out_in_progress ||
+      m_pending_requests > MAX_IN_FLIGHT ||
       m_queued_requests.empty()) {
     return;
   }
@@ -223,7 +224,7 @@ void JaRuleEndpoint::MaybeSendRequest() {
 
   int r = m_adaptor->SubmitTransfer(m_out_transfer);
   if (r) {
-    OLA_WARN << "Failed to submit out transfer: "
+    OLA_WARN << "Failed to submit outbound transfer: "
              << LibUsbAdaptor::ErrorCodeToString(r);
     return;
   }
@@ -280,7 +281,7 @@ void JaRuleEndpoint::HandleData(const uint8_t *data, unsigned int size) {
   }
 
   if (data[0] != SOF_IDENTIFIER) {
-    OLA_WARN << "SOF mismatch, was " << ola::strings::ToHex(data[0]);
+    OLA_WARN << "SOF_IDENTIFIER mismatch, was " << ola::strings::ToHex(data[0]);
     return;
   }
 

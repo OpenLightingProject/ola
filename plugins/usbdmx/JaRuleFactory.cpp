@@ -14,8 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * JaRuleFactory.cpp
- * The factory for Anyma uDMX widgets.
- * Copyright (C) 2014 Simon Newton
+ * The factory for Ja Rule widgets.
+ * Copyright (C) 2015 Simon Newton
  */
 
 #include "plugins/usbdmx/JaRuleFactory.h"
@@ -58,13 +58,13 @@ bool JaRuleFactory::DeviceAdded(
     return false;
   }
 
-  JaRuleWidget *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new JaRuleWidget(m_ss, m_adaptor, usb_device, m_uid);
+    return AddWidget(observer, usb_device,
+                     new JaRuleWidget(m_ss, m_adaptor, usb_device, m_uid));
   } else {
     OLA_WARN << "Ja Rule devices are not supported in Synchronous mode";
+    return false;
   }
-  return AddWidget(observer, usb_device, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

@@ -36,7 +36,7 @@ JaRuleWidget::JaRuleWidget(ola::io::SelectServerInterface *ss,
                            libusb_device *device,
                            const UID &controller_uid)
   : m_widget_impl(new JaRuleWidgetImpl(ss, adaptor, device, controller_uid)),
-    m_queueing_controller(m_widget_impl.get(), 50) {
+    m_queueing_controller(m_widget_impl.get(), RDM_QUEUE_SIZE) {
 }
 
 bool JaRuleWidget::Init() {

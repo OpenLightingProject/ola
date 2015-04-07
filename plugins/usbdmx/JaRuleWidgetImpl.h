@@ -45,7 +45,7 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
  public:
   /**
    * @brief Create a new JaRuleWidgetImpl.
-   * @param ss The SelectServer to run for the RDM callbacks on.
+   * @param ss The SelectServer to run the RDM callbacks on.
    * @param adaptor The LibUsbAdaptor to use.
    * @param device the libusb_device for the Ja Rule widget.
    * @param controller_uid The UID of the controller. This is used for DUB &

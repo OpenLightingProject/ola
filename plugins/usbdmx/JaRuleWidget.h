@@ -46,7 +46,7 @@ class JaRuleWidget : public Widget,
  public:
   /**
    * @brief Create a new Ja Rule widget.
-   * @param ss The SelectServer to run for the RDM callbacks on.
+   * @param ss The SelectServer to run the RDM callbacks on.
    * @param adaptor The LibUsbAdaptor to use.
    * @param device the libusb_device for the Ja Rule widget.
    * @param controller_uid The UID of the controller. This is used for DUB &
@@ -76,6 +76,8 @@ class JaRuleWidget : public Widget,
  private:
   std::auto_ptr<class JaRuleWidgetImpl> m_widget_impl;
   ola::rdm::DiscoverableQueueingRDMController m_queueing_controller;
+
+  static const unsigned int RDM_QUEUE_SIZE = 50;
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidget);
 };

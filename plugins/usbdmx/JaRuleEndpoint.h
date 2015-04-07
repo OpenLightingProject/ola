@@ -43,7 +43,7 @@ typedef enum {
 /**
  * @brief Handles communication with a Ja Rule USB Endpoint.
  *
- * See https://github.com/OpenLightingProject/ja-rule
+ * @see https://github.com/OpenLightingProject/ja-rule
  */
 class JaRuleEndpoint {
  public:
@@ -151,7 +151,7 @@ class JaRuleEndpoint {
   void _OutTransferComplete();
 
   /**
-   * @brief Called by libusb callback when the transfer completes or is
+   * @brief Called by the libusb callback when the transfer completes or is
    * cancelled.
    */
   void _InTransferComplete();
