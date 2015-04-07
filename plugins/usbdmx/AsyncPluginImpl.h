@@ -86,12 +86,14 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
+  bool NewWidget(class JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(class AnymauDMX *widget);
   void WidgetRemoved(class EurolitePro *widget);
+  void WidgetRemoved(class JaRuleWidget *widget);
   void WidgetRemoved(class ScanlimeFadecandy *widget);
   void WidgetRemoved(class Sunlite *widget);
   void WidgetRemoved(class VellemanK8062 *widget);
@@ -114,7 +116,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   ola::thread::Mutex m_mutex;
   bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
   std::auto_ptr<class LibUsbThread> m_usb_thread;
-  std::auto_ptr<class LibUsbAdaptor> m_usb_adaptor;
+  std::auto_ptr<class AsyncronousLibUsbAdaptor> m_usb_adaptor;
 
   WidgetFactories m_widget_factories;
   USBDeviceToFactoryMap m_device_factory_map;

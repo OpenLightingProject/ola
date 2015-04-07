@@ -39,16 +39,15 @@
 namespace ola {
 namespace rdm {
 
-
 /**
- * This is the type of callback that is run when a request completes or fails.
- * For performance reasons we can take either a single use callback or a
- * permanent callback.
- *
- * @param rdm_response_code the status code for the response
- * @param RDMResponse a pointer to the response object
- * @param vector<string> a list of strings that contain the raw response
+ * @brief The callback run when a RDM requests completes or fails.
+ * @tparam rdm_response_code the status code for the response
+ * @tparam RDMResponse a pointer to the response object
+ * @tparam vector<string> a list of strings that contain the raw response
  * messages (if the device supports this, some don't).
+ *
+ * For performance reasons this can be either a single use callback or a
+ * permanent callback.
  */
 typedef ola::BaseCallback3<void,
                            rdm_response_code,
@@ -56,50 +55,64 @@ typedef ola::BaseCallback3<void,
                            const std::vector<std::string>&> RDMCallback;
 
 /**
- * This is the callback used when discovery completes.
+ * @brief The callback run when a discovery operation completes.
+ * @tparam UIDSet The UIDs that were discovered.
  */
 typedef ola::BaseCallback1<void, const ola::rdm::UIDSet&> RDMDiscoveryCallback;
 
 /**
- * This is a class that can send RDM messages.
+ * @brief The interface that can send RDMRequest.
  */
 class RDMControllerInterface {
  public:
-    RDMControllerInterface() {}
-    virtual ~RDMControllerInterface() {}
+  virtual ~RDMControllerInterface() {}
 
-    /**
-     * Assumption: A class that implements this MUST ensure that as time tends
-     * to infinity, the probably that the callback is run tends to 1. That is,
-     * there must be no way that a request can be dropped in such a way that
-     * the callback is never run. Doing so will either block all subsequent
-     * requests, or leak memory depending on the implementation.
-     *
-     * Also the implementor of this class should re-write the transaction #,
-     * and possibly the UID (changing src UIDs isn't addressed by the RDM
-     * spec).
-     */
-    virtual void SendRDMRequest(const RDMRequest *request,
-                                RDMCallback *on_complete) = 0;
+  /**
+   * @brief Send a RDM command.
+   * @param request the RDMRequest, ownership is transferred.
+   * @param on_complete The callback to run when the request completes.
+   *
+   * Implementors much ensure that the callback is always run at some point.
+   * In other words, there must be no way that a request can be dropped in such
+   * a way that the callback is never run. Doing so will either block all
+   * subsequent requests, or leak memory depending on the implementation.
+   *
+   * Also the implementor of this class may want to  re-write the transaction #,
+   * and possibly the UID (changing src UIDs isn't addressed by the RDM
+   * spec).
+   *
+   * The RDMRequest may be a DISCOVERY_COMMAND, if the implementation does not
+   * support DISCOVERY_COMMANDs then the callback should be run with
+   * ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED.
+   */
+  virtual void SendRDMRequest(const RDMRequest *request,
+                              RDMCallback *on_complete) = 0;
 };
 
 
 /**
- * This is a class that can send RDM messages as well as perform discovery.
- * You only need to use this with the QueuingRDMController if discovery can't
- * run at the same time as RDM messages are being sent.
+ * @brief The interface that can send RDM commands, as well as perform discovery
+ * operations.
  */
 class DiscoverableRDMControllerInterface: public RDMControllerInterface {
  public:
-    DiscoverableRDMControllerInterface(): RDMControllerInterface() {}
-    virtual ~DiscoverableRDMControllerInterface() {}
+  DiscoverableRDMControllerInterface(): RDMControllerInterface() {}
 
-    /**
-     * These methods trigger RDM discovery. The callback may run immediately.
-     */
-    virtual void RunFullDiscovery(RDMDiscoveryCallback *callback) = 0;
+  virtual ~DiscoverableRDMControllerInterface() {}
 
-    virtual void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) = 0;
+  /**
+   * @brief Start a full discovery operation.
+   * @param callback The callback run when discovery completes. This may run
+   *   immediately in some implementations.
+   */
+  virtual void RunFullDiscovery(RDMDiscoveryCallback *callback) = 0;
+
+  /**
+   * @brief Start an incremental discovery operation.
+   * @param callback The callback run when discovery completes. This may run
+   *   immediately in some implementations.
+   */
+  virtual void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) = 0;
 };
 }  // namespace rdm
 }  // namespace ola

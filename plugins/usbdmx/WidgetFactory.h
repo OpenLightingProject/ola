@@ -67,6 +67,15 @@ class WidgetObserver {
   virtual bool NewWidget(class EurolitePro *widget) = 0;
 
   /**
+   * @brief Called when a new Ja Rule widget is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
+  virtual bool NewWidget(class JaRuleWidget *widget) = 0;
+
+  /**
    * @brief Called when a new ScanlimeFadecandy is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
@@ -108,6 +117,14 @@ class WidgetObserver {
    * It is an error to use the widget once this call completes.
    */
   virtual void WidgetRemoved(class EurolitePro *widget) = 0;
+
+  /**
+   * @brief Called when a Ja Rule widget is removed.
+   * @param widget the Widget that has been removed.
+   *
+   * It is an error to use the widget once this call completes.
+   */
+  virtual void WidgetRemoved(class JaRuleWidget *widget) = 0;
 
   /**
    * @brief Called when a ScanlimeFadecandy is removed.
@@ -200,6 +217,14 @@ class BaseWidgetFactory : public WidgetFactory {
   }
 
   /**
+   * @brief Return the number of active widgets.
+   * @returns The number of active widgets.
+   */
+  unsigned int DeviceCount() const {
+    return m_widget_map.size();
+  }
+
+  /**
    * @brief Initialize a widget and notify the observer.
    * @param observer The WidgetObserver to notify of the new widget.
    * @param usb_device the libusb_device associated with the widget.
@@ -244,7 +269,6 @@ bool BaseWidgetFactory<WidgetType>::AddWidget(WidgetObserver *observer,
 template <typename WidgetType>
 void BaseWidgetFactory<WidgetType>::DeviceRemoved(WidgetObserver *observer,
                                                   libusb_device *usb_device) {
-  OLA_INFO << "Removing device " << usb_device;
   WidgetType *widget = STLLookupAndRemovePtr(&m_widget_map, usb_device);
   if (widget) {
     observer->WidgetRemoved(widget);
