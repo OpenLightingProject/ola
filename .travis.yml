@@ -64,7 +64,7 @@ before_install:
 #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
 #Install doxygen if required
- - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
+ - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen graphviz; fi
 #Install grunt if required
  - if [ "$TASK" = "jshint"]; then sudo npm install -g grunt-cli; fi
 
