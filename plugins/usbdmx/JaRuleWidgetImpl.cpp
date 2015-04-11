@@ -292,6 +292,7 @@ void JaRuleWidgetImpl::HandleRDMResponse(const Message &message) {
         response = UnpackRDMResponse(
             request.get(), message.payload + 1, message.payload_size - 1,
             &response_code);
+        break;
       case RC_RX_TIMEOUT:
         response_code = rdm::RDM_WAS_BROADCAST;
         break;
