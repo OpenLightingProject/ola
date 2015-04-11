@@ -41,7 +41,6 @@ elif [[ $TASK = 'doxygen' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
-  make doxygen-doc
   # count the number of warnings
   warnings=$(make doxygen-doc 2>&1 >/dev/null | wc -l)
   if [[ $warnings -ne 0 ]]; then
