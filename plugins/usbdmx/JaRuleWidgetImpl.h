@@ -28,6 +28,8 @@
 #include <ola/rdm/UID.h>
 #include <ola/util/SequenceNumber.h>
 
+#include <string>
+
 #include "plugins/usbdmx/JaRuleEndpoint.h"
 #include "plugins/usbdmx/JaRuleWidget.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
@@ -40,8 +42,7 @@ namespace usbdmx {
  * @brief The internal implementation of a JaRuleWidget.
  */
 class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
-                         public ola::rdm::DiscoverableRDMControllerInterface,
-                         public JaRuleEndpoint::MessageHandlerInterface {
+                         public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   /**
    * @brief Create a new JaRuleWidgetImpl.
@@ -78,9 +79,6 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
               const ola::rdm::UID &upper,
               BranchCallback *branch_complete);
 
-  // From MessageHandlerInterface
-  void NewMessage(const Message &message);
-
   /**
    * @brief Send DMX data from this widget
    * @param buffer The DmxBuffer containing the data to send.
@@ -100,32 +98,59 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
     RC_BUFFER_FULL,
     RC_BAD_PARAM,
     RC_TX_ERROR,
-    RC_RX_TIMEOUT
+    RC_RDM_TIMEOUT,
+    RC_RDM_BCAST_RESPONSE,
+    RC_RDM_INVALID_RESPONSE,
   } JaRuleReturnCode;
 
   JaRuleEndpoint m_endpoint;
+  bool m_in_shutdown;
+
+  // DMX members
+  DmxBuffer m_dmx;
+  bool m_dmx_in_progress;
+  bool m_dmx_queued;
+  JaRuleEndpoint::CommandCompleteCallback *m_dmx_callback;
+
+  // RDM members
   ola::rdm::DiscoveryAgent m_discovery_agent;
   const ola::rdm::UID m_our_uid;
   ola::SequenceNumber<uint8_t> m_transaction_number;
-  ola::rdm::RDMCallback *m_rdm_callback;
-  const ola::rdm::RDMRequest *m_rdm_request;
-  MuteDeviceCallback *m_mute_callback;
-  UnMuteDeviceCallback *m_unmute_callback;
-  BranchCallback *m_branch_callback;
   ola::rdm::UIDSet m_uids;
 
-  void PrintAck(const Message &message);
-  void HandleDUBResponse(const Message &message);
-  void HandleRDM(const Message &message);
-  void HandleRDMResponse(const Message &message);
+  void CheckStatusFlags(uint8_t flags);
+  void DMXComplete(JaRuleEndpoint::CommandResult result, uint8_t return_code,
+                   uint8_t status_flags, const std::string &payload);
+  void MuteDeviceComplete(MuteDeviceCallback *mute_complete,
+                          JaRuleEndpoint::CommandResult result,
+                          uint8_t return_code,
+                          uint8_t status_flags,
+                          const std::string &payload);
+  void UnMuteDeviceComplete(UnMuteDeviceCallback *unmute_complete,
+                            JaRuleEndpoint::CommandResult result,
+                            uint8_t return_code,
+                            uint8_t status_flags,
+                            const std::string &payload);
+  void DUBComplete(BranchCallback *callback,
+                   JaRuleEndpoint::CommandResult status,
+                   uint8_t return_code,
+                   uint8_t status_flags,
+                   const std::string &payload);
+  void RDMComplete(const ola::rdm::RDMRequest *request,
+                   ola::rdm::RDMCallback *m_rdm_callback,
+                   JaRuleEndpoint::CommandResult result,
+                   uint8_t return_code,
+                   uint8_t status_flags,
+                   const std::string &payload);
   ola::rdm::RDMResponse* UnpackRDMResponse(
       const ola::rdm::RDMRequest *request,
-      const uint8_t *data,
-      unsigned int length,
+      const std::string &payload,
       ola::rdm::rdm_response_code *response_code);
   void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                          OLA_UNUSED bool ok,
                          const ola::rdm::UIDSet &uids);
+  JaRuleEndpoint::CommandClass GetCommandFromRequest(
+      const ola::rdm::RDMRequest *request);
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidgetImpl);
 };
