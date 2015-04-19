@@ -259,9 +259,6 @@ void JaRuleEndpoint::MaybeSendCommand() {
                               static_cast<void*>(this),
                               ENDPOINT_TIMEOUT_MS);
 
-  OLA_DEBUG << "TX: command: " << ToHex(command.command)
-            << ", token: " << ToHex(token) << ", size " << offset;
-
   int r = m_adaptor->SubmitTransfer(m_out_transfer);
   if (r) {
     OLA_WARN << "Failed to submit outbound transfer: "

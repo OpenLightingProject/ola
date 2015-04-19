@@ -210,18 +210,20 @@ void JaRuleWidgetImpl::MuteDeviceComplete(MuteDeviceCallback *mute_complete,
   CheckStatusFlags(status_flags);
   bool muted_ok = false;
   if (result == JaRuleEndpoint::COMMAND_COMPLETED_OK &&
-      return_code == RC_OK) {
+      return_code == RC_OK &&
+      payload.size() > 1) {
     ola::rdm::rdm_response_code response_code = rdm::RDM_INVALID_RESPONSE;
-    auto_ptr<RDMResponse> response(
-        RDMResponse::InflateFromData(payload, &response_code));
+    auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
+          reinterpret_cast<const uint8_t*>(payload.data()) + 1,
+          payload.size() - 1, &response_code));
 
     // TODO(simon): I guess we could ack timer the MUTE. Handle this case
     // someday.
-    muted_ok = (response_code == rdm::RDM_COMPLETED_OK &&
-                response.get() &&
-                response->CommandClass() == RDMCommand::SET_COMMAND_RESPONSE &&
-                response->ResponseType() == rdm::RDM_ACK);
-    mute_complete->Run(true);
+    muted_ok = (
+        response_code == rdm::RDM_COMPLETED_OK &&
+        response.get() &&
+        response->CommandClass() == RDMCommand::DISCOVER_COMMAND_RESPONSE &&
+        response->ResponseType() == rdm::RDM_ACK);
   }
   mute_complete->Run(muted_ok);
 }
@@ -335,11 +337,6 @@ ola::rdm::RDMResponse* JaRuleWidgetImpl::UnpackRDMResponse(
     const RDMRequest *request,
     const string &payload,
     ola::rdm::rdm_response_code *response_code) {
-  // TODO(simon): remove this.
-  ola::strings::FormatData(
-      &std::cout, reinterpret_cast<const uint8_t*>(payload.data()),
-      payload.size());
-
   if (payload.empty() ||
       static_cast<uint8_t>(payload[0]) != RDMCommand::START_CODE) {
     *response_code = rdm::RDM_INVALID_RESPONSE;
@@ -354,7 +351,6 @@ ola::rdm::RDMResponse* JaRuleWidgetImpl::UnpackRDMResponse(
 void JaRuleWidgetImpl::DiscoveryComplete(RDMDiscoveryCallback *callback,
                                          OLA_UNUSED bool ok,
                                          const UIDSet& uids) {
-  OLA_DEBUG << "Discovery complete: " << uids;
   m_uids = uids;
   if (callback) {
     callback->Run(m_uids);
