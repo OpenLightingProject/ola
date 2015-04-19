@@ -24,7 +24,9 @@
 #include <libusb.h>
 #include <ola/thread/ExecutorInterface.h>
 #include <ola/thread/Mutex.h>
+#include <ola/util/SequenceNumber.h>
 
+#include <map>
 #include <queue>
 #include <string>
 
@@ -34,21 +36,82 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-typedef enum {
-  LOGS_PENDING_FLAG = 0x01,  //!< Log messages are pending
-  FLAGS_CHANGED_FLAG = 0x02,  //!< Flags have changed
-  MSG_TRUNCATED_FLAG = 0x04  //!< The message has been truncated.
-} TransportFlags;
-
 /**
  * @brief Handles communication with a Ja Rule USB Endpoint.
+ * This class manages sending commands to the Ja Rule device. It builds the
+ * frame and handles the USB transfers required to send the command to the
+ * device and retrieve the response.
  *
  * @see https://github.com/OpenLightingProject/ja-rule
  */
 class JaRuleEndpoint {
  public:
+  typedef enum {
+    LOGS_PENDING_FLAG = 0x01,  //!< Log messages are pending
+    FLAGS_CHANGED_FLAG = 0x02,  //!< Flags have changed
+    MSG_TRUNCATED_FLAG = 0x04  //!< The message has been truncated.
+  } StatusFlags;
+
   /**
-   * @brief The various Ja Rule commands
+   * @brief Indicates the eventual state of a Ja Rule command.
+   *
+   * Various failures can occur at the libusb layer.
+   */
+  typedef enum {
+    /**
+     * @brief The command was sent and a response was received.
+     */
+    COMMAND_COMPLETED_OK,
+
+    /**
+     * @brief The command is malformed.
+     *
+     * This could mean the payload is too big or a NULL pointer with a non-0
+     * size was provided.
+     */
+     COMMAND_MALFORMED,
+
+    /**
+     * @brief An error occured when trying to send the command.
+     */
+    COMMAND_SEND_ERROR,
+
+    /**
+     * @brief The command was not sent as the TX queue was full.
+     */
+    COMMAND_QUEUE_FULL,
+
+    /**
+     * @brief The command was sent but no response was received.
+     */
+    COMMAND_TIMEOUT,
+
+    /**
+     * @brief The command class returned did not match the request.
+     */
+    COMMAND_CLASS_MISMATCH,
+
+    /**
+     * @brief The command was cancelled.
+     */
+    COMMAND_CANCELLED,
+  } CommandResult;
+
+  /**
+   * @brief A command completion callback.
+   * @tparam The result of the command operation
+   * @tparam The return code from the device.
+   * @tparam The status flags.
+   * @tparam The response payload.
+   *
+   * If the CommandResult is not COMMAND_COMPLETED_OK, the remaining values are
+   * undefined.
+   */
+  typedef ola::BaseCallback4<void, CommandResult, uint8_t, uint8_t,
+                             const std::string &> CommandCompleteCallback;
+
+  /**
+   * @brief The Ja Rule commands.
    */
   typedef enum {
     ECHO_COMMAND = 0x80,
@@ -68,36 +131,11 @@ class JaRuleEndpoint {
     SET_RDM_WAIT_TIME = 0x94,
     GET_RDM_WAIT_TIME = 0x95,
     RDM_BROADCAST_REQUEST = 0x96
-  } Command;
-
-  /**
-   * @brief The interface for Ja Rule message handlers.
-   */
-  class MessageHandlerInterface {
-   public:
-    struct Message {
-      uint16_t command;  //!< The message command
-      uint8_t return_code;  //!< The return code.
-      uint8_t flags;  //!< The TransportFlags.
-      const uint8_t *payload;  //!< A pointer to the payload.
-      unsigned int payload_size;  //!< The size of the payload.
-    };
-
-    virtual ~MessageHandlerInterface() {}
-
-    /**
-     * @brief Handle a new message.
-     * @param message The message.
-     *
-     * The payload data in the message is invalid once the call completes. If
-     * you need it to persist the implementation should make a copy.
-     */
-    virtual void NewMessage(const Message &message) = 0;
-  };
+  } CommandClass;
 
   /**
    * @brief Create a new JaRuleEndpoint.
-   * @param executor The Executor to run the message receive callbacks on.
+   * @param executor The Executor to run the command complete callbacks on.
    * @param adaptor The LibUsbAdaptor to use.
    * @param device the underlying libusb device. Ownership is not transferred.
    */
@@ -111,17 +149,6 @@ class JaRuleEndpoint {
   ~JaRuleEndpoint();
 
   /**
-   * @brief Set the message handler.
-   * @param handler the JaRuleEndpoint::MessageHandlerInterface to use.
-   *   Ownership is not transferred.
-   *
-   * This must only be called from the same thread the Executor is running in.
-   */
-  void SetHandler(MessageHandlerInterface *handler) {
-    m_message_handler = handler;
-  }
-
-  /**
    * @brief Open the device and claim the USB interface.
    * @returns true if the device was opened and claimed correctly, false
    *   otherwise.
@@ -129,20 +156,25 @@ class JaRuleEndpoint {
   bool Init();
 
   /**
-   * @brief Send a message to the endpoint.
+   * @brief Cancel all queued and inflight commands.
+   * This will immediately run all CommandCompleteCallbacks with the
+   * COMMAND_CANCELLED code.
+   */
+  void CancelAll();
+
+  /**
+   * @brief Send a command to the Device.
    * @param command the Command type.
    * @param data the payload data. The data is copied and can be freed once the
    *   method returns.
    * @param size the payload size.
-   * @returns false if the message was malformed, true if it was queued
-   *   correctly.
+   * @param callback The callback to run when the message operation completes.
+   * This may be run immediately in some conditions.
    *
    * SendMessage can be called from any thread, and messages will be queued.
-   *
-   * TODO(simon): This method needs to take a callback so we can provide
-   * notifications if the send fails.
    */
-  bool SendMessage(Command command, const uint8_t *data, unsigned int size);
+  void SendCommand(CommandClass command, const uint8_t *data, unsigned int size,
+                   CommandCompleteCallback *callback);
 
   /**
    * @brief Called by the libusb callback when the transfer completes or is
@@ -168,23 +200,40 @@ class JaRuleEndpoint {
     OUT_BUFFER_SIZE = 1024
   };
 
+  // A command that is in the send queue.
   typedef struct {
-    Command command;
+    CommandClass command;
+    CommandCompleteCallback *callback;
     std::string payload;
-  } PendingRequest;
+  } QueuedCommand;
+
+  // A command that has been sent, and is waiting on a response.
+  typedef struct {
+    CommandClass command;
+    CommandCompleteCallback *callback;
+    // TODO(simon): we probably need a counter here to detect timeouts.
+  } PendingCommand;
+
+  // The arguments passed to the user supplied callback.
+  typedef struct {
+     CommandResult result;
+     uint8_t return_code;
+     uint8_t status_flags;
+     const std::string payload;
+  } CallbackArgs;
+
+  typedef std::map<uint8_t, PendingCommand> PendingCommandMap;
+  typedef std::queue<QueuedCommand> CommandQueue;
 
   ola::thread::ExecutorInterface *m_executor;
   LibUsbAdaptor *m_adaptor;
   libusb_device *m_device;
   libusb_device_handle *m_usb_handle;
-  MessageHandlerInterface *m_message_handler;
+  ola::SequenceNumber<uint8_t> m_token;
 
   ola::thread::Mutex m_mutex;
-  std::queue<PendingRequest> m_queued_requests;  // GUARDED_BY(m_mutex);
-
-  // The number of request frames we've already sent to the device. We limit
-  // the number of outstanding requests to MAX_IN_FLIGHT.
-  unsigned int m_pending_requests;
+  CommandQueue m_queued_commands;  // GUARDED_BY(m_mutex);
+  PendingCommandMap m_pending_commands;  // GUARDED_BY(m_mutex);
 
   uint8_t m_out_buffer[OUT_BUFFER_SIZE];  // GUARDED_BY(m_mutex);
   libusb_transfer *m_out_transfer;  // GUARDED_BY(m_mutex);
@@ -194,17 +243,26 @@ class JaRuleEndpoint {
   libusb_transfer *m_in_transfer;  // GUARDED_BY(m_mutex);
   bool m_in_in_progress;  // GUARDED_BY(m_mutex);
 
-  void MaybeSendRequest();  // LOCK_REQUIRED(m_mutex);
+  void MaybeSendCommand();  // LOCK_REQUIRED(m_mutex);
   bool SubmitInTransfer();  // LOCK_REQUIRED(m_mutex);
+  void HandleResponse(const uint8_t *data,
+                      unsigned int size);  // LOCK_REQUIRED(m_mutex);
 
-  void HandleData(const uint8_t *data, unsigned int size);
+  void ScheduleCallback(CommandCompleteCallback *callback,
+                        CommandResult result,
+                        uint8_t return_code,
+                        uint8_t status_flags,
+                        const std::string &payload);
+  void RunCallback(CommandCompleteCallback *callback,
+                   CallbackArgs args);
 
   static const uint8_t EOF_IDENTIFIER = 0xa5;
   static const uint8_t SOF_IDENTIFIER = 0x5a;
   static const unsigned int MAX_PAYLOAD_SIZE = 513;
-  static const unsigned int MIN_RESPONSE_SIZE = 8;
+  static const unsigned int MIN_RESPONSE_SIZE = 9;
   static const unsigned int USB_PACKET_SIZE = 64;
   static const unsigned int MAX_IN_FLIGHT = 2;
+  static const unsigned int MAX_QUEUED_MESSAGES = 10;
   static const unsigned int INTERFACE_OFFSET = 2;
 
   static const uint8_t IN_ENDPOINT = 0x81;
