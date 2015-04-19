@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBDMX_JARULEWIDGETIMPL_H_
 #define PLUGINS_USBDMX_JARULEWIDGETIMPL_H_
 
+#include <ola/base/Macro.h>
 #include <ola/rdm/DiscoveryAgent.h>
 #include <ola/rdm/QueueingRDMController.h>
 #include <ola/rdm/RDMCommand.h>
@@ -102,6 +103,19 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
     RC_RDM_BCAST_RESPONSE,
     RC_RDM_INVALID_RESPONSE,
   } JaRuleReturnCode;
+
+  PACK(
+  struct DUBTiming {
+    uint16_t start;  //!< The start of the discovery response.
+    uint16_t end;  //!< The end of the discovery response.
+  });
+
+  PACK(
+  struct GetSetTiming {
+    uint16_t break_start;  //!< The start of the break.
+    uint16_t mark_start;  //!< The start of the mark / end of the break.
+    uint16_t mark_end;  //!< The end of the mark.
+  });
 
   JaRuleEndpoint m_endpoint;
   bool m_in_shutdown;

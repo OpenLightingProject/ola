@@ -211,11 +211,13 @@ void JaRuleWidgetImpl::MuteDeviceComplete(MuteDeviceCallback *mute_complete,
   bool muted_ok = false;
   if (result == JaRuleEndpoint::COMMAND_COMPLETED_OK &&
       return_code == RC_OK &&
-      payload.size() > 1) {
+      payload.size() > sizeof(GetSetTiming)) {
+    // Skip the timing data & the start code.
+    string mute_data = payload.substr(sizeof(GetSetTiming) + 1);
     ola::rdm::rdm_response_code response_code = rdm::RDM_INVALID_RESPONSE;
     auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
-          reinterpret_cast<const uint8_t*>(payload.data()) + 1,
-          payload.size() - 1, &response_code));
+          reinterpret_cast<const uint8_t*>(mute_data.data()),
+          mute_data.size(), &response_code));
 
     // TODO(simon): I guess we could ack timer the MUTE. Handle this case
     // someday.
@@ -246,11 +248,14 @@ void JaRuleWidgetImpl::DUBComplete(BranchCallback *callback,
                                    uint8_t status_flags,
                                    const std::string &payload) {
   CheckStatusFlags(status_flags);
-  // TODO(simon): skip over the timing info here.
+  string discovery_data;
+  if (payload.size() >= sizeof(DUBTiming)) {
+    discovery_data = payload.substr(sizeof(DUBTiming));
+  }
   if (result == JaRuleEndpoint::COMMAND_COMPLETED_OK &&
       return_code == RC_OK) {
-    callback->Run(reinterpret_cast<const uint8_t*>(payload.data()),
-                  payload.size());
+    callback->Run(reinterpret_cast<const uint8_t*>(discovery_data.data()),
+                  discovery_data.size());
   } else {
     callback->Run(NULL, 0);
   }
@@ -263,8 +268,6 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
                                    uint8_t status_flags,
                                    const std::string &payload) {
   CheckStatusFlags(status_flags);
-  // TODO(simon): skip over the timing info here.
-
   vector<string> packets;
   auto_ptr<const RDMRequest> request(request_ptr);
 
@@ -273,63 +276,50 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
   }
 
   JaRuleEndpoint::CommandClass command = GetCommandFromRequest(request.get());
-
   ola::rdm::rdm_response_code response_code = rdm::RDM_INVALID_RESPONSE;
   ola::rdm::RDMResponse *response = NULL;
 
-  if (command == JaRuleEndpoint::RDM_DUB) {
-    switch (return_code) {
-      case RC_OK:
-        packets.push_back(payload);
-        response_code = rdm::RDM_DUB_RESPONSE;
-        break;
-      case RC_RDM_TIMEOUT:
-        response_code = rdm::RDM_TIMEOUT;
-        break;
-      case RC_TX_ERROR:
-      case RC_BUFFER_FULL:
-        response_code = rdm::RDM_FAILED_TO_SEND;
-        break;
-      default:
-        OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(return_code);
-        response_code = rdm::RDM_FAILED_TO_SEND;
-        break;
+  if (command == JaRuleEndpoint::RDM_DUB &&
+      return_code == RC_OK) {
+    if (payload.size() > sizeof(DUBTiming)) {
+      packets.push_back(payload.substr(sizeof(DUBTiming)));
     }
-  } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST) {
-    switch (return_code) {
-      case RC_OK:
-        response_code = rdm::RDM_WAS_BROADCAST;
-        break;
-      case RC_RDM_BCAST_RESPONSE:
-        response = UnpackRDMResponse(request.get(), payload, &response_code);
-        break;
-      case RC_TX_ERROR:
-      case RC_BUFFER_FULL:
-        response_code = rdm::RDM_FAILED_TO_SEND;
-        break;
-      default:
-        OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(return_code);
-        response_code = rdm::RDM_FAILED_TO_SEND;
-        break;
+    response_code = rdm::RDM_DUB_RESPONSE;
+  } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
+             return_code == RC_OK) {
+    response_code = rdm::RDM_WAS_BROADCAST;
+  } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
+             return_code == RC_RDM_BCAST_RESPONSE) {
+    if (payload.size() > sizeof(GetSetTiming)) {
+      response = UnpackRDMResponse(
+          request.get(), payload.substr(sizeof(GetSetTiming)),
+          &response_code);
     }
+  } else if (command == JaRuleEndpoint::RDM_REQUEST &&
+             return_code == RC_OK) {
+    if (payload.size() > sizeof(GetSetTiming)) {
+      GetSetTiming timing;
+      memcpy(reinterpret_cast<uint8_t*>(&timing),
+             reinterpret_cast<const uint8_t*>(payload.data()),
+             sizeof(timing));
+      OLA_INFO << "Response time " << (timing.break_start / 10.0)
+               << "uS, Break: "
+               << (timing.mark_start - timing.break_start) / 10.0
+               << "uS, Mark: " << (timing.mark_end - timing.mark_start) / 10.0
+               << "uS";
+      response = UnpackRDMResponse(
+          request.get(), payload.substr(sizeof(GetSetTiming)),
+          &response_code);
+    }
+  } else if (return_code == RC_RDM_TIMEOUT) {
+    response_code = rdm::RDM_TIMEOUT;
+  } else if (return_code == RC_TX_ERROR || return_code == RC_BUFFER_FULL) {
+    response_code = rdm::RDM_FAILED_TO_SEND;
   } else {
-    switch (return_code) {
-      case RC_OK:
-        response = UnpackRDMResponse(request.get(), payload, &response_code);
-        break;
-      case RC_RDM_TIMEOUT:
-        response_code = rdm::RDM_TIMEOUT;
-        break;
-      case RC_TX_ERROR:
-      case RC_BUFFER_FULL:
-        response_code = rdm::RDM_FAILED_TO_SEND;
-        break;
-      default:
-        OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(return_code);
-        response_code = rdm::RDM_FAILED_TO_SEND;
-        break;
-    }
+    OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(return_code);
+    response_code = rdm::RDM_FAILED_TO_SEND;
   }
+
   callback->Run(response_code, response, packets);
 }
 
