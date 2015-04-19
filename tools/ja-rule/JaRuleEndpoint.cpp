@@ -74,6 +74,7 @@ JaRuleEndpoint::JaRuleEndpoint(SelectServer *ss, libusb_device *device)
     m_pending_requests(0),
     m_out_transfer(libusb_alloc_transfer(0)),
     m_out_in_progress(false),
+    m_token(0),
     m_in_transfer(libusb_alloc_transfer(0)),
     m_in_in_progress(false) {
 }
@@ -212,9 +213,10 @@ void JaRuleEndpoint::MaybeSendRequest() {
 
   unsigned int offset = 0;
   m_out_buffer[0] = SOF_IDENTIFIER;
-  SplitUInt16(request.command, &m_out_buffer[2], &m_out_buffer[1]);
-  SplitUInt16(request.payload.size(), &m_out_buffer[4], &m_out_buffer[3]);
-  offset += 5;
+  m_out_buffer[1] = m_token++;
+  SplitUInt16(request.command, &m_out_buffer[3], &m_out_buffer[2]);
+  SplitUInt16(request.payload.size(), &m_out_buffer[5], &m_out_buffer[4]);
+  offset += 6;
 
   if (request.payload.size() > 0) {
     memcpy(m_out_buffer + offset, request.payload.data(),
@@ -303,10 +305,11 @@ void JaRuleEndpoint::HandleData(const uint8_t *data, unsigned int size) {
     return;
   }
 
-  uint16_t command = JoinUInt8(data[2], data[1]);
-  uint16_t payload_size = JoinUInt8(data[4], data[3]);
-  uint8_t return_code = data[5];
-  uint8_t flags = data[6];
+  uint8_t token = data[1];
+  uint16_t command = JoinUInt8(data[3], data[2]);
+  uint16_t payload_size = JoinUInt8(data[5], data[4]);
+  uint8_t return_code = data[6];
+  uint8_t flags = data[7];
 
   if (payload_size + MIN_RESPONSE_SIZE > size) {
     OLA_WARN << "Message size of " << (payload_size + MIN_RESPONSE_SIZE)
@@ -324,7 +327,7 @@ void JaRuleEndpoint::HandleData(const uint8_t *data, unsigned int size) {
   }
 
   MessageHandlerInterface::Message message = {
-    command, return_code, flags,
+    token, command, return_code, flags,
     data + MIN_RESPONSE_SIZE - 1, payload_size
   };
 
