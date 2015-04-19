@@ -91,7 +91,8 @@ EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
     : m_send_cb(send_cb),
       m_ops(ops),
       m_active(true),
-      m_dmx_callback(NULL),
+      m_watchdog(WATCHDOG_LIMIT,
+                 NewCallback(this, &EnttecPortImpl::WatchdogFired)),
       m_discovery_agent(this),
       m_uid(uid),
       m_transaction_number(0),
@@ -107,10 +108,7 @@ EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
 void EnttecPortImpl::Stop() {
   m_active = false;
 
-  if (m_dmx_callback) {
-    delete m_dmx_callback;
-    m_dmx_callback = NULL;
-  }
+  m_dmx_callback.reset();
 
   // empty params struct
   usb_pro_parameters params;
@@ -147,9 +145,7 @@ bool EnttecPortImpl::SendDMX(const DmxBuffer &buffer) {
  * Set the callback to run when new DMX data arrives
  */
 void EnttecPortImpl::SetDMXCallback(ola::Callback0<void> *callback) {
-  if (m_dmx_callback)
-    delete m_dmx_callback;
-  m_dmx_callback = callback;
+  m_dmx_callback.reset(callback);
 }
 
 /*
@@ -224,9 +220,8 @@ bool EnttecPortImpl::SetParameters(uint8_t break_time,
 /**
  * Send an RDM Request.
  */
-void EnttecPortImpl::SendRDMRequest(
-    const ola::rdm::RDMRequest *request,
-    ola::rdm::RDMCallback *on_complete) {
+void EnttecPortImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                    ola::rdm::RDMCallback *on_complete) {
   auto_ptr<const ola::rdm::RDMRequest> request_ptr(request);
   vector<string> packets;
   if (m_rdm_request_callback) {
@@ -235,39 +230,19 @@ void EnttecPortImpl::SendRDMRequest(
     return;
   }
 
-  // Prepare the buffer for the RDM data including the start code.
-  unsigned int rdm_size = RDMCommandSerializer::RequiredSize(*request);
-  uint8_t *data = new uint8_t[rdm_size + 1];
-  data[0] = RDMCommand::START_CODE;
-
-  unsigned int this_transaction_number = m_transaction_number++;
-  unsigned int port_id = 1;
-
-  bool r = RDMCommandSerializer::Pack(*request, &data[1], &rdm_size, m_uid,
-                                      this_transaction_number, port_id);
-
-  if (!r) {
-    OLA_WARN << "Failed to pack message, dropping request";
-    delete[] data;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    return;
-  }
-
-  m_rdm_request_callback = on_complete;
-  // re-write the request so it appears to originate from this widget.
+  // Re-write the request so it appears to originate from this widget.
   m_pending_request = request->DuplicateWithControllerParams(
-      m_uid,
-      this_transaction_number,
-      port_id);
+      m_uid, m_transaction_number++, PORT_ID);
+  m_rdm_request_callback = on_complete;
 
-  const uint8_t label = (
-      IsDUBRequest(request) ? m_ops.rdm_discovery : m_ops.send_rdm);
-  bool ok = m_send_cb->Run(label, data, rdm_size + 1);
-  delete[] data;
+  bool ok = PackAndSendRDMRequest(
+      IsDUBRequest(request) ? m_ops.rdm_discovery : m_ops.send_rdm,
+      m_pending_request);
 
   if (!ok) {
-    m_rdm_request_callback = NULL;
+    delete m_pending_request;
     m_pending_request = NULL;
+    m_rdm_request_callback = NULL;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
 }
@@ -365,8 +340,11 @@ void EnttecPortImpl::Branch(const ola::rdm::UID &lower,
  * The length of this message should be 0.
  */
 void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
-  if (length)
+  if (length) {
     OLA_WARN << "Strange RDM timeout message, length was " << length;
+  }
+
+  m_watchdog.Disable();
 
   // check what operation we were waiting on
   if (m_unmute_callback) {
@@ -468,6 +446,8 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
     return;
   }
 
+  m_watchdog.Disable();
+
   // skip over the status bit
   data++;
   length--;
@@ -559,8 +539,9 @@ void EnttecPortImpl::HandleDMXDiff(const uint8_t *data, unsigned int length) {
     }
   }
 
-  if (m_dmx_callback)
+  if (m_dmx_callback.get()) {
     m_dmx_callback->Run();
+  }
 }
 
 
@@ -588,8 +569,9 @@ void EnttecPortImpl::HandleDMX(const uint8_t *data,
   // only handle start code = 0
   if (length > 2 && widget_reply->dmx[0] == 0) {
     m_input_buffer.Set(widget_reply->dmx + 1, length - 2);
-    if (m_dmx_callback)
+    if (m_dmx_callback.get()) {
       m_dmx_callback->Run();
+    }
   }
   return;
 }
@@ -620,7 +602,11 @@ bool EnttecPortImpl::PackAndSendRDMRequest(uint8_t label,
   uint8_t data[rdm_length + 1];  // inc start code
   data[0] = RDMCommand::START_CODE;
   RDMCommandSerializer::Pack(*request, &data[1], &rdm_length);
-  return m_send_cb->Run(label, data, rdm_length + 1);
+  bool ok = m_send_cb->Run(label, data, rdm_length + 1);
+  if (ok) {
+    m_watchdog.Enable();
+  }
+  return ok;
 }
 
 
@@ -630,6 +616,15 @@ bool EnttecPortImpl::PackAndSendRDMRequest(uint8_t label,
 bool EnttecPortImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
   return (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
           request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
+}
+
+void EnttecPortImpl::ClockWatchdog() {
+  m_watchdog.Clock();
+}
+
+void EnttecPortImpl::WatchdogFired() {
+  OLA_WARN << "Enttec watchdog fired";
+  // TODO(simon): think about what we want to do here.
 }
 
 
@@ -714,6 +709,7 @@ void EnttecPort::RunIncrementalDiscovery(
 class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
  public:
     EnttecUsbProWidgetImpl(
+        ola::thread::SchedulerInterface *scheduler,
         ola::io::ConnectedDescriptor *descriptor,
         const EnttecUsbProWidget::EnttecUsbProWidgetOptions &options);
     ~EnttecUsbProWidgetImpl();
@@ -731,6 +727,9 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
     typedef vector<EnttecUsbProWidget::EnttecUsbProPortAssignmentCallback*>
       PortAssignmentCallbacks;
 
+    ola::thread::SchedulerInterface *m_scheduler;
+    ola::thread::timeout_id m_watchdog_timer_id;
+
     vector<EnttecPort*> m_ports;
     vector<EnttecPortImpl*> m_port_impls;
     auto_ptr<EnttecPortImpl::SendCallback> m_send_cb;
@@ -747,6 +746,8 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
                  bool enable_rdm);
     void EnableSecondPort();
 
+    bool Watchdog();
+
     static const uint8_t PORT_ASSIGNMENT_LABEL = 141;
     static const uint8_t SET_PORT_ASSIGNMENT_LABEL = 145;
 };
@@ -757,9 +758,12 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
  * This also works for the RDM Pro with the standard firmware loaded.
  */
 EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
+  ola::thread::SchedulerInterface *scheduler,
   ola::io::ConnectedDescriptor *descriptor,
   const EnttecUsbProWidget::EnttecUsbProWidgetOptions &options)
     : BaseUsbProWidget(descriptor),
+      m_scheduler(scheduler),
+      m_watchdog_timer_id(ola::thread::INVALID_TIMEOUT),
       m_send_cb(NewCallback(this, &EnttecUsbProWidgetImpl::SendCommand)),
       m_uid(options.esta_id ? options.esta_id :
                               EnttecUsbProWidget::ENTTEC_ESTA_ID,
@@ -772,6 +776,9 @@ EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
             options.enable_rdm);
     EnableSecondPort();
   }
+  m_watchdog_timer_id = m_scheduler->RegisterRepeatingTimeout(
+    TimeInterval(1, 0),
+    NewCallback(this, &EnttecUsbProWidgetImpl::Watchdog));
 }
 
 
@@ -801,6 +808,11 @@ void EnttecUsbProWidgetImpl::GetPortAssignments(
  * Stop this widget
  */
 void EnttecUsbProWidgetImpl::Stop() {
+  if (m_watchdog_timer_id != ola::thread::INVALID_TIMEOUT) {
+    m_scheduler->RemoveTimeout(m_watchdog_timer_id);
+    m_watchdog_timer_id = ola::thread::INVALID_TIMEOUT;
+  }
+
   vector<EnttecPortImpl*>::iterator iter = m_port_impls.begin();
   for (; iter != m_port_impls.end(); ++iter)
     (*iter)->Stop();
@@ -912,6 +924,14 @@ void EnttecUsbProWidgetImpl::EnableSecondPort() {
     OLA_INFO << "Failed to enable second port";
 }
 
+bool EnttecUsbProWidgetImpl::Watchdog() {
+  vector<EnttecPortImpl*>::iterator iter = m_port_impls.begin();
+  for (; iter != m_port_impls.end(); ++iter) {
+    (*iter)->ClockWatchdog();
+  }
+  return true;
+}
+
 // EnttecUsbProWidget
 // ----------------------------------------------------------------------------
 
@@ -919,9 +939,10 @@ void EnttecUsbProWidgetImpl::EnableSecondPort() {
  * EnttecUsbProWidget Constructor
  */
 EnttecUsbProWidget::EnttecUsbProWidget(
+    ola::thread::SchedulerInterface *scheduler,
     ola::io::ConnectedDescriptor *descriptor,
     const EnttecUsbProWidgetOptions &options) {
-  m_impl = new EnttecUsbProWidgetImpl(descriptor, options);
+  m_impl = new EnttecUsbProWidgetImpl(scheduler, descriptor, options);
 }
 
 
