@@ -124,6 +124,9 @@ class MessageHandler : public JaRuleEndpoint::MessageHandlerInterface {
       case JaRuleEndpoint::SET_RDM_BROADCAST_LISTEN:
         PrintAck(message);
         break;
+      case JaRuleEndpoint::RDM_BROADCAST_REQUEST:
+        PrintAck(message);
+        break;
       default:
         OLA_WARN << "Unknown command: " << ToHex(message.command);
     }
@@ -207,7 +210,8 @@ class MessageHandler : public JaRuleEndpoint::MessageHandlerInterface {
 
 
   void PrintDUBResponse(const Message& message) {
-    OLA_INFO << "Got response of size " << message.payload_size;
+    OLA_INFO << "DUB Response: RC: " << static_cast<int>(message.return_code)
+             << ", size: " << message.payload_size;
   }
 
   void PrintResponse(const Message& message) {
@@ -430,7 +434,7 @@ class InputHandler {
     cout << " r - Reset" << endl;
     cout << " t - Send DMX frame" << endl;
     cout << " u - Send a broadcast unmute" << endl;
-    cout << " M - Send an unmute to " << m_target_uid << endl;
+    cout << " U - Send an unmute to " << m_target_uid << endl;
     cout << " w - Write Log" << endl;
     cout << " x - Get RDM Wait time" << endl;
     cout << " X - Set RDM Wait time" << endl;
@@ -692,7 +696,10 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
-    m_device->SendMessage(JaRuleEndpoint::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(
+        target.IsBroadcast() ? JaRuleEndpoint::RDM_BROADCAST_REQUEST :
+          JaRuleEndpoint::RDM_REQUEST,
+        data, rdm_length);
   }
 
   void WriteLog() {

@@ -114,23 +114,23 @@ class JaRuleEndpoint {
    * @brief The Ja Rule commands.
    */
   typedef enum {
-    ECHO_COMMAND = 0x80,
-    TX_DMX = 0x81,
-    GET_LOG = 0x82,
-    GET_FLAGS = 0x83,
-    WRITE_LOG = 0x84,
-    RESET_DEVICE = 0x85,
-    RDM_DUB = 0x86,
-    RDM_REQUEST = 0x87,
-    SET_BREAK_TIME = 0x88,
-    GET_BREAK_TIME = 0x89,
-    SET_MAB_TIME = 0x90,
-    GET_MAB_TIME = 0x91,
-    SET_RDM_BROADCAST_LISTEN = 0x92,
-    GET_RDM_BROADCAST_LISTEN = 0x93,
-    SET_RDM_WAIT_TIME = 0x94,
-    GET_RDM_WAIT_TIME = 0x95,
-    RDM_BROADCAST_REQUEST = 0x96
+    RESET_DEVICE = 0x00,
+    SET_BREAK_TIME = 0x10,
+    GET_BREAK_TIME = 0x11,
+    SET_MAB_TIME = 0x12,
+    GET_MAB_TIME = 0x13,
+    SET_RDM_BROADCAST_LISTEN = 0x20,
+    GET_RDM_BROADCAST_LISTEN = 0x21,
+    SET_RDM_WAIT_TIME = 0x22,
+    GET_RDM_WAIT_TIME = 0x23,
+    TX_DMX = 0x30,
+    RDM_DUB = 0x40,
+    RDM_REQUEST = 0x41,
+    RDM_BROADCAST_REQUEST = 0x42,
+    ECHO_COMMAND = 0xf0,
+    GET_LOG = 0xf1,
+    GET_FLAGS = 0xf2,
+    WRITE_LOG = 0xf3,
   } CommandClass;
 
   /**
