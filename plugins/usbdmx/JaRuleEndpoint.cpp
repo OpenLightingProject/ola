@@ -214,7 +214,7 @@ void JaRuleEndpoint::_InTransferComplete() {
     HandleResponse(m_in_transfer->buffer, m_in_transfer->actual_length);
   }
 
-  // TODO(simon): handle for timeouts here
+  // TODO(simon): handle timeouts here
   // Either we'll be getting timouts or we'll be getting good responses from
   // other messages, either way we don't need a RegisterTimeout with the SS.
 
@@ -390,7 +390,7 @@ void JaRuleEndpoint::ScheduleCallback(CommandCompleteCallback *callback,
 }
 
 /*
- * @brief Only even run in the Executor thread.
+ * @brief Only ever run in the Executor thread.
  */
 void JaRuleEndpoint::RunCallback(CommandCompleteCallback *callback,
                                  CallbackArgs args) {

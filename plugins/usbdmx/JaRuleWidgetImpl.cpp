@@ -32,6 +32,7 @@
 #include <ola/util/Utils.h>
 #include <ola/strings/Format.h>
 #include <ola/util/SequenceNumber.h>
+#include <string.h>
 
 #include <memory>
 #include <string>

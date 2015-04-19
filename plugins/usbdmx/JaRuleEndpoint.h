@@ -65,6 +65,7 @@ class JaRuleEndpoint {
 
     /**
      * @brief The command is malformed.
+     *
      * This could mean the payload is too big or a NULL pointer with a non-0
      * size was provided.
      */
