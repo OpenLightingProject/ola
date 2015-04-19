@@ -128,7 +128,10 @@ void JaRuleEndpoint::CancelAll() {
 
   {
     MutexLocker locker(&m_mutex);
-    queued_commands.swap(m_queued_commands);
+    queued_commands = m_queued_commands;
+    while (!m_queued_commands.empty()) {
+      m_queued_commands.pop();
+    }
     pending_commands.swap(m_pending_commands);
   }
 
