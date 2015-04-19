@@ -653,13 +653,13 @@ class GetSupportedParameters(ResponderTestFixture):
                     'DMX_START_ADDRESS',
                     'IDENTIFY_DEVICE']
 
-  # Banned PIDs, these are pid values that can not appear in the list of
+  # Banned PIDs, these are PID values that can not appear in the list of
   # supported parameters (these are used for discovery)
   BANNED_PIDS = ['DISC_UNIQUE_BRANCH',
                  'DISC_MUTE',
                  'DISC_UN_MUTE']
 
-  # If responders support any of the pids in these groups, the should really
+  # If responders support any of the PIDs in these groups, they should really
   # support all of them.
   PID_GROUPS = [
       ('PROXIED_DEVICE_COUNT', 'PROXIED_DEVICES'),
@@ -669,7 +669,7 @@ class GetSupportedParameters(ResponderTestFixture):
       ('SELF_TEST_DESCRIPTION', 'PERFORM_SELFTEST'),
   ]
 
-  # If the first pid in each group is supported, the remainer of the group
+  # If the first PID in each group is supported, the remainder of the group
   # must be.
   PID_DEPENDENCIES = [
       ('RECORD_SENSORS', 'SENSOR_VALUE'),
@@ -678,6 +678,17 @@ class GetSupportedParameters(ResponderTestFixture):
       ('OUTPUT_RESPONSE_TIME', 'OUTPUT_RESPONSE_TIME_DESCRIPTION'),
       ('MODULATION_FREQUENCY', 'MODULATION_FREQUENCY_DESCRIPTION'),
       ('LOCK_STATE', 'LOCK_STATE_DESCRIPTION'),
+  ]
+
+  # If any PID apart from the first in each group is supported, the first one
+  # must be.
+  PID_REVERSE_DEPENDENCIES = [
+      ('LIST_INTERFACES', 'INTERFACE_LABEL',
+       'INTERFACE_HARDWARE_ADDRESS_TYPE1', 'IPV4_DHCP_MODE',
+       'IPV4_ZEROCONF_MODE', 'IPV4_CURRENT_ADDRESS', 'IPV4_STATIC_ADDRESS',
+       'INTERFACE_RENEW_DHCP', 'INTERFACE_RELEASE_DHCP',
+       'INTERFACE_APPLY_CONFIGURATION', 'IPV4_DEFAULT_ROUTE',
+       'DNS_IPV4_NAME_SERVER', 'DNS_HOSTNAME', 'DNS_DOMAIN_NAME'),
   ]
 
   def Test(self):
@@ -731,7 +742,7 @@ class GetSupportedParameters(ResponderTestFixture):
 
     pid_store = PidStore.GetStore()
 
-    # check for duplicate pids
+    # check for duplicate PIDs
     for pid, count in count_by_pid.iteritems():
       if count > 1:
         pid_obj = self.LookupPidValue(pid)
@@ -776,6 +787,24 @@ class GetSupportedParameters(ResponderTestFixture):
       if unsupported_pids:
         self.AddAdvisory('%s supported but %s is not' %
                          (pid_names[0], ','.join(unsupported_pids)))
+
+    for pid_names in self.PID_REVERSE_DEPENDENCIES:
+      if self.LookupPid(pid_names[0]).value in supported_parameters:
+        continue
+
+      dependant_pids = []
+      for pid_name in pid_names[1:]:
+        pid = self.LookupPid(pid_name)
+        if pid is None:
+          self.SetBroken('Missing PID %s' % pid_name)
+          return
+
+        if pid.value in supported_parameters:
+          dependant_pids.append(pid_name)
+      if (dependant_pids and
+         (self.LookupPid(pid_names[0]).value in supported_parameters)):
+        self.AddAdvisory('%s supported but %s is not' %
+                         (','.join(unsupported_pids), pid_names[0]))
 
 
 class GetSupportedParametersWithData(ResponderTestFixture):
@@ -6296,7 +6325,7 @@ class AllSubDevicesGetPresetStatus(TestMixins.AllSubDevicesGetMixin,
 #------------------------------------------------------------------------------
 class GetPresetMergeMode(TestMixins.GetMixin,
                          OptionalParameterTestFixture):
-  """Get PRESET_MERGEMODE with extra data."""
+  """Get PRESET_MERGEMODE."""
   CATEGORY = TestCategory.CONTROL
   PID = 'PRESET_MERGEMODE'
   PROVIDES = ['preset_mergemode']
@@ -6402,6 +6431,50 @@ class AllSubDevicesGetPresetMergeMode(TestMixins.AllSubDevicesGetMixin,
   """Get PRESET_MERGEMODE addressed to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_MERGEMODE'
+
+# LIST_INTERFACES
+#------------------------------------------------------------------------------
+class GetListInterfaces(TestMixins.GetMixin,
+                        OptionalParameterTestFixture):
+  """Get LIST_INTERFACES."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'LIST_INTERFACES'
+  PROVIDES = ['list_interfaces']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      self.SetProperty('list_interfaces', [])
+      return
+
+    interfaces = []
+
+    for interface in fields['interfaces']:
+      interface_id = interface['interface_identifier']
+      interfaces.append(interface_id)
+      if interface['interface_hardware_type'] != 1:
+        self.AddAdvisory('Possible error, found unusual hardware type %d for interface %d' %
+                         (interface['interface_hardware_type'], interface_id))
+
+    self.SetProperty('list_interfaces', interfaces)
+
+class GetListInterfacesWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Get LIST_INTERFACES with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LIST_INTERFACES'
+
+class SetListInterfaces(ResponderTestFixture):
+  """Attempt to SET list interfaces."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LIST_INTERFACES'
+
+  def Test(self):
+    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
+    self.SendRawSet(ROOT_DEVICE, self.pid)
 
 # Cross check the control fields with various other properties
 #------------------------------------------------------------------------------
