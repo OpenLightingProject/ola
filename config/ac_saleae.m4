@@ -40,8 +40,10 @@ AC_DEFUN([SALEAE_DEVICE],
     [AC_LANG_PROGRAM([#include <SaleaeDeviceApi.h>],
                        [DevicesManagerInterface::RegisterOnConnect(NULL)])],
     [have_saleae=yes],
-    [AC_MSG_WARN([SaleaeDevice is not installed.])])
+    [have_saleae=no])
   LIBS=$old_libs
+  AS_IF([test "x$have_saleae" == xno],
+        [AC_MSG_WARN([SaleaeDevice library is not usable.])])
 
   AM_CONDITIONAL(HAVE_SALEAE_LOGIC, test "${have_saleae}" = "yes")
 ])
