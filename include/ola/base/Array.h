@@ -25,6 +25,8 @@
 #ifndef INCLUDE_OLA_BASE_ARRAY_H_
 #define INCLUDE_OLA_BASE_ARRAY_H_
 
+#include <stdint.h>
+
 namespace ola {
 
 /**
@@ -61,5 +63,34 @@ template <typename T, size_t N>
  */
 #define arraysize(array) (sizeof(ola::ArraySizeHelper(array)))
 
+
+/**
+ * @brief Deletes an array when it goes out of scope.
+ *
+ * This is similar to unique_ptr<T[]>, which we should switch to once we start
+ * introducing C++11 syntax.
+ */
+class ArrayDeleter {
+ public:
+  /**
+   * @brief Create a new ArrayDeleter.
+   * @param data The data to wrap.
+   */
+  explicit ArrayDeleter(const uint8_t* data) : m_data(data) {}
+
+  /**
+   * @brief Destructor.
+   *
+   * This calls delete[] on the data.
+   */
+  ~ArrayDeleter() {
+    if (m_data) {
+      delete[] m_data;
+    }
+  }
+
+ private:
+  const uint8_t* m_data;
+};
 }  // namespace ola
 #endif  // INCLUDE_OLA_BASE_ARRAY_H_

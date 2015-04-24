@@ -202,15 +202,15 @@ rdm_response_code RDMCommand::VerifyData(
     const uint8_t *data,
     unsigned int length,
     RDMCommandHeader *command_header) {
-  if (!data) {
-    OLA_WARN << "RDM data was null";
-    return RDM_INVALID_RESPONSE;
-  }
-
   if (length < sizeof(RDMCommandHeader)) {
     OLA_WARN << "RDM message is too small, needs to be at least " <<
       sizeof(RDMCommandHeader) << ", was " << length;
     return RDM_PACKET_TOO_SHORT;
+  }
+
+  if (!data) {
+    OLA_WARN << "RDM data was null";
+    return RDM_INVALID_RESPONSE;
   }
 
   memcpy(reinterpret_cast<uint8_t*>(command_header),
@@ -288,6 +288,11 @@ RDMCommand::RDMCommandClass RDMCommand::ConvertCommandClass(
   }
 }
 
+
+bool RDMRequest::IsDUB() const {
+  return (CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
+          ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
+}
 
 /*
  * Inflate a request from some data

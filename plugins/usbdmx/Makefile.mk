@@ -2,6 +2,7 @@
 ##################################################
 if USE_LIBUSB
 noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
+
 plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.cpp \
     plugins/usbdmx/AnymauDMX.h \
@@ -16,6 +17,14 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/EuroliteProFactory.h \
     plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/Flags.cpp \
+    plugins/usbdmx/JaRuleEndpoint.cpp \
+    plugins/usbdmx/JaRuleEndpoint.h \
+    plugins/usbdmx/JaRuleFactory.cpp \
+    plugins/usbdmx/JaRuleFactory.h \
+    plugins/usbdmx/JaRuleWidget.cpp \
+    plugins/usbdmx/JaRuleWidget.h \
+    plugins/usbdmx/JaRuleWidgetImpl.cpp \
+    plugins/usbdmx/JaRuleWidgetImpl.h \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
@@ -56,6 +65,10 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/GenericDevice.h \
     plugins/usbdmx/GenericOutputPort.cpp \
     plugins/usbdmx/GenericOutputPort.h \
+    plugins/usbdmx/JaRuleDevice.cpp \
+    plugins/usbdmx/JaRuleDevice.h \
+    plugins/usbdmx/JaRuleOutputPort.cpp \
+    plugins/usbdmx/JaRuleOutputPort.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \

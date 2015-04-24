@@ -494,7 +494,7 @@ void RDMCommandTest::testResponseInflation() {
   ola::rdm::rdm_response_code code;
   RDMResponse *command = RDMResponse::InflateFromData(NULL, 10, &code);
   OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
-  OLA_ASSERT_EQ(ola::rdm::RDM_INVALID_RESPONSE, code);
+  OLA_ASSERT_EQ(ola::rdm::RDM_PACKET_TOO_SHORT, code);
 
   string empty_string;
   command = RDMResponse::InflateFromData(empty_string, &code);

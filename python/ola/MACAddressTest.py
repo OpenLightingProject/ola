@@ -23,6 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import unittest
 from ola.MACAddress import MACAddress
 
+
 class MACAddressTest(unittest.TestCase):
 
   def testBasic(self):

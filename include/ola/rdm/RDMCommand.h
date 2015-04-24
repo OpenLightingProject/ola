@@ -305,6 +305,12 @@ class RDMRequest: public RDMCommand {
       printer->Print(this, summarize, unpack_param_data);
     }
 
+    /**
+     * @brief Check if this is a DUB request.
+     * @returns true if this is a DUB request.
+     */
+    bool IsDUB() const;
+
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
                                        unsigned int length);

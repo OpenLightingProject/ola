@@ -19,7 +19,8 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-MAC_ADDRESS_LENGTH = 6;
+MAC_ADDRESS_LENGTH = 6
+
 
 class Error(Exception):
   """Base Error Class."""
