@@ -31,11 +31,45 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace rdm {
 
 using std::string;
+
+// Internal Helper Functions
+namespace {
+
+/**
+ * @brief Guess the CommandClass of an RDM message.
+ * @param data a pointer to the RDM message (excluding the start code)
+ * @param length length of the rdm data
+ * @returns A RDMCommandClass value, which is set to INVALID_COMMAND if we
+ * couldn't determine the message type.
+ *
+ * This doesn't perform any data checking (that's left to the Inflate* methods).
+ */
+RDMCommand::RDMCommandClass GuessMessageType(const uint8_t *data,
+                                             unsigned int length) {
+  static const unsigned int COMMAND_CLASS_OFFSET = 19;
+  if (!data || length < COMMAND_CLASS_OFFSET + 1)
+    return RDMCommand::INVALID_COMMAND;
+
+  switch (data[COMMAND_CLASS_OFFSET]) {
+    case RDMCommand::GET_COMMAND:
+    case RDMCommand::GET_COMMAND_RESPONSE:
+    case RDMCommand::SET_COMMAND:
+    case RDMCommand::SET_COMMAND_RESPONSE:
+    case RDMCommand::DISCOVER_COMMAND:
+    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
+      return static_cast<RDMCommand::RDMCommandClass>(
+          data[COMMAND_CLASS_OFFSET]);
+    default:
+      return RDMCommand::INVALID_COMMAND;
+  }
+}
+}  // namespace
 
 /**
  * @addtogroup rdm_command
@@ -68,25 +102,10 @@ RDMCommand::RDMCommand(const UID &source,
 
 
 RDMCommand::~RDMCommand() {
-  if (m_data)
+  if (m_data) {
     delete[] m_data;
-}
-
-
-bool RDMCommand::operator==(const RDMCommand &other) const {
-  if (m_source == other.m_source &&
-      m_destination == other.m_destination &&
-      m_transaction_number == other.m_transaction_number &&
-      m_message_count == other.m_message_count &&
-      m_sub_device == other.m_sub_device &&
-      CommandClass() == other.CommandClass() &&
-      m_param_id == other.m_param_id &&
-      m_data_length == other.m_data_length) {
-    return 0 == memcmp(m_data, other.m_data, m_data_length);
   }
-  return false;
 }
-
 
 string RDMCommand::ToString() const {
   std::ostringstream str;
@@ -141,21 +160,8 @@ void RDMCommand::Write(ola::io::OutputStream *stream) const {
 }
 
 
-/**
- * Attempt to inflate RDM data (excluding the start code) into an RDMCommand
- * object. This is really only useful for sniffer-style programs.
- * @returns NULL if the RDM command is invalid.
- */
 RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
-  if (length < 21) {
-    return NULL;
-  }
-
-  rdm_message_type type;
-  RDMCommandClass command_class;
-
-  if (!GuessMessageType(&type, &command_class, data, length))
-    return NULL;
+  RDMCommandClass command_class = GuessMessageType(data, length);
 
   rdm_response_code response_code = RDM_COMPLETED_OK;
   switch (command_class) {
@@ -169,7 +175,7 @@ RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
       return RDMDiscoveryRequest::InflateFromData(data, length);
     case RDMCommand::DISCOVER_COMMAND_RESPONSE:
       return RDMDiscoveryResponse::InflateFromData(data, length);
-    default:
+    case RDMCommand::INVALID_COMMAND:
       return NULL;
   }
 }
@@ -288,6 +294,27 @@ RDMCommand::RDMCommandClass RDMCommand::ConvertCommandClass(
   }
 }
 
+RDMRequest::RDMRequest(const UID &source,
+                       const UID &destination,
+                       uint8_t transaction_number,
+                       uint8_t port_id,
+                       uint8_t message_count,
+                       uint16_t sub_device,
+                       RDMCommandClass command_class,
+                       uint16_t param_id,
+                       const uint8_t *data,
+                       unsigned int length)
+    : RDMCommand(source,
+               destination,
+               transaction_number,
+               port_id,
+               message_count,
+               sub_device,
+               param_id,
+               data,
+               length),
+  m_command_class(command_class) {
+}
 
 bool RDMRequest::IsDUB() const {
   return (CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
@@ -612,69 +639,6 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 
 // Helper functions follow
 
-/**
- * @brief Guess the type of an RDM message
- *
- * Used so we know whether we should unpack it as a request or response. This
- * doesn't perform any data checking (that's left to the Inflate* methods).
- * @param[out] type_arg a pointer to a rdm_message_type variable which is set
- * to RDM_REQUEST or RDM_RESPONSE.
- * @param[out] command_class_arg a pointer to a RDMCommandClass variable which
- * is set to the command class type
- * @param data a pointer to the RDM message (excluding the start code)
- * @param length length of the rdm data
- * @returns true if we could determine the type, false otherwise
- */
-bool GuessMessageType(rdm_message_type *type_arg,
-                      RDMCommand::RDMCommandClass *command_class_arg,
-                      const uint8_t *data,
-                      unsigned int length) {
-  static const unsigned int COMMAND_CLASS_OFFSET = 19;
-  if (!data || length < COMMAND_CLASS_OFFSET + 1)
-    return false;
-
-  rdm_message_type type;
-  RDMCommand::RDMCommandClass command_class;
-
-  switch (data[COMMAND_CLASS_OFFSET]) {
-    case RDMCommand::GET_COMMAND:
-      type = RDM_REQUEST;
-      command_class = RDMCommand::GET_COMMAND;
-      break;
-    case RDMCommand::GET_COMMAND_RESPONSE:
-      type = RDM_RESPONSE;
-      command_class = RDMCommand::GET_COMMAND_RESPONSE;
-      break;
-    case RDMCommand::SET_COMMAND:
-      type = RDM_REQUEST;
-      command_class = RDMCommand::SET_COMMAND;
-      break;
-    case RDMCommand::SET_COMMAND_RESPONSE:
-      type = RDM_RESPONSE;
-      command_class = RDMCommand::SET_COMMAND_RESPONSE;
-      break;
-    case RDMCommand::DISCOVER_COMMAND:
-      type = RDM_REQUEST;
-      command_class = RDMCommand::DISCOVER_COMMAND;
-      break;
-    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
-      type = RDM_RESPONSE;
-      command_class = RDMCommand::DISCOVER_COMMAND_RESPONSE;
-      break;
-    default:
-      command_class = RDMCommand::INVALID_COMMAND;
-      break;
-  }
-
-  if (command_class != RDMCommand::INVALID_COMMAND) {
-    if (type_arg)
-      *type_arg = type;
-    if (command_class_arg)
-      *command_class_arg = command_class;
-    return true;
-  }
-  return false;
-}
 
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason_enum,

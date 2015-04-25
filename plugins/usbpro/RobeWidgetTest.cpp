@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Callback.h"
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
@@ -216,7 +217,7 @@ void RobeWidgetTest::ValidateResponse(
   ola::rdm::rdm_response_code raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
-  OLA_ASSERT(*(raw_response.get()) == *response);
+  OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
   delete response;
   m_ss.Terminate();
 }

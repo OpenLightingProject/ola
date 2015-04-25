@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -163,11 +164,7 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response) {
-    OLA_ASSERT_DATA_EQUALS(m_expected_response->ParamData(),
-                           m_expected_response->ParamDataSize(),
-                           response->ParamData(),
-                           response->ParamDataSize());
-    OLA_ASSERT(*m_expected_response == *response);
+    OLA_ASSERT_TRUE(CommandsEqual(*m_expected_response, *response));
   } else {
     OLA_ASSERT_NULL(response);
   }

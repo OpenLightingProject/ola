@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/rdm/UID.h"
@@ -154,7 +155,7 @@ void MockRDMController::SendRDMRequest(const RDMRequest *request,
   OLA_ASSERT_TRUE(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
   m_expected_calls.pop();
-  OLA_ASSERT_EQ((*call.request), (*request));
+  OLA_ASSERT_TRUE(CommandsEqual(*call.request, *request));
   delete request;
   vector<string> packets;
   if (!call.packet.empty())
@@ -279,10 +280,11 @@ void QueueingRDMControllerTest::VerifyResponse(
     const RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);
-  if (expected_response)
-    OLA_ASSERT_EQ((*expected_response), (*response));
-  else
+  if (expected_response) {
+    OLA_ASSERT_TRUE(CommandsEqual(*expected_response, *response));
+  } else {
     OLA_ASSERT_EQ(expected_response, response);
+  }
 
   OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   for (unsigned int i = 0; i < packets.size(); i++)
