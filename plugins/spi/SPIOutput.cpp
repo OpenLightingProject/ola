@@ -306,6 +306,9 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
     case 6:
       CombinedP9813Control(buffer);
       break;
+    case 7:
+      IndividualAPA102Control(buffer);
+      break;
     default:
       break;
   }
