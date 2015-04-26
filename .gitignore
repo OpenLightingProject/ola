@@ -23,10 +23,6 @@ Thumbs.db
 */*/Thumbs.db
 */*/*/.dirstamp
 */*/*/Thumbs.db
-.DS_Store
-*.bak
-**/nppBackup
-.~lock.*
 INSTALL
 Makefile
 Makefile.in

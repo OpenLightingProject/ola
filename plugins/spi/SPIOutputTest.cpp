@@ -45,7 +45,6 @@ class SPIOutputTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCombinedLPD8806Control);
   CPPUNIT_TEST(testIndividualP9813Control);
   CPPUNIT_TEST(testCombinedP9813Control);
-  CPPUNIT_TEST(testIndividualAPA102Control);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -62,7 +61,6 @@ class SPIOutputTest: public CppUnit::TestFixture {
   void testCombinedLPD8806Control();
   void testIndividualP9813Control();
   void testCombinedP9813Control();
-  void testIndividualAPA102Control();
 
  private:
   UID m_uid;
@@ -417,73 +415,6 @@ void SPIOutputTest::testCombinedP9813Control() {
   const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 0xff, 0x05, 0x04, 0x03,
                                 0xff, 0x05, 0x04, 0x03, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
-
-  // Check nothing changed on the other output.
-  OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
-                backend.GetData(1, &length));
-  OLA_ASSERT_EQ(0u, backend.Writes(1));
-}
-
-/**
- * Test DMX writes in the individual APA102 mode.
- */
-void SPIOutputTest::testIndividualAPA102Control() {
-  FakeSPIBackend backend(2);
-  SPIOutput::Options options(0, "Test SPI Device");
-  options.pixel_count = 2;
-  SPIOutput output(m_uid, &backend, options);
-  output.SetPersonality(7);
-
-  DmxBuffer buffer;
-  unsigned int length = 0;
-  const uint8_t *data = NULL;
-
-  buffer.SetFromString("1, 10, 100");
-  output.WriteDMX(buffer);
-  data = backend.GetData(0, &length);
-  const uint8_t EXPECTED0[] = { 0, 0, 0, 0, 
-                                0xff, 0x64, 0x0a, 0x01,
-                                0xff, 0, 0, 0, 
-                                0, 0, 0, 0, 0, 0, 0, 0};
-  OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
-  OLA_ASSERT_EQ(1u, backend.Writes(0));
-
-  buffer.SetFromString("255,128,0,10,20,30");
-  output.WriteDMX(buffer);
-  data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 
-                                0xff, 0, 0x80, 0xff,
-                                0xff, 0x1e, 0x14, 0x0a, 
-                                0, 0, 0, 0, 0, 0, 0, 0};
-  OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
-  OLA_ASSERT_EQ(2u, backend.Writes(0));
-
-  buffer.SetFromString("34,56,78");
-  output.WriteDMX(buffer);
-  data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 
-                                0xff, 0x4e, 0x38, 0x22,
-                                0xff, 0, 0, 0, 
-                                0, 0, 0, 0, 0, 0, 0, 0};
-  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
-  OLA_ASSERT_EQ(3u, backend.Writes(0));
-
-  buffer.SetFromString("7, 9");
-  output.WriteDMX(buffer);
-  data = backend.GetData(0, &length);
-  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
-  OLA_ASSERT_EQ(3u, backend.Writes(0));
-
-  output.SetStartAddress(3);
-  buffer.SetFromString("1,2,3,4,5,6,7,8");
-  output.WriteDMX(buffer);
-  data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 
-                                0xff, 0x05, 0x04, 0x03,
-                                0xff, 0x08, 0x07, 0x06, 
-                                0, 0, 0, 0, 0, 0, 0, 0};
-  OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
-  OLA_ASSERT_EQ(4u, backend.Writes(0));
 
   // Check nothing changed on the other output.
   OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
