@@ -86,9 +86,12 @@ const uint8_t SPIOutput::SPI_MODE = 0;
 const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
 
-// Number of bytes that each P9813 pixel uses on the spi wires
+// Number of bytes that each pixel uses on the spi wires
+// (if it differs from 1:1 with colors)
 const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
+const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
@@ -187,6 +190,8 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                       "P9813 Individual Control"));
   personalities.push_back(Personality(P9813_SLOTS_PER_PIXEL,
                                       "P9813 Combined Control"));
+  personalities.push_back(Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
+                                      "APA102 Individual Control"));
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
@@ -485,6 +490,59 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
   flag |= (blue & 0xc0) >> 2;
   return ~flag;
 }
+
+
+void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
+  // some detailed information on the protocol:
+  // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
+  // StartFrame: 4Byte = 32Bits zeros
+  // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
+  // EndFrame: (n/2)bits; n = pixel_count
+  
+  const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  
+  // only do something if minimum 1pixel can be updated..
+  if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
+    // not even 3 bytes of data, don't bother updating
+    return;
+  }
+  
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count * APA102_SPI_BYTES_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length,
+                                        latch_bytes);
+
+  if (!output)
+    return;
+
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    // Convert RGB to P9813 Pixel
+    unsigned int offset = first_slot + i * APA102_SLOTS_PER_PIXEL;
+    // We need to avoid the first 4 bytes of the buffer since that acts as a
+    // start of frame delimiter
+    unsigned int spi_offset = (i + 1) * APA102_SPI_BYTES_PER_PIXEL;
+    uint8_t r = 0;
+    uint8_t b = 0;
+    uint8_t g = 0;
+    if (buffer.Size() - offset >= APA102_SLOTS_PER_PIXEL) {
+      r = buffer.Get(offset);
+      g = buffer.Get(offset + 1);
+      b = buffer.Get(offset + 2);
+    }
+    // first Byte consists off:
+    // 3bit start mark + 5bit GlobalBrightnes
+    // set GlobalBrightnes fixed to 31 --> that reduces flickering
+    output[spi_offset + 0] = 0xFF;
+    output[spi_offset + 1] = b;
+    output[spi_offset + 2] = g;
+    output[spi_offset + 3] = r;
+  }
+  m_backend->Commit(m_output_number);
+}
+
+
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
