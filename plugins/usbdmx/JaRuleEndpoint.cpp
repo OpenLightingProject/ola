@@ -271,8 +271,8 @@ void JaRuleEndpoint::MaybeSendCommand() {
   }
 
   PendingCommand pending_command = {
-    .command = command.command,
-    .callback = command.callback
+    command.command,
+    command.callback
   };
   std::pair<PendingCommandMap::iterator, bool> p = m_pending_commands.insert(
       PendingCommandMap::value_type(token, pending_command));
@@ -380,10 +380,10 @@ void JaRuleEndpoint::ScheduleCallback(CommandCompleteCallback *callback,
   }
 
   CallbackArgs args = {
-    .result = result,
-    .return_code = return_code,
-    .status_flags = status_flags,
-    .payload = payload
+    result,
+    return_code,
+    status_flags,
+    payload
   };
   m_executor->Execute(
       NewSingleCallback(this, &JaRuleEndpoint::RunCallback, callback, args));
