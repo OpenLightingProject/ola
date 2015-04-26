@@ -192,6 +192,8 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                       "P9813 Combined Control"));
   personalities.push_back(Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
                                       "APA102 Individual Control"));
+  personalities.push_back(Personality(APA102_SLOTS_PER_PIXEL,
+                                      "APA102 Combined Control"));
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
@@ -308,6 +310,9 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
       break;
     case 7:
       IndividualAPA102Control(buffer);
+      break;
+    case 8:
+      CombinedAPA102Control(buffer);
       break;
     default:
       break;
@@ -545,7 +550,10 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-
+void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
+  OLA_INFO << "Not implemented yet.";
+  return;
+}
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(

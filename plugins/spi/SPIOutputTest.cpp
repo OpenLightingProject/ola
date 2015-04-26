@@ -46,6 +46,7 @@ class SPIOutputTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIndividualP9813Control);
   CPPUNIT_TEST(testCombinedP9813Control);
   CPPUNIT_TEST(testIndividualAPA102Control);
+  CPPUNIT_TEST(testCombinedAPA102Control);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -63,6 +64,7 @@ class SPIOutputTest: public CppUnit::TestFixture {
   void testIndividualP9813Control();
   void testCombinedP9813Control();
   void testIndividualAPA102Control();
+  void testCombinedAPA102Control();
 
  private:
   UID m_uid;
@@ -428,26 +430,40 @@ void SPIOutputTest::testCombinedP9813Control() {
  * Test DMX writes in the individual APA102 mode.
  */
 void SPIOutputTest::testIndividualAPA102Control() {
+  // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
   options.pixel_count = 2;
+  // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
+  // set personality to 7= Individual APA102
   output.SetPersonality(7);
-
+  
+  // simulate incoming dmx data with this buffer
   DmxBuffer buffer;
+  // setup an pointer to the returned data (the fake SPI data stream)
   unsigned int length = 0;
   const uint8_t *data = NULL;
 
+  // test1
+  // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100");
+  // simulate incoming data
   output.WriteDMX(buffer);
+  // get fake SPI data stream
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED0[] = { 0, 0, 0, 0, 
-                                0xff, 0x64, 0x0a, 0x01,
-                                0xff, 0, 0, 0, 
-                                0, 0, 0, 0, 0, 0, 0, 0};
+  // this is the expected spi data stream:
+  const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
+                                0xff, 0x64, 0x0a, 0x01,   // first Pixel
+                                0xff, 0, 0, 0,            // second Pixel
+                                0, 0, 0, 0, 0, 0, 0, 0};  // EndFrame
+  // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
+  // check if the output writes are 1
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
+  // test2
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -457,7 +473,8 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
-
+  
+  // test3
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -467,14 +484,21 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
-
+  
+  // test4
+  // tests what happens if fewer then needed color information are received
   buffer.SetFromString("7, 9");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
+  // check that the returns are the same as test2 (nothing changed)
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
+  // test5
+  // test with other StartAddress
+  // set StartAddress
   output.SetStartAddress(3);
+  // values 1 & 2 should not be visibel in SPI data stream
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -484,9 +508,34 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
-
+  
+  // test6
   // Check nothing changed on the other output.
   OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
                 backend.GetData(1, &length));
   OLA_ASSERT_EQ(0u, backend.Writes(1));
+}
+
+/**
+ * Test DMX writes in the combined APA102 mode.
+ */
+void SPIOutputTest::testCombinedAPA102Control() {
+  // setup Backend
+  FakeSPIBackend backend(2);
+  SPIOutput::Options options(0, "Test SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
+  options.pixel_count = 2;
+  // setup SPIOutput
+  SPIOutput output(m_uid, &backend, options);
+  // set personality to 7= Individual APA102
+  output.SetPersonality(8);
+  
+  // simulate incoming dmx data with this buffer
+  DmxBuffer buffer;
+  // setup an pointer to the returned data (the fake SPI data stream)
+  unsigned int length = 0;
+  const uint8_t *data = NULL;
+  
+  // TODO
+  
 }
