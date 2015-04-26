@@ -669,26 +669,25 @@ class GetSupportedParameters(ResponderTestFixture):
       ('SELF_TEST_DESCRIPTION', 'PERFORM_SELFTEST'),
   ]
 
-  # If the first PID in each group is supported, the remainder of the group
-  # must be.
+  # If the first PID is supported, the PIDs in the group must be.
   PID_DEPENDENCIES = [
-      ('RECORD_SENSORS', 'SENSOR_VALUE'),
-      ('DEFAULT_SLOT_VALUE', 'SLOT_DESCRIPTION'),
-      ('CURVE', 'CURVE_DESCRIPTION'),
-      ('OUTPUT_RESPONSE_TIME', 'OUTPUT_RESPONSE_TIME_DESCRIPTION'),
-      ('MODULATION_FREQUENCY', 'MODULATION_FREQUENCY_DESCRIPTION'),
-      ('LOCK_STATE', 'LOCK_STATE_DESCRIPTION'),
+      ('RECORD_SENSORS', ['SENSOR_VALUE']),
+      ('DEFAULT_SLOT_VALUE', ['SLOT_DESCRIPTION']),
+      ('CURVE', ['CURVE_DESCRIPTION']),
+      ('OUTPUT_RESPONSE_TIME', ['OUTPUT_RESPONSE_TIME_DESCRIPTION']),
+      ('MODULATION_FREQUENCY', ['MODULATION_FREQUENCY_DESCRIPTION']),
+      ('LOCK_STATE', ['LOCK_STATE_DESCRIPTION']),
   ]
 
-  # If any PID apart from the first in each group is supported, the first one
-  # must be.
+  # If any of the PIDs in the group are supported, the first one must be too.
   PID_REVERSE_DEPENDENCIES = [
-      ('LIST_INTERFACES', 'INTERFACE_LABEL',
-       'INTERFACE_HARDWARE_ADDRESS_TYPE1', 'IPV4_DHCP_MODE',
-       'IPV4_ZEROCONF_MODE', 'IPV4_CURRENT_ADDRESS', 'IPV4_STATIC_ADDRESS',
-       'INTERFACE_RENEW_DHCP', 'INTERFACE_RELEASE_DHCP',
-       'INTERFACE_APPLY_CONFIGURATION', 'IPV4_DEFAULT_ROUTE',
-       'DNS_IPV4_NAME_SERVER', 'DNS_HOSTNAME', 'DNS_DOMAIN_NAME'),
+      ('LIST_INTERFACES',
+       ['INTERFACE_LABEL',
+        'INTERFACE_HARDWARE_ADDRESS_TYPE1', 'IPV4_DHCP_MODE',
+        'IPV4_ZEROCONF_MODE', 'IPV4_CURRENT_ADDRESS', 'IPV4_STATIC_ADDRESS',
+        'INTERFACE_RENEW_DHCP', 'INTERFACE_RELEASE_DHCP',
+        'INTERFACE_APPLY_CONFIGURATION', 'IPV4_DEFAULT_ROUTE',
+        'DNS_IPV4_NAME_SERVER', 'DNS_HOSTNAME', 'DNS_DOMAIN_NAME']),
   ]
 
   def Test(self):
@@ -771,40 +770,40 @@ class GetSupportedParameters(ResponderTestFixture):
             '%s supported but %s is not' %
             (','.join(supported_pids), ','.join(unsupported_pids)))
 
-    for pid_names in self.PID_DEPENDENCIES:
-      if self.LookupPid(pid_names[0]).value not in supported_parameters:
+    for p, dependent_pids in self.PID_DEPENDENCIES:
+      if self.LookupPid(p).value not in supported_parameters:
         continue
 
       unsupported_pids = []
-      for pid_name in pid_names[1:]:
+      for pid_name in dependent_pids:
         pid = self.LookupPid(pid_name)
         if pid is None:
-          self.SetBroken('Missing PID %s' % pid_name)
+          self.SetBroken('Failed to lookup info for PID %s' % pid_name)
           return
 
         if pid.value not in supported_parameters:
           unsupported_pids.append(pid_name)
       if unsupported_pids:
         self.AddAdvisory('%s supported but %s is not' %
-                         (pid_names[0], ','.join(unsupported_pids)))
+                         (p, ','.join(unsupported_pids)))
 
-    for pid_names in self.PID_REVERSE_DEPENDENCIES:
-      if self.LookupPid(pid_names[0]).value in supported_parameters:
+    for p, rev_dependent_pids in self.PID_REVERSE_DEPENDENCIES:
+      if self.LookupPid(p).value in supported_parameters:
         continue
 
-      dependant_pids = []
-      for pid_name in pid_names[1:]:
+      dependent_pids = []
+      for pid_name in rev_dependent_pids:
         pid = self.LookupPid(pid_name)
         if pid is None:
-          self.SetBroken('Missing PID %s' % pid_name)
+          self.SetBroken('Failed to lookup info for PID %s' % pid_name)
           return
 
         if pid.value in supported_parameters:
-          dependant_pids.append(pid_name)
-      if (dependant_pids and
-         (self.LookupPid(pid_names[0]).value in supported_parameters)):
+          dependent_pids.append(pid_name)
+      if (dependent_pids and
+         (self.LookupPid(p).value in supported_parameters)):
         self.AddAdvisory('%s supported but %s is not' %
-                         (','.join(unsupported_pids), pid_names[0]))
+                         (','.join(unsupported_pids), p))
 
 
 class GetSupportedParametersWithData(ResponderTestFixture):
@@ -6455,7 +6454,7 @@ class GetListInterfaces(TestMixins.GetMixin,
     for interface in fields['interfaces']:
       interface_id = interface['interface_identifier']
       interfaces.append(interface_id)
-      if interface['interface_hardware_type'] != 1:
+      if interface['interface_hardware_type'] != INTERFACE_HARDWARE_TYPE_ETHERNET:
         self.AddAdvisory('Possible error, found unusual hardware type %d for interface %d' %
                          (interface['interface_hardware_type'], interface_id))
 
