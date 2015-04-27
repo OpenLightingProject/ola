@@ -503,6 +503,7 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
 void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // some detailed information on the protocol:
   // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
+  // Data-Struct
   // StartFrame: 4Byte = 32Bits zeros
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
@@ -526,7 +527,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
     return;
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
-    // Convert RGB to P9813 Pixel
+    // Convert RGB to APA102 Pixel
     unsigned int offset = first_slot + i * APA102_SLOTS_PER_PIXEL;
     // We need to avoid the first 4 bytes of the buffer since that acts as a
     // start of frame delimiter
@@ -540,7 +541,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
       b = buffer.Get(offset + 2);
     }
     // first Byte consists off:
-    // 3bit start mark + 5bit GlobalBrightnes
+    // 3bit start mark (111) + 5bit GlobalBrightnes
     // set GlobalBrightnes fixed to 31 --> that reduces flickering
     output[spi_offset + 0] = 0xFF;
     output[spi_offset + 1] = b;
