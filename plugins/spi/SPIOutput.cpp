@@ -583,6 +583,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   pixel_data[3] = buffer.Get(first_slot);  // Get Red
   
   OLA_INFO << "Not implemented yet.";
+  OLA_INFO << "pixel_dat" << pixel_data;
   return;
 }
 
