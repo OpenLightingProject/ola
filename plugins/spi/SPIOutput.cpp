@@ -523,7 +523,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   const unsigned int output_length = m_pixel_count * APA102_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
-
+  // only update spi data if possible
   if (!output)
     return;
 
@@ -553,6 +553,12 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 }
 
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
+  // for Protocol details see IndividualAPA102Control
+  
+  const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  
+  OLA_INFO << "Test Text first_slot" << first_slot;
   
   // check if enough data is there.
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
@@ -561,6 +567,20 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
     return;
   }
   
+  // get data for entire string length
+  const unsigned int output_length = m_pixel_count * APA102_SPI_BYTES_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length,
+                                        latch_bytes);
+  // only update spi data if possible
+  if (!output)
+    return;
+  
+  // create Pixel Data
+  uint8_t pixel_data[P9813_SPI_BYTES_PER_PIXEL];
+  pixel_data[0] = 0xFF;
+  pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
+  pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
+  pixel_data[3] = buffer.Get(first_slot);  // Get Red
   
   OLA_INFO << "Not implemented yet.";
   return;
