@@ -288,6 +288,7 @@ void SPIOutput::SendRDMRequest(const RDMRequest *request,
                                        request, callback);
 }
 
+
 bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   switch (m_personality_manager->ActivePersonalityNumber()) {
     case 1:
@@ -552,9 +553,20 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 }
 
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
+  
+  // check if enough data is there.
+  if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+  
+  
   OLA_INFO << "Not implemented yet.";
   return;
 }
+
+
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
