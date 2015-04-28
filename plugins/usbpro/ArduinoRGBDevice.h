@@ -74,7 +74,7 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
       return true;
     }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback) {
       return m_widget->SendRDMRequest(request, callback);
     }

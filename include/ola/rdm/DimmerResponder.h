@@ -50,7 +50,7 @@ class DimmerResponder: public RDMControllerInterface {
   DimmerResponder(const UID &uid, uint16_t number_of_subdevices);
   virtual ~DimmerResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   SubDeviceDispatcher m_dispatcher;

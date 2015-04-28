@@ -50,7 +50,7 @@ class AckTimerResponder: public RDMControllerInterface {
   explicit AckTimerResponder(const UID &uid);
   ~AckTimerResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**

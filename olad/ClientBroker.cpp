@@ -41,7 +41,7 @@ void ClientBroker::RemoveClient(const Client *client) {
 
 void ClientBroker::SendRDMRequest(const Client *client,
                                   Universe *universe,
-                                  const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) {
   if (!STLContains(m_clients, client))
     OLA_WARN <<

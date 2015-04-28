@@ -110,7 +110,7 @@ DimmerSubDevice::DimmerSubDevice(const UID &uid,
 /*
  * Handle an RDM Request
  */
-void DimmerSubDevice::SendRDMRequest(const RDMRequest *request,
+void DimmerSubDevice::SendRDMRequest(RDMRequest *request,
                                      RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, m_sub_device_number,
                                        request, callback);

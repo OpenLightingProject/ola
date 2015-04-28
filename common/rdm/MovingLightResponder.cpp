@@ -245,7 +245,7 @@ MovingLightResponder::MovingLightResponder(const UID &uid)
 /*
  * Handle an RDM Request
  */
-void MovingLightResponder::SendRDMRequest(const RDMRequest *request,
+void MovingLightResponder::SendRDMRequest(RDMRequest *request,
                                           RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);

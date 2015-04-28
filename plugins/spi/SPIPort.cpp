@@ -88,7 +88,7 @@ void SPIOutputPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   return m_spi_output.RunIncrementalDiscovery(callback);
 }
 
-void SPIOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void SPIOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                    ola::rdm::RDMCallback *callback) {
   return m_spi_output.SendRDMRequest(request, callback);
 }

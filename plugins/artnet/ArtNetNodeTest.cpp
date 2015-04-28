@@ -163,7 +163,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void TodRequest() { m_tod_request = true; }
   void Flush() { m_tod_flush = true; }
 
-  void HandleRDM(const RDMRequest *request, RDMCallback *callback) {
+  void HandleRDM(RDMRequest *request, RDMCallback *callback) {
     m_rdm_request = request;
     m_rdm_callback = callback;
   }
@@ -241,7 +241,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     UID source(1, 2);
     UID destination(0x7a70, 0);
 
-    const RDMGetRequest *request = new RDMGetRequest(
+    RDMGetRequest *request = new RDMGetRequest(
         source,
         destination,
         0,  // transaction #

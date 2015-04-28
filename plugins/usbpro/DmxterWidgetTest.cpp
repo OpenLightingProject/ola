@@ -88,10 +88,10 @@ class DmxterWidgetTest: public CommonWidgetTest {
                       ola::rdm::rdm_response_code code,
                       const ola::rdm::RDMResponse *response,
                       const vector<string> &packets);
-  const RDMRequest *NewRequest(const UID &source,
-                               const UID &destination,
-                               const uint8_t *data,
-                               unsigned int length);
+  RDMRequest *NewRequest(const UID &source,
+                         const UID &destination,
+                         const uint8_t *data,
+                         unsigned int length);
 
   static const uint8_t TEST_RDM_DATA[];
 };
@@ -174,10 +174,10 @@ void DmxterWidgetTest::ValidateStatus(
 /**
  * Helper method to create new request objects
  */
-const RDMRequest *DmxterWidgetTest::NewRequest(const UID &source,
-                                               const UID &destination,
-                                               const uint8_t *data,
-                                               unsigned int length) {
+RDMRequest *DmxterWidgetTest::NewRequest(const UID &source,
+                                         const UID &destination,
+                                         const uint8_t *data,
+                                         unsigned int length) {
   return new ola::rdm::RDMGetRequest(
       source,
       destination,
@@ -247,7 +247,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
   UID new_source(0x5253, 0x12345678);
   vector<string> packets;
 
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
@@ -318,7 +318,7 @@ void DmxterWidgetTest::testSendRDMMute() {
   const UID destination(3, 4);
 
   // request
-  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+  RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
       source,
       destination,
       0,  // transaction #
@@ -386,7 +386,7 @@ void DmxterWidgetTest::testSendRDMDUB() {
   };
 
   // request
-  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+  RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
       source,
       destination,
       0,  // transaction #
@@ -486,7 +486,7 @@ void DmxterWidgetTest::testErrorCodes() {
 
   vector<string> packets;
 
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
@@ -639,7 +639,7 @@ void DmxterWidgetTest::testErrorConditions() {
   UID new_source(0x5253, 0x12345678);
   vector<string> packets;
 
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];

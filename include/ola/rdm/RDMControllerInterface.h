@@ -85,7 +85,7 @@ class RDMControllerInterface {
    * support DISCOVERY_COMMANDs then the callback should be run with
    * ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED.
    */
-  virtual void SendRDMRequest(const RDMRequest *request,
+  virtual void SendRDMRequest(RDMRequest *request,
                               RDMCallback *on_complete) = 0;
 };
 

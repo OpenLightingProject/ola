@@ -166,7 +166,7 @@ AckTimerResponder::~AckTimerResponder() {
 /*
  * Handle an RDM Request
  */
-void AckTimerResponder::SendRDMRequest(const RDMRequest *request,
+void AckTimerResponder::SendRDMRequest(RDMRequest *request,
                                        RDMCallback *callback) {
   // Queue any messages here
   QueueAnyNewMessages();

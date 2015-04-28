@@ -49,7 +49,7 @@ class NetworkResponder: public RDMControllerInterface {
   explicit NetworkResponder(const UID &uid);
   ~NetworkResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**

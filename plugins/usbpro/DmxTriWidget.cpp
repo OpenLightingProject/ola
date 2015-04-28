@@ -127,7 +127,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
  * only going to be called one-at-a-time. This will queue the RDM request if
  * there is a transaction pending.
  */
-void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void DmxTriWidgetImpl::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
   if (IsDUBRequest(request) && !m_use_raw_rdm) {
@@ -389,7 +389,7 @@ void DmxTriWidgetImpl::SendDiscoveryStat() {
  */
 void DmxTriWidgetImpl::SendRawRDMRequest() {
   // make a copy of this request, with the source UID and transaction number
-  const ola::rdm::RDMRequest *request =
+  ola::rdm::RDMRequest *request =
     m_pending_rdm_request->DuplicateWithControllerParams(
         m_pending_rdm_request->SourceUID(),
         m_transaction_number,
@@ -666,7 +666,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
   OLA_INFO << "got raw RDM response with code: 0x" << std::hex <<
     static_cast<int>(return_code) << ", length: " << std::dec << length;
 
-  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_rdm_request);
+  auto_ptr<ola::rdm::RDMRequest> request(m_pending_rdm_request);
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_pending_rdm_request = NULL;
   m_rdm_request_callback = NULL;

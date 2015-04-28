@@ -107,7 +107,7 @@ void DmxterWidgetImpl::Stop() {
  * @param request the RDMRequest object
  * @param on_complete the callback to run when the request completes or fails
  */
-void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
+void DmxterWidgetImpl::SendRDMRequest(RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
 

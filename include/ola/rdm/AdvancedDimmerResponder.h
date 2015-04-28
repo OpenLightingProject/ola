@@ -48,7 +48,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
  public:
   explicit AdvancedDimmerResponder(const UID &uid);
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**

@@ -45,7 +45,7 @@ class PortBrokerInterface {
     virtual void SendRDMRequest(
         const Port *port,
         Universe *universe,
-        const ola::rdm::RDMRequest *request,
+        ola::rdm::RDMRequest *request,
         ola::rdm::RDMCallback *callback) = 0;
 };
 
@@ -60,7 +60,7 @@ class PortBroker: public PortBrokerInterface {
 
     void SendRDMRequest(const Port *port,
                         Universe *universe,
-                        const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
  private:

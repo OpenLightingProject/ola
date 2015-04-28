@@ -168,7 +168,7 @@ class UsbProOutputPort: public BasicOutputPort {
       m_port->ChangeToReceiveMode(false);
   }
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback) {
     m_port->SendRDMRequest(request, callback);
   }

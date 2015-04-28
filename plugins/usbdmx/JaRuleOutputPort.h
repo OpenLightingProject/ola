@@ -52,7 +52,7 @@ class JaRuleOutputPort: public BasicOutputPort {
 
   std::string Description() const { return ""; }
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);

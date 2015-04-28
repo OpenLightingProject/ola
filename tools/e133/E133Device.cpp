@@ -223,7 +223,7 @@ void E133Device::EndpointRequest(
   }
 
   // attempt to unpack as a request
-  const ola::rdm::RDMRequest *request = ola::rdm::RDMRequest::InflateFromData(
+  ola::rdm::RDMRequest *request = ola::rdm::RDMRequest::InflateFromData(
     reinterpret_cast<const uint8_t*>(raw_request.data()),
     raw_request.size());
 

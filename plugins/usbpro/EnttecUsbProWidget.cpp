@@ -220,7 +220,7 @@ bool EnttecPortImpl::SetParameters(uint8_t break_time,
 /**
  * Send an RDM Request.
  */
-void EnttecPortImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void EnttecPortImpl::SendRDMRequest(ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *on_complete) {
   auto_ptr<const ola::rdm::RDMRequest> request_ptr(request);
   vector<string> packets;
@@ -668,7 +668,7 @@ bool EnttecPort::SetParameters(uint8_t break_time, uint8_t mab_time,
   return m_impl->SetParameters(break_time, mab_time, rate);
 }
 
-void EnttecPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void EnttecPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
   if (m_enable_rdm) {
     m_controller->SendRDMRequest(request, on_complete);

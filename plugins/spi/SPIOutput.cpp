@@ -275,8 +275,8 @@ void SPIOutput::RunIncrementalDiscovery(
 }
 
 
-void SPIOutput::SendRDMRequest(const RDMRequest *request,
-                                RDMCallback *callback) {
+void SPIOutput::SendRDMRequest(RDMRequest *request,
+                               RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
 }

@@ -140,7 +140,7 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
     m_rdm_handler.reset(handler);
   }
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback) {
     // if a RDMRequestHandler was provided use that.
     if (m_rdm_handler.get()) {

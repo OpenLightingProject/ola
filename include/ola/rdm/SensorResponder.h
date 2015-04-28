@@ -48,7 +48,7 @@ class SensorResponder: public RDMControllerInterface {
   explicit SensorResponder(const UID &uid);
   ~SensorResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**

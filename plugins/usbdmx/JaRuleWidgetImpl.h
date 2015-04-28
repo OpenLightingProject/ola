@@ -69,7 +69,7 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
   // From DiscoverableRDMControllerInterface
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   // From DiscoveryTargetInterface

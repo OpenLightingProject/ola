@@ -46,7 +46,7 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
   void AddSubDevice(uint16_t sub_device_number,
                     ola::rdm::RDMControllerInterface *device);
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:

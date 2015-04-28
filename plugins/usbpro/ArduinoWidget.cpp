@@ -98,7 +98,7 @@ void ArduinoWidgetImpl::Stop() {
  * Handle an RDM request by passing it through to the Arduino
  */
 void ArduinoWidgetImpl::SendRDMRequest(
-    const ola::rdm::RDMRequest *request,
+    ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
 

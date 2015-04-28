@@ -194,7 +194,7 @@ DummyResponder::~DummyResponder() {
 /*
  * Handle an RDM Request
  */
-void DummyResponder::SendRDMRequest(const RDMRequest *request,
+void DummyResponder::SendRDMRequest(RDMRequest *request,
                                     RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);

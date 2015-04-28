@@ -617,7 +617,7 @@ void UniverseTest::testRDMSend() {
 
   UID source_uid(0x7a70, 100);
   // first try a command to a uid we don't know about
-  const RDMRequest *request = new ola::rdm::RDMGetRequest(
+  RDMRequest *request = new ola::rdm::RDMGetRequest(
       source_uid,
       uid3,
       0,  // transaction #

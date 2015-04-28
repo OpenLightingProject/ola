@@ -101,7 +101,7 @@ bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
 /**
  * Send a RDM Message
  */
-void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
+void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
                                     ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
   if (m_rdm_request_callback) {

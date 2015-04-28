@@ -287,7 +287,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
 /*
  * Handle an RDM Request
  */
-void AdvancedDimmerResponder::SendRDMRequest(const RDMRequest *request,
+void AdvancedDimmerResponder::SendRDMRequest(RDMRequest *request,
                                              RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);

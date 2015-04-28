@@ -81,7 +81,7 @@ class DummyPort: public BasicOutputPort {
   /*
    * Handle an RDM Request
    */
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:

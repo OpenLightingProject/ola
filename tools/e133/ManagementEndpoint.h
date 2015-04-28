@@ -43,7 +43,7 @@ class ManagementEndpoint: public E133Endpoint {
                        class TCPConnectionStats *tcp_stats);
     ~ManagementEndpoint() {}
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
