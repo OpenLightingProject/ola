@@ -40,45 +40,6 @@ unsigned int RDMCommandSerializer::RequiredSize(
 bool RDMCommandSerializer::Pack(const RDMCommand &command,
                                 uint8_t *buffer,
                                 unsigned int *size) {
-  return PackWithParams(command, buffer, size, command.SourceUID(),
-                        command.TransactionNumber(),
-                        command.PortIdResponseType());
-}
-
-bool RDMCommandSerializer::Pack(const RDMRequest &request,
-                                uint8_t *buffer,
-                                unsigned int *size,
-                                const UID &source,
-                                uint8_t transaction_number,
-                                uint8_t port_id) {
-  return PackWithParams(request, buffer, size, source, transaction_number,
-                        port_id);
-}
-
-
-bool RDMCommandSerializer::Write(const RDMCommand &command,
-                                 ola::io::IOStack *stack) {
-  return WriteToStack(command, stack, command.SourceUID(),
-                      command.TransactionNumber(),
-                      command.PortIdResponseType());
-}
-
-
-bool RDMCommandSerializer::Write(const RDMRequest &request,
-                                 ola::io::IOStack *stack,
-                                 const UID &source,
-                                 uint8_t transaction_number,
-                                 uint8_t port_id) {
-  return WriteToStack(request, stack, source, transaction_number, port_id);
-}
-
-
-bool RDMCommandSerializer::PackWithParams(const RDMCommand &command,
-                                          uint8_t *buffer,
-                                          unsigned int *size,
-                                          const UID &source,
-                                          uint8_t transaction_number,
-                                          uint8_t port_id) {
   const unsigned int packet_length = RequiredSize(command);
   if (packet_length == 0 || *size < packet_length) {
     return false;
@@ -87,8 +48,8 @@ bool RDMCommandSerializer::PackWithParams(const RDMCommand &command,
   // The buffer pointer may not be aligned, so we incur a copy here.
   const unsigned int message_length = command.MessageLength();
   RDMCommandHeader header;
-  PopulateHeader(&header, command, message_length, source, transaction_number,
-                 port_id);
+  PopulateHeader(&header, command, message_length, command.SourceUID(),
+                 command.TransactionNumber(), command.PortIdResponseType());
 
   memcpy(buffer, &header, sizeof(header));
   memcpy(buffer + sizeof(RDMCommandHeader), command.ParamData(),
@@ -106,22 +67,8 @@ bool RDMCommandSerializer::PackWithParams(const RDMCommand &command,
   return true;
 }
 
-
-/**
- * Write an RDMCommand to a IOStack, excluding the START_CODE.
- * @param command the RDMCommand to write
- * @param stack the IOStack to write to
- * @param source the source UID
- * @param transaction_number the RDM transaction number
- * @param port_id the RDM port id
- * @returns true if successful, false if the parameter data is too large to fit
- *   into a single RDM message.
- */
-bool RDMCommandSerializer::WriteToStack(const RDMCommand &command,
-                                        ola::io::IOStack *stack,
-                                        const UID &source,
-                                        uint8_t transaction_number,
-                                        uint8_t port_id) {
+bool RDMCommandSerializer::Write(const RDMCommand &command,
+                                 ola::io::IOStack *stack) {
   const unsigned int packet_length = RequiredSize(command);
   if (packet_length == 0) {
     return false;
@@ -129,8 +76,8 @@ bool RDMCommandSerializer::WriteToStack(const RDMCommand &command,
 
   RDMCommandHeader header;
   const unsigned int message_length = command.MessageLength();
-  PopulateHeader(&header, command, message_length, source, transaction_number,
-                 port_id);
+  PopulateHeader(&header, command, message_length, command.SourceUID(),
+                 command.TransactionNumber(), command.PortIdResponseType());
 
   uint16_t checksum = START_CODE;
   const uint8_t *ptr = reinterpret_cast<uint8_t*>(&header);
@@ -150,7 +97,6 @@ bool RDMCommandSerializer::WriteToStack(const RDMCommand &command,
   output.Write(reinterpret_cast<uint8_t*>(&header), sizeof(header));
   return true;
 }
-
 
 /**
  * Populate the RDMCommandHeader struct.

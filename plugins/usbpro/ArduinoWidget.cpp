@@ -97,9 +97,8 @@ void ArduinoWidgetImpl::Stop() {
 /**
  * Handle an RDM request by passing it through to the Arduino
  */
-void ArduinoWidgetImpl::SendRDMRequest(
-    ola::rdm::RDMRequest *request,
-    ola::rdm::RDMCallback *on_complete) {
+void ArduinoWidgetImpl::SendRDMRequest(ola::rdm::RDMRequest *request,
+                                       ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
 
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
@@ -122,8 +121,10 @@ void ArduinoWidgetImpl::SendRDMRequest(
   uint8_t *data = new uint8_t[data_size + 1];
   data[0] = ola::rdm::RDMCommand::START_CODE;
 
-  if (RDMCommandSerializer::Pack(*request, data + 1, &data_size,
-                                 request->SourceUID(), m_transaction_id++, 1)) {
+  request->SetTransactionNumber(m_transaction_id++);
+  request->SetPortId(1);
+
+  if (RDMCommandSerializer::Pack(*request, data + 1, &data_size)) {
     data_size++;
     m_rdm_request_callback = on_complete;
     m_pending_request = request;

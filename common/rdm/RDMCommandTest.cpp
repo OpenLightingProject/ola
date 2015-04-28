@@ -973,7 +973,7 @@ void RDMCommandTest::testPack() {
 
   RDMGetRequest get_command(source,
                             destination,
-                            0,  // transaction #
+                            99,  // transaction #
                             1,  // port id
                             0,  // message count
                             10,  // sub device
@@ -983,16 +983,15 @@ void RDMCommandTest::testPack() {
 
   unsigned int length = RDMCommandSerializer::RequiredSize(get_command);
   uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(
-        get_command, data, &length, new_source, 99, 10));
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(get_command, data, &length));
 
   RDMRequest *command = RDMRequest::InflateFromData(data, length);
   OLA_ASSERT_NOT_NULL(command);
 
-  OLA_ASSERT_EQ(new_source, command->SourceUID());
+  OLA_ASSERT_EQ(source, command->SourceUID());
   OLA_ASSERT_EQ(destination, command->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 99, command->TransactionNumber());
-  OLA_ASSERT_EQ((uint8_t) 10, command->PortId());
+  OLA_ASSERT_EQ((uint8_t) 1, command->PortId());
   OLA_ASSERT_EQ((uint8_t) 0, command->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, command->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command->CommandClass());

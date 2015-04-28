@@ -121,21 +121,17 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
   unsigned int this_transaction_number = m_transaction_number++;
   unsigned int port_id = 1;
 
-  bool r = RDMCommandSerializer::Pack(*request, data, &data_size, m_uid,
-                                      this_transaction_number, port_id);
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(this_transaction_number);
+  request->SetPortId(port_id);
 
-  if (!r) {
+  if (!RDMCommandSerializer::Pack(*request, data, &data_size)) {
     OLA_WARN << "Failed to pack message, dropping request";
     delete[] data;
     delete request;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     return;
   }
-
-  // convert the request into one that matches this widget
-  request->SetSourceUID(m_uid);
-  request->SetTransactionNumber(this_transaction_number);
-  request->SetPortId(port_id);
 
   m_rdm_request_callback = on_complete;
   m_pending_request = request;

@@ -241,10 +241,9 @@ void DmxterWidgetTest::testTod() {
 void DmxterWidgetTest::testSendRDMRequest() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
   uint8_t RDM_BROADCAST_REQUEST_LABEL = 0x81;
-  UID source(1, 2);
+  UID source(0x5253, 0x12345678);
   UID destination(3, 4);
   UID bcast_destination(3, 0xffffffff);
-  UID new_source(0x5253, 0x12345678);
   vector<string> packets;
 
   RDMRequest *request = NewRequest(source, destination, NULL, 0);
@@ -252,8 +251,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
   unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
-                                        new_source, 0, 1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size));
 
   uint8_t return_packet[] = {
     0x00, 14,  // response code 'ok'
@@ -261,10 +259,10 @@ void DmxterWidgetTest::testSendRDMRequest() {
     1, 28,  // sub code & length
     0x52, 0x53, 0x12, 0x34, 0x56, 0x78,   // dst uid
     0, 3, 0, 0, 0, 4,   // src uid
-    0, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
+    1, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
     0x21, 0x1, 0x28, 4,  // command, param id, param data length
     0x5a, 0x5a, 0x5a, 0x5a,  // param data
-    0x04, 0x60  // checksum, filled in below
+    0x04, 0x61  // checksum
   };
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -277,16 +275,14 @@ void DmxterWidgetTest::testSendRDMRequest() {
 
   m_widget->SendRDMRequest(
       request,
-      ola::NewSingleCallback(this,
-                             &DmxterWidgetTest::ValidateResponse));
+      ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateResponse));
   m_ss.Run();
   m_endpoint->Verify();
 
   // now check broadcast
   request = NewRequest(source, bcast_destination, NULL, 0);
-
-  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
-                                        new_source, 1, 1));
+  request->SetTransactionNumber(1);
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size));
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_BROADCAST_REQUEST_LABEL,
@@ -480,9 +476,8 @@ void DmxterWidgetTest::testSendRDMDUB() {
  */
 void DmxterWidgetTest::testErrorCodes() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
-  UID source(1, 2);
+  UID source(0x5253, 0x12345678);
   UID destination(3, 4);
-  UID new_source(0x5253, 0x12345678);
 
   vector<string> packets;
 
@@ -491,8 +486,7 @@ void DmxterWidgetTest::testErrorCodes() {
   unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
-                                        new_source, 0, 1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size));
 
   uint8_t return_packet[] = {
     0x00, 1,  // checksum failure
@@ -515,10 +509,10 @@ void DmxterWidgetTest::testErrorCodes() {
   m_ss.Run();
   m_endpoint->Verify();
 
-  // update transaction # & checksum
-  expected_packet[15]++;
-  expected_packet[25] = 0xfa;
   return_packet[1] = 8;  // packet too short
+  // Update TN & Checksum
+  expected_packet[15]++;
+  expected_packet[25]++;
   request = NewRequest(source, destination, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
@@ -634,9 +628,8 @@ void DmxterWidgetTest::testErrorCodes() {
  */
 void DmxterWidgetTest::testErrorConditions() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
-  UID source(1, 2);
+  UID source(0x5253, 0x12345678);
   UID destination(3, 4);
-  UID new_source(0x5253, 0x12345678);
   vector<string> packets;
 
   RDMRequest *request = NewRequest(source, destination, NULL, 0);
@@ -644,8 +637,7 @@ void DmxterWidgetTest::testErrorConditions() {
   unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
-             new_source, 0, 1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size));
 
   // to small to be valid
   uint8_t return_packet[] = {0x00};
@@ -670,9 +662,9 @@ void DmxterWidgetTest::testErrorConditions() {
 
   // check mismatched version
   request = NewRequest(source, destination, NULL, 0);
+  request->SetTransactionNumber(1);
 
-  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
-             new_source, 1, 1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size));
 
   // non-0 version
   uint8_t return_packet2[] = {0x01, 0x11, 0xcc};
