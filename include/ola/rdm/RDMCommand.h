@@ -101,11 +101,6 @@ class RDMCommand {
   /** @} */
 
   /**
-   * @brief The CommmandClass of this message.
-   */
-  virtual RDMCommandClass CommandClass() const = 0;
-
-  /**
    * @name Accessors
    * @{
    */
@@ -125,23 +120,26 @@ class RDMCommand {
   /** @brief Returns the Transaction Number of the RDMCommand */
   uint8_t TransactionNumber() const { return m_transaction_number; }
 
+  /** @brief Returns the Port ID of the RDMCommand */
+  uint8_t PortIdResponseType() const { return m_port_id; }
+
   /** @brief Returns the Message Count of the RDMCommand */
   uint8_t MessageCount() const { return m_message_count; }
 
   /** @brief Returns the SubDevice of the RDMCommand */
   uint16_t SubDevice() const { return m_sub_device; }
 
-  /** @brief Returns the Port ID of the RDMCommand */
-  uint8_t PortIdResponseType() const { return m_port_id; }
+  /** @brief The CommmandClass of this message */
+  virtual RDMCommandClass CommandClass() const = 0;
 
   /** @brief Returns the Parameter ID of the RDMCommand */
   uint16_t ParamId() const { return m_param_id; }
 
-  /** @brief Returns the Parameter Data of the RDMCommand */
-  const uint8_t *ParamData() const { return m_data; }
-
   /** @brief Returns the Size of the Parameter Data of the RDMCommand */
   unsigned int ParamDataSize() const { return m_data_length; }
+
+  /** @brief Returns the Parameter Data of the RDMCommand */
+  const uint8_t *ParamData() const { return m_data; }
 
   /** @} */
 
@@ -402,10 +400,24 @@ class RDMRequest: public RDMCommand {
 
 
 /**
- * @brief The parent class for GET/SET requests.
+ * @brief An RDM Get / Set Request.
  */
 class RDMGetSetRequest: public RDMRequest {
  public:
+  /**
+   * @brief Create a new Get / Set Request.
+   * @param source The source UID.
+   * @param destination The destination UID.
+   * @param transaction_number The transaction number.
+   * @param port_id The Port ID.
+   * @param message_count Set to 0.
+   * @param sub_device The Sub Device index.
+   * @param command_class The Command Class of this request.
+   * @param param_id The PID value.
+   * @param data The parameter data, or NULL if there isn't any.
+   * @param length The length of the parameter data.
+   * @param options The OverideOptions.
+   */
   RDMGetSetRequest(const UID &source,
                    const UID &destination,
                    uint8_t transaction_number,
@@ -442,7 +454,6 @@ class BaseRDMRequest: public RDMGetSetRequest {
                        data, length, options) {
   }
 
-  RDMCommandClass CommandClass() const { return command_class; }
   BaseRDMRequest<command_class> *Duplicate()
     const {
     return DuplicateWithControllerParams(
@@ -473,11 +484,24 @@ typedef BaseRDMRequest<RDMCommand::SET_COMMAND> RDMSetRequest;
 
 
 /**
- * @brief The set of RDM Commands that represent responses (GET, SET or
+ * @brief An RDM Command that represents responses (GET, SET or
  * DISCOVER).
  */
 class RDMResponse: public RDMCommand {
  public:
+  /**
+   * @brief Create a new RDM Response.
+   * @param source The source UID.
+   * @param destination The destination UID.
+   * @param transaction_number The transaction number.
+   * @param response_type The Response Type.
+   * @param message_count Set to 0.
+   * @param sub_device The Sub Device index.
+   * @param command_class The Command Class of this request.
+   * @param param_id The PID value.
+   * @param data The parameter data, or NULL if there isn't any.
+   * @param length The length of the parameter data.
+   */
   RDMResponse(const UID &source,
               const UID &destination,
               uint8_t transaction_number,
@@ -493,15 +517,26 @@ class RDMResponse: public RDMCommand {
           m_command_class(command_class) {
   }
 
-  uint8_t ResponseType() const { return m_port_id; }
-
   virtual void Print(CommandPrinter *printer,
                      bool summarize,
                      bool unpack_param_data) const {
     printer->Print(this, summarize, unpack_param_data);
   }
 
+  /**
+   * @name Accessors
+   * @{
+   */
+
+  /**
+   * @brief The Response Type.
+   * @returns The Response Typpe (ACK, NACK, etc.)
+   */
+  uint8_t ResponseType() const { return m_port_id; }
+
   RDMCommandClass CommandClass() const { return m_command_class; }
+
+  /** @} */
 
   /**
    * @name Mutators
@@ -526,8 +561,11 @@ class RDMResponse: public RDMCommand {
 
   /** @} */
 
-  // The maximum size of an ACK_OVERFLOW session that we'll buffer
-  // 4k should be big enough for everyone ;)
+  /**
+   * @brief The maximum size of an ACK_OVERFLOW session that we'll buffer.
+   *
+   * 4k should be big enough for everyone ;)
+   */
   static const unsigned int MAX_OVERFLOW_SIZE = 4 << 10;
 
   // Convert a block of data to an RDMResponse object
@@ -548,7 +586,16 @@ class RDMResponse: public RDMCommand {
                                       const RDMRequest *request,
                                       uint8_t transaction_number);
 
-  // Combine two responses into one.
+  /**
+   * @brief Combine two RDMResponses.
+   * @param response1 the first response.
+   * @param response2 the second response.
+   * @return A new response with the data from the first and second combined or
+   * NULL if the size limit is reached.
+   *
+   * This is used to combine the data from two responses in an ACK_OVERFLOW
+   * session.
+   */
   static RDMResponse* CombineResponses(const RDMResponse *response1,
                                        const RDMResponse *response2);
 

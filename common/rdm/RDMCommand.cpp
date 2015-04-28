@@ -585,15 +585,6 @@ RDMResponse* RDMResponse::InflateFromData(const string &data,
                          transaction_number);
 }
 
-
-/**
- * This combines two RDMResponses into one. It's used to combine the data from
- * two responses in an ACK_OVERFLOW session together.
- * @param response1 the first response.
- * @param response2 the second response.
- * @return A new response with the data from the first and second combined or
- * NULL if the size limit is reached.
- */
 RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
                                            const RDMResponse *response2) {
   unsigned int combined_length = response1->ParamDataSize() +
