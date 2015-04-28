@@ -220,13 +220,15 @@ bool WidgetDetectorThread::RunScan() {
     const string base_name = ola::file::FilenameFromPath(*it);
     if (!base_name.empty() &&
         ola::io::CheckForUUCPLockFile(m_uucp_lock_paths, base_name)) {
-      OLA_INFO << "Locked USB Service device at " << *it;
+      OLA_INFO << "Locked USB Serial device at " << *it;
+      continue;
     }
 
     OLA_INFO << "Found potential USB Serial device at " << *it;
     ConnectedDescriptor *descriptor = BaseUsbProWidget::OpenDevice(*it);
-    if (!descriptor)
+    if (!descriptor) {
       continue;
+    }
 
     OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
     PerformDiscovery(*it, descriptor);

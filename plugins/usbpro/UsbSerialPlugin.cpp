@@ -318,7 +318,7 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
   if (lock_paths.empty()) {
     m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_MAC_PATH);
     m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_LINUX_PATH);
-    save |= true;
+    save = true;
   }
 
   save |= m_preferences->SetDefaultValue(DEVICE_DIR_KEY, StringValidator(),
