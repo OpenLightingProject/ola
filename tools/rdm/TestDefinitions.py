@@ -2959,10 +2959,10 @@ class SetDeviceHours(TestMixins.SetUInt32Mixin,
 
   def VerifyResult(self, response, fields):
     if response.command_class == PidStore.RDM_SET:
-      set_unsupported = (
-          not response.WasAcked() and
-          response.nack_reason == RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
-      self.SetProperty('set_device_hours_supported', not set_unsupported)
+      set_supported = (
+          response.WasAcked() or
+          response.nack_reason != RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      self.SetProperty('set_device_hours_supported', set_supported)
 
 class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
   """Set the device hours with no param data."""
@@ -3016,10 +3016,10 @@ class SetLampHours(TestMixins.SetUInt32Mixin,
 
   def VerifyResult(self, response, fields):
     if response.command_class == PidStore.RDM_SET:
-      set_unsupported = (
-          not response.WasAcked() and
-          response.nack_reason == RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
-      self.SetProperty('set_lamp_hours_supported', not set_unsupported)
+      set_supported = (
+          response.WasAcked() or
+          response.nack_reason != RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      self.SetProperty('set_lamp_hours_supported', set_supported)
 
 
 class SetLampHoursWithNoData(OptionalParameterTestFixture):
@@ -3072,10 +3072,10 @@ class SetLampStrikes(TestMixins.SetUInt32Mixin, OptionalParameterTestFixture):
 
   def VerifyResult(self, response, fields):
     if response.command_class == PidStore.RDM_SET:
-      set_unsupported = (
-          not response.WasAcked() and
-          response.nack_reason == RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
-      self.SetProperty('set_lamp_strikes_supported', not set_unsupported)
+      set_supported = (
+          response.WasAcked() or
+          response.nack_reason != RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      self.SetProperty('set_lamp_strikes_supported', set_supported)
 
 
 class SetLampStrikesWithNoData(OptionalParameterTestFixture):
@@ -3227,10 +3227,10 @@ class ResetDevicePowerCycles(TestMixins.SetUInt32Mixin,
 
   def VerifyResult(self, response, fields):
     if response.command_class == PidStore.RDM_SET:
-      set_unsupported = (
-          not response.WasAcked() and
-          response.nack_reason == RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
-      self.SetProperty('set_device_power_cycles_supported', not set_unsupported)
+      set_supported = (
+          response.WasAcked() or
+          response.nack_reason != RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      self.SetProperty('set_device_power_cycles_supported', set_supported)
 
 
 class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
