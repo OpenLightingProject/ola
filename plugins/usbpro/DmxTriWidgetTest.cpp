@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
@@ -151,7 +152,7 @@ void DmxTriWidgetTest::ValidateResponse(
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);
   OLA_ASSERT(response);
-  OLA_ASSERT(*expected_response == *response);
+  OLA_ASSERT_TRUE(CommandsEqual(*expected_response, *response));
   delete response;
 
   // the TRIs can't return the actual packets

@@ -103,9 +103,10 @@ common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_rdm_RDMMessageTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMTester_SOURCES = \
+    common/rdm/QueueingRDMControllerTest.cpp \
     common/rdm/RDMAPITest.cpp \
     common/rdm/RDMCommandTest.cpp \
-    common/rdm/QueueingRDMControllerTest.cpp \
+    common/rdm/TestHelper.h \
     common/rdm/UIDAllocatorTest.cpp \
     common/rdm/UIDTest.cpp
 common_rdm_RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

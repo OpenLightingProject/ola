@@ -28,28 +28,15 @@
 namespace ola {
 namespace rdm {
 
-/*
- * Returns the number of bytes required for the message.
- * @param command the RDMCommand
- * @returns the number of bytes required to pack this command, or 0 if this
- *   command contains more than 231 bytes of parameter data.
- */
 unsigned int RDMCommandSerializer::RequiredSize(
     const RDMCommand &command) {
   if (command.ParamDataSize() > MAX_PARAM_DATA_LENGTH)
     return 0;
+  // Don't use command.MessageLength() here, since it may be overridden.
   return sizeof(RDMCommandHeader) + command.ParamDataSize() + CHECKSUM_LENGTH;
 }
 
 
-/**
- * Pack this RDMCommand into a memory buffer.
- * @param command the RDMCommand to pack
- * @param buffer a pointer to the memory location to use
- * @param size the size of the memory location. Update with the number of bytes
- *   written.
- * @returns true if successful, false otherwise.
- */
 bool RDMCommandSerializer::Pack(const RDMCommand &command,
                                 uint8_t *buffer,
                                 unsigned int *size) {
@@ -58,18 +45,6 @@ bool RDMCommandSerializer::Pack(const RDMCommand &command,
                         command.PortIdResponseType());
 }
 
-/**
- * Pack this RDMRequest into a memory buffer, using the supplied parameters to
- *   override what's in the request.
- * @param request the RDMRequest to pack
- * @param buffer a pointer to the memory location to use
- * @param size the size of the memory location. Update with the number of bytes
- *   written.
- * @param source the source UID
- * @param transaction_number the RDM transaction number
- * @param port_id the RDM port id
- * @returns true if successful, false otherwise.
- */
 bool RDMCommandSerializer::Pack(const RDMRequest &request,
                                 uint8_t *buffer,
                                 unsigned int *size,
@@ -81,13 +56,6 @@ bool RDMCommandSerializer::Pack(const RDMRequest &request,
 }
 
 
-/*
- * Write a RDMCommand to an IOStack as a RDM message.
- * @param command the RDMCommand
- * @param stack the IOStack to write to.
- * @returns true if the write was successful, false if the RDM command needs to
- * be fragmented.
- */
 bool RDMCommandSerializer::Write(const RDMCommand &command,
                                  ola::io::IOStack *stack) {
   return WriteToStack(command, stack, command.SourceUID(),
@@ -96,16 +64,6 @@ bool RDMCommandSerializer::Write(const RDMCommand &command,
 }
 
 
-/*
- * Write a RDMRequest to an IOStack as a RDM message.
- * @param request the RDMRequest
- * @param stack the IOStack to write to.
- * @param source the source UID
- * @param transaction_number the RDM transaction number
- * @param port_id the RDM port id
- * @returns true if the write was successful, false if the RDM request needs to
- * be fragmented.
- */
 bool RDMCommandSerializer::Write(const RDMRequest &request,
                                  ola::io::IOStack *stack,
                                  const UID &source,
@@ -121,13 +79,15 @@ bool RDMCommandSerializer::PackWithParams(const RDMCommand &command,
                                           const UID &source,
                                           uint8_t transaction_number,
                                           uint8_t port_id) {
-  unsigned int packet_length = RequiredSize(command);
-  if (packet_length == 0 || *size < packet_length)
+  const unsigned int packet_length = RequiredSize(command);
+  if (packet_length == 0 || *size < packet_length) {
     return false;
+  }
 
   // The buffer pointer may not be aligned, so we incur a copy here.
+  const unsigned int message_length = command.MessageLength();
   RDMCommandHeader header;
-  PopulateHeader(&header, command, packet_length, source, transaction_number,
+  PopulateHeader(&header, command, message_length, source, transaction_number,
                  port_id);
 
   memcpy(buffer, &header, sizeof(header));
@@ -135,8 +95,10 @@ bool RDMCommandSerializer::PackWithParams(const RDMCommand &command,
          command.ParamDataSize());
 
   uint16_t checksum = START_CODE;
-  for (unsigned int i = 0; i < packet_length - CHECKSUM_LENGTH; i++)
+  for (unsigned int i = 0; i < packet_length - CHECKSUM_LENGTH; i++) {
     checksum += buffer[i];
+  }
+  checksum = command.Checksum(checksum);
   buffer[packet_length - CHECKSUM_LENGTH] = checksum >> 8;
   buffer[packet_length - CHECKSUM_LENGTH + 1] = checksum & 0xff;
 
@@ -160,22 +122,27 @@ bool RDMCommandSerializer::WriteToStack(const RDMCommand &command,
                                         const UID &source,
                                         uint8_t transaction_number,
                                         uint8_t port_id) {
-  unsigned int packet_length = RequiredSize(command);
-  if (packet_length == 0)
+  const unsigned int packet_length = RequiredSize(command);
+  if (packet_length == 0) {
     return false;
+  }
 
   RDMCommandHeader header;
-  PopulateHeader(&header, command, packet_length, source, transaction_number,
+  const unsigned int message_length = command.MessageLength();
+  PopulateHeader(&header, command, message_length, source, transaction_number,
                  port_id);
 
   uint16_t checksum = START_CODE;
   const uint8_t *ptr = reinterpret_cast<uint8_t*>(&header);
-  for (unsigned int i = 0; i < sizeof(header); i++)
+  for (unsigned int i = 0; i < sizeof(header); i++) {
     checksum += ptr[i];
+  }
   ptr = command.ParamData();
-  for (unsigned int i = 0; i < command.ParamDataSize(); i++)
+  for (unsigned int i = 0; i < command.ParamDataSize(); i++) {
     checksum += ptr[i];
+  }
 
+  checksum = command.Checksum(checksum);
   // now perform the write in reverse order (since it's a stack).
   ola::io::BigEndianOutputStream output(stack);
   output << checksum;
@@ -196,15 +163,12 @@ bool RDMCommandSerializer::WriteToStack(const RDMCommand &command,
  */
 void RDMCommandSerializer::PopulateHeader(RDMCommandHeader *header,
                                           const RDMCommand &command,
-                                          unsigned int packet_length,
+                                          unsigned int message_length,
                                           const UID &source,
                                           uint8_t transaction_number,
                                           uint8_t port_id) {
-  // ignore the checksum length for now
-  packet_length -= CHECKSUM_LENGTH;
-
-  header->sub_start_code = SUB_START_CODE;
-  header->message_length = packet_length + 1;  // add in start code as well
+  header->sub_start_code = command.SubStartCode();
+  header->message_length = message_length;
   command.DestinationUID().Pack(header->destination_uid, UID::UID_SIZE);
   source.Pack(header->source_uid, UID::UID_SIZE);
   header->transaction_number = transaction_number;

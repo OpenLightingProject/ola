@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommandSerializer.h"
@@ -137,13 +138,13 @@ void DmxterWidgetTest::ValidateResponse(
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   OLA_ASSERT_EQ((unsigned int) 4, response->ParamDataSize());
   OLA_ASSERT(0 == memcmp(expected_data, response->ParamData(),
-                             response->ParamDataSize()));
+                         response->ParamDataSize()));
 
   OLA_ASSERT_EQ((size_t) 1, packets.size());
   ola::rdm::rdm_response_code raw_code;
   ola::rdm::RDMResponse *raw_response =
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code);
-  OLA_ASSERT(*raw_response == *response);
+  OLA_ASSERT_TRUE(CommandsEqual(*raw_response, *response));
   delete raw_response;
   delete response;
   m_ss.Terminate();
