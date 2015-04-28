@@ -32,11 +32,13 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 #include "ola/strings/Format.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace rdm {
 
 using std::string;
+using ola::utils::SplitUInt16;
 
 // Internal Helper Functions
 namespace {
@@ -44,7 +46,7 @@ namespace {
 /**
  * @brief Guess the CommandClass of an RDM message.
  * @param data a pointer to the RDM message (excluding the start code)
- * @param length length of the rdm data
+ * @param length length of the RDM data
  * @returns A RDMCommandClass value, which is set to INVALID_COMMAND if we
  * couldn't determine the message type.
  *
@@ -53,8 +55,9 @@ namespace {
 RDMCommand::RDMCommandClass GuessMessageType(const uint8_t *data,
                                              unsigned int length) {
   static const unsigned int COMMAND_CLASS_OFFSET = 19;
-  if (!data || length < COMMAND_CLASS_OFFSET + 1)
+  if (!data || length < COMMAND_CLASS_OFFSET + 1) {
     return RDMCommand::INVALID_COMMAND;
+  }
 
   switch (data[COMMAND_CLASS_OFFSET]) {
     case RDMCommand::GET_COMMAND:
@@ -76,9 +79,6 @@ RDMCommand::RDMCommandClass GuessMessageType(const uint8_t *data,
  * @{
  */
 
-/*
- * Constructor
- */
 RDMCommand::RDMCommand(const UID &source,
                        const UID &destination,
                        uint8_t transaction_number,
@@ -123,22 +123,17 @@ string RDMCommand::ToString() const {
 
 
 void RDMCommand::Write(ola::io::OutputStream *stream) const {
-  unsigned int packet_length = (sizeof(RDMCommandHeader) +
-    m_data_length);  // size of packet excluding start code + checksum
-
   RDMCommandHeader message;
-  message.sub_start_code = SUB_START_CODE;
-  message.message_length = packet_length + 1;  // add in start code as well
+  message.sub_start_code = SubStartCode();
+  message.message_length = MessageLength();
   m_destination.Pack(message.destination_uid, UID::UID_SIZE);
   m_source.Pack(message.source_uid, UID::UID_SIZE);
   message.transaction_number = m_transaction_number;
   message.port_id = m_port_id;
   message.message_count = m_message_count;
-  message.sub_device[0] = m_sub_device >> 8;
-  message.sub_device[1] = m_sub_device & 0xff;
+  SplitUInt16(m_sub_device, &message.sub_device[0], &message.sub_device[1]);
   message.command_class = CommandClass();
-  message.param_id[0] = m_param_id >> 8;
-  message.param_id[1] = m_param_id & 0xff;
+  SplitUInt16(m_param_id, &message.param_id[0], &message.param_id[1]);
   message.param_data_length = m_data_length;
 
   unsigned int checksum_value = START_CODE;
@@ -178,6 +173,12 @@ RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
     case RDMCommand::INVALID_COMMAND:
       return NULL;
   }
+  return NULL;
+}
+
+uint8_t RDMCommand::MessageLength() const {
+  // The size of packet including start code, excluding checksum
+  return sizeof(RDMCommandHeader) + m_data_length + 1;
 }
 
 
@@ -298,22 +299,17 @@ RDMRequest::RDMRequest(const UID &source,
                        const UID &destination,
                        uint8_t transaction_number,
                        uint8_t port_id,
-                       uint8_t message_count,
+                       OLA_UNUSED uint8_t message_count,
                        uint16_t sub_device,
                        RDMCommandClass command_class,
                        uint16_t param_id,
                        const uint8_t *data,
-                       unsigned int length)
-    : RDMCommand(source,
-               destination,
-               transaction_number,
-               port_id,
-               message_count,
-               sub_device,
-               param_id,
-               data,
-               length),
-  m_command_class(command_class) {
+                       unsigned int length,
+                       const OverideOptions &options)
+    : RDMCommand(source, destination, transaction_number, port_id,
+                 options.message_count, sub_device, param_id, data, length),
+      m_override_options(options),
+      m_command_class(command_class) {
 }
 
 bool RDMRequest::IsDUB() const {
@@ -321,9 +317,23 @@ bool RDMRequest::IsDUB() const {
           ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 }
 
-/*
- * Inflate a request from some data
- */
+uint8_t RDMRequest::SubStartCode() const {
+  return m_override_options.sub_start_code;
+}
+
+uint8_t RDMRequest::MessageLength() const {
+  if (m_override_options.has_message_length) {
+    return m_override_options.message_length;
+  } else {
+    return RDMCommand::MessageLength();
+  }
+}
+
+uint16_t RDMRequest::Checksum(uint16_t checksum) const {
+  return m_override_options.has_checksum ?
+      m_override_options.checksum : checksum;
+}
+
 RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
                                         unsigned int length) {
   RDMCommandHeader command_message;

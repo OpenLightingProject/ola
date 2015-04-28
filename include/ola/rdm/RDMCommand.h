@@ -110,6 +110,12 @@ class RDMCommand {
    * @{
    */
 
+  /** @brief The Sub-Start code for the RDMCommand */
+  virtual uint8_t SubStartCode() const { return SUB_START_CODE; }
+
+  /** @brief The Message length field. */
+  virtual uint8_t MessageLength() const;
+
   /** @brief Returns the Source UID of the RDMCommand */
   const UID& SourceUID() const { return m_source; }
 
@@ -140,11 +146,20 @@ class RDMCommand {
   /** @} */
 
   /**
-   * @brief Used to print the data in an RDM Command to a CommandPrinter
+   * @brief Modify the calculated checksum for this command.
+   * @param checksum The original calculated checksum of the command.
+   * @returns The new checksum to use for the command.
+   *
+   * This can be used to generate commands with invalid checksums.
+   */
+  virtual uint16_t Checksum(uint16_t checksum) const { return checksum; }
+
+  /**
+   * @brief Output the contents of the command to a CommandPrinter.
    * @param printer CommandPrinter which will use the information
    * @param summarize enable a one line summary
    * @param unpack_param_data if the summary isn't enabled, this controls if
-   * we unpack and display parameter data
+   * we unpack and display parameter data.
    */
   virtual void Print(CommandPrinter *printer,
                      bool summarize,
@@ -158,6 +173,9 @@ class RDMCommand {
    */
   void Write(ola::io::OutputStream *stream) const;
 
+  /**
+   * @brief The RDM Start Code.
+   */
   static const uint8_t START_CODE = 0xcc;
 
   /**
@@ -215,6 +233,40 @@ class RDMCommand {
  */
 class RDMRequest: public RDMCommand {
  public:
+  struct OverideOptions {
+   public:
+    /**
+     * @brief Allow all fields in a RDMRequest to be specified. Using values
+     * other than the default may result in invalid RDM messages.
+     */
+    OverideOptions()
+      : has_message_length(false),
+        has_checksum(false),
+        sub_start_code(SUB_START_CODE),
+        message_length(0),
+        message_count(0),
+        checksum(0) {
+    }
+
+    void SetMessageLength(uint8_t message_length_arg) {
+      has_message_length = true;
+      message_length = message_length_arg;
+    }
+
+    void SetChecksum(uint16_t checksum_arg) {
+      has_checksum = true;
+      checksum = checksum_arg;
+    }
+
+    bool has_message_length;
+    bool has_checksum;
+
+    uint8_t sub_start_code;
+    uint8_t message_length;
+    uint8_t message_count;
+    uint16_t checksum;
+  };
+
   /**
    * @brief Create a new request.
    * @param source The source UID.
@@ -227,6 +279,7 @@ class RDMRequest: public RDMCommand {
    * @param param_id The PID value.
    * @param data The parameter data, or NULL if there isn't any.
    * @param length The length of the parameter data.
+   * @param options The OverideOptions.
    */
   RDMRequest(const UID &source,
              const UID &destination,
@@ -237,7 +290,8 @@ class RDMRequest: public RDMCommand {
              RDMCommandClass command_class,
              uint16_t param_id,
              const uint8_t *data,
-             unsigned int length);
+             unsigned int length,
+             const OverideOptions &options = OverideOptions());
 
   RDMCommandClass CommandClass() const { return m_command_class; }
 
@@ -309,12 +363,38 @@ class RDMRequest: public RDMCommand {
     m_transaction_number = transaction_number;
   }
 
+  /**
+   * @brief Set the Port Id.
+   * @param port_id the new Port Id.
+   */
+  void SetPortId(uint8_t port_id) {
+    m_port_id = port_id;
+  }
+
   /** @} */
 
-  // Convert a block of data to an RDMCommand object
+  /**
+   * @brief Inflate a request from some data.
+   * @param data The raw data.
+   * @param length The length of the data.
+   * @returns A RDMRequest object or NULL if the data was invalid.
+   */
   static RDMRequest* InflateFromData(const uint8_t *data,
                                      unsigned int length);
+
+  /**
+   * @brief Inflate a request from some data.
+   * @param data The raw data.
+   * @returns A RDMRequest object or NULL if the data was invalid.
+   */
   static RDMRequest* InflateFromData(const std::string &data);
+
+ protected:
+  OverideOptions m_override_options;
+
+  uint8_t SubStartCode() const;
+  uint8_t MessageLength() const;
+  uint16_t Checksum(uint16_t checksum) const;
 
  private:
   RDMCommandClass m_command_class;
@@ -326,77 +406,66 @@ class RDMRequest: public RDMCommand {
  */
 class RDMGetSetRequest: public RDMRequest {
  public:
-    RDMGetSetRequest(const UID &source,
-                     const UID &destination,
-                     uint8_t transaction_number,
-                     uint8_t port_id,
-                     uint8_t message_count,
-                     uint16_t sub_device,
-                     RDMCommandClass command_class,
-                     uint16_t param_id,
-                     const uint8_t *data,
-                     unsigned int length):
-      RDMRequest(source,
-                 destination,
-                 transaction_number,
-                 port_id,
-                 message_count,
-                 sub_device,
-                 command_class,
-                 param_id,
-                 data,
-                 length) {
-    }
+  RDMGetSetRequest(const UID &source,
+                   const UID &destination,
+                   uint8_t transaction_number,
+                   uint8_t port_id,
+                   uint8_t message_count,
+                   uint16_t sub_device,
+                   RDMCommandClass command_class,
+                   uint16_t param_id,
+                   const uint8_t *data,
+                   unsigned int length,
+                   const OverideOptions &options)
+      : RDMRequest(source, destination, transaction_number, port_id,
+                   message_count, sub_device, command_class, param_id,
+                   data, length, options) {
+  }
 };
 
 
 template <RDMCommand::RDMCommandClass command_class>
 class BaseRDMRequest: public RDMGetSetRequest {
  public:
-    BaseRDMRequest(const UID &source,
-                   const UID &destination,
-                   uint8_t transaction_number,
-                   uint8_t port_id,
-                   uint8_t message_count,
-                   uint16_t sub_device,
-                   uint16_t param_id,
-                   const uint8_t *data,
-                   unsigned int length):
-      RDMGetSetRequest(source,
-                       destination,
-                       transaction_number,
-                       port_id,
-                       message_count,
-                       sub_device,
-                       command_class,
-                       param_id,
-                       data,
-                       length) {
-    }
-    RDMCommandClass CommandClass() const { return command_class; }
-    BaseRDMRequest<command_class> *Duplicate()
-      const {
-      return DuplicateWithControllerParams(
-        SourceUID(),
-        TransactionNumber(),
-        PortId());
-    }
+  BaseRDMRequest(const UID &source,
+                 const UID &destination,
+                 uint8_t transaction_number,
+                 uint8_t port_id,
+                 uint8_t message_count,
+                 uint16_t sub_device,
+                 uint16_t param_id,
+                 const uint8_t *data,
+                 unsigned int length,
+                 const OverideOptions &options = OverideOptions())
+    : RDMGetSetRequest(source, destination, transaction_number, port_id,
+                       message_count, sub_device, command_class, param_id,
+                       data, length, options) {
+  }
 
-    BaseRDMRequest<command_class> *DuplicateWithControllerParams(
-        const UID &source,
-        uint8_t transaction_number,
-        uint8_t port_id) const {
-      return new BaseRDMRequest<command_class>(
-        source,
-        DestinationUID(),
-        transaction_number,
-        port_id,
-        MessageCount(),
-        SubDevice(),
-        ParamId(),
-        ParamData(),
-        ParamDataSize());
-    }
+  RDMCommandClass CommandClass() const { return command_class; }
+  BaseRDMRequest<command_class> *Duplicate()
+    const {
+    return DuplicateWithControllerParams(
+      SourceUID(),
+      TransactionNumber(),
+      PortId());
+  }
+
+  BaseRDMRequest<command_class> *DuplicateWithControllerParams(
+      const UID &source,
+      uint8_t transaction_number,
+      uint8_t port_id) const {
+    return new BaseRDMRequest<command_class>(
+      source,
+      DestinationUID(),
+      transaction_number,
+      port_id,
+      MessageCount(),
+      SubDevice(),
+      ParamId(),
+      ParamData(),
+      ParamDataSize());
+  }
 };
 
 typedef BaseRDMRequest<RDMCommand::GET_COMMAND> RDMGetRequest;
@@ -443,7 +512,7 @@ class RDMResponse: public RDMCommand {
    * @brief Set the destination UID
    * @param destination_uid The new destination UID.
    */
-  void SetSourceUID(const UID &destination_uid) {
+  void SetDestinationUID(const UID &destination_uid) {
     m_destination = destination_uid;
   }
 

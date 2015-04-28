@@ -56,6 +56,7 @@ using std::string;
 class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandTest);
   CPPUNIT_TEST(testRDMCommand);
+  CPPUNIT_TEST(testRequestOverrides);
   CPPUNIT_TEST(testOutputStream);
   CPPUNIT_TEST(testIOStack);
   CPPUNIT_TEST(testRequestInflation);
@@ -74,6 +75,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void setUp();
 
     void testRDMCommand();
+    void testRequestOverrides();
     void testOutputStream();
     void testIOStack();
     void testRequestInflation();
@@ -243,6 +245,38 @@ void RDMCommandTest::testRDMCommand() {
   PackAndVerify(command3, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
 }
 
+void RDMCommandTest::testRequestOverrides() {
+  RDMRequest::OverideOptions options;
+  options.SetMessageLength(10);
+  options.SetChecksum(999);
+  options.sub_start_code = 5;
+  options.message_count = 9;
+
+  UID source(1, 2);
+  UID destination(3, 4);
+
+  RDMGetRequest command(source,
+                        destination,
+                        0,  // transaction #
+                        1,  // port id
+                        0,  // message count
+                        10,  // sub device
+                        296,  // param id
+                        NULL,  // data
+                        0,  // data length
+                        options);
+
+  const uint8_t expected_data[] = {
+    5, 10,  // sub code & length
+    0, 3, 0, 0, 0, 4,   // dst uid
+    0, 1, 0, 0, 0, 2,   // src uid
+    0, 1, 9, 0, 10,  // transaction, port id, msg count & sub device
+    0x20, 1, 40, 0,  // command, param id, param data length
+    0x3, 0xe7  // checksum,
+  };
+
+  PackAndVerify(command, expected_data, sizeof(expected_data));
+}
 
 /*
  * Test write to an output stream works.
@@ -508,7 +542,6 @@ void RDMCommandTest::testResponseInflation() {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  // OLA_ASSERT_EQ(ola::rdm::RDM_RESPONSE, command->CommandType());
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
 

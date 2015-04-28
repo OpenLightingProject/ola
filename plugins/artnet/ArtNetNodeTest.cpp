@@ -2027,7 +2027,6 @@ void ArtNetNodeTest::testRDMResponder() {
                   m_rdm_request->ParamData());
     OLA_ASSERT_EQ(0u, m_rdm_request->ParamDataSize());
     OLA_ASSERT_EQ(25u, RDMCommandSerializer::RequiredSize(*m_rdm_request));
-    // OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, m_rdm_request->CommandType());
   }
 
   // run the RDM callback, triggering the response
