@@ -388,31 +388,29 @@ void DmxTriWidgetImpl::SendDiscoveryStat() {
  * Send a raw RDM command, bypassing all the handling the RDM-TRI does.
  */
 void DmxTriWidgetImpl::SendRawRDMRequest() {
-  // make a copy of this request, with the source UID and transaction number
-  ola::rdm::RDMRequest *request =
-    m_pending_rdm_request->DuplicateWithControllerParams(
-        m_pending_rdm_request->SourceUID(),
-        m_transaction_number,
-        1);  // port id is always 1
-  delete m_pending_rdm_request;
-  m_pending_rdm_request = request;
+  m_pending_rdm_request->SetTransactionNumber(m_transaction_number);
+  m_pending_rdm_request->SetPortId(1);  // port id is always 1
 
   // add two bytes for the command & option field
-  unsigned int packet_size = RDMCommandSerializer::RequiredSize(*request);
+  unsigned int packet_size = RDMCommandSerializer::RequiredSize(
+      *m_pending_rdm_request);
   uint8_t send_buffer[packet_size + 2];
   send_buffer[0] = RAW_RDM_COMMAND_ID;
   // a 2 means we don't wait for a break in the response.
-  send_buffer[1] = IsDUBRequest(request) ? 2 : 0;
+  send_buffer[1] = IsDUBRequest(m_pending_rdm_request) ? 2 : 0;
 
-  if (!RDMCommandSerializer::Pack(*request, send_buffer + 2, &packet_size)) {
+  if (!RDMCommandSerializer::Pack(*m_pending_rdm_request, send_buffer + 2,
+                                  &packet_size)) {
     OLA_WARN << "Failed to pack RDM request";
     HandleRDMError(ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
-  OLA_INFO << "Sending raw request to " << request->DestinationUID() <<
-    " with command " << std::hex << request->CommandClass() << " and param " <<
-    std::hex << request->ParamId();
+  OLA_INFO << "Sending raw request to "
+           << m_pending_rdm_request->DestinationUID()
+           << " with command " << std::hex
+           << m_pending_rdm_request->CommandClass()
+           << " and param " << std::hex << m_pending_rdm_request->ParamId();
 
   if (SendCommandToTRI(EXTENDED_COMMAND_LABEL, send_buffer, packet_size + 2)) {
     m_transaction_number++;

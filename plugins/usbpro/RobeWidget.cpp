@@ -132,12 +132,14 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
     return;
   }
 
-  m_rdm_request_callback = on_complete;
   // convert the request into one that matches this widget
-  m_pending_request = request->DuplicateWithControllerParams(
-      m_uid,
-      this_transaction_number,
-      port_id);
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(this_transaction_number);
+  request->SetPortId(port_id);
+
+  m_rdm_request_callback = on_complete;
+  m_pending_request = request;
+
   OLA_DEBUG << "Sending RDM command. CC: 0x" << std::hex <<
     request->CommandClass() << ", PID 0x" << std::hex <<
     request->ParamId() << ", TN: " << this_transaction_number;
@@ -146,7 +148,6 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
       (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
        request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) ?
       RDM_DISCOVERY : RDM_REQUEST);
-  delete request;
 
   if (!SendMessage(label, data, data_size + RDM_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;

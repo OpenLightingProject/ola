@@ -222,7 +222,6 @@ bool EnttecPortImpl::SetParameters(uint8_t break_time,
  */
 void EnttecPortImpl::SendRDMRequest(ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<const ola::rdm::RDMRequest> request_ptr(request);
   vector<string> packets;
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
@@ -230,9 +229,11 @@ void EnttecPortImpl::SendRDMRequest(ola::rdm::RDMRequest *request,
     return;
   }
 
-  // Re-write the request so it appears to originate from this widget.
-  m_pending_request = request->DuplicateWithControllerParams(
-      m_uid, m_transaction_number++, PORT_ID);
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(m_transaction_number++);
+  request->SetPortId(PORT_ID);
+
+  m_pending_request = request;
   m_rdm_request_callback = on_complete;
 
   bool ok = PackAndSendRDMRequest(

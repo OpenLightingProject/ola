@@ -304,22 +304,11 @@ class RDMRequest: public RDMCommand {
    * @returns A new RDMRequest that is identical to this one.
    */
   virtual RDMRequest *Duplicate() const {
-    return DuplicateWithControllerParams(
-      SourceUID(),
-      TransactionNumber(),
-      PortId());
-  }
-
-  // TODO(simon): remove this now we have mutators.
-  virtual RDMRequest *DuplicateWithControllerParams(
-      const UID &source,
-      uint8_t transaction_number,
-      uint8_t port_id) const {
     return new RDMRequest(
-      source,
+      SourceUID(),
       DestinationUID(),
-      transaction_number,
-      port_id,
+      TransactionNumber(),
+      PortId(),
       MessageCount(),
       SubDevice(),
       m_command_class,
@@ -454,23 +443,12 @@ class BaseRDMRequest: public RDMGetSetRequest {
                        data, length, options) {
   }
 
-  BaseRDMRequest<command_class> *Duplicate()
-    const {
-    return DuplicateWithControllerParams(
-      SourceUID(),
-      TransactionNumber(),
-      PortId());
-  }
-
-  BaseRDMRequest<command_class> *DuplicateWithControllerParams(
-      const UID &source,
-      uint8_t transaction_number,
-      uint8_t port_id) const {
+  BaseRDMRequest<command_class> *Duplicate() const {
     return new BaseRDMRequest<command_class>(
-      source,
+      SourceUID(),
       DestinationUID(),
-      transaction_number,
-      port_id,
+      TransactionNumber(),
+      PortId(),
       MessageCount(),
       SubDevice(),
       ParamId(),
