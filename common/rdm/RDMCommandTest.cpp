@@ -72,6 +72,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testMuteRequest);
   CPPUNIT_TEST(testUnMuteRequest);
   CPPUNIT_TEST(testCommandInflation);
+  CPPUNIT_TEST(testDiscoveryResponseInflation);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -91,6 +92,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testMuteRequest();
     void testUnMuteRequest();
     void testCommandInflation();
+    void testDiscoveryResponseInflation();
 
  private:
     void PackAndVerify(const RDMCommand &command,
@@ -105,6 +107,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     static uint8_t EXPECTED_DISCOVERY_REQUEST[];
     static uint8_t EXPECTED_MUTE_REQUEST[];
     static uint8_t EXPECTED_UNMUTE_REQUEST[];
+    static uint8_t MUTE_RESPONSE[];
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMCommandTest);
@@ -172,6 +175,15 @@ uint8_t RDMCommandTest::EXPECTED_UNMUTE_REQUEST[] = {
   0, 0  // checksum, filled in below
 };
 
+uint8_t RDMCommandTest::MUTE_RESPONSE[] = {
+  1, 24,  // sub code & length
+  0, 1, 0, 0, 0, 2,   // dst uid
+  0, 3, 0, 0, 0, 4,   // src uid
+  1, 1, 0, 0, 0,  // transaction, response type, msg count & sub device
+  0x11, 0, 2, 0,  // command, param id, param data length
+  0, 0  // checksum, filled in below
+};
+
 
 /*
  * Fill in the checksums
@@ -187,6 +199,7 @@ void RDMCommandTest::setUp() {
                  sizeof(EXPECTED_MUTE_REQUEST));
   UpdateChecksum(EXPECTED_UNMUTE_REQUEST,
                  sizeof(EXPECTED_UNMUTE_REQUEST));
+  UpdateChecksum(MUTE_RESPONSE, sizeof(MUTE_RESPONSE));
 }
 
 
@@ -219,6 +232,7 @@ void RDMCommandTest::testRDMCommand() {
   OLA_ASSERT_EQ(static_cast<const uint8_t*>(NULL), command.ParamData());
   OLA_ASSERT_EQ(0u, command.ParamDataSize());
   OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
+  OLA_ASSERT_FALSE(command.IsDUB());
   PackAndVerify(command, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
 
   ostringstream str;
@@ -501,6 +515,10 @@ void RDMCommandTest::testRequestInflation() {
                                             sizeof(EXPECTED_SET_BUFFER)));
   OLA_ASSERT_NULL(command.get());
   delete[] bad_packet;
+
+  // A non-0 length with a NULL pointer
+  command.reset(RDMRequest::InflateFromData(NULL, 32));
+  OLA_ASSERT_NULL(command.get());
 
   // Try to inflate a response
   command.reset(RDMRequest::InflateFromData(
@@ -1029,6 +1047,7 @@ void RDMCommandTest::testDiscoveryCommand() {
       NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
 
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
+  OLA_ASSERT_TRUE(request->IsDUB());
 
   // test pack
   unsigned int length = RDMCommandSerializer::RequiredSize(*request);
@@ -1171,4 +1190,23 @@ void RDMCommandTest::testCommandInflation() {
   OLA_ASSERT_NOT_NULL(command.get());
   discovery_request.reset(NewUnMuteRequest(source, destination, 1));
   OLA_ASSERT_TRUE(CommandsEqual(*discovery_request, *command));
+}
+
+void RDMCommandTest::testDiscoveryResponseInflation() {
+  auto_ptr<RDMCommand> command;
+
+  command.reset(RDMRequest::Inflate(MUTE_RESPONSE, arraysize(MUTE_RESPONSE)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND_RESPONSE, command->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 2, command->ParamId());
+  OLA_ASSERT_EQ(0u, command->ParamDataSize());
+
+  // Try the string version
+  string response_string(reinterpret_cast<char*>(MUTE_RESPONSE),
+                         arraysize(MUTE_RESPONSE));
+  command.reset(RDMRequest::Inflate(response_string));
+  OLA_ASSERT_NOT_NULL(command.get());
+  OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND_RESPONSE, command->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 2, command->ParamId());
+  OLA_ASSERT_EQ(0u, command->ParamDataSize());
 }

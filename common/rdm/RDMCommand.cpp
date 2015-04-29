@@ -178,6 +178,10 @@ RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
   return NULL;
 }
 
+RDMCommand *RDMCommand::Inflate(const string &data) {
+  return Inflate(reinterpret_cast<const uint8_t*>(data.data()), data.size());
+}
+
 uint8_t RDMCommand::MessageLength() const {
   // The size of packet including start code, excluding checksum
   return sizeof(RDMCommandHeader) + m_data_length + 1;
@@ -765,8 +769,7 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
 /*
  * Inflate a discovery request from some data.
  */
-RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
-    const string &data) {
+RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -863,7 +866,7 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
         data + sizeof(RDMCommandHeader),
         command_message.param_data_length);  // data length
   } else {
-    OLA_WARN << "Expected a RDM discovery request but got " << command_class;
+    OLA_WARN << "Expected a RDM discovery response but got " << command_class;
     return NULL;
   }
 }

@@ -184,6 +184,13 @@ class RDMCommand {
    */
   static RDMCommand *Inflate(const uint8_t *data, unsigned int length);
 
+  /**
+   * @brief Extract a RDMCommand from raw data.
+   * @param data The data excluding the state code.
+   * @returns NULL if the RDM command is invalid.
+   */
+  static RDMCommand *Inflate(const std::string &data);
+
  protected:
   uint8_t m_port_id;
   UID m_source;
