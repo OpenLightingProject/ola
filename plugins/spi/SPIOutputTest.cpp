@@ -536,11 +536,6 @@ void SPIOutputTest::testCombinedAPA102Control() {
   unsigned int length = 0;
   const uint8_t *data = NULL;
   
-  OLA_INFO << "Test Not implemented yet.";
-  OLA_INFO << "length" << length;
-  OLA_INFO << "data" << data;
-  // TODO
-  
   // test1
   // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100");
