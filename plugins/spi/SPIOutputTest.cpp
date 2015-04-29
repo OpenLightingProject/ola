@@ -541,4 +541,73 @@ void SPIOutputTest::testCombinedAPA102Control() {
   OLA_INFO << "data" << data;
   // TODO
   
+  // test1
+  // setup some 'DMX' data
+  buffer.SetFromString("1, 10, 100");
+  // simulate incoming data
+  output.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(0, &length);
+  // this is the expected spi data stream:
+  const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
+                                0xff, 0x64, 0x0a, 0x01,   // first Pixel
+                                0xff, 0x64, 0x0a, 0x01,   // second Pixel
+                                0, 0, 0, 0, 0, 0, 0, 0};  // EndFrame
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(0));
+
+  // test2
+  buffer.SetFromString("255,128,0,10,20,30");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 
+                                0xff, 0, 0x80, 0xff,
+                                0xff, 0, 0x80, 0xff,
+                                0, 0, 0, 0, 0, 0, 0, 0};
+  OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
+  OLA_ASSERT_EQ(2u, backend.Writes(0));
+  
+  // test3
+  buffer.SetFromString("34,56,78");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 
+                                0xff, 0x4e, 0x38, 0x22,
+                                0xff, 0x4e, 0x38, 0x22,
+                                0, 0, 0, 0, 0, 0, 0, 0};
+  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+  
+  // test4
+  // tests what happens if fewer then needed color information are received
+  buffer.SetFromString("7, 9");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  // check that the returns are the same as test2 (nothing changed)
+  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test5
+  // test with other StartAddress
+  // set StartAddress
+  output.SetStartAddress(3);
+  // values 1 & 2 should not be visibel in SPI data stream
+  buffer.SetFromString("1,2,3,4,5,6,7,8");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 
+                                0xff, 0x05, 0x04, 0x03,
+                                0xff, 0x05, 0x04, 0x03, 
+                                0, 0, 0, 0, 0, 0, 0, 0};
+  OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
+  OLA_ASSERT_EQ(4u, backend.Writes(0));
+  
+  // test6
+  // Check nothing changed on the other output.
+  OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
+                backend.GetData(1, &length));
+  OLA_ASSERT_EQ(0u, backend.Writes(1));
+  
 }
