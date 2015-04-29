@@ -70,12 +70,43 @@ using ola::proto::UniverseInfo;
 using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseNameRequest;
 using ola::proto::UniverseRequest;
+using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rpc::RpcController;
 using std::string;
 using std::vector;
+
+namespace {
+
+template<typename RequestType>
+
+RDMRequest::OverrideOptions RDMRequestOptionsFromProto(
+    const RequestType &request) {
+  RDMRequest::OverrideOptions options;
+
+  if (!request.has_options()) {
+    return options;
+  }
+
+  const ola::proto::RDMRequestOverrideOptions &proto_options =
+      request.options();
+  if (proto_options.has_sub_start_code()) {
+    options.sub_start_code = proto_options.sub_start_code();
+  }
+  if (proto_options.has_message_length()) {
+    options.SetMessageLength(proto_options.message_length());
+  }
+  if (proto_options.has_message_count()) {
+    options.message_count = proto_options.message_count();
+  }
+  if (proto_options.has_checksum()) {
+    options.SetChecksum(proto_options.checksum());
+  }
+  return options;
+}
+}  // namespace
 
 typedef CallbackRunner<ola::rpc::RpcService::CompletionCallback> ClosureRunner;
 
@@ -639,6 +670,8 @@ void OlaServerServiceImpl::RDMCommand(
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
+  RDMRequest::OverrideOptions options = RDMRequestOptionsFromProto(*request);
+
   ola::rdm::RDMRequest *rdm_request = NULL;
   if (request->is_set()) {
     rdm_request = new ola::rdm::RDMSetRequest(
@@ -649,7 +682,8 @@ void OlaServerServiceImpl::RDMCommand(
       request->sub_device(),
       request->param_id(),
       reinterpret_cast<const uint8_t*>(request->data().data()),
-      request->data().size());
+      request->data().size(),
+      options);
   } else {
     rdm_request = new ola::rdm::RDMGetRequest(
       source_uid,
@@ -659,7 +693,8 @@ void OlaServerServiceImpl::RDMCommand(
       request->sub_device(),
       request->param_id(),
       reinterpret_cast<const uint8_t*>(request->data().data()),
-      request->data().size());
+      request->data().size(),
+      options);
   }
 
   ola::rdm::RDMCallback *callback =
@@ -691,6 +726,8 @@ void OlaServerServiceImpl::RDMDiscoveryCommand(
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
+  RDMRequest::OverrideOptions options = RDMRequestOptionsFromProto(*request);
+
   ola::rdm::RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
       source_uid,
       destination,
@@ -699,7 +736,8 @@ void OlaServerServiceImpl::RDMDiscoveryCommand(
       request->sub_device(),
       request->param_id(),
       reinterpret_cast<const uint8_t*>(request->data().data()),
-      request->data().size());
+      request->data().size(),
+      options);
 
   ola::rdm::RDMCallback *callback =
     NewSingleCallback(
