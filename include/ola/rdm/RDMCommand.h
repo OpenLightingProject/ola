@@ -166,7 +166,7 @@ class RDMCommand {
   }
 
   /**
-   * @brief Write this RDMCommand to an OutputStream
+   * @brief Write the binary representation of a RDMCommand to an OutputStream.
    * @param stream is a pointer to an OutputStream
    */
   void Write(ola::io::OutputStream *stream) const;
@@ -231,13 +231,13 @@ class RDMCommand {
  */
 class RDMRequest: public RDMCommand {
  public:
-  struct OverideOptions {
+  struct OverrideOptions {
    public:
     /**
      * @brief Allow all fields in a RDMRequest to be specified. Using values
      * other than the default may result in invalid RDM messages.
      */
-    OverideOptions()
+    OverrideOptions()
       : has_message_length(false),
         has_checksum(false),
         sub_start_code(SUB_START_CODE),
@@ -271,25 +271,23 @@ class RDMRequest: public RDMCommand {
    * @param destination The destination UID.
    * @param transaction_number The transaction number.
    * @param port_id The Port ID.
-   * @param message_count Set to 0.
    * @param sub_device The Sub Device index.
    * @param command_class The Command Class of this request.
    * @param param_id The PID value.
    * @param data The parameter data, or NULL if there isn't any.
    * @param length The length of the parameter data.
-   * @param options The OverideOptions.
+   * @param options The OverrideOptions.
    */
   RDMRequest(const UID &source,
              const UID &destination,
              uint8_t transaction_number,
              uint8_t port_id,
-             uint8_t message_count,  // TODO(simon): remove since it's 0
              uint16_t sub_device,
              RDMCommandClass command_class,
              uint16_t param_id,
              const uint8_t *data,
              unsigned int length,
-             const OverideOptions &options = OverideOptions());
+             const OverrideOptions &options = OverrideOptions());
 
   RDMCommandClass CommandClass() const { return m_command_class; }
 
@@ -309,12 +307,12 @@ class RDMRequest: public RDMCommand {
       DestinationUID(),
       TransactionNumber(),
       PortId(),
-      MessageCount(),
       SubDevice(),
       m_command_class,
       ParamId(),
       ParamData(),
-      ParamDataSize());
+      ParamDataSize(),
+      m_override_options);
   }
 
   virtual void Print(CommandPrinter *printer,
@@ -328,6 +326,10 @@ class RDMRequest: public RDMCommand {
    * @returns true if this is a DUB request.
    */
   bool IsDUB() const;
+
+  uint8_t SubStartCode() const;
+  uint8_t MessageLength() const;
+  uint16_t Checksum(uint16_t checksum) const;
 
   /**
    * @name Mutators
@@ -377,11 +379,7 @@ class RDMRequest: public RDMCommand {
   static RDMRequest* InflateFromData(const std::string &data);
 
  protected:
-  OverideOptions m_override_options;
-
-  uint8_t SubStartCode() const;
-  uint8_t MessageLength() const;
-  uint16_t Checksum(uint16_t checksum) const;
+  OverrideOptions m_override_options;
 
  private:
   RDMCommandClass m_command_class;
@@ -399,28 +397,25 @@ class RDMGetSetRequest: public RDMRequest {
    * @param destination The destination UID.
    * @param transaction_number The transaction number.
    * @param port_id The Port ID.
-   * @param message_count Set to 0.
    * @param sub_device The Sub Device index.
    * @param command_class The Command Class of this request.
    * @param param_id The PID value.
    * @param data The parameter data, or NULL if there isn't any.
    * @param length The length of the parameter data.
-   * @param options The OverideOptions.
+   * @param options The OverrideOptions.
    */
   RDMGetSetRequest(const UID &source,
                    const UID &destination,
                    uint8_t transaction_number,
                    uint8_t port_id,
-                   uint8_t message_count,
                    uint16_t sub_device,
                    RDMCommandClass command_class,
                    uint16_t param_id,
                    const uint8_t *data,
                    unsigned int length,
-                   const OverideOptions &options)
+                   const OverrideOptions &options)
       : RDMRequest(source, destination, transaction_number, port_id,
-                   message_count, sub_device, command_class, param_id,
-                   data, length, options) {
+                   sub_device, command_class, param_id, data, length, options) {
   }
 };
 
@@ -432,15 +427,14 @@ class BaseRDMRequest: public RDMGetSetRequest {
                  const UID &destination,
                  uint8_t transaction_number,
                  uint8_t port_id,
-                 uint8_t message_count,
                  uint16_t sub_device,
                  uint16_t param_id,
                  const uint8_t *data,
                  unsigned int length,
-                 const OverideOptions &options = OverideOptions())
+                 const OverrideOptions &options = OverrideOptions())
     : RDMGetSetRequest(source, destination, transaction_number, port_id,
-                       message_count, sub_device, command_class, param_id,
-                       data, length, options) {
+                       sub_device, command_class, param_id, data, length,
+                       options) {
   }
 
   BaseRDMRequest<command_class> *Duplicate() const {
@@ -449,11 +443,11 @@ class BaseRDMRequest: public RDMGetSetRequest {
       DestinationUID(),
       TransactionNumber(),
       PortId(),
-      MessageCount(),
       SubDevice(),
       ParamId(),
       ParamData(),
-      ParamDataSize());
+      ParamDataSize(),
+      m_override_options);
   }
 };
 
@@ -662,21 +656,21 @@ class RDMDiscoveryRequest: public RDMRequest {
                         const UID &destination,
                         uint8_t transaction_number,
                         uint8_t port_id,
-                        uint8_t message_count,
                         uint16_t sub_device,
                         uint16_t param_id,
                         const uint8_t *data,
-                        unsigned int length)
+                        unsigned int length,
+                        const OverrideOptions &options = OverrideOptions())
         : RDMRequest(source,
                      destination,
                      transaction_number,
                      port_id,
-                     message_count,
                      sub_device,
                      DISCOVER_COMMAND,
                      param_id,
                      data,
-                     length) {
+                     length,
+                     options) {
     }
 
     uint8_t PortId() const { return m_port_id; }

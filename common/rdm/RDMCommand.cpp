@@ -38,6 +38,7 @@ namespace ola {
 namespace rdm {
 
 using std::string;
+using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
 
 // Internal Helper Functions
@@ -116,8 +117,9 @@ string RDMCommand::ToString() const {
     << ", Cmd Class " << CommandClass() << ", Param ID " << m_param_id
     << ", Data Len " << m_data_length;
   str << ", Data ";
-  for (unsigned int i = 0 ; i < m_data_length; i++)
+  for (unsigned int i = 0 ; i < m_data_length; i++) {
     str << std::hex << std::setw(2) << static_cast<int>(m_data[i]) << " ";
+  }
   return str.str();
 }
 
@@ -299,13 +301,12 @@ RDMRequest::RDMRequest(const UID &source,
                        const UID &destination,
                        uint8_t transaction_number,
                        uint8_t port_id,
-                       OLA_UNUSED uint8_t message_count,
                        uint16_t sub_device,
                        RDMCommandClass command_class,
                        uint16_t param_id,
                        const uint8_t *data,
                        unsigned int length,
-                       const OverideOptions &options)
+                       const OverrideOptions &options)
     : RDMCommand(source, destination, transaction_number, port_id,
                  options.message_count, sub_device, param_id, data, length),
       m_override_options(options),
@@ -341,13 +342,17 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
   if (code != RDM_COMPLETED_OK)
     return NULL;
 
-  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
-    command_message.sub_device[1]);
-  uint16_t param_id = ((command_message.param_id[0] << 8) +
-    command_message.param_id[1]);
-
+  uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
+                                  command_message.sub_device[1]);
+  uint16_t param_id = JoinUInt8(command_message.param_id[0],
+                                command_message.param_id[1]);
   RDMCommandClass command_class = ConvertCommandClass(
     command_message.command_class);
+
+  OverrideOptions options;
+  options.sub_start_code = command_message.sub_start_code;
+  options.message_length = command_message.message_length;
+  options.message_count = command_message.message_count;
 
   switch (command_class) {
     case DISCOVER_COMMAND:
@@ -356,33 +361,33 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           UID(command_message.destination_uid),
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
-          command_message.message_count,  // message count
           sub_device,
           param_id,
           data + sizeof(RDMCommandHeader),
-          command_message.param_data_length);  // data length
+          command_message.param_data_length,  // data length
+          options);
     case GET_COMMAND:
       return new RDMGetRequest(
           UID(command_message.source_uid),
           UID(command_message.destination_uid),
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
-          command_message.message_count,  // message count
           sub_device,
           param_id,
           data + sizeof(RDMCommandHeader),
-          command_message.param_data_length);  // data length
+          command_message.param_data_length,  // data length
+          options);
     case SET_COMMAND:
       return new RDMSetRequest(
           UID(command_message.source_uid),
           UID(command_message.destination_uid),
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
-          command_message.message_count,  // message count
           sub_device,
           param_id,
           data + sizeof(RDMCommandHeader),
-          command_message.param_data_length);  // data length
+          command_message.param_data_length,  // data length
+          options);
     default:
       OLA_WARN << "Expected a RDM request command but got " << command_class;
       return NULL;
@@ -727,13 +732,17 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
   if (code != RDM_COMPLETED_OK)
     return NULL;
 
-  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
-    command_message.sub_device[1]);
-  uint16_t param_id = ((command_message.param_id[0] << 8) +
-    command_message.param_id[1]);
-
+  uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
+                                  command_message.sub_device[1]);
+  uint16_t param_id = JoinUInt8(command_message.param_id[0],
+                                command_message.param_id[1]);
   RDMCommandClass command_class = ConvertCommandClass(
     command_message.command_class);
+
+  OverrideOptions options;
+  options.sub_start_code = command_message.sub_start_code;
+  options.message_length = command_message.message_length;
+  options.message_count = command_message.message_count;
 
   if (command_class == DISCOVER_COMMAND) {
     return new RDMDiscoveryRequest(
@@ -741,11 +750,11 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
         UID(command_message.destination_uid),
         command_message.transaction_number,  // transaction #
         command_message.port_id,  // port id
-        command_message.message_count,  // message count
         sub_device,
         param_id,
         data + sizeof(RDMCommandHeader),
-        command_message.param_data_length);  // data length
+        command_message.param_data_length,  // data length
+        options);
   } else {
     OLA_WARN << "Expected a RDM discovery request but got " << command_class;
     return NULL;
@@ -780,7 +789,6 @@ RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
                                  UID::AllDevices(),
                                  transaction_number,
                                  port_id,
-                                 0,  // message count
                                  ROOT_RDM_DEVICE,
                                  PID_DISC_UNIQUE_BRANCH,
                                  param_data,
@@ -799,7 +807,6 @@ RDMDiscoveryRequest *NewMuteRequest(const UID &source,
                                  destination,
                                  transaction_number,
                                  port_id,
-                                 0,  // message count
                                  ROOT_RDM_DEVICE,
                                  PID_DISC_MUTE,
                                  NULL,
@@ -818,7 +825,6 @@ RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
                                    destination,
                                    transaction_number,
                                    port_id,
-                                   0,  // message count
                                    ROOT_RDM_DEVICE,
                                    PID_DISC_UN_MUTE,
                                    NULL,

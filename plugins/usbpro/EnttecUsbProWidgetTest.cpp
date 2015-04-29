@@ -168,7 +168,6 @@ RDMRequest *EnttecUsbProWidgetTest::NewRequest(const UID &destination,
       destination,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       data,
@@ -575,7 +574,6 @@ void EnttecUsbProWidgetTest::testSendRDMMute() {
       DESTINATION,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_MUTE,  // param id
       NULL,
@@ -630,7 +628,6 @@ void EnttecUsbProWidgetTest::testSendRDMDUB() {
       DESTINATION,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
       REQUEST_DATA,
@@ -670,7 +667,6 @@ void EnttecUsbProWidgetTest::testSendRDMDUB() {
       DESTINATION,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
       REQUEST_DATA,

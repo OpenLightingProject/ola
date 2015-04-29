@@ -20,12 +20,14 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
-#include <string>
 #include <iomanip>
 #include <memory>
+#include <sstream>
+#include <string>
 
 #include "common/rdm/TestHelper.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/IOStack.h"
 #include "ola/io/OutputStream.h"
@@ -51,6 +53,7 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
 
 class RDMCommandTest: public CppUnit::TestFixture {
@@ -198,12 +201,13 @@ void RDMCommandTest::testRDMCommand() {
                         destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
                         0);  // data length
 
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 24, command.MessageLength());
   OLA_ASSERT_EQ(source, command.SourceUID());
   OLA_ASSERT_EQ(destination, command.DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, command.TransactionNumber());
@@ -214,29 +218,33 @@ void RDMCommandTest::testRDMCommand() {
   OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
   OLA_ASSERT_EQ(static_cast<const uint8_t*>(NULL), command.ParamData());
   OLA_ASSERT_EQ(0u, command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
   PackAndVerify(command, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
 
+  ostringstream str;
+  str << command;
+  OLA_ASSERT_FALSE(str.str().empty());
+  OLA_ASSERT_EQ(str.str(), command.ToString());
+
   // try one with extra long data
-  uint8_t *data = new uint8_t[232];
+  uint8_t data[232];
+  memset(data, 0, arraysize(data));
   RDMGetRequest long_command(source,
                              destination,
                              0,  // transaction #
                              1,  // port id
-                             0,  // message count
                              10,  // sub device
                              123,  // param id
                              data,  // data
                              232);  // data length
-
   OLA_ASSERT_EQ(232u, long_command.ParamDataSize());
-  delete[] data;
 
+  // 4 bytes of data.
   uint32_t data_value = 0xa5a5a5a5;
   RDMSetRequest command3(source,
                          destination,
                          0,  // transaction #
                          1,  // port id
-                         0,  // message count
                          10,  // sub device
                          296,  // param id
                          reinterpret_cast<uint8_t*>(&data_value),  // data
@@ -246,7 +254,7 @@ void RDMCommandTest::testRDMCommand() {
 }
 
 void RDMCommandTest::testRequestOverrides() {
-  RDMRequest::OverideOptions options;
+  RDMRequest::OverrideOptions options;
   options.SetMessageLength(10);
   options.SetChecksum(999);
   options.sub_start_code = 5;
@@ -259,12 +267,25 @@ void RDMCommandTest::testRequestOverrides() {
                         destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
                         0,  // data length
                         options);
+
+  OLA_ASSERT_EQ((uint8_t) 5, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 10, command.MessageLength());
+  OLA_ASSERT_EQ(source, command.SourceUID());
+  OLA_ASSERT_EQ(destination, command.DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 0, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortId());
+  OLA_ASSERT_EQ((uint8_t) 9, command.MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, command.SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command.CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
+  OLA_ASSERT_EQ(static_cast<const uint8_t*>(NULL), command.ParamData());
+  OLA_ASSERT_EQ(0u, command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 999u, command.Checksum(0));
 
   const uint8_t expected_data[] = {
     5, 10,  // sub code & length
@@ -275,7 +296,7 @@ void RDMCommandTest::testRequestOverrides() {
     0x3, 0xe7  // checksum,
   };
 
-  PackAndVerify(command, expected_data, sizeof(expected_data));
+  PackAndVerify(command, expected_data, arraysize(expected_data));
 }
 
 /*
@@ -291,7 +312,6 @@ void RDMCommandTest::testOutputStream() {
                         destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
@@ -314,7 +334,6 @@ void RDMCommandTest::testOutputStream() {
                          destination,
                          0,  // transaction #
                          1,  // port id
-                         0,  // message count
                          10,  // sub device
                          296,  // param id
                          reinterpret_cast<uint8_t*>(&data_value),  // data
@@ -350,7 +369,6 @@ void RDMCommandTest::testIOStack() {
                         destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
@@ -372,7 +390,6 @@ void RDMCommandTest::testIOStack() {
                          destination,
                          0,  // transaction #
                          1,  // port id
-                         0,  // message count
                          10,  // sub device
                          296,  // param id
                          reinterpret_cast<uint8_t*>(&data_value),  // data
@@ -409,39 +426,44 @@ void RDMCommandTest::testRequestInflation() {
   command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0));
   OLA_ASSERT_NULL(command.get());
 
-  command.reset(RDMRequest::InflateFromData(
-      EXPECTED_GET_BUFFER,
-      sizeof(EXPECTED_GET_BUFFER)));
+  command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER,
+                                            sizeof(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());
 
   RDMGetRequest expected_command(source,
                                  destination,
                                  0,  // transaction #
                                  1,  // port id
-                                 0,  // message count
                                  10,  // sub device
                                  296,  // param id
                                  NULL,  // data
                                  0);  // data length
   OLA_ASSERT_TRUE(CommandsEqual(expected_command, *command));
 
+  // Try the string version
   string get_request_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
                          sizeof(EXPECTED_GET_BUFFER));
   command.reset(RDMRequest::InflateFromData(get_request_str));
   OLA_ASSERT_NOT_NULL(command.get());
   OLA_ASSERT_TRUE(CommandsEqual(expected_command, *command));
 
-  // now try a set request
-  command.reset(RDMRequest::InflateFromData(
-      EXPECTED_SET_BUFFER,
-      sizeof(EXPECTED_SET_BUFFER)));
+  // An invalid Command class
+  string invalid_command_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
+                             sizeof(EXPECTED_GET_BUFFER));
+  invalid_command_str[19] = 0x44;
+  command.reset(RDMRequest::InflateFromData(invalid_command_str));
+  OLA_ASSERT_NULL(command.get());
+
+  // A set request
+  command.reset(RDMRequest::InflateFromData(EXPECTED_SET_BUFFER,
+                                            sizeof(EXPECTED_SET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());
   uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
 
-  // set request as a string
+  // A set request as a string
   string set_request_string(reinterpret_cast<char*>(EXPECTED_SET_BUFFER),
                             sizeof(EXPECTED_SET_BUFFER));
   command.reset(RDMRequest::InflateFromData(set_request_string));
@@ -450,40 +472,37 @@ void RDMCommandTest::testRequestInflation() {
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
 
-  // change the param length and make sure the checksum fails
+  // Change the param length and make sure the checksum fails
   uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_BUFFER)];
   memcpy(bad_packet, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
   bad_packet[22] = 255;
 
-  command.reset(RDMRequest::InflateFromData(
-      bad_packet,
-      sizeof(EXPECTED_GET_BUFFER)));
+  command.reset(RDMRequest::InflateFromData(bad_packet,
+                                            sizeof(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NULL(command.get());
 
   get_request_str[22] = 255;
   command.reset(RDMRequest::InflateFromData(get_request_str));
   OLA_ASSERT_NULL(command.get());
 
-  // now make sure we can't pass a bad param length larger than the buffer
+  // Make sure we can't pass a bad param length larger than the buffer
   UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(
-      bad_packet,
-      sizeof(EXPECTED_GET_BUFFER)));
+  command.reset(RDMRequest::InflateFromData(bad_packet,
+                                            sizeof(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NULL(command.get());
   delete[] bad_packet;
 
-  // change the param length of another packet and make sure the checksum fails
+  // Change the param length of another packet and make sure the checksum fails
   bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
   memcpy(bad_packet, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   bad_packet[22] = 5;
   UpdateChecksum(bad_packet, sizeof(EXPECTED_SET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(
-      bad_packet,
-      sizeof(EXPECTED_SET_BUFFER)));
+  command.reset(RDMRequest::InflateFromData(bad_packet,
+                                            sizeof(EXPECTED_SET_BUFFER)));
   OLA_ASSERT_NULL(command.get());
   delete[] bad_packet;
 
-  // now try to inflate a response
+  // Try to inflate a response
   command.reset(RDMRequest::InflateFromData(
       EXPECTED_GET_RESPONSE_BUFFER,
       sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
@@ -651,7 +670,6 @@ void RDMCommandTest::testNackWithReason() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -691,7 +709,6 @@ void RDMCommandTest::testNackWithReason() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -721,7 +738,6 @@ void RDMCommandTest::testGetResponseFromData() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -745,7 +761,6 @@ void RDMCommandTest::testGetResponseFromData() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -975,7 +990,6 @@ void RDMCommandTest::testPack() {
                             destination,
                             99,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -1101,7 +1115,6 @@ void RDMCommandTest::testCommandInflation() {
                                  destination,
                                  0,  // transaction #
                                  1,  // port id
-                                 0,  // message count
                                  10,  // sub device
                                  296,  // param id
                                  NULL,  // data

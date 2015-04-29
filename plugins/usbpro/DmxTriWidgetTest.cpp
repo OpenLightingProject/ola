@@ -191,7 +191,6 @@ RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       data,
@@ -211,7 +210,6 @@ RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       ola::rdm::PID_QUEUED_MESSAGE,
       &code,

@@ -331,7 +331,6 @@ RDMRequest *QueueingRDMControllerTest::NewGetRequest(const UID &source,
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,  // data

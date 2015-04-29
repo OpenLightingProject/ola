@@ -203,7 +203,6 @@ RDMRequest *ArduinoWidgetTest::NewRequest(const UID &destination,
       destination,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       data,

@@ -183,7 +183,6 @@ RDMRequest *DmxterWidgetTest::NewRequest(const UID &source,
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       data,
@@ -319,7 +318,6 @@ void DmxterWidgetTest::testSendRDMMute() {
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_MUTE,  // param id
       NULL,
@@ -387,7 +385,6 @@ void DmxterWidgetTest::testSendRDMDUB() {
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
       REQUEST_DATA,
@@ -430,7 +427,6 @@ void DmxterWidgetTest::testSendRDMDUB() {
       destination,
       1,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
       REQUEST_DATA,
