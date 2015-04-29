@@ -509,6 +509,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
   
+  // i don't know how this works.. but it works ;-)
   const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
   
@@ -541,9 +542,10 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
       g = buffer.Get(offset + 1);
       b = buffer.Get(offset + 2);
     }
-    // first Byte consists off:
+    // first Byte contains:
     // 3bit start mark (111) + 5bit GlobalBrightnes
     // set GlobalBrightnes fixed to 31 --> that reduces flickering
+	// that can be written as 0xE0 & 0x1F
     output[spi_offset + 0] = 0xFF;
     output[spi_offset + 1] = b;
     output[spi_offset + 2] = g;
@@ -557,8 +559,6 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   
   const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
-  
-  OLA_INFO << "Test Text first_slot" << first_slot;
   
   // check if enough data is there.
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
@@ -576,15 +576,20 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
     return;
   
   // create Pixel Data
-  uint8_t pixel_data[P9813_SPI_BYTES_PER_PIXEL];
-  pixel_data[0] = 0xFF;
+  uint8_t pixel_data[APA102_SPI_BYTES_PER_PIXEL];
+  pixel_data[0] = 0xff;
   pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
   pixel_data[3] = buffer.Get(first_slot);  // Get Red
   
-  OLA_INFO << "Not implemented yet.";
-  OLA_INFO << "pixel_dat" << pixel_data;
-  return;
+  // set all pixel to same value
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    memcpy(&output[(i + 1) * APA102_SPI_BYTES_PER_PIXEL], pixel_data,
+           APA102_SPI_BYTES_PER_PIXEL);
+  }
+  
+  // write output back...
+  m_backend->Commit(m_output_number);
 }
 
 
