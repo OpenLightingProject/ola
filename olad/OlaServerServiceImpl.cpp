@@ -792,7 +792,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
     ola::proto::RDMResponse* response,
     ola::rpc::RpcService::CompletionCallback* done,
     bool include_raw_packets,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const RDMResponse *rdm_response,
     const vector<string> &packets) {
   ClosureRunner runner(done);

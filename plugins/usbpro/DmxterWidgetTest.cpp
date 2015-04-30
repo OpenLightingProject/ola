@@ -80,12 +80,12 @@ class DmxterWidgetTest: public CommonWidgetTest {
     m_ss.Terminate();
   }
   void ValidateTod(const ola::rdm::UIDSet &uids);
-  void ValidateResponse(ola::rdm::rdm_response_code code,
+  void ValidateResponse(ola::rdm::RDMStatusCode code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
-  void ValidateStatus(ola::rdm::rdm_response_code expected_code,
+  void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
                       vector<string> expected_packets,
-                      ola::rdm::rdm_response_code code,
+                      ola::rdm::RDMStatusCode code,
                       const ola::rdm::RDMResponse *response,
                       const vector<string> &packets);
   RDMRequest *NewRequest(const UID &source,
@@ -130,7 +130,7 @@ void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
  * Check the response matches what we expected.
  */
 void DmxterWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
@@ -141,7 +141,7 @@ void DmxterWidgetTest::ValidateResponse(
                          response->ParamDataSize()));
 
   OLA_ASSERT_EQ((size_t) 1, packets.size());
-  ola::rdm::rdm_response_code raw_code;
+  ola::rdm::RDMStatusCode raw_code;
   ola::rdm::RDMResponse *raw_response =
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code);
   OLA_ASSERT_TRUE(CommandsEqual(*raw_response, *response));
@@ -155,9 +155,9 @@ void DmxterWidgetTest::ValidateResponse(
  * Check that we got an unknown UID code
  */
 void DmxterWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_code expected_code,
+    ola::rdm::RDMStatusCode expected_code,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);

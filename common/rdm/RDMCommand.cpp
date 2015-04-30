@@ -160,14 +160,14 @@ void RDMCommand::Write(ola::io::OutputStream *stream) const {
 RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
   RDMCommandClass command_class = GuessMessageType(data, length);
 
-  rdm_response_code response_code = RDM_COMPLETED_OK;
+  RDMStatusCode status_code = RDM_COMPLETED_OK;
   switch (command_class) {
     case RDMCommand::GET_COMMAND:
     case RDMCommand::SET_COMMAND:
       return RDMRequest::InflateFromData(data, length);
     case RDMCommand::GET_COMMAND_RESPONSE:
     case RDMCommand::SET_COMMAND_RESPONSE:
-      return RDMResponse::InflateFromData(data, length, &response_code);
+      return RDMResponse::InflateFromData(data, length, &status_code);
     case RDMCommand::DISCOVER_COMMAND:
       return RDMDiscoveryRequest::InflateFromData(data, length);
     case RDMCommand::DISCOVER_COMMAND_RESPONSE:
@@ -209,9 +209,9 @@ void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
  * @param data the raw RDM data, starting from the sub-start-code
  * @param length the length of the data
  * @param command_header the RDMCommandHeader struct to copy the data to
- * @return a rdm_response_code
+ * @return a RDMStatusCode
  */
-rdm_response_code RDMCommand::VerifyData(
+RDMStatusCode RDMCommand::VerifyData(
     const uint8_t *data,
     unsigned int length,
     RDMCommandHeader *command_header) {
@@ -342,8 +342,8 @@ uint16_t RDMRequest::Checksum(uint16_t checksum) const {
 RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
                                         unsigned int length) {
   RDMCommandHeader command_message;
-  rdm_response_code code = VerifyData(data, length, &command_message);
-  if (code != RDM_COMPLETED_OK)
+  RDMStatusCode status_code = VerifyData(data, length, &command_message);
+  if (status_code != RDM_COMPLETED_OK)
     return NULL;
 
   uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
@@ -412,30 +412,30 @@ RDMRequest* RDMRequest::InflateFromData(const string &data) {
  * Inflate a request from some data
  * @param data the request data
  * @param length the length of the request data
- * @param response_code a pointer to a rdm_response_code to set
+ * @param status_code a pointer to a RDMStatusCode to set
  * @param request an optional RDMRequest object that this response is for
  * @returns a new RDMResponse object, or NULL is this response is invalid
  */
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
                                           unsigned int length,
-                                          rdm_response_code *response_code,
+                                          RDMStatusCode *status_code,
                                           const RDMRequest *request) {
   if (request)
-    return InflateFromData(data, length, response_code, request,
+    return InflateFromData(data, length, status_code, request,
                            request->TransactionNumber());
   else
-    return InflateFromData(data, length, response_code, request, 0);
+    return InflateFromData(data, length, status_code, request, 0);
 }
 
 
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
                                           unsigned int length,
-                                          rdm_response_code *response_code,
+                                          RDMStatusCode *status_code,
                                           const RDMRequest *request,
                                           uint8_t transaction_number) {
   RDMCommandHeader command_message;
-  *response_code = VerifyData(data, length, &command_message);
-  if (*response_code != RDM_COMPLETED_OK)
+  *status_code = VerifyData(data, length, &command_message);
+  if (*status_code != RDM_COMPLETED_OK)
     return NULL;
 
   UID source_uid(command_message.source_uid);
@@ -450,7 +450,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     if (request->SourceUID() != destination_uid) {
       OLA_WARN << "The destination UID in the response doesn't match, got " <<
         destination_uid << ", expected " << request->SourceUID();
-      *response_code = RDM_DEST_UID_MISMATCH;
+      *status_code = RDM_DEST_UID_MISMATCH;
       return NULL;
     }
 
@@ -458,7 +458,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     if (request->DestinationUID() != source_uid) {
       OLA_WARN << "The source UID in the response doesn't match, got " <<
         source_uid << ", expected " << request->DestinationUID();
-      *response_code = RDM_SRC_UID_MISMATCH;
+      *status_code = RDM_SRC_UID_MISMATCH;
       return NULL;
     }
 
@@ -467,7 +467,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       OLA_WARN << "Transaction numbers don't match, got " <<
         static_cast<int>(command_message.transaction_number) << ", expected "
         << static_cast<int>(transaction_number);
-      *response_code = RDM_TRANSACTION_MISMATCH;
+      *status_code = RDM_TRANSACTION_MISMATCH;
       return NULL;
     }
 
@@ -478,7 +478,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
          request->ParamId() != PID_QUEUED_MESSAGE) {
       OLA_WARN << "Sub device didn't match, got " << sub_device <<
         ", expected " << request->SubDevice();
-      *response_code = RDM_SUB_DEVICE_MISMATCH;
+      *status_code = RDM_SUB_DEVICE_MISMATCH;
       return NULL;
     }
 
@@ -488,7 +488,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
         request->ParamId() != PID_QUEUED_MESSAGE) {
       OLA_WARN << "Expected GET_COMMAND_RESPONSE, got 0x" << std::hex <<
         command_class;
-      *response_code = RDM_COMMAND_CLASS_MISMATCH;
+      *status_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
 
@@ -496,7 +496,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
         command_class != SET_COMMAND_RESPONSE) {
       OLA_WARN << "Expected SET_COMMAND_RESPONSE, got 0x" << std::hex <<
         command_class;
-      *response_code = RDM_COMMAND_CLASS_MISMATCH;
+      *status_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
 
@@ -504,7 +504,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
         command_class != DISCOVER_COMMAND_RESPONSE) {
       OLA_WARN << "Expected DISCOVER_COMMAND_RESPONSE, got 0x" << std::hex <<
         command_class;
-      *response_code = RDM_COMMAND_CLASS_MISMATCH;
+      *status_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
   }
@@ -512,7 +512,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
   // check response type
   if (command_message.port_id > ACK_OVERFLOW) {
     OLA_WARN << "Response type isn't valid, got " << command_message.port_id;
-    *response_code = RDM_INVALID_RESPONSE_TYPE;
+    *status_code = RDM_INVALID_RESPONSE_TYPE;
     return NULL;
   }
 
@@ -523,7 +523,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 
   switch (command_class) {
     case DISCOVER_COMMAND_RESPONSE:
-      *response_code = RDM_COMPLETED_OK;
+      *status_code = RDM_COMPLETED_OK;
       return new RDMDiscoveryResponse(
           source_uid,
           destination_uid,
@@ -535,7 +535,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
           data + sizeof(RDMCommandHeader),
           command_message.param_data_length);  // data length
     case GET_COMMAND_RESPONSE:
-      *response_code = RDM_COMPLETED_OK;
+      *status_code = RDM_COMPLETED_OK;
       return new RDMGetResponse(
           source_uid,
           destination_uid,
@@ -547,7 +547,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
           data + sizeof(RDMCommandHeader),
           command_message.param_data_length);  // data length
     case SET_COMMAND_RESPONSE:
-      *response_code = RDM_COMPLETED_OK;
+      *status_code = RDM_COMPLETED_OK;
       return new RDMSetResponse(
           source_uid,
           destination_uid,
@@ -561,7 +561,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     default:
       OLA_WARN << "Command class isn't valid, got 0x" << std::hex <<
         command_class;
-      *response_code = RDM_INVALID_COMMAND_CLASS;
+      *status_code = RDM_INVALID_COMMAND_CLASS;
       return NULL;
   }
 }
@@ -571,12 +571,10 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
  * Inflate from some data
  */
 RDMResponse* RDMResponse::InflateFromData(const string &data,
-                                          rdm_response_code *response_code,
+                                          RDMStatusCode *status_code,
                                           const RDMRequest *request) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size(),
-                         response_code,
-                         request);
+                         data.size(), status_code, request);
 }
 
 
@@ -584,14 +582,11 @@ RDMResponse* RDMResponse::InflateFromData(const string &data,
  * Inflate from some data
  */
 RDMResponse* RDMResponse::InflateFromData(const string &data,
-                                          rdm_response_code *response_code,
+                                          RDMStatusCode *status_code,
                                           const RDMRequest *request,
                                           uint8_t transaction_number) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size(),
-                         response_code,
-                         request,
-                         transaction_number);
+                         data.size(), status_code, request, transaction_number);
 }
 
 RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
@@ -653,8 +648,8 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason_enum,
                             uint8_t outstanding_messages) {
-  uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
-    reason_enum));
+  uint16_t reason = ola::network::HostToNetwork(
+      static_cast<uint16_t>(reason_enum));
   return GetResponseFromData(request,
                              reinterpret_cast<uint8_t*>(&reason),
                              sizeof(reason),
@@ -732,7 +727,7 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
     const uint8_t *data,
     unsigned int length) {
   RDMCommandHeader command_message;
-  rdm_response_code code = VerifyData(data, length, &command_message);
+  RDMStatusCode code = VerifyData(data, length, &command_message);
   if (code != RDM_COMPLETED_OK)
     return NULL;
 
@@ -842,7 +837,7 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
     const uint8_t *data,
     unsigned int length) {
   RDMCommandHeader command_message;
-  rdm_response_code code = VerifyData(data, length, &command_message);
+  RDMStatusCode code = VerifyData(data, length, &command_message);
   if (code != RDM_COMPLETED_OK)
     return NULL;
 

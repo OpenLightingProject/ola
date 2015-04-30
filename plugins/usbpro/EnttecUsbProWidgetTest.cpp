@@ -52,19 +52,15 @@ using ola::plugin::usbpro::usb_pro_parameters;
 
 class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(EnttecUsbProWidgetTest);
-  /*
   CPPUNIT_TEST(testParams);
   CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testChangeMode);
-  */
   CPPUNIT_TEST(testSendRDMRequest);
-  /*
   CPPUNIT_TEST(testSendRDMMute);
   CPPUNIT_TEST(testSendRDMDUB);
   CPPUNIT_TEST(testMuteDevice);
   CPPUNIT_TEST(testUnMuteAll);
   CPPUNIT_TEST(testBranch);
-  */
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -83,19 +79,19 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
  private:
     auto_ptr<EnttecUsbProWidget> m_widget;
     uint8_t m_transaction_number;
-    ola::rdm::rdm_response_code m_received_code;
+    ola::rdm::RDMStatusCode m_received_code;
 
     RDMRequest *NewRequest(const UID &destination,
                            const uint8_t *data = NULL,
                            unsigned int length = 0);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
-    void ValidateResponse(ola::rdm::rdm_response_code code,
+    void ValidateResponse(ola::rdm::RDMStatusCode code,
                           const ola::rdm::RDMResponse *response,
                           const vector<string> &packets);
-    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
+    void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
                         vector<string> expected_packets,
-                        ola::rdm::rdm_response_code code,
+                        ola::rdm::RDMStatusCode code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
     void ValidateMuteStatus(bool expected,
@@ -211,7 +207,7 @@ uint8_t *EnttecUsbProWidgetTest::PackRDMResponse(const RDMResponse *response,
  * Check the response matches what we expected.
  */
 void EnttecUsbProWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
@@ -223,7 +219,7 @@ void EnttecUsbProWidgetTest::ValidateResponse(
                              response->ParamDataSize()));
 
   OLA_ASSERT_EQ((size_t) 1, packets.size());
-  ola::rdm::rdm_response_code raw_code;
+  ola::rdm::RDMStatusCode raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
   OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
@@ -241,9 +237,9 @@ void EnttecUsbProWidgetTest::ValidateResponse(
  * @param packets the actual packets involved
  */
 void EnttecUsbProWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_code expected_code,
+    ola::rdm::RDMStatusCode expected_code,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);

@@ -274,7 +274,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     return;
   }
 
-  ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
+  ola::rdm::RDMStatusCode code = ola::rdm::RDM_COMPLETED_OK;
   switch (response_code) {
     case RC_CHECKSUM_ERROR:
       code = ola::rdm::RDM_CHECKSUM_INCORRECT;

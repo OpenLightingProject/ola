@@ -119,7 +119,7 @@ void SubDeviceDispatcher::NackIfNotBroadcast(
  */
 void SubDeviceDispatcher::HandleSubDeviceResponse(
     FanOutTracker *tracker,
-    rdm_response_code code,
+    RDMStatusCode code,
     const RDMResponse *response_ptr,
     const std::vector<std::string> &packets) {
   std::auto_ptr<const RDMResponse> response(response_ptr);
@@ -143,21 +143,21 @@ SubDeviceDispatcher::FanOutTracker::FanOutTracker(
     : m_number_of_subdevices(number_of_subdevices),
       m_responses_so_far(0),
       m_callback(callback),
-      m_response_code(RDM_COMPLETED_OK),
+      m_status_code(RDM_COMPLETED_OK),
       m_response(NULL) {
 }
 
 void SubDeviceDispatcher::FanOutTracker::SetResponse(
-    rdm_response_code code,
+    RDMStatusCode code,
     const RDMResponse *response) {
-  m_response_code = code;
+  m_status_code = code;
   m_response = response;
 }
 
 void SubDeviceDispatcher::FanOutTracker::RunCallback() {
   vector<string> packets;
   if (m_callback) {
-    m_callback->Run(m_response_code, m_response, packets);
+    m_callback->Run(m_status_code, m_response, packets);
   }
   m_callback = NULL;
 }

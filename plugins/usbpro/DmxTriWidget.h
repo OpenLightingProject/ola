@@ -149,11 +149,11 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
                                  unsigned int length);
     bool PendingTransaction() const;
     void MaybeSendNextRequest();
-    void HandleRDMError(ola::rdm::rdm_response_code error_code);
+    void HandleRDMError(ola::rdm::RDMStatusCode error_code);
     bool SendCommandToTRI(uint8_t label, const uint8_t *data,
                           unsigned int length);
     bool TriToOlaReturnCode(uint8_t return_code,
-                            ola::rdm::rdm_response_code *code);
+                            ola::rdm::RDMStatusCode *code);
     bool ReturnCodeToNackReason(uint8_t return_code,
                                 ola::rdm::rdm_nack_reason *reason);
 

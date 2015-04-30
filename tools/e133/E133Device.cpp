@@ -57,9 +57,9 @@ using std::string;
 using std::vector;
 
 // TODO(simon): At some point move this to a common E1.33 library.
-ola::e133::E133StatusCode RDMResponseCodeToE133Status(
-    ola::rdm::rdm_response_code response_code) {
-  switch (response_code) {
+ola::e133::E133StatusCode RDMStatusCodeToE133Status(
+    ola::rdm::RDMStatusCode status_code) {
+  switch (status_code) {
     case ola::rdm::RDM_COMPLETED_OK:
       return ola::e133::SC_E133_ACK;
     case ola::rdm::RDM_WAS_BROADCAST:
@@ -254,17 +254,17 @@ void E133Device::EndpointRequestComplete(
     ola::network::IPV4SocketAddress target,
     uint32_t sequence_number,
     uint16_t endpoint_id,
-    ola::rdm::rdm_response_code response_code,
+    ola::rdm::RDMStatusCode status_code,
     const ola::rdm::RDMResponse *response_ptr,
     const vector<string>&) {
   auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
 
-  if (response_code != ola::rdm::RDM_COMPLETED_OK) {
-    string description = ola::rdm::ResponseCodeToString(response_code);
-    ola::e133::E133StatusCode status_code = RDMResponseCodeToE133Status(
-        response_code);
+  if (status_code != ola::rdm::RDM_COMPLETED_OK) {
+    string description = ola::rdm::ResponseCodeToString(status_code);
+    ola::e133::E133StatusCode e133_status_code = RDMStatusCodeToE133Status(
+        status_code);
     SendStatusMessage(target, sequence_number, endpoint_id,
-                      status_code, description);
+                      e133_status_code, description);
     return;
   }
 

@@ -325,12 +325,12 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   packets.push_back(packet);
 
   // try to inflate
-  ola::rdm::rdm_response_code response_code;
+  ola::rdm::RDMStatusCode status_code;
   RDMResponse *response = RDMResponse::InflateFromData(
       packet,
-      &response_code,
+      &status_code,
       request.get());
-  callback->Run(response_code, response, packets);
+  callback->Run(status_code, response, packets);
 }
 
 

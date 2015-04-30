@@ -62,7 +62,7 @@ void ClientBroker::SendRDMRequest(const Client *client,
  */
 void ClientBroker::RequestComplete(const Client *client,
                                    ola::rdm::RDMCallback *callback,
-                                   ola::rdm::rdm_response_code code,
+                                   ola::rdm::RDMStatusCode code,
                                    const ola::rdm::RDMResponse *response,
                                    const vector<string> &packets) {
   if (!STLContains(m_clients, client)) {

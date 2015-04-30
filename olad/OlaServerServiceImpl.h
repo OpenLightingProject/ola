@@ -253,7 +253,7 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   void HandleRDMResponse(ola::proto::RDMResponse* response,
                          ola::rpc::RpcService::CompletionCallback* done,
                          bool include_raw_packets,
-                         ola::rdm::rdm_response_code code,
+                         ola::rdm::RDMStatusCode code,
                          const ola::rdm::RDMResponse *rdm_response,
                          const std::vector<std::string> &packets);
   void RDMDiscoveryComplete(unsigned int universe,

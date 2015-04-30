@@ -212,7 +212,7 @@ class RDMCommand {
 
   void SetParamData(const uint8_t *data, unsigned int length);
 
-  static rdm_response_code VerifyData(
+  static RDMStatusCode VerifyData(
       const uint8_t *data,
       unsigned int length,
       RDMCommandHeader *command_message);
@@ -550,18 +550,18 @@ class RDMResponse: public RDMCommand {
   // Convert a block of data to an RDMResponse object
   static RDMResponse* InflateFromData(const uint8_t *data,
                                       unsigned int length,
-                                      rdm_response_code *response_code,
+                                      RDMStatusCode *status_code,
                                       const RDMRequest *request = NULL);
   static RDMResponse* InflateFromData(const uint8_t *data,
                                       unsigned int length,
-                                      rdm_response_code *response_code,
+                                      RDMStatusCode *status_code,
                                       const RDMRequest *request,
                                       uint8_t transaction_number);
   static RDMResponse* InflateFromData(const std::string &data,
-                                      rdm_response_code *response_code,
+                                      RDMStatusCode *status_code,
                                       const RDMRequest *request = NULL);
   static RDMResponse* InflateFromData(const std::string &data,
-                                      rdm_response_code *response_code,
+                                      RDMStatusCode *status_code,
                                       const RDMRequest *request,
                                       uint8_t transaction_number);
 

@@ -556,7 +556,7 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
 void RDMCommandTest::testResponseInflation() {
   UID source(1, 2);
   UID destination(3, 4);
-  ola::rdm::rdm_response_code code;
+  ola::rdm::RDMStatusCode code;
   RDMResponse *command = RDMResponse::InflateFromData(NULL, 10, &code);
   OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
   OLA_ASSERT_EQ(ola::rdm::RDM_PACKET_TOO_SHORT, code);

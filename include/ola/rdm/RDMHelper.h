@@ -37,7 +37,14 @@
 namespace ola {
 namespace rdm {
 
-std::string ResponseCodeToString(rdm_response_code status);
+std::string StatusCodeToString(RDMStatusCode status);
+
+/**
+ * @deprecated Use StatusCodeToString instead.
+ */
+inline std::string ResponseCodeToString(RDMStatusCode status) {
+  return StatusCodeToString(status);
+}
 
 std::string DataTypeToString(uint8_t type);
 std::string LampModeToString(uint8_t lamp_mode);

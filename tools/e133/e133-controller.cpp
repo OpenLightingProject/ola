@@ -318,11 +318,11 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
 void SimpleE133Controller::HandlePacket(
     const ola::e133::E133RDMMessage &rdm_message) {
   OLA_INFO << "RDM callback executed with code: " <<
-    ola::rdm::ResponseCodeToString(rdm_message.response_code);
+    ola::rdm::StatusCodeToString(rdm_message.status_code);
 
   m_ss.Terminate();
 
-  if (rdm_message.response_code != ola::rdm::RDM_COMPLETED_OK)
+  if (rdm_message.status_code != ola::rdm::RDM_COMPLETED_OK)
     return;
 
   switch (rdm_message.response->ResponseType()) {

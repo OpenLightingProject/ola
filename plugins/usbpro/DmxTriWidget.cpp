@@ -716,7 +716,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
     return;
   }
 
-  ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
+  ola::rdm::RDMStatusCode code = ola::rdm::RDM_COMPLETED_OK;
   ola::rdm::RDMResponse *response =
     ola::rdm::RDMResponse::InflateFromData(data, length, &code, request.get());
   callback->Run(code, response, packets);
@@ -792,7 +792,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
   }
 
   ola::rdm::RDMResponse *response = NULL;
-  ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
+  ola::rdm::RDMStatusCode code = ola::rdm::RDM_COMPLETED_OK;
   ola::rdm::rdm_nack_reason reason;
 
   if (ReturnCodeToNackReason(return_code, &reason)) {
@@ -909,7 +909,7 @@ void DmxTriWidgetImpl::MaybeSendNextRequest() {
  * Return an error on the RDM callback and handle the clean up. This assumes
  * that m_pending_rdm_request and m_rdm_request_callback are non-null.
  */
-void DmxTriWidgetImpl::HandleRDMError(ola::rdm::rdm_response_code error_code) {
+void DmxTriWidgetImpl::HandleRDMError(ola::rdm::RDMStatusCode error_code) {
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   delete m_pending_rdm_request;
   m_pending_rdm_request = NULL;
@@ -934,12 +934,12 @@ bool DmxTriWidgetImpl::SendCommandToTRI(uint8_t label, const uint8_t *data,
 }
 
 /**
- * Convert a DMX TRI return code to the appropriate rdm_response_code
+ * Convert a DMX TRI return code to the appropriate RDMStatusCode
  * @return true if this was a matching code, false otherwise
  */
 bool DmxTriWidgetImpl::TriToOlaReturnCode(
     uint8_t return_code,
-    ola::rdm::rdm_response_code *code) {
+    ola::rdm::RDMStatusCode *code) {
   switch (return_code) {
     case EC_RESPONSE_TRANSACTION:
       *code = ola::rdm::RDM_TRANSACTION_MISMATCH;

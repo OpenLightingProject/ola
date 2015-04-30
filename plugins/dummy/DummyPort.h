@@ -100,7 +100,7 @@ class DummyPort: public BasicOutputPort {
 
   void RunDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                          ola::rdm::rdm_response_code code,
+                          ola::rdm::RDMStatusCode code,
                           const ola::rdm::RDMResponse *response,
                           const std::vector<std::string> &packets);
 

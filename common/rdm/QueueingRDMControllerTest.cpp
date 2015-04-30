@@ -75,11 +75,11 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
     void testRequestAndDiscovery();
 
     void VerifyResponse(
-        ola::rdm::rdm_response_code expected_code,
+        ola::rdm::RDMStatusCode expected_code,
         const RDMResponse *expected_response,
         vector<string> expected_packets,
         bool delete_response,
-        ola::rdm::rdm_response_code code,
+        ola::rdm::RDMStatusCode code,
         const RDMResponse *response,
         const vector<string> &packets);
 
@@ -113,7 +113,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
     void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
     void AddExpectedCall(RDMRequest *request,
-                         ola::rdm::rdm_response_code code,
+                         ola::rdm::RDMStatusCode code,
                          RDMResponse *response,
                          const string &packet,
                          bool run_callback = true);
@@ -123,7 +123,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
     void RunFullDiscovery(RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
 
-    void RunRDMCallback(ola::rdm::rdm_response_code code,
+    void RunRDMCallback(ola::rdm::RDMStatusCode code,
                         RDMResponse *response,
                         const string &packet);
     void RunDiscoveryCallback(const UIDSet &uids);
@@ -132,7 +132,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
  private:
     typedef struct {
       RDMRequest *request;
-      ola::rdm::rdm_response_code code;
+      ola::rdm::RDMStatusCode code;
       RDMResponse *response;
       string packet;
       bool run_callback;
@@ -201,7 +201,7 @@ void MockRDMController::RunIncrementalDiscovery(
 
 
 void MockRDMController::AddExpectedCall(RDMRequest *request,
-                                        ola::rdm::rdm_response_code code,
+                                        ola::rdm::RDMStatusCode code,
                                         RDMResponse *response,
                                         const string &packet,
                                         bool run_callback) {
@@ -229,7 +229,7 @@ void MockRDMController::AddExpectedDiscoveryCall(bool full,
 /**
  * Run the current RDM callback
  */
-void MockRDMController::RunRDMCallback(ola::rdm::rdm_response_code code,
+void MockRDMController::RunRDMCallback(ola::rdm::RDMStatusCode code,
                                        RDMResponse *response,
                                        const string &packet) {
   vector<string> packets;
@@ -272,11 +272,11 @@ void QueueingRDMControllerTest::setUp() {
  * Verify a response
  */
 void QueueingRDMControllerTest::VerifyResponse(
-    ola::rdm::rdm_response_code expected_code,
+    ola::rdm::RDMStatusCode expected_code,
     const RDMResponse *expected_response,
     vector<string> expected_packets,
     bool delete_response,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);

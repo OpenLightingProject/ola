@@ -159,7 +159,7 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
   ola::rdm::RDMResponse* UnpackRDMResponse(
       const ola::rdm::RDMRequest *request,
       const std::string &payload,
-      ola::rdm::rdm_response_code *response_code);
+      ola::rdm::RDMStatusCode *status_code);
   void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                          OLA_UNUSED bool ok,
                          const ola::rdm::UIDSet &uids);

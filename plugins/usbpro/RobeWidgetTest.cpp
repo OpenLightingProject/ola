@@ -79,7 +79,7 @@ class RobeWidgetTest: public CommonWidgetTest {
  private:
     auto_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
     uint8_t m_transaction_number;
-    ola::rdm::rdm_response_code m_received_code;
+    ola::rdm::RDMStatusCode m_received_code;
     bool m_new_dmx_data;
 
     void Terminate() {
@@ -96,12 +96,12 @@ class RobeWidgetTest: public CommonWidgetTest {
                            unsigned int length = 0);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
-    void ValidateResponse(ola::rdm::rdm_response_code code,
+    void ValidateResponse(ola::rdm::RDMStatusCode code,
                           const ola::rdm::RDMResponse *response,
                           const vector<string> &packets);
-    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
+    void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
                         vector<string> expected_packets,
-                        ola::rdm::rdm_response_code code,
+                        ola::rdm::RDMStatusCode code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
     void ValidateMuteStatus(bool expected,
@@ -201,7 +201,7 @@ uint8_t *RobeWidgetTest::PackRDMResponse(const RDMResponse *response,
  * Check the response matches what we expected.
  */
 void RobeWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
@@ -213,7 +213,7 @@ void RobeWidgetTest::ValidateResponse(
                              response->ParamDataSize()));
 
   OLA_ASSERT_EQ((size_t) 1, packets.size());
-  ola::rdm::rdm_response_code raw_code;
+  ola::rdm::RDMStatusCode raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
   OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
@@ -231,9 +231,9 @@ void RobeWidgetTest::ValidateResponse(
  * @param packets the actual packets involved
  */
 void RobeWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_code expected_code,
+    ola::rdm::RDMStatusCode expected_code,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);

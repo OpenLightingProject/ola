@@ -3359,7 +3359,7 @@ bool RDMHTTPModule::CheckForRDMSuccessWithError(
   // TODO(simon): One day we should handle broadcast responses, ack timers etc.
   if (status.response_code != ola::rdm::RDM_COMPLETED_OK) {
     if (error) {
-      *error = ola::rdm::ResponseCodeToString(status.response_code);
+      *error = ola::rdm::StatusCodeToString(status.response_code);
     }
   } else {
     switch (status.response_type) {

@@ -110,7 +110,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
   }
 
   const RDMResponse *response = NULL;
-  rdm_response_code response_code = RDM_COMPLETED_OK;
+  RDMStatusCode status_code = RDM_COMPLETED_OK;
 
   // Right now we don't support sub devices
   bool for_our_subdevice = request->SubDevice() == sub_device ||
@@ -149,7 +149,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
   if (request->CommandClass() == RDMCommand::GET_COMMAND) {
     if (request->DestinationUID().IsBroadcast()) {
       // this should have been handled above, but be safe.
-      response_code = RDM_WAS_BROADCAST;
+      status_code = RDM_WAS_BROADCAST;
     } else {
       if (handler->get_handler) {
         response = (target->*(handler->get_handler))(request.get());
@@ -178,7 +178,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
     }
     on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
   } else {
-    on_complete->Run(response_code, response, packets);
+    on_complete->Run(status_code, response, packets);
   }
 }
 

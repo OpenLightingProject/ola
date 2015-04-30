@@ -93,10 +93,10 @@ class DummyPortTest: public CppUnit::TestFixture {
     m_expected_response = NULL;
     m_got_uids = false;
   }
-  void HandleRDMResponse(ola::rdm::rdm_response_code code,
+  void HandleRDMResponse(ola::rdm::RDMStatusCode code,
                          const RDMResponse *response,
                          const vector<string> &packets);
-  void SetExpectedResponse(ola::rdm::rdm_response_code code,
+  void SetExpectedResponse(ola::rdm::RDMStatusCode code,
                            const RDMResponse *response);
   void Verify() { OLA_ASSERT_FALSE(m_expected_response); }
 
@@ -115,7 +115,7 @@ class DummyPortTest: public CppUnit::TestFixture {
   UID m_expected_uid;
   UID m_test_source;
   MockDummyPort m_port;
-  ola::rdm::rdm_response_code m_expected_code;
+  ola::rdm::RDMStatusCode m_expected_code;
   const RDMResponse *m_expected_response;
   bool m_got_uids;
 
@@ -159,7 +159,7 @@ class DummyPortTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 
-void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
+void DummyPortTest::HandleRDMResponse(ola::rdm::RDMStatusCode code,
                                       const ola::rdm::RDMResponse *response,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
@@ -173,7 +173,7 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
   m_expected_response = NULL;
 }
 
-void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_response_code code,
+void DummyPortTest::SetExpectedResponse(ola::rdm::RDMStatusCode code,
                                         const RDMResponse *response) {
   m_expected_code = code;
   m_expected_response = response;

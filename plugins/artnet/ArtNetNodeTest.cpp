@@ -168,7 +168,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     m_rdm_callback = callback;
   }
 
-  void FinalizeRDM(ola::rdm::rdm_response_code status,
+  void FinalizeRDM(ola::rdm::RDMStatusCode status,
                    const RDMResponse *response,
                    const vector<string> &packets) {
     OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, status);
@@ -176,7 +176,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     (void) packets;
   }
 
-  void ExpectTimeout(ola::rdm::rdm_response_code status,
+  void ExpectTimeout(ola::rdm::RDMStatusCode status,
                      const RDMResponse *response,
                      const vector<string> &packets) {
     OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, status);

@@ -51,7 +51,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
-using ola::rdm::rdm_response_code;
+using ola::rdm::RDMStatusCode;
 using ola::strings::ToHex;
 using ola::thread::Thread;
 using ola::utils::JoinUInt8;
@@ -223,10 +223,10 @@ class MessageHandler : public JaRuleEndpoint::MessageHandlerInterface {
     }
 
     if (message.payload[0] == RDMCommand::START_CODE) {
-      rdm_response_code response_code;
+      RDMStatusCode status_code;
       // SKip over the start code.
       auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
-          message.payload + 1, message.payload_size - 1, &response_code));
+          message.payload + 1, message.payload_size - 1, &status_code));
 
       if (!response.get()) {
         OLA_WARN << "Failed to inflate RDM response";

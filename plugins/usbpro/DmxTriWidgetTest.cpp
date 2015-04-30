@@ -88,15 +88,15 @@ class DmxTriWidgetTest: public CommonWidgetTest {
     void AckSingleTxAndExpectData();
     void PopulateTod();
     void ValidateTod(const ola::rdm::UIDSet &uids);
-    void ValidateResponse(ola::rdm::rdm_response_code expected_code,
+    void ValidateResponse(ola::rdm::RDMStatusCode expected_code,
                           const RDMResponse *expected_response,
                           vector<string> expected_packets,
-                          ola::rdm::rdm_response_code code,
+                          ola::rdm::RDMStatusCode code,
                           const RDMResponse *response,
                           const vector<string> &packets);
-    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
+    void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
                         vector<string> expected_packets,
-                        ola::rdm::rdm_response_code code,
+                        ola::rdm::RDMStatusCode code,
                         const RDMResponse *response,
                         const vector<string> &packets);
     RDMRequest *NewRequest(const UID &source,
@@ -144,10 +144,10 @@ void DmxTriWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
  * Check the response matches what we expected.
  */
 void DmxTriWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_code expected_code,
+    ola::rdm::RDMStatusCode expected_code,
     const RDMResponse *expected_response,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);
@@ -165,9 +165,9 @@ void DmxTriWidgetTest::ValidateResponse(
  * Check that we got an unknown UID code
  */
 void DmxTriWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_code expected_code,
+    ola::rdm::RDMStatusCode expected_code,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);

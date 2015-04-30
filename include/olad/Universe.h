@@ -153,7 +153,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     typedef struct {
       unsigned int expected_count;
       unsigned int current_count;
-      ola::rdm::rdm_response_code response_code;
+      ola::rdm::RDMStatusCode status_code;
       ola::rdm::RDMCallback *callback;
       std::vector<std::string> packets;
     } broadcast_request_tracker;
@@ -182,11 +182,11 @@ class Universe: public ola::rdm::RDMControllerInterface {
     TimeStamp m_last_discovery_time;
 
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                            ola::rdm::rdm_response_code code,
+                            ola::rdm::RDMStatusCode code,
                             const ola::rdm::RDMResponse *response,
                             const std::vector<std::string> &packets);
     void HandleBroadcastDiscovery(broadcast_request_tracker *tracker,
-                                  ola::rdm::rdm_response_code code,
+                                  ola::rdm::RDMStatusCode code,
                                   const ola::rdm::RDMResponse *response,
                                   const std::vector<std::string> &packets);
     bool UpdateDependants();

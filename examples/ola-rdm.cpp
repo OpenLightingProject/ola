@@ -283,7 +283,7 @@ void RDMController::HandleResponse(
     return;
   } else if (response_status.response_code != ola::rdm::RDM_COMPLETED_OK) {
     cerr << "Error: " <<
-      ola::rdm::ResponseCodeToString(response_status.response_code) << endl;
+      ola::rdm::StatusCodeToString(response_status.response_code) << endl;
     m_ola_client.GetSelectServer()->Terminate();
     return;
   }

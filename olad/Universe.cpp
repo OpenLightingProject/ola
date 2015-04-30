@@ -465,7 +465,7 @@ void Universe::SendRDMRequest(RDMRequest *request_ptr,
     broadcast_request_tracker *tracker = new broadcast_request_tracker;
     tracker->expected_count = m_output_ports.size();
     tracker->current_count = 0;
-    tracker->response_code = (is_dub ?
+    tracker->status_code = (is_dub ?
         ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED :
         ola::rdm::RDM_WAS_BROADCAST);
     tracker->callback = callback;
@@ -796,13 +796,13 @@ void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
  * which point we run the callback for the client.
  */
 void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
-                                  ola::rdm::rdm_response_code code,
+                                  ola::rdm::RDMStatusCode code,
                                   const ola::rdm::RDMResponse *response,
                                   const vector<string> &packets) {
   tracker->current_count++;
   if (code != ola::rdm::RDM_WAS_BROADCAST)
     // propagate errors though
-    tracker->response_code = code;
+    tracker->status_code = code;
 
   if (response) {
     OLA_WARN << "Universe broadcast received response, this is an error";
@@ -811,7 +811,7 @@ void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
 
   if (tracker->current_count == tracker->expected_count) {
     // all ports have completed
-    tracker->callback->Run(tracker->response_code, NULL, packets);
+    tracker->callback->Run(tracker->status_code, NULL, packets);
     delete tracker;
   }
 }
@@ -832,22 +832,22 @@ void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
  */
 void Universe::HandleBroadcastDiscovery(
     broadcast_request_tracker *tracker,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
   tracker->current_count++;
 
   if (code == ola::rdm::RDM_DUB_RESPONSE) {
     // RDM_DUB_RESPONSE is the highest priority
-    tracker->response_code = ola::rdm::RDM_DUB_RESPONSE;
+    tracker->status_code = ola::rdm::RDM_DUB_RESPONSE;
   } else if (code == ola::rdm::RDM_TIMEOUT &&
-           tracker->response_code != ola::rdm::RDM_DUB_RESPONSE) {
+           tracker->status_code != ola::rdm::RDM_DUB_RESPONSE) {
     // RDM_TIMEOUT is the second highest
-    tracker->response_code = code;
-  } else if (tracker->response_code != ola::rdm::RDM_DUB_RESPONSE &&
-             tracker->response_code != ola::rdm::RDM_TIMEOUT) {
+    tracker->status_code = code;
+  } else if (tracker->status_code != ola::rdm::RDM_DUB_RESPONSE &&
+             tracker->status_code != ola::rdm::RDM_TIMEOUT) {
     // everything else follows
-    tracker->response_code = code;
+    tracker->status_code = code;
   }
 
   if (response) {
@@ -862,7 +862,7 @@ void Universe::HandleBroadcastDiscovery(
 
   if (tracker->current_count == tracker->expected_count) {
     // all ports have completed
-    tracker->callback->Run(tracker->response_code, NULL, tracker->packets);
+    tracker->callback->Run(tracker->status_code, NULL, tracker->packets);
     delete tracker;
   }
 }

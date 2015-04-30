@@ -83,7 +83,7 @@ class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
 
   void GetResponseStatusAndData(
       const Result &result,
-      ola::rdm::rdm_response_code response_code,
+      ola::rdm::RDMStatusCode status_code,
       const ola::rdm::RDMResponse *response,
       rdm::ResponseStatus *response_status,
       std::string *data);

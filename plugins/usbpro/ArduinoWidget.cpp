@@ -231,7 +231,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
   packet.assign(reinterpret_cast<const char*>(data + 2), length - 2);
   packets.push_back(packet);
 
-  ola::rdm::rdm_response_code code;
+  ola::rdm::RDMStatusCode code;
   ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
       packet,
       &code,

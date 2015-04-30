@@ -367,7 +367,7 @@ void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
       m_discovery_response_size = 0;
     }
   } else if (m_rdm_request_callback && m_pending_request) {
-    ola::rdm::rdm_response_code code;
+    ola::rdm::RDMStatusCode code;
     if (IsDUBRequest(m_pending_request))
         code = ola::rdm::RDM_TIMEOUT;
     else
@@ -479,11 +479,11 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
     m_pending_request = NULL;
 
     vector<string> packets;
-    ola::rdm::rdm_response_code response_code;
+    ola::rdm::RDMStatusCode status_code;
     ola::rdm::RDMResponse *response = NULL;
 
     if (waiting_for_dub_response) {
-      response_code = ola::rdm::RDM_DUB_RESPONSE;
+      status_code = ola::rdm::RDM_DUB_RESPONSE;
       packets.push_back(
           string(reinterpret_cast<const char*>(data), length));
     } else {
@@ -492,10 +492,10 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
       packets.push_back(packet);
       response = ola::rdm::RDMResponse::InflateFromData(
           packet,
-          &response_code,
+          &status_code,
           request);
     }
-    callback->Run(response_code, response, packets);
+    callback->Run(status_code, response, packets);
     delete request;
   }
 }

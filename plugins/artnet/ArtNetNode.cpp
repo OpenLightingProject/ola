@@ -1258,7 +1258,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     IPV4Address destination,
     uint8_t port_id,
     uint8_t universe_address,
-    ola::rdm::rdm_response_code code,
+    ola::rdm::RDMStatusCode code,
     const RDMResponse *raw_response,
     const vector<string>&) {
   auto_ptr<const RDMResponse> response(raw_response);
@@ -1286,7 +1286,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
 void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
                                        const string &response_data,
                                        const IPV4Address &source_address) {
-  ola::rdm::rdm_response_code code;
+  ola::rdm::RDMStatusCode code;
   auto_ptr<const RDMResponse> response(RDMResponse::InflateFromData(
       response_data, &code));
 

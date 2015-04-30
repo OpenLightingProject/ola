@@ -51,7 +51,6 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::DiscoverableQueueingRDMController;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using ola::rdm::rdm_response_code;
 using ola::strings::ToHex;
 using std::auto_ptr;
 using std::string;

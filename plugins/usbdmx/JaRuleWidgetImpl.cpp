@@ -59,7 +59,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using ola::rdm::rdm_response_code;
+using ola::rdm::RDMStatusCode;
 using ola::strings::ToHex;
 using std::auto_ptr;
 using std::string;
@@ -215,15 +215,15 @@ void JaRuleWidgetImpl::MuteDeviceComplete(MuteDeviceCallback *mute_complete,
       payload.size() > sizeof(GetSetTiming)) {
     // Skip the timing data & the start code.
     string mute_data = payload.substr(sizeof(GetSetTiming) + 1);
-    ola::rdm::rdm_response_code response_code = rdm::RDM_INVALID_RESPONSE;
+    ola::rdm::RDMStatusCode status_code = rdm::RDM_INVALID_RESPONSE;
     auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
           reinterpret_cast<const uint8_t*>(mute_data.data()),
-          mute_data.size(), &response_code));
+          mute_data.size(), &status_code));
 
     // TODO(simon): I guess we could ack timer the MUTE. Handle this case
     // someday.
     muted_ok = (
-        response_code == rdm::RDM_COMPLETED_OK &&
+        status_code == rdm::RDM_COMPLETED_OK &&
         response.get() &&
         response->CommandClass() == RDMCommand::DISCOVER_COMMAND_RESPONSE &&
         response->ResponseType() == rdm::RDM_ACK);
@@ -277,7 +277,7 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
   }
 
   JaRuleEndpoint::CommandClass command = GetCommandFromRequest(request.get());
-  ola::rdm::rdm_response_code response_code = rdm::RDM_INVALID_RESPONSE;
+  ola::rdm::RDMStatusCode status_code = rdm::RDM_INVALID_RESPONSE;
   ola::rdm::RDMResponse *response = NULL;
 
   if (command == JaRuleEndpoint::RDM_DUB &&
@@ -285,16 +285,16 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
     if (payload.size() > sizeof(DUBTiming)) {
       packets.push_back(payload.substr(sizeof(DUBTiming)));
     }
-    response_code = rdm::RDM_DUB_RESPONSE;
+    status_code = rdm::RDM_DUB_RESPONSE;
   } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
              return_code == RC_OK) {
-    response_code = rdm::RDM_WAS_BROADCAST;
+    status_code = rdm::RDM_WAS_BROADCAST;
   } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
              return_code == RC_RDM_BCAST_RESPONSE) {
     if (payload.size() > sizeof(GetSetTiming)) {
       response = UnpackRDMResponse(
           request.get(), payload.substr(sizeof(GetSetTiming)),
-          &response_code);
+          &status_code);
     }
   } else if (command == JaRuleEndpoint::RDM_REQUEST &&
              return_code == RC_OK) {
@@ -310,33 +310,33 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
                << "uS";
       response = UnpackRDMResponse(
           request.get(), payload.substr(sizeof(GetSetTiming)),
-          &response_code);
+          &status_code);
     }
   } else if (return_code == RC_RDM_TIMEOUT) {
-    response_code = rdm::RDM_TIMEOUT;
+    status_code = rdm::RDM_TIMEOUT;
   } else if (return_code == RC_TX_ERROR || return_code == RC_BUFFER_FULL) {
-    response_code = rdm::RDM_FAILED_TO_SEND;
+    status_code = rdm::RDM_FAILED_TO_SEND;
   } else {
     OLA_WARN << "Unknown Ja Rule RDM RC: " << ToHex(return_code);
-    response_code = rdm::RDM_FAILED_TO_SEND;
+    status_code = rdm::RDM_FAILED_TO_SEND;
   }
 
-  callback->Run(response_code, response, packets);
+  callback->Run(status_code, response, packets);
 }
 
 ola::rdm::RDMResponse* JaRuleWidgetImpl::UnpackRDMResponse(
     const RDMRequest *request,
     const string &payload,
-    ola::rdm::rdm_response_code *response_code) {
+    ola::rdm::RDMStatusCode *status_code) {
   if (payload.empty() ||
       static_cast<uint8_t>(payload[0]) != RDMCommand::START_CODE) {
-    *response_code = rdm::RDM_INVALID_RESPONSE;
+    *status_code = rdm::RDM_INVALID_RESPONSE;
     return NULL;
   }
 
   return ola::rdm::RDMResponse::InflateFromData(
       reinterpret_cast<const uint8_t*>(payload.data() + 1), payload.size() - 1,
-      response_code, request);
+      status_code, request);
 }
 
 void JaRuleWidgetImpl::DiscoveryComplete(RDMDiscoveryCallback *callback,
