@@ -568,7 +568,8 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   }
 
   // get data for entire string length
-  const unsigned int output_length = (m_pixel_count + 1) * APA102_SPI_BYTES_PER_PIXEL;
+  const unsigned int output_length = (m_pixel_count + 1) * 
+                                      APA102_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
   // only update spi data if possible

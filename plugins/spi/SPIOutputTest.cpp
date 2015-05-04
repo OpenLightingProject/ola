@@ -467,7 +467,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0,
                                 0xff, 0, 0x80, 0xff,
                                 0xff, 0x1e, 0x14, 0x0a, 
                                 0, 0, 0, 0, 0, 0, 0, 0};
@@ -478,7 +478,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 
+  const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0xff, 0x1e, 0x14, 0x0a, 
                                 0, 0, 0, 0, 0, 0, 0, 0};
@@ -502,7 +502,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
                                 0xff, 0x05, 0x04, 0x03,
                                 0xff, 0x08, 0x07, 0x06, 
                                 0, 0, 0, 0, 0, 0, 0, 0};
@@ -557,7 +557,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0,
                                 0xff, 0, 0x80, 0xff,
                                 0xff, 0, 0x80, 0xff,
                                 0, 0, 0, 0, 0, 0, 0, 0};
@@ -568,7 +568,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 
+  const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0, 0, 0, 0, 0, 0, 0, 0};
@@ -592,9 +592,9 @@ void SPIOutputTest::testCombinedAPA102Control() {
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
                                 0xff, 0x05, 0x04, 0x03,
-                                0xff, 0x05, 0x04, 0x03, 
+                                0xff, 0x05, 0x04, 0x03,
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
@@ -606,4 +606,3 @@ void SPIOutputTest::testCombinedAPA102Control() {
   OLA_ASSERT_EQ(0u, backend.Writes(1));
 
 }
-
