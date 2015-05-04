@@ -104,7 +104,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
   // DMX methods
   bool InternalWriteDMX(const DmxBuffer &buffer);
-  
+
   void IndividualWS2801Control(const DmxBuffer &buffer);
   void CombinedWS2801Control(const DmxBuffer &buffer);
   void IndividualLPD8806Control(const DmxBuffer &buffer);
@@ -113,7 +113,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void CombinedP9813Control(const DmxBuffer &buffer);
   void IndividualAPA102Control(const DmxBuffer &buffer);
   void CombinedAPA102Control(const DmxBuffer &buffer);
-  
+
   unsigned int LPD8806BufferSize() const;
   void WriteSPIData(const uint8_t *data, unsigned int length);
 
@@ -173,6 +173,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
   // Helpers
   uint8_t P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue);
+  uint8_t CalculateAPA102LatchBytes(unsigned int m_pixel_count);
 
   static const uint8_t SPI_MODE;
   static const uint8_t SPI_BITS_PER_WORD;

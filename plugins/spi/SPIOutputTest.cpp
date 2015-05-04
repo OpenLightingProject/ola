@@ -439,7 +439,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   SPIOutput output(m_uid, &backend, options);
   // set personality to 7= Individual APA102
   output.SetPersonality(7);
-  
+
   // simulate incoming dmx data with this buffer
   DmxBuffer buffer;
   // setup an pointer to the returned data (the fake SPI data stream)
@@ -473,18 +473,18 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
-  
+
   // test3
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 
                                 0xff, 0x4e, 0x38, 0x22,
-                                0xff, 0, 0, 0, 
+                                0xff, 0x1e, 0x14, 0x0a, 
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
-  
+
   // test4
   // tests what happens if fewer then needed color information are received
   buffer.SetFromString("7, 9");
@@ -498,7 +498,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // test with other StartAddress
   // set StartAddress
   output.SetStartAddress(3);
-  // values 1 & 2 should not be visibel in SPI data stream
+  // values 1 & 2 should not be visible in SPI data stream
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -508,7 +508,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
-  
+
   // test6
   // Check nothing changed on the other output.
   OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
@@ -527,15 +527,15 @@ void SPIOutputTest::testCombinedAPA102Control() {
   options.pixel_count = 2;
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
-  // set personality to 7= Individual APA102
+  // set personality to 8= Combined APA102
   output.SetPersonality(8);
-  
+
   // simulate incoming dmx data with this buffer
   DmxBuffer buffer;
   // setup an pointer to the returned data (the fake SPI data stream)
   unsigned int length = 0;
   const uint8_t *data = NULL;
-  
+
   // test1
   // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100");
@@ -563,7 +563,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
-  
+
   // test3
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
@@ -574,7 +574,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
-  
+
   // test4
   // tests what happens if fewer then needed color information are received
   buffer.SetFromString("7, 9");
@@ -588,7 +588,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   // test with other StartAddress
   // set StartAddress
   output.SetStartAddress(3);
-  // values 1 & 2 should not be visibel in SPI data stream
+  // values 1 & 2 should not be visible in SPI data stream
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -598,11 +598,12 @@ void SPIOutputTest::testCombinedAPA102Control() {
                                 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
-  
+
   // test6
   // Check nothing changed on the other output.
   OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
                 backend.GetData(1, &length));
   OLA_ASSERT_EQ(0u, backend.Writes(1));
-  
+
 }
+

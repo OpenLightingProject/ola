@@ -508,17 +508,17 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // StartFrame: 4Byte = 32Bits zeros
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
-  
+
   // i don't know how this works.. but it works ;-)
   const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
-  
+
   // only do something if minimum 1pixel can be updated..
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
     // not even 3 bytes of data, don't bother updating
     return;
   }
-  
+
   // We always check out the entire string length, even if we only have data
   // for part of it
   const unsigned int output_length = m_pixel_count * APA102_SPI_BYTES_PER_PIXEL;
@@ -545,7 +545,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
     // first Byte contains:
     // 3bit start mark (111) + 5bit GlobalBrightnes
     // set GlobalBrightnes fixed to 31 --> that reduces flickering
-	// that can be written as 0xE0 & 0x1F
+    // that can be written as 0xE0 & 0x1F
     output[spi_offset + 0] = 0xFF;
     output[spi_offset + 1] = b;
     output[spi_offset + 2] = g;
@@ -556,40 +556,53 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // for Protocol details see IndividualAPA102Control
-  
-  const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
+
+  const uint8_t latch_bytes = CalculateAPA102LatchBytes(m_pixel_count);
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
-  
+
   // check if enough data is there.
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
   }
-  
+
   // get data for entire string length
-  const unsigned int output_length = m_pixel_count * APA102_SPI_BYTES_PER_PIXEL;
+  const unsigned int output_length = (m_pixel_count + 1) * APA102_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
   // only update spi data if possible
   if (!output)
     return;
-  
+
   // create Pixel Data
   uint8_t pixel_data[APA102_SPI_BYTES_PER_PIXEL];
   pixel_data[0] = 0xff;
   pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
   pixel_data[3] = buffer.Get(first_slot);  // Get Red
-  
+
   // set all pixel to same value
-  for (unsigned int i = 0; i < m_pixel_count; i++) {
-    memcpy(&output[(i + 1) * APA102_SPI_BYTES_PER_PIXEL], pixel_data,
+  for (unsigned int i = 1; i <= m_pixel_count; i++) {
+    memcpy(&output[i * APA102_SPI_BYTES_PER_PIXEL], pixel_data,
            APA102_SPI_BYTES_PER_PIXEL);
   }
-  
+
   // write output back...
   m_backend->Commit(m_output_number);
+}
+
+/**
+ * Calculate Latch Bytes for APA102:
+ * minimal use half the pixel count bits 
+ * round up to next full byte count.
+ * datasheet says endframe should consist of 4 bytes - but thats only valid for 
+ * up to 64 pixels/leds.
+ */
+void SPIOutput::CalculateAPA102LatchBytes(unsigned int m_pixel_count) {
+  const uint8_t latch_bits = m_pixel_count / 2;
+  const uint8_t latch_bytes = (latch_bits / 8) + (latch_bits % 8 ? 1: 0);
+  return latch_bytes;
 }
 
 
