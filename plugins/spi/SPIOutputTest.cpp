@@ -457,7 +457,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
                                 0xff, 0x64, 0x0a, 0x01,   // first Pixel
                                 0xff, 0, 0, 0,            // second Pixel
-                                0, 0, 0, 0, 0, 0, 0, 0};  // EndFrame
+                                0};                       // EndFrame
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   // check if the output writes are 1
@@ -470,7 +470,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   const uint8_t EXPECTED1[] = { 0, 0, 0, 0,
                                 0xff, 0, 0x80, 0xff,
                                 0xff, 0x1e, 0x14, 0x0a,
-                                0, 0, 0, 0, 0, 0, 0, 0};
+                                0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
@@ -481,7 +481,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0xff, 0x1e, 0x14, 0x0a,
-                                0, 0, 0, 0, 0, 0, 0, 0};
+                                0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
@@ -505,7 +505,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
                                 0xff, 0x05, 0x04, 0x03,
                                 0xff, 0x08, 0x07, 0x06,
-                                0, 0, 0, 0, 0, 0, 0, 0};
+                                0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
 
@@ -547,7 +547,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
                                 0xff, 0x64, 0x0a, 0x01,   // first Pixel
                                 0xff, 0x64, 0x0a, 0x01,   // second Pixel
-                                0, 0, 0, 0, 0, 0, 0, 0};  // EndFrame
+                                0};                       // EndFrame
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   // check if the output writes are 1
@@ -571,7 +571,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0xff, 0x4e, 0x38, 0x22,
-                                0, 0, 0, 0, 0, 0, 0, 0};
+                                0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
@@ -595,7 +595,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
                                 0xff, 0x05, 0x04, 0x03,
                                 0xff, 0x05, 0x04, 0x03,
-                                0, 0, 0, 0, 0, 0, 0, 0};
+                                0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
 
