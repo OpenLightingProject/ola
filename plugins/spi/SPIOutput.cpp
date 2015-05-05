@@ -544,7 +544,13 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
     // start of frame delimiter
     unsigned int spi_offset = APA102_START_FRAME_BYTES +
                               (i * APA102_SPI_BYTES_PER_PIXEL);
-    // check if we have valid data for this pixel in the buffer
+    // set pixel data
+    // first Byte contains:
+    // 3bit start mark (111) + 5bit GlobalBrightnes
+    // set GlobalBrightnes fixed to 31 --> that reduces flickering
+    // that can be written as 0xE0 & 0x1F
+    output[spi_offset + 0] = 0xFF;
+    // only write pixel data if new data from buffer available:
     if ((buffer.Size() - offset) >= APA102_SLOTS_PER_PIXEL) {
       // Convert RGB to APA102 Pixel
       uint8_t r = 0;
@@ -555,11 +561,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
       g = buffer.Get(offset + 1);
       b = buffer.Get(offset + 2);
       // set rgb values in output
-      // first Byte contains:
-      // 3bit start mark (111) + 5bit GlobalBrightnes
-      // set GlobalBrightnes fixed to 31 --> that reduces flickering
-      // that can be written as 0xE0 & 0x1F
-      output[spi_offset + 0] = 0xFF;
+      // skip spi_offset + 0 (is already set)
       output[spi_offset + 1] = b;
       output[spi_offset + 2] = g;
       output[spi_offset + 3] = r;
