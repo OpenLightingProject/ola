@@ -513,11 +513,11 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
   // latch_bytes = EndFrame ??
   const uint8_t latch_bytes = CalculateAPA102LatchBytes(m_pixel_count);
-  OLA_INFO << "latch_bytes " << static_cast<int>(latch_bytes);
+  // OLA_INFO << "latch_bytes " << static_cast<int>(latch_bytes);
 
   // calculate dmx-start-address
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
-  OLA_INFO << "first_slot " << static_cast<int>(first_slot);
+  // OLA_INFO << "first_slot " << static_cast<int>(first_slot);
 
   // only do something if minimum 1pixel can be updated..
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
@@ -529,7 +529,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // for part of it
   const unsigned int output_length = APA102_START_FRAME_BYTES +
                                 (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
-  OLA_INFO << "output_length " << static_cast<int>(output_length);
+  // OLA_INFO << "output_length " << static_cast<int>(output_length);
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
   // only update spi data if possible

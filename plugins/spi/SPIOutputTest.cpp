@@ -454,11 +454,11 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // get fake SPI data stream
   data = backend.GetData(0, &length);
   // print data to see what is going on.
-  OLA_INFO << "length: " << length;
-  OLA_INFO << "data: ";
-  for (unsigned int i = 0; i < length; i++) {
-    OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
-  }
+  // OLA_INFO << "length: " << length;
+  // OLA_INFO << "data: ";
+  // for (unsigned int i = 0; i < length; i++) {
+    // OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
+  // }
 
   // this is the expected spi data stream:
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
@@ -490,12 +490,12 @@ void SPIOutputTest::testIndividualAPA102Control() {
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-   // print data to see what is going on.
-  OLA_INFO << "length: " << length;
-  OLA_INFO << "data: ";
-  for (unsigned int i = 0; i < length; i++) {
-    OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
-  }
+  // print data to see what is going on.
+  // OLA_INFO << "length: " << length;
+  // OLA_INFO << "data: ";
+  // for (unsigned int i = 0; i < length; i++) {
+    // OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
+  // }
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0xff, 0x1e, 0x14, 0x0a,
