@@ -509,8 +509,8 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
 
-  // i don't know how this works.. but it works ;-)
-  const uint8_t latch_bytes = 3 * APA102_SPI_BYTES_PER_PIXEL;
+  // latch_bytes = EndFrame ??
+  const uint8_t latch_bytes = CalculateAPA102LatchBytes(m_pixel_count);
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
   // only do something if minimum 1pixel can be updated..
@@ -568,7 +568,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   }
 
   // get data for entire string length
-  const unsigned int output_length = (m_pixel_count + 1) * 
+  const unsigned int output_length = (m_pixel_count + 1) *
                                       APA102_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
@@ -597,10 +597,13 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * Calculate Latch Bytes for APA102:
  * minimal use half the pixel count bits 
  * round up to next full byte count.
- * datasheet says endframe should consist of 4 bytes - but thats only valid for 
- * up to 64 pixels/leds.
+ * datasheet says endframe should consist of 4 bytes - 
+ * but thats only valid for up to 64 pixels/leds.
+ *
+ * the function is valid up to 4080 pixels. (255*8*2)
+ * ( otherwise the return type must be changed to uint16_t)
  */
-void SPIOutput::CalculateAPA102LatchBytes(unsigned int m_pixel_count) {
+uint8_t SPIOutput::CalculateAPA102LatchBytes(unsigned int m_pixel_count) {
   const uint8_t latch_bits = m_pixel_count / 2;
   const uint8_t latch_bytes = (latch_bits / 8) + (latch_bits % 8 ? 1: 0);
   return latch_bytes;
