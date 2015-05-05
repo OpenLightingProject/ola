@@ -457,7 +457,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   OLA_INFO << "length: " << length;
   OLA_INFO << "data: ";
   for (unsigned int i = 0; i <= length; i++) {
-    OLA_INFO << "[" << i << "] " << data[i];
+    OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
   }
 
   // this is the expected spi data stream:
