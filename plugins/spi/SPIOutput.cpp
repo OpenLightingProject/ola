@@ -93,6 +93,8 @@ const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
+const uint8_t SPIOutput::APA102_START_FRAME_BYTES = 4;
+
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
 const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
@@ -505,14 +507,16 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // some detailed information on the protocol:
   // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
   // Data-Struct
-  // StartFrame: 4Byte = 32Bits zeros
+  // StartFrame: 4Byte = 32Bits zeros (APA102_START_FRAME_BYTES)
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
 
   // latch_bytes = EndFrame ??
   const uint8_t latch_bytes = CalculateAPA102LatchBytes(m_pixel_count);
-  const unsigned int first_slot = m_start_address - 1;  // 0 offset
   OLA_INFO << "latch_bytes " << static_cast<int>(latch_bytes);
+
+  // calculate dmx-start-address
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
   OLA_INFO << "first_slot " << static_cast<int>(first_slot);
 
   // only do something if minimum 1pixel can be updated..
@@ -523,7 +527,8 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
   // We always check out the entire string length, even if we only have data
   // for part of it
-  const unsigned int output_length = m_pixel_count * APA102_SPI_BYTES_PER_PIXEL;
+  const unsigned int output_length = APA102_START_FRAME_BYTES + 
+                                (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
   OLA_INFO << "output_length " << static_cast<int>(output_length);
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
@@ -533,15 +538,18 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     // Convert RGB to APA102 Pixel
-    unsigned int offset = first_slot + i * APA102_SLOTS_PER_PIXEL;
+    unsigned int offset = first_slot + (i * APA102_SLOTS_PER_PIXEL);
+
     // We need to avoid the first 4 bytes of the buffer since that acts as a
     // start of frame delimiter
-    unsigned int spi_offset = (i + 1) * APA102_SPI_BYTES_PER_PIXEL;
+    unsigned int spi_offset = APA102_START_FRAME_BYTES + 
+                              (i * APA102_SPI_BYTES_PER_PIXEL);
+
     uint8_t r = 0;
     uint8_t b = 0;
     uint8_t g = 0;
-    if (buffer.Size() - offset >= APA102_SLOTS_PER_PIXEL) {
-      r = buffer.Get(offset);
+    if ( (buffer.Size() - offset) >= APA102_SLOTS_PER_PIXEL) {
+      r = buffer.Get(offset + 0);
       g = buffer.Get(offset + 1);
       b = buffer.Get(offset + 2);
     }
@@ -587,8 +595,10 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   pixel_data[3] = buffer.Get(first_slot);  // Get Red
 
   // set all pixel to same value
-  for (unsigned int i = 1; i <= m_pixel_count; i++) {
-    memcpy(&output[i * APA102_SPI_BYTES_PER_PIXEL], pixel_data,
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    unsigned int spi_offset = APA102_START_FRAME_BYTES + 
+                              (i * APA102_SPI_BYTES_PER_PIXEL);
+    memcpy(&output[spi_offset], pixel_data,
            APA102_SPI_BYTES_PER_PIXEL);
   }
 

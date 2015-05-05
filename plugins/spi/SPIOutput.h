@@ -185,6 +185,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static const uint16_t P9813_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_SLOTS_PER_PIXEL;
   static const uint16_t APA102_SPI_BYTES_PER_PIXEL;
+  static const uint8_t  APA102_START_FRAME_BYTES;
 
   static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
       PARAM_HANDLERS[];
