@@ -453,15 +453,23 @@ void SPIOutputTest::testIndividualAPA102Control() {
   output.WriteDMX(buffer);
   // get fake SPI data stream
   data = backend.GetData(0, &length);
+  // print data to see what is going on.
+  // OLA_INFO << "data: ";
+  // for (unsigned int i = 0; i <= length; i++) {
+    // OLA_INFO << "[" << i << "] " << data[i];
+  // }
+
   // this is the expected spi data stream:
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
                                 0xff, 0x64, 0x0a, 0x01,   // first Pixel
                                 0xff, 0, 0, 0,            // second Pixel
                                 0};                       // EndFrame
+  
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   // check if the output writes are 1
   OLA_ASSERT_EQ(1u, backend.Writes(0));
+
 
   // test2
   buffer.SetFromString("255,128,0,10,20,30");
@@ -560,7 +568,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   const uint8_t EXPECTED1[] = { 0, 0, 0, 0,
                                 0xff, 0, 0x80, 0xff,
                                 0xff, 0, 0x80, 0xff,
-                                0, 0, 0, 0, 0, 0, 0, 0};
+                                0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
