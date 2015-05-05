@@ -527,7 +527,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
   // We always check out the entire string length, even if we only have data
   // for part of it
-  const unsigned int output_length = APA102_START_FRAME_BYTES + 
+  const unsigned int output_length = APA102_START_FRAME_BYTES +
                                 (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
   OLA_INFO << "output_length " << static_cast<int>(output_length);
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
@@ -542,25 +542,28 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
     // We need to avoid the first 4 bytes of the buffer since that acts as a
     // start of frame delimiter
-    unsigned int spi_offset = APA102_START_FRAME_BYTES + 
+    unsigned int spi_offset = APA102_START_FRAME_BYTES +
                               (i * APA102_SPI_BYTES_PER_PIXEL);
-
-    uint8_t r = 0;
-    uint8_t b = 0;
-    uint8_t g = 0;
-    if ( (buffer.Size() - offset) >= APA102_SLOTS_PER_PIXEL) {
+    // check if we have valid data for this pixel in the buffer
+    if ((buffer.Size() - offset) >= APA102_SLOTS_PER_PIXEL) {
+      // Convert RGB to APA102 Pixel
+      uint8_t r = 0;
+      uint8_t b = 0;
+      uint8_t g = 0;
+      // read rgb values
       r = buffer.Get(offset + 0);
       g = buffer.Get(offset + 1);
       b = buffer.Get(offset + 2);
+      // set rgb values in output
+      // first Byte contains:
+      // 3bit start mark (111) + 5bit GlobalBrightnes
+      // set GlobalBrightnes fixed to 31 --> that reduces flickering
+      // that can be written as 0xE0 & 0x1F
+      output[spi_offset + 0] = 0xFF;
+      output[spi_offset + 1] = b;
+      output[spi_offset + 2] = g;
+      output[spi_offset + 3] = r;
     }
-    // first Byte contains:
-    // 3bit start mark (111) + 5bit GlobalBrightnes
-    // set GlobalBrightnes fixed to 31 --> that reduces flickering
-    // that can be written as 0xE0 & 0x1F
-    output[spi_offset + 0] = 0xFF;
-    output[spi_offset + 1] = b;
-    output[spi_offset + 2] = g;
-    output[spi_offset + 3] = r;
   }
   m_backend->Commit(m_output_number);
 }
@@ -596,7 +599,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
 
   // set all pixel to same value
   for (unsigned int i = 0; i < m_pixel_count; i++) {
-    unsigned int spi_offset = APA102_START_FRAME_BYTES + 
+    unsigned int spi_offset = APA102_START_FRAME_BYTES +
                               (i * APA102_SPI_BYTES_PER_PIXEL);
     memcpy(&output[spi_offset], pixel_data,
            APA102_SPI_BYTES_PER_PIXEL);

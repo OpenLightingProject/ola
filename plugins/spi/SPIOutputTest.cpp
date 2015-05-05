@@ -456,7 +456,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // print data to see what is going on.
   OLA_INFO << "length: " << length;
   OLA_INFO << "data: ";
-  for (unsigned int i = 0; i <= length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
   }
 
@@ -485,9 +485,17 @@ void SPIOutputTest::testIndividualAPA102Control() {
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
   // test3
+  // test what happens when only new data for the first leds is available.
+  // later data should be not modified so data set in test2 is valid for pixel2
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
+   // print data to see what is going on.
+  OLA_INFO << "length: " << length;
+  OLA_INFO << "data: ";
+  for (unsigned int i = 0; i < length; i++) {
+    OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
+  }
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
                                 0xff, 0x4e, 0x38, 0x22,
                                 0xff, 0x1e, 0x14, 0x0a,
