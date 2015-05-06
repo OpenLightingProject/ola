@@ -545,13 +545,12 @@ void SPIOutputTest::testIndividualAPA102Control() {
   output(m_uid, &backend, options);
   // set personality
   output.SetPersonality(thisTestPersonality);
-
   buffer.SetFromString(
         std::string("0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,") +
                     "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
+  const uint8_t EXPECTED7[] = { 0, 0, 0, 0,
                                 0xff, 0, 0, 0,  // Pixel 1
                                 0xff, 0, 0, 0,  // Pixel 2
                                 0xff, 0, 0, 0,  // Pixel 3
@@ -568,7 +567,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0xff, 0, 0, 0,  // Pixel 15
                                 0xff, 0, 0, 0,  // Pixel 16
                                 0};
-  OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   OLA_ASSERT_EQ(5u, backend.Writes(0));
 
 
@@ -587,7 +586,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
                     "0,0,0");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
+  const uint8_t EXPECTED8[] = { 0, 0, 0, 0,
                                 0xff, 0, 0, 0,  // Pixel 1
                                 0xff, 0, 0, 0,  // Pixel 2
                                 0xff, 0, 0, 0,  // Pixel 3
@@ -605,7 +604,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0xff, 0, 0, 0,  // Pixel 16
                                 0xff, 0, 0, 0,  // Pixel 17
                                 0, 0};  // now we have two latch bytes...
-  OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
   OLA_ASSERT_EQ(6u, backend.Writes(0));
 }
 
