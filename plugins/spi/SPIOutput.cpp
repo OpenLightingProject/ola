@@ -616,13 +616,15 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * minimal use half the pixel count bits 
  * round up to next full byte count.
  * datasheet says endframe should consist of 4 bytes - 
- * but thats only valid for up to 64 pixels/leds.
+ * but thats only valid for up to 64 pixels/leds. (4Byte*8Bit*2=64)
  *
  * the function is valid up to 4080 pixels. (255*8*2)
  * ( otherwise the return type must be changed to uint16_t)
  */
 uint8_t SPIOutput::CalculateAPA102LatchBytes(unsigned int m_pixel_count) {
-  const uint8_t latch_bits = m_pixel_count / 2;
+  // round up so that we get definitely more LatchBits as LEDs/2...
+  const uint8_t latch_bits = (m_pixel_count / 2)  + (m_pixel_count % 2 ? 1: 0);
+  // same for latch_bytes - if latch_bits is odd-numbered add on more byte.
   const uint8_t latch_bytes = (latch_bits / 8) + (latch_bits % 8 ? 1: 0);
   return latch_bytes;
 }

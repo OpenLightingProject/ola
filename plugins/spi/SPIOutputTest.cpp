@@ -430,6 +430,8 @@ void SPIOutputTest::testCombinedP9813Control() {
  * Test DMX writes in the individual APA102 mode.
  */
 void SPIOutputTest::testIndividualAPA102Control() {
+  // personality 7= Individual APA102
+  const uint16_t thisTestPersonality = 7;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -437,8 +439,8 @@ void SPIOutputTest::testIndividualAPA102Control() {
   options.pixel_count = 2;
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
-  // set personality to 7= Individual APA102
-  output.SetPersonality(7);
+  // set personality
+  output.SetPersonality(thisTestPersonality);
 
   // simulate incoming dmx data with this buffer
   DmxBuffer buffer;
@@ -508,12 +510,12 @@ void SPIOutputTest::testIndividualAPA102Control() {
   buffer.SetFromString("7, 9");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  // check that the returns are the same as test2 (nothing changed)
+  // check that the returns are the same as test3 (nothing changed)
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
   // test5
-  // test with other StartAddress
+  // test with changed StartAddress
   // set StartAddress
   output.SetStartAddress(3);
   // values 1 & 2 should not be visible in SPI data stream
@@ -526,12 +528,85 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
+  // change StartAddress back to default
+  output.SetStartAddress(1);
 
   // test6
   // Check nothing changed on the other output.
   OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
                 backend.GetData(1, &length));
   OLA_ASSERT_EQ(0u, backend.Writes(1));
+
+  // test7
+  // create new output with pixel_count=16 and check data length
+  // setup pixel_count to 16
+  options.pixel_count = 16;
+  // setup SPIOutput
+  SPIOutput output(m_uid, &backend, options);
+  // set personality
+  output.SetPersonality(thisTestPersonality);
+
+  buffer.SetFromString(
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
+                                0xff, 0, 0, 0,  // Pixel 1
+                                0xff, 0, 0, 0,  // Pixel 2
+                                0xff, 0, 0, 0,  // Pixel 3
+                                0xff, 0, 0, 0,  // Pixel 4
+                                0xff, 0, 0, 0,  // Pixel 5
+                                0xff, 0, 0, 0,  // Pixel 6
+                                0xff, 0, 0, 0,  // Pixel 7
+                                0xff, 0, 0, 0,  // Pixel 8
+                                0xff, 0, 0, 0,  // Pixel 9
+                                0xff, 0, 0, 0,  // Pixel 10
+                                0xff, 0, 0, 0,  // Pixel 12
+                                0xff, 0, 0, 0,  // Pixel 13
+                                0xff, 0, 0, 0,  // Pixel 14
+                                0xff, 0, 0, 0,  // Pixel 15
+                                0xff, 0, 0, 0,  // Pixel 16
+                                0};
+  OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
+  OLA_ASSERT_EQ(5u, backend.Writes(0));
+
+
+  // test8
+  // create new output with pixel_count=17 and check data length
+  // setup pixel_count to 17
+  options.pixel_count = 17;
+  // setup SPIOutput
+  SPIOutput output(m_uid, &backend, options);
+  // set personality
+  output.SetPersonality(thisTestPersonality);
+  // generate dmx data
+  buffer.SetFromString(
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
+                    "0,0,0");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
+                                0xff, 0, 0, 0,  // Pixel 1
+                                0xff, 0, 0, 0,  // Pixel 2
+                                0xff, 0, 0, 0,  // Pixel 3
+                                0xff, 0, 0, 0,  // Pixel 4
+                                0xff, 0, 0, 0,  // Pixel 5
+                                0xff, 0, 0, 0,  // Pixel 6
+                                0xff, 0, 0, 0,  // Pixel 7
+                                0xff, 0, 0, 0,  // Pixel 8
+                                0xff, 0, 0, 0,  // Pixel 9
+                                0xff, 0, 0, 0,  // Pixel 10
+                                0xff, 0, 0, 0,  // Pixel 12
+                                0xff, 0, 0, 0,  // Pixel 13
+                                0xff, 0, 0, 0,  // Pixel 14
+                                0xff, 0, 0, 0,  // Pixel 15
+                                0xff, 0, 0, 0,  // Pixel 16
+                                0xff, 0, 0, 0,  // Pixel 17
+                                0, 0};  // now we have two latch bytes...
+  OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
+  OLA_ASSERT_EQ(6u, backend.Writes(0));
 }
 
 /**
