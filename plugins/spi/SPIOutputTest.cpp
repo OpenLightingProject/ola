@@ -547,7 +547,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   output.SetPersonality(thisTestPersonality);
 
   buffer.SetFromString(
-                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," <<
                     "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -582,8 +582,8 @@ void SPIOutputTest::testIndividualAPA102Control() {
   output.SetPersonality(thisTestPersonality);
   // generate dmx data
   buffer.SetFromString(
-                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
-                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," <<
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," <<
                     "0,0,0");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
