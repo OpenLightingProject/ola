@@ -542,12 +542,12 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // setup pixel_count to 16
   options.pixel_count = 16;
   // setup SPIOutput
-  SPIOutput output(m_uid, &backend, options);
+  output(m_uid, &backend, options);
   // set personality
   output.SetPersonality(thisTestPersonality);
 
   buffer.SetFromString(
-                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," <<
+        std::string("0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,") +
                     "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
@@ -577,13 +577,13 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // setup pixel_count to 17
   options.pixel_count = 17;
   // setup SPIOutput
-  SPIOutput output(m_uid, &backend, options);
+  output(m_uid, &backend, options);
   // set personality
   output.SetPersonality(thisTestPersonality);
   // generate dmx data
   buffer.SetFromString(
-                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," <<
-                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," <<
+        std::string("0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,") +
+                    "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
                     "0,0,0");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
