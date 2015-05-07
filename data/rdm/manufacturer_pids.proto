@@ -263,6 +263,1072 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 16761
+  manufacturer_name: "Ayrton"
+  pid {
+    name: "DIMMER_MODE"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Dimmer Mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Dimmer Mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "LIGHT_MODE"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Light Mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Light Mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CONSTANT_COLOR_MODES"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Constant Color Modes"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Constant Color Modes"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17232
+  manufacturer_name: "Clay Paky S.p.A"
+  pid {
+    name: "CP_DISPLAYON"
+    value: 34048
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "display_on"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "display_on"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_FIXTID"
+    value: 34304
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fixture_id"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fixture_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_EVAN_RGBCMY"
+    value: 34305
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "cmy_on"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "cmy_on"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_FIXWHEELSC"
+    value: 34306
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "fix_wheel_shortcut"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "fix_wheel_shortcut"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_LAMPONDMX"
+    value: 34307
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "lamp_on_dmx"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "lamp_on_dmx"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_ENCPT"
+    value: 34308
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enable_PanTilt_encoder"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enable_PanTilt_encoder"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PTSPEEDMODE"
+    value: 34309
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "PanTilt_Speed"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Fast"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "PanTilt_Speed"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Fast"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_DIMMERCURVE"
+    value: 34310
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dimmer_curve"
+        label {
+          value: 0
+          label: "Curve 1 Conventional"
+        }
+        label {
+          value: 1
+          label: "Curve 2 Linear"
+        }
+        label {
+          value: 2
+          label: "Curve 3"
+        }
+        label {
+          value: 3
+          label: "Curve 4"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dimmer_curve"
+        label {
+          value: 0
+          label: "Curve 1 Conventional"
+        }
+        label {
+          value: 1
+          label: "Curve 2 Linear"
+        }
+        label {
+          value: 2
+          label: "Curve 3"
+        }
+        label {
+          value: 3
+          label: "Curve 4"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_SILENTMODE"
+    value: 34311
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "silent_mode"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Quiet"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "silent_mode"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Quiet"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_SHUTTERONERR"
+    value: 34312
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "shutter_on_error"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "shutter_on_error"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_CP_DIMMONSHUTTER"
+    value: 34313
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dimmer_on_error"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dimmer_on_error"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_POWERFANSMODE"
+    value: 34314
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_power_mode"
+        label {
+          value: 0
+          label: "Full Fan Speed"
+        }
+        label {
+          value: 1
+          label: "Low Fan Speed (reduced output)"
+        }
+        label {
+          value: 2
+          label: "Auto Fan Speed"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fan_power_mode"
+        label {
+          value: 0
+          label: "Full Fan Speed"
+        }
+        label {
+          value: 1
+          label: "Low Fan Speed (reduced output)"
+        }
+        label {
+          value: 2
+          label: "Auto Fan Speed"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_ARTNET_MODE"
+    value: 34315
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "control_protocol_artnet"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Art-Net on IP 2.x.x.x"
+        }
+        label {
+          value: 2
+          label: "Art-Net on IP 10.x.x.x"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "control_protocol_artnet"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Art-Net on IP 2.x.x.x"
+        }
+        label {
+          value: 2
+          label: "Art-Net on IP 10.x.x.x"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_NETREPEATDMX"
+    value: 34316
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "artnet_repeat_to_dmx"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Enabled on primary"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "artnet_repeat_to_dmx"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Enabled on primary"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_UNIVERSE"
+    value: 34317
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "artnet_universe"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "artnet_universe"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_AFAUTOSCALEOFF"
+    value: 34318
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "auto_focus_mode"
+        label {
+          value: 0
+          label: "Limited Zoom Range"
+        }
+        label {
+          value: 1
+          label: "Complete Zoom Range"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "auto_focus_mode"
+        label {
+          value: 0
+          label: "Limited Zoom Range"
+        }
+        label {
+          value: 1
+          label: "Complete Zoom Range"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_MCOLORADJUST"
+    value: 34319
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "macro_color_adjust"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "macro_color_adjust"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_MEFFRANDID"
+    value: 34320
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "scene_phase_displacement"
+        range {
+          min: 0
+          max: 255
+        }
+        label {
+          value: 0
+          label: "Auto by DMX address"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "scene_phase_displacement"
+        range {
+          min: 0
+          max: 255
+        }
+        label {
+          value: 0
+          label: "Auto by DMX address"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_MEFFDISTRIB"
+    value: 34321
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "number_of_projectors_in_macro"
+        range {
+          min: 2
+          max: 255
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "number_of_projectors_in_macro"
+        range {
+          min: 2
+          max: 255
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_EVANCURVEMODE"
+    value: 34322
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "color_mixing_curve"
+        label {
+          value: 0
+          label: "Curve 1"
+        }
+        label {
+          value: 1
+          label: "Curve 2"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "color_mixing_curve"
+        label {
+          value: 0
+          label: "Curve 1"
+        }
+        label {
+          value: 1
+          label: "Curve 2"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PT_HOMING_SPEC"
+    value: 34323
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "pantilt_homing_sequence"
+        label {
+          value: 0
+          label: "Not Sequenced"
+        }
+        label {
+          value: 1
+          label: "Sequenced"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "pantilt_homing_sequence"
+        label {
+          value: 0
+          label: "Not Sequenced"
+        }
+        label {
+          value: 1
+          label: "Sequenced"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PAN_HOME_ANGLE"
+    value: 34324
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "pan_homing_angle"
+        label {
+          value: 0
+          label: "0 Deg"
+        }
+        label {
+          value: 1
+          label: "90 Deg"
+        }
+        label {
+          value: 2
+          label: "180 Deg"
+        }
+        label {
+          value: 3
+          label: "270 Deg"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "pan_homing_angle"
+        label {
+          value: 0
+          label: "0 Deg"
+        }
+        label {
+          value: 1
+          label: "90 Deg"
+        }
+        label {
+          value: 2
+          label: "180 Deg"
+        }
+        label {
+          value: 3
+          label: "270 Deg"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_TILT_HOME_ANGLE"
+    value: 34325 
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "tilt_homing_angle"
+        label {
+          value: 0
+          label: "0 Percent"
+        }
+        label {
+          value: 1
+          label: "12,5 Percent"
+        }
+        label {
+          value: 2
+          label: "25 Percent"
+        }
+        label {
+          value: 3
+          label: "50 Percent"
+        }
+        label {
+          value: 4
+          label: "75 Percent"
+        }
+        label {
+          value: 5
+          label: "87,5 Percent"
+        }
+        label {
+          value: 6
+          label: "100 Percent"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "tilt_homing_angle"
+        label {
+          value: 0
+          label: "0 Percent"
+        }
+        label {
+          value: 1
+          label: "12,5 Percent"
+        }
+        label {
+          value: 2
+          label: "25 Percent"
+        }
+        label {
+          value: 3
+          label: "50 Percent"
+        }
+        label {
+          value: 4
+          label: "75 Percent"
+        }
+        label {
+          value: 5
+          label: "87,5 Percent"
+        }
+        label {
+          value: 6
+          label: "100 Percent"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_CWHEEL_LINEAR"
+    value: 34326
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "color_wheel_linear"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "color_wheel_linear"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_ANTI_BLIND"
+    value: 34327
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Anti Blind"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Anti Blind"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PIXELS_UNIVERSE"
+    value: 34328
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Pixel Engine Universe"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Pixel Engine Artnet Universe"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_RPTONDMX_UNIVERSE"
+    value: 34332
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Repeat On DMX Artnet Universe"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Repeat On DMX Artnet Universe"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_CHNLMODE_PIXELS"
+    value: 34335
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Channel Mode Pixels"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "RGB"
+        }
+        label {
+          value: 2
+          label: "RGBW"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Channel Mode Pixels"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "RGB"
+        }
+        label {
+          value: 2
+          label: "RGBW"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 17236
   manufacturer_name: "City Theatrical, Inc."
   pid {
@@ -1815,6 +2881,32 @@ manufacturer {
         label {
           value: 2
           label: "5 second delay"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FIXTURE_ID"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "fixture_id"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "fixture_id"
+        range {
+          min: 0
+          max: 9999
         }
       }
     }
@@ -4186,6 +5278,28 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
+    name: "PAN_TILT_FEEDBACK_ENABLE"
+    value: 33800
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
     name: "FOLLOW_SPOT_MODE_ENABLE"
     value: 34048
     get_request {
@@ -4480,6 +5594,535 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 20562
+  manufacturer_name: "Production Resource Group"
+  pid {
+    name: "FAN_ERROR_STATUS"
+    value: 33280
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Fan Error Status"
+        label {
+          value: 0
+          label: "No Error"
+        }
+        label {
+          value: 1
+          label: "Main Fan Error"
+        }
+        label {
+          value: 2
+          label: "UPE Fans Error"
+        }
+        label {
+          value: 3
+          label: "Pinch Fan Error"
+        }
+        label {
+          value: 4
+          label: "Stack Fan Error"
+        }
+        label {
+          value: 5
+          label: "Stack Fan Error"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "MAX_LAMP_POWER"
+    value: 33792
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Max Lamp Power"
+        label {
+          value: 1
+          label: "900 Watt"
+        }
+        label {
+          value: 2
+          label: "1200 Watt"
+        }
+        label {
+          value: 3
+          label: "1400 Watt"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Max Lamp Power"
+        label {
+          value: 1
+          label: "900 Watt"
+        }
+        label {
+          value: 2
+          label: "1200 Watt"
+        }
+        label {
+          value: 3
+          label: "1400 Watt"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "LAMP_FADE_ON_COMM_LOSS"
+    value: 33793
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Fade On Comm Loss"
+        label {
+          value: 1
+          label: "Hold"
+        }
+        label {
+          value: 2
+          label: "30 Sec"
+        }
+        label {
+          value: 3
+          label: "60 Sec"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Fade On Comm Loss"
+        label {
+          value: 1
+          label: "Hold"
+        }
+        label {
+          value: 2
+          label: "30 Sec"
+        }
+        label {
+          value: 3
+          label: "60 Sec"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "LOCK_PAN"
+    value: 34304
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Pan Lock"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Pan Lock"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "LOCK_TILT"
+    value: 34305
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Tilt Lock"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Tilt Lock"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "PAN_TILT_FREE_MOTION"
+    value: 34306
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Free Motion"
+        label {
+          value: 1
+          label: "Normal Operation"
+        }
+        label {
+          value: 2
+          label: "Pan Tilt Free Motion"
+        }
+        label {
+          value: 3
+          label: "Pan Tilt Locked"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Free Motion"
+        label {
+          value: 1
+          label: "Normal Operation"
+        }
+        label {
+          value: 2
+          label: "Pan Tilt Free Motion"
+        }
+        label {
+          value: 3
+          label: "Pan Tilt Locked"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_CONTROLLER_MODE"
+    value: 34312
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Followspot Control"
+        label {
+          value: 0
+          label: "Normal Operation"
+        }
+        label {
+          value: 1
+          label: "Intensity Control"
+        }
+        label {
+          value: 2
+          label: "Iris Control"
+        }
+        label {
+          value: 3
+          label: "Intensity + Iris Control"
+        }
+        label {
+          value: 4
+          label: "Zoom Control"
+        }
+        label {
+          value: 5
+          label: "Intensity + Zoom Control"
+        }
+        label {
+          value: 6
+          label: "Iris + Zoom Control"
+        }
+        label {
+          value: 7
+          label: "Intensity + Iris + Zoom Control"
+        }
+        label {
+          value: 8
+          label: "Edge Control"
+        }
+        label {
+          value: 9
+          label: "Intensity + Edge Control"
+        }
+        label {
+          value: 10
+          label: "Iris + Edge Control"
+        }
+        label {
+          value: 11
+          label: "Intensity + Iris + Edge Control"
+        }
+        label {
+          value: 12
+          label: "Edge + Zoom Control"
+        }
+        label {
+          value: 13
+          label: "Intensity + Edge + Zoom Control"
+        }
+        label {
+          value: 14
+          label: "Iris + Edge + Zoom Control"
+        }
+        label {
+          value: 15
+          label: "Intensity + Iris + Edge + Zoom Control"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Followspot Control"
+        label {
+          value: 0
+          label: "Normal Operation"
+        }
+        label {
+          value: 1
+          label: "Intensity Control"
+        }
+        label {
+          value: 2
+          label: "Iris Control"
+        }
+        label {
+          value: 3
+          label: "Intensity + Iris Control"
+        }
+        label {
+          value: 4
+          label: "Zoom Control"
+        }
+        label {
+          value: 5
+          label: "Intensity + Zoom Control"
+        }
+        label {
+          value: 6
+          label: "Iris + Zoom Control"
+        }
+        label {
+          value: 7
+          label: "Intensity + Iris + Zoom Control"
+        }
+        label {
+          value: 8
+          label: "Edge Control"
+        }
+        label {
+          value: 9
+          label: "Intensity + Edge Control"
+        }
+        label {
+          value: 10
+          label: "Iris + Edge Control"
+        }
+        label {
+          value: 11
+          label: "Intensity + Iris + Edge Control"
+        }
+        label {
+          value: 12
+          label: "Edge + Zoom Control"
+        }
+        label {
+          value: 13
+          label: "Intensity + Edge + Zoom Control"
+        }
+        label {
+          value: 14
+          label: "Iris + Edge + Zoom Control"
+        }
+        label {
+          value: 15
+          label: "Intensity + Iris + Edge + Zoom Control"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ZOOM_TYPE"
+    value: 34336
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Zoom Type"
+        label {
+          value: 0
+          label: "Fast"
+        }
+        label {
+          value: 1
+          label: "In Focus"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Zoom Type"
+        label {
+          value: 0
+          label: "Fast"
+        }
+        label {
+          value: 1
+          label: "In Focus"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ZOOM_TABLE"
+    value: 34337
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Zoom Table"
+        label {
+          value: 0
+          label: "30' Throw"
+        }
+        label {
+          value: 1
+          label: "50' Throw"
+        }
+        label {
+          value: 2
+          label: "75' Throw"
+        }
+        label {
+          value: 3
+          label: "100' Throw"
+        }
+        label {
+          value: 4
+          label: "300' Throw"
+        }
+        label {
+          value: 5
+          label: "15' Throw"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Zoom Table"
+        label {
+          value: 0
+          label: "30' Throw"
+        }
+        label {
+          value: 1
+          label: "50' Throw"
+        }
+        label {
+          value: 2
+          label: "75' Throw"
+        }
+        label {
+          value: 3
+          label: "100' Throw"
+        }
+        label {
+          value: 4
+          label: "300' Throw"
+        }
+        label {
+          value: 5
+          label: "15' Throw"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ZERO_GOBO_WHEELS"
+    value: 34368
+    set_request {
+      field {
+        type: BOOL
+        name: "Zero Gobo Wheels"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CLEAR_LOG"
+    value: 34400
+    set_request {
+      field {
+        type: BOOL
+        name: "Clear Log"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DISABLE_MECHS"
+    value: 36864
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Disable Mechanics"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Disable Mechanics"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 21075
   manufacturer_name: "Robe Show Lighting s.r.o."
   pid {
@@ -4650,6 +6293,76 @@ manufacturer {
           value: 10
           label: "10 Minutes"
         }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 21319
+  manufacturer_name: "SGM"
+  pid {
+    name: "LED_FREQ_(72000HZ/VALUE)"
+    value: 34336
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Value"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Value"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "GAMMA_CORRECTION"
+    value: 34339
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Gamma Correction"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Gamma Correction"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "WHITE_CALIBRATION"
+    value: 34340
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "White Calibration"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "White Calibration"
       }
     }
     set_response {
