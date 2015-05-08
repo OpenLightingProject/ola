@@ -25,6 +25,7 @@
 #include "common/protocol/OlaService.pb.h"
 #include "ola/Callback.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 
@@ -253,9 +254,7 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   void HandleRDMResponse(ola::proto::RDMResponse* response,
                          ola::rpc::RpcService::CompletionCallback* done,
                          bool include_raw_packets,
-                         ola::rdm::RDMStatusCode code,
-                         const ola::rdm::RDMResponse *rdm_response,
-                         const std::vector<std::string> &packets);
+                         ola::rdm::RDMReply *reply);
   void RDMDiscoveryComplete(unsigned int universe,
                             ola::rpc::RpcService::CompletionCallback* done,
                             ola::proto::UIDListReply *response,

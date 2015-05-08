@@ -344,6 +344,18 @@ message RDMDiscoveryRequest {
   optional RDMRequestOverrideOptions options = 8;
 }
 
+message RDMFrameTiming {
+  optional int32 response_delay = 1;
+  optional int32 break_time = 2;
+  optional int32 mark_time = 3;
+  optional int32 data_time = 4;
+}
+
+message RDMFrame {
+  optional bytes raw_response = 1;
+  optional RDMFrameTiming timing = 2;
+}
+
 message RDMResponse {
   required RDMResponseCode response_code = 1;
   optional UID source_uid = 9;
@@ -357,7 +369,8 @@ message RDMResponse {
   optional RDMCommandClass command_class = 6; // the command class
   optional uint32 param_id = 5;  // the param id, required for queued messages
   optional bytes data = 4 [default = ""]; // 0 - 231 bytes
-  repeated bytes raw_response = 8;
+  repeated bytes raw_response = 8;  // deprecated
+  repeated RDMFrame raw_frame = 12;
 }
 
 

@@ -52,9 +52,8 @@ QueueingRDMController::QueueingRDMController(
     m_max_queue_size(max_queue_size),
     m_rdm_request_pending(false),
     m_active(true),
-    m_response(NULL) {
-  m_callback = ola::NewCallback(this,
-                                &QueueingRDMController::HandleRDMResponse);
+    m_callback(ola::NewCallback(this,
+                                &QueueingRDMController::HandleRDMResponse)) {
 }
 
 
@@ -63,20 +62,14 @@ QueueingRDMController::QueueingRDMController(
  */
 QueueingRDMController::~QueueingRDMController() {
   // delete all outstanding requests
-  vector<string> packets;
   while (!m_pending_requests.empty()) {
     outstanding_rdm_request outstanding_request = m_pending_requests.front();
-    if (outstanding_request.on_complete)
-      outstanding_request.on_complete->Run(RDM_FAILED_TO_SEND, NULL, packets);
+    if (outstanding_request.on_complete) {
+      RunRDMCallback(outstanding_request.on_complete, RDM_FAILED_TO_SEND);
+    }
     delete outstanding_request.request;
     m_pending_requests.pop();
   }
-
-  if (m_response)
-    delete m_response;
-
-  if (m_callback)
-    delete m_callback;
 }
 
 
@@ -105,8 +98,7 @@ void QueueingRDMController::SendRDMRequest(RDMRequest *request,
   if (m_pending_requests.size() >= m_max_queue_size) {
     OLA_WARN << "RDM Queue is full, dropping request";
     if (on_complete) {
-      vector<string> packets;
-      on_complete->Run(RDM_FAILED_TO_SEND, NULL, packets);
+      RunRDMCallback(on_complete, RDM_FAILED_TO_SEND);
     }
     delete request;
     return;
@@ -164,17 +156,14 @@ void QueueingRDMController::DispatchNextRequest() {
   // We need to have the original request because we use it if we receive an
   // ACK_OVERFLOW.
   m_controller->SendRDMRequest(outstanding_request.request->Duplicate(),
-                               m_callback);
+                               m_callback.get());
 }
 
 
 /*
  * Handle the response to a RemoteGet command
  */
-void QueueingRDMController::HandleRDMResponse(
-    RDMStatusCode status,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
+void QueueingRDMController::HandleRDMResponse(RDMReply *reply) {
   m_rdm_request_pending = false;
 
   if (m_pending_requests.empty()) {
@@ -182,52 +171,59 @@ void QueueingRDMController::HandleRDMResponse(
     return;
   }
 
-  m_packets.insert(m_packets.end(), packets.begin(), packets.end());
-
-  if (status == RDM_COMPLETED_OK && response == NULL) {
-    // this is invalid, the only option here is to fail it
-    OLA_FATAL << "State was OK but response is NULL!";
-    status = RDM_INVALID_RESPONSE;
-  } else if (status == RDM_COMPLETED_OK) {
-    uint8_t original_type = response->ResponseType();
-    if (m_response) {
-      // if this is part of an overflowed response we need to combine it
-      RDMResponse *combined_response =
-        RDMResponse::CombineResponses(m_response, response);
-      delete m_response;
-      delete response;
-      m_response = combined_response;
+  bool was_ack_overflow = reply->StatusCode() == RDM_COMPLETED_OK &&
+                          reply->Response() &&
+                          reply->Response()->ResponseType() == ACK_OVERFLOW;
+  // Check for ACK_OVERFLOW
+  if (m_response.get()) {
+    if (reply->StatusCode() != RDM_COMPLETED_OK || reply->Response() == NULL) {
+      // We failed part way through an ACK_OVERFLOW
+      m_frames.insert(m_frames.end(), reply->Frames().begin(),
+                      reply->Frames().end());
+      RDMReply new_reply(reply->StatusCode(), NULL, m_frames);
+      RunCallback(&new_reply);
+      m_response.reset();
+      m_frames.clear();
+      TakeNextAction();
     } else {
-      m_response = response;
-    }
+      // Combine the data.
+      m_response.reset(RDMResponse::CombineResponses(
+            m_response.get(), reply->Response()));
+      m_frames.insert(m_frames.end(), reply->Frames().begin(),
+                      reply->Frames().end());
 
-    // m_response now points to a valid response, or null if we couldn't
-    // combine correctly.
-    if (m_response) {
-      if (original_type == ACK_OVERFLOW) {
-        // send the same command again;
+      if (reply->Response()->ResponseType() != ACK_OVERFLOW) {
+        RDMReply new_reply(RDM_COMPLETED_OK, m_response.release(), m_frames);
+        RunCallback(&new_reply);
+        m_response.reset();
+        m_frames.clear();
+      } else {
         DispatchNextRequest();
-        return;
       }
-    } else {
-      status = RDM_INVALID_RESPONSE;
+      return;
     }
+  } else if (was_ack_overflow) {
+    // We're in an ACK_OVERFLOW sequence.
+    m_frames.clear();
+    m_response.reset(reply->Response()->Duplicate());
+    m_frames.insert(m_frames.end(), reply->Frames().begin(),
+                    reply->Frames().end());
+    DispatchNextRequest();
   } else {
-    // If an error occurs mid-transaction we abort it.
-    if (m_response)
-      delete m_response;
-    m_response = NULL;
+    // Just pass the RDMReply on.
+    RunCallback(reply);
+    TakeNextAction();
   }
-  outstanding_rdm_request outstanding_request = m_pending_requests.front();
-  if (outstanding_request.on_complete)
-    outstanding_request.on_complete->Run(status, m_response, m_packets);
-  m_packets.clear();
-  m_response = NULL;
-  delete outstanding_request.request;
-  m_pending_requests.pop();
-  TakeNextAction();
 }
 
+void QueueingRDMController::RunCallback(RDMReply *reply) {
+  outstanding_rdm_request outstanding_request = m_pending_requests.front();
+  m_pending_requests.pop();
+  if (outstanding_request.on_complete) {
+    outstanding_request.on_complete->Run(reply);
+  }
+  delete outstanding_request.request;
+}
 
 
 /**

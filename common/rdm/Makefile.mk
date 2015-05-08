@@ -35,7 +35,9 @@ common_libolacommon_la_SOURCES += \
     common/rdm/RDMAPI.cpp \
     common/rdm/RDMCommand.cpp \
     common/rdm/RDMCommandSerializer.cpp \
+    common/rdm/RDMFrame.cpp \
     common/rdm/RDMHelper.cpp \
+    common/rdm/RDMReply.cpp \
     common/rdm/ResponderHelper.cpp \
     common/rdm/ResponderLoadSensor.cpp \
     common/rdm/ResponderPersonality.cpp \

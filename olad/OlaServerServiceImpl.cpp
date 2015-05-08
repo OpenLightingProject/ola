@@ -792,31 +792,30 @@ void OlaServerServiceImpl::HandleRDMResponse(
     ola::proto::RDMResponse* response,
     ola::rpc::RpcService::CompletionCallback* done,
     bool include_raw_packets,
-    ola::rdm::RDMStatusCode code,
-    const RDMResponse *rdm_response,
-    const vector<string> &packets) {
+    ola::rdm::RDMReply *reply) {
   ClosureRunner runner(done);
   response->set_response_code(
-      static_cast<ola::proto::RDMResponseCode>(code));
+      static_cast<ola::proto::RDMResponseCode>(reply->StatusCode()));
 
-  if (code == ola::rdm::RDM_COMPLETED_OK) {
-    if (!rdm_response) {
+  if (reply->StatusCode() == ola::rdm::RDM_COMPLETED_OK) {
+    if (!reply->Response()) {
       // No response returned.
       OLA_WARN << "RDM code was ok but response was NULL";
       response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
             ola::rdm::RDM_INVALID_RESPONSE));
-    } else if (rdm_response->ResponseType() <= ola::rdm::RDM_NACK_REASON) {
+    } else if (reply->Response()->ResponseType() <= ola::rdm::RDM_NACK_REASON) {
       // Valid RDM Response code.
-      SetProtoUID(rdm_response->SourceUID(), response->mutable_source_uid());
-      SetProtoUID(rdm_response->DestinationUID(),
+      SetProtoUID(reply->Response()->SourceUID(),
+                  response->mutable_source_uid());
+      SetProtoUID(reply->Response()->DestinationUID(),
                   response->mutable_dest_uid());
-      response->set_transaction_number(rdm_response->TransactionNumber());
+      response->set_transaction_number(reply->Response()->TransactionNumber());
       response->set_response_type(static_cast<ola::proto::RDMResponseType>(
-          rdm_response->ResponseType()));
-      response->set_message_count(rdm_response->MessageCount());
-      response->set_sub_device(rdm_response->SubDevice());
+          reply->Response()->ResponseType()));
+      response->set_message_count(reply->Response()->MessageCount());
+      response->set_sub_device(reply->Response()->SubDevice());
 
-      switch (rdm_response->CommandClass()) {
+      switch (reply->Response()->CommandClass()) {
         case ola::rdm::RDMCommand::DISCOVER_COMMAND_RESPONSE:
           response->set_command_class(ola::proto::RDM_DISCOVERY_RESPONSE);
           break;
@@ -829,34 +828,35 @@ void OlaServerServiceImpl::HandleRDMResponse(
         default:
           OLA_WARN << "Unknown command class "
                    << strings::ToHex(static_cast<unsigned int>(
-                         rdm_response->CommandClass()));
+                         reply->Response()->CommandClass()));
       }
 
-      response->set_param_id(rdm_response->ParamId());
+      response->set_param_id(reply->Response()->ParamId());
 
-      if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
-        const string data(
-            reinterpret_cast<const char*>(rdm_response->ParamData()),
-            rdm_response->ParamDataSize());
-        response->set_data(data);
-      } else {
-        response->set_data("");
+      if (reply->Response()->ParamData() &&
+          reply->Response()->ParamDataSize()) {
+        response->set_data(
+            reinterpret_cast<const char*>(reply->Response()->ParamData()),
+            reply->Response()->ParamDataSize());
       }
     } else {
       // Invalid RDM Response code.
       OLA_WARN << "RDM response present, but response type is invalid, was "
-               << strings::ToHex(rdm_response->ResponseType());
-      response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
-            ola::rdm::RDM_INVALID_RESPONSE));
+               << strings::ToHex(reply->Response()->ResponseType());
+      response->set_response_code(ola::proto::RDM_INVALID_RESPONSE);
     }
   }
 
-  delete rdm_response;
-
   if (include_raw_packets) {
-    vector<string>::const_iterator iter = packets.begin();
-    for (; iter != packets.end(); ++iter) {
-      response->add_raw_response(*iter);
+    vector<rdm::RDMFrame>::const_iterator iter = reply->Frames().begin();
+    for (; iter != reply->Frames().end(); ++iter) {
+      ola::proto::RDMFrame *frame = response->add_raw_frame();
+      frame->set_raw_response(iter->data.data(), iter->data.size());
+      ola::proto::RDMFrameTiming *timing = frame->mutable_timing();
+      timing->set_response_delay(iter->timing_info.response_delay);
+      timing->set_break_time(iter->timing_info.break_time);
+      timing->set_mark_time(iter->timing_info.mark_time);
+      timing->set_data_time(iter->timing_info.data_time);
     }
   }
 }

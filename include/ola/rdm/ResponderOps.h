@@ -65,7 +65,7 @@ class ResponderOps {
      * The member function should return a RDMResponse object. If the request
      * was broadcast, this object will be discarded.
      */
-    typedef const RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
+    typedef RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
 
     /**
      * @brief the structure that defines the behaviour for a specific PID.o

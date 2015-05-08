@@ -62,15 +62,12 @@ void ClientBroker::SendRDMRequest(const Client *client,
  */
 void ClientBroker::RequestComplete(const Client *client,
                                    ola::rdm::RDMCallback *callback,
-                                   ola::rdm::RDMStatusCode code,
-                                   const ola::rdm::RDMResponse *response,
-                                   const vector<string> &packets) {
+                                   ola::rdm::RDMReply *reply) {
   if (!STLContains(m_clients, client)) {
     OLA_DEBUG << "Client no longer exists, cleaning up from RDM response";
-    delete response;
     delete callback;
   } else {
-    callback->Run(code, response, packets);
+    callback->Run(reply);
   }
 }
 }  // namespace ola

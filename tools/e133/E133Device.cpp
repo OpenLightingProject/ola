@@ -254,22 +254,18 @@ void E133Device::EndpointRequestComplete(
     ola::network::IPV4SocketAddress target,
     uint32_t sequence_number,
     uint16_t endpoint_id,
-    ola::rdm::RDMStatusCode status_code,
-    const ola::rdm::RDMResponse *response_ptr,
-    const vector<string>&) {
-  auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
-
-  if (status_code != ola::rdm::RDM_COMPLETED_OK) {
-    string description = ola::rdm::ResponseCodeToString(status_code);
+    ola::rdm::RDMReply *reply) {
+  if (reply->StatusCode() != ola::rdm::RDM_COMPLETED_OK) {
+    string description = ola::rdm::ResponseCodeToString(reply->StatusCode());
     ola::e133::E133StatusCode e133_status_code = RDMStatusCodeToE133Status(
-        status_code);
+        reply->StatusCode());
     SendStatusMessage(target, sequence_number, endpoint_id,
                       e133_status_code, description);
     return;
   }
 
   IOStack packet(m_message_builder.pool());
-  ola::rdm::RDMCommandSerializer::Write(*response.get(), &packet);
+  ola::rdm::RDMCommandSerializer::Write(*reply->Response(), &packet);
   RDMPDU::PrependPDU(&packet);
   m_message_builder.BuildUDPRootE133(
       &packet, ola::acn::VECTOR_FRAMING_RDMNET, sequence_number,

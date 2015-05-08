@@ -211,10 +211,9 @@ void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
  * @param command_header the RDMCommandHeader struct to copy the data to
  * @return a RDMStatusCode
  */
-RDMStatusCode RDMCommand::VerifyData(
-    const uint8_t *data,
-    unsigned int length,
-    RDMCommandHeader *command_header) {
+RDMStatusCode RDMCommand::VerifyData(const uint8_t *data,
+                                     size_t length,
+                                     RDMCommandHeader *command_header) {
   if (length < sizeof(RDMCommandHeader)) {
     OLA_WARN << "RDM message is too small, needs to be at least " <<
       sizeof(RDMCommandHeader) << ", was " << length;
@@ -407,36 +406,15 @@ RDMRequest* RDMRequest::InflateFromData(const string &data) {
                          data.size());
 }
 
-
-/**
- * Inflate a request from some data
- * @param data the request data
- * @param length the length of the request data
- * @param status_code a pointer to a RDMStatusCode to set
- * @param request an optional RDMRequest object that this response is for
- * @returns a new RDMResponse object, or NULL is this response is invalid
- */
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
-                                          unsigned int length,
+                                          size_t length,
                                           RDMStatusCode *status_code,
                                           const RDMRequest *request) {
-  if (request)
-    return InflateFromData(data, length, status_code, request,
-                           request->TransactionNumber());
-  else
-    return InflateFromData(data, length, status_code, request, 0);
-}
-
-
-RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
-                                          unsigned int length,
-                                          RDMStatusCode *status_code,
-                                          const RDMRequest *request,
-                                          uint8_t transaction_number) {
   RDMCommandHeader command_message;
   *status_code = VerifyData(data, length, &command_message);
-  if (*status_code != RDM_COMPLETED_OK)
+  if (*status_code != RDM_COMPLETED_OK) {
     return NULL;
+  }
 
   UID source_uid(command_message.source_uid);
   UID destination_uid(command_message.destination_uid);
@@ -463,10 +441,10 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     }
 
     // check transaction #
-    if (command_message.transaction_number != transaction_number) {
+    if (command_message.transaction_number != request->TransactionNumber()) {
       OLA_WARN << "Transaction numbers don't match, got " <<
         static_cast<int>(command_message.transaction_number) << ", expected "
-        << static_cast<int>(transaction_number);
+        << static_cast<int>(request->TransactionNumber());
       *status_code = RDM_TRANSACTION_MISMATCH;
       return NULL;
     }
@@ -516,10 +494,9 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     return NULL;
   }
 
-  uint16_t param_id = ((command_message.param_id[0] << 8) +
-    command_message.param_id[1]);
-  uint8_t return_transaction_number = (request ? transaction_number :
-    command_message.transaction_number);
+  uint16_t param_id = JoinUInt8(command_message.param_id[0],
+                                command_message.param_id[1]);
+  uint8_t return_transaction_number = command_message.transaction_number;
 
   switch (command_class) {
     case DISCOVER_COMMAND_RESPONSE:
@@ -564,29 +541,6 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       *status_code = RDM_INVALID_COMMAND_CLASS;
       return NULL;
   }
-}
-
-
-/**
- * Inflate from some data
- */
-RDMResponse* RDMResponse::InflateFromData(const string &data,
-                                          RDMStatusCode *status_code,
-                                          const RDMRequest *request) {
-  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size(), status_code, request);
-}
-
-
-/**
- * Inflate from some data
- */
-RDMResponse* RDMResponse::InflateFromData(const string &data,
-                                          RDMStatusCode *status_code,
-                                          const RDMRequest *request,
-                                          uint8_t transaction_number) {
-  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size(), status_code, request, transaction_number);
 }
 
 RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,

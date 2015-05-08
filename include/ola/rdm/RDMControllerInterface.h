@@ -31,114 +31,36 @@
 
 #include <ola/Callback.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMReply.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UIDSet.h>
-#include <string>
-#include <vector>
 
 namespace ola {
 namespace rdm {
 
 /**
- * @brief The raw data for a RDM message and its timing information.
- *
- * A RDMFrame holds the raw data and timing metadata for a RDM message. If no
- * timing data was provided, all timing values will be 0.
- */
-class RDMFrame {
- public:
-  typedef std::basic_string<uint8_t> ByteString;
-
-  ByteString data;  //!< The raw RDM response data.
-
-  /**
-   * @brief The timing measurements for an RDM Frame.
-   *
-   * All times are measured in nanoseconds.
-   *
-   * For DUB responses, the break and mark values will be 0.
-   */
-  struct {
-    uint32_t response_delay;  //!< The delay before the first response.
-    uint32_t break_time;  //!< The duration of the break.
-    uint32_t mark_time;  //!< The duration of the mark-after-break.
-    uint32_t data_time;  //!< The duration of the data.
-  } timing_info;
-};
-
-/**
- * @brief Holds the final state of an RDM request.
- *
- * When a RDM request completes, the following information is returned:
- *  - The RDMStatusCode.
- *  - An RDMResponse, if the response data was valid.
- *  - Raw data, including response timing information if provided.
- */
-struct RDMReply {
- public:
-  /**
-   * @brief Create a new RDMReply from a RDM Response Code.
-   */
-  explicit RDMReply(RDMStatusCode status_code);
-
-  /**
-   * @brief Create a RDMReply with a response code and response object.
-   * @param status_code The RDMStatusCode.
-   * @param response The RDMResponse object, ownership is transferred.
-   */
-  RDMReply(RDMStatusCode status_code,
-           RDMResponse *response);
-
-  /**
-   * @brief Return the RDMStatusCode for the request.
-   */
-  RDMStatusCode StatusCode() const;
-
-  /**
-   * @brief Returns the RDMResponse if there is one.
-   * @returns A RDMResponse object or NULL if the response data was not a valid
-   *   RDM message.
-   *
-   * The returned pointer is valid for the lifetime of the RDMReply object.
-   */
-  const RDMResponse* Response() const;
-
-  /**
-   * @brief Returns a pointer to a mutable RDMResponse.
-   * @returns A RDMResponse object or NULL if the response data was not a valid
-   *   RDM message.
-   *
-   * The returned pointer is valid for the lifetime of the RDMReply object.
-   */
-  RDMResponse* MutableResponse();
-
-  /**
-   * @brief The frames that make up this RDM reply.
-   *
-   * This may be empty, if the raw frame data was not available.
-   */
-  std::vector<RDMFrame> frames;
-
- private:
-  RDMStatusCode m_status_code;
-  std::auto_ptr<RDMResponse> m_rdm_response;
-
-  DISALLOW_COPY_AND_ASSIGN(RDMReply);
-};
-
-/**
  * @brief The callback run when a RDM request completes.
- * @tparam reply The RDMReply object.
+ * @tparam reply The RDMReply object. The reply object is valid for the
+ * duration of the call.
+ *
+ * The RDMReply is not const, since some stages of the pipeline may need to
+ * rewrite the UID / Transaction Number.
  *
  * For performance reasons this can be either a single use callback or a
  * permanent callback.
  */
-// typedef ola::BaseCallback1<void, const RDMReply&> RDMCallback;
+typedef ola::BaseCallback1<void, RDMReply*> RDMCallback;
 
-typedef ola::BaseCallback3<void,
-                           RDMStatusCode,
-                           const RDMResponse*,
-                           const std::vector<std::string>&> RDMCallback;
+
+/**
+ * @brief A helper message to run a RDMCallback with the given status code.
+ * @param callback The RDMCallback to run.
+ * @param status_code The status code to use in the RDMReply.
+ */
+inline void RunRDMCallback(RDMCallback *callback, RDMStatusCode status_code) {
+  ola::rdm::RDMReply reply(status_code);
+  callback->Run(&reply);
+}
 
 /**
  * @brief The callback run when a discovery operation completes.

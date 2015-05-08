@@ -24,18 +24,23 @@
 #include <vector>
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/io/ByteString.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/RobeWidget.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
+#include "plugins/usbpro/RobeWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::io::ByteString;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMReply;
+using ola::rdm::RunRDMCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -66,19 +71,13 @@ RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
  * Stop the widget.
  */
 void RobeWidgetImpl::Stop() {
-  vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
   }
 
   m_discovery_agent.Abort();
-
-  if (m_pending_request) {
-    delete m_pending_request;
-    m_pending_request = NULL;
-  }
 }
 
 
@@ -101,22 +100,18 @@ bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
 /**
  * Send a RDM Message
  */
-void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
+void RobeWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                     ola::rdm::RDMCallback *on_complete) {
-  vector<string> packets;
+  auto_ptr<RDMRequest> request(request_ptr);
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
   // prepare the buffer for the RDM data, we don't need to include the start
   // code. We need to include 4 bytes at the end, these bytes can be any value.
-  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request) +
-    RDM_PADDING_BYTES;
-  uint8_t *data = new uint8_t[data_size];
-  memset(data, 0, data_size);
+  ByteString data;
 
   unsigned int this_transaction_number = m_transaction_number++;
   unsigned int port_id = 1;
@@ -125,35 +120,31 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
   request->SetTransactionNumber(this_transaction_number);
   request->SetPortId(port_id);
 
-  if (!RDMCommandSerializer::Pack(*request, data, &data_size)) {
+  if (!RDMCommandSerializer::Pack(*request, &data)) {
     OLA_WARN << "Failed to pack message, dropping request";
-    delete[] data;
-    delete request;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
+
+  // Append the extra padding bytes, which can be set to any value.
+  data.append(RDM_PADDING_BYTES, 0);
+
+  OLA_DEBUG << "Sending RDM command. CC: "
+            << strings::ToHex(request->CommandClass()) << ", PID "
+            << strings::ToHex(request->ParamId()) << ", TN: "
+            << this_transaction_number;
 
   m_rdm_request_callback = on_complete;
-  m_pending_request = request;
+  m_pending_request.reset(request.release());
 
-  OLA_DEBUG << "Sending RDM command. CC: 0x" << std::hex <<
-    request->CommandClass() << ", PID 0x" << std::hex <<
-    request->ParamId() << ", TN: " << this_transaction_number;
+  const uint8_t label = request->IsDUB() ? RDM_DISCOVERY : RDM_REQUEST;
+  bool sent_ok = SendMessage(label, data.data(), data.size());
 
-  const uint8_t label = (
-      (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
-       request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) ?
-      RDM_DISCOVERY : RDM_REQUEST);
-
-  if (!SendMessage(label, data, data_size + RDM_PADDING_BYTES)) {
+  if (!sent_ok) {
     m_rdm_request_callback = NULL;
-    m_pending_request = NULL;
-    delete[] data;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    return;
+    m_pending_request.reset();
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
   }
-
-  delete[] data;
 }
 
 
@@ -271,8 +262,8 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
       HandleDmxFrame(data, length);
       return;
     default:
-      OLA_INFO << "Unknown message from Robe widget " << std::hex <<
-        static_cast<unsigned int>(label);
+      OLA_INFO << "Unknown message from Robe widget "
+               << strings::ToHex(label);
   }
 }
 
@@ -283,7 +274,6 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
   OLA_DEBUG << "Got RDM Response from Robe Widget, length " << length;
-  vector<string> packets;
   if (m_unmute_callback) {
     UnMuteDeviceCallback *callback = m_unmute_callback;
     m_unmute_callback = NULL;
@@ -305,32 +295,24 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  auto_ptr<const RDMRequest> request(m_pending_request);
-  m_pending_request = NULL;
+  auto_ptr<const RDMRequest> request(m_pending_request.release());
 
   // this was a broadcast request
   if (request->DestinationUID().IsBroadcast()) {
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_WAS_BROADCAST);
     return;
   }
 
   if (length == RDM_PADDING_BYTES) {
     // this indicates that no request was received
-    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
     return;
   }
 
-  string packet;
-  packet.assign(reinterpret_cast<const char*>(data), length);
-  packets.push_back(packet);
-
-  // try to inflate
-  ola::rdm::RDMStatusCode status_code;
-  RDMResponse *response = RDMResponse::InflateFromData(
-      packet,
-      &status_code,
-      request.get());
-  callback->Run(status_code, response, packets);
+  // The widget response data doesn't contain a start code so we prepend it.
+  rdm::RDMFrame frame(data, length, rdm::RDMFrame::Options(true));
+  auto_ptr<RDMReply> reply(RDMReply::FromFrame(frame, request.get()));
+  callback->Run(reply.get());
 }
 
 
@@ -348,20 +330,17 @@ void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
     else
       callback->Run(data, length - RDM_PADDING_BYTES);
   } else if (m_rdm_request_callback) {
-    vector<string> packets;
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    auto_ptr<const RDMRequest> request(m_pending_request);
-    m_pending_request = NULL;
+    auto_ptr<const RDMRequest> request(m_pending_request.release());
 
     if (length <= RDM_PADDING_BYTES) {
       // this indicates that no request was received
-      callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+      RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
     } else {
-      packets.push_back(
-          string(reinterpret_cast<const char*>(data),
-                 length - RDM_PADDING_BYTES));
-      callback->Run(ola::rdm::RDM_DUB_RESPONSE, NULL, packets);
+      auto_ptr<RDMReply> reply(RDMReply::DUBReply(
+        rdm::RDMFrame(data, length - RDM_PADDING_BYTES)));
+      callback->Run(reply.get());
     }
   } else {
     OLA_WARN << "Got response to DUB but no callbacks defined!";
@@ -401,11 +380,12 @@ void RobeWidgetImpl::HandleDmxFrame(const uint8_t *data, unsigned int length) {
  */
 bool RobeWidgetImpl::PackAndSendRDMRequest(uint8_t label,
                                            const RDMRequest *request) {
-  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
-  uint8_t data[length + RDM_PADDING_BYTES];
-  memset(data, 0, length + RDM_PADDING_BYTES);
-  RDMCommandSerializer::Pack(*request, data, &length);
-  return SendMessage(label, data, length + RDM_PADDING_BYTES);
+  ByteString frame;
+  if (!RDMCommandSerializer::Pack(*request, &frame)) {
+    return false;
+  }
+  frame.append(RDM_PADDING_BYTES, 0);
+  return SendMessage(label, frame.data(), frame.size());
 }
 
 

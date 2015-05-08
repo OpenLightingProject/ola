@@ -32,9 +32,13 @@
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
 
+using ola::io::ByteString;
 using ola::plugin::usbpro::ArduinoWidget;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMFrame;
+using ola::rdm::RDMFrames;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -64,14 +68,10 @@ class ArduinoWidgetTest: public CommonWidgetTest {
     uint8_t m_transaction_number;
 
     void ValidateTod(const ola::rdm::UIDSet &uids);
-    void ValidateResponse(ola::rdm::RDMStatusCode code,
-                          const ola::rdm::RDMResponse *response,
-                          const vector<string> &packets);
+    void ValidateResponse(RDMReply *reply);
     void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
-                        vector<string> expected_packets,
-                        ola::rdm::RDMStatusCode code,
-                        const ola::rdm::RDMResponse *response,
-                        const vector<string> &packets);
+                        RDMFrames expected_frames,
+                        RDMReply *reply);
     RDMRequest *NewRequest(const UID &destination,
                            const uint8_t *data = NULL,
                            unsigned int length = 0);
@@ -131,59 +131,45 @@ void ArduinoWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
 /*
  * Check the response matches what we expected.
  */
-void ArduinoWidgetTest::ValidateResponse(
-    ola::rdm::RDMStatusCode code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
-  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
-  OLA_ASSERT(response);
+void ArduinoWidgetTest::ValidateResponse(RDMReply *reply) {
+  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
+  OLA_ASSERT(reply->Response());
+
+  const ola::rdm::RDMResponse *response = reply->Response();
   OLA_ASSERT_EQ(
       static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
       response->ParamDataSize());
   OLA_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
-                             response->ParamDataSize()));
+                         response->ParamDataSize()));
 
-  OLA_ASSERT_EQ((size_t) 1, packets.size());
+  OLA_ASSERT_EQ((size_t) 1, reply->Frames().size());
+  const ola::rdm::RDMFrame frame = reply->Frames()[0];
+
   ola::rdm::RDMStatusCode raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
-    ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
+    ola::rdm::RDMResponse::InflateFromData(frame.data, &raw_code));
   OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
-  delete response;
   m_ss.Terminate();
 }
 
 
 /*
- * Check that this request returned the expected status code
- * @param expected_code the expected widget status code
- * @param expected_code a list of expected packets
- * @param code the actual status code returns
- * @param response the RDMResponse object, or NULL
- * @param packets the actual packets involved
+ * Check that this request returned the expected status code & frames.
  */
-void ArduinoWidgetTest::ValidateStatus(
-    ola::rdm::RDMStatusCode expected_code,
-    vector<string> expected_packets,
-    ola::rdm::RDMStatusCode code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
+void ArduinoWidgetTest::ValidateStatus(ola::rdm::RDMStatusCode expected_code,
+                                       RDMFrames expected_frames,
+                                       RDMReply *reply) {
+  OLA_ASSERT_EQ(expected_code, reply->StatusCode());
+  OLA_ASSERT_NULL(reply->Response());
 
-  OLA_ASSERT_EQ(expected_code, code);
-  OLA_ASSERT_FALSE(response);
+  const RDMFrames &frames = reply->Frames();
 
-  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
-  for (unsigned int i = 0; i < packets.size(); i++) {
-    if (expected_packets[i].size() != packets[i].size())
-      OLA_INFO << expected_packets[i].size() << " != " << packets[i].size();
-    OLA_ASSERT_EQ(expected_packets[i].size(), packets[i].size());
-
-    if (expected_packets[i] != packets[i]) {
-      for (unsigned int j = 0; j < packets[i].size(); j++) {
-        OLA_INFO << std::hex << static_cast<int>(packets[i][j]) << " - " <<
-          static_cast<int>(expected_packets[i][j]);
-      }
-    }
-    OLA_ASSERT(expected_packets[i] == packets[i]);
+  OLA_ASSERT_EQ(expected_frames.size(), frames.size());
+  for (unsigned int i = 0; i < frames.size(); i++) {
+    const ByteString &expected = expected_frames[i].data;
+    const ByteString &actual = frames[i].data;
+    OLA_ASSERT_DATA_EQUALS(expected.data(), expected.size(), actual.data(),
+                           actual.size());
   }
   m_ss.Terminate();
 }
@@ -325,13 +311,13 @@ void ArduinoWidgetTest::testSendRDMRequest() {
       broadcast_response_frame,
       response_size);
 
-  vector<string> packets;
+  RDMFrames frames;
   m_arduino->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &ArduinoWidgetTest::ValidateStatus,
                              ola::rdm::RDM_WAS_BROADCAST,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -347,7 +333,7 @@ void ArduinoWidgetTest::testSendRDMRequest() {
  * Check that we handle invalid responses ok
  */
 void ArduinoWidgetTest::testErrorCodes() {
-  vector<string> packets;
+  RDMFrames frames;
   // request
   RDMRequest *rdm_request = NewRequest(DESTINATION);
   unsigned int expected_request_frame_size;
@@ -363,8 +349,8 @@ void ArduinoWidgetTest::testErrorCodes() {
   // verify a checksum error is detected
   // twiddle the penultimate bit so that the checksum fails
   response_frame[response_size - 2] += 1;
-  packets.push_back(string(reinterpret_cast<char*>(response_frame + 6),
-                           RDMCommandSerializer::RequiredSize(*response)));
+  frames.push_back(RDMFrame(response_frame + 6,
+                            RDMCommandSerializer::RequiredSize(*response)));
 
   // add the expected response, send and verify
   m_endpoint->AddExpectedDataAndReturn(
@@ -378,10 +364,10 @@ void ArduinoWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &ArduinoWidgetTest::ValidateStatus,
                              ola::rdm::RDM_CHECKSUM_INCORRECT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
-  packets.clear();
+  frames.clear();
   delete[] expected_request_frame;
   delete[] response_frame;
 
@@ -406,7 +392,7 @@ void ArduinoWidgetTest::testErrorCodes() {
       &response_size);
 
   // only return the first 10 bytes of the rdm response
-  packets.push_back(string(reinterpret_cast<char*>(response_frame + 6), 8));
+  frames.push_back(RDMFrame(response_frame + 6, 8));
 
   m_endpoint->AddExpectedDataAndReturn(
       expected_request_frame,
@@ -419,10 +405,10 @@ void ArduinoWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &ArduinoWidgetTest::ValidateStatus,
                              ola::rdm::RDM_PACKET_TOO_SHORT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
-  packets.clear();
+  frames.clear();
   delete[] expected_request_frame;
   delete[] response_frame;
 
@@ -440,8 +426,7 @@ void ArduinoWidgetTest::testErrorCodes() {
   rdm_data[16] += 1;
   // 'correct' the checksum
   rdm_data[response_size + 2 - 1] += 1;
-  packets.push_back(string(reinterpret_cast<char*>(rdm_data + 2),
-                           response_size));
+  frames.push_back(RDMFrame(rdm_data + 2, response_size));
 
   response_frame = BuildUsbProMessage(
       RDM_REQUEST_LABEL,
@@ -460,10 +445,10 @@ void ArduinoWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &ArduinoWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TRANSACTION_MISMATCH,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
-  packets.clear();
+  frames.clear();
 
   delete[] expected_request_frame;
   delete[] response_frame;
@@ -480,8 +465,7 @@ void ArduinoWidgetTest::testErrorCodes() {
   rdm_data[20] += 1;
   // 'correct' the checksum
   rdm_data[response_size + 2 - 1] += 1;
-  packets.push_back(string(reinterpret_cast<char*>(rdm_data + 2),
-                           response_size));
+  frames.push_back(RDMFrame(rdm_data + 2, response_size));
 
   response_frame = BuildUsbProMessage(
       RDM_REQUEST_LABEL,
@@ -500,11 +484,11 @@ void ArduinoWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &ArduinoWidgetTest::ValidateStatus,
                              ola::rdm::RDM_SUB_DEVICE_MISMATCH,
-                             packets));
+                             frames));
 
   m_ss.Run();
   m_endpoint->Verify();
-  packets.clear();
+  frames.clear();
   delete[] expected_request_frame;
   delete[] response_frame;
 }
@@ -514,7 +498,7 @@ void ArduinoWidgetTest::testErrorCodes() {
  * Check some of the error conditions
  */
 void ArduinoWidgetTest::testErrorConditions() {
-  vector<string> packets;
+  RDMFrames frames;
 
   uint8_t ERROR_CODES[] = {2, 3, 4, 5};
   // test each of the error codes.
@@ -543,7 +527,7 @@ void ArduinoWidgetTest::testErrorConditions() {
         ola::NewSingleCallback(this,
                                &ArduinoWidgetTest::ValidateStatus,
                                ola::rdm::RDM_FAILED_TO_SEND,
-                               packets));
+                               frames));
     m_ss.Run();
     m_endpoint->Verify();
     delete[] expected_request_frame;

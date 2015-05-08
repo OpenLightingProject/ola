@@ -22,14 +22,13 @@
 #define PLUGINS_USBDMX_JARULEWIDGETIMPL_H_
 
 #include <ola/base/Macro.h>
+#include <ola/io/ByteString.h>
 #include <ola/rdm/DiscoveryAgent.h>
 #include <ola/rdm/QueueingRDMController.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/UID.h>
 #include <ola/util/SequenceNumber.h>
-
-#include <string>
 
 #include "plugins/usbdmx/JaRuleEndpoint.h"
 #include "plugins/usbdmx/JaRuleWidget.h"
@@ -134,31 +133,31 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
 
   void CheckStatusFlags(uint8_t flags);
   void DMXComplete(JaRuleEndpoint::CommandResult result, uint8_t return_code,
-                   uint8_t status_flags, const std::string &payload);
+                   uint8_t status_flags, const ola::io::ByteString &payload);
   void MuteDeviceComplete(MuteDeviceCallback *mute_complete,
                           JaRuleEndpoint::CommandResult result,
                           uint8_t return_code,
                           uint8_t status_flags,
-                          const std::string &payload);
+                          const ola::io::ByteString &payload);
   void UnMuteDeviceComplete(UnMuteDeviceCallback *unmute_complete,
                             JaRuleEndpoint::CommandResult result,
                             uint8_t return_code,
                             uint8_t status_flags,
-                            const std::string &payload);
+                            const ola::io::ByteString &payload);
   void DUBComplete(BranchCallback *callback,
                    JaRuleEndpoint::CommandResult status,
                    uint8_t return_code,
                    uint8_t status_flags,
-                   const std::string &payload);
+                   const ola::io::ByteString &payload);
   void RDMComplete(const ola::rdm::RDMRequest *request,
                    ola::rdm::RDMCallback *m_rdm_callback,
                    JaRuleEndpoint::CommandResult result,
                    uint8_t return_code,
                    uint8_t status_flags,
-                   const std::string &payload);
+                   const ola::io::ByteString &payload);
   ola::rdm::RDMResponse* UnpackRDMResponse(
       const ola::rdm::RDMRequest *request,
-      const std::string &payload,
+      const ola::io::ByteString &payload,
       ola::rdm::RDMStatusCode *status_code);
   void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                          OLA_UNUSED bool ok,

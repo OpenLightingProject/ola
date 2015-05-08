@@ -95,9 +95,7 @@ class E133Device {
     void EndpointRequestComplete(ola::network::IPV4SocketAddress target,
                                  uint32_t sequence_number,
                                  uint16_t endpoint_id,
-                                 ola::rdm::RDMStatusCode status_code,
-                                 const ola::rdm::RDMResponse *response,
-                                 const std::vector<string> &packets);
+                                 ola::rdm::RDMReply *reply);
 
     void SendStatusMessage(const ola::network::IPV4SocketAddress target,
                            uint32_t sequence_number,

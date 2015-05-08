@@ -155,7 +155,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
       unsigned int current_count;
       ola::rdm::RDMStatusCode status_code;
       ola::rdm::RDMCallback *callback;
-      std::vector<std::string> packets;
+      std::vector<rdm::RDMFrame> frames;
     } broadcast_request_tracker;
 
     typedef std::map<Client*, bool> SourceClientMap;
@@ -182,13 +182,9 @@ class Universe: public ola::rdm::RDMControllerInterface {
     TimeStamp m_last_discovery_time;
 
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                            ola::rdm::RDMStatusCode code,
-                            const ola::rdm::RDMResponse *response,
-                            const std::vector<std::string> &packets);
+                            ola::rdm::RDMReply *reply);
     void HandleBroadcastDiscovery(broadcast_request_tracker *tracker,
-                                  ola::rdm::RDMStatusCode code,
-                                  const ola::rdm::RDMResponse *response,
-                                  const std::vector<std::string> &packets);
+                                  ola::rdm::RDMReply *reply);
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();

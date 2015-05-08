@@ -45,6 +45,7 @@ namespace dummy {
 using ola::rdm::DimmerResponder;
 using ola::rdm::DummyResponder;
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
 using std::auto_ptr;
 using std::map;
@@ -132,13 +133,14 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-void DummyPort::SendRDMRequest(ola::rdm::RDMRequest *request,
+void DummyPort::SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
                                ola::rdm::RDMCallback *callback) {
+  auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
+
   UID dest = request->DestinationUID();
   if (dest.IsBroadcast()) {
     if (m_responders.empty()) {
-      vector<string> packets;
-      callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      RunRDMCallback(callback, ola::rdm::RDM_WAS_BROADCAST);
     } else {
       broadcast_request_tracker *tracker = new broadcast_request_tracker;
       tracker->expected_count = m_responders.size();
@@ -152,16 +154,14 @@ void DummyPort::SendRDMRequest(ola::rdm::RDMRequest *request,
           NewSingleCallback(this, &DummyPort::HandleBroadcastAck, tracker));
       }
     }
-    delete request;
   } else {
-      ResponderMap::iterator i = m_responders.find(dest);
-      if (i != m_responders.end()) {
-        i->second->SendRDMRequest(request, callback);
-      } else {
-          vector<string> packets;
-          callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
-          delete request;
-      }
+    ola::rdm::RDMControllerInterface *interface = STLFindOrNull(
+        m_responders, dest);
+    if (interface) {
+      interface->SendRDMRequest(request.release(), callback);
+    } else {
+      RunRDMCallback(callback, ola::rdm::RDM_UNKNOWN_UID);
+    }
   }
 }
 
@@ -177,30 +177,25 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
 
 
 void DummyPort::HandleBroadcastAck(broadcast_request_tracker *tracker,
-                                   ola::rdm::RDMStatusCode code,
-                                   const ola::rdm::RDMResponse *response,
-                                   const vector<string> &packets) {
+                                   ola::rdm::RDMReply *reply) {
   tracker->current_count++;
-  if (code != ola::rdm::RDM_WAS_BROADCAST)
+  if (reply->StatusCode() != ola::rdm::RDM_WAS_BROADCAST) {
     tracker->failed = true;
+  }
+
   if (tracker->current_count == tracker->expected_count) {
     // all ports have completed
-    tracker->callback->Run(
+    RunRDMCallback(
+        tracker->callback,
         tracker->failed ?  ola::rdm::RDM_FAILED_TO_SEND :
-          ola::rdm::RDM_WAS_BROADCAST,
-        NULL,
-        packets);
+          ola::rdm::RDM_WAS_BROADCAST);
     delete tracker;
   }
-  (void) response;
 }
 
 
 DummyPort::~DummyPort() {
-  for (ResponderMap::iterator i = m_responders.begin();
-      i != m_responders.end(); i++) {
-    delete i->second;
-  }
+  STLDeleteValues(&m_responders);
 }
 }  // namespace dummy
 }  // namespace plugin

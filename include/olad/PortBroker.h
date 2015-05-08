@@ -68,9 +68,7 @@ class PortBroker: public PortBrokerInterface {
 
     void RequestComplete(port_key key,
                          ola::rdm::RDMCallback *callback,
-                         ola::rdm::RDMStatusCode code,
-                         const ola::rdm::RDMResponse *response,
-                         const std::vector<std::string> &packets);
+                         ola::rdm::RDMReply *reply);
 
     std::set<port_key> m_ports;
 

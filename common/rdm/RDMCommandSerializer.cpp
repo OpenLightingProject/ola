@@ -36,6 +36,38 @@ unsigned int RDMCommandSerializer::RequiredSize(
   return sizeof(RDMCommandHeader) + command.ParamDataSize() + CHECKSUM_LENGTH;
 }
 
+bool RDMCommandSerializer::Pack(const RDMCommand &command,
+                                ola::io::ByteString *output) {
+  const unsigned int packet_length = RequiredSize(command);
+  if (packet_length == 0) {
+    return false;
+  }
+
+  size_t front = output->size();
+
+  const unsigned int message_length = command.MessageLength();
+  RDMCommandHeader header;
+  PopulateHeader(&header, command, message_length, command.SourceUID(),
+                 command.TransactionNumber(), command.PortIdResponseType());
+
+  output->append(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+  output->append(command.ParamData(), command.ParamDataSize());
+
+  uint16_t checksum = START_CODE;
+  for (unsigned int i = front; i < output->size(); i++) {
+    checksum += (*output)[i];
+  }
+  checksum = command.Checksum(checksum);
+  output->push_back(checksum >> 8);
+  output->push_back(checksum & 0xff);
+  return true;
+}
+
+bool RDMCommandSerializer::PackWithStartCode(const RDMCommand &command,
+                                             ola::io::ByteString *output) {
+  output->push_back(ola::rdm::START_CODE);
+  return Pack(command, output);
+}
 
 bool RDMCommandSerializer::Pack(const RDMCommand &command,
                                 uint8_t *buffer,

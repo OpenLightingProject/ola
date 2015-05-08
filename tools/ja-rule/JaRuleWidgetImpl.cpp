@@ -91,8 +91,7 @@ void JaRuleWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *on_complete) {
   auto_ptr<RDMRequest> request_ptr(request);
   if (!CheckForDevice()) {
-    const std::vector<std::string> packets;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    ola::rdm::RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
