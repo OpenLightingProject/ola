@@ -614,15 +614,7 @@ AC_ARG_ENABLE(
 #####################################################
 AM_CONDITIONAL([BUILD_PYTHON_LIBS], [test "x$enable_python_libs" = xyes])
 
-AS_IF([test "${enable_python_libs}" = "yes"],
-      [AM_PATH_PYTHON(2.6)
-       AS_IF([test -z $PYTHON], [PYTHON="python"])
-       PYTHON_NAME=`basename $PYTHON`
-       AC_CACHE_CHECK([for $PYTHON_NAME module: google.protobuf],
-          [ac_cv_have_pymod_google_protobuf],
-          [AX_PYTHON_MODULE([google.protobuf], [fatal])
-           eval ac_cv_have_pymod_google_protobuf=\$AS_TR_CPP([HAVE_PYMOD_google.protobuf])])
-     ])
+AS_IF([test "${enable_python_libs}" = "yes"], [AM_PATH_PYTHON(2.6)])
 
 # Libraries, that depend on the feature args above.
 #####################################################
@@ -733,14 +725,27 @@ fi
 # Python modules can't be split over two directories. This is a problem when
 # doing VPATH builds since the generated files like
 # ${builddir}/python/ola/Ola_pb.py will be in a separate path ( $builddir ) from
-# the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
-# to pass we symlink the files we need for the tests from the builddir to the
-# srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+# the non-generated files $srcdir/python/ols/PidStore.py). To build a complete
+# module, we symlink the files from the builddir to the srcdir and set
+# PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
+AC_CONFIG_LINKS([python/setup.py:python/setup.py
+                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
+                 python/ola/DMXConstants.py:python/ola/DMXConstants.py
+                 python/ola/DUBDecoder.py:python/ola/DUBDecoder.py
+                 python/ola/DUBDecoderTest.py:python/ola/DUBDecoderTest.py
+                 python/ola/__init__.py:python/ola/__init__.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/MACAddressTest.py:python/ola/MACAddressTest.py
+                 python/ola/OlaClient.py:python/ola/OlaClient.py
+                 python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/RDMAPI.py:python/ola/RDMAPI.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
+                 python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
+                 python/ola/rpc/SimpleRpcControllerTest.py:python/ola/rpc/SimpleRpcControllerTest.py
+                 python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
                  python/ola/UID.py:python/ola/UID.py
-                 python/ola/__init__.py:python/ola/__init__.py])
+                 python/ola/UIDTest.py:python/ola/UIDTest.py])
 
 # Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h

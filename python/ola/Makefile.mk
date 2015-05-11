@@ -14,27 +14,13 @@ usbpro_path = ${top_srcdir}/plugins/usbpro/messages
 usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 if BUILD_PYTHON_LIBS
-output_files = \
+built_sources = \
     python/ola/ArtNetConfigMessages_pb2.py \
     python/ola/Ola_pb2.py \
     python/ola/UsbProConfigMessages_pb2.py \
     python/ola/Pids_pb2.py \
     python/ola/PidStoreLocation.py \
     python/ola/Version.py
-built_sources += $(output_files)
-
-nodist_pkgpython_PYTHON = $(output_files)
-pkgpython_PYTHON = \
-    python/ola/ClientWrapper.py \
-    python/ola/DMXConstants.py \
-    python/ola/DUBDecoder.py \
-    python/ola/MACAddress.py \
-    python/ola/OlaClient.py \
-    python/ola/RDMAPI.py \
-    python/ola/RDMConstants.py \
-    python/ola/PidStore.py \
-    python/ola/UID.py \
-    python/ola/__init__.py
 endif
 
 python/ola/ArtNetConfigMessages_pb2.py: $(artnet_proto)
