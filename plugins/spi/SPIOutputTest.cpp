@@ -239,7 +239,7 @@ void SPIOutputTest::testIndividualLPD8806Control() {
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0xc0, 0xff, 0x80, 0x8a, 0x85, 0x8f, 0 };
+  const uint8_t EXPECTED1[] = { 0xc0, 0xFF, 0x80, 0x8a, 0x85, 0x8f, 0 };
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
@@ -287,7 +287,7 @@ void SPIOutputTest::testCombinedLPD8806Control() {
   unsigned int length = 0;
   const uint8_t *data = backend.GetData(0, &length);
 
-  const uint8_t EXPECTED1[] = { 0xc0, 0xff, 0x80, 0xc0, 0xff, 0x80, 0};
+  const uint8_t EXPECTED1[] = { 0xc0, 0xFF, 0x80, 0xc0, 0xFF, 0x80, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
@@ -335,15 +335,15 @@ void SPIOutputTest::testIndividualP9813Control() {
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0, 0xef, 0x64, 0x0a, 0x01,
-                                0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                                0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xf4, 0, 0x80, 0xff,
-                                0xff, 0x1e, 0x14, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xf4, 0, 0x80, 0xFF,
+                                0xFF, 0x1e, 0x14, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
@@ -351,7 +351,7 @@ void SPIOutputTest::testIndividualP9813Control() {
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 0xef, 0x4e, 0x38, 0x22,
-                                0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                                0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
@@ -365,8 +365,8 @@ void SPIOutputTest::testIndividualP9813Control() {
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 0xff, 0x05, 0x04, 0x03,
-                                0xff, 0x08, 0x07, 0x06, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 0xFF, 0x05, 0x04, 0x03,
+                                0xFF, 0x08, 0x07, 0x06, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
 
@@ -393,8 +393,8 @@ void SPIOutputTest::testCombinedP9813Control() {
   unsigned int length = 0;
   const uint8_t *data = backend.GetData(0, &length);
 
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xf4, 0, 0x80, 0xff,
-                                0xf4, 0, 0x80, 0xff, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xf4, 0, 0x80, 0xFF,
+                                0xf4, 0, 0x80, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
@@ -416,8 +416,8 @@ void SPIOutputTest::testCombinedP9813Control() {
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 0xff, 0x05, 0x04, 0x03,
-                                0xff, 0x05, 0x04, 0x03, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED4[] = { 0, 0, 0, 0, 0xFF, 0x05, 0x04, 0x03,
+                                0xFF, 0x05, 0x04, 0x03, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
 
   // Check nothing changed on the other output.
@@ -431,7 +431,7 @@ void SPIOutputTest::testCombinedP9813Control() {
  */
 void SPIOutputTest::testIndividualAPA102Control() {
   // personality 7= Individual APA102
-  const uint16_t thisTestPersonality = 7;
+  const uint16_t this_test_personality = 7;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -440,11 +440,11 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
   // set personality
-  output.SetPersonality(thisTestPersonality);
+  output.SetPersonality(this_test_personality);
 
-  // simulate incoming dmx data with this buffer
+  // simulate incoming DMX data with this buffer
   DmxBuffer buffer;
-  // setup an pointer to the returned data (the fake SPI data stream)
+  // setup a pointer to the returned data (the fake SPI data stream)
   unsigned int length = 0;
   const uint8_t *data = NULL;
 
@@ -455,52 +455,36 @@ void SPIOutputTest::testIndividualAPA102Control() {
   output.WriteDMX(buffer);
   // get fake SPI data stream
   data = backend.GetData(0, &length);
-  // print data to see what is going on.
-  // OLA_INFO << "length: " << length;
-  // OLA_INFO << "data: ";
-  // for (unsigned int i = 0; i < length; i++) {
-    // OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
-  // }
-
   // this is the expected spi data stream:
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
-                                0xff, 0x64, 0x0a, 0x01,   // first Pixel
-                                0xff, 0, 0, 0,            // second Pixel
+                                0xFF, 0x64, 0x0A, 0x01,   // first Pixel
+                                0xFF, 0x00, 0x00, 0x00,   // second Pixel
                                 0};                       // EndFrame
-
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   // check if the output writes are 1
   OLA_ASSERT_EQ(1u, backend.Writes(0));
-
-
 
   // test2
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED1[] = { 0, 0, 0, 0,
-                                0xff, 0, 0x80, 0xff,
-                                0xff, 0x1e, 0x14, 0x0a,
+                                0xFF, 0x00, 0x80, 0xFF,
+                                0xFF, 0x1E, 0x14, 0x0A,
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
   // test3
   // test what happens when only new data for the first leds is available.
-  // later data should be not modified so data set in test2 is valid for pixel2
+  // later data should be not modified so for pixel2 data set in test2 is valid
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  // print data to see what is going on.
-  // OLA_INFO << "length: " << length;
-  // OLA_INFO << "data: ";
-  // for (unsigned int i = 0; i < length; i++) {
-    // OLA_INFO << "[" << i << "] " <<  static_cast<int>(data[i]);
-  // }
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
-                                0xff, 0x4e, 0x38, 0x22,
-                                0xff, 0x1e, 0x14, 0x0a,
+                                0xFF, 0x4E, 0x38, 0x22,
+                                0xFF, 0x1E, 0x14, 0x0A,
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
@@ -523,8 +507,8 @@ void SPIOutputTest::testIndividualAPA102Control() {
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
-                                0xff, 0x05, 0x04, 0x03,
-                                0xff, 0x08, 0x07, 0x06,
+                                0xFF, 0x05, 0x04, 0x03,
+                                0xFF, 0x08, 0x07, 0x06,
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
@@ -537,77 +521,74 @@ void SPIOutputTest::testIndividualAPA102Control() {
                 backend.GetData(1, &length));
   OLA_ASSERT_EQ(0u, backend.Writes(1));
 
-  /**
   // test7
   // create new output with pixel_count=16 and check data length
   // setup pixel_count to 16
   options.pixel_count = 16;
   // setup SPIOutput
-  SPIOutput output(m_uid, &backend, options);
+  SPIOutput output2(m_uid, &backend, options);
   // set personality
-  output.SetPersonality(thisTestPersonality);
+  output2.SetPersonality(this_test_personality);
   buffer.SetFromString(
         std::string("0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,") +
                     "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,");
-  output.WriteDMX(buffer);
+  output2.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED7[] = { 0, 0, 0, 0,
-                                0xff, 0, 0, 0,  // Pixel 1
-                                0xff, 0, 0, 0,  // Pixel 2
-                                0xff, 0, 0, 0,  // Pixel 3
-                                0xff, 0, 0, 0,  // Pixel 4
-                                0xff, 0, 0, 0,  // Pixel 5
-                                0xff, 0, 0, 0,  // Pixel 6
-                                0xff, 0, 0, 0,  // Pixel 7
-                                0xff, 0, 0, 0,  // Pixel 8
-                                0xff, 0, 0, 0,  // Pixel 9
-                                0xff, 0, 0, 0,  // Pixel 10
-                                0xff, 0, 0, 0,  // Pixel 12
-                                0xff, 0, 0, 0,  // Pixel 13
-                                0xff, 0, 0, 0,  // Pixel 14
-                                0xff, 0, 0, 0,  // Pixel 15
-                                0xff, 0, 0, 0,  // Pixel 16
+                                0xFF, 0, 0, 0,  // Pixel 1
+                                0xFF, 0, 0, 0,  // Pixel 2
+                                0xFF, 0, 0, 0,  // Pixel 3
+                                0xFF, 0, 0, 0,  // Pixel 4
+                                0xFF, 0, 0, 0,  // Pixel 5
+                                0xFF, 0, 0, 0,  // Pixel 6
+                                0xFF, 0, 0, 0,  // Pixel 7
+                                0xFF, 0, 0, 0,  // Pixel 8
+                                0xFF, 0, 0, 0,  // Pixel 9
+                                0xFF, 0, 0, 0,  // Pixel 10
+                                0xFF, 0, 0, 0,  // Pixel 12
+                                0xFF, 0, 0, 0,  // Pixel 13
+                                0xFF, 0, 0, 0,  // Pixel 14
+                                0xFF, 0, 0, 0,  // Pixel 15
+                                0xFF, 0, 0, 0,  // Pixel 16
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   OLA_ASSERT_EQ(5u, backend.Writes(0));
-
 
   // test8
   // create new output with pixel_count=17 and check data length
   // setup pixel_count to 17
   options.pixel_count = 17;
   // setup SPIOutput
-  SPIOutput output(m_uid, &backend, options);
+  SPIOutput output3(m_uid, &backend, options);
   // set personality
-  output.SetPersonality(thisTestPersonality);
+  output3.SetPersonality(this_test_personality);
   // generate dmx data
   buffer.SetFromString(
         std::string("0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,") +
                     "0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0," +
                     "0,0,0");
-  output.WriteDMX(buffer);
+  output3.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED8[] = { 0, 0, 0, 0,
-                                0xff, 0, 0, 0,  // Pixel 1
-                                0xff, 0, 0, 0,  // Pixel 2
-                                0xff, 0, 0, 0,  // Pixel 3
-                                0xff, 0, 0, 0,  // Pixel 4
-                                0xff, 0, 0, 0,  // Pixel 5
-                                0xff, 0, 0, 0,  // Pixel 6
-                                0xff, 0, 0, 0,  // Pixel 7
-                                0xff, 0, 0, 0,  // Pixel 8
-                                0xff, 0, 0, 0,  // Pixel 9
-                                0xff, 0, 0, 0,  // Pixel 10
-                                0xff, 0, 0, 0,  // Pixel 12
-                                0xff, 0, 0, 0,  // Pixel 13
-                                0xff, 0, 0, 0,  // Pixel 14
-                                0xff, 0, 0, 0,  // Pixel 15
-                                0xff, 0, 0, 0,  // Pixel 16
-                                0xff, 0, 0, 0,  // Pixel 17
+                                0xFF, 0, 0, 0,  // Pixel 1
+                                0xFF, 0, 0, 0,  // Pixel 2
+                                0xFF, 0, 0, 0,  // Pixel 3
+                                0xFF, 0, 0, 0,  // Pixel 4
+                                0xFF, 0, 0, 0,  // Pixel 5
+                                0xFF, 0, 0, 0,  // Pixel 6
+                                0xFF, 0, 0, 0,  // Pixel 7
+                                0xFF, 0, 0, 0,  // Pixel 8
+                                0xFF, 0, 0, 0,  // Pixel 9
+                                0xFF, 0, 0, 0,  // Pixel 10
+                                0xFF, 0, 0, 0,  // Pixel 12
+                                0xFF, 0, 0, 0,  // Pixel 13
+                                0xFF, 0, 0, 0,  // Pixel 14
+                                0xFF, 0, 0, 0,  // Pixel 15
+                                0xFF, 0, 0, 0,  // Pixel 16
+                                0xFF, 0, 0, 0,  // Pixel 17
                                 0, 0};  // now we have two latch bytes...
   OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
   OLA_ASSERT_EQ(6u, backend.Writes(0));
-  **/
 }
 
 /**
@@ -639,8 +620,8 @@ void SPIOutputTest::testCombinedAPA102Control() {
   data = backend.GetData(0, &length);
   // this is the expected spi data stream:
   const uint8_t EXPECTED0[] = { 0, 0, 0, 0,               // StartFrame
-                                0xff, 0x64, 0x0a, 0x01,   // first Pixel
-                                0xff, 0x64, 0x0a, 0x01,   // second Pixel
+                                0xFF, 0x64, 0x0A, 0x01,   // first Pixel
+                                0xFF, 0x64, 0x0A, 0x01,   // second Pixel
                                 0};                       // EndFrame
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
@@ -652,8 +633,8 @@ void SPIOutputTest::testCombinedAPA102Control() {
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED1[] = { 0, 0, 0, 0,
-                                0xff, 0, 0x80, 0xff,
-                                0xff, 0, 0x80, 0xff,
+                                0xFF, 0x00, 0x80, 0xFF,
+                                0xFF, 0x00, 0x80, 0xFF,
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
@@ -663,8 +644,8 @@ void SPIOutputTest::testCombinedAPA102Control() {
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED2[] = { 0, 0, 0, 0,
-                                0xff, 0x4e, 0x38, 0x22,
-                                0xff, 0x4e, 0x38, 0x22,
+                                0xFF, 0x4E, 0x38, 0x22,
+                                0xFF, 0x4E, 0x38, 0x22,
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
@@ -687,8 +668,8 @@ void SPIOutputTest::testCombinedAPA102Control() {
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED4[] = { 0, 0, 0, 0,
-                                0xff, 0x05, 0x04, 0x03,
-                                0xff, 0x05, 0x04, 0x03,
+                                0xFF, 0x05, 0x04, 0x03,
+                                0xFF, 0x05, 0x04, 0x03,
                                 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED4, arraysize(EXPECTED4), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));

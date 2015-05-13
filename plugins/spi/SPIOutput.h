@@ -173,7 +173,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
   // Helpers
   uint8_t P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue);
-  uint8_t CalculateAPA102LatchBytes(unsigned int m_pixel_count);
+  static uint8_t CalculateAPA102LatchBytes(uint16_t pixel_count);
 
   static const uint8_t SPI_MODE;
   static const uint8_t SPI_BITS_PER_WORD;
@@ -185,7 +185,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static const uint16_t P9813_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_SLOTS_PER_PIXEL;
   static const uint16_t APA102_SPI_BYTES_PER_PIXEL;
-  static const uint8_t  APA102_START_FRAME_BYTES;
+  static const uint16_t APA102_START_FRAME_BYTES;
 
   static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
       PARAM_HANDLERS[];
