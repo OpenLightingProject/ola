@@ -88,7 +88,7 @@ const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
 
-// Number of bytes that each pixel uses on the spi wires
+// Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
 const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
@@ -289,7 +289,6 @@ void SPIOutput::SendRDMRequest(const RDMRequest *request,
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
 }
-
 
 bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   switch (m_personality_manager->ActivePersonalityNumber()) {
@@ -511,17 +510,13 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
 
-  // latch_bytes = EndFrame ??
-  const uint8_t latch_bytes = CalculateAPA102LatchBytes(m_pixel_count);
-  // OLA_INFO << "latch_bytes " << static_cast<int>(latch_bytes);
-
   // calculate dmx-start-address
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
-  // OLA_INFO << "first_slot " << static_cast<int>(first_slot);
 
   // only do something if minimum 1pixel can be updated..
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
-    // not even 3 bytes of data, don't bother updating
+    OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
     return;
   }
 
@@ -529,12 +524,13 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // for part of it
   const unsigned int output_length = APA102_START_FRAME_BYTES +
                                 (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
-  // OLA_INFO << "output_length " << static_cast<int>(output_length);
+  // OLA_DEBUG << "output_length " << static_cast<int>(output_length);
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
-                                        latch_bytes);
-  // only update spi data if possible
-  if (!output)
+                                      CalculateAPA102LatchBytes(m_pixel_count));
+  // only update SPI data if possible
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     // Convert RGB to APA102 Pixel
@@ -550,21 +546,13 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
     // set GlobalBrightnes fixed to 31 --> that reduces flickering
     // that can be written as 0xE0 & 0x1F
     output[spi_offset + 0] = 0xFF;
-    // only write pixel data if new data from buffer available:
+    // only write pixel data if buffer has complete data for this pixel:
     if ((buffer.Size() - offset) >= APA102_SLOTS_PER_PIXEL) {
       // Convert RGB to APA102 Pixel
-      uint8_t r = 0;
-      uint8_t b = 0;
-      uint8_t g = 0;
-      // read rgb values
-      r = buffer.Get(offset + 0);
-      g = buffer.Get(offset + 1);
-      b = buffer.Get(offset + 2);
-      // set rgb values in output
       // skip spi_offset + 0 (is already set)
-      output[spi_offset + 1] = b;
-      output[spi_offset + 2] = g;
-      output[spi_offset + 3] = r;
+      output[spi_offset + 1] = buffer.Get(offset + 2);  // blue
+      output[spi_offset + 2] = buffer.Get(offset + 1);  // green
+      output[spi_offset + 3] = buffer.Get(offset + 0);  // red
     }
   }
   m_backend->Commit(m_output_number);
@@ -573,8 +561,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // for Protocol details see IndividualAPA102Control
 
-  const uint8_t latch_bytes = CalculateAPA102LatchBytes(m_pixel_count);
-  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  const uint16_t first_slot = m_start_address - 1;  // 0 offset
 
   // check if enough data is there.
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
@@ -584,24 +571,25 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   }
 
   // get data for entire string length
-  const unsigned int output_length = (m_pixel_count + 1) *
+  const uint16_t output_length = (m_pixel_count + 1) *
                                       APA102_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
-                                        latch_bytes);
-  // only update spi data if possible
-  if (!output)
+                                      CalculateAPA102LatchBytes(m_pixel_count));
+  // only update SPI data if possible
+  if (!output) {
     return;
+  }
 
   // create Pixel Data
   uint8_t pixel_data[APA102_SPI_BYTES_PER_PIXEL];
-  pixel_data[0] = 0xff;
+  pixel_data[0] = 0xFF;
   pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
   pixel_data[3] = buffer.Get(first_slot);  // Get Red
 
   // set all pixel to same value
-  for (unsigned int i = 0; i < m_pixel_count; i++) {
-    unsigned int spi_offset = APA102_START_FRAME_BYTES +
+  for (uint16_t i = 0; i < m_pixel_count; i++) {
+    uint16_t spi_offset = APA102_START_FRAME_BYTES +
                               (i * APA102_SPI_BYTES_PER_PIXEL);
     memcpy(&output[spi_offset], pixel_data,
            APA102_SPI_BYTES_PER_PIXEL);
@@ -621,11 +609,11 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * the function is valid up to 4080 pixels. (255*8*2)
  * ( otherwise the return type must be changed to uint16_t)
  */
-uint8_t SPIOutput::CalculateAPA102LatchBytes(unsigned int m_pixel_count) {
-  // round up so that we get definitely more LatchBits as LEDs/2...
-  const uint8_t latch_bits = (m_pixel_count / 2)  + (m_pixel_count % 2 ? 1: 0);
-  // same for latch_bytes - if latch_bits is odd-numbered add on more byte.
-  const uint8_t latch_bytes = (latch_bits / 8) + (latch_bits % 8 ? 1: 0);
+static uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
+  // round up so that we get definitely more LatchBits as LEDs/2
+  const uint8_t latch_bits = ceil(m_pixel_count / 2);
+  // same for latch_bytes
+  const uint8_t latch_bytes = ceil(latch_bits / 8);
   return latch_bytes;
 }
 
