@@ -557,7 +557,6 @@ void SPIOutputTest::testIndividualAPA102Control() {
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   OLA_ASSERT_EQ(5u, backend.Writes(0));
 
-
   // test8
   // create new output with pixel_count=17 and check data length
   // setup pixel_count to 17
@@ -593,7 +592,6 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0};  // now we have two latch bytes...
   OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
   OLA_ASSERT_EQ(6u, backend.Writes(0));
-  **/
 }
 
 /**
