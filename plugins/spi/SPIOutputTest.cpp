@@ -460,13 +460,10 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0xFF, 0x64, 0x0A, 0x01,   // first Pixel
                                 0xFF, 0x00, 0x00, 0x00,   // second Pixel
                                 0};                       // EndFrame
-
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   // check if the output writes are 1
   OLA_ASSERT_EQ(1u, backend.Writes(0));
-
-
 
   // test2
   buffer.SetFromString("255,128,0,10,20,30");
