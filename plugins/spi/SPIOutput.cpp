@@ -26,6 +26,7 @@
 #endif
 
 #include <string.h>
+#include <math.h>       /* for ceil */
 #include <algorithm>
 #include <memory>
 #include <sstream>
