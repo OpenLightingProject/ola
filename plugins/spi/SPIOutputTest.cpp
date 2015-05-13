@@ -593,7 +593,6 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0, 0};  // now we have two latch bytes...
   OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
   OLA_ASSERT_EQ(6u, backend.Writes(0));
-  **/
 }
 
 /**
