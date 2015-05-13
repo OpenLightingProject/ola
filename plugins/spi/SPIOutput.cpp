@@ -93,7 +93,7 @@ const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
-const uint8_t SPIOutput::APA102_START_FRAME_BYTES = 4;
+const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
 
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
@@ -609,9 +609,9 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * the function is valid up to 4080 pixels. (255*8*2)
  * ( otherwise the return type must be changed to uint16_t)
  */
-static uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
+uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
   // round up so that we get definitely more LatchBits as LEDs/2
-  const uint8_t latch_bits = ceil(m_pixel_count / 2);
+  const uint8_t latch_bits = ceil(pixel_count / 2);
   // same for latch_bytes
   const uint8_t latch_bytes = ceil(latch_bits / 8);
   return latch_bytes;
