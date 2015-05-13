@@ -545,6 +545,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0xFF, 0, 0, 0,  // Pixel 8
                                 0xFF, 0, 0, 0,  // Pixel 9
                                 0xFF, 0, 0, 0,  // Pixel 10
+                                0xFF, 0, 0, 0,  // Pixel 11
                                 0xFF, 0, 0, 0,  // Pixel 12
                                 0xFF, 0, 0, 0,  // Pixel 13
                                 0xFF, 0, 0, 0,  // Pixel 14
@@ -580,6 +581,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
                                 0xFF, 0, 0, 0,  // Pixel 8
                                 0xFF, 0, 0, 0,  // Pixel 9
                                 0xFF, 0, 0, 0,  // Pixel 10
+                                0xFF, 0, 0, 0,  // Pixel 11
                                 0xFF, 0, 0, 0,  // Pixel 12
                                 0xFF, 0, 0, 0,  // Pixel 13
                                 0xFF, 0, 0, 0,  // Pixel 14
