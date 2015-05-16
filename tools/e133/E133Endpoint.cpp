@@ -84,7 +84,7 @@ void E133Endpoint::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
 /**
  * Handle RDM requests to this endpoint
  */
-void E133Endpoint::SendRDMRequest(const RDMRequest *request_ptr,
+void E133Endpoint::SendRDMRequest(RDMRequest *request_ptr,
                                   RDMCallback *on_complete) {
   if (m_controller) {
     m_controller->SendRDMRequest(request_ptr, on_complete);

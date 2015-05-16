@@ -110,7 +110,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
           m_discovery_callback(NULL) {
     }
     ~MockRDMController() {}
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
     void AddExpectedCall(RDMRequest *request,
                          ola::rdm::rdm_response_code code,
@@ -150,7 +150,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
 };
 
 
-void MockRDMController::SendRDMRequest(const RDMRequest *request,
+void MockRDMController::SendRDMRequest(RDMRequest *request,
                                        RDMCallback *on_complete) {
   OLA_ASSERT_TRUE(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
@@ -331,7 +331,6 @@ RDMRequest *QueueingRDMControllerTest::NewGetRequest(const UID &source,
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,  // data

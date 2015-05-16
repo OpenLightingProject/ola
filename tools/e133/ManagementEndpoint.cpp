@@ -117,7 +117,7 @@ ManagementEndpoint::ManagementEndpoint(
  * @param request the RDMRequest object
  * @param on_complete the callback to run when we've handled this request.
  */
-void ManagementEndpoint::SendRDMRequest(const RDMRequest *request,
+void ManagementEndpoint::SendRDMRequest(RDMRequest *request,
                                         RDMCallback *on_complete) {
   const UID dst_uid = request->DestinationUID();
   if (dst_uid.IsBroadcast() && m_controller) {

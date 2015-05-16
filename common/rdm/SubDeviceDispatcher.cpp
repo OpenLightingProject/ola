@@ -47,7 +47,7 @@ void SubDeviceDispatcher::AddSubDevice(uint16_t sub_device_number,
 /*
  * Handle an RDM Request
  */
-void SubDeviceDispatcher::SendRDMRequest(const RDMRequest *request,
+void SubDeviceDispatcher::SendRDMRequest(RDMRequest *request,
                                          RDMCallback *callback) {
   if (request->SubDevice() == ALL_RDM_SUBDEVICES) {
     FanOutToSubDevices(request, callback);

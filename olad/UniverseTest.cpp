@@ -617,12 +617,11 @@ void UniverseTest::testRDMSend() {
 
   UID source_uid(0x7a70, 100);
   // first try a command to a uid we don't know about
-  const RDMRequest *request = new ola::rdm::RDMGetRequest(
+  RDMRequest *request = new ola::rdm::RDMGetRequest(
       source_uid,
       uid3,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,
@@ -642,7 +641,6 @@ void UniverseTest::testRDMSend() {
       uid1,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,
@@ -666,7 +664,6 @@ void UniverseTest::testRDMSend() {
       vendorcast_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,
@@ -695,7 +692,6 @@ void UniverseTest::testRDMSend() {
       vendorcast_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,

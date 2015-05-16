@@ -59,7 +59,7 @@ void PortBroker::RemovePort(const Port *port) {
  */
 void PortBroker::SendRDMRequest(const Port *port,
                                 Universe *universe,
-                                const ola::rdm::RDMRequest *request,
+                                ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *callback) {
   port_key key(port->UniqueId(), port);
   set<port_key>::const_iterator iter = m_ports.find(key);
@@ -67,7 +67,8 @@ void PortBroker::SendRDMRequest(const Port *port,
     OLA_WARN <<
       "Making an RDM call but the port doesn't exist in the broker!";
 
-  universe->SendRDMRequest(request,
+  universe->SendRDMRequest(
+      request,
       NewSingleCallback(this,
                         &PortBroker::RequestComplete,
                         key,

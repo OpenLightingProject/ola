@@ -47,7 +47,7 @@ class MovingLightResponder: public RDMControllerInterface {
  public:
   explicit MovingLightResponder(const UID &uid);
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
   uint16_t StartAddress() const { return m_start_address; }
   uint16_t Footprint() const {

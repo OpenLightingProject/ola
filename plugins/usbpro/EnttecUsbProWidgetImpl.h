@@ -99,7 +99,7 @@ class EnttecPortImpl
     bool SetParameters(uint8_t break_time, uint8_t mab_time, uint8_t rate);
 
     // the following are from DiscoverableRDMControllerInterface
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);

@@ -148,7 +148,7 @@ class E133Endpoint: public E133EndpointInterface {
     virtual void RunIncrementalDiscovery(
         ola::rdm::RDMDiscoveryCallback *callback);
 
-    virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    virtual void SendRDMRequest(ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete);
 
  private:

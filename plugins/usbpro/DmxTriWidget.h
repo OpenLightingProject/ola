@@ -53,7 +53,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     void Stop();
 
     bool SendDMX(const DmxBuffer &buffer);
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -100,7 +100,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     // This holds pointers to the RDMRequest and Callback that is queued or in
     // flight.
     ola::rdm::RDMCallback *m_rdm_request_callback;
-    const ola::rdm::RDMRequest *m_pending_rdm_request;
+    ola::rdm::RDMRequest *m_pending_rdm_request;
     uint8_t m_transaction_number;
     // The command id that we expect to see in the response.
     uint8_t m_last_command, m_expected_command;
@@ -221,7 +221,7 @@ class DmxTriWidget: public SerialWidgetInterface,
       return m_impl->SendDMX(buffer);
     }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }

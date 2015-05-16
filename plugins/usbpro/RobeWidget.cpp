@@ -101,7 +101,7 @@ bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
 /**
  * Send a RDM Message
  */
-void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
+void RobeWidgetImpl::SendRDMRequest(RDMRequest *request,
                                     ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
   if (m_rdm_request_callback) {
@@ -121,10 +121,11 @@ void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
   unsigned int this_transaction_number = m_transaction_number++;
   unsigned int port_id = 1;
 
-  bool r = RDMCommandSerializer::Pack(*request, data, &data_size, m_uid,
-                                      this_transaction_number, port_id);
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(this_transaction_number);
+  request->SetPortId(port_id);
 
-  if (!r) {
+  if (!RDMCommandSerializer::Pack(*request, data, &data_size)) {
     OLA_WARN << "Failed to pack message, dropping request";
     delete[] data;
     delete request;
@@ -133,11 +134,8 @@ void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
   }
 
   m_rdm_request_callback = on_complete;
-  // convert the request into one that matches this widget
-  m_pending_request = request->DuplicateWithControllerParams(
-      m_uid,
-      this_transaction_number,
-      port_id);
+  m_pending_request = request;
+
   OLA_DEBUG << "Sending RDM command. CC: 0x" << std::hex <<
     request->CommandClass() << ", PID 0x" << std::hex <<
     request->ParamId() << ", TN: " << this_transaction_number;
@@ -146,7 +144,6 @@ void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
       (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
        request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) ?
       RDM_DISCOVERY : RDM_REQUEST);
-  delete request;
 
   if (!SendMessage(label, data, data_size + RDM_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;

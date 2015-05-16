@@ -107,7 +107,7 @@ void DmxterWidgetImpl::Stop() {
  * @param request the RDMRequest object
  * @param on_complete the callback to run when the request completes or fails
  */
-void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
+void DmxterWidgetImpl::SendRDMRequest(RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   vector<string> packets;
 
@@ -118,13 +118,15 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
     return;
   }
 
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(m_transaction_number++);
+  request->SetPortId(1);
+
   unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *data = new uint8_t[data_size + 1];  // + start code
   data[0] = ola::rdm::RDMCommand::START_CODE;
 
-  bool r = RDMCommandSerializer::Pack(*request, data + 1, &data_size,
-                                      m_uid, m_transaction_number++, 1);
-  if (r) {
+  if (RDMCommandSerializer::Pack(*request, data + 1, &data_size)) {
     uint8_t label;
     if (IsDUBRequest(request)) {
       label = DISCOVERY_BRANCH_LABEL;

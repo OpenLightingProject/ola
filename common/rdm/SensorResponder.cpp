@@ -178,8 +178,8 @@ SensorResponder::~SensorResponder() {
 /*
  * Handle an RDM Request
  */
-void SensorResponder::SendRDMRequest(const RDMRequest *request,
-                                          RDMCallback *callback) {
+void SensorResponder::SendRDMRequest(RDMRequest *request,
+                                     RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }

@@ -99,13 +99,13 @@ class DmxTriWidgetTest: public CommonWidgetTest {
                         ola::rdm::rdm_response_code code,
                         const RDMResponse *response,
                         const vector<string> &packets);
-    const RDMRequest *NewRequest(const UID &source,
-                                 const UID &destination,
-                                 const uint8_t *data,
-                                 unsigned int length);
-    const RDMRequest *NewQueuedMessageRequest(const UID &source,
-                                              const UID &destination,
-                                              uint8_t code);
+    RDMRequest *NewRequest(const UID &source,
+                           const UID &destination,
+                           const uint8_t *data,
+                           unsigned int length);
+    RDMRequest *NewQueuedMessageRequest(const UID &source,
+                                        const UID &destination,
+                                        uint8_t code);
 
     static const uint8_t EXTENDED_LABEL = 0x58;
 };
@@ -182,16 +182,15 @@ void DmxTriWidgetTest::ValidateStatus(
 /**
  * Helper method to create new request objects
  */
-const RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
-                                               const UID &destination,
-                                               const uint8_t *data,
-                                               unsigned int length) {
+RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
+                                         const UID &destination,
+                                         const uint8_t *data,
+                                         unsigned int length) {
   return new ola::rdm::RDMGetRequest(
       source,
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       data,
@@ -202,7 +201,7 @@ const RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
 /**
  * Helper method to create a new queued request object
  */
-const RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
+RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
     const UID &source,
     const UID &destination,
     uint8_t code) {
@@ -211,7 +210,6 @@ const RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       ola::rdm::PID_QUEUED_MESSAGE,
       &code,
@@ -451,7 +449,7 @@ void DmxTriWidgetTest::testSendRDM() {
   UID destination(0x707a, 0xffffff00);
   uint8_t param_data[] = {0xa1, 0xb2};
 
-  const RDMRequest *request = NewRequest(
+  RDMRequest *request = NewRequest(
       source,
       destination,
       param_data,
@@ -562,7 +560,7 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
 
   // confirm transaction mis-match works
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t transaction_mismatch_response[] = {0x38, 0x13};
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -699,7 +697,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   vector<string> packets;
   PopulateTod();
 
-  const RDMRequest *request = NewRequest(
+  RDMRequest *request = NewRequest(
       source,
       vendor_cast_destination,
       NULL,
@@ -841,7 +839,7 @@ void DmxTriWidgetTest::testNack() {
   vector<string> packets;
   PopulateTod();
 
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
   uint8_t nack_pid_response[] = {0x38, 0x20};  // unknown pid
@@ -907,7 +905,7 @@ void DmxTriWidgetTest::testAckTimer() {
   vector<string> packets;
   PopulateTod();
 
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
   uint8_t ack_timer_response[] = {0x38, 0x10, 0x00, 0x10};  // ack timer, 1.6s
@@ -954,7 +952,7 @@ void DmxTriWidgetTest::testAckOverflow() {
   vector<string> packets;
   PopulateTod();
 
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+  RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
   uint8_t ack_overflow_response[] = {0x38, 0x12, 0x12, 0x34};  // ack overflow
@@ -1009,7 +1007,7 @@ void DmxTriWidgetTest::testQueuedMessages() {
   PopulateTod();
 
   // first try a response which is too short
-  const RDMRequest *request = NewQueuedMessageRequest(source, destination, 1);
+  RDMRequest *request = NewQueuedMessageRequest(source, destination, 1);
   uint8_t expected_rdm_command[] = {0x3a, 0x02, 0x01};
   uint8_t small_response[] = {0x3a, 0x04};
   m_endpoint->AddExpectedUsbProDataAndReturn(

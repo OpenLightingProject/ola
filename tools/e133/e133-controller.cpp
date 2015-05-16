@@ -232,7 +232,6 @@ void SimpleE133Controller::SendGetRequest(const UID &dst_uid,
       dst_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       ola::rdm::ROOT_RDM_DEVICE,  // sub device
       pid,  // param id
       data,  // data
@@ -263,7 +262,6 @@ void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
       dst_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       ola::rdm::ROOT_RDM_DEVICE,  // sub device
       pid,  // param id
       data,  // data

@@ -94,7 +94,7 @@ DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
 /*
  * Handle an RDM Request
  */
-void DimmerRootDevice::SendRDMRequest(const RDMRequest *request,
+void DimmerRootDevice::SendRDMRequest(RDMRequest *request,
                                       RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);

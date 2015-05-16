@@ -103,7 +103,7 @@ void JaRuleWidgetImpl::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
       callback));
 }
 
-void JaRuleWidgetImpl::SendRDMRequest(const RDMRequest *request,
+void JaRuleWidgetImpl::SendRDMRequest(RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
   uint8_t data[rdm_length];
@@ -112,7 +112,7 @@ void JaRuleWidgetImpl::SendRDMRequest(const RDMRequest *request,
   m_endpoint.SendCommand(
       GetCommandFromRequest(request), data, rdm_length,
       NewSingleCallback(this, &JaRuleWidgetImpl::RDMComplete,
-                        request, on_complete));
+                        static_cast<const RDMRequest*>(request), on_complete));
 }
 
 void JaRuleWidgetImpl::MuteDevice(const UID &target,

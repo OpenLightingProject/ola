@@ -57,7 +57,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
 
     bool SendDMX(const DmxBuffer &buffer);
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -130,7 +130,7 @@ class RobeWidget: public SerialWidgetInterface,
       return m_impl->SendDMX(buffer);
     }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }
