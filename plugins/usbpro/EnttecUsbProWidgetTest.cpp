@@ -52,19 +52,15 @@ using ola::plugin::usbpro::usb_pro_parameters;
 
 class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(EnttecUsbProWidgetTest);
-  /*
   CPPUNIT_TEST(testParams);
   CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testChangeMode);
-  */
   CPPUNIT_TEST(testSendRDMRequest);
-  /*
   CPPUNIT_TEST(testSendRDMMute);
   CPPUNIT_TEST(testSendRDMDUB);
   CPPUNIT_TEST(testMuteDevice);
   CPPUNIT_TEST(testUnMuteAll);
   CPPUNIT_TEST(testBranch);
-  */
   CPPUNIT_TEST_SUITE_END();
 
  public:

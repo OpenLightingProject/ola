@@ -106,7 +106,7 @@ void DmxterWidgetTest::setUp() {
   CommonWidgetTest::setUp();
   m_widget.reset(
       new ola::plugin::usbpro::DmxterWidget(&m_descriptor,
-                                            0x5253,
+                                            0x4744,
                                             0x12345678));
   m_tod_counter = 0;
 }
@@ -240,7 +240,7 @@ void DmxterWidgetTest::testTod() {
 void DmxterWidgetTest::testSendRDMRequest() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
   uint8_t RDM_BROADCAST_REQUEST_LABEL = 0x81;
-  UID source(0x5253, 0x12345678);
+  UID source(0x4744, 0x12345678);
   UID destination(3, 4);
   UID bcast_destination(3, 0xffffffff);
   vector<string> packets;
@@ -256,12 +256,12 @@ void DmxterWidgetTest::testSendRDMRequest() {
     0x00, 14,  // response code 'ok'
     0xcc,
     1, 28,  // sub code & length
-    0x52, 0x53, 0x12, 0x34, 0x56, 0x78,   // dst uid
+    0x47, 0x44, 0x12, 0x34, 0x56, 0x78,   // dst uid
     0, 3, 0, 0, 0, 4,   // src uid
     1, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
     0x21, 0x1, 0x28, 4,  // command, param id, param data length
     0x5a, 0x5a, 0x5a, 0x5a,  // param data
-    0x04, 0x61  // checksum
+    0x04, 0x47  // checksum
   };
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -309,7 +309,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
  */
 void DmxterWidgetTest::testSendRDMMute() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
-  const UID source(0x5253, 0x12345678);
+  const UID source(0x4744, 0x12345678);
   const UID destination(3, 4);
 
   // request
@@ -371,7 +371,7 @@ void DmxterWidgetTest::testSendRDMMute() {
  */
 void DmxterWidgetTest::testSendRDMDUB() {
   uint8_t RDM_DUB_LABEL = 0x83;
-  const UID source(0x5253, 0x12345678);
+  const UID source(0x4744, 0x12345678);
   const UID destination = UID::AllDevices();
 
   static const uint8_t REQUEST_DATA[] = {
@@ -472,7 +472,7 @@ void DmxterWidgetTest::testSendRDMDUB() {
  */
 void DmxterWidgetTest::testErrorCodes() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
-  UID source(0x5253, 0x12345678);
+  UID source(0x4744, 0x12345678);
   UID destination(3, 4);
 
   vector<string> packets;
@@ -529,7 +529,7 @@ void DmxterWidgetTest::testErrorCodes() {
 
   // update transaction # & checksum
   expected_packet[15]++;
-  expected_packet[25] = 0xfb;
+  expected_packet[25] = 0xe1;
   return_packet[1] = 12;  // transaction mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -551,7 +551,7 @@ void DmxterWidgetTest::testErrorCodes() {
 
   // update transaction # & checksum
   expected_packet[15]++;
-  expected_packet[25] = 0xfc;
+  expected_packet[25] = 0xe2;
   return_packet[1] = 17;  // timeout
   request = NewRequest(source, destination, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -573,7 +573,7 @@ void DmxterWidgetTest::testErrorCodes() {
 
   // update transaction # & checksum
   expected_packet[15]++;
-  expected_packet[25] = 0xfd;
+  expected_packet[25] = 0xe3;
   return_packet[1] = 41;  // device mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -595,7 +595,7 @@ void DmxterWidgetTest::testErrorCodes() {
 
   // update transaction # & checksum
   expected_packet[15]++;
-  expected_packet[25] = 0xfe;
+  expected_packet[25] = 0xe4;
   return_packet[1] = 42;  // sub device mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -624,7 +624,7 @@ void DmxterWidgetTest::testErrorCodes() {
  */
 void DmxterWidgetTest::testErrorConditions() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
-  UID source(0x5253, 0x12345678);
+  UID source(0x4744, 0x12345678);
   UID destination(3, 4);
   vector<string> packets;
 

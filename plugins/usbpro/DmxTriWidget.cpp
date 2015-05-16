@@ -33,6 +33,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 
@@ -40,14 +41,15 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
+using ola::network::NetworkToHost;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::strings::ToHex;
 using std::auto_ptr;
 using std::map;
 using std::string;
@@ -281,8 +283,7 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
 
     if (command_id != m_expected_command) {
       OLA_WARN << "Received an unexpected command response, expected "
-               << std::hex << static_cast<int>(m_expected_command) << ", got "
-               << static_cast<int>(command_id);
+               << ToHex(m_expected_command) << ", got " << ToHex(command_id);
     }
     m_last_command = m_expected_command;
     m_expected_command = RESERVED_COMMAND_ID;
@@ -316,8 +317,7 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
         HandleSetFilterResponse(return_code, data, length);
         break;
       default:
-        OLA_WARN << "Unknown DMX-TRI CI: 0x" << std::hex <<
-          static_cast<int>(command_id);
+        OLA_WARN << "Unknown DMX-TRI CI: " << ToHex(command_id);
     }
   } else {
     OLA_INFO << "DMX-TRI got response " << static_cast<int>(label);
@@ -408,9 +408,8 @@ void DmxTriWidgetImpl::SendRawRDMRequest() {
 
   OLA_INFO << "Sending raw request to "
            << m_pending_rdm_request->DestinationUID()
-           << " with command " << std::hex
-           << m_pending_rdm_request->CommandClass()
-           << " and param " << std::hex << m_pending_rdm_request->ParamId();
+           << " with command " << ToHex(m_pending_rdm_request->CommandClass())
+           << " and param " << ToHex(m_pending_rdm_request->ParamId());
 
   if (SendCommandToTRI(EXTENDED_COMMAND_LABEL, send_buffer, packet_size + 2)) {
     m_transaction_number++;
@@ -480,8 +479,8 @@ void DmxTriWidgetImpl::DispatchRequest() {
     RDMCommandSerializer::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
 
   OLA_INFO << "Sending request to " << request->DestinationUID()
-           << " with command " << std::hex << request->CommandClass()
-           << " and param " << std::hex << request->ParamId();
+           << " with command " << ToHex(request->CommandClass())
+           << " and param " << ToHex(request->ParamId());
 
   bool r = SendCommandToTRI(EXTENDED_COMMAND_LABEL,
                             reinterpret_cast<uint8_t*>(&message),
@@ -532,8 +531,8 @@ void DmxTriWidgetImpl::StopDiscovery() {
  */
 void DmxTriWidgetImpl::HandleSingleTXResponse(uint8_t return_code) {
   if (return_code != EC_NO_ERROR)
-    OLA_WARN << "Error sending DMX data. TRI return code was 0x" << std::hex <<
-        static_cast<int>(return_code);
+    OLA_WARN << "Error sending DMX data. TRI return code was 0x"
+             << ToHex(return_code);
   MaybeSendNextRequest();
 }
 
@@ -661,8 +660,8 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
 void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
                                             const uint8_t *data,
                                             unsigned int length) {
-  OLA_INFO << "got raw RDM response with code: 0x" << std::hex <<
-    static_cast<int>(return_code) << ", length: " << std::dec << length;
+  OLA_INFO << "got raw RDM response with code: 0x" << ToHex(return_code)
+           << ", length: " << length;
 
   auto_ptr<ola::rdm::RDMRequest> request(m_pending_rdm_request);
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
@@ -691,13 +690,14 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
 
   // handle responses to DUB commands
   if (IsDUBRequest(request.get())) {
-    if (return_code == EC_RESPONSE_NONE)
+    if (return_code == EC_RESPONSE_NONE) {
       callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
-    else if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_DISCOVERY)
+    } else if (return_code == EC_NO_ERROR ||
+               return_code == EC_RESPONSE_DISCOVERY) {
       callback->Run(ola::rdm::RDM_DUB_RESPONSE, NULL, packets);
-    else
-      OLA_WARN << "Un-handled DUB response 0x" << std::hex <<
-         static_cast<int>(return_code);
+    } else {
+      OLA_WARN << "Un-handled DUB response 0x" << ToHex(return_code);
+    }
     return;
   }
 
@@ -734,9 +734,9 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
     return;
   }
 
-  OLA_INFO << "Received RDM response with code 0x" <<
-    std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
-    " bytes, param " << std::hex << m_pending_rdm_request->ParamId();
+  OLA_INFO << "Received RDM response with code 0x" << ToHex(return_code)
+           << ", " << length << " bytes, param "
+           << ToHex(m_pending_rdm_request->ParamId());
 
   HandleGenericRDMResponse(return_code,
                            m_pending_rdm_request->ParamId(),
@@ -764,9 +764,9 @@ void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
   data += 2;
   length -= 2;
 
-  OLA_INFO << "Received queued message response with code 0x" <<
-    std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
-    " bytes, param " << std::hex << pid;
+  OLA_INFO << "Received queued message response with code "
+           << ToHex(return_code) << ", " << length << " bytes, param "
+           << ToHex(pid);
 
   if (!length)
     data = NULL;
@@ -830,8 +830,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
                                             length,
                                             ola::rdm::ACK_OVERFLOW);
   } else if (!TriToOlaReturnCode(return_code, &code)) {
-    OLA_WARN << "Response was returned with 0x" << std::hex
-             << static_cast<int>(return_code);
+    OLA_WARN << "Response was returned with " << ToHex(return_code);
     code = ola::rdm::RDM_INVALID_RESPONSE;
   }
   vector<string> packets;
@@ -927,7 +926,7 @@ bool DmxTriWidgetImpl::SendCommandToTRI(uint8_t label, const uint8_t *data,
                                         unsigned int length) {
   bool r = SendMessage(label, data, length);
   if (r && label == EXTENDED_COMMAND_LABEL && length) {
-    OLA_DEBUG << "Sent command 0x" << std::hex << static_cast<int>(data[0]);
+    OLA_DEBUG << "Sent command " << ToHex(data[0]);
     m_expected_command = data[0];
   }
   return r;
