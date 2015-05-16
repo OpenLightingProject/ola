@@ -109,11 +109,7 @@ class RDMCommandSerializer {
   static const unsigned int CHECKSUM_LENGTH = 2;
 
   static void PopulateHeader(RDMCommandHeader *header,
-                             const RDMCommand &command,
-                             unsigned int packet_length,
-                             const UID &source,
-                             uint8_t transaction_number,
-                             uint8_t port_id);
+                             const RDMCommand &command);
 };
 }  // namespace rdm
 }  // namespace ola

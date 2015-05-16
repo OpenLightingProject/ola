@@ -25,7 +25,7 @@
 #include "ola/rdm/RDMCommand.h"
 
 inline bool CommandsEqual(const ola::rdm::RDMCommand &cmd1,
-                   const ola::rdm::RDMCommand &cmd2) {
+                          const ola::rdm::RDMCommand &cmd2) {
   if (cmd1.SourceUID() == cmd2.SourceUID() &&
       cmd1.DestinationUID() == cmd2.DestinationUID() &&
       cmd1.TransactionNumber() == cmd2.TransactionNumber() &&
