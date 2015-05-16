@@ -611,14 +611,9 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * ( otherwise the return type must be changed to uint16_t)
  */
 uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
-  // round up so that we get definitely more LatchBits as LEDs/2
-  // const uint8_t latch_bits = ceil(pixel_count / 2);
-  const uint8_t latch_bits = (pixel_count / 2)  + (pixel_count % 2 ? 1: 0);
-  OLA_DEBUG << "latch_bits: " << latch_bits;
-  // same for latch_bytes
-  // const uint8_t latch_bytes = ceil(latch_bits / 8);
-  const uint8_t latch_bytes = (latch_bits / 8) + (latch_bits % 8 ? 1: 0);
-  OLA_DEBUG << "latch_bytes: " << latch_bytes;
+  // round up so that we get definitely enough bits
+  const uint8_t latch_bits = (pixel_count + 1) / 2;
+  const uint8_t latch_bytes = (latch_bits + 7) / 8;
   return latch_bytes;
 }
 
