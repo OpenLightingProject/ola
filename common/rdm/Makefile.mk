@@ -76,9 +76,14 @@ EXTRA_DIST += \
 test_programs += \
     common/rdm/DiscoveryAgentTester \
     common/rdm/PidStoreTester \
+    common/rdm/QueueingRDMControllerTester \
+    common/rdm/RDMAPITester \
+    common/rdm/RDMCommandSerializerTester \
+    common/rdm/RDMCommandTester \
     common/rdm/RDMHelperTester \
     common/rdm/RDMMessageTester \
-    common/rdm/RDMTester
+    common/rdm/UIDAllocatorTester \
+    common/rdm/UIDTester
 
 common_rdm_DiscoveryAgentTester_SOURCES = common/rdm/DiscoveryAgentTest.cpp
 common_rdm_DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
@@ -104,12 +109,35 @@ common_rdm_RDMMessageTester_SOURCES = \
 common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_rdm_RDMMessageTester_LDADD = $(COMMON_TESTING_LIBS)
 
-common_rdm_RDMTester_SOURCES = \
-    common/rdm/QueueingRDMControllerTest.cpp \
-    common/rdm/RDMAPITest.cpp \
+common_rdm_RDMAPITester_SOURCES = \
+    common/rdm/RDMAPITest.cpp
+common_rdm_RDMAPITester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_RDMAPITester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_RDMCommandTester_SOURCES = \
     common/rdm/RDMCommandTest.cpp \
-    common/rdm/TestHelper.h \
-    common/rdm/UIDAllocatorTest.cpp \
+    common/rdm/TestHelper.h
+common_rdm_RDMCommandTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_RDMCommandTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_RDMCommandSerializerTester_SOURCES = \
+    common/rdm/RDMCommandSerializerTest.cpp \
+    common/rdm/TestHelper.h
+common_rdm_RDMCommandSerializerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_RDMCommandSerializerTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_QueueingRDMControllerTester_SOURCES = \
+    common/rdm/QueueingRDMControllerTest.cpp \
+    common/rdm/TestHelper.h
+common_rdm_QueueingRDMControllerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_QueueingRDMControllerTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_UIDAllocatorTester_SOURCES = \
+    common/rdm/UIDAllocatorTest.cpp
+common_rdm_UIDAllocatorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_UIDAllocatorTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_UIDTester_SOURCES = \
     common/rdm/UIDTest.cpp
-common_rdm_RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-common_rdm_RDMTester_LDADD = $(COMMON_TESTING_LIBS)
+common_rdm_UIDTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_UIDTester_LDADD = $(COMMON_TESTING_LIBS)
