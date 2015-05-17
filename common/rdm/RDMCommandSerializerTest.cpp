@@ -59,6 +59,8 @@ void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
 class RDMCommandSerializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandSerializerTest);
   CPPUNIT_TEST(testGetRequest);
+  CPPUNIT_TEST(testRequestOverrides);
+  CPPUNIT_TEST(testPackWithStartCode);
   CPPUNIT_TEST(testDUB);
   CPPUNIT_TEST(testMuteRequest);
   CPPUNIT_TEST(testUnMuteRequest);
@@ -75,6 +77,8 @@ class RDMCommandSerializerTest: public CppUnit::TestFixture {
   void setUp();
 
   void testGetRequest();
+  void testRequestOverrides();
+  void testPackWithStartCode();
   void testDUB();
   void testMuteRequest();
   void testUnMuteRequest();
@@ -82,15 +86,15 @@ class RDMCommandSerializerTest: public CppUnit::TestFixture {
   void testIOStack();
 
  private:
-    UID m_source;
-    UID m_destination;
+  UID m_source;
+  UID m_destination;
 
-    static uint8_t EXPECTED_GET_BUFFER[];
-    static uint8_t EXPECTED_SET_BUFFER[];
-    static uint8_t EXPECTED_DISCOVERY_REQUEST[];
-    static uint8_t EXPECTED_MUTE_REQUEST[];
-    static uint8_t EXPECTED_UNMUTE_REQUEST[];
-    static uint8_t MUTE_RESPONSE[];
+  static uint8_t EXPECTED_GET_BUFFER[];
+  static uint8_t EXPECTED_SET_BUFFER[];
+  static uint8_t EXPECTED_DISCOVERY_REQUEST[];
+  static uint8_t EXPECTED_MUTE_REQUEST[];
+  static uint8_t EXPECTED_UNMUTE_REQUEST[];
+  static uint8_t MUTE_RESPONSE[];
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMCommandSerializerTest);
@@ -173,7 +177,6 @@ void RDMCommandSerializerTest::testGetRequest() {
   unsigned int length = RDMCommandSerializer::RequiredSize(request);
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(request, data, &length));
-
   OLA_ASSERT_DATA_EQUALS(EXPECTED_GET_BUFFER,
                          arraysize(EXPECTED_GET_BUFFER),
                          data,
@@ -186,6 +189,72 @@ void RDMCommandSerializerTest::testGetRequest() {
                          output.data(), output.length());
 
   delete[] data;
+}
+
+void RDMCommandSerializerTest::testRequestOverrides() {
+  RDMRequest::OverrideOptions options;
+  options.SetMessageLength(10);
+  options.SetChecksum(999);
+  options.sub_start_code = 5;
+  options.message_count = 9;
+
+  RDMGetRequest request(m_source,
+                        m_destination,
+                        0,  // transaction #
+                        1,  // port id
+                        10,  // sub device
+                        296,  // param id
+                        NULL,  // data
+                        0,  // data length
+                        options);
+
+  const uint8_t expected_data[] = {
+    5, 10,  // sub code & length
+    0, 3, 0, 0, 0, 4,   // dst uid
+    0, 1, 0, 0, 0, 2,   // src uid
+    0, 1, 9, 0, 10,  // transaction, port id, msg count & sub device
+    0x20, 1, 40, 0,  // command, param id, param data length
+    0x3, 0xe7  // checksum,
+  };
+
+  unsigned int length = RDMCommandSerializer::RequiredSize(request);
+  uint8_t *data = new uint8_t[length];
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(request, data, &length));
+  OLA_ASSERT_DATA_EQUALS(expected_data, arraysize(expected_data),
+                         data,
+                         length);
+
+  ByteString output;
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(request, &output));
+  OLA_ASSERT_DATA_EQUALS(expected_data,
+                         arraysize(expected_data),
+                         output.data(), output.length());
+}
+
+void RDMCommandSerializerTest::testPackWithStartCode() {
+  RDMGetRequest request(m_source,
+                        m_destination,
+                        0,  // transaction #
+                        1,  // port id
+                        10,  // sub device
+                        296,  // param id
+                        NULL,  // data
+                        0);  // data length
+
+  const uint8_t expected_data[] = {
+    0xcc, 1, 24,  // start code, sub code & length
+    0, 3, 0, 0, 0, 4,   // dst uid
+    0, 1, 0, 0, 0, 2,   // src uid
+    0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+    0x20, 1, 40, 0,  // command, param id, param data length
+    0x1, 0x43  // checksum,
+  };
+
+  ByteString output;
+  OLA_ASSERT_TRUE(RDMCommandSerializer::PackWithStartCode(request, &output));
+  OLA_ASSERT_DATA_EQUALS(expected_data,
+                         arraysize(expected_data),
+                         output.data(), output.length());
 }
 
 void RDMCommandSerializerTest::testDUB() {
@@ -230,8 +299,8 @@ void RDMCommandSerializerTest::testMuteRequest() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_MUTE_REQUEST, arraysize(EXPECTED_MUTE_REQUEST),
-                         data, length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED_MUTE_REQUEST,
+                         arraysize(EXPECTED_MUTE_REQUEST), data, length);
 
   ByteString output;
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request.get(), &output));
