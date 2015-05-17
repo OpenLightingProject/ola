@@ -48,7 +48,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
 
     void Stop();
 
-    void SendRDMRequest(ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
                         ola::rdm::RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);

@@ -574,7 +574,7 @@ class RDMResponse: public RDMCommand {
 
   /**
    * Create a RDMResponse request from raw data in a ByteString.
-   * @param data the response data.
+   * @param input the raw response data.
    * @param[out] status_code a pointer to a RDMStatusCode to set
    * @param request an optional RDMRequest object that this response is for
    * @returns a new RDMResponse object, or NULL is this response is invalid
