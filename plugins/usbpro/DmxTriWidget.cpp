@@ -282,8 +282,7 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
 
     if (command_id != m_expected_command) {
       OLA_WARN << "Received an unexpected command response, expected "
-               << ToHex(m_expected_command) << ", got "
-               << ToHex(command_id);
+               << ToHex(m_expected_command) << ", got " << ToHex(command_id);
     }
     m_last_command = m_expected_command;
     m_expected_command = RESERVED_COMMAND_ID;
@@ -394,8 +393,7 @@ void DmxTriWidgetImpl::SendRawRDMRequest() {
 
   OLA_INFO << "Sending raw request to "
            << m_pending_rdm_request->DestinationUID()
-           << " with command "
-           << ToHex(m_pending_rdm_request->CommandClass())
+           << " with command " << ToHex(m_pending_rdm_request->CommandClass())
            << " and param " << ToHex(m_pending_rdm_request->ParamId());
 
   if (SendCommandToTRI(EXTENDED_COMMAND_LABEL, data.data(), data.size())) {
@@ -670,7 +668,6 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
     return;
   }
 
-
   // handle responses to DUB commands
   if (request->IsDUB()) {
     if (return_code == EC_RESPONSE_NONE) {
@@ -681,7 +678,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
       auto_ptr<RDMReply> reply(RDMReply::DUBReply(frame));
       callback->Run(reply.get());
     } else {
-      OLA_WARN << "Un-handled DUB response 0x" << ToHex(return_code);
+      OLA_WARN << "Un-handled DUB response " << ToHex(return_code);
       RunRDMCallback(callback, ola::rdm::RDM_INVALID_RESPONSE);
     }
     return;
@@ -718,8 +715,8 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
     return;
   }
 
-  OLA_INFO << "Received RDM response with code 0x" << ToHex(return_code)
-           << ", " << std::dec << length << " bytes, param "
+  OLA_INFO << "Received RDM response with code " << ToHex(return_code)
+           << ", " << length << " bytes, param "
            << ToHex(m_pending_rdm_request->ParamId());
 
   HandleGenericRDMResponse(return_code,
@@ -749,8 +746,8 @@ void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
   length -= 2;
 
   OLA_INFO << "Received queued message response with code "
-           << ToHex(return_code) << ", " << length
-           << " bytes, param " << ToHex(pid);
+           << ToHex(return_code) << ", " << length << " bytes, param "
+           << ToHex(pid);
 
   if (!length)
     data = NULL;
@@ -813,8 +810,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
                                             length,
                                             ola::rdm::ACK_OVERFLOW);
   } else if (!TriToOlaReturnCode(return_code, &code)) {
-    OLA_WARN << "Response was returned with "
-             << ToHex(return_code);
+    OLA_WARN << "Response was returned with " << ToHex(return_code);
     code = ola::rdm::RDM_INVALID_RESPONSE;
   }
   // Unfortunately we don't get to see the raw response here, which limits the
@@ -909,7 +905,7 @@ bool DmxTriWidgetImpl::SendCommandToTRI(uint8_t label, const uint8_t *data,
                                         unsigned int length) {
   bool r = SendMessage(label, data, length);
   if (r && label == EXTENDED_COMMAND_LABEL && length) {
-    OLA_DEBUG << "Sent command 0x" << ToHex(data[0]);
+    OLA_DEBUG << "Sent command " << ToHex(data[0]);
     m_expected_command = data[0];
   }
   return r;

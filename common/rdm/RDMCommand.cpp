@@ -308,8 +308,9 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
                                         unsigned int length) {
   RDMCommandHeader command_message;
   RDMStatusCode status_code = VerifyData(data, length, &command_message);
-  if (status_code != RDM_COMPLETED_OK)
+  if (status_code != RDM_COMPLETED_OK) {
     return NULL;
+  }
 
   uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
                                   command_message.sub_device[1]);
@@ -648,8 +649,9 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
     unsigned int length) {
   RDMCommandHeader command_message;
   RDMStatusCode code = VerifyData(data, length, &command_message);
-  if (code != RDM_COMPLETED_OK)
+  if (code != RDM_COMPLETED_OK) {
     return NULL;
+  }
 
   uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
                                   command_message.sub_device[1]);
