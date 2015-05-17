@@ -100,7 +100,7 @@ void QueueingRDMController::Resume() {
 /**
  * Queue an RDM request for sending.
  */
-void QueueingRDMController::SendRDMRequest(const RDMRequest *request,
+void QueueingRDMController::SendRDMRequest(RDMRequest *request,
                                            RDMCallback *on_complete) {
   if (m_pending_requests.size() >= m_max_queue_size) {
     OLA_WARN << "RDM Queue is full, dropping request";

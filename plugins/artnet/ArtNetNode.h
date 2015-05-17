@@ -291,7 +291,7 @@ class ArtNetNodeImpl {
    * called one-at-a-time (per port)
    */
   void SendRDMRequest(uint8_t port_id,
-                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   /**
@@ -343,7 +343,7 @@ class ArtNetNodeImpl {
       ola::Callback0<void> *on_discover,
       ola::Callback0<void> *on_flush,
       ola::Callback2<void,
-                     const ola::rdm::RDMRequest*,
+                     ola::rdm::RDMRequest*,
                      ola::rdm::RDMCallback*> *on_rdm_request);
 
   /**
@@ -382,7 +382,7 @@ class ArtNetNodeImpl {
     Callback0<void> *on_discover;
     Callback0<void> *on_flush;
     ola::Callback2<void,
-                   const ola::rdm::RDMRequest*,
+                   ola::rdm::RDMRequest*,
                    ola::rdm::RDMCallback*> *on_rdm_request;
   };
 
@@ -670,7 +670,7 @@ class ArtNetNodeImplRDMWrapper
   }
   ~ArtNetNodeImplRDMWrapper() {}
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete) {
     m_impl->SendRDMRequest(m_port_id, request, on_complete);
   }
@@ -799,7 +799,7 @@ class ArtNetNode {
    * @brief Send a RDM request by passing it though the Queuing Controller
    */
   void SendRDMRequest(uint8_t port_id,
-                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   /*
@@ -831,7 +831,7 @@ class ArtNetNode {
       ola::Callback0<void> *on_discover,
       ola::Callback0<void> *on_flush,
       ola::Callback2<void,
-                     const ola::rdm::RDMRequest*,
+                     ola::rdm::RDMRequest*,
                      ola::rdm::RDMCallback*> *on_rdm_request) {
     return m_impl.SetOutputPortRDMHandlers(port_id,
                                            on_discover,

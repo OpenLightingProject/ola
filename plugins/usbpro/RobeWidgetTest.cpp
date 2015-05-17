@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Callback.h"
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
@@ -90,9 +91,9 @@ class RobeWidgetTest: public CommonWidgetTest {
       m_ss.Terminate();
     }
 
-    const RDMRequest *NewRequest(const UID &destination,
-                                 const uint8_t *data = NULL,
-                                 unsigned int length = 0);
+    RDMRequest *NewRequest(const UID &destination,
+                           const uint8_t *data = NULL,
+                           unsigned int length = 0);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
     void ValidateResponse(ola::rdm::rdm_response_code code,
@@ -151,15 +152,14 @@ void RobeWidgetTest::setUp() {
  * @param data the RDM Request data
  * @param length the size of the RDM data.
  */
-const RDMRequest *RobeWidgetTest::NewRequest(const UID &destination,
-                                             const uint8_t *data,
-                                             unsigned int length) {
+RDMRequest *RobeWidgetTest::NewRequest(const UID &destination,
+                                       const uint8_t *data,
+                                       unsigned int length) {
   return new ola::rdm::RDMGetRequest(
       SOURCE,
       destination,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       data,
@@ -216,7 +216,7 @@ void RobeWidgetTest::ValidateResponse(
   ola::rdm::rdm_response_code raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
-  OLA_ASSERT(*(raw_response.get()) == *response);
+  OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
   delete response;
   m_ss.Terminate();
 }
@@ -319,7 +319,7 @@ void RobeWidgetTest::testSendDMX() {
  */
 void RobeWidgetTest::testSendRDMRequest() {
   // request
-  const RDMRequest *rdm_request = NewRequest(DESTINATION);
+  RDMRequest *rdm_request = NewRequest(DESTINATION);
   unsigned int expected_request_frame_size;
   uint8_t *expected_request_frame = PackRDMRequest(
       rdm_request,
@@ -386,12 +386,11 @@ void RobeWidgetTest::testSendRDMRequest() {
  */
 void RobeWidgetTest::testSendRDMMute() {
   // request
-  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+  RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
       SOURCE,
       DESTINATION,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_MUTE,  // param id
       NULL,
@@ -438,12 +437,11 @@ void RobeWidgetTest::testSendRDMDUB() {
   };
 
   // request
-  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+  RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
       SOURCE,
       DESTINATION,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
       REQUEST_DATA,
@@ -483,7 +481,6 @@ void RobeWidgetTest::testSendRDMDUB() {
       DESTINATION,
       m_transaction_number++,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
       REQUEST_DATA,

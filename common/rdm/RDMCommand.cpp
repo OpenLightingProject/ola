@@ -31,20 +31,55 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
+#include "ola/strings/Format.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace rdm {
 
 using std::string;
+using ola::utils::JoinUInt8;
+using ola::utils::SplitUInt16;
+
+// Internal Helper Functions
+namespace {
+
+/**
+ * @brief Guess the CommandClass of an RDM message.
+ * @param data a pointer to the RDM message (excluding the start code)
+ * @param length length of the RDM data
+ * @returns A RDMCommandClass value, which is set to INVALID_COMMAND if we
+ * couldn't determine the message type.
+ *
+ * This doesn't perform any data checking (that's left to the Inflate* methods).
+ */
+RDMCommand::RDMCommandClass GuessMessageType(const uint8_t *data,
+                                             unsigned int length) {
+  static const unsigned int COMMAND_CLASS_OFFSET = 19;
+  if (!data || length < COMMAND_CLASS_OFFSET + 1) {
+    return RDMCommand::INVALID_COMMAND;
+  }
+
+  switch (data[COMMAND_CLASS_OFFSET]) {
+    case RDMCommand::GET_COMMAND:
+    case RDMCommand::GET_COMMAND_RESPONSE:
+    case RDMCommand::SET_COMMAND:
+    case RDMCommand::SET_COMMAND_RESPONSE:
+    case RDMCommand::DISCOVER_COMMAND:
+    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
+      return static_cast<RDMCommand::RDMCommandClass>(
+          data[COMMAND_CLASS_OFFSET]);
+    default:
+      return RDMCommand::INVALID_COMMAND;
+  }
+}
+}  // namespace
 
 /**
  * @addtogroup rdm_command
  * @{
  */
 
-/*
- * Constructor
- */
 RDMCommand::RDMCommand(const UID &source,
                        const UID &destination,
                        uint8_t transaction_number,
@@ -68,25 +103,10 @@ RDMCommand::RDMCommand(const UID &source,
 
 
 RDMCommand::~RDMCommand() {
-  if (m_data)
+  if (m_data) {
     delete[] m_data;
-}
-
-
-bool RDMCommand::operator==(const RDMCommand &other) const {
-  if (m_source == other.m_source &&
-      m_destination == other.m_destination &&
-      m_transaction_number == other.m_transaction_number &&
-      m_message_count == other.m_message_count &&
-      m_sub_device == other.m_sub_device &&
-      CommandClass() == other.CommandClass() &&
-      m_param_id == other.m_param_id &&
-      m_data_length == other.m_data_length) {
-    return 0 == memcmp(m_data, other.m_data, m_data_length);
   }
-  return false;
 }
-
 
 string RDMCommand::ToString() const {
   std::ostringstream str;
@@ -97,29 +117,25 @@ string RDMCommand::ToString() const {
     << ", Cmd Class " << CommandClass() << ", Param ID " << m_param_id
     << ", Data Len " << m_data_length;
   str << ", Data ";
-  for (unsigned int i = 0 ; i < m_data_length; i++)
+  for (unsigned int i = 0 ; i < m_data_length; i++) {
     str << std::hex << std::setw(2) << static_cast<int>(m_data[i]) << " ";
+  }
   return str.str();
 }
 
 
 void RDMCommand::Write(ola::io::OutputStream *stream) const {
-  unsigned int packet_length = (sizeof(RDMCommandHeader) +
-    m_data_length);  // size of packet excluding start code + checksum
-
   RDMCommandHeader message;
-  message.sub_start_code = SUB_START_CODE;
-  message.message_length = packet_length + 1;  // add in start code as well
+  message.sub_start_code = SubStartCode();
+  message.message_length = MessageLength();
   m_destination.Pack(message.destination_uid, UID::UID_SIZE);
   m_source.Pack(message.source_uid, UID::UID_SIZE);
   message.transaction_number = m_transaction_number;
   message.port_id = m_port_id;
   message.message_count = m_message_count;
-  message.sub_device[0] = m_sub_device >> 8;
-  message.sub_device[1] = m_sub_device & 0xff;
+  SplitUInt16(m_sub_device, &message.sub_device[0], &message.sub_device[1]);
   message.command_class = CommandClass();
-  message.param_id[0] = m_param_id >> 8;
-  message.param_id[1] = m_param_id & 0xff;
+  SplitUInt16(m_param_id, &message.param_id[0], &message.param_id[1]);
   message.param_data_length = m_data_length;
 
   unsigned int checksum_value = START_CODE;
@@ -141,21 +157,8 @@ void RDMCommand::Write(ola::io::OutputStream *stream) const {
 }
 
 
-/**
- * Attempt to inflate RDM data (excluding the start code) into an RDMCommand
- * object. This is really only useful for sniffer-style programs.
- * @returns NULL if the RDM command is invalid.
- */
 RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
-  if (length < 21) {
-    return NULL;
-  }
-
-  rdm_message_type type;
-  RDMCommandClass command_class;
-
-  if (!GuessMessageType(&type, &command_class, data, length))
-    return NULL;
+  RDMCommandClass command_class = GuessMessageType(data, length);
 
   rdm_response_code response_code = RDM_COMPLETED_OK;
   switch (command_class) {
@@ -169,9 +172,19 @@ RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
       return RDMDiscoveryRequest::InflateFromData(data, length);
     case RDMCommand::DISCOVER_COMMAND_RESPONSE:
       return RDMDiscoveryResponse::InflateFromData(data, length);
-    default:
+    case RDMCommand::INVALID_COMMAND:
       return NULL;
   }
+  return NULL;
+}
+
+RDMCommand *RDMCommand::Inflate(const string &data) {
+  return Inflate(reinterpret_cast<const uint8_t*>(data.data()), data.size());
+}
+
+uint8_t RDMCommand::MessageLength() const {
+  // The size of packet including start code, excluding checksum
+  return sizeof(RDMCommandHeader) + m_data_length + 1;
 }
 
 
@@ -288,29 +301,63 @@ RDMCommand::RDMCommandClass RDMCommand::ConvertCommandClass(
   }
 }
 
+RDMRequest::RDMRequest(const UID &source,
+                       const UID &destination,
+                       uint8_t transaction_number,
+                       uint8_t port_id,
+                       uint16_t sub_device,
+                       RDMCommandClass command_class,
+                       uint16_t param_id,
+                       const uint8_t *data,
+                       unsigned int length,
+                       const OverrideOptions &options)
+    : RDMCommand(source, destination, transaction_number, port_id,
+                 options.message_count, sub_device, param_id, data, length),
+      m_override_options(options),
+      m_command_class(command_class) {
+}
 
 bool RDMRequest::IsDUB() const {
   return (CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
           ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 }
 
-/*
- * Inflate a request from some data
- */
+uint8_t RDMRequest::SubStartCode() const {
+  return m_override_options.sub_start_code;
+}
+
+uint8_t RDMRequest::MessageLength() const {
+  if (m_override_options.has_message_length) {
+    return m_override_options.message_length;
+  } else {
+    return RDMCommand::MessageLength();
+  }
+}
+
+uint16_t RDMRequest::Checksum(uint16_t checksum) const {
+  return m_override_options.has_checksum ?
+      m_override_options.checksum : checksum;
+}
+
 RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
                                         unsigned int length) {
   RDMCommandHeader command_message;
   rdm_response_code code = VerifyData(data, length, &command_message);
-  if (code != RDM_COMPLETED_OK)
+  if (code != RDM_COMPLETED_OK) {
     return NULL;
+  }
 
-  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
-    command_message.sub_device[1]);
-  uint16_t param_id = ((command_message.param_id[0] << 8) +
-    command_message.param_id[1]);
-
+  uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
+                                  command_message.sub_device[1]);
+  uint16_t param_id = JoinUInt8(command_message.param_id[0],
+                                command_message.param_id[1]);
   RDMCommandClass command_class = ConvertCommandClass(
     command_message.command_class);
+
+  OverrideOptions options;
+  options.sub_start_code = command_message.sub_start_code;
+  options.message_length = command_message.message_length;
+  options.message_count = command_message.message_count;
 
   switch (command_class) {
     case DISCOVER_COMMAND:
@@ -319,33 +366,33 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           UID(command_message.destination_uid),
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
-          command_message.message_count,  // message count
           sub_device,
           param_id,
           data + sizeof(RDMCommandHeader),
-          command_message.param_data_length);  // data length
+          command_message.param_data_length,  // data length
+          options);
     case GET_COMMAND:
       return new RDMGetRequest(
           UID(command_message.source_uid),
           UID(command_message.destination_uid),
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
-          command_message.message_count,  // message count
           sub_device,
           param_id,
           data + sizeof(RDMCommandHeader),
-          command_message.param_data_length);  // data length
+          command_message.param_data_length,  // data length
+          options);
     case SET_COMMAND:
       return new RDMSetRequest(
           UID(command_message.source_uid),
           UID(command_message.destination_uid),
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
-          command_message.message_count,  // message count
           sub_device,
           param_id,
           data + sizeof(RDMCommandHeader),
-          command_message.param_data_length);  // data length
+          command_message.param_data_length,  // data length
+          options);
     default:
       OLA_WARN << "Expected a RDM request command but got " << command_class;
       return NULL;
@@ -548,15 +595,6 @@ RDMResponse* RDMResponse::InflateFromData(const string &data,
                          transaction_number);
 }
 
-
-/**
- * This combines two RDMResponses into one. It's used to combine the data from
- * two responses in an ACK_OVERFLOW session together.
- * @param response1 the first response.
- * @param response2 the second response.
- * @return A new response with the data from the first and second combined or
- * NULL if the size limit is reached.
- */
 RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
                                            const RDMResponse *response2) {
   unsigned int combined_length = response1->ParamDataSize() +
@@ -612,69 +650,6 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 
 // Helper functions follow
 
-/**
- * @brief Guess the type of an RDM message
- *
- * Used so we know whether we should unpack it as a request or response. This
- * doesn't perform any data checking (that's left to the Inflate* methods).
- * @param[out] type_arg a pointer to a rdm_message_type variable which is set
- * to RDM_REQUEST or RDM_RESPONSE.
- * @param[out] command_class_arg a pointer to a RDMCommandClass variable which
- * is set to the command class type
- * @param data a pointer to the RDM message (excluding the start code)
- * @param length length of the rdm data
- * @returns true if we could determine the type, false otherwise
- */
-bool GuessMessageType(rdm_message_type *type_arg,
-                      RDMCommand::RDMCommandClass *command_class_arg,
-                      const uint8_t *data,
-                      unsigned int length) {
-  static const unsigned int COMMAND_CLASS_OFFSET = 19;
-  if (!data || length < COMMAND_CLASS_OFFSET + 1)
-    return false;
-
-  rdm_message_type type;
-  RDMCommand::RDMCommandClass command_class;
-
-  switch (data[COMMAND_CLASS_OFFSET]) {
-    case RDMCommand::GET_COMMAND:
-      type = RDM_REQUEST;
-      command_class = RDMCommand::GET_COMMAND;
-      break;
-    case RDMCommand::GET_COMMAND_RESPONSE:
-      type = RDM_RESPONSE;
-      command_class = RDMCommand::GET_COMMAND_RESPONSE;
-      break;
-    case RDMCommand::SET_COMMAND:
-      type = RDM_REQUEST;
-      command_class = RDMCommand::SET_COMMAND;
-      break;
-    case RDMCommand::SET_COMMAND_RESPONSE:
-      type = RDM_RESPONSE;
-      command_class = RDMCommand::SET_COMMAND_RESPONSE;
-      break;
-    case RDMCommand::DISCOVER_COMMAND:
-      type = RDM_REQUEST;
-      command_class = RDMCommand::DISCOVER_COMMAND;
-      break;
-    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
-      type = RDM_RESPONSE;
-      command_class = RDMCommand::DISCOVER_COMMAND_RESPONSE;
-      break;
-    default:
-      command_class = RDMCommand::INVALID_COMMAND;
-      break;
-  }
-
-  if (command_class != RDMCommand::INVALID_COMMAND) {
-    if (type_arg)
-      *type_arg = type;
-    if (command_class_arg)
-      *command_class_arg = command_class;
-    return true;
-  }
-  return false;
-}
 
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason_enum,
@@ -759,16 +734,21 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
     unsigned int length) {
   RDMCommandHeader command_message;
   rdm_response_code code = VerifyData(data, length, &command_message);
-  if (code != RDM_COMPLETED_OK)
+  if (code != RDM_COMPLETED_OK) {
     return NULL;
+  }
 
-  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
-    command_message.sub_device[1]);
-  uint16_t param_id = ((command_message.param_id[0] << 8) +
-    command_message.param_id[1]);
-
+  uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
+                                  command_message.sub_device[1]);
+  uint16_t param_id = JoinUInt8(command_message.param_id[0],
+                                command_message.param_id[1]);
   RDMCommandClass command_class = ConvertCommandClass(
     command_message.command_class);
+
+  OverrideOptions options;
+  options.sub_start_code = command_message.sub_start_code;
+  options.message_length = command_message.message_length;
+  options.message_count = command_message.message_count;
 
   if (command_class == DISCOVER_COMMAND) {
     return new RDMDiscoveryRequest(
@@ -776,11 +756,11 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
         UID(command_message.destination_uid),
         command_message.transaction_number,  // transaction #
         command_message.port_id,  // port id
-        command_message.message_count,  // message count
         sub_device,
         param_id,
         data + sizeof(RDMCommandHeader),
-        command_message.param_data_length);  // data length
+        command_message.param_data_length,  // data length
+        options);
   } else {
     OLA_WARN << "Expected a RDM discovery request but got " << command_class;
     return NULL;
@@ -791,8 +771,7 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
 /*
  * Inflate a discovery request from some data.
  */
-RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
-    const string &data) {
+RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
@@ -815,7 +794,6 @@ RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
                                  UID::AllDevices(),
                                  transaction_number,
                                  port_id,
-                                 0,  // message count
                                  ROOT_RDM_DEVICE,
                                  PID_DISC_UNIQUE_BRANCH,
                                  param_data,
@@ -834,7 +812,6 @@ RDMDiscoveryRequest *NewMuteRequest(const UID &source,
                                  destination,
                                  transaction_number,
                                  port_id,
-                                 0,  // message count
                                  ROOT_RDM_DEVICE,
                                  PID_DISC_MUTE,
                                  NULL,
@@ -853,7 +830,6 @@ RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
                                    destination,
                                    transaction_number,
                                    port_id,
-                                   0,  // message count
                                    ROOT_RDM_DEVICE,
                                    PID_DISC_UN_MUTE,
                                    NULL,
@@ -892,7 +868,7 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
         data + sizeof(RDMCommandHeader),
         command_message.param_data_length);  // data length
   } else {
-    OLA_WARN << "Expected a RDM discovery request but got " << command_class;
+    OLA_WARN << "Expected a RDM discovery response but got " << command_class;
     return NULL;
   }
 }

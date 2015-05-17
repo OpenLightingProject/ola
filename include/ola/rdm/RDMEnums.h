@@ -48,6 +48,20 @@ typedef enum {
   RDM_VERSION_1_0 = 0x100,
 } rdm_protocol_version;
 
+/**
+ * @brief A set of values representing CommandClasses in E1.20.
+ * @note See section 6.2.10 of ANSI E1.20 for more information.
+ */
+typedef enum {
+  DISCOVER_COMMAND = 0x10, /**< Discovery Command */
+  DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
+  GET_COMMAND = 0x20, /**< Get Command */
+  GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
+  SET_COMMAND = 0x30, /**< Set Command */
+  SET_COMMAND_RESPONSE = 0x31, /**< Set Response */
+  INVALID_COMMAND = 0xff, /**< Invalid Command, specific to OLA */
+} RDMCommandClass;
+
 typedef enum {
   // discovery
   PID_DISC_UNIQUE_BRANCH = 0x0001,

@@ -132,7 +132,7 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   RunDiscovery(callback);
 }
 
-void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void DummyPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
   UID dest = request->DestinationUID();
   if (dest.IsBroadcast()) {

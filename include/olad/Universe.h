@@ -125,7 +125,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     void CleanStaleSourceClients();
 
     // RDM methods
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
     void RunRDMDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete,
                          bool full = true);

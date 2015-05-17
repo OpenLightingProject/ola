@@ -623,7 +623,7 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
 }
 
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
-                                    const RDMRequest *request,
+                                    RDMRequest *request,
                                     RDMCallback *on_complete) {
   vector<string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
@@ -777,7 +777,7 @@ bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
     uint8_t port_id,
     ola::Callback0<void> *on_discover,
     ola::Callback0<void> *on_flush,
-    ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
+    ola::Callback2<void, RDMRequest*, RDMCallback*> *on_rdm_request) {
   OutputPort *port = GetOutputPort(port_id);
   if (!port)
     return false;
@@ -1770,7 +1770,7 @@ void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
   }
 }
 
-void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
+void ArtNetNode::SendRDMRequest(uint8_t port_id, RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
   if (!CheckInputPortId(port_id)) {
     vector<string> packets;

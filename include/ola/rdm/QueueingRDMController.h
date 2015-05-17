@@ -52,7 +52,7 @@ class QueueingRDMController: public RDMControllerInterface {
     void Resume();
 
     // This can be called multiple times and the requests will be queued.
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
  protected:
     typedef struct {

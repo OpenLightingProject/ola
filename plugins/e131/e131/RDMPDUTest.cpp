@@ -130,7 +130,6 @@ void RDMPDUTest::testSimpleRDMPDU() {
     destination,
     0,  // transaction #
     1,  // port id
-    0,  // message count
     10,  // sub device
     296,  // param id
     NULL,  // data
@@ -172,7 +171,6 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
     destination,
     0,  // transaction #
     1,  // port id
-    0,  // message count
     10,  // sub device
     296,  // param id
     NULL,  // data
@@ -221,7 +219,6 @@ void RDMPDUTest::testRDMPDUWithData() {
     destination,
     0,  // transaction #
     1,  // port id
-    0,  // message count
     10,  // sub device
     296,  // param id
     rdm_data,  // data
@@ -265,7 +262,6 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
     destination,
     0,  // transaction #
     1,  // port id
-    0,  // message count
     10,  // sub device
     296,  // param id
     rdm_data,  // data

@@ -52,7 +52,7 @@ class DimmerSubDevice: public RDMControllerInterface {
   DimmerSubDevice(const UID &uid, uint16_t sub_device_number,
                   uint16_t total_sub_devices);
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
   uint16_t Footprint() const {
     return m_personality_manager.ActivePersonalityFootprint();

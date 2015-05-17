@@ -82,7 +82,7 @@ class ArtNetOutputPort: public BasicOutputPort {
   /*
    * Handle an RDMRequest
    */
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   /*

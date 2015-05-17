@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -52,7 +53,9 @@
 namespace ola {
 
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMRequest;
 using ola::rdm::UID;
+using std::auto_ptr;
 using std::map;
 using std::ostringstream;
 using std::set;
@@ -432,8 +435,10 @@ void Universe::CleanStaleSourceClients() {
  * transferred to this method.
  * @returns true if this request was sent to an Output port, false otherwise
  */
-void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void Universe::SendRDMRequest(RDMRequest *request_ptr,
                               ola::rdm::RDMCallback *callback) {
+  auto_ptr<RDMRequest> request(request_ptr);
+
   OLA_INFO << "Universe " << UniverseId() << ", RDM request to " <<
     request->DestinationUID() << ", SD: " << request->SubDevice() << ", CC "
       << std::hex << request->CommandClass() << ", TN "
@@ -453,7 +458,6 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
       callback->Run(
           is_dub ? ola::rdm::RDM_TIMEOUT : ola::rdm::RDM_WAS_BROADCAST,
           NULL, packets);
-      delete request;
       return;
     }
 
@@ -482,7 +486,6 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
             NewSingleCallback(this, &Universe::HandleBroadcastAck, tracker));
       }
     }
-    delete request;
   } else {
     map<UID, OutputPort*>::iterator iter =
       m_output_uids.find(request->DestinationUID());
@@ -492,9 +495,8 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
         " in the output universe map, dropping request";
       vector<string> packets;
       callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
-      delete request;
     } else {
-      iter->second->SendRDMRequest(request, callback);
+      iter->second->SendRDMRequest(request.release(), callback);
     }
   }
 }

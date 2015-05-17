@@ -47,7 +47,7 @@ class JaRuleWidget : public ola::rdm::DiscoverableRDMControllerInterface {
 
   ~JaRuleWidget() {}
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);

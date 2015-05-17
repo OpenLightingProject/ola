@@ -109,7 +109,7 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
   return m_node->SendDMX(PortId(), buffer);
 }
 
-void ArtNetOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void ArtNetOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
   vector<string> packets;

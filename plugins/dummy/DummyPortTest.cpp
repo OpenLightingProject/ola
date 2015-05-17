@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -163,11 +164,7 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response) {
-    OLA_ASSERT_DATA_EQUALS(m_expected_response->ParamData(),
-                           m_expected_response->ParamDataSize(),
-                           response->ParamData(),
-                           response->ParamDataSize());
-    OLA_ASSERT(*m_expected_response == *response);
+    OLA_ASSERT_TRUE(CommandsEqual(*m_expected_response, *response));
   } else {
     OLA_ASSERT_NULL(response);
   }
@@ -203,7 +200,6 @@ void DummyPortTest::testUnknownPid() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_COMMS_STATUS,  // param id
       NULL,  // data
@@ -230,7 +226,6 @@ void DummyPortTest::testSupportedParams() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_SUPPORTED_PARAMETERS,  // param id
       NULL,  // data
@@ -295,7 +290,6 @@ void DummyPortTest::testDeviceInfo() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DEVICE_INFO,  // param id
       NULL,  // data
@@ -349,7 +343,6 @@ void DummyPortTest::testSoftwareVersion() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_SOFTWARE_VERSION_LABEL,  // param id
       NULL,  // data
@@ -383,7 +376,6 @@ void DummyPortTest::testDmxAddress() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DMX_START_ADDRESS,  // param id
       NULL,  // data
@@ -408,7 +400,6 @@ void DummyPortTest::testDmxAddress() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      2,  // message count
       0,  // sub device
       ola::rdm::PID_DMX_START_ADDRESS,  // param id
       reinterpret_cast<const uint8_t*>(&dmx_address),
@@ -427,7 +418,6 @@ void DummyPortTest::testDmxAddress() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DMX_START_ADDRESS,  // param id
       NULL,  // data
@@ -453,7 +443,6 @@ void DummyPortTest::testDmxAddress() {
       broadcast_uid,
       0,  // transaction #
       1,  // port id
-      3,  // message count
       0,  // sub device
       ola::rdm::PID_DMX_START_ADDRESS,  // param id
       reinterpret_cast<const uint8_t*>(&dmx_address),
@@ -472,7 +461,6 @@ void DummyPortTest::testDmxAddress() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_DMX_START_ADDRESS,  // param id
       NULL,  // data
@@ -505,7 +493,6 @@ void DummyPortTest::testIdentifyDevice() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_IDENTIFY_DEVICE,  // param id
       NULL,  // data
@@ -530,7 +517,6 @@ void DummyPortTest::testIdentifyDevice() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      2,  // message count
       0,  // sub device
       ola::rdm::PID_IDENTIFY_DEVICE,  // param id
       &new_mode,
@@ -549,7 +535,6 @@ void DummyPortTest::testIdentifyDevice() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_IDENTIFY_DEVICE,  // param id
       NULL,  // data
@@ -575,7 +560,6 @@ void DummyPortTest::testIdentifyDevice() {
       broadcast_uid,
       0,  // transaction #
       1,  // port id
-      3,  // message count
       0,  // sub device
       ola::rdm::PID_IDENTIFY_DEVICE,  // param id
       &new_mode,
@@ -594,7 +578,6 @@ void DummyPortTest::testIdentifyDevice() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_IDENTIFY_DEVICE,  // param id
       NULL,  // data
@@ -629,7 +612,6 @@ void DummyPortTest::testParamDescription() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_PARAMETER_DESCRIPTION,  // param id
       reinterpret_cast<uint8_t*>(&param_id),  // data
@@ -695,7 +677,6 @@ void DummyPortTest::testParamDescription() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_PARAMETER_DESCRIPTION,  // param id
       reinterpret_cast<uint8_t*>(&unknown_param_id),  // data
@@ -726,7 +707,6 @@ void DummyPortTest::testOlaManufacturerPidCodeVersion() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,  // param id
       NULL,  // data
@@ -760,7 +740,6 @@ void DummyPortTest::testSlotInfo() {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       ola::rdm::PID_SLOT_INFO,  // param id
       NULL,  // data
@@ -833,7 +812,6 @@ void DummyPortTest::checkSubDeviceOutOfRange(uint16_t pid) {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       1,  // sub device
       pid,
       NULL,  // data
@@ -859,7 +837,6 @@ void DummyPortTest::checkMalformedRequest(uint16_t pid,
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       pid,
       reinterpret_cast<uint8_t*>(&bad_data),  // data
@@ -883,7 +860,6 @@ void DummyPortTest::checkSetRequest(uint16_t pid) {
       m_expected_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       pid,
       NULL,  // data
@@ -908,7 +884,6 @@ void DummyPortTest::checkNoBroadcastResponse(uint16_t pid) {
       broadcast_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       pid,  // param id
       NULL,  // data
@@ -927,7 +902,6 @@ void DummyPortTest::checkNoBroadcastResponse(uint16_t pid) {
       broadcast_uid,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       0,  // sub device
       pid,  // param id
       NULL,  // data

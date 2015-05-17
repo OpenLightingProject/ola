@@ -646,7 +646,6 @@ void OlaServerServiceImpl::RDMCommand(
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       request->sub_device(),
       request->param_id(),
       reinterpret_cast<const uint8_t*>(request->data().data()),
@@ -657,7 +656,6 @@ void OlaServerServiceImpl::RDMCommand(
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       request->sub_device(),
       request->param_id(),
       reinterpret_cast<const uint8_t*>(request->data().data()),
@@ -698,7 +696,6 @@ void OlaServerServiceImpl::RDMDiscoveryCommand(
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       request->sub_device(),
       request->param_id(),
       reinterpret_cast<const uint8_t*>(request->data().data()),

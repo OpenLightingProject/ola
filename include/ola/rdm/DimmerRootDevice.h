@@ -49,7 +49,7 @@ class DimmerRootDevice: public RDMControllerInterface {
 
     DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices);
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
     /**

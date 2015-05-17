@@ -40,7 +40,7 @@ bool JaRuleOutputPort::WriteDMX(const DmxBuffer &buffer,
   return true;
 }
 
-void JaRuleOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void JaRuleOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *callback) {
   m_widget->SendRDMRequest(request, callback);
 }

@@ -76,7 +76,7 @@ class ClientBroker {
    */
   void SendRDMRequest(const Client *client,
                       Universe *universe,
-                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:

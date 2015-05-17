@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/rdm/UID.h"
@@ -109,7 +110,7 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
           m_discovery_callback(NULL) {
     }
     ~MockRDMController() {}
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
     void AddExpectedCall(RDMRequest *request,
                          ola::rdm::rdm_response_code code,
@@ -149,12 +150,12 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
 };
 
 
-void MockRDMController::SendRDMRequest(const RDMRequest *request,
+void MockRDMController::SendRDMRequest(RDMRequest *request,
                                        RDMCallback *on_complete) {
   OLA_ASSERT_TRUE(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
   m_expected_calls.pop();
-  OLA_ASSERT_EQ((*call.request), (*request));
+  OLA_ASSERT_TRUE(CommandsEqual(*call.request, *request));
   delete request;
   vector<string> packets;
   if (!call.packet.empty())
@@ -279,10 +280,11 @@ void QueueingRDMControllerTest::VerifyResponse(
     const RDMResponse *response,
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);
-  if (expected_response)
-    OLA_ASSERT_EQ((*expected_response), (*response));
-  else
+  if (expected_response) {
+    OLA_ASSERT_TRUE(CommandsEqual(*expected_response, *response));
+  } else {
     OLA_ASSERT_EQ(expected_response, response);
+  }
 
   OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   for (unsigned int i = 0; i < packets.size(); i++)
@@ -329,7 +331,6 @@ RDMRequest *QueueingRDMControllerTest::NewGetRequest(const UID &source,
       destination,
       0,  // transaction #
       1,  // port id
-      0,  // message count
       10,  // sub device
       296,  // param id
       NULL,  // data

@@ -153,7 +153,7 @@ NetworkResponder::~NetworkResponder() {
 /*
  * Handle an RDM Request
  */
-void NetworkResponder::SendRDMRequest(const RDMRequest *request,
+void NetworkResponder::SendRDMRequest(RDMRequest *request,
                                       RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);

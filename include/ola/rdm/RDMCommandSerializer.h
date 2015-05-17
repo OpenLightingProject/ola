@@ -38,60 +38,63 @@ namespace ola {
 namespace rdm {
 
 
-/*
- * Serializes a RDMCommand to a memory buffer. This restricts the serialized
- * command to 231 bytes of paramater data. If the message is more than 231
- * bytes then Pack will return false.
+/**
+ * @brief Serializes RDMCommands.
+ *
+ * This creates the binary representation of an RDMCommand. The binary
+ * representation is restricted to 231 bytes of paramater data. If
+ * the message is more than 231 bytes then Pack() will return false.
  */
 class RDMCommandSerializer {
  public:
-    static unsigned int RequiredSize(const RDMCommand &command);
+  /**
+   * @brief Return the number of bytes required to store the serialized version
+   * of the RDMCommand.
+   * @param command The RDMCommand which will be serialized.
+   * @returns The number of bytes required for the serialized form of the
+   * command or 0 if the command contains more than 231 bytes of parameter data.
+   */
+  static unsigned int RequiredSize(const RDMCommand &command);
 
-    static bool Pack(const RDMCommand &command,
-                     uint8_t *buffer,
-                     unsigned int *size);
-    static bool Pack(const RDMRequest &request,
-                     uint8_t *buffer,
-                     unsigned int *size,
-                     const UID &source,
-                     uint8_t transaction_number,
-                     uint8_t port_id);
+  /**
+   * @brief Serialize a RDMCommand to an array of bytes.
+   * @param command the RDMCommand to serialize.
+   * @param buffer The memory location to serailize to.
+   * @param[in,out] size The size of the memory location.
+   * @returns True if the command was serialized correctly, false otherwise.
+   *
+   * The size of the memory location should be at least as large as what was
+   * returned from RequiredSize().
+   */
+  static bool Pack(const RDMCommand &command,
+                   uint8_t *buffer,
+                   unsigned int *size);
 
-    // TODO(simon): Add IOQueue Write() methods here
+  // TODO(simon): Add IOQueue Write() method here
 
-    // Similar to above but we write the output to an IOStack
-    static bool Write(const RDMCommand &command,
-                      ola::io::IOStack *stack);
-    static bool Write(const RDMRequest &request,
-                      ola::io::IOStack *stack,
-                      const UID &source,
-                      uint8_t transaction_number,
-                      uint8_t port_id);
+  /**
+   * @brief Write the binary representation of an RDMCommand to an IOStack.
+   * @param command the RDMCommand
+   * @param stack the IOStack to write to.
+   * @returns true if the write was successful, false if the RDM command needs
+   *   to be fragmented.
+   */
+  static bool Write(const RDMCommand &command, ola::io::IOStack *stack);
 
-    enum { MAX_PARAM_DATA_LENGTH = 231 };
+  /**
+   * @brief The maximum parameter data a single command can contain.
+   */
+  enum { MAX_PARAM_DATA_LENGTH = 231 };
 
  private:
-    static const unsigned int CHECKSUM_LENGTH = 2;
+  static const unsigned int CHECKSUM_LENGTH = 2;
 
-    static bool PackWithParams(const RDMCommand &command,
-                               uint8_t *buffer,
-                               unsigned int *size,
-                               const UID &source,
-                               uint8_t transaction_number,
-                               uint8_t port_id);
-
-    static bool WriteToStack(const RDMCommand &command,
-                             ola::io::IOStack *stack,
+  static void PopulateHeader(RDMCommandHeader *header,
+                             const RDMCommand &command,
+                             unsigned int packet_length,
                              const UID &source,
                              uint8_t transaction_number,
                              uint8_t port_id);
-
-    static void PopulateHeader(RDMCommandHeader *header,
-                               const RDMCommand &command,
-                               unsigned int packet_length,
-                               const UID &source,
-                               uint8_t transaction_number,
-                               uint8_t port_id);
 };
 }  // namespace rdm
 }  // namespace ola
