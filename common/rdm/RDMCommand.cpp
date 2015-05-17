@@ -38,6 +38,7 @@ namespace ola {
 namespace rdm {
 
 using std::string;
+using ola::strings::ToHex;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
 
@@ -407,25 +408,26 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
   if (request) {
     // check dest uid
     if (request->SourceUID() != destination_uid) {
-      OLA_WARN << "The destination UID in the response doesn't match, got " <<
-        destination_uid << ", expected " << request->SourceUID();
+      OLA_WARN << "The destination UID in the response doesn't match, got "
+               << destination_uid << ", expected " << request->SourceUID();
       *status_code = RDM_DEST_UID_MISMATCH;
       return NULL;
     }
 
     // check src uid
     if (request->DestinationUID() != source_uid) {
-      OLA_WARN << "The source UID in the response doesn't match, got " <<
-        source_uid << ", expected " << request->DestinationUID();
+      OLA_WARN << "The source UID in the response doesn't match, got "
+               << source_uid << ", expected " << request->DestinationUID();
       *status_code = RDM_SRC_UID_MISMATCH;
       return NULL;
     }
 
     // check transaction #
     if (command_message.transaction_number != request->TransactionNumber()) {
-      OLA_WARN << "Transaction numbers don't match, got " <<
-        static_cast<int>(command_message.transaction_number) << ", expected "
-        << static_cast<int>(request->TransactionNumber());
+      OLA_WARN << "Transaction numbers don't match, got "
+               << static_cast<int>(command_message.transaction_number)
+               << ", expected "
+               << static_cast<int>(request->TransactionNumber());
       *status_code = RDM_TRANSACTION_MISMATCH;
       return NULL;
     }
@@ -435,8 +437,8 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     if (sub_device != request->SubDevice() &&
         request->SubDevice() != ALL_RDM_SUBDEVICES &&
          request->ParamId() != PID_QUEUED_MESSAGE) {
-      OLA_WARN << "Sub device didn't match, got " << sub_device <<
-        ", expected " << request->SubDevice();
+      OLA_WARN << "Sub device didn't match, got " << sub_device
+               << ", expected " << request->SubDevice();
       *status_code = RDM_SUB_DEVICE_MISMATCH;
       return NULL;
     }
@@ -445,24 +447,24 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     if (request->CommandClass() == GET_COMMAND &&
         command_class != GET_COMMAND_RESPONSE &&
         request->ParamId() != PID_QUEUED_MESSAGE) {
-      OLA_WARN << "Expected GET_COMMAND_RESPONSE, got 0x" << std::hex <<
-        command_class;
+      OLA_WARN << "Expected GET_COMMAND_RESPONSE, got "
+               << ToHex(command_class);
       *status_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
 
     if (request->CommandClass() == SET_COMMAND &&
         command_class != SET_COMMAND_RESPONSE) {
-      OLA_WARN << "Expected SET_COMMAND_RESPONSE, got 0x" << std::hex <<
-        command_class;
+      OLA_WARN << "Expected SET_COMMAND_RESPONSE, got "
+               << ToHex(command_class);
       *status_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
 
     if (request->CommandClass() == DISCOVER_COMMAND &&
         command_class != DISCOVER_COMMAND_RESPONSE) {
-      OLA_WARN << "Expected DISCOVER_COMMAND_RESPONSE, got 0x" << std::hex <<
-        command_class;
+      OLA_WARN << "Expected DISCOVER_COMMAND_RESPONSE, got "
+               << ToHex(command_class);
       *status_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
@@ -470,7 +472,8 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 
   // check response type
   if (command_message.port_id > ACK_OVERFLOW) {
-    OLA_WARN << "Response type isn't valid, got " << command_message.port_id;
+    OLA_WARN << "Response type isn't valid, got "
+             << static_cast<int>(command_message.port_id);
     *status_code = RDM_INVALID_RESPONSE_TYPE;
     return NULL;
   }
@@ -517,8 +520,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
           data + sizeof(RDMCommandHeader),
           command_message.param_data_length);  // data length
     default:
-      OLA_WARN << "Command class isn't valid, got 0x" << std::hex <<
-        command_class;
+      OLA_WARN << "Command class isn't valid, got " << ToHex(command_class);
       *status_code = RDM_INVALID_COMMAND_CLASS;
       return NULL;
   }

@@ -26,6 +26,9 @@
 #include <ola/rdm/RDMFrame.h>
 #include <ola/rdm/RDMResponseCodes.h>
 
+#include <string>
+#include <memory>
+
 namespace ola {
 namespace rdm {
 

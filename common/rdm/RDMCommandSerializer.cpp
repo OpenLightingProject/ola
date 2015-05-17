@@ -63,7 +63,7 @@ bool RDMCommandSerializer::Pack(const RDMCommand &command,
 
 bool RDMCommandSerializer::PackWithStartCode(const RDMCommand &command,
                                              ola::io::ByteString *output) {
-  output->push_back(ola::rdm::START_CODE);
+  output->push_back(START_CODE);
   return Pack(command, output);
 }
 
