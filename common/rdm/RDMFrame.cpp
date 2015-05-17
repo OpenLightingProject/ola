@@ -43,5 +43,13 @@ RDMFrame::RDMFrame(const ola::io::ByteString &frame_data,
   data.append(frame_data);
   memset(reinterpret_cast<uint8_t*>(&timing_info), 0, sizeof(timing_info));
 }
+
+bool RDMFrame::operator==(const RDMFrame &other) const {
+  return (data == other.data &&
+          timing_info.response_delay == other.timing_info.response_delay &&
+          timing_info.break_time == other.timing_info.break_time &&
+          timing_info.mark_time == other.timing_info.mark_time &&
+          timing_info.data_time == other.timing_info.data_time);
+}
 }  // namespace rdm
 }  // namespace ola

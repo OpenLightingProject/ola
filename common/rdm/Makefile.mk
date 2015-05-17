@@ -80,8 +80,10 @@ test_programs += \
     common/rdm/RDMAPITester \
     common/rdm/RDMCommandSerializerTester \
     common/rdm/RDMCommandTester \
+    common/rdm/RDMFrameTester \
     common/rdm/RDMHelperTester \
     common/rdm/RDMMessageTester \
+    common/rdm/RDMReplyTester \
     common/rdm/UIDAllocatorTester \
     common/rdm/UIDTester
 
@@ -119,6 +121,18 @@ common_rdm_RDMCommandTester_SOURCES = \
     common/rdm/TestHelper.h
 common_rdm_RDMCommandTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_rdm_RDMCommandTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_RDMFrameTester_SOURCES = \
+    common/rdm/RDMFrameTest.cpp \
+    common/rdm/TestHelper.h
+common_rdm_RDMFrameTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_RDMFrameTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_RDMReplyTester_SOURCES = \
+    common/rdm/RDMReplyTest.cpp \
+    common/rdm/TestHelper.h
+common_rdm_RDMReplyTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_RDMReplyTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMCommandSerializerTester_SOURCES = \
     common/rdm/RDMCommandSerializerTest.cpp \

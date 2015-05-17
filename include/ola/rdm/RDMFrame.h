@@ -72,6 +72,14 @@ class RDMFrame {
                     const Options &options = Options());
 
   /**
+   * @brief Test for equality.
+   * @param other The RDMFrame to test against.
+   * @returns True if two RDMFrames are equal, including any timing
+   *   information.
+   */
+  bool operator==(const RDMFrame &other) const;
+
+  /**
    * @brief The raw RDM data, including the RDM start code.
    */
   ola::io::ByteString data;
