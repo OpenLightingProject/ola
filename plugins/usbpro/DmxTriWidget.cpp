@@ -516,7 +516,7 @@ void DmxTriWidgetImpl::StopDiscovery() {
  */
 void DmxTriWidgetImpl::HandleSingleTXResponse(uint8_t return_code) {
   if (return_code != EC_NO_ERROR)
-    OLA_WARN << "Error sending DMX data. TRI return code was 0x"
+    OLA_WARN << "Error sending DMX data. TRI return code was "
              << ToHex(return_code);
   MaybeSendNextRequest();
 }

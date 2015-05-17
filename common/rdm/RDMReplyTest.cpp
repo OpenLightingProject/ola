@@ -130,7 +130,7 @@ void RDMReplyTest::testReplyWithFrames() {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply.StatusCode());
   OLA_ASSERT_EQ(static_cast<const RDMResponse*>(response), reply.Response());
   OLA_ASSERT_EQ(response, reply.MutableResponse());
-  OLA_ASSERT_EQ(static_cast<unsigned long>(1), reply.Frames().size());
+  OLA_ASSERT_EQ(static_cast<size_t>(1), reply.Frames().size());
   OLA_ASSERT_TRUE(frame == reply.Frames()[0]);
 }
 
@@ -157,7 +157,7 @@ void RDMReplyTest::testFromFrameHelper() {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
   OLA_ASSERT_NOT_NULL(reply->Response());
   OLA_ASSERT_NOT_NULL(reply->MutableResponse());
-  OLA_ASSERT_EQ(static_cast<unsigned long>(1), reply->Frames().size());
+  OLA_ASSERT_EQ(static_cast<size_t>(1), reply->Frames().size());
   OLA_ASSERT_TRUE(frame == reply->Frames()[0]);
 
   const RDMResponse *response = reply->Response();
@@ -189,7 +189,7 @@ void RDMReplyTest::testDUBHelper() {
   OLA_ASSERT_EQ(ola::rdm::RDM_DUB_RESPONSE, reply->StatusCode());
   OLA_ASSERT_NULL(reply->Response());
   OLA_ASSERT_NULL(reply->MutableResponse());
-  OLA_ASSERT_EQ(static_cast<unsigned long>(1), reply->Frames().size());
+  OLA_ASSERT_EQ(static_cast<size_t>(1), reply->Frames().size());
   OLA_ASSERT_TRUE(frame == reply->Frames()[0]);
   OLA_ASSERT_EQ(10000u, reply->Frames()[0].timing_info.response_delay);
   OLA_ASSERT_EQ(45000u, reply->Frames()[0].timing_info.data_time);
