@@ -21,6 +21,7 @@
 #include "ola/rdm/RDMFrame.h"
 
 #include <ola/rdm/RDMPacket.h>
+#include <string.h>
 #include <vector>
 
 namespace ola {
