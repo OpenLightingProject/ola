@@ -167,12 +167,6 @@ class RDMCommand {
   }
 
   /**
-   * @brief Write the binary representation of a RDMCommand to an OutputStream.
-   * @param stream is a pointer to an OutputStream
-   */
-  void Write(ola::io::OutputStream *stream) const;
-
-  /**
    * @brief The RDM Start Code.
    */
   static const uint8_t START_CODE = 0xcc;
