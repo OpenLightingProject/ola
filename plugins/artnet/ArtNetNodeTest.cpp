@@ -35,6 +35,7 @@
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/RDMReply.h"
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -43,7 +44,6 @@
 #include "ola/timecode/TimeCode.h"
 #include "plugins/artnet/ArtNetNode.h"
 #include "ola/testing/TestUtils.h"
-
 
 
 using ola::DmxBuffer;
@@ -56,6 +56,7 @@ using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMGetRequest;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -168,20 +169,14 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     m_rdm_callback = callback;
   }
 
-  void FinalizeRDM(ola::rdm::RDMStatusCode status,
-                   const RDMResponse *response,
-                   const vector<string> &packets) {
-    OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, status);
-    m_rdm_response = response;
-    (void) packets;
+  void FinalizeRDM(RDMReply *reply) {
+    OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
+    m_rdm_response = reply->Response()->Duplicate();
   }
 
-  void ExpectTimeout(ola::rdm::RDMStatusCode status,
-                     const RDMResponse *response,
-                     const vector<string> &packets) {
-    OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, status);
-    OLA_ASSERT(NULL == response);
-    (void) packets;
+  void ExpectTimeout(RDMReply *reply) {
+    OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, reply->StatusCode());
+    OLA_ASSERT_NULL(reply->Response());
     m_got_rdm_timeout = true;
   }
 
@@ -2055,8 +2050,8 @@ void ArtNetNodeTest::testRDMResponder() {
     RDMResponse *response = GetResponseFromData(m_rdm_request,
                                                 param_data,
                                                 sizeof(param_data));
-    vector<string> packets;
-    m_rdm_callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
+    RDMReply reply(ola::rdm::RDM_COMPLETED_OK, response);
+    m_rdm_callback->Run(&reply);
 
     // clean up
     delete m_rdm_request;

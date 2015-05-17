@@ -147,8 +147,9 @@ void ArduinoWidgetTest::ValidateResponse(RDMReply *reply) {
 
   ola::rdm::RDMStatusCode raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
-    ola::rdm::RDMResponse::InflateFromData(frame.data, &raw_code));
-  OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
+    ola::rdm::RDMResponse::InflateFromData(frame.data.data() + 1,
+      frame.data.size() - 1, &raw_code));
+  OLA_ASSERT_TRUE(*raw_response.get() == *response);
   m_ss.Terminate();
 }
 
@@ -349,8 +350,8 @@ void ArduinoWidgetTest::testErrorCodes() {
   // verify a checksum error is detected
   // twiddle the penultimate bit so that the checksum fails
   response_frame[response_size - 2] += 1;
-  frames.push_back(RDMFrame(response_frame + 6,
-                            RDMCommandSerializer::RequiredSize(*response)));
+  frames.push_back(RDMFrame(response_frame + 5,
+                            RDMCommandSerializer::RequiredSize(*response) + 1));
 
   // add the expected response, send and verify
   m_endpoint->AddExpectedDataAndReturn(
@@ -392,7 +393,7 @@ void ArduinoWidgetTest::testErrorCodes() {
       &response_size);
 
   // only return the first 10 bytes of the rdm response
-  frames.push_back(RDMFrame(response_frame + 6, 8));
+  frames.push_back(RDMFrame(response_frame + 5, 9));
 
   m_endpoint->AddExpectedDataAndReturn(
       expected_request_frame,
@@ -426,7 +427,7 @@ void ArduinoWidgetTest::testErrorCodes() {
   rdm_data[16] += 1;
   // 'correct' the checksum
   rdm_data[response_size + 2 - 1] += 1;
-  frames.push_back(RDMFrame(rdm_data + 2, response_size));
+  frames.push_back(RDMFrame(rdm_data + 1, response_size + 1));
 
   response_frame = BuildUsbProMessage(
       RDM_REQUEST_LABEL,
@@ -465,7 +466,7 @@ void ArduinoWidgetTest::testErrorCodes() {
   rdm_data[20] += 1;
   // 'correct' the checksum
   rdm_data[response_size + 2 - 1] += 1;
-  frames.push_back(RDMFrame(rdm_data + 2, response_size));
+  frames.push_back(RDMFrame(rdm_data + 1, response_size + 1));
 
   response_frame = BuildUsbProMessage(
       RDM_REQUEST_LABEL,

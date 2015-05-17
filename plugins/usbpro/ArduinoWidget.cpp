@@ -114,7 +114,7 @@ void ArduinoWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
   request->SetPortId(1);
 
   ola::io::ByteString data;
-  if (RDMCommandSerializer::PackWithStartCode(*request, &data)) {
+  if (!RDMCommandSerializer::PackWithStartCode(*request, &data)) {
     OLA_WARN << "Failed to pack message, dropping request";
     RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;

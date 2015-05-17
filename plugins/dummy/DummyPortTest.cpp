@@ -49,6 +49,7 @@ namespace dummy {
 using ola::network::HostToNetwork;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMGetResponse;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
@@ -93,9 +94,7 @@ class DummyPortTest: public CppUnit::TestFixture {
     m_expected_response = NULL;
     m_got_uids = false;
   }
-  void HandleRDMResponse(ola::rdm::RDMStatusCode code,
-                         const RDMResponse *response,
-                         const vector<string> &packets);
+  void HandleRDMResponse(RDMReply *reply);
   void SetExpectedResponse(ola::rdm::RDMStatusCode code,
                            const RDMResponse *response);
   void Verify() { OLA_ASSERT_FALSE(m_expected_response); }
@@ -159,16 +158,13 @@ class DummyPortTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 
-void DummyPortTest::HandleRDMResponse(ola::rdm::RDMStatusCode code,
-                                      const ola::rdm::RDMResponse *response,
-                                      const vector<string>&) {
-  OLA_ASSERT_EQ(m_expected_code, code);
+void DummyPortTest::HandleRDMResponse(RDMReply *reply) {
+  OLA_ASSERT_EQ(m_expected_code, reply->StatusCode());
   if (m_expected_response) {
-    OLA_ASSERT_TRUE(CommandsEqual(*m_expected_response, *response));
+    OLA_ASSERT_TRUE(*m_expected_response == *reply->Response());
   } else {
-    OLA_ASSERT_NULL(response);
+    OLA_ASSERT_NULL(reply->Response());
   }
-  delete response;
   delete m_expected_response;
   m_expected_response = NULL;
 }

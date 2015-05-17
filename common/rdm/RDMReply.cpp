@@ -22,6 +22,7 @@
 
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
+#include <string>
 #include <vector>
 
 using ola::rdm::RDMResponse;
