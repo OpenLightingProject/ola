@@ -51,7 +51,6 @@ namespace rdm {
  */
 typedef ola::BaseCallback1<void, RDMReply*> RDMCallback;
 
-
 /**
  * @brief A helper message to run a RDMCallback with the given status code.
  * @param callback The RDMCallback to run.

@@ -34,6 +34,7 @@
 #include "ola/rdm/RDMPacket.h"
 #include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
+#include "ola/util/Utils.h"
 
 using ola::io::IOStack;
 using ola::io::ByteString;
@@ -51,8 +52,8 @@ void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
   for (unsigned int i = 0 ; i < expected_length - 2; i++)
     checksum += expected[i];
 
-  expected[expected_length - 2] = checksum >> 8;
-  expected[expected_length - 1] = checksum & 0xff;
+  ola::utils::SplitUInt16(checksum, &expected[expected_length - 2],
+                          &expected[expected_length - 1]);
 }
 
 

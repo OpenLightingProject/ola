@@ -379,7 +379,7 @@ void RDMCommandTest::testRequestInflation() {
   command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0));
   OLA_ASSERT_NULL(command.get());
 
-  // Try an valid command
+  // Try a valid command
   command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER,
                                             sizeof(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());

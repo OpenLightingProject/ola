@@ -24,9 +24,12 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMPacket.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace rdm {
+
+using ola::utils::SplitUInt16;
 
 unsigned int RDMCommandSerializer::RequiredSize(
     const RDMCommand &command) {
@@ -138,11 +141,11 @@ void RDMCommandSerializer::PopulateHeader(RDMCommandHeader *header,
   header->transaction_number = command.TransactionNumber();
   header->port_id = command.PortIdResponseType();
   header->message_count = command.MessageCount();
-  header->sub_device[0] = command.SubDevice() >> 8;
-  header->sub_device[1] = command.SubDevice() & 0xff;
+  SplitUInt16(command.SubDevice(), &header->sub_device[0],
+              &header->sub_device[1]);
   header->command_class = command.CommandClass();
-  header->param_id[0] = command.ParamId() >> 8;
-  header->param_id[1] = command.ParamId() & 0xff;
+  SplitUInt16(command.ParamId(), &header->param_id[0],
+              &header->param_id[1]);
   header->param_data_length = command.ParamDataSize();
 }
 }  // namespace rdm

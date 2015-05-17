@@ -101,7 +101,7 @@ class RDMFrame {
     uint32_t break_time;  //!< The duration of the break.
     uint32_t mark_time;  //!< The duration of the mark-after-break.
     /**
-     * @brief The time between the first and last byte of the  data.
+     * @brief The time between the first and last byte of the data.
      */
     uint32_t data_time;
   } timing_info;

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMFrame.cpp
- * The RDmFramw object.
+ * The RDMFrame object.
  * Copyright (C) 2015 Simon Newton
  */
 
