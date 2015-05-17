@@ -167,6 +167,13 @@ class RDMCommand {
   }
 
   /**
+   * @brief Test for equality.
+   * @param other The RDMCommand to test against.
+   * @returns True if two RDMCommands are equal.
+   */
+  bool operator==(const RDMCommand &other) const;
+
+  /**
    * @brief The RDM Start Code.
    */
   static const uint8_t START_CODE = 0xcc;

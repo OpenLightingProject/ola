@@ -188,15 +188,22 @@ void QueueingRDMController::HandleRDMResponse(RDMReply *reply) {
     } else {
       // Combine the data.
       m_response.reset(RDMResponse::CombineResponses(
-            m_response.get(), reply->Response()));
+          m_response.get(), reply->Response()));
       m_frames.insert(m_frames.end(), reply->Frames().begin(),
                       reply->Frames().end());
 
-      if (reply->Response()->ResponseType() != ACK_OVERFLOW) {
+      if (!m_response.get()) {
+        // The response was invalid
+        RDMReply new_reply(RDM_INVALID_RESPONSE, NULL, m_frames);
+        RunCallback(&new_reply);
+        m_frames.clear();
+        TakeNextAction();
+      } else if (reply->Response()->ResponseType() != ACK_OVERFLOW) {
         RDMReply new_reply(RDM_COMPLETED_OK, m_response.release(), m_frames);
         RunCallback(&new_reply);
         m_response.reset();
         m_frames.clear();
+        TakeNextAction();
       } else {
         DispatchNextRequest();
       }

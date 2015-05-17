@@ -24,8 +24,8 @@
 #include <string>
 #include <vector>
 
-#include "common/rdm/TestHelper.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/Callback.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -33,12 +33,14 @@
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/testing/TestUtils.h"
 
-
 using ola::NewSingleCallback;
 using ola::rdm::ACK_OVERFLOW;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMFrame;
+using ola::rdm::RDMFrames;
 using ola::rdm::RDMGetResponse;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDM_ACK;
@@ -47,6 +49,29 @@ using ola::rdm::UIDSet;
 using std::auto_ptr;
 using std::string;
 using std::vector;
+
+RDMRequest *NewGetRequest(const UID &source, const UID &destination) {
+  return new ola::rdm::RDMGetRequest(source,
+                                     destination,
+                                     0,  // transaction #
+                                     1,  // port id
+                                     10,  // sub device
+                                     296,  // param id
+                                     NULL,  // data
+                                     0);  // data length
+}
+
+RDMResponse *NewGetResponse(const UID &source, const UID &destination) {
+  return new RDMGetResponse(source,
+                            destination,
+                            0,  // transaction #
+                            RDM_ACK,
+                            0,  // message count
+                            10,  // sub device
+                            296,  // param id
+                            NULL,  // data
+                            0);  // data length
+}
 
 class QueueingRDMControllerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(QueueingRDMControllerTest);
@@ -62,40 +87,49 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
+  QueueingRDMControllerTest()
+      : m_source(1, 2),
+        m_destination(3, 4),
+        m_discovery_complete_count(0) {
+  }
 
-    void testSendAndReceive();
-    void testDelayedSendAndReceive();
-    void testAckOverflows();
-    void testPauseAndResume();
-    void testQueueOverflow();
-    void testDiscovery();
-    void testMultipleDiscovery();
-    void testReentrantDiscovery();
-    void testRequestAndDiscovery();
+  void testSendAndReceive();
+  void testDelayedSendAndReceive();
+  void testAckOverflows();
+  void testPauseAndResume();
+  void testQueueOverflow();
+  void testDiscovery();
+  void testMultipleDiscovery();
+  void testReentrantDiscovery();
+  void testRequestAndDiscovery();
 
-    void VerifyResponse(
-        ola::rdm::RDMStatusCode expected_code,
-        const RDMResponse *expected_response,
-        vector<string> expected_packets,
-        bool delete_response,
-        ola::rdm::RDMStatusCode code,
-        const RDMResponse *response,
-        const vector<string> &packets);
+  void VerifyResponse(RDMReply *expected_reply,
+                      RDMReply *reply) {
+    OLA_ASSERT_EQ(*expected_reply, *reply);
+    delete expected_reply;
+  }
 
-    void VerifyDiscoveryComplete(UIDSet *expected_uids,
-                                 const UIDSet &uids);
-    void ReentrantDiscovery(
-        ola::rdm::DiscoverableQueueingRDMController *controller,
-        UIDSet *expected_uids,
-        const UIDSet &uids);
+  void VerifyDiscoveryComplete(UIDSet *expected_uids, const UIDSet &uids) {
+    OLA_ASSERT_EQ(*expected_uids, uids);
+    m_discovery_complete_count++;
+  }
+
+  void ReentrantDiscovery(
+      ola::rdm::DiscoverableQueueingRDMController *controller,
+      UIDSet *expected_uids,
+      const UIDSet &uids);
 
  private:
-    int m_discovery_complete_count;
+  UID m_source;
+  UID m_destination;
+  int m_discovery_complete_count;
 
-    RDMRequest *NewGetRequest(const UID &source,
-                              const UID &destination);
+  static const uint8_t MOCK_FRAME_DATA[];
+  static const uint8_t MOCK_FRAME_DATA2[];
 };
+
+const uint8_t QueueingRDMControllerTest::MOCK_FRAME_DATA[] = { 1, 2, 3, 4 };
+const uint8_t QueueingRDMControllerTest::MOCK_FRAME_DATA2[] = { 5, 6, 7, 8 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(QueueingRDMControllerTest);
 
@@ -109,32 +143,27 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
         : m_rdm_callback(NULL),
           m_discovery_callback(NULL) {
     }
-    ~MockRDMController() {}
+
     void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
-    void AddExpectedCall(RDMRequest *request,
-                         ola::rdm::RDMStatusCode code,
-                         RDMResponse *response,
-                         const string &packet,
-                         bool run_callback = true);
+    void ExpectCallAndCapture(RDMRequest *request);
+    void ExpectCallAndReplyWith(RDMRequest *request,
+                                RDMReply *reply);
 
     void AddExpectedDiscoveryCall(bool full, const UIDSet *uids);
 
     void RunFullDiscovery(RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
 
-    void RunRDMCallback(ola::rdm::RDMStatusCode code,
-                        RDMResponse *response,
-                        const string &packet);
+    void RunRDMCallback(RDMReply *reply);
+
     void RunDiscoveryCallback(const UIDSet &uids);
     void Verify();
 
  private:
     typedef struct {
       RDMRequest *request;
-      ola::rdm::RDMStatusCode code;
-      RDMResponse *response;
-      string packet;
+      RDMReply *reply;
       bool run_callback;
     } expected_call;
 
@@ -155,13 +184,11 @@ void MockRDMController::SendRDMRequest(RDMRequest *request,
   OLA_ASSERT_TRUE(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
   m_expected_calls.pop();
-  OLA_ASSERT_TRUE(CommandsEqual(*call.request, *request));
+  OLA_ASSERT_TRUE(*call.request == *request);
   delete request;
-  vector<string> packets;
-  if (!call.packet.empty())
-    packets.push_back(call.packet);
+
   if (call.run_callback) {
-    on_complete->Run(call.code, call.response, packets);
+    on_complete->Run(call.reply);
   } else {
     OLA_ASSERT_FALSE(m_rdm_callback);
     m_rdm_callback = on_complete;
@@ -200,21 +227,24 @@ void MockRDMController::RunIncrementalDiscovery(
 }
 
 
-void MockRDMController::AddExpectedCall(RDMRequest *request,
-                                        ola::rdm::RDMStatusCode code,
-                                        RDMResponse *response,
-                                        const string &packet,
-                                        bool run_callback) {
+void MockRDMController::ExpectCallAndCapture(RDMRequest *request) {
   expected_call call = {
     request,
-    code,
-    response,
-    packet,
-    run_callback
+    NULL,
+    false,
   };
   m_expected_calls.push(call);
 }
 
+void MockRDMController::ExpectCallAndReplyWith(RDMRequest *request,
+                                                 RDMReply *reply) {
+  expected_call call = {
+    request,
+    reply,
+    true,
+  };
+  m_expected_calls.push(call);
+}
 
 void MockRDMController::AddExpectedDiscoveryCall(bool full,
                                                  const UIDSet *uids) {
@@ -229,16 +259,11 @@ void MockRDMController::AddExpectedDiscoveryCall(bool full,
 /**
  * Run the current RDM callback
  */
-void MockRDMController::RunRDMCallback(ola::rdm::RDMStatusCode code,
-                                       RDMResponse *response,
-                                       const string &packet) {
-  vector<string> packets;
-  if (!packet.empty())
-    packets.push_back(packet);
+void MockRDMController::RunRDMCallback(RDMReply *reply) {
   OLA_ASSERT_TRUE(m_rdm_callback);
   RDMCallback *callback = m_rdm_callback;
   m_rdm_callback = NULL;
-  callback->Run(code, response, packets);
+  callback->Run(reply);
 }
 
 
@@ -263,50 +288,6 @@ void MockRDMController::Verify() {
 }
 
 
-void QueueingRDMControllerTest::setUp() {
-  m_discovery_complete_count = 0;
-}
-
-
-/**
- * Verify a response
- */
-void QueueingRDMControllerTest::VerifyResponse(
-    ola::rdm::RDMStatusCode expected_code,
-    const RDMResponse *expected_response,
-    vector<string> expected_packets,
-    bool delete_response,
-    ola::rdm::RDMStatusCode code,
-    const RDMResponse *response,
-    const vector<string> &packets) {
-  OLA_ASSERT_EQ(expected_code, code);
-  if (expected_response) {
-    OLA_ASSERT_TRUE(CommandsEqual(*expected_response, *response));
-  } else {
-    OLA_ASSERT_EQ(expected_response, response);
-  }
-
-  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
-  for (unsigned int i = 0; i < packets.size(); i++)
-    OLA_ASSERT_EQ(expected_packets[i], packets[i]);
-
-  if (delete_response)
-    delete response;
-}
-
-
-/**
- * Verify the two UIDSets match
- */
-void QueueingRDMControllerTest::VerifyDiscoveryComplete(
-    UIDSet *expected_uids,
-    const UIDSet &uids) {
-  OLA_ASSERT_EQ(*expected_uids, uids);
-  m_discovery_complete_count++;
-}
-
-
-
 void QueueingRDMControllerTest::ReentrantDiscovery(
     ola::rdm::DiscoverableQueueingRDMController *controller,
     UIDSet *expected_uids,
@@ -320,98 +301,59 @@ void QueueingRDMControllerTest::ReentrantDiscovery(
           expected_uids));
 }
 
-
-/**
- *
- */
-RDMRequest *QueueingRDMControllerTest::NewGetRequest(const UID &source,
-                                                     const UID &destination) {
-  return  new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
-}
-
-
 /*
  * Check that sending RDM commands work.
- * This all run the RDMCallback immediately.
+ * This runs the RDMCallback immediately.
  */
 void QueueingRDMControllerTest::testSendAndReceive() {
-  UID source(1, 2);
-  UID destination(3, 4);
-
   MockRDMController mock_controller;
   ola::rdm::QueueingRDMController controller(&mock_controller, 10);
 
+  // Some mock frame data.
+  RDMFrame frame(MOCK_FRAME_DATA, arraysize(MOCK_FRAME_DATA));
+  RDMFrames frames;
+  frames.push_back(frame);
+
   // test a simple request/response
-  RDMRequest *get_request = NewGetRequest(source, destination);
+  RDMRequest *get_request = NewGetRequest(m_source, m_destination);
+  RDMReply *expected_reply = new RDMReply(
+      ola::rdm::RDM_COMPLETED_OK,
+      NewGetResponse(m_destination, m_source),
+      frames);
+  mock_controller.ExpectCallAndReplyWith(get_request, expected_reply);
 
-  RDMGetResponse expected_command(destination,
-                                  source,
-                                  0,  // transaction #
-                                  RDM_ACK,
-                                  0,  // message count
-                                  10,  // sub device
-                                  296,  // param id
-                                  NULL,  // data
-                                  0);  // data length
-
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  &expected_command,
-                                  "foo");
-
-  vector<string> packets;
-  packets.push_back("foo");
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_command),
-          packets,
-          false));
+          expected_reply));
 
   // check a response where we return ok, but pass a null pointer
-  get_request = NewGetRequest(source, destination);
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  NULL,
-                                  "bar");
-  packets[0] = "bar";
+  get_request = NewGetRequest(m_source, m_destination);
+  expected_reply = new RDMReply(ola::rdm::RDM_COMPLETED_OK,
+                                NULL,
+                                frames);
+  mock_controller.ExpectCallAndReplyWith(get_request, expected_reply);
+
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_INVALID_RESPONSE,
-          static_cast<const RDMResponse*>(NULL),
-          packets,
-          false));
+          expected_reply));
 
   // check a failed command
-  get_request = NewGetRequest(source, destination);
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_FAILED_TO_SEND,
-                                  NULL,
-                                  "");
-  vector<string> empty_packets;
+  get_request = NewGetRequest(m_source, m_destination);
+  expected_reply = new RDMReply(ola::rdm::RDM_FAILED_TO_SEND);
+  mock_controller.ExpectCallAndReplyWith(get_request, expected_reply);
+
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_FAILED_TO_SEND,
-          static_cast<const RDMResponse*>(NULL),
-          empty_packets,
-          false));
+          expected_reply));
 
   mock_controller.Verify();
 }
@@ -422,68 +364,53 @@ void QueueingRDMControllerTest::testSendAndReceive() {
  * This all defer the running of the RDMCallback.
  */
 void QueueingRDMControllerTest::testDelayedSendAndReceive() {
-  UID source(1, 2);
-  UID destination(3, 4);
-
   MockRDMController mock_controller;
   ola::rdm::QueueingRDMController controller(&mock_controller, 10);
 
+  // Some mock frame data.
+  RDMFrame frame(MOCK_FRAME_DATA, arraysize(MOCK_FRAME_DATA));
+  RDMFrames frames;
+  frames.push_back(frame);
+
   // test a simple request/response
-  RDMRequest *get_request = NewGetRequest(source, destination);
+  RDMRequest *get_request = NewGetRequest(m_source, m_destination);
+  mock_controller.ExpectCallAndCapture(get_request);
 
-  RDMGetResponse expected_command(destination,
-                                  source,
-                                  0,  // transaction #
-                                  RDM_ACK,
-                                  0,  // message count
-                                  10,  // sub device
-                                  296,  // param id
-                                  NULL,  // data
-                                  0);  // data length
+  RDMReply *expected_reply = new RDMReply(
+      ola::rdm::RDM_COMPLETED_OK,
+      NewGetResponse(m_destination, m_source),
+      frames);
 
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  NULL,
-                                  "",
-                                  false);
-
-  vector<string> packets;
-  packets.push_back("foo");
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_command),
-          packets,
-          false));
+          expected_reply));
 
   // now run the callback
-  mock_controller.RunRDMCallback(ola::rdm::RDM_COMPLETED_OK,
-                                 &expected_command,
-                                 "foo");
+  mock_controller.RunRDMCallback(expected_reply);
   mock_controller.Verify();
 }
-
 
 /*
  * Check that overflow sequences work.
  */
 void QueueingRDMControllerTest::testAckOverflows() {
-  UID source(1, 2);
-  UID destination(3, 4);
-
   MockRDMController mock_controller;
   ola::rdm::QueueingRDMController controller(&mock_controller, 10);
 
+  // Some mock frame data.
+  RDMFrame frame1(MOCK_FRAME_DATA, arraysize(MOCK_FRAME_DATA));
+  RDMFrame frame2(MOCK_FRAME_DATA2, arraysize(MOCK_FRAME_DATA2));
+
   // test an ack overflow sequence
-  RDMRequest *get_request = NewGetRequest(source, destination);
+  RDMRequest *get_request = NewGetRequest(m_source, m_destination);
   uint8_t data[] = {0xaa, 0xbb};
 
   RDMGetResponse *response1 = new RDMGetResponse(
-      destination,
-      source,
+      m_destination,
+      m_source,
       0,  // transaction #
       ACK_OVERFLOW,  // response type
       0,  // message count
@@ -493,8 +420,8 @@ void QueueingRDMControllerTest::testAckOverflows() {
       1);  // data length
 
   RDMGetResponse *response2 = new RDMGetResponse(
-      destination,
-      source,
+      m_destination,
+      m_source,
       0,  // transaction #
       RDM_ACK,  // response type
       0,  // message count
@@ -503,9 +430,9 @@ void QueueingRDMControllerTest::testAckOverflows() {
       data + 1,  // data
       1);  // data length
 
-  RDMGetResponse expected_response(
-      destination,
-      source,
+  RDMGetResponse *expected_response = new RDMGetResponse(
+      m_destination,
+      m_source,
       0,  // transaction #
       RDM_ACK,  // response type
       0,  // message count
@@ -514,34 +441,40 @@ void QueueingRDMControllerTest::testAckOverflows() {
       data,  // data
       2);  // data length
 
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  response1,
-                                  "foo");
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  response2,
-                                  "bar");
+  RDMFrames frames1;
+  frames1.push_back(frame1);
 
-  vector<string> packets;
-  packets.push_back("foo");
-  packets.push_back("bar");
+  RDMFrames frames2;
+  frames2.push_back(frame2);
+
+  mock_controller.ExpectCallAndReplyWith(
+      get_request,
+      new RDMReply(ola::rdm::RDM_COMPLETED_OK, response1, frames1));
+  mock_controller.ExpectCallAndReplyWith(
+      get_request,
+      new RDMReply(ola::rdm::RDM_COMPLETED_OK, response2, frames2));
+
+  RDMFrames expected_frames;
+  expected_frames.push_back(frame1);
+  expected_frames.push_back(frame2);
+
+  RDMReply *expected_reply = new RDMReply(
+      ola::rdm::RDM_COMPLETED_OK,
+      expected_response,
+      expected_frames);
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_response),
-          packets,
-          true));
+          expected_reply));
 
   // now check an broken transaction. We first ACK, the return a timeout
-  get_request = NewGetRequest(source, destination);
+  get_request = NewGetRequest(m_source, m_destination);
 
   response1 = new RDMGetResponse(
-      destination,
-      source,
+      m_destination,
+      m_source,
       0,  // transaction #
       ACK_OVERFLOW,  // response type
       0,  // message count
@@ -550,31 +483,26 @@ void QueueingRDMControllerTest::testAckOverflows() {
       data,  // data
       1);  // data length
 
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  response1,
-                                  "foo");
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_TIMEOUT,
-                                  NULL,
-                                  "bar");
+  mock_controller.ExpectCallAndReplyWith(
+      get_request,
+      new RDMReply(ola::rdm::RDM_COMPLETED_OK, response1));
+  mock_controller.ExpectCallAndReplyWith(
+      get_request,
+      new RDMReply(ola::rdm::RDM_TIMEOUT));
 
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_TIMEOUT,
-          static_cast<const RDMResponse*>(NULL),
-          packets,
-          false));
+          new RDMReply(ola::rdm::RDM_TIMEOUT)));
 
   // now test the case where the responses can't be combined
-  get_request = NewGetRequest(source, destination);
+  get_request = NewGetRequest(m_source, m_destination);
 
   response1 = new RDMGetResponse(
-      destination,
-      source,
+      m_destination,
+      m_source,
       0,  // transaction #
       ACK_OVERFLOW,  // response type
       0,  // message count
@@ -584,8 +512,8 @@ void QueueingRDMControllerTest::testAckOverflows() {
       1);  // data length
 
   response2 = new RDMGetResponse(
-      source,
-      source,
+      m_source,
+      m_source,
       0,  // transaction #
       RDM_ACK,  // response type
       0,  // message count
@@ -594,132 +522,94 @@ void QueueingRDMControllerTest::testAckOverflows() {
       data + 1,  // data
       1);  // data length
 
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  response1,
-                                  "foo");
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  response2,
-                                  "bar");
+  mock_controller.ExpectCallAndReplyWith(
+      get_request,
+      new RDMReply(ola::rdm::RDM_COMPLETED_OK, response1));
+  mock_controller.ExpectCallAndReplyWith(
+      get_request,
+      new RDMReply(ola::rdm::RDM_COMPLETED_OK, response2));
 
   controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_INVALID_RESPONSE,
-          static_cast<const RDMResponse*>(NULL),
-          packets,
-          false));
+          new RDMReply(ola::rdm::RDM_INVALID_RESPONSE)));
 
   mock_controller.Verify();
 }
-
 
 /*
  * Verify that pausing works.
  */
 void QueueingRDMControllerTest::testPauseAndResume() {
-  UID source(1, 2);
-  UID destination(3, 4);
-
   MockRDMController mock_controller;
   ola::rdm::QueueingRDMController controller(&mock_controller, 10);
   controller.Pause();
 
-  RDMRequest *get_request = NewGetRequest(source, destination);
 
-  RDMGetResponse expected_command(destination,
-                                  source,
-                                  0,  // transaction #
-                                  RDM_ACK,  // response type
-                                  0,  // message count
-                                  10,  // sub device
-                                  296,  // param id
-                                  NULL,  // data
-                                  0);  // data length
 
   // queue up two requests
-  vector<string> packets;
-  packets.push_back("foo");
-  controller.SendRDMRequest(
-      get_request,
-      ola::NewSingleCallback(
-          this,
-          &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_command),
-          packets,
-          false));
+  RDMRequest *get_request1 = NewGetRequest(m_source, m_destination);
+  RDMRequest *get_request2 = NewGetRequest(m_source, m_destination);
+  RDMReply *expected_reply1 = new RDMReply(
+      ola::rdm::RDM_COMPLETED_OK,
+      NewGetResponse(m_destination, m_source));
+  RDMReply *expected_reply2 = new RDMReply(
+      ola::rdm::RDM_FAILED_TO_SEND);
 
-  packets[0] = "bar";
-  get_request = NewGetRequest(source, destination);
+
+  // queue up two requests
   controller.SendRDMRequest(
-      get_request,
+      get_request1,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_command),
-          packets,
-          false));
+          expected_reply1));
+  controller.SendRDMRequest(
+      get_request2,
+      ola::NewSingleCallback(
+          this,
+          &QueueingRDMControllerTest::VerifyResponse,
+          expected_reply2));
 
   // now resume
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  &expected_command,
-                                  "foo");
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  &expected_command,
-                                  "bar");
+  mock_controller.ExpectCallAndReplyWith(get_request1, expected_reply1);
+  mock_controller.ExpectCallAndReplyWith(get_request2, expected_reply2);
   controller.Resume();
 }
-
 
 /*
  * Verify that overflowing the queue behaves
  */
 void QueueingRDMControllerTest::testQueueOverflow() {
-  UID source(1, 2);
-  UID destination(3, 4);
-
   MockRDMController mock_controller;
   auto_ptr<ola::rdm::QueueingRDMController> controller(
       new ola::rdm::QueueingRDMController(&mock_controller, 1));
   controller->Pause();
 
-  RDMRequest *get_request = NewGetRequest(source, destination);
-  vector<string> packets;
+  RDMRequest *get_request = NewGetRequest(m_source, m_destination);
   controller->SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_FAILED_TO_SEND,
-          static_cast<const RDMResponse*>(NULL),
-          packets,
-          false));
+          new RDMReply(ola::rdm::RDM_FAILED_TO_SEND)));
 
   // this one should overflow the queue
-  get_request = NewGetRequest(source, destination);
+  get_request = NewGetRequest(m_source, m_destination);
   controller->SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_FAILED_TO_SEND,
-          static_cast<const RDMResponse*>(NULL),
-          packets,
-          false));
+          new RDMReply(ola::rdm::RDM_FAILED_TO_SEND)));
 
   // now because we're paused the first should fail as well when the control
   // goes out of scope
 }
 
-
-/**
+/*
  * Verify discovery works
  */
 void QueueingRDMControllerTest::testDiscovery() {
@@ -793,8 +683,7 @@ void QueueingRDMControllerTest::testDiscovery() {
   mock_controller.Verify();
 }
 
-
-/**
+/*
  * Check that attempting a discovery while another is running fails.
  */
 void QueueingRDMControllerTest::testMultipleDiscovery() {
@@ -853,8 +742,7 @@ void QueueingRDMControllerTest::testMultipleDiscovery() {
   mock_controller.Verify();
 }
 
-
-/**
+/*
  * Verify reentrant discovery works
  */
 void QueueingRDMControllerTest::testReentrantDiscovery() {
@@ -893,8 +781,7 @@ void QueueingRDMControllerTest::testReentrantDiscovery() {
   mock_controller.Verify();
 }
 
-
-/**
+/*
  * Check that interleaving requests and discovery commands work.
  */
 void QueueingRDMControllerTest::testRequestAndDiscovery() {
@@ -908,39 +795,20 @@ void QueueingRDMControllerTest::testRequestAndDiscovery() {
   uids.AddUID(uid1);
   uids.AddUID(uid2);
 
-  UID source(1, 2);
-  UID destination(3, 4);
-
   // Send a request, but don't run the RDM request callback
-  RDMRequest *get_request = NewGetRequest(source, destination);
+  RDMRequest *get_request = NewGetRequest(m_source, m_destination);
+  mock_controller.ExpectCallAndCapture(get_request);
 
-  RDMGetResponse expected_command(destination,
-                                  source,
-                                  0,  // transaction #
-                                  RDM_ACK,
-                                  0,  // message count
-                                  10,  // sub device
-                                  296,  // param id
-                                  NULL,  // data
-                                  0);  // data length
+  RDMReply *expected_reply = new RDMReply(
+      ola::rdm::RDM_COMPLETED_OK,
+      NewGetResponse(m_destination, m_source));
 
-  mock_controller.AddExpectedCall(get_request,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  NULL,
-                                  "",
-                                  false);
-
-  vector<string> packets;
-  packets.push_back("foo");
   controller->SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_command),
-          packets,
-          false));
+          expected_reply));
 
   // now queue up a discovery request
   controller->RunFullDiscovery(
@@ -953,41 +821,25 @@ void QueueingRDMControllerTest::testRequestAndDiscovery() {
 
   // now run the RDM callback, this should unblock the discovery process
   mock_controller.AddExpectedDiscoveryCall(true, NULL);
-  mock_controller.RunRDMCallback(ola::rdm::RDM_COMPLETED_OK,
-                                 &expected_command,
-                                 "foo");
+  mock_controller.RunRDMCallback(expected_reply);
   mock_controller.Verify();
 
   // now queue another RDM request
-  RDMRequest *get_request2 = NewGetRequest(source, destination);
+  RDMRequest *get_request2 = NewGetRequest(m_source, m_destination);
+  RDMReply *expected_reply2 = new RDMReply(
+      ola::rdm::RDM_COMPLETED_OK,
+      NewGetResponse(m_destination, m_source));
+  mock_controller.ExpectCallAndReplyWith(get_request2, expected_reply2);
 
-  RDMGetResponse expected_command2(destination,
-                                   source,
-                                   0,  // transaction #
-                                   RDM_ACK,
-                                   0,  // message count
-                                   10,  // sub device
-                                   296,  // param id
-                                   NULL,  // data
-                                   0);  // data length
-
+  // discovery is still running so this won't send the request just yet.
   controller->SendRDMRequest(
       get_request2,
       ola::NewSingleCallback(
           this,
           &QueueingRDMControllerTest::VerifyResponse,
-          ola::rdm::RDM_COMPLETED_OK,
-          static_cast<const RDMResponse*>(&expected_command2),
-          packets,
-          false));
-  // discovery is still running so this won't send the request
-  mock_controller.Verify();
+          expected_reply2));
 
   // now finish the discovery
-  mock_controller.AddExpectedCall(get_request2,
-                                  ola::rdm::RDM_COMPLETED_OK,
-                                  &expected_command,
-                                  "foo");
   mock_controller.RunDiscoveryCallback(uids);
   OLA_ASSERT_TRUE(m_discovery_complete_count);
   mock_controller.Verify();

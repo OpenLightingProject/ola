@@ -392,14 +392,14 @@ void RDMCommandTest::testRequestInflation() {
                                  296,  // param id
                                  NULL,  // data
                                  0);  // data length
-  OLA_ASSERT_TRUE(CommandsEqual(expected_command, *command));
+  OLA_ASSERT_TRUE(expected_command == *command);
 
   // Try the string version
   string get_request_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
                          sizeof(EXPECTED_GET_BUFFER));
   command.reset(RDMRequest::InflateFromData(get_request_str));
   OLA_ASSERT_NOT_NULL(command.get());
-  OLA_ASSERT_TRUE(CommandsEqual(expected_command, *command));
+  OLA_ASSERT_TRUE(expected_command == *command);
 
   // An invalid Command class
   string invalid_command_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
@@ -546,7 +546,7 @@ void RDMCommandTest::testResponseInflation() {
                                   296,  // param id
                                   reinterpret_cast<uint8_t*>(&data_value),
                                   sizeof(data_value));  // data length
-  OLA_ASSERT_TRUE(CommandsEqual(expected_command, *command));
+  OLA_ASSERT_TRUE(expected_command == *command);
   delete command;
 
   // now try from a string
@@ -558,7 +558,7 @@ void RDMCommandTest::testResponseInflation() {
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
-  OLA_ASSERT_TRUE(CommandsEqual(expected_command, *command));
+  OLA_ASSERT_TRUE(expected_command == *command);
   delete command;
 
   // change the param length and make sure the checksum fails
@@ -1057,7 +1057,7 @@ void RDMCommandTest::testCommandInflation() {
                                  296,  // param id
                                  NULL,  // data
                                  0);  // data length
-  OLA_ASSERT_TRUE(CommandsEqual(expected_request, *command));
+  OLA_ASSERT_TRUE(expected_request == *command);
 
   command.reset(RDMCommand::Inflate(EXPECTED_SET_BUFFER,
                                     sizeof(EXPECTED_SET_BUFFER)));
@@ -1086,7 +1086,7 @@ void RDMCommandTest::testCommandInflation() {
                                    296,  // param id
                                    reinterpret_cast<uint8_t*>(&data_value),
                                    sizeof(data_value));  // data length
-  OLA_ASSERT_TRUE(CommandsEqual(expected_response, *command));
+  OLA_ASSERT_TRUE(expected_response == *command);
 
   // test DUB
   command.reset(RDMCommand::Inflate(EXPECTED_DISCOVERY_REQUEST,
@@ -1094,21 +1094,21 @@ void RDMCommandTest::testCommandInflation() {
   OLA_ASSERT_NOT_NULL(command.get());
   auto_ptr<RDMDiscoveryRequest> discovery_request(
       NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
-  OLA_ASSERT_TRUE(CommandsEqual(*discovery_request, *command));
+  OLA_ASSERT_TRUE(*discovery_request == *command);
 
   // test mute
   command.reset(RDMCommand::Inflate(EXPECTED_MUTE_REQUEST,
                                     sizeof(EXPECTED_MUTE_REQUEST)));
   OLA_ASSERT_NOT_NULL(command.get());
   discovery_request.reset(NewMuteRequest(source, destination, 1));
-  OLA_ASSERT_TRUE(CommandsEqual(*discovery_request, *command));
+  OLA_ASSERT_TRUE(*discovery_request == *command);
 
   // test unmute
   command.reset(RDMCommand::Inflate(EXPECTED_UNMUTE_REQUEST,
                                     sizeof(EXPECTED_UNMUTE_REQUEST)));
   OLA_ASSERT_NOT_NULL(command.get());
   discovery_request.reset(NewUnMuteRequest(source, destination, 1));
-  OLA_ASSERT_TRUE(CommandsEqual(*discovery_request, *command));
+  OLA_ASSERT_TRUE(*discovery_request == *command);
 }
 
 void RDMCommandTest::testDiscoveryResponseInflation() {

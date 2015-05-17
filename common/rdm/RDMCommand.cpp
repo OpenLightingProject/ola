@@ -123,6 +123,20 @@ string RDMCommand::ToString() const {
   return str.str();
 }
 
+bool RDMCommand::operator==(const RDMCommand &other) const {
+  if (SourceUID() == other.SourceUID() &&
+      DestinationUID() == other.DestinationUID() &&
+      TransactionNumber() == other.TransactionNumber() &&
+      MessageCount() == other.MessageCount() &&
+      SubDevice() == other.SubDevice() &&
+      CommandClass() == other.CommandClass() &&
+      ParamId() == other.ParamId() &&
+      ParamDataSize() == other.ParamDataSize()) {
+    return 0 == memcmp(ParamData(), other.ParamData(), ParamDataSize());
+  }
+  return false;
+}
+
 RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
   RDMCommandClass command_class = GuessMessageType(data, length);
 
