@@ -201,7 +201,7 @@ tools/usbpro/usbpro_firmware.exe
 tools/ja-rule/ja-rule
 tools/ja-rule/ja-rule.exe
 javascript/new-src/node_modules
-javascript/new-src/.idea
+.idea
 .project
 .autotools
 .cproject
