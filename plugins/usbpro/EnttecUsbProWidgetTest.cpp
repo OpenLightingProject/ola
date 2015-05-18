@@ -213,7 +213,7 @@ void EnttecUsbProWidgetTest::ValidateResponse(RDMReply *reply) {
                          reply->Response()->ParamData(),
                          reply->Response()->ParamDataSize());
 
-  RDMFrames frames = reply->Frames();
+  const RDMFrames &frames = reply->Frames();
   OLA_ASSERT_EQ((size_t) 1, frames.size());
   ola::rdm::RDMStatusCode raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(

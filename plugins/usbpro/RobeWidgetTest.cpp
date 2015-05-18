@@ -28,6 +28,7 @@
 #include "ola/Callback.h"
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
+#include "ola/base/Array.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
@@ -37,13 +38,14 @@
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
 
-
-
 using ola::DmxBuffer;
 using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::RobeWidget;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMFrame;
+using ola::rdm::RDMFrames;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -96,14 +98,10 @@ class RobeWidgetTest: public CommonWidgetTest {
                            unsigned int length = 0);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
-    void ValidateResponse(ola::rdm::RDMStatusCode code,
-                          const ola::rdm::RDMResponse *response,
-                          const vector<string> &packets);
+    void ValidateResponse(RDMReply *reply);
     void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
-                        vector<string> expected_packets,
-                        ola::rdm::RDMStatusCode code,
-                        const ola::rdm::RDMResponse *response,
-                        const vector<string> &packets);
+                        RDMFrames expected_frames,
+                        RDMReply *reply);
     void ValidateMuteStatus(bool expected,
                             bool actual);
     void ValidateBranchStatus(const uint8_t *expected_data,
@@ -200,58 +198,43 @@ uint8_t *RobeWidgetTest::PackRDMResponse(const RDMResponse *response,
 /*
  * Check the response matches what we expected.
  */
-void RobeWidgetTest::ValidateResponse(
-    ola::rdm::RDMStatusCode code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
-  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
-  OLA_ASSERT(response);
-  OLA_ASSERT_EQ(
-      static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
-      response->ParamDataSize());
-  OLA_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
-                             response->ParamDataSize()));
+void RobeWidgetTest::ValidateResponse(RDMReply *reply) {
+  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
+  OLA_ASSERT(reply->Response());
+  OLA_ASSERT_DATA_EQUALS(TEST_RDM_DATA, arraysize(TEST_RDM_DATA),
+                         reply->Response()->ParamData(),
+                         reply->Response()->ParamDataSize());
 
-  OLA_ASSERT_EQ((size_t) 1, packets.size());
+  const RDMFrames &frames = reply->Frames();
+  OLA_ASSERT_EQ((size_t) 1, frames.size());
   ola::rdm::RDMStatusCode raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
-    ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
-  OLA_ASSERT_TRUE(CommandsEqual(*raw_response.get(), *response));
-  delete response;
+    ola::rdm::RDMResponse::InflateFromData(frames[0].data.data() + 1,
+                                           frames[0].data.size() - 1,
+                                           &raw_code));
+  OLA_ASSERT_TRUE(*raw_response.get() == *reply->Response());
   m_ss.Terminate();
 }
 
 
 /*
  * Check that this request returned the expected status code
- * @param expected_code the expected widget status code
- * @param expected_code a list of expected packets
- * @param code the actual status code returns
- * @param response the RDMResponse object, or NULL
- * @param packets the actual packets involved
  */
 void RobeWidgetTest::ValidateStatus(
     ola::rdm::RDMStatusCode expected_code,
-    vector<string> expected_packets,
-    ola::rdm::RDMStatusCode code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
-  OLA_ASSERT_EQ(expected_code, code);
-  OLA_ASSERT_FALSE(response);
+    RDMFrames expected_frames,
+    RDMReply *reply) {
+  OLA_ASSERT_EQ(expected_code, reply->StatusCode());
+  OLA_ASSERT_FALSE(reply->Response());
 
-  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
-  for (unsigned int i = 0; i < packets.size(); i++) {
-    if (expected_packets[i].size() != packets[i].size())
-      OLA_INFO << expected_packets[i].size() << " != " << packets[i].size();
-    OLA_ASSERT_EQ(expected_packets[i].size(), packets[i].size());
-
-    if (expected_packets[i] != packets[i]) {
-      for (unsigned int j = 0; j < packets[i].size(); j++) {
-        OLA_INFO << std::hex << static_cast<int>(packets[i][j]) << " - " <<
-          static_cast<int>(expected_packets[i][j] & 0xFF);
-      }
-    }
-    OLA_ASSERT(expected_packets[i] == packets[i]);
+  const RDMFrames &frames = reply->Frames();
+  OLA_ASSERT_EQ(expected_frames.size(), frames.size());
+  for (unsigned int i = 0; i < frames.size(); i++) {
+    OLA_ASSERT_DATA_EQUALS(expected_frames[i].data.data(),
+                           expected_frames[i].data.size(),
+                           frames[i].data.data(),
+                           frames[i].data.size());
+    OLA_ASSERT_TRUE(expected_frames[i] == frames[i]);
   }
   m_received_code = expected_code;
   m_ss.Terminate();
@@ -365,13 +348,13 @@ void RobeWidgetTest::testSendRDMRequest() {
       NULL,
       0);
 
-  vector<string> packets;
+  RDMFrames frames;
   m_widget->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &RobeWidgetTest::ValidateStatus,
                              ola::rdm::RDM_WAS_BROADCAST,
-                             packets));
+                             frames));
   m_ss.Run();
   OLA_ASSERT_EQ(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
   m_endpoint->Verify();
@@ -463,13 +446,13 @@ void RobeWidgetTest::testSendRDMDUB() {
       EMPTY_RESPONSE,
       sizeof(EMPTY_RESPONSE));
 
-  vector<string> packets;
+  RDMFrames frames;
   m_widget->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &RobeWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TIMEOUT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -501,15 +484,13 @@ void RobeWidgetTest::testSendRDMDUB() {
       FAKE_RESPONSE,
       sizeof(FAKE_RESPONSE));
 
-  packets.push_back(
-      string(reinterpret_cast<const char*>(FAKE_RESPONSE),
-             sizeof(FAKE_RESPONSE) - 4));
+  frames.push_back(RDMFrame(FAKE_RESPONSE, arraysize(FAKE_RESPONSE) - 4));
   m_widget->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &RobeWidgetTest::ValidateStatus,
                              ola::rdm::RDM_DUB_RESPONSE,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 

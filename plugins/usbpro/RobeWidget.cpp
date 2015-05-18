@@ -137,7 +137,8 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
   m_rdm_request_callback = on_complete;
   m_pending_request.reset(request.release());
 
-  const uint8_t label = request->IsDUB() ? RDM_DISCOVERY : RDM_REQUEST;
+  const uint8_t label = m_pending_request->IsDUB() ?
+      RDM_DISCOVERY : RDM_REQUEST;
   bool sent_ok = SendMessage(label, data.data(), data.size());
 
   if (!sent_ok) {

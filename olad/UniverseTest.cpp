@@ -28,6 +28,7 @@
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMReply.h"
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/UID.h"
 #include "olad/Client.h"
@@ -52,6 +53,7 @@ using ola::TimeStamp;
 using ola::Universe;
 using ola::rdm::NewDiscoveryUniqueBranchRequest;
 using ola::rdm::RDMCallback;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -103,16 +105,13 @@ class UniverseTest: public CppUnit::TestFixture {
   void ConfirmRDM(int line,
                   RDMStatusCode expected_status_code,
                   const RDMResponse *expected_response,
-                  RDMStatusCode status_code,
-                  const RDMResponse *response,
-                  const vector<string>&);
+                  RDMReply *reply);
 
   void ReturnRDMCode(RDMStatusCode status_code,
                      const RDMRequest *request,
                      RDMCallback *callback) {
-    vector<string> packets;
     delete request;
-    callback->Run(status_code, NULL, packets);
+    RunRDMCallback(callback, status_code);
   }
 };
 
@@ -815,13 +814,11 @@ void UniverseTest::ConfirmUIDs(UIDSet *expected, const UIDSet &uids) {
 void UniverseTest::ConfirmRDM(int line,
                               RDMStatusCode expected_status_code,
                               const RDMResponse *expected_response,
-                              RDMStatusCode status_code,
-                              const RDMResponse *response,
-                              const vector<string>&) {
+                              RDMReply *reply) {
   std::ostringstream str;
   str << "Line " << line;
   OLA_ASSERT_EQ_MSG(expected_status_code,
-                    status_code,
+                    reply->StatusCode(),
                     str.str());
-  OLA_ASSERT_EQ_MSG(expected_response, response, str.str());
+  OLA_ASSERT_EQ_MSG(expected_response, reply->Response(), str.str());
 }
