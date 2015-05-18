@@ -142,7 +142,7 @@ void ArduinoWidgetImpl::HandleMessage(uint8_t label,
       HandleRDMResponse(data, length);
       break;
     default:
-      OLA_WARN << "Unknown label: 0x" << strings::ToHex(label);
+      OLA_WARN << "Unknown label: " << strings::ToHex(label);
   }
 }
 

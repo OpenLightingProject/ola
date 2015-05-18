@@ -862,8 +862,8 @@ void EnttecUsbProWidgetImpl::HandleLabel(EnttecPortImpl *port,
   } else if (ops.cos_dmx == label) {
     port->HandleDMXDiff(data, length);
   } else {
-      OLA_WARN << "Unknown message type 0x" << ToHex(label)
-               << ", length " << length;
+      OLA_WARN << "Unknown message type " << ToHex(label) << ", length "
+               << length;
   }
 }
 

@@ -187,7 +187,7 @@ void DummyPort::HandleBroadcastAck(broadcast_request_tracker *tracker,
     // all ports have completed
     RunRDMCallback(
         tracker->callback,
-        tracker->failed ?  ola::rdm::RDM_FAILED_TO_SEND :
+        tracker->failed ? ola::rdm::RDM_FAILED_TO_SEND :
           ola::rdm::RDM_WAS_BROADCAST);
     delete tracker;
   }

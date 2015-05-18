@@ -305,7 +305,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
       if (waiting_for_dub_response) {
         status_code = ola::rdm::RDM_DUB_RESPONSE;
       } else {
-        OLA_INFO << "Got response status_code "
+        OLA_INFO << "Got response code "
                  << static_cast<int>(header->response_code);
         status_code = ola::rdm::RDM_INVALID_RESPONSE;
       }
