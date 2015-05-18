@@ -243,7 +243,7 @@ void EnttecPortImpl::SendRDMRequest(RDMRequest *request_ptr,
   m_rdm_request_callback = on_complete;
 
   bool ok = PackAndSendRDMRequest(
-      request->IsDUB() ? m_ops.rdm_discovery : m_ops.send_rdm,
+      m_pending_request->IsDUB() ? m_ops.rdm_discovery : m_ops.send_rdm,
       m_pending_request.get());
 
   if (!ok) {
