@@ -137,7 +137,8 @@ void DmxTriWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *on_complete) {
   auto_ptr<RDMRequest> request(request_ptr);
 
-  if (request->IsDUB() && !m_use_raw_rdm) {
+  if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND &&
+      !m_use_raw_rdm) {
     RunRDMCallback(on_complete, ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     return;
   }
@@ -699,7 +700,10 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
     return;
   }
 
-  auto_ptr<RDMReply> reply(RDMReply::FromFrame(rdm::RDMFrame(data, length)));
+  rdm::RDMFrame::Options options;
+  options.prepend_start_code = true;
+  auto_ptr<RDMReply> reply(RDMReply::FromFrame(
+        rdm::RDMFrame(data, length, options)));
   callback->Run(reply.get());
 }
 
