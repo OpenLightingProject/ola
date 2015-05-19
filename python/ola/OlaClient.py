@@ -454,6 +454,47 @@ for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.items():
   RDMNack._CODE_TO_OBJECT[value] = nack
 
 
+
+class RDMFrame(object):
+  """The raw data in an RDM frame.
+
+  The timing attributes may be 0 if the plugin does not provide timing
+  information. All timing data is in nano-seconds.
+
+  Attributes:
+    data: The raw byte data.
+    response_delay: The time between the request and the response.
+    break_time: The break duration.
+    mark_time: The mark duration.
+    data_time: The data time.
+  """
+  def __init__(self, frame):
+    self._data = frame.raw_response
+    self._response_delay = frame.timing.response_delay
+    self._break_time = frame.timing.break_time
+    self._mark_time = frame.timing.mark_time
+    self._data_time = frame.timing.data_time
+
+  @property
+  def data(self):
+    return self._data
+
+  @property
+  def response_delay(self):
+    return self._response_delay
+
+  @property
+  def break_time(self):
+    return self._break_time
+
+  @property
+  def mark_time(self):
+    return self._mark_time
+
+  @property
+  def data_time(self):
+    return self._data_time
+
 class RDMResponse(object):
   """Represents a RDM Response.
 
@@ -489,6 +530,7 @@ class RDMResponse(object):
     ack_timer: If the response type was ACK_TIMER, this is the number of ms to
       wait before checking for queued messages.
     transaction_number:
+    frames: A list of RDM frames that made up this response.
   """
 
   RESPONSE_CODES_TO_STRING = {
@@ -524,6 +566,8 @@ class RDMResponse(object):
   }
 
   def __init__(self, controller, response):
+    self._frames = []
+
     self.status = RequestStatus(controller)
     if self.status.Succeeded() and response is not None:
       self._response_code = response.response_code
@@ -534,7 +578,9 @@ class RDMResponse(object):
       self.command_class = response.command_class
       self.pid = response.param_id
       self.data = response.data
-      self._raw_responses = response.raw_response
+
+      for frame in response.raw_frame:
+        self._frames.append(RDMFrame(frame))
 
     # we populate these below if required
     self._nack_reason = None
@@ -578,9 +624,16 @@ class RDMResponse(object):
     return self._transaction_number
 
   @property
+  def frames(self):
+    return self._frames
+
+  @property
   def raw_response(self):
     """The list of byte strings in the response packets."""
-    return self._raw_responses
+    data = []
+    for frame in self._frames:
+      data.append(frame.data)
+    return data
 
   def WasAcked(self):
     """Returns true if this RDM request returned a ACK response."""
