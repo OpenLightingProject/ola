@@ -34,6 +34,7 @@
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
+#include "ola/util/Utils.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::ByteString;
@@ -48,6 +49,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
+using ola::utils::SplitUInt16;
 using std::auto_ptr;
 using std::ostringstream;
 using std::string;
@@ -57,11 +59,12 @@ using std::string;
  */
 void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
   unsigned int checksum = RDMCommand::START_CODE;
-  for (unsigned int i = 0 ; i < expected_length - 2; i++)
+  for (unsigned int i = 0 ; i < expected_length - 2; i++) {
     checksum += expected[i];
+  }
 
-  expected[expected_length - 2] = checksum >> 8;
-  expected[expected_length - 1] = checksum & 0xff;
+  SplitUInt16(checksum, &expected[expected_length - 2],
+              &expected[expected_length - 1]);
 }
 
 void UpdateChecksum(ByteString *data) {
@@ -70,8 +73,8 @@ void UpdateChecksum(ByteString *data) {
     checksum += (*data)[i];
   }
 
-  (*data)[data->size() - 2] = checksum >> 8;
-  (*data)[data->size() - 1] = checksum & 0xff;
+  SplitUInt16(checksum, &data->at(data->size() - 2),
+              &data->at(data->size() - 1));
 }
 
 
