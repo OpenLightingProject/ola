@@ -36,6 +36,7 @@
 #include "ola/network/Socket.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMFrame.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/timecode/TimeCode.h"
@@ -500,9 +501,7 @@ class ArtNetNodeImpl {
   void RDMRequestCompletion(ola::network::IPV4Address destination,
                             uint8_t port_id,
                             uint8_t universe_address,
-                            ola::rdm::rdm_response_code code,
-                            const ola::rdm::RDMResponse *response,
-                            const std::vector<std::string> &packets);
+                            ola::rdm::RDMReply *reply);
 
   /**
    * @brief Handle an RDM response.
@@ -514,7 +513,7 @@ class ArtNetNodeImpl {
    * </rant>
    */
   void HandleRDMResponse(InputPort *port,
-                         const std::string &rdm_data,
+                         const ola::rdm::RDMFrame &rdm_data,
                          const ola::network::IPV4Address &source_address);
 
   /**

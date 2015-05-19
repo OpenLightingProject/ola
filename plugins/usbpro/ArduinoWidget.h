@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBPRO_ARDUINOWIDGET_H_
 #define PLUGINS_USBPRO_ARDUINOWIDGET_H_
 
+#include <memory>
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -61,7 +62,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
  private:
     uint8_t m_transaction_id;
     ola::rdm::UID m_uid;
-    const ola::rdm::RDMRequest *m_pending_request;
+    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
 
     void HandleMessage(uint8_t label,

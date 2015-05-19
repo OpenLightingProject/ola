@@ -74,23 +74,22 @@ class NetworkResponder: public RDMControllerInterface {
   bool m_identify_mode;
   std::auto_ptr<NetworkManagerInterface> m_network_manager;
 
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetProductDetailList(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-  const RDMResponse *GetListInterfaces(const RDMRequest *request);
-  const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
-  const RDMResponse *GetInterfaceHardwareAddressType1(
-      const RDMRequest *request);
-  const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
-  const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
-  const RDMResponse *GetDNSHostname(const RDMRequest *request);
-  const RDMResponse *GetDNSDomainName(const RDMRequest *request);
-  const RDMResponse *GetDNSNameServer(const RDMRequest *request);
+  RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  RDMResponse *GetProductDetailList(const RDMRequest *request);
+  RDMResponse *GetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentify(const RDMRequest *request);
+  RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  RDMResponse *GetListInterfaces(const RDMRequest *request);
+  RDMResponse *GetInterfaceLabel(const RDMRequest *request);
+  RDMResponse *GetInterfaceHardwareAddressType1(const RDMRequest *request);
+  RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
+  RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
+  RDMResponse *GetDNSHostname(const RDMRequest *request);
+  RDMResponse *GetDNSDomainName(const RDMRequest *request);
+  RDMResponse *GetDNSNameServer(const RDMRequest *request);
 
   static const ResponderOps<NetworkResponder>::ParamHandler PARAM_HANDLERS[];
 };

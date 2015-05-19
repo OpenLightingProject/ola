@@ -97,7 +97,7 @@ void ClientRDMAPIShim::HandleResponseWithPid(
 
 void ClientRDMAPIShim::GetResponseStatusAndData(
     const Result &result,
-    ola::rdm::rdm_response_code response_code,
+    ola::rdm::RDMStatusCode status_code,
     const ola::rdm::RDMResponse *response,
     rdm::ResponseStatus *response_status,
     string *data) {
@@ -105,8 +105,8 @@ void ClientRDMAPIShim::GetResponseStatusAndData(
   response_status->response_code = ola::rdm::RDM_FAILED_TO_SEND;
 
   if (result.Success()) {
-    response_status->response_code = response_code;
-    if (response_code == ola::rdm::RDM_COMPLETED_OK && response) {
+    response_status->response_code = status_code;
+    if (status_code == ola::rdm::RDM_COMPLETED_OK && response) {
       response_status->response_type = response->PortIdResponseType();
       response_status->message_count = response->MessageCount();
       response_status->pid_value = response->ParamId();

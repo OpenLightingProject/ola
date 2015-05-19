@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_RDM_RDMCOMMANDSERIALIZER_H_
 
 #include <stdint.h>
+#include <ola/io/ByteString.h>
 #include <ola/io/IOStack.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UID.h>
@@ -43,13 +44,31 @@ namespace rdm {
  *
  * This creates the binary representation of an RDMCommand. The binary
  * representation is restricted to 231 bytes of paramater data. If
- * the message is more than 231 bytes then Pack() will return false.
+ * the message is more than 231 bytes then the methods will return false.
  */
 class RDMCommandSerializer {
  public:
   /**
+   * @brief Serialize a RDMCommand to a ByteString, without the RDM Start Code.
+   * @param command the RDMCommand to serialize.
+   * @param[out] output The ByteString to append to.
+   * @returns True if the command was serialized correctly, false otherwise.
+   */
+  static bool Pack(const RDMCommand &command,
+                   ola::io::ByteString *output);
+
+  /**
+   * @brief Serialize a RDMCommand to a ByteString, with the RDM Start Code.
+   * @param command the RDMCommand to serialize.
+   * @param[out] output The ByteString to append to.
+   * @returns True if the command was serialized correctly, false otherwise.
+   */
+  static bool PackWithStartCode(const RDMCommand &command,
+                                ola::io::ByteString *output);
+
+  /**
    * @brief Return the number of bytes required to store the serialized version
-   * of the RDMCommand.
+   *   of the RDMCommand.
    * @param command The RDMCommand which will be serialized.
    * @returns The number of bytes required for the serialized form of the
    * command or 0 if the command contains more than 231 bytes of parameter data.
@@ -90,11 +109,7 @@ class RDMCommandSerializer {
   static const unsigned int CHECKSUM_LENGTH = 2;
 
   static void PopulateHeader(RDMCommandHeader *header,
-                             const RDMCommand &command,
-                             unsigned int packet_length,
-                             const UID &source,
-                             uint8_t transaction_number,
-                             uint8_t port_id);
+                             const RDMCommand &command);
 };
 }  // namespace rdm
 }  // namespace ola

@@ -112,10 +112,10 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 void ArtNetOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
-  vector<string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
     OLA_WARN << "Blocked attempt to send discovery command via Artnet";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    ola::rdm::RunRDMCallback(on_complete,
+                             ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     delete request;
   } else {
     m_node->SendRDMRequest(PortId(), request, on_complete);

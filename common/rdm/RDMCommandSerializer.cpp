@@ -24,9 +24,12 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMPacket.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace rdm {
+
+using ola::utils::SplitUInt16;
 
 unsigned int RDMCommandSerializer::RequiredSize(
     const RDMCommand &command) {
@@ -36,6 +39,36 @@ unsigned int RDMCommandSerializer::RequiredSize(
   return sizeof(RDMCommandHeader) + command.ParamDataSize() + CHECKSUM_LENGTH;
 }
 
+bool RDMCommandSerializer::Pack(const RDMCommand &command,
+                                ola::io::ByteString *output) {
+  const unsigned int packet_length = RequiredSize(command);
+  if (packet_length == 0) {
+    return false;
+  }
+
+  size_t front = output->size();
+
+  RDMCommandHeader header;
+  PopulateHeader(&header, command);
+
+  output->append(reinterpret_cast<const uint8_t*>(&header), sizeof(header));
+  output->append(command.ParamData(), command.ParamDataSize());
+
+  uint16_t checksum = START_CODE;
+  for (unsigned int i = front; i < output->size(); i++) {
+    checksum += (*output)[i];
+  }
+  checksum = command.Checksum(checksum);
+  output->push_back(checksum >> 8);
+  output->push_back(checksum & 0xff);
+  return true;
+}
+
+bool RDMCommandSerializer::PackWithStartCode(const RDMCommand &command,
+                                             ola::io::ByteString *output) {
+  output->push_back(START_CODE);
+  return Pack(command, output);
+}
 
 bool RDMCommandSerializer::Pack(const RDMCommand &command,
                                 uint8_t *buffer,
@@ -46,10 +79,8 @@ bool RDMCommandSerializer::Pack(const RDMCommand &command,
   }
 
   // The buffer pointer may not be aligned, so we incur a copy here.
-  const unsigned int message_length = command.MessageLength();
   RDMCommandHeader header;
-  PopulateHeader(&header, command, message_length, command.SourceUID(),
-                 command.TransactionNumber(), command.PortIdResponseType());
+  PopulateHeader(&header, command);
 
   memcpy(buffer, &header, sizeof(header));
   memcpy(buffer + sizeof(RDMCommandHeader), command.ParamData(),
@@ -75,9 +106,7 @@ bool RDMCommandSerializer::Write(const RDMCommand &command,
   }
 
   RDMCommandHeader header;
-  const unsigned int message_length = command.MessageLength();
-  PopulateHeader(&header, command, message_length, command.SourceUID(),
-                 command.TransactionNumber(), command.PortIdResponseType());
+  PopulateHeader(&header, command);
 
   uint16_t checksum = START_CODE;
   const uint8_t *ptr = reinterpret_cast<uint8_t*>(&header);
@@ -102,29 +131,21 @@ bool RDMCommandSerializer::Write(const RDMCommand &command,
  * Populate the RDMCommandHeader struct.
  * @param header a pointer to the RDMCommandHeader to populate
  * @param command the RDMCommand to use
- * @param the length of the packet excluding the start code.
- * @param source the source UID.
- * @param transaction_number the RDM transaction number
- * @param port_id the RDM port id
  */
 void RDMCommandSerializer::PopulateHeader(RDMCommandHeader *header,
-                                          const RDMCommand &command,
-                                          unsigned int message_length,
-                                          const UID &source,
-                                          uint8_t transaction_number,
-                                          uint8_t port_id) {
+                                          const RDMCommand &command) {
   header->sub_start_code = command.SubStartCode();
-  header->message_length = message_length;
+  header->message_length = command.MessageLength();
   command.DestinationUID().Pack(header->destination_uid, UID::UID_SIZE);
-  source.Pack(header->source_uid, UID::UID_SIZE);
-  header->transaction_number = transaction_number;
-  header->port_id = port_id;
+  command.SourceUID().Pack(header->source_uid, UID::UID_SIZE);
+  header->transaction_number = command.TransactionNumber();
+  header->port_id = command.PortIdResponseType();
   header->message_count = command.MessageCount();
-  header->sub_device[0] = command.SubDevice() >> 8;
-  header->sub_device[1] = command.SubDevice() & 0xff;
+  SplitUInt16(command.SubDevice(), &header->sub_device[0],
+              &header->sub_device[1]);
   header->command_class = command.CommandClass();
-  header->param_id[0] = command.ParamId() >> 8;
-  header->param_id[1] = command.ParamId() & 0xff;
+  SplitUInt16(command.ParamId(), &header->param_id[0],
+              &header->param_id[1]);
   header->param_data_length = command.ParamDataSize();
 }
 }  // namespace rdm

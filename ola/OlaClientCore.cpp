@@ -977,12 +977,12 @@ void OlaClientCore::SendRDMCommand(bool is_set,
  */
 ola::rdm::RDMResponse *OlaClientCore::BuildRDMResponse(
     ola::proto::RDMResponse *reply,
-    ola::rdm::rdm_response_code *response_code) {
+    ola::rdm::RDMStatusCode *status_code) {
   // Get the response code, if it's not RDM_COMPLETED_OK don't bother with the
   // rest of the response data.
-  *response_code = static_cast<ola::rdm::rdm_response_code>(
+  *status_code = static_cast<ola::rdm::RDMStatusCode>(
       reply->response_code());
-  if (*response_code != ola::rdm::RDM_COMPLETED_OK) {
+  if (*status_code != ola::rdm::RDM_COMPLETED_OK) {
     return NULL;
   }
 

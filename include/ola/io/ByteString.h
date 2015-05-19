@@ -13,22 +13,32 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * TestHelper.h
- * Helper classes for the RDM tests.
+ * ByteString.h
+ * A string of uint8_t data.
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef COMMON_RDM_TESTHELPER_H_
-#define COMMON_RDM_TESTHELPER_H_
+#ifndef INCLUDE_OLA_IO_BYTESTRING_H_
+#define INCLUDE_OLA_IO_BYTESTRING_H_
 
-#include "ola/network/NetworkUtils.h"
-#include "ola/rdm/RDMCommand.h"
+#include <stdint.h>
+#include <string>
 
-inline uint16_t NackReasonFromResponse(const ola::rdm::RDMResponse *response) {
-  uint16_t reason;
-  memcpy(reinterpret_cast<uint8_t*>(&reason), response->ParamData(),
-         sizeof(reason));
-  return ola::network::NetworkToHost(reason);
-}
+namespace ola {
+namespace io {
 
-#endif  // COMMON_RDM_TESTHELPER_H_
+/**
+ * @brief A contiguous block of uint8_t data.
+ *
+ * The constraints of the .data() and .c_str() methods from the C++ standard
+ * mean that string stores it's data in a contiguous block.
+ *
+ * In some implementations, basic_string may be reference counted, but with the
+ * additional contraints added by C++11 this will not be the case, so think
+ * twice about copying ByteStrings.
+ */
+typedef std::basic_string<uint8_t> ByteString;
+
+}  // namespace io
+}  // namespace ola
+#endif  // INCLUDE_OLA_IO_BYTESTRING_H_

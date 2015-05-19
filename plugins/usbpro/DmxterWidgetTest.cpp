@@ -27,16 +27,20 @@
 #include "common/rdm/TestHelper.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::plugin::usbpro::DmxterWidget;
+using ola::rdm::GetResponseFromData;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMFrame;
+using ola::rdm::RDMFrames;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
-using ola::rdm::GetResponseFromData;
 using ola::rdm::UID;
 using std::auto_ptr;
 using std::string;
@@ -80,14 +84,10 @@ class DmxterWidgetTest: public CommonWidgetTest {
     m_ss.Terminate();
   }
   void ValidateTod(const ola::rdm::UIDSet &uids);
-  void ValidateResponse(ola::rdm::rdm_response_code code,
-                        const ola::rdm::RDMResponse *response,
-                        const vector<string> &packets);
-  void ValidateStatus(ola::rdm::rdm_response_code expected_code,
-                      vector<string> expected_packets,
-                      ola::rdm::rdm_response_code code,
-                      const ola::rdm::RDMResponse *response,
-                      const vector<string> &packets);
+  void ValidateResponse(RDMReply *reply);
+  void ValidateStatus(ola::rdm::RDMStatusCode expected_code,
+                      RDMFrames expected_frames,
+                      RDMReply *reply);
   RDMRequest *NewRequest(const UID &source,
                          const UID &destination,
                          const uint8_t *data,
@@ -129,24 +129,24 @@ void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
 /**
  * Check the response matches what we expected.
  */
-void DmxterWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_code code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
-  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
-  OLA_ASSERT(response);
-  uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
-  OLA_ASSERT_EQ((unsigned int) 4, response->ParamDataSize());
-  OLA_ASSERT(0 == memcmp(expected_data, response->ParamData(),
-                         response->ParamDataSize()));
+void DmxterWidgetTest::ValidateResponse(RDMReply *reply) {
+  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
+  OLA_ASSERT_NOT_NULL(reply->Response());
 
-  OLA_ASSERT_EQ((size_t) 1, packets.size());
-  ola::rdm::rdm_response_code raw_code;
-  ola::rdm::RDMResponse *raw_response =
-    ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code);
-  OLA_ASSERT_TRUE(CommandsEqual(*raw_response, *response));
-  delete raw_response;
-  delete response;
+  const RDMResponse *response = reply->Response();
+
+  uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
+  OLA_ASSERT_DATA_EQUALS(expected_data, arraysize(expected_data),
+                         response->ParamData(), response->ParamDataSize());
+
+  const RDMFrames &frames = reply->Frames();
+  OLA_ASSERT_EQ((size_t) 1, frames.size());
+
+  ola::rdm::RDMStatusCode raw_code;
+  auto_ptr<ola::rdm::RDMResponse> raw_response(
+      ola::rdm::RDMResponse::InflateFromData(
+          frames[0].data.substr(1), &raw_code));
+  OLA_ASSERT_TRUE(*raw_response == *response);
   m_ss.Terminate();
 }
 
@@ -155,17 +155,20 @@ void DmxterWidgetTest::ValidateResponse(
  * Check that we got an unknown UID code
  */
 void DmxterWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_code expected_code,
-    vector<string> expected_packets,
-    ola::rdm::rdm_response_code code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
-  OLA_ASSERT_EQ(expected_code, code);
-  OLA_ASSERT_FALSE(response);
+    ola::rdm::RDMStatusCode expected_code,
+    RDMFrames expected_frames,
+    RDMReply *reply) {
+  OLA_ASSERT_EQ(expected_code, reply->StatusCode());
+  OLA_ASSERT_NULL(reply->Response());
 
-  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
-  for (unsigned int i = 0; i < packets.size(); i++) {
-    OLA_ASSERT(expected_packets[i] == packets[i]);
+  const RDMFrames &frames = reply->Frames();
+  OLA_ASSERT_EQ(expected_frames.size(), frames.size());
+  for (unsigned int i = 0; i < frames.size(); i++) {
+    OLA_ASSERT_DATA_EQUALS(expected_frames[i].data.data(),
+                           expected_frames[i].data.size(),
+                           frames[i].data.data(),
+                           frames[i].data.size());
+    OLA_ASSERT_TRUE(expected_frames[i] == frames[i]);
   }
   m_ss.Terminate();
 }
@@ -243,7 +246,6 @@ void DmxterWidgetTest::testSendRDMRequest() {
   UID source(0x4744, 0x12345678);
   UID destination(3, 4);
   UID bcast_destination(3, 0xffffffff);
-  vector<string> packets;
 
   RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
@@ -258,10 +260,10 @@ void DmxterWidgetTest::testSendRDMRequest() {
     1, 28,  // sub code & length
     0x47, 0x44, 0x12, 0x34, 0x56, 0x78,   // dst uid
     0, 3, 0, 0, 0, 4,   // src uid
-    1, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
+    0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
     0x21, 0x1, 0x28, 4,  // command, param id, param data length
     0x5a, 0x5a, 0x5a, 0x5a,  // param data
-    0x04, 0x47  // checksum
+    0x04, 0x50  // checksum
   };
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
@@ -291,12 +293,13 @@ void DmxterWidgetTest::testSendRDMRequest() {
       static_cast<uint8_t*>(NULL),
       0);
 
+  RDMFrames frames;
   m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_WAS_BROADCAST,
-                             packets));
+                             frames));
 
   delete[] expected_packet;
   m_ss.Run();
@@ -409,13 +412,13 @@ void DmxterWidgetTest::testSendRDMDUB() {
       TIMEOUT_RESPONSE,
       sizeof(TIMEOUT_RESPONSE));
 
-  vector<string> packets;
+  RDMFrames frames;
   m_widget->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TIMEOUT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -451,15 +454,13 @@ void DmxterWidgetTest::testSendRDMDUB() {
       FAKE_RESPONSE,
       sizeof(FAKE_RESPONSE));
 
-  packets.push_back(
-      string(reinterpret_cast<const char*>(&FAKE_RESPONSE[2]),
-             sizeof(FAKE_RESPONSE) - 2));
+  frames.push_back(RDMFrame(&FAKE_RESPONSE[2], arraysize(FAKE_RESPONSE) - 2));
   m_widget->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_DUB_RESPONSE,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -475,7 +476,7 @@ void DmxterWidgetTest::testErrorCodes() {
   UID source(0x4744, 0x12345678);
   UID destination(3, 4);
 
-  vector<string> packets;
+  RDMFrames frames;
 
   RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
@@ -501,7 +502,7 @@ void DmxterWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_CHECKSUM_INCORRECT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -523,7 +524,7 @@ void DmxterWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_PACKET_TOO_SHORT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -545,7 +546,7 @@ void DmxterWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TRANSACTION_MISMATCH,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -567,7 +568,7 @@ void DmxterWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TIMEOUT,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -589,7 +590,7 @@ void DmxterWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_SRC_UID_MISMATCH,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -611,7 +612,7 @@ void DmxterWidgetTest::testErrorCodes() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_SUB_DEVICE_MISMATCH,
-                             packets));
+                             frames));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -626,7 +627,7 @@ void DmxterWidgetTest::testErrorConditions() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
   UID source(0x4744, 0x12345678);
   UID destination(3, 4);
-  vector<string> packets;
+  RDMFrames frames;
 
   RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
@@ -651,7 +652,7 @@ void DmxterWidgetTest::testErrorConditions() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_INVALID_RESPONSE,
-                             packets));
+                             frames));
 
   m_ss.Run();
   m_endpoint->Verify();
@@ -678,7 +679,7 @@ void DmxterWidgetTest::testErrorConditions() {
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_INVALID_RESPONSE,
-                             packets));
+                             frames));
 
   delete[] expected_packet;
   m_ss.Run();

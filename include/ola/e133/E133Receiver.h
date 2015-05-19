@@ -97,14 +97,14 @@ class E133RDMMessage : public E133Message {
     E133RDMMessage(const IPV4Address &ip,
                    uint16_t endpoint,
                    uint32_t sequence_number,
-                   ola::rdm::rdm_response_code response_code,
+                   ola::rdm::RDMStatusCode status_code,
                    const ola::rdm::RDMResponse *response)
       : E133Message(ip, endpoint, sequence_number),
-        response_code(response_code),
+        status_code(status_code),
         response(response) {
     }
 
-    ola::rdm::rdm_response_code response_code;
+    ola::rdm::RDMStatusCode status_code;
     const ola::rdm::RDMResponse *response;
 };
 
