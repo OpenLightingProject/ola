@@ -159,10 +159,6 @@ RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
   return NULL;
 }
 
-RDMCommand *RDMCommand::Inflate(const string &data) {
-  return Inflate(reinterpret_cast<const uint8_t*>(data.data()), data.size());
-}
-
 uint8_t RDMCommand::MessageLength() const {
   // The size of packet including start code, excluding checksum
   return sizeof(RDMCommandHeader) + m_data_length + 1;
@@ -377,15 +373,6 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
       OLA_WARN << "Expected a RDM request command but got " << command_class;
       return NULL;
   }
-}
-
-
-/**
- * Inflate from some data
- */
-RDMRequest* RDMRequest::InflateFromData(const string &data) {
-  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size());
 }
 
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
@@ -700,15 +687,6 @@ RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
 
 
 /*
- * Inflate a discovery request from some data.
- */
-RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(const string &data) {
-  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size());
-}
-
-
-/*
  * Create a new DUB request object.
  */
 RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
@@ -802,16 +780,6 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
     OLA_WARN << "Expected a RDM discovery response but got " << command_class;
     return NULL;
   }
-}
-
-
-/*
- * Inflate a discovery response from some data.
- */
-RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
-    const string &data) {
-  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
-                         data.size());
 }
 /**@}*/
 }  // namespace rdm

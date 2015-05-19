@@ -186,13 +186,6 @@ class RDMCommand {
    */
   static RDMCommand *Inflate(const uint8_t *data, unsigned int length);
 
-  /**
-   * @brief Extract a RDMCommand from raw data.
-   * @param data The data excluding the state code.
-   * @returns NULL if the RDM command is invalid.
-   */
-  static RDMCommand *Inflate(const std::string &data);
-
  protected:
   uint8_t m_port_id;
   UID m_source;
@@ -378,13 +371,6 @@ class RDMRequest: public RDMCommand {
    */
   static RDMRequest* InflateFromData(const uint8_t *data,
                                      unsigned int length);
-
-  /**
-   * @brief Inflate a request from some data.
-   * @param data The raw data.
-   * @returns A RDMRequest object or NULL if the data was invalid.
-   */
-  static RDMRequest* InflateFromData(const std::string &data);
 
  protected:
   OverrideOptions m_override_options;
@@ -717,7 +703,6 @@ class RDMDiscoveryRequest: public RDMRequest {
 
     static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
                                                 unsigned int length);
-    static RDMDiscoveryRequest* InflateFromData(const std::string &data);
 };
 
 
@@ -785,7 +770,6 @@ class RDMDiscoveryResponse: public RDMResponse {
 
     static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,
                                                  unsigned int length);
-    static RDMDiscoveryResponse* InflateFromData(const std::string &data);
 };
 /** @} */
 }  // namespace rdm
