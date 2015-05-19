@@ -653,7 +653,7 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
   pid {
-    name: "CP_CP_DIMMONSHUTTER"
+    name: "CP_DIMMONSHUTTER"
     value: 34313
     get_request {
     }
@@ -1063,60 +1063,6 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
   pid {
-    name: "CP_TILT_HOME_ANGLE"
-    value: 34324
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT8
-        name: "pan_homing_angle"
-        label {
-          value: 0
-          label: "0 Deg"
-        }
-        label {
-          value: 1
-          label: "90 Deg"
-        }
-        label {
-          value: 2
-          label: "180 Deg"
-        }
-        label {
-          value: 3
-          label: "270 Deg"
-        }
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT8
-        name: "pan_homing_angle"
-        label {
-          value: 0
-          label: "0 Deg"
-        }
-        label {
-          value: 1
-          label: "90 Deg"
-        }
-        label {
-          value: 2
-          label: "180 Deg"
-        }
-        label {
-          value: 3
-          label: "270 Deg"
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
     name: "CP_PAN_HOME_ANGLE"
     value: 34324
     get_request {
@@ -1171,7 +1117,7 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
   pid {
-    name: "CP_CWHEEL_LINEAR"
+    name: "CP_TILT_HOME_ANGLE"
     value: 34325
     get_request {
     }
@@ -6082,7 +6028,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "FOLLOW_SPOT_CONTROLLER_MODE"
+    name: "FOLLOW_SPOT_ZOOM"
     value: 34337
     get_request {
     }
@@ -8198,4 +8144,4 @@ manufacturer {
     get_sub_device_range: ROOT_OR_SUBDEVICE
   }
 }
-version: 1431997980
+version: 1432052711
