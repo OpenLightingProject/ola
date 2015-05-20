@@ -34,6 +34,7 @@
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
+#include "ola/util/Utils.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::ByteString;
@@ -48,9 +49,34 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
+using ola::utils::SplitUInt16;
 using std::auto_ptr;
 using std::ostringstream;
 using std::string;
+
+/*
+ * Calculate a checksum for a packet and update it
+ */
+void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
+  unsigned int checksum = RDMCommand::START_CODE;
+  for (unsigned int i = 0 ; i < expected_length - 2; i++) {
+    checksum += expected[i];
+  }
+
+  SplitUInt16(checksum, &expected[expected_length - 2],
+              &expected[expected_length - 1]);
+}
+
+void UpdateChecksum(ByteString *data) {
+  unsigned int checksum = RDMCommand::START_CODE;
+  for (unsigned int i = 0 ; i < data->size() - 2; i++) {
+    checksum += (*data)[i];
+  }
+
+  SplitUInt16(checksum, &data->at(data->size() - 2),
+              &data->at(data->size() - 1));
+}
+
 
 class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandTest);
@@ -100,9 +126,6 @@ class RDMCommandTest: public CppUnit::TestFixture {
  private:
   UID m_source;
   UID m_destination;
-
-  void UpdateChecksum(uint8_t *expected,
-                      unsigned int expected_length);
 
   static uint8_t EXPECTED_GET_BUFFER[];
   static uint8_t EXPECTED_SET_BUFFER[];
@@ -371,17 +394,13 @@ void RDMCommandTest::testRequestInflation() {
   auto_ptr<RDMRequest> command(RDMRequest::InflateFromData(NULL, 10));
   OLA_ASSERT_NULL(command.get());
 
-  string empty_string;
-  command.reset(RDMRequest::InflateFromData(empty_string));
-  OLA_ASSERT_NULL(command.get());
-
   // now try a proper command but with no length
   command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0));
   OLA_ASSERT_NULL(command.get());
 
   // Try a valid command
   command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER,
-                                            sizeof(EXPECTED_GET_BUFFER)));
+                                            arraysize(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());
 
   RDMGetRequest expected_command(source,
@@ -394,67 +413,42 @@ void RDMCommandTest::testRequestInflation() {
                                  0);  // data length
   OLA_ASSERT_TRUE(expected_command == *command);
 
-  // Try the string version
-  string get_request_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
-                         sizeof(EXPECTED_GET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(get_request_str));
-  OLA_ASSERT_NOT_NULL(command.get());
-  OLA_ASSERT_TRUE(expected_command == *command);
-
   // An invalid Command class
-  string invalid_command_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
-                             sizeof(EXPECTED_GET_BUFFER));
-  invalid_command_str[19] = 0x44;
-  command.reset(RDMRequest::InflateFromData(invalid_command_str));
+  ByteString invalid_command(EXPECTED_GET_BUFFER,
+                             arraysize(EXPECTED_GET_BUFFER));
+  invalid_command[19] = 0x44;
+  command.reset(RDMRequest::InflateFromData(invalid_command.data(),
+                                            invalid_command.size()));
   OLA_ASSERT_NULL(command.get());
 
-  // A set request
+  // A SET request
   command.reset(RDMRequest::InflateFromData(EXPECTED_SET_BUFFER,
-                                            sizeof(EXPECTED_SET_BUFFER)));
+                                            arraysize(EXPECTED_SET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());
   uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
-  OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
-                          command->ParamDataSize()));
-
-  // A set request as a string
-  string set_request_string(reinterpret_cast<char*>(EXPECTED_SET_BUFFER),
-                            sizeof(EXPECTED_SET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(set_request_string));
-  OLA_ASSERT_NOT_NULL(command.get());
-  OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
-                          command->ParamDataSize()));
+  OLA_ASSERT_DATA_EQUALS(expected_data, arraysize(expected_data),
+                         command->ParamData(), command->ParamDataSize());
 
   // Change the param length and make sure the checksum fails
-  uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_BUFFER)];
-  memcpy(bad_packet, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
+  ByteString bad_packet(EXPECTED_GET_BUFFER, arraysize(EXPECTED_GET_BUFFER));
   bad_packet[22] = 255;
-
-  command.reset(RDMRequest::InflateFromData(bad_packet,
-                                            sizeof(EXPECTED_GET_BUFFER)));
-  OLA_ASSERT_NULL(command.get());
-
-  get_request_str[22] = 255;
-  command.reset(RDMRequest::InflateFromData(get_request_str));
+  command.reset(RDMRequest::InflateFromData(bad_packet.data(),
+                                            bad_packet.size()));
   OLA_ASSERT_NULL(command.get());
 
   // Make sure we can't pass a bad param length larger than the buffer
-  UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(bad_packet,
-                                            sizeof(EXPECTED_GET_BUFFER)));
+  UpdateChecksum(&bad_packet);
+  command.reset(RDMRequest::InflateFromData(bad_packet.data(),
+                                            bad_packet.size()));
   OLA_ASSERT_NULL(command.get());
-  delete[] bad_packet;
 
   // Change the param length of another packet and make sure the checksum fails
-  bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
-  memcpy(bad_packet, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
+  bad_packet.assign(EXPECTED_SET_BUFFER, arraysize(EXPECTED_SET_BUFFER));
   bad_packet[22] = 5;
-  UpdateChecksum(bad_packet, sizeof(EXPECTED_SET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(bad_packet,
-                                            sizeof(EXPECTED_SET_BUFFER)));
+  UpdateChecksum(&bad_packet);
+  command.reset(RDMRequest::InflateFromData(bad_packet.data(),
+                                            bad_packet.size()));
   OLA_ASSERT_NULL(command.get());
-  delete[] bad_packet;
 
   // A non-0 length with a NULL pointer
   command.reset(RDMRequest::InflateFromData(NULL, 32));
@@ -463,12 +457,7 @@ void RDMCommandTest::testRequestInflation() {
   // Try to inflate a response
   command.reset(RDMRequest::InflateFromData(
       EXPECTED_GET_RESPONSE_BUFFER,
-      sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
-  OLA_ASSERT_NULL(command.get());
-
-  string response_string(reinterpret_cast<char*>(EXPECTED_GET_RESPONSE_BUFFER),
-                         sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  command.reset(RDMRequest::InflateFromData(response_string));
+      arraysize(EXPECTED_GET_RESPONSE_BUFFER)));
   OLA_ASSERT_NULL(command.get());
 }
 
@@ -609,20 +598,6 @@ void RDMCommandTest::testResponseInflation() {
   command = RDMResponse::InflateFromData(request_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_INVALID_COMMAND_CLASS, code);
   OLA_ASSERT_NULL(command);
-}
-
-
-/*
- * Calculate a checksum for a packet and update it
- */
-void RDMCommandTest::UpdateChecksum(uint8_t *expected,
-                                    unsigned int expected_length) {
-  unsigned int checksum = RDMCommand::START_CODE;
-  for (unsigned int i = 0 ; i < expected_length - 2; i++)
-    checksum += expected[i];
-
-  expected[expected_length - 2] = checksum >> 8;
-  expected[expected_length - 1] = checksum & 0xff;
 }
 
 
@@ -1115,15 +1090,6 @@ void RDMCommandTest::testDiscoveryResponseInflation() {
   auto_ptr<RDMCommand> command;
 
   command.reset(RDMRequest::Inflate(MUTE_RESPONSE, arraysize(MUTE_RESPONSE)));
-  OLA_ASSERT_NOT_NULL(command.get());
-  OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND_RESPONSE, command->CommandClass());
-  OLA_ASSERT_EQ((uint16_t) 2, command->ParamId());
-  OLA_ASSERT_EQ(0u, command->ParamDataSize());
-
-  // Try the string version
-  string response_string(reinterpret_cast<char*>(MUTE_RESPONSE),
-                         arraysize(MUTE_RESPONSE));
-  command.reset(RDMRequest::Inflate(response_string));
   OLA_ASSERT_NOT_NULL(command.get());
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND_RESPONSE, command->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 2, command->ParamId());
