@@ -102,7 +102,7 @@ const SettingCollection<BasicSetting>
     AdvancedDimmerResponder::LockSettings(
         LOCK_STATES, arraysize(LOCK_STATES), true);
 
-const RDMResponse *AdvancedDimmerResponder::
+RDMResponse *AdvancedDimmerResponder::
     LockManager::SetWithPin(const RDMRequest *request, uint16_t pin) {
   PACK(
   struct lock_s {
@@ -287,12 +287,12 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
 /*
  * Handle an RDM Request
  */
-void AdvancedDimmerResponder::SendRDMRequest(const RDMRequest *request,
+void AdvancedDimmerResponder::SendRDMRequest(RDMRequest *request,
                                              RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
-const RDMResponse *AdvancedDimmerResponder::GetDeviceInfo(
+RDMResponse *AdvancedDimmerResponder::GetDeviceInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_E137_DIMMER_MODEL,
@@ -302,39 +302,39 @@ const RDMResponse *AdvancedDimmerResponder::GetDeviceInfo(
       0, 0);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetProductDetailList(
+RDMResponse *AdvancedDimmerResponder::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
     vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetDeviceModelDescription(
+RDMResponse *AdvancedDimmerResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA E1.37-1 Dimmer");
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetManufacturerLabel(
+RDMResponse *AdvancedDimmerResponder::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetDeviceLabel(
+RDMResponse *AdvancedDimmerResponder::GetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Adv Dimmer");
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetSoftwareVersionLabel(
+RDMResponse *AdvancedDimmerResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPersonality(
+RDMResponse *AdvancedDimmerResponder::GetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, &m_personality_manager);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetPersonality(
+RDMResponse *AdvancedDimmerResponder::SetPersonality(
     const RDMRequest *request) {
   if (m_lock_settings.CurrentSetting() > 1) {
     return NackWithReason(request, NR_WRITE_PROTECT);
@@ -344,19 +344,19 @@ const RDMResponse *AdvancedDimmerResponder::SetPersonality(
                                          m_start_address);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPersonalityDescription(
+RDMResponse *AdvancedDimmerResponder::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, &m_personality_manager);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetDmxStartAddress(
+RDMResponse *AdvancedDimmerResponder::GetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
                                         m_start_address);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetDmxStartAddress(
+RDMResponse *AdvancedDimmerResponder::SetDmxStartAddress(
     const RDMRequest *request) {
   if (m_lock_settings.CurrentSetting() > 0) {
     return NackWithReason(request, NR_WRITE_PROTECT);
@@ -366,7 +366,7 @@ const RDMResponse *AdvancedDimmerResponder::SetDmxStartAddress(
                                         &m_start_address);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
+RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -400,7 +400,7 @@ const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetMinimumLevel(
+RDMResponse *AdvancedDimmerResponder::GetMinimumLevel(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -417,7 +417,7 @@ const RDMResponse *AdvancedDimmerResponder::GetMinimumLevel(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
+RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
     const RDMRequest *request) {
   min_level_s args;
   if (request->ParamDataSize() != sizeof(args)) {
@@ -444,12 +444,12 @@ const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
   }
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetMaximumLevel(
+RDMResponse *AdvancedDimmerResponder::GetMaximumLevel(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt16Value(request, m_maximum_level);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
+RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
     const RDMRequest *request) {
   uint16_t arg;
   if (!ResponderHelper::ExtractUInt16(request, &arg)) {
@@ -464,15 +464,15 @@ const RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
   }
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetIdentify(
+RDMResponse *AdvancedDimmerResponder::GetIdentify(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_state);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetIdentify(
+RDMResponse *AdvancedDimmerResponder::SetIdentify(
     const RDMRequest *request) {
   bool old_value = m_identify_state;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_state);
   if (m_identify_state != old_value) {
     OLA_INFO << "E1.37-1 Dimmer Device " << m_uid << ", identify state "
@@ -481,7 +481,7 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentify(
   return response;
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
+RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
     const RDMRequest *request) {
   PACK(
   struct preset_s {
@@ -523,7 +523,7 @@ const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPresetPlayback(
+RDMResponse *AdvancedDimmerResponder::GetPresetPlayback(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -540,7 +540,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetPlayback(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetPresetPlayback(
+RDMResponse *AdvancedDimmerResponder::SetPresetPlayback(
     const RDMRequest *request) {
   preset_playback_s args;
 
@@ -563,12 +563,12 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetPlayback(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetIdentifyMode(
+RDMResponse *AdvancedDimmerResponder::GetIdentifyMode(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt8Value(request, m_identify_mode);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
+RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
     const RDMRequest *request) {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
@@ -584,12 +584,12 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
   }
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetBurnIn(
+RDMResponse *AdvancedDimmerResponder::GetBurnIn(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt8Value(request, m_burn_in);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetBurnIn(
+RDMResponse *AdvancedDimmerResponder::SetBurnIn(
     const RDMRequest *request) {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
@@ -602,72 +602,72 @@ const RDMResponse *AdvancedDimmerResponder::SetBurnIn(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetCurve(
+RDMResponse *AdvancedDimmerResponder::GetCurve(
     const RDMRequest *request) {
   return m_curve_settings.Get(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetCurve(
+RDMResponse *AdvancedDimmerResponder::SetCurve(
     const RDMRequest *request) {
   return m_curve_settings.Set(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetCurveDescription(
+RDMResponse *AdvancedDimmerResponder::GetCurveDescription(
     const RDMRequest *request) {
   return m_curve_settings.GetDescription(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetResponseTime(
+RDMResponse *AdvancedDimmerResponder::GetResponseTime(
     const RDMRequest *request) {
   return m_response_time_settings.Get(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetResponseTime(
+RDMResponse *AdvancedDimmerResponder::SetResponseTime(
     const RDMRequest *request) {
   return m_response_time_settings.Set(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetResponseTimeDescription(
+RDMResponse *AdvancedDimmerResponder::GetResponseTimeDescription(
     const RDMRequest *request) {
   return m_response_time_settings.GetDescription(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPWMFrequency(
+RDMResponse *AdvancedDimmerResponder::GetPWMFrequency(
     const RDMRequest *request) {
   return m_frequency_settings.Get(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetPWMFrequency(
+RDMResponse *AdvancedDimmerResponder::SetPWMFrequency(
     const RDMRequest *request) {
   return m_frequency_settings.Set(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
+RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
     const RDMRequest *request) {
   return m_frequency_settings.GetDescription(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetLockState(
+RDMResponse *AdvancedDimmerResponder::GetLockState(
     const RDMRequest *request) {
   return m_lock_settings.Get(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetLockState(
+RDMResponse *AdvancedDimmerResponder::SetLockState(
     const RDMRequest *request) {
   return m_lock_settings.SetWithPin(request, m_lock_pin);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
+RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
     const RDMRequest *request) {
   return m_lock_settings.GetDescription(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetLockPin(
+RDMResponse *AdvancedDimmerResponder::GetLockPin(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt16Value(request, m_lock_pin, 0);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetLockPin(
+RDMResponse *AdvancedDimmerResponder::SetLockPin(
     const RDMRequest *request) {
   PACK(
   struct set_pin_s {
@@ -701,17 +701,17 @@ const RDMResponse *AdvancedDimmerResponder::SetLockPin(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(
+RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_power_on_self_test);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetPowerOnSelfTest(
+RDMResponse *AdvancedDimmerResponder::SetPowerOnSelfTest(
     const RDMRequest *request) {
   return ResponderHelper::SetBoolValue(request, &m_power_on_self_test);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
+RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
     const RDMRequest *request) {
   uint16_t arg;
   if (!ResponderHelper::ExtractUInt16(request, &arg)) {
@@ -737,7 +737,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
+RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
     const RDMRequest *request) {
   preset_status_s args;
   if (request->ParamDataSize() != sizeof(args)) {
@@ -777,7 +777,7 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
+RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -836,7 +836,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
+RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -846,7 +846,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
   return GetResponseFromData(request, &output, sizeof(output), RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
+RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
     const RDMRequest *request) {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
@@ -860,7 +860,7 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetFailMode(
+RDMResponse *AdvancedDimmerResponder::GetFailMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -880,7 +880,7 @@ const RDMResponse *AdvancedDimmerResponder::GetFailMode(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetFailMode(
+RDMResponse *AdvancedDimmerResponder::SetFailMode(
     const RDMRequest *request) {
   fail_mode_s args;
   if (request->ParamDataSize() != sizeof(args)) {
@@ -916,7 +916,7 @@ const RDMResponse *AdvancedDimmerResponder::SetFailMode(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *AdvancedDimmerResponder::GetStartUpMode(
+RDMResponse *AdvancedDimmerResponder::GetStartUpMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -936,7 +936,7 @@ const RDMResponse *AdvancedDimmerResponder::GetStartUpMode(
       RDM_ACK);
 }
 
-const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
+RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
     const RDMRequest *request) {
   startup_mode_s args;
   if (request->ParamDataSize() != sizeof(args)) {

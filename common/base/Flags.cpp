@@ -79,27 +79,22 @@ void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetDescription(description);
 }
 
-
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
 }
-
 
 void DisplayUsageAndExit() {
   GetRegistry()->DisplayUsage();
   exit(ola::EXIT_USAGE);
 }
 
-
 void DisplayVersion() {
   GetRegistry()->DisplayVersion();
 }
 
-
 void GenManPage() {
   GetRegistry()->GenManPage();
 }
-
 
 void ParseFlags(int *argc, char **argv) {
   GetRegistry()->ParseFlags(argc, argv);
@@ -110,6 +105,16 @@ void ParseFlags(int *argc, char **argv) {
  * @cond HIDDEN_SYMBOLS
  */
 
+static FlagRegistry *registry = NULL;
+
+/*
+ * Registered as an atexit function by the FlagRegistry constructor.
+ */
+void DeleteFlagRegistry() {
+  FlagRegistry *old_registry = registry;
+  registry = NULL;
+  delete old_registry;
+}
 
 /*
  * Change the input to s/_/-/g
@@ -143,7 +148,10 @@ const char *BaseFlag::NewCanonicalName(const char *name) {
  * Get the global FlagRegistry object.
  */
 FlagRegistry *GetRegistry() {
-  static FlagRegistry *registry = new FlagRegistry();
+  if (!registry) {
+    registry = new FlagRegistry();
+    atexit(DeleteFlagRegistry);
+  }
   return registry;
 }
 
@@ -157,7 +165,6 @@ void FlagRegistry::RegisterFlag(FlagInterface *flag) {
   }
 }
 
-
 /**
  * @brief Parse the command line flags. This re-arranges argv so that only the
  * non-flag options remain.
@@ -165,7 +172,6 @@ void FlagRegistry::RegisterFlag(FlagInterface *flag) {
 void FlagRegistry::ParseFlags(int *argc, char **argv) {
   const string long_option_prefix("--");
   const string short_option_prefix("-");
-
 
   m_argv0 = argv[0];
 

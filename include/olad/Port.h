@@ -152,7 +152,7 @@ class InputPort: public Port {
    * @brief Handle RDMRequests, ownership of the RDMRequest object is
    *   transferred
    */
-  virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+  virtual void HandleRDMRequest(ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *callback) = 0;
 };
 
@@ -179,7 +179,7 @@ class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
 
   // Methods from DiscoverableRDMControllerInterface
   // Ownership of the request object is transferred
-  virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  virtual void SendRDMRequest(ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback) = 0;
   virtual void RunFullDiscovery(
       ola::rdm::RDMDiscoveryCallback *on_complete) = 0;
@@ -228,7 +228,7 @@ class BasicInputPort: public InputPort {
    * @param request the RDMRequest object, ownership is transferred to us
    * @param callback the callback to run
    */
-  void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+  void HandleRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
   /**
@@ -311,7 +311,7 @@ class BasicOutputPort: public OutputPort {
   /**
    * @brief Handle an RDMRequest, subclasses can implement this to support RDM
    */
-  virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  virtual void SendRDMRequest(ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback);
   /**
    * @brief This is a noop for ports that don't support RDM

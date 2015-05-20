@@ -48,7 +48,7 @@ class SensorResponder: public RDMControllerInterface {
   explicit SensorResponder(const UID &uid);
   ~SensorResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**
@@ -72,18 +72,18 @@ class SensorResponder: public RDMControllerInterface {
   bool m_identify_mode;
   Sensors m_sensors;
 
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetProductDetailList(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-  const RDMResponse *GetSensorDefinition(const RDMRequest *request);
-  const RDMResponse *GetSensorValue(const RDMRequest *request);
-  const RDMResponse *SetSensorValue(const RDMRequest *request);
-  const RDMResponse *RecordSensor(const RDMRequest *request);
+  RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  RDMResponse *GetProductDetailList(const RDMRequest *request);
+  RDMResponse *GetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentify(const RDMRequest *request);
+  RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  RDMResponse *GetSensorDefinition(const RDMRequest *request);
+  RDMResponse *GetSensorValue(const RDMRequest *request);
+  RDMResponse *SetSensorValue(const RDMRequest *request);
+  RDMResponse *RecordSensor(const RDMRequest *request);
 
   static const ResponderOps<SensorResponder>::ParamHandler PARAM_HANDLERS[];
 };

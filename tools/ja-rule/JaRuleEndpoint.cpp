@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OpenLightingDevice.cpp
+ * JaRuleEndpoint.cpp
  * The Open Lighting USB Device.
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "tools/ja-rule/OpenLightingDevice.h"
+#include "tools/ja-rule/JaRuleEndpoint.h"
 
 #include <libusb.h>
 
@@ -41,62 +41,53 @@
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 
 using ola::Clock;
-using ola::NewCallback;
 using ola::NewSingleCallback;
-using ola::TimeInterval;
 using ola::TimeStamp;
 using ola::io::SelectServer;
 using ola::plugin::usbdmx::LibUsbAdaptor;
-using ola::thread::Mutex;
 using ola::thread::MutexLocker;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
-using std::auto_ptr;
 using std::cout;
 using std::string;
-
-static const uint8_t kInEndpoint = 0x81;
-static const uint8_t kOutEndpoint = 0x01;
-static const unsigned int kTimeout = 1000;
 
 namespace {
 
 void InTransferCompleteHandler(struct libusb_transfer *transfer) {
-  OpenLightingDevice *sender = static_cast<OpenLightingDevice*>(
+  JaRuleEndpoint *sender = static_cast<JaRuleEndpoint*>(
       transfer->user_data);
   return sender->_InTransferComplete();
 }
 
 void OutTransferCompleteHandler(struct libusb_transfer *transfer) {
-  OpenLightingDevice *sender = static_cast<OpenLightingDevice*>(
+  JaRuleEndpoint *sender = static_cast<JaRuleEndpoint*>(
       transfer->user_data);
   return sender->_OutTransferComplete();
 }
 }  // namespace
 
 
-OpenLightingDevice::OpenLightingDevice(SelectServer* ss, libusb_device* device)
+JaRuleEndpoint::JaRuleEndpoint(SelectServer *ss, libusb_device *device)
   : m_ss(ss),
     m_device(device),
     m_handle(NULL),
     m_pending_requests(0),
     m_out_transfer(libusb_alloc_transfer(0)),
     m_out_in_progress(false),
+    m_token(0),
     m_in_transfer(libusb_alloc_transfer(0)),
     m_in_in_progress(false) {
 }
 
-OpenLightingDevice::~OpenLightingDevice() {
+JaRuleEndpoint::~JaRuleEndpoint() {
   {
     MutexLocker locker(&m_mutex);
 
     if (m_out_in_progress) {
-      OLA_DEBUG << "Cancel m_out_transfer";
       libusb_cancel_transfer(m_out_transfer);
     }
 
     if (m_in_in_progress) {
-      OLA_DEBUG << "Cancel m_in_transfer";
       libusb_cancel_transfer(m_in_transfer);
     }
   }
@@ -119,11 +110,10 @@ OpenLightingDevice::~OpenLightingDevice() {
 
   if (m_handle) {
     libusb_close(m_handle);
-    m_handle = NULL;
   }
 }
 
-bool OpenLightingDevice::Init() {
+bool JaRuleEndpoint::Init() {
   int r = libusb_open(m_device, &m_handle);
   if (r != 0) {
     OLA_WARN << "Failed to open device: "
@@ -141,9 +131,9 @@ bool OpenLightingDevice::Init() {
   return true;
 }
 
-bool OpenLightingDevice::SendMessage(Command command,
-                                     const uint8_t *data,
-                                     unsigned int size) {
+bool JaRuleEndpoint::SendMessage(Command command,
+                                 const uint8_t *data,
+                                 unsigned int size) {
   if (size > MAX_PAYLOAD_SIZE) {
     OLA_WARN << "Message exceeds max payload size";
     return false;
@@ -164,7 +154,7 @@ bool OpenLightingDevice::SendMessage(Command command,
   return true;
 }
 
-void OpenLightingDevice::_OutTransferComplete() {
+void JaRuleEndpoint::_OutTransferComplete() {
   TimeStamp now;
   Clock clock;
   clock.CurrentTime(&now);
@@ -183,7 +173,7 @@ void OpenLightingDevice::_OutTransferComplete() {
   MaybeSendRequest();
 }
 
-void OpenLightingDevice::_InTransferComplete() {
+void JaRuleEndpoint::_InTransferComplete() {
   TimeStamp now;
   Clock clock;
   clock.CurrentTime(&now);
@@ -196,7 +186,7 @@ void OpenLightingDevice::_InTransferComplete() {
     // running on the SS thread.
     m_ss->Execute(
         NewSingleCallback(
-          this, &OpenLightingDevice::HandleData,
+          this, &JaRuleEndpoint::HandleData,
           reinterpret_cast<const uint8_t*>(m_in_transfer->buffer),
           static_cast<unsigned int>(m_in_transfer->actual_length)));
   } else {
@@ -211,7 +201,7 @@ void OpenLightingDevice::_InTransferComplete() {
   }
 }
 
-void OpenLightingDevice::MaybeSendRequest() {
+void JaRuleEndpoint::MaybeSendRequest() {
   if (m_out_in_progress || m_pending_requests > MAX_IN_FLIGHT ||
       m_queued_requests.empty()) {
     return;
@@ -223,9 +213,10 @@ void OpenLightingDevice::MaybeSendRequest() {
 
   unsigned int offset = 0;
   m_out_buffer[0] = SOF_IDENTIFIER;
-  SplitUInt16(request.command, &m_out_buffer[2], &m_out_buffer[1]);
-  SplitUInt16(request.payload.size(), &m_out_buffer[4], &m_out_buffer[3]);
-  offset += 5;
+  m_out_buffer[1] = m_token++;
+  SplitUInt16(request.command, &m_out_buffer[3], &m_out_buffer[2]);
+  SplitUInt16(request.payload.size(), &m_out_buffer[5], &m_out_buffer[4]);
+  offset += 6;
 
   if (request.payload.size() > 0) {
     memcpy(m_out_buffer + offset, request.payload.data(),
@@ -241,11 +232,11 @@ void OpenLightingDevice::MaybeSendRequest() {
     m_out_buffer[offset++] = 0;
   }
 
-  libusb_fill_bulk_transfer(m_out_transfer, m_handle, kOutEndpoint,
+  libusb_fill_bulk_transfer(m_out_transfer, m_handle, OUT_ENDPOINT,
                             m_out_buffer, offset,
                             OutTransferCompleteHandler,
                             static_cast<void*>(this),
-                            kTimeout);
+                            ENDPOINT_TIMEOUT_MS);
 
   Clock clock;
   clock.CurrentTime(&m_out_sent_time);
@@ -267,18 +258,18 @@ void OpenLightingDevice::MaybeSendRequest() {
   return;
 }
 
-bool OpenLightingDevice::SubmitInTransfer() {
+bool JaRuleEndpoint::SubmitInTransfer() {
   if (m_in_in_progress) {
     OLA_WARN << "Read already pending";
     return true;
   }
 
   uint8_t* rx_buffer = new uint8_t[IN_BUFFER_SIZE];
-  libusb_fill_bulk_transfer(m_in_transfer, m_handle, kInEndpoint,
+  libusb_fill_bulk_transfer(m_in_transfer, m_handle, IN_ENDPOINT,
                             rx_buffer, IN_BUFFER_SIZE,
                             InTransferCompleteHandler,
                             static_cast<void*>(this),
-                            kTimeout);
+                            ENDPOINT_TIMEOUT_MS);
 
   Clock clock;
   clock.CurrentTime(&m_send_in_time);
@@ -293,16 +284,8 @@ bool OpenLightingDevice::SubmitInTransfer() {
   return true;
 }
 
-void OpenLightingDevice::HandleData(const uint8_t* data, unsigned int size) {
-  class ArrayDeleter {
-   public:
-    explicit ArrayDeleter(const uint8_t* data) : m_data(data) {}
-    ~ArrayDeleter() { delete[] m_data; }
-   private:
-    const uint8_t* m_data;
-  };
-
-  ArrayDeleter deleter(data);
+void JaRuleEndpoint::HandleData(const uint8_t *data, unsigned int size) {
+  ola::ArrayDeleter deleter(data);
 
   // Right now we assume that the device only sends a single message at a time.
   // If this ever changes from a message model to more of a stream model we'll
@@ -322,10 +305,11 @@ void OpenLightingDevice::HandleData(const uint8_t* data, unsigned int size) {
     return;
   }
 
-  uint16_t command = JoinUInt8(data[2], data[1]);
-  uint16_t payload_size = JoinUInt8(data[4], data[3]);
-  uint8_t return_code = data[5];
-  uint8_t flags = data[6];
+  uint8_t token = data[1];
+  uint16_t command = JoinUInt8(data[3], data[2]);
+  uint16_t payload_size = JoinUInt8(data[5], data[4]);
+  uint8_t return_code = data[6];
+  uint8_t flags = data[7];
 
   if (payload_size + MIN_RESPONSE_SIZE > size) {
     OLA_WARN << "Message size of " << (payload_size + MIN_RESPONSE_SIZE)
@@ -343,7 +327,7 @@ void OpenLightingDevice::HandleData(const uint8_t* data, unsigned int size) {
   }
 
   MessageHandlerInterface::Message message = {
-    command, return_code, flags,
+    token, command, return_code, flags,
     data + MIN_RESPONSE_SIZE - 1, payload_size
   };
 

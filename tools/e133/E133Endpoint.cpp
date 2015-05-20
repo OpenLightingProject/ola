@@ -18,6 +18,7 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/UID.h>
 #include <ola/rdm/UIDSet.h>
 #include <memory>
@@ -84,7 +85,7 @@ void E133Endpoint::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
 /**
  * Handle RDM requests to this endpoint
  */
-void E133Endpoint::SendRDMRequest(const RDMRequest *request_ptr,
+void E133Endpoint::SendRDMRequest(RDMRequest *request_ptr,
                                   RDMCallback *on_complete) {
   if (m_controller) {
     m_controller->SendRDMRequest(request_ptr, on_complete);
@@ -93,7 +94,6 @@ void E133Endpoint::SendRDMRequest(const RDMRequest *request_ptr,
     auto_ptr<const RDMRequest> request(request_ptr);
     OLA_WARN << "Endpoint " << m_endpoint_label
              << " has no controller attached";
-    RDMPackets packets;
-    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+    ola::rdm::RunRDMCallback(on_complete, ola::rdm::RDM_UNKNOWN_UID);
   }
 }

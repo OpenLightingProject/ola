@@ -172,6 +172,12 @@ ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), (expected), \
     CPPUNIT_NS::Message("Expression: " #value " == NULL"), \
     CPPUNIT_SOURCELINE())
 
+#define OLA_ASSERT_EMPTY(container) \
+  CPPUNIT_NS::Asserter::failIf( \
+    !container.empty(), \
+    CPPUNIT_NS::Message("Expression: " #container " is not empty"), \
+    CPPUNIT_SOURCELINE())
+
 #define OLA_ASSERT_NOT_EMPTY(container) \
   CPPUNIT_NS::Asserter::failIf( \
     container.empty(), \

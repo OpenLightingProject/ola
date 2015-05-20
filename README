@@ -6,7 +6,7 @@ OLA consists of three parts, the daemon olad, the olad plugins and the client
 library, libola.
 
 For documentation on OLA, including examples on how to get started please see
-http://www.opendmx.net/index.php/OLA
+https://wiki.openlighting.org/index.php/OLA
 
 
 Plugins

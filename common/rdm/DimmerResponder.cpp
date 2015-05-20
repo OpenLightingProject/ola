@@ -56,7 +56,7 @@ DimmerResponder::~DimmerResponder() {
  * Handle an RDM Request. This just uses the SubDeviceDispatcher to call the
  * correct sub device.
  */
-void DimmerResponder::SendRDMRequest(const RDMRequest *request,
+void DimmerResponder::SendRDMRequest(RDMRequest *request,
                                      RDMCallback *callback) {
   if (request->SubDevice() == ROOT_RDM_DEVICE) {
     m_root_device->SendRDMRequest(request, callback);

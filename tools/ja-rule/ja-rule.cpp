@@ -38,7 +38,7 @@
 #include <memory>
 #include <string>
 
-#include "tools/ja-rule/OpenLightingDevice.h"
+#include "tools/ja-rule/JaRuleEndpoint.h"
 #include "tools/ja-rule/USBDeviceManager.h"
 
 using ola::NewCallback;
@@ -51,7 +51,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
-using ola::rdm::rdm_response_code;
+using ola::rdm::RDMStatusCode;
 using ola::strings::ToHex;
 using ola::thread::Thread;
 using ola::utils::JoinUInt8;
@@ -70,58 +70,61 @@ DEFINE_string(upper_uid, "ffff:ffffffff", "The upper UID for the DUB.");
 /**
  * @brief Print messages received from the device.
  */
-class MessageHandler : public MessageHandlerInterface {
+class MessageHandler : public JaRuleEndpoint::MessageHandlerInterface {
  public:
   MessageHandler() {}
 
   void NewMessage(const Message& message) {
     switch (message.command) {
-      case OpenLightingDevice::ECHO_COMMAND:
+      case JaRuleEndpoint::ECHO_COMMAND:
         PrintEcho(message);
         break;
-      case OpenLightingDevice::TX_DMX:
+      case JaRuleEndpoint::TX_DMX:
         PrintResponse(message);
         break;
-      case OpenLightingDevice::GET_LOG:
+      case JaRuleEndpoint::GET_LOG:
         PrintLog(message.payload, message.payload_size);
         break;
-      case OpenLightingDevice::GET_FLAGS:
+      case JaRuleEndpoint::GET_FLAGS:
         PrintFlags(message);
         break;
-      case OpenLightingDevice::WRITE_LOG:
+      case JaRuleEndpoint::WRITE_LOG:
         PrintAck(message);
         break;
-      case OpenLightingDevice::RESET_DEVICE:
+      case JaRuleEndpoint::RESET_DEVICE:
         PrintAck(message);
         break;
-      case OpenLightingDevice::RDM_DUB:
+      case JaRuleEndpoint::RDM_DUB:
         PrintDUBResponse(message);
         break;
-      case OpenLightingDevice::RDM_REQUEST:
+      case JaRuleEndpoint::RDM_REQUEST:
         PrintResponse(message);
         break;
-      case OpenLightingDevice::GET_BREAK_TIME:
+      case JaRuleEndpoint::GET_BREAK_TIME:
         PrintTime(message, MICRO_SECONDS);
         break;
-      case OpenLightingDevice::SET_BREAK_TIME:
+      case JaRuleEndpoint::SET_BREAK_TIME:
         PrintAck(message);
         break;
-      case OpenLightingDevice::GET_MAB_TIME:
+      case JaRuleEndpoint::GET_MAB_TIME:
         PrintTime(message, MICRO_SECONDS);
         break;
-      case OpenLightingDevice::SET_MAB_TIME:
+      case JaRuleEndpoint::SET_MAB_TIME:
         PrintAck(message);
         break;
-      case OpenLightingDevice::GET_RDM_WAIT_TIME:
+      case JaRuleEndpoint::GET_RDM_WAIT_TIME:
         PrintTime(message, TENTHS_OF_MILLI_SECONDS);
         break;
-      case OpenLightingDevice::SET_RDM_WAIT_TIME:
+      case JaRuleEndpoint::SET_RDM_WAIT_TIME:
         PrintAck(message);
         break;
-      case OpenLightingDevice::GET_RDM_BROADCAST_LISTEN:
+      case JaRuleEndpoint::GET_RDM_BROADCAST_LISTEN:
         PrintTime(message, TENTHS_OF_MILLI_SECONDS);
         break;
-      case OpenLightingDevice::SET_RDM_BROADCAST_LISTEN:
+      case JaRuleEndpoint::SET_RDM_BROADCAST_LISTEN:
+        PrintAck(message);
+        break;
+      case JaRuleEndpoint::RDM_BROADCAST_REQUEST:
         PrintAck(message);
         break;
       default:
@@ -207,7 +210,8 @@ class MessageHandler : public MessageHandlerInterface {
 
 
   void PrintDUBResponse(const Message& message) {
-    OLA_INFO << "Got response of size " << message.payload_size;
+    OLA_INFO << "DUB Response: RC: " << static_cast<int>(message.return_code)
+             << ", size: " << message.payload_size;
   }
 
   void PrintResponse(const Message& message) {
@@ -219,10 +223,10 @@ class MessageHandler : public MessageHandlerInterface {
     }
 
     if (message.payload[0] == RDMCommand::START_CODE) {
-      rdm_response_code response_code;
+      RDMStatusCode status_code;
       // SKip over the start code.
       auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
-          message.payload + 1, message.payload_size - 1, &response_code));
+          message.payload + 1, message.payload_size - 1, &status_code));
 
       if (!response.get()) {
         OLA_WARN << "Failed to inflate RDM response";
@@ -292,7 +296,7 @@ class InputHandler {
   }
 
   void DeviceEvent(USBDeviceManager::EventType event,
-                   OpenLightingDevice* device) {
+                   JaRuleEndpoint* device) {
     if (event == USBDeviceManager::DEVICE_ADDED) {
       OLA_INFO << "Open Lighting Device added";
       m_device = device;
@@ -430,7 +434,7 @@ class InputHandler {
     cout << " r - Reset" << endl;
     cout << " t - Send DMX frame" << endl;
     cout << " u - Send a broadcast unmute" << endl;
-    cout << " M - Send an unmute to " << m_target_uid << endl;
+    cout << " U - Send an unmute to " << m_target_uid << endl;
     cout << " w - Write Log" << endl;
     cout << " x - Get RDM Wait time" << endl;
     cout << " X - Set RDM Wait time" << endl;
@@ -453,7 +457,7 @@ class InputHandler {
   UID m_our_uid, m_target_uid, m_lower_uid, m_upper_uid;
   auto_ptr<StdinHandler> m_stdin_handler;
   MessageHandler m_handler;
-  OpenLightingDevice* m_device;
+  JaRuleEndpoint* m_device;
   unsigned int m_log_count;
   uint8_t m_dmx_slot_data;
   Mode m_mode;
@@ -475,7 +479,7 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_LOG, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_LOG, NULL, 0);
   }
 
   void ResetDevice() {
@@ -483,7 +487,7 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::RESET_DEVICE, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::RESET_DEVICE, NULL, 0);
   }
 
   void GetFlags() {
@@ -491,14 +495,14 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_FLAGS, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_FLAGS, NULL, 0);
   }
 
   void _SendDMX(const uint8_t *data, unsigned int size) {
     if (!CheckForDevice()) {
       return;
     }
-    m_device->SendMessage(OpenLightingDevice::TX_DMX, data, size);
+    m_device->SendMessage(JaRuleEndpoint::TX_DMX, data, size);
   }
 
   void Adjust(bool increase) {
@@ -545,22 +549,22 @@ class InputHandler {
     switch (m_mode) {
       case EDIT_BREAK:
         SplitUInt16(m_break, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_BREAK_TIME, payload,
+        m_device->SendMessage(JaRuleEndpoint::SET_BREAK_TIME, payload,
                               arraysize(payload));
         break;
       case EDIT_MAB:
         SplitUInt16(m_mab, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_MAB_TIME, payload,
+        m_device->SendMessage(JaRuleEndpoint::SET_MAB_TIME, payload,
                               arraysize(payload));
         break;
       case EDIT_RDM_WAIT_TIME:
         SplitUInt16(m_rdm_wait_time, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_RDM_WAIT_TIME,
+        m_device->SendMessage(JaRuleEndpoint::SET_RDM_WAIT_TIME,
                               payload, arraysize(payload));
         break;
       case EDIT_RDM_BROADCAST_LISTEN:
         SplitUInt16(m_rdm_broadcast_listen, &payload[1], &payload[0]);
-        m_device->SendMessage(OpenLightingDevice::SET_RDM_BROADCAST_LISTEN,
+        m_device->SendMessage(JaRuleEndpoint::SET_RDM_BROADCAST_LISTEN,
                               payload, arraysize(payload));
         break;
       default:
@@ -602,7 +606,7 @@ class InputHandler {
     }
 
     const uint8_t payload[] = {'e', 'c', 'h', 'o', ' ', 't', 'e', 's', 't'};
-    m_device->SendMessage(OpenLightingDevice::ECHO_COMMAND, payload,
+    m_device->SendMessage(JaRuleEndpoint::ECHO_COMMAND, payload,
                           arraysize(payload));
   }
 
@@ -611,7 +615,7 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_BREAK_TIME, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_BREAK_TIME, NULL, 0);
   }
 
   void GetMABTime() {
@@ -619,21 +623,21 @@ class InputHandler {
       return;
     }
 
-    m_device->SendMessage(OpenLightingDevice::GET_MAB_TIME, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_MAB_TIME, NULL, 0);
   }
 
   void GetRDMWaitTime() {
     if (!CheckForDevice()) {
       return;
     }
-    m_device->SendMessage(OpenLightingDevice::GET_RDM_WAIT_TIME, NULL, 0);
+    m_device->SendMessage(JaRuleEndpoint::GET_RDM_WAIT_TIME, NULL, 0);
   }
 
   void GetRDMBroadcastListen() {
     if (!CheckForDevice()) {
       return;
     }
-    m_device->SendMessage(OpenLightingDevice::GET_RDM_BROADCAST_LISTEN, NULL,
+    m_device->SendMessage(JaRuleEndpoint::GET_RDM_BROADCAST_LISTEN, NULL,
                           0);
   }
 
@@ -648,7 +652,7 @@ class InputHandler {
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
     OLA_INFO << "Sending " << rdm_length << " RDM command.";
-    m_device->SendMessage(OpenLightingDevice::RDM_DUB, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_DUB, data, rdm_length);
   }
 
   void SendIdentify(bool identify_on) {
@@ -664,7 +668,7 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(request, data, &rdm_length);
-    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_REQUEST, data, rdm_length);
   }
 
   void SendMute(const UID &target) {
@@ -678,7 +682,7 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
-    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(JaRuleEndpoint::RDM_REQUEST, data, rdm_length);
   }
 
   void SendUnMute(const UID &target) {
@@ -692,7 +696,10 @@ class InputHandler {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
-    m_device->SendMessage(OpenLightingDevice::RDM_REQUEST, data, rdm_length);
+    m_device->SendMessage(
+        target.IsBroadcast() ? JaRuleEndpoint::RDM_BROADCAST_REQUEST :
+          JaRuleEndpoint::RDM_REQUEST,
+        data, rdm_length);
   }
 
   void WriteLog() {
@@ -703,7 +710,7 @@ class InputHandler {
     std::ostringstream str;
     str << "Log Test " << m_log_count++ << ", this is quite long";
     const string payload = str.str();
-    m_device->SendMessage(OpenLightingDevice::WRITE_LOG,
+    m_device->SendMessage(JaRuleEndpoint::WRITE_LOG,
                           reinterpret_cast<const uint8_t*>(payload.c_str()),
                           payload.size());
   }

@@ -117,7 +117,7 @@ ManagementEndpoint::ManagementEndpoint(
  * @param request the RDMRequest object
  * @param on_complete the callback to run when we've handled this request.
  */
-void ManagementEndpoint::SendRDMRequest(const RDMRequest *request,
+void ManagementEndpoint::SendRDMRequest(RDMRequest *request,
                                         RDMCallback *on_complete) {
   const UID dst_uid = request->DestinationUID();
   if (dst_uid.IsBroadcast() && m_controller) {
@@ -134,9 +134,8 @@ void ManagementEndpoint::SendRDMRequest(const RDMRequest *request,
     // This request just goes to the other responders.
     m_controller->SendRDMRequest(request, on_complete);
   } else {
-    vector<string> packets;
+    ola::rdm::RunRDMCallback(on_complete, ola::rdm::RDM_UNKNOWN_UID);
     delete request;
-    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
   }
 }
 
@@ -177,8 +176,7 @@ void ManagementEndpoint::RunIncrementalDiscovery(
 /**
  * Handle PID_ENDPOINT_LIST.
  */
-const RDMResponse *ManagementEndpoint::GetEndpointList(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetEndpointList(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -211,7 +209,7 @@ const RDMResponse *ManagementEndpoint::GetEndpointList(
 /**
  * Handle PID_ENDPOINT_LIST_CHANGE.
  */
-const RDMResponse *ManagementEndpoint::GetEndpointListChange(
+RDMResponse *ManagementEndpoint::GetEndpointListChange(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -226,7 +224,7 @@ const RDMResponse *ManagementEndpoint::GetEndpointListChange(
 /**
  * Handle PID_ENDPOINT_IDENTIFY
  */
-const RDMResponse *ManagementEndpoint::GetEndpointIdentify(
+RDMResponse *ManagementEndpoint::GetEndpointIdentify(
     const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
@@ -255,7 +253,7 @@ const RDMResponse *ManagementEndpoint::GetEndpointIdentify(
       sizeof(endpoint_identify_message));
 }
 
-const RDMResponse *ManagementEndpoint::SetEndpointIdentify(
+RDMResponse *ManagementEndpoint::SetEndpointIdentify(
     const RDMRequest *request) {
   PACK(
   struct IdentifyEndpointParamData {
@@ -287,13 +285,13 @@ const RDMResponse *ManagementEndpoint::SetEndpointIdentify(
 /**
  * Handle PID_ENDPOINT_TO_UNIVERSE
  */
-const RDMResponse *ManagementEndpoint::GetEndpointToUniverse(
+RDMResponse *ManagementEndpoint::GetEndpointToUniverse(
     const RDMRequest *request) {
   // TODO(simon): add me
   return NackWithReason(request, NR_UNKNOWN_PID);
 }
 
-const RDMResponse *ManagementEndpoint::SetEndpointToUniverse(
+RDMResponse *ManagementEndpoint::SetEndpointToUniverse(
     const RDMRequest *request) {
   // TODO(simon): add me
   return NackWithReason(request, NR_UNKNOWN_PID);
@@ -302,14 +300,12 @@ const RDMResponse *ManagementEndpoint::SetEndpointToUniverse(
 /**
  * Handle PID_ENDPOINT_MODE
  */
-const RDMResponse *ManagementEndpoint::GetEndpointMode(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetEndpointMode(const RDMRequest *request) {
   // TODO(simon): add me
   return NackWithReason(request, NR_UNKNOWN_PID);
 }
 
-const RDMResponse *ManagementEndpoint::SetEndpointMode(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::SetEndpointMode(const RDMRequest *request) {
   // TODO(simon): add me
   return NackWithReason(request, NR_UNKNOWN_PID);
 }
@@ -317,14 +313,12 @@ const RDMResponse *ManagementEndpoint::SetEndpointMode(
 /**
  * Handle PID_ENDPOINT_LABEL
  */
-const RDMResponse *ManagementEndpoint::GetEndpointLabel(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetEndpointLabel(const RDMRequest *request) {
   // TODO(simon): add me
   return NackWithReason(request, NR_UNKNOWN_PID);
 }
 
-const RDMResponse *ManagementEndpoint::SetEndpointLabel(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::SetEndpointLabel(const RDMRequest *request) {
   // TODO(simon): add me
   return NackWithReason(request, NR_UNKNOWN_PID);
 }
@@ -332,7 +326,7 @@ const RDMResponse *ManagementEndpoint::SetEndpointLabel(
 /**
  * Handle PID_ENDPOINT_DEVICE_LIST_CHANGE
  */
-const RDMResponse *ManagementEndpoint::GetEndpointDeviceListChange(
+RDMResponse *ManagementEndpoint::GetEndpointDeviceListChange(
     const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
@@ -356,8 +350,7 @@ const RDMResponse *ManagementEndpoint::GetEndpointDeviceListChange(
 /**
  * Handle PID_ENDPOINT_DEVICES
  */
-const RDMResponse *ManagementEndpoint::GetEndpointDevices(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetEndpointDevices(const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -413,8 +406,7 @@ const RDMResponse *ManagementEndpoint::GetEndpointDevices(
 /**
  * Handle PID_TCP_COMMS_STATUS
  */
-const RDMResponse *ManagementEndpoint::GetTCPCommsStatus(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetTCPCommsStatus(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -439,8 +431,7 @@ const RDMResponse *ManagementEndpoint::GetTCPCommsStatus(
       sizeof(tcp_stats_message));
 }
 
-const RDMResponse *ManagementEndpoint::SetTCPCommsStatus(
-    const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::SetTCPCommsStatus(const RDMRequest *request) {
   m_tcp_stats->ResetCounters();
   return GetResponseFromData(request, NULL, 0);
 }

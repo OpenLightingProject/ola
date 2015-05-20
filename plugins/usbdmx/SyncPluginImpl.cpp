@@ -123,6 +123,12 @@ bool SyncPluginImpl::NewWidget(EurolitePro *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
+bool SyncPluginImpl::NewWidget(OLA_UNUSED class JaRuleWidget *widget) {
+  // This should never happen since there is no Syncronous support for Ja Rule.
+  OLA_WARN << "::NewWidget called for a JaRuleWidget";
+  return false;
+}
+
 bool SyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
       widget,

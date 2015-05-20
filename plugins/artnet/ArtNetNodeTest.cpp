@@ -35,6 +35,7 @@
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/RDMReply.h"
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -43,7 +44,6 @@
 #include "ola/timecode/TimeCode.h"
 #include "plugins/artnet/ArtNetNode.h"
 #include "ola/testing/TestUtils.h"
-
 
 
 using ola::DmxBuffer;
@@ -56,6 +56,7 @@ using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMGetRequest;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -163,25 +164,19 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void TodRequest() { m_tod_request = true; }
   void Flush() { m_tod_flush = true; }
 
-  void HandleRDM(const RDMRequest *request, RDMCallback *callback) {
+  void HandleRDM(RDMRequest *request, RDMCallback *callback) {
     m_rdm_request = request;
     m_rdm_callback = callback;
   }
 
-  void FinalizeRDM(ola::rdm::rdm_response_code status,
-                   const RDMResponse *response,
-                   const vector<string> &packets) {
-    OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, status);
-    m_rdm_response = response;
-    (void) packets;
+  void FinalizeRDM(RDMReply *reply) {
+    OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
+    m_rdm_response = reply->Response()->Duplicate();
   }
 
-  void ExpectTimeout(ola::rdm::rdm_response_code status,
-                     const RDMResponse *response,
-                     const vector<string> &packets) {
-    OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, status);
-    OLA_ASSERT(NULL == response);
-    (void) packets;
+  void ExpectTimeout(RDMReply *reply) {
+    OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, reply->StatusCode());
+    OLA_ASSERT_NULL(reply->Response());
     m_got_rdm_timeout = true;
   }
 
@@ -241,12 +236,11 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     UID source(1, 2);
     UID destination(0x7a70, 0);
 
-    const RDMGetRequest *request = new RDMGetRequest(
+    RDMGetRequest *request = new RDMGetRequest(
         source,
         destination,
         0,  // transaction #
         1,  // port id
-        0,  // message count
         10,  // sub device
         296,  // param id
         NULL,  // data
@@ -2023,11 +2017,10 @@ void ArtNetNodeTest::testRDMResponder() {
     OLA_ASSERT_EQ(RDMCommand::GET_COMMAND,
                   m_rdm_request->CommandClass());
     OLA_ASSERT_EQ((uint16_t) 296, m_rdm_request->ParamId());
-    OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL),
+    OLA_ASSERT_EQ(static_cast<const uint8_t*>(NULL),
                   m_rdm_request->ParamData());
     OLA_ASSERT_EQ(0u, m_rdm_request->ParamDataSize());
     OLA_ASSERT_EQ(25u, RDMCommandSerializer::RequiredSize(*m_rdm_request));
-    OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, m_rdm_request->CommandType());
   }
 
   // run the RDM callback, triggering the response
@@ -2057,8 +2050,8 @@ void ArtNetNodeTest::testRDMResponder() {
     RDMResponse *response = GetResponseFromData(m_rdm_request,
                                                 param_data,
                                                 sizeof(param_data));
-    vector<string> packets;
-    m_rdm_callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
+    RDMReply reply(ola::rdm::RDM_COMPLETED_OK, response);
+    m_rdm_callback->Run(&reply);
 
     // clean up
     delete m_rdm_request;
