@@ -48,20 +48,20 @@ void RDMFrameTest::testRDMFrame() {
   OLA_ASSERT_DATA_EQUALS(raw_data, arraysize(raw_data), frame.data.data(),
                          frame.data.size());
 
-  OLA_ASSERT_EQ(0u, frame.timing_info.response_delay);
-  OLA_ASSERT_EQ(0u, frame.timing_info.break_time);
-  OLA_ASSERT_EQ(0u, frame.timing_info.mark_time);
-  OLA_ASSERT_EQ(0u, frame.timing_info.data_time);
+  OLA_ASSERT_EQ(0u, frame.timing.response_time);
+  OLA_ASSERT_EQ(0u, frame.timing.break_time);
+  OLA_ASSERT_EQ(0u, frame.timing.mark_time);
+  OLA_ASSERT_EQ(0u, frame.timing.data_time);
 
   ByteString input_data(raw_data, arraysize(raw_data));
   RDMFrame frame2(input_data);
 
   OLA_ASSERT_DATA_EQUALS(input_data.data(), input_data.size(),
                          frame.data.data(), frame.data.size());
-  OLA_ASSERT_EQ(0u, frame2.timing_info.response_delay);
-  OLA_ASSERT_EQ(0u, frame2.timing_info.break_time);
-  OLA_ASSERT_EQ(0u, frame2.timing_info.mark_time);
-  OLA_ASSERT_EQ(0u, frame2.timing_info.data_time);
+  OLA_ASSERT_EQ(0u, frame2.timing.response_time);
+  OLA_ASSERT_EQ(0u, frame2.timing.break_time);
+  OLA_ASSERT_EQ(0u, frame2.timing.mark_time);
+  OLA_ASSERT_EQ(0u, frame2.timing.data_time);
 }
 
 void RDMFrameTest::testPrependStartCode() {

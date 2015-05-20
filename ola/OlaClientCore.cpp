@@ -38,6 +38,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMFrame.h"
 
 namespace ola {
 namespace client {
@@ -900,7 +901,20 @@ void OlaClientCore::HandleRDM(RpcController *controller_ptr,
 
   if (!controller->Failed()) {
     response = BuildRDMResponse(reply.get(), &metadata.response_code);
+    for (int i = 0; i < reply->raw_frame_size(); i++) {
+      const ola::proto::RDMFrame &proto_frame = reply->raw_frame(i);
+
+      ola::rdm::RDMFrame frame(
+          reinterpret_cast<const uint8_t*>(proto_frame.raw_response().data()),
+          proto_frame.raw_response().size());
+      frame.timing.response_time = proto_frame.timing().response_delay();
+      frame.timing.break_time = proto_frame.timing().break_time();
+      frame.timing.mark_time = proto_frame.timing().mark_time();
+      frame.timing.data_time = proto_frame.timing().data_time();
+      metadata.frames.push_back(frame);
+    }
   }
+
   callback->Run(result, metadata, response);
 }
 
@@ -962,6 +976,10 @@ void OlaClientCore::SendRDMCommand(bool is_set,
   request.set_param_id(pid);
   request.set_is_set(is_set);
   request.set_data(string(reinterpret_cast<const char*>(data), data_length));
+
+  if (args.include_raw_frames) {
+    request.set_include_raw_response(true);
+  }
 
   CompletionCallback *cb = NewSingleCallback(
       this,

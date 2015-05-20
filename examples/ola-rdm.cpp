@@ -22,8 +22,8 @@
 #include <getopt.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
+#include <ola/client/OlaClient.h>
+#include <ola/client/ClientWrapper.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
@@ -63,14 +63,16 @@ typedef struct {
   string pid;      // pid to get/set
   vector<string> args;  // extra args
   string cmd;  // argv[0]
+  bool display_frames;  // print raw frames.
 } options;
 
 
-
 /*
- * parse our cmd line options
+ * Parse our cmd line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  const int FRAME_OPTION_VALUE = 256;
+
   opts->cmd = argv[0];
   opts->set_mode = false;
   opts->pid_location = "";
@@ -79,6 +81,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->universe = 1;
   opts->uid = NULL;
   opts->sub_device = 0;
+  opts->display_frames = false;
 
   if (ola::file::FilenameFromPathOrPath(argv[0]) == "ola_rdm_set") {
     opts->set_mode = true;
@@ -91,6 +94,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"pid-location", required_argument, 0, 'p'},
       {"list-pids", no_argument, 0, 'l'},
       {"universe", required_argument, 0, 'u'},
+      {"frames", no_argument, 0, FRAME_OPTION_VALUE},
       {"uid", required_argument, &uid_set, 1},
       {0, 0, 0, 0}
     };
@@ -123,6 +127,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 'u':
         opts->universe = atoi(optarg);
         break;
+      case FRAME_OPTION_VALUE:
+        opts->display_frames = true;
+        break;
       default:
         break;
     }
@@ -144,12 +151,13 @@ void DisplayGetPidHelp(const options &opts) {
   "Get the value of a pid for a device.\n"
   "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
+  "  --frames                  display the raw RDM frames if available\n."
+  "  --uid <uid>               the UID of the device to control.\n"
   "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
   "  -l, --list-pids           display a list of pids\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
-  "  --uid <uid>               the UID of the device to control.\n"
   << endl;
 }
 
@@ -164,12 +172,13 @@ void DisplaySetPidHelp(const options &opts) {
   "Set the value of a pid for a device.\n"
   "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
+  "  --frames                  display the raw RDM frames if available\n."
+  "  --uid <uid>               the UID of the device to control.\n"
   "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
   "  -l, --list-pids           display a list of pids\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
-  "  --uid <uid>               the UID of the device to control.\n"
   << endl;
 }
 
@@ -206,53 +215,57 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
 
 class RDMController {
  public:
-    explicit RDMController(string pid_location);
+  RDMController(string pid_location, bool show_frames);
 
-    bool InitPidHelper();
-    bool Setup();
-    const PidStoreHelper& PidHelper() const { return m_pid_helper; }
+  bool InitPidHelper();
+  bool Setup();
+  const PidStoreHelper& PidHelper() const { return m_pid_helper; }
 
-    int PerformRequestAndWait(unsigned int universe,
-                              const UID &uid,
-                              uint16_t sub_device,
-                              const string &pid_name,
-                              bool is_set,
-                              const vector<string> &inputs);
+  int PerformRequestAndWait(unsigned int universe,
+                            const UID &uid,
+                            uint16_t sub_device,
+                            const string &pid_name,
+                            bool is_set,
+                            const vector<string> &inputs);
 
-    void HandleResponse(const ola::rdm::ResponseStatus &response_status,
-                        const string &rdm_data);
+  void HandleResponse(const ola::client::Result &result,
+                      const ola::client::RDMMetadata &metadata,
+                      const ola::rdm::RDMResponse *response);
 
  private:
-    struct PendingRequest {
-     public:
-      PendingRequest()
-          : universe(0),
-            uid(NULL),
-            sub_device(0),
-            pid_value(0) {
-      }
+  struct PendingRequest {
+   public:
+    PendingRequest()
+        : universe(0),
+          uid(NULL),
+          sub_device(0),
+          pid_value(0) {
+    }
 
-      unsigned int universe;
-      const UID *uid;
-      uint16_t sub_device;
-      uint16_t pid_value;
-    };
+    unsigned int universe;
+    const UID *uid;
+    uint16_t sub_device;
+    uint16_t pid_value;
+  };
 
-    ola::OlaCallbackClientWrapper m_ola_client;
-    PidStoreHelper m_pid_helper;
-    PendingRequest m_pending_request;
+  const bool m_show_frames;
+  ola::client::OlaClientWrapper m_ola_client;
+  PidStoreHelper m_pid_helper;
+  PendingRequest m_pending_request;
 
-    void FetchQueuedMessage();
-    void PrintRemainingMessages(uint8_t message_count);
-    void HandleAckResponse(uint16_t manufacturer_id,
-                           bool is_set,
-                           uint16_t pid,
-                           const string &rdm_data);
+  void FetchQueuedMessage();
+  void PrintRemainingMessages(uint8_t message_count);
+  void HandleAckResponse(uint16_t manufacturer_id,
+                         bool is_set,
+                         uint16_t pid,
+                         const uint8_t *data,
+                         unsigned int length);
 };
 
 
-RDMController::RDMController(string pid_location)
-    : m_pid_helper(pid_location) {
+RDMController::RDMController(string pid_location, bool show_frames)
+    : m_show_frames(show_frames),
+      m_pid_helper(pid_location) {
 }
 
 
@@ -269,44 +282,59 @@ bool RDMController::Setup() {
 /**
  * Handle the RDM response
  */
-void RDMController::HandleResponse(
-    const ola::rdm::ResponseStatus &response_status,
-    const string &rdm_data) {
-  if (!response_status.error.empty()) {
-    cerr << "Error: " << response_status.error << endl;
+void RDMController::HandleResponse(const ola::client::Result &result,
+                                   const ola::client::RDMMetadata &metadata,
+                                   const ola::rdm::RDMResponse *response) {
+  if (!result.Success()) {
+    cerr << "Error: " << result.Error() << endl;
     m_ola_client.GetSelectServer()->Terminate();
     return;
   }
 
-  if (response_status.response_code == ola::rdm::RDM_WAS_BROADCAST) {
+  if (metadata.response_code == ola::rdm::RDM_WAS_BROADCAST) {
     m_ola_client.GetSelectServer()->Terminate();
     return;
-  } else if (response_status.response_code != ola::rdm::RDM_COMPLETED_OK) {
+  } else if (metadata.response_code != ola::rdm::RDM_COMPLETED_OK) {
     cerr << "Error: "
-         << ola::rdm::StatusCodeToString(response_status.response_code) << endl;
+         << ola::rdm::StatusCodeToString(metadata.response_code) << endl;
     m_ola_client.GetSelectServer()->Terminate();
     return;
   }
 
-  if (response_status.response_type == ola::rdm::RDM_ACK_TIMER) {
-    m_ola_client.GetSelectServer()->RegisterSingleTimeout(
-      response_status.AckTimer(),
-      ola::NewSingleCallback(this, &RDMController::FetchQueuedMessage));
+  if (!response) {
+    cerr << "Error: Missing RDM Response but response_code was "
+            "RDM_COMPLETED_OK, this is a bug, please report it!"
+         << endl;
     return;
   }
 
-  if (response_status.response_type == ola::rdm::RDM_ACK) {
-    if (response_status.pid_value == m_pending_request.pid_value ||
+  if (response->ResponseType() == ola::rdm::RDM_ACK_TIMER) {
+    uint16_t backoff_time;
+    if (response->ParamDataSize() != sizeof(backoff_time)) {
+      cerr << "Invalid ACK_TIMER param size of " << response->ParamDataSize();
+    } else {
+      memcpy(reinterpret_cast<uint8_t*>(&backoff_time), response->ParamData(),
+             sizeof(backoff_time));
+      unsigned int timeout = 100 * backoff_time;
+      m_ola_client.GetSelectServer()->RegisterSingleTimeout(
+        timeout,
+        ola::NewSingleCallback(this, &RDMController::FetchQueuedMessage));
+    }
+  } else if (response->ResponseType() == ola::rdm::RDM_ACK) {
+    if (response->ParamId() == m_pending_request.pid_value ||
         m_pending_request.pid_value == ola::rdm::PID_QUEUED_MESSAGE) {
-      HandleAckResponse(m_pending_request.uid->ManufacturerId(),
-                        response_status.set_command,
-                        response_status.pid_value,
-                        rdm_data);
+      HandleAckResponse(
+          m_pending_request.uid->ManufacturerId(),
+          response->CommandClass() ==
+              ola::rdm::RDMCommand::SET_COMMAND_RESPONSE,
+          response->ParamId(),
+          response->ParamData(),
+          response->ParamDataSize());
     } else {
       // we got something other than an empty status message, this means there
       // there are probably more messages to fetch
-      if (response_status.pid_value != ola::rdm::PID_STATUS_MESSAGES ||
-          rdm_data.size() != 0) {
+      if (response->ParamId() != ola::rdm::PID_STATUS_MESSAGES ||
+          response->ParamDataSize() != 0) {
         FetchQueuedMessage();
         return;
       }
@@ -314,14 +342,45 @@ void RDMController::HandleResponse(
       // support queued messages.
       cout << "Empty STATUS_MESSAGES returned." << endl;
     }
-  } else if (response_status.response_type == ola::rdm::RDM_NACK_REASON) {
-    cout << "Request NACKed: " <<
-      ola::rdm::NackReasonToString(response_status.NackReason()) << endl;
+  } else if (response->ResponseType() == ola::rdm::RDM_NACK_REASON) {
+    uint16_t nack_reason;
+    if (response->ParamDataSize() != sizeof(nack_reason)) {
+      cerr << "Invalid NACK reason size of " << response->ParamDataSize();
+    } else {
+      memcpy(reinterpret_cast<uint8_t*>(&nack_reason), response->ParamData(),
+             sizeof(nack_reason));
+      cout << "Request NACKed: " <<
+        ola::rdm::NackReasonToString(nack_reason) << endl;
+    }
   } else {
     cout << "Unknown RDM response type "
-         << ola::strings::ToHex(response_status.response_type) << endl;
+         << ola::strings::ToHex(response->ResponseType()) << endl;
   }
-  PrintRemainingMessages(response_status.message_count);
+  PrintRemainingMessages(response->MessageCount());
+
+  if (m_show_frames && !metadata.frames.empty()) {
+    cout << "------- Frame Information --------" << endl;
+    ola::rdm::RDMFrames::const_iterator iter = metadata.frames.begin();
+    for (; iter != metadata.frames.end(); ++iter) {
+      if (iter->timing.response_time) {
+        cout << "Response Time: " << iter->timing.response_time / 1000 << "uS"
+             << endl;
+      }
+      if (iter->timing.break_time) {
+        cout << "Break Time: " << iter->timing.break_time / 1000 << "uS"
+             << endl;
+      }
+      if (iter->timing.mark_time) {
+        cout << "Break Time: " << iter->timing.mark_time / 1000 << "uS"
+             << endl;
+      }
+      if (iter->timing.data_time) {
+        cout << "Break Time: " << iter->timing.data_time / 1000 << "uS"
+             << endl;
+      }
+      ola::strings::FormatData(&cout, iter->data.data(), iter->data.size());
+    }
+  }
   m_ola_client.GetSelectServer()->Terminate();
 }
 
@@ -387,24 +446,30 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
       message.get(),
       &param_data_length);
 
+  ola::client::SendRDMArgs args(
+      ola::NewSingleCallback(this, &RDMController::HandleResponse));
+  if (m_show_frames) {
+    args.include_raw_frames = true;
+  }
+
   if (is_set) {
     m_ola_client.GetClient()->RDMSet(
-      ola::NewSingleCallback(this, &RDMController::HandleResponse),
       m_pending_request.universe,
       *m_pending_request.uid,
       m_pending_request.sub_device,
       pid_descriptor->Value(),
       param_data,
-      param_data_length);
+      param_data_length,
+      args);
   } else {
     m_ola_client.GetClient()->RDMGet(
-      ola::NewSingleCallback(this, &RDMController::HandleResponse),
       m_pending_request.universe,
       *m_pending_request.uid,
       m_pending_request.sub_device,
       pid_descriptor->Value(),
       param_data,
-      param_data_length);
+      param_data_length,
+      args);
   }
 
   m_ola_client.GetSelectServer()->Run();
@@ -417,14 +482,17 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
  */
 void RDMController::FetchQueuedMessage() {
   uint8_t status_type = 4;
+  ola::client::SendRDMArgs args(
+      ola::NewSingleCallback(this, &RDMController::HandleResponse));
+
   m_ola_client.GetClient()->RDMGet(
-    ola::NewSingleCallback(this, &RDMController::HandleResponse),
     m_pending_request.universe,
     *m_pending_request.uid,
     m_pending_request.sub_device,
     ola::rdm::PID_QUEUED_MESSAGE,
     &status_type,
-    sizeof(status_type));
+    sizeof(status_type),
+    args);
 }
 
 
@@ -445,7 +513,8 @@ void RDMController::PrintRemainingMessages(uint8_t message_count) {
 void RDMController::HandleAckResponse(uint16_t manufacturer_id,
                                       bool is_set,
                                       uint16_t pid,
-                                      const string &rdm_data) {
+                                      const uint8_t *data,
+                                      unsigned int length) {
   const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper.GetDescriptor(
       pid,
       m_pending_request.uid->ManufacturerId());
@@ -468,10 +537,7 @@ void RDMController::HandleAckResponse(uint16_t manufacturer_id,
   }
 
   auto_ptr<const ola::messaging::Message> message(
-      m_pid_helper.DeserializeMessage(
-          descriptor,
-          reinterpret_cast<const uint8_t*>(rdm_data.data()),
-          rdm_data.size()));
+      m_pid_helper.DeserializeMessage(descriptor, data, length));
 
   if (!message.get()) {
     OLA_WARN << "Unable to inflate RDM response";
@@ -496,7 +562,7 @@ int main(int argc, char *argv[]) {
   }
   options opts;
   ParseOptions(argc, argv, &opts);
-  RDMController controller(opts.pid_location);
+  RDMController controller(opts.pid_location, opts.display_frames);
 
   if (opts.help)
     DisplayHelpAndExit(opts);
