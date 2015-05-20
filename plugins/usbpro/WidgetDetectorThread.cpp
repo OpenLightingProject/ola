@@ -26,11 +26,12 @@
 
 #include "ola/Callback.h"
 #include "ola/Constants.h"
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
-#include "ola/Logging.h"
+#include "ola/io/Serial.h"
 #include "ola/stl/STLUtils.h"
-#include "ola/StringUtils.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
@@ -106,6 +107,15 @@ void WidgetDetectorThread::SetIgnoredDevices(const vector<string> &devices) {
   for (; iter != devices.end(); ++iter) {
     m_ignored_devices.insert(*iter);
   }
+}
+
+/**
+ * @brief Set the directories to check for UUCP lock files.
+ * @param paths a list of paths to check for lock files.
+ */
+void WidgetDetectorThread::SetUUCPLockFilePaths(
+    const std::vector<std::string> &paths) {
+  m_uucp_lock_paths = paths;
 }
 
 
@@ -207,10 +217,18 @@ bool WidgetDetectorThread::RunScan() {
     if (StringEndsWith(*it, ".init") || StringEndsWith(*it, ".lock"))
       continue;
 
+    const string base_name = ola::file::FilenameFromPath(*it);
+    if (!base_name.empty() &&
+        ola::io::CheckForUUCPLockFile(m_uucp_lock_paths, base_name)) {
+      OLA_INFO << "Locked USB Serial device at " << *it;
+      continue;
+    }
+
     OLA_INFO << "Found potential USB Serial device at " << *it;
     ConnectedDescriptor *descriptor = BaseUsbProWidget::OpenDevice(*it);
-    if (!descriptor)
+    if (!descriptor) {
       continue;
+    }
 
     OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
     PerformDiscovery(*it, descriptor);
@@ -261,7 +279,7 @@ void WidgetDetectorThread::UsbProWidgetReady(
           options.enable_rdm = true;
         }
         DispatchWidget(
-            new EnttecUsbProWidget(descriptor, options),
+            new EnttecUsbProWidget(m_other_ss, descriptor, options),
             information);
         return;
       }
@@ -320,7 +338,8 @@ void WidgetDetectorThread::UsbProWidgetReady(
                << "." << (information->firmware_version & 0xff);
     }
   }
-  DispatchWidget(new EnttecUsbProWidget(descriptor, options), information);
+  DispatchWidget(
+      new EnttecUsbProWidget(m_other_ss, descriptor, options), information);
 }
 
 

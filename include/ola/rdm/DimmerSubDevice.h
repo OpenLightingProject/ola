@@ -52,7 +52,7 @@ class DimmerSubDevice: public RDMControllerInterface {
   DimmerSubDevice(const UID &uid, uint16_t sub_device_number,
                   uint16_t total_sub_devices);
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
   uint16_t Footprint() const {
     return m_personality_manager.ActivePersonalityFootprint();
@@ -105,22 +105,22 @@ class DimmerSubDevice: public RDMControllerInterface {
   uint8_t m_identify_mode;
   PersonalityManager m_personality_manager;
 
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetProductDetailList(const RDMRequest *request);
-  const RDMResponse *GetPersonality(const RDMRequest *request);
-  const RDMResponse *SetPersonality(const RDMRequest *request);
-  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentifyMode(const RDMRequest *request);
-  const RDMResponse *GetIdentifyMode(const RDMRequest *request);
-  const RDMResponse *GetRealTimeClock(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  RDMResponse *GetProductDetailList(const RDMRequest *request);
+  RDMResponse *GetPersonality(const RDMRequest *request);
+  RDMResponse *SetPersonality(const RDMRequest *request);
+  RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *GetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentifyMode(const RDMRequest *request);
+  RDMResponse *GetIdentifyMode(const RDMRequest *request);
+  RDMResponse *GetRealTimeClock(const RDMRequest *request);
+  RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
 
   static const ResponderOps<DimmerSubDevice>::ParamHandler PARAM_HANDLERS[];
 };

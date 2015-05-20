@@ -101,8 +101,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool ContainsPort(OutputPort *port) const;
     unsigned int InputPortCount() const { return m_input_ports.size(); }
     unsigned int OutputPortCount() const { return m_output_ports.size(); }
-    void InputPorts(std::vector<InputPort*> *ports);
-    void OutputPorts(std::vector<OutputPort*> *ports);
+    void InputPorts(std::vector<InputPort*> *ports) const;
+    void OutputPorts(std::vector<OutputPort*> *ports) const;
 
     // Source clients are those that provide us with data
     bool AddSourceClient(Client *client);
@@ -125,7 +125,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     void CleanStaleSourceClients();
 
     // RDM methods
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
     void RunRDMDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete,
                          bool full = true);
@@ -153,9 +153,9 @@ class Universe: public ola::rdm::RDMControllerInterface {
     typedef struct {
       unsigned int expected_count;
       unsigned int current_count;
-      ola::rdm::rdm_response_code response_code;
+      ola::rdm::RDMStatusCode status_code;
       ola::rdm::RDMCallback *callback;
-      std::vector<std::string> packets;
+      std::vector<rdm::RDMFrame> frames;
     } broadcast_request_tracker;
 
     typedef std::map<Client*, bool> SourceClientMap;
@@ -182,13 +182,9 @@ class Universe: public ola::rdm::RDMControllerInterface {
     TimeStamp m_last_discovery_time;
 
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                            ola::rdm::rdm_response_code code,
-                            const ola::rdm::RDMResponse *response,
-                            const std::vector<std::string> &packets);
+                            ola::rdm::RDMReply *reply);
     void HandleBroadcastDiscovery(broadcast_request_tracker *tracker,
-                                  ola::rdm::rdm_response_code code,
-                                  const ola::rdm::RDMResponse *response,
-                                  const std::vector<std::string> &packets);
+                                  ola::rdm::RDMReply *reply);
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();

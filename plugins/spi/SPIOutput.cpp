@@ -275,8 +275,8 @@ void SPIOutput::RunIncrementalDiscovery(
 }
 
 
-void SPIOutput::SendRDMRequest(const RDMRequest *request,
-                                RDMCallback *callback) {
+void SPIOutput::SendRDMRequest(RDMRequest *request,
+                               RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
 }
@@ -486,7 +486,7 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
   return ~flag;
 }
 
-const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
       ola::rdm::PRODUCT_CATEGORY_FIXTURE, 4,
@@ -495,71 +495,66 @@ const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
       0, m_sensors.size());
 }
 
-const RDMResponse *SPIOutput::GetProductDetailList(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetProductDetailList(const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
     vector<ola::rdm::rdm_product_detail>
         (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
-const RDMResponse *SPIOutput::GetDeviceModelDescription(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDeviceModelDescription(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA SPI Device");
 }
 
-const RDMResponse *SPIOutput::GetManufacturerLabel(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetManufacturerLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(
       request,
       ola::rdm::OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *SPIOutput::GetDeviceLabel(const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, m_device_label);
 }
 
-const RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
+RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::SetString(request, &m_device_label);
 }
 
-const RDMResponse *SPIOutput::GetSoftwareVersionLabel(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, m_personality_manager.get());
 }
 
-const RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
+RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
   return ResponderHelper::SetPersonality(request, m_personality_manager.get(),
                                          m_start_address);
 }
 
-const RDMResponse *SPIOutput::GetPersonalityDescription(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetPersonalityDescription(const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, m_personality_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, m_personality_manager.get(),
                                         m_start_address);
 }
 
-const RDMResponse *SPIOutput::SetDmxStartAddress(const RDMRequest *request) {
+RDMResponse *SPIOutput::SetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, m_personality_manager.get(),
                                         &m_start_address);
 }
 
-const RDMResponse *SPIOutput::GetIdentify(const RDMRequest *request) {
+RDMResponse *SPIOutput::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
+RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "SPI " << m_spi_device_name << " identify mode " << (
@@ -579,77 +574,69 @@ const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
 /**
  * PID_SENSOR_DEFINITION
  */
-const RDMResponse *SPIOutput::GetSensorDefinition(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetSensorDefinition(const RDMRequest *request) {
   return ResponderHelper::GetSensorDefinition(request, m_sensors);
 }
 
 /**
  * PID_SENSOR_VALUE
  */
-const RDMResponse *SPIOutput::GetSensorValue(const RDMRequest *request) {
+RDMResponse *SPIOutput::GetSensorValue(const RDMRequest *request) {
   return ResponderHelper::GetSensorValue(request, m_sensors);
 }
 
-const RDMResponse *SPIOutput::SetSensorValue(const RDMRequest *request) {
+RDMResponse *SPIOutput::SetSensorValue(const RDMRequest *request) {
   return ResponderHelper::SetSensorValue(request, m_sensors);
 }
 
 /**
  * PID_RECORD_SENSORS
  */
-const RDMResponse *SPIOutput::RecordSensor(const RDMRequest *request) {
+RDMResponse *SPIOutput::RecordSensor(const RDMRequest *request) {
   return ResponderHelper::RecordSensor(request, m_sensors);
 }
 
 /**
  * E1.37-2 PIDs
  */
-const RDMResponse *SPIOutput::GetListInterfaces(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetListInterfaces(const RDMRequest *request) {
   return ResponderHelper::GetListInterfaces(request,
                                             m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetInterfaceLabel(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetInterfaceLabel(const RDMRequest *request) {
   return ResponderHelper::GetInterfaceLabel(request,
                                             m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetInterfaceHardwareAddressType1(
+RDMResponse *SPIOutput::GetInterfaceHardwareAddressType1(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceHardwareAddressType1(
       request,
       m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetIPV4CurrentAddress(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetIPV4CurrentAddress(const RDMRequest *request) {
   return ResponderHelper::GetIPV4CurrentAddress(request,
                                                 m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetIPV4DefaultRoute(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetIPV4DefaultRoute(const RDMRequest *request) {
   return ResponderHelper::GetIPV4DefaultRoute(request,
                                               m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetDNSHostname(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDNSHostname(const RDMRequest *request) {
   return ResponderHelper::GetDNSHostname(request,
                                          m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetDNSDomainName(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDNSDomainName(const RDMRequest *request) {
   return ResponderHelper::GetDNSDomainName(request,
                                            m_network_manager.get());
 }
 
-const RDMResponse *SPIOutput::GetDNSNameServer(
-    const RDMRequest *request) {
+RDMResponse *SPIOutput::GetDNSNameServer(const RDMRequest *request) {
   return ResponderHelper::GetDNSNameServer(request,
                                            m_network_manager.get());
 }

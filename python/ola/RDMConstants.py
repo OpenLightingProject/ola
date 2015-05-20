@@ -28,6 +28,7 @@ RDM_MANUFACTURER_PID_MAX = 0xFFDF
 RDM_MANUFACTURER_SD_MIN = 0x8000
 RDM_MANUFACTURER_SD_MAX = 0xFFDF
 
+
 def _ReverseDict(input):
   output = {}
   for key, value in input.items():
@@ -365,3 +366,5 @@ MERGE_MODE = {
 }
 
 MERGE_MODE_TO_NAME = _ReverseDict(MERGE_MODE)
+
+INTERFACE_HARDWARE_TYPE_ETHERNET = 0x0001;

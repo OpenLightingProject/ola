@@ -30,6 +30,7 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "ola/Callback.h"
+#include "ola/ClientTypesFactory.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
@@ -640,11 +641,8 @@ void OlaClientCore::HandlePluginList(RpcController *controller_ptr,
   if (!controller->Failed()) {
     for (int i = 0; i < reply->plugin_size(); ++i) {
       ola::proto::PluginInfo plugin_info = reply->plugin(i);
-      OlaPlugin plugin(plugin_info.plugin_id(),
-                       plugin_info.name(),
-                       plugin_info.active(),
-                       plugin_info.enabled());
-      ola_plugins.push_back(plugin);
+      ola_plugins.push_back(
+          ClientTypesFactory::PluginFromProtobuf(plugin_info));
     }
   }
   std::sort(ola_plugins.begin(), ola_plugins.end());
@@ -700,11 +698,8 @@ void OlaClientCore::HandlePluginState(
     plugin_state.preferences_source = reply->preferences_source();
     for (int i = 0; i < reply->conflicts_with_size(); ++i) {
       ola::proto::PluginInfo plugin_info = reply->conflicts_with(i);
-      OlaPlugin plugin(plugin_info.plugin_id(),
-                       plugin_info.name(),
-                       plugin_info.active(),
-                       plugin_info.enabled());
-      plugin_state.conflicting_plugins.push_back(plugin);
+      plugin_state.conflicting_plugins.push_back(
+          ClientTypesFactory::PluginFromProtobuf(plugin_info));
     }
   }
 
@@ -731,48 +726,8 @@ void OlaClientCore::HandleDeviceInfo(RpcController *controller_ptr,
   if (!controller->Failed()) {
     for (int i = 0; i < reply->device_size(); ++i) {
       ola::proto::DeviceInfo device_info = reply->device(i);
-      vector<OlaInputPort> input_ports;
-
-      for (int j = 0; j < device_info.input_port_size(); ++j) {
-        ola::proto::PortInfo port_info = device_info.input_port(j);
-        OlaInputPort port(
-            port_info.port_id(),
-            port_info.universe(),
-            port_info.active(),
-            port_info.description(),
-            static_cast<port_priority_capability>(
-              port_info.priority_capability()),
-            static_cast<port_priority_mode>(
-              port_info.priority_mode()),
-            port_info.priority(),
-            port_info.supports_rdm());
-        input_ports.push_back(port);
-      }
-
-      vector<OlaOutputPort> output_ports;
-      for (int j = 0; j < device_info.output_port_size(); ++j) {
-        ola::proto::PortInfo port_info = device_info.output_port(j);
-        OlaOutputPort port(
-            port_info.port_id(),
-            port_info.universe(),
-            port_info.active(),
-            port_info.description(),
-            static_cast<port_priority_capability>(
-              port_info.priority_capability()),
-            static_cast<port_priority_mode>(
-              port_info.priority_mode()),
-            port_info.priority(),
-            port_info.supports_rdm());
-        output_ports.push_back(port);
-      }
-
-      OlaDevice device(device_info.device_id(),
-                       device_info.device_alias(),
-                       device_info.device_name(),
-                       device_info.plugin_id(),
-                       input_ports,
-                       output_ports);
-      ola_devices.push_back(device);
+      ola_devices.push_back(
+          ClientTypesFactory::DeviceFromProtobuf(device_info));
     }
   }
   std::sort(ola_devices.begin(), ola_devices.end());
@@ -842,17 +797,8 @@ void OlaClientCore::HandleUniverseList(RpcController *controller_ptr,
   if (!controller->Failed()) {
     for (int i = 0; i < reply->universe_size(); ++i) {
       ola::proto::UniverseInfo universe_info = reply->universe(i);
-      OlaUniverse::merge_mode merge_mode = (
-        universe_info.merge_mode() == ola::proto::HTP ?
-        OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP);
-
-      OlaUniverse universe(universe_info.universe(),
-                           merge_mode,
-                           universe_info.name(),
-                           universe_info.input_port_count(),
-                           universe_info.output_port_count(),
-                           universe_info.rdm_devices());
-      ola_universes.push_back(universe);
+      ola_universes.push_back(
+          ClientTypesFactory::UniverseFromProtobuf(universe_info));
     }
   }
   callback->Run(result, ola_universes);
@@ -870,21 +816,16 @@ void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
 
   string error_str(controller->Failed() ? controller->ErrorText() : "");
 
-  OlaUniverse null_universe(0, OlaUniverse::MERGE_LTP, "", 0, 0, 0);
+  OlaUniverse null_universe(0, OlaUniverse::MERGE_LTP, "",
+                            std::vector<OlaInputPort>(),
+                            std::vector<OlaOutputPort>(),
+                            0);
 
   if (!controller->Failed()) {
     if (reply->universe_size() == 1) {
       ola::proto::UniverseInfo universe_info = reply->universe(0);
-      OlaUniverse::merge_mode merge_mode = (
-        universe_info.merge_mode() == ola::proto::HTP ?
-        OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP);
-
-      OlaUniverse universe(universe_info.universe(),
-                           merge_mode,
-                           universe_info.name(),
-                           universe_info.input_port_count(),
-                           universe_info.output_port_count(),
-                           universe_info.rdm_devices());
+      OlaUniverse universe =
+          ClientTypesFactory::UniverseFromProtobuf(universe_info);
       Result result(error_str);
       callback->Run(result, universe);
       return;
@@ -1036,12 +977,12 @@ void OlaClientCore::SendRDMCommand(bool is_set,
  */
 ola::rdm::RDMResponse *OlaClientCore::BuildRDMResponse(
     ola::proto::RDMResponse *reply,
-    ola::rdm::rdm_response_code *response_code) {
+    ola::rdm::RDMStatusCode *status_code) {
   // Get the response code, if it's not RDM_COMPLETED_OK don't bother with the
   // rest of the response data.
-  *response_code = static_cast<ola::rdm::rdm_response_code>(
+  *status_code = static_cast<ola::rdm::RDMStatusCode>(
       reply->response_code());
-  if (*response_code != ola::rdm::RDM_COMPLETED_OK) {
+  if (*status_code != ola::rdm::RDM_COMPLETED_OK) {
     return NULL;
   }
 

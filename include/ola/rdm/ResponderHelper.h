@@ -54,7 +54,7 @@ class ResponderHelper {
 
     // Response Generation methods
     // E1.20 Helpers
-    static const RDMResponse *GetDeviceInfo(
+    static RDMResponse *GetDeviceInfo(
         const RDMRequest *request,
         uint16_t device_model,
         rdm_product_category product_category,
@@ -67,7 +67,7 @@ class ResponderHelper {
         uint8_t sensor_count,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetDeviceInfo(
+    static RDMResponse *GetDeviceInfo(
         const RDMRequest *request,
         uint16_t device_model,
         rdm_product_category product_category,
@@ -78,64 +78,64 @@ class ResponderHelper {
         uint8_t sensor_count,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetProductDetailList(
+    static RDMResponse *GetProductDetailList(
         const RDMRequest *request,
         const std::vector<rdm_product_detail> &product_details,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetPersonality(
+    static RDMResponse *GetPersonality(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *SetPersonality(
+    static RDMResponse *SetPersonality(
         const RDMRequest *request,
         PersonalityManager *personality_manager,
         uint16_t start_address,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetPersonalityDescription(
+    static RDMResponse *GetPersonalityDescription(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetSlotInfo(
+    static RDMResponse *GetSlotInfo(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetSlotDescription(
+    static RDMResponse *GetSlotDescription(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetSlotDefaultValues(
+    static RDMResponse *GetSlotDefaultValues(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetDmxAddress(
+    static RDMResponse *GetDmxAddress(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint16_t start_address,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *SetDmxAddress(
+    static RDMResponse *SetDmxAddress(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint16_t *dmx_address,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetSensorDefinition(
+    static RDMResponse *GetSensorDefinition(
         const RDMRequest *request, const Sensors &sensor_list);
 
-    static const RDMResponse *GetSensorValue(
+    static RDMResponse *GetSensorValue(
         const RDMRequest *request, const Sensors &sensor_list);
-    static const RDMResponse *SetSensorValue(
-        const RDMRequest *request, const Sensors &sensor_list);
-
-    static const RDMResponse *RecordSensor(
+    static RDMResponse *SetSensorValue(
         const RDMRequest *request, const Sensors &sensor_list);
 
-    static const RDMResponse *GetParamDescription(
+    static RDMResponse *RecordSensor(
+        const RDMRequest *request, const Sensors &sensor_list);
+
+    static RDMResponse *GetParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         uint8_t pdl_size,
@@ -148,13 +148,13 @@ class ResponderHelper {
         uint32_t max_value,
         std::string description,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *GetASCIIParamDescription(
+    static RDMResponse *GetASCIIParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         rdm_command_class command_class,
         std::string description,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *GetBitFieldParamDescription(
+    static RDMResponse *GetBitFieldParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         uint8_t pdl_size,
@@ -162,98 +162,98 @@ class ResponderHelper {
         std::string description,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetRealTimeClock(
+    static RDMResponse *GetRealTimeClock(
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
 
     // E1.37-2 Helpers
-    static const RDMResponse *GetListInterfaces(
+    static RDMResponse *GetListInterfaces(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetInterfaceLabel(
+    static RDMResponse *GetInterfaceLabel(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetInterfaceHardwareAddressType1(
+    static RDMResponse *GetInterfaceHardwareAddressType1(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetIPV4CurrentAddress(
+    static RDMResponse *GetIPV4CurrentAddress(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetIPV4DefaultRoute(
+    static RDMResponse *GetIPV4DefaultRoute(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetDNSHostname(
+    static RDMResponse *GetDNSHostname(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetDNSDomainName(
+    static RDMResponse *GetDNSDomainName(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetDNSNameServer(
+    static RDMResponse *GetDNSNameServer(
         const RDMRequest *request,
         const NetworkManagerInterface *network_manager,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetIPV4Address(
+    static RDMResponse *GetIPV4Address(
         const RDMRequest *request,
         const ola::network::IPV4Address &value,
         uint8_t queued_message_count = 0);
 
     // Generic Helpers.
-    static const RDMResponse *GetString(
+    static RDMResponse *GetString(
         const RDMRequest *request,
         const std::string &value,
         uint8_t queued_message_count = 0,
         uint8_t max_length = MAX_RDM_STRING_LENGTH);
 
-    static const RDMResponse *EmptyGetResponse(
+    static RDMResponse *EmptyGetResponse(
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *EmptySetResponse(
+    static RDMResponse *EmptySetResponse(
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *SetString(
+    static RDMResponse *SetString(
         const RDMRequest *request,
         std::string *value,
         uint8_t queued_message_count = 0,
         uint8_t max_length = MAX_RDM_STRING_LENGTH);
-    static const RDMResponse *GetBoolValue(
+    static RDMResponse *GetBoolValue(
         const RDMRequest *request, bool value,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *SetBoolValue(
+    static RDMResponse *SetBoolValue(
         const RDMRequest *request, bool *value,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetUInt8Value(
+    static RDMResponse *GetUInt8Value(
         const RDMRequest *request, uint8_t value,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *GetUInt16Value(
+    static RDMResponse *GetUInt16Value(
         const RDMRequest *request, uint16_t value,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *GetUInt32Value(
+    static RDMResponse *GetUInt32Value(
         const RDMRequest *request, uint32_t value,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *SetUInt8Value(
+    static RDMResponse *SetUInt8Value(
         const RDMRequest *request, uint8_t *value,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *SetUInt16Value(
+    static RDMResponse *SetUInt16Value(
         const RDMRequest *request, uint16_t *value,
         uint8_t queued_message_count = 0);
-    static const RDMResponse *SetUInt32Value(
+    static RDMResponse *SetUInt32Value(
         const RDMRequest *request, uint32_t *value,
         uint8_t queued_message_count = 0);
 

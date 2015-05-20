@@ -27,9 +27,11 @@ olardminclude_HEADERS = \
     include/ola/rdm/RDMControllerAdaptor.h \
     include/ola/rdm/RDMControllerInterface.h \
     include/ola/rdm/RDMEnums.h \
+    include/ola/rdm/RDMFrame.h \
     include/ola/rdm/RDMHelper.h \
     include/ola/rdm/RDMMessagePrinters.h \
     include/ola/rdm/RDMPacket.h \
+    include/ola/rdm/RDMReply.h \
     include/ola/rdm/ResponderHelper.h \
     include/ola/rdm/ResponderLoadSensor.h \
     include/ola/rdm/ResponderOps.h \

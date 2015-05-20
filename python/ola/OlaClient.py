@@ -20,14 +20,12 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
-import logging
 import socket
 import struct
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
 from ola.UID import UID
-from ola.RDMConstants import MERGE_MODE
 
 
 """The port that the OLA server listens on."""
@@ -72,6 +70,13 @@ class Plugin(object):
   @property
   def enabled(self):
     return self._enabled
+
+  @staticmethod
+  def FromProtobuf(plugin_pb):
+    return Plugin(plugin_pb.plugin_id,
+                  plugin_pb.name,
+                  plugin_pb.active,
+                  plugin_pb.enabled)
 
   def __repr__(self):
     s = 'Plugin(id={id}, name="{name}", active={active}, enabled={enabled})'
@@ -150,6 +155,18 @@ class Device(object):
   def output_ports(self):
     return self._output_ports
 
+  @staticmethod
+  def FromProtobuf(device_pb):
+    input_ports = [Port.FromProtobuf(x) for x in device_pb.input_port]
+    output_ports = [Port.FromProtobuf(x) for x in device_pb.output_port]
+
+    return Device(device_pb.device_id,
+                  device_pb.device_alias,
+                  device_pb.device_name,
+                  device_pb.plugin_id,
+                  input_ports,
+                  output_ports)
+
   def __repr__(self):
     s = 'Device(id="{id}", alias={alias}, name="{name}", ' \
         'plugin_id={plugin_id}, {nr_inputs} inputs, {nr_outputs} outputs)'
@@ -218,6 +235,15 @@ class Port(object):
   def supports_rdm(self):
     return self._supports_rdm
 
+  @staticmethod
+  def FromProtobuf(port_pb):
+    universe = port_pb.universe if port_pb.HasField('universe') else None
+    return Port(port_pb.port_id,
+                universe,
+                port_pb.active,
+                port_pb.description,
+                port_pb.supports_rdm)
+
   def __repr__(self):
     s = 'Port(id={id}, universe={universe}, active={active}, ' \
         'description="{desc}", supports_rdm={supports_rdm})'
@@ -260,10 +286,12 @@ class Universe(object):
   LTP = Ola_pb2.LTP
   HTP = Ola_pb2.HTP
 
-  def __init__(self, universe_id, name, merge_mode):
+  def __init__(self, universe_id, name, merge_mode, input_ports, output_ports):
     self._id = universe_id
     self._name = name
     self._merge_mode = merge_mode
+    self._input_ports = sorted(input_ports)
+    self._output_ports = sorted(output_ports)
 
   @property
   def id(self):
@@ -276,6 +304,25 @@ class Universe(object):
   @property
   def merge_mode(self):
     return self._merge_mode
+
+  @property
+  def input_ports(self):
+    return self._input_ports
+
+  @property
+  def output_ports(self):
+    return self._output_ports
+
+  @staticmethod
+  def FromProtobuf(universe_pb):
+    input_ports = [Port.FromProtobuf(x) for x in universe_pb.input_ports]
+    output_ports = [Port.FromProtobuf(x) for x in universe_pb.output_ports]
+
+    return Universe(universe_pb.universe,
+                    universe_pb.name,
+                    universe_pb.merge_mode,
+                    input_ports,
+                    output_ports)
 
   def __repr__(self):
     merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
@@ -407,6 +454,47 @@ for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.items():
   RDMNack._CODE_TO_OBJECT[value] = nack
 
 
+
+class RDMFrame(object):
+  """The raw data in an RDM frame.
+
+  The timing attributes may be 0 if the plugin does not provide timing
+  information. All timing data is in nano-seconds.
+
+  Attributes:
+    data: The raw byte data.
+    response_delay: The time between the request and the response.
+    break_time: The break duration.
+    mark_time: The mark duration.
+    data_time: The data time.
+  """
+  def __init__(self, frame):
+    self._data = frame.raw_response
+    self._response_delay = frame.timing.response_delay
+    self._break_time = frame.timing.break_time
+    self._mark_time = frame.timing.mark_time
+    self._data_time = frame.timing.data_time
+
+  @property
+  def data(self):
+    return self._data
+
+  @property
+  def response_delay(self):
+    return self._response_delay
+
+  @property
+  def break_time(self):
+    return self._break_time
+
+  @property
+  def mark_time(self):
+    return self._mark_time
+
+  @property
+  def data_time(self):
+    return self._data_time
+
 class RDMResponse(object):
   """Represents a RDM Response.
 
@@ -442,6 +530,7 @@ class RDMResponse(object):
     ack_timer: If the response type was ACK_TIMER, this is the number of ms to
       wait before checking for queued messages.
     transaction_number:
+    frames: A list of RDM frames that made up this response.
   """
 
   RESPONSE_CODES_TO_STRING = {
@@ -477,8 +566,10 @@ class RDMResponse(object):
   }
 
   def __init__(self, controller, response):
+    self._frames = []
+
     self.status = RequestStatus(controller)
-    if (self.status.Succeeded() and (response != None)):
+    if self.status.Succeeded() and response is not None:
       self._response_code = response.response_code
       self._response_type = response.response_type
       self._queued_messages = response.message_count
@@ -487,7 +578,9 @@ class RDMResponse(object):
       self.command_class = response.command_class
       self.pid = response.param_id
       self.data = response.data
-      self._raw_responses = response.raw_response
+
+      for frame in response.raw_frame:
+        self._frames.append(RDMFrame(frame))
 
     # we populate these below if required
     self._nack_reason = None
@@ -531,9 +624,16 @@ class RDMResponse(object):
     return self._transaction_number
 
   @property
+  def frames(self):
+    return self._frames
+
+  @property
   def raw_response(self):
     """The list of byte strings in the response packets."""
-    return self._raw_responses
+    data = []
+    for frame in self._frames:
+      data.append(frame.data)
+    return data
 
   def WasAcked(self):
     """Returns true if this RDM request returned a ACK response."""
@@ -582,7 +682,7 @@ class RDMResponse(object):
   def _command_class(self):
     if self.command_class == OlaClient.RDM_GET_RESPONSE:
       return 'GET'
-    elif self.command_class == OlaClient.RDM_SET_RESPONSE :
+    elif self.command_class == OlaClient.RDM_SET_RESPONSE:
       return 'SET'
     elif self.command_class == OlaClient.RDM_DISCOVERY_RESPONSE:
       return 'DISCOVERY'
@@ -592,7 +692,7 @@ class RDMResponse(object):
 
 class OlaClient(Ola_pb2.OlaClientService):
   """The client used to communicate with olad."""
-  def __init__(self, our_socket = None, close_callback = None):
+  def __init__(self, our_socket=None, close_callback=None):
     """Create a new client.
 
     Args:
@@ -1030,7 +1130,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data = ''):
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=''):
     """Send an RDM get command.
 
     Args:
@@ -1048,9 +1148,9 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data);
+                            data)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data = ''):
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=''):
     """Send an RDM set command.
 
     Args:
@@ -1068,7 +1168,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data, set = True);
+                            data, set=True)
 
   def SendRawRDMDiscovery(self,
                           universe,
@@ -1076,7 +1176,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data = ''):
+                          data=''):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
 
@@ -1146,7 +1246,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
-                  set = False):
+                  set=False):
     controller = SimpleRpcController()
     request = Ola_pb2.RDMRequest()
     request.universe = universe
@@ -1178,9 +1278,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     plugins = None
 
     if status.Succeeded():
-      plugins = [Plugin(p.plugin_id, p.name, p.active, p.enabled)
-                 for p in response.plugin]
-      plugins.sort(key=lambda x: x.id)
+      plugins = sorted([Plugin.FromProtobuf(p) for p in response.plugin])
 
     callback(status, plugins)
 
@@ -1222,22 +1320,10 @@ class OlaClient(Ola_pb2.OlaClientService):
         input_ports = []
         output_ports = []
         for port in device.input_port:
-          universe = port.universe if port.HasField('universe') else None
-
-          input_ports.append(Port(port.port_id,
-                                  universe,
-                                  port.active,
-                                  port.description,
-                                  port.supports_rdm))
+          input_ports.append(Port.FromProtobuf(port))
 
         for port in device.output_port:
-          universe = port.universe if port.HasField('universe') else None
-
-          output_ports.append(Port(port.port_id,
-                                   universe,
-                                   port.active,
-                                   port.description,
-                                   port.supports_rdm))
+          output_ports.append(Port.FromProtobuf(port))
 
         devices.append(Device(device.device_id,
                               device.device_alias,
@@ -1261,8 +1347,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     universes = None
 
     if status.Succeeded():
-      universes = [Universe(u.universe, u.name, u.merge_mode) for u in
-          response.universe]
+      universes = [Universe.FromProtobuf(u) for u in response.universe]
 
     callback(status, universes)
 

@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -52,7 +53,11 @@
 namespace ola {
 
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMReply;
+using ola::rdm::RDMRequest;
+using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
+using std::auto_ptr;
 using std::map;
 using std::ostringstream;
 using std::set;
@@ -241,7 +246,7 @@ bool Universe::ContainsPort(OutputPort *port) const {
  * Get a list of input ports associated with this universe
  * @param ports, the vector to be populated
  */
-void Universe::InputPorts(vector<InputPort*> *ports) {
+void Universe::InputPorts(vector<InputPort*> *ports) const {
   ports->clear();
   std::copy(m_input_ports.begin(), m_input_ports.end(),
       std::back_inserter(*ports));
@@ -252,7 +257,7 @@ void Universe::InputPorts(vector<InputPort*> *ports) {
  * Get a list of output ports associated with this universe
  * @param ports, the vector to be populated
  */
-void Universe::OutputPorts(vector<OutputPort*> *ports) {
+void Universe::OutputPorts(vector<OutputPort*> *ports) const {
   ports->clear();
   std::copy(m_output_ports.begin(), m_output_ports.end(),
       std::back_inserter(*ports));
@@ -430,10 +435,11 @@ void Universe::CleanStaleSourceClients() {
 /*
  * Handle a RDM request for this universe, ownership of the request object is
  * transferred to this method.
- * @returns true if this request was sent to an Output port, false otherwise
  */
-void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void Universe::SendRDMRequest(RDMRequest *request_ptr,
                               ola::rdm::RDMCallback *callback) {
+  auto_ptr<RDMRequest> request(request_ptr);
+
   OLA_INFO << "Universe " << UniverseId() << ", RDM request to " <<
     request->DestinationUID() << ", SD: " << request->SubDevice() << ", CC "
       << std::hex << request->CommandClass() << ", TN "
@@ -444,16 +450,11 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
   SafeIncrement(K_UNIVERSE_RDM_REQUESTS);
 
   if (request->DestinationUID().IsBroadcast()) {
-    const bool is_dub = (
-        request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
-        request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
-
     if (m_output_ports.empty()) {
-      vector<string> packets;
-      callback->Run(
-          is_dub ? ola::rdm::RDM_TIMEOUT : ola::rdm::RDM_WAS_BROADCAST,
-          NULL, packets);
-      delete request;
+      RunRDMCallback(
+          callback,
+          request->IsDUB() ? ola::rdm::RDM_TIMEOUT :
+              ola::rdm::RDM_WAS_BROADCAST);
       return;
     }
 
@@ -461,7 +462,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     broadcast_request_tracker *tracker = new broadcast_request_tracker;
     tracker->expected_count = m_output_ports.size();
     tracker->current_count = 0;
-    tracker->response_code = (is_dub ?
+    tracker->status_code = (request->IsDUB() ?
         ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED :
         ola::rdm::RDM_WAS_BROADCAST);
     tracker->callback = callback;
@@ -470,7 +471,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
          ++port_iter) {
       // because each port deletes the request, we need to copy it here
-      if (is_dub) {
+      if (request->IsDUB()) {
         (*port_iter)->SendRDMRequest(
             request->Duplicate(),
             NewSingleCallback(this,
@@ -482,7 +483,6 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
             NewSingleCallback(this, &Universe::HandleBroadcastAck, tracker));
       }
     }
-    delete request;
   } else {
     map<UID, OutputPort*>::iterator iter =
       m_output_uids.find(request->DestinationUID());
@@ -490,11 +490,9 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     if (iter == m_output_uids.end()) {
       OLA_WARN << "Can't find UID " << request->DestinationUID() <<
         " in the output universe map, dropping request";
-      vector<string> packets;
-      callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
-      delete request;
+      RunRDMCallback(callback, ola::rdm::RDM_UNKNOWN_UID);
     } else {
-      iter->second->SendRDMRequest(request, callback);
+      iter->second->SendRDMRequest(request.release(), callback);
     }
   }
 }
@@ -794,22 +792,16 @@ void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
  * which point we run the callback for the client.
  */
 void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
-                                  ola::rdm::rdm_response_code code,
-                                  const ola::rdm::RDMResponse *response,
-                                  const vector<string> &packets) {
+                                  RDMReply *reply) {
   tracker->current_count++;
-  if (code != ola::rdm::RDM_WAS_BROADCAST)
+  if (reply->StatusCode() != ola::rdm::RDM_WAS_BROADCAST) {
     // propagate errors though
-    tracker->response_code = code;
-
-  if (response) {
-    OLA_WARN << "Universe broadcast received response, this is an error";
-    delete response;
+    tracker->status_code = reply->StatusCode();
   }
 
   if (tracker->current_count == tracker->expected_count) {
     // all ports have completed
-    tracker->callback->Run(tracker->response_code, NULL, packets);
+    RunRDMCallback(tracker->callback, tracker->status_code);
     delete tracker;
   }
 }
@@ -830,37 +822,31 @@ void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
  */
 void Universe::HandleBroadcastDiscovery(
     broadcast_request_tracker *tracker,
-    ola::rdm::rdm_response_code code,
-    const ola::rdm::RDMResponse *response,
-    const vector<string> &packets) {
+    RDMReply *reply) {
   tracker->current_count++;
 
-  if (code == ola::rdm::RDM_DUB_RESPONSE) {
+  if (reply->StatusCode() == ola::rdm::RDM_DUB_RESPONSE) {
     // RDM_DUB_RESPONSE is the highest priority
-    tracker->response_code = ola::rdm::RDM_DUB_RESPONSE;
-  } else if (code == ola::rdm::RDM_TIMEOUT &&
-           tracker->response_code != ola::rdm::RDM_DUB_RESPONSE) {
+    tracker->status_code = ola::rdm::RDM_DUB_RESPONSE;
+  } else if (reply->StatusCode() == ola::rdm::RDM_TIMEOUT &&
+             tracker->status_code != ola::rdm::RDM_DUB_RESPONSE) {
     // RDM_TIMEOUT is the second highest
-    tracker->response_code = code;
-  } else if (tracker->response_code != ola::rdm::RDM_DUB_RESPONSE &&
-             tracker->response_code != ola::rdm::RDM_TIMEOUT) {
+    tracker->status_code = reply->StatusCode();
+  } else if (tracker->status_code != ola::rdm::RDM_DUB_RESPONSE &&
+             tracker->status_code != ola::rdm::RDM_TIMEOUT) {
     // everything else follows
-    tracker->response_code = code;
-  }
-
-  if (response) {
-    OLA_WARN << "Universe DUB received response, this is an error";
-    delete response;
+    tracker->status_code = reply->StatusCode();
   }
 
   // append any packets to the main packets vector
-  tracker->packets.insert(tracker->packets.end(),
-                          packets.begin(),
-                          packets.end());
+  tracker->frames.insert(tracker->frames.end(),
+                         reply->Frames().begin(),
+                         reply->Frames().end());
 
   if (tracker->current_count == tracker->expected_count) {
     // all ports have completed
-    tracker->callback->Run(tracker->response_code, NULL, tracker->packets);
+    RDMReply reply(tracker->status_code, NULL, tracker->frames);
+    tracker->callback->Run(&reply);
     delete tracker;
   }
 }

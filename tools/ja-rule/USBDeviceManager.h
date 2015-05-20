@@ -35,7 +35,7 @@
 #include <utility>
 
 #include "plugins/usbdmx/LibUsbThread.h"
-#include "tools/ja-rule/OpenLightingDevice.h"
+#include "tools/ja-rule/JaRuleEndpoint.h"
 
 /**
  * @brief Manages adding / removing Open Lighting Devices.
@@ -55,7 +55,7 @@ class USBDeviceManager {
   /**
    * @brief Indicates a device has been added or removed
    */
-  typedef ola::Callback2<void, EventType, OpenLightingDevice*>
+  typedef ola::Callback2<void, EventType, JaRuleEndpoint*>
       NotificationCallback;
 
   /**
@@ -101,7 +101,7 @@ class USBDeviceManager {
 
  private:
   typedef std::pair<uint8_t, uint8_t> USBDeviceID;
-  typedef std::map<USBDeviceID, OpenLightingDevice*> DeviceMap;
+  typedef std::map<USBDeviceID, JaRuleEndpoint*> DeviceMap;
 
   ola::io::SelectServer* m_ss;
   ola::thread::ExecutorThread m_cleanup_thread;
@@ -120,12 +120,12 @@ class USBDeviceManager {
                    const USBDeviceID& device_id);
   void DeviceRemoved(const USBDeviceID& device_id);
 
-  void SignalEvent(EventType event, OpenLightingDevice* device,
+  void SignalEvent(EventType event, JaRuleEndpoint* device,
                    ola::thread::MutexLocker* locker);
-  void DeviceEvent(EventType event, OpenLightingDevice* device,
+  void DeviceEvent(EventType event, JaRuleEndpoint* device,
                    ola::thread::Future<void>* f);
 
-  void DeleteDevice(OpenLightingDevice* device);
+  void DeleteDevice(JaRuleEndpoint* device);
 
   DISALLOW_COPY_AND_ASSIGN(USBDeviceManager);
 };

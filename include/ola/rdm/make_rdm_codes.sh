@@ -48,13 +48,22 @@ namespace ola {
 namespace rdm {
 
 /**
- * @brief RDM response codes
+ * @brief RDM Status Codes.
+ *
+ * The status codes indicates the outcome of an RDM Request. The two most
+ * common status codes are RDM_COMPLETED_OK and RDM_WAS_BROADCAST. The other
+ * codes generally indicate some sort of failure.
  */
 typedef enum {
 EOM
 sed -ne  '/^enum RDMResponseCode/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
-} rdm_response_code;
+} RDMStatusCode;
+
+/**
+ * @deprecated Use RDMStatusCode instead.
+ */
+typedef RDMStatusCode rdm_response_code;
 
 /**
  * @brief RDM response types

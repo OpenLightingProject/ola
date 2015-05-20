@@ -68,7 +68,7 @@ class DmxTriOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     std::string Description() const { return m_description; }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback) {
       m_tri_widget->SendRDMRequest(request, callback);
     }

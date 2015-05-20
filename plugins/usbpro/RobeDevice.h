@@ -93,7 +93,7 @@ class RobeOutputPort: public BasicOutputPort {
     std::string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback) {
       m_widget->SendRDMRequest(request, callback);
     }
