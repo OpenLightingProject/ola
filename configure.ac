@@ -131,8 +131,10 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 LT_INIT
 AC_PROG_LIBTOOL
 
-# Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
+if test -z "${USING_WIN32_FALSE}"; then
+  AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw64])
+fi
 
 # Epoll
 AX_HAVE_EPOLL(
@@ -307,6 +309,22 @@ ACX_PTHREAD([
              CC="$PTHREAD_CC"
              CXX="$PTHREAD_CXX"],
             [AC_MSG_ERROR([Missing pthread, please install it])])
+
+if test -z "${USING_WIN32_TRUE}"; then
+  has_winpthread=no
+  dnl this will tell us if the implementation of pthread is winpthread
+  AC_CHECK_LIB(winpthread, pthread_create, [has_winpthread="yes"],
+               [echo "found library winpthread"], )
+  PTHREAD_CFLAGS=-pthread
+  PTHREAD_LIBS=-lwinpthread
+AM_CONDITIONAL([HAVE_WINPTHREAD], [test "x$has_winpthread" = xyes])
+AS_IF([test "x$has_winpthread" = xyes],
+      [AC_DEFINE([HAVE_WINPTHREAD], [1],
+                 [define if winpthread is installed])])
+fi
+
+AC_SUBST(PTHREAD_CFLAGS)
+AC_SUBST(PTHREAD_LIBS)
 
 # pthread_setname_np can take either 1 or 2 arguments.
 PTHREAD_SET_NAME()
