@@ -674,7 +674,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
     RunRDMCallback(
         on_complete,
         uid_destination.IsBroadcast() ? ola::rdm::RDM_WAS_BROADCAST :
-            ola::rdm::RDM_FAILED_TO_SEND);
+                                        ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 
