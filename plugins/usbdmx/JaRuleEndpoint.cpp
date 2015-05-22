@@ -53,12 +53,18 @@ using std::cout;
 
 namespace {
 
+#ifdef _WIN32
+__attribute__((__stdcall__))
+#endif
 void InTransferCompleteHandler(struct libusb_transfer *transfer) {
   JaRuleEndpoint *sender = static_cast<JaRuleEndpoint*>(
       transfer->user_data);
   return sender->_InTransferComplete();
 }
 
+#ifdef _WIN32
+__attribute__((__stdcall__))
+#endif
 void OutTransferCompleteHandler(struct libusb_transfer *transfer) {
   JaRuleEndpoint *sender = static_cast<JaRuleEndpoint*>(
       transfer->user_data);

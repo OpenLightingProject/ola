@@ -155,10 +155,10 @@ void DummyPort::SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
       }
     }
   } else {
-    ola::rdm::RDMControllerInterface *interface = STLFindOrNull(
+    ola::rdm::RDMControllerInterface *controller = STLFindOrNull(
         m_responders, dest);
-    if (interface) {
-      interface->SendRDMRequest(request.release(), callback);
+    if (controller) {
+      controller->SendRDMRequest(request.release(), callback);
     } else {
       RunRDMCallback(callback, ola::rdm::RDM_UNKNOWN_UID);
     }
