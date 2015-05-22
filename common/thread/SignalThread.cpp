@@ -112,11 +112,11 @@ void* SignalThread::Run() {
   return NULL;
 }
 
+#ifndef _WIN32
 /**
  * @brief Add the signals we're interested in to the sigset.
  */
 bool SignalThread::AddSignals(sigset_t *signals) {
-#ifndef _WIN32
   SignalMap::const_iterator iter = m_signal_handlers.begin();
   for (; iter != m_signal_handlers.end(); ++iter) {
     if (sigaddset(signals, iter->first)) {
@@ -125,9 +125,9 @@ bool SignalThread::AddSignals(sigset_t *signals) {
       return false;
     }
   }
-#endif
   return true;
 }
+#endif
 
 /**
  * Block the signal

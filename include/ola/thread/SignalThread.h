@@ -64,7 +64,9 @@ class SignalThread : public ola::thread::Thread {
 
     SignalMap m_signal_handlers;
 
+#ifndef _WIN32
     bool AddSignals(sigset_t *signals);
+#endif
     bool BlockSignal(int signal);
 
     DISALLOW_COPY_AND_ASSIGN(SignalThread);
