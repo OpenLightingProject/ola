@@ -658,25 +658,23 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
   }
 
   port->rdm_request_callback = on_complete;
-  port->pending_request = request.get();
-  bool r = SendRDMCommand(*request,
+  port->pending_request = request.release();
+  bool r = SendRDMCommand(*port->pending_request,
                           port->rdm_ip_destination,
                           port->PortAddress());
-  if (r) {
-    if (uid_destination.IsBroadcast()) {
-      port->rdm_request_callback = NULL;
-      port->pending_request = NULL;
-      RunRDMCallback(on_complete, ola::rdm::RDM_WAS_BROADCAST);
-    } else {
-      request.release();
-      port->rdm_send_timeout = m_ss->RegisterSingleTimeout(
-        RDM_REQUEST_TIMEOUT_MS,
-        ola::NewSingleCallback(this, &ArtNetNodeImpl::TimeoutRDMRequest, port));
-    }
+
+  if (r && !uid_destination.IsBroadcast()) {
+    port->rdm_send_timeout = m_ss->RegisterSingleTimeout(
+      RDM_REQUEST_TIMEOUT_MS,
+      ola::NewSingleCallback(this, &ArtNetNodeImpl::TimeoutRDMRequest, port));
   } else {
-    port->rdm_request_callback = NULL;
+    delete port->pending_request;
     port->pending_request = NULL;
-    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
+    port->rdm_request_callback = NULL;
+    RunRDMCallback(
+        on_complete,
+        uid_destination.IsBroadcast() ? ola::rdm::RDM_WAS_BROADCAST :
+            ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 
