@@ -96,7 +96,7 @@ class RDMFrame {
      * @brief The time between the end of the last byte of the request to the
      * start of the response.
      */
-    uint32_t response_delay;
+    uint32_t response_time;
 
     uint32_t break_time;  //!< The duration of the break.
     uint32_t mark_time;  //!< The duration of the mark-after-break.
@@ -104,7 +104,7 @@ class RDMFrame {
      * @brief The time between the first and last byte of the data.
      */
     uint32_t data_time;
-  } timing_info;
+  } timing;
 };
 
 /**
