@@ -49,7 +49,8 @@ class TestThread: public ola::thread::Thread {
     }
 
     void TestCallback() {
-      OLA_ASSERT_EQ(m_ss_thread_id, ola::thread::Thread::Self());
+      OLA_ASSERT_TRUE(
+          pthread_equal(m_ss_thread_id, ola::thread::Thread::Self()));
       m_callback_executed = true;
       m_ss->Terminate();
     }
