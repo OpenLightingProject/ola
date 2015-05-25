@@ -35,6 +35,7 @@
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace rdm {
@@ -268,7 +269,8 @@ bool PidStoreLoader::GetPidList(PidMap *pid_map,
 
     PidMap::iterator iter = STLLookupOrInsertNull(pid_map, pid.value());
     if (iter->second) {
-      OLA_INFO << "Using " << OVERRIDE_FILE_NAME << " for " << pid.name();
+      OLA_INFO << "Using " << OVERRIDE_FILE_NAME << " for " << pid.name()
+               << "( " << strings::ToHex(pid.value()) << ")";
       continue;
     }
 
