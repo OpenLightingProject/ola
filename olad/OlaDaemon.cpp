@@ -62,6 +62,7 @@ using std::auto_ptr;
 using std::string;
 
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
+const char OlaDaemon::CONFIG_DIR_KEY[] = "config-dir";
 
 OlaDaemon::OlaDaemon(const OlaServer::Options &options,
                      ExportMap *export_map)
@@ -95,6 +96,9 @@ bool OlaDaemon::Init() {
   // in macports the home directory isn't writeable
   InitConfigDir(config_dir);
   OLA_INFO << "Using configs in " << config_dir;
+  if (m_export_map) {
+    m_export_map->GetStringVar(CONFIG_DIR_KEY)->Set(config_dir);
+  }
   auto_ptr<PreferencesFactory> preferences_factory(
       new FileBackedPreferencesFactory(config_dir));
 
