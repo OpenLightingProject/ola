@@ -25,6 +25,7 @@
 
 #include <ola/messaging/Descriptor.h>
 #include <ola/rdm/PidStore.h>
+#include <map>
 #include <istream>
 #include <string>
 #include <vector>
@@ -39,52 +40,88 @@ namespace rdm {
  */
 class PidStoreLoader {
  public:
-    PidStoreLoader() {}
-    ~PidStoreLoader() {}
+  PidStoreLoader() {}
 
-    // Load information into this store
-    const RootPidStore *LoadFromFile(const std::string &file,
+  /**
+   * @brief Load Pid information from a file.
+   * @param file the path to the file to load
+   * @param validate set to true if we should perform validation of the
+   *   contents.
+   * @returns A pointer to a new RootPidStore or NULL if loading failed.
+   */
+  const RootPidStore *LoadFromFile(const std::string &file,
+                                   bool validate = true);
+
+  /**
+   * @brief Load Pid information from a directory, including overrides.
+   * @param directory the directory to load files from.
+   * @param validate set to true if we should perform validation of the
+   *   contents.
+   * @returns A pointer to a new RootPidStore or NULL if loading failed.
+   *
+   * This is an all-or-nothing load. Any error with cause us to abort the load.
+   */
+  const RootPidStore *LoadFromDirectory(const std::string &directory,
+                                        bool validate = true);
+
+  /**
+   * @brief Load Pid information from a stream
+   * @param data the input stream.
+   * @param validate set to true if we should perform validation of the
+   *   contents.
+   * @returns A pointer to a new RootPidStore or NULL if loading failed.
+   */
+  const RootPidStore *LoadFromStream(std::istream *data,
                                      bool validate = true);
 
-    // Load information into this store
-    const RootPidStore *LoadFromDirectory(const std::string &directory,
-                                          bool validate = true);
-
-    // Load information into this store
-    const RootPidStore *LoadFromStream(std::istream *data,
-                                       bool validate = true);
-
  private:
-    PidStoreLoader(const PidStoreLoader&);
-    PidStoreLoader& operator=(const PidStoreLoader&);
-    DescriptorConsistencyChecker m_checker;
+  typedef std::map<uint16_t, const PidDescriptor*> PidMap;
+  typedef std::map<uint16_t, PidMap*> ManufacturerMap;
 
-    const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
-                                   bool validate);
-    template <typename pb_object>
-    bool GetPidList(std::vector<const PidDescriptor*> *pids,
-                    const pb_object &store,
-                    bool validate,
-                    bool limit_pid_values);
-    PidDescriptor *PidToDescriptor(const ola::rdm::pid::Pid &pid,
-                                   bool validate);
-    const ola::messaging::Descriptor* FrameFormatToDescriptor(
-        const ola::rdm::pid::FrameFormat &format,
-        bool validate);
-    const ola::messaging::FieldDescriptor *FieldToFieldDescriptor(
-        const ola::rdm::pid::Field &field);
+  DescriptorConsistencyChecker m_checker;
 
-    template <typename descriptor_class>
-    const ola::messaging::FieldDescriptor *IntegerFieldToFieldDescriptor(
-        const ola::rdm::pid::Field &field);
+  bool ReadFile(const std::string &file_path,
+                ola::rdm::pid::PidStore *proto);
 
-    const ola::messaging::FieldDescriptor *StringFieldToFieldDescriptor(
-        const ola::rdm::pid::Field &field);
-    const ola::messaging::FieldDescriptor *GroupFieldToFieldDescriptor(
-        const ola::rdm::pid::Field &field);
-    PidDescriptor::sub_device_validator ConvertSubDeviceValidator(
-        const ola::rdm::pid::SubDeviceRange &sub_device_range);
-    void CleanStore();
+  const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
+                                 const ola::rdm::pid::PidStore &override_pb,
+                                 bool validate);
+
+  bool LoadFromProto(ManufacturerMap *pid_data,
+                     const ola::rdm::pid::PidStore &proto,
+                     bool validate);
+
+  template <typename pb_object>
+  bool GetPidList(PidMap *pid_map,
+                  const pb_object &store,
+                  bool validate,
+                  bool limit_pid_values);
+
+  PidDescriptor *PidToDescriptor(const ola::rdm::pid::Pid &pid,
+                                 bool validate);
+  const ola::messaging::Descriptor* FrameFormatToDescriptor(
+      const ola::rdm::pid::FrameFormat &format,
+      bool validate);
+  const ola::messaging::FieldDescriptor *FieldToFieldDescriptor(
+      const ola::rdm::pid::Field &field);
+
+  template <typename descriptor_class>
+  const ola::messaging::FieldDescriptor *IntegerFieldToFieldDescriptor(
+      const ola::rdm::pid::Field &field);
+
+  const ola::messaging::FieldDescriptor *StringFieldToFieldDescriptor(
+      const ola::rdm::pid::Field &field);
+  const ola::messaging::FieldDescriptor *GroupFieldToFieldDescriptor(
+      const ola::rdm::pid::Field &field);
+  PidDescriptor::sub_device_validator ConvertSubDeviceValidator(
+      const ola::rdm::pid::SubDeviceRange &sub_device_range);
+
+  void FreeManufacturerMap(ManufacturerMap *data);
+
+  static const char OVERRIDE_FILE_NAME[];
+  static const uint16_t ESTA_MANUFACTURER_ID;
+
+  DISALLOW_COPY_AND_ASSIGN(PidStoreLoader);
 };
 }  // namespace rdm
 }  // namespace ola

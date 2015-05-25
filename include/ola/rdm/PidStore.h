@@ -60,6 +60,10 @@ class PidDescriptor;
  *   - E1.20, Remote %Device Management.
  *   - E1.37-1, Additional Message Sets for Dimmers.
  *   - E1.37-2, Additional Message Sets for IPv4 & DNS Configuration.
+ *
+ * An overrides.proto file can be used as a local system override of any PID
+ * data. This allows manufacturers to specify their own manufacturer specific
+ * commands and for testing of draft PIDs.
  */
 class RootPidStore {
  public:
