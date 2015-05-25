@@ -41,7 +41,7 @@
  *
  * Instead of exiting, a better approach would be to try and reconnect to the
  * olad server. Clients that do this should use a ola::BackOffPolicy to avoid
- * spnning in a loop trying to reconnect.
+ * spinning in a loop trying to reconnect.
  *
  * @section sec_cpp_client_Thread Running the OlaClient within a thread.
  *
@@ -53,7 +53,6 @@
  * We can use ola::io::SelectServer::Execute to run a callback on a
  * SelectServer running in a different thread. This allows us to schedule the
  * calls to OlaClient on the thread where the SelectServer is running.
- *
  *
  * @snippet client_thread.cpp Client Thread
  *

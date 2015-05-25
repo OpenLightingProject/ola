@@ -16,6 +16,7 @@
  * Copyright (C) 2015 Simon Newton
  */
 //! [Client Disconnect Example] NOLINT(whitespace/comments)
+#include <stdint.h>
 #include <ola/DmxBuffer.h>
 #include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
@@ -33,10 +34,10 @@ void ConnectionClosed(ola::io::SelectServer *ss) {
 
 bool SendData(ola::client::OlaClientWrapper *wrapper) {
   static unsigned int universe = 1;
-  static unsigned int i = 0;
+  static uint8_t i = 0;
   ola::DmxBuffer buffer;
   buffer.Blackout();
-  buffer.SetChannel(0, i);
+  buffer.SetChannel(0, i++);
 
   wrapper->GetClient()->SendDMX(universe, buffer, ola::client::SendDMXArgs());
   return true;
