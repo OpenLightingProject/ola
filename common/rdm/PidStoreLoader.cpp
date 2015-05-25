@@ -126,7 +126,7 @@ const RootPidStore *PidStoreLoader::LoadFromStream(std::istream *data,
 
 bool PidStoreLoader::ReadFile(const std::string &file_path,
                               ola::rdm::pid::PidStore *proto) {
-  std::ifstream proto_file(file_path);
+  std::ifstream proto_file(file_path.c_str());
   if (!proto_file.is_open()) {
     OLA_WARN << "Failed to open " << file_path << ": " << strerror(errno);
     return false;
