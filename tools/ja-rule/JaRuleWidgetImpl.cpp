@@ -89,7 +89,7 @@ void JaRuleWidgetImpl::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
 
 void JaRuleWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request_ptr(request);
+  auto_ptr<RDMRequest> request(request_ptr);
   if (!CheckForDevice()) {
     ola::rdm::RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
