@@ -33,7 +33,7 @@ RDMFrame::RDMFrame(const uint8_t *raw_data, unsigned int length,
     data.push_back(START_CODE);
   }
   data.append(raw_data, length);
-  memset(reinterpret_cast<uint8_t*>(&timing_info), 0, sizeof(timing_info));
+  memset(reinterpret_cast<uint8_t*>(&timing), 0, sizeof(timing));
 }
 
 RDMFrame::RDMFrame(const ola::io::ByteString &frame_data,
@@ -42,15 +42,15 @@ RDMFrame::RDMFrame(const ola::io::ByteString &frame_data,
     data.push_back(START_CODE);
   }
   data.append(frame_data);
-  memset(reinterpret_cast<uint8_t*>(&timing_info), 0, sizeof(timing_info));
+  memset(reinterpret_cast<uint8_t*>(&timing), 0, sizeof(timing));
 }
 
 bool RDMFrame::operator==(const RDMFrame &other) const {
   return (data == other.data &&
-          timing_info.response_delay == other.timing_info.response_delay &&
-          timing_info.break_time == other.timing_info.break_time &&
-          timing_info.mark_time == other.timing_info.mark_time &&
-          timing_info.data_time == other.timing_info.data_time);
+          timing.response_time == other.timing.response_time &&
+          timing.break_time == other.timing.break_time &&
+          timing.mark_time == other.timing.mark_time &&
+          timing.data_time == other.timing.data_time);
 }
 }  // namespace rdm
 }  // namespace ola

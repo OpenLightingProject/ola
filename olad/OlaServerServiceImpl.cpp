@@ -885,10 +885,10 @@ void OlaServerServiceImpl::HandleRDMResponse(
       ola::proto::RDMFrame *frame = response->add_raw_frame();
       frame->set_raw_response(iter->data.data(), iter->data.size());
       ola::proto::RDMFrameTiming *timing = frame->mutable_timing();
-      timing->set_response_delay(iter->timing_info.response_delay);
-      timing->set_break_time(iter->timing_info.break_time);
-      timing->set_mark_time(iter->timing_info.mark_time);
-      timing->set_data_time(iter->timing_info.data_time);
+      timing->set_response_delay(iter->timing.response_time);
+      timing->set_break_time(iter->timing.break_time);
+      timing->set_mark_time(iter->timing.mark_time);
+      timing->set_data_time(iter->timing.data_time);
     }
   }
 }

@@ -391,7 +391,8 @@ void PidStoreTest::testPidStoreFileLoad() {
 
 
 /**
- * Check that loading from a directory works
+ * Check that loading from a directory works. This also tests the override
+ * mechanism.
  */
 void PidStoreTest::testPidStoreDirectoryLoad() {
   PidStoreLoader loader;
@@ -416,23 +417,28 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
   OLA_ASSERT_NOT_NULL(open_lighting_store);
   OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 
+  // FOO_BAR in the overrides file replaces SERIAL_NUMBER.
   const PidDescriptor *serial_number = open_lighting_store->LookupPID(
       "SERIAL_NUMBER");
-  OLA_ASSERT_NOT_NULL(serial_number);
-  OLA_ASSERT_EQ(static_cast<uint16_t>(32768), serial_number->Value());
-  OLA_ASSERT_EQ(string("SERIAL_NUMBER"), serial_number->Name());
+  OLA_ASSERT_NULL(serial_number);
+
+  const PidDescriptor *foo_bar = open_lighting_store->LookupPID(
+      "FOO_BAR");
+  OLA_ASSERT_NOT_NULL(foo_bar);
+  OLA_ASSERT_EQ(static_cast<uint16_t>(32768), foo_bar->Value());
+  OLA_ASSERT_EQ(string("FOO_BAR"), foo_bar->Name());
 
   // check descriptors
+  OLA_ASSERT_TRUE(foo_bar->GetRequest());
+  OLA_ASSERT_TRUE(foo_bar->GetResponse());
   OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
-                       serial_number->GetRequest());
+                       foo_bar->SetRequest());
   OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
-                       serial_number->GetResponse());
-  OLA_ASSERT_TRUE(serial_number->SetRequest());
-  OLA_ASSERT_TRUE(serial_number->SetResponse());
+                       foo_bar->SetResponse());
 
   ola::messaging::SchemaPrinter printer;
-  serial_number->SetRequest()->Accept(&printer);
-  string expected2 = "serial_number: uint32\n";
+  foo_bar->GetResponse()->Accept(&printer);
+  string expected2 = "baz: uint32\n";
   OLA_ASSERT_EQ(expected2, printer.AsString());
 }
 

@@ -107,10 +107,10 @@ void RDMReplyTest::testReplyWithFrames() {
   };
 
   RDMFrame frame(response_data, arraysize(response_data));
-  frame.timing_info.response_delay = 10000;
-  frame.timing_info.mark_time = 32000;
-  frame.timing_info.break_time = 8000;
-  frame.timing_info.data_time = 45000;
+  frame.timing.response_time = 10000;
+  frame.timing.mark_time = 32000;
+  frame.timing.break_time = 8000;
+  frame.timing.data_time = 45000;
 
   RDMFrames frames;
   frames.push_back(frame);
@@ -146,10 +146,10 @@ void RDMReplyTest::testFromFrameHelper() {
   };
 
   RDMFrame frame(response_data, arraysize(response_data));
-  frame.timing_info.response_delay = 10000;
-  frame.timing_info.mark_time = 32000;
-  frame.timing_info.break_time = 8000;
-  frame.timing_info.data_time = 45000;
+  frame.timing.response_time = 10000;
+  frame.timing.mark_time = 32000;
+  frame.timing.break_time = 8000;
+  frame.timing.data_time = 45000;
 
   auto_ptr<RDMReply> reply(RDMReply::FromFrame(frame));
   OLA_ASSERT_NOT_NULL(reply.get());
@@ -180,8 +180,8 @@ void RDMReplyTest::testFromFrameHelper() {
 void RDMReplyTest::testDUBHelper() {
   const uint8_t data[] = {1, 2, 3, 4};
   RDMFrame frame(data, arraysize(data));
-  frame.timing_info.response_delay = 10000;
-  frame.timing_info.data_time = 45000;
+  frame.timing.response_time = 10000;
+  frame.timing.data_time = 45000;
 
   auto_ptr<RDMReply> reply(RDMReply::DUBReply(frame));
   OLA_ASSERT_NOT_NULL(reply.get());
@@ -191,6 +191,6 @@ void RDMReplyTest::testDUBHelper() {
   OLA_ASSERT_NULL(reply->MutableResponse());
   OLA_ASSERT_EQ(static_cast<size_t>(1), reply->Frames().size());
   OLA_ASSERT_TRUE(frame == reply->Frames()[0]);
-  OLA_ASSERT_EQ(10000u, reply->Frames()[0].timing_info.response_delay);
-  OLA_ASSERT_EQ(45000u, reply->Frames()[0].timing_info.data_time);
+  OLA_ASSERT_EQ(10000u, reply->Frames()[0].timing.response_time);
+  OLA_ASSERT_EQ(45000u, reply->Frames()[0].timing.data_time);
 }
