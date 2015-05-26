@@ -362,22 +362,26 @@ void RDMController::HandleResponse(const ola::client::Result &result,
     cout << "------- Frame Information --------" << endl;
     ola::rdm::RDMFrames::const_iterator iter = metadata.frames.begin();
     for (; iter != metadata.frames.end(); ++iter) {
+      std::ios::fmtflags f(cout.flags());
+      cout << std::fixed << std::setprecision(1);
+
       if (iter->timing.response_time) {
-        cout << "Response Time: " << iter->timing.response_time / 1000 << "uS"
+        cout << "Response Time: " << iter->timing.response_time / 1000.0 << "uS"
              << endl;
       }
       if (iter->timing.break_time) {
-        cout << "Break Time: " << iter->timing.break_time / 1000 << "uS"
+        cout << "Break Time: " << iter->timing.break_time / 1000.0 << "uS"
              << endl;
       }
       if (iter->timing.mark_time) {
-        cout << "Break Time: " << iter->timing.mark_time / 1000 << "uS"
+        cout << "Mark Time: " << iter->timing.mark_time / 1000.0 << "uS"
              << endl;
       }
       if (iter->timing.data_time) {
-        cout << "Break Time: " << iter->timing.data_time / 1000 << "uS"
+        cout << "Data Time: " << iter->timing.data_time / 1000.0 << "uS"
              << endl;
       }
+      cout.flags(f);
       ola::strings::FormatData(&cout, iter->data.data(), iter->data.size());
     }
   }

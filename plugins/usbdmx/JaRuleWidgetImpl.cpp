@@ -280,8 +280,16 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
 
   if (command == JaRuleEndpoint::RDM_DUB && return_code == RC_OK) {
     if (payload.size() > sizeof(DUBTiming)) {
-      // TODO(simon): Add timing info here.
-      frames.push_back(ola::rdm::RDMFrame(payload.substr(sizeof(DUBTiming))));
+      DUBTiming timing;
+      memcpy(reinterpret_cast<uint8_t*>(&timing),
+             payload.data(), sizeof(timing));
+      OLA_INFO << "Start time " << (timing.start / 10.0)
+               << "uS, End: " << (timing.end / 10.0) << "uS";
+
+      ola::rdm::RDMFrame frame(payload.substr(sizeof(DUBTiming)));
+      frame.timing.response_time = 100 * timing.start;
+      frame.timing.data_time = 100 * (timing.end - timing.start);
+      frames.push_back(frame);
     }
     status_code = rdm::RDM_DUB_RESPONSE;
   } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
@@ -309,9 +317,11 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
           request.get(), payload.substr(sizeof(GetSetTiming)),
           &status_code);
 
-      // TODO(simon): Add timing info here.
-      frames.push_back(
-          ola::rdm::RDMFrame(payload.substr(sizeof(GetSetTiming))));
+      ola::rdm::RDMFrame frame(payload.substr(sizeof(GetSetTiming)));
+      frame.timing.response_time = 100 * timing.break_start;
+      frame.timing.break_time = 100 * (timing.mark_start - timing.break_start);
+      frame.timing.mark_time = 100 * (timing.mark_end - timing.mark_start);
+      frames.push_back(frame);
     }
   } else if (return_code == RC_RDM_TIMEOUT) {
     status_code = rdm::RDM_TIMEOUT;
