@@ -273,8 +273,7 @@ void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
 }
 
 void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
-  auto_ptr<RDMCommand> command(
-      RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(data), length));
+  auto_ptr<RDMCommand> command(RDMCommand::Inflate(data, length));
   if (command.get()) {
     if (FLAGS_full_rdm)
       cout << "---------------------------------------" << endl;

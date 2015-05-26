@@ -95,16 +95,16 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
   // We have to do a memcpy to avoid the word alignment issues on ARM
   uint16_t addr2[3];
   uint32_t addr4[3];
-  memcpy(addr2, data, sizeof(addr2));
-  memcpy(addr4, data, sizeof(addr4));
 
   if (type == NON_RANGE) {
     switch (size) {
       case ONE_BYTES:
         return new OneByteDMPAddress(*data);
       case TWO_BYTES:
+        memcpy(addr2, data, sizeof(addr2));
         return new TwoByteDMPAddress(NetworkToHost(addr2[0]));
       case FOUR_BYTES:
+        memcpy(addr4, data, sizeof(addr4));
         return new FourByteDMPAddress(NetworkToHost(addr4[0]));
       default:
         return NULL;  // should never make it here because we checked above
@@ -115,10 +115,12 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
     case ONE_BYTES:
       return new OneByteRangeDMPAddress(addr1[0], addr1[1], addr1[2]);
     case TWO_BYTES:
+      memcpy(addr2, data, sizeof(addr2));
       return new TwoByteRangeDMPAddress(NetworkToHost(addr2[0]),
                                         NetworkToHost(addr2[1]),
                                         NetworkToHost(addr2[2]));
     case FOUR_BYTES:
+      memcpy(addr4, data, sizeof(addr4));
       return new FourByteRangeDMPAddress(NetworkToHost(addr4[0]),
                                          NetworkToHost(addr4[1]),
                                          NetworkToHost(addr4[2]));

@@ -149,18 +149,15 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
     }
 
     // otherwise just return a RDM_FAILED_TO_SEND
-    std::vector<std::string> packets;
     delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
   }
 
-  void RunFullDiscovery(
-      ola::rdm::RDMDiscoveryCallback *on_complete) {
+  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete) {
     on_complete->Run(*m_uids);
   }
 
-  void RunIncrementalDiscovery(
-      ola::rdm::RDMDiscoveryCallback *on_complete) {
+  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete) {
     on_complete->Run(*m_uids);
   }
 

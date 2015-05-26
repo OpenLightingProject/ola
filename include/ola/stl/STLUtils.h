@@ -421,6 +421,29 @@ typename T1::iterator STLLookupOrInsertNull(T1 *container,
   return p.first;
 }
 
+template<typename T1>
+void PairAssociativeAssignNew(T1 **location) {
+  *location = new T1();
+}
+
+/**
+ * @brief Lookup or insert a new object into a pair associative container.
+ * @tparam T1 A container.
+ * @param[in] container the container to lookup from or insert into.
+ * @param[in] key the key to lookup.
+ * @returns An iterator pointing to the value.
+ */
+template<typename T1>
+typename T1::iterator STLLookupOrInsertNew(T1 *container,
+                                           const typename T1::key_type &key) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, NULL));
+  if (p.second) {
+    PairAssociativeAssignNew(&p.first->second);
+  }
+  return p.first;
+}
+
 /**
  * @brief Remove a value from a pair associative container and delete it.
  * @tparam T1 A container.

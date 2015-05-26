@@ -28,6 +28,7 @@
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMReply.h"
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/UID.h"
 #include "olad/Client.h"
@@ -52,11 +53,12 @@ using ola::TimeStamp;
 using ola::Universe;
 using ola::rdm::NewDiscoveryUniqueBranchRequest;
 using ola::rdm::RDMCallback;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using ola::rdm::rdm_response_code;
+using ola::rdm::RDMStatusCode;
 using std::string;
 using std::vector;
 
@@ -101,18 +103,15 @@ class UniverseTest: public CppUnit::TestFixture {
   void ConfirmUIDs(UIDSet *expected, const UIDSet &uids);
 
   void ConfirmRDM(int line,
-                  rdm_response_code expected_response_code,
+                  RDMStatusCode expected_status_code,
                   const RDMResponse *expected_response,
-                  rdm_response_code response_code,
-                  const RDMResponse *response,
-                  const vector<string>&);
+                  RDMReply *reply);
 
-  void ReturnRDMCode(rdm_response_code response_code,
+  void ReturnRDMCode(RDMStatusCode status_code,
                      const RDMRequest *request,
                      RDMCallback *callback) {
-    vector<string> packets;
     delete request;
-    callback->Run(response_code, NULL, packets);
+    RunRDMCallback(callback, status_code);
   }
 };
 
@@ -813,15 +812,13 @@ void UniverseTest::ConfirmUIDs(UIDSet *expected, const UIDSet &uids) {
  * Confirm an RDM response
  */
 void UniverseTest::ConfirmRDM(int line,
-                              rdm_response_code expected_response_code,
+                              RDMStatusCode expected_status_code,
                               const RDMResponse *expected_response,
-                              rdm_response_code response_code,
-                              const RDMResponse *response,
-                              const vector<string>&) {
+                              RDMReply *reply) {
   std::ostringstream str;
   str << "Line " << line;
-  OLA_ASSERT_EQ_MSG(expected_response_code,
-                    response_code,
+  OLA_ASSERT_EQ_MSG(expected_status_code,
+                    reply->StatusCode(),
                     str.str());
-  OLA_ASSERT_EQ_MSG(expected_response, response, str.str());
+  OLA_ASSERT_EQ_MSG(expected_response, reply->Response(), str.str());
 }

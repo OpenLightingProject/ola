@@ -52,10 +52,10 @@ void SubDeviceDispatcher::SendRDMRequest(RDMRequest *request,
   if (request->SubDevice() == ALL_RDM_SUBDEVICES) {
     FanOutToSubDevices(request, callback);
   } else {
-    RDMControllerInterface *device = STLFindOrNull(
+    RDMControllerInterface *sub_device = STLFindOrNull(
         m_subdevices, request->SubDevice());
-    if (device) {
-      device->SendRDMRequest(request, callback);
+    if (sub_device) {
+      sub_device->SendRDMRequest(request, callback);
     } else {
       NackIfNotBroadcast(request, callback, NR_SUB_DEVICE_OUT_OF_RANGE);
     }
@@ -78,8 +78,7 @@ void SubDeviceDispatcher::FanOutToSubDevices(
 
   // Fan out to all sub devices but don't include the root device
   if (m_subdevices.empty()) {
-    vector<string> packets;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    RunRDMCallback(callback, RDM_WAS_BROADCAST);
   } else {
     SubDeviceMap::iterator iter = m_subdevices.begin();
     FanOutTracker *tracker = new FanOutTracker(m_subdevices.size(), callback);
@@ -104,28 +103,22 @@ void SubDeviceDispatcher::NackIfNotBroadcast(
     RDMCallback *callback,
     rdm_nack_reason nack_reason) {
   std::auto_ptr<const RDMRequest> request(request_ptr);
-  vector<string> packets;
   if (request->DestinationUID().IsBroadcast()) {
-    callback->Run(RDM_WAS_BROADCAST, NULL, packets);
+    RunRDMCallback(callback, RDM_WAS_BROADCAST);
   } else {
-    RDMResponse *response = NackWithReason(
-        request.get(), nack_reason);
-    callback->Run(RDM_COMPLETED_OK, response, packets);
+    RDMReply reply(RDM_COMPLETED_OK,
+                   NackWithReason(request.get(), nack_reason));
+    callback->Run(&reply);
   }
 }
 
 /**
  * Called when a subdevice returns during a ALL_RDM_SUBDEVICES call.
  */
-void SubDeviceDispatcher::HandleSubDeviceResponse(
-    FanOutTracker *tracker,
-    rdm_response_code code,
-    const RDMResponse *response_ptr,
-    const std::vector<std::string> &packets) {
-  std::auto_ptr<const RDMResponse> response(response_ptr);
-
+void SubDeviceDispatcher::HandleSubDeviceResponse(FanOutTracker *tracker,
+                                                  RDMReply *reply) {
   if (tracker->NumResponses() == 0) {
-    tracker->SetResponse(code, response.release());
+    tracker->SetResponse(reply->StatusCode(), reply->Response()->Duplicate());
   }
 
   if (tracker->IncrementAndCheckIfComplete()) {
@@ -134,7 +127,6 @@ void SubDeviceDispatcher::HandleSubDeviceResponse(
     tracker->RunCallback();
     delete tracker;
   }
-  (void) packets;
 }
 
 SubDeviceDispatcher::FanOutTracker::FanOutTracker(
@@ -143,21 +135,21 @@ SubDeviceDispatcher::FanOutTracker::FanOutTracker(
     : m_number_of_subdevices(number_of_subdevices),
       m_responses_so_far(0),
       m_callback(callback),
-      m_response_code(RDM_COMPLETED_OK),
+      m_status_code(RDM_COMPLETED_OK),
       m_response(NULL) {
 }
 
 void SubDeviceDispatcher::FanOutTracker::SetResponse(
-    rdm_response_code code,
-    const RDMResponse *response) {
-  m_response_code = code;
+    RDMStatusCode code,
+    RDMResponse *response) {
+  m_status_code = code;
   m_response = response;
 }
 
 void SubDeviceDispatcher::FanOutTracker::RunCallback() {
-  vector<string> packets;
   if (m_callback) {
-    m_callback->Run(m_response_code, m_response, packets);
+    RDMReply reply(m_status_code, m_response);
+    m_callback->Run(&reply);
   }
   m_callback = NULL;
 }

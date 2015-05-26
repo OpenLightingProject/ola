@@ -102,8 +102,7 @@ void BasicInputPort::HandleRDMRequest(ola::rdm::RDMRequest *request_ptr,
         request.release(),
         callback);
   } else {
-    vector<string> packets;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    ola::rdm::RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 
@@ -171,13 +170,12 @@ void BasicOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
   auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
 
   // broadcasts go to every port
-  vector<string> packets;
   if (request->DestinationUID().IsBroadcast()) {
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    ola::rdm::RunRDMCallback(callback, ola::rdm::RDM_WAS_BROADCAST);
   } else {
     OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM"
-      << " request routing";
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+             << " request routing";
+    ola::rdm::RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 

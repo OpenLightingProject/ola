@@ -429,7 +429,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
    */
   ola::rdm::RDMResponse *BuildRDMResponse(
       ola::proto::RDMResponse *reply,
-      ola::rdm::rdm_response_code *response_code);
+      ola::rdm::RDMStatusCode *status_code);
 
   static const char NOT_CONNECTED_ERROR[];
 

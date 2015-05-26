@@ -88,7 +88,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
     ola::rdm::DiscoveryAgent m_discovery_agent;
     std::auto_ptr<Callback0<void> > m_dmx_callback;
     DmxBuffer m_buffer;
-    const ola::rdm::RDMRequest *m_pending_request;
+    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
 

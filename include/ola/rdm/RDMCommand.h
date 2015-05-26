@@ -32,6 +32,7 @@
 
 #include <stdint.h>
 #include <ola/base/Macro.h>
+#include <ola/io/ByteString.h>
 #include <ola/io/OutputStream.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/RDMEnums.h>
@@ -166,10 +167,11 @@ class RDMCommand {
   }
 
   /**
-   * @brief Write the binary representation of a RDMCommand to an OutputStream.
-   * @param stream is a pointer to an OutputStream
+   * @brief Test for equality.
+   * @param other The RDMCommand to test against.
+   * @returns True if two RDMCommands are equal.
    */
-  void Write(ola::io::OutputStream *stream) const;
+  bool operator==(const RDMCommand &other) const;
 
   /**
    * @brief The RDM Start Code.
@@ -183,13 +185,6 @@ class RDMCommand {
    * @returns NULL if the RDM command is invalid.
    */
   static RDMCommand *Inflate(const uint8_t *data, unsigned int length);
-
-  /**
-   * @brief Extract a RDMCommand from raw data.
-   * @param data The data excluding the state code.
-   * @returns NULL if the RDM command is invalid.
-   */
-  static RDMCommand *Inflate(const std::string &data);
 
  protected:
   uint8_t m_port_id;
@@ -212,10 +207,9 @@ class RDMCommand {
 
   void SetParamData(const uint8_t *data, unsigned int length);
 
-  static rdm_response_code VerifyData(
-      const uint8_t *data,
-      unsigned int length,
-      RDMCommandHeader *command_message);
+  static RDMStatusCode VerifyData(const uint8_t *data,
+                                  size_t length,
+                                  RDMCommandHeader *command_message);
 
   static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
@@ -378,13 +372,6 @@ class RDMRequest: public RDMCommand {
   static RDMRequest* InflateFromData(const uint8_t *data,
                                      unsigned int length);
 
-  /**
-   * @brief Inflate a request from some data.
-   * @param data The raw data.
-   * @returns A RDMRequest object or NULL if the data was invalid.
-   */
-  static RDMRequest* InflateFromData(const std::string &data);
-
  protected:
   OverrideOptions m_override_options;
 
@@ -503,6 +490,24 @@ class RDMResponse: public RDMCommand {
   }
 
   /**
+   * @brief Make a copy of the response.
+   * @returns A new RDMResponse that is identical to this one.
+   */
+  RDMResponse *Duplicate() const {
+    return new RDMResponse(
+      SourceUID(),
+      DestinationUID(),
+      TransactionNumber(),
+      ResponseType(),
+      MessageCount(),
+      SubDevice(),
+      CommandClass(),
+      ParamId(),
+      ParamData(),
+      ParamDataSize());
+  }
+
+  /**
    * @name Accessors
    * @{
    */
@@ -547,23 +552,31 @@ class RDMResponse: public RDMCommand {
    */
   static const unsigned int MAX_OVERFLOW_SIZE = 4 << 10;
 
-  // Convert a block of data to an RDMResponse object
+  /**
+   * Create a RDMResponse request from raw data.
+   * @param data the response data.
+   * @param length the length of the response data.
+   * @param[out] status_code a pointer to a RDMStatusCode to set
+   * @param request an optional RDMRequest object that this response is for
+   * @returns a new RDMResponse object, or NULL is this response is invalid
+   */
   static RDMResponse* InflateFromData(const uint8_t *data,
-                                      unsigned int length,
-                                      rdm_response_code *response_code,
+                                      size_t length,
+                                      RDMStatusCode *status_code,
                                       const RDMRequest *request = NULL);
-  static RDMResponse* InflateFromData(const uint8_t *data,
-                                      unsigned int length,
-                                      rdm_response_code *response_code,
-                                      const RDMRequest *request,
-                                      uint8_t transaction_number);
-  static RDMResponse* InflateFromData(const std::string &data,
-                                      rdm_response_code *response_code,
-                                      const RDMRequest *request = NULL);
-  static RDMResponse* InflateFromData(const std::string &data,
-                                      rdm_response_code *response_code,
-                                      const RDMRequest *request,
-                                      uint8_t transaction_number);
+
+  /**
+   * Create a RDMResponse request from raw data in a ByteString.
+   * @param input the raw response data.
+   * @param[out] status_code a pointer to a RDMStatusCode to set
+   * @param request an optional RDMRequest object that this response is for
+   * @returns a new RDMResponse object, or NULL is this response is invalid
+   */
+  static RDMResponse* InflateFromData(const ola::io::ByteString &input,
+                                      RDMStatusCode *status_code,
+                                      const RDMRequest *request = NULL) {
+    return InflateFromData(input.data(), input.size(), status_code, request);
+  }
 
   /**
    * @brief Combine two RDMResponses.
@@ -690,7 +703,6 @@ class RDMDiscoveryRequest: public RDMRequest {
 
     static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
                                                 unsigned int length);
-    static RDMDiscoveryRequest* InflateFromData(const std::string &data);
 };
 
 
@@ -758,7 +770,6 @@ class RDMDiscoveryResponse: public RDMResponse {
 
     static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,
                                                  unsigned int length);
-    static RDMDiscoveryResponse* InflateFromData(const std::string &data);
 };
 /** @} */
 }  // namespace rdm

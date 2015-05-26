@@ -65,18 +65,17 @@ class QueueingRDMController: public RDMControllerInterface {
     std::queue<outstanding_rdm_request> m_pending_requests;
     bool m_rdm_request_pending;  // true if a request is in progress
     bool m_active;  // true if the controller is active
-    RDMCallback *m_callback;
-    const ola::rdm::RDMResponse *m_response;
-    std::vector<std::string> m_packets;
+    std::auto_ptr<RDMCallback> m_callback;
+    std::auto_ptr<ola::rdm::RDMResponse> m_response;
+    std::vector<RDMFrame> m_frames;
 
     virtual void TakeNextAction();
     virtual bool CheckForBlockingCondition();
     void MaybeSendRDMRequest();
     void DispatchNextRequest();
 
-    void HandleRDMResponse(rdm_response_code status,
-                           const ola::rdm::RDMResponse *response,
-                           const std::vector<std::string> &packets);
+    void HandleRDMResponse(RDMReply *reply);
+    void RunCallback(RDMReply *reply);
 };
 
 
