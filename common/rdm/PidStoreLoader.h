@@ -43,7 +43,7 @@ class PidStoreLoader {
   PidStoreLoader() {}
 
   /**
-   * @brief Load Pid information from a file.
+   * @brief Load PID information from a file.
    * @param file the path to the file to load
    * @param validate set to true if we should perform validation of the
    *   contents.
@@ -53,7 +53,7 @@ class PidStoreLoader {
                                    bool validate = true);
 
   /**
-   * @brief Load Pid information from a directory, including overrides.
+   * @brief Load PID information from a directory, including overrides.
    * @param directory the directory to load files from.
    * @param validate set to true if we should perform validation of the
    *   contents.
@@ -120,6 +120,8 @@ class PidStoreLoader {
 
   static const char OVERRIDE_FILE_NAME[];
   static const uint16_t ESTA_MANUFACTURER_ID;
+  static const uint16_t MANUFACTURER_PID_MIN;
+  static const uint16_t MANUFACTURER_PID_MAX;
 
   DISALLOW_COPY_AND_ASSIGN(PidStoreLoader);
 };

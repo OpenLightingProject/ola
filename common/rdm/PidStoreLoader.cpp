@@ -50,6 +50,8 @@ using std::vector;
 
 const char PidStoreLoader::OVERRIDE_FILE_NAME[] = "overrides.proto";
 const uint16_t PidStoreLoader::ESTA_MANUFACTURER_ID = 0;
+const uint16_t PidStoreLoader::MANUFACTURER_PID_MIN = 0x8000;
+const uint16_t PidStoreLoader::MANUFACTURER_PID_MAX = 0xffe0;
 
 const RootPidStore *PidStoreLoader::LoadFromFile(const string &file,
                                                  bool validate) {
@@ -143,7 +145,7 @@ bool PidStoreLoader::ReadFile(const std::string &file_path,
   return ok;
 }
 
-/**
+/*
  * Build the RootPidStore from a protocol buffer.
  */
 const RootPidStore *PidStoreLoader::BuildStore(
@@ -195,6 +197,7 @@ const RootPidStore *PidStoreLoader::BuildStore(
  * @param[out] pid_data the ManufacturerMap to populate.
  * @param proto the Protobuf data.
  * @param validate Enables strict validation mode.
+ *
  * If a collision occurs, the data in the map is not replaced.
  */
 bool PidStoreLoader::LoadFromProto(ManufacturerMap *pid_data,
@@ -247,21 +250,22 @@ bool PidStoreLoader::GetPidList(PidMap *pid_map,
     OLA_DEBUG << "Loading " << pid.name();
     if (validate) {
       if (STLContains(seen_pids, pid.value())) {
-        OLA_WARN << "Pid " << pid.value()
+        OLA_WARN << "PID " << pid.value()
                  << " exists multiple times in the pid file";
         return false;
       }
       seen_pids.insert(pid.value());
 
       if (STLContains(seen_names, pid.name())) {
-        OLA_WARN << "Pid " << pid.name()
+        OLA_WARN << "PID " << pid.name()
                  << " exists multiple times in the pid file";
         return false;
       }
       seen_names.insert(pid.name());
 
-      if (limit_pid_values && pid.value() > 0x8000 && pid.value() < 0xffe0) {
-        OLA_WARN << "ESTA Pid " << pid.name() << " (" << pid.value() << ")"
+      if (limit_pid_values && pid.value() > MANUFACTURER_PID_MIN &&
+          pid.value() < MANUFACTURER_PID_MAX) {
+        OLA_WARN << "ESTA PID " << pid.name() << " (" << pid.value() << ")"
                  << " is outside acceptable range";
         return false;
       }
@@ -283,7 +287,7 @@ bool PidStoreLoader::GetPidList(PidMap *pid_map,
   return true;
 }
 
-/**
+/*
  * Build a PidDescriptor from a Pid protobuf object
  */
 PidDescriptor *PidStoreLoader::PidToDescriptor(const ola::rdm::pid::Pid &pid,
@@ -348,8 +352,7 @@ PidDescriptor *PidStoreLoader::PidToDescriptor(const ola::rdm::pid::Pid &pid,
   return descriptor;
 }
 
-
-/**
+/*
  * Convert a protobuf frame format to a Descriptor object
  */
 const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
@@ -388,8 +391,7 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
   return descriptor;
 }
 
-
-/**
+/*
  * Convert a protobuf field object to a FieldDescriptor.
  */
 const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
@@ -450,8 +452,7 @@ const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
   return descriptor;
 }
 
-
-/**
+/*
  * Convert a integer protobuf field to a FieldDescriptor.
  */
 template <typename descriptor_class>
@@ -493,7 +494,7 @@ const FieldDescriptor *PidStoreLoader::IntegerFieldToFieldDescriptor(
       multipler);
 }
 
-/**
+/*
  * Convert a string protobuf field to a FieldDescriptor.
  */
 const FieldDescriptor *PidStoreLoader::StringFieldToFieldDescriptor(
@@ -513,8 +514,7 @@ const FieldDescriptor *PidStoreLoader::StringFieldToFieldDescriptor(
       field.max_size());
 }
 
-
-/**
+/*
  * Convert a group protobuf field to a FieldDescriptor.
  */
 const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
@@ -555,8 +555,7 @@ const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
       max);
 }
 
-
-/**
+/*
  * Convert a protobuf sub device enum to a PidDescriptor one.
  */
 PidDescriptor::sub_device_validator PidStoreLoader::ConvertSubDeviceValidator(
