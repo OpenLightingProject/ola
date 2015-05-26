@@ -718,7 +718,8 @@ AC_SUBST(OLA_CLIENT_LIBS)
 # Extra tools
 #####################################################
 AM_CONDITIONAL([BUILD_JA_RULE],
-               [test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xyes])
+               [test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xyes \
+                && test "x$have_libusb_hotplug_api" = xyes])
 
 # Status just for configure
 BUILDING_JA_RULE='no'
@@ -770,7 +771,7 @@ Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
 Ja Rule: ${BUILDING_JA_RULE}
-Enabled Plugins: ${PLUGINS}
+Enabled Plugins:${PLUGINS}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
