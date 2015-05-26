@@ -67,6 +67,7 @@ conftest.dir/
 *Tester
 *Tester.exe
 data/rdm/PidDataTest.sh
+data/rdm/overrides.proto
 debian/files
 debian/*.debhelper.log
 debian/*.substvars
