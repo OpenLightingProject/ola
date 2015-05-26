@@ -661,7 +661,7 @@ class InputHandler {
     }
 
     uint8_t param_data = identify_on;
-    RDMSetRequest request(m_our_uid, m_target_uid, 0, 0, 0, 0,
+    RDMSetRequest request(m_our_uid, m_target_uid, 0, 0, 0,
                           ola::rdm::PID_IDENTIFY_DEVICE, &param_data,
                           sizeof(param_data));
 

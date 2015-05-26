@@ -82,6 +82,12 @@ debian/ola/
 debian/tmp/
 doxygen/examples/callback_client_transmit
 doxygen/examples/callback_client_transmit.exe
+doxygen/examples/client_disconnect
+doxygen/examples/client_disconnect.exe
+doxygen/examples/client_thread
+doxygen/examples/client_thread.exe
+doxygen/examples/fetch_plugins
+doxygen/examples/fetch_plugins.exe
 doxygen/examples/flags
 doxygen/examples/flags.exe
 doxygen/examples/legacy_callback_client_transmit
@@ -201,6 +207,8 @@ tools/usbpro/usbpro_firmware
 tools/usbpro/usbpro_firmware.exe
 tools/ja-rule/ja-rule
 tools/ja-rule/ja-rule.exe
+tools/ja-rule/ja-rule-controller
+tools/ja-rule/ja-rule-controller.exe
 javascript/new-src/node_modules
 javascript/new-src/.idea
 .project
