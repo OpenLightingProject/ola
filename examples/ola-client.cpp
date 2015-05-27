@@ -813,19 +813,8 @@ int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
     DisplayPluginStateHelp(opts);
     exit(1);
   }
-  if (opts.state.length() > 0) {
-    bool state;
-    if (ola::StringToBoolTolerant(opts.state, &state)) {
-      cout << "Setting state to " << (state ? "enabled" : "disabled") << endl;
-    } else {
-      cerr << "Invalid state: " << opts.state << endl;
-      DisplayPluginStateHelp(opts);
-      exit(1);
-    }
-  } else {
-    client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
-                             NewSingleCallback(&DisplayPluginState, ss));
-  }
+  client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
+                           NewSingleCallback(&DisplayPluginState, ss));
   return 0;
 }
 
