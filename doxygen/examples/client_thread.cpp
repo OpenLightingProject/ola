@@ -24,6 +24,12 @@
 
 #include <vector>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <ola/win/CleanWindows.h>
+#endif
+
 using ola::io::SelectServer;
 using ola::NewSingleCallback;
 
@@ -103,7 +109,11 @@ int main(int, char *[]) {
       ola::NewSingleCallback(ShowPluginList, ss));
 
   // The main program continues...
+#ifdef _WIN32
+  Sleep(1000);
+#else
   sleep(1);
+#endif
 
   // When it's time to exit, Stop the OLA thread.
   ola_thread.Stop();
