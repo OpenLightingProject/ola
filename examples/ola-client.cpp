@@ -601,8 +601,10 @@ void DisplayPluginInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd << " [--plugin-id <plugin-id>]\n"
           "\n"
           "Get info on the plugins loaded by olad. Called without arguments \n"
-          "this will display the plugins loaded by olad. When used with "
-          "--plugin-id this will display the specified plugin's description.\n"
+          "this will\n"
+          "display the plugins loaded by olad. When used with --plugin-id this"
+          " will\n"
+          " display the specified plugin's description.\n"
           "\n"
           "  -h, --help                  Display this help message and exit.\n"
           "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the "
@@ -619,8 +621,9 @@ void DisplayPluginStateHelp(const options &opts) {
   cout << "Usage: " << opts.cmd
        << " --plugin-id <plugin-id>\n"
           "\n"
-          "Displays the enabled/disabled state for a plugin and the list of\n"
-          "plugins this plugin will conflict with.\n"
+          "Displays the enabled/disabled state for a plugin and the list of"
+          "plugins\n"
+          "this plugin will conflict with.\n"
           "\n"
           "  -h, --help                  Display this help message and exit.\n"
           "  -p, --plugin-id <plugin-id> Id of the plugin to fetch the state "
@@ -664,8 +667,9 @@ void DisplayUniverseNameHelp(const options &opts) {
 void DisplayUniverseMergeHelp(const options &opts) {
   cout << "Usage: " << opts.cmd << " --universe <uni> [ --ltp]\n"
           "\n"
-          "Change the merge mode for the specified universe. Without --ltp\n"
-          "it will revert to HTP mode.\n"
+          "Change the merge mode for the specified universe. Without --ltp "
+          "it will\n"
+          " revert to HTP mode.\n"
           "\n"
           "  -h, --help                Display this help message and exit.\n"
           "  -l, --ltp                 Change to ltp mode.\n"
@@ -696,8 +700,9 @@ void DisplaySetPriorityHelp(const options &opts) {
   cout << "Usage: " << opts.cmd
        << " --device <dev> --port <port> [--override <value>]\n"
           "\n"
-          "Set a port's priority, without the --override flag this will set\n"
-          "the port to inherit mode.\n"
+          "Set a port's priority, without the --override flag this will set "
+          "the port\n"
+          " to inherit mode.\n"
           "\n"
           "  -d, --device <device>    Id of device to set priority for.\n"
           "  -h, --help               Display this help message and exit.\n"
@@ -808,8 +813,19 @@ int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
     DisplayPluginStateHelp(opts);
     exit(1);
   }
-  client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
-                           NewSingleCallback(&DisplayPluginState, ss));
+  if (opts.state.length() > 0) {
+    bool state;
+    if (ola::StringToBoolTolerant(opts.state, &state)) {
+      cout << "Setting state to " << (state ? "enabled" : "disabled") << endl;
+    } else {
+      cerr << "Invalid state: " << opts.state << endl;
+      DisplayPluginStateHelp(opts);
+      exit(1);
+    }
+  } else {
+    client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
+                             NewSingleCallback(&DisplayPluginState, ss));
+  }
   return 0;
 }
 
