@@ -33,7 +33,8 @@ angular
             key === 'remove_ports' ||
             key === 'modify_ports' ||
             key === 'add_ports') {
-            // this is here so dmx posts don't get broken because of removed comma's
+            // this is here so dmx posts don't get broken
+            // because of removed comma's
             PostData.push(key + '=' + data[key]);
           } else {
             PostData.push(key + '=' + encodeURIComponent(data[key]));
@@ -55,44 +56,53 @@ angular
       };
       return {
         get: {
+          Debug: function() {
+            return $http.get('/debug')
+              .then(function(response) {
+                return response.data;
+              });
+          },
           ItemList: function() {
-            return $http.get('/json/universe_plugin_list').then(function(response) {
-              return response.data;
-            });
+            return $http.get('/json/universe_plugin_list')
+              .then(function(response) {
+                return response.data;
+              });
           },
           ServerInfo: function() {
-            return $http.get('/json/server_stats').then(function(response) {
-              return response.data;
-            });
+            return $http.get('/json/server_stats')
+              .then(function(response) {
+                return response.data;
+              });
           },
           Ports: function() {
-            return $http.get('/json/get_ports').then(function(response) {
-              return response.data;
-            });
+            return $http.get('/json/get_ports')
+              .then(function(response) {
+                return response.data;
+              });
           },
           PortsId: function(id) {
-            return $http.get('/json/get_ports?id=' +
-              id).then(function(response) {
-              return response.data;
-            });
+            return $http.get('/json/get_ports?id=' + id)
+              .then(function(response) {
+                return response.data;
+              });
           },
           InfoPlugin: function(id) {
-            return $http.get('/json/plugin_info?id=' +
-              id).then(function(response) {
-              return response.data;
-            });
+            return $http.get('/json/plugin_info?id=' + id)
+              .then(function(response) {
+                return response.data;
+              });
           },
           Dmx: function(id) {
-            return $http.get('/get_dmx?u=' +
-              id).then(function(response) {
-              return response.data;
-            });
+            return $http.get('/get_dmx?u=' + id)
+              .then(function(response) {
+                return response.data;
+              });
           },
           UniverseInfo: function(id) {
-            return $http.get('/json/universe_info?id=' +
-              id).then(function(response) {
-              return response.data;
-            });
+            return $http.get('/json/universe_info?id=' + id)
+              .then(function(response) {
+                return response.data;
+              });
           }
         },
         post: {
@@ -139,80 +149,96 @@ angular
         },
         action: {
           Shutdown: function() {
-            return $http.get('/quit').then(function(response) {
-              return response.data;
-            });
+            return $http.get('/quit')
+              .then(function(response) {
+                return response.data;
+              });
           },
           Reload: function() {
-            return $http.get('/reload').then(function(response) {
-              return response.data;
-            });
+            return $http.get('/reload')
+              .then(function(response) {
+                return response.data;
+              });
           },
           ReloadPids: function() {
-            return $http.get('/reload_pids').then(function(response) {
-              return response.data;
-            });
+            return $http.get('/reload_pids')
+              .then(function(response) {
+                return response.data;
+              });
           }
         },
         rdm: {
           // /json/rdm/section_info?id=[universe]&uid=[uid]&section=[section]
           GetSectionInfo: function(universe, uid, section) {
-            var url = '/json/rdm/section_info?id=' + universe +
-              '&uid=' + uid + '&section=' + section;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            var url = '/json/rdm/section_info' +
+              '?id=' + universe + '&uid=' + uid + '&section=' + section;
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/set_section_info?id=[universe]&uid=[uid]&section=[section]
           SetSection: function(universe, uid, section, hint, option) {
-            var url = '/json/rdm/set_section_info?id=' + universe +
-              '&uid=' + uid + '&section=' + section +
+            var url = '/json/rdm/set_section_info' +
+              '?id=' + universe + '&uid=' + uid + '&section=' + section +
               '&hint=' + hint + '&int=' + option;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/supported_pids?id=[universe]&uid=[uid]
           GetSupportedPids: function(universe, uid) {
-            var url = '/json/rdm/supported_pids?id=' + universe + '&uid=' + uid;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            var url = '/json/rdm/supported_pids' +
+              '?id=' + universe + '&uid=' + uid;
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/supported_sections?id=[universe]&uid=[uid]
           GetSupportedSections: function(universe, uid) {
-            var url = '/json/rdm/supported_sections?id=' + universe + '&uid=' + uid;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            var url = '/json/rdm/supported_sections' +
+              '?id=' + universe + '&uid=' + uid;
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/uid_identify_device?id=[universe]&uid=[uid]
           UidIdentifyDevice: function(universe, uid) {
-            var url = '/json/rdm/uid_identify_device?id=' + universe + '&uid=' + uid;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            var url = '/json/rdm/uid_identify_device' +
+              '?id=' + universe + '&uid=' + uid;
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/uid_info?id=[universe]&uid=[uid]
           UidInfo: function(universe, uid) {
-            var url = '/json/rdm/uid_info?id=' + universe + '&uid=' + uid;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            var url = '/json/rdm/uid_info' +
+              '?id=' + universe + '&uid=' + uid;
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/uid_personalities?id=[universe]&uid=[uid]
           UidPersonalities: function(universe, uid) {
-            var url = '/json/rdm/uid_personalities?id=' + universe + '&uid=' + uid;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            var url = '/json/rdm/uid_personalities' +
+              '?id=' + universe + '&uid=' + uid;
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /json/rdm/uids?id=[universe]
           Uids: function(universe) {
             var url = '/json/rdm/uids?id=' + universe;
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            return $http.get(url)
+              .then(function(response) {
+                return response.data;
+              });
           },
           // /rdm/run_discovery?id=[universe]&incremental=true
           RunDiscovery: function(universe, incremental) {
@@ -225,7 +251,8 @@ angular
             });
           }
         },
-        tabs: function(tab, id) { // TODO(Dave_o): use a directive instead of this
+        tabs: function(tab, id) {
+          // TODO(Dave_o): use a directive instead of this
           $window.$('ul#ola-nav-tabs').html('' +
             '<li id="overview" role="presentation"><a href="/new/#/universe/' +
             id +
@@ -301,6 +328,10 @@ angular
       $ola.get.ServerInfo().then(function(data) {
         $scope.Info = data;
       });
+      $ola.get.Debug().then(function(data) {
+        var regex = /config-dir: (.*)/;
+        $scope.Info.config_dir = regex.exec(data)[1];
+      });
       $scope.Shutdown = function() {
         $ola.action.Shutdown().then();
       };
@@ -322,10 +353,12 @@ angular
       };
       $ola.get.ItemList().then(function(data) {
         for (var u in data.universes) {
-          if ($scope.Data.id === parseInt(data.universes[u].id, 10)) {
-            $scope.Data.id++;
+          if (data.universes.hasOwnProperty(u)) {
+            if ($scope.Data.id === parseInt(data.universes[u].id, 10)) {
+              $scope.Data.id++;
+            }
+            $scope.Universes.push(parseInt(data.universes[u].id, 10));
           }
-          $scope.Universes.push(parseInt(data.universes[u].id, 10));
         }
       });
       $scope.Submit = function() {
@@ -381,7 +414,8 @@ angular
         $ola.get.Dmx($scope.Universe).then(function(data) {
           for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
             $scope.dmx[i] =
-              (typeof data.dmx[i] === 'number') ? data.dmx[i] : OLA.MIN_CHANNEL_VALUE;
+              (typeof data.dmx[i] === 'number') ?
+                data.dmx[i] : OLA.MIN_CHANNEL_VALUE;
           }
         });
       }, 100);
@@ -449,7 +483,8 @@ angular
       };
       $scope.page = function(d) {
         if (d === 1) {
-          var offsetLimit = $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
+          var offsetLimit =
+            $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
           if (($scope.offset + 1) !== offsetLimit) {
             $scope.offset++;
           }
@@ -460,7 +495,8 @@ angular
         }
       };
       $scope.getWidth = function() {
-        var width = $window.Math.floor(($window.innerWidth * 0.99) / $scope.limit);
+        var width =
+          $window.Math.floor(($window.innerWidth * 0.99) / $scope.limit);
         var amount = width - (52 / $scope.limit);
         return amount + 'px';
       };
@@ -531,7 +567,8 @@ angular
           $scope.Data.old.merge_mode = data.merge_mode;
           $scope.Data.model.merge_mode = data.merge_mode;
           $scope.ActivePorts = data.output_ports.concat(data.input_ports);
-          $scope.Data.old.ActivePorts = data.output_ports.concat(data.input_ports);
+          $scope.Data.old.ActivePorts =
+            data.output_ports.concat(data.input_ports);
           for (var i = 0; i < $scope.ActivePorts.length; ++i) {
             $scope.Data.Remove[i] = '';
           }
@@ -548,20 +585,20 @@ angular
         var modified = [];
         $scope.ActivePorts.forEach(function(element, index) {
           if ($scope.Data.Remove.indexOf($scope.ActivePorts[index].id) === -1) {
-            var mode = $scope.ActivePorts[index].priority.current_mode;
-            var id = $scope.ActivePorts[index].id;
-            if (mode === 'static') {
-              if (0 < $scope.ActivePorts[index].priority.value < 100) {
-                a[id + '_priority_value'] = $scope.ActivePorts[index].priority.value;
-                if (modified.indexOf(id) === -1) {
-                  modified.push(id);
+            var port = $scope.ActivePorts[index];
+            var port_old = $scope.Data.old.ActivePorts[index];
+            if (port.priority.current_mode === 'static') {
+              if (0 < port.priority.value < 100) {
+                a[port.id + '_priority_value'] = port.priority.value;
+                if (modified.indexOf(port.id) === -1) {
+                  modified.push(port.id);
                 }
               }
             }
-            if ($scope.Data.old.ActivePorts[index].priority.current_mode !== mode) {
-              a[id + '_priority_mode'] = mode;
-              if (modified.indexOf(id) === -1) {
-                modified.push(id);
+            if (port_old.priority.current_mode !== port.priority.current_mode) {
+              a[port.id + '_priority_mode'] = port.priority.current_mode;
+              if (modified.indexOf(port.id) === -1) {
+                modified.push(port.id);
               }
             }
           }
