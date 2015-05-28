@@ -22,13 +22,13 @@
 #define PLUGINS_USBDMX_JARULEENDPOINT_H_
 
 #include <libusb.h>
+#include <ola/io/ByteString.h>
 #include <ola/thread/ExecutorInterface.h>
 #include <ola/thread/Mutex.h>
 #include <ola/util/SequenceNumber.h>
 
 #include <map>
 #include <queue>
-#include <string>
 
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 
@@ -107,8 +107,9 @@ class JaRuleEndpoint {
    * If the CommandResult is not COMMAND_COMPLETED_OK, the remaining values are
    * undefined.
    */
-  typedef ola::BaseCallback4<void, CommandResult, uint8_t, uint8_t,
-                             const std::string &> CommandCompleteCallback;
+  typedef ola::BaseCallback4<
+    void, CommandResult, uint8_t, uint8_t, const ola::io::ByteString&>
+      CommandCompleteCallback;
 
   /**
    * @brief The Ja Rule commands.
@@ -204,7 +205,7 @@ class JaRuleEndpoint {
   typedef struct {
     CommandClass command;
     CommandCompleteCallback *callback;
-    std::string payload;
+    ola::io::ByteString payload;
   } QueuedCommand;
 
   // A command that has been sent, and is waiting on a response.
@@ -219,7 +220,7 @@ class JaRuleEndpoint {
      CommandResult result;
      uint8_t return_code;
      uint8_t status_flags;
-     const std::string payload;
+     const ola::io::ByteString payload;
   } CallbackArgs;
 
   typedef std::map<uint8_t, PendingCommand> PendingCommandMap;
@@ -252,9 +253,8 @@ class JaRuleEndpoint {
                         CommandResult result,
                         uint8_t return_code,
                         uint8_t status_flags,
-                        const std::string &payload);
-  void RunCallback(CommandCompleteCallback *callback,
-                   CallbackArgs args);
+                        const ola::io::ByteString &payload);
+  void RunCallback(CommandCompleteCallback *callback, CallbackArgs args);
 
   static const uint8_t EOF_IDENTIFIER = 0xa5;
   static const uint8_t SOF_IDENTIFIER = 0x5a;

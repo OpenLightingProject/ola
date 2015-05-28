@@ -51,7 +51,7 @@ namespace rdm {
 class ResponseStatus {
  public:
   std::string error;  // Non empty if the RPC failed
-  rdm_response_code response_code;
+  RDMStatusCode response_code;
   uint8_t response_type;  /** The RDM response type */
   uint8_t message_count;  /** Number of queued messages */
   uint16_t m_param;

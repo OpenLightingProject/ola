@@ -76,7 +76,7 @@ class ClientBroker {
    */
   void SendRDMRequest(const Client *client,
                       Universe *universe,
-                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:
@@ -86,9 +86,7 @@ class ClientBroker {
 
   void RequestComplete(const Client *key,
                        ola::rdm::RDMCallback *callback,
-                       ola::rdm::rdm_response_code code,
-                       const ola::rdm::RDMResponse *response,
-                       const std::vector<std::string> &packets);
+                       ola::rdm::RDMReply *reply);
 
   DISALLOW_COPY_AND_ASSIGN(ClientBroker);
 };

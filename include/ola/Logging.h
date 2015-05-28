@@ -261,7 +261,7 @@ bool InitLoggingFromFlags();
 /**
  * @brief Initialize the OLA logging system
  * @param level the level to log at
- * @param output the destintion for the logs
+ * @param output the destination for the logs
  * @returns true if logging was initialized sucessfully, false otherwise.
  */
 bool InitLogging(log_level level, log_output output);
@@ -270,7 +270,6 @@ bool InitLogging(log_level level, log_output output);
  * @brief Initialize the OLA logging system using the specified LogDestination.
  * @param level the level to log at
  * @param destination the LogDestination to use.
- * @returns true if logging was initialized sucessfully, false otherwise.
  */
 void InitLogging(log_level level, LogDestination *destination);
 /***/

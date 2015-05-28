@@ -31,7 +31,7 @@ JaRuleWidget::JaRuleWidget(JaRuleEndpoint *endpoint, const UID &controller_uid)
     m_queueing_controller(m_widget_impl.get(), 50) {
 }
 
-void JaRuleWidget::SendRDMRequest(const RDMRequest *request,
+void JaRuleWidget::SendRDMRequest(RDMRequest *request,
                                   ola::rdm::RDMCallback *on_complete) {
   m_queueing_controller.SendRDMRequest(request, on_complete);
 }

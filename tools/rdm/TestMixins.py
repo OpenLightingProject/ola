@@ -641,11 +641,11 @@ class DiscoveryMixin(ResponderTestFixture):
     if not self.ExpectResponse():
       return
 
-    if len(response.raw_response) != 1:
+    if len(response.frames) != 1:
       self.SetFailed('Multiple DUB responses returned')
       return
 
-    uid = DecodeResponse(bytearray(response.raw_response[0]))
+    uid = DecodeResponse(bytearray(response.frames[0].data))
     if uid is None or uid != self._uid:
       self.SetFailed('Missing UID in DUB response')
 

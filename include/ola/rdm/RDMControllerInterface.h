@@ -31,28 +31,35 @@
 
 #include <ola/Callback.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMReply.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UIDSet.h>
-#include <string>
-#include <vector>
 
 namespace ola {
 namespace rdm {
 
 /**
- * @brief The callback run when a RDM requests completes or fails.
- * @tparam rdm_response_code the status code for the response
- * @tparam RDMResponse a pointer to the response object
- * @tparam vector<string> a list of strings that contain the raw response
- * messages (if the device supports this, some don't).
+ * @brief The callback run when a RDM request completes.
+ * @tparam reply The RDMReply object. The reply object is valid for the
+ * duration of the call.
+ *
+ * The RDMReply is not const, since some stages of the pipeline may need to
+ * rewrite the UID / Transaction Number.
  *
  * For performance reasons this can be either a single use callback or a
  * permanent callback.
  */
-typedef ola::BaseCallback3<void,
-                           rdm_response_code,
-                           const RDMResponse*,
-                           const std::vector<std::string>&> RDMCallback;
+typedef ola::BaseCallback1<void, RDMReply*> RDMCallback;
+
+/**
+ * @brief A helper message to run a RDMCallback with the given status code.
+ * @param callback The RDMCallback to run.
+ * @param status_code The status code to use in the RDMReply.
+ */
+inline void RunRDMCallback(RDMCallback *callback, RDMStatusCode status_code) {
+  ola::rdm::RDMReply reply(status_code);
+  callback->Run(&reply);
+}
 
 /**
  * @brief The callback run when a discovery operation completes.
@@ -85,7 +92,7 @@ class RDMControllerInterface {
    * support DISCOVERY_COMMANDs then the callback should be run with
    * ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED.
    */
-  virtual void SendRDMRequest(const RDMRequest *request,
+  virtual void SendRDMRequest(RDMRequest *request,
                               RDMCallback *on_complete) = 0;
 };
 

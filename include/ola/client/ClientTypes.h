@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_CLIENT_CLIENTTYPES_H_
 
 #include <ola/dmx/SourcePriorities.h>
+#include <ola/rdm/RDMFrame.h>
 #include <ola/rdm/RDMResponseCodes.h>
 
 #include <olad/PortConstants.h>
@@ -333,6 +334,11 @@ struct RDMMetadata {
    * @brief The internal (OLA) response code.
    */
   ola::rdm::rdm_response_code response_code;
+
+  /**
+   * @brief The RDMFrames that made up this response.
+   */
+  std::vector<ola::rdm::RDMFrame> frames;
 
   /**
    * @brief Construct a new RDMMetadata object.

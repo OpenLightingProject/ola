@@ -50,6 +50,14 @@ bool Open(const std::string &path, int oflag, int *fd);
  * @sa Open
  */
 bool TryOpen(const std::string &path, int oflag, int *fd);
+
+/**
+ * @brief Check if a file exists using stat().
+ * @param file_name The name of the file.
+ * @returns true if the stat() command completed & the file exists,
+ *   false if stat() failed, or the file doesn't exist.
+ */
+bool FileExists(const std::string &file_name);
 }  // namespace io
 }  // namespace ola
 #endif  // INCLUDE_OLA_IO_IOUTILS_H_

@@ -35,9 +35,9 @@ using std::vector;
 
 
 /**
- * Convert a rdm_response_code to a string
+ * Convert a RDMStatusCode to a string
  */
-string ResponseCodeToString(rdm_response_code status) {
+string StatusCodeToString(RDMStatusCode status) {
   switch (status) {
     case RDM_COMPLETED_OK:
       return "Completed Ok";
@@ -75,6 +75,10 @@ string ResponseCodeToString(rdm_response_code status) {
       return "The command class didn't match the request";
     case RDM_INVALID_RESPONSE_TYPE:
       return "The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK";
+    case RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED:
+      return "The output plugin does not support DISCOVERY commands";
+    case RDM_DUB_RESPONSE:
+      return "DUB response";
     default:
       return "Unknown";
   }
