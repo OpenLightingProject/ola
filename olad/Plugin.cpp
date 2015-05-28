@@ -30,13 +30,10 @@ using std::string;
 
 const char Plugin::ENABLED_KEY[] = "enabled";
 
-
-/*
- * Load the preferences and set defaults
- */
 bool Plugin::LoadPreferences() {
-  if (m_preferences)
+  if (m_preferences) {
     return true;
+  }
 
   if (PluginPrefix() == "") {
     OLA_WARN << Name() << ", no prefix provided";
@@ -45,8 +42,9 @@ bool Plugin::LoadPreferences() {
 
   m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   m_preferences->Load();
 
@@ -54,8 +52,9 @@ bool Plugin::LoadPreferences() {
       ENABLED_KEY,
       BoolValidator(),
       DefaultMode() ? "true" : "false");
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   if (!SetDefaultPreferences()) {
     OLA_INFO << Name() << ", SetDefaultPreferences failed";
@@ -64,35 +63,25 @@ bool Plugin::LoadPreferences() {
   return true;
 }
 
-/*
- * Returns true if this plugin is enabled.
- */
-string Plugin::PreferenceSource() const {
-  return m_preferences->Source();
+string Plugin::PreferenceConfigLocation() const {
+  return m_preferences->ConfigLocation();
 }
 
-
-/*
- * Returns true if this plugin is enabled.
- */
 bool Plugin::IsEnabled() const {
   return !(m_preferences->GetValue(ENABLED_KEY) == "false");
 }
 
-/*
- * Start the plugin. Calls start_hook() which can be over-ridden by the
- * derrived classes.
- * @returns true if started sucessfully, false otherwise.
- */
 bool Plugin::Start() {
   string enabled;
 
-  if (m_enabled)
+  if (m_enabled) {
     return false;
+  }
 
   // setup prefs
-  if (!LoadPreferences())
+  if (!LoadPreferences()) {
     return false;
+  }
 
   if (!StartHook()) {
     return false;
@@ -102,16 +91,10 @@ bool Plugin::Start() {
   return true;
 }
 
-
-/*
- * Stop the plugin. Calls stop_hook which can be over-ridden by the
- * derrived classes.
- *
- * @returns true if stopped sucessfully, false otherwise.
- */
 bool Plugin::Stop() {
-  if (!m_enabled)
+  if (!m_enabled) {
     return false;
+  }
 
   bool ret = StopHook();
 
