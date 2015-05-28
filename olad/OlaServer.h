@@ -150,6 +150,14 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
     return m_instance_name;
   }
 
+  /**
+   * @brief Get the preferences factory
+   * @return a pointer to the preferences factory
+   */
+  const PreferencesFactory* GetPreferencesFactory() {
+    return m_preferences_factory;
+  }
+
   static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
   static const unsigned int DEFAULT_RPC_PORT = OLA_DEFAULT_PORT;
