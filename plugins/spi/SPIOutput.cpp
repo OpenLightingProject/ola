@@ -26,7 +26,6 @@
 #endif
 
 #include <string.h>
-#include <math.h>       /* for ceil */
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -511,10 +510,10 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
 
-  // calculate dmx-start-address
+  // calculate DMX-start-address
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
-  // only do something if minimum 1pixel can be updated..
+  // only do something if at least 1pixel can be updated..
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
@@ -525,7 +524,6 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // for part of it
   const unsigned int output_length = APA102_START_FRAME_BYTES +
                                 (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
-  // OLA_DEBUG << "output_length " << static_cast<int>(output_length);
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                       CalculateAPA102LatchBytes(m_pixel_count));
   // only update SPI data if possible
@@ -591,7 +589,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // set all pixel to same value
   for (uint16_t i = 0; i < m_pixel_count; i++) {
     uint16_t spi_offset = APA102_START_FRAME_BYTES +
-                              (i * APA102_SPI_BYTES_PER_PIXEL);
+        (i * APA102_SPI_BYTES_PER_PIXEL);
     memcpy(&output[spi_offset], pixel_data,
            APA102_SPI_BYTES_PER_PIXEL);
   }
@@ -602,9 +600,9 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
 
 /**
  * Calculate Latch Bytes for APA102:
- * minimal use half the pixel count bits 
+ * Use at least half the pixel count bits
  * round up to next full byte count.
- * datasheet says endframe should consist of 4 bytes - 
+ * datasheet says endframe should consist of 4 bytes -
  * but thats only valid for up to 64 pixels/leds. (4Byte*8Bit*2=64)
  *
  * the function is valid up to 4080 pixels. (255*8*2)

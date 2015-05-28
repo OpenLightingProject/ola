@@ -232,21 +232,21 @@ void SPIOutputTest::testIndividualLPD8806Control() {
   buffer.SetFromString("1, 10, 100");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED0[] = { 0x85, 0x80, 0xb2, 0, 0, 0, 0};
+  const uint8_t EXPECTED0[] = { 0x85, 0x80, 0xB2, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0xc0, 0xFF, 0x80, 0x8a, 0x85, 0x8f, 0 };
+  const uint8_t EXPECTED1[] = { 0xC0, 0xFF, 0x80, 0x8A, 0x85, 0x8F, 0 };
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0x9c, 0x91, 0xa7, 0x8a, 0x85, 0x8f, 0 };
+  const uint8_t EXPECTED2[] = { 0x9C, 0x91, 0xA7, 0x8A, 0x85, 0x8F, 0 };
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
@@ -287,14 +287,14 @@ void SPIOutputTest::testCombinedLPD8806Control() {
   unsigned int length = 0;
   const uint8_t *data = backend.GetData(0, &length);
 
-  const uint8_t EXPECTED1[] = { 0xc0, 0xFF, 0x80, 0xc0, 0xFF, 0x80, 0};
+  const uint8_t EXPECTED1[] = { 0xC0, 0xFF, 0x80, 0xC0, 0xFF, 0x80, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0x9c, 0x91, 0xa7, 0x9c, 0x91, 0xa7, 0 };
+  const uint8_t EXPECTED2[] = { 0x9C, 0x91, 0xA7, 0x9C, 0x91, 0xA7, 0 };
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
@@ -334,7 +334,7 @@ void SPIOutputTest::testIndividualP9813Control() {
   buffer.SetFromString("1, 10, 100");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED0[] = { 0, 0, 0, 0, 0xef, 0x64, 0x0a, 0x01,
+  const uint8_t EXPECTED0[] = { 0, 0, 0, 0, 0xEF, 0x64, 0x0A, 0x01,
                                 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED0, arraysize(EXPECTED0), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
@@ -342,15 +342,15 @@ void SPIOutputTest::testIndividualP9813Control() {
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xf4, 0, 0x80, 0xFF,
-                                0xFF, 0x1e, 0x14, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xF4, 0, 0x80, 0xFF,
+                                0xFF, 0x1E, 0x14, 0x0A, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 0xef, 0x4e, 0x38, 0x22,
+  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 0xEF, 0x4E, 0x38, 0x22,
                                 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
@@ -393,16 +393,16 @@ void SPIOutputTest::testCombinedP9813Control() {
   unsigned int length = 0;
   const uint8_t *data = backend.GetData(0, &length);
 
-  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xf4, 0, 0x80, 0xFF,
-                                0xf4, 0, 0x80, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED1[] = { 0, 0, 0, 0, 0xF4, 0, 0x80, 0xFF,
+                                0xF4, 0, 0x80, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   OLA_ASSERT_EQ(1u, backend.Writes(0));
 
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 0xef, 0x4e, 0x38, 0x22,
-                                0xef, 0x4e, 0x38, 0x22, 0, 0, 0, 0, 0, 0, 0, 0};
+  const uint8_t EXPECTED2[] = { 0, 0, 0, 0, 0xEF, 0x4E, 0x38, 0x22,
+                                0xEF, 0x4E, 0x38, 0x22, 0, 0, 0, 0, 0, 0, 0, 0};
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
 
