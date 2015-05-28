@@ -506,14 +506,14 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // some detailed information on the protocol:
   // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
   // Data-Struct
-  // StartFrame: 4Byte = 32Bits zeros (APA102_START_FRAME_BYTES)
-  // LEDFrame: 1Byte FF ; 3Byte color info (Blue, Green, Red)
+  // StartFrame: 4 bytes = 32 bits zeros (APA102_START_FRAME_BYTES)
+  // LEDFrame: 1 byte FF ; 3 bytes color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
 
   // calculate DMX-start-address
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
-  // only do something if at least 1pixel can be updated..
+  // only do something if at least 1 pixel can be updated..
   if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
@@ -541,8 +541,8 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
                               (i * APA102_SPI_BYTES_PER_PIXEL);
     // set pixel data
     // first Byte contains:
-    // 3bit start mark (111) + 5bit GlobalBrightnes
-    // set GlobalBrightnes fixed to 31 --> that reduces flickering
+    // 3 bits start mark (111) + 5 bits global brightness
+    // set global brightness fixed to 31 --> that reduces flickering
     // that can be written as 0xE0 & 0x1F
     output[spi_offset + 0] = 0xFF;
     // only write pixel data if buffer has complete data for this pixel:
@@ -571,9 +571,9 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
 
   // get data for entire string length
   const uint16_t output_length = (m_pixel_count + 1) *
-                                      APA102_SPI_BYTES_PER_PIXEL;
+      APA102_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
-                                      CalculateAPA102LatchBytes(m_pixel_count));
+      CalculateAPA102LatchBytes(m_pixel_count));
   // only update SPI data if possible
   if (!output) {
     return;
@@ -584,7 +584,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   pixel_data[0] = 0xFF;
   pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
-  pixel_data[3] = buffer.Get(first_slot);  // Get Red
+  pixel_data[3] = buffer.Get(first_slot + 0);  // Get Red
 
   // set all pixel to same value
   for (uint16_t i = 0; i < m_pixel_count; i++) {
