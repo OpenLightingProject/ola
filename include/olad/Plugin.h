@@ -41,15 +41,17 @@ class AbstractPlugin {
   virtual ~AbstractPlugin() {}
 
   /**
-   * @brief Load the preferences for a plugin
+   * @brief Load the preferences for a plugin and set defaults
    */
   virtual bool LoadPreferences() = 0;
 
   /**
-   * @brief The location for preferences. This can be anything really but should
-   * indicate to the user how how the preferences were loaded.
+   * @brief The location for preferences.
+   *
+   * This can be anything really but should indicate to the user how how the
+   * preferences were loaded.
    */
-  virtual std::string PreferenceSource() const = 0;
+  virtual std::string PreferenceConfigLocation() const = 0;
 
   /**
    * @brief Is the plugin enabled?
@@ -58,13 +60,17 @@ class AbstractPlugin {
   virtual bool IsEnabled() const = 0;
 
   /**
-   * Start the plugin
+   * @brief Start the plugin
+   *
+   * Calls start_hook() which can be over-ridden by the derrived classes.
    * @return true if we started ok, false otherwise
    */
   virtual bool Start() = 0;
 
   /**
-   * Stop the plugin
+   * @brief Stop the plugin
+   *
+   * Calls stop_hook() which can be over-ridden by the derrived classes.
    * @return true on success, false on failure
    */
   virtual bool Stop() = 0;
@@ -113,7 +119,7 @@ class Plugin: public AbstractPlugin {
   virtual ~Plugin() {}
 
   bool LoadPreferences();
-  std::string PreferenceSource() const;
+  std::string PreferenceConfigLocation() const;
   bool IsEnabled() const;
   virtual bool Start();
   virtual bool Stop();
