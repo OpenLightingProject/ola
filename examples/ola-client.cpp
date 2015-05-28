@@ -88,6 +88,7 @@ typedef struct {
   uint8_t priority_value;  // port priority value
   bool list_plugin_ids;
   bool list_universe_ids;
+  string state;      // plugin enable/disable state
 } options;
 
 
@@ -278,6 +279,12 @@ void DisplayDevices(SelectServer *ss,
   ss->Terminate();
 }
 
+void SetPluginStateComplete(SelectServer *ss, const Result &result) {
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
+  }
+  ss->Terminate();
+}
 
 /*
  * Called when the patch command completes.
@@ -322,7 +329,6 @@ void SetPortPriorityComplete(SelectServer *ss, const Result &result) {
   ss->Terminate();
 }
 
-
 /*
  * Init options
  */
@@ -348,6 +354,8 @@ void InitOptions(options *opts) {
  */
 void SetMode(options *opts) {
   opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
+  // To skip the lt prefix during development
+  ola::StripPrefix(&opts->cmd, "lt-");
 #ifdef _WIN32
   // Strip the extension
   size_t extension = opts->cmd.find(".");
@@ -394,6 +402,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
       {"plugin-id", required_argument, 0, 'p'},
+      {"state", required_argument, 0, 's'},
       {"list-plugin-ids", no_argument, 0, LIST_PLUGIN_IDS_OPTION},
       {"list-universe-ids", no_argument, 0, LIST_UNIVERSE_IDS_OPTION},
       {"universe", required_argument, 0, 'u'},
@@ -404,7 +413,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ld:n:u:p:hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "ld:n:u:p:s:hv", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -426,6 +435,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'p':
         opts->plugin_id = atoi(optarg);
+        break;
+      case 's':
+        opts->state = optarg;
         break;
       case 'u':
         opts->uni = atoi(optarg);
@@ -619,7 +631,7 @@ void DisplayPluginInfoHelp(const options &opts) {
  */
 void DisplayPluginStateHelp(const options &opts) {
   cout << "Usage: " << opts.cmd
-       << " --plugin-id <plugin-id>\n"
+       << " --plugin-id <plugin-id> [--state <enable|disable]\n"
           "\n"
           "Displays the enabled/disabled state for a plugin and the list of"
           "plugins\n"
@@ -628,6 +640,7 @@ void DisplayPluginStateHelp(const options &opts) {
           "  -h, --help                  Display this help message and exit.\n"
           "  -p, --plugin-id <plugin-id> Id of the plugin to fetch the state "
           "of\n"
+          "  -s, --state <enable|disable> State to set a plugin to\n"
       << endl;
 }
 
@@ -813,8 +826,21 @@ int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
     DisplayPluginStateHelp(opts);
     exit(1);
   }
-  client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
-                           NewSingleCallback(&DisplayPluginState, ss));
+  if (opts.state.length() > 0) {
+    bool state;
+    if (ola::StringToBoolTolerant(opts.state, &state)) {
+      cout << "Setting state to " << (state ? "enabled" : "disabled") << endl;
+      client->SetPluginState((ola::ola_plugin_id) opts.plugin_id, state,
+                             NewSingleCallback(&SetPluginStateComplete, ss));
+    } else {
+      cerr << "Invalid state: " << opts.state << endl;
+      DisplayPluginStateHelp(opts);
+      exit(1);
+    }
+  } else {
+    client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
+                             NewSingleCallback(&DisplayPluginState, ss));
+  }
   return 0;
 }
 

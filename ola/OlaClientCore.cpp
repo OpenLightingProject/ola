@@ -252,6 +252,28 @@ void OlaClientCore::ConfigureDevice(
   }
 }
 
+void OlaClientCore::SetPluginState(ola_plugin_id plugin_id,
+                                   bool state,
+                                   SetCallback *callback) {
+  ola::proto::PluginStateChange request;
+  RpcController *controller = new RpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.add_plugin_id(plugin_id);
+  request.set_enabled(state);
+
+  if (m_connected) {
+    CompletionCallback *cb = ola::NewSingleCallback(
+        this,
+        &OlaClientCore::HandleAck,
+        controller, reply, callback);
+    m_stub->SetPluginState(controller, &request, reply, cb);
+  } else {
+    controller->SetFailed(NOT_CONNECTED_ERROR);
+    HandleAck(controller, reply, callback);
+  }
+}
+
 void OlaClientCore::SetPortPriorityInherit(unsigned int device_alias,
                                            unsigned int port,
                                            PortDirection port_direction,

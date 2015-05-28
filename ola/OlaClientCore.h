@@ -140,6 +140,16 @@ class OlaClientCore: public ola::proto::OlaClientService {
                        ConfigureDeviceCallback *callback);
 
   /**
+   * @brief Set the state of a plugin.
+   * @param plugin_id the plugin's state to change
+   * @param state the state to change to.
+   * @param callback the SetCallback to invoke upon completion.
+   */
+  void SetPluginState(ola_plugin_id plugin_id,
+                      bool state,
+                      SetCallback *callback);
+
+  /**
    * @brief Set the priority for a port to inherit mode.
    * @param device_alias the device containing the port to change
    * @param port the port id of the port to change.

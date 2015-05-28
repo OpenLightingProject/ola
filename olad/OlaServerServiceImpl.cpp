@@ -484,6 +484,23 @@ void OlaServerServiceImpl::GetPluginState(
   }
 }
 
+void OlaServerServiceImpl::SetPluginState(
+    OLA_UNUSED RpcController* controller,
+    const ola::proto::PluginStateChange* request,
+    OLA_UNUSED Ack* response,
+    ola::rpc::RpcService::CompletionCallback* done) {
+  OLA_DEBUG << "SetPluginState: " << request->enabled();
+  ClosureRunner runner(done);
+  for (int i = 0; i < request->plugin_id_size(); ++i) {
+    OLA_DEBUG << "SPS Plugin " << request->plugin_id(i);
+  }
+  //Universe *universe = m_universe_store->GetUniverse(request->universe());
+  //if (!universe)
+  //  return MissingUniverseError(controller);
+
+  //universe->SetName(request->name());
+}
+
 void OlaServerServiceImpl::GetDeviceInfo(
     RpcController*,
     const DeviceInfoRequest* request,
