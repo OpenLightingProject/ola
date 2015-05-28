@@ -20,27 +20,24 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
-#include <string>
 #include <iomanip>
 #include <memory>
+#include <sstream>
+#include <string>
 
+#include "common/rdm/TestHelper.h"
 #include "ola/Logging.h"
-#include "ola/io/IOQueue.h"
-#include "ola/io/IOStack.h"
-#include "ola/io/OutputStream.h"
+#include "ola/base/Array.h"
+#include "ola/io/ByteString.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
+#include "ola/util/Utils.h"
 #include "ola/testing/TestUtils.h"
 
-
-using ola::io::IOQueue;
-using ola::io::IOStack;
-using ola::io::OutputStream;
-using ola::network::HostToNetwork;
-using ola::rdm::GuessMessageType;
+using ola::io::ByteString;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryRequest;
@@ -52,58 +49,91 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
+using ola::utils::SplitUInt16;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
+
+/*
+ * Calculate a checksum for a packet and update it
+ */
+void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
+  unsigned int checksum = RDMCommand::START_CODE;
+  for (unsigned int i = 0 ; i < expected_length - 2; i++) {
+    checksum += expected[i];
+  }
+
+  SplitUInt16(checksum, &expected[expected_length - 2],
+              &expected[expected_length - 1]);
+}
+
+void UpdateChecksum(ByteString *data) {
+  unsigned int checksum = RDMCommand::START_CODE;
+  for (unsigned int i = 0 ; i < data->size() - 2; i++) {
+    checksum += (*data)[i];
+  }
+
+  SplitUInt16(checksum, &data->at(data->size() - 2),
+              &data->at(data->size() - 1));
+}
+
 
 class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandTest);
-  CPPUNIT_TEST(testRDMCommand);
-  CPPUNIT_TEST(testOutputStream);
-  CPPUNIT_TEST(testIOStack);
+  CPPUNIT_TEST(testGetRequestCreation);
+  CPPUNIT_TEST(testGetWithExtraData);
+  CPPUNIT_TEST(testSetWithParamData);
+  CPPUNIT_TEST(testRequestOverrides);
+  CPPUNIT_TEST(testRequestMutation);
   CPPUNIT_TEST(testRequestInflation);
+  CPPUNIT_TEST(testResponseMutation);
   CPPUNIT_TEST(testResponseInflation);
   CPPUNIT_TEST(testNackWithReason);
   CPPUNIT_TEST(testGetResponseFromData);
   CPPUNIT_TEST(testCombineResponses);
-  CPPUNIT_TEST(testPack);
-  CPPUNIT_TEST(testGuessMessageType);
   CPPUNIT_TEST(testDiscoveryCommand);
   CPPUNIT_TEST(testMuteRequest);
   CPPUNIT_TEST(testUnMuteRequest);
   CPPUNIT_TEST(testCommandInflation);
+  CPPUNIT_TEST(testDiscoveryResponseInflation);
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
+  RDMCommandTest()
+    : m_source(1, 2),
+      m_destination(3, 4) {
+  }
 
-    void testRDMCommand();
-    void testOutputStream();
-    void testIOStack();
-    void testRequestInflation();
-    void testResponseInflation();
-    void testNackWithReason();
-    void testGetResponseFromData();
-    void testCombineResponses();
-    void testPack();
-    void testGuessMessageType();
-    void testDiscoveryCommand();
-    void testMuteRequest();
-    void testUnMuteRequest();
-    void testCommandInflation();
+  void setUp();
+
+  void testGetRequestCreation();
+  void testGetWithExtraData();
+  void testSetWithParamData();
+  void testRequestOverrides();
+  void testRequestMutation();
+  void testRequestInflation();
+  void testResponseMutation();
+  void testResponseInflation();
+  void testNackWithReason();
+  void testGetResponseFromData();
+  void testCombineResponses();
+  void testDiscoveryCommand();
+  void testMuteRequest();
+  void testUnMuteRequest();
+  void testCommandInflation();
+  void testDiscoveryResponseInflation();
 
  private:
-    void PackAndVerify(const RDMCommand &command,
-                       const uint8_t *expected,
-                       unsigned int expected_length);
-    void UpdateChecksum(uint8_t *expected,
-                        unsigned int expected_length);
+  UID m_source;
+  UID m_destination;
 
-    static uint8_t EXPECTED_GET_BUFFER[];
-    static uint8_t EXPECTED_SET_BUFFER[];
-    static uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
-    static uint8_t EXPECTED_DISCOVERY_REQUEST[];
-    static uint8_t EXPECTED_MUTE_REQUEST[];
-    static uint8_t EXPECTED_UNMUTE_REQUEST[];
+  static uint8_t EXPECTED_GET_BUFFER[];
+  static uint8_t EXPECTED_SET_BUFFER[];
+  static uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
+  static uint8_t EXPECTED_DISCOVERY_REQUEST[];
+  static uint8_t EXPECTED_MUTE_REQUEST[];
+  static uint8_t EXPECTED_UNMUTE_REQUEST[];
+  static uint8_t MUTE_RESPONSE[];
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMCommandTest);
@@ -171,6 +201,15 @@ uint8_t RDMCommandTest::EXPECTED_UNMUTE_REQUEST[] = {
   0, 0  // checksum, filled in below
 };
 
+uint8_t RDMCommandTest::MUTE_RESPONSE[] = {
+  1, 24,  // sub code & length
+  0, 1, 0, 0, 0, 2,   // dst uid
+  0, 3, 0, 0, 0, 4,   // src uid
+  1, 1, 0, 0, 0,  // transaction, response type, msg count & sub device
+  0x11, 0, 2, 0,  // command, param id, param data length
+  0, 0  // checksum, filled in below
+};
+
 
 /*
  * Fill in the checksums
@@ -186,183 +225,165 @@ void RDMCommandTest::setUp() {
                  sizeof(EXPECTED_MUTE_REQUEST));
   UpdateChecksum(EXPECTED_UNMUTE_REQUEST,
                  sizeof(EXPECTED_UNMUTE_REQUEST));
+  UpdateChecksum(MUTE_RESPONSE, sizeof(MUTE_RESPONSE));
 }
 
 
-/*
- * Test the RDMCommands work.
- */
-void RDMCommandTest::testRDMCommand() {
-  UID source(1, 2);
-  UID destination(3, 4);
-
-  RDMGetRequest command(source,
-                        destination,
+void RDMCommandTest::testGetRequestCreation() {
+  RDMGetRequest command(m_source,
+                        m_destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
                         0);  // data length
 
-  OLA_ASSERT_EQ(source, command.SourceUID());
-  OLA_ASSERT_EQ(destination, command.DestinationUID());
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 24, command.MessageLength());
+  OLA_ASSERT_EQ(m_source, command.SourceUID());
+  OLA_ASSERT_EQ(m_destination, command.DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortIdResponseType());
   OLA_ASSERT_EQ((uint8_t) 1, command.PortId());
   OLA_ASSERT_EQ((uint8_t) 0, command.MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, command.SubDevice());
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command.CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), command.ParamData());
+  OLA_ASSERT_NULL(command.ParamData());
   OLA_ASSERT_EQ(0u, command.ParamDataSize());
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, command.CommandType());
-  PackAndVerify(command, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
+  OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
+  OLA_ASSERT_FALSE(command.IsDUB());
 
-  // try one with extra long data
-  uint8_t *data = new uint8_t[232];
-  RDMGetRequest long_command(source,
-                             destination,
-                             0,  // transaction #
-                             1,  // port id
-                             0,  // message count
-                             10,  // sub device
-                             123,  // param id
-                             data,  // data
-                             232);  // data length
+  // Test ToString() and <<.
+  ostringstream str;
+  str << command;
+  OLA_ASSERT_FALSE(str.str().empty());
+  OLA_ASSERT_EQ(str.str(), command.ToString());
+}
 
-  OLA_ASSERT_EQ(232u, long_command.ParamDataSize());
-  delete[] data;
+void RDMCommandTest::testGetWithExtraData() {
+  uint8_t data[232];
+  memset(data, 0, arraysize(data));
+  RDMGetRequest command(m_source,
+                        m_destination,
+                        1,  // transaction #
+                        1,  // port id
+                        10,  // sub device
+                        123,  // param id
+                        data,  // data
+                        arraysize(data));  // data length
 
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, command.SubStartCode());
+  OLA_ASSERT_EQ(m_source, command.SourceUID());
+  OLA_ASSERT_EQ(m_destination, command.DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 1, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortId());
+  OLA_ASSERT_EQ((uint8_t) 0, command.MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, command.SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command.CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 123, command.ParamId());
+  OLA_ASSERT_DATA_EQUALS(reinterpret_cast<const uint8_t*>(&data),
+                         arraysize(data), command.ParamData(),
+                         command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
+  OLA_ASSERT_FALSE(command.IsDUB());
+}
+
+void RDMCommandTest::testSetWithParamData() {
   uint32_t data_value = 0xa5a5a5a5;
-  RDMSetRequest command3(source,
-                         destination,
-                         0,  // transaction #
+  RDMSetRequest command(m_source,
+                         m_destination,
+                         3,  // transaction #
                          1,  // port id
-                         0,  // message count
-                         10,  // sub device
+                         13,  // sub device
                          296,  // param id
                          reinterpret_cast<uint8_t*>(&data_value),  // data
                          sizeof(data_value));  // data length
 
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, command3.CommandType());
-  PackAndVerify(command3, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 28, command.MessageLength());
+  OLA_ASSERT_EQ(m_source, command.SourceUID());
+  OLA_ASSERT_EQ(m_destination, command.DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 3, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortId());
+  OLA_ASSERT_EQ((uint8_t) 0, command.MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 13, command.SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND, command.CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
+  OLA_ASSERT_DATA_EQUALS(reinterpret_cast<const uint8_t*>(&data_value),
+                         sizeof(data_value), command.ParamData(),
+                         command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
+  OLA_ASSERT_FALSE(command.IsDUB());
 }
 
+void RDMCommandTest::testRequestOverrides() {
+  RDMRequest::OverrideOptions options;
+  options.SetMessageLength(10);
+  options.SetChecksum(999);
+  options.sub_start_code = 5;
+  options.message_count = 9;
 
-/*
- * Test write to an output stream works.
- */
-void RDMCommandTest::testOutputStream() {
-  IOQueue output;
-  OutputStream stream(&output);
-  UID source(1, 2);
-  UID destination(3, 4);
-
-  RDMGetRequest command(source,
-                        destination,
+  RDMGetRequest command(m_source,
+                        m_destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
-                        0);  // data length
-  command.Write(&stream);
+                        0,  // data length
+                        options);
 
-  uint8_t *raw_command = new uint8_t[output.Size()];
-  unsigned int raw_command_size = output.Peek(raw_command, output.Size());
-  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command));
-
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER),
-                         raw_command, raw_command_size);
-  output.Pop(raw_command_size);
-  OLA_ASSERT_EQ(0u, output.Size());
-  delete[] raw_command;
-
-  // now try a command with data
-  uint32_t data_value = 0xa5a5a5a5;
-  RDMSetRequest command2(source,
-                         destination,
-                         0,  // transaction #
-                         1,  // port id
-                         0,  // message count
-                         10,  // sub device
-                         296,  // param id
-                         reinterpret_cast<uint8_t*>(&data_value),  // data
-                         sizeof(data_value));  // data length
-
-  OLA_ASSERT_EQ(29u, RDMCommandSerializer::RequiredSize(command2));
-
-  command2.Write(&stream);
-  OLA_ASSERT_EQ(RDMCommandSerializer::RequiredSize(command2), output.Size());
-
-  raw_command = new uint8_t[output.Size()];
-  raw_command_size = output.Peek(raw_command, output.Size());
-  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command2));
-
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER),
-                         raw_command, raw_command_size);
-  output.Pop(raw_command_size);
-  OLA_ASSERT_EQ(0u, output.Size());
-  delete[] raw_command;
+  OLA_ASSERT_EQ((uint8_t) 5, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 10, command.MessageLength());
+  OLA_ASSERT_EQ(m_source, command.SourceUID());
+  OLA_ASSERT_EQ(m_destination, command.DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 0, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, command.PortId());
+  OLA_ASSERT_EQ((uint8_t) 9, command.MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, command.SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command.CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
+  OLA_ASSERT_NULL(command.ParamData());
+  OLA_ASSERT_EQ(0u, command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 999u, command.Checksum(0));
 }
 
+void RDMCommandTest::testRequestMutation() {
+  UID new_uid(5, 6);
 
-/*
- * Test writing to an IOStack works.
- */
-void RDMCommandTest::testIOStack() {
-  IOStack output;
-  UID source(1, 2);
-  UID destination(3, 4);
-  IOStack stack;
-
-  RDMGetRequest command(source,
-                        destination,
+  RDMGetRequest command(m_source,
+                        m_destination,
                         0,  // transaction #
                         1,  // port id
-                        0,  // message count
                         10,  // sub device
                         296,  // param id
                         NULL,  // data
-                        0);  // data length
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Write(command, &stack));
+                        0);
 
-  unsigned int raw_command_size = stack.Size();
-  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command));
-  uint8_t raw_command[raw_command_size];
-  OLA_ASSERT_EQ(raw_command_size, stack.Read(raw_command, raw_command_size));
-  OLA_ASSERT_EQ(0u, stack.Size());
+  command.SetSourceUID(new_uid);
+  command.SetTransactionNumber(99);
+  command.SetPortId(5);
 
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER),
-                         raw_command, raw_command_size);
-
-  // now try a command with data
-  uint32_t data_value = 0xa5a5a5a5;
-  RDMSetRequest command2(source,
-                         destination,
-                         0,  // transaction #
-                         1,  // port id
-                         0,  // message count
-                         10,  // sub device
-                         296,  // param id
-                         reinterpret_cast<uint8_t*>(&data_value),  // data
-                         sizeof(data_value));  // data length
-
-  OLA_ASSERT_EQ(29u, RDMCommandSerializer::RequiredSize(command2));
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Write(command2, &stack));
-
-  raw_command_size = stack.Size();
-  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command2));
-  uint8_t raw_command2[raw_command_size];
-  OLA_ASSERT_EQ(raw_command_size, stack.Read(raw_command2, raw_command_size));
-  OLA_ASSERT_EQ(0u, stack.Size());
-
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER),
-                         raw_command2, raw_command_size);
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 24, command.MessageLength());
+  OLA_ASSERT_EQ(new_uid, command.SourceUID());
+  OLA_ASSERT_EQ(m_destination, command.DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 99, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 5, command.PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 5, command.PortId());
+  OLA_ASSERT_EQ((uint8_t) 0, command.MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, command.SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command.CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
+  OLA_ASSERT_NULL(command.ParamData());
+  OLA_ASSERT_EQ(0u, command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
+  OLA_ASSERT_FALSE(command.IsDUB());
 }
-
 
 /*
  * Test that we can inflate RDM request messages correctly
@@ -373,117 +394,104 @@ void RDMCommandTest::testRequestInflation() {
   auto_ptr<RDMRequest> command(RDMRequest::InflateFromData(NULL, 10));
   OLA_ASSERT_NULL(command.get());
 
-  string empty_string;
-  command.reset(RDMRequest::InflateFromData(empty_string));
-  OLA_ASSERT_NULL(command.get());
-
   // now try a proper command but with no length
   command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0));
   OLA_ASSERT_NULL(command.get());
 
-  command.reset(RDMRequest::InflateFromData(
-      EXPECTED_GET_BUFFER,
-      sizeof(EXPECTED_GET_BUFFER)));
+  // Try a valid command
+  command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER,
+                                            arraysize(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());
 
   RDMGetRequest expected_command(source,
                                  destination,
                                  0,  // transaction #
                                  1,  // port id
-                                 0,  // message count
                                  10,  // sub device
                                  296,  // param id
                                  NULL,  // data
                                  0);  // data length
   OLA_ASSERT_TRUE(expected_command == *command);
 
-  string get_request_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
-                         sizeof(EXPECTED_GET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(get_request_str));
-  OLA_ASSERT_NOT_NULL(command.get());
-  OLA_ASSERT_TRUE(expected_command == *command);
+  // An invalid Command class
+  ByteString invalid_command(EXPECTED_GET_BUFFER,
+                             arraysize(EXPECTED_GET_BUFFER));
+  invalid_command[19] = 0x44;
+  command.reset(RDMRequest::InflateFromData(invalid_command.data(),
+                                            invalid_command.size()));
+  OLA_ASSERT_NULL(command.get());
 
-  // now try a set request
-  command.reset(RDMRequest::InflateFromData(
-      EXPECTED_SET_BUFFER,
-      sizeof(EXPECTED_SET_BUFFER)));
+  // A SET request
+  command.reset(RDMRequest::InflateFromData(EXPECTED_SET_BUFFER,
+                                            arraysize(EXPECTED_SET_BUFFER)));
   OLA_ASSERT_NOT_NULL(command.get());
   uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
-  OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
-                          command->ParamDataSize()));
+  OLA_ASSERT_DATA_EQUALS(expected_data, arraysize(expected_data),
+                         command->ParamData(), command->ParamDataSize());
 
-  // set request as a string
-  string set_request_string(reinterpret_cast<char*>(EXPECTED_SET_BUFFER),
-                            sizeof(EXPECTED_SET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(set_request_string));
-  OLA_ASSERT_NOT_NULL(command.get());
-  OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
-                          command->ParamDataSize()));
-
-  // change the param length and make sure the checksum fails
-  uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_BUFFER)];
-  memcpy(bad_packet, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
+  // Change the param length and make sure the checksum fails
+  ByteString bad_packet(EXPECTED_GET_BUFFER, arraysize(EXPECTED_GET_BUFFER));
   bad_packet[22] = 255;
-
-  command.reset(RDMRequest::InflateFromData(
-      bad_packet,
-      sizeof(EXPECTED_GET_BUFFER)));
+  command.reset(RDMRequest::InflateFromData(bad_packet.data(),
+                                            bad_packet.size()));
   OLA_ASSERT_NULL(command.get());
 
-  get_request_str[22] = 255;
-  command.reset(RDMRequest::InflateFromData(get_request_str));
+  // Make sure we can't pass a bad param length larger than the buffer
+  UpdateChecksum(&bad_packet);
+  command.reset(RDMRequest::InflateFromData(bad_packet.data(),
+                                            bad_packet.size()));
   OLA_ASSERT_NULL(command.get());
 
-  // now make sure we can't pass a bad param length larger than the buffer
-  UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(
-      bad_packet,
-      sizeof(EXPECTED_GET_BUFFER)));
-  OLA_ASSERT_NULL(command.get());
-  delete[] bad_packet;
-
-  // change the param length of another packet and make sure the checksum fails
-  bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
-  memcpy(bad_packet, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
+  // Change the param length of another packet and make sure the checksum fails
+  bad_packet.assign(EXPECTED_SET_BUFFER, arraysize(EXPECTED_SET_BUFFER));
   bad_packet[22] = 5;
-  UpdateChecksum(bad_packet, sizeof(EXPECTED_SET_BUFFER));
-  command.reset(RDMRequest::InflateFromData(
-      bad_packet,
-      sizeof(EXPECTED_SET_BUFFER)));
+  UpdateChecksum(&bad_packet);
+  command.reset(RDMRequest::InflateFromData(bad_packet.data(),
+                                            bad_packet.size()));
   OLA_ASSERT_NULL(command.get());
-  delete[] bad_packet;
 
-  // now try to inflate a response
+  // A non-0 length with a NULL pointer
+  command.reset(RDMRequest::InflateFromData(NULL, 32));
+  OLA_ASSERT_NULL(command.get());
+
+  // Try to inflate a response
   command.reset(RDMRequest::InflateFromData(
       EXPECTED_GET_RESPONSE_BUFFER,
-      sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
-  OLA_ASSERT_NULL(command.get());
-
-  string response_string(reinterpret_cast<char*>(EXPECTED_GET_RESPONSE_BUFFER),
-                         sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  command.reset(RDMRequest::InflateFromData(response_string));
+      arraysize(EXPECTED_GET_RESPONSE_BUFFER)));
   OLA_ASSERT_NULL(command.get());
 }
 
 
-/*
- * Calculate the checksum for a packet, and verify
- */
-void RDMCommandTest::PackAndVerify(const RDMCommand &command,
-                                   const uint8_t *expected,
-                                   unsigned int expected_length) {
-  // now check packing
-  unsigned int buffer_size = RDMCommandSerializer::RequiredSize(command);
-  uint8_t *buffer = new uint8_t[buffer_size];
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(command, buffer, &buffer_size));
+void RDMCommandTest::testResponseMutation() {
+  UID new_uid(5, 6);
 
-  OLA_ASSERT_DATA_EQUALS(expected, expected_length,
-                         buffer, buffer_size);
-  delete[] buffer;
+  RDMGetResponse command(m_source,
+                        m_destination,
+                        0,  // transaction #
+                        0,  // response type
+                        0,  // message count
+                        10,  // sub device
+                        100,  // param id
+                        NULL,  // data
+                        0);
+
+  command.SetDestinationUID(new_uid);
+  command.SetTransactionNumber(99);
+
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, command.SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 24, command.MessageLength());
+  OLA_ASSERT_EQ(m_source, command.SourceUID());
+  OLA_ASSERT_EQ(new_uid, command.DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 99, command.TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 0, command.PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 0, command.MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, command.SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, command.CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 100, command.ParamId());
+  OLA_ASSERT_NULL(command.ParamData());
+  OLA_ASSERT_EQ(0u, command.ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, command.Checksum(0));
 }
-
 
 /*
  * Test that we can inflate RDM response correctly
@@ -491,20 +499,20 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
 void RDMCommandTest::testResponseInflation() {
   UID source(1, 2);
   UID destination(3, 4);
-  ola::rdm::rdm_response_code code;
+  ola::rdm::RDMStatusCode code;
   RDMResponse *command = RDMResponse::InflateFromData(NULL, 10, &code);
-  OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
+  OLA_ASSERT_NULL(command);
   OLA_ASSERT_EQ(ola::rdm::RDM_PACKET_TOO_SHORT, code);
 
-  string empty_string;
+  ByteString empty_string;
   command = RDMResponse::InflateFromData(empty_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_PACKET_TOO_SHORT, code);
-  OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
+  OLA_ASSERT_NULL(command);
 
   command = RDMResponse::InflateFromData(EXPECTED_GET_RESPONSE_BUFFER, 0,
                                          &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_PACKET_TOO_SHORT, code);
-  OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
+  OLA_ASSERT_NULL(command);
 
   command = RDMResponse::InflateFromData(
       EXPECTED_GET_RESPONSE_BUFFER,
@@ -514,7 +522,6 @@ void RDMCommandTest::testResponseInflation() {
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_EQ(ola::rdm::RDM_RESPONSE, command->CommandType());
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
 
@@ -532,8 +539,8 @@ void RDMCommandTest::testResponseInflation() {
   delete command;
 
   // now try from a string
-  string response_string(reinterpret_cast<char*>(EXPECTED_GET_RESPONSE_BUFFER),
-                         sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  ByteString response_string(EXPECTED_GET_RESPONSE_BUFFER,
+                             sizeof(EXPECTED_GET_RESPONSE_BUFFER));
   command = RDMResponse::InflateFromData(response_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
   OLA_ASSERT_NOT_NULL(command);
@@ -541,23 +548,18 @@ void RDMCommandTest::testResponseInflation() {
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
   OLA_ASSERT_TRUE(expected_command == *command);
+  delete command;
 
   // change the param length and make sure the checksum fails
-  uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_RESPONSE_BUFFER)];
+  uint8_t *bad_packet = new uint8_t[arraysize(EXPECTED_GET_RESPONSE_BUFFER)];
   memcpy(bad_packet, EXPECTED_GET_RESPONSE_BUFFER,
-         sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+         arraysize(EXPECTED_GET_RESPONSE_BUFFER));
   bad_packet[22] = 255;
-  delete command;
 
   command = RDMResponse::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_GET_RESPONSE_BUFFER),
+      arraysize(EXPECTED_GET_RESPONSE_BUFFER),
       &code);
-  OLA_ASSERT_EQ(ola::rdm::RDM_CHECKSUM_INCORRECT, code);
-  OLA_ASSERT_NULL(command);
-
-  response_string[22] = 255;
-  command = RDMResponse::InflateFromData(response_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_CHECKSUM_INCORRECT, code);
   OLA_ASSERT_NULL(command);
 
@@ -589,27 +591,13 @@ void RDMCommandTest::testResponseInflation() {
       EXPECTED_GET_BUFFER,
       sizeof(EXPECTED_GET_BUFFER),
       &code);
-  OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
+  OLA_ASSERT_NULL(command);
 
-  string request_string(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
-                        sizeof(EXPECTED_GET_BUFFER));
+  ByteString request_string(EXPECTED_GET_BUFFER,
+                            arraysize(EXPECTED_GET_BUFFER));
   command = RDMResponse::InflateFromData(request_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_INVALID_COMMAND_CLASS, code);
-  OLA_ASSERT_EQ(static_cast<RDMResponse*>(NULL), command);
-}
-
-
-/*
- * Calculate a checksum for a packet and update it
- */
-void RDMCommandTest::UpdateChecksum(uint8_t *expected,
-                                    unsigned int expected_length) {
-  unsigned int checksum = RDMCommand::START_CODE;
-  for (unsigned int i = 0 ; i < expected_length - 2; i++)
-    checksum += expected[i];
-
-  expected[expected_length - 2] = checksum >> 8;
-  expected[expected_length - 1] = checksum & 0xff;
+  OLA_ASSERT_NULL(command);
 }
 
 
@@ -624,16 +612,14 @@ void RDMCommandTest::testNackWithReason() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
                             0);  // data length
 
-  RDMResponse *response = NackWithReason(&get_command,
-                                         ola::rdm::NR_UNKNOWN_PID);
-  uint16_t reason = ola::rdm::NR_UNKNOWN_PID;
-  OLA_ASSERT_NOT_NULL(response);
+  auto_ptr<RDMResponse> response(
+      NackWithReason(&get_command, ola::rdm::NR_UNKNOWN_PID));
+  OLA_ASSERT_NOT_NULL(response.get());
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -642,15 +628,13 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(HostToNetwork(reason),
-                *(reinterpret_cast<uint16_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(reason), response->ParamDataSize());
-  delete response;
+  OLA_ASSERT_EQ(2u, response->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) ola::rdm::NR_UNKNOWN_PID,
+                NackReasonFromResponse(response.get()));
 
-  response = NackWithReason(&get_command,
-                            ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
-  OLA_ASSERT_NOT_NULL(response);
+  response.reset(NackWithReason(&get_command,
+                                ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE));
+  OLA_ASSERT_NOT_NULL(response.get());
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -659,25 +643,21 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(HostToNetwork(reason),
-                *(reinterpret_cast<uint16_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(reason), response->ParamDataSize());
-  delete response;
+  OLA_ASSERT_EQ(2u, response->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE,
+                NackReasonFromResponse(response.get()));
 
   RDMSetRequest set_command(source,
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
                             0);  // data length
 
-  response = NackWithReason(&set_command,
-                            ola::rdm::NR_WRITE_PROTECT);
-  reason = ola::rdm::NR_WRITE_PROTECT;
-  OLA_ASSERT_NOT_NULL(response);
+  response.reset(NackWithReason(&set_command, ola::rdm::NR_WRITE_PROTECT));
+  OLA_ASSERT_NOT_NULL(response.get());
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -686,10 +666,9 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(HostToNetwork(reason),
-                 *(reinterpret_cast<uint16_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(reason), response->ParamDataSize());
-  delete response;
+  OLA_ASSERT_EQ(2u, response->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) ola::rdm::NR_WRITE_PROTECT,
+                NackReasonFromResponse(response.get()));
 }
 
 
@@ -701,7 +680,6 @@ void RDMCommandTest::testGetResponseFromData() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -717,7 +695,7 @@ void RDMCommandTest::testGetResponseFromData() {
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), response->ParamData());
+  OLA_ASSERT_NULL(response->ParamData());
   OLA_ASSERT_EQ(0u, response->ParamDataSize());
   delete response;
 
@@ -725,7 +703,6 @@ void RDMCommandTest::testGetResponseFromData() {
                             destination,
                             0,  // transaction #
                             1,  // port id
-                            0,  // message count
                             10,  // sub device
                             296,  // param id
                             NULL,  // data
@@ -741,7 +718,7 @@ void RDMCommandTest::testGetResponseFromData() {
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), response->ParamData());
+  OLA_ASSERT_NULL(response->ParamData());
   OLA_ASSERT_EQ(0u, response->ParamDataSize());
   delete response;
 
@@ -760,7 +737,7 @@ void RDMCommandTest::testGetResponseFromData() {
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
   OLA_ASSERT_EQ(data_value,
-                *(reinterpret_cast<uint32_t*>(response->ParamData())));
+                *(reinterpret_cast<const uint32_t*>(response->ParamData())));
   OLA_ASSERT_EQ((unsigned int) sizeof(data_value), response->ParamDataSize());
   delete response;
 }
@@ -944,164 +921,88 @@ void RDMCommandTest::testCombineResponses() {
 
 
 /**
- * Test that cloning works
- */
-void RDMCommandTest::testPack() {
-  UID source(1, 2);
-  UID destination(3, 4);
-  UID new_source(7, 8);
-
-  RDMGetRequest get_command(source,
-                            destination,
-                            0,  // transaction #
-                            1,  // port id
-                            0,  // message count
-                            10,  // sub device
-                            296,  // param id
-                            NULL,  // data
-                            0);  // data length
-
-  unsigned int length = RDMCommandSerializer::RequiredSize(get_command);
-  uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(
-        get_command, data, &length, new_source, 99, 10));
-
-  RDMRequest *command = RDMRequest::InflateFromData(data, length);
-  OLA_ASSERT_NOT_NULL(command);
-
-  OLA_ASSERT_EQ(new_source, command->SourceUID());
-  OLA_ASSERT_EQ(destination, command->DestinationUID());
-  OLA_ASSERT_EQ((uint8_t) 99, command->TransactionNumber());
-  OLA_ASSERT_EQ((uint8_t) 10, command->PortId());
-  OLA_ASSERT_EQ((uint8_t) 0, command->MessageCount());
-  OLA_ASSERT_EQ((uint16_t) 10, command->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command->CommandClass());
-  OLA_ASSERT_EQ((uint16_t) 296, command->ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), command->ParamData());
-  OLA_ASSERT_EQ(0u, command->ParamDataSize());
-  OLA_ASSERT_EQ(25u, RDMCommandSerializer::RequiredSize(*command));
-  delete[] data;
-  delete command;
-}
-
-
-/**
- * Check that GuessMessageType works
- */
-void RDMCommandTest::testGuessMessageType() {
-  ola::rdm::rdm_message_type message_type;
-  RDMCommand::RDMCommandClass command_class;
-  OLA_ASSERT_FALSE(GuessMessageType(&message_type, &command_class, NULL, 0));
-  OLA_ASSERT_FALSE(GuessMessageType(&message_type, &command_class, NULL, 20));
-  OLA_ASSERT_FALSE(GuessMessageType(
-        &message_type, &command_class, EXPECTED_GET_BUFFER, 0));
-  OLA_ASSERT_FALSE(GuessMessageType(
-        &message_type, &command_class, EXPECTED_GET_BUFFER, 18));
-  OLA_ASSERT_FALSE(GuessMessageType(
-        &message_type, &command_class, EXPECTED_GET_BUFFER, 19));
-
-  OLA_ASSERT_TRUE(GuessMessageType(
-        &message_type,
-        &command_class,
-        EXPECTED_GET_BUFFER,
-        sizeof(EXPECTED_GET_BUFFER)));
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, message_type);
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command_class);
-
-  OLA_ASSERT_TRUE(GuessMessageType(
-        &message_type,
-        &command_class,
-        EXPECTED_SET_BUFFER,
-        sizeof(EXPECTED_SET_BUFFER)));
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, message_type);
-  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND, command_class);
-
-  OLA_ASSERT_TRUE(GuessMessageType(
-        &message_type,
-        &command_class,
-        EXPECTED_GET_RESPONSE_BUFFER,
-        sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
-  OLA_ASSERT_EQ(ola::rdm::RDM_RESPONSE, message_type);
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, command_class);
-}
-
-
-/**
  * Check the discovery command
  */
 void RDMCommandTest::testDiscoveryCommand() {
-  UID source(1, 2);
   UID lower(0x0102, 0x0304);
   UID upper(0x0506, 0x0708);
 
-  auto_ptr<RDMDiscoveryRequest> request(
-      NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
+  const uint8_t expected_data[] = {
+    1, 2, 0, 0, 3, 4,
+    5, 6, 0, 0, 7, 8
+  };
 
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, request->CommandType());
+  auto_ptr<RDMDiscoveryRequest> request(
+      NewDiscoveryUniqueBranchRequest(m_source, lower, upper, 1));
+
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
-  // test pack
-  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
-  OLA_ASSERT_EQ(37u, length);
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, request->SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 36, request->MessageLength());
+  OLA_ASSERT_EQ(m_source, request->SourceUID());
+  OLA_ASSERT_EQ(UID::AllDevices(), request->DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 1, request->TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, request->PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 1, request->PortId());
+  OLA_ASSERT_EQ((uint8_t) 0, request->MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 0, request->SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 0x0001, request->ParamId());
+  OLA_ASSERT_DATA_EQUALS(expected_data, arraysize(expected_data),
+                         request->ParamData(), request->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, request->Checksum(0));
 
-  uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
-
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_DISCOVERY_REQUEST,
-                         sizeof(EXPECTED_DISCOVERY_REQUEST),
-                         data,
-                         length);
-  delete[] data;
+  OLA_ASSERT_TRUE(request->IsDUB());
 }
-
 
 /**
  * Check the mute command
  */
 void RDMCommandTest::testMuteRequest() {
-  UID source(1, 2);
-  UID destination(3, 4);
   auto_ptr<RDMDiscoveryRequest> request(
-      NewMuteRequest(source, destination, 1));
+      NewMuteRequest(m_source, m_destination, 1));
 
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, request->CommandType());
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, request->SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 24, request->MessageLength());
+  OLA_ASSERT_EQ(m_source, request->SourceUID());
+  OLA_ASSERT_EQ(m_destination, request->DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 1, request->TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, request->PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 1, request->PortId());
+  OLA_ASSERT_EQ((uint8_t) 0, request->MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 0, request->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 0x0002, request->ParamId());
+  OLA_ASSERT_NULL(request->ParamData());
+  OLA_ASSERT_EQ(0u, request->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, request->Checksum(0));
 
-  // test pack
-  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
-  OLA_ASSERT_EQ(25u, length);
-  uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
-
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_MUTE_REQUEST, sizeof(EXPECTED_MUTE_REQUEST),
-                         data, length);
-  delete[] data;
+  OLA_ASSERT_FALSE(request->IsDUB());
 }
-
 
 /**
  * Check the UnMute Command
  */
 void RDMCommandTest::testUnMuteRequest() {
-  UID source(1, 2);
-  UID destination(3, 4);
   auto_ptr<RDMDiscoveryRequest> request(
-      NewUnMuteRequest(source, destination, 1));
+      NewUnMuteRequest(m_source, m_destination, 1));
 
-  OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, request->CommandType());
+  OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, request->SubStartCode());
+  OLA_ASSERT_EQ((uint8_t) 24, request->MessageLength());
+  OLA_ASSERT_EQ(m_source, request->SourceUID());
+  OLA_ASSERT_EQ(m_destination, request->DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 1, request->TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 1, request->PortIdResponseType());
+  OLA_ASSERT_EQ((uint8_t) 1, request->PortId());
+  OLA_ASSERT_EQ((uint8_t) 0, request->MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 0, request->SubDevice());
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 0x0003, request->ParamId());
+  OLA_ASSERT_NULL(request->ParamData());
+  OLA_ASSERT_EQ(0u, request->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) 0, request->Checksum(0));
 
-  // test pack
-  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
-  OLA_ASSERT_EQ(25u, length);
-  uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
-
-  OLA_ASSERT_DATA_EQUALS(EXPECTED_UNMUTE_REQUEST,
-                         sizeof(EXPECTED_UNMUTE_REQUEST),
-                         data,
-                         length);
-  delete[] data;
+  OLA_ASSERT_FALSE(request->IsDUB());
 }
 
 
@@ -1127,7 +1028,6 @@ void RDMCommandTest::testCommandInflation() {
                                  destination,
                                  0,  // transaction #
                                  1,  // port id
-                                 0,  // message count
                                  10,  // sub device
                                  296,  // param id
                                  NULL,  // data
@@ -1148,7 +1048,6 @@ void RDMCommandTest::testCommandInflation() {
   OLA_ASSERT_NOT_NULL(command.get());
   uint8_t expected_data2[] = {0x5a, 0x5a, 0x5a, 0x5a};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_EQ(ola::rdm::RDM_RESPONSE, command->CommandType());
   OLA_ASSERT_EQ(0, memcmp(expected_data2, command->ParamData(),
                           command->ParamDataSize()));
 
@@ -1162,7 +1061,7 @@ void RDMCommandTest::testCommandInflation() {
                                    296,  // param id
                                    reinterpret_cast<uint8_t*>(&data_value),
                                    sizeof(data_value));  // data length
-  OLA_ASSERT_TRUE(expected_response ==  *command);
+  OLA_ASSERT_TRUE(expected_response == *command);
 
   // test DUB
   command.reset(RDMCommand::Inflate(EXPECTED_DISCOVERY_REQUEST,
@@ -1170,19 +1069,29 @@ void RDMCommandTest::testCommandInflation() {
   OLA_ASSERT_NOT_NULL(command.get());
   auto_ptr<RDMDiscoveryRequest> discovery_request(
       NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
-  OLA_ASSERT_TRUE(*discovery_request ==  *command);
+  OLA_ASSERT_TRUE(*discovery_request == *command);
 
   // test mute
   command.reset(RDMCommand::Inflate(EXPECTED_MUTE_REQUEST,
                                     sizeof(EXPECTED_MUTE_REQUEST)));
   OLA_ASSERT_NOT_NULL(command.get());
   discovery_request.reset(NewMuteRequest(source, destination, 1));
-  OLA_ASSERT_TRUE(*discovery_request ==  *command);
+  OLA_ASSERT_TRUE(*discovery_request == *command);
 
   // test unmute
   command.reset(RDMCommand::Inflate(EXPECTED_UNMUTE_REQUEST,
                                     sizeof(EXPECTED_UNMUTE_REQUEST)));
   OLA_ASSERT_NOT_NULL(command.get());
   discovery_request.reset(NewUnMuteRequest(source, destination, 1));
-  OLA_ASSERT_TRUE(*discovery_request ==  *command);
+  OLA_ASSERT_TRUE(*discovery_request == *command);
+}
+
+void RDMCommandTest::testDiscoveryResponseInflation() {
+  auto_ptr<RDMCommand> command;
+
+  command.reset(RDMRequest::Inflate(MUTE_RESPONSE, arraysize(MUTE_RESPONSE)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND_RESPONSE, command->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 2, command->ParamId());
+  OLA_ASSERT_EQ(0u, command->ParamDataSize());
 }

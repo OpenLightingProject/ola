@@ -57,7 +57,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
 
     bool SendDMX(const DmxBuffer &buffer);
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -88,7 +88,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
     ola::rdm::DiscoveryAgent m_discovery_agent;
     std::auto_ptr<Callback0<void> > m_dmx_callback;
     DmxBuffer m_buffer;
-    const ola::rdm::RDMRequest *m_pending_request;
+    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
 
@@ -130,7 +130,7 @@ class RobeWidget: public SerialWidgetInterface,
       return m_impl->SendDMX(buffer);
     }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }

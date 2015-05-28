@@ -27,12 +27,14 @@
 #include "ola/Callback.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/io/ByteString.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidgetImpl.h"
@@ -41,13 +43,16 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::io::ByteString;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
-using ola::rdm::RDMRequest;
+using ola::rdm::RDMReply;
+using ola::rdm::RunRDMCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::strings::ToHex;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -220,30 +225,31 @@ bool EnttecPortImpl::SetParameters(uint8_t break_time,
 /**
  * Send an RDM Request.
  */
-void EnttecPortImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void EnttecPortImpl::SendRDMRequest(RDMRequest *request_ptr,
                                     ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<const ola::rdm::RDMRequest> request_ptr(request);
-  vector<string> packets;
+  auto_ptr<RDMRequest> request(request_ptr);
+
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
-  // Re-write the request so it appears to originate from this widget.
-  m_pending_request = request->DuplicateWithControllerParams(
-      m_uid, m_transaction_number++, PORT_ID);
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(m_transaction_number++);
+  request->SetPortId(PORT_ID);
+
+  m_pending_request.reset(request.release());
   m_rdm_request_callback = on_complete;
 
   bool ok = PackAndSendRDMRequest(
-      IsDUBRequest(request) ? m_ops.rdm_discovery : m_ops.send_rdm,
-      m_pending_request);
+      m_pending_request->IsDUB() ? m_ops.rdm_discovery : m_ops.send_rdm,
+      m_pending_request.get());
 
   if (!ok) {
-    delete m_pending_request;
-    m_pending_request = NULL;
+    m_pending_request.reset();
     m_rdm_request_callback = NULL;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 
@@ -319,10 +325,11 @@ void EnttecPortImpl::Branch(const ola::rdm::UID &lower,
       ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper,
                                                 m_transaction_number++));
   OLA_INFO << "Sending DUB packet: " << lower << " - " << upper;
-  if (PackAndSendRDMRequest(m_ops.rdm_discovery, branch_request.get()))
+  if (PackAndSendRDMRequest(m_ops.rdm_discovery, branch_request.get())) {
     m_branch_callback = callback;
-  else
+  } else {
     callback->Run(NULL, 0);
+  }
 }
 
 
@@ -365,22 +372,21 @@ void EnttecPortImpl::HandleRDMTimeout(unsigned int length) {
       m_discovery_response = NULL;
       m_discovery_response_size = 0;
     }
-  } else if (m_rdm_request_callback && m_pending_request) {
-    ola::rdm::rdm_response_code code;
-    if (IsDUBRequest(m_pending_request))
-        code = ola::rdm::RDM_TIMEOUT;
-    else
-      code = (
+  } else if (m_rdm_request_callback && m_pending_request.get()) {
+    ola::rdm::RDMStatusCode status_code;
+    if (m_pending_request->IsDUB()) {
+        status_code = ola::rdm::RDM_TIMEOUT;
+    } else {
+      status_code = (
           m_pending_request->DestinationUID().IsBroadcast() ?
           ola::rdm::RDM_WAS_BROADCAST :
           ola::rdm::RDM_TIMEOUT);
+    }
 
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    delete m_pending_request;
-    m_pending_request = NULL;
-    vector<string> packets;
-    callback->Run(code, NULL, packets);
+    m_pending_request.reset();
+    RunRDMCallback(callback, status_code);
   }
 }
 
@@ -428,12 +434,12 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
                                                unsigned int length) {
   bool waiting_for_dub_response = (
       m_branch_callback != NULL || (
-      (m_rdm_request_callback && IsDUBRequest(m_pending_request))));
+      (m_rdm_request_callback && m_pending_request->IsDUB())));
 
   // if we're not waiting for a DUB response, and this isn't an RDM frame, then
   // let the super class handle it.
   if (!waiting_for_dub_response && length >= 2 &&
-      data[1] != ola::rdm::RDMCommand::START_CODE) {
+      data[1] != ola::rdm::START_CODE) {
     HandleDMX(data, length);
     return;
   }
@@ -474,28 +480,15 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
   } else if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    const ola::rdm::RDMRequest *request = m_pending_request;
-    m_pending_request = NULL;
-
-    vector<string> packets;
-    ola::rdm::rdm_response_code response_code;
-    ola::rdm::RDMResponse *response = NULL;
-
+    auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
+    auto_ptr<RDMReply> reply;
     if (waiting_for_dub_response) {
-      response_code = ola::rdm::RDM_DUB_RESPONSE;
-      packets.push_back(
-          string(reinterpret_cast<const char*>(data), length));
+      reply.reset(RDMReply::DUBReply(rdm::RDMFrame(data, length)));
     } else {
-      // try to inflate
-      string packet(reinterpret_cast<const char*>(data + 1), length - 1);
-      packets.push_back(packet);
-      response = ola::rdm::RDMResponse::InflateFromData(
-          packet,
-          &response_code,
-          request);
+      reply.reset(RDMReply::FromFrame(rdm::RDMFrame(data, length),
+                                      request.get()));
     }
-    callback->Run(response_code, response, packets);
-    delete request;
+    callback->Run(reply.get());
   }
 }
 
@@ -598,24 +591,16 @@ void EnttecPortImpl::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
  */
 bool EnttecPortImpl::PackAndSendRDMRequest(uint8_t label,
                                            const RDMRequest *request) {
-  unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
-  uint8_t data[rdm_length + 1];  // inc start code
-  data[0] = RDMCommand::START_CODE;
-  RDMCommandSerializer::Pack(*request, &data[1], &rdm_length);
-  bool ok = m_send_cb->Run(label, data, rdm_length + 1);
+  ByteString data;
+  if (!RDMCommandSerializer::PackWithStartCode(*request, &data)) {
+    return false;
+  }
+
+  bool ok = m_send_cb->Run(label, data.data(), data.size());
   if (ok) {
     m_watchdog.Enable();
   }
   return ok;
-}
-
-
-/**
- * Return true if this is a Discovery Unique Branch request
- */
-bool EnttecPortImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
-  return (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
-          request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 }
 
 void EnttecPortImpl::ClockWatchdog() {
@@ -668,13 +653,12 @@ bool EnttecPort::SetParameters(uint8_t break_time, uint8_t mab_time,
   return m_impl->SetParameters(break_time, mab_time, rate);
 }
 
-void EnttecPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void EnttecPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
   if (m_enable_rdm) {
     m_controller->SendRDMRequest(request, on_complete);
   } else {
-    vector<string> packets;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     delete request;
   }
 }
@@ -878,8 +862,8 @@ void EnttecUsbProWidgetImpl::HandleLabel(EnttecPortImpl *port,
   } else if (ops.cos_dmx == label) {
     port->HandleDMXDiff(data, length);
   } else {
-      OLA_WARN << "Unknown message type 0x" << std::hex <<
-        static_cast<int>(label) << ", length " << length;
+      OLA_WARN << "Unknown message type " << ToHex(label) << ", length "
+               << length;
   }
 }
 

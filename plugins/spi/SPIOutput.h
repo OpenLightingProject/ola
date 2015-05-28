@@ -68,7 +68,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:
@@ -115,57 +115,57 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void WriteSPIData(const uint8_t *data, unsigned int length);
 
   // RDM methods
-  const ola::rdm::RDMResponse *GetDeviceInfo(
+  ola::rdm::RDMResponse *GetDeviceInfo(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetProductDetailList(
+  ola::rdm::RDMResponse *GetProductDetailList(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDeviceModelDescription(
+  ola::rdm::RDMResponse *GetDeviceModelDescription(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetManufacturerLabel(
+  ola::rdm::RDMResponse *GetManufacturerLabel(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDeviceLabel(
+  ola::rdm::RDMResponse *GetDeviceLabel(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *SetDeviceLabel(
+  ola::rdm::RDMResponse *SetDeviceLabel(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetSoftwareVersionLabel(
+  ola::rdm::RDMResponse *GetSoftwareVersionLabel(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDmxPersonality(
+  ola::rdm::RDMResponse *GetDmxPersonality(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *SetDmxPersonality(
+  ola::rdm::RDMResponse *SetDmxPersonality(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetPersonalityDescription(
+  ola::rdm::RDMResponse *GetPersonalityDescription(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDmxStartAddress(
+  ola::rdm::RDMResponse *GetDmxStartAddress(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *SetDmxStartAddress(
+  ola::rdm::RDMResponse *SetDmxStartAddress(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetIdentify(
+  ola::rdm::RDMResponse *GetIdentify(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *SetIdentify(
+  ola::rdm::RDMResponse *SetIdentify(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetSensorDefinition(
+  ola::rdm::RDMResponse *GetSensorDefinition(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetSensorValue(
+  ola::rdm::RDMResponse *GetSensorValue(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *SetSensorValue(
+  ola::rdm::RDMResponse *SetSensorValue(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *RecordSensor(
+  ola::rdm::RDMResponse *RecordSensor(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetListInterfaces(
+  ola::rdm::RDMResponse *GetListInterfaces(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetInterfaceLabel(
+  ola::rdm::RDMResponse *GetInterfaceLabel(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetInterfaceHardwareAddressType1(
+  ola::rdm::RDMResponse *GetInterfaceHardwareAddressType1(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetIPV4CurrentAddress(
+  ola::rdm::RDMResponse *GetIPV4CurrentAddress(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetIPV4DefaultRoute(
+  ola::rdm::RDMResponse *GetIPV4DefaultRoute(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDNSHostname(
+  ola::rdm::RDMResponse *GetDNSHostname(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDNSDomainName(
+  ola::rdm::RDMResponse *GetDNSDomainName(
       const ola::rdm::RDMRequest *request);
-  const ola::rdm::RDMResponse *GetDNSNameServer(
+  ola::rdm::RDMResponse *GetDNSNameServer(
       const ola::rdm::RDMRequest *request);
 
   // Helpers

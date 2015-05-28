@@ -45,7 +45,7 @@ class PortBrokerInterface {
     virtual void SendRDMRequest(
         const Port *port,
         Universe *universe,
-        const ola::rdm::RDMRequest *request,
+        ola::rdm::RDMRequest *request,
         ola::rdm::RDMCallback *callback) = 0;
 };
 
@@ -60,7 +60,7 @@ class PortBroker: public PortBrokerInterface {
 
     void SendRDMRequest(const Port *port,
                         Universe *universe,
-                        const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
  private:
@@ -68,9 +68,7 @@ class PortBroker: public PortBrokerInterface {
 
     void RequestComplete(port_key key,
                          ola::rdm::RDMCallback *callback,
-                         ola::rdm::rdm_response_code code,
-                         const ola::rdm::RDMResponse *response,
-                         const std::vector<std::string> &packets);
+                         ola::rdm::RDMReply *reply);
 
     std::set<port_key> m_ports;
 

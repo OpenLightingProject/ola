@@ -100,6 +100,7 @@ class OlaDaemon {
   bool InitConfigDir(const std::string &path);
 
   static const char OLA_CONFIG_DIR[];
+  static const char CONFIG_DIR_KEY[];
 
   DISALLOW_COPY_AND_ASSIGN(OlaDaemon);
 };

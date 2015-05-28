@@ -34,6 +34,7 @@ IGNORED_FILES = [
   'common/rdm/testdata/inconsistent_pid.proto',
   'common/rdm/testdata/invalid_esta_pid.proto',
   'common/rdm/testdata/test_pids.proto',
+  'common/rdm/testdata/pids/overrides.proto',
   'common/rdm/testdata/pids/pids1.proto',
   'common/rdm/testdata/pids/pids2.proto',
   'examples/ola-dmxconsole.cpp',

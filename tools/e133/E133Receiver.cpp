@@ -117,11 +117,11 @@ void E133Receiver::HandlePacket(
   OLA_INFO << "Got E1.33 data from " << transport_header->Source();
 
   // Attempt to unpack as a response for now.
-  ola::rdm::rdm_response_code response_code;
+  ola::rdm::RDMStatusCode status_code;
   const RDMResponse *response = RDMResponse::InflateFromData(
     reinterpret_cast<const uint8_t*>(raw_response.data()),
     raw_response.size(),
-    &response_code);
+    &status_code);
 
   if (!response) {
     OLA_WARN << "Failed to unpack E1.33 RDM message, ignoring request.";
@@ -130,7 +130,7 @@ void E133Receiver::HandlePacket(
 
   m_rdm_callback->Run(E133RDMMessage(
       transport_header->Source().Host(), e133_header->Endpoint(),
-      e133_header->Sequence(), response_code, response));
+      e133_header->Sequence(), status_code, response));
 }
 }  // namespace e133
 }  // namespace ola

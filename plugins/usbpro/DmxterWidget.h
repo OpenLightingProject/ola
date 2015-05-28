@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBPRO_DMXTERWIDGET_H_
 #define PLUGINS_USBPRO_DMXTERWIDGET_H_
 
+#include <memory>
 #include "ola/io/SelectServerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -47,7 +48,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
 
     void Stop();
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
                         ola::rdm::RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -57,7 +58,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
     ola::rdm::UID m_uid;
     ola::rdm::UIDSet m_uids;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
-    const ola::rdm::RDMRequest *m_pending_request;
+    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     uint8_t m_transaction_number;
 
@@ -66,11 +67,9 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
                        unsigned int length);
     void HandleTodResponse(const uint8_t *data, unsigned int length);
     void HandleRDMResponse(const uint8_t *data,
-                           unsigned int length,
-                           bool is_dub = false);
+                           unsigned int length);
     void HandleBroadcastRDMResponse(const uint8_t *data, unsigned int length);
     void HandleShutdown(const uint8_t *data, unsigned int length);
-    bool IsDUBRequest(const ola::rdm::RDMRequest *request);
 
     static const uint8_t RDM_REQUEST_LABEL;
     static const uint8_t RDM_BCAST_REQUEST_LABEL;
@@ -120,6 +119,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
       RC_SUBDEVICE_MISMATCH = 42,
       RC_COMMAND_CLASS_MISMATCH = 43,
       RC_PARAM_ID_MISMATCH = 44,
+      RC_DATA_RECEIVED_NO_BREAK = 46,
     } response_code;
 };
 
@@ -138,7 +138,7 @@ class DmxterWidget: public SerialWidgetInterface,
 
     void Stop() { m_impl->Stop(); }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }

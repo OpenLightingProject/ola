@@ -43,8 +43,8 @@ bool JaRuleWidget::Init() {
   return m_widget_impl->Init();
 }
 
-void JaRuleWidget::SendRDMRequest(const RDMRequest *request,
-                    ola::rdm::RDMCallback *on_complete) {
+void JaRuleWidget::SendRDMRequest(RDMRequest *request,
+                                  ola::rdm::RDMCallback *on_complete) {
   m_queueing_controller.SendRDMRequest(request, on_complete);
 }
 

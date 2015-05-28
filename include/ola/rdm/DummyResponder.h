@@ -46,7 +46,7 @@ class DummyResponder: public RDMControllerInterface {
   explicit DummyResponder(const UID &uid);
   ~DummyResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
   uint16_t StartAddress() const { return m_start_address; }
   uint16_t Footprint() const {
@@ -94,42 +94,42 @@ class DummyResponder: public RDMControllerInterface {
   Sensors m_sensors;
   std::auto_ptr<NetworkManagerInterface> m_network_manager;
 
-  const RDMResponse *GetParamDescription(const RDMRequest *request);
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetFactoryDefaults(const RDMRequest *request);
-  const RDMResponse *SetFactoryDefaults(const RDMRequest *request);
-  const RDMResponse *GetProductDetailList(const RDMRequest *request);
-  const RDMResponse *GetPersonality(const RDMRequest *request);
-  const RDMResponse *SetPersonality(const RDMRequest *request);
-  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-  const RDMResponse *GetSlotInfo(const RDMRequest *request);
-  const RDMResponse *GetSlotDescription(const RDMRequest *request);
-  const RDMResponse *GetSlotDefaultValues(const RDMRequest *request);
-  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *GetLampStrikes(const RDMRequest *request);
-  const RDMResponse *SetLampStrikes(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *GetRealTimeClock(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-  const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
-  const RDMResponse *GetSensorDefinition(const RDMRequest *request);
-  const RDMResponse *GetSensorValue(const RDMRequest *request);
-  const RDMResponse *SetSensorValue(const RDMRequest *request);
-  const RDMResponse *RecordSensor(const RDMRequest *request);
-  const RDMResponse *GetListInterfaces(const RDMRequest *request);
-  const RDMResponse *GetInterfaceLabel(const RDMRequest *request);
-  const RDMResponse *GetInterfaceHardwareAddressType1(
+  RDMResponse *GetParamDescription(const RDMRequest *request);
+  RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  RDMResponse *GetFactoryDefaults(const RDMRequest *request);
+  RDMResponse *SetFactoryDefaults(const RDMRequest *request);
+  RDMResponse *GetProductDetailList(const RDMRequest *request);
+  RDMResponse *GetPersonality(const RDMRequest *request);
+  RDMResponse *SetPersonality(const RDMRequest *request);
+  RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  RDMResponse *GetSlotInfo(const RDMRequest *request);
+  RDMResponse *GetSlotDescription(const RDMRequest *request);
+  RDMResponse *GetSlotDefaultValues(const RDMRequest *request);
+  RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *GetLampStrikes(const RDMRequest *request);
+  RDMResponse *SetLampStrikes(const RDMRequest *request);
+  RDMResponse *GetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentify(const RDMRequest *request);
+  RDMResponse *GetRealTimeClock(const RDMRequest *request);
+  RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
+  RDMResponse *GetSensorDefinition(const RDMRequest *request);
+  RDMResponse *GetSensorValue(const RDMRequest *request);
+  RDMResponse *SetSensorValue(const RDMRequest *request);
+  RDMResponse *RecordSensor(const RDMRequest *request);
+  RDMResponse *GetListInterfaces(const RDMRequest *request);
+  RDMResponse *GetInterfaceLabel(const RDMRequest *request);
+  RDMResponse *GetInterfaceHardwareAddressType1(
       const RDMRequest *request);
-  const RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
-  const RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
-  const RDMResponse *GetDNSHostname(const RDMRequest *request);
-  const RDMResponse *GetDNSDomainName(const RDMRequest *request);
-  const RDMResponse *GetDNSNameServer(const RDMRequest *request);
+  RDMResponse *GetIPV4CurrentAddress(const RDMRequest *request);
+  RDMResponse *GetIPV4DefaultRoute(const RDMRequest *request);
+  RDMResponse *GetDNSHostname(const RDMRequest *request);
+  RDMResponse *GetDNSDomainName(const RDMRequest *request);
+  RDMResponse *GetDNSNameServer(const RDMRequest *request);
 
   static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint8_t DEFAULT_PERSONALITY = 2;

@@ -166,7 +166,7 @@ AckTimerResponder::~AckTimerResponder() {
 /*
  * Handle an RDM Request
  */
-void AckTimerResponder::SendRDMRequest(const RDMRequest *request,
+void AckTimerResponder::SendRDMRequest(RDMRequest *request,
                                        RDMCallback *callback) {
   // Queue any messages here
   QueueAnyNewMessages();
@@ -203,7 +203,7 @@ void AckTimerResponder::QueueAnyNewMessages() {
 /**
  * Build a RDM response from a QueuedResponse
  */
-const RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
+RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
     const RDMRequest *request,
     const class QueuedResponse *queued_response) {
   switch (queued_response->CommandClass()) {
@@ -225,7 +225,7 @@ const RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
 /**
  * Return an empty STATUS_MESSAGES response.
  */
-const RDMResponse *AckTimerResponder::EmptyStatusMessage(
+RDMResponse *AckTimerResponder::EmptyStatusMessage(
     const RDMRequest *request) {
   return GetResponseWithPid(request, PID_STATUS_MESSAGES, NULL, 0, RDM_ACK,
                             QueuedMessageCount());
@@ -234,8 +234,7 @@ const RDMResponse *AckTimerResponder::EmptyStatusMessage(
 /**
  * PID_QUEUED_MESSAGE
  */
-const RDMResponse *AckTimerResponder::GetQueuedMessage(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::GetQueuedMessage(const RDMRequest *request) {
   uint8_t status_type;
   if (!ResponderHelper::ExtractUInt8(request, &status_type)) {
     return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
@@ -256,7 +255,7 @@ const RDMResponse *AckTimerResponder::GetQueuedMessage(
 
   m_last_queued_message.reset(m_queued_messages.front());
   m_queued_messages.pop();
-  const RDMResponse *response = ResponseFromQueuedMessage(
+  RDMResponse *response = ResponseFromQueuedMessage(
       request, m_last_queued_message.get());
   OLA_DEBUG << *response;
   return response;
@@ -265,8 +264,7 @@ const RDMResponse *AckTimerResponder::GetQueuedMessage(
 /**
  * PID_DEVICE_INFO
  */
-const RDMResponse *AckTimerResponder::GetDeviceInfo(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_ACK_TIMER_MODEL,
       PRODUCT_CATEGORY_TEST, 1,
@@ -278,14 +276,12 @@ const RDMResponse *AckTimerResponder::GetDeviceInfo(
 /**
  * PID_DMX_PERSONALITY
  */
-const RDMResponse *AckTimerResponder::GetPersonality(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::GetPersonality(const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, &m_personality_manager,
                                          QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::SetPersonality(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::SetPersonality(const RDMRequest *request) {
   return ResponderHelper::SetPersonality(request, &m_personality_manager,
                                          m_start_address, QueuedMessageCount());
 }
@@ -293,7 +289,7 @@ const RDMResponse *AckTimerResponder::SetPersonality(
 /**
  * PID_DMX_PERSONALITY_DESCRIPTION
  */
-const RDMResponse *AckTimerResponder::GetPersonalityDescription(
+RDMResponse *AckTimerResponder::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, &m_personality_manager, QueuedMessageCount());
@@ -302,14 +298,12 @@ const RDMResponse *AckTimerResponder::GetPersonalityDescription(
 /**
  * PID_DMX_START_ADDRESS
  */
-const RDMResponse *AckTimerResponder::GetDmxStartAddress(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::GetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
                                         m_start_address, QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::SetDmxStartAddress(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::SetDmxStartAddress(const RDMRequest *request) {
   uint16_t address;
   if (!ResponderHelper::ExtractUInt16(request, &address)) {
     return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
@@ -346,14 +340,12 @@ const RDMResponse *AckTimerResponder::SetDmxStartAddress(
 /**
  * PID_IDENTIFY_DEVICE
  */
-const RDMResponse *AckTimerResponder::GetIdentify(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode,
                                        QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::SetIdentify(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::SetIdentify(const RDMRequest *request) {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
     return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
@@ -388,25 +380,24 @@ const RDMResponse *AckTimerResponder::SetIdentify(
                              QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::GetDeviceModelDescription(
+RDMResponse *AckTimerResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Ack Timer Responder",
                                     QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::GetManufacturerLabel(
+RDMResponse *AckTimerResponder::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL,
                                     QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::GetDeviceLabel(
-    const RDMRequest *request) {
+RDMResponse *AckTimerResponder::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Ack Timer Responder",
                                     QueuedMessageCount());
 }
 
-const RDMResponse *AckTimerResponder::GetSoftwareVersionLabel(
+RDMResponse *AckTimerResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION,
                                     QueuedMessageCount());

@@ -106,7 +106,15 @@ struct SendRDMArgs {
    */
   RDMCallback *callback;
 
-  explicit SendRDMArgs(RDMCallback *callback) : callback(callback) {}
+  /**
+   * @brief Set to true to include frame & timing information in the response.
+   */
+  bool include_raw_frames;
+
+  explicit SendRDMArgs(RDMCallback *callback)
+    : callback(callback),
+      include_raw_frames(false) {
+  }
 };
 }  // namespace client
 }  // namespace ola
