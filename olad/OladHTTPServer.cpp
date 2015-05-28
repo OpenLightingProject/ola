@@ -285,7 +285,8 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   JsonObject json;
   json.Add("hostname", ola::network::FQDN());
   json.Add("instance_name", m_ola_server->InstanceName());
-  json.Add("config_dir", m_ola_server->GetPreferencesFactory()->Source());
+  json.Add("config_dir",
+           m_ola_server->GetPreferencesFactory()->ConfigLocation());
   json.Add("ip", m_interface.ip_address.ToString());
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());

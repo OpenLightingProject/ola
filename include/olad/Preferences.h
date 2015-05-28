@@ -170,7 +170,7 @@ class Preferences {
    * @brief The location of where these preferences are stored.
    * @return the location
    */
-  virtual std::string Source() const = 0;
+  virtual std::string ConfigLocation() const = 0;
 
   /**
    * @brief Set a preference value, overriding the existing value.
@@ -331,7 +331,7 @@ class PreferencesFactory {
    * @brief The location where preferences will be stored.
    * @return the location
    */
-  virtual std::string Source() const = 0;
+  virtual std::string ConfigLocation() const = 0;
 
  private:
   virtual Preferences *Create(const std::string &name) = 0;
@@ -350,7 +350,7 @@ class MemoryPreferences: public Preferences {
   virtual bool Save() const { return true; }
   virtual void Clear();
 
-  virtual std::string Source() const { return "Not Saved"; }
+  virtual std::string ConfigLocation() const { return "Not Saved"; }
 
   virtual void SetValue(const std::string &key, const std::string &value);
   virtual void SetValue(const std::string &key, unsigned int value);
@@ -392,7 +392,7 @@ class MemoryPreferences: public Preferences {
 
 class MemoryPreferencesFactory: public PreferencesFactory {
  public:
-  virtual std::string Source() const { return "Not Saved"; }
+  virtual std::string ConfigLocation() const { return "Not Saved"; }
 
  private:
   MemoryPreferences *Create(const std::string &name) {
@@ -461,7 +461,7 @@ class FileBackedPreferences: public MemoryPreferences {
    */
   bool LoadFromFile(const std::string &filename);
 
-  std::string Source() const { return FileName(); }
+  std::string ConfigLocation() const { return FileName(); }
 
  private:
   const std::string m_directory;
@@ -489,7 +489,7 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
     m_saver_thread.Join();
   }
 
-  virtual std::string Source() const { return m_directory; }
+  virtual std::string ConfigLocation() const { return m_directory; }
 
  private:
   const std::string m_directory;
