@@ -66,6 +66,7 @@ USBDeviceManager::USBDeviceManager(SelectServer* ss,
     : m_ss(ss),
       m_cleanup_thread(Thread::Options("cleanup-thread")),
       m_context(NULL),
+      m_start_thread_id(0),
       m_notification_cb(notification_cb),
       m_suppress_hotplug_events(false) {
 }
@@ -220,7 +221,7 @@ void USBDeviceManager::SignalEvent(EventType event,
     return;
   }
 
-  if (m_start_thread_id == Thread::Self()) {
+  if (pthread_equal(m_start_thread_id, Thread::Self())) {
     locker->Release();
     // We're within Start(), so we can execute the callbacks directly.
     m_notification_cb->Run(event, device);

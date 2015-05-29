@@ -71,6 +71,7 @@ JaRuleEndpoint::JaRuleEndpoint(SelectServer *ss, libusb_device *device)
   : m_ss(ss),
     m_device(device),
     m_handle(NULL),
+    m_message_handler(NULL),
     m_pending_requests(0),
     m_out_transfer(libusb_alloc_transfer(0)),
     m_out_in_progress(false),

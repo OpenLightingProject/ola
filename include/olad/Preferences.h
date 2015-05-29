@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * preferences.h
+ * Preferences.h
  * Interface for the Preferences class - this allows storing user preferences /
  * settings.
  * Copyright (C) 2005 Simon Newton
@@ -170,7 +170,7 @@ class Preferences {
    * @brief The location of where these preferences are stored.
    * @return the location
    */
-  virtual std::string Source() const = 0;
+  virtual std::string ConfigLocation() const = 0;
 
   /**
    * @brief Set a preference value, overriding the existing value.
@@ -327,6 +327,12 @@ class PreferencesFactory {
    */
   virtual Preferences *NewPreference(const std::string &name);
 
+  /**
+   * @brief The location where preferences will be stored.
+   * @return the location
+   */
+  virtual std::string ConfigLocation() const = 0;
+
  private:
   virtual Preferences *Create(const std::string &name) = 0;
   std::map<std::string, Preferences*> m_preferences_map;
@@ -344,7 +350,7 @@ class MemoryPreferences: public Preferences {
   virtual bool Save() const { return true; }
   virtual void Clear();
 
-  virtual std::string Source() const { return "Not Saved"; }
+  virtual std::string ConfigLocation() const { return "Not Saved"; }
 
   virtual void SetValue(const std::string &key, const std::string &value);
   virtual void SetValue(const std::string &key, unsigned int value);
@@ -385,6 +391,9 @@ class MemoryPreferences: public Preferences {
 
 
 class MemoryPreferencesFactory: public PreferencesFactory {
+ public:
+  virtual std::string ConfigLocation() const { return "Not Saved"; }
+
  private:
   MemoryPreferences *Create(const std::string &name) {
     return new MemoryPreferences(name);
@@ -452,7 +461,7 @@ class FileBackedPreferences: public MemoryPreferences {
    */
   bool LoadFromFile(const std::string &filename);
 
-  std::string Source() const { return FileName(); }
+  std::string ConfigLocation() const { return FileName(); }
 
  private:
   const std::string m_directory;
@@ -479,6 +488,8 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
   ~FileBackedPreferencesFactory() {
     m_saver_thread.Join();
   }
+
+  virtual std::string ConfigLocation() const { return m_directory; }
 
  private:
   const std::string m_directory;
