@@ -196,7 +196,7 @@ message PluginStateReply {
   repeated PluginInfo conflicts_with = 5;
 }
 
-message PluginStateChange {
+message PluginStateChangeRequest {
   repeated int32 plugin_id = 1;
   required bool enabled = 2;
 }
@@ -406,7 +406,7 @@ service OlaServerService {
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
   rpc GetCandidatePorts (OptionalUniverseRequest) returns (DeviceInfoReply);
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
-  rpc SetPluginState (PluginStateChange) returns (Ack);
+  rpc SetPluginState (PluginStateChangeRequest) returns (Ack);
   rpc SetPortPriority (PortPriorityRequest) returns (Ack);
   rpc GetUniverseInfo (OptionalUniverseRequest) returns (UniverseInfoReply);
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);

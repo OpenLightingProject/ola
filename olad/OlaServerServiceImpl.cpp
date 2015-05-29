@@ -486,7 +486,7 @@ void OlaServerServiceImpl::GetPluginState(
 
 void OlaServerServiceImpl::SetPluginState(
     OLA_UNUSED RpcController* controller,
-    const ola::proto::PluginStateChange* request,
+    const ola::proto::PluginStateChangeRequest* request,
     OLA_UNUSED Ack* response,
     ola::rpc::RpcService::CompletionCallback* done) {
   OLA_DEBUG << "SetPluginState: " << request->enabled();

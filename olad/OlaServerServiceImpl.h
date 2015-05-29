@@ -179,7 +179,7 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
    */
   void SetPluginState(
       ola::rpc::RpcController* controller,
-      const ola::proto::PluginStateChange* request,
+      const ola::proto::PluginStateChangeRequest* request,
       ola::proto::Ack* response,
       ola::rpc::RpcService::CompletionCallback* done);
 

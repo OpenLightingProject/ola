@@ -255,7 +255,7 @@ void OlaClientCore::ConfigureDevice(
 void OlaClientCore::SetPluginState(ola_plugin_id plugin_id,
                                    bool state,
                                    SetCallback *callback) {
-  ola::proto::PluginStateChange request;
+  ola::proto::PluginStateChangeRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
