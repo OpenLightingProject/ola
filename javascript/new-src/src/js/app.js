@@ -328,10 +328,6 @@ angular
       $ola.get.ServerInfo().then(function(data) {
         $scope.Info = data;
       });
-      $ola.get.Debug().then(function(data) {
-        var regex = /config-dir: (.*)/;
-        $scope.Info.config_dir = regex.exec(data)[1];
-      });
       $scope.Shutdown = function() {
         $ola.action.Shutdown().then();
       };
