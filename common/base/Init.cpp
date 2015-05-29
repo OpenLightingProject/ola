@@ -315,18 +315,14 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
 
 void Daemonise() {
 #ifndef _WIN32
-  pid_t pid;
-  unsigned int i;
-  int fd0, fd1, fd2;
   struct rlimit rl;
-  struct sigaction sa;
-
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     OLA_FATAL << "Could not determine file limit";
     exit(EXIT_OSFILE);
   }
 
-  // fork
+  // fork so we're not the process group leader
+  pid_t pid;
   if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork\n";
     exit(EXIT_OSERR);
@@ -334,9 +330,11 @@ void Daemonise() {
     exit(EXIT_OK);
   }
 
-  // start a new session
+  // start a new session so we're the session leader and we free ourselves from
+  // the controlling terminal.
   setsid();
 
+  struct sigaction sa;
   sa.sa_handler = SIG_IGN;
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
@@ -346,7 +344,8 @@ void Daemonise() {
     exit(EXIT_OSERR);
   }
 
-  if ((pid= fork()) < 0) {
+  // fork to ensure we're not the session leader.
+  if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork\n";
     exit(EXIT_OSERR);
   } else if (pid != 0) {
@@ -360,19 +359,27 @@ void Daemonise() {
   }
 
   // close all fds
-  if (rl.rlim_max == RLIM_INFINITY)
-    rl.rlim_max = 1024;
-  for (i = 0; i < rl.rlim_max; i++)
-    close(i);
+  int maxfd = sysconf(_SC_OPEN_MAX);
+  if (maxfd == -1) {
+    if (rl.rlim_max == RLIM_INFINITY) {
+      maxfd = 1024;
+    } else {
+      maxfd = rl.rlim_max;
+    }
+  }
+
+  for (unsigned int fd = 0; fd < rl.rlim_max; fd++) {
+    close(fd);
+  }
 
   // send stdout, in and err to /dev/null
-  fd0 = open("/dev/null", O_RDWR);
-  fd1 = dup(0);
-  fd2 = dup(0);
+  int fd0 = open("/dev/null", O_RDWR);
+  int fd1 = dup(0);
+  int fd2 = dup(0);
 
-  if (fd0 != 0 || fd1 != 1 || fd2 != 2) {
-    OLA_FATAL << "Unexpected file descriptors: " << fd0 << ", " << fd1 << ", "
-      << fd2;
+  if (fd0 != STDIN_FILENO || fd1 != STDOUT_FILENO || fd2 != STDERR_FILENO) {
+    OLA_FATAL << "Unexpected file descriptors: " << fd0 << ", " << fd1
+              << ", " << fd2;
     exit(EXIT_OSERR);
   }
 #endif  // _WIN32
