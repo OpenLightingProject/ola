@@ -57,6 +57,9 @@ namespace {
 /**
  * @brief Called by libusb when a USB device is added / removed.
  */
+#ifdef _WIN32
+__attribute__((__stdcall__))
+#endif
 int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
                      struct libusb_device *dev,
                      libusb_hotplug_event event,
