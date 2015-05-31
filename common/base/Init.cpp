@@ -368,7 +368,7 @@ void Daemonise() {
     }
   }
 
-  for (unsigned int fd = 0; fd < rl.rlim_max; fd++) {
+  for (int fd = 0; fd < maxfd; fd++) {
     close(fd);
   }
 
