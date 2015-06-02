@@ -63,12 +63,35 @@ using std::string;
 
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
 const char OlaDaemon::CONFIG_DIR_KEY[] = "config-dir";
+const char OlaDaemon::UID_KEY[] = "uid";
+const char OlaDaemon::GID_KEY[] = "gid";
+const char OlaDaemon::USER_NAME_KEY[] = "user";
+const char OlaDaemon::GROUP_NAME_KEY[] = "group";
 
 OlaDaemon::OlaDaemon(const OlaServer::Options &options,
                      ExportMap *export_map)
     : m_options(options),
       m_export_map(export_map),
       m_ss(m_export_map) {
+  if (m_export_map) {
+    uid_t uid;
+    if (GetUID(&uid)) {
+      m_export_map->GetIntegerVar(UID_KEY)->Set(uid);
+      PasswdEntry passwd;
+      if (GetPasswdUID(uid, &passwd)) {
+        m_export_map->GetStringVar(USER_NAME_KEY)->Set(passwd.pw_name);
+      }
+    }
+
+    gid_t gid;
+    if (GetGID(&gid)) {
+      m_export_map->GetIntegerVar(GID_KEY)->Set(gid);
+      GroupEntry group;
+      if (GetGroupGID(gid, &group)) {
+        m_export_map->GetStringVar(GROUP_NAME_KEY)->Set(group.gr_name);
+      }
+    }
+  }
 }
 
 
