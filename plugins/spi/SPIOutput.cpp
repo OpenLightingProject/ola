@@ -525,7 +525,8 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   const uint16_t output_length = APA102_START_FRAME_BYTES +
       (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
   uint8_t *output = m_backend->Checkout(
-      m_output_number, output_length,
+      m_output_number,
+      output_length,
       CalculateAPA102LatchBytes(m_pixel_count));
 
   // only update SPI data if possible
@@ -567,11 +568,6 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // for Protocol details see IndividualAPA102Control
 
-
-
-
-
-
   // calculate DMX-start-address
   const uint16_t first_slot = m_start_address - 1;  // 0 offset
 
@@ -582,12 +578,12 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
     return;
   }
 
-
   // get data for entire string length
   const uint16_t output_length = APA102_START_FRAME_BYTES +
       (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
   uint8_t *output = m_backend->Checkout(
-      m_output_number, output_length,
+      m_output_number,
+      output_length,
       CalculateAPA102LatchBytes(m_pixel_count));
 
   // only update SPI data if possible
