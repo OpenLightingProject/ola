@@ -101,6 +101,10 @@ class OlaDaemon {
 
   static const char OLA_CONFIG_DIR[];
   static const char CONFIG_DIR_KEY[];
+  static const char UID_KEY[];
+  static const char USER_NAME_KEY[];
+  static const char GID_KEY[];
+  static const char GROUP_NAME_KEY[];
 
   DISALLOW_COPY_AND_ASSIGN(OlaDaemon);
 };
