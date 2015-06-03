@@ -195,8 +195,6 @@ class InputHandler {
   Mode m_mode;
   UID m_selected_uid;
 
-  unsigned int m_log_count;
-
   void SetIdentify(bool identify_on) {
     JaRuleWidget *widget = m_widget_manager->GetWidget();
     if (!widget) {
