@@ -21,3 +21,4 @@ Contributors:
   Rui Barreiros, ftdidmx plugin
   Sean Sill, various fixes.
   Tobi Schäfer, for the MacPort files
+  Stefan Krüger, added APA102 support to the SPI Plugin
