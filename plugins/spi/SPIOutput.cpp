@@ -557,7 +557,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
       // skip spi_offset + 0 (is already set)
       output[spi_offset + 1] = buffer.Get(offset + 2);  // blue
       output[spi_offset + 2] = buffer.Get(offset + 1);  // green
-      output[spi_offset + 3] = buffer.Get(offset + 0);  // red
+      output[spi_offset + 3] = buffer.Get(offset);      // red
     }
   }
 
@@ -599,7 +599,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   pixel_data[0] = 0xFF;
   pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
-  pixel_data[3] = buffer.Get(first_slot + 0);  // Get Red
+  pixel_data[3] = buffer.Get(first_slot);      // Get Red
 
   // set all pixel to same value
   for (uint16_t i = 0; i < m_pixel_count; i++) {
