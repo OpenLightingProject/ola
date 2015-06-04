@@ -29,15 +29,17 @@ angular
       var postEncode = function(data) {
         var PostData = [];
         for (var key in data) {
-          if (key === 'd' ||
-            key === 'remove_ports' ||
-            key === 'modify_ports' ||
-            key === 'add_ports') {
-            // this is here so dmx posts don't get broken
-            // because of removed comma's
-            PostData.push(key + '=' + data[key]);
-          } else {
-            PostData.push(key + '=' + encodeURIComponent(data[key]));
+          if (data.hasOwnProperty(key)){
+            if (key === 'd' ||
+                key === 'remove_ports' ||
+                key === 'modify_ports' ||
+                key === 'add_ports') {
+              // this is here so some posts don't get broken
+              // because of removed comma's in arrays
+              PostData.push(key + '=' + data[key]);
+            } else {
+              PostData.push(key + '=' + encodeURIComponent(data[key]));
+            }
           }
         }
         return PostData.join('&');
@@ -56,12 +58,6 @@ angular
       };
       return {
         get: {
-          Debug: function() {
-            return $http.get('/debug')
-              .then(function(response) {
-                return response.data;
-              });
-          },
           ItemList: function() {
             return $http.get('/json/universe_plugin_list')
               .then(function(response) {
@@ -371,14 +367,14 @@ angular
         } else if ($scope.Data.add_ports === undefined ||
           $scope.Data.add_ports === '') {
           $ola.error.modal('There are no ports selected for the universe.' +
-            ' This is required.');
+                           ' This is required.');
         }
       };
       $ola.get.Ports().then(function(data) {
         $scope.Ports = data;
       });
-      $scope.getDirection = function(bool) {
-        if (bool) {
+      $scope.getDirection = function(dicrection) {
+        if (dicrection) {
           return 'Output';
         } else {
           return 'Input';
