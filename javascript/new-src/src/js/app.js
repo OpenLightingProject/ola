@@ -29,7 +29,7 @@ angular
       var postEncode = function(data) {
         var PostData = [];
         for (var key in data) {
-          if (data.hasOwnProperty(key)){
+          if (data.hasOwnProperty(key)) {
             if (key === 'd' ||
                 key === 'remove_ports' ||
                 key === 'modify_ports' ||
@@ -279,9 +279,13 @@ angular
           modal: function(body, title) {
             if (typeof body !== 'undefined') {
               $('#errorModalBody').text(body);
+            } else {
+              $('#errorModalBody').text('There has been an error');
             }
             if (typeof title !== 'undefined') {
               $('#errorModalLabel').text(title);
+            } else {
+              $('#errorModalLabel').text('Error');
             }
             $('#errorModal').modal('show');
           }
@@ -373,8 +377,8 @@ angular
       $ola.get.Ports().then(function(data) {
         $scope.Ports = data;
       });
-      $scope.getDirection = function(dicrection) {
-        if (dicrection) {
+      $scope.getDirection = function(direction) {
+        if (direction) {
           return 'Output';
         } else {
           return 'Input';
@@ -647,8 +651,8 @@ angular
       $scope.go = function(id) {
         $location.path('/plugin/' + id);
       };
-      $scope.getStyle = function(bool) {
-        if (bool) {
+      $scope.getStyle = function(style) {
+        if (style) {
           return {
             'background-color': 'green'
           };
