@@ -2,12 +2,13 @@ x/y/2015 ola-0.9.6
  Features:
  * Default to using epoll() and kqueue() rather than select() if they exist.
  * Default to the async libusb implementation in the usbdmx plugin.
+ * Added support for the APA102 family of SPI pixels.
 
  API:
  * Python: callbacks are now also systematically called when the RPC calls fail.
 
  RDM Tests:
- * 
+ *
 
  Bugs:
  * Fix port with unset universe appearing as bound to universe 0 in the Python
