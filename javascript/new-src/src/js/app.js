@@ -77,25 +77,49 @@ angular
               });
           },
           PortsId: function(id) {
-            return $http.get('/json/get_ports?id=' + id)
+            return $http({
+              method: 'GET',
+              url: '/json/get_ports',
+              params: {
+                'id': id
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           InfoPlugin: function(id) {
-            return $http.get('/json/plugin_info?id=' + id)
+            return $http({
+              method: 'GET',
+              url:'/json/plugin_info',
+              params: {
+                'id': id
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           Dmx: function(id) {
-            return $http.get('/get_dmx?u=' + id)
+            return $http({
+              method: 'GET',
+              url: '/get_dmx',
+              params: {
+                'u': id
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           UniverseInfo: function(id) {
-            return $http.get('/json/universe_info?id=' + id)
+            return $http({
+              method: 'GET',
+              url: '/json/universe_info',
+              params:{
+                'id': id
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
@@ -166,85 +190,132 @@ angular
         rdm: {
           // /json/rdm/section_info?id=[universe]&uid=[uid]&section=[section]
           GetSectionInfo: function(universe, uid, section) {
-            var url = '/json/rdm/section_info' +
-              '?id=' + universe + '&uid=' + uid + '&section=' + section;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/section_info',
+              params: {
+                'id': universe,
+                'uid': uid,
+                'section': section
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/set_section_info?id=[universe]&uid=[uid]&section=[section]
           SetSection: function(universe, uid, section, hint, option) {
-            var url = '/json/rdm/set_section_info' +
-              '?id=' + universe + '&uid=' + uid + '&section=' + section +
-              '&hint=' + hint + '&int=' + option;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/set_section_info',
+              params: {
+                'id': universe,
+                'uid': uid,
+                'section': section,
+                'hint': hint,
+                'int': option
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/supported_pids?id=[universe]&uid=[uid]
           GetSupportedPids: function(universe, uid) {
-            var url = '/json/rdm/supported_pids' +
-              '?id=' + universe + '&uid=' + uid;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/supported_pids',
+              params: {
+                'id': universe,
+                'uid': uid
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/supported_sections?id=[universe]&uid=[uid]
           GetSupportedSections: function(universe, uid) {
-            var url = '/json/rdm/supported_sections' +
-              '?id=' + universe + '&uid=' + uid;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/supported_sections',
+              params: {
+                'id': universe,
+                'uid': uid
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uid_identify_device?id=[universe]&uid=[uid]
           UidIdentifyDevice: function(universe, uid) {
-            var url = '/json/rdm/uid_identify_device' +
-              '?id=' + universe + '&uid=' + uid;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/uid_identify_device',
+              params: {
+                'id': universe,
+                'uid': uid
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uid_info?id=[universe]&uid=[uid]
           UidInfo: function(universe, uid) {
-            var url = '/json/rdm/uid_info' +
-              '?id=' + universe + '&uid=' + uid;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/uid_info',
+              params: {
+                'id': universe,
+                'uid': uid
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uid_personalities?id=[universe]&uid=[uid]
           UidPersonalities: function(universe, uid) {
-            var url = '/json/rdm/uid_personalities' +
-              '?id=' + universe + '&uid=' + uid;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/uid_personalities',
+              params: {
+                'id': universe,
+                'uid': uid
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uids?id=[universe]
           Uids: function(universe) {
-            var url = '/json/rdm/uids?id=' + universe;
-            return $http.get(url)
+            return $http({
+              method: 'GET',
+              url: '/json/rdm/uids',
+              params: {
+                'id': universe
+              }
+            })
               .then(function(response) {
                 return response.data;
               });
           },
           // /rdm/run_discovery?id=[universe]&incremental=true
           RunDiscovery: function(universe, incremental) {
-            var url = '/rdm/run_discovery?id=' + universe;
-            if (incremental === true) {
-              url = url + '&incremental=true';
-            }
-            return $http.get(url).then(function(response) {
-              return response.data;
-            });
+            return $http({
+              method: 'GET',
+              url: '/rdm/run_discovery',
+              params: {
+                'id': universe,
+                'incremental': incremental
+              }
+            })
+              .then(function(response) {
+                return response.data;
+              });
           }
         },
         tabs: function(tab, id) {
@@ -301,21 +372,17 @@ angular
       $scope.goTo = function(url) {
         $location.path(url);
       };
-      $ola.get.ItemList().then(function(data) {
-        $scope.Items = data;
-      });
-      $ola.get.ServerInfo().then(function(data) {
-        $scope.Info = data;
-        document.title = data.instance_name + ' - ' + data.ip;
-      });
-      $interval(function() {
+      var getData = function() {
         $ola.get.ItemList().then(function(data) {
           $scope.Items = data;
         });
         $ola.get.ServerInfo().then(function(data) {
           $scope.Info = data;
+          document.title = data.instance_name + ' - ' + data.ip;
         });
-      }, 10000);
+      };
+      getData();
+      $interval(getData, 10000);
     }])
   .controller('overviewCtrl', ['$scope', '$ola', '$location',
     function($scope, $ola, $location) {
