@@ -45,13 +45,13 @@ namespace client {
 
 using ola::io::ConnectedDescriptor;
 using ola::proto::OlaServerService_Stub;
+using ola::rdm::UID;
+using ola::rdm::UIDSet;
 using ola::rpc::RpcChannel;
 using ola::rpc::RpcController;
 using std::auto_ptr;
 using std::string;
 using std::vector;
-using ola::rdm::UID;
-using ola::rdm::UIDSet;
 
 const char OlaClientCore::NOT_CONNECTED_ERROR[] = "Not connected";
 
@@ -252,14 +252,18 @@ void OlaClientCore::ConfigureDevice(
   }
 }
 
-void OlaClientCore::SetPluginState(ola_plugin_id plugin_id,
+void OlaClientCore::SetPluginState(const vector<ola_plugin_id> plugin_ids,
                                    bool state,
                                    SetCallback *callback) {
   ola::proto::PluginStateChangeRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
-  request.add_plugin_id(plugin_id);
+  for (vector<ola_plugin_id>::const_iterator iter = plugin_ids.begin();
+       iter != plugin_ids.end();
+       ++iter) {
+    request.add_plugin_id(*iter);
+  }
   request.set_enabled(state);
 
   if (m_connected) {
