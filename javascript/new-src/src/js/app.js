@@ -45,8 +45,8 @@ angular
         return PostData.join('&');
       };
       var dmxConvert = function(dmx) {
-        var length = 1,
-          integers = [];
+        var length = 1;
+        var integers = [];
         for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
           integers[i] = parseInt(dmx[i], 10);
           if (integers[i] > OLA.MIN_CHANNEL_VALUE) {
@@ -359,19 +359,19 @@ angular
       });
       $scope.Submit = function() {
         if (typeof $scope.Data.id === 'number' &&
-          $scope.Data.add_ports !== '' &&
-          $scope.Universes.indexOf($scope.Data.id) === -1) {
+            $scope.Data.add_ports !== '' &&
+            $scope.Universes.indexOf($scope.Data.id) === -1) {
           if ($scope.Data.name === undefined || $scope.Data.name === '') {
             $scope.Data.name = 'Universe ' + $scope.Data.id;
           }
           $ola.post.AddUniverse($scope.Data);
           $location.path('/universe/' + $scope.Data.id);
         } else if ($scope.Universes.indexOf($scope.Data.id) !== -1) {
-          $ola.error.modal('Universe Id already exists.');
+          $ola.error.modal('Universe ID already exists.');
         } else if ($scope.Data.add_ports === undefined ||
-          $scope.Data.add_ports === '') {
-          $ola.error.modal('There are no ports selected for the universe.' +
-                           ' This is required.');
+                   $scope.Data.add_ports === '') {
+          $ola.error.modal('There are no ports selected for the universe. ' +
+                           'This is required.');
         }
       };
       $ola.get.Ports().then(function(data) {
