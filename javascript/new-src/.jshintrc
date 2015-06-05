@@ -7,7 +7,7 @@
   "noarg": true,
   "indent": 2,
   "trailing": true,
-  "white": false,
+  "white": true,
   "forin": true,
   "noempty": true,
   "quotmark": "single",
