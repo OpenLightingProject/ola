@@ -25,6 +25,7 @@
 #include "common/protocol/OlaService.pb.h"
 #include "ola/Callback.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 
@@ -32,6 +33,8 @@
 #define OLAD_OLASERVERSERVICEIMPL_H_
 
 namespace ola {
+
+class Universe;
 
 /**
  * @brief The OLA Server RPC methods.
@@ -251,9 +254,7 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   void HandleRDMResponse(ola::proto::RDMResponse* response,
                          ola::rpc::RpcService::CompletionCallback* done,
                          bool include_raw_packets,
-                         ola::rdm::rdm_response_code code,
-                         const ola::rdm::RDMResponse *rdm_response,
-                         const std::vector<std::string> &packets);
+                         ola::rdm::RDMReply *reply);
   void RDMDiscoveryComplete(unsigned int universe,
                             ola::rpc::RpcService::CompletionCallback* done,
                             ola::proto::UIDListReply *response,
@@ -269,6 +270,8 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   void AddDevice(class AbstractDevice *device,
                  unsigned int alias,
                  ola::proto::DeviceInfoReply* response) const;
+  void AddUniverse(const Universe *universe,
+                   ola::proto::UniverseInfoReply *universe_info_reply) const;
 
   template <class PortClass>
   void PopulatePort(const PortClass &port,

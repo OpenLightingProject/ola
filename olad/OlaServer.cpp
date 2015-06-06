@@ -65,8 +65,8 @@
 
 DEFINE_s_uint16(rpc_port, r, ola::OlaServer::DEFAULT_RPC_PORT,
                 "The port to listen for RPCs on. Defaults to 9010.");
-DEFINE_bool(register_with_dns_sd, true,
-            "Register the web service using DNS-SD (Bonjour).");
+DEFINE_default_bool(register_with_dns_sd, true,
+                    "Don't register the web service using DNS-SD (Bonjour).");
 
 namespace ola {
 
@@ -478,6 +478,6 @@ void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
 #endif
 
   m_pid_store.reset(pid_store);
-  OLA_INFO << "pid store is at " << m_pid_store.get();
+  OLA_INFO << "PID store is at " << m_pid_store.get();
 }
 }  // namespace ola

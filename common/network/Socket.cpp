@@ -32,7 +32,7 @@
 #endif
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Ws2tcpip.h>
 #include <winioctl.h>
 #include <Mswsock.h>
@@ -288,9 +288,10 @@ bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 #endif
 }
 
-bool UDPSocket::RecvFrom(uint8_t *buffer,
-                         ssize_t *data_read,
-                         IPV4Address &source) const {  // NOLINT
+bool UDPSocket::RecvFrom(
+    uint8_t *buffer,
+    ssize_t *data_read,
+    IPV4Address &source) const {  // NOLINT(runtime/references)
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
 #ifdef _WIN32
@@ -306,8 +307,8 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
 
 bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
-                         IPV4Address &source,  // NOLINT
-                         uint16_t &port) const {  // NOLINT
+                         IPV4Address &source,  // NOLINT(runtime/references)
+                         uint16_t &port) const {  // NOLINT(runtime/references)
   struct sockaddr_in src_sockaddr;
   socklen_t src_size = sizeof(src_sockaddr);
 #ifdef _WIN32

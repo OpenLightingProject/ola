@@ -16,6 +16,11 @@
  * FtdiDmxThread.h
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
@@ -30,7 +35,7 @@ namespace ftdidmx {
 
 class FtdiDmxThread : public ola::thread::Thread {
  public:
-    FtdiDmxThread(FtdiWidget *widget, unsigned int frequency);
+    FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
     ~FtdiDmxThread();
 
     bool Stop();
@@ -41,9 +46,9 @@ class FtdiDmxThread : public ola::thread::Thread {
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
-    FtdiWidget *m_widget;
+    FtdiInterface *m_interface;
     bool m_term;
-    int unsigned m_frequency;
+    unsigned int m_frequency;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;

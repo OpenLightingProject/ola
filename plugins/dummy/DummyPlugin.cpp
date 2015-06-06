@@ -130,6 +130,10 @@ string DummyPlugin::Description() const {
 " * Dummy Device (original)\n"
 " * Dimmer Rack, with a configurable number of sub-devices\n"
 " * Moving Light\n"
+" * Advanced Dimmer Rack, with E1.37-1 PIDs\n"
+" * A device that responds with ack timers\n"
+" * Sensor Device, with a number of sensors implemented\n"
+" * Network Device, with E1.37-2 PIDs\n"
 "\n"
 "The number of each device is configurable.\n"
 "\n"
@@ -155,6 +159,7 @@ string DummyPlugin::Description() const {
 "\n"
 "sensor_device_count = 1\n"
 "The number of sensor-only devices to create.\n"
+"\n"
 "network_device_count = 1\n"
 "The number of network E1.37-2 devices to create.\n"
 "\n";

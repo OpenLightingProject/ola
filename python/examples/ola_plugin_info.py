@@ -27,28 +27,28 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
 def Usage():
-  print textwrap.dedent("""
+  print(textwrap.dedent("""
   Usage: ola_plugin_info.py [--plugin <plugin_id>]
 
   Display a list of plugins, or a description for a particular plugin.
 
   -h, --help                Display this help message and exit.
-  -p, --plugin <plugin_id>  Plugin ID number.""")
+  -p, --plugin <plugin_id>  Plugin ID number."""))
 
 def main():
   def Plugins(state, plugins):
     for plugin in plugins:
-      print '%d %s' % (plugin.id, plugin.name)
+      print('%d %s' % (plugin.id, plugin.name))
     wrapper.Stop()
 
   def PluginDescription(state, description):
-    print description;
+    print(description);
     wrapper.Stop()
 
   try:
       opts, args = getopt.getopt(sys.argv[1:], "hp:", ["help", "plugin="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

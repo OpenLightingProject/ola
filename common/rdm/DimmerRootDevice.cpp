@@ -94,13 +94,13 @@ DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
 /*
  * Handle an RDM Request
  */
-void DimmerRootDevice::SendRDMRequest(const RDMRequest *request,
+void DimmerRootDevice::SendRDMRequest(RDMRequest *request,
                                       RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
 
-const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -112,40 +112,37 @@ const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
       m_sub_devices.size(), 0);
 }
 
-const RDMResponse *DimmerRootDevice::GetProductDetailList(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetProductDetailList(const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
     vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
+RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Dimmer");
 }
 
-const RDMResponse *DimmerRootDevice::GetManufacturerLabel(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetManufacturerLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *DimmerRootDevice::GetDeviceLabel(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Dimmer");
 }
 
-const RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
+RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
-const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_on;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_on);
   if (m_identify_on != old_value) {
     OLA_INFO << "Dimmer Root Device " << m_uid << ", identify mode "
@@ -154,8 +151,7 @@ const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
   return response;
 }
 
-const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetDmxBlockAddress(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -196,8 +192,7 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
                              sizeof(pdl));
 }
 
-const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::SetDmxBlockAddress(const RDMRequest *request) {
   uint16_t base_start_address = 0;
   uint16_t total_footprint = 0;
 
@@ -227,13 +222,11 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   return GetResponseFromData(request, NULL, 0);
 }
 
-const RDMResponse *DimmerRootDevice::GetIdentifyMode(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetIdentifyMode(const RDMRequest *request) {
   return ResponderHelper::GetUInt8Value(request, m_identify_mode);
 }
 
-const RDMResponse *DimmerRootDevice::SetIdentifyMode(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::SetIdentifyMode(const RDMRequest *request) {
   uint8_t new_identify_mode;
 
   if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))

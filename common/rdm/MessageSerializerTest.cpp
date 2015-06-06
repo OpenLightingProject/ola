@@ -40,6 +40,8 @@ using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
+using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Message;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
@@ -48,7 +50,6 @@ using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::StringMessageBuilder;
 using ola::rdm::MessageSerializer;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -109,6 +110,8 @@ void MessageSerializerTest::testSimple() {
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
   fields.push_back(new Int32FieldDescriptor("int32"));
+  fields.push_back(new IPV4FieldDescriptor("ip"));
+  fields.push_back(new MACFieldDescriptor("mac"));
   fields.push_back(new StringFieldDescriptor("string", 0, 32));
   Descriptor descriptor("Test Descriptor", fields);
 
@@ -121,6 +124,8 @@ void MessageSerializerTest::testSimple() {
   inputs.push_back("-400");
   inputs.push_back("66000");
   inputs.push_back("-66000");
+  inputs.push_back("10.0.0.1");
+  inputs.push_back("01:23:45:67:89:ab");
   inputs.push_back("foo");
 
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
@@ -132,18 +137,16 @@ void MessageSerializerTest::testSimple() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   OLA_ASSERT_NOT_NULL(data);
-  OLA_ASSERT_EQ(18u, packed_length);
+  OLA_ASSERT_EQ(28u, packed_length);
 
   uint8_t expected[] = {
     1, 1, 253, 1, 44, 254, 112,
     0, 1, 1, 208, 255, 254, 254, 48,
+    10, 0, 0, 1,
+    1, 35, 69, 103, 137, 171,
     'f', 'o', 'o'};
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                     expected,
-                     sizeof(expected),
-                     data,
-                     packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), data, packed_length);
 }
 
 
@@ -173,11 +176,10 @@ void MessageSerializerTest::testString() {
   OLA_ASSERT_EQ(31u, packed_length);
 
   uint8_t expected[] = "foo bar\0\0\0long long foo bar baz";
-  ASSERT_DATA_EQUALS(__LINE__,
-                     expected,
-                     sizeof(expected) - 1,  // ignore the trailing \0
-                     data,
-                     packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected,
+                         sizeof(expected) - 1,  // ignore the trailing \0
+                         data,
+                         packed_length);
 }
 
 
@@ -205,7 +207,7 @@ void MessageSerializerTest::testUID() {
   OLA_ASSERT_EQ(6u, packed_length);
 
   uint8_t expected[] = {0x7a, 0x70, 0, 0, 0, 1};
-  ASSERT_DATA_EQUALS(__LINE__, expected, sizeof(expected), data, packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), data, packed_length);
 }
 
 
@@ -246,11 +248,7 @@ void MessageSerializerTest::testLittleEndian() {
   uint8_t expected[] = {
     1, 253, 44, 1, 112, 254,
     208, 1, 1, 0, 48, 254, 254, 255};
-  ASSERT_DATA_EQUALS(__LINE__,
-                     expected,
-                     sizeof(expected),
-                     data,
-                     packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), data, packed_length);
 }
 
 
@@ -284,11 +282,7 @@ void MessageSerializerTest::testWithGroups() {
   OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(2u, packed_length);
   uint8_t expected[] = {1, 10};
-  ASSERT_DATA_EQUALS(__LINE__,
-                     expected,
-                     sizeof(expected),
-                     data,
-                     packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), data, packed_length);
 
   // now do multiple groups
   vector<string> inputs2;
@@ -304,11 +298,7 @@ void MessageSerializerTest::testWithGroups() {
   OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(6u, packed_length);
   uint8_t expected2[] = {1, 10, 1, 42, 0, 240};
-  ASSERT_DATA_EQUALS(__LINE__,
-                     expected2,
-                     sizeof(expected2),
-                     data,
-                     packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected2, sizeof(expected2), data, packed_length);
 }
 
 
@@ -346,9 +336,5 @@ void MessageSerializerTest::testWithNestedGroups() {
   OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(8u, packed_length);
   uint8_t expected[] = {0, 1, 1, 1, 0, 2, 1, 0};
-  ASSERT_DATA_EQUALS(__LINE__,
-                     expected,
-                     sizeof(expected),
-                     data,
-                     packed_length);
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), data, packed_length);
 }

@@ -50,7 +50,8 @@ class NetworkManager : public NetworkManagerInterface {
 
   const ola::network::InterfacePicker *GetInterfacePicker() const;
   rdm_dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
-  bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route) const;
+  bool GetIPV4DefaultRoute(int32_t *if_index,
+                           ola::network::IPV4Address *default_route) const;
   const std::string GetHostname() const;
   const std::string GetDomainName() const;
   bool GetNameServers(

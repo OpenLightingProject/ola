@@ -44,8 +44,8 @@ class UartDmxThread : public ola::thread::Thread {
   TimerGranularity m_granularity;
   UartWidget *m_widget;
   bool m_term;
-  int unsigned m_breakt;
-  int unsigned m_malft;
+  unsigned int m_breakt;
+  unsigned int m_malft;
   DmxBuffer m_buffer;
   ola::thread::Mutex m_term_mutex;
   ola::thread::Mutex m_buffer_mutex;

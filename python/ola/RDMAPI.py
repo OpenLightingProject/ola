@@ -17,10 +17,11 @@
 
 """The Python RDM API."""
 
+from __future__ import print_function
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import sys
-from ola.UID import UID
 from ola.OlaClient import OlaClient
 from ola import PidStore
 
@@ -35,7 +36,7 @@ class RDMAPI(object):
       OlaClient.RDM_SET_RESPONSE: PidStore.RDM_SET,
   }
 
-  def __init__(self, client, pid_store, strict_checks = True):
+  def __init__(self, client, pid_store, strict_checks=True):
     """Create a new RDM API.
 
     Args:
@@ -81,7 +82,7 @@ class RDMAPI(object):
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
                                 PidStore.RDM_DISCOVERY)
 
-  def Get(self, universe, uid, sub_device, pid, callback, args = []):
+  def Get(self, universe, uid, sub_device, pid, callback, args=[]):
     """Send a RDM Get message, packing the arguments into a message.
 
     Args:
@@ -96,7 +97,7 @@ class RDMAPI(object):
       True if sent ok, False otherwise.
     """
     if self._strict_checks and uid.IsBroadcast():
-      print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
+      print("Can't send GET to broadcast address %s" % uid, file=sys.stderr)
       return False
 
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
@@ -117,13 +118,13 @@ class RDMAPI(object):
       True if sent ok, False otherwise.
     """
     if self._strict_checks and uid.IsBroadcast():
-      print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
+      print("Can't send GET to broadcast address %s" % uid, file=sys.stderr)
       return False
 
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
                                 PidStore.RDM_GET)
 
-  def Set(self, universe, uid, sub_device, pid, callback, args = []):
+  def Set(self, universe, uid, sub_device, pid, callback, args=[]):
     """Send a RDM Set message.
 
     Args:
@@ -140,7 +141,7 @@ class RDMAPI(object):
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
                              PidStore.RDM_SET)
 
-  def RawSet(self, universe, uid, sub_device, pid, callback, args = []):
+  def RawSet(self, universe, uid, sub_device, pid, callback, args=[]):
     """Send a RDM Set message with the raw data supplied.
 
     Args:
@@ -155,7 +156,7 @@ class RDMAPI(object):
       True if sent ok, False otherwise.
     """
     return self._SendRawRequest(universe, uid, sub_device, pid, callback,
-                                    args, PidStore.RDM_SET)
+                                args, PidStore.RDM_SET)
 
   def _SendRequest(self, universe, uid, sub_device, pid, callback, args,
                    request_type):
@@ -176,7 +177,7 @@ class RDMAPI(object):
     """
     data = pid.Pack(args, request_type)
     if data is None:
-      print >> sys.stderr, 'Could not pack data'
+      print('Could not pack data', file=sys.stderr)
       return False
 
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
@@ -239,7 +240,7 @@ class RDMAPI(object):
       if pid_descriptor:
         try:
           obj = pid_descriptor.Unpack(response.data, request_type)
-        except PidStore.UnpackException, e:
+        except PidStore.UnpackException as e:
           obj = None
           unpack_exception = e
       else:

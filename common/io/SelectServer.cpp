@@ -21,7 +21,7 @@
 #include "ola/io/SelectServer.h"
 
 #ifdef _WIN32
-#include <winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/select.h>
 #endif
@@ -54,12 +54,14 @@
 
 #ifdef HAVE_EPOLL
 #include "common/io/EPoller.h"
-DEFINE_default_bool(use_epoll, false, "Use epoll() if available");
+DEFINE_default_bool(use_epoll, true,
+                    "Disable the use of epoll(), revert to select()");
 #endif
 
 #ifdef HAVE_KQUEUE
 #include "common/io/KQueuePoller.h"
-DEFINE_default_bool(use_kqueue, false, "Use kqueue() if available");
+DEFINE_default_bool(use_kqueue, true,
+                    "Disable the use of kqueue(), revert to select()");
 #endif
 
 namespace ola {

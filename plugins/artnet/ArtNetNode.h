@@ -36,6 +36,7 @@
 #include "ola/network/Socket.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMFrame.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/timecode/TimeCode.h"
@@ -291,7 +292,7 @@ class ArtNetNodeImpl {
    * called one-at-a-time (per port)
    */
   void SendRDMRequest(uint8_t port_id,
-                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   /**
@@ -343,7 +344,7 @@ class ArtNetNodeImpl {
       ola::Callback0<void> *on_discover,
       ola::Callback0<void> *on_flush,
       ola::Callback2<void,
-                     const ola::rdm::RDMRequest*,
+                     ola::rdm::RDMRequest*,
                      ola::rdm::RDMCallback*> *on_rdm_request);
 
   /**
@@ -382,7 +383,7 @@ class ArtNetNodeImpl {
     Callback0<void> *on_discover;
     Callback0<void> *on_flush;
     ola::Callback2<void,
-                   const ola::rdm::RDMRequest*,
+                   ola::rdm::RDMRequest*,
                    ola::rdm::RDMCallback*> *on_rdm_request;
   };
 
@@ -406,9 +407,6 @@ class ArtNetNodeImpl {
   OutputPort m_output_ports[ARTNET_MAX_PORTS];
   ola::network::Interface m_interface;
   std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
-
-  ArtNetNodeImpl(const ArtNetNodeImpl&);
-  ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
 
   /**
    * @brief Called when there is data on this socket
@@ -503,9 +501,7 @@ class ArtNetNodeImpl {
   void RDMRequestCompletion(ola::network::IPV4Address destination,
                             uint8_t port_id,
                             uint8_t universe_address,
-                            ola::rdm::rdm_response_code code,
-                            const ola::rdm::RDMResponse *response,
-                            const std::vector<std::string> &packets);
+                            ola::rdm::RDMReply *reply);
 
   /**
    * @brief Handle an RDM response.
@@ -517,7 +513,7 @@ class ArtNetNodeImpl {
    * </rant>
    */
   void HandleRDMResponse(InputPort *port,
-                         const std::string &rdm_data,
+                         const ola::rdm::RDMFrame &rdm_data,
                          const ola::network::IPV4Address &source_address);
 
   /**
@@ -655,6 +651,8 @@ class ArtNetNodeImpl {
   static const unsigned int RDM_REQUEST_QUEUE_LIMIT = 100;
   // How long to wait for a response to an RDM Request
   static const unsigned int RDM_REQUEST_TIMEOUT_MS = 2000;
+
+  DISALLOW_COPY_AND_ASSIGN(ArtNetNodeImpl);
 };
 
 
@@ -671,7 +669,7 @@ class ArtNetNodeImplRDMWrapper
   }
   ~ArtNetNodeImplRDMWrapper() {}
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete) {
     m_impl->SendRDMRequest(m_port_id, request, on_complete);
   }
@@ -687,6 +685,8 @@ class ArtNetNodeImplRDMWrapper
  private:
   ArtNetNodeImpl *m_impl;
   uint8_t m_port_id;
+
+  DISALLOW_COPY_AND_ASSIGN(ArtNetNodeImplRDMWrapper);
 };
 
 
@@ -798,7 +798,7 @@ class ArtNetNode {
    * @brief Send a RDM request by passing it though the Queuing Controller
    */
   void SendRDMRequest(uint8_t port_id,
-                      const ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
 
   /*
@@ -830,7 +830,7 @@ class ArtNetNode {
       ola::Callback0<void> *on_discover,
       ola::Callback0<void> *on_flush,
       ola::Callback2<void,
-                     const ola::rdm::RDMRequest*,
+                     ola::rdm::RDMRequest*,
                      ola::rdm::RDMCallback*> *on_rdm_request) {
     return m_impl.SetOutputPortRDMHandlers(port_id,
                                            on_discover,
@@ -853,6 +853,8 @@ class ArtNetNode {
    * @return true if the port id is valid, false otherwise
    */
   bool CheckInputPortId(uint8_t port_id);
+
+  DISALLOW_COPY_AND_ASSIGN(ArtNetNode);
 };
 }  // namespace artnet
 }  // namespace plugin

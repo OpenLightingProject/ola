@@ -36,7 +36,7 @@
 #include "olad/HttpServerActions.h"
 #include "olad/OladHTTPServer.h"
 #include "olad/OlaServer.h"
-
+#include "olad/Preferences.h"
 
 namespace ola {
 
@@ -66,7 +66,7 @@ const char OladHTTPServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
 const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
 /**
- * Create a new OLA HTTP server
+ * @brief Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
  * @param options the OladHTTPServerOptions for the OLA HTTP server
  * @param client_socket A ConnectedDescriptor which is used to communicate with
@@ -103,7 +103,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   RegisterHandler("/json/get_ports", &OladHTTPServer::JsonAvailablePorts);
   RegisterHandler("/json/universe_info", &OladHTTPServer::JsonUniverseInfo);
 
-  // these are the static files for the new UI
+  // these are the static files for the old UI
   m_server.RegisterFile("/blank.gif", HTTPServer::CONTENT_TYPE_GIF);
   m_server.RegisterFile("/button-bg.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/custombutton.css", HTTPServer::CONTENT_TYPE_CSS);
@@ -126,6 +126,96 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/warning.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
 
+  // these are the static files for the new UI
+  m_server.RegisterFile(
+      "/new/",
+      "/new/index.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/overview.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/plugins.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/plugin-info.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-overview.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-add.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-keypad.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-patch.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-settings.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-faders.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universes.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/views/universe-rdm.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
+      "/new/js/app.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/js/app.min.js.map",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/jquery/js/jquery.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/angular-route/js/angular-route.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/angular/js/angular.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/js/bootstrap.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.svg",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.eot",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2",
+      HTTPServer::CONTENT_TYPE_OCT);
+  m_server.RegisterFile(
+      "/new/css/style.min.css",
+      HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile(
+      "/new/libs/bootstrap/css/bootstrap.min.css",
+      HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile(
+      "/new/img/logo.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile(
+      "/new/img/light_bulb.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile(
+      "/new/img/light_bulb_off.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile(
+      "/new/img/logo-mini.png",
+      HTTPServer::CONTENT_TYPE_PNG);
+
   m_start_time_t = time(NULL);
 }
 
@@ -134,11 +224,13 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
  * @brief Teardown
  */
 OladHTTPServer::~OladHTTPServer() {
-  if (m_client_socket)
+  if (m_client_socket) {
     m_server.SelectServer()->RemoveReadDescriptor(m_client_socket);
+  }
   m_client.Stop();
-  if (m_client_socket)
+  if (m_client_socket) {
     delete m_client_socket;
+  }
 }
 
 
@@ -147,8 +239,9 @@ OladHTTPServer::~OladHTTPServer() {
  * @return true if this worked, false otherwise.
  */
 bool OladHTTPServer::Init() {
-  if (!OlaHTTPServer::Init())
+  if (!OlaHTTPServer::Init()) {
     return false;
+  }
 
   if (!m_client.Setup()) {
     return false;
@@ -192,6 +285,8 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   JsonObject json;
   json.Add("hostname", ola::network::FQDN());
   json.Add("instance_name", m_ola_server->InstanceName());
+  json.Add("config_dir",
+           m_ola_server->GetPreferencesFactory()->ConfigLocation());
   json.Add("ip", m_interface.ip_address.ToString());
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
@@ -209,7 +304,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 
 
 /**
- * Print the list of universes / plugins as a json string
+ * @brief Print the list of universes / plugins as a json string
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
@@ -232,12 +327,14 @@ int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
  */
 int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
                                    HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "?id=[plugin]");
+  }
   string val = request->GetParameter("id");
   int plugin_id;
-  if (!StringToInt(val, &plugin_id))
+  if (!StringToInt(val, &plugin_id)) {
     return ServeHelpRedirect(response);
+  }
 
   m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
@@ -256,12 +353,14 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
  */
 int OladHTTPServer::JsonUniverseInfo(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "?id=[universe]");
+  }
   string uni_id = request->GetParameter("id");
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   m_client.FetchUniverseInfo(
       universe_id,
@@ -281,8 +380,9 @@ int OladHTTPServer::JsonUniverseInfo(OLA_UNUSED const HTTPRequest *request,
  */
 int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
                                        HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "? or ?id=[universe]");
+  }
   string uni_id = request->GetParameter("id");
 
   if (uni_id.empty()) {
@@ -293,8 +393,9 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
                           response));
   } else {
     unsigned int universe_id;
-    if (!StringToInt(uni_id, &universe_id))
+    if (!StringToInt(uni_id, &universe_id)) {
       return ServeHelpRedirect(response);
+    }
 
     m_client.FetchCandidatePorts(
         universe_id,
@@ -314,17 +415,20 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
  */
 int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
                                       HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "POST id=[universe], name=[name]");
+  }
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
 
-  if (name.size() > K_UNIVERSE_NAME_LIMIT)
+  if (name.size() > K_UNIVERSE_NAME_LIMIT) {
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
+  }
 
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
@@ -337,9 +441,10 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
   string add_port_ids = request->GetPostParameter("add_ports");
   AddPatchActions(action_queue, add_port_ids, universe_id, ola::client::PATCH);
 
-  if (!name.empty())
+  if (!name.empty()) {
     action_queue->AddAction(
         new SetNameAction(&m_client, universe_id, name, false));
+  }
 
   action_queue->NextAction();
   return MHD_YES;
@@ -354,22 +459,27 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
                                    HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response,
                       "POST id=[universe], name=[name], merge_mode=[HTP|LTP]");
+  }
+
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
   string merge_mode = request->GetPostParameter("merge_mode");
 
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
-  if (name.empty())
+  if (name.empty()) {
     return m_server.ServeError(response, "No name supplied");
+  }
 
-  if (name.size() > K_UNIVERSE_NAME_LIMIT)
+  if (name.size() > K_UNIVERSE_NAME_LIMIT) {
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
+  }
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
@@ -407,12 +517,14 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::GetDmx(const HTTPRequest *request,
                            HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response, "?u=[universe]");
+  }
   string uni_id = request->GetParameter("u");
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   m_client.FetchDMX(
       universe_id,
@@ -429,19 +541,22 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
                                  HTTPResponse *response) {
-  if (request->CheckParameterExists(HELP_PARAMETER))
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response,
         "POST u=[universe], d=[DMX data (a comma separated list of values)]");
+  }
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id)) {
     return ServeHelpRedirect(response);
+  }
 
   DmxBuffer buffer;
   buffer.SetFromString(dmx_data_str);
-  if (!buffer.Size())
+  if (!buffer.Size()) {
     return m_server.ServeError(response, "Invalid DMX string");
+  }
 
   ola::client::SendDMXArgs args(
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
@@ -536,6 +651,8 @@ void OladHTTPServer::HandlePluginList(HTTPResponse *response,
     JsonObject *plugin = plugins_json->AppendObject();
     plugin->Add("name", iter->Name());
     plugin->Add("id", iter->Id());
+    plugin->Add("active", iter->IsActive());
+    plugin->Add("enabled", iter->IsEnabled());
   }
 }
 
@@ -783,8 +900,9 @@ void OladHTTPServer::SendCreateUniverseResponse(
     bool included_name,
     class ActionQueue *action_queue) {
   unsigned int action_count = action_queue->ActionCount();
-  if (included_name)
+  if (included_name) {
     action_count--;
+  }
   bool failed = true;
   // it only takes one port patch to pass
   for (unsigned int i = 0; i < action_count; i++) {
@@ -1007,16 +1125,17 @@ void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
 void OladHTTPServer::DecodePortIds(const string &port_ids,
                                    vector<port_identifier> *ports) {
   vector<string> port_strings;
-  StringSplit(port_ids, port_strings, ",");
+  StringSplit(port_ids, &port_strings, ",");
   vector<string>::const_iterator iter;
   vector<string> tokens;
 
   for (iter = port_strings.begin(); iter != port_strings.end(); ++iter) {
-    if (iter->empty())
+    if (iter->empty()) {
       continue;
+    }
 
     tokens.clear();
-    StringSplit(*iter, tokens, "-");
+    StringSplit(*iter, &tokens, "-");
 
     if (tokens.size() != 3 || (tokens[1] != "I" && tokens[1] != "O")) {
       OLA_INFO << "Not a valid port id " << *iter;

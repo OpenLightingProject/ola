@@ -275,8 +275,10 @@ bool GenericGetGroupReentrant(F f, arg a, GroupEntry *group_entry) {
     }
   }
 
-  if (!grp_ptr)
+  if (!grp_ptr) {
+    // not found
     return false;
+  }
 
   group_entry->gr_name = grp_ptr->gr_name;
   group_entry->gr_gid = grp_ptr->gr_gid;
@@ -322,16 +324,16 @@ bool GetGroupName(const string &name, GroupEntry *group_entry) {
 }
 
 
-bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
+bool GetGroupGID(gid_t gid, GroupEntry *group_entry) {
 #ifdef _WIN32
-  (void) uid;
+  (void) gid;
   (void) group_entry;
   return false;
 #else
 #ifdef HAVE_GETGRGID_R
-  return GenericGetGroupReentrant(getgrgid_r, uid, group_entry);
+  return GenericGetGroupReentrant(getgrgid_r, gid, group_entry);
 #else
-  return GenericGetGroup(getgrgid, uid, group_entry);
+  return GenericGetGroup(getgrgid, gid, group_entry);
 #endif
 #endif
 }

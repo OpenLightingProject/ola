@@ -56,6 +56,13 @@ plugins.
 http://www.opendmx.net/index.php/OLA_developer_info describes many of the
 underlying classes used.
 
+C++ 11
+------
+
+As much as we'd like to start using C++11, Ubuntu 12.04 still comes with g++
+4.6 which has partial support. Once 12.04 is end-of-lifed, we'll consider
+using C++ 11 constructs.
+
 Endian Issues
 -------------
 
@@ -100,6 +107,11 @@ Style / Coding Standards
 
 We use the Google C++ Style Guide:
   http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
+
+We provide formatting configuration files for some IDEs at
+https://github.com/OpenLightingProject/editor-configs . If you use an IDE
+which isn't listed there please consider submitting the formatting
+configuration files.
 
 Please run the cpplint.py script on all files before requesting a review.
 

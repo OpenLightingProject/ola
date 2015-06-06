@@ -152,6 +152,11 @@ install-exec-hook: $(INSTALL_EXEC_HOOKS)
 
 # -----------------------------------------------------------------------------
 
+# This gives us a rather hacky method to build the files normally built during
+# the build, so they are present for Doxygen to run against
+builtfiles : Makefile.am $(built_sources)
+.PHONY : builtfiles
+
 # I can't figure out how to safely execute a command (mvn) in a subdirectory,
 # so this is recursive for now.
 SUBDIRS = java
@@ -220,6 +225,8 @@ EXTRA_DIST += \
   javascript/ola/port_table.js \
   javascript/ola/universe_control.js \
   javascript/ola/universe_item.js \
+  javascript/new-src/src/css/style.css \
+  javascript/new-src/src/js/app.js \
   mac_build.sh \
   tests/recvdmx.py \
   tests/regression.py

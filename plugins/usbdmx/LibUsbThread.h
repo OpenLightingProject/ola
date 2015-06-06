@@ -23,6 +23,10 @@
 
 #include <libusb.h>
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "ola/base/Macro.h"
 #include "ola/thread/Thread.h"
 
@@ -128,7 +132,7 @@ class LibUsbThread : private ola::thread::Thread {
   ola::thread::Mutex m_term_mutex;
 };
 
-#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
+#if HAVE_LIBUSB_HOTPLUG_API
 
 /**
  * @brief The hotplug version of the LibUsbThread.

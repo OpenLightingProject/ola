@@ -23,7 +23,7 @@
 #endif
 
 #ifdef HAVE_WINSOCK2_H
-#include <winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
 #endif
@@ -67,7 +67,7 @@ bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
 // TODO(Peter): This currently allows some rather quirky values as per
 // inet_aton, we may want to restrict that in future to match IPV4Validator
 
-  if (address.length() == 0) {
+  if (address.empty()) {
     // Don't bother trying to extract an address if we weren't given one
     return false;
   }
@@ -98,16 +98,18 @@ string IPV4Address::ToString() const {
 
 IPV4Address* IPV4Address::FromString(const string &address) {
   struct in_addr addr;
-  if (!IPV4StringToAddress(address, &addr))
+  if (!IPV4StringToAddress(address, &addr)) {
     return NULL;
+  }
 
   return new IPV4Address(addr.s_addr);
 }
 
 bool IPV4Address::FromString(const string &address, IPV4Address *target) {
   struct in_addr addr;
-  if (!IPV4StringToAddress(address, &addr))
+  if (!IPV4StringToAddress(address, &addr)) {
     return false;
+  }
   *target = IPV4Address(addr.s_addr);
   return true;
 }

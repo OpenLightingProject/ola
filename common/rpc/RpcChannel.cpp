@@ -63,12 +63,25 @@ class OutstandingRequest {
    * These are requests on the server end that haven't completed yet.
    */
  public:
-    OutstandingRequest() {}
-    ~OutstandingRequest() {}
+  OutstandingRequest(int id,
+                     RpcSession *session,
+                     google::protobuf::Message *response)
+      : id(id),
+        controller(new RpcController(session)),
+        response(response) {
+  }
+  ~OutstandingRequest() {
+    if (controller) {
+      delete controller;
+    }
+    if (response) {
+      delete response;
+    }
+  }
 
-    int id;
-    RpcController *controller;
-    google::protobuf::Message *response;
+  int id;
+  RpcController *controller;
+  google::protobuf::Message *response;
 };
 
 
@@ -77,13 +90,20 @@ class OutstandingResponse {
    * These are Requests on the client end that haven't completed yet.
    */
  public:
-    OutstandingResponse() {}
-    ~OutstandingResponse() {}
+  OutstandingResponse(int id,
+                      RpcController *controller,
+                      SingleUseCallback0<void> *callback,
+                      Message *reply)
+      : id(id),
+        controller(controller),
+        callback(callback),
+        reply(reply) {
+  }
 
-    int id;
-    RpcController *controller;
-    SingleUseCallback0<void> *callback;
-    Message *reply;
+  int id;
+  RpcController *controller;
+  SingleUseCallback0<void> *callback;
+  Message *reply;
 };
 
 RpcChannel::RpcChannel(
@@ -221,11 +241,8 @@ void RpcChannel::CallMethod(const MethodDescriptor *method,
     return;
   }
 
-  OutstandingResponse *response = new OutstandingResponse();
-  response->id = message.id();
-  response->controller = controller;
-  response->callback = done;
-  response->reply = reply;
+  OutstandingResponse *response = new OutstandingResponse(
+      message.id(), controller, done, reply);
 
   auto_ptr<OutstandingResponse> old_response(
       STLReplacePtr(&m_responses, message.id(), response));
@@ -452,10 +469,8 @@ void RpcChannel::HandleRequest(RpcMessage *msg) {
     return;
   }
 
-  OutstandingRequest *request = new OutstandingRequest();
-  request->id = msg->id();
-  request->controller = new RpcController(m_session.get());
-  request->response = response_pb;
+  OutstandingRequest *request = new OutstandingRequest(
+      msg->id(), m_session.get(), response_pb);
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
     OLA_WARN << "dup sequence number for request " << msg->id();
@@ -545,10 +560,7 @@ void RpcChannel::SendNotImplemented(int msg_id) {
  * Cleanup an outstanding request after the response has been returned
  */
 void RpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
-  m_requests.erase(request->id);
-  delete request->controller;
-  delete request->response;
-  delete request;
+  STLRemoveAndDelete(&m_requests, request->id);
 }
 
 

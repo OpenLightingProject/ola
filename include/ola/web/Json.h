@@ -659,7 +659,7 @@ class JsonDouble: public JsonNumber {
    *   exponent: -3
    */
   struct DoubleRepresentation {
-    /** The sign of the double, true is negative, false is postive */
+    /** The sign of the double, true is negative, false is positive */
     bool is_negative;
     /** The number to the left of the decimal point */
     uint64_t full;

@@ -34,6 +34,14 @@ version information
 The length of time (seconds) to run for.
 .IP "--syslog"
 Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
 .SH EXAMPLES
 .SS Record universes 1 and 2 to the file foo:
 ola_recorder --universes 1,2 --record foo

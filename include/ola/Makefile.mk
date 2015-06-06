@@ -12,6 +12,7 @@ include include/ola/network/Makefile.mk
 include include/ola/rdm/Makefile.mk
 include include/ola/rpc/Makefile.mk
 include include/ola/stl/Makefile.mk
+include include/ola/strings/Makefile.mk
 include include/ola/system/Makefile.mk
 include include/ola/testing/Makefile.mk
 include include/ola/thread/Makefile.mk
@@ -41,6 +42,6 @@ nodist_pkginclude_HEADERS += include/ola/plugin_id.h
 # automake rules for common/libolacommon.la
 built_sources += include/ola/plugin_id.h
 
-include/ola/plugin_id.h: Makefile.am include/ola/make_plugin_id.sh common/protocol/Ola.proto
+include/ola/plugin_id.h: include/ola/Makefile.mk include/ola/make_plugin_id.sh common/protocol/Ola.proto
 	mkdir -p $(top_builddir)/include/ola
 	sh $(top_srcdir)/include/ola/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto > $(top_builddir)/include/ola/plugin_id.h

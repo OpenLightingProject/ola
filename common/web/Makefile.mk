@@ -40,6 +40,11 @@ common_web_libolaweb_la_SOURCES = \
     common/web/SchemaParser.cpp \
     common/web/SchemaParser.h
 
+if USING_WIN32
+#Work around limitations with Windows library linking
+common_web_libolaweb_la_LIBADD = common/libolacommon.la
+endif
+
 # TESTS
 ################################################
 # Patch test names are abbreviated to prevent Windows' UAC from blocking them.

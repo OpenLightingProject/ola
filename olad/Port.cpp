@@ -20,6 +20,7 @@
  * Unfortunately this file contains a lot of code duplication.
  */
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
@@ -30,6 +31,7 @@
 
 namespace ola {
 
+using std::auto_ptr;
 using std::string;
 using std::vector;
 
@@ -90,18 +92,17 @@ void BasicInputPort::DmxChanged() {
   }
 }
 
-void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+void BasicInputPort::HandleRDMRequest(ola::rdm::RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *callback) {
+  auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
   if (m_universe) {
     m_plugin_adaptor->GetPortBroker()->SendRDMRequest(
         this,
         m_universe,
-        request,
+        request.release(),
         callback);
   } else {
-    vector<string> packets;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
+    ola::rdm::RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 
@@ -164,18 +165,17 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
   return true;
 }
 
-void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void BasicOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
                                      ola::rdm::RDMCallback *callback) {
+  auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
+
   // broadcasts go to every port
-  vector<string> packets;
   if (request->DestinationUID().IsBroadcast()) {
-    delete request;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    ola::rdm::RunRDMCallback(callback, ola::rdm::RDM_WAS_BROADCAST);
   } else {
     OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM"
-      << " request routing";
-    delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+             << " request routing";
+    ola::rdm::RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 

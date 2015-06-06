@@ -38,7 +38,7 @@ SyncronizedWidgetObserver::SyncronizedWidgetObserver(
 
 template<typename WidgetClass>
 bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass*widget) {
-  if (Thread::Self() == m_main_thread_id) {
+  if (pthread_equal(Thread::Self(), m_main_thread_id)) {
     return m_observer->NewWidget(widget);
   } else {
     AddFuture f;
@@ -52,7 +52,7 @@ bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass*widget) {
 
 template<typename WidgetClass>
 void SyncronizedWidgetObserver::DispatchWidgetRemoved(WidgetClass *widget) {
-  if (Thread::Self() == m_main_thread_id) {
+  if (pthread_equal(Thread::Self(), m_main_thread_id)) {
     m_observer->WidgetRemoved(widget);
   } else {
     RemoveFuture f;

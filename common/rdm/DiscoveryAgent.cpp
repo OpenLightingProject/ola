@@ -16,22 +16,6 @@
  * DiscoveryAgent.cpp
  * Implements the RDM Discovery algorithm.
  * Copyright (C) 2011 Simon Newton
- *
- * The discovery process goes something like this:
- *   - if incremental, copy all previously discovered UIDs to the mute list
- *   - push (0, 0xffffffffffff) onto the resolution stack
- *   - unmute all
- *   - mute all previously discovered UIDs, for any that fail to mute remove
- *     them from the UIDSet.
- *   - Send a discovery unique branch message
- *     - If we get a valid response, mute, and send the same branch again
- *     - If we get a collision, split the UID range, and try each branch
- *       separately.
- *
- * We also track responders that fail to ack a mute request (we attempt to mute
- * MAX_MUTE_ATTEMPTS times) and branches that contain responders which continue
- * to responde once muted. The latter causes a branch to be marked as corrupt,
- * which prevents us from looping forver.
  */
 
 #include "ola/Callback.h"
@@ -39,15 +23,11 @@
 #include "ola/rdm/DiscoveryAgent.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace rdm {
 
-
-/**
- * Create a new DiscoveryAgent
- * @param target the DiscoveryTargetInterface to use for sending messages.
- */
 DiscoveryAgent::DiscoveryAgent(DiscoveryTargetInterface *target)
     : m_target(target),
       m_on_complete(NULL),
@@ -60,25 +40,15 @@ DiscoveryAgent::DiscoveryAgent(DiscoveryTargetInterface *target)
       m_branch_callback(
         ola::NewCallback(this, &DiscoveryAgent::BranchComplete)),
       m_muting_uid(0, 0),
-      m_mute_attempts(0) {
+      m_unmute_count(0),
+      m_mute_attempts(0),
+      m_tree_corrupt(false) {
 }
 
-
-/**
- * Clean up
- */
 DiscoveryAgent::~DiscoveryAgent() {
   Abort();
-  delete m_unmute_callback;
-  delete m_incremental_mute_callback;
-  delete m_branch_mute_callback;
-  delete m_branch_callback;
 }
 
-
-/**
- * Cancel the running discovery
- */
 void DiscoveryAgent::Abort() {
   while (!m_uid_ranges.empty()) {
     UIDRange *range = m_uid_ranges.top();
@@ -94,28 +64,17 @@ void DiscoveryAgent::Abort() {
   }
 }
 
-
-/**
- * Initiate full discovery
- * @param on_complete the callback to run once discovery completes.
- */
 void DiscoveryAgent::StartFullDiscovery(
     DiscoveryCompleteCallback *on_complete) {
   InitDiscovery(on_complete, false);
 }
 
-
-/**
- * Initiate incremental discovery
- * @param on_complete the callback to run once discovery completes.
- */
 void DiscoveryAgent::StartIncrementalDiscovery(
     DiscoveryCompleteCallback *on_complete) {
   InitDiscovery(on_complete, true);
 }
 
-
-/**
+/*
  * Start the discovery process
  * @param on_complete the callback to run when discovery completes
  * @param incremental true if this is incremental, false otherwise
@@ -154,22 +113,32 @@ void DiscoveryAgent::InitDiscovery(
   UID lower(0, 0);
   m_uid_ranges.push(new UIDRange(lower, UID::AllDevices(), NULL));
 
-  m_target->UnMuteAll(m_unmute_callback);
+  m_unmute_count = 0;
+  m_target->UnMuteAll(m_unmute_callback.get());
 }
 
-
-/**
- * Called when the UnMute completes. This starts muting previously known
- * devices, or proceeeds immediately to the DUB stage if there are none.
+/*
+ * Called when the UnMute completes. This resends the Unmute command up to
+ * BROADCAST_UNMUTE_REPEATS times and then starts muting previously known
+ * devices (incremental only).
  */
 void DiscoveryAgent::UnMuteComplete() {
+  if (m_uid_ranges.empty()) {
+    // Abort() was called
+    return;
+  }
+
+  m_unmute_count++;
+  if (m_unmute_count < BROADCAST_UNMUTE_REPEATS) {
+    m_target->UnMuteAll(m_unmute_callback.get());
+    return;
+  }
   MaybeMuteNextDevice();
 }
 
-
-/**
- * If any previously discovered devices remain, mute them. Otherwise proceed to
- * the branch phase.
+/*
+ * If we're in incremental mode, mute previously discovered devices. Otherwise
+ * proceed to the branch stage.
  */
 void DiscoveryAgent::MaybeMuteNextDevice() {
   if (m_uids_to_mute.empty()) {
@@ -178,10 +147,9 @@ void DiscoveryAgent::MaybeMuteNextDevice() {
     m_muting_uid = m_uids_to_mute.front();
     m_uids_to_mute.pop();
     OLA_DEBUG << "Muting previously discovered responder: " << m_muting_uid;
-    m_target->MuteDevice(m_muting_uid, m_incremental_mute_callback);
+    m_target->MuteDevice(m_muting_uid, m_incremental_mute_callback.get());
   }
 }
-
 
 /**
  * Called when we mute a device during incremental discovery.
@@ -196,8 +164,7 @@ void DiscoveryAgent::IncrementalMuteComplete(bool status) {
   MaybeMuteNextDevice();
 }
 
-
-/**
+/*
  * Send a Discovery Unique Branch request.
  */
 void DiscoveryAgent::SendDiscovery() {
@@ -231,17 +198,17 @@ void DiscoveryAgent::SendDiscovery() {
       ", attempt " << range->attempt << ", uids found: " <<
       range->uids_discovered << ", failures " << range->failures <<
       ", corrupted " << range->branch_corrupt;
-    m_target->Branch(range->lower, range->upper, m_branch_callback);
+    m_target->Branch(range->lower, range->upper, m_branch_callback.get());
   }
 }
 
-
-/**
- * Called when we get a response (or timeout) to a branch request.
+/*
+ * Handle a DUB response (inc. timeouts).
  * @param data the raw response, excluding the start code
  * @param length the length of the response, 0 if no response was received.
  */
 void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
+  OLA_INFO << "BranchComplete, got " << length;
   if (length == 0) {
     // timeout
     FreeCurrentRange();
@@ -249,25 +216,33 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
     return;
   }
 
-  if (length < MIN_DUB_RESPONSE_SIZE || length > MAX_DUB_RESPONSE_SIZE) {
+  // Must at least have the separator, the EUID and the checksum
+  if (length < 1 + EUID_SIZE + CHECKSUM_SIZE) {
     HandleCollision();
     return;
   }
 
-  unsigned int preamble_size = length - MIN_DUB_RESPONSE_SIZE;
-  for (unsigned int i = 0; i < preamble_size; i++) {
-    if (data[i] != 0xfe) {
-      OLA_INFO << "preamble " << i << " " << std::hex <<
-        static_cast<int>(data[i]);
+  unsigned int offset = 0;
+  while (data[offset] != PREAMBLE_SEPARATOR && offset < PREAMBLE_SIZE - 1) {
+    if (data[offset] != PREAMBLE) {
+      OLA_INFO << "Preamble " << offset << " " << strings::ToHex(data[offset]);
       HandleCollision();
       return;
     }
+    offset++;
   }
 
-  unsigned int offset = preamble_size;
-  if (data[offset++] != 0xaa) {
-    OLA_INFO << "preamble separator is " << std::hex <<
-      static_cast<int>(data[offset]);
+  if (data[offset] != PREAMBLE_SEPARATOR) {
+    OLA_INFO << "Preamble separator" << offset << " "
+             << strings::ToHex(data[offset]);
+    HandleCollision();
+    return;
+  }
+
+  offset++;
+  unsigned int remaining = length - offset;
+  if (remaining < EUID_SIZE + CHECKSUM_SIZE) {
+    OLA_INFO << "Insufficient data remaining, was " << remaining;
     HandleCollision();
     return;
   }
@@ -295,8 +270,9 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
       reinterpret_cast<const dub_response_structure*>(data + offset);
 
   uint16_t calculated_checksum = 0;
-  for (unsigned int i = offset; i < offset + 12; i++)
+  for (unsigned int i = offset; i < offset + EUID_SIZE; i++) {
     calculated_checksum += data[i];
+  }
 
   uint16_t recovered_checksum =
     ((response->ecs3 & response->ecs2) << 8) +
@@ -338,13 +314,12 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
     m_muting_uid = located_uid;
     m_mute_attempts = 0;
     OLA_INFO << "muting " << m_muting_uid;
-    m_target->MuteDevice(m_muting_uid, m_branch_mute_callback);
+    m_target->MuteDevice(m_muting_uid, m_branch_mute_callback.get());
   }
 }
 
-
-/**
- * Called when we successfull mute a device during the branch phase
+/*
+ * Called when we successfull mute a device during the branch stage.
  */
 void DiscoveryAgent::BranchMuteComplete(bool status) {
   m_mute_attempts++;
@@ -355,7 +330,7 @@ void DiscoveryAgent::BranchMuteComplete(bool status) {
     // failed to mute, if we haven't reached the limit try it again
     if (m_mute_attempts < MAX_MUTE_ATTEMPTS) {
       OLA_INFO << "muting " << m_muting_uid;
-      m_target->MuteDevice(m_muting_uid, m_branch_mute_callback);
+      m_target->MuteDevice(m_muting_uid, m_branch_mute_callback.get());
       return;
     } else {
       // this UID is bad, either it was a phantom or it doesn't response to
@@ -367,9 +342,8 @@ void DiscoveryAgent::BranchMuteComplete(bool status) {
   SendDiscovery();
 }
 
-
-/**
- * Handle a collision
+/*
+ * Handle a DUB collision.
  */
 void DiscoveryAgent::HandleCollision() {
   UIDRange *range = m_uid_ranges.top();
@@ -402,8 +376,7 @@ void DiscoveryAgent::HandleCollision() {
   SendDiscovery();
 }
 
-
-/**
+/*
  * Deletes the current range from the stack, and pops it.
  */
 void DiscoveryAgent::FreeCurrentRange() {
@@ -411,7 +384,7 @@ void DiscoveryAgent::FreeCurrentRange() {
   if (m_uid_ranges.size() == 1) {
     // top of stack
     if (range->branch_corrupt) {
-      OLA_INFO << "top of tree is corrupted";
+      OLA_INFO << "Discovery tree is corrupted";
       m_tree_corrupt = true;
     }
   } else {

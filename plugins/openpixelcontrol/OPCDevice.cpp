@@ -27,9 +27,7 @@
 
 #include "ola/Logging.h"
 #include "olad/Preferences.h"
-#include "plugins/openpixelcontrol/OPCClient.h"
 #include "plugins/openpixelcontrol/OPCPort.h"
-#include "plugins/openpixelcontrol/OPCServer.h"
 
 namespace ola {
 namespace plugin {

@@ -80,12 +80,13 @@ bool OpenHandleAndClaimInterface(libusb_device *usb_device,
     return false;
   }
 
-  int r = libusb_claim_interface(*usb_handle, 0);
+  int r = libusb_claim_interface(*usb_handle, interface);
   if (r) {
     OLA_WARN << "Failed to claim interface " << interface
              << " on device: " << usb_device << ": "
              << LibUsbAdaptor::ErrorCodeToString(r);
     libusb_close(*usb_handle);
+    *usb_handle = NULL;
     return false;
   }
   return true;

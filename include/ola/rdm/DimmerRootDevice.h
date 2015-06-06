@@ -49,7 +49,7 @@ class DimmerRootDevice: public RDMControllerInterface {
 
     DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices);
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
     /**
@@ -73,18 +73,18 @@ class DimmerRootDevice: public RDMControllerInterface {
     rdm_identify_mode m_identify_mode;
     SubDeviceMap m_sub_devices;
 
-    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    const RDMResponse *GetProductDetailList(const RDMRequest *request);
-    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-    const RDMResponse *GetIdentify(const RDMRequest *request);
-    const RDMResponse *SetIdentify(const RDMRequest *request);
-    const RDMResponse *GetDmxBlockAddress(const RDMRequest *request);
-    const RDMResponse *SetDmxBlockAddress(const RDMRequest *request);
-    const RDMResponse *GetIdentifyMode(const RDMRequest *request);
-    const RDMResponse *SetIdentifyMode(const RDMRequest *request);
+    RDMResponse *GetDeviceInfo(const RDMRequest *request);
+    RDMResponse *GetProductDetailList(const RDMRequest *request);
+    RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+    RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+    RDMResponse *GetDeviceLabel(const RDMRequest *request);
+    RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+    RDMResponse *GetIdentify(const RDMRequest *request);
+    RDMResponse *SetIdentify(const RDMRequest *request);
+    RDMResponse *GetDmxBlockAddress(const RDMRequest *request);
+    RDMResponse *SetDmxBlockAddress(const RDMRequest *request);
+    RDMResponse *GetIdentifyMode(const RDMRequest *request);
+    RDMResponse *SetIdentifyMode(const RDMRequest *request);
 
     static const ResponderOps<DimmerRootDevice>::ParamHandler PARAM_HANDLERS[];
 };

@@ -26,6 +26,7 @@
 #ifndef INCLUDE_OLA_STRINGUTILS_H_
 #define INCLUDE_OLA_STRINGUTILS_H_
 
+#include <ola/strings/Format.h>
 #include <stdint.h>
 #include <iomanip>
 #include <iostream>
@@ -37,8 +38,18 @@
 
 namespace ola {
 
-/** @brief the width of a hex character in bits */
-enum { HEX_BIT_WIDTH = 4 };
+/**
+ * @brief Split a string into pieces.
+ *
+ * If two delimiters appear next to each other an empty string is added to the
+ *   output vector.
+ * @param[in] input the string to split
+ * @param[out] tokens pointer to a vector with the parts of the string
+ * @param delimiters the delimiiter to use for splitting. Defaults to ' '
+ */
+void StringSplit(const std::string &input,
+                 std::vector<std::string> *tokens,
+                 const std::string &delimiters = " ");
 
 /**
  * @brief Split a string into pieces.
@@ -48,10 +59,14 @@ enum { HEX_BIT_WIDTH = 4 };
  * @param[in] input the string to split
  * @param[out] tokens the parts of the string
  * @param delimiters the delimiiter to use for splitting. Defaults to ' '
+ * @deprecated Use the version with a vector pointer instead (3 Jan 2015).
  */
-void StringSplit(const std::string &input,
-                 std::vector<std::string> &tokens,  // NOLINT
-                 const std::string &delimiters = " ");
+inline void StringSplit(
+    const std::string &input,
+    std::vector<std::string> &tokens,  // NOLINT(runtime/references)
+    const std::string &delimiters = " ") {
+  StringSplit(input, &tokens, delimiters);
+}
 
 /**
  * @brief Trim leading and trailing whitespace from a string
@@ -101,71 +116,20 @@ bool StripSuffix(std::string *s, const std::string &suffix);
  * @brief Convert an int to a string.
  * @param i the int to convert
  * @return the string representation of the int
+ * @deprecated Use ola::strings::IntToString instead (30 Dec 2014).
  */
-std::string IntToString(int i);
+inline std::string IntToString(int i) {
+  return ola::strings::IntToString(i);
+}
 
 /**
  * Convert an unsigned int to a string.
  * @param i the unsigned int to convert
  * @return The string representation of the unsigned int
+ * @deprecated Use ola::strings::IntToString instead (30 Dec 2014).
  */
-std::string IntToString(unsigned int i);
-
-/**
- * Internal type used by ToHex
- */
-template<typename T>
-struct _ToHex {
- public:
-  _ToHex(T v, int width, bool prefix)
-      : width(width),
-        value(v),
-        prefix(prefix) {
-  }
-
-  int width;  // setw takes an int
-  T value;
-  bool prefix;
-};
-
-inline uint32_t _HexCast(uint8_t v) { return v; }
-inline uint16_t _HexCast(uint16_t v) { return v; }
-inline uint32_t _HexCast(uint32_t v) { return v; }
-
-/**
- * Convert a value to a hex string.
- *
- * Automatic constructor for _ToHex that deals with widths
- * @tparam T the type of value to convert
- * @param v the value to convert
- * @param prefix show the 0x prefix
- * @return A _ToHex struct representing the value, output it to an ostream to
- *     use it.
- * @note We only currently support unsigned ints due to a lack of requirement
- * for anything else
- */
-template<typename T>
-_ToHex<T> ToHex(T v, bool prefix = true) {
-  return _ToHex<T>(v,
-                   (std::numeric_limits<T>::digits / HEX_BIT_WIDTH),
-                   prefix);
-}
-
-/**
- * Output the _ToHex type to an ostream
- */
-template <typename T>
-std::ostream& operator<<(std::ostream &out, const _ToHex<T> &i) {
-  std::ios::fmtflags flags(out.flags());  // Store the current format flags
-  // In C++, you only get the 0x on non-zero values, so we have to explicitly
-  // add it for all values if we want it
-  if (i.prefix) {
-    out << "0x";
-  }
-  out << std::setw(i.width) << std::hex << std::setfill('0')
-      << _HexCast(i.value);
-  out.flags(flags);  // Put the format flags back to normal
-  return out;
+inline std::string IntToString(unsigned int i) {
+  return ola::strings::IntToString(i);
 }
 
 /**
@@ -189,7 +153,7 @@ std::string IntToHexString(unsigned int i, unsigned int width);
  */
 inline std::string IntToHexString(uint8_t i) {
   std::ostringstream str;
-  str << ToHex(i);
+  str << ola::strings::ToHex(i);
   return str.str();
 }
 
@@ -202,7 +166,7 @@ inline std::string IntToHexString(uint8_t i) {
  */
 inline std::string IntToHexString(uint16_t i) {
   std::ostringstream str;
-  str << ToHex(i);
+  str << ola::strings::ToHex(i);
   return str.str();
 }
 
@@ -215,7 +179,7 @@ inline std::string IntToHexString(uint16_t i) {
  */
 inline std::string IntToHexString(uint32_t i) {
   std::ostringstream str;
-  str << ToHex(i);
+  str << ola::strings::ToHex(i);
   return str.str();
 }
 
@@ -367,35 +331,52 @@ bool StringToInt(const std::string &value,
 bool StringToInt(const std::string &value, int8_t *output, bool strict = false);
 
 /**
+ * @brief Convert a string to an int type or return a default if it failed.
+ * @tparam int_type the type to convert to
+ * @param value the string to convert
+ * @param alternative the default value to return if conversion failed.
+ * @param[in] strict this controls if trailing characters produce an error.
+ * @returns the value if it converted successfully or the default if the string
+ * was not an int or the value was too large / small for the type.
+ */
+template <typename int_type>
+int_type StringToIntOrDefault(const std::string &value,
+                              int_type alternative,
+                              bool strict = false) {
+  int_type output;
+  return (StringToInt(value, &output, strict)) ? output : alternative;
+}
+
+/**
  * @brief Convert a hex string to a uint8_t.
+ *
+ * The string can contain upper or lower case hex characters.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
  */
 bool HexStringToInt(const std::string &value, uint8_t *output);
 
 /**
  * @brief Convert a hex string to a uint16_t.
+ *
+ * The string can contain upper or lower case hex characters.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
  */
 bool HexStringToInt(const std::string &value, uint16_t *output);
 
 /**
  * @brief Convert a hex string to a uint32_t.
+ *
+ * The string can contain upper or lower case hex characters.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
  */
 bool HexStringToInt(const std::string &value, uint32_t *output);
 
@@ -412,23 +393,23 @@ bool HexStringToInt(const std::string &value, int8_t *output);
 
 /**
  * @brief Convert a hex string to a int16_t.
+ *
+ * The string can contain upper or lower case hex characters.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
  */
 bool HexStringToInt(const std::string &value, int16_t *output);
 
 /**
  * @brief Convert a hex string to a int32_t.
+ *
+ * The string can contain upper or lower case hex characters.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
  */
 bool HexStringToInt(const std::string &value, int32_t *output);
 
@@ -476,15 +457,18 @@ void CustomCapitalizeLabel(std::string *s);
  *
  * The data is printed in two columns, hex on the left, ascii on the right.
  * Non ascii values are printed as .
+ * @deprecated Use ola::strings::FormatData instead (30 Dec 2014).
  */
-void FormatData(std::ostream *out,
-                const uint8_t *data,
-                unsigned int length,
-                unsigned int indent = 0,
-                unsigned int byte_per_line = 8);
+inline void FormatData(std::ostream *out,
+                       const uint8_t *data,
+                       unsigned int length,
+                       unsigned int indent = 0,
+                       unsigned int byte_per_line = 8) {
+  return ola::strings::FormatData(out, data, length, indent, byte_per_line);
+}
 
 /**
- * Convert a hex string, prefixed with 0x or 0X to an int type.
+ * @brief Convert a hex string, prefixed with 0x or 0X to an int type.
  */
 template <typename int_type>
 bool PrefixedHexStringToInt(const std::string &input, int_type *output) {

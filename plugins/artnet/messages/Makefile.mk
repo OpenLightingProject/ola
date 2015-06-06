@@ -22,7 +22,7 @@ nodist_plugins_artnet_messages_libolaartnetconf_la_SOURCES = \
     plugins/artnet/messages/ArtNetConfigMessages.pb.cc
 plugins_artnet_messages_libolaartnetconf_la_LIBADD = $(libprotobuf_LIBS)
 
-plugins/artnet/messages/ArtNetConfigMessages.pb.cc plugins/artnet/messages/ArtNetConfigMessages.pb.h: plugins/artnet/messages/ArtNetConfigMessages.proto
+plugins/artnet/messages/ArtNetConfigMessages.pb.cc plugins/artnet/messages/ArtNetConfigMessages.pb.h: plugins/artnet/messages/Makefile.mk plugins/artnet/messages/ArtNetConfigMessages.proto
 	$(PROTOC) --cpp_out plugins/artnet/messages/ --proto_path $(srcdir)/plugins/artnet/messages $(srcdir)/plugins/artnet/messages/ArtNetConfigMessages.proto
 
 endif

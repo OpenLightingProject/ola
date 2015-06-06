@@ -33,6 +33,14 @@
 
 #include <string>
 
+#if defined(_WIN32) && defined(__GNUC__)
+inline std::ostream& operator<<(std::ostream &stream,
+                                 const ptw32_handle_t &handle) {
+  stream << handle.p;
+  return stream;
+}
+#endif
+
 namespace ola {
 namespace thread {
 

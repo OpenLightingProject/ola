@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -205,6 +205,7 @@ class HTTPServer: public ola::thread::Thread {
   static const char CONTENT_TYPE_PNG[];
   static const char CONTENT_TYPE_CSS[];
   static const char CONTENT_TYPE_JS[];
+  static const char CONTENT_TYPE_OCT[];
 
   // Expose the SelectServer
   ola::io::SelectServer *SelectServer() { return &m_select_server; }

@@ -22,6 +22,11 @@
 #define PLUGINS_USBDMX_ASYNCPLUGINIMPL_H_
 
 #include <libusb.h>
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <map>
 #include <memory>
 #include <set>
@@ -42,10 +47,6 @@ class Device;
 
 namespace plugin {
 namespace usbdmx {
-
-#if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
-#define OLA_LIBUSB_HAS_HOTPLUG_API
-#endif
 
 /**
  * @brief The asynchronous libusb implementation.
@@ -68,7 +69,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool Start();
   bool Stop();
 
-  #ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+  #ifdef HAVE_LIBUSB_HOTPLUG_API
   /**
    * @brief Called when a USB hotplug event occurs.
    * @param dev the libusb_device the event occurred for.
@@ -85,12 +86,14 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
+  bool NewWidget(class JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(class AnymauDMX *widget);
   void WidgetRemoved(class EurolitePro *widget);
+  void WidgetRemoved(class JaRuleWidget *widget);
   void WidgetRemoved(class ScanlimeFadecandy *widget);
   void WidgetRemoved(class Sunlite *widget);
   void WidgetRemoved(class VellemanK8062 *widget);
@@ -113,7 +116,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   ola::thread::Mutex m_mutex;
   bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
   std::auto_ptr<class LibUsbThread> m_usb_thread;
-  std::auto_ptr<class LibUsbAdaptor> m_usb_adaptor;
+  std::auto_ptr<class AsyncronousLibUsbAdaptor> m_usb_adaptor;
 
   WidgetFactories m_widget_factories;
   USBDeviceToFactoryMap m_device_factory_map;

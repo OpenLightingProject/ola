@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
   vector<IPV4Address> targets;
   if (!FLAGS_target_addresses.str().empty()) {
     vector<string> tokens;
-    ola::StringSplit(FLAGS_target_addresses, tokens, ",");
+    ola::StringSplit(FLAGS_target_addresses, &tokens, ",");
 
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {

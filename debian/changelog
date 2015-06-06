@@ -1,3 +1,16 @@
+ola (0.9.5-1) unstable; urgency=low
+
+  * New upstream release
+  * Update udev rules
+
+ -- RenZO <renzo@imaginux.com>  Sat, 28 Feb 2015 19:22:09 +0100
+
+ola (0.9.4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- RenZO <renzo@imaginux.com>  Sat, 24 Jan 2015 18:24:52 +0100
+
 ola (0.9.3-1) unstable; urgency=low
 
   * New upstream release

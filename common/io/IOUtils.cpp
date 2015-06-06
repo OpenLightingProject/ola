@@ -20,9 +20,10 @@
 
 #include "ola/io/IOUtils.h"
 
-#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <string>
 
 #include "ola/Logging.h"
@@ -39,6 +40,16 @@ bool Open(const string &path, int oflag, int *fd) {
     return false;
   }
   return true;
+}
+
+bool TryOpen(const string &path, int oflag, int *fd) {
+  *fd = open(path.c_str(), oflag);
+  return *fd >= 0;
+}
+
+bool FileExists(const std::string &file_name) {
+  struct stat file_stat;
+  return 0 == stat(file_name.c_str(), &file_stat);
 }
 }  // namespace io
 }  // namespace ola

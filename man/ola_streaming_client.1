@@ -12,12 +12,24 @@ will read from STDIN.
 Display the help message.
 .IP "-d, --dmx <dmx data>"
 The DMX512 data to send, e.g. '1,240,0,255'
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
 .IP "-u, --universe <universe-id>"
 Id of the universe to send data for.
 .IP "-v, --version"
 Print
 .B ola_streaming_client
 version information
+.IP "--syslog"
+Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
 .SH SEE ALSO
 .BR olad(1) ,
 .

@@ -18,10 +18,18 @@
  * Copyright (C) 2014 Peter Newman
  */
 
+#include <string>
+#include <vector>
+
+#include "ola/file/Util.h"
+#include "ola/io/IOUtils.h"
 #include "ola/io/Serial.h"
 
 namespace ola {
 namespace io {
+
+using std::vector;
+using std::string;
 
 bool UIntToSpeedT(uint32_t value, speed_t *output) {
   switch (value) {
@@ -43,6 +51,19 @@ bool UIntToSpeedT(uint32_t value, speed_t *output) {
     case BAUD_RATE_230400:
       *output = B230400;
       return true;
+  }
+  return false;
+}
+
+bool CheckForUUCPLockFile(const std::vector<std::string> &directories,
+                          const std::string &serial_device) {
+  vector<string>::const_iterator iter = directories.begin();
+  for (; iter != directories.end(); ++iter) {
+    const string lock_file = (
+        *iter + ola::file::PATH_SEPARATOR + "LCK.." + serial_device);
+    if (FileExists(lock_file)) {
+      return true;
+    }
   }
   return false;
 }

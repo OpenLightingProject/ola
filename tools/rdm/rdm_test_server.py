@@ -540,13 +540,20 @@ class TestDefinitionsHandler(JsonRequestHandler):
 class GetUniversesHandler(OLAServerRequestHandler):
   """Return a JSON list of universes."""
   def GetJson(self, request, response):
+    def UniverseToJson(u):
+      return {
+        '_id': u.id,
+        '_name': u.name,
+        '_merge_mode': u.merge_mode,
+      }
+
     status, universes = self.GetThread().FetchUniverses()
     if not status.Succeeded():
       raise ServerException('Failed to fetch universes from server')
 
     response.SetStatus(HTTPResponse.OK)
     return {
-      'universes': [u.__dict__ for u in universes],
+      'universes': [UniverseToJson(u) for u in universes],
       'status': True,
     }
 

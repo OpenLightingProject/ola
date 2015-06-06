@@ -72,7 +72,6 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
                                             RDMCallback *on_complete) {
   // Take ownership of the request object, so the targets don't have to.
   std::auto_ptr<const RDMRequest> request(raw_request);
-  std::vector<std::string> packets;
 
   if (!on_complete) {
     OLA_WARN << "Null callback passed!";
@@ -88,16 +87,16 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
                << request->DestinationUID();
     }
 
-    on_complete->Run(
-        (request->DestinationUID().IsBroadcast() ?
-         RDM_WAS_BROADCAST : RDM_TIMEOUT),
-        NULL, packets);
+    RunRDMCallback(
+        on_complete,
+        request->DestinationUID().IsBroadcast() ?  RDM_WAS_BROADCAST :
+            RDM_TIMEOUT);
     return;
   }
 
   // Right now we don't support discovery.
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
-    on_complete->Run(RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED, NULL, packets);
+    RunRDMCallback(on_complete, RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     return;
   }
 
@@ -105,12 +104,12 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
   if (request->CommandClass() == RDMCommand::GET_COMMAND &&
       request->DestinationUID().IsBroadcast()) {
     OLA_WARN << "Received broadcast GET command";
-    on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
+    RunRDMCallback(on_complete, RDM_WAS_BROADCAST);
     return;
   }
 
-  const RDMResponse *response = NULL;
-  rdm_response_code response_code = RDM_COMPLETED_OK;
+  RDMResponse *response = NULL;
+  RDMStatusCode status_code = RDM_COMPLETED_OK;
 
   // Right now we don't support sub devices
   bool for_our_subdevice = request->SubDevice() == sub_device ||
@@ -118,10 +117,11 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
 
   if (!for_our_subdevice) {
     if (request->DestinationUID().IsBroadcast()) {
-      on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
+      RunRDMCallback(on_complete, RDM_WAS_BROADCAST);
     } else {
-      response = NackWithReason(request.get(), NR_SUB_DEVICE_OUT_OF_RANGE);
-      on_complete->Run(RDM_COMPLETED_OK, response, packets);
+      RDMReply reply(RDM_COMPLETED_OK,
+                     NackWithReason(request.get(), NR_SUB_DEVICE_OUT_OF_RANGE));
+      on_complete->Run(&reply);
     }
     return;
   }
@@ -129,19 +129,21 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
   // gets to ALL_RDM_SUBDEVICES are a special case
   if (request->SubDevice() == ALL_RDM_SUBDEVICES &&
       request->CommandClass() == RDMCommand::GET_COMMAND) {
-    // the broadcast get case was handled above.
-    response = NackWithReason(request.get(), NR_SUB_DEVICE_OUT_OF_RANGE);
-    on_complete->Run(RDM_COMPLETED_OK, response, packets);
+    // The broadcast get case was handled above.
+    RDMReply reply(RDM_COMPLETED_OK,
+                   NackWithReason(request.get(), NR_SUB_DEVICE_OUT_OF_RANGE));
+    on_complete->Run(&reply);
     return;
   }
 
   InternalParamHandler *handler = STLFind(&m_handlers, request->ParamId());
   if (!handler) {
     if (request->DestinationUID().IsBroadcast()) {
-      on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
+      RunRDMCallback(on_complete, RDM_WAS_BROADCAST);
     } else {
-      response = NackWithReason(request.get(), NR_UNKNOWN_PID);
-      on_complete->Run(RDM_COMPLETED_OK, response, packets);
+      RDMReply reply(RDM_COMPLETED_OK,
+                     NackWithReason(request.get(), NR_UNKNOWN_PID));
+      on_complete->Run(&reply);
     }
     return;
   }
@@ -149,7 +151,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
   if (request->CommandClass() == RDMCommand::GET_COMMAND) {
     if (request->DestinationUID().IsBroadcast()) {
       // this should have been handled above, but be safe.
-      response_code = RDM_WAS_BROADCAST;
+      status_code = RDM_WAS_BROADCAST;
     } else {
       if (handler->get_handler) {
         response = (target->*(handler->get_handler))(request.get());
@@ -176,9 +178,10 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
     if (response) {
       delete response;
     }
-    on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
+    RunRDMCallback(on_complete, RDM_WAS_BROADCAST);
   } else {
-    on_complete->Run(response_code, response, packets);
+    RDMReply reply(status_code, response);
+    on_complete->Run(&reply);
   }
 }
 

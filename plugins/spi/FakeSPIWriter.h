@@ -21,6 +21,7 @@
 #ifndef PLUGINS_SPI_FAKESPIWRITER_H_
 #define PLUGINS_SPI_FAKESPIWRITER_H_
 
+#include <ola/testing/TestUtils.h>
 #include <ola/thread/Mutex.h>
 #include <stdint.h>
 #include <string>
@@ -62,7 +63,8 @@ class FakeSPIWriter : public SPIWriterInterface {
 
   unsigned int WriteCount() const;
   unsigned int LastWriteSize() const;
-  void CheckDataMatches(unsigned int line, const uint8_t *data,
+  void CheckDataMatches(const ola::testing::SourceLine &source_line,
+                        const uint8_t *data,
                         unsigned int length);
 
  private:

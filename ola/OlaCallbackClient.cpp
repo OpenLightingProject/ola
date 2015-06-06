@@ -442,8 +442,8 @@ void OlaCallbackClient::HandleUniverseInfo(
       universe.Id(),
       universe.MergeMode(),
       universe.Name(),
-      universe.InputPortCount(),
-      universe.OutputPortCount(),
+      universe.InputPorts(),
+      universe.OutputPorts(),
       universe.RDMDeviceCount());
   callback->Run(new_universe, result.Error());
 }

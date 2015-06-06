@@ -55,10 +55,11 @@ class OSCPlugin: public ola::Plugin {
                        OSCDevice::PortConfig *port_config);
 
     OSCDevice *m_device;
+    static const uint8_t DEFAULT_PORT_COUNT = 5;
+    static const uint16_t DEFAULT_UDP_PORT = 7770;
+
     static const char DEFAULT_ADDRESS_TEMPLATE[];
-    static const char DEFAULT_PORT_COUNT[];
     static const char DEFAULT_TARGETS_TEMPLATE[];
-    static const char DEFAULT_UDP_PORT[];
     static const char INPUT_PORT_COUNT_KEY[];
     static const char OUTPUT_PORT_COUNT_KEY[];
     static const char PLUGIN_NAME[];

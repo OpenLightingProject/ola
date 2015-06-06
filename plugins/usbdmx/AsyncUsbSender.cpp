@@ -32,6 +32,9 @@ namespace {
 /*
  * Called by libusb when the transfer completes.
  */
+#ifdef _WIN32
+__attribute__((__stdcall__))
+#endif
 void AsyncCallback(struct libusb_transfer *transfer) {
   AsyncUsbSender *widget = reinterpret_cast<AsyncUsbSender*>(
       transfer->user_data);

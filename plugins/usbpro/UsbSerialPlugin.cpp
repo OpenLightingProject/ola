@@ -51,8 +51,6 @@ using std::string;
 using std::vector;
 
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
-const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
-const char UsbSerialPlugin::DEFAULT_ULTRA_FPS_LIMIT[] = "40";
 const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 const char UsbSerialPlugin::IGNORED_DEVICES_KEY[] = "ignore_device";
@@ -66,6 +64,9 @@ const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 const char UsbSerialPlugin::ULTRA_FPS_LIMIT_KEY[] = "ultra_fps_limit";
+const char UsbSerialPlugin::UUCP_LOCK_PATH_KEY[] = "uucp_lock_path";
+const char UsbSerialPlugin::UUCP_LINUX_PATH[] = "/tmp";
+const char UsbSerialPlugin::UUCP_MAC_PATH[] = "/var/lock";
 
 UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
@@ -111,6 +112,9 @@ string UsbSerialPlugin::Description() const {
 "\n"
 "ultra_fps_limit = 40\n"
 "The max frames per second to send to a Ultra DMX Pro device.\n"
+"\n"
+"uucp_lock_path = /var/lock\n"
+"Path to check for UUCP Lock files."
 "\n";
 }
 
@@ -266,6 +270,8 @@ bool UsbSerialPlugin::StartHook() {
       m_preferences->GetValue(DEVICE_DIR_KEY));
   m_detector_thread.SetDevicePrefixes(
       m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY));
+  m_detector_thread.SetUUCPLockFilePaths(
+      m_preferences->GetMultipleValue(UUCP_LOCK_PATH_KEY));
   if (!m_detector_thread.Start()) {
     OLA_FATAL << "Failed to start the widget discovery thread";
     return false;
@@ -304,6 +310,14 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, LINUX_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, MAC_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, BSD_DEVICE_PREFIX);
+    save = true;
+  }
+
+  vector<string> lock_paths =
+    m_preferences->GetMultipleValue(UUCP_LOCK_PATH_KEY);
+  if (lock_paths.empty()) {
+    m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_MAC_PATH);
+    m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_LINUX_PATH);
     save = true;
   }
 
@@ -361,8 +375,9 @@ string UsbSerialPlugin::GetDeviceName(
 unsigned int UsbSerialPlugin::GetProFrameLimit() {
   unsigned int fps_limit;
   if (!StringToInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
-                   &fps_limit))
-    StringToInt(DEFAULT_PRO_FPS_LIMIT, &fps_limit);
+                   &fps_limit)) {
+    return DEFAULT_PRO_FPS_LIMIT;
+  }
   return fps_limit;
 }
 
@@ -373,8 +388,9 @@ unsigned int UsbSerialPlugin::GetProFrameLimit() {
 unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
   unsigned int fps_limit;
   if (!StringToInt(m_preferences->GetValue(ULTRA_FPS_LIMIT_KEY) ,
-                   &fps_limit))
-    StringToInt(DEFAULT_ULTRA_FPS_LIMIT, &fps_limit);
+                   &fps_limit)) {
+    return DEFAULT_ULTRA_FPS_LIMIT;
+  }
   return fps_limit;
 }
 }  // namespace usbpro

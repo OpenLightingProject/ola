@@ -443,7 +443,7 @@ void OlaServerServiceImplTest::testSetUniverseName() {
   Universe *universe = store.GetUniverse(universe_id);
   OLA_ASSERT_FALSE(universe);
 
-  // Check SetUniverseName works on an existing univserse
+  // Check SetUniverseName works on an existing universe
   universe = store.GetUniverseOrCreate(universe_id);
   CallSetUniverseName(&service, universe_id, universe_name, &ack_check);
   OLA_ASSERT_EQ(universe_name, universe->Name());

@@ -23,8 +23,11 @@
 
 #include <memory>
 #include <string>
+
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
+#include "plugins/openpixelcontrol/OPCClient.h"
+#include "plugins/openpixelcontrol/OPCServer.h"
 
 namespace ola {
 

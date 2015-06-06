@@ -207,9 +207,9 @@ class SettingManager {
 
     virtual ~SettingManager() {}
 
-    const RDMResponse *Get(const RDMRequest *request) const;
-    const RDMResponse *Set(const RDMRequest *request);
-    const RDMResponse *GetDescription(const RDMRequest *request) const;
+    RDMResponse *Get(const RDMRequest *request) const;
+    RDMResponse *Set(const RDMRequest *request);
+    RDMResponse *GetDescription(const RDMRequest *request) const;
 
     uint8_t Count() const {
       return m_settings->Count();
@@ -230,8 +230,7 @@ typedef SettingCollection<BasicSetting> BasicSettingCollection;
 typedef SettingManager<BasicSetting> BasicSettingManager;
 
 template <class SettingType>
-const RDMResponse *SettingManager<SettingType>::Get(
-    const RDMRequest *request) const {
+RDMResponse *SettingManager<SettingType>::Get(const RDMRequest *request) const {
   uint16_t data = ((m_current_setting + m_settings->Offset()) << 8 |
       m_settings->Count());
   if (m_settings->Offset() == 0) {
@@ -242,8 +241,7 @@ const RDMResponse *SettingManager<SettingType>::Get(
 }
 
 template <class SettingType>
-const RDMResponse *SettingManager<SettingType>::Set(
-    const RDMRequest *request) {
+RDMResponse *SettingManager<SettingType>::Set(const RDMRequest *request) {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -259,7 +257,7 @@ const RDMResponse *SettingManager<SettingType>::Set(
 }
 
 template <class SettingType>
-const RDMResponse *SettingManager<SettingType>::GetDescription(
+RDMResponse *SettingManager<SettingType>::GetDescription(
     const RDMRequest *request) const {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
@@ -272,7 +270,8 @@ const RDMResponse *SettingManager<SettingType>::GetDescription(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     const SettingType *setting = m_settings->Lookup(arg - offset);
-    uint8_t output[setting->DescriptionResponseSize()]; // NOLINT
+    uint8_t output[
+        setting->DescriptionResponseSize()];  // NOLINT(runtime/arrays)
     unsigned int size = setting->GenerateDescriptionResponse(arg, output);
     return GetResponseFromData(request, output, size, RDM_ACK);
   }

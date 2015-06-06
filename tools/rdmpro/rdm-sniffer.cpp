@@ -22,8 +22,8 @@
 #include <time.h>
 
 #include <ola/Callback.h>
-#include <ola/Constants.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
@@ -38,6 +38,7 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
+#include <ola/strings/Format.h>
 
 #include <iostream>
 #include <fstream>
@@ -53,7 +54,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-using ola::ToHex;
+using ola::strings::ToHex;
 using ola::io::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::messaging::Descriptor;
@@ -231,9 +232,11 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
     // this is an actual byte of data
     switch (m_state) {
       case IDLE:
+        // fall through
       case MAB:
         m_state = DATA;
         m_frame.Reset();
+        // fall through
       case DATA:
         m_frame.AddByte(data_byte);
         break;

@@ -61,7 +61,7 @@ class EnttecPort
     bool SupportsRDM() const { return m_enable_rdm; }
 
     // the following are from DiscoverableRDMControllerInterface
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -115,7 +115,8 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       }
     };
 
-    EnttecUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
+    EnttecUsbProWidget(ola::thread::SchedulerInterface *ss,
+                       ola::io::ConnectedDescriptor *descriptor,
                        const EnttecUsbProWidgetOptions &options);
     ~EnttecUsbProWidget();
 

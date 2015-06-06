@@ -641,11 +641,11 @@ class DiscoveryMixin(ResponderTestFixture):
     if not self.ExpectResponse():
       return
 
-    if len(response.raw_response) != 1:
+    if len(response.frames) != 1:
       self.SetFailed('Multiple DUB responses returned')
       return
 
-    uid = DecodeResponse(bytearray(response.raw_response[0]))
+    uid = DecodeResponse(bytearray(response.frames[0].data))
     if uid is None or uid != self._uid:
       self.SetFailed('Missing UID in DUB response')
 
@@ -664,7 +664,7 @@ class SetDmxFailModeMixin(object):
   REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
 
-  INFINITE_TIME = 6553.5
+  INFINITE_TIME = 6553.5 # 0xffff * 10^-1 (multiplier)
 
   def ResetState(self):
     if not self.PidSupported():
@@ -693,7 +693,7 @@ class SetDmxStartupModeMixin(object):
               'set_dmx_startup_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
 
-  INFINITE_TIME = 6553.5
+  INFINITE_TIME = 6553.5 # 0xffff * 10^-1 (multiplier)
 
   def ResetState(self):
     if not self.PidSupported():

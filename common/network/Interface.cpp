@@ -134,7 +134,10 @@ InterfaceBuilder::InterfaceBuilder()
   : m_ip_address(0),
     m_broadcast_address(0),
     m_subnet_mask(0),
-    m_hw_address() {
+    m_hw_address(),
+    m_loopback(false),
+    m_index(Interface::DEFAULT_INDEX),
+    m_type(Interface::ARP_VOID_TYPE) {
 }
 
 

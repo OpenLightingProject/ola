@@ -38,16 +38,14 @@ const InterfacePicker *NetworkManager::GetInterfacePicker() const {
 }
 
 rdm_dhcp_status NetworkManager::GetDHCPStatus(const Interface&) const {
-  // It's a challenge to determine DHCP state, so we already return
+  // It's a challenge to determine DHCP state, so we always return
   // DHCP_STATUS_UNKNOWN.
   return DHCP_STATUS_UNKNOWN;
 }
 
-bool NetworkManager::GetIPV4DefaultRoute(
-    IPV4Address *default_route) const {
-  // if_index is ignored for now.
-  int32_t if_index;
-  return ola::network::DefaultRoute(&if_index, default_route);
+bool NetworkManager::GetIPV4DefaultRoute(int32_t *if_index,
+                                         IPV4Address *default_route) const {
+  return ola::network::DefaultRoute(if_index, default_route);
 }
 
 const string NetworkManager::GetHostname() const {

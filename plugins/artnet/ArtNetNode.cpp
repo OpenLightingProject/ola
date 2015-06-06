@@ -29,12 +29,15 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
+#include "ola/strings/Utils.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 
@@ -42,8 +45,8 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using ola::Callback1;
 using ola::Callback0;
+using ola::Callback1;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -51,14 +54,18 @@ using ola::network::IPV4SocketAddress;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
-using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMFrame;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
+using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::strings::CopyToFixedLengthBuffer;
+using ola::strings::ToHex;
 using std::auto_ptr;
 using std::map;
 using std::pair;
@@ -124,7 +131,7 @@ class ArtNetNodeImpl::InputPort {
     return m_port_address;
   }
 
-  void SetTodCallback(ola::rdm::RDMDiscoveryCallback *callback) {
+  void SetTodCallback(RDMDiscoveryCallback *callback) {
     m_tod_callback.reset(callback);
   }
 
@@ -152,14 +159,14 @@ class ArtNetNodeImpl::InputPort {
   uid_map uids;  // used to keep track of the UIDs
   // NULL if discovery isn't running, otherwise the callback to run when it
   // finishes
-  ola::rdm::RDMDiscoveryCallback *discovery_callback;
+  RDMDiscoveryCallback *discovery_callback;
   // The set of nodes we're expecting a response from
   set<IPV4Address> discovery_node_set;
   // the timeout_id for the discovery timer
   ola::thread::timeout_id discovery_timeout;
   // the in-flight request and it's callback
-  ola::rdm::RDMCallback *rdm_request_callback;
-  const ola::rdm::RDMRequest *pending_request;
+  RDMCallback *rdm_request_callback;
+  const RDMRequest *pending_request;
   IPV4Address rdm_ip_destination;
 
   // these control the sending of RDM requests.
@@ -169,7 +176,7 @@ class ArtNetNodeImpl::InputPort {
   uint8_t m_port_address;
   // The callback to run if we receive an TOD and the discovery process
   // isn't running
-  auto_ptr<ola::rdm::RDMDiscoveryCallback> m_tod_callback;
+  auto_ptr<RDMDiscoveryCallback> m_tod_callback;
 
   void RunRDMCallbackWithUIDs(const uid_map &uids,
                               RDMDiscoveryCallback *callback) {
@@ -196,6 +203,8 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
       m_always_broadcast(options.always_broadcast),
       m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_in_configuration_mode(false),
+      m_artpoll_required(false),
+      m_artpollreply_required(false),
       m_interface(iface),
       m_socket(socket) {
 
@@ -251,7 +260,6 @@ bool ArtNetNodeImpl::Stop() {
     return false;
 
   // clean up any in-flight rdm requests
-  vector<string> packets;
   InputPorts::iterator iter = m_input_ports.begin();
   for (; iter != m_input_ports.end(); ++iter) {
     InputPort *port = *iter;
@@ -278,7 +286,7 @@ bool ArtNetNodeImpl::Stop() {
     if (port->rdm_request_callback) {
       RDMCallback *callback = port->rdm_request_callback;
       port->rdm_request_callback = NULL;
-      callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+      RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
     }
   }
 
@@ -402,12 +410,15 @@ uint8_t ArtNetNodeImpl::GetInputPortUniverse(uint8_t port_id) const {
 
 void ArtNetNodeImpl::DisableInputPort(uint8_t port_id) {
   InputPort *port = GetInputPort(port_id);
-  bool was_enabled = port->enabled;
-  if (port)
+  bool was_enabled = false;
+  if (port) {
+    was_enabled = port->enabled;
     port->enabled = false;
+  }
 
-  if (was_enabled)
+  if (was_enabled) {
     SendPollReplyIfRequired();
+  }
 }
 
 bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
@@ -418,11 +429,13 @@ bool ArtNetNodeImpl::InputPortState(uint8_t port_id) const {
 bool ArtNetNodeImpl::SetOutputPortUniverse(uint8_t port_id,
                                            uint8_t universe_id) {
   OutputPort *port = GetOutputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
-  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf))
+  if (port->enabled && (port->universe_address & 0xf) == (universe_id & 0xf)) {
     return true;
+  }
 
   port->universe_address = (
       (universe_id & 0x0f) | (port->universe_address & 0xf0));
@@ -587,7 +600,7 @@ void ArtNetNodeImpl::RunFullDiscovery(uint8_t port_id,
 
 void ArtNetNodeImpl::RunIncrementalDiscovery(
     uint8_t port_id,
-    ola::rdm::RDMDiscoveryCallback *callback) {
+    RDMDiscoveryCallback *callback) {
   InputPort *port = GetEnabledInputPort(port_id, "ArtTodRequest");
   if (!port) {
     UIDSet uids;
@@ -613,28 +626,23 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
 }
 
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
-                                    const RDMRequest *request,
+                                    RDMRequest *request_ptr,
                                     RDMCallback *on_complete) {
-  vector<string> packets;
+  auto_ptr<RDMRequest> request(request_ptr);
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
-    on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
-                     NULL,
-                     packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     return;
   }
 
   InputPort *port = GetEnabledInputPort(port_id, "ArtRDM");
   if (!port) {
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
   if (port->rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
@@ -650,26 +658,23 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
   }
 
   port->rdm_request_callback = on_complete;
-  port->pending_request = request;
-  bool r = SendRDMCommand(*request,
+  port->pending_request = request.release();
+  bool r = SendRDMCommand(*port->pending_request,
                           port->rdm_ip_destination,
                           port->PortAddress());
-  if (r) {
-    if (uid_destination.IsBroadcast()) {
-      port->rdm_request_callback = NULL;
-      port->pending_request = NULL;
-      delete request;
-      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
-    } else {
-      port->rdm_send_timeout = m_ss->RegisterSingleTimeout(
-        RDM_REQUEST_TIMEOUT_MS,
-        ola::NewSingleCallback(this, &ArtNetNodeImpl::TimeoutRDMRequest, port));
-    }
+
+  if (r && !uid_destination.IsBroadcast()) {
+    port->rdm_send_timeout = m_ss->RegisterSingleTimeout(
+      RDM_REQUEST_TIMEOUT_MS,
+      ola::NewSingleCallback(this, &ArtNetNodeImpl::TimeoutRDMRequest, port));
   } else {
-    port->rdm_request_callback = NULL;
+    delete port->pending_request;
     port->pending_request = NULL;
-    delete request;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    port->rdm_request_callback = NULL;
+    RunRDMCallback(
+        on_complete,
+        uid_destination.IsBroadcast() ? ola::rdm::RDM_WAS_BROADCAST :
+                                        ola::rdm::RDM_FAILED_TO_SEND);
   }
 }
 
@@ -767,7 +772,7 @@ bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
     uint8_t port_id,
     ola::Callback0<void> *on_discover,
     ola::Callback0<void> *on_flush,
-    ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
+    ola::Callback2<void, RDMRequest*, RDMCallback*> *on_rdm_request) {
   OutputPort *port = GetOutputPort(port_id);
   if (!port)
     return false;
@@ -853,17 +858,15 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
   packet.data.reply.oem = HostToNetwork(OEM_CODE);
   packet.data.reply.status1 = 0xd2;  // normal indicators, rdm enabled
   packet.data.reply.esta_id = HostToLittleEndian(OPEN_LIGHTING_ESTA_CODE);
-  strncpy(packet.data.reply.short_name,
-          m_short_name.data(),
-          ARTNET_SHORT_NAME_LENGTH);
-  strncpy(packet.data.reply.long_name,
-          m_long_name.data(),
-          ARTNET_LONG_NAME_LENGTH);
+  strings::StrNCopy(packet.data.reply.short_name,
+                    m_short_name.data());
+  strings::StrNCopy(packet.data.reply.long_name,
+                    m_long_name.data());
 
   std::ostringstream str;
   str << "#0001 [" << m_unsolicited_replies << "] OLA";
-  strncpy(packet.data.reply.node_report, str.str().data(),
-          ARTNET_REPORT_LENGTH);
+  CopyToFixedLengthBuffer(str.str(), packet.data.reply.node_report,
+                          arraysize(packet.data.reply.node_report));
   packet.data.reply.number_ports[1] = ARTNET_MAX_PORTS;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort *iport = GetInputPort(i, false);
@@ -1236,11 +1239,12 @@ void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
     }
   }
 
+  // The ArtNet packet does not include the RDM start code. Prepend that.
+  RDMFrame rdm_response(packet.data, rdm_length, RDMFrame::Options(true));
+
   InputPorts::iterator iter = m_input_ports.begin();
   for (; iter != m_input_ports.end(); ++iter) {
     if ((*iter)->enabled && (*iter)->PortAddress() == packet.address) {
-      string rdm_response(reinterpret_cast<const char*>(packet.data),
-                          rdm_length);
       HandleRDMResponse(*iter, rdm_response, source_address);
     }
   }
@@ -1250,24 +1254,21 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     IPV4Address destination,
     uint8_t port_id,
     uint8_t universe_address,
-    ola::rdm::rdm_response_code code,
-    const RDMResponse *raw_response,
-    const vector<string>&) {
-  auto_ptr<const RDMResponse> response(raw_response);
+    RDMReply *reply) {
   OutputPort *port = GetEnabledOutputPort(port_id, "ArtRDM");
   if (!port)
     return;
 
   if (port->universe_address == universe_address) {
-    if (code == ola::rdm::RDM_COMPLETED_OK) {
+    if (reply->StatusCode() == ola::rdm::RDM_COMPLETED_OK) {
       // TODO(simon): handle fragmenation here
-      SendRDMCommand(*response, destination, universe_address);
-    } else if (code == ola::rdm::RDM_UNKNOWN_UID) {
+      SendRDMCommand(*reply->Response(), destination, universe_address);
+    } else if (reply->StatusCode() == ola::rdm::RDM_UNKNOWN_UID) {
       // call the on discovery handler, which will send a new TOD and
       // hopefully update the remote controller
       port->on_discover->Run();
     } else {
-      OLA_WARN << "ArtNet RDM request failed with code " << code;
+      OLA_WARN << "ArtNet RDM request failed with code " << reply->StatusCode();
     }
   } else {
     // the universe address has changed we need to drop this request
@@ -1276,60 +1277,59 @@ void ArtNetNodeImpl::RDMRequestCompletion(
 }
 
 void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
-                                       const string &response_data,
+                                       const RDMFrame &frame,
                                        const IPV4Address &source_address) {
-  ola::rdm::rdm_response_code code;
-  auto_ptr<const RDMResponse> response(RDMResponse::InflateFromData(
-      response_data, &code));
+  auto_ptr<RDMReply> reply(ola::rdm::RDMReply::FromFrame(frame));
 
   // without a valid response, we don't know which request this matches. This
   // makes ArtNet rather useless for RDM regression testing
-  if (!response.get())
+  if (!reply->Response()) {
     return;
+  }
 
   if (!port->pending_request) {
     return;
   }
 
   const RDMRequest *request = port->pending_request;
-  if (request->SourceUID() != response->DestinationUID() ||
-      request->DestinationUID() != response->SourceUID()) {
+  if (request->SourceUID() != reply->Response()->DestinationUID() ||
+      request->DestinationUID() != reply->Response()->SourceUID()) {
     OLA_INFO << "Got response from/to unexpected UID: req "
              << request->SourceUID() << " -> " << request->DestinationUID()
-             << ", res " << response->SourceUID() << " -> "
-             << response->DestinationUID();
+             << ", res " << reply->Response()->SourceUID() << " -> "
+             << reply->Response()->DestinationUID();
     return;
   }
 
   if (request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE &&
-      request->ParamId() != response->ParamId()) {
-    OLA_INFO << "Param ID mismatch, request was 0x" << std::hex
-             << request->ParamId() << ", response was 0x" << std::hex
-             << response->ParamId();
+      request->ParamId() != reply->Response()->ParamId()) {
+    OLA_INFO << "Param ID mismatch, request was "
+             << ToHex(request->ParamId()) << ", response was "
+             << ToHex(reply->Response()->ParamId());
     return;
   }
 
   if (request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE &&
       request->SubDevice() != ola::rdm::ALL_RDM_SUBDEVICES &&
-      request->SubDevice() != response->SubDevice()) {
+      request->SubDevice() != reply->Response()->SubDevice()) {
     OLA_INFO << "Subdevice mismatch, request was for"
              << request->SubDevice() << ", response was "
-             << response->SubDevice();
+             << reply->Response()->SubDevice();
     return;
   }
 
   if (request->CommandClass() == RDMCommand::GET_COMMAND &&
-      response->CommandClass() != RDMCommand::GET_COMMAND_RESPONSE &&
+      reply->Response()->CommandClass() != RDMCommand::GET_COMMAND_RESPONSE &&
       request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE) {
     OLA_INFO << "Invalid return CC in response to get, was "
-             << static_cast<int>(response->CommandClass());
+             << ToHex(reply->Response()->CommandClass());
     return;
   }
 
   if (request->CommandClass() == RDMCommand::SET_COMMAND &&
-      response->CommandClass() != RDMCommand::SET_COMMAND_RESPONSE) {
+      reply->Response()->CommandClass() != RDMCommand::SET_COMMAND_RESPONSE) {
     OLA_INFO << "Invalid return CC in response to set, was "
-             << static_cast<int>(response->CommandClass());
+             << ToHex(reply->Response()->CommandClass());
     return;
   }
 
@@ -1342,10 +1342,8 @@ void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
   // at this point we've decided it's for us
   port->pending_request = NULL;
   delete request;
-  ola::rdm::RDMCallback *callback = port->rdm_request_callback;
+  RDMCallback *callback = port->rdm_request_callback;
   port->rdm_request_callback = NULL;
-  vector<string> packets;
-  packets.push_back(response_data);
 
   // remove the timeout
   if (port->rdm_send_timeout != ola::thread::INVALID_TIMEOUT) {
@@ -1353,7 +1351,7 @@ void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
     port->rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
   }
 
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response.release(), packets);
+  callback->Run(reply.get());
 }
 
 void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
@@ -1372,7 +1370,8 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
 
 void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
                                           uint16_t op_code) {
-  strncpy(reinterpret_cast<char*>(packet->id), ARTNET_ID, sizeof(packet->id));
+  CopyToFixedLengthBuffer(ARTNET_ID, reinterpret_cast<char*>(packet->id),
+                          arraysize(packet->id));
   packet->op_code = HostToLittleEndian(op_code);
 }
 
@@ -1397,10 +1396,9 @@ void ArtNetNodeImpl::TimeoutRDMRequest(InputPort *port) {
   port->rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
   delete port->pending_request;
   port->pending_request = NULL;
-  ola::rdm::RDMCallback *callback = port->rdm_request_callback;
+  RDMCallback *callback = port->rdm_request_callback;
   port->rdm_request_callback = NULL;
-  vector<string> packets;
-  callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
 }
 
 bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
@@ -1761,11 +1759,10 @@ void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
   }
 }
 
-void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
-                                ola::rdm::RDMCallback *on_complete) {
+void ArtNetNode::SendRDMRequest(uint8_t port_id, RDMRequest *request,
+                                RDMCallback *on_complete) {
   if (!CheckInputPortId(port_id)) {
-    vector<string> packets;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+  RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     delete request;
   } else {
     m_controllers[port_id]->SendRDMRequest(request, on_complete);

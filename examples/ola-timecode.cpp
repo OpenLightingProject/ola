@@ -21,12 +21,12 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <ola/Logging.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <ola/timecode/TimeCode.h>
 #include <ola/timecode/TimeCodeEnums.h>
 
@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-using ola::OlaCallbackClientWrapper;
+using ola::client::OlaClientWrapper;
 using ola::StringToInt;
 using ola::io::SelectServer;
 using ola::timecode::TimeCode;
@@ -49,8 +49,10 @@ DEFINE_s_string(format, f, "SMPTE", "One of FILM, EBU, DF, SMPTE (default).");
  * Called on when we return from sending timecode data.
  */
 void TimeCodeDone(ola::io::SelectServer *ss,
-                  const string &status) {
-  OLA_WARN << status;
+                  const ola::client::Result &result) {
+  if (!result.Success()) {
+    OLA_WARN << result.Error();
+  }
   ss->Terminate();
 }
 
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
       "[options] <time_code>",
       "Send TimeCode data to OLA. time_code is in the form: \n"
           "Hours:Minutes:Seconds:Frames");
-  ola::OlaCallbackClientWrapper ola_client;
+  ola::client::OlaClientWrapper ola_client;
 
   if (argc != 2)
     ola::DisplayUsageAndExit();
@@ -88,7 +90,7 @@ int main(int argc, char *argv[]) {
   }
 
   vector<string> tokens;
-  ola::StringSplit(argv[1], tokens, ":");
+  ola::StringSplit(argv[1], &tokens, ":");
   if (tokens.size() != 4) {
     cerr << "Invalid TimeCode value " << argv[1] << endl;
     exit(ola::EXIT_USAGE);
@@ -124,8 +126,8 @@ int main(int argc, char *argv[]) {
   }
 
   ola_client.GetClient()->SendTimeCode(
-      ola::NewSingleCallback(&TimeCodeDone, ola_client.GetSelectServer()),
-      timecode);
+      timecode,
+      ola::NewSingleCallback(&TimeCodeDone, ola_client.GetSelectServer()));
 
   ola_client.GetSelectServer()->Run();
   return ola::EXIT_OK;

@@ -16,6 +16,11 @@
  * FtdiDmxDevice.h
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #ifndef PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_
@@ -41,13 +46,13 @@ class FtdiDmxDevice : public Device {
 
   std::string DeviceId() const { return m_widget->Serial(); }
   std::string Description() const { return m_widget_info.Description(); }
-  FtdiWidget* GetDevice() {return m_widget.get(); }
+  FtdiWidget* GetDevice() { return m_widget; }
 
  protected:
   bool StartHook();
 
  private:
-  std::auto_ptr<FtdiWidget> m_widget;
+  FtdiWidget *m_widget;
   const FtdiWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };

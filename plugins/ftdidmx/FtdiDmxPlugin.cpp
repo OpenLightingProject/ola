@@ -16,6 +16,11 @@
  * FtdiDmxPlugin.cpp
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #include <vector>
@@ -35,24 +40,16 @@ namespace ftdidmx {
 using std::string;
 using std::vector;
 
-const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";
 const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB DMX";
 const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
 
 /**
- * Attempt to start a device and, if successfull, register it
+ * @brief Attempt to start a device and, if successful, register it
+ *
  * Ownership of the FtdiDmxDevice is transfered to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
-  // Check if device is working before adding
-  if (device->GetDevice()->SetupOutput() == false) {
-    OLA_WARN << "Unable to setup device for output, device ignored "
-             << device->Description();
-    delete device;
-    return;
-  }
-
   if (device->Start()) {
       m_devices.push_back(device);
       m_plugin_adaptor->RegisterDevice(device);
@@ -64,29 +61,34 @@ void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
 
 
 /**
- * Fetch a list of all FTDI widgets and create a new device for each of them.
+ * @brief Fetch a list of all FTDI widgets and create a new device for each of them.
  */
 bool FtdiDmxPlugin::StartHook() {
   typedef vector<FtdiWidgetInfo> FtdiWidgetInfoVector;
   FtdiWidgetInfoVector widgets;
   FtdiWidget::Widgets(&widgets);
 
+  unsigned int frequency = StringToIntOrDefault(
+      m_preferences->GetValue(K_FREQUENCY),
+      DEFAULT_FREQUENCY);
+
   FtdiWidgetInfoVector::const_iterator iter;
   for (iter = widgets.begin(); iter != widgets.end(); ++iter) {
-    AddDevice(new FtdiDmxDevice(this, *iter, GetFrequency()));
+    AddDevice(new FtdiDmxDevice(this, *iter, frequency));
   }
   return true;
 }
 
 
 /**
- * Stop all the devices.
+ * @brief Stop all the devices.
  */
 bool FtdiDmxPlugin::StopHook() {
   FtdiDeviceVector::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
+    delete (*iter);
   }
   m_devices.clear();
   return true;
@@ -94,7 +96,7 @@ bool FtdiDmxPlugin::StopHook() {
 
 
 /**
- * Return a description for this plugin.
+ * @brief Return a description for this plugin.
  */
 string FtdiDmxPlugin::Description() const {
   return
@@ -115,33 +117,24 @@ string FtdiDmxPlugin::Description() const {
 
 
 /**
- * Set the default preferences
+ * @brief Set the default preferences
  */
 bool FtdiDmxPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   if (m_preferences->SetDefaultValue(FtdiDmxPlugin::K_FREQUENCY,
                                      UIntValidator(1, 44),
-                                     DEFAULT_FREQUENCY))
+                                     DEFAULT_FREQUENCY)) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY).empty())
+  if (m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY).empty()) {
     return false;
+  }
 
   return true;
-}
-
-
-/**
- * Return the frequency as specified in the config file.
- */
-int unsigned FtdiDmxPlugin::GetFrequency() {
-  unsigned int frequency;
-
-  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY), &frequency))
-    StringToInt(DEFAULT_FREQUENCY, &frequency);
-  return frequency;
 }
 }  // namespace ftdidmx
 }  // namespace plugin

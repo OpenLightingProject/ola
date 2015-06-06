@@ -74,7 +74,7 @@
  *
  * For the OLA Client, the ola::OlaClientWrapper class encapsulates the
  * SelectServer behind an easy to use interface. This is described in the @ref
- * client_tutorial.
+ * dmx_cpp_client_tutorial.
  *
  * @subsection sec_Python Python
  *
@@ -102,8 +102,9 @@
  * triggers.
  *
  * For frameworks that do not support raw file descriptor access the best
- * solution is to run the OLA client in a separate thread and use a callback
- * queue to pass control between the threads.
+ * solution is to run the OLA client in a \ref sec_cpp_client_Thread
+ * "separate thread" and use a callback queue to pass control between the
+ * threads.
  *
  * The OLA clients are not thread safe, and must only be accessed from the
  * thread in which the event loop is running.

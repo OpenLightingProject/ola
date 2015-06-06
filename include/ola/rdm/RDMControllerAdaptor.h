@@ -50,7 +50,7 @@ class DiscoverableRDMControllerAdaptor
         : m_uid(uid),
           m_interface(interface) {
     }
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete) {
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete) {
       m_interface->SendRDMRequest(request, on_complete);
     }
 

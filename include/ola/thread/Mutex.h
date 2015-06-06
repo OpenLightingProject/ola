@@ -59,8 +59,11 @@ class MutexLocker {
     explicit MutexLocker(Mutex *mutex);
     ~MutexLocker();
 
+    void Release();
+
  private:
     Mutex *m_mutex;
+    bool m_requires_unlock;
 
     DISALLOW_COPY_AND_ASSIGN(MutexLocker);
 };

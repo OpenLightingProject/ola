@@ -1,21 +1,60 @@
-x/y/2014 ola-0.9.4
+x/y/2015 ola-0.9.6
+ Features:
+ * Default to using epoll() and kqueue() rather than select() if they exist.
+ * Default to the async libusb implementation in the usbdmx plugin.
+ * Added support for the APA102 family of SPI pixels.
+
+ API:
+ * Python: callbacks are now also systematically called when the RPC calls fail.
+
+ RDM Tests:
+ *
+
+ Bugs:
+ * Fix port with unset universe appearing as bound to universe 0 in the Python
+   client.
+ * Ensure universe names and LTP priorities are always written to the config
+   file #661
+
+ Internal:
+ *
+
+1/3/2015 ola-0.9.5
+ Features:
+ * Work on a new Web-UI which is built with AngularJS
+ * Added E1.37-2 support to the SPI plugin RDM responder
+ * USB DMX plug now works on Windows (Scanlime Fadcandy tested working)
+ * Update the deb package's udev rules
+
+ Bugs:
+ * Fix finding ola_protoc_plugin when cross-compiling.
+ * Fix ncurses flags issues between configure and the Makefile.
+ * Fix some more build issues on Windows XP
+ * Fix our E1.37-2 implementation to match the E1.37-2 standard.
+ * Fix the old website's RDM patcher identify function
+
+29/1/2015 ola-0.9.4
  Features:
  * Added support for hotplugging USB devices using the usbdmx plugin, #374.
  * Added support for setting the thread scheduling options, #399.
  * Added support for the Open Pixel Control protocol, #502.
+ * Added support for the Scanlime Fadecandy device, #503.
  * Added a GPIO Plugin, closes #299.
+ * Added support for the Open DMX clone from KWMATIK.
 
  API:
- * 
+ * Plugin libraries that were previously installed under $PREFIX/lib/olad/ are
+   now in $PREFIX/lib/
 
  RDM Tests:
- * 
+ * Fix a bug with the GetPresetInfo test around display multipliers.
 
  Bugs:
- * 
+ * Add a workaround to make the Windows HTTP server more responsive.
+ * Fixed defects detected by Coverity Scan.
 
  Internal:
- * 
+ * Remove the SLP code since it's no longer required for E1.33.
 
 16/11/2014 ola-0.9.3
  Features:
@@ -30,10 +69,10 @@ x/y/2014 ola-0.9.4
  * Make the ola_trigger config syntax more flexible, including dots in program
    names and quoted program names #507
  * Add an instance name to OLA server and use it within E1.31 and the DNS-SD
-   code to make multiple instances of OLA easier to track.
+   code to make multiple instances of OLA easier to track. #473
 
  Bugs:
- * Fix some build issues on OS X 10.5.8
+ * Fix some build issues on OS X 10.5.8 #493
  * Fix some build issues on Windows XP
  * Use the correct ifdefs within plugin loading so we only load stuff if we
    asked for it
@@ -211,7 +250,7 @@ Documentation:
 
 29/9/2013 ola-0.8.32
  * Added more RDM responder tests to cover E1.37-1
- * Print the UID, manufacturer, model description, software version and 
+ * Print the UID, manufacturer, model description, software version and
    timestamp in the RDM test logs
  * Added pretty printing of slot info messages
  * Added support for new OSC formats
@@ -633,5 +672,3 @@ Documentation:
 17/4/2006 lla-0.1.2
   Support for multiple Enttec Pro devices
   Logging levels can be changed with -USR1 signals
-
-

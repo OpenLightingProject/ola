@@ -35,9 +35,9 @@ using std::vector;
 
 
 /**
- * Convert a rdm_response_code to a string
+ * Convert a RDMStatusCode to a string
  */
-string ResponseCodeToString(rdm_response_code status) {
+string StatusCodeToString(RDMStatusCode status) {
   switch (status) {
     case RDM_COMPLETED_OK:
       return "Completed Ok";
@@ -75,6 +75,10 @@ string ResponseCodeToString(rdm_response_code status) {
       return "The command class didn't match the request";
     case RDM_INVALID_RESPONSE_TYPE:
       return "The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK";
+    case RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED:
+      return "The output plugin does not support DISCOVERY commands";
+    case RDM_DUB_RESPONSE:
+      return "DUB response";
     default:
       return "Unknown";
   }
@@ -994,15 +998,15 @@ string StatusMessageIdToString(uint16_t message_id,
       // Data Value shall be a signed integer." but I'm sure it's what was
       // intended. The same thing is technically true with the slots too.
       str << "Proxy Drop: PID "
-          << ToHex(reinterpret_cast<uint16_t&>(data1)) << " at TN "
+          << strings::ToHex(reinterpret_cast<uint16_t&>(data1)) << " at TN "
           << data2;
       break;
     case STS_ASC_RXOK:
-      str << "DMX ASC " << ToHex(reinterpret_cast<uint16_t&>(data1))
+      str << "DMX ASC " << strings::ToHex(reinterpret_cast<uint16_t&>(data1))
           << " received OK";
       break;
     case STS_ASC_DROPPED:
-      str << "DMX ASC " << ToHex(reinterpret_cast<uint16_t&>(data1))
+      str << "DMX ASC " << strings::ToHex(reinterpret_cast<uint16_t&>(data1))
           << " now dropped";
       break;
     case STS_DMXNSCNONE:

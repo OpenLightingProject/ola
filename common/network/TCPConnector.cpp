@@ -150,8 +150,10 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
       return 0;
     }
   } else {
-    // connect returned immediately
+    // Connect returned immediately
+    // The callback takes ownership of the socket descriptor.
     callback->Run(sd, 0);
+    // coverity[RESOURCE_LEAK]
     return 0;
   }
 

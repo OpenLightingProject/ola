@@ -30,13 +30,13 @@ def RDMString(port):
 
 def Devices(state, devices):
   for device in sorted(devices):
-    print 'Device %d: %s' % (device.alias, device.name)
-    print 'Input ports:'
+    print('Device %d: %s' % (device.alias, device.name))
+    print('Input ports:')
     for port in device.input_ports:
-      print '  port %d, %s %s' % (port.id, port.description, RDMString(port))
-    print 'Output ports:'
+      print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
+    print('Output ports:')
     for port in device.output_ports:
-      print '  port %d, %s %s' % (port.id, port.description, RDMString(port))
+      print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
   wrapper.Stop()
 
 

@@ -22,6 +22,7 @@
 #ifndef _WIN32
 #include "ola/system/Limits.h"
 
+#include <errno.h>
 #include <string.h>
 #include <sys/resource.h>
 
@@ -33,7 +34,7 @@ namespace system {
 bool GetRLimit(int resource, struct rlimit *lim) {
   int r = getrlimit(resource, lim);
   if (r) {
-    OLA_WARN << "getrlimit(" << resource << "): " << strerror(r);
+    OLA_WARN << "getrlimit(" << resource << "): " << strerror(errno);
     return false;
   }
   return true;
@@ -42,7 +43,7 @@ bool GetRLimit(int resource, struct rlimit *lim) {
 bool SetRLimit(int resource, const struct rlimit &lim) {
   int r = setrlimit(resource, &lim);
   if (r) {
-    OLA_WARN << "setrlimit(" << resource << "): " << strerror(r);
+    OLA_WARN << "setrlimit(" << resource << "): " << strerror(errno);
     return false;
   }
   return true;

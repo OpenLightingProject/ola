@@ -29,16 +29,20 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 #include "olad/PluginAdaptor.h"
 
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
-#include "plugins/usbdmx/ScanlimeFadecandy.h"
-#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
+#include "plugins/usbdmx/JaRuleDevice.h"
+#include "plugins/usbdmx/JaRuleFactory.h"
+#include "plugins/usbdmx/JaRuleWidget.h"
 #include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/LibUsbThread.h"
+#include "plugins/usbdmx/ScanlimeFadecandy.h"
+#include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
 #include "plugins/usbdmx/VellemanK8062.h"
 #include "plugins/usbdmx/VellemanK8062Factory.h"
@@ -49,10 +53,13 @@ namespace usbdmx {
 
 namespace {
 
+#ifdef HAVE_LIBUSB_HOTPLUG_API
 /**
  * @brief Called by libusb when a USB device is added / removed.
  */
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef _WIN32
+__attribute__((__stdcall__))
+#endif
 int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
                      struct libusb_device *dev,
                      libusb_hotplug_event event,
@@ -93,12 +100,12 @@ bool AsyncPluginImpl::Start() {
   m_use_hotplug = HotplugSupported();
   OLA_INFO << "HotplugSupported returned " << m_use_hotplug;
   if (m_use_hotplug) {
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef HAVE_LIBUSB_HOTPLUG_API
     m_usb_thread.reset(new LibUsbHotplugThread(
           m_context, hotplug_callback, this));
 #else
     OLA_FATAL << "Mismatch between m_use_hotplug and "
-      " OLA_LIBUSB_HAS_HOTPLUG_API";
+      " HAVE_LIBUSB_HOTPLUG_API";
     return false;
 #endif
   } else {
@@ -110,6 +117,8 @@ bool AsyncPluginImpl::Start() {
   m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor.get()));
+  m_widget_factories.push_back(
+      new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor.get()));
   m_widget_factories.push_back(
       new ScanlimeFadecandyFactory(m_usb_adaptor.get()));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor.get()));
@@ -170,7 +179,7 @@ bool AsyncPluginImpl::Stop() {
   return true;
 }
 
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef HAVE_LIBUSB_HOTPLUG_API
 void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
                                    libusb_hotplug_event event) {
   ola::thread::MutexLocker locker(&m_mutex);
@@ -202,6 +211,12 @@ bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
+bool AsyncPluginImpl::NewWidget(class JaRuleWidget *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new JaRuleDevice(m_plugin, widget, "Ja Rule USB Device", "0"));
+}
+
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
       widget,
@@ -231,6 +246,10 @@ void AsyncPluginImpl::WidgetRemoved(EurolitePro *widget) {
   RemoveWidget(widget);
 }
 
+void AsyncPluginImpl::WidgetRemoved(JaRuleWidget *widget) {
+  RemoveWidget(widget);
+}
+
 void AsyncPluginImpl::WidgetRemoved(ScanlimeFadecandy *widget) {
   RemoveWidget(widget);
 }
@@ -249,7 +268,7 @@ void AsyncPluginImpl::WidgetRemoved(VellemanK8062 *widget) {
  *   otherwise.
  */
 bool AsyncPluginImpl::HotplugSupported() {
-#ifdef OLA_LIBUSB_HAS_HOTPLUG_API
+#ifdef HAVE_LIBUSB_HOTPLUG_API
   return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
 #else
   return false;
@@ -267,8 +286,8 @@ bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   libusb_get_device_descriptor(usb_device, &descriptor);
 
   OLA_DEBUG << "USB device added, checking for widget support, vendor "
-            << ToHex(descriptor.idVendor) << ", product "
-            << ToHex(descriptor.idProduct);
+            << strings::ToHex(descriptor.idVendor) << ", product "
+            << strings::ToHex(descriptor.idProduct);
 
   WidgetFactories::iterator iter = m_widget_factories.begin();
   for (; iter != m_widget_factories.end(); ++iter) {

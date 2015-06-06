@@ -28,7 +28,7 @@
 #include <ola/web/JsonWriter.h>
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #endif
 
 #include <fstream>
@@ -73,6 +73,7 @@ const char HTTPServer::CONTENT_TYPE_GIF[] = "image/gif";
 const char HTTPServer::CONTENT_TYPE_PNG[] = "image/png";
 const char HTTPServer::CONTENT_TYPE_CSS[] = "text/css";
 const char HTTPServer::CONTENT_TYPE_JS[] = "text/javascript";
+const char HTTPServer::CONTENT_TYPE_OCT[] = "application/octet-stream";
 
 
 /**
@@ -296,7 +297,7 @@ const string HTTPRequest::GetHeader(const string &key) const {
 const string HTTPRequest::GetParameter(const string &key) const {
   const char *value = MHD_lookup_connection_value(m_connection,
                                                   MHD_GET_ARGUMENT_KIND,
-                                                  key.data());
+                                                  key.c_str());
   if (value)
     return string(value);
   else
@@ -311,7 +312,7 @@ const string HTTPRequest::GetParameter(const string &key) const {
 bool HTTPRequest::CheckParameterExists(const string &key) const {
   const char *value = MHD_lookup_connection_value(m_connection,
                                                   MHD_GET_ARGUMENT_KIND,
-                                                  key.data());
+                                                  key.c_str());
   if (value != NULL) {
     return true;
   } else {
@@ -668,8 +669,6 @@ bool HTTPServer::RegisterFile(const std::string &path,
 bool HTTPServer::RegisterFile(const std::string &path,
                               const std::string &file,
                               const std::string &content_type) {
-  // TODO(Peter): The file detail probably needs slashes swapping on Windows
-  // here or above.
   map<string, static_file_info>::const_iterator file_iter = (
       m_static_content.find(path));
 
@@ -781,9 +780,8 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   unsigned int length;
   string file_path = m_data_dir;
   file_path.push_back(ola::file::PATH_SEPARATOR);
-  // TODO(Peter): The below line may need fixing to swap slashes on Windows
   file_path.append(file_info->file_path);
-  ifstream i_stream(file_path.data(), ifstream::binary);
+  ifstream i_stream(file_path.c_str(), ifstream::binary);
 
   if (!i_stream.is_open()) {
     OLA_WARN << "Missing file: " << file_path;
@@ -808,7 +806,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   if (!file_info->content_type.empty())
     MHD_add_response_header(mhd_response,
                             MHD_HTTP_HEADER_CONTENT_TYPE,
-                            file_info->content_type.data());
+                            file_info->content_type.c_str());
 
   int ret = MHD_queue_response(response->Connection(),
                                MHD_HTTP_OK,

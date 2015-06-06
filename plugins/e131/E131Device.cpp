@@ -154,7 +154,7 @@ void E131Device::Configure(RpcController *controller,
 
 
 /*
- * Handle an preview mode request.
+ * Handle a preview mode request.
  */
 void E131Device::HandlePreviewMode(const Request *request, string *response) {
   if (request->has_preview_mode()) {

@@ -47,7 +47,7 @@ class AbstractPlugin;
  * rest of the conflicting plugins are ignored.
  *
  * Plugins are active if they weren't disabled, there were no conflicts that
- * prevented them from laoding, and the call to Start() was successfull.
+ * prevented them from loading, and the call to Start() was successfull.
  */
 class PluginManager {
  public:
@@ -91,6 +91,12 @@ class PluginManager {
   void ActivePlugins(std::vector<AbstractPlugin*> *plugins) const;
 
   /**
+   * @brief Return a list of enabled plugins.
+   * @param[out] plugins the list of enabled plugins.
+   */
+  void EnabledPlugins(std::vector<AbstractPlugin*> *plugins) const;
+
+  /**
    * @brief Lookup a plugin by ID.
    * @param plugin_id the id of the plugin to find.
    * @return the plugin matching the id or NULL if not found.
@@ -103,6 +109,13 @@ class PluginManager {
    * @returns true if the plugin is active, false otherwise.
    */
   bool IsActive(ola_plugin_id plugin_id) const;
+
+  /**
+   * @brief Check if a plugin is enabled.
+   * @param plugin_id the id of the plugin to check.
+   * @returns true if the plugin is enabled, false otherwise.
+   */
+  bool IsEnabled(ola_plugin_id plugin_id) const;
 
   /**
    * @brief Return a list of plugins that conflict with this particular plugin.
@@ -118,6 +131,7 @@ class PluginManager {
   std::vector<PluginLoader*> m_plugin_loaders;
   PluginMap m_loaded_plugins;  // plugins that are loaded
   PluginMap m_active_plugins;  // active plugins
+  PluginMap m_enabled_plugins;  // enabled plugins
   PluginAdaptor *m_plugin_adaptor;
 
   DISALLOW_COPY_AND_ASSIGN(PluginManager);

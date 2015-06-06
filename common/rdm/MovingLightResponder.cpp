@@ -245,13 +245,13 @@ MovingLightResponder::MovingLightResponder(const UID &uid)
 /*
  * Handle an RDM Request
  */
-void MovingLightResponder::SendRDMRequest(const RDMRequest *request,
+void MovingLightResponder::SendRDMRequest(RDMRequest *request,
                                           RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
 
-const RDMResponse *MovingLightResponder::GetParamDescription(
+RDMResponse *MovingLightResponder::GetParamDescription(
     const RDMRequest *request) {
   // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
   uint16_t parameter_id;
@@ -273,7 +273,7 @@ const RDMResponse *MovingLightResponder::GetParamDescription(
   }
 }
 
-const RDMResponse *MovingLightResponder::GetDeviceInfo(
+RDMResponse *MovingLightResponder::GetDeviceInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_MOVING_LIGHT_MODEL,
@@ -287,7 +287,7 @@ const RDMResponse *MovingLightResponder::GetDeviceInfo(
 /**
  * Reset to factory defaults
  */
-const RDMResponse *MovingLightResponder::GetFactoryDefaults(
+RDMResponse *MovingLightResponder::GetFactoryDefaults(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -297,13 +297,12 @@ const RDMResponse *MovingLightResponder::GetFactoryDefaults(
       m_start_address == 1 &&
       m_personality_manager.ActivePersonalityNumber() == 1 &&
       m_identify_mode == false);
-  return GetResponseFromData(
-    request,
-    &using_defaults,
-    sizeof(using_defaults));
+  return GetResponseFromData(request,
+                             &using_defaults,
+                             sizeof(using_defaults));
 }
 
-const RDMResponse *MovingLightResponder::SetFactoryDefaults(
+RDMResponse *MovingLightResponder::SetFactoryDefaults(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -316,7 +315,7 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
+RDMResponse *MovingLightResponder::GetLanguageCapabilities(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -327,37 +326,25 @@ const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
     'f', 'r',
     'd', 'e',
   };
-  return new RDMGetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    reinterpret_cast<const uint8_t*>(languages),
-    arraysize(languages));
+
+  return GetResponseFromData(request,
+                             reinterpret_cast<const uint8_t*>(languages),
+                             arraysize(languages));
 }
 
-const RDMResponse *MovingLightResponder::GetLanguage(
+RDMResponse *MovingLightResponder::GetLanguage(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  return new RDMGetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    reinterpret_cast<const uint8_t*>(m_language.c_str()),
-    m_language.size());
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<const uint8_t*>(m_language.c_str()),
+      m_language.size());
 }
 
-const RDMResponse *MovingLightResponder::SetLanguage(
+RDMResponse *MovingLightResponder::SetLanguage(
     const RDMRequest *request) {
   if (request->ParamDataSize() != 2) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -373,94 +360,94 @@ const RDMResponse *MovingLightResponder::SetLanguage(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::GetProductDetailList(
+RDMResponse *MovingLightResponder::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(
       request, vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *MovingLightResponder::GetPersonality(
+RDMResponse *MovingLightResponder::GetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, &m_personality_manager);
 }
 
-const RDMResponse *MovingLightResponder::SetPersonality(
+RDMResponse *MovingLightResponder::SetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::SetPersonality(request, &m_personality_manager,
                                          m_start_address);
 }
 
-const RDMResponse *MovingLightResponder::GetPersonalityDescription(
+RDMResponse *MovingLightResponder::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, &m_personality_manager);
 }
 
-const RDMResponse *MovingLightResponder::GetSlotInfo(
+RDMResponse *MovingLightResponder::GetSlotInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetSlotInfo(request, &m_personality_manager);
 }
 
-const RDMResponse *MovingLightResponder::GetSlotDescription(
+RDMResponse *MovingLightResponder::GetSlotDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetSlotDescription(request, &m_personality_manager);
 }
 
-const RDMResponse *MovingLightResponder::GetSlotDefaultValues(
+RDMResponse *MovingLightResponder::GetSlotDefaultValues(
     const RDMRequest *request) {
   return ResponderHelper::GetSlotDefaultValues(request, &m_personality_manager);
 }
 
-const RDMResponse *MovingLightResponder::GetDmxStartAddress(
+RDMResponse *MovingLightResponder::GetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
                                         m_start_address);
 }
 
-const RDMResponse *MovingLightResponder::SetDmxStartAddress(
+RDMResponse *MovingLightResponder::SetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
                                         &m_start_address);
 }
 
-const RDMResponse *MovingLightResponder::GetDeviceHours(
+RDMResponse *MovingLightResponder::GetDeviceHours(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt32Value(request, m_device_hours++);
 }
 
-const RDMResponse *MovingLightResponder::SetDeviceHours(
+RDMResponse *MovingLightResponder::SetDeviceHours(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt32Value(request, &m_device_hours);
 }
 
-const RDMResponse *MovingLightResponder::GetLampHours(
+RDMResponse *MovingLightResponder::GetLampHours(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt32Value(request, m_lamp_hours++);
 }
 
-const RDMResponse *MovingLightResponder::SetLampHours(
+RDMResponse *MovingLightResponder::SetLampHours(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt32Value(request, &m_lamp_hours);
 }
 
-const RDMResponse *MovingLightResponder::GetLampStrikes(
+RDMResponse *MovingLightResponder::GetLampStrikes(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt32Value(request, m_lamp_strikes);
 }
 
-const RDMResponse *MovingLightResponder::SetLampStrikes(
+RDMResponse *MovingLightResponder::SetLampStrikes(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt32Value(request, &m_lamp_strikes);
 }
 
-const RDMResponse *MovingLightResponder::GetLampState(
+RDMResponse *MovingLightResponder::GetLampState(
     const RDMRequest *request) {
   uint8_t value = m_lamp_state;
   return ResponderHelper::GetUInt8Value(request, value);
 }
 
-const RDMResponse *MovingLightResponder::SetLampState(
+RDMResponse *MovingLightResponder::SetLampState(
     const RDMRequest *request) {
   uint8_t new_value;
   if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
@@ -475,13 +462,13 @@ const RDMResponse *MovingLightResponder::SetLampState(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::GetLampOnMode(
+RDMResponse *MovingLightResponder::GetLampOnMode(
     const RDMRequest *request) {
   uint8_t value = m_lamp_on_mode;
   return ResponderHelper::GetUInt8Value(request, value);
 }
 
-const RDMResponse *MovingLightResponder::SetLampOnMode(
+RDMResponse *MovingLightResponder::SetLampOnMode(
     const RDMRequest *request) {
   uint8_t new_value;
   if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
@@ -496,25 +483,25 @@ const RDMResponse *MovingLightResponder::SetLampOnMode(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::GetDevicePowerCycles(
+RDMResponse *MovingLightResponder::GetDevicePowerCycles(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt32Value(request, m_device_power_cycles++);
 }
 
-const RDMResponse *MovingLightResponder::SetDevicePowerCycles(
+RDMResponse *MovingLightResponder::SetDevicePowerCycles(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt32Value(request, &m_device_power_cycles);
 }
 
-const RDMResponse *MovingLightResponder::GetIdentify(
+RDMResponse *MovingLightResponder::GetIdentify(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-const RDMResponse *MovingLightResponder::SetIdentify(
+RDMResponse *MovingLightResponder::SetIdentify(
     const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Dummy Moving Light " << m_uid << ", identify mode "
@@ -523,13 +510,13 @@ const RDMResponse *MovingLightResponder::SetIdentify(
   return response;
 }
 
-const RDMResponse *MovingLightResponder::GetDisplayInvert(
+RDMResponse *MovingLightResponder::GetDisplayInvert(
     const RDMRequest *request) {
   uint8_t value = m_display_invert;
   return ResponderHelper::GetUInt8Value(request, value);
 }
 
-const RDMResponse *MovingLightResponder::SetDisplayInvert(
+RDMResponse *MovingLightResponder::SetDisplayInvert(
     const RDMRequest *request) {
   uint8_t new_value;
   if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
@@ -544,58 +531,58 @@ const RDMResponse *MovingLightResponder::SetDisplayInvert(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::GetDisplayLevel(
+RDMResponse *MovingLightResponder::GetDisplayLevel(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt8Value(request, m_display_level);
 }
 
-const RDMResponse *MovingLightResponder::SetDisplayLevel(
+RDMResponse *MovingLightResponder::SetDisplayLevel(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt8Value(request, &m_display_level);
 }
 
-const RDMResponse *MovingLightResponder::GetPanInvert(
+RDMResponse *MovingLightResponder::GetPanInvert(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_pan_invert);
 }
 
-const RDMResponse *MovingLightResponder::SetPanInvert(
+RDMResponse *MovingLightResponder::SetPanInvert(
     const RDMRequest *request) {
   return ResponderHelper::SetBoolValue(request, &m_pan_invert);
 }
 
-const RDMResponse *MovingLightResponder::GetTiltInvert(
+RDMResponse *MovingLightResponder::GetTiltInvert(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_tilt_invert);
 }
 
-const RDMResponse *MovingLightResponder::SetTiltInvert(
+RDMResponse *MovingLightResponder::SetTiltInvert(
     const RDMRequest *request) {
   return ResponderHelper::SetBoolValue(request, &m_tilt_invert);
 }
 
-const RDMResponse *MovingLightResponder::GetPanTiltSwap(
+RDMResponse *MovingLightResponder::GetPanTiltSwap(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_pan_tilt_swap);
 }
 
-const RDMResponse *MovingLightResponder::SetPanTiltSwap(
+RDMResponse *MovingLightResponder::SetPanTiltSwap(
     const RDMRequest *request) {
   return ResponderHelper::SetBoolValue(request, &m_pan_tilt_swap);
 }
 
-const RDMResponse *MovingLightResponder::GetRealTimeClock(
+RDMResponse *MovingLightResponder::GetRealTimeClock(
     const RDMRequest *request) {
   return ResponderHelper::GetRealTimeClock(request);
 }
 
-const RDMResponse *MovingLightResponder::GetPowerState(
+RDMResponse *MovingLightResponder::GetPowerState(
     const RDMRequest *request) {
   uint8_t value = m_power_state;
   return ResponderHelper::GetUInt8Value(request, value);
 }
 
-const RDMResponse *MovingLightResponder::SetPowerState(
+RDMResponse *MovingLightResponder::SetPowerState(
     const RDMRequest *request) {
   uint8_t new_value;
   if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
@@ -608,7 +595,7 @@ const RDMResponse *MovingLightResponder::SetPowerState(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::SetResetDevice(
+RDMResponse *MovingLightResponder::SetResetDevice(
     const RDMRequest *request) {
   uint8_t value;
   rdm_reset_device_mode reset_device_enum;
@@ -629,32 +616,32 @@ const RDMResponse *MovingLightResponder::SetResetDevice(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *MovingLightResponder::GetDeviceModelDescription(
+RDMResponse *MovingLightResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Moving Light");
 }
 
-const RDMResponse *MovingLightResponder::GetManufacturerLabel(
+RDMResponse *MovingLightResponder::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *MovingLightResponder::GetDeviceLabel(
+RDMResponse *MovingLightResponder::GetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, m_device_label);
 }
 
-const RDMResponse *MovingLightResponder::SetDeviceLabel(
+RDMResponse *MovingLightResponder::SetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::SetString(request, &m_device_label);
 }
 
-const RDMResponse *MovingLightResponder::GetSoftwareVersionLabel(
+RDMResponse *MovingLightResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *MovingLightResponder::GetOlaCodeVersion(
+RDMResponse *MovingLightResponder::GetOlaCodeVersion(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, VERSION);
 }

@@ -30,7 +30,14 @@ namespace file {
 extern const char PATH_SEPARATOR;
 
 /**
- * Find all files in a directory that match the given prefix.
+ * @brief Convert all seperators in a path to the OS's version.
+ * @param path the path to convert
+ * @returns the path with all path seperators switched to the OS's version
+ */
+std::string ConvertPathSeparators(const std::string &path);
+
+/**
+ * @brief Find all files in a directory that match the given prefix.
  * @param[in] directory the directory to look in
  * @param[in] prefix the prefix to match on
  * @param[out] files a pointer to a vector with the absolute path of the
@@ -42,7 +49,7 @@ bool FindMatchingFiles(const std::string &directory,
                        std::vector<std::string> *files);
 
 /**
- * Find all files in a directory that match any of the prefixes.
+ * @brief Find all files in a directory that match any of the prefixes.
  * @param[in] directory the directory to look in
  * @param[in] prefixes the prefixes to match on
  * @param[out] files a pointer to a vector with the absolute path of the
@@ -54,8 +61,9 @@ bool FindMatchingFiles(const std::string &directory,
                        std::vector<std::string> *files);
 
 /**
- * Get a list of all files in a directory. Entries in \p files will contain
- * the full path to the file.
+ * @brief Get a list of all files in a directory.
+ *
+ * Entries in @param files will contain the full path to the file.
  * @param[in] directory the directory to list
  * @param[out] files a pointer to a string vector that will receive file paths
  * @returns false if there was an error, true otherwise.
@@ -64,7 +72,7 @@ bool ListDirectory(const std::string& directory,
                    std::vector<std::string> *files);
 
 /**
- * Convert a path to a filename
+ * @brief Convert a path to a filename
  * @param path a full path to a file
  * @param default_value what to return if the path can't be found
  * @return the filename (basename) part of the path or default if it can't be
@@ -74,8 +82,8 @@ std::string FilenameFromPathOrDefault(const std::string &path,
                                       const std::string &default_value);
 
 /**
- * Convert a path to a filename (this variant is good for switching based on
- *   executable names)
+ * @brief Convert a path to a filename (this variant is good for switching
+ *   based on executable names)
  * @param path a full path to a file
  * @return the filename (basename) part of the path or the whole path if it
  *   can't be found
@@ -83,7 +91,7 @@ std::string FilenameFromPathOrDefault(const std::string &path,
 std::string FilenameFromPathOrPath(const std::string &path);
 
 /**
- * Convert a path to a filename
+ * @brief Convert a path to a filename
  * @param path a full path to a file
  * @return the filename (basename) part of the path or "" if it can't be found
  */

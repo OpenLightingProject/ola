@@ -35,34 +35,35 @@ namespace e131 {
  */
 class TransportHeader {
  public:
-    enum TransportType {
-      TCP,
-      UDP,
-    };
+  enum TransportType {
+    TCP,
+    UDP,
+    UNDEFINED,
+  };
 
-    TransportHeader() {}
-    TransportHeader(const ola::network::IPV4SocketAddress &source,
-                    TransportType type)
-        : m_source(source),
-          m_transport_type(type) {}
+  TransportHeader() : m_transport_type(UNDEFINED) {}
+  TransportHeader(const ola::network::IPV4SocketAddress &source,
+                  TransportType type)
+      : m_source(source),
+        m_transport_type(type) {}
 
-    ~TransportHeader() {}
-    const ola::network::IPV4SocketAddress& Source() const { return m_source; }
-    TransportType Transport() const { return m_transport_type; }
+  ~TransportHeader() {}
+  const ola::network::IPV4SocketAddress& Source() const { return m_source; }
+  TransportType Transport() const { return m_transport_type; }
 
-    bool operator==(const TransportHeader &other) const {
-      return (m_source == other.m_source &&
-              m_transport_type == other.m_transport_type);
-    }
+  bool operator==(const TransportHeader &other) const {
+    return (m_source == other.m_source &&
+            m_transport_type == other.m_transport_type);
+  }
 
-    void operator=(const TransportHeader &other) {
-      m_source = other.m_source;
-      m_transport_type = other.m_transport_type;
-    }
+  void operator=(const TransportHeader &other) {
+    m_source = other.m_source;
+    m_transport_type = other.m_transport_type;
+  }
 
  private:
-    ola::network::IPV4SocketAddress m_source;
-    TransportType m_transport_type;
+  ola::network::IPV4SocketAddress m_source;
+  TransportType m_transport_type;
 };
 }  // namespace e131
 }  // namespace plugin

@@ -131,11 +131,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 LT_INIT
 AC_PROG_LIBTOOL
 
-# Doxygen
-DX_PDF_FEATURE(OFF)
-DX_PS_FEATURE(OFF)
-DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
-
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
 
@@ -501,6 +496,11 @@ AS_IF([test "x$enable_java_libs" = xyes],
        MAVEN_SUPPORT([2.2.1])])
 AM_CONDITIONAL([BUILD_JAVA_LIBS], [test "x$enable_java_libs" = xyes])
 
+# Optionally build the Ja Rule tool
+AC_ARG_ENABLE(
+  [ja-rule],
+  [AS_HELP_STRING([--enable-ja-rule], [Build the Ja Rule test tool])])
+
 # libftdi: this requires libusb-0.1.4+ don't know if I should also
 # check for it, since the libusb check above is not for 0.1.4 but for libusb-1
 AC_ARG_ENABLE(
@@ -534,6 +534,15 @@ AS_IF([test "x$enable_libusb" != xno],
 AS_IF([test "x$have_libusb_error_name" = xyes],
       [AC_DEFINE([HAVE_LIBUSB_ERROR_NAME], [1],
                  [define if libusb is installed and has libusb_error_name])])
+
+have_libusb_hotplug_api="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_hotplug_api], [libusb-1.0 >= 1.0.16],
+                         [have_libusb_hotplug_api="yes"], [true])])
+AS_IF([test "x$have_libusb_hotplug_api" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_HOTPLUG_API], [1],
+                 [define if libusb is installed and the libusb])])
+AM_CONDITIONAL([HAVE_LIBUSB_HOTPLUG_API], [test "x$have_libusb_hotplug_api" = xyes])
 
 # UART direct plugin
 AC_ARG_ENABLE(
@@ -596,14 +605,10 @@ AS_IF([test "x$enable_tcmalloc" = xyes],
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
-DOXYGEN_VERSION=$PACKAGE_VERSION
 AC_ARG_ENABLE(
   [doxygen-version],
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
-AS_IF([test "x$enable_doxygen_version" = xno],
-      [DOXYGEN_VERSION="\"Latest Git\""])
-AC_SUBST(DOXYGEN_VERSION)
 
 # Python wrappers & RDM Responder tests.
 #####################################################
@@ -628,6 +633,22 @@ AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
 
+
+# Doxygen
+#####################################################
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+
+DX_ARG_ABLE(verbose, [Verbose doxygen output],
+            [], [], [],
+            [DX_ENV_APPEND(QUIET, NO)],
+            [DX_ENV_APPEND(QUIET, YES)])
+doxygen_project_number=$PACKAGE_VERSION
+AS_IF([test "x$enable_doxygen_version" = xno],
+      [doxygen_project_number="Latest Git"])
+DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
+
+DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
 # Plugins
 #####################################################
@@ -694,6 +715,18 @@ if test -z "${USING_WIN32_TRUE}"; then
 fi
 AC_SUBST(OLA_CLIENT_LIBS)
 
+# Extra tools
+#####################################################
+AM_CONDITIONAL([BUILD_JA_RULE],
+               [test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xyes \
+                && test "x$have_libusb_hotplug_api" = xyes])
+
+# Status just for configure
+BUILDING_JA_RULE='no'
+if test -z "${BUILD_JA_RULE_TRUE}"; then
+  BUILDING_JA_RULE='yes'
+fi
+
 # Output
 #####################################################
 # Hack alert!
@@ -709,9 +742,8 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/UID.py:python/ola/UID.py
                  python/ola/__init__.py:python/ola/__init__.py])
 
-# Non-makefile generted files.
-AC_CONFIG_FILES([Doxyfile
-                 include/ola/base/Version.h
+# Non-makefile generated files.
+AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
@@ -738,7 +770,8 @@ Python API: ${enable_python_libs}
 Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
-Enabled Plugins: ${PLUGINS}
+Ja Rule: ${BUILDING_JA_RULE}
+Enabled Plugins:${PLUGINS}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:

@@ -1,0 +1,20 @@
+<div class="row">
+ <div style="text-align: left" class="col-md-6">
+  <h2>&nbsp;Universes:</h2>
+ </div>
+ <div style="text-align: right" class="col-md-6">
+  <button type="button" class="btn btn-primary btn-md" ng-click="goUniverse('add')">Add New Universe</button>
+ </div>
+</div>
+<div class="col-md-12">
+    <table class="table table-striped">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+        <tr style="cursor: pointer;" ng-repeat="u in Universes track by $index">
+            <td ng-click="goUniverse(u.id)">{{u.id}}</td>
+            <td ng-click="goUniverse(u.id)">{{u.name}}</td>
+        </tr>
+    </table>
+</div>

@@ -20,13 +20,13 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
-import logging
 import socket
 import struct
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
 from ola.UID import UID
+
 
 """The port that the OLA server listens on."""
 OLA_PORT = 9010
@@ -46,10 +46,14 @@ class Plugin(object):
   Attributes:
     id: the id of this plugin
     name: the name of this plugin
+    active: whether this plugin is active
+    enabled: whether this plugin is enabled
   """
-  def __init__(self, plugin_id, name):
+  def __init__(self, plugin_id, name, active, enabled):
     self._id = plugin_id
     self._name = name
+    self._active = active
+    self._enabled = enabled
 
   @property
   def id(self):
@@ -59,11 +63,47 @@ class Plugin(object):
   def name(self):
     return self._name
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
+  @property
+  def active(self):
+    return self._active
 
-  def __str__(self):
-    return 'Plugin %d (%s)' % (self._id, self,_name)
+  @property
+  def enabled(self):
+    return self._enabled
+
+  @staticmethod
+  def FromProtobuf(plugin_pb):
+    return Plugin(plugin_pb.plugin_id,
+                  plugin_pb.name,
+                  plugin_pb.active,
+                  plugin_pb.enabled)
+
+  def __repr__(self):
+    s = 'Plugin(id={id}, name="{name}", active={active}, enabled={enabled})'
+    return s.format(id=self.id,
+                    name=self.name,
+                    active=self.active,
+                    enabled=self.enabled)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 # Populate the Plugin class attributes from the protobuf
@@ -115,8 +155,47 @@ class Device(object):
   def output_ports(self):
     return self._output_ports
 
-  def __cmp__(self, other):
-    return cmp(self._alias, other._alias)
+  @staticmethod
+  def FromProtobuf(device_pb):
+    input_ports = [Port.FromProtobuf(x) for x in device_pb.input_port]
+    output_ports = [Port.FromProtobuf(x) for x in device_pb.output_port]
+
+    return Device(device_pb.device_id,
+                  device_pb.device_alias,
+                  device_pb.device_name,
+                  device_pb.plugin_id,
+                  input_ports,
+                  output_ports)
+
+  def __repr__(self):
+    s = 'Device(id="{id}", alias={alias}, name="{name}", ' \
+        'plugin_id={plugin_id}, {nr_inputs} inputs, {nr_outputs} outputs)'
+    return s.format(id=self.id,
+                    alias=self.alias,
+                    name=self.name,
+                    plugin_id=self.plugin_id,
+                    nr_inputs=len(self.input_ports),
+                    nr_outputs=len(self.output_ports))
+
+  def __lt__(self, other):
+    return self.alias < other.alias
+
+  def __eq__(self, other):
+    return self.alias == other.alias
+
+  # These 3 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.alias <= other.alias
+
+  def __gt__(self, other):
+    return self.alias > other.alias
+
+  def __ge__(self, other):
+    return self.alias >= other.alias
+
+  def __ne__(self, other):
+    return self.alias != other.alias
 
 
 class Port(object):
@@ -156,8 +235,43 @@ class Port(object):
   def supports_rdm(self):
     return self._supports_rdm
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
+  @staticmethod
+  def FromProtobuf(port_pb):
+    universe = port_pb.universe if port_pb.HasField('universe') else None
+    return Port(port_pb.port_id,
+                universe,
+                port_pb.active,
+                port_pb.description,
+                port_pb.supports_rdm)
+
+  def __repr__(self):
+    s = 'Port(id={id}, universe={universe}, active={active}, ' \
+        'description="{desc}", supports_rdm={supports_rdm})'
+    return s.format(id=self.id,
+                    universe=self.universe,
+                    active=self.active,
+                    desc=self.description,
+                    supports_rdm=self.supports_rdm)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 class Universe(object):
@@ -172,10 +286,12 @@ class Universe(object):
   LTP = Ola_pb2.LTP
   HTP = Ola_pb2.HTP
 
-  def __init__(self, universe_id, name, merge_mode):
+  def __init__(self, universe_id, name, merge_mode, input_ports, output_ports):
     self._id = universe_id
     self._name = name
     self._merge_mode = merge_mode
+    self._input_ports = sorted(input_ports)
+    self._output_ports = sorted(output_ports)
 
   @property
   def id(self):
@@ -189,8 +305,51 @@ class Universe(object):
   def merge_mode(self):
     return self._merge_mode
 
-  def __cmp__(self, other):
-    return cmp(self._id, other._id)
+  @property
+  def input_ports(self):
+    return self._input_ports
+
+  @property
+  def output_ports(self):
+    return self._output_ports
+
+  @staticmethod
+  def FromProtobuf(universe_pb):
+    input_ports = [Port.FromProtobuf(x) for x in universe_pb.input_ports]
+    output_ports = [Port.FromProtobuf(x) for x in universe_pb.output_ports]
+
+    return Universe(universe_pb.universe,
+                    universe_pb.name,
+                    universe_pb.merge_mode,
+                    input_ports,
+                    output_ports)
+
+  def __repr__(self):
+    merge_mode = 'LTP' if self.merge_mode == Universe.LTP else 'HTP'
+    s = 'Universe(id={id}, name="{name}", merge_mode={merge_mode})'
+    return s.format(id=self.id,
+                    name=self.name,
+                    merge_mode=merge_mode)
+
+  def __lt__(self, other):
+    return self.id < other.id
+
+  def __eq__(self, other):
+    return self.id == other.id
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.id <= other.id
+
+  def __gt__(self, other):
+    return self.id > other.id
+
+  def __ge__(self, other):
+    return self.id >= other.id
+
+  def __ne__(self, other):
+    return self.id != other.id
 
 
 class RequestStatus(object):
@@ -252,11 +411,34 @@ class RDMNack(object):
   def value(self):
     return self._value
 
-  def __str__(self):
-    return self._description
+  @property
+  def description(self):
+      return self._description
 
-  def __cmp__(self, other):
-    return cmp(self.value, other.value)
+  def __repr__(self):
+    s = 'RDMNack(value={value}, desc="{desc}")'
+    return s.format(value=self.value,
+                    desc=self.description)
+
+  def __lt__(self, other):
+    return self.value < other.value
+
+  def __eq__(self, other):
+    return self.value == other.value
+
+  # These 4 could be replaced by functools.total_ordering when support
+  # for 2.6 is dropped.
+  def __le__(self, other):
+    return self.value <= other.value
+
+  def __gt__(self, other):
+    return self.value > other.value
+
+  def __ge__(self, other):
+    return self.value >= other.value
+
+  def __ne__(self, other):
+    return self.value != other.value
 
   @classmethod
   def LookupCode(cls, code):
@@ -266,11 +448,52 @@ class RDMNack(object):
     return obj
 
 
-for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.iteritems():
+for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.items():
   nack = RDMNack(value, description)
   setattr(RDMNack, symbol, nack)
   RDMNack._CODE_TO_OBJECT[value] = nack
 
+
+
+class RDMFrame(object):
+  """The raw data in an RDM frame.
+
+  The timing attributes may be 0 if the plugin does not provide timing
+  information. All timing data is in nano-seconds.
+
+  Attributes:
+    data: The raw byte data.
+    response_delay: The time between the request and the response.
+    break_time: The break duration.
+    mark_time: The mark duration.
+    data_time: The data time.
+  """
+  def __init__(self, frame):
+    self._data = frame.raw_response
+    self._response_delay = frame.timing.response_delay
+    self._break_time = frame.timing.break_time
+    self._mark_time = frame.timing.mark_time
+    self._data_time = frame.timing.data_time
+
+  @property
+  def data(self):
+    return self._data
+
+  @property
+  def response_delay(self):
+    return self._response_delay
+
+  @property
+  def break_time(self):
+    return self._break_time
+
+  @property
+  def mark_time(self):
+    return self._mark_time
+
+  @property
+  def data_time(self):
+    return self._data_time
 
 class RDMResponse(object):
   """Represents a RDM Response.
@@ -307,6 +530,7 @@ class RDMResponse(object):
     ack_timer: If the response type was ACK_TIMER, this is the number of ms to
       wait before checking for queued messages.
     transaction_number:
+    frames: A list of RDM frames that made up this response.
   """
 
   RESPONSE_CODES_TO_STRING = {
@@ -342,8 +566,10 @@ class RDMResponse(object):
   }
 
   def __init__(self, controller, response):
+    self._frames = []
+
     self.status = RequestStatus(controller)
-    if (self.status.Succeeded() and (response != None)):
+    if self.status.Succeeded() and response is not None:
       self._response_code = response.response_code
       self._response_type = response.response_type
       self._queued_messages = response.message_count
@@ -352,7 +578,9 @@ class RDMResponse(object):
       self.command_class = response.command_class
       self.pid = response.param_id
       self.data = response.data
-      self._raw_responses = response.raw_response
+
+      for frame in response.raw_frame:
+        self._frames.append(RDMFrame(frame))
 
     # we populate these below if required
     self._nack_reason = None
@@ -396,9 +624,16 @@ class RDMResponse(object):
     return self._transaction_number
 
   @property
+  def frames(self):
+    return self._frames
+
+  @property
   def raw_response(self):
     """The list of byte strings in the response packets."""
-    return self._raw_responses
+    data = []
+    for frame in self._frames:
+      data.append(frame.data)
+    return data
 
   def WasAcked(self):
     """Returns true if this RDM request returned a ACK response."""
@@ -410,18 +645,25 @@ class RDMResponse(object):
   def ack_timer(self):
     return 100 * self._ack_timer
 
-  def __str__(self):
+  def __repr__(self):
     if self.response_code != Ola_pb2.RDM_COMPLETED_OK:
-      return 'RDMResponse: %s' % self.ResponseCodeAsString()
+      s = 'RDMResponse(error="{error}")'
+      return s.format(error=self.ResponseCodeAsString())
 
     if self.response_type == OlaClient.RDM_ACK:
-      return 'RDMResponse: %s ACK' % self._command_class()
+      s = 'RDMResponse(type=ACK, command_class={cmd})'
+      return s.format(cmd=self._command_class())
     elif self.response_type == OlaClient.RDM_ACK_TIMER:
-      return 'RDMResponse: %s ACK TIMER, %d ms' % (
-          self._command_class(), self.ack_timer)
+      s = 'RDMResponse(type=ACK_TIMER, ack_timer={timer} ms, ' \
+          'command_class={cmd})'
+      return s.format(timer=self.ack_timer,
+                      cmd=self._command_class())
+    elif self.response_type == OlaClient.RDM_NACK_REASON:
+      s = 'RDMResponse(type=NACK, reason="{reason}")'
+      return s.format(reason=self.nack_reason.description)
     else:
-      return 'RDMResponse:, %s NACK %s' % (
-          self._command_class(), self.nack_reason)
+      s = 'RDMResponse(type="Unknown")'
+      return s
 
   def _get_short_from_data(self, data):
     """Try to unpack the binary data into a short.
@@ -439,18 +681,18 @@ class RDMResponse(object):
 
   def _command_class(self):
     if self.command_class == OlaClient.RDM_GET_RESPONSE:
-      return 'Get'
-    elif self.command_class == OlaClient.RDM_SET_RESPONSE :
-      return 'Set'
+      return 'GET'
+    elif self.command_class == OlaClient.RDM_SET_RESPONSE:
+      return 'SET'
     elif self.command_class == OlaClient.RDM_DISCOVERY_RESPONSE:
-      return 'Discovery'
+      return 'DISCOVERY'
     else:
       return "UNKNOWN_CC"
 
 
 class OlaClient(Ola_pb2.OlaClientService):
   """The client used to communicate with olad."""
-  def __init__(self, our_socket = None, close_callback = None):
+  def __init__(self, our_socket=None, close_callback=None):
     """Create a new client.
 
     Args:
@@ -515,11 +757,11 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def PluginDescription(self, callback, plugin_id):
-    """Fetch the list of plugins.
+    """Fetch the description of a plugin.
 
     Args:
       callback: the function to call once complete, takes two arguments, a
-        RequestStatus object and a list of Plugin objects
+        RequestStatus object and the plugin description text.
       plugin_id: the id of the plugin
 
     Returns:
@@ -585,7 +827,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def FetchDmx(self, universe, callback):
-    """Fetch a list of universes from the server
+    """Fetch DMX data from the server
 
     Args:
       universe: the universe to fetch the data for
@@ -612,7 +854,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Send DMX data to the server
 
     Args:
-      universe: the universe to fetch the data for
+      universe: the universe to send the data for
       data: An array object with the DMX data
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
@@ -661,10 +903,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def SetUniverseMergeMode(self, universe, merge_mode, callback=None):
-    """Set the merge_mode of a universe.
+    """Set the merge mode of a universe.
 
     Args:
-      universe: the universe to set the name of
+      universe: the universe to set the merge mode of
       merge_mode: either Universe.HTP or Universe.LTP
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
@@ -690,7 +932,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Register to receive dmx updates for a universe.
 
     Args:
-      universe: the universe to set the name of
+      universe: the universe to register to
       action: OlaClient.REGISTER or OlaClient.UNREGISTER
       data_callback: the function to be called when there is new data, passed
         a single argument of type array.
@@ -723,10 +965,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Patch a port to a universe.
 
     Args:
-      device_alias: the alias of the device to configure
+      device_alias: the alias of the device of which to patch a port
       port: the id of the port
       is_output: select the input or output port
-      action: OlaClient.PATCH or OlcClient.UNPATCH
+      action: OlaClient.PATCH or OlaClient.UNPATCH
       universe: the universe to set the name of
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
@@ -888,7 +1130,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data = ''):
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=''):
     """Send an RDM get command.
 
     Args:
@@ -906,9 +1148,9 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data);
+                            data)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data = ''):
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=''):
     """Send an RDM set command.
 
     Args:
@@ -926,7 +1168,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data, set = True);
+                            data, set=True)
 
   def SendRawRDMDiscovery(self,
                           universe,
@@ -934,7 +1176,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data = ''):
+                          data=''):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
 
@@ -968,8 +1210,43 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
+  def GetCandidatePorts(self, callback, universe=None):
+    """Send a GetCandidatePorts request. The result is similar to FetchDevices
+    (GetDeviceInfo), except that returned devices will only contain ports
+    available for patching to the given universe. If universe is None, then the
+    devices will list their ports available for patching to a potential new
+    universe.
+
+    Args:
+      callback: The function to call once complete, takes a RequestStatus
+        object and a list of Device objects.
+      universe: The universe to get the candidate ports for. If unspecified,
+        return the candidate ports for a new universe.
+
+    Returns:
+      True if the request was sent, False otherwise.
+    """
+    if self._socket is None:
+      return False
+
+    controller = SimpleRpcController()
+    request = Ola_pb2.OptionalUniverseRequest()
+
+    if universe is not None:
+      request.universe = universe
+
+    # GetCandidatePorts works very much like GetDeviceInfo, so we can re-use
+    # its complete method.
+    done = lambda x, y: self._DeviceInfoComplete(callback, x, y)
+    try:
+      self._stub.GetCandidatePorts(controller, request, done)
+    except socket.error:
+      raise OLADNotRunningException()
+
+    return True
+
   def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
-                  set = False):
+                  set=False):
     controller = SimpleRpcController()
     request = Ola_pb2.RDMRequest()
     request.universe = universe
@@ -996,12 +1273,13 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
 
-    plugins = [Plugin(p.plugin_id, p.name) for p in response.plugin]
-    plugins.sort(key=lambda x: x.id)
+    status = RequestStatus(controller)
+    plugins = None
+
+    if status.Succeeded():
+      plugins = sorted([Plugin.FromProtobuf(p) for p in response.plugin])
+
     callback(status, plugins)
 
   def _PluginDescriptionComplete(self, callback, controller, response):
@@ -1014,10 +1292,14 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
-    callback(status, response.description)
+    description = None
+
+    if status.Succeeded():
+      description = response.description
+
+    callback(status, description)
 
   def _DeviceInfoComplete(self, callback, controller, response):
     """Called when the Device info request returns.
@@ -1030,33 +1312,25 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
+    devices = None
 
-    devices = []
-    for device in response.device:
-      input_ports = []
-      output_ports = []
-      for port in device.input_port:
-        input_ports.append(Port(port.port_id,
-                                port.universe,
-                                port.active,
-                                port.description,
-                                port.supports_rdm))
+    if status.Succeeded():
+      devices = []
+      for device in response.device:
+        input_ports = []
+        output_ports = []
+        for port in device.input_port:
+          input_ports.append(Port.FromProtobuf(port))
 
-      for port in device.output_port:
-        output_ports.append(Port(port.port_id,
-                                 port.universe,
-                                 port.active,
-                                 port.description,
-                                port.supports_rdm))
+        for port in device.output_port:
+          output_ports.append(Port.FromProtobuf(port))
 
-      devices.append(Device(device.device_id,
-                            device.device_alias,
-                            device.device_name,
-                            device.plugin_id,
-                            input_ports,
-                            output_ports))
+        devices.append(Device(device.device_id,
+                              device.device_alias,
+                              device.device_name,
+                              device.plugin_id,
+                              input_ports,
+                              output_ports))
     callback(status, devices)
 
   def _UniverseInfoComplete(self, callback, controller, response):
@@ -1070,11 +1344,11 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
+    universes = None
 
-    universes = [Universe(u.universe, u.name, u.merge_mode) for u in
-        response.universe]
+    if status.Succeeded():
+      universes = [Universe.FromProtobuf(u) for u in response.universe]
+
     callback(status, universes)
 
   def _GetDmxComplete(self, callback, controller, response):
@@ -1088,12 +1362,15 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
+    data = None
+    universe = None
 
-    data = array.array('B')
-    data.fromstring(response.data)
-    callback(status, response.universe, data)
+    if status.Succeeded():
+      data = array.array('B')
+      data.fromstring(response.data)
+      universe = response.universe
+
+    callback(status, universe, data)
 
   def _AckMessageComplete(self, callback, controller, response):
     """Called when an rpc that returns an Ack completes.
@@ -1118,10 +1395,14 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
-    callback(status, response.data)
+    data = None
+
+    if status.Succeeded():
+      data = response.data
+
+    callback(status, data)
 
   def _FetchUIDsComplete(self, callback, controller, response):
     """Called when a FetchUIDList request completes.
@@ -1133,12 +1414,16 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+
     status = RequestStatus(controller)
-    uids = []
-    if response:
+    uids = None
+
+    if status.Succeeded():
+      uids = []
       for uid in response.uid:
         uids.append(UID(uid.esta_id, uid.device_id))
-    uids.sort()
+      uids.sort()
+
     callback(status, uids)
 
   def _RDMCommandComplete(self, callback, controller, response):

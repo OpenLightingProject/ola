@@ -41,6 +41,8 @@ using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
+using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Message;
 using ola::messaging::GenericMessagePrinter;
 using ola::messaging::StringFieldDescriptor;
@@ -59,6 +61,8 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEmpty);
   CPPUNIT_TEST(testSimpleBigEndian);
   CPPUNIT_TEST(testSimpleLittleEndian);
+  CPPUNIT_TEST(testIPV4);
+  CPPUNIT_TEST(testMAC);
   CPPUNIT_TEST(testString);
   CPPUNIT_TEST(testUID);
   CPPUNIT_TEST(testWithGroups);
@@ -70,6 +74,8 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
     void testEmpty();
     void testSimpleBigEndian();
     void testSimpleLittleEndian();
+    void testIPV4();
+    void testMAC();
     void testString();
     void testUID();
     void testWithGroups();
@@ -211,6 +217,56 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
   const string expected = (
       "bool: true\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
       "uint32: 16909060\nint32: -33159416\n");
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
+}
+
+
+/**
+ * Test IPV4 inflation.
+ */
+void MessageDeserializerTest::testIPV4() {
+  // build the descriptor
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new IPV4FieldDescriptor("Address"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the data
+  const uint8_t big_endian_data[] = {10, 0, 0, 1};
+
+  // now the correct amount & verify
+  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+      &descriptor,
+      big_endian_data,
+      sizeof(big_endian_data)));
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(1u, message->FieldCount());
+
+  const string expected = "Address: 10.0.0.1\n";
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
+}
+
+
+/**
+ * Test MAC inflation.
+ */
+void MessageDeserializerTest::testMAC() {
+  // build the descriptor
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new MACFieldDescriptor("Address"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the data
+  const uint8_t big_endian_data[] = {1, 35, 69, 103, 137, 171};
+
+  // now the correct amount & verify
+  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+      &descriptor,
+      big_endian_data,
+      sizeof(big_endian_data)));
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(1u, message->FieldCount());
+
+  const string expected = "Address: 01:23:45:67:89:ab\n";
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
