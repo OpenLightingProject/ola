@@ -13,6 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+/*jshint browser: true */
+/* global angular, $ */
 angular
   .module('olaApp', ['ngRoute'])
   .constant('OLA', {
@@ -618,7 +620,12 @@ angular
       'use strict';
       $ola.tabs('settings', $routeParams.id);
       $scope.loadData = function () {
-        $scope.Data = {old: {}, model: {}, Remove: [], Add: []};
+        $scope.Data = {
+          old: {},
+          model: {},
+          Remove: [],
+          Add: []
+        };
         $scope.Data.old.id = $scope.Data.model.id = $routeParams.id;
         $ola.get.PortsId($routeParams.id).then(function (data) {
           $scope.DeactivePorts = data;
