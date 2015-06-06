@@ -24,11 +24,11 @@ angular
     'MAX_CHANNEL_VALUE': 255
   })
   .factory('$ola', ['$http', '$window', 'OLA',
-    function ($http, $window, OLA) {
+    function($http, $window, OLA) {
       'use strict';
       // once olad supports json post data postEncode can go away
       // and the header in post requests too.
-      var postEncode = function (data) {
+      var postEncode = function(data) {
         var PostData = [];
         for (var key in data) {
           if (data.hasOwnProperty(key)) {
@@ -46,7 +46,7 @@ angular
         }
         return PostData.join('&');
       };
-      var dmxConvert = function (dmx) {
+      var dmxConvert = function(dmx) {
         var length = 1;
         var integers = [];
         for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
@@ -60,25 +60,25 @@ angular
       };
       return {
         get: {
-          ItemList: function () {
+          ItemList: function() {
             return $http.get('/json/universe_plugin_list')
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          ServerInfo: function () {
+          ServerInfo: function() {
             return $http.get('/json/server_stats')
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          Ports: function () {
+          Ports: function() {
             return $http.get('/json/get_ports')
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          PortsId: function (id) {
+          PortsId: function(id) {
             return $http({
               method: 'GET',
               url: '/json/get_ports',
@@ -86,11 +86,11 @@ angular
                 'id': id
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          InfoPlugin: function (id) {
+          InfoPlugin: function(id) {
             return $http({
               method: 'GET',
               url: '/json/plugin_info',
@@ -98,11 +98,11 @@ angular
                 'id': id
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          Dmx: function (id) {
+          Dmx: function(id) {
             return $http({
               method: 'GET',
               url: '/get_dmx',
@@ -110,11 +110,11 @@ angular
                 'u': id
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          UniverseInfo: function (id) {
+          UniverseInfo: function(id) {
             return $http({
               method: 'GET',
               url: '/json/universe_info',
@@ -122,13 +122,13 @@ angular
                 'id': id
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           }
         },
         post: {
-          ModifyUniverse: function (data) {
+          ModifyUniverse: function(data) {
             return $http({
               method: 'POST',
               url: '/modify_universe',
@@ -136,11 +136,11 @@ angular
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
               }
-            }).then(function (response) {
+            }).then(function(response) {
               return response.data;
             });
           },
-          AddUniverse: function (data) {
+          AddUniverse: function(data) {
             return $http({
               method: 'POST',
               url: '/new_universe',
@@ -148,11 +148,11 @@ angular
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
               }
-            }).then(function (response) {
+            }).then(function(response) {
               return response.data;
             });
           },
-          Dmx: function (universe, dmx) {
+          Dmx: function(universe, dmx) {
             var data = {
               u: universe,
               d: dmxConvert(dmx)
@@ -164,34 +164,34 @@ angular
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
               }
-            }).then(function (response) {
+            }).then(function(response) {
               return response.data;
             });
           }
         },
         action: {
-          Shutdown: function () {
+          Shutdown: function() {
             return $http.get('/quit')
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          Reload: function () {
+          Reload: function() {
             return $http.get('/reload')
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
-          ReloadPids: function () {
+          ReloadPids: function() {
             return $http.get('/reload_pids')
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           }
         },
         rdm: {
           // /json/rdm/section_info?id=[universe]&uid=[uid]&section=[section]
-          GetSectionInfo: function (universe, uid, section) {
+          GetSectionInfo: function(universe, uid, section) {
             return $http({
               method: 'GET',
               url: '/json/rdm/section_info',
@@ -201,12 +201,12 @@ angular
                 'section': section
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/set_section_info?id=[universe]&uid=[uid]&section=[section]
-          SetSection: function (universe, uid, section, hint, option) {
+          SetSection: function(universe, uid, section, hint, option) {
             return $http({
               method: 'GET',
               url: '/json/rdm/set_section_info',
@@ -218,12 +218,12 @@ angular
                 'int': option
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/supported_pids?id=[universe]&uid=[uid]
-          GetSupportedPids: function (universe, uid) {
+          GetSupportedPids: function(universe, uid) {
             return $http({
               method: 'GET',
               url: '/json/rdm/supported_pids',
@@ -232,12 +232,12 @@ angular
                 'uid': uid
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/supported_sections?id=[universe]&uid=[uid]
-          GetSupportedSections: function (universe, uid) {
+          GetSupportedSections: function(universe, uid) {
             return $http({
               method: 'GET',
               url: '/json/rdm/supported_sections',
@@ -246,12 +246,12 @@ angular
                 'uid': uid
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uid_identify_device?id=[universe]&uid=[uid]
-          UidIdentifyDevice: function (universe, uid) {
+          UidIdentifyDevice: function(universe, uid) {
             return $http({
               method: 'GET',
               url: '/json/rdm/uid_identify_device',
@@ -260,12 +260,12 @@ angular
                 'uid': uid
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uid_info?id=[universe]&uid=[uid]
-          UidInfo: function (universe, uid) {
+          UidInfo: function(universe, uid) {
             return $http({
               method: 'GET',
               url: '/json/rdm/uid_info',
@@ -274,12 +274,12 @@ angular
                 'uid': uid
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uid_personalities?id=[universe]&uid=[uid]
-          UidPersonalities: function (universe, uid) {
+          UidPersonalities: function(universe, uid) {
             return $http({
               method: 'GET',
               url: '/json/rdm/uid_personalities',
@@ -288,12 +288,12 @@ angular
                 'uid': uid
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /json/rdm/uids?id=[universe]
-          Uids: function (universe) {
+          Uids: function(universe) {
             return $http({
               method: 'GET',
               url: '/json/rdm/uids',
@@ -301,12 +301,12 @@ angular
                 'id': universe
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           },
           // /rdm/run_discovery?id=[universe]&incremental=true
-          RunDiscovery: function (universe, incremental) {
+          RunDiscovery: function(universe, incremental) {
             return $http({
               method: 'GET',
               url: '/rdm/run_discovery',
@@ -315,12 +315,12 @@ angular
                 'incremental': incremental
               }
             })
-              .then(function (response) {
+              .then(function(response) {
                 return response.data;
               });
           }
         },
-        tabs: function (tab, id) {
+        tabs: function(tab, id) {
           // TODO(Dave_o): use a directive instead of this
           $window.$('ul#ola-nav-tabs').html('' +
             '<li id="overview" role="presentation"><a href="/new/#/universe/' +
@@ -343,13 +343,13 @@ angular
             '/settings">Settings</a></li>');
           $window.$('ul#ola-nav-tabs > li#' + tab).addClass('active');
         },
-        header: function (name, id) {
+        header: function(name, id) {
           $('div#header-universe').html(
             '<h4>' + name + '</h4><div>(id: ' + id + ')</div>'
           );  // TODO(Dave_o): use a directive instead of this
         },
         error: {
-          modal: function (body, title) {
+          modal: function(body, title) {
             if (typeof body !== 'undefined') {
               $('#errorModalBody').text(body);
             } else {
@@ -367,18 +367,18 @@ angular
     }
   ])
   .controller('menuCtrl', ['$scope', '$ola', '$interval', '$location',
-    function ($scope, $ola, $interval, $location) {
+    function($scope, $ola, $interval, $location) {
       'use strict';
       $scope.Items = {};
       $scope.Info = {};
-      $scope.goTo = function (url) {
+      $scope.goTo = function(url) {
         $location.path(url);
       };
-      var getData = function () {
-        $ola.get.ItemList().then(function (data) {
+      var getData = function() {
+        $ola.get.ItemList().then(function(data) {
           $scope.Items = data;
         });
-        $ola.get.ServerInfo().then(function (data) {
+        $ola.get.ServerInfo().then(function(data) {
           $scope.Info = data;
           document.title = data.instance_name + ' - ' + data.ip;
         });
@@ -387,25 +387,25 @@ angular
       $interval(getData, 10000);
     }])
   .controller('overviewCtrl', ['$scope', '$ola', '$location',
-    function ($scope, $ola, $location) {
+    function($scope, $ola, $location) {
       'use strict';
       $scope.Info = {};
       $scope.Universes = {};
-      $ola.get.ItemList().then(function (data) {
+      $ola.get.ItemList().then(function(data) {
         $scope.Universes = data.universes;
       });
-      $ola.get.ServerInfo().then(function (data) {
+      $ola.get.ServerInfo().then(function(data) {
         $scope.Info = data;
       });
-      $scope.Shutdown = function () {
+      $scope.Shutdown = function() {
         $ola.action.Shutdown().then();
       };
-      $scope.goUniverse = function (id) {
+      $scope.goUniverse = function(id) {
         $location.path('/universe/' + id);
       };
     }])
   .controller('addUniverseCtrl', ['$scope', '$ola', '$window', '$location',
-    function ($scope, $ola, $window, $location) {
+    function($scope, $ola, $window, $location) {
       'use strict';
       $scope.Ports = {};
       $scope.addPorts = [];
@@ -416,7 +416,7 @@ angular
         name: '',
         add_ports: ''
       };
-      $ola.get.ItemList().then(function (data) {
+      $ola.get.ItemList().then(function(data) {
         for (var u in data.universes) {
           if (data.universes.hasOwnProperty(u)) {
             if ($scope.Data.id === parseInt(data.universes[u].id, 10)) {
@@ -426,7 +426,7 @@ angular
           }
         }
       });
-      $scope.Submit = function () {
+      $scope.Submit = function() {
         if (typeof $scope.Data.id === 'number' &&
           $scope.Data.add_ports !== '' &&
           $scope.Universes.indexOf($scope.Data.id) === -1) {
@@ -443,40 +443,40 @@ angular
             'This is required.');
         }
       };
-      $ola.get.Ports().then(function (data) {
+      $ola.get.Ports().then(function(data) {
         $scope.Ports = data;
       });
-      $scope.getDirection = function (direction) {
+      $scope.getDirection = function(direction) {
         if (direction) {
           return 'Output';
         } else {
           return 'Input';
         }
       };
-      $scope.updateId = function () {
+      $scope.updateId = function() {
         if ($scope.Universes.indexOf($scope.Data.id) !== -1) {
           $scope.Class = 'has-error';
         } else {
           $scope.Class = '';
         }
       };
-      $scope.TogglePort = function () {
+      $scope.TogglePort = function() {
         $scope.Data.add_ports =
           $window.$.grep($scope.addPorts, Boolean).join(',');
       };
     }])
   .controller('universeCtrl',
   ['$scope', '$ola', '$routeParams', '$interval', 'OLA',
-    function ($scope, $ola, $routeParams, $interval, OLA) {
+    function($scope, $ola, $routeParams, $interval, OLA) {
       'use strict';
       $ola.tabs('overview', $routeParams.id);
-      $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
         $ola.header(data.name, $routeParams.id);
       });
       $scope.dmx = [];
       $scope.Universe = $routeParams.id;
-      var interval = $interval(function () {
-        $ola.get.Dmx($scope.Universe).then(function (data) {
+      var interval = $interval(function() {
+        $ola.get.Dmx($scope.Universe).then(function(data) {
           for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
             $scope.dmx[i] =
               (typeof data.dmx[i] === 'number') ?
@@ -484,10 +484,10 @@ angular
           }
         });
       }, 100);
-      $scope.$on('$destroy', function () {
+      $scope.$on('$destroy', function() {
         $interval.cancel(interval);
       });
-      $scope.getColor = function (i) {
+      $scope.getColor = function(i) {
         if (i > 140) {
           return 'black';
         } else {
@@ -498,10 +498,10 @@ angular
   ])
   .controller('faderUniverseCtrl',
   ['$scope', '$ola', '$routeParams', '$window', '$interval', 'OLA',
-    function ($scope, $ola, $routeParams, $window, $interval, OLA) {
+    function($scope, $ola, $routeParams, $window, $interval, OLA) {
       'use strict';
       $ola.tabs('faders', $routeParams.id);
-      $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
         $ola.header(data.name, $routeParams.id);
       });
       $scope.get = [];
@@ -515,14 +515,14 @@ angular
         $scope.list[i] = i;
         $scope.get[i] = OLA.MIN_CHANNEL_VALUE;
       }
-      $scope.light = function (j) {
+      $scope.light = function(j) {
         for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
           $scope.get[i] = j;
         }
         $scope.change();
       };
-      var dmxGet = $interval(function () {
-        $ola.get.Dmx($scope.Universe).then(function (data) {
+      var dmxGet = $interval(function() {
+        $ola.get.Dmx($scope.Universe).then(function(data) {
           for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
             if (i < data.dmx.length) {
               $scope.get[i] = data.dmx[i];
@@ -533,20 +533,20 @@ angular
           $scope.send = true;
         });
       }, 1000);
-      $scope.getColor = function (i) {
+      $scope.getColor = function(i) {
         if (i > 140) {
           return 'black';
         } else {
           return 'white';
         }
       };
-      $scope.ceil = function (i) {
+      $scope.ceil = function(i) {
         return $window.Math.ceil(i);
       };
-      $scope.change = function () {
+      $scope.change = function() {
         $ola.post.Dmx($scope.Universe, $scope.get);
       };
-      $scope.page = function (d) {
+      $scope.page = function(d) {
         if (d === 1) {
           var offsetLimit =
             $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
@@ -559,13 +559,13 @@ angular
           }
         }
       };
-      $scope.getWidth = function () {
+      $scope.getWidth = function() {
         var width =
           $window.Math.floor(($window.innerWidth * 0.99) / $scope.limit);
         var amount = width - (52 / $scope.limit);
         return amount + 'px';
       };
-      $scope.getLimit = function () {
+      $scope.getLimit = function() {
         var width = ($window.innerWidth * 0.99) / 66;
         return $window.Math.floor(width);
       };
@@ -573,53 +573,53 @@ angular
       $scope.width = {
         'width': $scope.getWidth()
       };
-      $window.$($window).resize(function () {
-        $scope.$apply(function () {
+      $window.$($window).resize(function() {
+        $scope.$apply(function() {
           $scope.limit = $scope.getLimit();
           $scope.width = {
             width: $scope.getWidth()
           };
         });
       });
-      $scope.$on('$destroy', function () {
+      $scope.$on('$destroy', function() {
         $interval.cancel(dmxGet);
       });
     }
   ])
   .controller('keypadUniverseCtrl', ['$scope', '$ola', '$routeParams',
-    function ($scope, $ola, $routeParams) {
+    function($scope, $ola, $routeParams) {
       'use strict';
       $ola.tabs('keypad', $routeParams.id);
       $scope.Universe = $routeParams.id;
-      $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
         $ola.header(data.name, $routeParams.id);
       });
     }])
   .controller('rdmUniverseCtrl', ['$scope', '$ola', '$routeParams',
-    function ($scope, $ola, $routeParams) {
+    function($scope, $ola, $routeParams) {
       'use strict';
       $ola.tabs('rdm', $routeParams.id);
       //get:
       // /json/rdm/set_section_info?id={{id}}&uid={{uid}}&section={{section}}&hint={{hint}}&address={{address}}
       $scope.Universe = $routeParams.id;
-      $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
         $ola.header(data.name, $routeParams.id);
       });
     }])
   .controller('patchUniverseCtrl', ['$scope', '$ola', '$routeParams',
-    function ($scope, $ola, $routeParams) {
+    function($scope, $ola, $routeParams) {
       'use strict';
       $ola.tabs('patch', $routeParams.id);
       $scope.Universe = $routeParams.id;
-      $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
         $ola.header(data.name, $routeParams.id);
       });
     }])
   .controller('settingUniverseCtrl', ['$scope', '$ola', '$routeParams',
-    function ($scope, $ola, $routeParams) {
+    function($scope, $ola, $routeParams) {
       'use strict';
       $ola.tabs('settings', $routeParams.id);
-      $scope.loadData = function () {
+      $scope.loadData = function() {
         $scope.Data = {
           old: {},
           model: {},
@@ -627,10 +627,10 @@ angular
           Add: []
         };
         $scope.Data.old.id = $scope.Data.model.id = $routeParams.id;
-        $ola.get.PortsId($routeParams.id).then(function (data) {
+        $ola.get.PortsId($routeParams.id).then(function(data) {
           $scope.DeactivePorts = data;
         });
-        $ola.get.UniverseInfo($routeParams.id).then(function (data) {
+        $ola.get.UniverseInfo($routeParams.id).then(function(data) {
           window.console.log(data);
           $ola.header(data.name, $routeParams.id);
           $scope.Data.old.name = $scope.Data.model.name = data.name;
@@ -645,7 +645,7 @@ angular
         });
       };
       $scope.loadData();
-      $scope.Save = function () {
+      $scope.Save = function() {
         var a = {};
         a.id = $scope.Data.model.id;
         a.name = $scope.Data.model.name;
@@ -653,7 +653,7 @@ angular
         a.add_ports = $.grep($scope.Data.Add, Boolean).join(',');
         a.remove_ports = $.grep($scope.Data.Remove, Boolean).join(',');
         var modified = [];
-        $scope.ActivePorts.forEach(function (element, index) {
+        $scope.ActivePorts.forEach(function(element, index) {
           if ($scope.Data.Remove.indexOf($scope.ActivePorts[index].id) === -1) {
             var port = $scope.ActivePorts[index];
             var port_old = $scope.Data.old.ActivePorts[index];
@@ -674,16 +674,16 @@ angular
           }
         });
         a.modify_ports = $.grep(modified, Boolean).join(',');
-        $ola.post.ModifyUniverse(a).then(function (data) {
+        $ola.post.ModifyUniverse(a).then(function(data) {
           window.console.log(data);
         });
         $scope.loadData();
       };
     }])
   .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola', '$window',
-    function ($scope, $routeParams, $ola, $window) {
+    function($scope, $routeParams, $ola, $window) {
       'use strict';
-      $ola.get.InfoPlugin($routeParams.id).then(function (data) {
+      $ola.get.InfoPlugin($routeParams.id).then(function(data) {
         $scope.active = data.active;
         $scope.enabled = data.enabled;
         $scope.name = data.name;
@@ -693,7 +693,7 @@ angular
           description.innerHTML.replace(/\\n/g, '<br />');
         $window.console.log(data);
       });
-      $scope.stateColor = function (val) {
+      $scope.stateColor = function(val) {
         if (val) {
           return {
             'background-color': 'green'
@@ -707,25 +707,25 @@ angular
     }
   ])
   .controller('pluginsCtrl', ['$scope', '$ola', '$location',
-    function ($scope, $ola, $location) {
+    function($scope, $ola, $location) {
       'use strict';
       $scope.Items = {};
       $scope.active = [];
       $scope.enabled = [];
-      $scope.getInfo = function () {
-        $ola.get.ItemList().then(function (data) {
+      $scope.getInfo = function() {
+        $ola.get.ItemList().then(function(data) {
           $scope.Items = data;
         });
       };
       $scope.getInfo();
-      $scope.Reload = function () {
+      $scope.Reload = function() {
         $ola.action.Reload().then();
         $scope.getInfo();
       };
-      $scope.go = function (id) {
+      $scope.go = function(id) {
         $location.path('/plugin/' + id);
       };
-      $scope.getStyle = function (style) {
+      $scope.getStyle = function(style) {
         if (style) {
           return {
             'background-color': 'green'
@@ -737,7 +737,7 @@ angular
         }
       };
     }])
-  .config(['$routeProvider', function ($routeProvider) {
+  .config(['$routeProvider', function($routeProvider) {
     'use strict';
     $routeProvider.when('/', {
       templateUrl: '/new/views/overview.html',
@@ -776,9 +776,9 @@ angular
       redirectTo: '/'
     });
   }])
-  .filter('startFrom', function () {
+  .filter('startFrom', function() {
     'use strict';
-    return function (input, start) {
+    return function(input, start) {
       start = parseInt(start, 10);
       return input.slice(start);
     };
